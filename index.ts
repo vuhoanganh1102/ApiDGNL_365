@@ -1,14 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from "body-parser";
-import {router} from "./src/router/router";
 import mongoose from "mongoose";
 const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cors());
-app.use('', router)
 const DB_URL = 'mongodb://localhost:27017/timviec365';
 mongoose.connect(DB_URL)
 
