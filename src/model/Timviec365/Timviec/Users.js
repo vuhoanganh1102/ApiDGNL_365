@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import {model} from "mongoose";
 const UserSchema = new mongoose.Schema(
     {
         _id:{
@@ -6,10 +7,10 @@ const UserSchema = new mongoose.Schema(
             required: true,
         },
         email: String,
-        phoneTK:Number,
+        phoneTK:String,
         userName: String,
         alias: String,
-        phone:Number,
+        phone:String,
         emailContact:String,
         avatarUser: String,
         type: Number,
@@ -21,8 +22,8 @@ const UserSchema = new mongoose.Schema(
         authentic: Number,
         isOnline: Number,
         from: String,
-        createdAt: Date,
-        updatedAt: Date,
+        createdAt: Number,
+        updatedAt: Number,
         lastActivedAt: Date,
         time_login: Date,
         role: Number,
@@ -34,10 +35,6 @@ const UserSchema = new mongoose.Schema(
         chat365_secret: String,
         inForEmployee: {
             type: {
-                _id:{
-                    type: Number,
-                    required: true,
-                },
                 user_id: Number,
                 companyID: Number,
                 depID: Number,
@@ -59,11 +56,7 @@ const UserSchema = new mongoose.Schema(
         },
         inForCompanyCC: {
             type: {
-                _id:{
-                    type: Number,
-                    required: true,
-                },
-                userID: Number,
+                user_id: Number,
                 type_timekeeping: String,
                 id_way_timekeeping: String,
                 com_role_id: Number,
@@ -76,10 +69,6 @@ const UserSchema = new mongoose.Schema(
         },
         inForCandidateTV365: {
             type: {
-                _id:{
-                    type: Number,
-                    required: true,
-                },
                 user_id: Number,
                 candiTitle: Number,
                 candiHocVan: Number,
@@ -103,10 +92,6 @@ const UserSchema = new mongoose.Schema(
         },
         inForCompanyTV365: {
             type: {
-                _id:{
-                    type: Number,
-                    required: true,
-                },
                 userID: Number,
                 comMd5: String,
                 comViewCount: Number,
@@ -125,4 +110,10 @@ const UserSchema = new mongoose.Schema(
                 userContactEmail: String,
             }, default: null
         }
-    })
+    },
+    { collection: 'Users',  
+    versionKey: false , 
+    timestamp:true
+  }  
+    )
+export default model("Users", UserSchema);
