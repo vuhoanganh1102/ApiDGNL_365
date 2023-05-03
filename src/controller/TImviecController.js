@@ -1,38 +1,49 @@
 import axios from 'axios'
 import mongoose from "mongoose";
+import https from 'https'
+
+//
 import Users from "../model/Timviec365/Timviec/Users.js"
 import newTV365 from '../model/Timviec365/Timviec/newTV365.js';
-import https from 'https'
+import blog from "../model/Timviec365/Timviec/blog.js";
+
 const ObjectId = mongoose.Types.ObjectId;
+
 export const getData = async (req, res, next) => {
     try {
-        await axios({
-            method: "post",
-            url: "http://43.239.223.142:9006/api/users/TakeDataUser",
-            data: {
-            },
-            headers: { "Content-Type": "multipart/form-data" },
-        }).then((response) => {
-            postData(response.data.data.listUser)
-            return res.status(200).json(response.data.data.listUser)
-        });
-
+        let i=0;
+        let count=0
+        while (i<3000){
+            await axios({
+                method: "post",
+                url: "http://43.239.223.142:9006/api/users/TakeDataUser",
+                data: {
+                    count:count+i*100
+                },
+                timeout: 1200000, 
+                httpsAgent: new https.Agent({ keepAlive: true }),
+                headers: { "Content-Type": "multipart/form-data" },
+            }).then((response) => {
+                postData(response.data.data.listUser)
+                return res.status(200).json()
+            });
+            i++
+        }
+  
     } catch (err) {
         console.log(err);
     }
 };
+
 export const getDataUpdate = async (req, res, next) => {
     try {
         const { data } = await axios({
             method: "post",
-            url: "https://timviec365.vn/api/get_list_user.php?page=4",
+            url: "https://timviec365.vn/api/get_list_user.php?page=5",
             data: {
             },
             timeout: 60000, 
             httpsAgent: new https.Agent({ keepAlive: true }),
-            url: "https://timviec365.vn/api/get_list_user.php?page=1",
-            data: {
-            },
             headers: { "Content-Type": "multipart/form-data" },
         })
         const response = {
@@ -103,14 +114,18 @@ const getUpdateData=async(data)=>{
           try {
 
             const user = await Users.findOne({ idTimViec365: item.use_id }).exec().then(async(user)=>{
+            let dateCreate = new Date(item.use_create_time * 1000);
+            let dateUpdate = new Date(item.use_update_time * 1000);
+            let mongoDateCreate = new Date(dateCreate.getTime());
+            let mongoDateUpdate = new Date(dateUpdate.getTime());
                 if (user!=null) {
                     const update = {
                       phoneTK: item.use_phone_tk,
                       city: item.use_city,
                       district: item.use_quanhuyen,
                       address: item.use_address,
-                      createdAt: item.use_create_time,
-                      updatedAt: item.use_update_time,
+                      createdAt: mongoDateCreate,
+                      updatedAt: mongoDateUpdate,
                       authentic: item.use_authentic,
                       chat365_secret: item.chat365_secret,
                     };
@@ -131,11 +146,11 @@ const getUpdateData=async(data)=>{
                                     userName: item.use_first_name,
                                     avatarUser: item.use_logo,
                                     phoneTK: item.use_phone_tk,
-                                    city: item.use_city,
+                                    city: Number(item.use_city),
                                     district: item.use_quanhuyen,
                                     address: item.use_address,
-                                    createdAt:item.use_create_time,
-                                    updatedAt: item.use_update_time,
+                                    createdAt:mongoDateCreate,
+                                    updatedAt: mongoDateUpdate,
                                     authentic: item.use_authentic,
                                     chat365_secret: item.chat365_secret,
                                     inForCandidateTV365: { user_id: item.chat365_id },
@@ -153,11 +168,11 @@ const getUpdateData=async(data)=>{
                                     userName: item.use_first_name,
                                     avatarUser: item.use_logo,
                                     phoneTK: item.use_phone_tk,
-                                    city: item.use_city,
+                                    city: Number(item.use_city),
                                     district: item.use_quanhuyen,
                                     address: item.use_address,
-                                    createdAt:item.use_create_time,
-                                    updatedAt: item.use_update_time,
+                                    createdAt:mongoDateCreate,
+                                    updatedAt: mongoDateUpdate,
                                     authentic: item.use_authentic,
                                     chat365_secret: item.chat365_secret,
                                     inForCandidateTV365: { user_id: item.chat365_id },
@@ -180,11 +195,11 @@ const getUpdateData=async(data)=>{
                                     userName: item.use_first_name,
                                     avatarUser: item.use_logo,
                                     phoneTK: item.use_phone_tk,
-                                    city: item.use_city,
+                                    city: Number(item.use_city),
                                     district: item.use_quanhuyen,
                                     address: item.use_address,
-                                    createdAt:item.use_create_time,
-                                    updatedAt: item.use_update_time,
+                                    createdAt:mongoDateCreate,
+                                    updatedAt: mongoDateUpdate,
                                     authentic: item.use_authentic,
                                     chat365_secret: item.chat365_secret,
                                     inForCandidateTV365: { user_id: item.chat365_id },
@@ -277,4 +292,69 @@ const postDataNew=async(data)=>{
         console.log(err)
     }
 }
-    
+export const getDataBlog = async (req, res, next) => {
+    try {
+        await axios({
+            method: "post",
+            url: 'https://timviec365.vn/api/get_list_blog.php?page=1',
+            data: {
+            },
+            headers: { "Content-Type": "multipart/form-data" },
+        }).then(async(response) => {
+            postDataBlog(response.data)
+            return res.status(200).json(response.data)
+        });
+    } catch (err) {
+        console.log(err);
+    }
+};
+const postDataBlog=async(data)=>{
+    try{
+        data.forEach(async(element) => {
+            
+            let date = new Date(element.new_date * 1000);
+            let mongoDate= new Date(date.getTime());
+            let dateLastEdit = new Date(element.new_date_last_edit * 1000);
+            let mongoDateLastEdit= new Date(dateLastEdit.getTime());
+                const insert= new blog({
+                    _id:element.new_id,
+                    adminID:element.admin_id,
+                    langID:element.lang_id,
+                    title:element.new_title,
+                    titleRewrite:element.new_title_rewrite,
+                    redirect301:element.new_301,
+                    canonical:element.new_canonical,
+                    mail:element.new_mail,
+                    picture:element.new_picture,
+                    teaser:element.new_teaser,
+                    description:element.new_description,
+                    thongTin:element.new_tt,
+                    des:element.new_des,
+                    keyword:element.new_keyword,
+                    video:element.new_video,
+                    categoryID:element.new_category_id,
+                    categoryCB:element.new_category_cb,
+                    date: mongoDate,
+                    adminEdit:element.new_admin_edit,
+                    dateLastEdit:mongoDateLastEdit,
+                    order:element.new_order,
+                    hits:element.new_hits,
+                    active:element.new_active,
+                    cateUrl:element.new_cate_url,
+                    hot:element.new_hot,
+                    new:element.new_new,
+                    view:element.new_view,
+                    urlLq:element.new_url_lq,
+                    tagCate:element.new_tag_cate,
+                    Vl:element.new_vl,
+                    tdgy:element.new_tdgy,
+                    ndgy:element.new_ndgy,
+                    audio:element.new_audio,
+                })
+                await insert.save()
+            })
+
+    } catch(err){
+        console.log(err)
+    }
+}

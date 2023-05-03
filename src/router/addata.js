@@ -1,5 +1,5 @@
-import { getDataCV, getDataCVUV } from "../controller/addDataCV.js";
-import {getData, getDataNew, getDataUpdate, maxID} from "../controller/addata.js";
+import { getDataCV, getDataCVUV } from "../controller/CvController.js";
+import {getData, getDataNew, getDataUpdate, maxID} from "../controller/TimviecController.js";
 import express from "express";
 const router = express.Router();
 router.get('/get-data', getDataUpdate); 

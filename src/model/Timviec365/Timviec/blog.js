@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import {model} from "mongoose";
 const blogSchema = new mongoose.Schema(
     {
         _id:{
@@ -17,55 +18,43 @@ const blogSchema = new mongoose.Schema(
         titleRewrite:String,
         redirect301: {
             type:String,
-            required:true,
         },
         canonical:{
             type:String,
-            required:true,
         },
         mail:{
             type:Number,
             default:0,
-            required:true,
         },
         picture:{
             type:String,
-            required:true,
         },
         teaser:{
             type:String,
-            required:true,
         },
         description:{
             type:String,
-            required:true,
         },
         thongTin:{
             type:String,
-            required:true,
         },
         des:{
             type:String,
-            required:true,
         },
         keyword:String,
         video:{
             type:String,
-            required:true,
         },
         categoryID:{
             type:Number,
-            required:true,
             default:0
         },
         categoryCB:{
             type:Number,
-            required:true,
         },
         date:Date,
         adminEdit: {
             type:Number,
-            required:true,
             default:0
         },
         dateLastEdit:{
@@ -86,7 +75,6 @@ const blogSchema = new mongoose.Schema(
         },
         cateUrl:{
             type:String,
-            required:true
         },
         hot:{
             type:Number,
@@ -102,16 +90,13 @@ const blogSchema = new mongoose.Schema(
         },
         urlLq:{
             type:String,
-            required:true
         },
         tagCate:{
             type:Number,
             default:0,
-            required:true
         },
         Vl:{
             type:String,
-            required:true
         },
         tdgy:{
             type:String,
@@ -121,7 +106,11 @@ const blogSchema = new mongoose.Schema(
         },
         audio:{
             type:Number,
-            required:true,
             default:0
         },
-    })
+    },
+    { collection: 'Blog',  
+    versionKey: false , 
+    timestamp:true
+  })
+  export default model("Blog", blogSchema);
