@@ -4,7 +4,6 @@ const UserSchema = new mongoose.Schema(
     {
         _id:{
             type: Number,
-            required: true,
         },
         email: String,
         phoneTK:String,

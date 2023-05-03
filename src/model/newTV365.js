@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import {model} from "mongoose";
 const newTV365Schema = new mongoose.Schema(
     {
         _id:{
@@ -27,7 +28,8 @@ const newTV365Schema = new mongoose.Schema(
         money:Number,
         capBac:Number,
         exp:Number,
-        sex:Number,
+        bangCap:Number,
+        sex:String,
         salary:Number,
         hinhThuc:Number,
         doTuoi:Number,
@@ -44,11 +46,6 @@ const newTV365Schema = new mongoose.Schema(
         post:Number,
         renew:Number,
         newMulti:{
-            type:{
-                priNewId:{
-                    type:Number,
-                    required: true,
-                },
                 newId:{
                     type:Number,
                     required: true,
@@ -58,73 +55,68 @@ const newTV365Schema = new mongoose.Schema(
                 quyenLoi:String,
                 hoSo:{
                     type:String,
-                    required: true,
                 },
                 titleSeo:{
                     type:String,
-                    required: true,
+                   
                 },
                 desSeo:{
                     type:String,
-                    required: true,
+                    
                 },
                 hoaHong:{
                     type:String,
-                    required: true,
+                   
                 },
                 tgtv:{
                     type:String,
-                    required: true,
+                    
                 },
                 lv:{
                     type:String,
-                    required: true,
+                    
                 },
                 baoLuu:String,
                 timeBaoLuu:{
                     type:Date,
-                    required: true,
+                    
                 },
                 jobPosting:{
                     type:Number,
-                    required: true,
+                    
                 },
                 videoType:{
                     type:Number,
-                    required: true,
+                    
                 },
                 videoActive:{
                     type:String,
-                    required: true,
+                    
                 },
                 images:{
                     type:String,
-                    required: true,
-                }
             },
-            default:null
         },
         newMoney:{
-            type:{
                 id: {
                     type: Number,
-                    required: true,
                 },
                 newId: {
                     type: Number,
-                    required: true,
                 },
                 type: {
                     type: Number,
-                    required: true,
                 },
                 minValue: Number,
                 maxValue: Number,
                 unit: {
                     type: Number,
-                    required: true,
                 }
-            },
-            default:null
-        }
-    })
+            }
+    },
+    { collection: 'NewTV365',  
+    versionKey: false , 
+    timestamp:true
+  }  
+    )
+    export default model("NewTV365", newTV365Schema);
