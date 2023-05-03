@@ -1,9 +1,8 @@
 import axios from 'axios'
 import mongoose from "mongoose";
-import Users from "../model/Users.js"
-import newTV365 from '../model/newTV365.js';
+import Users from "../model/Timviec/Users.js"
+import newTV365 from '../model/Timviec/newTV365.js';
 import https from 'https'
-
 const ObjectId = mongoose.Types.ObjectId;
 export const getData = async (req, res, next) => {
     try {
@@ -11,13 +10,13 @@ export const getData = async (req, res, next) => {
             method: "post",
             url: "http://43.239.223.142:9006/api/users/TakeDataUser",
             data: {
-                count:0
             },
             headers: { "Content-Type": "multipart/form-data" },
-        }).then(async(response) => {
+        }).then((response) => {
             postData(response.data.data.listUser)
             return res.status(200).json(response.data.data.listUser)
         });
+
     } catch (err) {
         console.log(err);
     }
@@ -31,12 +30,16 @@ export const getDataUpdate = async (req, res, next) => {
             },
             timeout: 60000, 
             httpsAgent: new https.Agent({ keepAlive: true }),
+            url: "https://timviec365.vn/api/get_list_user.php?page=1",
+            data: {
+            },
             headers: { "Content-Type": "multipart/form-data" },
         })
         const response = {
             data: data
         }
         // await getUpdateData(response)
+        await getUpdateData(response)
         return res.status(200).json(response);
 
     } catch (err) {
@@ -274,3 +277,4 @@ const postDataNew=async(data)=>{
         console.log(err)
     }
 }
+    
