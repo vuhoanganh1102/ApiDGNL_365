@@ -6,7 +6,7 @@ const NgonNguCVSchema = new mongoose.Schema(
         require: true
        },
        name:{
-        type: Number
+        type: String
        },
        alias:{
         type: String

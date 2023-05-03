@@ -1,7 +1,7 @@
 import axios from 'axios'
 import mongoose from "mongoose";
-import Users from "../model/Timviec/Users.js"
-import newTV365 from '../model/Timviec/newTV365.js';
+import Users from "../model/Timviec365/Timviec/Users.js"
+import newTV365 from '../model/Timviec365/Timviec/newTV365.js';
 import https from 'https'
 const ObjectId = mongoose.Types.ObjectId;
 export const getData = async (req, res, next) => {

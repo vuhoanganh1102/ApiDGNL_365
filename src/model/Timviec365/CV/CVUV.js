@@ -14,7 +14,10 @@ const CVUVSchema = new mongoose.Schema(
             type: String
         },
         html:{
-            type: String
+            color:String,
+            font:String,
+            fontSize:String,
+            fontSpacing:String,
         },
         nameImage:{
             type: String
