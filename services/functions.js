@@ -7,9 +7,7 @@ exports.CheckEmail = async(email)=>{
     return gmailRegex.test(email)
 }
 exports.getDatafindOne =async(model,condition)=>{
-     model.findOne(condition).then(async(user)=>{
-        return user
-    })
+    return model.findOne(condition);
 }
 exports.success =async(messsage = "", data = [])=>{
     return {
