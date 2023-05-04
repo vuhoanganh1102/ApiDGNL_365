@@ -41,7 +41,7 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://localhost:27017/Base365';
+const DB_URL = 'mongodb://localhost:27017/timviec365';
 mongoose.connect(DB_URL)
 .then(() => console.log('DB Connected!'))
 .catch(error => console.log('DB connection error:', error.message));
