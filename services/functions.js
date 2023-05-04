@@ -10,5 +10,16 @@ exports.getDatafindOne =async(model,condition)=>{
      model.findOne(condition).then(async(user)=>{
         return user
     })
-
+}
+exports.success =async(messsage = "", data = [])=>{
+    return {
+        code: 200,
+        data,
+        messsage
+    };
+}
+exports.setError = async (code,message) => {
+    return {
+        code, message
+    }
 }
