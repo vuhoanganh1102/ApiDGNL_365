@@ -4,7 +4,6 @@ const UserSchema = new mongoose.Schema(
     {
         _id:{
             type: Number,
-            required: true,
         },
         email: String,
         phoneTK:String,
@@ -22,8 +21,8 @@ const UserSchema = new mongoose.Schema(
         authentic: Number,
         isOnline: Number,
         from: String,
-        createdAt: Number,
-        updatedAt: Number,
+        createdAt: Date,
+        updatedAt: Date,
         lastActivedAt: Date,
         time_login: Date,
         role: Number,
