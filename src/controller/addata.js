@@ -1,7 +1,6 @@
 import axios from 'axios'
 import mongoose from "mongoose";
-import Users from "../model/Users.js"
-import User from '../../../../Downloads/TestNode/models/User.js';
+import User from '../model/Timviec365/Timviec/Users.js';
 const ObjectId = mongoose.Types.ObjectId;
 export const getData = async (req, res, next) => {
     try {
