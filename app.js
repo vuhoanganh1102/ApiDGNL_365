@@ -10,6 +10,11 @@ var cvRouter = require('./routes/timviec/cv');
 
 var app = express();
 
+const DB_URL = 'mongodb://localhost:27017/timviec365';
+mongoose.connect(DB_URL)
+    .then(() => console.log('DB Connected!'))
+    .catch(error => console.log('DB connection error:', error.message));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
