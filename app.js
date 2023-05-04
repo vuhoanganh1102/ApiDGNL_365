@@ -8,13 +8,10 @@ var mongoose = require('mongoose')
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var cvRouter = require('./routes/timviec/cv');
+var authCompanyRouter = require('./routes/timviec/Company');
+
 
 var app = express();
-
-const DB_URL = 'mongodb://localhost:27017/timviec365';
-mongoose.connect(DB_URL)
-    .then(() => console.log('DB Connected!'))
-    .catch(error => console.log('DB connection error:', error.message));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -29,6 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/timviec/cv', cvRouter);
+app.use('/api/auth/company',authCompanyRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -46,7 +44,7 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://localhost:27017/Base365';
+const DB_URL = 'mongodb://localhost:27017/timviec365';
 mongoose.connect(DB_URL)
 .then(() => console.log('DB Connected!'))
 .catch(error => console.log('DB connection error:', error.message));
