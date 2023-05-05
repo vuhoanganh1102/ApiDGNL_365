@@ -20,6 +20,13 @@ exports.getDatafindOne =async(model,condition)=>{
     return model.findOne(condition);
 }
 
+exports.getDatafind =async(model,condition)=>{
+    return model.find(condition);
+}
+
+exports.getDatafindOneAndUpdate =async(model,condition,projection)=>{
+    return model.findOneAndUpdate(condition,projection);
+}
 exports.success =async(messsage = "", data = [])=>{
     return {
         code: 200,
@@ -32,7 +39,6 @@ exports.setError = async (code,message) => {
         code, message
     }
 }
-
 exports.getMaxID= async(model) => {
     const maxUser= await model.findOne({}, {}, { sort: { _id: -1 } }).lean();
     return maxUser._id;
@@ -97,3 +103,21 @@ exports.checkVideo = async (filePath) => {
         console.log('File was deleted');
       });
   }
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'public/cvUpload')
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+      cb(null, file.fieldname +uniqueSuffix+'.pdf')
+    }
+  })
+  
+  exports.uploadFile = multer({ storage: storage })
+
+exports.createError = async(code, message) => {
+    const err = new Error();
+    err.code = code;
+    err.message = message;
+    return {data:null,error:err};
+  };
