@@ -75,10 +75,7 @@ exports.register = async(req,res,next)=>{
                                     return res.status(200).json(await functions.success('đăng ký thành công'))
                                  }
                                     else {
-                                     if (avatarUser){
-                                         functions.deleteFile(avatarUser.path)
-                                     }
-                                     return res.status(404).json(await functions.setError(404,'ảnh >2mb hoặc không đúng định dạng ảnh'));
+                                     return res.status(404).json(await functions.setError(404,'ảnh >2mb hoặc không đúng định dạng ảnh',avatarUser));
                                  }
                                 }
                                 else {
