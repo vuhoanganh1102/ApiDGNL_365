@@ -9,6 +9,7 @@ const { route } = require('..');
 router.get('/', candidate.index);
 router.post('/RegisterB1',formData.parse(), candidate.RegisterB1);
 router.post('/RegisterB2CvUpload',uploadFile.single('videoUpload'), candidate.RegisterB2VideoUpload);
+
 router.post('/login',formData.parse(),candidate.login);
 
 

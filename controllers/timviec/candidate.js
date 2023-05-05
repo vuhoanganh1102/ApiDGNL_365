@@ -183,6 +183,9 @@ exports.login = async (req,res,next) =>{
             const token = jwt.sign(payload,secret_key)
 
             res.json(await functions.success('Dang nhap thanh cong',token))
+        }else{
+            console.log(await functions.createError(200, "Sai tai khoan hoac mat khau"))
+            return res.status(200).json(await functions.createError(200, "Sai tai khoan hoac mat khau"));
         }
     }
 }
