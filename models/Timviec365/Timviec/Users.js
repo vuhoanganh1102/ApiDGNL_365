@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const Schema = mongoose.Schema
 const UserSchema = new mongoose.Schema(
     {
         _id:{
@@ -116,4 +116,5 @@ const UserSchema = new mongoose.Schema(
     timestamp:true
   }  
     )
+    
 module.exports = mongoose.model("Users", UserSchema);

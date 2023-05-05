@@ -2,13 +2,16 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const userUnsetSchema = new mongoose.Schema(
     {
-       id:{
+       _id:{
         type: Number
        },
        useMail:{
         type: String
        },
        usePhoneTk:{
+        type: String
+       },
+       useFirstName:{
         type: String
        },
        usePass:{
