@@ -12,7 +12,7 @@ exports.CheckPhoneNumber =async(phone)=>{
 }
 
 exports.CheckEmail = async(email)=>{
-    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@.+\.[a-z]{2,}$/;
     return gmailRegex.test(email)
 }
 
