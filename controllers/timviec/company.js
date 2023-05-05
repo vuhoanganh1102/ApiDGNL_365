@@ -4,7 +4,7 @@ const Users=require('../../models/Timviec365/Timviec/Users')
 const functions=require('../../services/functions')
 const CompanyUnset=require('../../models/Timviec365/Timviec/userCompanyUnset')
 
-// chay duoc phan dang ky , thieu upload video
+// bị lỗi khi uploadImg và uploadVideo cùng chạy
 exports.register = async(req,res,next)=>{
     try{
         let request= req.body,
@@ -24,7 +24,7 @@ exports.register = async(req,res,next)=>{
         authentic=request.authentic,
         from=request.from,
         role=request.role;
-       // check du lieu khong bi undefined
+       // check dữ liệu không bị undefined
        if ((username && password && city && district &&
             address && email && idKd && mst && phone )!==undefined){
                // validate email,phone
@@ -34,11 +34,11 @@ exports.register = async(req,res,next)=>{
                        //  check email co trong trong database hay khong
                        let user =await functions.getDatafindOne(Users,{email})
                                if(user==null){
-                                // check anh 
+                                // check ảnh 
                                 if(avatarUser){
                                     let checkImg=await functions.checkImage(avatarUser.path) 
                                     if(checkImg==true ){
-                                      // tim ID max trong DB
+                                      // tìm Id max trong DB
                                       let maxID=await functions.getMaxID(Users);
                                       const maxIDTimviec = await (Users.findOne({type:1},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean())
                                       let newIDTimViec=maxIDTimviec.idTimViec365 || 1
@@ -78,6 +78,7 @@ exports.register = async(req,res,next)=>{
                                      return res.status(404).json(await functions.setError(404,'ảnh >2mb hoặc không đúng định dạng ảnh',avatarUser));
                                  }
                                 }
+                                // trường hợp không có ảnh
                                 else {
                                     let maxID=await functions.getMaxID(Users);
                                     const maxIDTimviec = await (Users.findOne({type:1},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean())
@@ -144,6 +145,7 @@ exports.registerFall = async(req,res,next) => {
         regis=request.regis;
         let maxID=await functions.getMaxID(CompanyUnset) || 1;
         if(email!=undefined){
+            // check email ,phone
            let checkEmail=functions.CheckEmail(email)
            let CheckPhoneNumber=functions.CheckPhoneNumber(phone)
            if((checkEmail && CheckPhoneNumber)==true){
