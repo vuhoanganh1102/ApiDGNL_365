@@ -4,6 +4,7 @@ const Users=require('../../models/Timviec365/Timviec/Users')
 const functions=require('../../services/functions')
 const CompanyUnset=require('../../models/Timviec365/Timviec/userCompanyUnset')
 
+// chay duoc phan dang ky , thieu upload video
 exports.register = async(req,res,next)=>{
     try{
         let request= req.body,
@@ -15,77 +16,131 @@ exports.register = async(req,res,next)=>{
         district=request.district,
         address=request.address,
         mst=request.mst,
-        avatarUser=req.file.filename,
+        avatarUser=req.file,
         idKd=request.idKD,
         linkVideo=request.linkVideo,
         videoType=request.videoType,
-        description=request.description;
-        let pathAvatarUSer=req.file.path
+        description=request.description,
+        authentic=request.authentic,
+        from=request.from,
+        role=request.role;
        // check du lieu khong bi undefined
        if ((username && password && city && district &&
-            address && email && idKd && mst && avatarUser && phone )!==undefined){
+            address && email && idKd && mst && phone )!==undefined){
                // validate email,phone
                    let CheckEmail=await functions.CheckEmail(email),
                        CheckPhoneNumber=await functions.CheckPhoneNumber(phone);
                        if((CheckPhoneNumber && CheckEmail )==true){
                        //  check email co trong trong database hay khong
                        let user =await functions.getDatafindOne(Users,{email})
-                       console.log(user)
                                if(user==null){
                                 // check anh 
-                                   let checkImg=await functions.checkImage(pathAvatarUSer) 
-                                   if(checkImg==true ){
-                                     // tim ID max trong DB
-                                   let maxID=await functions.getMaxID(Users);
-                                   const company = new Users({
-                                       _id:(Number(maxID)+1),
-                                       email: email,
-                                       password: md5(password),
-                                       phone:phone,
-                                       userName:username,
-                                       type: 1,
-                                       city:city,
-                                       district:district,
-                                       address:address,
-                                       avatarUser:avatarUser,
-                                       inForCompanyTV365:{
-                                           userID:(Number(maxID)+1),
-                                           idKD:idKd,
-                                           mst:mst,
-                                           videoType:videoType || null,
-                                           linkVideo:linkVideo || null,
-                                           description:description || null,
-                                       }
-                                     });
-                                     await company.save();   
-                                     let companyUnset= await functions.getDatafindOne(CompanyUnset,{email})
-                                     if(companyUnset!=null){
-                                       await functions.getDataDeleteOne(CompanyUnset,{email})
-                                     }   
-                                   return res.status(200).json(await functions.success('Dang ky thanh cong'))
+                                if(avatarUser){
+                                    let checkImg=await functions.checkImage(avatarUser.path) 
+                                    if(checkImg==true ){
+                                      // tim ID max trong DB
+                                      let maxID=await functions.getMaxID(Users);
+                                      const maxIDTimviec = await (Users.findOne({type:1},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean())
+                                      let newIDTimViec=maxIDTimviec.idTimViec365 || 1
+                                      const company = new Users({
+                                        _id:(Number(maxID)+1),
+                                        email: email,
+                                        password: md5(password),
+                                        phone:phone,
+                                        userName:username,
+                                        type: 1,
+                                        city:city,
+                                        district:district,
+                                        address:address,
+                                        avatarUser:avatarUser.filename,
+                                        createdAt:new Date().getTime(),
+                                        role:role ||null,
+                                        authentic:authentic || null,
+                                        from:from || null,
+                                        inForCompanyTV365:{
+                                            userID:(Number(newIDTimViec)+1),
+                                            idKD:idKd,
+                                            mst:mst,
+                                            videoType:videoType || null,
+                                            linkVideo:linkVideo || null,
+                                            description:description || null,
+                                        }
+                                        
+                                      });
+                                      await company.save();   
+                                      let companyUnset= await functions.getDatafindOne(CompanyUnset,{email})
+                                      if(companyUnset!=null){
+                                        await functions.getDataDeleteOne(CompanyUnset,{email})
+                                      }   
+                                    return res.status(200).json(await functions.success('đăng ký thành công'))
+                                 }
+                                    else {
+                                     if (avatarUser){
+                                         functions.deleteFile(avatarUser.path)
+                                     }
+                                     return res.status(404).json(await functions.setError(404,'ảnh >2mb hoặc không đúng định dạng ảnh'));
+                                 }
                                 }
-                                   else {
-                                     functions.deleteFile(pathAvatarUSer)
-                                    return res.status(404).json(await functions.setError(404,'anh >2mb hoac khong dung dinh dang'));
+                                else {
+                                    let maxID=await functions.getMaxID(Users);
+                                    const maxIDTimviec = await (Users.findOne({type:1},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean())
+                                    let newIDTimViec=maxIDTimviec.idTimViec365 || 1
+                                    const company = new Users({
+                                      _id:(Number(maxID)+1),
+                                      email: email,
+                                      password: md5(password),
+                                      phone:phone,
+                                      userName:username,
+                                      type: 1,
+                                      city:city,
+                                      district:district,
+                                      address:address,
+                                      avatarUser:null,
+                                      createdAt:new Date().getTime(),
+                                      role:role ||null,
+                                      authentic:authentic || null,
+                                      from:from || null,
+                                      inForCompanyTV365:{
+                                          userID:(Number(newIDTimViec)+1),
+                                          idKD:idKd,
+                                          mst:mst,
+                                          videoType:videoType || null,
+                                          linkVideo:linkVideo || null,
+                                          description:description || null,
+                                      }
+                                    });
+                                    await company.save();   
+                                    let companyUnset= await functions.getDatafindOne(CompanyUnset,{email})
+                                    if(companyUnset!=null){
+                                      await functions.getDataDeleteOne(CompanyUnset,{email})
+                                    }   
+                                  return res.status(200).json(await functions.success('đăng ký thành công'))
                                 }
-                                  
                                }
                                else {
-                                functions.deleteFile(pathAvatarUSer)
-                                return res.status(404).json(await functions.setError(404,'email da ton tai'));
+                                 if (avatarUser){
+                                    functions.deleteFile(avatarUser.path)
+                                }
+                                return res.status(404).json(await functions.setError(404,'email đã tồn tại'));
                                }
                        }
                        else{
-                        functions.deleteFile(pathAvatarUSer)
-                        return res.status(404).json(await functions.setError(404,'email hoac so dien thoai khong dung dinh dang'));
+                        if (avatarUser){
+                            functions.deleteFile(avatarUser.path)
+                        }
+                        return res.status(404).json(await functions.setError(404,'email hoặc số điện thoại định dạng không hợp lệ '));
                        }
                
        }else{
-        functions.deleteFile(pathAvatarUSer)
-        return res.status(404).json(await functions.setError(404,'Khong du du lieu'));
+        if (avatarUser){
+            functions.deleteFile(avatarUser.path)
+        }
+        return res.status(404).json(await functions.setError(404,'thiếu dữ liệu'));
        }
     }catch (error){
-        functions.deleteFile(pathAvatarUSer)
+        if(req.file !=undefined){
+            functions.deleteFile(req.file.path)
+        }
         console.log(error)
         return res.status(404).json({messege:error})
     }
@@ -125,19 +180,20 @@ exports.registerFall = async(req,res,next) => {
                    
                      });
                      await companyUnset.save();
-                     return res.status(200).json(await functions.success('thanh cong'))
+                     return res.status(200).json(await functions.success('thành công'))
                } 
                else {
-                   return res.status(404).json(await functions.setError(404,'email da ton tai'));
+                   return res.status(404).json(await functions.setError(404,'email đã tồn tại'));
                }
            }
            else{
-               return res.status(404).json(await functions.setError(404,'email hoac so dien thoai khong dung dinh dang'));
+               return res.status(404).json(await functions.setError(404,'email hoặc số điện thoại không đúng định dạng'));
            }
         }else{
-           return res.status(404).json( await functions.setError(404,'Thieu du lieu gmail'));
+           return res.status(404).json( await functions.setError(404,'thiếu dữ liệu gmail'));
        }
     }catch(error){
+        console.log(error)
         return res.status(404).json({error})
     }
    

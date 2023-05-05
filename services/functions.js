@@ -86,17 +86,19 @@ exports.checkVideo = async (filePath) => {
   exports.getDataDeleteOne= async(model,condition) =>{
     return model.deleteOne(condition)
   }
-  const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'public/avatarUser')
-    },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname + '-' + uniqueSuffix + '.jpg')
-    }
-  })
-  
-  exports.upload = multer({ storage: storage })
+  const storageMain = (destination, fileExtension) => {
+    return multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, destination)
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.fieldname + uniqueSuffix + fileExtension)
+      }
+    })
+  }
+  exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') })
+  exports.uploadVideo = multer({ storage: storageMain('public/company/video', '.mp4') })
   exports.deleteFile = (filePath)=>{
      fs.unlink(filePath, (err) => {
         if (err) throw err;
