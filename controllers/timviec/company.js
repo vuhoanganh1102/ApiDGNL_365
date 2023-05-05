@@ -1,5 +1,4 @@
 const md5= require('md5')
-const multer=require('multer')
 
 const Users=require('../../models/Timviec365/Timviec/Users')
 const functions=require('../../services/functions')
@@ -66,23 +65,27 @@ exports.register = async(req,res,next)=>{
                                    return res.status(200).json(await functions.success('Dang ky thanh cong'))
                                 }
                                    else {
+                                     functions.deleteFile(pathAvatarUSer)
                                     return res.status(404).json(await functions.setError(404,'anh >2mb hoac khong dung dinh dang'));
                                 }
                                   
                                }
                                else {
-                                   return res.status(404).json(await functions.setError(404,'email da ton tai'));
+                                functions.deleteFile(pathAvatarUSer)
+                                return res.status(404).json(await functions.setError(404,'email da ton tai'));
                                }
                        }
                        else{
-                           return res.status(404).json(await functions.setError(404,'email hoac so dien thoai khong dung dinh dang'));
+                        functions.deleteFile(pathAvatarUSer)
+                        return res.status(404).json(await functions.setError(404,'email hoac so dien thoai khong dung dinh dang'));
                        }
                
        }else{
-          
-           return res.status(404).json(await functions.setError(404,'Khong du du lieu'));
+        functions.deleteFile(pathAvatarUSer)
+        return res.status(404).json(await functions.setError(404,'Khong du du lieu'));
        }
     }catch (error){
+        functions.deleteFile(pathAvatarUSer)
         console.log(error)
         return res.status(404).json({messege:error})
     }
