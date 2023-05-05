@@ -34,7 +34,10 @@ exports.success =async(messsage = "", data = [])=>{
         messsage
     };
 }
-exports.setError = async (code,message) => {
+exports.setError = async (code,message,condition) => {
+  if(condition){
+    deleteFile(condition.path)
+  }
     return {
         code, message
     }
@@ -99,7 +102,7 @@ exports.checkVideo = async (filePath) => {
   }
   exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') })
   exports.uploadVideo = multer({ storage: storageMain('public/company/video', '.mp4') })
-  exports.deleteFile = (filePath)=>{
+ const deleteFile = (filePath)=>{
      fs.unlink(filePath, (err) => {
         if (err) throw err;
         console.log('File was deleted');

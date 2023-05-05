@@ -114,35 +114,23 @@ exports.register = async(req,res,next)=>{
                                     if(companyUnset!=null){
                                       await functions.getDataDeleteOne(CompanyUnset,{email})
                                     }   
-                                  return res.status(200).json(await functions.success('đăng ký thành công'))
+                                  return res.status(200).json(await functions.success('đăng ký thành công'),avatarUser)
                                 }
                                }
                                else {
-                                 if (avatarUser){
-                                    functions.deleteFile(avatarUser.path)
-                                }
-                                return res.status(404).json(await functions.setError(404,'email đã tồn tại'));
+                                return res.status(404).json(await functions.setError(404,'email đã tồn tại',avatarUser));
                                }
                        }
                        else{
-                        if (avatarUser){
-                            functions.deleteFile(avatarUser.path)
-                        }
-                        return res.status(404).json(await functions.setError(404,'email hoặc số điện thoại định dạng không hợp lệ '));
+                        return res.status(404).json(await functions.setError(404,'email hoặc số điện thoại định dạng không hợp lệ ',avatarUser));
                        }
                
        }else{
-        if (avatarUser){
-            functions.deleteFile(avatarUser.path)
-        }
-        return res.status(404).json(await functions.setError(404,'thiếu dữ liệu'));
+        return res.status(404).json(await functions.setError(404,'thiếu dữ liệu',avatarUser));
        }
     }catch (error){
-        if(req.file !=undefined){
-            functions.deleteFile(req.file.path)
-        }
         console.log(error)
-        return res.status(404).json({messege:error})
+        return  res.status(404).json(await functions.setError(404,error,req.avatarUser));
     }
   
 }
