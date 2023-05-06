@@ -33,50 +33,14 @@ exports.register = async(req,res,next)=>{
                        let user =await functions.getDatafindOne(Users,{email})
                                if(user==null){
                                 // check ảnh 
-                                if(avatarUser){
-                                    let checkImg=await functions.checkImage(avatarUser.path) 
-                                    if(checkImg==true ){
-                                      // tìm Id max trong DB
-                                      let maxID=await functions.getMaxID(Users);
-                                      const maxIDTimviec = await (Users.findOne({type:1},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean())
-                                      let newIDTimViec=maxIDTimviec.idTimViec365 || 1
-                                      const company = new Users({ 
-                                        _id:(Number(maxID)+1),
-                                        email: email,
-                                        password: md5(password),
-                                        phone:phone,
-                                        userName:username,
-                                        type: 1,
-                                        city:city,
-                                        district:district,
-                                        address:address,
-                                        avatarUser:avatarUser.filename,
-                                        createdAt:new Date().getTime(),
-                                        role:1,
-                                        authentic:0,
-                                        from:from || null,
-                                        inForCompanyTV365:{
-                                            userID:(Number(newIDTimViec)+1),
-                                            idKD:idKd,
-                                            mst:mst,
-                                            videoType:videoType || null,
-                                            linkVideo:linkVideo || null,
-                                            description:description || null,
-                                        }
-                                        
-                                      });
-                                      await company.save();   
-                                      let companyUnset= await functions.getDatafindOne(CompanyUnset,{email})
-                                      if(companyUnset!=null){
-                                        await functions.getDataDeleteOne(CompanyUnset,{email})
-                                      }   
-                                    return res.status(200).json(await functions.success('đăng ký thành công'))
-                                 }
-                                    else {
-                                  }
-                                }
-                                // trường hợp không có ảnh
-                                else {
+                                // let avatar=""
+                                // if(avatarUser){
+                                //     let checkImg=await functions.checkImage(avatarUser.path) 
+                                //     if(checkImg==true ){
+                                //       avatar =avatarUser.filename
+                                //  }
+                                // }
+                                     // tìm Id max trong DB
                                     let maxID=await functions.getMaxID(Users);
                                     const maxIDTimviec = await (Users.findOne({type:1},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean())
                                     let newIDTimViec=maxIDTimviec.idTimViec365 || 1
@@ -109,9 +73,8 @@ exports.register = async(req,res,next)=>{
                                     if(companyUnset!=null){
                                       await functions.getDataDeleteOne(CompanyUnset,{email})
                                     }   
-                                  return res.status(200).json(await functions.success('đăng ký thành công'),avatarUser)
+                                  return res.status(200).json(await functions.success('đăng ký thành công'))
                                 }
-                               }
                                else {
                                 return res.status(404).json(await functions.setError(404,'email đã tồn tại',avatarUser));
                                }
