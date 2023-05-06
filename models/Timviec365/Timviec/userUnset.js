@@ -39,7 +39,7 @@ const userUnsetSchema = new mongoose.Schema(
         type: String
        },
        useCreateTime:{
-        type: Number
+        type: Date
        },
        useLink:{
         type: String

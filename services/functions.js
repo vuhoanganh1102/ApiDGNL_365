@@ -4,18 +4,27 @@ const util = require('util');
 const stat = util.promisify(fs.stat);
 const { promisify } = require('util');
 const probe = promisify(require('ffmpeg-probe'));
-const multer=require('multer')
+const multer = require('multer')
 const nodemailer = require("nodemailer");
-const dotenv =require ("dotenv");
-const jwt=require('jsonwebtoken')
+const dotenv = require ("dotenv");
+const jwt = require('jsonwebtoken');
 
+// Giới hạn dung lượng ảnh (2MB)
+const MAX_IMG_SIZE = 2 * 1024 * 1024;
+
+// Giới hạn dung lượng video (100MB)
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+
+// Định dạng video
+const SUPPORTED_VIDEO_FORMATS = ['mp4', 'mov', 'avi', 'wmv', 'flv'];
 const Users=require('../models/Timviec365/Timviec/Users')
+
 
 dotenv.config();
 
 const crypto = require('crypto');
 
-exports.CheckPhoneNumber =async(phone)=>{
+exports.CheckPhoneNumber = async(phone)=>{
     if(phone==undefined){
       return true
     }
@@ -33,27 +42,26 @@ exports.getDatafindOne =async(model,condition)=>{
     return model.findOne(condition);
 }
 
-exports.getDatafind =async(model,condition)=>{
+exports.getDatafind = async(model,condition)=>{
     return model.find(condition);
 }
 
 exports.getDatafindOneAndUpdate =async(model,condition,projection)=>{
     return model.findOneAndUpdate(condition,projection);
 }
-exports.success =async(res,messsage = "", data = [])=>{
+exports.success = async(res,messsage = "", data = [])=>{
   return res.status(200).json({result:true,messsage,data})
 
 }
-exports.setError = async (res,message,code =500) => {
 
+exports.setError = async (res, message, code = 500) => {
     return res.status(code).json({code,message})
 }
+
 exports.getMaxID= async(model) => {
     const maxUser= await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
 }
-
-const MAX_IMG_SIZE = 2 * 1024 * 1024; 
 
 const isImage = async (filePath) => {
     const { format } = await sharp(filePath).metadata();
@@ -74,9 +82,7 @@ exports.checkImage = async (filePath) => {
       return  true ;
   };
 
-const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 
-const SUPPORTED_VIDEO_FORMATS = ['mp4', 'mov', 'avi', 'wmv', 'flv'];
 
 exports.checkVideo = async (filePath) => {
   const { size } = await stat(filePath);
@@ -128,17 +134,17 @@ exports.checkVideo = async (filePath) => {
 
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, 'public/cvUpload')
+      cb(null, 'public/videoUpload')
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname +uniqueSuffix+'.pdf')
+      cb(null, file.fieldname +uniqueSuffix+'.mp4')
     }
   })
   
   exports.uploadFile = multer({ storage: storage })
 
-  exports.createError = async(code, message) => {
+exports.createError = async(code, message) => {
     const err = new Error();
     err.code = code;
     err.message = message;
