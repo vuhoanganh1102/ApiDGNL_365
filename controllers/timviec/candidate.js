@@ -19,7 +19,6 @@ exports.RegisterB1 = async(req,res,next) =>{
             const city = req.body.city
             const district = req.body.district
             const address = req.body.address
-            const from = req.body.from
             const candiCateID = req.body.candiCateID
             const candiCityID = req.body.candiCityID
             const candiMucTieu = req.body.candiMucTieu
@@ -42,21 +41,22 @@ exports.RegisterB1 = async(req,res,next) =>{
                           newID=Number(maxID._id)+1;
                         }
                         else newID = 1 
-                        if(phoneTk,password,userName,city,district,address,candiCateID,candiCityID,candiMucTieu){ //check UV lỗi hay UV chưa hoàn thiện hồ sơ để cập nhật trường error
-                            let updateUserUv = await functions.getDatafindOneAndUpdate(userUnset,{usePhoneTk:phoneTk},{
-                                usePass:password,
-                                useFirstName:userName,
-                                useMail:email,
-                                useCity:city,
-                                useQh:district,
-                                useAddr:address,
-                                uRegis:from,
-                                useCvCate:candiCateID,
-                                useCvCity:candiCityID,
-                                useCvTitle:candiMucTieu})
-                                error : 0
-                            if(!updateUserUv){//check đã có tài khoản trong userUnset
-                                
+                        //check UV lỗi hay UV chưa hoàn thiện hồ sơ để cập nhật trường error
+                            let findUserUv = await functions.findOne(userUnset,{usePhoneTk:phoneTk})
+                            if(findUserUv){
+                                let updateUserUv = await functions.getDatafindOneAndUpdate(userUnset,{usePhoneTk:phoneTk},{
+                                    usePass:password,
+                                    useFirstName:userName,
+                                    useMail:email,
+                                    useCity:city,
+                                    useQh:district,
+                                    useAddr:address,
+                                    uRegis:uRegis,
+                                    useCvCate:candiCateID,
+                                    useCvCity:candiCityID,
+                                    useCvTitle:candiMucTieu})
+                                    error : 0
+                            }else{
                                 let UserUV = new userUnset({
                                     _id:newID,
                                     usePhoneTk: phoneTk,
@@ -66,7 +66,7 @@ exports.RegisterB1 = async(req,res,next) =>{
                                     useCity:city,
                                     useQh:district,
                                     useAddr:address,
-                                    uRegis:from,
+                                    uRegis:uRegis,
                                     useCvCate:candiCateID,
                                     useCvCity:candiCityID,
                                     useCvTitle:candiMucTieu,
@@ -77,55 +77,10 @@ exports.RegisterB1 = async(req,res,next) =>{
                                     useDelete: 0,
                                     type: 0,
                                     empId: 0,
-                                    uRegis: uRegis,
                                     error: 0,
                                 })
                                 let saveUserUV = UserUV.save()
-                                
-                            } 
-
-                        }else{
-                            let updateUserUv = await functions.getDatafindOneAndUpdate(userUnset,{usePhoneTk:phoneTk},{
-                                usePass:password,
-                                useFirstName:userName,
-                                useMail:email,
-                                useCity:city,
-                                useQh:district,
-                                useAddr:address,
-                                uRegis:from,
-                                useCvCate:candiCateID,
-                                useCvCity:candiCityID,
-                                useCvTitle:candiMucTieu})
-                                error : 1
-                            if(!updateUserUv){
-                                
-                                let UserUV = new userUnset({
-                                    _id:newID,
-                                    usePhoneTk: phoneTk,
-                                    usePass:password,
-                                    useFirstName:userName,
-                                    useMail:email,
-                                    useCity:city,
-                                    useQh:district,
-                                    useAddr:address,
-                                    uRegis:from,
-                                    useCvCate:candiCateID,
-                                    useCvCity:candiCityID,
-                                    useCvTitle:candiMucTieu,
-                                    usePhone:"",
-                                    useCreateTime: new Date(Date.now),
-                                    useLink: "",
-                                    useActive: 0,
-                                    useDelete: 0,
-                                    type: 0,
-                                    empId: 0,
-                                    uRegis: uRegis,
-                                    error: 1,
-                                })
-                                let saveUserUV = UserUV.save()
-                            } 
-                        }
-                        
+                            }
                         const token = await functions.encodeToken(req.body)
                         res.json(await functions.success("Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong",token))
                     } else return res.status(200).json(await functions.setError(200, "Email không hợp lệ"));
@@ -205,7 +160,6 @@ exports.RegisterB2VideoUpload = async(req,res,next) =>{
                             candiMucTieu:userInfo.candiMucTieu,
                             video:videoLink
                         }
-    
                     })
                     let saveUser = User.save()
                 }
