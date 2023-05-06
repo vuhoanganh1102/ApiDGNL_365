@@ -1,8 +1,10 @@
 const md5= require('md5')
+const axios= require('axios')
 
 const Users=require('../../models/Timviec365/Timviec/Users')
 const functions=require('../../services/functions')
 const CompanyUnset=require('../../models/Timviec365/Timviec/userCompanyUnset')
+const { response } = require('express')
 
 // bị lỗi khi uploadImg và uploadVideo cùng chạy
 exports.register = async(req,res,next)=>{
@@ -24,7 +26,7 @@ exports.register = async(req,res,next)=>{
         from=request.from;
        // check dữ liệu không bị undefined
        if ((username && password && city && district &&
-            address && email && idKd && mst && phone )!==undefined){
+            address && email && phone )!==undefined){
                // validate email,phone
                    let CheckEmail=await functions.CheckEmail(email),
                        CheckPhoneNumber=await functions.CheckPhoneNumber(phone);
@@ -190,6 +192,74 @@ exports.verify = async(req,res,next) => {
             return res.status(200).json(await functions.success('xác thực thành công'))
         }
         return res.status(404).json( await functions.setError(404,'xác thực thất bại'));
+    }catch(error){
+        console.log(error)
+        return res.status(404).json( await functions.setError(404,error));
+    }
+}
+exports.forgotPasswordCheckMail= async(req,res,next) => {
+    try{
+        let email=req.body.email;
+         // api lẫy mã OTP qua app Chat
+         await axios({
+            method: "post",
+            url: "http://43.239.223.142:9000/api/users/RegisterMailOtp",
+            data: {
+              email:email
+            },
+            headers: { "Content-Type": "multipart/form-data" }
+          }).then(async (response)=>{
+           let otp=response.data.data.otp;
+           let checkEmail=await functions.CheckEmail(email);
+           if(checkEmail){
+               let verify=await Users.findOne({email});
+               if(verify != null){
+                await Users.updateOne({ email: email }, { 
+                    $set: { 
+                       otp:otp
+                    }
+                   });
+                   return res.status(200).json(await functions.success('xác thực thành công'))
+               }
+               return res.status(404).json( await functions.setError(404,'email không đúng'));
+           }
+           return res.status(404).json( await functions.setError(404,'sai định dạng email'));
+          }).catch(async (error) => {
+            console.log(error); // in ra lỗi nếu có
+            return res.status(404).json( await functions.setError(404,error));
+          });
+       
+      
+    }catch(error){
+        console.log(error)
+        return res.status(404).json( await functions.setError(404,error));
+    }
+}
+exports.forgotPasswordCheckOTP= async(req,res,next) => {
+    try{
+        let email=req.body.email;
+        let otp=req.body.otp;
+        let verify=await Users.findOne({email,otp});
+        if(verify != null){
+            return res.status(200).json(await functions.success('xác thực thành công'))
+        }
+        return res.status(404).json( await functions.setError(404,'mã otp không đúng'));
+       
+    }catch(error){
+        console.log(error)
+        return res.status(404).json( await functions.setError(404,error));
+    }
+}
+
+exports.updatePassword= async(req,res,next) => {
+    try{
+        email=req.body.email,
+        password=req.body.password;
+        await Users.updateOne({ email: email }, { 
+            $set: { 
+               password:md5(password)
+            }
+        });          
     }catch(error){
         console.log(error)
         return res.status(404).json( await functions.setError(404,error));
