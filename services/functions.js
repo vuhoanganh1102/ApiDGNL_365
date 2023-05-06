@@ -1,4 +1,5 @@
 const multer = require('multer');
+var jwt = require('jsonwebtoken');
 
 exports.CheckPhoneNumber =async(phone)=>{
     const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
@@ -26,27 +27,31 @@ exports.success =async(messsage = "", data = [])=>{
         messsage
     };
 }
-exports.setError = async (code,message) => {
-    return {
-        code, message
+exports.setError = async (code,message,condition = undefined) => {
+    if(condition){
+        deleteFile(condition.path)
     }
-}
+      return {
+          code, message
+      }
+  }
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, 'public/cvUpload')
+      cb(null, 'public/videoUpload')
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname +uniqueSuffix+'.pdf')
+      cb(null, file.fieldname +uniqueSuffix+'.mp4')
     }
   })
   
   exports.uploadFile = multer({ storage: storage })
 
-exports.createError = async(code, message) => {
-    const err = new Error();
-    err.code = code;
-    err.message = message;
-    return {data:null,error:err};
-  };
+exports.encodeToken =async( token)=>{
+    return jwt.sign(token, "HHP1234568")
+}
+
+exports.decodeToken =async( token)=>{
+    return jwt.verify(token, "HHP1234568")
+}
