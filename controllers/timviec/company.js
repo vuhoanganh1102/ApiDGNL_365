@@ -156,13 +156,12 @@ exports.registerFall = async(req,res,next) => {
 exports.sendOTP = async(req,res,next) => {
     try{
         let email=req.body.email,
-        nameCompany=req.body.userName,
-        password=req.body.password
-        
+        nameCompany=req.body.userName;
+
         if (email!=undefined){
             let checkEmail=await functions.CheckEmail(email)
             if(checkEmail){
-                await functions.sendEmailVerificationRequest(email,nameCompany,password)
+                await functions.sendEmailVerificationRequest(email,nameCompany)
                 return res.status(200).json(await functions.success('Gửi mã OTP thành công'))
             }
             else{
