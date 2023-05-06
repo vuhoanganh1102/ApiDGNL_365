@@ -4,6 +4,7 @@ const candidate = require('../../controllers/timviec/candidate');
 const formData = require('express-form-data');
 const router = express.Router();
 const {uploadFile} = require('../../services/functions.js');
+const { route } = require('..');
 
 router.get('/', candidate.index);
 router.post('/RegisterB1',formData.parse(), candidate.RegisterB1);
