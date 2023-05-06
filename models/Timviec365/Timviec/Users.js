@@ -109,6 +109,7 @@ const UserSchema = new mongoose.Schema(
                 userContactPhone: String,
                 userContactEmail: String,
                 description:String,
+                site:Number
             }, default: null
         }
     },

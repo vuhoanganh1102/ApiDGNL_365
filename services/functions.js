@@ -33,7 +33,7 @@ const MAX_IMG_SIZE = 2 * 1024 * 1024;
 dotenv.config();
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000; 
-
+// hàm validate phone
 exports.CheckPhoneNumber =async(phone)=>{
     if(phone==undefined){
       return true
@@ -41,7 +41,7 @@ exports.CheckPhoneNumber =async(phone)=>{
     const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
     return phoneNumberRegex.test(phone)
 }
-
+// hàm validate email
 exports.CheckEmail = async(email)=>{
     const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
@@ -59,24 +59,27 @@ exports.getDatafind =async(model,condition)=>{
 exports.getDatafindOneAndUpdate =async(model,condition,projection)=>{
     return model.findOneAndUpdate(condition,projection);
 }
+// hàm khi thành công
 exports.success =async(res,messsage = "", data = [])=>{
   return res.status(200).json({result:true,messsage,data})
 
 }
+// hàm thực thi khi thất bại
 exports.setError = async (res,message,code =500) => {
 
     return res.status(code).json({code,message})
 }
+// hàm tìm id max 
 exports.getMaxID= async(model) => {
     const maxUser= await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
 }
-
+// hàm check định dạng ảnh
 const isImage = async (filePath) => {
     const { format } = await sharp(filePath).metadata();
     return !!format;
 };
-
+// hàm check ảnh
 exports.checkImage = async (filePath) => {
       const { size } = await fs.promises.stat(filePath);
       if (size > MAX_IMG_SIZE) {
@@ -91,7 +94,7 @@ exports.checkImage = async (filePath) => {
       return  true ;
   };
 
-
+// hàm check video
 exports.checkVideo = async (filePath) => {
   const { size } = await stat(filePath);
   if (size > MAX_VIDEO_SIZE) {
@@ -110,7 +113,7 @@ exports.checkVideo = async (filePath) => {
   exports.getDataDeleteOne= async(model,condition) =>{
     return model.deleteOne(condition)
   }
-
+// storage để updload file
   const storageMain = (destination, fileExtension) => {
     return multer.diskStorage({
       destination: function (req, file, cb) {
@@ -122,9 +125,9 @@ exports.checkVideo = async (filePath) => {
       }
     })
   }
-
+//  hàm upload ảnh
   exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') })
-
+// hàm upload file
   exports.uploadVideo = multer({ storage: storageMain('public/company/video', '.mp4') })
 
   const deleteFile = (filePath)=>{
@@ -133,13 +136,14 @@ exports.checkVideo = async (filePath) => {
         console.log('File was deleted');
       });
   }
+  // hàm xóa file
   exports.deleteImg = async(condition) => {
     if(condition){
      await deleteFile(condition.path)
     }
 
   }
-
+// storega check file
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, 'public/cvUpload')
@@ -150,6 +154,7 @@ exports.checkVideo = async (filePath) => {
     }
   })
   
+  // hàm check file
   exports.uploadFile = multer({ storage: storage })
 
   exports.createError = async(code, message) => {
@@ -158,7 +163,7 @@ exports.checkVideo = async (filePath) => {
     err.message = message;
     return {data:null,error:err};
   };
-  
+  // hàm cấu hình mail
   const transport = nodemailer.createTransport({
       host: process.env.NODE_MAILER_HOST,
       port: Number(process.env.NODE_MAILER_PORT),
@@ -169,7 +174,7 @@ exports.checkVideo = async (filePath) => {
           pass: process.env.AUTH_PASSWORD
       }
   });
-
+  // hàm gửi mail
   exports.sendEmailVerificationRequest = async (otp,email,nameCompany) => {
     let options = {
         from: process.env.AUTH_EMAIL,
@@ -200,6 +205,7 @@ exports.checkVideo = async (filePath) => {
     const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
     return md5Hash === hashedPassword;
   }
+  // hàm check token
  exports.checkToken =async(req,res) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];

@@ -289,8 +289,9 @@ exports.updatePassword= async(req,res,next) => {
 }
 exports.updateInfoCompany = async(req,res,next) => {
     let request= req.body,
+        email=req.email,
         phone=request.phone,
-        username=request.userName,
+        userCompany=request.userName,
         city=request.city,
         address=request.address,
         site=request.site,
@@ -299,9 +300,31 @@ exports.updateInfoCompany = async(req,res,next) => {
         mst=request.mst,
         idKD=request.idKD;
 
-
     let verifyToken= await functions.checkToken(req,res);
     if(verifyToken){
-
+        if(phone && username && city && address && description && site){
+            let checkPhone= await functions.checkPhone(phone)
+            if(checkPhone){
+                await Users.updateOne({ email: email }, { 
+                    $set: { 
+                        userName: userCompany,
+                        phone: phone,
+                        city: city,
+                        description: description,
+                        website: website || null,
+                        address: address,
+                        inForCompanyTV365:{
+                            idKD:idKD,
+                            mst:mst || null,
+                            website:website || null,
+                            site:site
+                        },
+                    }
+                });
+                  return  functions.success(res,'update thành công')
+            }
+        }
+        return functions.setError(res,'thiếu dữ liệu')
     }
+    return functions.setError(res,'Token không hợp lệ')
 }
