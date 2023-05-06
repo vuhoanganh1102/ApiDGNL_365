@@ -31,7 +31,8 @@ const SUPPORTED_VIDEO_FORMATS = ['mp4', 'mov', 'avi', 'wmv', 'flv'];
 const MAX_IMG_SIZE = 2 * 1024 * 1024; 
 
 dotenv.config();
-
+// hàm mã otp ngẫu nhiên có 6 chữ số
+exports.randomNumber = Math.floor(Math.random() * 900000) + 100000; 
 
 exports.CheckPhoneNumber =async(phone)=>{
     if(phone==undefined){
@@ -168,7 +169,6 @@ exports.checkVideo = async (filePath) => {
           pass: process.env.AUTH_PASSWORD
       }
   });
- exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
 
   exports.sendEmailVerificationRequest = async (otp,email,nameCompany) => {
     let options = {
