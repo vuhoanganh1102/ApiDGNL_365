@@ -158,6 +158,7 @@ exports.sendOTP = async(req,res,next) => {
         let email=req.body.email,
         nameCompany=req.body.userName,
         password=req.body.password
+        
         if (email!=undefined){
             let checkEmail=await functions.CheckEmail(email)
             if(checkEmail){
