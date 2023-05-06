@@ -22,8 +22,8 @@ const UserSchema = new mongoose.Schema(
         authentic: Number,
         isOnline: Number,
         from: String,
-        createdAt: Number,
-        updatedAt: Number,
+        createdAt: Date,
+        updatedAt: Date,
         lastActivedAt: Date,
         time_login: Date,
         role: Number,
@@ -108,6 +108,7 @@ const UserSchema = new mongoose.Schema(
                 userContactAddress: String,
                 userContactPhone: String,
                 userContactEmail: String,
+                description:String,
             }, default: null
         }
     },
