@@ -6,9 +6,11 @@
     "start": "nodemon ./bin/www"
   },
   "dependencies": {
-    "buffer-equal-constant-time": "^1.0.1",
+    "axios": "^1.4.0",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
+    "dotenv": "^16.0.3",
+    "buffer-equal-constant-time": "^1.0.1",
     "ecdsa-sig-formatter": "^1.0.11",
     "express": "~4.16.1",
     "express-form-data": "^2.0.22",
@@ -21,6 +23,7 @@
     "mongoose": "^7.1.0",
     "morgan": "~1.9.1",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.1",
     "nodemon": "^2.0.22",
     "sharp": "^0.32.1",
     "util": "^0.12.5"

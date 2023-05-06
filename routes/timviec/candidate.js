@@ -10,6 +10,7 @@ router.post('/RegisterB1',formData.parse(), candidate.RegisterB1);
 router.post('/RegisterB2CvUpload',uploadFile.single('videoUpload'), candidate.RegisterB2VideoUpload);
 
 router.post('/login',formData.parse(),candidate.login);
+router.post('/AddUserChat365',formData.parse(),candidate.AddUserChat365);
 
 
 module.exports = router;

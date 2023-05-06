@@ -1,7 +1,8 @@
 const Users = require('../../models/Timviec365/Timviec/Users')
 const userUnset = require('../../models/Timviec365/Timviec/userUnset')
 const md5 = require('md5')
-var jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
+const axios = require('axios');
 const functions=require('../../services/functions');
 
 exports.index = (req, res, next) => {
@@ -332,5 +333,33 @@ exports.RegisterB2CvUpload = async(req,res,next) =>{
         res.status(200).json(await functions.setError(200, "Đã có lỗi xảy ra"));
       }
     
+    
+}
+
+exports.AddUserChat365 = async(req,res,next) =>{
+    try {
+        // for(let i=0;i<325900;i=i+100){
+            let takeData = await axios({
+                method: "post",
+                url: "http://43.239.223.142:9006/api/users/TakeDataUser",
+                data: {
+                  count: 0
+                },
+                headers: { "Content-Type": "multipart/form-data" }
+              });
+              for(let j=0;j<takeData.data.data.length;j++){
+                let checkUser = await functions.getDatafindOne(Users,{phoneTK:takeData.data.data.email, type:takeData.data.data.email})
+                if(!checkUser){
+                    let user = new Users({
+                        
+                    })
+                }
+              }
+        // }
+      }
+      catch (e) {
+        console.log("Đã có lỗi xảy ra khi đăng kí B1", e);
+        res.status(200).json(await functions.setError(200, "Đã có lỗi xảy ra"));
+      }
     
 }
