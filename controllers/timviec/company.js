@@ -63,7 +63,6 @@ exports.register = async(req,res,next)=>{
                                       from:from || null,
                                       idTimViec365:(Number(newIDTimViec)+1),
                                       inForCompanyTV365:{
-                                          userID:(Number(newIDTimViec)+1),
                                           idKD:idKd,
                                           mst:mst,
                                           videoType:videoType || null,
@@ -264,4 +263,15 @@ exports.updatePassword= async(req,res,next) => {
         console.log(error)
         return res.status(404).json( await functions.setError(404,error));
     }
+}
+exports.updateInfoCompany = async(req,res,next) => {
+    let request= req.body,
+        email=request.email,
+        phone=request.phone,
+        username=request.userName,
+        password=request.password,
+        city=request.city,
+        district=request.district;
+        district=request.district;
+        district=request.district;
 }
