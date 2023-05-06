@@ -293,8 +293,8 @@ exports.updateInfoCompany = async(req,res,next) => {
         idKD=request.idKD;
 
 
-    let verifyToken= await functions.checkToken(token);
-    if(verifyToken!=false){
+    let verifyToken= await functions.checkToken(req,res);
+    if(verifyToken){
 
     }
 }

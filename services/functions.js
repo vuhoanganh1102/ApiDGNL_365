@@ -195,10 +195,10 @@ exports.checkVideo = async (filePath) => {
  exports.checkToken =async(req,res) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) return this.setError(); // Nếu không tìm thấy token, trả về false
+  if (token == null) return res.status(401); // Nếu không tìm thấy token, trả về mã lỗi 401
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return false; // Nếu token không hợp lệ, trả về false
+    if (err) return res.status(403); // Nếu token không hợp lệ, trả về mã lỗi 403
     req.user = user;
   });
  }
