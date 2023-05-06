@@ -5,6 +5,7 @@ const stat = util.promisify(fs.stat);
 const { promisify } = require('util');
 const probe = promisify(require('ffmpeg-probe'));
 const multer=require('multer')
+const crypto = require('crypto');
 
 exports.CheckPhoneNumber =async(phone)=>{
     const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
@@ -103,15 +104,7 @@ exports.checkVideo = async (filePath) => {
         console.log('File was deleted');
       });
   }
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'public/cvUpload')
-    },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname +uniqueSuffix+'.pdf')
-    }
-  })
+
   
   exports.uploadFile = multer({ storage: storage })
 
@@ -121,3 +114,8 @@ exports.createError = async(code, message) => {
     err.message = message;
     return {data:null,error:err};
   };
+
+  exports.verifyPassword = async(inputPassword, hashedPassword) => {
+    const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
+    return md5Hash === hashedPassword;
+  }
