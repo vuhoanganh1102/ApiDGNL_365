@@ -46,7 +46,7 @@ const storage = multer.diskStorage({
     }
   })
   
-  exports.uploadFile = multer({ storage: storage })
+exports.uploadFile = multer({ storage: storage })
 
 exports.encodeToken =async( token)=>{
     return jwt.sign(token, "HHP1234568")
