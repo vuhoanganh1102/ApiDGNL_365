@@ -216,3 +216,6 @@ exports.checkVideo = async (filePath) => {
     req.user = user;
   });
  }
+ exports.createToken = async(data,hours) => {
+  jwt.sign({ data }, 'my_secret_key', { expiresIn: hours });
+ }
