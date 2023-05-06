@@ -266,12 +266,8 @@ exports.updatePassword= async(req,res,next) => {
 }
 exports.updateInfoCompany = async(req,res,next) => {
     let request= req.body,
-        email=request.email,
         phone=request.phone,
         username=request.userName,
-        password=request.password,
         city=request.city,
-        district=request.district;
-        district=request.district;
-        district=request.district;
+        address=request.address
 }

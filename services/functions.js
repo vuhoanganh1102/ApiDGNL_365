@@ -12,6 +12,7 @@ const Users=require('../models/Timviec365/Timviec/Users')
 
 dotenv.config();
 
+const crypto = require('crypto');
 
 exports.CheckPhoneNumber =async(phone)=>{
     if(phone==undefined){
@@ -185,3 +186,8 @@ exports.checkVideo = async (filePath) => {
     })
 }
 
+
+  exports.verifyPassword = async(inputPassword, hashedPassword) => {
+    const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
+    return md5Hash === hashedPassword;
+  }

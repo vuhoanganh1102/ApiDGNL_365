@@ -2,7 +2,8 @@ const Users = require('../../models/Timviec365/Timviec/Users')
 const userUnset = require('../../models/Timviec365/Timviec/userUnset')
 const md5 = require('md5')
 var jwt = require('jsonwebtoken');
-const functions=require('../../services/functions')
+const functions=require('../../services/functions');
+const { token } = require('morgan');
 
 
 exports.index = (req, res, next) => {
@@ -140,3 +141,51 @@ exports.RegisterB2VideoUpload = async(req,res,next) =>{
 }
 
 
+
+exports.login = async (req,res,next) =>{
+
+    // tai khoan -> email ? phone
+    // email: email: account, password: pass, type
+    // phone: phoneTK: account, password: pass, type
+    const type = 0;
+
+    if(req.body.account && req.body.password){
+        const account = req.body.account
+        const password = req.body.password
+        var CheckPhoneNumber
+        var checkAccount
+
+        if(await functions.CheckPhoneNumber(account)){
+            CheckPhoneNumber =  await functions.getDatafindOne(Users,{phoneTK:account})
+            console.log('tai khoan la so dien thoai')
+            checkAccount = CheckPhoneNumber.phoneTK
+        }
+        if(await functions.CheckEmail(account)){
+            CheckPhoneNumber =  await functions.getDatafindOne(Users,{email:account})
+            console.log('tai khoan la email')
+
+            checkAccount = CheckPhoneNumber.email
+        }    
+
+        console.log(CheckPhoneNumber.userName)
+
+        let checkPassword = CheckPhoneNumber.password
+        let checkType = CheckPhoneNumber.type
+
+        if(account === checkAccount && await functions.verifyPassword(password,checkPassword) === true && checkType === type){
+            let payload = {
+                username: CheckPhoneNumber.userName ,
+                type : checkType
+            }
+            
+            const secret_key = 'HHP1234568'
+
+            const token = jwt.sign(payload,secret_key)
+
+            res.json(await functions.success('Dang nhap thanh cong',token))
+        }else{
+            console.log(await functions.createError(200, "Sai tai khoan hoac mat khau"))
+            return res.status(200).json(await functions.createError(200, "Sai tai khoan hoac mat khau"));
+        }
+    }
+}
