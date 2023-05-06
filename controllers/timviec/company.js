@@ -59,6 +59,7 @@ exports.register = async(req,res,next)=>{
                                       role:1,
                                       authentic:0,
                                       from:from || null,
+                                      idTimViec365:(Number(newIDTimViec)+1),
                                       inForCompanyTV365:{
                                           userID:(Number(newIDTimViec)+1),
                                           idKD:idKd,
@@ -151,5 +152,46 @@ exports.registerFall = async(req,res,next) => {
         console.log(error)
         return res.status(404).json( await functions.setError(404,error));
     }
-   
+}
+exports.sendOTP = async(req,res,next) => {
+    try{
+        let email=req.body.email,
+        nameCompany=req.body.userName,
+        password=req.body.password
+        if (email!=undefined){
+            let checkEmail=await functions.CheckEmail(email)
+            if(checkEmail){
+                await functions.sendEmailVerificationRequest(email,nameCompany,password)
+                return res.status(200).json(await functions.success('Gửi mã OTP thành công'))
+            }
+            else{
+                return res.status(404).json(await functions.setError(404,'email không đúng định dạng'));
+            }
+        }else{
+            return res.status(404).json( await functions.setError(404,'thiếu dữ liệu gmail'));
+        }
+
+    }catch(error){
+        console.log(error)
+        return res.status(404).json( await functions.setError(404,error));
+    }
+}
+exports.verify = async(req,res,next) => {
+    try{
+        let otp=req.body.otp,
+        email=req.body.email;
+        let verify=await Users.findOne({email,otp});
+        if(verify != null){
+            await Users.updateOne({ email: email }, { 
+                $set: { 
+                    authentic:1
+                }
+            });
+            return res.status(200).json(await functions.success('xác thực thành công'))
+        }
+        return res.status(404).json( await functions.setError(404,'xác thực thất bại'));
+    }catch(error){
+        console.log(error)
+        return res.status(404).json( await functions.setError(404,error));
+    }
 }
