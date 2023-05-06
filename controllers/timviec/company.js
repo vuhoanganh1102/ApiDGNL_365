@@ -174,7 +174,14 @@ exports.sendOTP = async(req,res,next) => {
         if (email!=undefined){
             let checkEmail=await functions.CheckEmail(email)
             if(checkEmail){
-                await functions.sendEmailVerificationRequest(email,nameCompany)
+                let otp=await functions.randomNumber
+                console.log(otp)
+                await Users.updateOne({ email: email }, { 
+                    $set: { 
+                       otp:otp
+                    }
+                });
+                await functions.sendEmailVerificationRequest(otp,email,nameCompany)
                 return  functions.success(res,'Gửi mã OTP thành công',)
 
             }

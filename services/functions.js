@@ -1,30 +1,39 @@
+ // check ảnh
 const sharp = require('sharp');
-const fs = require('fs');
-const util = require('util');
-const stat = util.promisify(fs.stat);
+// check ảnh và video
+const fs = require('fs'); 
+// check video
+const util = require('util'); 
+// check video
+const stat = util.promisify(fs.stat); 
+// check video
 const { promisify } = require('util');
+ // check video
 const probe = promisify(require('ffmpeg-probe'));
+// upload file
 const multer = require('multer')
+// gửi mail
 const nodemailer = require("nodemailer");
+// tạo biến môi trường
 const dotenv = require ("dotenv");
-const jwt = require('jsonwebtoken');
+// mã hóa mật khẩu
+const crypto = require('crypto');
 
-// Giới hạn dung lượng ảnh (2MB)
-const MAX_IMG_SIZE = 2 * 1024 * 1024;
+// tọa token
+const jwt = require('jsonwebtoken')
 
-// Giới hạn dung lượng video (100MB)
-const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
-
-// Định dạng video
-const SUPPORTED_VIDEO_FORMATS = ['mp4', 'mov', 'avi', 'wmv', 'flv'];
 const Users=require('../models/Timviec365/Timviec/Users')
-
+// giới hạn dung lượng video < 100MB
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+// định dạng video
+const SUPPORTED_VIDEO_FORMATS = ['mp4', 'mov', 'avi', 'wmv', 'flv'];
+// giới hạn dung lượng ảnh < 2MB
+const MAX_IMG_SIZE = 2 * 1024 * 1024; 
 
 dotenv.config();
 
-const crypto = require('crypto');
 
-exports.CheckPhoneNumber = async(phone)=>{
+exports.CheckPhoneNumber =async(phone)=>{
     if(phone==undefined){
       return true
     }
@@ -42,22 +51,21 @@ exports.getDatafindOne =async(model,condition)=>{
     return model.findOne(condition);
 }
 
-exports.getDatafind = async(model,condition)=>{
+exports.getDatafind =async(model,condition)=>{
     return model.find(condition);
 }
 
 exports.getDatafindOneAndUpdate =async(model,condition,projection)=>{
     return model.findOneAndUpdate(condition,projection);
 }
-exports.success = async(res,messsage = "", data = [])=>{
+exports.success =async(res,messsage = "", data = [])=>{
   return res.status(200).json({result:true,messsage,data})
 
 }
+exports.setError = async (res,message,code =500) => {
 
-exports.setError = async (res, message, code = 500) => {
     return res.status(code).json({code,message})
 }
-
 exports.getMaxID= async(model) => {
     const maxUser= await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
@@ -81,7 +89,6 @@ exports.checkImage = async (filePath) => {
   
       return  true ;
   };
-
 
 
 exports.checkVideo = async (filePath) => {
@@ -134,17 +141,17 @@ exports.checkVideo = async (filePath) => {
 
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, 'public/videoUpload')
+      cb(null, 'public/cvUpload')
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname +uniqueSuffix+'.mp4')
+      cb(null, file.fieldname +uniqueSuffix+'.pdf')
     }
   })
   
   exports.uploadFile = multer({ storage: storage })
 
-exports.createError = async(code, message) => {
+  exports.createError = async(code, message) => {
     const err = new Error();
     err.code = code;
     err.message = message;
@@ -161,18 +168,13 @@ exports.createError = async(code, message) => {
           pass: process.env.AUTH_PASSWORD
       }
   });
+ exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
 
-  exports.sendEmailVerificationRequest = async (email,nameCompany) => {
-    const randomNumber = Math.floor(Math.random() * 900000) + 100000;
-    await Users.updateOne({ email: email }, { 
-      $set: { 
-         otp:randomNumber
-      }
-  });
+  exports.sendEmailVerificationRequest = async (otp,email,nameCompany) => {
     let options = {
         from: process.env.AUTH_EMAIL,
         to: email,
-        subject: 'Tìm việc 365 WEB Email Verification',
+        subject: 'Tìm việc 365 WEB xác thực email',
         html: `
     <body style="width: 100%;background-color: #dad7d7;text-align: justify;padding: 0;margin: 0;font-family: unset;padding-top: 20px;padding-bottom: 20px;"><table style="width: 600px;background:#fff; margin:0 auto;border-collapse: collapse;color: #000"><tr style="height: 165px;background-image: url(https://timviec365.vn/images/email/bg1.png);background-size:100% 100%;background-repeat: no-repeat;float: left;width: 100%;padding: 0px 30px;box-sizing: border-box;">
     <td style="padding-top: 23px;float: left;">
@@ -181,7 +183,7 @@ exports.createError = async(code, message) => {
     <ul style="margin-top: 15px;padding-left: 0px;">
     <li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">
     Hiển thị danh sách ứng viên online</span></li>
-    <li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">Nhắn tin trực tiếp ứng viên qua Chat365</span></li><li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">Cam kết bảo hành 100%</span></li></ul></td></tr><tr style="float: left;padding:10px 30px 30px 30px;"><td colspan="2"><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-top: 15px;">Xin chào <span style="color:#307df1;">${nameCompany}</span></p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Chúc mừng bạn đã hoàn thành thông tin đăng ký tài khoản nhà tuyển dụng tại website Timviec365</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Dưới đây là thông tin tài khoản đã tạo:</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-left: 35px;">- Tài khoản: ${email}</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-left: 35px;">- Mật khẩu: ****** </p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Dưới đây là mã OTP của bạn</p><p style="margin: auto;margin-top: 45px;text-align: center;width: 160px;height: 43px;background:#307df1;border-radius: 5px;font-size: 22px;color: #fff">${randomNumber}</a></p></td></tr><tr style="height: 160px;background-image: url(https://timviec365.vn/images/email/bg2.png);background-size:100% 100%;background-repeat: no-repeat;float: left;width: 100%;"><td style="padding-top: 50px;"><ul><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;">Liên hệ với chúng tôi để được hỗ trợ nhiều hơn:</span></li><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;">Hotline: <span style="color: #ffa111;">1900633682</span> - ấn phím 1</span></li><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;color: #ffa111;">Trân trọng !</span></li></ul></td></tr></table></body>
+    <li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">Nhắn tin trực tiếp ứng viên qua Chat365</span></li><li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">Cam kết bảo hành 100%</span></li></ul></td></tr><tr style="float: left;padding:10px 30px 30px 30px;"><td colspan="2"><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-top: 15px;">Xin chào <span style="color:#307df1;">${nameCompany}</span></p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Chúc mừng bạn đã hoàn thành thông tin đăng ký tài khoản nhà tuyển dụng tại website Timviec365</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Dưới đây là thông tin tài khoản đã tạo:</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-left: 35px;">- Tài khoản: ${email}</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-left: 35px;">- Mật khẩu: ****** </p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Dưới đây là mã OTP của bạn</p><p style="margin: auto;margin-top: 45px;text-align: center;width: 160px;height: 43px;background:#307df1;border-radius: 5px;font-size: 22px;color: #fff">${otp}</a></p></td></tr><tr style="height: 160px;background-image: url(https://timviec365.vn/images/email/bg2.png);background-size:100% 100%;background-repeat: no-repeat;float: left;width: 100%;"><td style="padding-top: 50px;"><ul><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;">Liên hệ với chúng tôi để được hỗ trợ nhiều hơn:</span></li><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;">Hotline: <span style="color: #ffa111;">1900633682</span> - ấn phím 1</span></li><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;color: #ffa111;">Trân trọng !</span></li></ul></td></tr></table></body>
         `
     }
      transport.sendMail(options, (err, info) => {
