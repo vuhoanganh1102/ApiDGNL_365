@@ -21,9 +21,7 @@ exports.register = async(req,res,next)=>{
         linkVideo=request.linkVideo,
         videoType=request.videoType,
         description=request.description,
-        authentic=request.authentic,
-        from=request.from,
-        role=request.role;
+        from=request.from;
        // check dữ liệu không bị undefined
        if ((username && password && city && district &&
             address && email && idKd && mst && phone )!==undefined){
@@ -42,7 +40,7 @@ exports.register = async(req,res,next)=>{
                                       let maxID=await functions.getMaxID(Users);
                                       const maxIDTimviec = await (Users.findOne({type:1},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean())
                                       let newIDTimViec=maxIDTimviec.idTimViec365 || 1
-                                      const company = new Users({
+                                      const company = new Users({ 
                                         _id:(Number(maxID)+1),
                                         email: email,
                                         password: md5(password),
@@ -54,8 +52,8 @@ exports.register = async(req,res,next)=>{
                                         address:address,
                                         avatarUser:avatarUser.filename,
                                         createdAt:new Date().getTime(),
-                                        role:role ||null,
-                                        authentic:authentic || null,
+                                        role:1,
+                                        authentic:0,
                                         from:from || null,
                                         inForCompanyTV365:{
                                             userID:(Number(newIDTimViec)+1),
@@ -75,8 +73,7 @@ exports.register = async(req,res,next)=>{
                                     return res.status(200).json(await functions.success('đăng ký thành công'))
                                  }
                                     else {
-                                     return res.status(404).json(await functions.setError(404,'ảnh >2mb hoặc không đúng định dạng ảnh',avatarUser));
-                                 }
+                                  }
                                 }
                                 // trường hợp không có ảnh
                                 else {
@@ -95,8 +92,8 @@ exports.register = async(req,res,next)=>{
                                       address:address,
                                       avatarUser:null,
                                       createdAt:new Date().getTime(),
-                                      role:role ||null,
-                                      authentic:authentic || null,
+                                      role:1,
+                                      authentic:0,
                                       from:from || null,
                                       inForCompanyTV365:{
                                           userID:(Number(newIDTimViec)+1),
@@ -138,30 +135,27 @@ exports.registerFall = async(req,res,next) => {
         email=request.email,
         phone=request.phone,
         nameCompany=request.nameCompany,
-        password=request.password,
         city=request.city,
         district=request.district,
         address=request.address,
         regis=request.regis;
         let maxID=await functions.getMaxID(CompanyUnset) || 1;
-        if(email!=undefined){
+        if((email)!=undefined){
             // check email ,phone
-           let checkEmail=functions.CheckEmail(email)
-           let CheckPhoneNumber=functions.CheckPhoneNumber(phone)
+           let checkEmail=await functions.CheckEmail(email)
+           let CheckPhoneNumber=await functions.CheckPhoneNumber(phone)
            if((checkEmail && CheckPhoneNumber)==true){
                let company =await functions.getDatafindOne(CompanyUnset,{email})
                if(company==null){
                    const companyUnset = new CompanyUnset({
                        _id:(Number(maxID)+1),
                        email: email ,
-                       password: md5(password) | null,
                        nameCompany:nameCompany | null,
                        type: 1,
                        phone:phone,
                        city:city | null,
                        district:district | null,
                        address:address || null,
-                       avatarUser:avatarUser || null,
                        errTime: new Date().getTime(),
                        regis:regis || null
                    
@@ -170,7 +164,18 @@ exports.registerFall = async(req,res,next) => {
                      return res.status(200).json(await functions.success('thành công'))
                } 
                else {
-                   return res.status(404).json(await functions.setError(404,'email đã tồn tại'));
+                await CompanyUnset.updateOne({ email: email }, { 
+                    $set: { 
+                        nameCompany: nameCompany,
+                        phone: phone,
+                        city: city,
+                        district: district,
+                        address: address,
+                        errTime: new Date().getTime(),
+                        regis: regis
+                    }
+                });
+                  return res.status(200).json(await functions.success('update thành công'))
                }
            }
            else{
@@ -181,7 +186,7 @@ exports.registerFall = async(req,res,next) => {
        }
     }catch(error){
         console.log(error)
-        return res.status(404).json({error})
+        return res.status(404).json( await functions.setError(404,error));
     }
    
 }

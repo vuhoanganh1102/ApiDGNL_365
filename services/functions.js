@@ -7,12 +7,16 @@ const probe = promisify(require('ffmpeg-probe'));
 const multer=require('multer')
 
 exports.CheckPhoneNumber =async(phone)=>{
+    if(phone==undefined){
+      return true
+    }
     const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
     return phoneNumberRegex.test(phone)
 }
 
 exports.CheckEmail = async(email)=>{
-    const gmailRegex = /^[a-zA-Z0-9._%+-]+@.+\.[a-z]{2,}$/;
+    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+
     return gmailRegex.test(email)
 }
 
@@ -34,7 +38,7 @@ exports.success =async(messsage = "", data = [])=>{
         messsage
     };
 }
-exports.setError = async (code,message,condition) => {
+exports.setError = async (code,message,condition = undefined) => {
   if(condition){
       deleteFile(condition.path)
   }
@@ -43,7 +47,7 @@ exports.setError = async (code,message,condition) => {
     }
 }
 exports.getMaxID= async(model) => {
-    const maxUser= await model.findOne({}, {}, { sort: { _id: -1 } }).lean();
+    const maxUser= await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
 }
 
