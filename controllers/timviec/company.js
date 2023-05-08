@@ -321,8 +321,11 @@ exports.updateInfoCompany = async(req,res,next) => {
               let checkImg=await functions.checkImage(avatarUser.path) 
               if(checkImg==true ){
               avatar =avatarUser.filename
+              }else{
+                await functions.deleteImg(avatarUser)
+                return functions.setError(res,'ảnh không đúng định dạng hoặc lớn hơn 2MB',404)
               }
-              return functions.setError(res,'ảnh không đúng định dạng hoặc lớn hơn 2MB',404)
+              
               }
                 await Users.updateOne({ email: email }, { 
                     $set: { 
@@ -341,9 +344,6 @@ exports.updateInfoCompany = async(req,res,next) => {
                         },
                     }
                 });
-                if(avatarUser==null){
-                    await functions.deleteImg(avatarUser)
-                }
                 return  functions.success(res,'update thành công')
             }
             await functions.deleteImg(avatarUser)
@@ -417,8 +417,10 @@ exports.updateVideoOrLink = async(req,res,next) => {
             let checkLink = await functions.checkLink(linkVideo);
             if(checkLink){
                 link=linkVideo;
+            }else{
+                await functions.deleteImg(videoType)
+                return functions.setError(res,'link không đúng định dạng ',404)
             }
-            return functions.setError(res,'link không đúng định dạng ',404)
         }
         let user= await functions.getDatafindOne(Users,{email})
                     if(user != null){
@@ -430,9 +432,6 @@ exports.updateVideoOrLink = async(req,res,next) => {
                                 },
                             }
                         });
-                        if(video==null){
-                            await functions.deleteImg(videoType)
-                        }
                         return  functions.success(res,'update thành công')
                     }
                     await functions.deleteImg(videoType)
