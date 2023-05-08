@@ -6,15 +6,17 @@
     "start": "nodemon ./bin/www"
   },
   "dependencies": {
+    "asynckit": "^0.4.0",
     "axios": "^1.4.0",
+    "buffer-equal-constant-time": "^1.0.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.0.3",
-    "buffer-equal-constant-time": "^1.0.1",
     "ecdsa-sig-formatter": "^1.0.11",
     "express": "~4.16.1",
     "express-form-data": "^2.0.22",
     "ffmpeg-probe": "^1.0.6",
+    "follow-redirects": "^1.15.2",
     "fs": "^0.0.1-security",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
