@@ -28,8 +28,8 @@ exports.register = async(req,res,next)=>{
        if ((username && password && city && district &&
             address && email && phone )!==undefined){
                // validate email,phone
-                   let CheckEmail=await functions.CheckEmail(email),
-                       CheckPhoneNumber=await functions.CheckPhoneNumber(phone);
+                   let CheckEmail=await functions.checkEmail(email),
+                       CheckPhoneNumber=await functions.checkPhoneNumber(phone);
                        if((CheckPhoneNumber && CheckEmail )==true){
                        //  check email co trong trong database hay khong
                        let user =await functions.getDatafindOne(Users,{email})
@@ -120,8 +120,8 @@ exports.registerFall = async(req,res,next) => {
         let maxID=await functions.getMaxID(CompanyUnset) || 1;
         if((email)!=undefined){
             // check email ,phone
-           let checkEmail=await functions.CheckEmail(email)
-           let CheckPhoneNumber=await functions.CheckPhoneNumber(phone)
+           let checkEmail=await functions.checkEmail(email)
+           let CheckPhoneNumber=await functions.checkPhoneNumber(phone)
            if((checkEmail && CheckPhoneNumber)==true){
                let company =await functions.getDatafindOne(CompanyUnset,{email})
                if(company==null){
@@ -178,7 +178,7 @@ exports.sendOTP = async(req,res,next) => {
         nameCompany=req.body.userName;
 
         if (email!=undefined){
-            let checkEmail=await functions.CheckEmail(email)
+            let checkEmail=await functions.checkEmail(email)
             if(checkEmail){
                 let otp=await functions.randomNumber
                 await Users.updateOne({ email: email }, { 
@@ -230,7 +230,7 @@ exports.verify = async(req,res,next) => {
 exports.forgotPasswordCheckMail= async(req,res,next) => {
     try{
         let email=req.body.email;
-         let checkEmail=await functions.CheckEmail(email);
+         let checkEmail=await functions.checkEmail(email);
          if(checkEmail){
              let verify=await Users.findOne({email});
              if(verify != null){
@@ -245,6 +245,7 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
                        });
                        const token= await functions.createToken(verify,'30m')
                        res.setHeader('authorization', `Bearer ${token}`);
+                    //    console.log()
                        return  functions.success(res,'xác thực thành công',[token])
                 }
                 return  functions.setError(res,'chưa lấy được mã otp',404)
@@ -311,7 +312,7 @@ exports.updateInfoCompany = async(req,res,next) => {
         avatarUser=req.file
 
         if(phone && userCompany && city && address && description && site){
-            let checkPhone= await functions.CheckPhoneNumber(phone)
+            let checkPhone= await functions.checkPhoneNumber(phone)
             if(checkPhone){
                 //   check ảnh 
               let avatar=""
@@ -357,15 +358,39 @@ exports.updateInfoCompany = async(req,res,next) => {
 }
 // hàm sửa thông tin liên hệ 
 exports.updateContactInfo = async (req,res,next) => {
-    let userContactName= req.body.userContactName,
-    userContactPhone=req.body.userContactPhone,
-    userContactAddress=req.body.userContactAddress,
-    userContactEmail=req.body.userContactEmail;
-    if(userContactAddress && userContactEmail && userContactName && userContactPhone){
-        let checkPhone =await functions.CheckPhoneNumber(userContactPhone);
-        let checkEmail= await functions.CheckEmail(userContactEmail);
-        if(checkEmail && checkPhone){
-
+    try {
+        let email=req.user.data.email
+        let userContactName= req.body.userContactName,
+        userContactPhone=req.body.userContactPhone,
+        userContactAddress=req.body.userContactAddress,
+        userContactEmail=req.body.userContactEmail;
+    
+        if(userContactAddress && userContactEmail && userContactName && userContactPhone){
+            let checkPhone =await functions.checkPhoneNumber(userContactPhone);
+            let checkEmail= await functions.checkEmail(userContactEmail);
+    
+            if(checkEmail && checkPhone){
+                let user= await functions.getDatafindOne(Users,{email})
+    
+                if(user != null){
+                    await Users.updateOne({ email: email }, { 
+                        $set: { 
+                            inForCompanyTV365:{
+                                userContactName:userContactName,
+                                userContactPhone:userContactPhone,
+                                userContactAddress:userContactAddress,
+                                userContactEmail:userContactEmail,
+                            },
+                        }
+                    });
+                    return  functions.success(res,'update thành công')
+                }
+            }
+            return functions.setError(res,'sai định dạng số điện thoại hoặc email')
         }
+        return functions.setError(res,'thiếu dữ liệu')
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
     }
 }

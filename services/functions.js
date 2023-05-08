@@ -36,7 +36,7 @@ dotenv.config();
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000; 
 // hàm validate phone
-exports.CheckPhoneNumber =async(phone)=>{
+exports.checkPhoneNumber =async(phone)=>{
     if(phone==undefined){
       return true
     }
@@ -44,12 +44,16 @@ exports.CheckPhoneNumber =async(phone)=>{
     return phoneNumberRegex.test(phone)
 }
 // hàm validate email
-exports.CheckEmail = async(email)=>{
+exports.checkEmail = async(email)=>{
     const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
     return gmailRegex.test(email)
 }
-
+// hàm validate link
+exports.checkLink = async(link) => {
+  const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+  return urlRegex.test(yourUrlVariable);
+}
 exports.getDatafindOne =async(model,condition)=>{
     return model.findOne(condition);
 }
