@@ -14,5 +14,8 @@ router.post('/updatePassword',formData.parse(),functions.checkToken,company.upda
 router.post('/updateInfor',functions.uploadImg.single('avatarUser'),functions.checkToken,company.updateInfoCompany)
 router.post('/updateContactInfor',formData.parse(),functions.checkToken,company.updateContactInfo)
 router.post('/updateVideoOrLink',functions.uploadVideo.single('videoType'),functions.checkToken,company.updateVideoOrLink)
+router.get('/changePasswordSendOTP',functions.checkToken,company.changePasswordSendOTP)
+router.post('/changePasswordCheckOTP',formData.parse(),functions.checkToken,company.changePasswordCheckOTP)
+router.post('/changePassword',formData.parse(),functions.checkToken,company.changePassword)
 
 module.exports = router;

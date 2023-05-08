@@ -223,17 +223,15 @@ return true;
     });
   };
  // hàm tạo token 
- exports.createToken = async(data,hours) => {
-  return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: hours });
+ exports.createToken = async(data,time) => {
+  return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
  }
  // hàm lấy data từ axios 
  exports.getDataAxios = async(url,condition) =>{
  return await await axios({
     method: "post",
     url: url,
-    data: {
-      condition:condition
-    },
+    data: condition,
     headers: { "Content-Type": "multipart/form-data" }
   }).then(async (response)=>{
     return response.data

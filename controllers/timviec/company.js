@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken')
 const Users=require('../../models/Timviec365/Timviec/Users')
 const functions=require('../../services/functions')
 const CompanyUnset=require('../../models/Timviec365/Timviec/userCompanyUnset')
-const { response } = require('express')
 
 // bị lỗi khi uploadImg và uploadVideo cùng chạy
 exports.register = async(req,res,next)=>{
@@ -231,12 +230,11 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
     try{
         let email=req.body.email;
          let checkEmail=await functions.checkEmail(email);
-         console.log(checkEmail)
          if(checkEmail){
              let verify=await Users.findOne({email});
              if(verify != null){
                 // api lẫy mã OTP qua app Chat
-                let data=await functions.getDataAxios('http://43.239.223.142:9000/api/users/RegisterMailOtp',email);
+                let data=await functions.getDataAxios('http://43.239.223.142:9000/api/users/RegisterMailOtp',{email});
                 let otp=data.data.otp
                 if(otp){
                     await Users.updateOne({ email: email }, { 
@@ -246,7 +244,6 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
                        });
                        const token= await functions.createToken(verify,'30m')
                        res.setHeader('authorization', `Bearer ${token}`);
-                    //    console.log()
                        return  functions.success(res,'xác thực thành công',[token])
                 }
                 return  functions.setError(res,'chưa lấy được mã otp',404)
@@ -268,11 +265,14 @@ exports.forgotPasswordCheckOTP= async(req,res,next) => {
     try{
         let email=req.user.data.email;
         let otp=req.body.otp;
+        if(otp){
         let verify=await Users.findOne({email,otp});
         if(verify != null){
             return  functions.success(res,'xác thực thành công')
         }
         return  functions.setError(res,'mã otp không đúng',404)
+        }
+        return  functions.setError(res,'thiếu mã otp',404)
 
        
     }catch(error){
@@ -285,12 +285,18 @@ exports.forgotPasswordCheckOTP= async(req,res,next) => {
 exports.updatePassword= async(req,res,next) => {
     try{
         let email=req.user.data.email,
-        password=req.body.password
-        await Users.updateOne({ email: email }, { 
-            $set: { 
-               password:md5(password)
-            }
-        });          
+        password=req.body.password;
+        if(password){
+            await Users.updateOne({ email: email }, { 
+                $set: { 
+                   password:md5(password)
+                }
+            });  
+            return  functions.success(res,'đổi mật khẩu thành công')
+      
+        }
+        return  functions.setError(res,'thiếu mật khẩu',404)
+
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)
@@ -410,6 +416,7 @@ exports.updateVideoOrLink = async(req,res,next) => {
            if(checkVideo){
             video=videoType.filename
            }
+           await functions.deleteImg(videoType)
             return functions.setError(res,'video không đúng định dạng hoặc lớn hơn 100MB ',404)
         
         }
@@ -418,7 +425,6 @@ exports.updateVideoOrLink = async(req,res,next) => {
             if(checkLink){
                 link=linkVideo;
             }else{
-                await functions.deleteImg(videoType)
                 return functions.setError(res,'link không đúng định dạng ',404)
             }
         }
@@ -441,5 +447,66 @@ exports.updateVideoOrLink = async(req,res,next) => {
         await functions.deleteImg(req.file)
         return  functions.setError(res,error)
     }
-   
+}
+// hàm đổi mật khẩu bước 1
+exports.changePasswordSendOTP = async(req,res,next) => {
+    try{
+        let email=req.user.data.email
+        let id=req.user.data._id
+        let otp=await functions.randomNumber;
+        let data={
+            UserID:id,
+            SenderID:1191,
+            MessageType:'text',
+            Message:`Chúng tôi nhận được yêu cầu tạo mật khẩu mới tài khoản ứng viên trên timviec365.vn. Mã OTP của bạn là: '${otp}'`
+        }
+        await functions.getDataAxios('http://43.239.223.142:9000/api/message/SendMessageIdChat',data)
+        await Users.updateOne({ email: email }, { 
+            $set: { 
+               otp:otp
+            }
+           });
+        return  functions.success(res,'update thành công')
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+}
+exports.changePasswordCheckOTP = async(req,res,next) => {
+    try{
+        let email=req.user.data.email
+        let otp=req.body.otp
+        if(otp){
+            let verify=await Users.findOne({email,otp});
+            if(verify != null){
+                return  functions.success(res,'xác thực thành công')
+            }
+            return  functions.setError(res,'mã otp không đúng',404)
+        }
+        return  functions.setError(res,'thiếu otp',404)
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+}
+// hàm đổi mật khẩu bước 3
+exports.changePassword = async(req,res,next) => {
+    try{
+        let email=req.user.data.email
+        let password=req.body.password
+        if(password){
+            await Users.updateOne({ email: email }, { 
+                $set: { 
+                        password:md5(password),
+                }
+            });
+            return  functions.success(res,'đổi mật khẩu thành công')
+        }
+        return  functions.setError(res,'thiếu mật khẩu',404)
+
+       
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
 }
