@@ -68,6 +68,10 @@ exports.register = async(req,res,next)=>{
                                           videoType:videoType || null,
                                           linkVideo:linkVideo || null,
                                           description:description || null,
+                                          userContactName:username,
+                                          userContactPhone:phone,
+                                          userContactAddress:address,
+                                          userContactEmail:email
                                       }
                                     });
                                     await company.save();   
@@ -240,6 +244,7 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
                         }
                        });
                        const token= await functions.createToken(verify,'30m')
+                       res.setHeader('authorization', `Bearer ${token}`);
                        return  functions.success(res,'xác thực thành công',[token])
                 }
                 return  functions.setError(res,'chưa lấy được mã otp',404)
@@ -289,7 +294,7 @@ exports.updatePassword= async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
-// hàm sửa thông tin 
+// hàm sửa thông tin công ty
 exports.updateInfoCompany = async(req,res,next) => {
     try{
         let request= req.body,
@@ -306,7 +311,7 @@ exports.updateInfoCompany = async(req,res,next) => {
         avatarUser=req.file
 
         if(phone && userCompany && city && address && description && site){
-            let checkPhone= await functions.checkPhone(phone)
+            let checkPhone= await functions.CheckPhoneNumber(phone)
             if(checkPhone){
                 //   check ảnh 
               let avatar=""
@@ -324,7 +329,7 @@ exports.updateInfoCompany = async(req,res,next) => {
                         description: description,
                         website: website || null,
                         address: address,
-                        avatarUser:av|| null,
+                        avatarUser:avatar|| null,
                         inForCompanyTV365:{
                             idKD:idKD,
                             mst:mst || null,
@@ -349,5 +354,14 @@ exports.updateInfoCompany = async(req,res,next) => {
         await functions.deleteImg(req.file)
         return  functions.setError(res,error)
     }
-
+}
+// hàm sửa thông tin liên hệ 
+exports.updateContactInfo = async (req,res,next) => {
+    let userContactName= req.body.userContactName,
+    userContactPhone=req.body.userContactPhone,
+    userContactAddress=req.body.userContactAddress,
+    userContactEmail=req.body.userContactEmail;
+    if(userContactAddress && userContactEmail && userContactName && userContactPhone){
+        
+    }
 }
