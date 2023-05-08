@@ -4,17 +4,27 @@ const util = require('util');
 const stat = util.promisify(fs.stat);
 const { promisify } = require('util');
 const probe = promisify(require('ffmpeg-probe'));
-const multer=require('multer')
+const multer = require('multer')
 const nodemailer = require("nodemailer");
-const dotenv =require ("dotenv");
+const dotenv = require ("dotenv");
+const jwt = require('jsonwebtoken');
 
+// Giới hạn dung lượng ảnh (2MB)
+const MAX_IMG_SIZE = 2 * 1024 * 1024;
+
+// Giới hạn dung lượng video (100MB)
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+
+// Định dạng video
+const SUPPORTED_VIDEO_FORMATS = ['mp4', 'mov', 'avi', 'wmv', 'flv'];
 const Users=require('../models/Timviec365/Timviec/Users')
+
 
 dotenv.config();
 
 const crypto = require('crypto');
 
-exports.CheckPhoneNumber =async(phone)=>{
+exports.CheckPhoneNumber = async(phone)=>{
     if(phone==undefined){
       return true
     }
@@ -32,34 +42,26 @@ exports.getDatafindOne =async(model,condition)=>{
     return model.findOne(condition);
 }
 
-exports.getDatafind =async(model,condition)=>{
+exports.getDatafind = async(model,condition)=>{
     return model.find(condition);
 }
 
 exports.getDatafindOneAndUpdate =async(model,condition,projection)=>{
     return model.findOneAndUpdate(condition,projection);
 }
-exports.success =async(messsage = "", data = [])=>{
-    return {
-        code: 200,
-        data,
-        messsage
-    };
+exports.success = async(res,messsage = "", data = [])=>{
+  return res.status(200).json({result:true,messsage,data})
+
 }
-exports.setError = async (code,message,condition = undefined) => {
-  if(condition){
-      deleteFile(condition.path)
-  }
-    return {
-        code, message
-    }
+
+exports.setError = async (res, message, code = 500) => {
+    return res.status(code).json({code,message})
 }
+
 exports.getMaxID= async(model) => {
     const maxUser= await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
 }
-
-const MAX_IMG_SIZE = 2 * 1024 * 1024; 
 
 const isImage = async (filePath) => {
     const { format } = await sharp(filePath).metadata();
@@ -80,9 +82,7 @@ exports.checkImage = async (filePath) => {
       return  true ;
   };
 
-const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 
-const SUPPORTED_VIDEO_FORMATS = ['mp4', 'mov', 'avi', 'wmv', 'flv'];
 
 exports.checkVideo = async (filePath) => {
   const { size } = await stat(filePath);
@@ -125,20 +125,26 @@ exports.checkVideo = async (filePath) => {
         console.log('File was deleted');
       });
   }
+  exports.deleteImg = async(condition) => {
+    if(condition){
+     await deleteFile(condition.path)
+    }
+
+  }
 
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, 'public/cvUpload')
+      cb(null, 'public/videoUpload')
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname +uniqueSuffix+'.pdf')
+      cb(null, file.fieldname +uniqueSuffix+'.mp4')
     }
   })
   
   exports.uploadFile = multer({ storage: storage })
 
-  exports.createError = async(code, message) => {
+exports.createError = async(code, message) => {
     const err = new Error();
     err.code = code;
     err.message = message;
@@ -155,6 +161,7 @@ exports.checkVideo = async (filePath) => {
           pass: process.env.AUTH_PASSWORD
       }
   });
+
   exports.sendEmailVerificationRequest = async (email,nameCompany) => {
     const randomNumber = Math.floor(Math.random() * 900000) + 100000;
     await Users.updateOne({ email: email }, { 
@@ -191,3 +198,13 @@ exports.checkVideo = async (filePath) => {
     const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
     return md5Hash === hashedPassword;
   }
+ exports.checkToken =async(req,res) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) return this.setError(); // Nếu không tìm thấy token, trả về false
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return false; // Nếu token không hợp lệ, trả về false
+    req.user = user;
+  });
+ }
