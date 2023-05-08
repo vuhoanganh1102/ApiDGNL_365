@@ -297,8 +297,8 @@ exports.updatePassword= async(req,res,next) => {
 // hàm sửa thông tin công ty
 exports.updateInfoCompany = async(req,res,next) => {
     try{
+        let email=req.user.data.email
         let request= req.body,
-        email=req.email,
         phone=request.phone,
         userCompany=request.userName,
         city=request.city,
@@ -362,6 +362,10 @@ exports.updateContactInfo = async (req,res,next) => {
     userContactAddress=req.body.userContactAddress,
     userContactEmail=req.body.userContactEmail;
     if(userContactAddress && userContactEmail && userContactName && userContactPhone){
-        
+        let checkPhone =await functions.CheckPhoneNumber(userContactPhone);
+        let checkEmail= await functions.CheckEmail(userContactEmail);
+        if(checkEmail && checkPhone){
+
+        }
     }
 }
