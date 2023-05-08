@@ -416,8 +416,10 @@ exports.updateVideoOrLink = async(req,res,next) => {
            if(checkVideo){
             video=videoType.filename
            }
-           await functions.deleteImg(videoType)
+           else {
+            await functions.deleteImg(videoType)
             return functions.setError(res,'video không đúng định dạng hoặc lớn hơn 100MB ',404)
+           }
         
         }
         if(linkVideo){
@@ -472,6 +474,7 @@ exports.changePasswordSendOTP = async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
+// hàm bước 2  đổi mật khẩu
 exports.changePasswordCheckOTP = async(req,res,next) => {
     try{
         let email=req.user.data.email
