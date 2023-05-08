@@ -1,5 +1,5 @@
 const md5= require('md5')
-const axios= require('axios')
+const jwt = require('jsonwebtoken')
 
 const Users=require('../../models/Timviec365/Timviec/Users')
 const functions=require('../../services/functions')
@@ -102,6 +102,7 @@ exports.register = async(req,res,next)=>{
     }
   
 }
+// hàm lấy user khi đăng ký sai
 exports.registerFall = async(req,res,next) => {
     try{
         let request= req.body,
@@ -166,6 +167,7 @@ exports.registerFall = async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
+// hàm gửi otp qua gmail khi kích hoạt tài khoản
 exports.sendOTP = async(req,res,next) => {
     try{
         let email=req.body.email,
@@ -175,7 +177,6 @@ exports.sendOTP = async(req,res,next) => {
             let checkEmail=await functions.CheckEmail(email)
             if(checkEmail){
                 let otp=await functions.randomNumber
-                console.log(otp)
                 await Users.updateOne({ email: email }, { 
                     $set: { 
                        otp:otp
@@ -197,59 +198,57 @@ exports.sendOTP = async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
+// hàm xác nhận otp để kích hoạt tài khoản
 exports.verify = async(req,res,next) => {
     try{
         let otp=req.body.otp,
         email=req.body.email;
-        let verify=await Users.findOne({email,otp});
-        if(verify != null){
-            await Users.updateOne({ email: email }, { 
-                $set: { 
-                    authentic:1
-                }
-            });
-            return  functions.success(res,'xác thực thành công')
-
+        if(otp && email){
+            let verify=await Users.findOne({email,otp});
+            if(verify != null){
+                await Users.updateOne({ email: email }, { 
+                    $set: { 
+                        authentic:1
+                    }
+                });
+                return  functions.success(res,'xác thực thành công')
+            }
+            return  functions.setError(res,'xác thực thất bại',404)
         }
-        return  functions.setError(res,'xác thực thất bại',404)
+        return  functions.setError(res,'thiếu dữ liệu',404)
+       
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)
     }
 }
+// hàm bước 1 của quên mật khẩu
 exports.forgotPasswordCheckMail= async(req,res,next) => {
     try{
         let email=req.body.email;
-         // api lẫy mã OTP qua app Chat
-         await axios({
-            method: "post",
-            url: "http://43.239.223.142:9000/api/users/RegisterMailOtp",
-            data: {
-              email:email
-            },
-            headers: { "Content-Type": "multipart/form-data" }
-          }).then(async (response)=>{
-           let otp=response.data.data.otp;
-           let checkEmail=await functions.CheckEmail(email);
-           if(checkEmail){
-               let verify=await Users.findOne({email});
-               if(verify != null){
-                await Users.updateOne({ email: email }, { 
-                    $set: { 
-                       otp:otp
-                    }
-                   });
-                   const token= await functions.createToken(verify,'30m')
-                   return  functions.success(res,'xác thực thành công',[token])
-               }
-               return  functions.setError(res,'email không đúng',404)
-           }
-           return  functions.setError(res,'sai định dạng email',404)
+         let checkEmail=await functions.CheckEmail(email);
+         if(checkEmail){
+             let verify=await Users.findOne({email});
+             if(verify != null){
+                // api lẫy mã OTP qua app Chat
+                let data=await functions.getDataAxios('http://43.239.223.142:9000/api/users/RegisterMailOtp',email);
+                console.log(data)
+                let otp=data.data.otp
+                if(otp){
+                    await Users.updateOne({ email: email }, { 
+                        $set: { 
+                           otp:otp
+                        }
+                       });
+                       const token= await functions.createToken(verify,'30m')
+                       return  functions.success(res,'xác thực thành công',[token])
+                }
+                return  functions.setError(res,'chưa lấy được mã otp',404)
 
-          }).catch(async (error) => {
-            console.log(error); // in ra lỗi nếu có
-            return  functions.setError(res,error)
-        });
+             }
+             return  functions.setError(res,'email không đúng',404)
+         }
+         return  functions.setError(res,'sai định dạng email',404)
        
       
     }catch(error){
@@ -257,10 +256,12 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
+// hàm bước 2 của quên mật khẩu
+
 exports.forgotPasswordCheckOTP= async(req,res,next) => {
     try{
-        let email=req.body.email;
-        let otp=req.body.otp;
+        let email=req.user.data.email;
+        let otp=req.user.data.email;
         let verify=await Users.findOne({email,otp});
         if(verify != null){
             return  functions.success(res,'xác thực thành công')
@@ -273,11 +274,12 @@ exports.forgotPasswordCheckOTP= async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
+// hàm bước 3 của quên mật khẩu
 
 exports.updatePassword= async(req,res,next) => {
     try{
-        email=req.body.email,
-        password=req.body.password;
+        let email=req.user.data.email,
+        password=req.body.password
         await Users.updateOne({ email: email }, { 
             $set: { 
                password:md5(password)
@@ -288,8 +290,10 @@ exports.updatePassword= async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
+// hàm sửa thông tin 
 exports.updateInfoCompany = async(req,res,next) => {
-    let request= req.body,
+    try{
+        let request= req.body,
         email=req.email,
         phone=request.phone,
         userCompany=request.userName,
@@ -300,10 +304,19 @@ exports.updateInfoCompany = async(req,res,next) => {
         description=request.description,
         mst=request.mst,
         idKD=request.idKD;
+        avatarUser=req.file
 
-        if(phone && username && city && address && description && site){
+        if(phone && userCompany && city && address && description && site){
             let checkPhone= await functions.checkPhone(phone)
             if(checkPhone){
+                //   check ảnh 
+              let avatar=""
+              if(avatarUser){
+              let checkImg=await functions.checkImage(avatarUser.path) 
+              if(checkImg==true ){
+              avatar =avatarUser.filename
+              }
+              }
                 await Users.updateOne({ email: email }, { 
                     $set: { 
                         userName: userCompany,
@@ -312,6 +325,7 @@ exports.updateInfoCompany = async(req,res,next) => {
                         description: description,
                         website: website || null,
                         address: address,
+                        avatarUser:av|| null,
                         inForCompanyTV365:{
                             idKD:idKD,
                             mst:mst || null,
@@ -320,8 +334,21 @@ exports.updateInfoCompany = async(req,res,next) => {
                         },
                     }
                 });
-                  return  functions.success(res,'update thành công')
+                if(avatarUser==null){
+                    await functions.deleteImg(avatarUser)
+                }
+                return  functions.success(res,'update thành công')
             }
+            await functions.deleteImg(avatarUser)
+            return functions.setError(res,'sai định dạng số điện thoại')
         }
+        await functions.deleteImg(avatarUser)
+
         return functions.setError(res,'thiếu dữ liệu')
+    }catch(error){
+        console.log(error)
+        await functions.deleteImg(req.file)
+        return  functions.setError(res,error)
+    }
+
 }

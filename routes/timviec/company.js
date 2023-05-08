@@ -9,7 +9,8 @@ router.post('/sendOTP',formData.parse(),company.sendOTP)
 router.post('/verify',formData.parse(),company.verify)
 router.post('/forgotPasswordCheckMail',formData.parse(),company.forgotPasswordCheckMail)
 router.post('/forgotPasswordCheckOTP',formData.parse(),functions.checkToken,company.forgotPasswordCheckOTP)
-router.post('/updatePassword', formData.parse(),company.updatePassword)
+router.post('/updatePassword',formData.parse(),functions.checkToken,company.updatePassword)
+router.post('/updateInfor',functions.uploadImg.single('avatarUser'),company.updateInfoCompany)
 
 
 module.exports = router;

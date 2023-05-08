@@ -18,6 +18,8 @@ const nodemailer = require("nodemailer");
 const dotenv = require ("dotenv");
 // mã hóa mật khẩu
 const crypto = require('crypto');
+// gọi api
+const axios= require('axios')
 
 // tọa token
 const jwt = require('jsonwebtoken')
@@ -209,7 +211,6 @@ exports.checkVideo = async (filePath) => {
   exports.checkToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
-    console.log(token)
     if (!token) {
       return res.status(401).json({ message: "Missing token" });
     }
@@ -225,4 +226,17 @@ exports.checkVideo = async (filePath) => {
  // hàm tạo token 
  exports.createToken = async(data,hours) => {
   return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: hours });
+ }
+ // hàm lấy data từ axios 
+ exports.getDataAxios = async(url,condition) =>{
+ return await await axios({
+    method: "post",
+    url: url,
+    data: {
+      condition:condition
+    },
+    headers: { "Content-Type": "multipart/form-data" }
+  }).then(async (response)=>{
+    return response.data
+  })
  }
