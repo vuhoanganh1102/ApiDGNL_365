@@ -316,23 +316,10 @@ exports.updateInfoCompany = async(req,res,next) => {
         description=request.description,
         mst=request.mst,
         idKD=request.idKD;
-        avatarUser=req.file
 
         if(phone && userCompany && city && address && description && site){
             let checkPhone= await functions.checkPhoneNumber(phone)
             if(checkPhone){
-                //   check ảnh 
-              let avatar=""
-              if(avatarUser){
-              let checkImg=await functions.checkImage(avatarUser.path) 
-              if(checkImg==true ){
-              avatar =avatarUser.filename
-              }else{
-                await functions.deleteImg(avatarUser)
-                return functions.setError(res,'ảnh không đúng định dạng hoặc lớn hơn 2MB',404)
-              }
-              
-              }
                 await Users.updateOne({ email: email }, { 
                     $set: { 
                         userName: userCompany,
@@ -341,7 +328,6 @@ exports.updateInfoCompany = async(req,res,next) => {
                         description: description,
                         website: website || null,
                         address: address,
-                        avatarUser:avatar|| null,
                         inForCompanyTV365:{
                             idKD:idKD,
                             mst:mst || null,
@@ -352,15 +338,11 @@ exports.updateInfoCompany = async(req,res,next) => {
                 });
                 return  functions.success(res,'update thành công')
             }
-            await functions.deleteImg(avatarUser)
             return functions.setError(res,'sai định dạng số điện thoại')
         }
-        await functions.deleteImg(avatarUser)
-
         return functions.setError(res,'thiếu dữ liệu')
     }catch(error){
         console.log(error)
-        await functions.deleteImg(req.file)
         return  functions.setError(res,error)
     }
 }
@@ -510,6 +492,36 @@ exports.changePassword = async(req,res,next) => {
        
     }catch(error){
         console.log(error)
+        return  functions.setError(res,error)
+    }
+}
+// hàm updload avatar
+exports.uploadIMG = async(req,res,next) => {
+    try{
+        let email=req.user.data.email,
+        avatarUser=req.file;
+        if(avatarUser){
+            let checkImg=await functions.checkImage(avatarUser.path)
+            if(checkImg){
+                await Users.updateOne({ email: email }, { 
+                    $set: { 
+                        avatarUser:avatarUser.filename,
+                    }
+                });
+                return  functions.success(res,'thay đổi ảnh thành công')
+                }
+                else{
+                    await functions.deleteImg(avatarUser)
+                    return  functions.setError(res,'sai định dạng ảnh hoặc ảnh lớn hơn 2MB',404)
+            }
+        }
+        else{
+            await functions.deleteImg(avatarUser)
+            return  functions.setError(res,'chưa có ảnh',404)
+        }
+    }catch(error){
+        console.log(error)
+        await functions.deleteImg(req.file)
         return  functions.setError(res,error)
     }
 }

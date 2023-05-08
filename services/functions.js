@@ -1,5 +1,4 @@
- // check ảnh
-const sharp = require('sharp');
+
 // check ảnh và video
 const fs = require('fs'); 
 // upload file
@@ -12,20 +11,17 @@ const dotenv = require ("dotenv");
 const crypto = require('crypto');
 // gọi api
 const axios= require('axios')
-//check video
-const ffmpeg = require('fluent-ffmpeg');
 // check video
 const path = require('path');
-
+//check ảnh
+const { promisify } = require('util');
 // tọa token
 const jwt = require('jsonwebtoken')
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
-// định dạng video
-const SUPPORTED_VIDEO_FORMATS = ['mp4', 'mov', 'avi', 'wmv', 'flv'];
 // danh sách các loại video cho phép
-const allowedTypes = ['.mp4', '.mov', '.avi']; 
+const allowedTypes = ['.mp4', '.mov', '.avi','.wmv','.flv']; 
 // giới hạn dung lượng ảnh < 2MB
 const MAX_IMG_SIZE = 2 * 1024 * 1024; 
 
@@ -80,23 +76,29 @@ exports.getMaxID= async(model) => {
 }
 // hàm check định dạng ảnh
 const isImage = async (filePath) => {
-    const { format } = await sharp(filePath).metadata();
-    return !!format;
+  const extname = path.extname(filePath).toLowerCase();
+  return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(extname);
 };
 // hàm check ảnh
+
+
 exports.checkImage = async (filePath) => {
-      const { size } = await fs.promises.stat(filePath);
-      if (size > MAX_IMG_SIZE) {
-        return 'dung luong anh > 2mb' ;
-      }
-  
-      const isImg = await isImage(filePath);
-      if (!isImg) {
-        return  'file khong dung dinh dang anh' ;
-      }
-  
-      return  true ;
-  };
+  if (typeof(filePath) !== 'string') {
+    return false;
+  }
+
+  const { size } = await promisify(fs.stat)(filePath);
+  if (size > MAX_IMG_SIZE) {
+    return false;
+  }
+
+  const isImg = await isImage(filePath);
+  if (!isImg) {
+    return false;
+  }
+
+  return true;
+};
 
 // hàm check video
 exports.checkVideo= async(filePath) => {
