@@ -302,7 +302,7 @@ exports.updatePassword= async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
-// hàm sửa thông tin công ty
+// hàm cập nhập thông tin công ty
 exports.updateInfoCompany = async(req,res,next) => {
     try{
         let email=req.user.data.email
@@ -346,7 +346,7 @@ exports.updateInfoCompany = async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
-// hàm sửa thông tin liên hệ 
+// hàm cập nhập thông tin liên hệ 
 exports.updateContactInfo = async (req,res,next) => {
     try {
         let email=req.user.data.email
@@ -385,7 +385,7 @@ exports.updateContactInfo = async (req,res,next) => {
         return  functions.setError(res,error)
     }
 }
-// hàm sửa video hoặc link 
+// hàm cập nhập video hoặc link 
 exports.updateVideoOrLink = async(req,res,next) => {
     try{
         let email=req.user.data.email,
