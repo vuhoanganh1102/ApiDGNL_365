@@ -239,7 +239,8 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
                        otp:otp
                     }
                    });
-                   return  functions.success(res,'xác thực thành công')
+                   const token= await functions.createToken(verify,'30m')
+                   return  functions.success(res,'xác thực thành công',[token])
                }
                return  functions.setError(res,'email không đúng',404)
            }
@@ -300,8 +301,6 @@ exports.updateInfoCompany = async(req,res,next) => {
         mst=request.mst,
         idKD=request.idKD;
 
-    let verifyToken= await functions.checkToken(req,res);
-    if(verifyToken){
         if(phone && username && city && address && description && site){
             let checkPhone= await functions.checkPhone(phone)
             if(checkPhone){
@@ -325,6 +324,4 @@ exports.updateInfoCompany = async(req,res,next) => {
             }
         }
         return functions.setError(res,'thiếu dữ liệu')
-    }
-    return functions.setError(res,'Token không hợp lệ')
 }

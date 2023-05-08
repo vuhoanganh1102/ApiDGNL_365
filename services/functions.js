@@ -206,16 +206,23 @@ exports.checkVideo = async (filePath) => {
     return md5Hash === hashedPassword;
   }
   // hàm check token
- exports.checkToken =async(req,res) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) return res.status(401); // Nếu không tìm thấy token, trả về mã lỗi 401
-
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.status(403); // Nếu token không hợp lệ, trả về mã lỗi 403
-    req.user = user;
-  });
- }
+  exports.checkToken = (req, res, next) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    console.log(token)
+    if (!token) {
+      return res.status(401).json({ message: "Missing token" });
+    }
+  
+    jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
+      if (err) {
+        return res.status(403).json({ message: "Invalid token" });
+      }
+      req.user = user;
+      next();
+    });
+  };
+ // hàm tạo token 
  exports.createToken = async(data,hours) => {
-  jwt.sign({ data }, 'my_secret_key', { expiresIn: hours });
+  return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: hours });
  }

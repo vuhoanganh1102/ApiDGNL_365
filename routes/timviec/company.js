@@ -8,8 +8,8 @@ router.post('/registerfall',formData.parse(),company.registerFall)
 router.post('/sendOTP',formData.parse(),company.sendOTP)
 router.post('/verify',formData.parse(),company.verify)
 router.post('/forgotPasswordCheckMail',formData.parse(),company.forgotPasswordCheckMail)
-router.post('/forgotPasswordCheckOTP',formData.parse(),company.forgotPasswordCheckOTP)
-router.post('/updatePassword',formData.parse(),company.updatePassword)
+router.post('/forgotPasswordCheckOTP',formData.parse(),functions.checkToken,company.forgotPasswordCheckOTP)
+router.post('/updatePassword', formData.parse(),company.updatePassword)
 
 
 module.exports = router;
