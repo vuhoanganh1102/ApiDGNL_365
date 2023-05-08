@@ -13,6 +13,6 @@ router.post('/updatePassword',formData.parse(),functions.checkToken,company.upda
 router.post('/updatePassword',formData.parse(),functions.checkToken,company.updatePassword)
 router.post('/updateInfor',functions.uploadImg.single('avatarUser'),functions.checkToken,company.updateInfoCompany)
 router.post('/updateContactInfor',formData.parse(),functions.checkToken,company.updateContactInfo)
-
+router.post('/updateVideoOrLink',functions.uploadVideo.single('videoType'),functions.checkToken,company.updateVideoOrLink)
 
 module.exports = router;

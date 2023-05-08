@@ -231,6 +231,7 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
     try{
         let email=req.body.email;
          let checkEmail=await functions.checkEmail(email);
+         console.log(checkEmail)
          if(checkEmail){
              let verify=await Users.findOne({email});
              if(verify != null){
@@ -321,6 +322,7 @@ exports.updateInfoCompany = async(req,res,next) => {
               if(checkImg==true ){
               avatar =avatarUser.filename
               }
+              return functions.setError(res,'ảnh không đúng định dạng hoặc lớn hơn 2MB',404)
               }
                 await Users.updateOne({ email: email }, { 
                     $set: { 
@@ -385,6 +387,7 @@ exports.updateContactInfo = async (req,res,next) => {
                     });
                     return  functions.success(res,'update thành công')
                 }
+                return functions.setError(res,'email không tồn tại')
             }
             return functions.setError(res,'sai định dạng số điện thoại hoặc email')
         }
@@ -393,4 +396,51 @@ exports.updateContactInfo = async (req,res,next) => {
         console.log(error)
         return  functions.setError(res,error)
     }
+}
+// hàm sửa video hoặc link 
+exports.updateVideoOrLink = async(req,res,next) => {
+    try{
+        let email=req.user.data.email,
+        videoType=req.file,
+        linkVideo=req.body.linkVideo,
+        video='',
+        link='';
+        if(videoType){
+           let checkVideo= await functions.checkVideo(videoType);
+           if(checkVideo){
+            video=videoType.filename
+           }
+            return functions.setError(res,'video không đúng định dạng hoặc lớn hơn 100MB ',404)
+        
+        }
+        if(linkVideo){
+            let checkLink = await functions.checkLink(linkVideo);
+            if(checkLink){
+                link=linkVideo;
+            }
+            return functions.setError(res,'link không đúng định dạng ',404)
+        }
+        let user= await functions.getDatafindOne(Users,{email})
+                    if(user != null){
+                        await Users.updateOne({ email: email }, { 
+                            $set: { 
+                                inForCompanyTV365:{
+                                    videoType:video,
+                                    linkVideo:link,
+                                },
+                            }
+                        });
+                        if(video==null){
+                            await functions.deleteImg(videoType)
+                        }
+                        return  functions.success(res,'update thành công')
+                    }
+                    await functions.deleteImg(videoType)
+                    return functions.setError(res,'email không tồn tại')
+    }catch(error){
+        console.log(error)
+        await functions.deleteImg(req.file)
+        return  functions.setError(res,error)
+    }
+   
 }

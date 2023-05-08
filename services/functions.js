@@ -2,14 +2,6 @@
 const sharp = require('sharp');
 // check ảnh và video
 const fs = require('fs'); 
-// check video
-const util = require('util'); 
-// check video
-const stat = util.promisify(fs.stat); 
-// check video
-const { promisify } = require('util');
- // check video
-const probe = promisify(require('ffmpeg-probe'));
 // upload file
 const multer = require('multer')
 // gửi mail
@@ -20,15 +12,20 @@ const dotenv = require ("dotenv");
 const crypto = require('crypto');
 // gọi api
 const axios= require('axios')
+//check video
+const ffmpeg = require('fluent-ffmpeg');
+// check video
+const path = require('path');
 
 // tọa token
 const jwt = require('jsonwebtoken')
 
-const Users=require('../models/Timviec365/Timviec/Users')
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 // định dạng video
 const SUPPORTED_VIDEO_FORMATS = ['mp4', 'mov', 'avi', 'wmv', 'flv'];
+// danh sách các loại video cho phép
+const allowedTypes = ['.mp4', '.mov', '.avi']; 
 // giới hạn dung lượng ảnh < 2MB
 const MAX_IMG_SIZE = 2 * 1024 * 1024; 
 
@@ -45,6 +42,7 @@ exports.checkPhoneNumber =async(phone)=>{
 }
 // hàm validate email
 exports.checkEmail = async(email)=>{
+  console.log(email)
     const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
     return gmailRegex.test(email)
@@ -101,20 +99,17 @@ exports.checkImage = async (filePath) => {
   };
 
 // hàm check video
-exports.checkVideo = async (filePath) => {
-  const { size } = await stat(filePath);
-  if (size > MAX_VIDEO_SIZE) {
-    return  'dung luong video > 100mb.' ;
-  }
-
-  const videoProbe = await probe(filePath);
-  const format = videoProbe.format.format_name.split(',')[0];
-  if (!SUPPORTED_VIDEO_FORMATS.includes(format)) {
-    return  'file khong dung dinh dang video.' ;
-  }
-
-  return true;
-};
+exports.checkVideo= async(filePath) => {
+ // kiểm tra loại file
+ if (!allowedTypes.includes(path.extname(filePath.originalname).toLowerCase())) {
+  return false;
+}
+// kiểm tra kích thước file
+if (filePath.size > MAX_VIDEO_SIZE) {
+  return false;
+}
+return true;
+}
 
   exports.getDataDeleteOne= async(model,condition) =>{
     return model.deleteOne(condition)
