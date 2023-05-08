@@ -232,7 +232,6 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
              if(verify != null){
                 // api lẫy mã OTP qua app Chat
                 let data=await functions.getDataAxios('http://43.239.223.142:9000/api/users/RegisterMailOtp',email);
-                console.log(data)
                 let otp=data.data.otp
                 if(otp){
                     await Users.updateOne({ email: email }, { 
@@ -261,7 +260,7 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
 exports.forgotPasswordCheckOTP= async(req,res,next) => {
     try{
         let email=req.user.data.email;
-        let otp=req.user.data.email;
+        let otp=req.body.otp;
         let verify=await Users.findOne({email,otp});
         if(verify != null){
             return  functions.success(res,'xác thực thành công')
