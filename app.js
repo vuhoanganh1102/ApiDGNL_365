@@ -9,6 +9,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
+var newTV365Router=require('./routes/timviec/newTV365')
 
 var app = express();
 
@@ -26,6 +27,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/timviec/candidate', candidateRouter);
 app.use('/api/timviec/company',companyRouter)
+app.use('/api/timviec/newTV365',newTV365Router)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

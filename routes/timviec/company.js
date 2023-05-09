@@ -45,4 +45,7 @@ router.post('/changePassword',formData.parse(),functions.checkToken,company.chan
 // api cập nhập ảnh đại diện
 router.post('/uploadAvatar',functions.uploadImg.single('avatarUser'),functions.checkToken,company.uploadIMG);
 
+//api lấy dữ liệu nhà tuyển dụng
+router.get('/getDataCompany',functions.checkToken,company.getDataCompany)
+
 module.exports = router;

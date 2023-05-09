@@ -34,13 +34,16 @@ exports.register = async(req,res,next)=>{
                        let user =await functions.getDatafindOne(Users,{email})
                                if(user==null){
                                 // check ảnh 
-                                // let avatar=""
-                                // if(avatarUser){
-                                //     let checkImg=await functions.checkImage(avatarUser.path) 
-                                //     if(checkImg==true ){
-                                //       avatar =avatarUser.filename
-                                //  }
-                                // }
+                                let avatar=""
+                                if(avatarUser){
+                                    let checkImg=await functions.checkImage(avatarUser.path) 
+                                    if(checkImg==true ){
+                                      avatar =avatarUser.filename
+                                 }else{
+                                    await functions.deleteImg(avatarUser)
+                                    return  functions.setError(res,'ảnh không đúng định dạng hoặc lớn hơn 2MB',404)
+                                 }
+                                }
                                      // tìm Id max trong DB
                                     let maxID=await functions.getMaxID(Users);
                                     const maxIDTimviec = await (Users.findOne({type:1},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean())
@@ -55,7 +58,7 @@ exports.register = async(req,res,next)=>{
                                       city:city,
                                       district:district,
                                       address:address,
-                                      avatarUser:null,
+                                      avatarUser:avatar,
                                       createdAt:new Date().getTime(),
                                       role:1,
                                       authentic:0,
@@ -78,9 +81,7 @@ exports.register = async(req,res,next)=>{
                                     if(companyUnset!=null){
                                       await functions.getDataDeleteOne(CompanyUnset,{email})
                                     }   
-                                    if(avatarUser==null){
-                                        await functions.deleteImg(avatarUser)
-                                    }
+
                                   return  functions.success(res,'đăng ký thành công')
                                 }
                                else {
@@ -522,6 +523,21 @@ exports.uploadIMG = async(req,res,next) => {
     }catch(error){
         console.log(error)
         await functions.deleteImg(req.file)
+        return  functions.setError(res,error)
+    }
+}
+// hàm lấy dữ liệu thông tin cập nhập
+exports.getDataCompany = async(req,res,next) => {
+    try{
+        let id=req.user.data._id
+        let user= await functions.getDatafindOne(Users,{_id:id})
+        if(user){
+            return  functions.success(res,'lấy thông tin thành công',[user])
+        }
+        return  functions.setError(res,'người dùng không tồn tại',404)
+
+    }catch(error){
+        console.log(error)
         return  functions.setError(res,error)
     }
 }

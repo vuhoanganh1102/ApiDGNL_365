@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose');
 const newTV365Schema = new mongoose.Schema(
     {
         _id:{
@@ -9,14 +9,17 @@ const newTV365Schema = new mongoose.Schema(
         title:String,
         newMd5:String,
         alias:String,
-        redirect301:String,
-        cateID:{
+        redirect301:{
             type:String,
+            default:""
+        },
+        cateID:{
+            type:Number,
             ref:'Category'
         },
-        tagID:String,
+        tagID:Number,
         cityID:{
-            type:String,
+            type:Number,
             ref:"City"
         },
         districtID:{
@@ -28,7 +31,9 @@ const newTV365Schema = new mongoose.Schema(
         capBac:Number,
         exp:Number,
         sex:Number,
-        salary:Number,
+        bangCap:Number,
+        position:String,
+        soLuong:Number,
         hinhThuc:Number,
         doTuoi:Number,
         createTime:Date,
@@ -42,8 +47,55 @@ const newTV365Schema = new mongoose.Schema(
         viewCount:Number,
         hanNop:Date,
         post:Number,
-        renew:Number,
-        newMulti:{
+        renew:{
+            type:Number,
+            default:0
+        },
+        hot:{
+            type:Number,
+            default:0
+        },
+        do:{
+            type:Number,
+            default:0
+        },
+        cao:{
+            type:Number,
+            default:0
+        },
+        nganh:{
+            type:Number,
+            default:0
+        },
+        ghim:{
+            type:Number,
+            default:0
+        },
+        thuc:{
+            type:Number,
+            default:0
+        },
+        order:{
+            type:Number,
+            default:0
+        },
+        order:{
+            type:Number,
+            default:0
+        },
+        ut:{
+            type:Number,
+            default:0
+        },
+        hideAdmin:{
+            type:Number,
+            default:0
+        },
+        sendVip:{
+            type:Number,
+            default:0
+        },
+        newMutil:{
             type:{
                 priNewId:{
                     type:Number,
@@ -127,4 +179,9 @@ const newTV365Schema = new mongoose.Schema(
             },
             default:null
         }
-    })
+    },
+    { collection: 'NewTV365',  
+    versionKey: false , 
+    timestamp:true
+  }  )
+  module.exports = mongoose.model("NewTV365", newTV365Schema);

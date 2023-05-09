@@ -38,7 +38,6 @@ exports.checkPhoneNumber =async(phone)=>{
 }
 // hàm validate email
 exports.checkEmail = async(email)=>{
-  console.log(email)
     const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
     return gmailRegex.test(email)
@@ -128,6 +127,29 @@ return true;
       }
     })
   }
+  const storageFile = (destination) => {
+    const storage = multer.diskStorage({
+      destination: function (req, file, cb) {
+        cb(null, destination)
+      },
+      filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop())
+      },
+      fileFilter: function (req, file, cb) {
+        const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'video/webm', 'video/quicktime'];
+        if (allowedTypes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Only .jpeg, .png, .mp4, .webm and .mov format allowed!'));
+        }
+      }
+    });
+    
+    return multer({ storage: storage });
+  };
+  exports.uploadVideoAndIMG = multer({ storage: storageFile('public/newTV365') })
+
 //  hàm upload ảnh
   exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') })
 // hàm upload file
@@ -203,7 +225,6 @@ return true;
     })
 }
 
-
   exports.verifyPassword = async(inputPassword, hashedPassword) => {
     const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
     return md5Hash === hashedPassword;
@@ -238,4 +259,38 @@ return true;
   }).then(async (response)=>{
     return response.data
   })
+ }
+ // hàm lấy dữ liệu ngành nghề
+ exports.getDataCareer = async() => {
+  return ["An toàn lao động","Báo chí - Truyền hình","Bảo hiểm","Bảo trì","Bảo vệ","Biên - Phiên dịch",
+           "Bưu chính viễn thông","Chăm sóc khách hàng","Chăn nuôi - Thú y","Cơ khí - Chế tạo","Công chức - Viên chức","Công nghệ cao","Công nghệ thực phẩm","copywrite",
+           "Dầu khí - Địa chất","Dệt may - Da dày","Dịch vụ","Du lịch","Freelancer","Giáo dục - Đào tạo","Giao thông vận tải -Thủy lợi - Cầu đường", "Giúp việc" ,"Hàng hải","Hàng không",
+           "Hành chính - Văn phòng","Hóa học - Sinh học","Hoạch định - Dự án","In ấn - Xuất bản","IT phần cứng - mạng","IT phần mềm","KD bất động sản","Kế toán - Kiểm toán","Khánh sạn - Nhà hàng",
+           "Khu chế xuất - Khu công nghiệp","Kiến trúc - Tk nội thất","Kỹ thuật","Kỹ thuật ứng dụng","Làm đẹp - Thể lực - Spa","Lao động phổ thông","Lễ tan - PG - PB","Logistic","Luật - Pháp lý","Lương cao",
+           "Marketing - PR","Môi trường - Xử lý chất thải","Mỹ phẩm - Thời trang - Trang sức","Ngân hàng - chứng khoán - Đầu tư","Nghệ thuật - Điện ảnh","Nhân sự","Kinh doanh","Nhập liệu","Nông - Lâm - Ngư - Nghiệp",
+           "Ô tô - Xe máy","Pha chế - Bar","Phát triển thị trường","Phục vụ - Tạp vụ","Quan hệ đối ngoại","Quản lý điều hành","Quản lý đơn hàng","Quản trị kinh doanh","Sản xuất - Vận hành sản xuất",
+           "Sinh viên làm thêm","StarUp","Tài chính","Telesales","Thẩm định - Giảm thẩm định - Quản lý chất lượng","Thể dục - Thể thao","Thiết kế - Mỹ thuật","Thiết kế web","Thống kê","Thư ký - Trợ lý",
+           "Thu Ngân","Thư viện","Thực phẩm - Đồ uống","Thương Mại điện tử","Thủy Sản","Thị trường - Quảng cáo","Tìm việc làm thêm","Tổ chức sự kiện","Trắc địa","Truyển thông","Tư vấn","Vận chuyển giao nhận","Vận tải - Lái xe","Vật tư - Thiết bị",
+           "Việc làm bán hàng","Việc làm Tết","Xây dựng","Xuất - nhập khẩu","Xuất khẩu lao động","Y tế - Dược","Đầu bếp - phụ bếp","Điện - Điện tử","Điện tử viễn thông","ngàng nghề khác"]
+ }
+  // hàm lấy dữ liệu hình thức làm việc
+ exports.getDataWorkingForm = async()=>{
+   return ["Toàn thời gian cố định","Toàn thời gian tạm thời","Bán thời gian","Bán thời gian tạm thời","Hợp đồng","Việc làm từ xa","Khác"]
+ }
+   // hàm lấy dữ liệu cấp bậc làm việc
+ exports.getDataWorkingRank = async() => {
+  return ["Mới tốt nghiệp","Thực tập sinh","Nhân viên","Trưởng nhóm","Phó tổ trưởng","Tổ trưởng","Phó trưởng phòng","Trưởng phòng","Phó giám đốc","Giám đóc","Phó tổng giám đốc","Tổng giám đốc","Quản lý cấp trung","Quản lý cấp cao"]
+ }
+  // hàm lấy dữ liệu kinh nghiệm làm việc
+ exports.getDataEXP = async() => {
+  return ["Không yêu cầu","Chưa có kinh nghiệm","0 - 1 năm kinh nghiệm","Hơn 1 năm kinh nghiệm","Hơn 2 năm kinh nghiệm","Hơn 5 năm kinh nghiệm","Hơn 10 năm kinh nghiệm"]
+ }
+   // hàm lấy dữ liệu bằng cấp làm việc
+ exports.getDataDegree = async() => {
+  return ["Không yêu cầu","Đại học trở lên","Cao đẳng trở lên","THPT trở lên","Trung học trở lên","Chứng chỉ","Trung cấp trở lên","Cử nhân trở lên","Thạc sĩ trở lên","Thạc sĩ Nghệ thuật","Thạc sĩ Thương mại","Thạc sĩ Khoa học",
+          "Thạc sĩ Kiến trúc","Thạc sĩ QTKD","Thạc sĩ Kỹ thuật ứng dụng","Thạc sĩ Luật","Thạc sĩ Y học","Thạc sĩ Dược phẩm","Tiến sĩ","Khác"]
+ }
+    // hàm lấy dữ liệu giới tính làm việc
+ exports.getDataSex = async() => {
+  return ["Nam","Nữ","Không yêu cầu"]
  }

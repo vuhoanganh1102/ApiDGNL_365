@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose');
 const citySchema = new mongoose.Schema(
     {
         _id:{
@@ -19,6 +19,7 @@ const citySchema = new mongoose.Schema(
             type: Number,
             default:0
         },
+        countVlch:Number,
         postCode:{
             type: String,
             required:true
@@ -43,4 +44,9 @@ const citySchema = new mongoose.Schema(
             type:Number,
             required:true
         }
-    })
+    },
+    { collection: 'City',  
+    versionKey: false , 
+    timestamp:true
+  }  )
+  module.exports = mongoose.model("City", citySchema);
