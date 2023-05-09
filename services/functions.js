@@ -134,11 +134,11 @@ exports.checkVideo = async (filePath) => {
 
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, 'public/videoUpload')
+      cb(null, 'public/cvUpload')
     },
     filename: function (req, file, cb) {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname +uniqueSuffix+'.mp4')
+      cb(null, file.fieldname +uniqueSuffix+'.pdf')
     }
   })
   

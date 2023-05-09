@@ -11,5 +11,4 @@ router.post('/forgotPasswordCheckMail',formData.parse(),company.forgotPasswordCh
 router.post('/forgotPasswordCheckOTP',formData.parse(),company.forgotPasswordCheckOTP)
 router.post('/updatePassword',formData.parse(),company.updatePassword)
 
-
 module.exports = router;
