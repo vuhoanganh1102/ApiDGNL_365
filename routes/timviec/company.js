@@ -47,5 +47,4 @@ router.post('/uploadAvatar',functions.uploadImg.single('avatarUser'),functions.c
 
 //api lấy dữ liệu nhà tuyển dụng
 router.get('/getDataCompany',functions.checkToken,company.getDataCompany)
-
 module.exports = router;

@@ -47,6 +47,16 @@ exports.checkLink = async(link) => {
   const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
   return urlRegex.test(yourUrlVariable);
 }
+ // hàm validate thơi gian
+ exports.checkTime = async(time) =>{
+  const currentTime = new Date(); // Lấy thời gian hiện tại
+  const inputTime = new Date(time); // Thời gian nhập vào
+  if (inputTime < currentTime) {
+    return false
+  } else {
+    return true
+  }
+ }
 exports.getDatafindOne =async(model,condition)=>{
     return model.findOne(condition);
 }
@@ -127,10 +137,9 @@ return true;
       }
     })
   }
-  const storageFile = (destination) => {
-    const storage = multer.diskStorage({
+    const storageFile = multer.diskStorage({
       destination: function (req, file, cb) {
-        cb(null, destination)
+        cb(null, 'public/newTV365')
       },
       filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
@@ -146,9 +155,7 @@ return true;
       }
     });
     
-    return multer({ storage: storage });
-  };
-  exports.uploadVideoAndIMG = multer({ storage: storageFile('public/newTV365') })
+  exports.uploadVideoAndIMG = multer({ storage: storageFile })
 
 //  hàm upload ảnh
   exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') })
