@@ -43,6 +43,7 @@ exports.postNewTv365 =async (req,res,next) => {
         if(title && cateID && soLuong && capBac && hinhThuc && city && district && address &&
             until && moTa && yeuCau && exp && bangCap && sex && quyenLoi && hanNop && userContactName
             && userContactAddress && userContactPhone && userContactEmail && typeNewMoney){
+                // check type của new money
                 switch(Number(typeNewMoney)){
                     case 1:
                         maxValue=null;
@@ -101,6 +102,7 @@ exports.postNewTv365 =async (req,res,next) => {
                         return functions.setError(res,'link không đúng định dạng ',404)
                     }
                 }
+                // check thời gian hạn nộp
                 let checkTime=await functions.checkTime(hanNop)
                 if(checkTime==false){
                     if( avatar){
