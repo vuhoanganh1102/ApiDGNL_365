@@ -29,49 +29,58 @@ dotenv.config();
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
 // hàm validate phone
 exports.checkPhoneNumber = async(phone) => {
-        if (phone == undefined) {
-            return true
-        }
-        const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
-        return phoneNumberRegex.test(phone)
+    if (phone == undefined) {
+        return true
     }
-    // hàm validate email
+};
+// hàm validate email
 exports.checkEmail = async(email) => {
-        const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-        return gmailRegex.test(email);
-    }
-    // hàm validate link
+    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return gmailRegex.test(email);
+};
+// hàm validate link
 exports.checkLink = async(link) => {
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
     return urlRegex.test(yourUrlVariable);
-}
+};
+// hàm validate email
+exports.checkEmail = async(email) => {
+    console.log(email)
+    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+
+    return gmailRegex.test(email)
+};
+// hàm validate link
+exports.checkLink = async(link) => {
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+    return urlRegex.test(yourUrlVariable);
+};
 exports.getDatafindOne = async(model, condition) => {
     return model.findOne(condition);
-}
+};
 
 exports.getDatafind = async(model, condition) => {
     return model.find(condition);
-}
+};
 
 exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
-        return model.findOneAndUpdate(condition, projection);
-    }
-    // hàm khi thành công
+    return model.findOneAndUpdate(condition, projection);
+};
+// hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
-        return res.status(200).json({ result: true, messsage, data })
-
-    }
-    // hàm thực thi khi thất bại
+    return res.status(200).json({ result: true, messsage, data })
+};
+// hàm thực thi khi thất bại
 exports.setError = async(res, message, code = 500) => {
 
-        return res.status(code).json({ code, message })
-    }
-    // hàm tìm id max 
+    return res.status(code).json({ code, message })
+};
+// hàm tìm id max 
 exports.getMaxID = async(model) => {
-        const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-        return maxUser._id;
-    }
-    // hàm check định dạng ảnh
+    const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+    return maxUser._id;
+};
+// hàm check định dạng ảnh
 const isImage = async(filePath) => {
     const extname = path.extname(filePath).toLowerCase();
     return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(extname);
@@ -108,42 +117,45 @@ exports.checkVideo = async(filePath) => {
         return false;
     }
     return true;
-}
+};
 
 exports.getDataDeleteOne = async(model, condition) => {
-        return model.deleteOne(condition)
-    }
-    // storage để updload file
+    return model.deleteOne(condition)
+};
+// storage để updload file
 const storageMain = (destination, fileExtension) => {
-        return multer.diskStorage({
-            destination: function(req, file, cb) {
-                cb(null, destination)
-            },
-            filename: function(req, file, cb) {
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-                cb(null, file.fieldname + uniqueSuffix + fileExtension)
-            }
-        })
-    }
-    //  hàm upload ảnh
-exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') })
-    // hàm upload file
-exports.uploadVideo = multer({ storage: storageMain('public/company/video', '.mp4') })
+    return multer.diskStorage({
+        destination: function(req, file, cb) {
+            cb(null, destination)
+        },
+        filename: function(req, file, cb) {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+            cb(null, file.fieldname + uniqueSuffix + fileExtension)
+        }
+    })
+};
+
+//  hàm upload ảnh
+exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') });
+
+// hàm upload file
+exports.uploadVideo = multer({ storage: storageMain('public/company/video', '.mp4') });
 
 const deleteFile = (filePath) => {
-        fs.unlink(filePath, (err) => {
-            if (err) throw err;
-            console.log('File was deleted');
-        });
-    }
-    // hàm xóa file
-exports.deleteImg = async(condition) => {
-        if (condition) {
-            await deleteFile(condition.path)
-        }
+    fs.unlink(filePath, (err) => {
+        if (err) throw err;
+        console.log('File was deleted');
+    });
+};
 
+// hàm xóa file
+exports.deleteImg = async(condition) => {
+    if (condition) {
+        await deleteFile(condition.path)
     }
-    // storega check file
+};
+
+// storega check file
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         cb(null, 'public/cvUpload')
@@ -152,10 +164,10 @@ const storage = multer.diskStorage({
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
         cb(null, file.fieldname + uniqueSuffix + '.pdf')
     }
-})
+});
 
 // hàm check file
-exports.uploadFile = multer({ storage: storage })
+exports.uploadFile = multer({ storage: storage });
 
 exports.createError = async(code, message) => {
     const err = new Error();
@@ -163,6 +175,7 @@ exports.createError = async(code, message) => {
     err.message = message;
     return { data: null, error: err };
 };
+
 // hàm cấu hình mail
 const transport = nodemailer.createTransport({
     host: process.env.NODE_MAILER_HOST,
@@ -198,14 +211,15 @@ exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
             console.log('Message sent: ' + info.response);
         }
     })
-}
+};
 
 
 exports.verifyPassword = async(inputPassword, hashedPassword) => {
-        const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
-        return md5Hash === hashedPassword;
-    }
-    // hàm check token
+    const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
+    return md5Hash === hashedPassword;
+};
+
+// hàm check token
 exports.checkToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
@@ -223,9 +237,10 @@ exports.checkToken = (req, res, next) => {
 };
 // hàm tạo token 
 exports.createToken = async(data, time) => {
-        return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
-    }
-    // hàm lấy data từ axios 
+    return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
+};
+
+// hàm lấy data từ axios 
 exports.getDataAxios = async(url, condition) => {
     return await await axios({
         method: "post",
@@ -235,4 +250,4 @@ exports.getDataAxios = async(url, condition) => {
     }).then(async(response) => {
         return response.data
     })
-}
+};
