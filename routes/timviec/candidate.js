@@ -7,7 +7,9 @@ const {uploadFile} = require('../../services/functions.js');
 
 router.get('/', candidate.index);
 router.post('/RegisterB1',formData.parse(), candidate.RegisterB1);
-router.post('/RegisterB2CvUpload',uploadFile.single('videoUpload'), candidate.RegisterB2VideoUpload);
+router.post('/RegisterB2VideoUpload',uploadFile.single('videoUpload'), candidate.RegisterB2VideoUpload);
+
+router.post('/RegisterB2CvUpload',uploadFile.any(), candidate.RegisterB2CvUpload);
 
 router.post('/login',formData.parse(),candidate.login);
 router.post('/AddUserChat365',formData.parse(),candidate.AddUserChat365);
