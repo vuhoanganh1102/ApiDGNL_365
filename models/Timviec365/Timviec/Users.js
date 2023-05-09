@@ -6,110 +6,353 @@ const UserSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        email: String,
-        phoneTK:String,
-        userName: String,
-        alias: String,
-        phone:String,
-        emailContact:String,
-        avatarUser: String,
-        type: Number,
-        password: String,
-        city: Number,
-        district: Number,
-        address: String,
-        otp: String,
-        authentic: Number,
-        isOnline: Number,
-        from: String,
-        createdAt: Date,
-        updatedAt: Date,
-        lastActivedAt: Date,
-        time_login: Date,
-        role: Number,
-        latitude: String,
-        longtitude: String,
-        idQLC: Number,
-        idTimViec365: Number,
-        idRaoNhanh365: Number,
-        chat365_secret: String,
+        email: {
+            type: String,
+            required: true,
+        },
+        phoneTK:{
+            type: String,
+            default : null,
+        },
+        userName: {
+            type: String,
+            required: true,
+        },
+        alias: {
+            type: String,
+            default: null
+        },
+        phone:{
+            type: String,
+            default: null
+        },
+        emailContact:{
+            type: String,
+            default: null
+        },
+        avatarUser: {
+            type: String,
+            default: null
+        },
+        type: {
+            type: Number,
+            required: true,
+        },
+        password: {
+            type: String,
+            required: true,
+        },
+        city:{
+            type: Number,
+             default: null,
+        },
+        district:{
+            type: Number,
+             default: null,
+        },
+        address: {
+            type: String,
+             default: null,
+        },
+        otp: {
+            type: String,
+            default: null
+        },
+        authentic: {
+            type:Number,
+            default:0
+        },
+        isOnline: {
+            type: Number,
+            default: 0
+        },
+        from: {
+            type: String,
+            default: null
+        },
+        createdAt: {
+            type: Date
+        },
+        updatedAt: {
+            type: Date,
+            default: null
+        },
+        lastActivedAt:{
+            type: Date,
+            default: null
+        },
+        time_login: {
+            type: Date,
+            default: null
+        },
+        role: {
+            type: Number,
+            default: 0
+        },
+        latitude: {
+            type: String,
+            default: null
+        },
+        longtitude: {
+            type: String,
+            default: null
+        },
+        idQLC: {
+            type: Number,
+            default: 0
+        },
+        idTimViec365: {
+            type: Number,
+            default: 0
+        },
+        idRaoNhanh365:{
+            type: Number,
+            default: 0
+        },
+        chat365_secret: {
+            type: String,
+            default: null
+        },
         inForEmployee: {
             type: {
-                user_id: Number,
-                companyID: Number,
-                depID: Number,
-                groupID: Number,
-                positionID: Number,
-                startWorkingTime: Date,
-                timeQuitJob: Date,
-                description: String,
-                status: String,
-                ep_signature: Number,
-                allow_update_face: Number,
-                version_in_use: Number,
-                ep_featured_recognition: String,
-                birthday: Date,
-                gender: Number,
-                married: Number,
-                exp: Number
+                companyID: {
+                    type: Number,
+                    default: 0
+                },
+                depID: {
+                    type: Number,
+                    default: 0
+                },
+                groupID: {
+                    type: Number,
+                    default: 0
+                },
+                positionID: {
+                    type: Number,
+                    default: 0
+                },
+                startWorkingTime: {
+                    type: String,
+                    default: null
+                },
+                timeQuitJob: {
+                    type: String,
+                    default: null
+                },
+                description: {
+                    type: String,
+                    default: null
+                },
+                status: {
+                    type: String,
+                    default: null
+                },
+                ep_signature:{
+                    type: Number,
+                    default: 0
+                },
+                allow_update_face: {
+                    type: Number,
+                    default: 0
+                },
+                version_in_use:{
+                    type: Number,
+                    default: 0
+                },
+                ep_featured_recognition:{
+                    type: String,
+                    default: null
+                },
+                birthday: {
+                    type: String,
+                    default: null
+                },
+                gender: {
+                    type: Number,
+                    default: 0
+                },
+                married: {
+                    type: Number,
+                    default: 0
+                },
+                exp: {
+                    type: Number,
+                    default: 0
+                },
             }, default: null
         },
         inForCompanyCC: {
             type: {
-                user_id: Number,
-                type_timekeeping: String,
-                id_way_timekeeping: String,
-                com_role_id: Number,
-                com_size: Number,
-                com_description: String,
-                enable_scan_qr: Number,
-                com_vip: Number,
-                com_ep_vip: Number
+                type_timekeeping:{
+                    type: String,
+                    default: null
+                },
+                id_way_timekeeping: {
+                    type: String,
+                    default: null
+                },
+                com_role_id: {
+                    type: Number,
+                    default: 0
+                },
+                com_size: {
+                    type: Number,
+                    default: 0
+                },
+                com_description: {
+                    type: String,
+                    default: null
+                },
+                enable_scan_qr: {
+                    type: Number,
+                    default: 0
+                },
+                com_vip: {
+                    type: Number,
+                    default: 0
+                },
+                com_ep_vip: {
+                    type: Number,
+                    default: 0
+                },
             }, default: null
         },
         inForCandidateTV365: {
             type: {
-                user_id: Number,
-                candiTitle: Number,
-                candiHocVan: Number,
-                candiExp: Number,
-                candiMucTieu: String,
-                candiCityID: String,
-                candiCateID: String,
-                candiCapBac: Number,
-                candiMoney: Number,
-                candiLoaiHinh: Number,
-                referencePersonName: String,
-                referencePersonEmail: String,
-                referencePersonPhone: String,
-                referencePersonPosition: String,
-                referencePersonAddress: String,
-                referencePersonCompany: String,
-                video: String,
-                videoType: Number,
-                videoActive: Number
+                candiTitle: {
+                    type: Number,
+                    default: 0
+                },
+                candiHocVan: {
+                    type: Number,
+                    default: 0
+                },
+                candiExp: {
+                    type: Number,
+                    default: 0
+                },
+                candiMucTieu: {
+                    type: String,
+                    default: null
+                },
+                candiCityID:{
+                    type: String,
+                    default: null
+                },
+                candiCateID: {
+                    type: String,
+                    default: null
+                },
+                candiCapBac:{
+                    type: Number,
+                    default: 0
+                },
+                candiMoney:{
+                    type: Number,
+                    default: 0
+                },
+                candiLoaiHinh:{
+                    type: Number,
+                    default: 0
+                },
+                referencePersonName: {
+                    type: String,
+                    default: null
+                },
+                referencePersonEmail: {
+                    type: String,
+                    default: null
+                },
+                referencePersonPhone: {
+                    type: String,
+                    default: null
+                },
+                referencePersonPosition: {
+                    type: String,
+                    default: null
+                },
+                referencePersonAddress: {
+                    type: String,
+                    default: null
+                },
+                referencePersonCompany: {
+                    type: String,
+                    default: null
+                },
+                video:  {
+                    type: String,
+                    default: null
+                },
+                videoType: {
+                    type: Number,
+                    default: 0
+                },
+                videoActive: {
+                    type: Number,
+                    default: 0
+                },
             }, default: null
         },
         inForCompanyTV365: {
             type: {
-                userID: Number,
                 comMd5: String,
-                comViewCount: Number,
-                idKD: Number,
+                comViewCount: {
+                    type: Number,
+                    default: 0
+                },
+                idKD: {
+                    type: Number,
+                    default: 0
+                },
                 canonical: String,
-                linkVideo: String,
-                videoType: String,
-                VideoActive: Number,
-                comImages: String,
-                website: String,
-                mst: String,
-                ipAddressRegister: String,
-                userContactName: String,
-                userContactAddress: String,
-                userContactPhone: String,
-                userContactEmail: String,
-                description:String,
-                site:Number
+linkVideo: {
+                    type: Number,
+                    default: 0
+                },
+                videoType: {
+                    type: Number,
+                    default: 0
+                },
+                VideoActive: {
+                    type: Number,
+                    default: 0
+                },
+                comImages: {
+                    type: String,
+                    default: null
+                },
+                website: {
+                    type: String,
+                    default: null
+                },
+                mst: {
+                    type: String,
+                    default: null
+                },
+                ipAddressRegister: {
+                    type: String,
+                    default: null
+                },
+                userContactName: {
+                    type: String,
+                    default: null
+                },
+                userContactAddress: {
+                    type: String,
+                    default: null
+                },
+                userContactPhone: {
+                    type: String,
+                    default: null
+                },
+                userContactEmail: {
+                    type: String,
+                    default: null
+                },
+                description:{
+                    type: String,
+                    default: null
+                },
             }, default: null
         }
     },

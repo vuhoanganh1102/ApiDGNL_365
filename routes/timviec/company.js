@@ -44,5 +44,4 @@ router.post('/changePassword',formData.parse(),functions.checkToken,company.chan
 
 // api cập nhập ảnh đại diện
 router.post('/uploadAvatar',functions.uploadImg.single('avatarUser'),functions.checkToken,company.uploadIMG);
-
 module.exports = router;
