@@ -75,22 +75,30 @@ exports.register = async(req,res,next)=>{
                                     if(companyUnset!=null){
                                       await functions.getDataDeleteOne(CompanyUnset,{email})
                                     }   
-                                  return res.status(200).json(await functions.success('đăng ký thành công'))
+                                    if(avatarUser==null){
+                                        await functions.deleteImg(avatarUser)
+                                    }
+                                  return  functions.success(res,'đăng ký thành công')
                                 }
                                else {
-                                return res.status(404).json(await functions.setError(404,'email đã tồn tại',avatarUser));
+                                await functions.deleteImg(avatarUser)
+                                return  functions.setError(res,'email đã tồn tại',404)
                                }
                        }
                        else{
-                        return res.status(404).json(await functions.setError(404,'email hoặc số điện thoại định dạng không hợp lệ ',avatarUser));
+                        await functions.deleteImg(avatarUser)
+                        return  functions.setError(res,'email hoặc số điện thoại định dạng không hợp lệ',404)
                        }
                
        }else{
-        return res.status(404).json(await functions.setError(404,'thiếu dữ liệu',avatarUser));
+        await functions.deleteImg(avatarUser)
+
+        return  functions.setError(res,'Thiếu dữ liệu',404)
        }
     }catch (error){
         console.log(error)
-        return  res.status(404).json(await functions.setError(404,error,req.avatarUser));
+        await functions.deleteImg(avatarUser)
+        return  functions.setError(res,error)
     }
   
 }
@@ -126,7 +134,8 @@ exports.registerFall = async(req,res,next) => {
                    
                      });
                      await companyUnset.save();
-                     return res.status(200).json(await functions.success('thành công'))
+                     return  functions.success(res,'tạo thành công')
+
                } 
                else {
                 await CompanyUnset.updateOne({ email: email }, { 
@@ -140,18 +149,21 @@ exports.registerFall = async(req,res,next) => {
                         regis: regis
                     }
                 });
-                  return res.status(200).json(await functions.success('update thành công'))
+                  return  functions.success(res,'update thành công')
+
+                  
                }
            }
            else{
-               return res.status(404).json(await functions.setError(404,'email hoặc số điện thoại không đúng định dạng'));
+               return  functions.setError(res,'email hoặc số điện thoại không đúng định dạng',404)
            }
         }else{
-           return res.status(404).json( await functions.setError(404,'thiếu dữ liệu gmail'));
+           return  functions.setError(res,'thiếu dữ liệu gmail',404)
+
        }
     }catch(error){
         console.log(error)
-        return res.status(404).json( await functions.setError(404,error));
+        return  functions.setError(res,error)
     }
 }
 exports.sendOTP = async(req,res,next) => {
@@ -163,18 +175,19 @@ exports.sendOTP = async(req,res,next) => {
             let checkEmail=await functions.CheckEmail(email)
             if(checkEmail){
                 await functions.sendEmailVerificationRequest(email,nameCompany)
-                return res.status(200).json(await functions.success('Gửi mã OTP thành công'))
+                return  functions.success(res,'Gửi mã OTP thành công',)
+
             }
             else{
-                return res.status(404).json(await functions.setError(404,'email không đúng định dạng'));
+                return  functions.setError(res,'email không đúng định dạng',404)
             }
         }else{
-            return res.status(404).json( await functions.setError(404,'thiếu dữ liệu gmail'));
+            return  functions.setError(res,'thiếu dữ liệu gmail',404)
         }
 
     }catch(error){
         console.log(error)
-        return res.status(404).json( await functions.setError(404,error));
+        return  functions.setError(res,error)
     }
 }
 exports.verify = async(req,res,next) => {
@@ -188,12 +201,13 @@ exports.verify = async(req,res,next) => {
                     authentic:1
                 }
             });
-            return res.status(200).json(await functions.success('xác thực thành công'))
+            return  functions.success(res,'xác thực thành công')
+
         }
-        return res.status(404).json( await functions.setError(404,'xác thực thất bại'));
+        return  functions.setError(res,'xác thực thất bại',404)
     }catch(error){
         console.log(error)
-        return res.status(404).json( await functions.setError(404,error));
+        return  functions.setError(res,error)
     }
 }
 exports.forgotPasswordCheckMail= async(req,res,next) => {
@@ -218,20 +232,21 @@ exports.forgotPasswordCheckMail= async(req,res,next) => {
                        otp:otp
                     }
                    });
-                   return res.status(200).json(await functions.success('xác thực thành công'))
+                   return  functions.success(res,'xác thực thành công')
                }
-               return res.status(404).json( await functions.setError(404,'email không đúng'));
+               return  functions.setError(res,'email không đúng',404)
            }
-           return res.status(404).json( await functions.setError(404,'sai định dạng email'));
+           return  functions.setError(res,'sai định dạng email',404)
+
           }).catch(async (error) => {
             console.log(error); // in ra lỗi nếu có
-            return res.status(404).json( await functions.setError(404,error));
-          });
+            return  functions.setError(res,error)
+        });
        
       
     }catch(error){
         console.log(error)
-        return res.status(404).json( await functions.setError(404,error));
+        return  functions.setError(res,error)
     }
 }
 exports.forgotPasswordCheckOTP= async(req,res,next) => {
@@ -240,13 +255,14 @@ exports.forgotPasswordCheckOTP= async(req,res,next) => {
         let otp=req.body.otp;
         let verify=await Users.findOne({email,otp});
         if(verify != null){
-            return res.status(200).json(await functions.success('xác thực thành công'))
+            return  functions.success(res,'xác thực thành công')
         }
-        return res.status(404).json( await functions.setError(404,'mã otp không đúng'));
+        return  functions.setError(res,'mã otp không đúng',404)
+
        
     }catch(error){
         console.log(error)
-        return res.status(404).json( await functions.setError(404,error));
+        return  functions.setError(res,error)
     }
 }
 
@@ -261,7 +277,7 @@ exports.updatePassword= async(req,res,next) => {
         });          
     }catch(error){
         console.log(error)
-        return res.status(404).json( await functions.setError(404,error));
+        return  functions.setError(res,error)
     }
 }
 exports.updateInfoCompany = async(req,res,next) => {
@@ -269,5 +285,16 @@ exports.updateInfoCompany = async(req,res,next) => {
         phone=request.phone,
         username=request.userName,
         city=request.city,
-        address=request.address
+        address=request.address,
+        site=request.site,
+        website=request.website,
+        description=request.description,
+        mst=request.mst,
+        idKD=request.idKD;
+
+
+    let verifyToken= await functions.checkToken(token);
+    if(verifyToken!=false){
+
+    }
 }

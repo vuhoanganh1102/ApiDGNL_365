@@ -1,9 +1,13 @@
-const Users = require('../../models/Timviec365/Timviec/Users')
-const userUnset = require('../../models/Timviec365/Timviec/userUnset')
-const md5 = require('md5')
-const jwt = require('jsonwebtoken');
+const Users = require('../../models/Timviec365/Timviec/Users');
+const userUnset = require('../../models/Timviec365/Timviec/userUnset');
+//mã hóa mật khẩu
+const md5 = require('md5');
+//token
+var jwt = require('jsonwebtoken');
 const axios = require('axios');
 const functions=require('../../services/functions');
+const { token } = require('morgan');
+
 
 exports.index = (req, res, next) => {
     res.json('123 123123123') 
@@ -348,14 +352,49 @@ exports.AddUserChat365 = async(req,res,next) =>{
                 headers: { "Content-Type": "multipart/form-data" }
               });
               for(let j=0;j<takeData.data.data.length;j++){
+                let CheckEmail=await functions.CheckEmail(takeData.data.data.email)
+                let CheckPhoneNumber=await functions.CheckPhoneNumber(takeData.data.data.email)
                 let checkUser = await functions.getDatafindOne(Users,{phoneTK:takeData.data.data.email, type:takeData.data.data.email})
-                if(!checkUser){
+                if(!checkUser && CheckPhoneNumber){
                     let user = new Users({
-                        
+                        _id: takeData.data.data._id,
+                        idQLC: takeData.data.data.id365,
+                        type: takeData.data.data.type365,
+                        phoneTK: takeData.data.data.email,
+                        password: takeData.data.data.password,
+                        userName: takeData.data.data.userName,
+                        avatarUser: takeData.data.data.avatarUser,
+                        lastActivedAt: takeData.data.data.lastActive,
+                        isOnline: takeData.data.data.isOnline,
+                        idTimViec365: takeData.data.data.idTimviec,
+                        from: takeData.data.data.fromWeb,
+                        chat365_secret: takeData.data.data.secretCode,
+                        latitude: takeData.data.data.latitude,
+                        longitude: takeData.data.data.longitude,
+                    })
+                }
+                if(!checkUser && CheckEmail){
+                    let user = new Users({
+                        _id: takeData.data.data._id,
+                        idQLC: takeData.data.data.id365,
+                        type: takeData.data.data.type365,
+                        email: takeData.data.data.email,
+                        password: takeData.data.data.password,
+                        userName: takeData.data.data.userName,
+                        avatarUser: takeData.data.data.avatarUser,
+                        lastActivedAt: takeData.data.data.lastActive,
+                        isOnline: takeData.data.data.isOnline,
+                        idTimViec365: takeData.data.data.idTimviec,
+                        from: takeData.data.data.fromWeb,
+                        chat365_secret: takeData.data.data.secretCode,
+                        latitude: takeData.data.data.latitude,
+                        longitude: takeData.data.data.longitude,
                     })
                 }
               }
         // }
+        res.json(await functions.success("Add dữ liệu thành công"))
+
       }
       catch (e) {
         console.log("Đã có lỗi xảy ra khi đăng kí B1", e);

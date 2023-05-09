@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema(
         },
         phoneTK:{
             type: String,
-            required: true,
+            default : null,
         },
         userName: {
             type: String,
@@ -34,22 +34,25 @@ const UserSchema = new mongoose.Schema(
             type: String,
             default: null
         },
-        type: Number,
+        type: {
+            type: Number,
+            required: true,
+        },
         password: {
             type: String,
             required: true,
         },
         city:{
             type: Number,
-            required: true,
+             default: null,
         },
         district:{
             type: Number,
-            required: true,
+             default: null,
         },
         address: {
             type: String,
-            required: true,
+             default: null,
         },
         otp: {
             type: String,
@@ -63,7 +66,10 @@ const UserSchema = new mongoose.Schema(
             type: Number,
             default: 0
         },
-        from: String,
+        from: {
+            type: String,
+            default: null
+        },
         createdAt: {
             type: Date
         },
