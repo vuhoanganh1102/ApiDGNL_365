@@ -1,7 +1,10 @@
 const Users = require('../../models/Timviec365/Timviec/Users');
 const userUnset = require('../../models/Timviec365/Timviec/userUnset');
+//mã hóa mật khẩu
 const md5 = require('md5');
+//token
 var jwt = require('jsonwebtoken');
+const axios = require('axios');
 const functions=require('../../services/functions');
 const { token } = require('morgan');
 
@@ -42,8 +45,7 @@ exports.RegisterB1 = async(req,res,next) =>{
                           newID=Number(maxID._id)+1;
                         }
                         else newID = 1 
-                        //check UV lỗi hay UV chưa hoàn thiện hồ sơ để cập nhật trường error
-                            let findUserUv = await functions.findOne(userUnset,{usePhoneTk:phoneTk})
+                            let findUserUv = await functions.getDatafindOne(userUnset,{usePhoneTk:phoneTk})
                             if(findUserUv){
                                 let updateUserUv = await functions.getDatafindOneAndUpdate(userUnset,{usePhoneTk:phoneTk},{
                                     usePass:password,
@@ -56,7 +58,7 @@ exports.RegisterB1 = async(req,res,next) =>{
                                     useCvCate:candiCateID,
                                     useCvCity:candiCityID,
                                     useCvTitle:candiMucTieu})
-                                    error : 0
+                                    
                             }else{
                                 let UserUV = new userUnset({
                                     _id:newID,
@@ -77,8 +79,8 @@ exports.RegisterB1 = async(req,res,next) =>{
                                     useActive: 0,
                                     useDelete: 0,
                                     type: 0,
-                                    empId: 0,
-                                    error: 0,
+                                
+                                    
                                 })
                                 let saveUserUV = UserUV.save()
                             }
@@ -102,11 +104,22 @@ exports.RegisterB2VideoUpload = async(req,res,next) =>{
             const token = req.body.token
             const videoUpload = req.file
             const videoLink = req.body.videoLink
-            const userInfo = functions.decodeToken(token)
-            console.log(userInfo)
-            let findUser = await functions.getDatafindOne(Users,{phoneTK:userInfo.phoneTK})
-            if(findUser){// check tồn tại tài khoản chưa
-                return res.status(200).json(functions.setError(200, "Số điện thoại này đã được đăng kí"));
+            const userInfo = await functions.decodeToken(token)
+            const phoneTK = userInfo.phoneTK
+            const password = userInfo.password
+            const userName = userInfo.userName
+            const email = userInfo.email
+            const city = userInfo.city
+            const district = userInfo.district
+            const address = userInfo.address
+            const from = userInfo.uRegis
+            const candiCateID = userInfo.candiCateID
+            const candiCityID = userInfo.candiCityID
+            const candiMucTieu = userInfo.candiMucTieu
+        
+            let findUser = await functions.getDatafindOne(Users,{phoneTK:phoneTK})
+            if(findUser && findUser.phoneTK && findUser.phoneTK == phoneTK){// check tồn tại tài khoản chưa
+                return res.status(200).json(await functions.setError(200, "Số điện thoại này đã được đăng kí"));
             }else{
                 const maxID = await Users.findOne({},{_id:1}).sort({ _id: -1 }).limit(1).lean();
                 if(maxID){
@@ -119,26 +132,28 @@ exports.RegisterB2VideoUpload = async(req,res,next) =>{
                 if(videoUpload && !videoLink){ // check video tải lên là file video
                     let User = new Users({
                         _id:newID,
-                        phoneTK: userInfo.phoneTk,
-                        password:userInfo.password,
-                        userName:userInfo.userName,
-                        email:userInfo.email,
-                        city:userInfo.city,
-                        district:userInfo.district,
-                        address:userInfo.address,
-                        from:userInfo.from,
+                        phoneTK: phoneTK,
+                        password:password,
+                        userName:userName,
+                        email:email,
+                        city:city,
+                        district:district,
+                        address:address,
+                        from:from,
                         idTimViec365:newIDTimviec,
                         authentic:0,
                         createdAt: new Date(Date.now()),
                         inForCandidateTV365:{
+                            user_id:0,
                             candiCateID:userInfo.candiCateID,
                             candiCityID:userInfo.candiCityID,
                             candiMucTieu:userInfo.candiMucTieu,
-                            video:videoUpload.filename
+                            video:videoUpload.filename,
+                            videoType:1,
+                            videoActive:1
                         }
                     })
                     let saveUser = User.save()
-                    console.log(saveUser)
                 }
                 if(videoLink && !videoUpload){ //check video upload là link
                     
@@ -156,28 +171,29 @@ exports.RegisterB2VideoUpload = async(req,res,next) =>{
                         authentic:0,
                         createdAt: new Date(Date.now()),
                         inForCandidateTV365:{
-                            candiCateID:userInfo.candiCateID,
-                            candiCityID:userInfo.candiCityID,
-                            candiMucTieu:userInfo.candiMucTieu,
-                            video:videoLink
+                            user_id:0,
+                            candiCateID:candiCateID,
+                            candiCityID:candiCityID,
+                            candiMucTieu:candiMucTieu,
+                            video:videoLink,
+                            videoType:2,
+                            videoActive:1
                         }
                     })
                     let saveUser = User.save()
                 }
-                let deleteUser = userUnset.findOneAndDelete({usePhoneTk:userInfo.phoneTK})
+                let deleteUser = userUnset.findOneAndDelete({usePhoneTk:phoneTK})
                 res.json(await functions.success("Đăng kí thành công"))
             }
         }else  res.status(200).json(await functions.setError(200, "Thông tin truyền lên không đầy đủ"));
       }
       catch (e) {
         console.log("Đã có lỗi xảy ra khi đăng kí", e);
-        return false;
+        res.status(200).json(await functions.setError(200, "Đã có lỗi xảy ra"));
       }
     
     
 }
-
-
 
 exports.login = async (req,res,next) =>{
 
@@ -225,4 +241,164 @@ exports.login = async (req,res,next) =>{
             return res.status(200).json(await functions.createError(200, "Sai tai khoan hoac mat khau"));
         }
     }
+}
+
+exports.RegisterB2CvUpload = async(req,res,next) =>{
+    try {
+        if(req && req.body && req.body.token && req.file){
+            const token = req.body.token
+            const videoUpload = req.file
+            const videoLink = req.body.videoLink
+            const userInfo = await functions.decodeToken(token)
+            const phoneTK = userInfo.phoneTK
+            const password = userInfo.password
+            const userName = userInfo.userName
+            const email = userInfo.email
+            const city = userInfo.city
+            const district = userInfo.district
+            const address = userInfo.address
+            const from = userInfo.uRegis
+            const candiCateID = userInfo.candiCateID
+            const candiCityID = userInfo.candiCityID
+            const candiMucTieu = userInfo.candiMucTieu
+        
+            let findUser = await functions.getDatafindOne(Users,{phoneTK:phoneTK})
+            if(findUser && findUser.phoneTK && findUser.phoneTK == phoneTK){// check tồn tại tài khoản chưa
+                return res.status(200).json(await functions.setError(200, "Số điện thoại này đã được đăng kí"));
+            }else{
+                const maxID = await Users.findOne({},{_id:1}).sort({ _id: -1 }).limit(1).lean();
+                if(maxID){
+                  newID=Number(maxID._id)+1;
+                }
+                const maxIDTimviec = await Users.findOne({type:0},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean();
+                if(maxIDTimviec){
+                  newIDTimviec=Number(maxIDTimviec.idTimViec365)+1;
+                }
+                if(videoUpload && !videoLink){ // check video tải lên là file video
+                    let User = new Users({
+                        _id:newID,
+                        phoneTK: phoneTK,
+                        password:password,
+                        userName:userName,
+                        email:email,
+                        city:city,
+                        district:district,
+                        address:address,
+                        from:from,
+                        idTimViec365:newIDTimviec,
+                        authentic:0,
+                        createdAt: new Date(Date.now()),
+                        inForCandidateTV365:{
+                            user_id:0,
+                            candiCateID:userInfo.candiCateID,
+                            candiCityID:userInfo.candiCityID,
+                            candiMucTieu:userInfo.candiMucTieu,
+                            video:videoUpload.filename,
+                            videoType:1,
+                            videoActive:1
+                        }
+                    })
+                    let saveUser = User.save()
+                }
+                if(videoLink && !videoUpload){ //check video upload là link
+                    
+                    let User = new Users({
+                        _id:newID,
+                        phoneTK: userInfo.phoneTk,
+                        password:userInfo.password,
+                        userName:userInfo.userName,
+                        email:userInfo.email,
+                        city:userInfo.city,
+                        district:userInfo.district,
+                        address:userInfo.address,
+                        from:userInfo.from,
+                        idTimViec365:newIDTimviec,
+                        authentic:0,
+                        createdAt: new Date(Date.now()),
+                        inForCandidateTV365:{
+                            user_id:0,
+                            candiCateID:candiCateID,
+                            candiCityID:candiCityID,
+                            candiMucTieu:candiMucTieu,
+                            video:videoLink,
+                            videoType: 0,
+                            videoActive :1
+                        }
+                    })
+                    let saveUser = User.save()
+                }
+                let deleteUser = userUnset.findOneAndDelete({usePhoneTk:phoneTK})
+                res.json(await functions.success("Đăng kí thành công"))
+            }
+        }else  res.status(200).json(await functions.setError(200, "Thông tin truyền lên không đầy đủ"));
+      }
+      catch (e) {
+        console.log("Đã có lỗi xảy ra khi đăng kí", e);
+        res.status(200).json(await functions.setError(200, "Đã có lỗi xảy ra"));
+      }
+    
+    
+}
+
+exports.AddUserChat365 = async(req,res,next) =>{
+    try {
+        // for(let i=0;i<325900;i=i+100){
+            let takeData = await axios({
+                method: "post",
+                url: "http://43.239.223.142:9006/api/users/TakeDataUser",
+                data: {
+                  count: 0
+                },
+                headers: { "Content-Type": "multipart/form-data" }
+              });
+              for(let j=0;j<takeData.data.data.length;j++){
+                let CheckEmail=await functions.CheckEmail(takeData.data.data.email)
+                let CheckPhoneNumber=await functions.CheckPhoneNumber(takeData.data.data.email)
+                let checkUser = await functions.getDatafindOne(Users,{phoneTK:takeData.data.data.email, type:takeData.data.data.email})
+                if(!checkUser && CheckPhoneNumber){
+                    let user = new Users({
+                        _id: takeData.data.data._id,
+                        idQLC: takeData.data.data.id365,
+                        type: takeData.data.data.type365,
+                        phoneTK: takeData.data.data.email,
+                        password: takeData.data.data.password,
+                        userName: takeData.data.data.userName,
+                        avatarUser: takeData.data.data.avatarUser,
+                        lastActivedAt: takeData.data.data.lastActive,
+                        isOnline: takeData.data.data.isOnline,
+                        idTimViec365: takeData.data.data.idTimviec,
+                        from: takeData.data.data.fromWeb,
+                        chat365_secret: takeData.data.data.secretCode,
+                        latitude: takeData.data.data.latitude,
+                        longitude: takeData.data.data.longitude,
+                    })
+                }
+                if(!checkUser && CheckEmail){
+                    let user = new Users({
+                        _id: takeData.data.data._id,
+                        idQLC: takeData.data.data.id365,
+                        type: takeData.data.data.type365,
+                        email: takeData.data.data.email,
+                        password: takeData.data.data.password,
+                        userName: takeData.data.data.userName,
+                        avatarUser: takeData.data.data.avatarUser,
+                        lastActivedAt: takeData.data.data.lastActive,
+                        isOnline: takeData.data.data.isOnline,
+                        idTimViec365: takeData.data.data.idTimviec,
+                        from: takeData.data.data.fromWeb,
+                        chat365_secret: takeData.data.data.secretCode,
+                        latitude: takeData.data.data.latitude,
+                        longitude: takeData.data.data.longitude,
+                    })
+                }
+              }
+        // }
+        res.json(await functions.success("Add dữ liệu thành công"))
+
+      }
+      catch (e) {
+        console.log("Đã có lỗi xảy ra khi đăng kí B1", e);
+        res.status(200).json(await functions.setError(200, "Đã có lỗi xảy ra"));
+      }
+    
 }
