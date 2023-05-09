@@ -208,3 +208,14 @@ exports.createError = async(code, message) => {
     req.user = user;
   });
  }
+
+//mã hóa json thành token
+exports.encodeToken = async(token) => {
+  const tokenString = JSON.stringify(token);
+  return jwt.sign(tokenString, "Hhp1234568");
+}
+
+ //giải mã token thành json
+ exports.encodeToken = async(token) => {
+  return jwt.verify(token,"Hhp1234568")
+ }

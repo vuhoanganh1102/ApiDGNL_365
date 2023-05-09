@@ -84,16 +84,18 @@ exports.RegisterB1 = async(req,res,next) =>{
                                 })
                                 let saveUserUV = UserUV.save()
                             }
+                            console.log(req.body)
                         const token = await functions.encodeToken(req.body)
-                        res.json(await functions.success("Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong",token))
-                    } else return res.status(200).json(await functions.setError(200, "Email không hợp lệ"));
+                        
+                        return  functions.success(res,'Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong',token)
+                    } else return  functions.setError(res, "Email không hợp lệ",200);
                 }
-            }else return res.status(200).json(await functions.setError(200, "Số điện thoại không hợp lệ"));
+            }else return functions.setError(res, "Số điện thoại không hợp lệ",200);
         }
       }
       catch (e) {
         console.log("Đã có lỗi xảy ra khi đăng kí B1", e);
-        res.status(200).json(await functions.setError(200, "Đã có lỗi xảy ra"));
+        return functions.setError(res, "Đã có lỗi xảy ra",400);
       }
     
 }
@@ -397,8 +399,8 @@ exports.AddUserChat365 = async(req,res,next) =>{
 
       }
       catch (e) {
-        console.log("Đã có lỗi xảy ra khi đăng kí B1", e);
-        res.status(200).json(await functions.setError(200, "Đã có lỗi xảy ra"));
+        console.log("add sữu liệu lỗi", e);
+        functions.setError(res,'Add sữu liệu lỗi',404)
       }
     
 }
