@@ -1,6 +1,7 @@
 const express = require('express');
 const formData = require('express-form-data');
 const router = express.Router();
+const functions = require('../../services/functions');
 
 const cv = require('../../controllers/timviec/cv');
 
@@ -21,7 +22,7 @@ router.get('/previewCV/:_id',formData.parse(),cv.previewCV);
 router.get('/detailCV',formData.parse(),cv.detailCV);
 
 //lưu và tải cv
-router.post('/createCV',formData.parse(),cv.createCV);
+router.post('/createCV',formData.parse(),functions.checkToken,cv.createCV);
 
 
 

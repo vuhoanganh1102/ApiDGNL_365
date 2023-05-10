@@ -23,11 +23,11 @@ exports.insertDataCV = async (req, res, next) => {
 // lấy tất cả danh sách mẫu CV
 exports.getListCV = async (req, res, next) => {
     try {
-        const data = await functions.getDataCV({},{});
+        const data = await functions.getDataCVSortById({});
         if(data) {
-            return await functions.success(res,'Lấy mẫu CV thành công',data);
+            return await functions.success(res,'Lấy mẫu CV thành công', data);
         };
-        return functions.setError(res,'Không có dữ liệu');
+        return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
         functions.setError(res, err.message);
     };
@@ -39,52 +39,44 @@ exports.getListCVByCondition = async (req, res, next) => {
         const cate_id =  req.query.cate_id;
         const lang_id =  req.query.lang_id;
         const design_id =  req.query.design_id;
-        let sort = req.query.sort;
+        const sort = req.query.sort;  // 0 ||1 (_id|| download)
         let data = [];
-        
-        if(sort === 'download') {
-             if(cate_id) {
-            data = await functions.getDataCV({cate_id: cate_id},{download:-1});
-            if(data) {
-                return await functions.success(res,'Lấy mẫu CV thành công',data);
+        if(sort == 1) {
+            if(cate_id || lang_id || design_id) {
+                if(cate_id) {
+                    data = await functions.getDataCVSortByDownload({cate_id: cate_id});
+                    return await functions.success(res, 'Lấy dữ liệu thành công', data);
+                };
+                if(lang_id) {
+                    data = await functions.getDataCVSortByDownload({lang_id: lang_id});
+                    return await functions.success(res, 'Lấy dữ liệu thành công', data);
+                };
+                if(design_id) {
+                    data = await functions.getDataCVSortByDownload({design_id: design_id});
+                    return await functions.success(res, 'Lấy dữ liệu thành công', data);
+                };  
             };
-        };
-        if(lang_id) {
-            data = await functions.getDataCV({lang_id: lang_id},{download:-1});
-            if(data) {
-                return await functions.success(res,'Lấy mẫu CV thành công',data);
+            
+            data = await functions.getDataCVSortByDownload({});
+            return await functions.success(res, 'Lấy dữ liệu thành công', data);
+        } else {
+            if(cate_id) {
+                data = await functions.getDataCVSortById({cate_id: cate_id});
+                return await functions.success(res, 'Lấy dữ liệu thành công', data);
             };
-        };
-        if(design_id) {
-            data = await functions.getDataCV({design_id: design_id},{download:-1});
-            if(data) {
-                return await functions.success(res,'Lấy mẫu CV thành công',data);
+            if(lang_id) {
+                data = await functions.getDataCVSortById({lang_id: lang_id});
+                return await functions.success(res, 'Lấy dữ liệu thành công', data);
             };
-        };
-        return functions.setError(res,'Không có dữ liệu');
-
-        }
-        if(cate_id) {
-            data = await functions.getDataCV({cate_id: cate_id},{});
-            if(data) {
-                return await functions.success(res,'Lấy mẫu CV thành công',data);
+            if(design_id) {
+                data = await functions.getDataCVSortById({design_id: design_id});
+                return await functions.success(res, 'Lấy dữ liệu thành công', data);
             };
+            data = await functions.getDataCVSortById({});
+            return await functions.success(res, 'Lấy dữ liệu thành công', data);
         };
-        if(lang_id) {
-            data = await functions.getDataCV({lang_id: lang_id},{});
-            if(data) {
-                return await functions.success(res,'Lấy mẫu CV thành công',data);
-            };
-        };
-        if(design_id) {
-            data = await functions.getDataCV({design_id: design_id},{});
-            if(data) {
-                return await functions.success(res,'Lấy mẫu CV thành công',data);
-            };
-        };
-        return functions.setError(res,'Không có dữ liệu');
     } catch(e){
-        functions.setError(res, e.message,404);
+        functions.setError(res, e.message,);
     }
 };
 
@@ -98,11 +90,11 @@ exports.previewCV = async (req, res, next) => {
             let view = data.view + 1;    // cập nhật số lượng xem 
             await CV.updateOne({_id:_id},{view:view});
 
-           return await functions.success(res,'Lấy mẫu cv thành công',data); 
+            return await functions.success(res, 'Lấy mẫu cv thành công', data); 
         }
-        return functions.setError(res,'Không có dữ liệu');
+        return functions.setError(res, 'Không có dữ liệu', 404);
     } catch(e) {
-        functions.setError(res, e.message,404);
+        functions.setError(res, e.message,);
     };
 
 };
@@ -119,27 +111,27 @@ exports.detailCV = async (req, res, text) => {
         const data = await CV.findOne({_id:_id}).select(`_id name ${html_lang}`);
 
         if(!data){
-            await functions.setError(res, 'Không có dữ liệu',);
+            await functions.setError(res, 'Không có dữ liệu', 404);
         }
-        return await functions.success(res,'Lấy CV thành công',data);
+        return await functions.success(res, 'Lấy CV thành công', data);
     } catch(e){
-        functions.setError(res, e.message,404);
+        functions.setError(res, e.message,);
     };
 };
 
 //lưu và tải cv
 exports.createCV = async (req, res, next) => {
-    try{
-        const token = jwt.verify(req.headers.token, 'token', (err, decoded) => {
-            if (err) {
-              console.error(err);
-            } else {
-              return decoded;
-            }
-          });
+    // try{
+    //     const token = jwt.verify(req.headers.token, 'token', (err, decoded) => {
+    //         if (err) {
+    //           console.error(err);
+    //         } else {
+    //           return decoded;
+    //         }
+    //       });
         
 
-    } catch(e){
-        functions.setError(res, e.message, 404);
-    }
+    // } catch(e){
+    //     functions.setError(res, e.message, 404);
+    // }
 };

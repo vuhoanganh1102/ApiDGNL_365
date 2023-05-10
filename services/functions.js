@@ -241,14 +241,23 @@ return true;
   })
  }
 
- // lấy danh sách mẫu CV
- exports.getDataCV = async (condition,sort={_id:-1}) => {
-   const data = await CV.find(condition).select('_id image name meta_key price status view love download cate_id lang_id design_id').sort(sort);
+ // lấy danh sách mẫu CV sắp xếp mới nhất
+ exports.getDataCVSortById = async (condition) => {
+   const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({_id:-1});
    if(data.length > 0){
     return data;
    };
    return null;
  };
+
+  // lấy danh sách mẫu CV sắp xếp lượt tải nn
+  exports.getDataCVSortByDownload = async (condition) => {
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({download:-1});
+    if(data.length > 0){
+     return data;
+    };
+    return null;
+  };
 
  
  
