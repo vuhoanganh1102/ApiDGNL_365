@@ -74,6 +74,15 @@ exports.checkTilte = async (input,list)=>{
     return true
   }
 }
+// hàm check title khi update
+exports.removeSimilarKeywords = (keyword,arr) => {
+    const pattern = /[^A-Za-z0-9\s]/g; 
+    const sanitizedInput = keyword.replace(pattern, ''); 
+    const filteredKeywords = arr.filter(keyword => {
+      return !keyword.includes(sanitizedInput); 
+    });
+    return filteredKeywords;
+  }
 
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000; 
@@ -239,6 +248,9 @@ return true;
   exports.deleteImg = async(condition) => {
     if(condition){
      await deleteFile(condition.path)
+    }
+    if(typeof(condition)=="string"){
+      await deleteFile(condition)
     }
 
   }

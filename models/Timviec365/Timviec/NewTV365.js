@@ -164,7 +164,8 @@ const newTV365Schema = new mongoose.Schema(
                 [
                     {
                     type:String,
-                }]
+                }
+                ]
 
         },
         newMoney:{
