@@ -409,7 +409,7 @@ exports.sendOTP = async (req, res, next) => {
     try{
         const user = req.body.user;
         if(await functions.checkPhoneNumber(user) && await functions.getDatafindOne(Users,{phoneTK: user})) {
-            const data = await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp",{user})
+            await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp",{user})
             .then((response) => {
 
                 const otp = response.data.otp;
@@ -420,7 +420,7 @@ exports.sendOTP = async (req, res, next) => {
                     }
                    });  
                 }
-                functions.setError(res, "Gửi OTP lỗi1",);
+                functions.setError(res, "Gửi OTP lỗi 1",);
             })
             .then(() => {functions.getDatafindOne(Users,{phoneTK: user},)
                 .then(async (response) => {
@@ -431,7 +431,7 @@ exports.sendOTP = async (req, res, next) => {
                     }
                     const token= await functions.createToken(payload,'30m');
                     res.setHeader('authorization', `Bearer ${token}`);
-                    return  functions.success(res,'xác thực thành công');
+                    return  functions.success(res,'Gửi OTP thành công');
                 }); 
             });
             
@@ -446,7 +446,7 @@ exports.sendOTP = async (req, res, next) => {
                         }
                        });  
                   }
-                  functions.setError(res, "Gửi OTP lỗi 2",);
+                  functions.setError(res, 'Gửi OTP lỗi 2',);
             })
             .then(() => {functions.getDatafindOne(Users,{email: user},)
                 .then(async (response) => {
@@ -457,7 +457,7 @@ exports.sendOTP = async (req, res, next) => {
                     }
                     const token= await functions.createToken(payload,'30m');
                     res.setHeader('authorization', `Bearer ${token}`);
-                    return  functions.success(res,'xác thực thành công');
+                    return  functions.success(res,'Gửi OTP thành công');
                 }); 
             }); 
         } else {
@@ -473,17 +473,17 @@ exports.confirmOTP = async (req, res, next) => {
     try{
         const user = req.user.data.user;
         const otp = req.body.otp;
-        let verify=await Users.findOne({email:user,otp}) || await Users.findOne({phoneTK:user,otp}) ;
+        const verify=await Users.findOne({email:user,otp}) || await Users.findOne({phoneTK:user,otp}) ;
         
         if(verify) {
             const token= await functions.createToken(verify,'30m');
             res.setHeader('authorization', `Bearer ${token}`);
-            return functions.success(res,'Otp đúng',);
+            return functions.success(res,'Xác thực OTP thành công',);
         }else {
             return functions.setError(res, "Otp không chính xác",404);
         }
     }catch(e){
-        return functions.setError(res, "Xác nhận OTP lỗi",);
+        return functions.setError(res, 'Xác nhận OTP lỗi',);
     }
    
 };
@@ -491,15 +491,15 @@ exports.confirmOTP = async (req, res, next) => {
 exports.changePassword = async (req, res, next) => {
     try{
         const password =req.body.password;
-        const user = req.user.dat.user;
-         console.log(user);
+        const user = req.user.data.email || req.user.data.phoneTK;
+        
         if(await functions.checkEmail(user) && password){
             await Users.updateOne({ email: user }, { 
                 $set: { 
                    password:md5(password)
                 }
                }); 
-            return functions.success(res,'Đổi mật khẩu thành công',);
+            return functions.success(res,'Đổi mật khẩu thành công',req.user.data);
         };
         if(await functions.checkPhoneNumber(user) && password){
             await Users.updateOne({ phoneTk: user }, { 
@@ -507,9 +507,10 @@ exports.changePassword = async (req, res, next) => {
                    password:md5(password)
                 }
                });
-            return functions.success(res,'Đổi mật khẩu thành công',);
+            return functions.success(res,'Đổi mật khẩu thành công',req.user.data);
         }
+        return functions.setError(res, 'Đổi mật khẩu lỗi', 404);
     } catch(e){
-        return functions.setError(res, "Đổi mật khẩu lỗi",);
+        return functions.setError(res, 'Đổi mật khẩu lỗi',);
     }
 };

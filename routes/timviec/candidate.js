@@ -17,6 +17,6 @@ router.post('/AddUserChat365',formData.parse(),candidate.AddUserChat365);
 // đổi mật khẩu
 router.post('/sendOTP',formData.parse(),candidate.sendOTP);
 router.post('/confirmOTP',formData.parse(),functions.checkToken,candidate.confirmOTP);
-router.post('/changePassword',formData.parse(),functions.checkToken.candidate.changePassword);
+router.post('/changePassword',formData.parse(),functions.checkToken,candidate.changePassword);
 
 module.exports = router;
