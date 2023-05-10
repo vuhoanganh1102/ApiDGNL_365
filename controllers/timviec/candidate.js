@@ -407,14 +407,14 @@ exports.AddUserChat365 = async(req,res,next) =>{
 // b1: gửi mã otp tới tên tài khoản được nhập
 exports.sendOTP = async (req, res, next) => {
     try{
-        const account = req.body.account;
-        if(await functions.checkPhoneNumber(account) && await functions.getDatafindOne(Users,{phoneTK: account})) {
-            const data = await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp",{account})
+        const user = req.body.user;
+        if(await functions.checkPhoneNumber(user) && await functions.getDatafindOne(Users,{phoneTK: user})) {
+            const data = await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp",{user})
             .then((response) => {
-                console.log(1)
+
                 const otp = response.data.otp;
                 if(otp){
-                  return Users.updateOne({ phoneTK: account }, { 
+                  return Users.updateOne({ phoneTK: user }, { 
                     $set: { 
                        otp:otp
                     }
@@ -422,25 +422,25 @@ exports.sendOTP = async (req, res, next) => {
                 }
                 functions.setError(res, "Gửi OTP lỗi1",);
             })
-            .then(() => {functions.getDatafindOne(Users,{phoneTK: account},)
+            .then(() => {functions.getDatafindOne(Users,{phoneTK: user},)
                 .then(async (response) => {
                     const payload = {
-                        account: response.phoneTK,
+                        _id: response._id,
+                        user: response.phoneTK,
                         otp: response.otp,
                     }
-                        const token = jwt.sign(payload,'token',{ expiresIn: '30m'},);
-                        res.set('token', token,);
-                        return functions.success(res,'Gửi mã OTP thành công',)
+                    const token= await functions.createToken(payload,'30m');
+                    res.setHeader('authorization', `Bearer ${token}`);
+                    return  functions.success(res,'xác thực thành công');
                 }); 
             });
             
-        } else if(await functions.checkEmail(account) && await functions.getDatafindOne(Users,{email: account},)) {
-            await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp",{account})
+        } else if(await functions.checkEmail(user) && await functions.getDatafindOne(Users,{email: user},)) {
+            await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp",{user})
             .then((response) => {
-                console.log(response)
                 const otp = response.data.otp;
                 if(otp){
-                    return Users.updateOne({ email: account }, { 
+                    return Users.updateOne({ email: user }, { 
                         $set: { 
                            otp:otp
                         }
@@ -448,15 +448,16 @@ exports.sendOTP = async (req, res, next) => {
                   }
                   functions.setError(res, "Gửi OTP lỗi 2",);
             })
-            .then(() => {functions.getDatafindOne(Users,{email: account},)
+            .then(() => {functions.getDatafindOne(Users,{email: user},)
                 .then(async (response) => {
                     const payload = {
-                        account: response.email,
+                        _id: response._id,
+                        user: response.phoneTK,
                         otp: response.otp,
                     }
-                    const token = jwt.sign(payload,'token',{ expiresIn: '30m'},);
-                    res.set('token', token);
-                    return functions.success(res,'Gửi mã OTP thành công',)
+                    const token= await functions.createToken(payload,'30m');
+                    res.setHeader('authorization', `Bearer ${token}`);
+                    return  functions.success(res,'xác thực thành công');
                 }); 
             }); 
         } else {
@@ -470,19 +471,13 @@ exports.sendOTP = async (req, res, next) => {
 // b2: xác nhận mã otp
 exports.confirmOTP = async (req, res, next) => {
     try{
-        const token = jwt.verify(req.headers.token, 'token', (err, decoded) => {
-            if (err) {
-              console.error(err);
-            } else {
-              return decoded;
-            }
-          });
-        const account = token.account;
+        const user = req.user.data.user;
         const otp = req.body.otp;
-        let verify=await Users.findOne({email:account,otp}) || await Users.findOne({phoneTK:account,otp}) ;
+        let verify=await Users.findOne({email:user,otp}) || await Users.findOne({phoneTK:user,otp}) ;
         
         if(verify) {
-            res.set('token', req.headers.token,);
+            const token= await functions.createToken(verify,'30m');
+            res.setHeader('authorization', `Bearer ${token}`);
             return functions.success(res,'Otp đúng',);
         }else {
             return functions.setError(res, "Otp không chính xác",404);
@@ -495,26 +490,19 @@ exports.confirmOTP = async (req, res, next) => {
 //b3: đổi mật khẩu
 exports.changePassword = async (req, res, next) => {
     try{
-        const token = req.headers.token
         const password =req.body.password;
-        const account = jwt.verify(req.headers.token, 'token', (err, decoded) => {
-            if (err) {
-              console.error(err);
-            } else {
-              return decoded.account;
-            }
-        });
-         console.log(account);
-        if(await functions.checkEmail(account) && password){
-            await Users.updateOne({ email: account }, { 
+        const user = req.user.dat.user;
+         console.log(user);
+        if(await functions.checkEmail(user) && password){
+            await Users.updateOne({ email: user }, { 
                 $set: { 
                    password:md5(password)
                 }
                }); 
             return functions.success(res,'Đổi mật khẩu thành công',);
         };
-        if(await functions.checkPhoneNumber(account) && password){
-            await Users.updateOne({ phoneTk: account }, { 
+        if(await functions.checkPhoneNumber(user) && password){
+            await Users.updateOne({ phoneTk: user }, { 
                 $set: { 
                    password:md5(password)
                 }
