@@ -68,16 +68,15 @@ exports.checkTilte = async (input,list)=>{
   });
   
   if (foundKeyword) {
-    console.log("Input contains keyword:", foundKeyword);
     return false
   } else {
-    console.log("Input does not contain any keyword.");
     return true
   }
 }
 
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000; 
+exports.keywordsTilte=["hot","tuyển gấp","cần gấp","lương cao"]
 // hàm validate phone
 exports.checkPhoneNumber =async(phone)=>{
     if(phone==undefined){

@@ -56,8 +56,8 @@ exports.postNewTv365 =async (req,res,next) => {
                 }
                 let checkTile=await functions.checkTilte(title,listArrPost) ;
                 // validate title
-                let checkValidateTilte=await functions.checkTilte(title,keywords);
-                if((checkValidateTilte || checkTile)==false){
+                let checkValidateTilte=await functions.checkTilte(title,functions.keywordsTilte);
+                if((checkValidateTilte==false || checkTile==false)){
                     return functions.setError(res,'tiêu đề đã có từ bài viết trước hoặc chưa từ khóa không cho phép',404)
                 }
                 // check type của new money
@@ -116,14 +116,14 @@ exports.postNewTv365 =async (req,res,next) => {
                     if(checkLink){
                         link=linkVideo;
                     }else{
-                        if( avatar){
-                            avatar.forEach(async(element)=>{
-                                await functions.deleteImg(element)
-                            })
-                        }
-                        if(videoType){
-                            await functions.deleteImg(videoType[0])
-                        }
+                          if( avatar){
+                        avatar.forEach(async(element)=>{
+                            await functions.deleteImg(element)
+                        })
+                    }
+                    if(videoType){
+                        await functions.deleteImg(videoType[0])
+                    }
                         return functions.setError(res,'link không đúng định dạng ',404)
                     }
                 }
