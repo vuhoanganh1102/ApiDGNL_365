@@ -7,6 +7,7 @@ var mongoose = require('mongoose')
 
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
+var cvRouter = require('./routes/timviec/cv');
 
 var app = express();
 
@@ -21,7 +22,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/company',companyRouter)
+app.use('/api/timviec/company',companyRouter);
+app.use('/api/timviec/cv',cvRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

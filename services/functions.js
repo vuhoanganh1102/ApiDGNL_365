@@ -243,7 +243,7 @@ return true;
 
  // lấy danh sách mẫu CV
  exports.getDataCV = async (condition,sort={_id:-1}) => {
-   const data = await CV.find(condition).select('_id image name meta_key price status view love download cate_id lang_id design_id html_vi html_en html_jp html_cn html_kr').sort(sort);
+   const data = await CV.find(condition).select('_id image name meta_key price status view love download cate_id lang_id design_id').sort(sort);
    if(data.length > 0){
     return data;
    };

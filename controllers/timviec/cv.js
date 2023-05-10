@@ -1,5 +1,4 @@
 const CV = require('../../models/Timviec365/CV/CV');
-const axios = require('axios');
 const functions=require('../../services/functions');
 
 
@@ -22,7 +21,7 @@ exports.insertDataCV = async (req, res, next) => {
 // lấy tất cả danh sách mẫu CV
 exports.getListCV = async (req, res, next) => {
     try {
-        const data = await functions.getDataCV();
+        const data = await functions.getDataCV({},{});
         if(data) {
             return await functions.success(res,'Lấy mẫu CV thành công',data);
         };
@@ -32,7 +31,7 @@ exports.getListCV = async (req, res, next) => {
     };
 };
 
-// lấy theo điều kiện
+// lấy theo điều kiện --- func getDataCV nhận 2 tham số là điều kiện và cách sắp xếp( cập nhật mới hoặc download)
 exports.getListCVByCondition = async (req, res, next) => {
     try{
         const cate_id =  req.query.cate_id;
