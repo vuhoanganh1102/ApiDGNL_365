@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose');
 const CVSchema = new mongoose.Schema(
     {
         _id:{
@@ -11,10 +11,10 @@ const CVSchema = new mongoose.Schema(
         alias:{
             type: String,
         },
-        urlAlias:{
+        url_alias:{
             type: String,
         },
-        urlCanonical:{
+        url_canonical:{
             type: String,
         },
         image:{
@@ -23,13 +23,13 @@ const CVSchema = new mongoose.Schema(
         price:{
             type: Number,
         },
-        color:{
+        colors:{
             type: String
         },
         view:{
             type: Number
         },
-        favorite:{
+        love:{
             type: Number
         },
         download:{
@@ -38,70 +38,76 @@ const CVSchema = new mongoose.Schema(
         vip:{
             type: Number
         },
-        cvIndex:{
+        cv_index:{
             type: Number,
         },
-        cId:{
+        cid:{
             type: Number
         },
         content:{
             type: String
         },
-        motaCv:{
+        mota_cv:{
             type: String
         },
-        htmlVi:{
-            type: String
+        html_vi:{
+            type: Object
         },
-        htmlEn:{
-            type: String
+        html_en:{
+            type: Object
         },
-        htmlJp:{
-            type: String
+        html_jp:{
+            type: Object
         },
-        htmlCn:{
-            type: String
+        html_cn:{
+            type: Object
         },
-        htmlKr:{
-            type: String
+        html_kr:{
+            type: Object
         },
-        cateId:{
+        cate_id:{
             type: Number
         },
-        langId:{
+        lang_id:{
             type: Number
         },
-        designId:{
+        design_id:{
             type: Number
         },
         exp:{
             type: Number
         },
-        nhuCau:{
+        nhucau:{
             type: Number
         },
-        metaTitle:{
-            Type: String
+        meta_title:{
+            type: String
         },
-        metaKey:{
-            Type: String
+        meta_key:{
+            type: String
         },
-        metaDes:{
-            Type: String
+        meta_des:{
+            type: String
         },
-        thuTu:{
-            Type: Number
+        thutu:{
+            type: Number
         },
         full:{
-            Type: String
+            type: String
         },
         status:{
-            Type: Number
-        }
+            type: Number
+        },
+        cv_point:{
+            type: Number
+        },
 
     },
     { collection: 'CV',
       versionKey: false}
 )
 
-export default mongoose.model("CV", CVSchema)
+module.exports = mongoose.model("CV", CVSchema);
+
+// { collection: 'CV',
+//       versionKey: false}

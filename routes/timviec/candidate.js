@@ -1,6 +1,7 @@
 const express = require('express');
 
 const candidate = require('../../controllers/timviec/candidate');
+const cv = require('../../controllers/timviec/cv');
 const formData = require('express-form-data');
 const router = express.Router();
 const {uploadFile} = require('../../services/functions.js');
@@ -17,6 +18,14 @@ router.post('/AddUserChat365',formData.parse(),candidate.AddUserChat365);
 router.post('/sendOTP',formData.parse(),candidate.sendOTP);
 router.post('/confirmOTP',formData.parse(),candidate.confirmOTP);
 router.post('/changePassword',formData.parse(),candidate.changePassword);
+
+// CV & hồ sơ
+router.post('/insertDataCV',formData.parse(),cv.insertDataCV);
+// tìm tất cả
+router.get('/getListCV',formData.parse(),cv.getListCV);
+//tìm theo điều kiện
+router.get('/getListCVByCondition',formData.parse(),cv.getListCVByCondition);
+
 
 
 module.exports = router;

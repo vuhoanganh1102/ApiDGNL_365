@@ -16,7 +16,8 @@ const path = require('path');
 //check ảnh
 const { promisify } = require('util');
 // tọa token
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const CV = require('../models/Timviec365/CV/CV');
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -239,3 +240,15 @@ return true;
     return response.data
   })
  }
+
+ // lấy danh sách mẫu CV
+ exports.getDataCV = async (condition,sort={_id:-1}) => {
+   const data = await CV.find(condition).select('_id image name meta_key price status view love download cate_id lang_id design_id html_vi html_en html_jp html_cn html_kr').sort(sort);
+   if(data.length > 0){
+    return data;
+   };
+   return null;
+ };
+
+ 
+ 
