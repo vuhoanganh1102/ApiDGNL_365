@@ -26,7 +26,7 @@ const allowedTypes = ['.mp4', '.mov', '.avi','.wmv','.flv'];
 const MAX_IMG_SIZE = 2 * 1024 * 1024; 
 
 dotenv.config();
-
+// check title
 const removeAccent = (str) => {
   const accents = "àáâãäåèéêëìíîïòóôõöùúûüýÿđ";
   const accentRegex = new RegExp(`[${accents}]`, "g");
@@ -60,6 +60,7 @@ const removeAccent = (str) => {
   };
   return str.replace(accentRegex, (match) => accentMap[match]);
 };
+// check title
 exports.checkTilte = async (input,list)=>{
   const formattedInput = removeAccent(input).toLowerCase();
   const foundKeyword = list.find((keyword) => {

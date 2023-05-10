@@ -305,7 +305,7 @@ const UserSchema = new mongoose.Schema(
                     default: 0
                 },
                 canonical: String,
-linkVideo: {
+                 linkVideo: {
                     type: Number,
                     default: 0
                 },

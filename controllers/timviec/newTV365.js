@@ -2,8 +2,8 @@ const functions=require('../../services/functions')
 const City=require('../../models/Timviec365/Timviec/City')
 const District=require('../../models/Timviec365/Timviec/District');
 const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
+const Users=require('../../models/Timviec365/Timviec/Users')
 
-// từ khóa bị cấm ở tiêu đề đăng tin
 
 // đăng tin
 exports.postNewTv365 =async (req,res,next) => {
@@ -140,6 +140,11 @@ exports.postNewTv365 =async (req,res,next) => {
                     }
                     return  functions.setError(res,'thời gian hạn nộp phải lớn hơn thời gian hiện tại',404)
                 }
+                let checkEmail=await functions.checkEmail(userContactEmail);
+                let checkPhone=await functions.checkPhoneNumber(userContactPhone);
+                if(checkEmail == false || checkPhone == false){
+                    return  functions.setError(res,'email hoặc số điện thoại không đúng định dạng',404)
+                }
                 let maxID=await functions.getMaxID(NewTV365) || 1;
                 const newTV = new NewTV365({
                     _id:(Number(maxID)+1),
@@ -180,7 +185,17 @@ exports.postNewTv365 =async (req,res,next) => {
                         until:until || 1,
                     }
                   });
-                  await newTV.save();    
+                  await newTV.save();
+                  await Users.updateOne({ _id: id }, { 
+                    $set: { 
+                        inForCompanyTV365:{
+                            userContactName:userContactName,
+                            userContactEmail:userContactEmail,
+                            userContactAddress:userContactAddress,
+                            userContactPhone:userContactPhone,
+                        }
+                    }
+                });
                   return functions.success(res,"tạo bài tuyển dụng thành công")
                 }
         return  functions.setError(res,'thiếu dữ liệu',404)
@@ -271,4 +286,196 @@ exports.checkPostNew10p = async(req,res,next) => {
         console.log(error)
         return  functions.setError(res,error)
 }
+}
+// cập nhập tin tuyển dụng
+exports.updateNewTV =async (req,res,next) => {
+    try{
+        let request=req.body,
+        idNew=request.id,
+        title=request.title,
+        cateID=request.cateID,
+        soLuong=request.soLuong,
+        capBac=request.capBac,
+        hinhThuc=request.hinhThuc,
+        city=request.city,
+        district=request.district,
+        address=request.address,
+        until=request.until,
+        hoaHong=request.hoaHong,
+        typeNewMoney=request.typeNewMoney,
+        tgtv=request.tgtv,
+        minValue=request.minValue,
+        maxValue=request.maxValue,
+        moTa=request.moTa,
+        yeuCau=request.yeuCau,
+        exp=request.exp,
+        bangCap=request.bangCap,
+        sex=request.sex,
+        quyenLoi=request.quyenLoi,
+        hoSo=request.hoSo,
+        hanNop=request.hanNop,
+        userContactName=request.userContactName,
+        userContactAddress=request.userContactAddress,
+        userContactPhone=request.userContactPhone,
+        userContactEmail=request.userContactEmail,
+        linkVideo=req.linkVideo,
+        avatar=req.files.avatarUser,
+        videoType=req.files.videoType,
+        money=1;
+        let video='';
+        let link='';
+        let listImg=[];
+        let listArrPost=[];
+        if(title && cateID && soLuong && capBac && hinhThuc && city && district && address &&
+            until && moTa && yeuCau && exp && bangCap && sex && quyenLoi && hanNop && userContactName
+            && userContactAddress && userContactPhone && userContactEmail && typeNewMoney){
+                // check title trùng với title đã đăng hay không
+                let listPost=await functions.getDatafind(NewTV365,{userID:id});
+                if(listPost.length>0){
+                    listPost.forEach((element)=>{
+                        listArrPost.push(element.title)
+                    })
+                }
+                let checkTile=await functions.checkTilte(title,listArrPost) ;
+                // validate title
+                let checkValidateTilte=await functions.checkTilte(title,functions.keywordsTilte);
+                if((checkValidateTilte==false || checkTile==false)){
+                    return functions.setError(res,'tiêu đề đã có từ bài viết trước hoặc chưa từ khóa không cho phép',404)
+                }
+                // check type của new money
+                switch(Number(typeNewMoney)){
+                    case 1:
+                        maxValue=null;
+                        minValue=null;
+                        break;
+                    case 2:
+                        maxValue=null;
+                        break;
+                    case 3: 
+                         minValue=null;
+                         break;
+                         case 5:
+                            money=request.money;
+                            break;
+                    default:
+                        break;
+                }
+                //check video
+                if(videoType){
+                    if(videoType.length==1){
+                        let checkVideo= await functions.checkVideo(videoType[0]);
+                        if(checkVideo){
+                         video=videoType[0].filename
+                        }
+                        else {
+                         await functions.deleteImg(videoType[0])
+                         return functions.setError(res,'video không đúng định dạng hoặc lớn hơn 100MB ',404)
+                        }                }
+                    else
+                     if(videoType.length>1){
+                        return  functions.setError(res,'chỉ được đưa lên 1 video',404)
+                    }
+                }
+                
+                //check ảnh
+                if(avatar){
+                    if(avatar.length >=1 && avatar.length <=6){
+                        avatar.forEach(async(element) => {
+                            let checkImg=await functions.checkImage(element.path)
+                            if (checkImg) {
+                                listImg.push(element.filename);
+                            } else {
+                                await functions.deleteImg(element);
+                                return functions.setError(res, `sai định dạng ảnh hoặc ảnh lớn hơn 2MB :${element.originalname}`, 404);
+                            }
+                        });
+                    }
+                }
+               
+                // check link video
+                if(linkVideo){
+                    let checkLink = await functions.checkLink(linkVideo);
+                    if(checkLink){
+                        link=linkVideo;
+                    }else{
+                          if( avatar){
+                             avatar.forEach(async(element)=>{
+                             await functions.deleteImg(element)
+                        })
+                          }
+                          if(videoType){
+                              await functions.deleteImg(videoType[0])
+                         }
+                        return functions.setError(res,'link không đúng định dạng ',404)
+                    }
+                }
+                // check thời gian hạn nộp
+                let checkTime=await functions.checkTime(hanNop)
+                if(checkTime==false){
+                    if( avatar){
+                        avatar.forEach(async(element)=>{
+                            await functions.deleteImg(element)
+                        })
+                    }
+                    if(videoType){
+                        await functions.deleteImg(videoType[0])
+                    }
+                    return  functions.setError(res,'thời gian hạn nộp phải lớn hơn thời gian hiện tại',404)
+                }
+                let maxID=await functions.getMaxID(NewTV365) || 1;
+                const newTV = new NewTV365({
+                    _id:(Number(maxID)+1),
+                    title:title,
+                    userID:id,
+                    alias:'',
+                    redirect301:'',
+                    cateID:cateID,
+                    cityID:city,
+                    districtID:district,
+                    address:address,
+                    money:money,
+                    capBac:capBac,
+                    exp:exp,
+                    sex:sex,
+                    bangCap:bangCap,
+                    soLuong:soLuong,
+                    hinhThuc:hinhThuc,
+                    createTime:new Date().getTime(),
+                    active:0,
+                    type:1,
+                    viewCount:0,
+                    hanNop:hanNop,
+                    newMutil:{
+                        moTa:moTa,
+                        yeuCau:yeuCau,
+                        quyenLoi:quyenLoi,
+                        hoSo:hoSo,
+                        hoaHong:hoaHong || " ",
+                        tgtv:tgtv || " ",
+                        videoType:video || " ",
+                        images:listImg || " "
+                    },
+                    newMoney:{
+                        type:typeNewMoney,
+                        minValue:minValue || null,
+                        maxValue:maxValue || null,
+                        until:until || 1,
+                    }
+                  });
+                  await newTV.save();    
+                  return functions.success(res,"tạo bài tuyển dụng thành công")
+                }
+        return  functions.setError(res,'thiếu dữ liệu',404)
+    }catch(error){
+        console.log(error)
+        if( req.files.avatarUser){
+            req.files.avatarUser.forEach(async(element)=>{
+                await functions.deleteImg(element)
+            })
+        }
+        if(req.files.videoType){
+            await functions.deleteImg(req.files.videoType[0])
+        }
+        return  functions.setError(res,error)
+    }
 }
