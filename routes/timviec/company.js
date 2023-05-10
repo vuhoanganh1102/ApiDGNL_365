@@ -25,16 +25,16 @@ router.post('/forgotPasswordCheckMail',formData.parse(),company.forgotPasswordCh
 router.post('/forgotPasswordCheckOTP',formData.parse(),functions.checkToken,company.forgotPasswordCheckOTP);
 
 // api đổi mật khẩu (quên mật khẩu)
-router.post('/updatePassword',formData.parse(),functions.checkToken,company.updatePassword);
+router.put('/updatePassword',formData.parse(),functions.checkToken,company.updatePassword);
 
 // api cập nhập thông tin nhà tuyển dụng
-router.post('/updateInfor',formData.parse(),functions.checkToken,company.updateInfoCompany);
+router.put('/updateInfor',formData.parse(),functions.checkToken,company.updateInfoCompany);
 
 // api cập nhập thông tin liên hệ nhà tuyển dụng
-router.post('/updateContactInfor',formData.parse(),functions.checkToken,company.updateContactInfo);
+router.put('/updateContactInfor',formData.parse(),functions.checkToken,company.updateContactInfo);
 
 // api cập nhập video hoặc link video nhà tuyển dụng
-router.post('/updateVideoOrLink',functions.uploadVideo.single('videoType'),functions.checkToken,company.updateVideoOrLink);
+router.put('/updateVideoOrLink',functions.uploadVideo.single('videoType'),functions.checkToken,company.updateVideoOrLink);
 
 // api gửi mã OTP qua appChat (dổi mật khẩu)
 router.get('/changePasswordSendOTP',functions.checkToken,company.changePasswordSendOTP);
@@ -46,7 +46,7 @@ router.post('/changePasswordCheckOTP',formData.parse(),functions.checkToken,comp
 router.post('/changePassword',formData.parse(),functions.checkToken,company.changePassword);
 
 // api cập nhập ảnh đại diện
-router.post('/uploadAvatar',functions.uploadImg.single('avatarUser'),functions.checkToken,company.uploadIMG);
+router.put('/uploadAvatar',functions.uploadImg.single('avatarUser'),functions.checkToken,company.uploadIMG);
 
 //api lấy dữ liệu nhà tuyển dụng
 router.get('/getDataCompany',functions.checkToken,company.getDataCompany)
