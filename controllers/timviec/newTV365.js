@@ -3,6 +3,8 @@ const City=require('../../models/Timviec365/Timviec/City')
 const District=require('../../models/Timviec365/Timviec/District');
 const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
 
+// từ khóa bị cấm ở tiêu đề đăng tin
+
 // đăng tin
 exports.postNewTv365 =async (req,res,next) => {
     try{
@@ -41,9 +43,23 @@ exports.postNewTv365 =async (req,res,next) => {
         let video='';
         let link='';
         let listImg=[];
+        let listArrPost=[];
         if(title && cateID && soLuong && capBac && hinhThuc && city && district && address &&
             until && moTa && yeuCau && exp && bangCap && sex && quyenLoi && hanNop && userContactName
             && userContactAddress && userContactPhone && userContactEmail && typeNewMoney){
+                // check title trùng với title đã đăng hay không
+                let listPost=await functions.getDatafind(NewTV365,{userID:id});
+                if(listPost.length>0){
+                    listPost.forEach((element)=>{
+                        listArrPost.push(element.title)
+                    })
+                }
+                let checkTile=await functions.checkTilte(title,listArrPost) ;
+                // validate title
+                let checkValidateTilte=await functions.checkTilte(title,keywords);
+                if((checkValidateTilte || checkTile)==false){
+                    return functions.setError(res,'tiêu đề đã có từ bài viết trước hoặc chưa từ khóa không cho phép',404)
+                }
                 // check type của new money
                 switch(Number(typeNewMoney)){
                     case 1:
@@ -100,6 +116,14 @@ exports.postNewTv365 =async (req,res,next) => {
                     if(checkLink){
                         link=linkVideo;
                     }else{
+                        if( avatar){
+                            avatar.forEach(async(element)=>{
+                                await functions.deleteImg(element)
+                            })
+                        }
+                        if(videoType){
+                            await functions.deleteImg(videoType[0])
+                        }
                         return functions.setError(res,'link không đúng định dạng ',404)
                     }
                 }

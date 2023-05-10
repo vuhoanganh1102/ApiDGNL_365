@@ -310,7 +310,7 @@ linkVideo: {
                     default: 0
                 },
                 videoType: {
-                    type: Number,
+                    type: String,
                     default: 0
                 },
                 VideoActive: {

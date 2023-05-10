@@ -26,6 +26,56 @@ const allowedTypes = ['.mp4', '.mov', '.avi','.wmv','.flv'];
 const MAX_IMG_SIZE = 2 * 1024 * 1024; 
 
 dotenv.config();
+
+const removeAccent = (str) => {
+  const accents = "àáâãäåèéêëìíîïòóôõöùúûüýÿđ";
+  const accentRegex = new RegExp(`[${accents}]`, "g");
+  const accentMap = {
+    à: "a",
+    á: "a",
+    â: "a",
+    ã: "a",
+    ä: "a",
+    å: "a",
+    è: "e",
+    é: "e",
+    ê: "e",
+    ë: "e",
+    ì: "i",
+    í: "i",
+    î: "i",
+    ï: "i",
+    ò: "o",
+    ó: "o",
+    ô: "o",
+    õ: "o",
+    ö: "o",
+    ù: "u",
+    ú: "u",
+    û: "u",
+    ü: "u",
+    ý: "y",
+    ÿ: "y",
+    đ: "d",
+  };
+  return str.replace(accentRegex, (match) => accentMap[match]);
+};
+exports.checkTilte = async (input,list)=>{
+  const formattedInput = removeAccent(input).toLowerCase();
+  const foundKeyword = list.find((keyword) => {
+    const formattedKeyword = removeAccent(keyword).toLowerCase();
+    return formattedInput.includes(formattedKeyword);
+  });
+  
+  if (foundKeyword) {
+    console.log("Input contains keyword:", foundKeyword);
+    return false
+  } else {
+    console.log("Input does not contain any keyword.");
+    return true
+  }
+}
+
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000; 
 // hàm validate phone
@@ -151,25 +201,28 @@ return true;
       }
     })
   }
-    const storageFile = multer.diskStorage({
-      destination: function (req, file, cb) {
-        cb(null, 'public/newTV365')
-      },
-      filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop())
-      },
-      fileFilter: function (req, file, cb) {
-        const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'video/webm', 'video/quicktime'];
-        if (allowedTypes.includes(file.mimetype)) {
-          cb(null, true);
-        } else {
-          cb(new Error('Only .jpeg, .png, .mp4, .webm and .mov format allowed!'));
+    const storageFile =(destination) =>{
+      return multer.diskStorage({
+        destination: function (req, file, cb) {
+          cb(null, destination)
+        },
+        filename: function (req, file, cb) {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+          cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop())
+        },
+        fileFilter: function (req, file, cb) {
+          const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'video/webm', 'video/quicktime'];
+          if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+          } else {
+            cb(new Error('Only .jpeg, .png, .mp4, .webm and .mov format allowed!'));
+          }
         }
-      }
-    });
+      });
+    } 
     
-  exports.uploadVideoAndIMG = multer({ storage: storageFile })
+  exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/newTV365') })
+  exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/company') })
 
 //  hàm upload ảnh
   exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') })

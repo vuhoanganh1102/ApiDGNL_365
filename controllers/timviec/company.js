@@ -5,7 +5,7 @@ const Users=require('../../models/Timviec365/Timviec/Users')
 const functions=require('../../services/functions')
 const CompanyUnset=require('../../models/Timviec365/Timviec/userCompanyUnset')
 
-// bị lỗi khi uploadImg và uploadVideo cùng chạy
+// hàm đăng ký
 exports.register = async(req,res,next)=>{
     try{
         let request= req.body,
@@ -17,12 +17,15 @@ exports.register = async(req,res,next)=>{
         district=request.district,
         address=request.address,
         mst=request.mst,
-        avatarUser=req.file,
         idKd=request.idKD,
         linkVideo=request.linkVideo,
-        videoType=request.videoType,
         description=request.description,
-        from=request.from;
+        from=request.from,
+        avatarUser=req.files.avatarUser,
+        videoType=req.files.videoType;
+        let video='';
+        let link='';
+        let avatar="";
        // check dữ liệu không bị undefined
        if ((username && password && city && district &&
             address && email && phone )!==undefined){
@@ -35,15 +38,56 @@ exports.register = async(req,res,next)=>{
                                if(user==null){
                                 // check ảnh 
                                 let avatar=""
-                                if(avatarUser){
-                                    let checkImg=await functions.checkImage(avatarUser.path) 
-                                    if(checkImg==true ){
-                                      avatar =avatarUser.filename
-                                 }else{
-                                    await functions.deleteImg(avatarUser)
-                                    return  functions.setError(res,'ảnh không đúng định dạng hoặc lớn hơn 2MB',404)
-                                 }
+                             //check video
+                             if(videoType){
+                                if(videoType.length==1){
+                                    let checkVideo= await functions.checkVideo(videoType[0]);
+                                    if(checkVideo){
+                                     video=videoType[0].filename
+                                    }
+                                    else {
+                                     await functions.deleteImg(videoType[0])
+                                     if(avatarUser){
+                                        await functions.deleteImg(avatarUser[0])
+                                    }
+                                     return functions.setError(res,'video không đúng định dạng hoặc lớn hơn 100MB ',404)
+                                    }             
+                                   }
+                            }
+                            
+                            //check ảnh
+                            if(avatarUser){
+                                if(avatarUser.length==1){
+                                    let checkImg= await functions.checkImage(avatarUser[0].path);
+                                    if(checkImg){
+                                        avatar=avatarUser[0].filename
+                                    }
+                                  else {
+                                    if(videoType){
+                                        await functions.deleteImg(videoType[0])
+                                    }
+                                            await functions.deleteImg(avatarUser[0]);
+                                            return functions.setError(res, `sai định dạng ảnh hoặc ảnh lớn hơn 2MB :${avatarUser[0].originalname}`, 404);
+                                        }
+                                    }
                                 }
+                            
+                           
+                            // check link video
+                            if(linkVideo){
+                                let checkLink = await functions.checkLink(linkVideo);
+                                if(checkLink){
+                                    link=linkVideo;
+                                }else{
+                                    if(videoType){
+                                        await functions.deleteImg(videoType[0])
+                                    }
+                                    if(avatarUser){
+                                        await functions.deleteImg(avatarUser[0])
+                                    }
+                                    return functions.setError(res,'link không đúng định dạng ',404)
+                                }
+                            }
                                      // tìm Id max trong DB
                                     let maxID=await functions.getMaxID(Users);
                                     const maxIDTimviec = await (Users.findOne({type:1},{idTimViec365:1}).sort({ idTimViec365: -1 }).lean())
@@ -58,7 +102,7 @@ exports.register = async(req,res,next)=>{
                                       city:city,
                                       district:district,
                                       address:address,
-                                      avatarUser:avatar,
+                                      avatarUser: avatar,
                                       createdAt:new Date().getTime(),
                                       role:1,
                                       authentic:0,
@@ -67,7 +111,7 @@ exports.register = async(req,res,next)=>{
                                       inForCompanyTV365:{
                                           idKD:idKd,
                                           mst:mst,
-                                          videoType:videoType || null,
+                                          videoType:video || null,
                                           linkVideo:linkVideo || null,
                                           description:description || null,
                                           userContactName:username,
@@ -85,23 +129,43 @@ exports.register = async(req,res,next)=>{
                                   return  functions.success(res,'đăng ký thành công')
                                 }
                                else {
-                                await functions.deleteImg(avatarUser)
+                                if(videoType){
+                                    await functions.deleteImg(videoType[0])
+                                }
+                                if(avatarUser){
+                                    await functions.deleteImg(avatarUser[0])
+                                }
                                 return  functions.setError(res,'email đã tồn tại',404)
                                }
                        }
                        else{
-                        await functions.deleteImg(avatarUser)
+                        if(videoType){
+                            await functions.deleteImg(videoType[0])
+                        }
+                        if(avatarUser){
+                            await functions.deleteImg(avatarUser[0])
+                        }
                         return  functions.setError(res,'email hoặc số điện thoại định dạng không hợp lệ',404)
                        }
                
        }else{
-        await functions.deleteImg(avatarUser)
+        if(videoType){
+            await functions.deleteImg(videoType[0])
+        }
+        if(avatarUser){
+            await functions.deleteImg(avatarUser[0])
+        }
 
         return  functions.setError(res,'Thiếu dữ liệu',404)
        }
     }catch (error){
         console.log(error)
-        await functions.deleteImg(avatarUser)
+        if(videoType){
+            await functions.deleteImg(videoType[0])
+        }
+        if(avatarUser){
+            await functions.deleteImg(avatarUser[0])
+        }
         return  functions.setError(res,error)
     }
   

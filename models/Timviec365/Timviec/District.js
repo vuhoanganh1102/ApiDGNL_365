@@ -5,16 +5,20 @@ const districtSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
+        // tên quận huyện
         name:String,
+        // mức độ ưu tiên
         order:{
             type: Number,
             default:0
         },
+        // 1 là thành phố , null là quận huyện
         type:Number,
         count:{
             type: Number,
             default:0
         },
+        // id của thành phố 
         parent:{
             type:Number,
             required:true

@@ -5,12 +5,16 @@ const citySchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
+        // tên thành phố
         name:String,
         order:{
+            // mức độ ưu tiên
             type: Number,
             default:0
         },
+        // 1 miền bắc , 2 miền trung , 3 miền nam
         type:Number,
+        // số lượng
         count:{
             type: Number,
             default:0
@@ -21,6 +25,7 @@ const citySchema = new mongoose.Schema(
         },
         countVlch:Number,
         postCode:{
+            // mã số
             type: String,
             required:true
         },
@@ -29,18 +34,23 @@ const citySchema = new mongoose.Schema(
             required:true
         },
         code:{
+            // mã chữ
             type:String,
             required:true
         },
         cCode:{
+            // mã chứ viết tắt
             type:String,
             required:true
         },
+
         imgCity:{
+            // img của thành phố
             type:String,
             required:true
         },
         m:{
+            // 1 miền bắc , 2 miền trung , 3 miền nam
             type:Number,
             required:true
         }

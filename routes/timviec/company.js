@@ -4,7 +4,10 @@ var company = require('../../controllers/timviec/company');
 var formData=require('express-form-data')
 const functions=require('../../services/functions')
 // api đăng ký
-router.post('/register',functions.uploadImg.single('avatarUser'),company.register);
+router.post('/register',functions.uploadVideoAndIMGRegister.fields([
+    { name: 'avatarUser', maxCount:1 },
+    { name: 'videoType', maxCount: 1 }
+  ]) ,company.register);
 
 // api đăng ký khi thiếu dữ liệu
 router.post('/registerfall',formData.parse(),company.registerFall);
@@ -33,7 +36,7 @@ router.post('/updateContactInfor',formData.parse(),functions.checkToken,company.
 // api cập nhập video hoặc link video nhà tuyển dụng
 router.post('/updateVideoOrLink',functions.uploadVideo.single('videoType'),functions.checkToken,company.updateVideoOrLink);
 
-// api gửi mã OTP qua appChat để (dổi mật khẩu)
+// api gửi mã OTP qua appChat (dổi mật khẩu)
 router.get('/changePasswordSendOTP',functions.checkToken,company.changePasswordSendOTP);
 
 // api check mã OTP (đổi mật khẩu)

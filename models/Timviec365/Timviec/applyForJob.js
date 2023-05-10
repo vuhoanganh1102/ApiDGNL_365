@@ -1,0 +1,54 @@
+import mongoose from "mongoose";
+const applyForJobSchema = new mongoose.Schema(
+    {
+        _id:{
+            type: Number,
+            required: true,
+        },
+        userID: {
+            type:Number,
+            required: true,
+        },
+        newID: {
+            type:Number,
+            required: true,
+        },
+        time: {
+            //thời gian ứng tuyển
+            type:Date,
+            required: true
+        },
+        active:{
+            // xác nhận ứng tuyển 
+            type:Number,
+            required: true
+        },
+        kq:{
+            // kết quả ứng tuyển
+            type:Number,
+            required: true
+        },
+        timePV:{
+            // thời gian phỏng vấn
+            type:Date,
+            required: true
+        },
+        timeTVS:{
+            type:Date,
+            required: true
+        },
+        timeTVE:{
+            type:Date,
+            required: true
+        },
+        text:{
+            // lời giới thiệu bản thân 
+            type:String,
+            required: true
+        },
+        cv:{
+            // file cv
+            type:String,
+            required: true
+        }
+    })

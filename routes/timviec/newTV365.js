@@ -8,7 +8,7 @@ const functions=require('../../services/functions')
 // api đăng tin tuyển dụng
 router.post('/postNewTv365', 
   functions.checkToken, 
-  functions.uploadVideoAndIMG.fields([
+  functions.uploadVideoAndIMGNewTV.fields([
     { name: 'avatarUser', maxCount:6 },
     { name: 'videoType', maxCount: 1 }
   ]), 
