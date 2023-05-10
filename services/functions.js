@@ -57,6 +57,20 @@ exports.checkLink = async(link) => {
     return true
   }
  }
+ // hàm check thời gian đăng tin 10p/1 lần
+exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
+  const inputTime = Date.parse(timeInput);
+
+  const now = new Date().getTime();
+
+  const diffInMinutes = (now - inputTime) / (1000 * 60);
+
+  if (diffInMinutes >= 10) {
+    return true;
+  } else {
+    return false;
+  }
+}
 exports.getDatafindOne =async(model,condition)=>{
     return model.findOne(condition);
 }

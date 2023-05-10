@@ -26,4 +26,7 @@ router.get('/getDataListPost',functions.checkToken,newTV365.getListPost)
 
 //api lấy 1 bài viết
 router.get('/getDataPost',functions.checkToken,newTV365.getPost) 
+
+// api check đăng tin 10p/1 lần
+router.get('/checkNew10p',functions.checkToken,newTV365.checkPostNew10p) 
 module.exports = router;

@@ -3,6 +3,7 @@ const City=require('../../models/Timviec365/Timviec/City')
 const District=require('../../models/Timviec365/Timviec/District');
 const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
 
+// đăng tin
 exports.postNewTv365 =async (req,res,next) => {
     try{
         let id=req.user.data._id,
@@ -172,6 +173,7 @@ exports.postNewTv365 =async (req,res,next) => {
         return  functions.setError(res,error)
     }
 }
+// lấy danh sach thành phố
 exports.getDataCity = async(req,res,next) => {
     try{
         let city=await functions.getDatafind(City)
@@ -185,6 +187,7 @@ exports.getDataCity = async(req,res,next) => {
         return  functions.setError(res,error)
 }
 }
+// lấy danh sách quận huyện theo id thành phố
 exports.getDataDistrict= async(req,res,next) => {
     try{
         let idCity=req.body.parent;
@@ -199,7 +202,7 @@ exports.getDataDistrict= async(req,res,next) => {
         return  functions.setError(res,error)
 }
 }
-// 
+// lấy danh sách các bài post của nhà tuyển  dụng
 exports.getListPost= async(req,res,next) => {
     try{
         let idCompany=req.user.data._id;
@@ -210,6 +213,7 @@ exports.getListPost= async(req,res,next) => {
         return  functions.setError(res,error)
 }
 }
+// lấy 1 bài post 
 exports.getPost= async(req,res,next) => {
     try{
         let id=req.query.id;
@@ -218,6 +222,26 @@ exports.getPost= async(req,res,next) => {
             return functions.success(res,"Láy dữ liệu thành công",[post])
         }
         return  functions.setError(res,'sai id',404)
+
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+}
+}
+// check 10p đăng tin 1 lần
+exports.checkPostNew10p = async(req,res,next) => {
+    try{
+    let id=req.user.data._id;
+    let post=await NewTV365.findOne({userID: id}).sort({id: -1});
+    if(post){
+        let checkPost=await functions.isCurrentTimeGreaterThanInputTime(post.createTime);
+        console.log(checkPost)
+        if(checkPost){
+            return functions.success(res,"Láy dữ liệu thành công")
+        }
+    return  functions.setError(res,'chưa đủ 10p',404)
+    }
+    return  functions.setError(res,'không có dữ liệu',404)
 
     }catch(error){
         console.log(error)
