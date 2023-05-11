@@ -2,6 +2,7 @@ const Users = require('../../models/Timviec365/Timviec/Users');
 const blog = require('../../models/Timviec365/Timviec/blog.model');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
 const CV = require('../../models/Timviec365/CV/CV');
+const like = require('../../models/Timviec365/CV/like');
 const userUnset = require('../../models/Timviec365/Timviec/userUnset');
 const newTV365 = require('../../models/Timviec365/Timviec/newTV365.model');
 //mã hóa mật khẩu
@@ -539,14 +540,9 @@ exports.loginUv = async(req, res, next) => {
                 return functions.setError(res, "Mật khẩu sai", 200)
             }
             if (findUser.type == type) {
-                let login = {
-                    account: phoneTK,
-                    password: password,
-                    type: 0
-                }
-                const token = await functions.createToken(login, "2d")
+                const token = await functions.createToken(findUser, "2d")
                 return functions.success(res, 'Đăng nhập thành công', token)
-            }
+            } else return functions.setError(res, "tài khoản này không phải tài khoản cá nhân", 200)
 
 
         } else {
@@ -557,13 +553,12 @@ exports.loginUv = async(req, res, next) => {
 
 exports.completeProfileQlc = async(req, res, next) => {
     try {
-        let phoneTK = String(req.user.data.account)
+        let phoneTK = String(req.user.data.phoneTK)
         let newAI = []
         let newCv = []
         let newBlog = []
-        let findUser = await functions.getDatafindOne(Users, { phoneTK })
-
-        let candiCateID = Number(findUser.inForCandidateTV365.candiCateID.split(",")[0])
+        console.log(req.user.data)
+        let candiCateID = Number(req.user.data.inForCandidateTV365.candiCateID.split(",")[0])
 
         let takeData = await axios({
             method: "post",
@@ -609,15 +604,48 @@ exports.completeProfileQlc = async(req, res, next) => {
 
 exports.cvXinViec = async(req, res, next) => {
     try {
-        if (req.body.userId) {
-            const userId = req.body.userId
-            let findCvUv
+        if (req.user) {
+            let page = Number(req.body.page)
+            let pageSize = Number(req.body.pageSize)
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let userId = req.user.data._id
+            let findCvUv = await functions.pageFind(CVUV, { userId }, { _id: 1 }, skip, limit)
+            const totalCount = await CVUV.countDocuments({ userId: userId })
+            const totalPages = Math.ceil(totalCount / pageSize)
+
+            let findFavorCvUv = await functions.pageFind(like, { userId }, { _id: 1 }, skip, limit)
+            const totalCountFavor = await like.countDocuments({ userId: userId, type: 1 })
+            const totalPagesFavor = Math.ceil(totalCountFavor / pageSize)
+            if (findCvUv) {
+                functions.success(res, "Hiển thị những CV Đã tạo và yêu thích thành công", { CVUV: { totalCount, totalPages, listCv: findCvUv }, CVUVFavor: { totalCountFavor, totalPagesFavor, listCvFavor: findFavorCvUv } });
+            }
         } else {
-            return functions.setError(res, "Thông tin truyền lên không đúng", 400);
+            return functions.setError(res, "Token không hợp lệ", 400);
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
+}
 
+exports.donXinViec = async(req, res, next) => {
+    try {
+        if (req.body.user) {
+            let start = Number(req.body.start)
+            let count = Number(req.body.count)
+            let end = start + count
+            let userId = req.body.user.data._id
+            let findCvUv = functions.pageFind(CVUV, { userId: userId }, { _id: $slice[start, end] })
+                // let findFavorCv = functions.pageFind(CV,{},{})
+            if (findCvUv) {
+                functions.success(res, "Hiển thị những CV Đã tạo và yêu thích thành công", findCvUv)
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
 }

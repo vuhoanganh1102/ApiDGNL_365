@@ -215,7 +215,6 @@ exports.checkToken = (req, res, next) => {
     if (!token) {
         return res.status(401).json({ message: "Missing token" });
     }
-
     jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
         if (err) {
             return res.status(403).json({ message: "Invalid token" });
@@ -244,4 +243,10 @@ exports.getDataAxios = async(url, condition) => {
     }).then(async(response) => {
         return response.data
     })
+}
+
+//hàm phân trang find
+exports.pageFind = async(model, condition, sort, skip, limit) => {
+    return model.find(condition).sort(sort).skip(skip).limit(limit)
+
 }
