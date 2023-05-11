@@ -239,3 +239,8 @@ exports.getDataAxios = async (url, condition) => {
     return response.data
   })
 }
+
+//hàm kiểm tra string có phải number không
+exports.checkNumber = async (string) => {
+  return !isNaN(string)
+}
