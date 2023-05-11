@@ -5,8 +5,8 @@ var formData=require('express-form-data')
 const functions=require('../../services/functions')
 // api đăng ký
 router.post('/register',functions.uploadVideoAndIMGRegister.fields([
-    { name: 'avatarUser', maxCount:1 },
-    { name: 'videoType', maxCount: 1 }
+    { name: 'avatarUser' },
+    { name: 'videoType' }
   ]) ,company.register);
 
 // api đăng ký khi thiếu dữ liệu

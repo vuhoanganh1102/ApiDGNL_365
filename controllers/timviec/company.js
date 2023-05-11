@@ -55,8 +55,11 @@ exports.register = async(req,res,next)=>{
                                         await functions.deleteImg(avatarUser[0])
                                     }
                                      return functions.setError(res,'video không đúng định dạng hoặc lớn hơn 100MB ',404)
-                                    }             
+                                    }          
                                    }
+                                   else if(videoType.length >1){
+                                    return functions.setError(res,'chỉ được đăng 1 video',404)
+                                }
                             }
                             
                             //check ảnh
@@ -73,6 +76,9 @@ exports.register = async(req,res,next)=>{
                                             await functions.deleteImg(avatarUser[0]);
                                             return functions.setError(res, `sai định dạng ảnh hoặc ảnh lớn hơn 2MB :${avatarUser[0].originalname}`, 404);
                                         }
+                                    }
+                                    else if(avatarUser.length >1){
+                                        return functions.setError(res,'chỉ được đăng 1 ảnh',404)
                                     }
                                 }
                             
@@ -600,7 +606,7 @@ exports.getDataCompany = async(req,res,next) => {
         let id=req.user.data._id;
         let user= await functions.getDatafindOne(Users,{_id:id});
         if(user){
-            return  functions.success(res,'lấy thông tin thành công',[user])
+            return  functions.success(res,'lấy thông tin thành công',user)
         }
         return  functions.setError(res,'người dùng không tồn tại',404)
 
@@ -708,7 +714,6 @@ exports.listSaveUV = async(req,res,next) => {
         console.log(error)
         return  functions.setError(res,error)
     }
-    
 }
 // hàm quản lý điểm
 exports.manageFilterPoint = async(req,res,next) => {

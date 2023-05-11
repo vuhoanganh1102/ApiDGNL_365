@@ -9,16 +9,16 @@ const functions=require('../../services/functions')
 router.post('/postNewTv365', 
   functions.checkToken, 
   functions.uploadVideoAndIMGNewTV.fields([
-    { name: 'avatarUser', maxCount:6 },
-    { name: 'videoType', maxCount: 1 }
+    { name: 'avatarUser'},
+    { name: 'videoType'}
   ]), 
   newTV365.postNewTv365
 );
 router.put('/updateNewTv365/:idNew', 
   functions.checkToken, 
   functions.uploadVideoAndIMGNewTV.fields([
-    { name: 'avatarUser', maxCount:6 },
-    { name: 'videoType', maxCount: 1 }
+    { name: 'avatarUser'},
+    { name: 'videoType'}
   ]), 
   newTV365.updateNewTv365
 );
