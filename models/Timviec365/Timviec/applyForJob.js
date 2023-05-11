@@ -50,7 +50,9 @@ const applyForJobSchema = new mongoose.Schema(
             // file cv
             type:String,
             required: true
-        }
+        },
+        // 1 là ứng viên ứng tuyển , 2 là chuyên viên gửi ứng tuyển
+        type:Number,
     },
     { collection: 'ApplyForJob',  
     versionKey: false , 

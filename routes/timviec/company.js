@@ -53,8 +53,18 @@ router.get('/getDataCompany',functions.checkToken,company.getDataCompany)
 
 // api lấy danh sach UV
 router.post('/listUVApplyJob',formData.parse(),functions.checkToken,company.listUVApplyJob)
+router.get('/getDataCompany',functions.checkToken,company.getDataCompany)
+
+// api lấy danh sach UV do chuyên viên gửi
+router.post('/listUVApplyJobStaff',formData.parse(),functions.checkToken,company.listUVApplyJobStaff)
 
 //api thống kê tin đăng
 router.get('/postStatistics',functions.checkToken,company.postStatistics)
+
+//api lấy danh sách lưu UV
+router.post('/listSaveUV',formData.parse(),functions.checkToken,company.listSaveUV)
+
+//api quản lý lọc điểm
+router.get('/manageFilterPoint',formData.parse(),functions.checkToken,company.manageFilterPoint)
 
 module.exports = router;

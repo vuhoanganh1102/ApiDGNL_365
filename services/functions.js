@@ -142,7 +142,7 @@ exports.getDatafindOneAndUpdate =async(model,condition,projection)=>{
     return model.findOneAndUpdate(condition,projection);
 }
 exports.findCount=async(model,condition) =>{
-  return model.countDocuments(condition)
+  return model.countDocuments(condition) ||0
 }
 // hàm khi thành công
 exports.success =async(res,messsage = "", data = [])=>{

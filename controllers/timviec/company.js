@@ -6,7 +6,8 @@ const functions=require('../../services/functions')
 const CompanyUnset=require('../../models/Timviec365/Timviec/userCompanyUnset')
 const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob')
 const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
-
+const SaveCandidate = require('../../models/Timviec365/Timviec/saveCandidate');
+const PointCompany=require('../../models/Timviec365/Timviec/pointCompany.model')
 
 // hàm đăng ký
 exports.register = async(req,res,next)=>{
@@ -616,8 +617,29 @@ exports.listUVApplyJob = async(req,res,next) => {
         let pageSize = Number(req.body.pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let findUV = await functions.pageFind(ApplyForJob, { userID:idCompany }, { _id: 1 }, skip, limit);
-        const totalCount = await functions.findCount(ApplyForJob,{userID:idCompany});
+        let findUV = await functions.pageFind(ApplyForJob, { userID:idCompany,type:1 }, { _id: -1 }, skip, limit);
+        const totalCount = await functions.findCount(ApplyForJob,{userID:idCompany,type:1});
+        const totalPages = Math.ceil(totalCount / pageSize);
+        if (findUV) {
+           return functions.success(res, "Lấy danh sách uv thành công",  { totalCount, totalPages, listUv: findUV });
+    }
+    return  functions.setError(res,'không lấy được danh sách',404)
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+    
+}
+// hàm lấy dữ liệu danh sách ứng tuyển của chuyên viên gửi
+exports.listUVApplyJobStaff = async(req,res,next) => {
+    try {
+        let idCompany=req.user.data._id;
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let findUV = await functions.pageFind(ApplyForJob, { userID:idCompany,type:2 }, { _id: -1 }, skip, limit);
+        const totalCount = await functions.findCount(ApplyForJob,{userID:idCompany,type:2});
         const totalPages = Math.ceil(totalCount / pageSize);
         if (findUV) {
            return functions.success(res, "Lấy danh sách uv thành công",  { totalCount, totalPages, listUv: findUV });
@@ -638,14 +660,23 @@ exports.postStatistics = async(req,res,next) =>{
         let startOfDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
         let endOfDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)); 
         let threeDaysTomorow= new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
-        let countApplyForJob=await functions.findCount(ApplyForJob,{userID:idCompany});
+        // count UV ứng tuyển
+        let countApplyForJobTypeOne=await functions.findCount(ApplyForJob,{userID:idCompany,type:1});
+        // count cọng tác viên gửi Uv
+        let countApplyForJobTypeTwo=await functions.findCount(ApplyForJob,{userID:idCompany,type:2});
+        // count việc còn hạn
         let countAvailableJobs=await functions.findCount(NewTV365,{userID:idCompany, hanNop: { $gt: now }});
+        // count việc hết hạn
         let countGetExpiredJobs=await functions.findCount(NewTV365,{userID:idCompany, hanNop: { $lt: now }});
+        // count tin đã đăng trong ngày
         let countPostsInDay=await functions.findCount(NewTV365,{userID:idCompany, createTime: { $gte: startOfDay, $lte: endOfDay }});
+        // count tin đã cập nhập trong ngày
         let countRefreshPostInDay=await functions.findCount(NewTV365,{userID:idCompany, updateTime: { $gte: startOfDay, $lte: endOfDay }});
+        // count tin gần hết hạn 
         let countJobsNearExpiration = await functions.findCount(NewTV365, { userID: idCompany, hanNop: { $lte: threeDaysTomorow, $gte: now } });
         let count ={
-            countApplyForJob:countApplyForJob,
+            countApplyForJobUV:countApplyForJobTypeOne,
+            countApplyForJobStaff:countApplyForJobTypeTwo,
             countAvailableJobs:countAvailableJobs,
             countGetExpiredJobs:countGetExpiredJobs,
             countPostsInDay:countPostsInDay,
@@ -653,6 +684,51 @@ exports.postStatistics = async(req,res,next) =>{
             countJobsNearExpiration:countJobsNearExpiration
         }
         return functions.success(res,"lấy số lượng thành công",count)
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+}
+// hàm lấy danh sách các ứng viên đã lưu
+exports.listSaveUV = async(req,res,next) => {
+    try {
+        let idCompany=req.user.data._id;
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let findUV = await functions.pageFind(SaveCandidate, { uscID:idCompany }, { _id: -1 }, skip, limit);
+        const totalCount = await functions.findCount(SaveCandidate,{uscID:idCompany});
+        const totalPages = Math.ceil(totalCount / pageSize);
+        if (findUV) {
+           return functions.success(res, "Lấy danh sách uv thành công",  { totalCount, totalPages, listUv: findUV });
+    }
+    return  functions.setError(res,'không lấy được danh sách',404)
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+    
+}
+// hàm quản lý điểm
+exports.manageFilterPoint = async(req,res,next) => {
+    try{
+        let idCompany=req.user.data._id;
+        let point=await functions.getDatafindOne(PointCompany,{uscID:208639});
+        let now = new Date();
+        let pointUSC=0;
+        if(point){
+            let checkReset0=await functions.getDatafindOne(PointCompany,{uscID:idCompany, dayResetPoint0: { $lt: now }});
+            if(checkReset0 == null){
+                pointUSC=point.pointUSC
+            }
+            return functions.success(res,"lấy số lượng thành công",{
+                pointFree:0,
+                pointUSC:pointUSC,
+                totalPoint:pointUSC,
+            })
+        }
+        return  functions.setError(res,'không có dữ liệu',404)
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)

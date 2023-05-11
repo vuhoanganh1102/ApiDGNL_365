@@ -1,10 +1,11 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose');
 const pointCompanySchema = new mongoose.Schema(
     {
         _id:{
             type: Number,
             required: true,
         },
+        uscID:Number,
         point:{
             type: Number,
             required: true,
@@ -20,4 +21,10 @@ const pointCompanySchema = new mongoose.Schema(
         chuThichBaoLuu:String,
         dayResetPoint:Date,
         dayResetPoint0:Date,
-    })
+    },
+    { collection: 'PointCompany',  
+    versionKey: false , 
+    timestamp:true
+  }  
+  )
+  module.exports = mongoose.model("PointCompany", pointCompanySchema);
