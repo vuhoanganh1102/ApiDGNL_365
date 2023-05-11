@@ -414,22 +414,17 @@ exports.sendOTP = async (req, res, next) => {
 
                 const otp = response.data.otp;
                 if(otp){
-                  return Users.updateOne({ phoneTK: user }, { 
-                    $set: { 
-                       otp:otp
-                    }
-                   });  
+                   return Users.updateOne({ phoneTK: user }, { 
+                      $set: { 
+                        otp:otp
+                      }
+                    }); 
                 }
                 functions.setError(res, "Gửi OTP lỗi 1",);
             })
             .then(() => {functions.getDatafindOne(Users,{phoneTK: user},)
                 .then(async (response) => {
-                    const payload = {
-                        _id: response._id,
-                        user: response.phoneTK,
-                        otp: response.otp,
-                    }
-                    const token= await functions.createToken(payload,'30m');
+                    const token= await functions.createToken(response,'30m');             // tạo token chuyển lên headers
                     res.setHeader('authorization', `Bearer ${token}`);
                     return  functions.success(res,'Gửi OTP thành công');
                 }); 
@@ -448,14 +443,9 @@ exports.sendOTP = async (req, res, next) => {
                   }
                   functions.setError(res, 'Gửi OTP lỗi 2',);
             })
-            .then(() => {functions.getDatafindOne(Users,{email: user},)
+            .then(() => { Users.findOne({email: user})
                 .then(async (response) => {
-                    const payload = {
-                        _id: response._id,
-                        user: response.phoneTK,
-                        otp: response.otp,
-                    }
-                    const token= await functions.createToken(payload,'30m');
+                    const token= await functions.createToken(response,'30m');
                     res.setHeader('authorization', `Bearer ${token}`);
                     return  functions.success(res,'Gửi OTP thành công');
                 }); 
@@ -471,16 +461,16 @@ exports.sendOTP = async (req, res, next) => {
 // b2: xác nhận mã otp
 exports.confirmOTP = async (req, res, next) => {
     try{
-        const user = req.user.data.user;
+        const _id = req.user.data._id;
         const otp = req.body.otp;
-        const verify=await Users.findOne({email:user,otp}) || await Users.findOne({phoneTK:user,otp}) ;
+        const verify=await Users.findOne({_id:_id,otp});              // tìm user với dk có otp === otp người dùng nhập
         
         if(verify) {
             const token= await functions.createToken(verify,'30m');
             res.setHeader('authorization', `Bearer ${token}`);
             return functions.success(res,'Xác thực OTP thành công',);
         }else {
-            return functions.setError(res, "Otp không chính xác",404);
+            return functions.setError(res, "Otp không chính xác 1",404);
         }
     }catch(e){
         return functions.setError(res, 'Xác nhận OTP lỗi',);
@@ -491,24 +481,16 @@ exports.confirmOTP = async (req, res, next) => {
 exports.changePassword = async (req, res, next) => {
     try{
         const password =req.body.password;
-        const user = req.user.data.email || req.user.data.phoneTK;
+        const _id = req.user.data._id;
         
-        if(await functions.checkEmail(user) && password){
-            await Users.updateOne({ email: user }, { 
+        if(_id && password){
+            await Users.updateOne({ _id: _id }, {                               // update mật khẩu
                 $set: { 
                    password:md5(password)
                 }
                }); 
-            return functions.success(res,'Đổi mật khẩu thành công',req.user.data);
+            return functions.success(res,'Đổi mật khẩu thành công');
         };
-        if(await functions.checkPhoneNumber(user) && password){
-            await Users.updateOne({ phoneTk: user }, { 
-                $set: { 
-                   password:md5(password)
-                }
-               });
-            return functions.success(res,'Đổi mật khẩu thành công',req.user.data);
-        }
         return functions.setError(res, 'Đổi mật khẩu lỗi', 404);
     } catch(e){
         return functions.setError(res, 'Đổi mật khẩu lỗi',);
