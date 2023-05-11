@@ -317,10 +317,29 @@ const UserSchema = new mongoose.Schema(
                     type: Number,
                     default: 0
                 },
-                comImages: {
-                    type: String,
-                    default: null
-                },
+                comImages: [{
+                    listImg: 
+                    [{
+                        // danh sách ảnh
+                        type: String,
+                    }],
+                    default : [],
+                    listVideo: 
+                    [ {
+                        // danh sách video
+                        type: String,
+                    }], 
+                    default : [],
+                    // kích hoạt
+                    active:Number,
+                    // thời gian tạo
+                    timeCreate:Date,
+                    // thời gian sửa
+                    timeUpdate:Date,
+                }],
+                comVideos:[
+
+                ],
                 website: {
                     type: String,
                     default: null

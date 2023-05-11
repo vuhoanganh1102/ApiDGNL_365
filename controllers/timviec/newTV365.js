@@ -3,12 +3,12 @@ const City=require('../../models/Timviec365/Timviec/City')
 const District=require('../../models/Timviec365/Timviec/District');
 const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
 const Users=require('../../models/Timviec365/Timviec/Users')
-
+const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob')
 
 // đăng tin
 exports.postNewTv365 =async (req,res,next) => {
     try{
-        let id=req.user.data._id,
+        let idCompany=req.user.data._id,
         request=req.body,
         title=request.title,
         cateID=request.cateID,
@@ -50,7 +50,7 @@ exports.postNewTv365 =async (req,res,next) => {
             until && moTa && yeuCau && exp && bangCap && sex && quyenLoi && hanNop && userContactName
             && userContactAddress && userContactPhone && userContactEmail && typeNewMoney){
                 // check title trùng với title đã đăng hay không
-                let listPost=await functions.getDatafind(NewTV365,{userID:id});
+                let listPost=await functions.getDatafind(NewTV365,{userID:idCompany});
                 if(listPost.length>0){
                     listPost.forEach((element)=>{
                         listArrPost.push(element.title)
@@ -145,11 +145,13 @@ exports.postNewTv365 =async (req,res,next) => {
                 if(checkEmail == false || checkPhone == false){
                     return  functions.setError(res,'email hoặc số điện thoại không đúng định dạng',404)
                 }
+                //check kho ảnh
+             
                 let maxID=await functions.getMaxID(NewTV365) || 1;
                 const newTV = new NewTV365({
                     _id:(Number(maxID)+1),
                     title:title,
-                    userID:id,
+                    userID:idCompany,
                     alias:'',
                     redirect301:'',
                     cateID:cateID,
@@ -496,6 +498,7 @@ exports.updateNewTv365 =async (req,res,next) => {
         return  functions.setError(res,error)
     }
 }
+// hàm xóa tin
 exports.deleteNewTv365 = async(req,res,next) => {
     try{
         let idNew = req.params.idNew;
@@ -505,6 +508,16 @@ exports.deleteNewTv365 = async(req,res,next) => {
             return functions.success(res,"xóa bài tuyển dụng thành công")
         }
         return  functions.setError(res,'thiếu dữ liệu',404)
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+}
+exports.countApplyForJob = async(req,res,next) =>{
+    try{
+        let idCompany=req.user.data._id;
+        let count=await functions.findCount(ApplyForJob,{userID:idCompany});
+        return functions.success(res,"lấy số lượng thành công",count)
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)

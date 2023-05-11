@@ -38,4 +38,6 @@ router.get('/getDataPost/:idNew',functions.checkToken,newTV365.getPost)
 // api check đăng tin 10p/1 lần
 router.get('/checkNew10p',functions.checkToken,newTV365.checkPostNew10p) 
 
+//api che
+router.get('/countApplyForJob',functions.checkToken,newTV365.countApplyForJob)
 module.exports = router;

@@ -135,11 +135,14 @@ exports.getDatafindOne =async(model,condition)=>{
 }
 
 exports.getDatafind =async(model,condition)=>{
-    return model.find(condition);
+    return model.find(condition) || 0;
 }
 
 exports.getDatafindOneAndUpdate =async(model,condition,projection)=>{
     return model.findOneAndUpdate(condition,projection);
+}
+exports.findCount=async(model,condition) =>{
+  return model.countDocuments(condition)
 }
 // hàm khi thành công
 exports.success =async(res,messsage = "", data = [])=>{
@@ -246,13 +249,14 @@ return true;
   }
   // hàm xóa file
   exports.deleteImg = async(condition) => {
-    if(condition){
-     await deleteFile(condition.path)
-    }
     if(typeof(condition)=="string"){
-      await deleteFile(condition)
+     return await deleteFile(condition)
     }
 
+    if(typeof(condition)=="object"){
+      return await deleteFile(condition.path)
+    }
+   
   }
 // storega check file
   const storage = multer.diskStorage({

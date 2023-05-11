@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose');
 const applyForJobSchema = new mongoose.Schema(
     {
         _id:{
@@ -51,4 +51,9 @@ const applyForJobSchema = new mongoose.Schema(
             type:String,
             required: true
         }
-    })
+    },
+    { collection: 'ApplyForJob',  
+    versionKey: false , 
+    timestamp:true
+  }  )
+  module.exports = mongoose.model("ApplyForJob", applyForJobSchema);
