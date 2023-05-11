@@ -188,7 +188,7 @@ exports.postNewTv365 =async (req,res,next) => {
                     }
                   });
                   await newTV.save();
-                  await Users.updateOne({ _id: id }, { 
+                  await Users.updateOne({ _id: idCompany }, { 
                     $set: { 
                         inForCompanyTV365:{
                             userContactName:userContactName,
@@ -513,10 +513,28 @@ exports.deleteNewTv365 = async(req,res,next) => {
         return  functions.setError(res,error)
     }
 }
-exports.countApplyForJob = async(req,res,next) =>{
+// hàm thống kê đăng tin
+exports.postStatistics = async(req,res,next) =>{
     try{
         let idCompany=req.user.data._id;
-        let count=await functions.findCount(ApplyForJob,{userID:idCompany});
+        const now = new Date();
+        let startOfDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+        let endOfDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)); 
+        let threeDaysTomorow= new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
+        let countApplyForJob=await functions.findCount(ApplyForJob,{userID:idCompany});
+        let countAvailableJobs=await functions.findCount(NewTV365,{userID:idCompany, hanNop: { $gt: now }});
+        let countGetExpiredJobs=await functions.findCount(NewTV365,{userID:idCompany, hanNop: { $lt: now }});
+        let countPostsInDay=await functions.findCount(NewTV365,{userID:idCompany, createTime: { $gte: startOfDay, $lte: endOfDay }});
+        let countRefreshPostInDay=await functions.findCount(NewTV365,{userID:idCompany, updateTime: { $gte: startOfDay, $lte: endOfDay }});
+        let countJobsNearExpiration = await functions.findCount(NewTV365, { userID: idCompany, hanNop: { $lte: threeDaysTomorow, $gte: now } });
+        let count ={
+            countApplyForJob:countApplyForJob,
+            countAvailableJobs:countAvailableJobs,
+            countGetExpiredJobs:countGetExpiredJobs,
+            countPostsInDay:countPostsInDay,
+            countRefreshPostInDay:countRefreshPostInDay,
+            countJobsNearExpiration:countJobsNearExpiration
+        }
         return functions.success(res,"lấy số lượng thành công",count)
     }catch(error){
         console.log(error)
