@@ -3,20 +3,20 @@ const functions = require("../../services/functions")
 exports.getListGroup = async (req, res) => {
     await functions.getDatafind(Group, {})
         .then((group) => functions.success(res, "", group))
-        .catch((err => functions.setError(res, err.message, 701)))
+        .catch((err => functions.setError(res, err.message, 701)));
 };
 
 exports.getGroupById = async (req, res) => {
     const _id = req.params.id;
 
     if (isNaN(_id)) {
-        functions.setError(res, "Id must be a number", 702)
+        functions.setError(res, "Id must be a number", 702);
     } else {
         const group = await Group.findById(_id)
         if (!group) {
-            functions.setError(res, "Group cannot be found or does not exist", 703)
+            functions.setError(res, "Group cannot be found or does not exist", 703);
         } else {
-            functions.success(res, "Group found", group)
+            functions.success(res, "Group found", group);
         }
     }
 
@@ -60,14 +60,14 @@ exports.createGroup = async (req, res) => {
             groupName: groupName,
             managerId: null,
             groupOrder: groupOrder
-        })
+        });
 
         await group.save()
             .then(() => {
                 functions.success(res, "Group created successfully", group)
             })
             .catch((err) => {
-                functions.setError(res, err.message, 709)
+                functions.setError(res, err.message, 709);
             });
     }
 };
@@ -76,9 +76,9 @@ exports.editGroup = async (req, res) => {
     const _id = req.params.id;
 
     if (isNaN(_id)) {
-        functions.setError(res, "Id must be a number", 702)
+        functions.setError(res, "Id must be a number", 702);
     } else {
-        const { teamId, groupname, groupOrder } = req.body;
+        const { teamId, groupName, groupOrder } = req.body;
 
         if (!teamId) {
             //Kiểm tra Id tổ khác null
@@ -103,7 +103,7 @@ exports.editGroup = async (req, res) => {
         } else {
             const group = await functions.getDatafindOne(Group, { _id: _id });
             if (!group) {
-                functions.setError(res, "Group does not exist", 710)
+                functions.setError(res, "Group does not exist", 710);
             } else {
 
                 await functions.getDatafindOneAndUpdate(Team, { _id: _id }, {
@@ -112,7 +112,7 @@ exports.editGroup = async (req, res) => {
                     groupOrder: groupOrder,
                 })
                     .then((group) => functions.success(res, "Group edited successfully".group))
-                    .catch(err => functions.setError(res, err.message), 711)
+                    .catch(err => functions.setError(res, err.message), 711);
             }
         }
     }
@@ -122,15 +122,15 @@ exports.deleteGroup = async (req, res) => {
     const _id = req.params.id;
 
     if (isNaN(_id)) {
-        functions.setError(res, "Id must be a number", 702)
+        functions.setError(res, "Id must be a number", 702);
     } else {
         const group = await functions.getDatafindOne(Group, { _id: _id });
         if (!group) {
-            functions.setError(res, "Group does not exist", 710)
+            functions.setError(res, "Group does not exist", 710);
         } else {
             functions.getDataDeleteOne(Group, { _id: _id })
                 .then(() => functions.success(res, "Delete group successfully", group))
-                .catch(err => functions.setError(res, err.message, 712))
+                .catch(err => functions.setError(res, err.message, 712));
         }
     }
 
@@ -139,10 +139,10 @@ exports.deleteGroup = async (req, res) => {
 
 exports.deleteAllGroups = async (req, res) => {
     if (!await functions.getMaxID(Group)) {
-        functions.setError(res, "No group existed", 713)
+        functions.setError(res, "No group existed", 713);
     } else {
         Group.deleteMany()
             .then(() => functions.success(res, "Delete all groups successfully"))
-            .catch(() => functions.error(res, err.message, 714))
+            .catch(() => functions.error(res, err.message, 714));
     }
 }

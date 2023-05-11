@@ -11,7 +11,7 @@ router.get("/:id", GroupController.getGroupById);
 router.post("/", GroupController.createGroup);
 
 //API thay đổi thông tin của một nhóm
-router.put("/:id", GroupController.editGroup);
+router.post("/:id", GroupController.editGroup);
 
 //API Xóa một nhóm theo id
 router.delete("/:id", GroupController.deleteGroup);

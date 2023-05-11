@@ -13,12 +13,12 @@ router.get("/:id", TeamController.getTeamById);
 router.post("/", TeamController.createTeam);
 
 //Chỉnh sửa dự liệu của một tổ
-router.put("/:id", TeamController.editTeam);
+router.post("/:id", TeamController.editTeam);
 
 //Xóa dữ liệu của một tổ
 router.delete("/:id", TeamController.deleteTeam);
 
 //Xoá toàn bộ dữ liệu tổ
-router.delete ("/", TeamController.deleteAllTeams)
+router.delete("/", TeamController.deleteAllTeams)
 
 module.exports = router

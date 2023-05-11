@@ -11,7 +11,7 @@ router.get("/:id", DeparmentController.getDeparmentById);
 router.post("/", DeparmentController.createDeparment);
 
 //API thay dổi thông tin của một phòng ban
-router.put("/:id", DeparmentController.editDeparment);
+router.post("/:id", DeparmentController.editDeparment);
 
 //API xóa một phòng ban theo id
 router.delete("/:id", DeparmentController.deleteDeparment);

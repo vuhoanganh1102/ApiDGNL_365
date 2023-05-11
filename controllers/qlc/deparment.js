@@ -10,7 +10,7 @@ exports.getListDeparment = async (req, res) => {
 exports.getDeparmentById = async (req, res) => {
     const _id = req.params.id;
     if (isNaN(_id)) {
-        functions.setError(res, "Id must be a number", 502)
+        functions.setError(res, "Id must be a number", 502);
     } else {
         const deparment = await Deparment.findById(_id);
         if (!deparment) {
@@ -122,7 +122,7 @@ exports.deleteDeparment = async (req, res) => {
     const _id = req.params.id;
 
     if (isNaN(_id)) {
-        functions.setError(res, "Id must be a number", 502)
+        functions.setError(res, "Id must be a number", 502);
     } else {
         const deparment = await functions.getDatafindOne(Deparment, { _id: _id });
         if (!deparment) {

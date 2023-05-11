@@ -79,23 +79,23 @@ exports.editTeam = async (req, res) => {
 
         if (!deparmentId) {
             //Kiểm tra Id phòng ban có khác null
-            functions.setError(res, "Deparment Id required", 604)
+            functions.setError(res, "Deparment Id required", 604);
         } else if (typeof deparmentId !== "number") {
             //Kiểm tra Id phòng ban có thuộc kiểu number không
-            functions.setError(res, "Deparment Id must be a number", 605)
+            functions.setError(res, "Deparment Id must be a number", 605);
         } else if (!teamName) {
             //Kiểm tra tên của tổ có khác null
-            functions.setError(res, "Team name required", 606)
+            functions.setError(res, "Team name required", 606);
         } else if (!teamOrder) {
             //Kiểm tra sắp xếp thứ tự có khác null
-            functions.setError(res, "Team order required", 607)
+            functions.setError(res, "Team order required", 607);
         } else if (typeof teamOrder !== "number") {
             //Kiểm tra sắp xếp thứ tự có phải kiểu number hay không
             functions.setError(res, "Team order must be a number", 608)
         } else {
             const team = await functions.getDatafindOne(Team, { _id: _id });
             if (!team) {
-                functions.setError(res, "Team not exist", 610)
+                functions.setError(res, "Team not exist", 610);
             } else {
                 await functions.getDatafindOneAndUpdate(Team, { _id: _id }, {
                     deparmentId: dearmentId,
@@ -103,7 +103,7 @@ exports.editTeam = async (req, res) => {
                     teamOrder: teamOrder
                 })
                     .then((team) => functions.success(res, "Team edited successfully", team))
-                    .catch((err) => functions.setError(res, err.message, 611))
+                    .catch((err) => functions.setError(res, err.message, 611));
             }
 
         }
@@ -120,11 +120,11 @@ exports.deleteTeam = async (req, res) => {
     } else {
         const team = await functions.getDatafindOne(Team, { _id: _id });
         if (!team) {
-            functions.setError(res, "Team does not exist", 610)
+            functions.setError(res, "Team does not exist", 610);
         } else {
             functions.getDataDeleteOne(Team, { _id: _id })
                 .then(() => functions.success(res, "Delete team successfully", team))
-                .catch(err => functions.setError(res, err.message, 612))
+                .catch(err => functions.setError(res, err.message, 612));
         }
     }
 
@@ -137,6 +137,6 @@ exports.deleteAllTeams = async (req, res) => {
     } else {
         Team.deleteMany()
             .then(() => functions.success(res, "Delete all teams successfully"))
-            .catch(() => functions.error(res, err.message, 614))
+            .catch(() => functions.error(res, err.message, 614));
     }
 }
