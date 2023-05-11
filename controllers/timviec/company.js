@@ -681,13 +681,13 @@ exports.postStatistics = async(req,res,next) =>{
         // count tin gần hết hạn 
         let countJobsNearExpiration = await functions.findCount(NewTV365, { userID: idCompany, hanNop: { $lte: threeDaysTomorow, $gte: now } });
         let count ={
-            countApplyForJobUV:countApplyForJobTypeOne,
-            countApplyForJobStaff:countApplyForJobTypeTwo,
-            countAvailableJobs:countAvailableJobs,
-            countGetExpiredJobs:countGetExpiredJobs,
-            countPostsInDay:countPostsInDay,
-            countRefreshPostInDay:countRefreshPostInDay,
-            countJobsNearExpiration:countJobsNearExpiration
+            count_uv_ung_tuyen:countApplyForJobTypeOne,
+            count_ctv_gui_uv:countApplyForJobTypeTwo,
+            count_tin_dang_con_han:countAvailableJobs,
+            count_tin_dang_het_han:countGetExpiredJobs,
+            count_tin_dang_trong_ngay:countPostsInDay,
+            count_tin_cap_nhap_trong_ngay:countRefreshPostInDay,
+            count_tin_sap_het_han:countJobsNearExpiration,
         }
         return functions.success(res,"lấy số lượng thành công",count)
     }catch(error){
@@ -719,7 +719,7 @@ exports.listSaveUV = async(req,res,next) => {
 exports.manageFilterPoint = async(req,res,next) => {
     try{
         let idCompany=req.user.data._id;
-        let point=await functions.getDatafindOne(PointCompany,{uscID:208639});
+        let point=await functions.getDatafindOne(PointCompany,{uscID:idCompany});
         let now = new Date();
         let pointUSC=0;
         if(point){

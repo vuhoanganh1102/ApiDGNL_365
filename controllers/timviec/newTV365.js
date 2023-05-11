@@ -117,7 +117,6 @@ exports.postNewTv365 =async (req,res,next) => {
                         }
                         return  functions.setError(res,'đã có ảnh sai định dạng hoặc lớn hơn 2MB',404)
                     }
-                    
                 }
                 else if(avatar && avatar.length>6){
                     return  functions.setError(res,'chỉ được đưa lên tối đa 6 ảnh',404)
@@ -401,7 +400,8 @@ exports.updateNewTv365 =async (req,res,next) => {
                         else {
                          await functions.deleteImg(videoType[0])
                          return functions.setError(res,'video không đúng định dạng hoặc lớn hơn 100MB ',404)
-                        }                }
+                        }                
+                    }
                     else
                      if(videoType.length>1){
                         return  functions.setError(res,'chỉ được đưa lên 1 video',404)
