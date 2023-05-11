@@ -45,16 +45,17 @@ exports.checkLink = async(link) => {
 };
 // hàm validate email
 exports.checkEmail = async(email) => {
-    console.log(email)
     const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
     return gmailRegex.test(email)
 };
+
 // hàm validate link
 exports.checkLink = async(link) => {
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
     return urlRegex.test(yourUrlVariable);
 };
+
 exports.getDatafindOne = async(model, condition) => {
     return model.findOne(condition);
 };
@@ -70,24 +71,26 @@ exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
 exports.success = async(res, messsage = "", data = []) => {
     return res.status(200).json({ result: true, messsage, data })
 };
+
 // hàm thực thi khi thất bại
 exports.setError = async(res, message, code = 500) => {
 
     return res.status(code).json({ code, message })
 };
+
 // hàm tìm id max 
 exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
 };
+
 // hàm check định dạng ảnh
 const isImage = async(filePath) => {
     const extname = path.extname(filePath).toLowerCase();
     return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(extname);
 };
+
 // hàm check ảnh
-
-
 exports.checkImage = async(filePath) => {
     if (typeof(filePath) !== 'string') {
         return false;
