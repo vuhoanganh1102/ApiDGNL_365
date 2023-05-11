@@ -50,4 +50,11 @@ router.put('/uploadAvatar',functions.uploadImg.single('avatarUser'),functions.ch
 
 //api lấy dữ liệu nhà tuyển dụng
 router.get('/getDataCompany',functions.checkToken,company.getDataCompany)
+
+// api lấy danh sach UV
+router.post('/listUVApplyJob',formData.parse(),functions.checkToken,company.listUVApplyJob)
+
+//api thống kê tin đăng
+router.get('/postStatistics',functions.checkToken,company.postStatistics)
+
 module.exports = router;

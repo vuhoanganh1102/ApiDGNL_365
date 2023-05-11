@@ -4,6 +4,9 @@ const jwt = require('jsonwebtoken')
 const Users=require('../../models/Timviec365/Timviec/Users')
 const functions=require('../../services/functions')
 const CompanyUnset=require('../../models/Timviec365/Timviec/userCompanyUnset')
+const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob')
+const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
+
 
 // hàm đăng ký
 exports.register = async(req,res,next)=>{
@@ -593,13 +596,63 @@ exports.uploadIMG = async(req,res,next) => {
 // hàm lấy dữ liệu thông tin cập nhập
 exports.getDataCompany = async(req,res,next) => {
     try{
-        let id=req.user.data._id
-        let user= await functions.getDatafindOne(Users,{_id:id})
+        let id=req.user.data._id;
+        let user= await functions.getDatafindOne(Users,{_id:id});
         if(user){
             return  functions.success(res,'lấy thông tin thành công',[user])
         }
         return  functions.setError(res,'người dùng không tồn tại',404)
 
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+}
+// hàm lấy dữ liệu danh sách ứng tuyển UV
+exports.listUVApplyJob = async(req,res,next) => {
+    try {
+        let idCompany=req.user.data._id;
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let findUV = await functions.pageFind(ApplyForJob, { userID:idCompany }, { _id: 1 }, skip, limit);
+        const totalCount = await functions.findCount(ApplyForJob,{userID:idCompany});
+        const totalPages = Math.ceil(totalCount / pageSize);
+        if (findUV) {
+           return functions.success(res, "Lấy danh sách uv thành công",  { totalCount, totalPages, listUv: findUV });
+    }
+    return  functions.setError(res,'không lấy được danh sách',404)
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+    
+}
+
+// hàm thống kê tin đăng
+exports.postStatistics = async(req,res,next) =>{
+    try{
+        let idCompany=req.user.data._id;
+        const now = new Date();
+        let startOfDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
+        let endOfDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)); 
+        let threeDaysTomorow= new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
+        let countApplyForJob=await functions.findCount(ApplyForJob,{userID:idCompany});
+        let countAvailableJobs=await functions.findCount(NewTV365,{userID:idCompany, hanNop: { $gt: now }});
+        let countGetExpiredJobs=await functions.findCount(NewTV365,{userID:idCompany, hanNop: { $lt: now }});
+        let countPostsInDay=await functions.findCount(NewTV365,{userID:idCompany, createTime: { $gte: startOfDay, $lte: endOfDay }});
+        let countRefreshPostInDay=await functions.findCount(NewTV365,{userID:idCompany, updateTime: { $gte: startOfDay, $lte: endOfDay }});
+        let countJobsNearExpiration = await functions.findCount(NewTV365, { userID: idCompany, hanNop: { $lte: threeDaysTomorow, $gte: now } });
+        let count ={
+            countApplyForJob:countApplyForJob,
+            countAvailableJobs:countAvailableJobs,
+            countGetExpiredJobs:countGetExpiredJobs,
+            countPostsInDay:countPostsInDay,
+            countRefreshPostInDay:countRefreshPostInDay,
+            countJobsNearExpiration:countJobsNearExpiration
+        }
+        return functions.success(res,"lấy số lượng thành công",count)
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)

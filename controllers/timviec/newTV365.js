@@ -3,7 +3,6 @@ const City=require('../../models/Timviec365/Timviec/City')
 const District=require('../../models/Timviec365/Timviec/District');
 const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
 const Users=require('../../models/Timviec365/Timviec/Users')
-const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob')
 
 // đăng tin
 exports.postNewTv365 =async (req,res,next) => {
@@ -508,34 +507,6 @@ exports.deleteNewTv365 = async(req,res,next) => {
             return functions.success(res,"xóa bài tuyển dụng thành công")
         }
         return  functions.setError(res,'thiếu dữ liệu',404)
-    }catch(error){
-        console.log(error)
-        return  functions.setError(res,error)
-    }
-}
-// hàm thống kê đăng tin
-exports.postStatistics = async(req,res,next) =>{
-    try{
-        let idCompany=req.user.data._id;
-        const now = new Date();
-        let startOfDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
-        let endOfDay = (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)); 
-        let threeDaysTomorow= new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
-        let countApplyForJob=await functions.findCount(ApplyForJob,{userID:idCompany});
-        let countAvailableJobs=await functions.findCount(NewTV365,{userID:idCompany, hanNop: { $gt: now }});
-        let countGetExpiredJobs=await functions.findCount(NewTV365,{userID:idCompany, hanNop: { $lt: now }});
-        let countPostsInDay=await functions.findCount(NewTV365,{userID:idCompany, createTime: { $gte: startOfDay, $lte: endOfDay }});
-        let countRefreshPostInDay=await functions.findCount(NewTV365,{userID:idCompany, updateTime: { $gte: startOfDay, $lte: endOfDay }});
-        let countJobsNearExpiration = await functions.findCount(NewTV365, { userID: idCompany, hanNop: { $lte: threeDaysTomorow, $gte: now } });
-        let count ={
-            countApplyForJob:countApplyForJob,
-            countAvailableJobs:countAvailableJobs,
-            countGetExpiredJobs:countGetExpiredJobs,
-            countPostsInDay:countPostsInDay,
-            countRefreshPostInDay:countRefreshPostInDay,
-            countJobsNearExpiration:countJobsNearExpiration
-        }
-        return functions.success(res,"lấy số lượng thành công",count)
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)
