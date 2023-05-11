@@ -1,42 +1,51 @@
 import mongoose from "mongoose";
 const ChuyenMucCVSchema = new mongoose.Schema({
-    _id:{
+    _id: {
         type: Number,
         require: true
     },
-    name:{
-        type : String,
+    name: {
+        //tên chuyên mục
+        type: String,
     },
-    alias:{
+    alias: {
+        //tên chuyên mục không tiếng việt
         type: String
     },
-    content:{
+    content: {
+        //nôi dung chuyên mục trong thẻ <p>
         type: String
     },
-    image:{
+    image: {
+        //tên ảnh chuyên mục
         type: String
     },
-    parent:{
+    parent: {
         type: Number
     },
-    menu:{
+    menu: {
         type: Number
     },
-    sort:{
+    sort: {
+        //sắp xếp danh mục
         type: Number
     },
-    metaTitle:{
+    metaTitle: {
+        //tiêu đề chuyên mục
         type: String
     },
-    metaKey:{
+    metaKey: {
+        //từ khóa tìm kiếm chuyên mục
         type: String
     },
-    metaDes:{
+    metaDes: {
+        //chú thích chuyên mục
         type: String
     },
 
-},
-    {collection: 'ChuyenMucCV',
-    versionKey: false});
+}, {
+    collection: 'ChuyenMucCV',
+    versionKey: false
+});
 
-export default mongoose.model("ChuyenMucCV",ChuyenMucCVSchema)
+export default mongoose.model("ChuyenMucCV", ChuyenMucCVSchema)

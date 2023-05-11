@@ -305,41 +305,22 @@ const UserSchema = new mongoose.Schema(
                     default: 0
                 },
                 canonical: String,
-                 linkVideo: {
+linkVideo: {
                     type: Number,
                     default: 0
                 },
                 videoType: {
-                    type: String,
+                    type: Number,
                     default: 0
                 },
                 VideoActive: {
                     type: Number,
                     default: 0
                 },
-                comImages: [{
-                    listImg: 
-                    [{
-                        // danh sách ảnh
-                        type: String,
-                    }],
-                    default : [],
-                    listVideo: 
-                    [ {
-                        // danh sách video
-                        type: String,
-                    }], 
-                    default : [],
-                    // kích hoạt
-                    active:Number,
-                    // thời gian tạo
-                    timeCreate:Date,
-                    // thời gian sửa
-                    timeUpdate:Date,
-                }],
-                comVideos:[
-
-                ],
+                comImages: {
+                    type: String,
+                    default: null
+                },
                 website: {
                     type: String,
                     default: null
