@@ -15,5 +15,17 @@ router.post('/loginUv', formData.parse(), candidate.loginUv);
 router.post('/AddUserChat365', formData.parse(), candidate.AddUserChat365);
 router.post('/completeProfileQlc', formData.parse(), functions.checkToken, candidate.completeProfileQlc);
 router.post('/cvXinViec', formData.parse(), functions.checkToken, candidate.cvXinViec);
+router.post('/donXinViec', formData.parse(), functions.checkToken, candidate.donXinViec);
+router.post('/thuXinViec', formData.parse(), functions.checkToken, candidate.thuXinViec);
+router.post('/hosoXinViec', formData.parse(), functions.checkToken, candidate.hosoXinViec);
+router.post('/listJobCandidateApply', formData.parse(), functions.checkToken, candidate.listJobCandidateApply);
+router.post('/listJobCandidateSave', formData.parse(), functions.checkToken, candidate.listJobCandidateSave);
+router.post('/updateContactInfo', uploadFile.single('imageUpload'), functions.checkToken, candidate.updateContactInfo);
+router.post('/updateDesiredJob', formData.parse(), functions.checkToken, candidate.updateDesiredJob);
+router.post('/updateCareerGoals', formData.parse(), functions.checkToken, candidate.updateCareerGoals);
+router.post('/updateSkills', formData.parse(), functions.checkToken, candidate.updateSkills);
+router.post('/updateReferencePersonInfo', formData.parse(), functions.checkToken, candidate.updateReferencePersonInfo);
+router.post('/RefreshProfile', formData.parse(), functions.checkToken, candidate.RefreshProfile);
+router.post('/updateIntroVideo', uploadFile.single('videoUpload'), functions.checkToken, candidate.updateIntroVideo);
 
 module.exports = router;

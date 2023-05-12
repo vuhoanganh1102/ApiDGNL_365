@@ -260,6 +260,10 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
+            candiSkills: {
+                type: String,
+                default: null
+            },
             referencePersonName: {
                 type: String,
                 default: null
