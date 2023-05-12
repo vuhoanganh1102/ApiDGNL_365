@@ -1,7 +1,7 @@
 const md5 = require('md5');
 const jwt = require('jsonwebtoken');
 
-const Users = require('../../models/Timviec365/Timviec/Users');
+const Users = require('../../models/Users');
 const functions = require('../../services/functions');
 const CompanyUnset = require('../../models/Timviec365/Timviec/userCompanyUnset');
 const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob');
@@ -26,8 +26,10 @@ exports.register = async(req, res, next) => {
                 idKd = request.idKD,
                 linkVideo = request.linkVideo,
                 description = request.description,
-                from = request.from,
+                fromDevice = request.fromDevice,
+                fromWeb = request.fromWeb,
                 avatarUser = req.files.avatarUser,
+                ipAddressRegister = request.ipAddressRegister,
                 videoType = req.files.videoType;
             let video = '';
             let link = '';
@@ -42,9 +44,7 @@ exports.register = async(req, res, next) => {
                     //  check email co trong trong database hay khong
                     let user = await functions.getDatafindOne(Users, { email })
                     if (user == null) {
-                        // check ảnh 
-                        let avatar = ""
-                            //check video
+                        //check video
                         if (videoType) {
                             if (videoType.length == 1) {
                                 let checkVideo = await functions.checkVideo(videoType[0]);
@@ -97,9 +97,9 @@ exports.register = async(req, res, next) => {
                             }
                         }
                         // tìm Id max trong DB
-                        let maxID = await functions.getMaxID(Users);
-                        const maxIDTimviec = await (Users.findOne({ type: 1 }, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean())
-                        let newIDTimViec = maxIDTimviec.idTimViec365 || 1
+                        let maxID = await functions.getMaxID(Users) || 0;
+                        let maxIDTimviec = await (Users.findOne({ type: 1 }).sort({ idTimViec365: -1 }).lean()) || 0;
+                        let newIDTimViec = maxIDTimviec.idTimViec365 || 0;
                         const company = new Users({
                             _id: (Number(maxID) + 1),
                             email: email,
@@ -114,18 +114,20 @@ exports.register = async(req, res, next) => {
                             createdAt: new Date().getTime(),
                             role: 1,
                             authentic: 0,
-                            from: from || null,
+                            fromWeb: fromWeb || null,
+                            fromDevice: fromDevice || null,
                             idTimViec365: (Number(newIDTimViec) + 1),
-                            inForCompanyTV365: {
+                            inForCompany: {
                                 idKD: idKd,
                                 mst: mst,
                                 videoType: video || null,
-                                linkVideo: linkVideo || null,
+                                linkVideo: link || null,
                                 description: description || null,
                                 userContactName: username,
                                 userContactPhone: phone,
                                 userContactAddress: address,
-                                userContactEmail: email
+                                userContactEmail: email,
+                                ipAddressRegister: ipAddressRegister
                             }
                         });
                         await company.save();
@@ -390,25 +392,24 @@ exports.updateInfoCompany = async(req, res, next) => {
                 if (checkPhone) {
                     await Users.updateOne({ email: email }, {
                         $set: {
-                            userName: userCompany,
-                            phone: phone,
-                            city: city,
-                            description: description,
-                            website: website || null,
-                            address: address,
-                            inForCompanyTV365: {
-                                idKD: idKD,
-                                mst: mst || null,
-                                website: website || null,
-                                site: site
-                            },
+                            'inForCompany.description': description,
+                            'userName': userCompany,
+                            'phone': phone,
+                            'city': city,
+                            'website': website || null,
+                            'address': address,
+                            'inForCompany.idKD': idKD,
+                            'inForCompany.mst': mst || null,
+                            'inForCompany.website': website || null,
+                            'inForCompany.com_size': site,
+
                         }
                     });
-                    return functions.success(res, 'update thành công')
+                    return functions.success(res, 'update thành công', 404)
                 }
-                return functions.setError(res, 'sai định dạng số điện thoại')
+                return functions.setError(res, 'sai định dạng số điện thoại', 404)
             }
-            return functions.setError(res, 'thiếu dữ liệu')
+            return functions.setError(res, 'thiếu dữ liệu', 404)
         } catch (error) {
             console.log(error)
             return functions.setError(res, error)
@@ -433,12 +434,10 @@ exports.updateContactInfo = async(req, res, next) => {
                     if (user != null) {
                         await Users.updateOne({ email: email }, {
                             $set: {
-                                inForCompanyTV365: {
-                                    userContactName: userContactName,
-                                    userContactPhone: userContactPhone,
-                                    userContactAddress: userContactAddress,
-                                    userContactEmail: userContactEmail,
-                                },
+                                'inForCompany.userContactName': userContactName,
+                                'inForCompany.userContactPhone': userContactPhone,
+                                'inForCompany.userContactAddress': userContactAddress,
+                                'inForCompany.userContactEmail': userContactEmail,
                             }
                         });
                         return functions.success(res, 'update thành công')
@@ -483,10 +482,8 @@ exports.updateVideoOrLink = async(req, res, next) => {
             if (user != null) {
                 await Users.updateOne({ email: email }, {
                     $set: {
-                        inForCompanyTV365: {
-                            videoType: video,
-                            linkVideo: link,
-                        },
+                        'inForCompany.videoType': video,
+                        'inForCompany.linkVideo': link
                     }
                 });
                 return functions.success(res, 'update thành công')
@@ -562,8 +559,8 @@ exports.changePassword = async(req, res, next) => {
             return functions.setError(res, error)
         }
     }
-    // hàm updload avatar
-exports.uploadIMG = async(req, res, next) => {
+    // hàm cập nhập avatar
+exports.updateImg = async(req, res, next) => {
         try {
             let email = req.user.data.email,
                 avatarUser = req.file;
@@ -714,7 +711,7 @@ exports.listSaveUV = async(req, res, next) => {
                 return functions.setError(res, 'không lấy được danh sách', 404)
             } else {
                 let findUV = await functions.getDatafind(SaveCandidate, { uscID: idCompany });
-                return functions.success(res, "Lấy danh sách uv thành công", findUV);
+                return functions.success(res, "Lấy danh sách tất cả uv thành công", findUV);
             }
         } catch (error) {
             console.log(error)
@@ -725,11 +722,11 @@ exports.listSaveUV = async(req, res, next) => {
 exports.manageFilterPoint = async(req, res, next) => {
         try {
             let idCompany = req.user.data.idTimViec365;
-            let point = await functions.getDatafindOne(PointCompany, { idTimViec365: idCompany });
+            let point = await functions.getDatafindOne(PointCompany, { uscID: idCompany });
             let now = new Date();
             let pointUSC = 0;
             if (point) {
-                let checkReset0 = await functions.getDatafindOne(PointCompany, { idTimViec365: idCompany, dayResetPoint0: { $lt: now } });
+                let checkReset0 = await functions.getDatafindOne(PointCompany, { uscID: idCompany, dayResetPoint0: { $lt: now } });
                 if (checkReset0 == null) {
                     pointUSC = point.pointUSC
                 }
@@ -755,11 +752,11 @@ exports.seenUVWithPoint = async(req, res, next) => {
             let returnPoint = req.body.returnPoint;
             let point = 0;
             if (idUser && ipUser) {
-                let companyPoint = await functions.getDatafindOne(PointCompany, { idTimViec365: idCompany });
+                let companyPoint = await functions.getDatafindOne(PointCompany, { uscID: idCompany });
                 if (companyPoint) {
                     point = companyPoint.pointUSC - 1;
                     if (point >= 0 && companyPoint.pointUSC > 0) {
-                        await PointCompany.updateOne({ idTimViec365: idCompany }, {
+                        await PointCompany.updateOne({ uscID: idCompany }, {
                             $set: {
                                 pointUSC: point,
                             }
@@ -796,7 +793,7 @@ exports.submitFeedbackCtv = async(req, res, next) => {
         try {
             let request = req.body,
                 idCompany = req.user.data.idTimViec365,
-                description = req.user.data.inForCompanyTV365.description;
+                description = req.user.data.inForCompany.description;
             if (request) {
                 let company = await functions.getDatafindOne(UserCompanyMultit, { uscID: idCompany });
                 if (company) {
@@ -820,6 +817,7 @@ exports.submitFeedbackCtv = async(req, res, next) => {
                     return functions.success(res, "tạo thành công")
                 }
             }
+            return functions.setError(res, 'không có dữ liệu', 404)
         } catch (error) {
             console.log(error)
             return functions.setError(res, error)
@@ -830,7 +828,7 @@ exports.submitFeedbackWeb = async(req, res, next) => {
         try {
             let request = req.body,
                 idCompany = req.user.data.idTimViec365,
-                description = req.user.data.inForCompanyTV365.description;
+                description = req.user.data.inForCompany.description;
             if (request) {
                 let company = await functions.getDatafindOne(UserCompanyMultit, { uscID: idCompany });
                 if (company) {
@@ -855,6 +853,8 @@ exports.submitFeedbackWeb = async(req, res, next) => {
 
                 }
             }
+            return functions.setError(res, 'không có dữ liệu', 404)
+
         } catch (error) {
             console.log(error)
             return functions.setError(res, error)
@@ -862,11 +862,127 @@ exports.submitFeedbackWeb = async(req, res, next) => {
     }
     // hàm lấy ra kho ảnh
 exports.displayImages = async(req, res, next) => {
+        try {
+            let idCompany = req.user.data._id;
+            let khoAnh = await functions.getDatafindOne(Users, { _id: idCompany });
+            if (khoAnh) {
+                let data = {
+                    listImgs: khoAnh.inForCompany.comImages,
+                    listVideos: khoAnh.inForCompany.comVideos,
+                }
+                return functions.success(res, "lấy dữ liệu thành công thành công", data)
+            }
+            return functions.setError(res, 'không có dữ liệu', 404)
+        } catch (error) {
+            console.log(error)
+            return functions.setError(res, error)
+        }
+    }
+    // hàm up ảnh ở kho ảnh
+exports.uploadImg = async(req, res, next) => {
+        try {
+            let idCompany = req.user.data._id;
+            let img = req.file;
+            let user = await functions.getDatafindOne(Users, { _id: idCompany });
+            if (user) {
+                if (user.inForCompany.comImages.length < 30) {
+                    let listImg = user.inForCompany.comImages;
+                    if (img) {
+                        let checkImg = await functions.checkImage(img.path)
+                        if (checkImg) {
+                            listImg.push(img.filename)
+                            await Users.updateOne({ _id: idCompany }, {
+                                $set: { 'inForCompany.comImages': listImg }
+                            });
+                            return functions.success(res, 'thêm ảnh thành công')
+                        } else {
+                            await functions.deleteImg(img)
+                            return functions.setError(res, 'sai định dạng ảnh hoặc ảnh lớn hơn 2MB', 404)
+                        }
+                    } else {
+                        await functions.deleteImg(img)
+                        return functions.setError(res, 'chưa có ảnh', 404)
+                    }
+                }
+                await functions.deleteImg(img)
+                return functions.setError(res, ' giới hạn 30 ảnh ', 404)
+            }
+            await functions.deleteImg(img)
+            return functions.setError(res, 'nguời dùng không tồn tại', 404)
+        } catch (error) {
+            console.log(error)
+            await functions.deleteImg(req.file)
+            return functions.setError(res, error)
+        }
+    }
+    // hàm up video ở kho ảnh
+exports.uploadVideo = async(req, res, next) => {
+        try {
+            let idCompany = req.user.data._id;
+            let video = req.file;
+            let user = await functions.getDatafindOne(Users, { _id: idCompany });
+            if (user) {
+                if (user.inForCompany.comVideos.length < 3) {
+                    let listVideo = user.inForCompany.comVideos;
+                    if (video) {
+                        let checkImg = await functions.checkVideo(video)
+                        if (checkImg) {
+                            listVideo.push(video.filename)
+                            await Users.updateOne({ _id: idCompany }, {
+                                $set: { 'inForCompany.comVideos': listVideo }
+                            });
+                            return functions.success(res, 'thêm video thành công')
+                        } else {
+                            await functions.deleteImg(video)
+                            return functions.setError(res, 'sai định dạng video hoặc video lớn hơn 100MB', 404)
+                        }
+                    } else {
+                        await functions.deleteImg(video)
+                        return functions.setError(res, 'chưa có video', 404)
+                    }
+                }
+                await functions.deleteImg(video)
+                return functions.setError(res, ' giới hạn 3 video ', 404)
+            }
+            await functions.deleteImg(video)
+            return functions.setError(res, 'nguời dùng không tồn tại', 404)
+        } catch (error) {
+            console.log(error)
+            await functions.deleteImg(req.file)
+            return functions.setError(res, error)
+        }
+    }
+    // hàm xóa ảnh/video
+exports.deleteFile = async(req, res, next) => {
     try {
-        let idCompany = req.user.data.idTimViec365;
-        let imgs = await functions.getDatafind(Users, { idTimViec365: idCompany })
+        let idCompany = req.user.data._id;
+        let namefile = req.body.namefile;
+        let user = await functions.getDatafindOne(Users, { _id: idCompany });
+        if (namefile && user) {
+            // check xem file là ảnh hay video 1 ảnh 2 video
+            let checkFile = await functions.isImageOrVideo(namefile)
+            if (checkFile == 1) {
+                // xóa đi phần tử trong mảng rồi cập nhập
+                let listImg = await functions.removeSimilarKeywords(namefile, user.inForCompany.comImages);
+                await Users.updateOne({ _id: idCompany }, {
+                    $set: { 'inForCompany.comImages': listImg }
+                });
+
+            }
+            if (checkFile == 2) {
+                let listVideo = await functions.removeSimilarKeywords(namefile, user.inForCompany.comVideos);
+                await Users.updateOne({ _id: idCompany }, {
+                    $set: { 'inForCompany.comVideos': listVideo }
+                });
+
+            }
+            await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${namefile}`)
+            return functions.success(res, 'xoá thành công')
+        }
+        return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
     } catch (error) {
         console.log(error)
+        await functions.deleteImg(req.file)
         return functions.setError(res, error)
     }
 }

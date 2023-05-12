@@ -2,7 +2,7 @@ const functions = require('../../services/functions')
 const City = require('../../models/Timviec365/Timviec/City')
 const District = require('../../models/Timviec365/Timviec/District');
 const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
-const Users = require('../../models/Timviec365/Timviec/Users')
+const Users = require('../../models/Users')
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -200,7 +200,7 @@ exports.postNewTv365 = async(req, res, next) => {
                 await newTV.save();
                 await Users.updateOne({ idTimViec365: idCompany }, {
                     $set: {
-                        inForCompanyTV365: {
+                        inForCompany: {
                             userContactName: userContactName,
                             userContactEmail: userContactEmail,
                             userContactAddress: userContactAddress,
@@ -501,7 +501,7 @@ exports.updateNewTv365 = async(req, res, next) => {
                 });
                 await Users.updateOne({ idTimViec365: idCompany }, {
                     $set: {
-                        inForCompanyTV365: {
+                        inForCompany: {
                             userContactName: userContactName,
                             userContactEmail: userContactEmail,
                             userContactAddress: userContactAddress,

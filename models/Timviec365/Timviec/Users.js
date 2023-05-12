@@ -256,6 +256,10 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            candiSchool: {
+                type: String,
+                default: null
+            },
             referencePersonName: {
                 type: String,
                 default: null
@@ -292,6 +296,10 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            cv: {
+                type: String,
+                default: null
+            }
         },
         default: null
     },
@@ -320,16 +328,8 @@ const UserSchema = new mongoose.Schema({
                 default: 0
             },
             comImages: {
-                imgs: [{
-                    type: String
-                }],
-                active: Number,
-            },
-            comVideos: {
-                videos: [{
-                    type: String
-                }],
-                active: Number,
+                type: String,
+                default: null
             },
             website: {
                 type: String,
@@ -372,4 +372,4 @@ const UserSchema = new mongoose.Schema({
     timestamp: true
 })
 
-module.exports = mongoose.model("Users", UserSchema);
+// module.exports = mongoose.model("Users", UserSchema);
