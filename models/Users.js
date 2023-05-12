@@ -229,7 +229,7 @@ const UserSchema = new mongoose.Schema({
             },
             candiTitle: {
                 // Công việc mong muốn
-                type: Number,
+                type: String,
                 default: 0
             },
             candiHocVan: {
