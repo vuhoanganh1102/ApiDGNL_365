@@ -159,6 +159,8 @@ const newTV365Schema = new mongoose.Schema(
                 videoActive:{
                     type:String,
                 },
+                // link video
+                link:String,
                 // list ảnh bài post
                 images:
                 [

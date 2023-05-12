@@ -1,13 +1,15 @@
-const md5= require('md5')
-const jwt = require('jsonwebtoken')
+const md5= require('md5');
+const jwt = require('jsonwebtoken');
 
-const Users=require('../../models/Timviec365/Timviec/Users')
-const functions=require('../../services/functions')
-const CompanyUnset=require('../../models/Timviec365/Timviec/userCompanyUnset')
-const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob')
+const Users=require('../../models/Timviec365/Timviec/Users');
+const functions=require('../../services/functions');
+const CompanyUnset=require('../../models/Timviec365/Timviec/userCompanyUnset');
+const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob');
 const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
 const SaveCandidate = require('../../models/Timviec365/Timviec/saveCandidate');
-const PointCompany=require('../../models/Timviec365/Timviec/pointCompany.model')
+const PointCompany=require('../../models/Timviec365/Timviec/pointCompany.model');
+const PointUsed=require('../../models/Timviec365/Timviec/pointUsed.model')
+const UserCompanyMultit=require('../../models/Timviec365/Timviec/userCompanyMutil')
 
 // hàm đăng ký
 exports.register = async(req,res,next)=>{
@@ -734,6 +736,123 @@ exports.manageFilterPoint = async(req,res,next) => {
             })
         }
         return  functions.setError(res,'không có dữ liệu',404)
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+}
+// hàm xem ứng hồ sơ ứng viên với điểm lọc 
+exports.seenUVWithPoint= async(req,res,next) => {
+    try{
+        let idCompany= req.user.data._id;
+        let idUser=req.body.useID;
+        let noteUV=req.body.noteUV;
+        let ipUser=req.body.ipUser;
+        let returnPoint=req.body.returnPoint;
+        let point=0;
+        if(idUser && ipUser){
+            let companyPoint=await functions.getDatafindOne(PointCompany,{uscID:idCompany});
+            if(companyPoint){
+                point=companyPoint.pointUSC-1;
+                if(point >= 0 && companyPoint.pointUSC >0) {
+                    await PointCompany.updateOne({ uscID: idCompany }, { 
+                        $set: { 
+                            pointUSC:point,
+                        }
+                    });
+                    let maxID=await functions.getMaxID(PointUsed) ||0 ;
+                    const pointUsed= new PointUsed({
+                        _id:Number(maxID)+1,
+                        uscID:idCompany,
+                        useID:idUser,
+                        point:1,
+                        type:1,
+                        noteUV:noteUV || " ",
+                        usedDay:new Date().getTime(),
+                        returnPoint:returnPoint || 0,
+                        ipUser:ipUser
+                    })
+                    await pointUsed.save();
+                    return functions.success(res,"Xem thành công")
+                }
+                return functions.success(res,"Điểm còn lại là 0",{
+                    point:0
+                })
+            }
+            return  functions.setError(res,'nhà tuyển dụng không có điểm',404)
+        }
+        return  functions.setError(res,'không có dữ liệu',404)
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+}
+// hàm đánh giá của NTD về CTV
+exports.submitFeedbackCtv = async (req,res,next) =>{
+    try{
+        let request=req.body,
+        idCompany=req.user.data._id,
+        description=req.user.data.inForCompanyTV365.description;
+        if(request){
+            let company=await functions.getDatafindOne(UserCompanyMultit,{uscID:idCompany});
+            if(company){
+                await UserCompanyMultit.updateOne({ uscID: idCompany }, { 
+                    $set: { 
+                        dgc:request,
+                        dgTime:new Date().getTime(),
+                    }
+                });
+                return functions.success(res,"Cập nhập thành công")
+            }
+            else{
+                let maxID=await functions.getMaxID(UserCompanyMultit) ||0;
+                const feedBack= new UserCompanyMultit({
+                    _id:maxID,
+                    uscID:idCompany,
+                    companyInfo:description,
+                    dgc:request,
+                    dgTime:new Date().getTime(),
+                });
+                await feedBack.save();
+                return functions.success(res,"tạo thành công")
+            }
+        }
+    }catch(error){
+        console.log(error)
+        return  functions.setError(res,error)
+    }
+}
+// hàm đánh giá của NTD về Web
+exports.submitFeedbackWeb = async (req,res,next) =>{
+    try{
+        let request=req.body,
+        idCompany=req.user.data._id,
+        description=req.user.data.inForCompanyTV365.description;
+        if(request){
+            let company=await functions.getDatafindOne(UserCompanyMultit,{uscID:idCompany});
+            if(company){
+                await UserCompanyMultit.updateOne({ uscID: idCompany }, { 
+                    $set: { 
+                        dgtv:request,
+                        dgTime:new Date().getTime(),
+                    }
+                });
+                return functions.success(res,"Cập nhập thành công")
+            }
+            else{
+                let maxID=await functions.getMaxID(UserCompanyMultit) ||0;
+                const feedBack= new UserCompanyMultit({
+                    _id:maxID,
+                    uscID:idCompany,
+                    companyInfo:description,
+                    dgtv:request,
+                    dgTime:new Date().getTime(),
+                });
+                await feedBack.save();
+                return functions.success(res,"tạo thành công")
+
+            }
+        }
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)

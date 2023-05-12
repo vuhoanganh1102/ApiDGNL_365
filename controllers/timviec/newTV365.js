@@ -190,7 +190,8 @@ exports.postNewTv365 =async (req,res,next) => {
                         hoaHong:hoaHong || " ",
                         tgtv:tgtv || " ",
                         videoType:video || " ",
-                        images:listImg || " "
+                        images:listImg || " ",
+                        link:link,
                     },
                     newMoney:{
                         type:typeNewMoney,
