@@ -120,58 +120,54 @@ exports.checkVideo = async(filePath) => {
         return false;
     }
     return true;
-};
+}
 
 exports.getDataDeleteOne = async(model, condition) => {
-    return model.deleteOne(condition)
-};
-// storage để updload file
+        return model.deleteOne(condition)
+    }
+    // storage để updload file
 const storageMain = (destination, fileExtension) => {
-    return multer.diskStorage({
-        destination: function(req, file, cb) {
-            cb(null, destination)
-        },
-        filename: function(req, file, cb) {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-            cb(null, file.fieldname + uniqueSuffix + fileExtension)
-        }
-    })
-};
-
-//  hàm upload ảnh
-exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') });
-
-// hàm upload file
-exports.uploadVideo = multer({ storage: storageMain('public/company/video', '.mp4') });
+        return multer.diskStorage({
+            destination: function(req, file, cb) {
+                cb(null, destination)
+            },
+            filename: function(req, file, cb) {
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+                cb(null, file.fieldname + uniqueSuffix + fileExtension)
+            }
+        })
+    }
+    //  hàm upload ảnh
+exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') })
+    // hàm upload file
+exports.uploadVideo = multer({ storage: storageMain('public/company/video', '.mp4') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
         if (err) throw err;
         console.log('File was deleted');
     });
-};
-
-// hàm xóa file
+}
+    // hàm xóa file
 exports.deleteImg = async(condition) => {
     if (condition) {
         await deleteFile(condition.path)
     }
-};
 
-// storega check file
-const storage = multer.diskStorage({
+}
+    // storega check file
+const storageFile = multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, 'public/cvUpload')
+        cb(null, 'public/candidate/fileUpload')
     },
     filename: function(req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.fieldname + uniqueSuffix + '.pdf')
-    }
-});
+        cb(null, file.fieldname + uniqueSuffix + `.${file.originalname.split('.').slice(-1)[0]}`)
+    },
+})
 
 // hàm check file
-exports.uploadFile = multer({ storage: storage });
-
+exports.uploadFile = multer({ storage: storageFile })
 exports.createError = async(code, message) => {
     const err = new Error();
     err.code = code;
@@ -221,15 +217,12 @@ exports.verifyPassword = async(inputPassword, hashedPassword) => {
     const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
     return md5Hash === hashedPassword;
 };
-
-// hàm check token
 exports.checkToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
         return res.status(401).json({ message: "Missing token" });
     }
-
     jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
         if (err) {
             return res.status(403).json({ message: "Invalid token" });
@@ -243,6 +236,11 @@ exports.createToken = async(data, time) => {
     return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
 };
 
+//hàm giải mã token
+exports.decodeToken = async(data, time) => {
+    return jwt.verify(data, process.env.NODE_SERCET, { expiresIn: time });
+};
+
 // hàm lấy data từ axios 
 exports.getDataAxios = async(url, condition) => {
     return await await axios({
@@ -254,3 +252,8 @@ exports.getDataAxios = async(url, condition) => {
         return response.data
     })
 };
+
+//hàm phân trang find
+exports.pageFind = async(model, condition, sort, skip, limit) => {
+    return model.find(condition).sort(sort).skip(skip).limit(limit)
+}
