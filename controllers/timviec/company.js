@@ -623,6 +623,8 @@ exports.listUVApplyJob = async(req,res,next) => {
         let idCompany=req.user.data._id;
         let page = Number(req.body.page);
         let pageSize = Number(req.body.pageSize);
+        if(page && pageSize){
+
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let findUV = await functions.pageFind(ApplyForJob, { userID:idCompany,type:1 }, { _id: -1 }, skip, limit);
@@ -630,6 +632,11 @@ exports.listUVApplyJob = async(req,res,next) => {
         const totalPages = Math.ceil(totalCount / pageSize);
         if (findUV) {
            return functions.success(res, "Lấy danh sách uv thành công",  { totalCount, totalPages, listUv: findUV });
+    }
+   }
+   else{
+    let findUV = await functions.getDatafind(ApplyForJob, { userID:idCompany,type:1 } );
+    return functions.success(res, "Lấy danh sách uv thành công", findUV);
     }
     return  functions.setError(res,'không lấy được danh sách',404)
     }catch(error){
@@ -644,6 +651,7 @@ exports.listUVApplyJobStaff = async(req,res,next) => {
         let idCompany=req.user.data._id;
         let page = Number(req.body.page);
         let pageSize = Number(req.body.pageSize);
+        if(page && pageSize){
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let findUV = await functions.pageFind(ApplyForJob, { userID:idCompany,type:2 }, { _id: -1 }, skip, limit);
@@ -653,6 +661,11 @@ exports.listUVApplyJobStaff = async(req,res,next) => {
            return functions.success(res, "Lấy danh sách uv thành công",  { totalCount, totalPages, listUv: findUV });
     }
     return  functions.setError(res,'không lấy được danh sách',404)
+   }
+    else{
+        let findUV = await functions.getDatafind(ApplyForJob, { userID:idCompany,type:2 } );
+        return functions.success(res, "Lấy danh sách uv thành công", findUV);
+        }
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)
@@ -703,15 +716,21 @@ exports.listSaveUV = async(req,res,next) => {
         let idCompany=req.user.data._id;
         let page = Number(req.body.page);
         let pageSize = Number(req.body.pageSize);
-        const skip = (page - 1) * pageSize;
-        const limit = pageSize;
-        let findUV = await functions.pageFind(SaveCandidate, { uscID:idCompany }, { _id: -1 }, skip, limit);
-        const totalCount = await functions.findCount(SaveCandidate,{uscID:idCompany});
-        const totalPages = Math.ceil(totalCount / pageSize);
-        if (findUV) {
-           return functions.success(res, "Lấy danh sách uv thành công",  { totalCount, totalPages, listUv: findUV });
-    }
-    return  functions.setError(res,'không lấy được danh sách',404)
+        if(page && pageSize){
+           const skip = (page - 1) * pageSize;
+           const limit = pageSize;
+           let findUV = await functions.pageFind(SaveCandidate, { uscID:idCompany }, { _id: -1 }, skip, limit);
+           const totalCount = await functions.findCount(SaveCandidate,{uscID:idCompany});
+           const totalPages = Math.ceil(totalCount / pageSize);
+           if (findUV) {
+               return functions.success(res, "Lấy danh sách uv thành công",  { totalCount, totalPages, listUv: findUV });
+                 }
+              return  functions.setError(res,'không lấy được danh sách',404)
+            }
+            else{
+            let findUV = await functions.getDatafind(SaveCandidate, { uscID:idCompany } );
+            return functions.success(res, "Lấy danh sách uv thành công", findUV);
+            }
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)

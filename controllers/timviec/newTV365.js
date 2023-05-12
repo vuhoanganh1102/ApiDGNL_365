@@ -260,8 +260,24 @@ exports.getDataDistrict= async(req,res,next) => {
 exports.getListPost= async(req,res,next) => {
     try{
         let idCompany=req.user.data._id;
-        let listPost=await functions.getDatafind(NewTV365,{userID:idCompany})
-        return functions.success(res,"Láy dữ liệu thành công",listPost)
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        if(page && pageSize){
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let listPost = await functions.pageFind(NewTV365, { userID:idCompany }, { _id: -1 }, skip, limit);
+            const totalCount = await functions.findCount(NewTV365,{userID:idCompany});
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (listPost) {
+               return functions.success(res, "Lấy danh sách tin đăng thành công",  { totalCount, totalPages, listPost: listPost });
+        }
+        return  functions.setError(res,'không lấy được danh sách',404)
+        }else{
+            let listPost = await functions.getDatafind(NewTV365, { userID:idCompany } );
+            return functions.success(res, "Lấy danh sách tin đăng thành công", listPost);
+
+        }
+        
     }catch(error){
         console.log(error)
         return  functions.setError(res,error)
