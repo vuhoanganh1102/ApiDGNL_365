@@ -7,30 +7,31 @@ const CalendarSchema = new Schema({
         type: Number,
         require: true
     },
-    //Tên của lịch làm việc
-    calendarName: {
-        type: String,
-    },
     // ID của công ty tạo lịch làm việc
     companyId: {
         type: Number,
+    },
+    //Tên của lịch làm việc
+    calendarName: {
+        type: String,
     },
     //Thời điểm tạo lịch làm việc
     createdAt: {
         type: Date,
         default: Date.now()
     },
-    //Thời gian áp dụng (theo tháng)
-    timeApply: {
-        type: Date
-    },
     //Id lịch làm việc
+    //1: Thứ 2 - thứ 6, 2: Thứ 2 - thứ 7, 3: Thứ 2 - thứ CN
     idCalendarWork: {
         type: Number
     },
     //Lịch làm việc
     workCalendar: {
         type: String
+    },
+    //Thời gian áp dụng (theo tháng)
+    timeApply: {
+        type: Date
     },
     //Ngày bắt đầu áp dụng 
     timeStart: {
@@ -43,6 +44,13 @@ const CalendarSchema = new Schema({
     //Thời điềm copy nền không phải copy thì là null
     timeCopy: {
         type: Date
+    },
+    // Lịch chi tiết cho từng ngày
+    calendar: {
+        type: [{
+            type:Schema.Types.ObjectId,
+            ref: 'ShiftCalendars'
+        }]
     }
 
 });
