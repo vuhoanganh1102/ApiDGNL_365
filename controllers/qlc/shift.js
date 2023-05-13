@@ -21,7 +21,7 @@ exports.getShiftById = async (req, res) => {
             functions.setError(res, "Shift cannot be found or does not exist", 622);
         }
     }
-}
+};
 
 exports.getShiftByComId = async (req, res) => {
 
@@ -47,7 +47,7 @@ exports.createShift = async (req, res) => {
 
     if (!companyId) {
         functions.setError(res, "Company id required");
-    } else if (functions.checkNumber(companyId)) {
+    } else if (typeof companyId !== "number") {
         functions.setError(res, "Company id must be a number");
     } else if (!shiftName) {
         functions.setError(res, "Shift name required");
@@ -55,11 +55,13 @@ exports.createShift = async (req, res) => {
         functions.setError(res, "Time check in required");
     } else if (!timeCheckOut) {
         functions.setError(res, "Time check out required");
-    } else if (!timeCheckInEarliest) {
-        functions.setError(res, "Time check in earliest required");
-    } else if (!timeCheckOutLastest) {
-        functions.setError(res, "Time check out lastest required");
-    } else if (!idTypeCalculateWork) {
+    }
+    // else if (!timeCheckInEarliest) {
+    //     functions.setError(res, "Time check in earliest required");
+    // } else if (!timeCheckOutLastest) {
+    //     functions.setError(res, "Time check out lastest required");
+    // }
+    else if (!idTypeCalculateWork) {
         functions.setError(res, "Id type calculation work required");
     } else {
         if (idTypeCalculateWork === 2) {
@@ -102,7 +104,7 @@ exports.createShift = async (req, res) => {
             numOfWorkPerShift: numOfWorkPerShift,
             money: money,
 
-        })
+        });
 
         await shift.save()
             .then(() => {
@@ -116,7 +118,7 @@ exports.createShift = async (req, res) => {
 };
 
 exports.editShift = async (req, res) => {
-    const _id = req.params.id
+    const _id = req.params.id;
 
     if (functions.checkNumber(_id)) {
         functions.setError(res, "Id must be a number");
@@ -133,7 +135,7 @@ exports.editShift = async (req, res) => {
 
         if (!companyId) {
             functions.setError(res, "Company id required");
-        } else if (functions.checkNumber(companyId)) {
+        } else if (typeof companyId !== "number") {
             functions.setError(res, "Company id must be a number");
         } else if (!shiftName) {
             functions.setError(res, "Shift name required");
@@ -141,11 +143,13 @@ exports.editShift = async (req, res) => {
             functions.setError(res, "Time check in required");
         } else if (!timeCheckOut) {
             functions.setError(res, "Time check out required");
-        } else if (!timeCheckInEarliest) {
-            functions.setError(res, "Time check in earliest required");
-        } else if (!timeCheckOutLastest) {
-            functions.setError(res, "Time check out lastest required");
-        } else if (!idTypeCalculateWork) {
+        }
+        // else if (!timeCheckInEarliest) {
+        //     functions.setError(res, "Time check in earliest required");
+        // } else if (!timeCheckOutLastest) {
+        //     functions.setError(res, "Time check out lastest required");
+        // } 
+        else if (!idTypeCalculateWork) {
             functions.setError(res, "Id type calculation work required");
         } else {
             if (idTypeCalculateWork === 2) {
@@ -211,6 +215,24 @@ exports.deleteShift = async (req, res) => {
 }
 
 exports.deleteShiftCompany = async (req, res) => {
+    const { companyId } = req.body;
+
+    if (!companyId) {
+        functions.setError(res, "Company id required");
+    } else if (typeof companyId !== "number") {
+        functions.setError(res, "Company id must be a number");
+    } else {
+        const shifts = await functions.getDatafind(Shift, { companyId: companyId });
+        if (!shifts) {
+            functions.setError(res, "No shifts found in this company");
+        } else {
+            await Shift.deleteMany({ companyId: companyId })
+                .then(() => functions.success(res, "Shifts deleted successfully", shifts))
+                .catch((err) => functions.setError(res, err.message));
+        }
+    }
+
+
 
 }
 

@@ -11,6 +11,10 @@ const CalendarSchema = new Schema({
     calendarName: {
         type: String,
     },
+    // ID của công ty tạo lịch làm việc
+    companyId: {
+        type: Number,
+    },
     //Thời điểm tạo lịch làm việc
     createdAt: {
         type: Date,
@@ -38,8 +42,7 @@ const CalendarSchema = new Schema({
     },
     //Thời điềm copy nền không phải copy thì là null
     timeCopy: {
-        type: Date,
-        default: isCopy ? Date.now() : null
+        type: Date
     }
 
 });
