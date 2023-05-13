@@ -29,12 +29,13 @@ exports.register = async(req, res, next) => {
             fromWeb = request.fromWeb,
             avatarUser = req.files.avatarUser,
             ipAddressRegister = request.ipAddressRegister,
-            videoType = req.files.videoType;
-        let video = '';
-        let link = '';
-        let avatar = "";
-        let listIDKD = [];
-        let idKD = 0;
+            videoType = req.files.videoType,
+            video = '',
+            link = '',
+            avatar = "",
+            listIDKD = [],
+            idKD = 0,
+            empID = 0;
         // check dữ liệu không bị undefined
         if ((username && password && city && district &&
                 address && email && phone) !== undefined) {
@@ -96,12 +97,14 @@ exports.register = async(req, res, next) => {
                             return functions.setError(res, 'link không đúng định dạng ', 404)
                         }
                     }
+                    // lấy danh sách id bộ phận
                     let listKD = await functions.getDatafind(AdminUser, { bophan: { $ne: 0 } });
                     let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1);
                     let idKDUser = listUser[0].inForCompany.idKD;
                     for (let i = 0; i < listKD.length; i++) {
                         listIDKD.push(listKD[i].bophan)
                     }
+                    // tìm vị trí của idKd của người đăng ký mới nhất
                     let index = listIDKD.findIndex(id => id == idKDUser);
                     if (index !== -1) {
                         if (index === listIDKD.length - 1) {
@@ -114,6 +117,21 @@ exports.register = async(req, res, next) => {
                     let maxID = await functions.getMaxID(Users) || 0;
                     let maxIDTimviec = await (Users.findOne({ type: 1 }).sort({ idTimViec365: -1 }).lean()) || 0;
                     let newIDTimViec = maxIDTimviec.idTimViec365 || 0;
+                    let adminKD = await functions.getDatafindOne(AdminUser, { bophan: idKD });
+                    if (adminKD) {
+                        empID = adminKD.empID;
+                    }
+                    // data gửi đến bộ phận nhân sự qua app chat
+                    let dataSendChatApp = {
+                        ContactId: empID,
+                        SenderID: 1191,
+                        MessageType: text,
+                        Message: `${username} vừa đăng ký tài khoản nhà tuyển dụng trên timviec365.vn`,
+                        LiveChat: { "ClientId": "200504_liveChatV2", "ClientName": username, "FromWeb": "timviec365.vn", "FromConversation": "506685" },
+                        InfoSupport: { "Title": "Hỗ trợ", "Status": 1 },
+                        MessageInforSupport: `Xin chào, tôi tên là ${username},SĐT: ${phone} `,
+                        Email: `${email},tôi vừa đăng ký tài khoản NTD trên timviec365.vn,tôi cần bạn hỗ trợ !`
+                    }
                     const company = new Users({
                         _id: (Number(maxID) + 1),
                         email: email,
@@ -145,6 +163,8 @@ exports.register = async(req, res, next) => {
                         }
                     });
                     await company.save();
+                    // gửi cho bộ phận nhân sự qua appchat
+                    await functions.getDataAxios('http://43.239.223.142:9000/api/message/SendMessage_v2', dataSendChatApp)
                     let companyUnset = await functions.getDatafindOne(CompanyUnset, { email })
                     if (companyUnset != null) {
                         await functions.getDataDeleteOne(CompanyUnset, { email })
