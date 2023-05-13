@@ -1,5 +1,6 @@
-const Users = require('../../models/Timviec365/Timviec/Users');
+const Users = require('../../models/Users');
 const blog = require('../../models/Timviec365/Timviec/blog.model');
+const hoso = require('../../models/Timviec365/Timviec/hoso');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
 const donUV = require('../../models/Timviec365/CV/donUV');
 const HoSoUV = require('../../models/Timviec365/CV/HoSoUV');
@@ -17,6 +18,8 @@ var jwt = require('jsonwebtoken');
 const axios = require('axios');
 const functions = require('../../services/functions');
 const { token } = require('morgan');
+const fs = require('fs');
+const path = require('path');
 
 
 exports.index = (req, res, next) => {
@@ -55,6 +58,10 @@ exports.RegisterB1 = async(req, res, next) => {
                         if (maxID) {
                             newID = Number(maxID._id) + 1;
                         } else newID = 1
+                        const maxIDUser = await Users.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                        if (maxIDUser) {
+                            newIDUser = Number(maxIDUser._id) + 1;
+                        }
                         let findUserUv = await functions.getDatafindOne(userUnset, { usePhoneTk: phoneTK })
                         if (findUserUv) {
                             let updateUserUv = await functions.getDatafindOneAndUpdate(userUnset, { usePhoneTk: phoneTK }, {
@@ -96,6 +103,7 @@ exports.RegisterB1 = async(req, res, next) => {
                             let saveUserUV = UserUV.save()
                         }
                         req.body.password = md5(req.body.password)
+                        req.body._id = maxIDUser._id
                         const token = await functions.createToken(req.body, "2d")
 
                         return functions.success(res, 'Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong', token)
@@ -113,22 +121,20 @@ exports.RegisterB1 = async(req, res, next) => {
 //đăng kí ứng viên B2 bằng video
 exports.RegisterB2VideoUpload = async(req, res, next) => {
     try {
-        if (req && req.body && req.body.token && req.file) {
-            const token = req.body.token
+        if (req && req.body && req.file) {
             const videoUpload = req.file
             const videoLink = req.body.videoLink
-            const userInfo = await functions.decodeToken(token, "2d")
-            const phoneTK = userInfo.data.phoneTK
-            const password = userInfo.data.password
-            const userName = userInfo.data.userName
-            const email = userInfo.data.email
-            const city = userInfo.data.city
-            const district = userInfo.data.district
-            const address = userInfo.data.address
-            const from = userInfo.data.uRegis
-            const candiCateID = userInfo.data.candiCateID
-            const candiCityID = userInfo.data.candiCityID
-            const candiTitle = userInfo.data.candiTitle
+            const phoneTK = req.user.data.phoneTK
+            const password = req.user.data.password
+            const userName = req.user.data.userName
+            const email = req.user.data.email
+            const city = req.user.data.city
+            const district = req.user.data.district
+            const address = req.user.data.address
+            const from = req.user.data.uRegis
+            const candiCateID = req.user.data.candiCateID
+            const candiCityID = req.user.data.candiCityID
+            const candiTitle = req.user.data.candiTitle
 
             let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK })
             if (findUser && findUser.phoneTK && findUser.phoneTK == phoneTK) { // check tồn tại tài khoản chưa
@@ -157,7 +163,7 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                         idTimViec365: newIDTimviec,
                         authentic: 0,
                         createdAt: new Date(Date.now()),
-                        inForCandidateTV365: {
+                        inForPerson: {
                             user_id: 0,
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
@@ -185,7 +191,7 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                         idTimViec365: newIDTimviec,
                         authentic: 0,
                         createdAt: new Date(Date.now()),
-                        inForCandidateTV365: {
+                        inForPerson: {
                             user_id: 0,
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
@@ -213,43 +219,38 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
 exports.RegisterB2CvUpload = async(req, res, next) => {
     try {
 
-        if (req && req.body && req.body.token && req.files) {
-
-            const token = req.body.token
+        if (req && req.body && req.files) {
             const birthday = req.body.birthday
             const candiExp = req.body.candiExp
             const candiHocVan = req.body.candiHocVan
             const candiSchool = req.body.candiSchool
             const fileUpload = req.files
             const videoLink = req.body.videoLink
-            const userInfo = await functions.decodeToken(token, "2d")
-            const phoneTK = userInfo.data.phoneTK
-            const password = userInfo.data.password
-            const userName = userInfo.data.userName
-            const email = userInfo.data.email
-            const city = userInfo.data.city
-            const district = userInfo.data.district
-            const address = userInfo.data.address
-            const from = userInfo.data.uRegis
-            const candiCateID = userInfo.data.candiCateID
-            const candiCityID = userInfo.data.candiCityID
-            const candiTitle = userInfo.data.candiTitle
+            const phoneTK = req.user.data.phoneTK
+            const password = req.user.data.password
+            const userName = req.user.data.userName
+            const email = req.user.data.email
+            const city = req.user.data.city
+            const district = req.user.data.district
+            const address = req.user.data.address
+            const from = req.user.data.uRegis
+            const candiCateID = req.user.data.candiCateID
+            const candiCityID = req.user.data.candiCityID
+            const candiTitle = req.user.data.candiTitle
             let cvUpload, videoUpload
-            for (let i = 0; i < fileUpload.length; i++) {
-                if (!fileUpload[i].fieldname == "cvUpload") {
-                    return functions.setError(req, "không tải Cv", 200)
-                }
-                if (fileUpload[i].fieldname == "cvUpload") {
-                    cvUpload = fileUpload[i]
-                }
-                if (fileUpload[i].fieldname == "videoUpload") {
-                    videoUpload = fileUpload[i]
-                    if (videoUpload.size > (100 * 1024 * 1024)) {
-                        return functions.setError(req, "dung lượng file vượt quá 100 MB", 200)
-                    }
+
+            if (!fileUpload.cvUpload) {
+                return functions.setError(req, "không tải Cv", 200)
+            }
+            if (fileUpload.cvUpload) {
+                cvUpload = fileUpload.cvUpload
+            }
+            if (fileUpload.videoUpload) {
+                videoUpload = fileUpload.videoUpload
+                if (videoUpload.size > (100 * 1024 * 1024)) {
+                    return functions.setError(req, "dung lượng file vượt quá 100 MB", 200)
                 }
             }
-
             let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK })
             if (findUser && findUser.phoneTK && findUser.phoneTK == phoneTK) { // check tồn tại tài khoản chưa
                 return functions.setError(res, "Số điện thoại này đã được đăng kí", 200);
@@ -279,7 +280,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                         authentic: 0,
                         createdAt: new Date(Date.now()),
                         birthday: birthday,
-                        inForCandidateTV365: {
+                        inForPerson: {
                             user_id: 0,
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
@@ -287,8 +288,8 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                             candiExp: candiExp,
                             candiHocVan: candiHocVan,
                             candiSchool: candiSchool,
-                            video: videoUpload.filename,
-                            cv: cvUpload.filename,
+                            video: videoUpload[0].filename,
+                            cv: cvUpload[0].filename,
                             videoType: 1,
                             videoActive: 1
                         }
@@ -312,7 +313,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                         authentic: 0,
                         createdAt: new Date(Date.now()),
                         birthday: birthday,
-                        inForCandidateTV365: {
+                        inForPerson: {
                             user_id: 0,
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
@@ -321,7 +322,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                             candiHocVan: candiHocVan,
                             candiSchool: candiSchool,
                             video: videoLink,
-                            cv: cvUpload.filename,
+                            cv: cvUpload[0].filename,
                             videoType: 2,
                             videoActive: 1
                         }
@@ -406,29 +407,26 @@ exports.AddUserChat365 = async(req, res, next) => {
 //đăng kí ứng viên bước 2 bằng cách tạo cv trên site
 exports.RegisterB2CvSite = async(req, res, next) => {
     try {
-        if (req && req.body && req.body.token && req.file) {
-            const token = req.body.token
+        if (req && req.body && req.file) {
             const imageUpload = req.file
             const lang = req.body.lang
             const html = JSON.stringify(req.body.html)
-            console.log(html)
             const cvId = req.body.cvId
             const status = req.body.status
             const heightCv = req.body.heightCv
             const scan = req.body.scan
             const state = req.body.state
-            const userInfo = await functions.decodeToken(token, "2d")
-            const phoneTK = userInfo.data.phoneTK
-            const password = userInfo.data.password
-            const userName = userInfo.data.userName
-            const email = userInfo.data.email
-            const city = userInfo.data.city
-            const district = userInfo.data.district
-            const address = userInfo.data.address
-            const from = userInfo.data.uRegis
-            const candiCateID = userInfo.data.candiCateID
-            const candiCityID = userInfo.data.candiCityID
-            const candiTitle = userInfo.data.candiTitle
+            const phoneTK = req.user.data.phoneTK
+            const password = req.user.data.password
+            const userName = req.user.data.userName
+            const email = req.user.data.email
+            const city = req.user.data.city
+            const district = req.user.data.district
+            const address = req.user.data.address
+            const from = req.user.data.uRegis
+            const candiCateID = req.user.data.candiCateID
+            const candiCityID = req.user.data.candiCityID
+            const candiTitle = req.user.data.candiTitle
 
 
             let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK })
@@ -463,7 +461,7 @@ exports.RegisterB2CvSite = async(req, res, next) => {
                     idTimViec365: newIDTimviec,
                     authentic: 0,
                     createdAt: new Date(Date.now()),
-                    inForCandidateTV365: {
+                    inForPerson: {
                         user_id: 0,
                         candiCateID: candiCateID,
                         candiCityID: candiCityID,
@@ -536,7 +534,7 @@ exports.completeProfileQlc = async(req, res, next) => {
         let newCv = []
         let newBlog = []
         console.log(req.user.data)
-        let candiCateID = Number(req.user.data.inForCandidateTV365.candiCateID.split(",")[0])
+        let candiCateID = Number(req.user.data.inForPerson.candiCateID.split(",")[0])
 
         let takeData = await axios({
             method: "post",
@@ -763,7 +761,7 @@ exports.updateContactInfo = async(req, res, next) => {
                 city: city,
                 district: district,
                 avatarUser: avatarUser.filename,
-                inForEmployee: {
+                inForPerson: {
                     birthday: birthday,
                     gender: gender,
                     married: married,
@@ -796,7 +794,7 @@ exports.updateDesiredJob = async(req, res, next) => {
             let candiCapBac = req.body.candiCapBac
             let candiMoney = req.body.candiMoney
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
-                inForCandidateTV365: {
+                inForPerson: {
                     candiCateID: candiCateID,
                     candiExp: candiExp,
                     candiCapBac: candiCapBac,
@@ -826,7 +824,7 @@ exports.updateCareerGoals = async(req, res, next) => {
             let userId = req.user.data._id
             let candiMucTieu = req.body.candiMucTieu
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
-                inForCandidateTV365: {
+                inForPerson: {
                     candiMucTieu: candiMucTieu,
                 }
             })
@@ -850,7 +848,7 @@ exports.updateSkills = async(req, res, next) => {
             let userId = req.user.data._id
             let candiSkills = req.body.candiSkills
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
-                inForCandidateTV365: {
+                inForPerson: {
                     candiSkills: candiSkills,
                 }
             })
@@ -879,7 +877,7 @@ exports.updateReferencePersonInfo = async(req, res, next) => {
             let referencePersonPosition = req.body.referencePersonPosition
             let referencePersonCompany = req.body.referencePersonCompany
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
-                inForCandidateTV365: {
+                inForPerson: {
                     referencePersonName: referencePersonName,
                     referencePersonEmail: referencePersonEmail,
                     referencePersonPhone: referencePersonPhone,
@@ -908,7 +906,7 @@ exports.updateIntroVideo = async(req, res, next) => {
             if (req.file && !videoLink) {
                 let videoName = req.file.filename
                 let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
-                    inForCandidateTV365: {
+                    inForPerson: {
                         video: videoName,
                         videoType: 0
                     }
@@ -918,7 +916,7 @@ exports.updateIntroVideo = async(req, res, next) => {
                 }
             } else if (!req.body.file && videoLink) {
                 let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
-                    inForCandidateTV365: {
+                    inForPerson: {
                         video: videoLink,
                         videoType: 1
                     }
@@ -944,7 +942,7 @@ exports.updateDegree = async(req, res, next) => {
             let userId = req.user.data._id
             let candiSkills = req.body.candiSkills
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
-                inForCandidateTV365: {
+                inForPerson: {
                     candiSkills: candiSkills,
                 }
             })
@@ -977,6 +975,88 @@ exports.RefreshProfile = async(req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi cập nhật kỹ năng bản thân", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//Cập nhật ảnh đại diện
+exports.updateAvatarUser = async(req, res, next) => {
+    try {
+        if (req.user) {
+            let userId = req.user.data._id
+            if (req.file) {
+                let imageName = req.file.filename
+                let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+                    avatarUser: imageName
+                })
+                if (updateUser) {
+                    functions.success(res, "Cập nhật ảnh đại diện thành công");
+                }
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi cập nhật ảnh đại diện", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//tải hồ sơ của tôi lên (cv)
+exports.upLoadHoSo = async(req, res, next) => {
+    try {
+        if (req.user && req.body.nameHoSo) {
+            console.log(1)
+            let userId = req.user.data._id
+            let nameHoSo = req.body.nameHoSo
+            if (req.file) {
+                const targetDirectory = `public/candidate/${userId}`;
+                // Đặt lại tên file
+                const originalname = req.file.originalname;
+                const extension = originalname.split('.').pop();
+                const uniqueSuffix = Date.now();
+                const newFilename = nameHoSo + uniqueSuffix + '.' + extension;
+
+                // Đường dẫn tới file cũ
+                const oldFilePath = req.file.path;
+
+                // Đường dẫn tới file mới
+                const newFilePath = path.join(targetDirectory, newFilename);
+
+                // Di chuyển file và đổi tên file
+                fs.rename(oldFilePath, newFilePath, async function(err) {
+                    if (err) {
+                        console.error(err);
+                        return functions.setError(res, "Lỗi khi đổi tên file", 400);
+                    }
+                })
+
+                const maxID = await hoso.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                if (maxID) {
+                    newID = Number(maxID._id) + 1;
+                } else newID = 1
+
+                let findhoso = await functions.getDatafind(hoso, { userId })
+                if (findhoso.length < 3) {
+                    let hosoUv = new hoso({
+                        _id: newID,
+                        userId: userId,
+                        name: newFilename,
+                        createTime: new Date(Date.now()),
+                    })
+                    let savehosoUv = hosoUv.save()
+                    findhoso.push(hosoUv)
+                    if (savehosoUv) {
+                        functions.success(res, "Tải lên hồ sơ thành công", findhoso);
+                    }
+
+                } else return functions.setError(res, "Bạn chỉ có thể upload tối đa 3 hồ sơ", 400);
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
