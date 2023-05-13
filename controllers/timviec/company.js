@@ -882,36 +882,74 @@ exports.displayImages = async(req, res, next) => {
 exports.uploadImg = async(req, res, next) => {
         try {
             let idCompany = req.user.data._id;
-            let img = req.file;
+            let img = req.files;
             let user = await functions.getDatafindOne(Users, { _id: idCompany });
             if (user) {
                 if (user.inForCompany.comImages.length < 30) {
                     let listImg = user.inForCompany.comImages;
                     if (img) {
-                        let checkImg = await functions.checkImage(img.path)
-                        if (checkImg) {
-                            listImg.push(img.filename)
+                        if ((Number(listImg.length) + Number(img.length)) <= 30) {
+                            for (let i = 0; i < img.length; i++) {
+                                let checkImg = await functions.checkImage(img[i].path);
+                                if (checkImg) {
+                                    let id = listImg[listImg.length - 1] || 0;
+                                    let newID = id._id || 0;
+                                    listImg.push({
+                                        _id: Number(newID) + 1,
+                                        name: img[i].filename
+                                    })
+
+                                } else {
+                                    if (img) {
+                                        for (let i = 0; i < img.length; i++) {
+                                            await functions.deleteImg(img[i])
+                                        }
+                                    }
+                                    return functions.setError(res, 'sai định dạng ảnh hoặc ảnh lớn hơn 2MB', 404)
+                                }
+                            }
                             await Users.updateOne({ _id: idCompany }, {
                                 $set: { 'inForCompany.comImages': listImg }
                             });
                             return functions.success(res, 'thêm ảnh thành công')
+
                         } else {
-                            await functions.deleteImg(img)
-                            return functions.setError(res, 'sai định dạng ảnh hoặc ảnh lớn hơn 2MB', 404)
+                            if (img) {
+                                for (let i = 0; i < img.length; i++) {
+                                    await functions.deleteImg(img[i])
+                                }
+                            }
+                            return functions.setError(res, 'tổng số ảnh đã quá 30 ảnh', 404)
                         }
                     } else {
-                        await functions.deleteImg(img)
+                        if (img) {
+                            for (let i = 0; i < img.length; i++) {
+                                await functions.deleteImg(img[i])
+                            }
+                        }
                         return functions.setError(res, 'chưa có ảnh', 404)
                     }
                 }
-                await functions.deleteImg(img)
+                if (img) {
+                    for (let i = 0; i < img.length; i++) {
+                        await functions.deleteImg(img[i])
+                    }
+                }
                 return functions.setError(res, ' giới hạn 30 ảnh ', 404)
             }
-            await functions.deleteImg(img)
+            if (img) {
+                for (let i = 0; i < img.length; i++) {
+                    await functions.deleteImg(img[i])
+                }
+            }
             return functions.setError(res, 'nguời dùng không tồn tại', 404)
         } catch (error) {
             console.log(error)
-            await functions.deleteImg(req.file)
+            if (img) {
+                for (let i = 0; i < img.length; i++) {
+                    await functions.deleteImg(img[i])
+                }
+            }
             return functions.setError(res, error)
         }
     }
@@ -919,70 +957,127 @@ exports.uploadImg = async(req, res, next) => {
 exports.uploadVideo = async(req, res, next) => {
         try {
             let idCompany = req.user.data._id;
-            let video = req.file;
+            let video = req.files;
             let user = await functions.getDatafindOne(Users, { _id: idCompany });
             if (user) {
                 if (user.inForCompany.comVideos.length < 3) {
                     let listVideo = user.inForCompany.comVideos;
                     if (video) {
-                        let checkImg = await functions.checkVideo(video)
-                        if (checkImg) {
-                            listVideo.push(video.filename)
+                        if ((Number(listVideo.length) + Number(video.length)) <= 3) {
+                            for (let i = 0; i < video.length; i++) {
+                                let checkVideo = await functions.checkVideo(video[i]);
+                                if (checkVideo) {
+                                    let id = listVideo[listVideo.length - 1] || 0;
+                                    let newID = id._id || 0;
+                                    listVideo.push({
+                                        _id: Number(newID) + 1,
+                                        name: video[i].filename
+                                    })
+
+                                } else {
+                                    if (video) {
+                                        for (let i = 0; i < video.length; i++) {
+                                            await functions.deleteImg(video[i])
+                                        }
+                                    }
+                                    return functions.setError(res, 'sai định dạng video hoặc video lớn hơn 100MB', 404)
+                                }
+                            }
                             await Users.updateOne({ _id: idCompany }, {
                                 $set: { 'inForCompany.comVideos': listVideo }
                             });
                             return functions.success(res, 'thêm video thành công')
                         } else {
-                            await functions.deleteImg(video)
-                            return functions.setError(res, 'sai định dạng video hoặc video lớn hơn 100MB', 404)
+                            if (video) {
+                                for (let i = 0; i < video.length; i++) {
+                                    await functions.deleteImg(video[i])
+                                }
+                            }
+                            return functions.setError(res, 'đã quá 3 video', 404)
                         }
                     } else {
-                        await functions.deleteImg(video)
+                        if (video) {
+                            for (let i = 0; i < video.length; i++) {
+                                await functions.deleteImg(video[i])
+                            }
+                        }
                         return functions.setError(res, 'chưa có video', 404)
                     }
                 }
-                await functions.deleteImg(video)
+                if (video) {
+                    for (let i = 0; i < video.length; i++) {
+                        await functions.deleteImg(video[i])
+                    }
+                }
                 return functions.setError(res, ' giới hạn 3 video ', 404)
             }
-            await functions.deleteImg(video)
+            if (video) {
+                for (let i = 0; i < video.length; i++) {
+                    await functions.deleteImg(video[i])
+                }
+            }
             return functions.setError(res, 'nguời dùng không tồn tại', 404)
         } catch (error) {
             console.log(error)
-            await functions.deleteImg(req.file)
+            if (video) {
+                for (let i = 0; i < video.length; i++) {
+                    await functions.deleteImg(video[i])
+                }
+            }
             return functions.setError(res, error)
         }
     }
-    // hàm xóa ảnh/video
-exports.deleteFile = async(req, res, next) => {
+    // hàm xóa ảnh
+exports.deleteImg = async(req, res, next) => {
     try {
         let idCompany = req.user.data._id;
         let namefile = req.body.namefile;
+        let idFile = req.body.idFile;
         let user = await functions.getDatafindOne(Users, { _id: idCompany });
         if (namefile && user) {
-            // check xem file là ảnh hay video 1 ảnh 2 video
-            let checkFile = await functions.isImageOrVideo(namefile)
-            if (checkFile == 1) {
-                // xóa đi phần tử trong mảng rồi cập nhập
-                let listImg = await functions.removeSimilarKeywords(namefile, user.inForCompany.comImages);
+            let listImg = user.inForCompany.comImages;
+            const index = listImg.findIndex(img => img._id == idFile);
+            if (index != -1) {
+                await listImg.splice(index, 1);
                 await Users.updateOne({ _id: idCompany }, {
                     $set: { 'inForCompany.comImages': listImg }
                 });
-
+                await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${namefile}`)
+                return functions.success(res, 'xoá thành công')
+            } else {
+                return functions.setError(res, 'id không đúng', 404)
             }
-            if (checkFile == 2) {
-                let listVideo = await functions.removeSimilarKeywords(namefile, user.inForCompany.comVideos);
-                await Users.updateOne({ _id: idCompany }, {
-                    $set: { 'inForCompany.comVideos': listVideo }
-                });
 
-            }
-            await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${namefile}`)
-            return functions.success(res, 'xoá thành công')
         }
         return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
     } catch (error) {
         console.log(error)
-        await functions.deleteImg(req.file)
+        return functions.setError(res, error)
+    }
+}
+exports.deleteVideo = async(req, res, next) => {
+    try {
+        let idCompany = req.user.data._id;
+        let namefile = req.body.namefile;
+        let idFile = req.body.idFile;
+        let user = await functions.getDatafindOne(Users, { _id: idCompany });
+        if (namefile && user) {
+            let listVideo = user.inForCompany.comVideos;
+            const index = listVideo.findIndex(video => video._id == idFile);
+            if (index != -1) {
+                await listVideo.splice(index, 1);
+                await Users.updateOne({ _id: idCompany }, {
+                    $set: { 'inForCompany.comVideos': listVideo }
+                });
+                await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${namefile}`)
+                return functions.success(res, 'xoá thành công')
+            } else {
+                return functions.setError(res, 'id không đúng', 404)
+            }
+        }
+        return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
+    } catch (error) {
+        console.log(error)
         return functions.setError(res, error)
     }
 }

@@ -1,6 +1,6 @@
 const functions = require('../../services/functions')
-const City = require('../../models/Timviec365/Timviec/City')
-const District = require('../../models/Timviec365/Timviec/District');
+const City = require('../../models/Timviec365/Timviec/city.model')
+const District = require('../../models/Timviec365/Timviec/district.model');
 const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
 const Users = require('../../models/Users')
 

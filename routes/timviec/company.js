@@ -79,12 +79,15 @@ router.post('/submitFeedbackWeb', formData.parse(), functions.checkToken, compan
 router.post('/displayImages', formData.parse(), functions.checkToken, company.displayImages)
 
 //api upload ảnh trong kho ảnh
-router.post('/uploadImg', functions.checkToken, functions.uploadImgKhoAnh.single('comImages'), company.uploadImg)
+router.post('/uploadImg', functions.checkToken, functions.uploadImgKhoAnh.array('comImages', 30), company.uploadImg)
 
 //api upload video trong kho ảnh
-router.post('/uploadVideo', functions.checkToken, functions.uploadVideoKhoAnh.single('comVideos'), company.uploadVideo)
+router.post('/uploadVideo', functions.checkToken, functions.uploadVideoKhoAnh.array('comVideos', 3), company.uploadVideo)
 
-//api xóa video/ảnh trong kho ảnh
-router.post('/deleteFile', functions.checkToken, formData.parse(), company.deleteFile)
+//api xóa ảnh trong kho ảnh
+router.post('/deleteImg', functions.checkToken, formData.parse(), company.deleteImg)
+
+//api xóa video trong kho ảnh
+router.post('/deleteVideo', functions.checkToken, formData.parse(), company.deleteVideo)
 
 module.exports = router;

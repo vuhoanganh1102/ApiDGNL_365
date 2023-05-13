@@ -1,5 +1,5 @@
 const Users = require('../../models/Timviec365/Timviec/Users');
-const blog = require('../../models/Timviec365/Timviec/blog');
+const blog = require('../../models/Timviec365/Timviec/blog.model');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
 const CV = require('../../models/Timviec365/CV/CV');
 const like = require('../../models/Timviec365/CV/like');

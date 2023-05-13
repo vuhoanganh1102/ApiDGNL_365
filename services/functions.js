@@ -210,10 +210,15 @@ const storageMain = (destination, fileExtension) => {
 const storageFile = (destination) => {
     return multer.diskStorage({
         destination: function(req, file, cb) {
-            const userId = req.user.data._id; // Lấy id người dùng từ request
-            const userDestination = `${destination}/${userId}`; // Tạo đường dẫn đến thư mục của người dùng
-            if (!fs.existsSync(userDestination)) { // Nếu thư mục chưa tồn tại thì tạo mới
-                fs.mkdirSync(userDestination, { recursive: true });
+            let userDestination = " "
+            if (req.user) {
+                const userId = req.user.data._id; // Lấy id người dùng từ request
+                userDestination = `${destination}/${userId}`; // Tạo đường dẫn đến thư mục của người dùng
+                if (!fs.existsSync(userDestination)) { // Nếu thư mục chưa tồn tại thì tạo mới
+                    fs.mkdirSync(userDestination, { recursive: true });
+                }
+            } else {
+                userDestination = 'public/company'
             }
             cb(null, userDestination);
         },

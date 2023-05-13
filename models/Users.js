@@ -351,16 +351,16 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            comImages: {
-                // Kho ảnh
-                type: Array,
-                default: []
-            },
-            comVideos: {
-                // Kho video
-                type: Array,
-                default: []
-            },
+            //kho ảnh
+            comImages: [{
+                _id: Number,
+                name: String,
+            }],
+            // kho video
+            comVideos: [{
+                _id: Number,
+                name: String,
+            }],
             website: {
                 // Website công ty
                 type: String,
