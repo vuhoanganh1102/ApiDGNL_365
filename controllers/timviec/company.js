@@ -10,141 +10,147 @@ const SaveCandidate = require('../../models/Timviec365/Timviec/saveCandidate.mod
 const PointCompany = require('../../models/Timviec365/Timviec/pointCompany.model');
 const PointUsed = require('../../models/Timviec365/Timviec/pointUsed.model')
 const UserCompanyMultit = require('../../models/Timviec365/Timviec/userCompanyMutil')
-
-// hàm đăng ký
+const AdminUser = require('../../models/Timviec365/Timviec/adminUser.model')
+    // hàm đăng ký
 exports.register = async(req, res, next) => {
-        try {
-            let request = req.body,
-                email = request.email,
-                phone = request.phone,
-                username = request.userName,
-                password = request.password,
-                city = request.city,
-                district = request.district,
-                address = request.address,
-                mst = request.mst,
-                idKd = request.idKD,
-                linkVideo = request.linkVideo,
-                description = request.description,
-                fromDevice = request.fromDevice,
-                fromWeb = request.fromWeb,
-                avatarUser = req.files.avatarUser,
-                ipAddressRegister = request.ipAddressRegister,
-                videoType = req.files.videoType;
-            let video = '';
-            let link = '';
-            let avatar = "";
-            // check dữ liệu không bị undefined
-            if ((username && password && city && district &&
-                    address && email && phone) !== undefined) {
-                // validate email,phone
-                let CheckEmail = await functions.checkEmail(email),
-                    CheckPhoneNumber = await functions.checkPhoneNumber(phone);
-                if ((CheckPhoneNumber && CheckEmail) == true) {
-                    //  check email co trong trong database hay khong
-                    let user = await functions.getDatafindOne(Users, { email })
-                    if (user == null) {
-                        //check video
-                        if (videoType) {
-                            if (videoType.length == 1) {
-                                let checkVideo = await functions.checkVideo(videoType[0]);
-                                if (checkVideo) {
-                                    video = videoType[0].filename
-                                } else {
-                                    await functions.deleteImg(videoType[0])
-                                    if (avatarUser) {
-                                        await functions.deleteImg(avatarUser[0])
-                                    }
-                                    return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
+    try {
+        let request = req.body,
+            email = request.email,
+            phone = request.phone,
+            username = request.userName,
+            password = request.password,
+            city = request.city,
+            district = request.district,
+            address = request.address,
+            mst = request.mst,
+            linkVideo = request.linkVideo,
+            description = request.description,
+            fromDevice = request.fromDevice,
+            fromWeb = request.fromWeb,
+            avatarUser = req.files.avatarUser,
+            ipAddressRegister = request.ipAddressRegister,
+            videoType = req.files.videoType;
+        let video = '';
+        let link = '';
+        let avatar = "";
+        let listIDKD = [];
+        let idKD = 0;
+        // check dữ liệu không bị undefined
+        if ((username && password && city && district &&
+                address && email && phone) !== undefined) {
+            // validate email,phone
+            let CheckEmail = await functions.checkEmail(email),
+                CheckPhoneNumber = await functions.checkPhoneNumber(phone);
+            if ((CheckPhoneNumber && CheckEmail) == true) {
+                //  check email co trong trong database hay khong
+                let user = await functions.getDatafindOne(Users, { email })
+                if (user == null) {
+                    //check video
+                    if (videoType) {
+                        if (videoType.length == 1) {
+                            let checkVideo = await functions.checkVideo(videoType[0]);
+                            if (checkVideo) {
+                                video = videoType[0].filename
+                            } else {
+                                await functions.deleteImg(videoType[0])
+                                if (avatarUser) {
+                                    await functions.deleteImg(avatarUser[0])
                                 }
-                            } else if (videoType.length > 1) {
-                                return functions.setError(res, 'chỉ được đăng 1 video', 404)
+                                return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
                             }
+                        } else if (videoType.length > 1) {
+                            return functions.setError(res, 'chỉ được đăng 1 video', 404)
                         }
+                    }
 
-                        //check ảnh
-                        if (avatarUser) {
-                            if (avatarUser.length == 1) {
-                                let checkImg = await functions.checkImage(avatarUser[0].path);
-                                if (checkImg) {
-                                    avatar = avatarUser[0].filename
-                                } else {
-                                    if (videoType) {
-                                        await functions.deleteImg(videoType[0])
-                                    }
-                                    await functions.deleteImg(avatarUser[0]);
-                                    return functions.setError(res, `sai định dạng ảnh hoặc ảnh lớn hơn 2MB :${avatarUser[0].originalname}`, 404);
-                                }
-                            } else if (avatarUser.length > 1) {
-                                return functions.setError(res, 'chỉ được đăng 1 ảnh', 404)
-                            }
-                        }
-
-                        // check link video
-                        if (linkVideo) {
-                            let checkLink = await functions.checkLink(linkVideo);
-                            if (checkLink) {
-                                link = linkVideo;
+                    //check ảnh
+                    if (avatarUser) {
+                        if (avatarUser.length == 1) {
+                            let checkImg = await functions.checkImage(avatarUser[0].path);
+                            if (checkImg) {
+                                avatar = avatarUser[0].filename
                             } else {
                                 if (videoType) {
                                     await functions.deleteImg(videoType[0])
                                 }
-                                if (avatarUser) {
-                                    await functions.deleteImg(avatarUser[0])
-                                }
-                                return functions.setError(res, 'link không đúng định dạng ', 404)
+                                await functions.deleteImg(avatarUser[0]);
+                                return functions.setError(res, `sai định dạng ảnh hoặc ảnh lớn hơn 2MB :${avatarUser[0].originalname}`, 404);
                             }
+                        } else if (avatarUser.length > 1) {
+                            return functions.setError(res, 'chỉ được đăng 1 ảnh', 404)
                         }
-                        // tìm Id max trong DB
-                        let maxID = await functions.getMaxID(Users) || 0;
-                        let maxIDTimviec = await (Users.findOne({ type: 1 }).sort({ idTimViec365: -1 }).lean()) || 0;
-                        let newIDTimViec = maxIDTimviec.idTimViec365 || 0;
-                        const company = new Users({
-                            _id: (Number(maxID) + 1),
-                            email: email,
-                            password: md5(password),
-                            phone: phone,
-                            userName: username,
-                            type: 1,
-                            city: city,
-                            district: district,
-                            address: address,
-                            avatarUser: avatar,
-                            createdAt: new Date().getTime(),
-                            role: 1,
-                            authentic: 0,
-                            fromWeb: fromWeb || null,
-                            fromDevice: fromDevice || null,
-                            idTimViec365: (Number(newIDTimViec) + 1),
-                            inForCompany: {
-                                idKD: idKd,
-                                mst: mst,
-                                videoType: video || null,
-                                linkVideo: link || null,
-                                description: description || null,
-                                userContactName: username,
-                                userContactPhone: phone,
-                                userContactAddress: address,
-                                userContactEmail: email,
-                                ipAddressRegister: ipAddressRegister
-                            }
-                        });
-                        await company.save();
-                        let companyUnset = await functions.getDatafindOne(CompanyUnset, { email })
-                        if (companyUnset != null) {
-                            await functions.getDataDeleteOne(CompanyUnset, { email })
-                        }
-
-                        return functions.success(res, 'đăng ký thành công')
-                    } else {
-                        if (videoType) {
-                            await functions.deleteImg(videoType[0])
-                        }
-                        if (avatarUser) {
-                            await functions.deleteImg(avatarUser[0])
-                        }
-                        return functions.setError(res, 'email đã tồn tại', 404)
                     }
+
+                    // check link video
+                    if (linkVideo) {
+                        let checkLink = await functions.checkLink(linkVideo);
+                        if (checkLink) {
+                            link = linkVideo;
+                        } else {
+                            if (videoType) {
+                                await functions.deleteImg(videoType[0])
+                            }
+                            if (avatarUser) {
+                                await functions.deleteImg(avatarUser[0])
+                            }
+                            return functions.setError(res, 'link không đúng định dạng ', 404)
+                        }
+                    }
+                    let listKD = await functions.getDatafind(AdminUser, { bophan: { $ne: 0 } });
+                    let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1);
+                    let idKDUser = listUser[0].inForCompany.idKD;
+                    for (let i = 0; i < listKD.length; i++) {
+                        listIDKD.push(listKD[i].bophan)
+                    }
+                    let index = listIDKD.findIndex(id => id == idKDUser);
+                    if (index !== -1) {
+                        if (index === listIDKD.length - 1) {
+                            idKD = listIDKD[0];
+                        } else {
+                            idKD = listIDKD[index + 1];
+                        }
+                    }
+                    // tìm Id max trong DB
+                    let maxID = await functions.getMaxID(Users) || 0;
+                    let maxIDTimviec = await (Users.findOne({ type: 1 }).sort({ idTimViec365: -1 }).lean()) || 0;
+                    let newIDTimViec = maxIDTimviec.idTimViec365 || 0;
+                    const company = new Users({
+                        _id: (Number(maxID) + 1),
+                        email: email,
+                        password: md5(password),
+                        phone: phone,
+                        userName: username,
+                        type: 1,
+                        city: city,
+                        district: district,
+                        address: address,
+                        avatarUser: avatar,
+                        createdAt: new Date().getTime(),
+                        role: 1,
+                        authentic: 0,
+                        fromWeb: fromWeb || null,
+                        fromDevice: fromDevice || null,
+                        idTimViec365: (Number(newIDTimViec) + 1),
+                        inForCompany: {
+                            idKD: idKD,
+                            mst: mst,
+                            videoType: video || null,
+                            linkVideo: link || null,
+                            description: description || null,
+                            userContactName: username,
+                            userContactPhone: phone,
+                            userContactAddress: address,
+                            userContactEmail: email,
+                            ipAddressRegister: ipAddressRegister
+                        }
+                    });
+                    await company.save();
+                    let companyUnset = await functions.getDatafindOne(CompanyUnset, { email })
+                    if (companyUnset != null) {
+                        await functions.getDataDeleteOne(CompanyUnset, { email })
+                    }
+
+                    return functions.success(res, 'đăng ký thành công')
                 } else {
                     if (videoType) {
                         await functions.deleteImg(videoType[0])
@@ -152,9 +158,8 @@ exports.register = async(req, res, next) => {
                     if (avatarUser) {
                         await functions.deleteImg(avatarUser[0])
                     }
-                    return functions.setError(res, 'email hoặc số điện thoại định dạng không hợp lệ', 404)
+                    return functions.setError(res, 'email đã tồn tại', 404)
                 }
-
             } else {
                 if (videoType) {
                     await functions.deleteImg(videoType[0])
@@ -162,22 +167,32 @@ exports.register = async(req, res, next) => {
                 if (avatarUser) {
                     await functions.deleteImg(avatarUser[0])
                 }
-
-                return functions.setError(res, 'Thiếu dữ liệu', 404)
+                return functions.setError(res, 'email hoặc số điện thoại định dạng không hợp lệ', 404)
             }
-        } catch (error) {
-            console.log(error)
+
+        } else {
             if (videoType) {
                 await functions.deleteImg(videoType[0])
             }
             if (avatarUser) {
                 await functions.deleteImg(avatarUser[0])
             }
-            return functions.setError(res, error)
-        }
 
+            return functions.setError(res, 'Thiếu dữ liệu', 404)
+        }
+    } catch (error) {
+        console.log(error)
+        if (videoType) {
+            await functions.deleteImg(videoType[0])
+        }
+        if (avatarUser) {
+            await functions.deleteImg(avatarUser[0])
+        }
+        return functions.setError(res, error)
     }
-    // hàm lấy user khi đăng ký sai
+}
+
+// hàm lấy user khi đăng ký sai
 exports.registerFall = async(req, res, next) => {
         try {
             let request = req.body,
@@ -383,8 +398,7 @@ exports.updateInfoCompany = async(req, res, next) => {
                 site = request.site,
                 website = request.website,
                 description = request.description,
-                mst = request.mst,
-                idKD = request.idKD;
+                mst = request.mst;
 
             if (phone && userCompany && city && address && description && site) {
                 let checkPhone = await functions.checkPhoneNumber(phone)
@@ -397,7 +411,6 @@ exports.updateInfoCompany = async(req, res, next) => {
                             'city': city,
                             'website': website || null,
                             'address': address,
-                            'inForCompany.idKD': idKD,
                             'inForCompany.mst': mst || null,
                             'inForCompany.website': website || null,
                             'inForCompany.com_size': site,
@@ -1056,37 +1069,66 @@ exports.deleteImg = async(req, res, next) => {
     }
     // hàm xóa video
 exports.deleteVideo = async(req, res, next) => {
-    try {
-        let idCompany = req.user.data._id;
-        let idFile = req.body.idFile;
-        let user = await functions.getDatafindOne(Users, { _id: idCompany });
-        if (idFile && user) {
-            let listVideo = user.inForCompany.comVideos;
-            const index = listVideo.findIndex(video => video._id == idFile);
-            if (index != -1) {
-                await listVideo.splice(index, 1);
-                let nameFile = listVideo[index].name;
-                await Users.updateOne({ _id: idCompany }, {
-                    $set: { 'inForCompany.comVideos': listVideo }
-                });
-                await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${nameFile}`)
-                return functions.success(res, 'xoá thành công')
-            } else {
-                return functions.setError(res, 'id không đúng', 404)
+        try {
+            let idCompany = req.user.data._id;
+            let idFile = req.body.idFile;
+            let user = await functions.getDatafindOne(Users, { _id: idCompany });
+            if (idFile && user) {
+                let listVideo = user.inForCompany.comVideos;
+                const index = listVideo.findIndex(video => video._id == idFile);
+                if (index != -1) {
+                    await listVideo.splice(index, 1);
+                    let nameFile = listVideo[index].name;
+                    await Users.updateOne({ _id: idCompany }, {
+                        $set: { 'inForCompany.comVideos': listVideo }
+                    });
+                    await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${nameFile}`)
+                    return functions.success(res, 'xoá thành công')
+                } else {
+                    return functions.setError(res, 'id không đúng', 404)
+                }
             }
+            return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
+        } catch (error) {
+            console.log(error)
+            return functions.setError(res, error)
         }
-        return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
     }
-}
-exports.getDataApi = async(req, res, next) => {
-    try {
-        let data = await functions.getDataAxios('https://timviec365.vn/api/get_user_admin.php?page=1')
-        return functions.success(res, 'xoá thành công', data)
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
+    // exports.getDataApi = async(req, res, next) => {
+    //     try {
+    //         let data = await functions.getDataAxios('https://timviec365.vn/api/get_user_admin.php?page=1')
+    //         for (let i = 0; i < data.length; i++) {
+    //             const admin = new AdminUser({
+    //                 _id: data[i].adm_id,
+    //                 loginName: data[i].adm_loginname,
+    //                 password: data[i].adm_password,
+    //                 name: data[i].adm_name,
+    //                 email: data[i].adm_email,
+    //                 author: data[i].adm_author,
+    //                 address: data[i].adm_address,
+    //                 phone: data[i].adm_phone,
+    //                 mobile: data[i].adm_mobile,
+    //                 accesModule: data[i].adm_access_module,
+    //                 accessCategory: data[i].adm_access_category,
+    //                 date: data[i].adm_date,
+    //                 isadmin: data[i].adm_isadmin,
+    //                 active: data[i].adm_active,
+    //                 langID: data[i].lang_id,
+    //                 delete: data[i].adm_delete,
+    //                 allCategory: data[i].adm_all_category,
+    //                 editAll: data[i].adm_edit_all,
+    //                 adminID: data[i].admin_id,
+    //                 bophan: data[i].adm_bophan,
+    //                 ntd: data[i].adm_ntd,
+    //                 empID: data[i].emp_id,
+    //                 nhaplieu: data[i].adm_nhaplieu,
+    //                 rank: data[i].adm_rank,
+    //             })
+    //             await admin.save();
+    //         }
+    //         return functions.success(res, 'xoá thành công', data)
+    //     } catch (error) {
+    //         console.log(error)
+    //         return functions.setError(res, error)
+    //     }
+    // }
