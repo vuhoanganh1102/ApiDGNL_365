@@ -1029,39 +1029,39 @@ exports.uploadVideo = async(req, res, next) => {
     }
     // hàm xóa ảnh
 exports.deleteImg = async(req, res, next) => {
-    try {
-        let idCompany = req.user.data._id;
-        let namefile = req.body.namefile;
-        let idFile = req.body.idFile;
-        let user = await functions.getDatafindOne(Users, { _id: idCompany });
-        if (namefile && user) {
-            let listImg = user.inForCompany.comImages;
-            const index = listImg.findIndex(img => img._id == idFile);
-            if (index != -1) {
-                await listImg.splice(index, 1);
-                await Users.updateOne({ _id: idCompany }, {
-                    $set: { 'inForCompany.comImages': listImg }
-                });
-                await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${namefile}`)
-                return functions.success(res, 'xoá thành công')
-            } else {
-                return functions.setError(res, 'id không đúng', 404)
-            }
+        try {
+            let idCompany = req.user.data._id;
+            let idFile = req.body.idFile;
+            let user = await functions.getDatafindOne(Users, { _id: idCompany });
+            if (idFile && user) {
+                let listImg = user.inForCompany.comImages;
+                const index = listImg.findIndex(img => img._id == idFile);
+                if (index != -1) {
+                    console.log(listImg[index].name)
+                    await listImg.splice(index, 1);
+                    await Users.updateOne({ _id: idCompany }, {
+                        $set: { 'inForCompany.comImages': listImg }
+                    });
+                    await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${listImg[index].name}`)
+                    return functions.success(res, 'xoá thành công')
+                } else {
+                    return functions.setError(res, 'id không đúng', 404)
+                }
 
+            }
+            return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
+        } catch (error) {
+            console.log(error)
+            return functions.setError(res, error)
         }
-        return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
     }
-}
+    // hàm xóa video
 exports.deleteVideo = async(req, res, next) => {
     try {
         let idCompany = req.user.data._id;
-        let namefile = req.body.namefile;
         let idFile = req.body.idFile;
         let user = await functions.getDatafindOne(Users, { _id: idCompany });
-        if (namefile && user) {
+        if (idFile && user) {
             let listVideo = user.inForCompany.comVideos;
             const index = listVideo.findIndex(video => video._id == idFile);
             if (index != -1) {
@@ -1069,7 +1069,7 @@ exports.deleteVideo = async(req, res, next) => {
                 await Users.updateOne({ _id: idCompany }, {
                     $set: { 'inForCompany.comVideos': listVideo }
                 });
-                await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${namefile}`)
+                await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${listVideo[index].name}`)
                 return functions.success(res, 'xoá thành công')
             } else {
                 return functions.setError(res, 'id không đúng', 404)

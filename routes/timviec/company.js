@@ -79,10 +79,10 @@ router.post('/submitFeedbackWeb', formData.parse(), functions.checkToken, compan
 router.post('/displayImages', formData.parse(), functions.checkToken, company.displayImages)
 
 //api upload ảnh trong kho ảnh
-router.post('/uploadImg', functions.checkToken, functions.uploadImgKhoAnh.array('comImages', 30), company.uploadImg)
+router.post('/uploadImg', functions.checkToken, functions.uploadImgKhoAnh.array('comImages'), company.uploadImg)
 
 //api upload video trong kho ảnh
-router.post('/uploadVideo', functions.checkToken, functions.uploadVideoKhoAnh.array('comVideos', 3), company.uploadVideo)
+router.post('/uploadVideo', functions.checkToken, functions.uploadVideoKhoAnh.array('comVideos'), company.uploadVideo)
 
 //api xóa ảnh trong kho ảnh
 router.post('/deleteImg', functions.checkToken, formData.parse(), company.deleteImg)
