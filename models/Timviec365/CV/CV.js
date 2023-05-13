@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema
 const CVSchema = new mongoose.Schema({
     _id: {
         type: Number,
@@ -10,10 +11,10 @@ const CVSchema = new mongoose.Schema({
     alias: {
         type: String,
     },
-    url_alias: {
+    urlAlias: {
         type: String,
     },
-    url_canonical: {
+    urlCanonical: {
         type: String,
     },
     image: {
@@ -22,13 +23,13 @@ const CVSchema = new mongoose.Schema({
     price: {
         type: Number,
     },
-    colors: {
+    color: {
         type: String
     },
     view: {
         type: Number
     },
-    love: {
+    favorite: {
         type: Number
     },
     download: {
@@ -37,69 +38,66 @@ const CVSchema = new mongoose.Schema({
     vip: {
         type: Number
     },
-    cv_index: {
+    cvIndex: {
         type: Number,
     },
-    cid: {
+    cId: {
         type: Number
     },
     content: {
         type: String
     },
-    mota_cv: {
+    motaCv: {
         type: String
     },
-    html_vi: {
-        type: Object
+    htmlVi: {
+        type: String
     },
-    html_en: {
-        type: Object
+    htmlEn: {
+        type: String
     },
-    html_jp: {
-        type: Object
+    htmlJp: {
+        type: String
     },
-    html_cn: {
-        type: Object
+    htmlCn: {
+        type: String
     },
-    html_kr: {
-        type: Object
+    htmlKr: {
+        type: String
     },
-    cate_id: {
+    cateId: {
         type: Number
     },
-    lang_id: {
+    langId: {
         type: Number
     },
-    design_id: {
+    designId: {
         type: Number
     },
     exp: {
         type: Number
     },
-    nhucau: {
+    nhuCau: {
         type: Number
     },
-    meta_title: {
-        type: String
+    metaTitle: {
+        Type: String
     },
-    meta_key: {
-        type: String
+    metaKey: {
+        Type: String
     },
-    meta_des: {
-        type: String
+    metaDes: {
+        Type: String
     },
-    thutu: {
-        type: Number
+    thuTu: {
+        Type: Number
     },
     full: {
-        type: String
+        Type: String
     },
     status: {
-        type: Number
-    },
-    cv_point: {
-        type: Number
-    },
+        Type: Number
+    }
 
 }, {
     collection: 'CV',
@@ -107,6 +105,3 @@ const CVSchema = new mongoose.Schema({
 })
 
 module.exports = mongoose.model("CV", CVSchema);
-
-// { collection: 'CV',
-//       versionKey: false}
