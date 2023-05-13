@@ -191,7 +191,7 @@ exports.getDataDeleteOne = async(model, condition) => {
         return model.deleteOne(condition)
     }
     // storage để updload file
-const storageMain = (destination, fileExtension) => {
+const storageMain = (destination) => {
     return multer.diskStorage({
         destination: function(req, file, cb) {
             const userId = req.user.data._id; // Lấy id người dùng từ request
@@ -203,7 +203,7 @@ const storageMain = (destination, fileExtension) => {
         },
         filename: function(req, file, cb) {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-            cb(null, file.fieldname + uniqueSuffix + fileExtension)
+            cb(null, file.fieldname + uniqueSuffix + file.originalname.split('.').pop())
         }
     })
 }
@@ -241,16 +241,16 @@ exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/KhoAnh') 
 exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/KhoAnh') })
 
 //  hàm upload ảnh ở cập nhập avatar
-exports.uploadImg = multer({ storage: storageMain('public/KhoAnh', '.jpg') })
+exports.uploadImg = multer({ storage: storageMain('public/KhoAnh') })
 
 //  hàm upload ảnh ở kho ảnh
-exports.uploadImgKhoAnh = multer({ storage: storageMain('public/KhoAnh', '.jpg') })
+exports.uploadImgKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
 //  hàm upload ảnh ở kho ảnh
-exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh', '.mp4') })
+exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
 // hàm upload video ở cập nhập KhoAnh
-exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh', '.mp4') })
+exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
 
 const deleteFile = (filePath) => {
         fs.unlink(filePath, (err) => {

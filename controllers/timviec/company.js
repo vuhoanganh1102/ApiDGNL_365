@@ -1037,12 +1037,12 @@ exports.deleteImg = async(req, res, next) => {
                 let listImg = user.inForCompany.comImages;
                 const index = listImg.findIndex(img => img._id == idFile);
                 if (index != -1) {
-                    console.log(listImg[index].name)
+                    let nameFile = listImg[index].name;
                     await listImg.splice(index, 1);
                     await Users.updateOne({ _id: idCompany }, {
                         $set: { 'inForCompany.comImages': listImg }
                     });
-                    await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${listImg[index].name}`)
+                    await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${nameFile}`)
                     return functions.success(res, 'xoá thành công')
                 } else {
                     return functions.setError(res, 'id không đúng', 404)
@@ -1066,10 +1066,11 @@ exports.deleteVideo = async(req, res, next) => {
             const index = listVideo.findIndex(video => video._id == idFile);
             if (index != -1) {
                 await listVideo.splice(index, 1);
+                let nameFile = listVideo[index].name;
                 await Users.updateOne({ _id: idCompany }, {
                     $set: { 'inForCompany.comVideos': listVideo }
                 });
-                await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${listVideo[index].name}`)
+                await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${nameFile}`)
                 return functions.success(res, 'xoá thành công')
             } else {
                 return functions.setError(res, 'id không đúng', 404)
