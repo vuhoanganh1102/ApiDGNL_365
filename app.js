@@ -8,6 +8,8 @@ var mongoose = require('mongoose')
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
 var cvRouter = require('./routes/timviec/cv');
+var donRouter = require('./routes/timviec/don');
+var thuRouter = require('./routes/timviec/thu');
 
 var app = express();
 
@@ -22,8 +24,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/company',companyRouter);
-app.use('/api/timviec/cv',cvRouter);
+app.use('/api/timviec/company', companyRouter);
+app.use('/api/timviec/cv', cvRouter);
+app.use('/api/timviec/don', donRouter);
+app.use('/api/timviec/thu', thuRouter);
+
 
 
 // catch 404 and forward to error handler
@@ -44,7 +49,7 @@ app.use(function(err, req, res, next) {
 
 const DB_URL = 'mongodb://127.0.0.1/timviec365';
 mongoose.connect(DB_URL)
-.then(() => console.log('DB Connected!'))
-.catch(error => console.log('DB connection error:', error.message));
+    .then(() => console.log('DB Connected!'))
+    .catch(error => console.log('DB connection error:', error.message));
 
 module.exports = app;

@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 const CVUVSchema = new mongoose.Schema(
     {
         _id:{
-            type: Number
+            type: Number, 
         },
         userId:{
             type: Number
@@ -14,9 +14,12 @@ const CVUVSchema = new mongoose.Schema(
             type: String
         },
         html:{
-            type: String
+            type: Object
         },
         nameImage:{
+            type: String
+        },
+        userAvatar:{
             type: String
         },
         timeEdit:{
@@ -45,4 +48,4 @@ const CVUVSchema = new mongoose.Schema(
       versionKey: false}
 );
 
-export default mongoose.model("CVUV", CVUVSchema)
+module.exports = mongoose.model("CVUV", CVUVSchema);
