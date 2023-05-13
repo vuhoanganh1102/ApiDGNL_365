@@ -12,9 +12,10 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
+var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
-
+//
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -27,7 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/timviec/candidate', candidateRouter);
 app.use('/api/timviec/company', companyRouter);
-
+app.use('/api/tool', toolAddDataRouter);
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
