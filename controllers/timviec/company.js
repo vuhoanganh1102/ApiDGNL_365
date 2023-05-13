@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken');
 const Users = require('../../models/Users');
 const functions = require('../../services/functions');
 const CompanyUnset = require('../../models/Timviec365/Timviec/userCompanyUnset');
-const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob');
-const NewTV365 = require('../../models/Timviec365/Timviec/NewTV365');
-const SaveCandidate = require('../../models/Timviec365/Timviec/saveCandidate');
+const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob.model');
+const NewTV365 = require('../../models/Timviec365/Timviec/newTV365.model');
+const SaveCandidate = require('../../models/Timviec365/Timviec/saveCandidate.model');
 const PointCompany = require('../../models/Timviec365/Timviec/pointCompany.model');
 const PointUsed = require('../../models/Timviec365/Timviec/pointUsed.model')
 const UserCompanyMultit = require('../../models/Timviec365/Timviec/userCompanyMutil')
@@ -79,7 +79,6 @@ exports.register = async(req, res, next) => {
                                 return functions.setError(res, 'chỉ được đăng 1 ảnh', 404)
                             }
                         }
-
 
                         // check link video
                         if (linkVideo) {
@@ -1077,6 +1076,15 @@ exports.deleteVideo = async(req, res, next) => {
             }
         }
         return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+exports.getDataApi = async(req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://timviec365.vn/api/get_user_admin.php?page=1')
+        return functions.success(res, 'xoá thành công', data)
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)

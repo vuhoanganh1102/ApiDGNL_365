@@ -4,7 +4,7 @@ const CVUV = require('../../models/Timviec365/CV/CVUV');
 const CV = require('../../models/Timviec365/CV/CV');
 const like = require('../../models/Timviec365/CV/like');
 const userUnset = require('../../models/Timviec365/Timviec/userUnset');
-const newTV365 = require('../../models/Timviec365/Timviec/NewTV365');
+const newTV365 = require('../../models/Timviec365/Timviec/newTV365.model');
 //mã hóa mật khẩu
 const md5 = require('md5');
 //token
