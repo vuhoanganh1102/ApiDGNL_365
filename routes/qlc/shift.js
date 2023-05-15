@@ -6,7 +6,7 @@ const ShiftController = require('../../controllers/qlc/shift')
 router.get("/", ShiftController.getListShifts)
 
 //API lấy ca làm việc theo id
-// router.get("/:id", ShiftController.getShiftById)
+router.get("/:id", ShiftController.getShiftById)
 
 //API lấy danh sách ca làm việc theo Id công ty
 router.get("/all/company", ShiftController.getShiftByComId)

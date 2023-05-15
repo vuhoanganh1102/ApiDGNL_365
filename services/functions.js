@@ -15,7 +15,8 @@ const path = require('path');
 //check ảnh
 const { promisify } = require('util');
 // tọa token
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const CV = require('../models/Timviec365/CV/CV');
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -331,7 +332,6 @@ exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
     })
 };
 
-
 exports.verifyPassword = async(inputPassword, hashedPassword) => {
         const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
         return md5Hash === hashedPassword;
@@ -358,38 +358,42 @@ exports.createToken = async(data, time) => {
     }
     // hàm lấy data từ axios 
 exports.getDataAxios = async(url, condition) => {
-        return await await axios({
-            method: "post",
-            url: url,
-            data: condition,
-            headers: { "Content-Type": "multipart/form-data" }
-        }).then(async(response) => {
-            return response.data
-        })
-    }
-    // hàm lấy dữ liệu ngành nghề
+    return await await axios({
+        method: "post",
+        url: url,
+        data: condition,
+        headers: { "Content-Type": "multipart/form-data" }
+    }).then(async(response) => {
+        return response.data
+    })
+};
+
+// hàm lấy dữ liệu ngành nghề
 exports.getDataCareer = async() => {
-        return ["An toàn lao động", "Báo chí - Truyền hình", "Bảo hiểm", "Bảo trì", "Bảo vệ", "Biên - Phiên dịch",
-            "Bưu chính viễn thông", "Chăm sóc khách hàng", "Chăn nuôi - Thú y", "Cơ khí - Chế tạo", "Công chức - Viên chức", "Công nghệ cao", "Công nghệ thực phẩm", "copywrite",
-            "Dầu khí - Địa chất", "Dệt may - Da dày", "Dịch vụ", "Du lịch", "Freelancer", "Giáo dục - Đào tạo", "Giao thông vận tải -Thủy lợi - Cầu đường", "Giúp việc", "Hàng hải", "Hàng không",
-            "Hành chính - Văn phòng", "Hóa học - Sinh học", "Hoạch định - Dự án", "In ấn - Xuất bản", "IT phần cứng - mạng", "IT phần mềm", "KD bất động sản", "Kế toán - Kiểm toán", "Khánh sạn - Nhà hàng",
-            "Khu chế xuất - Khu công nghiệp", "Kiến trúc - Tk nội thất", "Kỹ thuật", "Kỹ thuật ứng dụng", "Làm đẹp - Thể lực - Spa", "Lao động phổ thông", "Lễ tan - PG - PB", "Logistic", "Luật - Pháp lý", "Lương cao",
-            "Marketing - PR", "Môi trường - Xử lý chất thải", "Mỹ phẩm - Thời trang - Trang sức", "Ngân hàng - chứng khoán - Đầu tư", "Nghệ thuật - Điện ảnh", "Nhân sự", "Kinh doanh", "Nhập liệu", "Nông - Lâm - Ngư - Nghiệp",
-            "Ô tô - Xe máy", "Pha chế - Bar", "Phát triển thị trường", "Phục vụ - Tạp vụ", "Quan hệ đối ngoại", "Quản lý điều hành", "Quản lý đơn hàng", "Quản trị kinh doanh", "Sản xuất - Vận hành sản xuất",
-            "Sinh viên làm thêm", "StarUp", "Tài chính", "Telesales", "Thẩm định - Giảm thẩm định - Quản lý chất lượng", "Thể dục - Thể thao", "Thiết kế - Mỹ thuật", "Thiết kế web", "Thống kê", "Thư ký - Trợ lý",
-            "Thu Ngân", "Thư viện", "Thực phẩm - Đồ uống", "Thương Mại điện tử", "Thủy Sản", "Thị trường - Quảng cáo", "Tìm việc làm thêm", "Tổ chức sự kiện", "Trắc địa", "Truyển thông", "Tư vấn", "Vận chuyển giao nhận", "Vận tải - Lái xe", "Vật tư - Thiết bị",
-            "Việc làm bán hàng", "Việc làm Tết", "Xây dựng", "Xuất - nhập khẩu", "Xuất khẩu lao động", "Y tế - Dược", "Đầu bếp - phụ bếp", "Điện - Điện tử", "Điện tử viễn thông", "ngàng nghề khác"
-        ]
-    }
-    // hàm lấy dữ liệu hình thức làm việc
+    return ["An toàn lao động", "Báo chí - Truyền hình", "Bảo hiểm", "Bảo trì", "Bảo vệ", "Biên - Phiên dịch",
+        "Bưu chính viễn thông", "Chăm sóc khách hàng", "Chăn nuôi - Thú y", "Cơ khí - Chế tạo", "Công chức - Viên chức", "Công nghệ cao", "Công nghệ thực phẩm", "copywrite",
+        "Dầu khí - Địa chất", "Dệt may - Da dày", "Dịch vụ", "Du lịch", "Freelancer", "Giáo dục - Đào tạo", "Giao thông vận tải -Thủy lợi - Cầu đường", "Giúp việc", "Hàng hải", "Hàng không",
+        "Hành chính - Văn phòng", "Hóa học - Sinh học", "Hoạch định - Dự án", "In ấn - Xuất bản", "IT phần cứng - mạng", "IT phần mềm", "KD bất động sản", "Kế toán - Kiểm toán", "Khánh sạn - Nhà hàng",
+        "Khu chế xuất - Khu công nghiệp", "Kiến trúc - Tk nội thất", "Kỹ thuật", "Kỹ thuật ứng dụng", "Làm đẹp - Thể lực - Spa", "Lao động phổ thông", "Lễ tan - PG - PB", "Logistic", "Luật - Pháp lý", "Lương cao",
+        "Marketing - PR", "Môi trường - Xử lý chất thải", "Mỹ phẩm - Thời trang - Trang sức", "Ngân hàng - chứng khoán - Đầu tư", "Nghệ thuật - Điện ảnh", "Nhân sự", "Kinh doanh", "Nhập liệu", "Nông - Lâm - Ngư - Nghiệp",
+        "Ô tô - Xe máy", "Pha chế - Bar", "Phát triển thị trường", "Phục vụ - Tạp vụ", "Quan hệ đối ngoại", "Quản lý điều hành", "Quản lý đơn hàng", "Quản trị kinh doanh", "Sản xuất - Vận hành sản xuất",
+        "Sinh viên làm thêm", "StarUp", "Tài chính", "Telesales", "Thẩm định - Giảm thẩm định - Quản lý chất lượng", "Thể dục - Thể thao", "Thiết kế - Mỹ thuật", "Thiết kế web", "Thống kê", "Thư ký - Trợ lý",
+        "Thu Ngân", "Thư viện", "Thực phẩm - Đồ uống", "Thương Mại điện tử", "Thủy Sản", "Thị trường - Quảng cáo", "Tìm việc làm thêm", "Tổ chức sự kiện", "Trắc địa", "Truyển thông", "Tư vấn", "Vận chuyển giao nhận", "Vận tải - Lái xe", "Vật tư - Thiết bị",
+        "Việc làm bán hàng", "Việc làm Tết", "Xây dựng", "Xuất - nhập khẩu", "Xuất khẩu lao động", "Y tế - Dược", "Đầu bếp - phụ bếp", "Điện - Điện tử", "Điện tử viễn thông", "ngàng nghề khác"
+    ]
+}
+
+// hàm lấy dữ liệu hình thức làm việc
 exports.getDataWorkingForm = async() => {
-        return ["Toàn thời gian cố định", "Toàn thời gian tạm thời", "Bán thời gian", "Bán thời gian tạm thời", "Hợp đồng", "Việc làm từ xa", "Khác"]
-    }
-    // hàm lấy dữ liệu cấp bậc làm việc
+    return ["Toàn thời gian cố định", "Toàn thời gian tạm thời", "Bán thời gian", "Bán thời gian tạm thời", "Hợp đồng", "Việc làm từ xa", "Khác"]
+}
+
+// hàm lấy dữ liệu cấp bậc làm việc
 exports.getDataWorkingRank = async() => {
-        return ["Mới tốt nghiệp", "Thực tập sinh", "Nhân viên", "Trưởng nhóm", "Phó tổ trưởng", "Tổ trưởng", "Phó trưởng phòng", "Trưởng phòng", "Phó giám đốc", "Giám đóc", "Phó tổng giám đốc", "Tổng giám đốc", "Quản lý cấp trung", "Quản lý cấp cao"]
-    }
-    // hàm lấy dữ liệu kinh nghiệm làm việc
+    return ["Mới tốt nghiệp", "Thực tập sinh", "Nhân viên", "Trưởng nhóm", "Phó tổ trưởng", "Tổ trưởng", "Phó trưởng phòng", "Trưởng phòng", "Phó giám đốc", "Giám đóc", "Phó tổng giám đốc", "Tổng giám đốc", "Quản lý cấp trung", "Quản lý cấp cao"]
+}
+
+// hàm lấy dữ liệu kinh nghiệm làm việc
 exports.getDataEXP = async() => {
         return ["Không yêu cầu", "Chưa có kinh nghiệm", "0 - 1 năm kinh nghiệm", "Hơn 1 năm kinh nghiệm", "Hơn 2 năm kinh nghiệm", "Hơn 5 năm kinh nghiệm", "Hơn 10 năm kinh nghiệm"]
     }
@@ -403,7 +407,30 @@ exports.getDataDegree = async() => {
 exports.getDataSex = async() => {
     return ["Nam", "Nữ", "Không yêu cầu"]
 }
+
 exports.pageFind = async(model, condition, sort, skip, limit) => {
     return model.find(condition).sort(sort).skip(skip).limit(limit)
+}
 
+// lấy danh sách mẫu CV sắp xếp mới nhất
+exports.getDataCVSortById = async(condition) => {
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ _id: -1 });
+    if (data.length > 0) {
+        return data;
+    };
+    return null;
+};
+
+// lấy danh sách mẫu CV sắp xếp lượt tải nn
+exports.getDataCVSortByDownload = async(condition) => {
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ download: -1 });
+    if (data.length > 0) {
+        return data;
+    };
+    return null;
+};
+
+//hàm kiểm tra string có phải number không
+exports.checkNumber = async(string) => {
+    return !isNaN(string)
 }

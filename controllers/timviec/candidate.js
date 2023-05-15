@@ -366,68 +366,99 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
 
 }
 
-exports.AddUserChat365 = async(req, res, next) => {
-    try {
-        // for(let i=0;i<325900;i=i+100){
-        let takeData = await axios({
-            method: "post",
-            url: "http://43.239.223.142:9006/api/users/TakeDataUser",
-            data: {
-                count: 0
-            },
-            headers: { "Content-Type": "multipart/form-data" }
-        });
-        for (let j = 0; j < takeData.data.data.length; j++) {
-            let CheckEmail = await functions.CheckEmail(takeData.data.data.email)
-            let CheckPhoneNumber = await functions.CheckPhoneNumber(takeData.data.data.email)
-            let checkUser = await functions.getDatafindOne(Users, { phoneTK: takeData.data.data.email, type: takeData.data.data.email })
-            if (!checkUser && CheckPhoneNumber) {
-                let user = new Users({
-                    _id: takeData.data.data._id,
-                    idQLC: takeData.data.data.id365,
-                    type: takeData.data.data.type365,
-                    phoneTK: takeData.data.data.email,
-                    password: takeData.data.data.password,
-                    userName: takeData.data.data.userName,
-                    avatarUser: takeData.data.data.avatarUser,
-                    lastActivedAt: takeData.data.data.lastActive,
-                    isOnline: takeData.data.data.isOnline,
-                    idTimViec365: takeData.data.data.idTimviec,
-                    from: takeData.data.data.fromWeb,
-                    chat365_secret: takeData.data.data.secretCode,
-                    latitude: takeData.data.data.latitude,
-                    longitude: takeData.data.data.longitude,
-                })
-            }
-            if (!checkUser && CheckEmail) {
-                let user = new Users({
-                    _id: takeData.data.data._id,
-                    idQLC: takeData.data.data.id365,
-                    type: takeData.data.data.type365,
-                    email: takeData.data.data.email,
-                    password: takeData.data.data.password,
-                    userName: takeData.data.data.userName,
-                    avatarUser: takeData.data.data.avatarUser,
-                    lastActivedAt: takeData.data.data.lastActive,
-                    isOnline: takeData.data.data.isOnline,
-                    idTimViec365: takeData.data.data.idTimviec,
-                    from: takeData.data.data.fromWeb,
-                    chat365_secret: takeData.data.data.secretCode,
-                    latitude: takeData.data.data.latitude,
-                    longitude: takeData.data.data.longitude,
-                })
-            }
-        }
-        // }
-        res.json(await functions.success("Add dữ liệu thành công"))
+  // đôit mật khẩu
+// b1: gửi mã otp tới tên tài khoản được nhập
+exports.sendOTP = async (req, res, next) => {
+    try{
+        const user = req.body.user;
+        if(await functions.checkPhoneNumber(user) && await functions.getDatafindOne(Users,{phoneTK: user})) {
+            await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp",{user})
+            .then((response) => {
 
+                const otp = response.data.otp;
+                if(otp){
+                   return Users.updateOne({ phoneTK: user }, { 
+                      $set: { 
+                        otp:otp
+                      }
+                    }); 
+                }
+                functions.setError(res, "Gửi OTP lỗi 1",);
+            })
+            .then(() => {functions.getDatafindOne(Users,{phoneTK: user},)
+                .then(async (response) => {
+                    const token= await functions.createToken(response,'30m');             // tạo token chuyển lên headers
+                    res.setHeader('authorization', `Bearer ${token}`);
+                    return  functions.success(res,'Gửi OTP thành công');
+                }); 
+            });
+            
+        } else if(await functions.checkEmail(user) && await functions.getDatafindOne(Users,{email: user},)) {
+            await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp",{user})
+            .then((response) => {
+                const otp = response.data.otp;
+                if(otp){
+                    return Users.updateOne({ email: user }, { 
+                        $set: { 
+                           otp:otp
+                        }
+                       });  
+                  }
+                  functions.setError(res, 'Gửi OTP lỗi 2',);
+            })
+            .then(() => { Users.findOne({email: user})
+                .then(async (response) => {
+                    const token= await functions.createToken(response,'30m');
+                    res.setHeader('authorization', `Bearer ${token}`);
+                    return  functions.success(res,'Gửi OTP thành công');
+                }); 
+            }); 
+        } else {
+            return functions.setError(res,"Tài khoản không tồn tại. ",404)
+        }  
     } catch (e) {
-        console.log("add sữu liệu lỗi", e);
-        functions.setError(res, 'Add sữu liệu lỗi', 404)
+        return functions.setError(res,"Gửi OTP lỗi3",)
     }
-
-}
-
+     
+};
+// b2: xác nhận mã otp
+exports.confirmOTP = async (req, res, next) => {
+    try{
+        const _id = req.user.data._id;
+        const otp = req.body.otp;
+        const verify=await Users.findOne({_id:_id,otp});              // tìm user với dk có otp === otp người dùng nhập
+        
+        if(verify) {
+            const token= await functions.createToken(verify,'30m');
+            res.setHeader('authorization', `Bearer ${token}`);
+            return functions.success(res,'Xác thực OTP thành công',);
+        }else {
+            return functions.setError(res, "Otp không chính xác 1",404);
+        }
+    }catch(e){
+        return functions.setError(res, 'Xác nhận OTP lỗi',);
+    }
+   
+};
+//b3: đổi mật khẩu
+exports.changePassword = async (req, res, next) => {
+    try{
+        const password =req.body.password;
+        const _id = req.user.data._id;
+        
+        if(_id && password){
+            await Users.updateOne({ _id: _id }, {                               // update mật khẩu
+                $set: { 
+                   password:md5(password)
+                }
+               }); 
+            return functions.success(res,'Đổi mật khẩu thành công');
+        };
+        return functions.setError(res, 'Đổi mật khẩu lỗi', 404);
+    } catch(e){
+        return functions.setError(res, 'Đổi mật khẩu lỗi',);
+    }
+};
 exports.RegisterB2CvSite = async(req, res, next) => {
     try {
         if (req && req.body && req.body.token && req.file) {

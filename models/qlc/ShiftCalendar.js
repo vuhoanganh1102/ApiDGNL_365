@@ -11,14 +11,10 @@ const ShiftCalendarSchema = new Schema({
     shiftId: {
         type: Number,
     },
-    //ID của lịch làm việc
-    calendarId: {
-        type: Number,
-    },
     //Ngày diễn ra lịch với ca làm việc đó
     date: {
         type: Date
     }
 })
 
-//module.exports = mongoose.model("ShiftCalendars", ShiftCalendarSchema)
+mongoose.model("ShiftCalendars", ShiftCalendarSchema)

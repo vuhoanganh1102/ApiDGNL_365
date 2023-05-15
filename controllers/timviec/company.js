@@ -1,5 +1,4 @@
 const md5 = require('md5');
-const jwt = require('jsonwebtoken');
 
 const Users = require('../../models/Users');
 const functions = require('../../services/functions');
@@ -11,8 +10,8 @@ const PointCompany = require('../../models/Timviec365/Timviec/pointCompany.model
 const PointUsed = require('../../models/Timviec365/Timviec/pointUsed.model');
 const UserCompanyMultit = require('../../models/Timviec365/Timviec/userCompanyMutil');
 const AdminUser = require('../../models/Timviec365/Timviec/adminUser.model');
-const Modules = require('../../models/Timviec365/Timviec/modules.model')
-    // hàm đăng ký
+const Modules = require('../../models/Timviec365/Timviec/modules.model');
+// hàm đăng ký
 exports.register = async(req, res, next) => {
     try {
         let request = req.body,

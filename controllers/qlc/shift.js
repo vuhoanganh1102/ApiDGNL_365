@@ -4,14 +4,14 @@ const functions = require("../../services/functions");
 exports.getListShifts = async (req, res) => {
     await functions.getDatafind(Shift, {})
         .then((shifts) => functions.success(res, "Get shift's data successfully", shifts))
-        .error(err => functions.setError(res, err.message, 620));
+        .catch(err => functions.setError(res, err.message, 620));
 };
 
 exports.getShiftById = async (req, res) => {
 
     const _id = req.params.id;
 
-    if (functions.checkNumber(_id)) {
+    if (!functions.checkNumber(_id)) {
         functions.setError(res, "Id must be a number", 621);
     } else {
         const shift = await functions.getDatafindOne(Shift, { _id: _id });
@@ -27,12 +27,21 @@ exports.getShiftByComId = async (req, res) => {
 
     const { companyId } = req.body;
 
-    await functions.getDatafind(Shift, { companyId: companyId })
-        .then((shifts) => functions.success(res, "Get shift's data successfully", shifts))
-        .catch(err => functions.setError(res, err.message, 623));
+    if (!companyId) {
+        functions.setError(res, "Company id required");
+    } else if (typeof companyId !== "number") {
+        functions.setError(res, "Company id must be a number");
+    } else {
+        await functions.getDatafind(Shift, { companyId: companyId })
+            .then((shifts) => functions.success(res, "Get shift's data successfully", shifts))
+            .catch(err => functions.setError(res, err.message, 623));
+    }
+
+
 };
 
 exports.createShift = async (req, res) => {
+
     const companyId = req.body.companyId;;
     const shiftName = req.body.shiftName;
     const timeCheckIn = req.body.timeCheckIn;
@@ -40,10 +49,10 @@ exports.createShift = async (req, res) => {
     const timeCheckInEarliest = req.body.timeCheckInEarliest;
     const timeCheckOutLastest = req.body.timeCheckOutLastest;
     const idTypeCalculateWork = req.body.idTypeCalculateWork;
-    const numOfWorkPerShift = req.body.numOfWorkPerShift;
-    const money = req.body.money;
+    let numOfWorkPerShift = req.body.numOfWorkPerShift;
+    let money = req.body.money;
 
-    const typeCalculateWork = "";
+
 
     if (!companyId) {
         functions.setError(res, "Company id required");
@@ -64,6 +73,7 @@ exports.createShift = async (req, res) => {
     else if (!idTypeCalculateWork) {
         functions.setError(res, "Id type calculation work required");
     } else {
+        let typeCalculateWork = "";
         if (idTypeCalculateWork === 2) {
             if (!numOfWorkPerShift) {
                 functions.setError(res, "Number of work per shift required");
@@ -83,6 +93,8 @@ exports.createShift = async (req, res) => {
         }
 
         if (idTypeCalculateWork === 1) {
+            numOfWorkPerShift = null;
+            money = null;
             typeCalculateWork = "Tính công theo giờ";
         }
 
@@ -120,7 +132,7 @@ exports.createShift = async (req, res) => {
 exports.editShift = async (req, res) => {
     const _id = req.params.id;
 
-    if (functions.checkNumber(_id)) {
+    if (!functions.checkNumber(_id)) {
         functions.setError(res, "Id must be a number");
     } else {
         const companyId = req.body.companyId;;
@@ -200,7 +212,7 @@ exports.editShift = async (req, res) => {
 exports.deleteShift = async (req, res) => {
     const _id = req.params.id;
 
-    if (functions.checkNumber(_id)) {
+    if (!functions.checkNumber(_id)) {
         functions.setError(res, "Id must be a number", 621);
     } else {
         const shift = await functions.getDatafindOne(Shift, { _id: _id });
@@ -241,7 +253,7 @@ exports.deleteAllShifts = async (req, res) => {
         functions.setError(res, "No shift existed");
     } else {
         Shift.deleteMany()
-            .then(() => functions.success(res, "Delete al shifts sucessfully"))
+            .then(() => functions.success(res, "Delete all shifts sucessfully"))
             .catch(err => functions.setError(err, err.message));
     }
 }
