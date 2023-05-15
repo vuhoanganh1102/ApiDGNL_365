@@ -343,7 +343,7 @@ const UserSchema = new mongoose.Schema({
             },
             videoType: {
                 // 1: Video tự up, 2: Video từ youtube hoặc tiktok
-                type: Number,
+                type: String,
                 default: 0
             },
             videoActive: {
@@ -351,11 +351,18 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            comImages: {
-                // Kho ảnh
-                type: Array,
-                default: []
-            },
+            //kho ảnh
+            comImages: [{
+                _id: Number,
+                name: String,
+                size: Number,
+            }],
+            // kho video
+            comVideos: [{
+                _id: Number,
+                name: String,
+                size: Number,
+            }],
             website: {
                 // Website công ty
                 type: String,

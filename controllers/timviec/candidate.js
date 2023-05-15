@@ -746,4 +746,4 @@ exports.donXinViec = async(req, res, next) => {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
-}
+};
