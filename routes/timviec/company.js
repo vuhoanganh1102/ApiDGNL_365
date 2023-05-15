@@ -90,7 +90,7 @@ router.post('/deleteImg', functions.checkToken, formData.parse(), company.delete
 //api xóa video trong kho ảnh
 router.post('/deleteVideo', functions.checkToken, formData.parse(), company.deleteVideo)
 
-// //api xóa video trong kho ảnh
-// router.post('/getData', functions.checkToken, formData.parse(), company.getDataCompany)
+// //api đưa data vào base 
+router.post('/getData', company.getDataApi)
 
 module.exports = router;
