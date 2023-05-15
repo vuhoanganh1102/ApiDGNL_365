@@ -963,7 +963,7 @@ exports.uploadImg = async(req, res, next) => {
                                     await functions.deleteImg(img[i])
                                 }
                             }
-                            return functions.setError(res, 'tổng số ảnh đã quá 30 ảnh', 404)
+                            return functions.setError(res, 'ảnh thêm vào đã quá dung lượng của kho', 404)
                         }
                     } else {
                         if (img) {
@@ -979,7 +979,7 @@ exports.uploadImg = async(req, res, next) => {
                         await functions.deleteImg(img[i])
                     }
                 }
-                return functions.setError(res, ' giới hạn 30 ảnh ', 404)
+                return functions.setError(res, ' kho ảnh đã đầy', 404)
             }
             if (img) {
                 for (let i = 0; i < img.length; i++) {
@@ -1051,7 +1051,7 @@ exports.uploadVideo = async(req, res, next) => {
                                     await functions.deleteImg(video[i])
                                 }
                             }
-                            return functions.setError(res, 'đã quá 3 video', 404)
+                            return functions.setError(res, 'video thêm vào đã quá dung lượng của kho', 404)
                         }
                     } else {
                         if (video) {
@@ -1067,7 +1067,7 @@ exports.uploadVideo = async(req, res, next) => {
                         await functions.deleteImg(video[i])
                     }
                 }
-                return functions.setError(res, ' giới hạn 3 video ', 404)
+                return functions.setError(res, 'kho ảnh đã đầy', 404)
             }
             if (video) {
                 for (let i = 0; i < video.length; i++) {
