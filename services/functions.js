@@ -24,38 +24,116 @@ const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 const allowedTypes = ['.mp4', '.mov', '.avi', '.wmv', '.flv'];
 // giới hạn dung lượng ảnh < 2MB
 const MAX_IMG_SIZE = 2 * 1024 * 1024;
+// giới hạn dung lượng kho ảnh
+exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
 dotenv.config();
+// check title
+const removeAccent = (str) => {
+    const accents = "àáâãäåèéêëìíîïòóôõöùúûüýÿđ";
+    const accentRegex = new RegExp(`[${accents}]`, "g");
+    const accentMap = {
+        à: "a",
+        á: "a",
+        â: "a",
+        ã: "a",
+        ä: "a",
+        å: "a",
+        è: "e",
+        é: "e",
+        ê: "e",
+        ë: "e",
+        ì: "i",
+        í: "i",
+        î: "i",
+        ï: "i",
+        ò: "o",
+        ó: "o",
+        ô: "o",
+        õ: "o",
+        ö: "o",
+        ù: "u",
+        ú: "u",
+        û: "u",
+        ü: "u",
+        ý: "y",
+        ÿ: "y",
+        đ: "d",
+    };
+    return str.replace(accentRegex, (match) => accentMap[match]);
+};
+// check title
+exports.checkTilte = async(input, list) => {
+        const formattedInput = removeAccent(input).toLowerCase();
+        const foundKeyword = list.find((keyword) => {
+            const formattedKeyword = removeAccent(keyword).toLowerCase();
+            return formattedInput.includes(formattedKeyword);
+        });
+
+        if (foundKeyword) {
+            return false
+        } else {
+            return true
+        }
+    }
+    // hàm check title khi update
+exports.removeSimilarKeywords = (keyword, arr) => {
+    return arr.filter(file => !file.startsWith(keyword));
+}
+
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
+exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"];
+
 // hàm validate phone
-exports.checkPhoneNumber = async (phone) => {
-    if (phone == undefined) {
-        return true
-    }
+exports.checkPhoneNumber = async(phone) => {
     const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
     return phoneNumberRegex.test(phone)
-}
+};
+
 // hàm validate email
-exports.checkEmail = async (email) => {
+exports.checkEmail = async(email) => {
     const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
     return gmailRegex.test(email)
 };
 
 // hàm validate link
-exports.checkLink = async (link) => {
+exports.checkLink = async(link) => {
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
     return urlRegex.test(yourUrlVariable);
 };
 
+// hàm validate thơi gian
+exports.checkTime = async(time) => {
+    const currentTime = new Date(); // Lấy thời gian hiện tại
+    const inputTime = new Date(time); // Thời gian nhập vào
+    if (inputTime < currentTime) {
+        return false
+    } else {
+        return true
+    }
+};
+
+// hàm check thời gian đăng tin 10p/1 lần
+exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
+    const now = new Date().getTime();
+    const inputTime = Date.parse(timeInput);
+    const diffInMinutes = (now - inputTime) / (1000 * 60);
+
+    if (diffInMinutes >= 10) {
+        return true;
+    } else {
+        return false;
+    }
+}
 exports.getDatafindOne = async (model, condition) => {
     return model.findOne(condition);
 };
 
 exports.getDatafind = async (model, condition) => {
     return model.find(condition);
-};
+}
 
 exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
@@ -126,43 +204,92 @@ exports.checkVideo = async (filePath) => {
     return true;
 }
 
-exports.getDataDeleteOne = async (model, condition) => {
-    return model.deleteOne(condition)
-}
-// storage để updload file
-const storageMain = (destination, fileExtension) => {
+exports.getDataDeleteOne = async(model, condition) => {
+        return model.deleteOne(condition)
+    }
+    // storage để updload file
+const storageMain = (destination) => {
     return multer.diskStorage({
-        destination: function (req, file, cb) {
-            cb(null, destination)
+        destination: function(req, file, cb) {
+            const userId = req.user.data._id; // Lấy id người dùng từ request
+            const userDestination = `${destination}/${userId}`; // Tạo đường dẫn đến thư mục của người dùng
+            if (!fs.existsSync(userDestination)) { // Nếu thư mục chưa tồn tại thì tạo mới
+                fs.mkdirSync(userDestination, { recursive: true });
+            }
+            cb(null, userDestination);
         },
-        filename: function (req, file, cb) {
+        filename: function(req, file, cb) {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-            cb(null, file.fieldname + uniqueSuffix + fileExtension)
+            cb(null, file.fieldname + uniqueSuffix + '.' + file.originalname.split('.').pop())
         }
     })
 }
-//  hàm upload ảnh
-exports.uploadImg = multer({ storage: storageMain('public/company/avatar', '.jpg') })
-// hàm upload file
-exports.uploadVideo = multer({ storage: storageMain('public/company/video', '.mp4') })
-
-const deleteFile = (filePath) => {
-    fs.unlink(filePath, (err) => {
-        if (err) throw err;
-        console.log('File was deleted');
+const storageFile = (destination) => {
+    return multer.diskStorage({
+        destination: function(req, file, cb) {
+            let userDestination = " "
+            if (req.user) {
+                const userId = req.user.data._id; // Lấy id người dùng từ request
+                userDestination = `${destination}/${userId}`; // Tạo đường dẫn đến thư mục của người dùng
+                if (!fs.existsSync(userDestination)) { // Nếu thư mục chưa tồn tại thì tạo mới
+                    fs.mkdirSync(userDestination, { recursive: true });
+                }
+            } else {
+                userDestination = 'public/company'
+            }
+            cb(null, userDestination);
+        },
+        filename: function(req, file, cb) {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+            cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop())
+        },
+        fileFilter: function(req, file, cb) {
+            const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'video/webm', 'video/quicktime'];
+            if (allowedTypes.includes(file.mimetype)) {
+                cb(null, true);
+            } else {
+                cb(new Error('Only .jpeg, .png, .mp4, .webm and .mov format allowed!'));
+            }
+        }
     });
 }
-// hàm xóa file
-exports.deleteImg = async (condition) => {
-    if (condition) {
-        await deleteFile(condition.path)
-    }
 
-}
-// storega check file
-const storageFile = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'public/candidate/fileUpload')
+exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/KhoAnh') })
+exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/KhoAnh') })
+
+//  hàm upload ảnh ở cập nhập avatar
+exports.uploadImg = multer({ storage: storageMain('public/KhoAnh') })
+
+//  hàm upload ảnh ở kho ảnh
+exports.uploadImgKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
+
+//  hàm upload ảnh ở kho ảnh
+exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
+
+// hàm upload video ở cập nhập KhoAnh
+exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
+
+const deleteFile = (filePath) => {
+        fs.unlink(filePath, (err) => {
+            if (err) throw err;
+            console.log('File was deleted');
+        });
+    }
+    // hàm xóa file
+exports.deleteImg = async(condition) => {
+        if (typeof(condition) == "string") {
+            return await deleteFile(condition)
+        }
+
+        if (typeof(condition) == "object") {
+            return await deleteFile(condition.path)
+        }
+
+    }
+    // storega check file
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, 'public/cvUpload')
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
@@ -180,7 +307,6 @@ exports.createError = async (code, message) => {
     err.message = message;
     return { data: null, error: err };
 };
-
 // hàm cấu hình mail
 const transport = nodemailer.createTransport({
     host: process.env.NODE_MAILER_HOST,
@@ -216,17 +342,21 @@ exports.sendEmailVerificationRequest = async (otp, email, nameCompany) => {
             console.log('Message sent: ' + info.response);
         }
     })
-}
-exports.verifyPassword = async (inputPassword, hashedPassword) => {
+};
+
+
+exports.verifyPassword = async(inputPassword, hashedPassword) => {
     const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
     return md5Hash === hashedPassword;
-};
+}
+// hàm check token
 exports.checkToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
         return res.status(401).json({ message: "Missing token" });
     }
+
     jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
         if (err) {
             return res.status(403).json({ message: "Invalid token" });
@@ -235,27 +365,66 @@ exports.checkToken = (req, res, next) => {
         next();
     });
 };
-// hàm tạo token
-exports.createToken = async (data, time) => {
+// hàm tạo token 
+exports.createToken = async(data, time) => {
     return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
 };
 
-//hàm giải mã token
-exports.decodeToken = async (data, time) => {
-    return jwt.verify(data, process.env.NODE_SERCET, { expiresIn: time });
+// hàm lấy data từ axios 
+exports.getDataAxios = async(url, condition) => {
+  return await await axios({
+      method: "post",
+      url: url,
+      data: condition,
+      headers: { "Content-Type": "multipart/form-data" }
+  }).then(async(response) => {
+      return response.data
+  })
 };
 
-// hàm lấy data từ axios
-exports.getDataAxios = async (url, condition) => {
-    return await axios({
-        method: "post",
-        url: url,
-        data: condition,
-        headers: { "Content-Type": "multipart/form-data" }
-    }).then(async (response) => {
-        return response.data
-    })
-};
+    // hàm lấy dữ liệu ngành nghề
+exports.getDataCareer = async() => {
+        return ["An toàn lao động", "Báo chí - Truyền hình", "Bảo hiểm", "Bảo trì", "Bảo vệ", "Biên - Phiên dịch",
+            "Bưu chính viễn thông", "Chăm sóc khách hàng", "Chăn nuôi - Thú y", "Cơ khí - Chế tạo", "Công chức - Viên chức", "Công nghệ cao", "Công nghệ thực phẩm", "copywrite",
+            "Dầu khí - Địa chất", "Dệt may - Da dày", "Dịch vụ", "Du lịch", "Freelancer", "Giáo dục - Đào tạo", "Giao thông vận tải -Thủy lợi - Cầu đường", "Giúp việc", "Hàng hải", "Hàng không",
+            "Hành chính - Văn phòng", "Hóa học - Sinh học", "Hoạch định - Dự án", "In ấn - Xuất bản", "IT phần cứng - mạng", "IT phần mềm", "KD bất động sản", "Kế toán - Kiểm toán", "Khánh sạn - Nhà hàng",
+            "Khu chế xuất - Khu công nghiệp", "Kiến trúc - Tk nội thất", "Kỹ thuật", "Kỹ thuật ứng dụng", "Làm đẹp - Thể lực - Spa", "Lao động phổ thông", "Lễ tan - PG - PB", "Logistic", "Luật - Pháp lý", "Lương cao",
+            "Marketing - PR", "Môi trường - Xử lý chất thải", "Mỹ phẩm - Thời trang - Trang sức", "Ngân hàng - chứng khoán - Đầu tư", "Nghệ thuật - Điện ảnh", "Nhân sự", "Kinh doanh", "Nhập liệu", "Nông - Lâm - Ngư - Nghiệp",
+            "Ô tô - Xe máy", "Pha chế - Bar", "Phát triển thị trường", "Phục vụ - Tạp vụ", "Quan hệ đối ngoại", "Quản lý điều hành", "Quản lý đơn hàng", "Quản trị kinh doanh", "Sản xuất - Vận hành sản xuất",
+            "Sinh viên làm thêm", "StarUp", "Tài chính", "Telesales", "Thẩm định - Giảm thẩm định - Quản lý chất lượng", "Thể dục - Thể thao", "Thiết kế - Mỹ thuật", "Thiết kế web", "Thống kê", "Thư ký - Trợ lý",
+            "Thu Ngân", "Thư viện", "Thực phẩm - Đồ uống", "Thương Mại điện tử", "Thủy Sản", "Thị trường - Quảng cáo", "Tìm việc làm thêm", "Tổ chức sự kiện", "Trắc địa", "Truyển thông", "Tư vấn", "Vận chuyển giao nhận", "Vận tải - Lái xe", "Vật tư - Thiết bị",
+            "Việc làm bán hàng", "Việc làm Tết", "Xây dựng", "Xuất - nhập khẩu", "Xuất khẩu lao động", "Y tế - Dược", "Đầu bếp - phụ bếp", "Điện - Điện tử", "Điện tử viễn thông", "ngàng nghề khác"
+        ]
+    }
+
+// hàm lấy dữ liệu hình thức làm việc
+exports.getDataWorkingForm = async() => {
+    return ["Toàn thời gian cố định", "Toàn thời gian tạm thời", "Bán thời gian", "Bán thời gian tạm thời", "Hợp đồng", "Việc làm từ xa", "Khác"]
+}
+
+// hàm lấy dữ liệu cấp bậc làm việc
+exports.getDataWorkingRank = async() => {
+    return ["Mới tốt nghiệp", "Thực tập sinh", "Nhân viên", "Trưởng nhóm", "Phó tổ trưởng", "Tổ trưởng", "Phó trưởng phòng", "Trưởng phòng", "Phó giám đốc", "Giám đóc", "Phó tổng giám đốc", "Tổng giám đốc", "Quản lý cấp trung", "Quản lý cấp cao"]
+}
+
+// hàm lấy dữ liệu kinh nghiệm làm việc
+exports.getDataEXP = async() => {
+    return ["Không yêu cầu", "Chưa có kinh nghiệm", "0 - 1 năm kinh nghiệm", "Hơn 1 năm kinh nghiệm", "Hơn 2 năm kinh nghiệm", "Hơn 5 năm kinh nghiệm", "Hơn 10 năm kinh nghiệm"]
+}
+// hàm lấy dữ liệu bằng cấp làm việc
+exports.getDataDegree = async() => {
+    return ["Không yêu cầu", "Đại học trở lên", "Cao đẳng trở lên", "THPT trở lên", "Trung học trở lên", "Chứng chỉ", "Trung cấp trở lên", "Cử nhân trở lên", "Thạc sĩ trở lên", "Thạc sĩ Nghệ thuật", "Thạc sĩ Thương mại", "Thạc sĩ Khoa học",
+        "Thạc sĩ Kiến trúc", "Thạc sĩ QTKD", "Thạc sĩ Kỹ thuật ứng dụng", "Thạc sĩ Luật", "Thạc sĩ Y học", "Thạc sĩ Dược phẩm", "Tiến sĩ", "Khác"
+    ]
+}
+// hàm lấy dữ liệu giới tính làm việc
+exports.getDataSex = async() => {
+return ["Nam", "Nữ", "Không yêu cầu"]
+}
+
+exports.pageFind = async(model, condition, sort, skip, limit) => {
+  return model.find(condition).sort(sort).skip(skip).limit(limit);
+}
 
  // lấy danh sách mẫu CV sắp xếp mới nhất
  exports.getDataCVSortById = async (condition) => {
@@ -275,10 +444,6 @@ exports.getDataAxios = async (url, condition) => {
     return null;
   };
 
-//hàm phân trang find
-exports.pageFind = async (model, condition, sort, skip, limit) => {
-    return model.find(condition).sort(sort).skip(skip).limit(limit)
-}
 //hàm kiểm tra string có phải number không
 exports.checkNumber = async (string) => {
     return !isNaN(string)
