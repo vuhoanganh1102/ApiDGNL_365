@@ -6,6 +6,7 @@ const router = express.Router();
 const { uploadFile } = require('../../services/functions.js');
 const functions = require('../../services/functions')
 
+
 router.get('/', candidate.index);
 router.post('/RegisterB1', formData.parse(), candidate.RegisterB1);
 router.post('/RegisterB2VideoUpload', uploadFile.single('videoUpload'), candidate.RegisterB2VideoUpload);
