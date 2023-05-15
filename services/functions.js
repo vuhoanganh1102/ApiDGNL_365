@@ -15,7 +15,8 @@ const path = require('path');
 //check ảnh
 const { promisify } = require('util');
 // tọa token
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const CV = require('../models/Timviec365/CV/CV');
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -246,7 +247,7 @@ exports.decodeToken = async (data, time) => {
 
 // hàm lấy data từ axios
 exports.getDataAxios = async (url, condition) => {
-    return await await axios({
+    return await axios({
         method: "post",
         url: url,
         data: condition,
@@ -255,6 +256,24 @@ exports.getDataAxios = async (url, condition) => {
         return response.data
     })
 };
+
+ // lấy danh sách mẫu CV sắp xếp mới nhất
+ exports.getDataCVSortById = async (condition) => {
+   const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({_id:-1});
+   if(data.length > 0){
+    return data;
+   };
+   return null;
+ };
+
+  // lấy danh sách mẫu CV sắp xếp lượt tải nn
+  exports.getDataCVSortByDownload = async (condition) => {
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({download:-1});
+    if(data.length > 0){
+     return data;
+    };
+    return null;
+  };
 
 //hàm phân trang find
 exports.pageFind = async (model, condition, sort, skip, limit) => {
