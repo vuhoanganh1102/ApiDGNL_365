@@ -23,6 +23,8 @@ const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 const allowedTypes = ['.mp4', '.mov', '.avi', '.wmv', '.flv'];
 // giới hạn dung lượng ảnh < 2MB
 const MAX_IMG_SIZE = 2 * 1024 * 1024;
+// giới hạn dung lượng kho ảnh
+exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
 dotenv.config();
 // check title

@@ -915,12 +915,24 @@ exports.uploadImg = async(req, res, next) => {
         try {
             let idCompany = req.user.data._id;
             let img = req.files;
+            let imageMoment = 0;
+            let sizeImg = 0;
             let user = await functions.getDatafindOne(Users, { _id: idCompany });
             if (user) {
-                if (user.inForCompany.comImages.length < 30) {
-                    let listImg = user.inForCompany.comImages;
+                let listImg = user.inForCompany.comImages;
+                let listVideo = user.inForCompany.comVideos;
+                for (let i = 0; i < listImg.length; i++) {
+                    imageMoment += listImg[i].size;
+                }
+                for (let i = 0; i < listVideo.length; i++) {
+                    imageMoment += listVideo[i].size;
+                }
+                if (imageMoment < functions.MAX_Kho_Anh) {
                     if (img) {
-                        if ((Number(listImg.length) + Number(img.length)) <= 30) {
+                        for (let i = 0; i < img.length; i++) {
+                            sizeImg += img[i].size;
+                        }
+                        if ((Number(sizeImg) + Number(imageMoment)) <= functions.MAX_Kho_Anh) {
                             for (let i = 0; i < img.length; i++) {
                                 let checkImg = await functions.checkImage(img[i].path);
                                 if (checkImg) {
@@ -928,9 +940,9 @@ exports.uploadImg = async(req, res, next) => {
                                     let newID = id._id || 0;
                                     listImg.push({
                                         _id: Number(newID) + 1,
-                                        name: img[i].filename
+                                        name: img[i].filename,
+                                        size: img[i].size
                                     })
-
                                 } else {
                                     if (img) {
                                         for (let i = 0; i < img.length; i++) {
@@ -990,20 +1002,34 @@ exports.uploadVideo = async(req, res, next) => {
         try {
             let idCompany = req.user.data._id;
             let video = req.files;
+            let imageMoment = 0;
+            let sizeVideo = 0;
             let user = await functions.getDatafindOne(Users, { _id: idCompany });
             if (user) {
-                if (user.inForCompany.comVideos.length < 3) {
-                    let listVideo = user.inForCompany.comVideos;
+                let listImg = user.inForCompany.comImages;
+                let listVideo = user.inForCompany.comVideos;
+                for (let i = 0; i < listImg.length; i++) {
+                    imageMoment += listImg[i].size;
+                }
+                for (let i = 0; i < listVideo.length; i++) {
+                    imageMoment += listVideo[i].size;
+                }
+                if (imageMoment < functions.MAX_Kho_Anh) {
                     if (video) {
-                        if ((Number(listVideo.length) + Number(video.length)) <= 3) {
+                        for (let i = 0; i < video.length; i++) {
+                            sizeVideo += video[i].size;
+                        }
+                        console.log(imageMoment)
+                        if ((Number(sizeVideo) + Number(imageMoment)) <= functions.MAX_Kho_Anh) {
                             for (let i = 0; i < video.length; i++) {
-                                let checkVideo = await functions.checkVideo(video[i]);
-                                if (checkVideo) {
+                                let checkImg = await functions.checkVideo(video[i]);
+                                if (checkImg) {
                                     let id = listVideo[listVideo.length - 1] || 0;
                                     let newID = id._id || 0;
                                     listVideo.push({
                                         _id: Number(newID) + 1,
-                                        name: video[i].filename
+                                        name: video[i].filename,
+                                        size: video[i].size,
                                     })
 
                                 } else {

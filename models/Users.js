@@ -355,11 +355,13 @@ const UserSchema = new mongoose.Schema({
             comImages: [{
                 _id: Number,
                 name: String,
+                size: Number,
             }],
             // kho video
             comVideos: [{
                 _id: Number,
                 name: String,
+                size: Number,
             }],
             website: {
                 // Website công ty
