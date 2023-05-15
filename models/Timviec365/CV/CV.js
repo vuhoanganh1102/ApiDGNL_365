@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const Schema = mongoose.Schema
 const CVSchema = new mongoose.Schema({
     _id: {
@@ -102,6 +101,5 @@ const CVSchema = new mongoose.Schema({
 }, {
     collection: 'CV',
     versionKey: false
-})
-
+});
 module.exports = mongoose.model("CV", CVSchema);
