@@ -69,6 +69,18 @@ exports.getDatafind = async(model, condition) => {
 exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
 };
+
+// hàm validate email
+exports.checkEmail = async(email) => {
+    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return gmailRegex.test(email);
+};
+// hàm validate link
+exports.checkLink = async(link) => {
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+    return urlRegex.test(yourUrlVariable);
+};
+
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
     return res.status(200).json({ result: true, messsage, data })
@@ -79,8 +91,7 @@ exports.setError = async(res, message, code = 500) => {
 
     return res.status(code).json({ code, message })
 };
-
-// hàm tìm id max 
+// hàm tìm id max
 exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
@@ -230,14 +241,14 @@ exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
         to: email,
         subject: 'Tìm việc 365 WEB xác thực email',
         html: `
-    <body style="width: 100%;background-color: #dad7d7;text-align: justify;padding: 0;margin: 0;font-family: unset;padding-top: 20px;padding-bottom: 20px;"><table style="width: 600px;background:#fff; margin:0 auto;border-collapse: collapse;color: #000"><tr style="height: 165px;background-image: url(https://timviec365.vn/images/email/bg1.png);background-size:100% 100%;background-repeat: no-repeat;float: left;width: 100%;padding: 0px 30px;box-sizing: border-box;">
-    <td style="padding-top: 23px;float: left;">
-    <img src="https://timviec365.vn/images/email/logo2.png"></td>
-    <td style="text-align: left;float: right;">
-    <ul style="margin-top: 15px;padding-left: 0px;">
-    <li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">
-    Hiển thị danh sách ứng viên online</span></li>
-    <li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">Nhắn tin trực tiếp ứng viên qua Chat365</span></li><li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">Cam kết bảo hành 100%</span></li></ul></td></tr><tr style="float: left;padding:10px 30px 30px 30px;"><td colspan="2"><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-top: 15px;">Xin chào <span style="color:#307df1;">${nameCompany}</span></p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Chúc mừng bạn đã hoàn thành thông tin đăng ký tài khoản nhà tuyển dụng tại website Timviec365</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Dưới đây là thông tin tài khoản đã tạo:</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-left: 35px;">- Tài khoản: ${email}</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-left: 35px;">- Mật khẩu: ****** </p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Dưới đây là mã OTP của bạn</p><p style="margin: auto;margin-top: 45px;text-align: center;width: 160px;height: 43px;background:#307df1;border-radius: 5px;font-size: 22px;color: #fff">${otp}</a></p></td></tr><tr style="height: 160px;background-image: url(https://timviec365.vn/images/email/bg2.png);background-size:100% 100%;background-repeat: no-repeat;float: left;width: 100%;"><td style="padding-top: 50px;"><ul><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;">Liên hệ với chúng tôi để được hỗ trợ nhiều hơn:</span></li><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;">Hotline: <span style="color: #ffa111;">1900633682</span> - ấn phím 1</span></li><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;color: #ffa111;">Trân trọng !</span></li></ul></td></tr></table></body>
+        <body style="width: 100%;background-color: #dad7d7;text-align: justify;padding: 0;margin: 0;font-family: unset;padding-top: 20px;padding-bottom: 20px;"><table style="width: 600px;background:#fff; margin:0 auto;border-collapse: collapse;color: #000"><tr style="height: 165px;background-image: url(https://timviec365.vn/images/email/bg1.png);background-size:100% 100%;background-repeat: no-repeat;float: left;width: 100%;padding: 0px 30px;box-sizing: border-box;">
+        <td style="padding-top: 23px;float: left;">
+        <img src="https://timviec365.vn/images/email/logo2.png"></td>
+        <td style="text-align: left;float: right;">
+        <ul style="margin-top: 15px;padding-left: 0px;">
+        <li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">
+        Hiển thị danh sách ứng viên online</span></li>
+        <li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">Nhắn tin trực tiếp ứng viên qua Chat365</span></li><li style="list-style-type: none;padding-bottom: 5px;height:25px;margin-left: 0px;"><span style="color: #307df1;font-size: 28px;padding-right: 5px;font-weight:bold;">&#8727;</span><span style="font-size:18px;">Cam kết bảo hành 100%</span></li></ul></td></tr><tr style="float: left;padding:10px 30px 30px 30px;"><td colspan="2"><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-top: 15px;">Xin chào <span style="color:#307df1;">${nameCompany}</span></p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Chúc mừng bạn đã hoàn thành thông tin đăng ký tài khoản nhà tuyển dụng tại website Timviec365</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Dưới đây là thông tin tài khoản đã tạo:</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-left: 35px;">- Tài khoản: ${email}</p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;padding-left: 35px;">- Mật khẩu: ****** </p><p style="font-size: 18px;margin: 0;line-height: 25px;margin-bottom: 5px;">Dưới đây là mã OTP của bạn</p><p style="margin: auto;margin-top: 45px;text-align: center;width: 160px;height: 43px;background:#307df1;border-radius: 5px;font-size: 22px;color: #fff">${otp}</a></p></td></tr><tr style="height: 160px;background-image: url(https://timviec365.vn/images/email/bg2.png);background-size:100% 100%;background-repeat: no-repeat;float: left;width: 100%;"><td style="padding-top: 50px;"><ul><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;">Liên hệ với chúng tôi để được hỗ trợ nhiều hơn:</span></li><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;">Hotline: <span style="color: #ffa111;">1900633682</span> - ấn phím 1</span></li><li style="list-style-type: none;color: #fff;margin-bottom: 5px;"><span style="font-size: 18px;line-height: 18px;color: #ffa111;">Trân trọng !</span></li></ul></td></tr></table></body>
         `
     }
     transport.sendMail(options, (err, info) => {
@@ -247,9 +258,7 @@ exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
             console.log('Message sent: ' + info.response);
         }
     })
-};
-
-
+}
 exports.verifyPassword = async(inputPassword, hashedPassword) => {
     const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
     return md5Hash === hashedPassword;
@@ -268,7 +277,7 @@ exports.checkToken = (req, res, next) => {
         next();
     });
 };
-// hàm tạo token 
+// hàm tạo token
 exports.createToken = async(data, time) => {
     return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
 };
@@ -278,7 +287,7 @@ exports.decodeToken = async(data, time) => {
     return jwt.verify(data, process.env.NODE_SERCET, { expiresIn: time });
 };
 
-// hàm lấy data từ axios 
+// hàm lấy data từ axios
 exports.getDataAxios = async(url, condition) => {
     return await await axios({
         method: "post",

@@ -7,6 +7,11 @@ var mongoose = require('mongoose')
 
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
+var deparmentRouter = require('./routes/qlc/deparment')
+var teamRouter = require('./routes/qlc/team');
+var groupRouter = require('./routes/qlc/group');
+var shiftRouter = require('./routes/qlc/shift');
+var calendarRouter = require('./routes/qlc/calendar');
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
@@ -22,16 +27,25 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/company', companyRouter)
+app.use('/api/timviec/company', companyRouter);
 app.use('/api/tool', toolAddDataRouter);
 
+// API quản lí chung
+app.use('/api/qlc/deparment', deparmentRouter);
+app.use('/api/qlc/team', teamRouter);
+app.use("/api/qlc/group", groupRouter);
+
+//API quẩn lý ca làm việc
+app.use("/api/qlc/shift", shiftRouter);
+app.use("/api/calendar", calendarRouter);
+
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
