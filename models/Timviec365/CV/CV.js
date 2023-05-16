@@ -1,4 +1,4 @@
-const Schema = mongoose.Schema
+const mongoose = require('mongoose');
 const CVSchema = new mongoose.Schema({
     _id: {
         type: Number,

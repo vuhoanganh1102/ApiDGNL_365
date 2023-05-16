@@ -5,9 +5,10 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose')
 
-var candidateRouter = require('./routes/timviec/candidate');
+// var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
-var newTV365Router = require('./routes/timviec/newTV365');
+var newTV365Router = require('./routes/timviec/newTV365')
+var adminRouter = require('./routes/timviec/admin')
 var cvRouter = require('./routes/timviec/cv');
 
 // Quản lý chung
@@ -16,7 +17,6 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
-
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
@@ -31,10 +31,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/company',companyRouter);
-app.use('/api/timviec/newTV365', newTV365Router);
-app.use('/api/timviec/cv',cvRouter);
+// app.use('/api/timviec/candidate', candidateRouter);
+app.use('/api/timviec/newTV365', newTV365Router)
+app.use('/api/timviec/admin', adminRouter)
+app.use('/api/timviec/company', companyRouter)
+app.use('/api/timviec/cv', cvRouter);
 app.use('/api/tool', toolAddDataRouter);
 
 // API quản lí chung
@@ -47,12 +48,12 @@ app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
     next(createError(404));
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function(err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -62,7 +63,7 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://127.0.0.1/api-base365';
+const DB_URL = 'mongodb://127.0.0.1/timviec365';
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));

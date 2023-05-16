@@ -3,8 +3,7 @@ var router = express.Router();
 var company = require('../../controllers/timviec/company');
 var formData = require('express-form-data')
 const functions = require('../../services/functions')
-
-// api đăng ký
+    // api đăng ký
 router.post('/register', functions.uploadVideoAndIMGRegister.fields([
     { name: 'avatarUser' },
     { name: 'videoType' }
@@ -35,9 +34,9 @@ router.post('/updateInfor', formData.parse(), functions.checkToken, company.upda
 router.post('/updateContactInfor', formData.parse(), functions.checkToken, company.updateContactInfo);
 
 // api cập nhập video hoặc link video nhà tuyển dụng
-router.post('/updateVideoOrLink', functions.uploadVideo.single('videoType'), functions.checkToken, company.updateVideoOrLink);
+router.post('/updateVideoOrLink', functions.checkToken, functions.uploadVideo.single('videoType'), company.updateVideoOrLink);
 
-// api gửi mã OTP qua appChat để (dổi mật khẩu)
+// api gửi mã OTP qua appChat (dổi mật khẩu)
 router.get('/changePasswordSendOTP', functions.checkToken, company.changePasswordSendOTP);
 
 // api check mã OTP (đổi mật khẩu)
@@ -91,7 +90,7 @@ router.post('/deleteImg', functions.checkToken, formData.parse(), company.delete
 //api xóa video trong kho ảnh
 router.post('/deleteVideo', functions.checkToken, formData.parse(), company.deleteVideo)
 
-// //api xóa video trong kho ảnh
-// router.post('/getData', functions.checkToken, formData.parse(), company.getDataCompany)
+// //api đưa data vào base 
+router.post('/getData', company.getDataApi)
 
 module.exports = router;

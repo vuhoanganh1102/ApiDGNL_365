@@ -52,20 +52,16 @@ const adminUserSchema = new mongoose.Schema({
     ntd: {
         type: Number,
         default: 0,
-        required: true
     },
     empID: {
         type: Number,
-        required: true
     },
     nhaplieu: {
         type: Number,
         default: 0,
-        required: true
     },
     rank: {
         type: Number,
-        required: true
     },
 }, {
     collection: 'AdminUser',

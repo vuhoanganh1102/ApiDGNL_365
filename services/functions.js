@@ -2,7 +2,7 @@
 const fs = require('fs');
 // upload file
 const multer = require('multer')
-// gửi mail
+    // gửi mail
 const nodemailer = require("nodemailer");
 // tạo biến môi trường
 const dotenv = require("dotenv");
@@ -10,7 +10,7 @@ const dotenv = require("dotenv");
 const crypto = require('crypto');
 // gọi api
 const axios = require('axios')
-// check video
+    // check video
 const path = require('path');
 //check ảnh
 const { promisify } = require('util');
@@ -83,42 +83,39 @@ exports.removeSimilarKeywords = (keyword, arr) => {
 
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
-exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"];
-
-// hàm validate phone
+exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"]
+    // hàm validate phone
 exports.checkPhoneNumber = async(phone) => {
-    const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
-    return phoneNumberRegex.test(phone)
-};
-
-// hàm validate email
-exports.checkEmail = async(email) => {
-    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
-    return gmailRegex.test(email)
-};
-
-// hàm validate link
-exports.checkLink = async(link) => {
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-    return urlRegex.test(yourUrlVariable);
-};
-
-// hàm validate thơi gian
-exports.checkTime = async(time) => {
-    const currentTime = new Date(); // Lấy thời gian hiện tại
-    const inputTime = new Date(time); // Thời gian nhập vào
-    if (inputTime < currentTime) {
-        return false
-    } else {
-        return true
+        const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
+        return phoneNumberRegex.test(phone)
     }
-};
+    // hàm validate email
+exports.checkEmail = async(email) => {
+        const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
-// hàm check thời gian đăng tin 10p/1 lần
+        return gmailRegex.test(email)
+    }
+    // hàm validate link
+exports.checkLink = async(link) => {
+        const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+        return urlRegex.test(link);
+    }
+    // hàm validate thơi gian
+exports.checkTime = async(time) => {
+        const currentTime = new Date(); // Lấy thời gian hiện tại
+        const inputTime = new Date(time); // Thời gian nhập vào
+        if (inputTime < currentTime) {
+            return false
+        } else {
+            return true
+        }
+    }
+    // hàm check thời gian đăng tin 10p/1 lần
 exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
-    const now = new Date().getTime();
     const inputTime = Date.parse(timeInput);
+
+    const now = new Date().getTime();
+
     const diffInMinutes = (now - inputTime) / (1000 * 60);
 
     if (diffInMinutes >= 10) {
@@ -127,54 +124,43 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
         return false;
     }
 }
-exports.getDatafindOne = async (model, condition) => {
+exports.getDatafindOne = async(model, condition) => {
     return model.findOne(condition);
 };
 
-exports.getDatafind = async (model, condition) => {
+exports.getDatafind = async(model, condition) => {
     return model.find(condition);
 }
 
-exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
-    return model.findOneAndUpdate(condition, projection);
-};
+exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
+        return model.findOneAndUpdate(condition, projection);
+    }
+    // hàm khi thành công
+exports.success = async(res, messsage = "", data = []) => {
+        return res.status(200).json({ result: true, messsage, data })
 
-// hàm validate email
-exports.checkEmail = async (email) => {
-    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-    return gmailRegex.test(email);
-};
-// hàm validate link
-exports.checkLink = async (link) => {
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-    return urlRegex.test(yourUrlVariable);
-};
+    }
+    // hàm thực thi khi thất bại
+exports.setError = async(res, message, code = 500) => {
 
-// hàm khi thành công
-exports.success = async (res, messsage = "", data = []) => {
-    return res.status(200).json({ result: true, messsage, data })
-};
-
-// hàm thực thi khi thất bại
-exports.setError = async (res, message, code = 500) => {
-
-    return res.status(code).json({ code, message })
-};
-// hàm tìm id max
-exports.getMaxID = async (model) => {
-    const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-    return maxUser._id;
-};
-
-// hàm check định dạng ảnh
-const isImage = async (filePath) => {
+        return res.status(code).json({ code, message })
+    }
+    // hàm tìm id max 
+exports.getMaxID = async(model) => {
+        const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+        return maxUser._id;
+    }
+    // hàm check định dạng ảnh
+const isImage = async(filePath) => {
     const extname = path.extname(filePath).toLowerCase();
     return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(extname);
 };
 
 // hàm check ảnh
-exports.checkImage = async (filePath) => {
-    if (typeof (filePath) !== 'string') {
+
+
+exports.checkImage = async(filePath) => {
+    if (typeof(filePath) !== 'string') {
         return false;
     }
 
@@ -192,7 +178,7 @@ exports.checkImage = async (filePath) => {
 };
 
 // hàm check video
-exports.checkVideo = async (filePath) => {
+exports.checkVideo = async(filePath) => {
     // kiểm tra loại file
     if (!allowedTypes.includes(path.extname(filePath.originalname).toLowerCase())) {
         return false;
@@ -291,7 +277,7 @@ const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         cb(null, 'public/cvUpload')
     },
-    filename: function (req, file, cb) {
+    filename: function(req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
         cb(null, file.fieldname + uniqueSuffix + `.$ { file.originalname.split('.').slice(-1)[0]
 }
@@ -301,7 +287,9 @@ const storage = multer.diskStorage({
 
 // hàm check file
 exports.uploadFile = multer({ storage: storageFile })
-exports.createError = async (code, message) => {
+
+
+exports.createError = async(code, message) => {
     const err = new Error();
     err.code = code;
     err.message = message;
@@ -319,7 +307,7 @@ const transport = nodemailer.createTransport({
     }
 });
 // hàm gửi mail
-exports.sendEmailVerificationRequest = async (otp, email, nameCompany) => {
+exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
     let options = {
         from: process.env.AUTH_EMAIL,
         to: email,
@@ -344,12 +332,11 @@ exports.sendEmailVerificationRequest = async (otp, email, nameCompany) => {
     })
 };
 
-
 exports.verifyPassword = async(inputPassword, hashedPassword) => {
-    const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
-    return md5Hash === hashedPassword;
-}
-// hàm check token
+        const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
+        return md5Hash === hashedPassword;
+    }
+    // hàm check token
 exports.checkToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
@@ -367,35 +354,34 @@ exports.checkToken = (req, res, next) => {
 };
 // hàm tạo token 
 exports.createToken = async(data, time) => {
-    return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
-};
-
-// hàm lấy data từ axios 
-exports.getDataAxios = async(url, condition) => {
-  return await await axios({
-      method: "post",
-      url: url,
-      data: condition,
-      headers: { "Content-Type": "multipart/form-data" }
-  }).then(async(response) => {
-      return response.data
-  })
-};
-
-    // hàm lấy dữ liệu ngành nghề
-exports.getDataCareer = async() => {
-        return ["An toàn lao động", "Báo chí - Truyền hình", "Bảo hiểm", "Bảo trì", "Bảo vệ", "Biên - Phiên dịch",
-            "Bưu chính viễn thông", "Chăm sóc khách hàng", "Chăn nuôi - Thú y", "Cơ khí - Chế tạo", "Công chức - Viên chức", "Công nghệ cao", "Công nghệ thực phẩm", "copywrite",
-            "Dầu khí - Địa chất", "Dệt may - Da dày", "Dịch vụ", "Du lịch", "Freelancer", "Giáo dục - Đào tạo", "Giao thông vận tải -Thủy lợi - Cầu đường", "Giúp việc", "Hàng hải", "Hàng không",
-            "Hành chính - Văn phòng", "Hóa học - Sinh học", "Hoạch định - Dự án", "In ấn - Xuất bản", "IT phần cứng - mạng", "IT phần mềm", "KD bất động sản", "Kế toán - Kiểm toán", "Khánh sạn - Nhà hàng",
-            "Khu chế xuất - Khu công nghiệp", "Kiến trúc - Tk nội thất", "Kỹ thuật", "Kỹ thuật ứng dụng", "Làm đẹp - Thể lực - Spa", "Lao động phổ thông", "Lễ tan - PG - PB", "Logistic", "Luật - Pháp lý", "Lương cao",
-            "Marketing - PR", "Môi trường - Xử lý chất thải", "Mỹ phẩm - Thời trang - Trang sức", "Ngân hàng - chứng khoán - Đầu tư", "Nghệ thuật - Điện ảnh", "Nhân sự", "Kinh doanh", "Nhập liệu", "Nông - Lâm - Ngư - Nghiệp",
-            "Ô tô - Xe máy", "Pha chế - Bar", "Phát triển thị trường", "Phục vụ - Tạp vụ", "Quan hệ đối ngoại", "Quản lý điều hành", "Quản lý đơn hàng", "Quản trị kinh doanh", "Sản xuất - Vận hành sản xuất",
-            "Sinh viên làm thêm", "StarUp", "Tài chính", "Telesales", "Thẩm định - Giảm thẩm định - Quản lý chất lượng", "Thể dục - Thể thao", "Thiết kế - Mỹ thuật", "Thiết kế web", "Thống kê", "Thư ký - Trợ lý",
-            "Thu Ngân", "Thư viện", "Thực phẩm - Đồ uống", "Thương Mại điện tử", "Thủy Sản", "Thị trường - Quảng cáo", "Tìm việc làm thêm", "Tổ chức sự kiện", "Trắc địa", "Truyển thông", "Tư vấn", "Vận chuyển giao nhận", "Vận tải - Lái xe", "Vật tư - Thiết bị",
-            "Việc làm bán hàng", "Việc làm Tết", "Xây dựng", "Xuất - nhập khẩu", "Xuất khẩu lao động", "Y tế - Dược", "Đầu bếp - phụ bếp", "Điện - Điện tử", "Điện tử viễn thông", "ngàng nghề khác"
-        ]
+        return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
     }
+    // hàm lấy data từ axios 
+exports.getDataAxios = async(url, condition) => {
+    return await await axios({
+        method: "post",
+        url: url,
+        data: condition,
+        headers: { "Content-Type": "multipart/form-data" }
+    }).then(async(response) => {
+        return response.data
+    })
+};
+
+// hàm lấy dữ liệu ngành nghề
+exports.getDataCareer = async() => {
+    return ["An toàn lao động", "Báo chí - Truyền hình", "Bảo hiểm", "Bảo trì", "Bảo vệ", "Biên - Phiên dịch",
+        "Bưu chính viễn thông", "Chăm sóc khách hàng", "Chăn nuôi - Thú y", "Cơ khí - Chế tạo", "Công chức - Viên chức", "Công nghệ cao", "Công nghệ thực phẩm", "copywrite",
+        "Dầu khí - Địa chất", "Dệt may - Da dày", "Dịch vụ", "Du lịch", "Freelancer", "Giáo dục - Đào tạo", "Giao thông vận tải -Thủy lợi - Cầu đường", "Giúp việc", "Hàng hải", "Hàng không",
+        "Hành chính - Văn phòng", "Hóa học - Sinh học", "Hoạch định - Dự án", "In ấn - Xuất bản", "IT phần cứng - mạng", "IT phần mềm", "KD bất động sản", "Kế toán - Kiểm toán", "Khánh sạn - Nhà hàng",
+        "Khu chế xuất - Khu công nghiệp", "Kiến trúc - Tk nội thất", "Kỹ thuật", "Kỹ thuật ứng dụng", "Làm đẹp - Thể lực - Spa", "Lao động phổ thông", "Lễ tan - PG - PB", "Logistic", "Luật - Pháp lý", "Lương cao",
+        "Marketing - PR", "Môi trường - Xử lý chất thải", "Mỹ phẩm - Thời trang - Trang sức", "Ngân hàng - chứng khoán - Đầu tư", "Nghệ thuật - Điện ảnh", "Nhân sự", "Kinh doanh", "Nhập liệu", "Nông - Lâm - Ngư - Nghiệp",
+        "Ô tô - Xe máy", "Pha chế - Bar", "Phát triển thị trường", "Phục vụ - Tạp vụ", "Quan hệ đối ngoại", "Quản lý điều hành", "Quản lý đơn hàng", "Quản trị kinh doanh", "Sản xuất - Vận hành sản xuất",
+        "Sinh viên làm thêm", "StarUp", "Tài chính", "Telesales", "Thẩm định - Giảm thẩm định - Quản lý chất lượng", "Thể dục - Thể thao", "Thiết kế - Mỹ thuật", "Thiết kế web", "Thống kê", "Thư ký - Trợ lý",
+        "Thu Ngân", "Thư viện", "Thực phẩm - Đồ uống", "Thương Mại điện tử", "Thủy Sản", "Thị trường - Quảng cáo", "Tìm việc làm thêm", "Tổ chức sự kiện", "Trắc địa", "Truyển thông", "Tư vấn", "Vận chuyển giao nhận", "Vận tải - Lái xe", "Vật tư - Thiết bị",
+        "Việc làm bán hàng", "Việc làm Tết", "Xây dựng", "Xuất - nhập khẩu", "Xuất khẩu lao động", "Y tế - Dược", "Đầu bếp - phụ bếp", "Điện - Điện tử", "Điện tử viễn thông", "ngàng nghề khác"
+    ]
+}
 
 // hàm lấy dữ liệu hình thức làm việc
 exports.getDataWorkingForm = async() => {
@@ -409,42 +395,42 @@ exports.getDataWorkingRank = async() => {
 
 // hàm lấy dữ liệu kinh nghiệm làm việc
 exports.getDataEXP = async() => {
-    return ["Không yêu cầu", "Chưa có kinh nghiệm", "0 - 1 năm kinh nghiệm", "Hơn 1 năm kinh nghiệm", "Hơn 2 năm kinh nghiệm", "Hơn 5 năm kinh nghiệm", "Hơn 10 năm kinh nghiệm"]
-}
-// hàm lấy dữ liệu bằng cấp làm việc
+        return ["Không yêu cầu", "Chưa có kinh nghiệm", "0 - 1 năm kinh nghiệm", "Hơn 1 năm kinh nghiệm", "Hơn 2 năm kinh nghiệm", "Hơn 5 năm kinh nghiệm", "Hơn 10 năm kinh nghiệm"]
+    }
+    // hàm lấy dữ liệu bằng cấp làm việc
 exports.getDataDegree = async() => {
-    return ["Không yêu cầu", "Đại học trở lên", "Cao đẳng trở lên", "THPT trở lên", "Trung học trở lên", "Chứng chỉ", "Trung cấp trở lên", "Cử nhân trở lên", "Thạc sĩ trở lên", "Thạc sĩ Nghệ thuật", "Thạc sĩ Thương mại", "Thạc sĩ Khoa học",
-        "Thạc sĩ Kiến trúc", "Thạc sĩ QTKD", "Thạc sĩ Kỹ thuật ứng dụng", "Thạc sĩ Luật", "Thạc sĩ Y học", "Thạc sĩ Dược phẩm", "Tiến sĩ", "Khác"
-    ]
-}
-// hàm lấy dữ liệu giới tính làm việc
+        return ["Không yêu cầu", "Đại học trở lên", "Cao đẳng trở lên", "THPT trở lên", "Trung học trở lên", "Chứng chỉ", "Trung cấp trở lên", "Cử nhân trở lên", "Thạc sĩ trở lên", "Thạc sĩ Nghệ thuật", "Thạc sĩ Thương mại", "Thạc sĩ Khoa học",
+            "Thạc sĩ Kiến trúc", "Thạc sĩ QTKD", "Thạc sĩ Kỹ thuật ứng dụng", "Thạc sĩ Luật", "Thạc sĩ Y học", "Thạc sĩ Dược phẩm", "Tiến sĩ", "Khác"
+        ]
+    }
+    // hàm lấy dữ liệu giới tính làm việc
 exports.getDataSex = async() => {
-return ["Nam", "Nữ", "Không yêu cầu"]
+    return ["Nam", "Nữ", "Không yêu cầu"]
 }
 
 exports.pageFind = async(model, condition, sort, skip, limit) => {
-  return model.find(condition).sort(sort).skip(skip).limit(limit);
+    return model.find(condition).sort(sort).skip(skip).limit(limit)
 }
 
- // lấy danh sách mẫu CV sắp xếp mới nhất
- exports.getDataCVSortById = async (condition) => {
-   const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({_id:-1});
-   if(data.length > 0){
-    return data;
-   };
-   return null;
- };
-
-  // lấy danh sách mẫu CV sắp xếp lượt tải nn
-  exports.getDataCVSortByDownload = async (condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({download:-1});
-    if(data.length > 0){
-     return data;
+// lấy danh sách mẫu CV sắp xếp mới nhất
+exports.getDataCVSortById = async(condition) => {
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ _id: -1 });
+    if (data.length > 0) {
+        return data;
     };
     return null;
-  };
+};
+
+// lấy danh sách mẫu CV sắp xếp lượt tải nn
+exports.getDataCVSortByDownload = async(condition) => {
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ download: -1 });
+    if (data.length > 0) {
+        return data;
+    };
+    return null;
+};
 
 //hàm kiểm tra string có phải number không
-exports.checkNumber = async (string) => {
+exports.checkNumber = async(string) => {
     return !isNaN(string)
 }
