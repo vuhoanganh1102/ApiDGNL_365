@@ -3,8 +3,12 @@ var router = express.Router();
 var company = require('../../controllers/timviec/company');
 var formData = require('express-form-data')
 const functions = require('../../services/functions')
+
 // api đăng ký
-router.post('/register', functions.uploadImg.single('avatarUser'), company.register);
+router.post('/register', functions.uploadVideoAndIMGRegister.fields([
+    { name: 'avatarUser' },
+    { name: 'videoType' }
+]), company.register);
 
 // api đăng ký khi thiếu dữ liệu
 router.post('/registerfall', formData.parse(), company.registerFall);
@@ -43,5 +47,51 @@ router.post('/changePasswordCheckOTP', formData.parse(), functions.checkToken, c
 router.post('/changePassword', formData.parse(), functions.checkToken, company.changePassword);
 
 // api cập nhập ảnh đại diện
-router.post('/uploadAvatar', functions.uploadImg.single('avatarUser'), functions.checkToken, company.uploadIMG);
+router.put('/uploadAvatar', functions.checkToken, functions.uploadImg.single('avatarUser'), company.updateImg);
+
+//api lấy dữ liệu nhà tuyển dụng
+router.get('/getDataCompany', functions.checkToken, company.getDataCompany)
+
+// api lấy danh sach UV
+router.post('/listUVApplyJob', formData.parse(), functions.checkToken, company.listUVApplyJob)
+
+// api lấy danh sach UV do chuyên viên gửi
+router.post('/listUVApplyJobStaff', formData.parse(), functions.checkToken, company.listUVApplyJobStaff)
+
+//api thống kê tin đăng
+router.get('/postStatistics', functions.checkToken, company.postStatistics)
+
+//api lấy danh sách lưu UV
+router.post('/listSaveUV', formData.parse(), functions.checkToken, company.listSaveUV)
+
+//api quản lý lọc điểm
+router.get('/manageFilterPoint', formData.parse(), functions.checkToken, company.manageFilterPoint)
+
+//api xem điểm uv 
+router.post('/seenUVWithPoint', formData.parse(), functions.checkToken, company.seenUVWithPoint)
+
+//api đánh giá ctv 
+router.post('/submitFeedbackCtv', formData.parse(), functions.checkToken, company.submitFeedbackCtv)
+
+//api đánh giá web 
+router.post('/submitFeedbackWeb', formData.parse(), functions.checkToken, company.submitFeedbackWeb)
+
+//api lấy ra dữ liệu kho ảnh
+router.post('/displayImages', formData.parse(), functions.checkToken, company.displayImages)
+
+//api upload ảnh trong kho ảnh
+router.post('/uploadImg', functions.checkToken, functions.uploadImgKhoAnh.array('comImages'), company.uploadImg)
+
+//api upload video trong kho ảnh
+router.post('/uploadVideo', functions.checkToken, functions.uploadVideoKhoAnh.array('comVideos'), company.uploadVideo)
+
+//api xóa ảnh trong kho ảnh
+router.post('/deleteImg', functions.checkToken, formData.parse(), company.deleteImg)
+
+//api xóa video trong kho ảnh
+router.post('/deleteVideo', functions.checkToken, formData.parse(), company.deleteVideo)
+
+// //api xóa video trong kho ảnh
+// router.post('/getData', functions.checkToken, formData.parse(), company.getDataCompany)
+
 module.exports = router;

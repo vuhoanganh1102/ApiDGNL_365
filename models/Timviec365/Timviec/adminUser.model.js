@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose');
 const adminUserSchema = new mongoose.Schema({
     _id: {
         type: Number,
@@ -67,4 +67,9 @@ const adminUserSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+}, {
+    collection: 'AdminUser',
+    versionKey: false,
+    timestamp: true
 })
+module.exports = mongoose.model("AdminUser", adminUserSchema);

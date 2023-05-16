@@ -102,6 +102,5 @@ const CVSchema = new mongoose.Schema({
 }, {
     collection: 'CV',
     versionKey: false
-})
-
+});
 module.exports = mongoose.model("CV", CVSchema);

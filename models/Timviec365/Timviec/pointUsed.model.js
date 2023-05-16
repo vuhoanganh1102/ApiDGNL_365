@@ -1,49 +1,46 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose');
 const pointUsedSchema = new mongoose.Schema(
     {
         _id:{
             type: Number,
-            required: true,
         },
         uscID:{
             type: Number,
-            required: true,
         },
         useID:{
             type: Number,
-            required: true,
         },
         point:{
             type: Number,
-            required: true,
         },
         type:{
             type: Number,
-            required: true,
         },
         typeErr:{
             type: Number,
-            required: true,
+            default:0
         },
         noteUV:{
             type: String,
-            required: true,
+            default: " "
         },
         usedDay:{
-            type: Number,
-            required: true,
+            type: Date,
         },
         returnPoint:{
-            type: Date,
-            required: true,
-            default:0
+            type: Number,
         },
         adminID:{
             type: Number,
-            required: true,
+            default:0
         },
         ipUser:{
             type: String,
-            required: true,
         },
-    })
+    },
+    { collection: 'PointUsed',  
+    versionKey: false , 
+    timestamp:true
+  }  
+  )
+  module.exports = mongoose.model("PointUsed", pointUsedSchema);

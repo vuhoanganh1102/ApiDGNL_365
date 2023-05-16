@@ -26,7 +26,6 @@ exports.addUserChat365 = async(req, res, next) => {
 
             let listUser = getDataUser.data.data.listUser;
             if (listUser.length > 0) {
-                console.log(listUser);
                 listUser.forEach(async element => {
                     let account = element.email,
                         type = element.type365,

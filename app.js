@@ -7,11 +7,16 @@ var mongoose = require('mongoose')
 
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
+var newTV365Router = require('./routes/timviec/newTV365');
+var cvRouter = require('./routes/timviec/cv');
+
+// Quản lý chung
 var deparmentRouter = require('./routes/qlc/deparment')
 var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
+
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
@@ -27,7 +32,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/company', companyRouter);
+app.use('/api/timviec/company',companyRouter);
+app.use('/api/timviec/newTV365', newTV365Router);
+app.use('/api/timviec/cv',cvRouter);
 app.use('/api/tool', toolAddDataRouter);
 
 // API quản lí chung
@@ -55,7 +62,7 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://localhost:27017/timviec365';
+const DB_URL = 'mongodb://127.0.0.1/api-base365';
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
