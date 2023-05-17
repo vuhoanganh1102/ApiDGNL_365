@@ -17,6 +17,7 @@ const { promisify } = require('util');
 // tọa token
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
+const { error } = require('console');
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -137,7 +138,7 @@ exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
     }
     // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
-        return res.status(200).json({ result: true, messsage, data })
+        return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
 
     }
     // hàm thực thi khi thất bại
@@ -434,3 +435,14 @@ exports.getDataCVSortByDownload = async(condition) => {
 exports.checkNumber = async(string) => {
     return !isNaN(string)
 }
+
+// hàm dém count
+exports.findCount = async(model, filter) => {
+    try {
+        const count = await model.countDocuments(filter);
+        return count;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};

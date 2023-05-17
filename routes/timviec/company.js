@@ -3,11 +3,15 @@ var router = express.Router();
 var company = require('../../controllers/timviec/company');
 var formData = require('express-form-data')
 const functions = require('../../services/functions')
-    // api đăng ký
+
+// api đăng ký
 router.post('/register', functions.uploadVideoAndIMGRegister.fields([
-    { name: 'avatarUser' },
+    { name: 'logo' },
     { name: 'videoType' }
 ]), company.register);
+
+// api đăng nhập
+router.post('/login', formData.parse(), company.login)
 
 // api đăng ký khi thiếu dữ liệu
 router.post('/registerfall', formData.parse(), company.registerFall);
@@ -46,7 +50,7 @@ router.post('/changePasswordCheckOTP', formData.parse(), functions.checkToken, c
 router.post('/changePassword', formData.parse(), functions.checkToken, company.changePassword);
 
 // api cập nhập ảnh đại diện
-router.put('/uploadAvatar', functions.checkToken, functions.uploadImg.single('avatarUser'), company.updateImg);
+router.post('/uploadAvatar', functions.checkToken, functions.uploadImg.single('avatarUser'), company.updateImg);
 
 //api lấy dữ liệu nhà tuyển dụng
 router.get('/getDataCompany', functions.checkToken, company.getDataCompany)
@@ -89,6 +93,36 @@ router.post('/deleteImg', functions.checkToken, formData.parse(), company.delete
 
 //api xóa video trong kho ảnh
 router.post('/deleteVideo', functions.checkToken, formData.parse(), company.deleteVideo)
+
+//api gọi dữ liệu lĩnh vực
+router.post('/getDataLV', company.getDataLV)
+
+//api gọi dữ liệu lĩnh vực theo ngành nghề
+router.post('/getFieldsByIndustry', formData.parse(), company.getFieldsByIndustry)
+
+//api lưu uv
+router.post('/saveUV', functions.checkToken, formData.parse(), company.luuUV)
+
+//api lưu xóa ứng viên trong danh sách lưu
+router.post('/deleteUV', functions.checkToken, formData.parse(), company.deleteUV)
+
+//api danh sách điểm xem uv
+router.post('/listUVPoin', functions.checkToken, formData.parse(), company.listUVPoin)
+
+//api xóa ứng viên trong danh sách đùng điểm
+router.post('/listUVPoin', functions.checkToken, formData.parse(), company.deleteUVUsePoin)
+
+//api cập kết quả ứng viên ứng tuyển
+router.post('/updateUvApplyJob', functions.checkToken, formData.parse(), company.updateUvApplyJob)
+
+//api chi tiết công ty trước khi đăng nhập
+router.post('/getDetailInfoCompany', formData.parse(), company.getDetailInfoCompany)
+
+//api hàm đánh giá uv
+router.post('/assessmentUV', functions.checkToken, formData.parse(), company.assessmentUV)
+
+//api cập nhập uv trong danh sách điểm lọc
+router.post('/updateUvWithPoint', functions.checkToken, formData.parse(), company.updateUvWithPoint)
 
 // //api đưa data vào base 
 router.post('/getData', company.getDataApi)

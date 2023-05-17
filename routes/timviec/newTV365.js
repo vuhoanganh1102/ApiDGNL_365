@@ -14,7 +14,7 @@ router.post('/postNewTv365',
     ]),
     newTV365.postNewTv365
 );
-router.put('/updateNewTv365/:idNew',
+router.post('/updateNewTv365',
     functions.checkToken,
     functions.uploadVideoAndIMGNewTV.fields([
         { name: 'avatarUser' },
@@ -27,7 +27,7 @@ router.delete('/deleteNewTv365/:idNew', functions.checkToken, newTV365.deleteNew
 router.get('/getDataCIty', newTV365.getDataCity)
 
 //api lấy dữ liệu của quận huyện của 1 thành phố
-router.post('/getDataDistric/:idCity', newTV365.getDataDistrict)
+router.post('/getDataDistric', newTV365.getDataDistrict)
 
 // api lấy danh sách bài post
 router.get('/getDataListPost', functions.checkToken, newTV365.getListPost)
@@ -37,6 +37,9 @@ router.get('/getDataPost/:idNew', functions.checkToken, newTV365.getPost)
 
 // api check đăng tin 10p/1 lần
 router.get('/checkNew10p', functions.checkToken, newTV365.checkPostNew10p)
+
+// api làm mới tin
+router.get('/checkNew10p', functions.checkToken, newTV365.refreshNew)
 
 
 module.exports = router;
