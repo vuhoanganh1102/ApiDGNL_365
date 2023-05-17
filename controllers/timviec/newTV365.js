@@ -3,6 +3,8 @@ const City = require('../../models/Timviec365/Timviec/city.model')
 const District = require('../../models/Timviec365/Timviec/district.model');
 const NewTV365 = require('../../models/Timviec365/Timviec/newTV365.model');
 const Users = require('../../models/Users')
+const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob.model');
+const UserSavePost = require('../../models/Timviec365/Timviec/userSavePost.model')
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -176,6 +178,7 @@ exports.postNewTv365 = async(req, res, next) => {
                 soLuong: soLuong,
                 hinhThuc: hinhThuc,
                 createTime: new Date().getTime(),
+                updateTime: new Date().getTime(),
                 active: 0,
                 type: 1,
                 viewCount: 0,
@@ -289,7 +292,7 @@ exports.getListPost = async(req, res, next) => {
 // lấy 1 bài post 
 exports.getPost = async(req, res, next) => {
     try {
-        let id = req.params.idNew;
+        let id = req.body.new_id;
         let post = await functions.getDatafindOne(NewTV365, { _id: id })
         if (post) {
             return functions.success(res, "Láy dữ liệu thành công", [post])
@@ -562,6 +565,161 @@ exports.refreshNew = async(req, res, next) => {
             return functions.success(res, "làm mới bài tuyển dụng thành công")
         }
         return functions.setError(res, 'thiếu dữ liệu', 404)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// chi tiết tin tuyển 
+exports.getNew = async(req, res, next) => {
+    try {
+        let newID = req.body.new_id;
+        let statusApply = "";
+        let statusSavePost = "";
+        if (req.user) {
+            let userID = req.user.data.idTimViec365;
+            let apply = await functions.getDatafindOne(ApplyForJob, { userID: userID, newID: newID });
+            let savePost = await functions.getDatafindOne(UserSavePost, { userID: userID, newID: newID });
+            if (apply) {
+                statusApply = "đã ứng tuyển"
+            } else {
+                statusApply = "chưa ứng tuyển"
+            }
+            if (savePost) {
+                statusSavePost = "đã lưu"
+            } else {
+                statusSavePost = "chưa lưu"
+            }
+        }
+        if (newID) {
+            let post = await functions.getDatafindOne(NewTV365, { _id: newID });
+            return functions.success(res, "làm mới bài tuyển dụng thành công", { post, statusApply, statusSavePost })
+        }
+        return functions.setError(res, 'thiếu dữ liệu', 404)
+
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+
+// hàm lấy danh sách tin tuyển dụng tuyển gấp
+exports.listPostVLTG = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let now = new Date();
+        if (page && pageSize) {
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let listPostTG = await functions.pageFind(NewTV365, { newGap: { $ne: 0 }, hanNop: { $gt: now } }, { updateTime: -1 }, skip, limit);
+            const totalCount = await functions.findCount(NewTV365, { newGap: { $ne: 0 }, hanNop: { $gt: now } });
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (listPostTG) {
+                return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPostTG });
+            }
+            return functions.setError(res, 'không lấy được danh sách', 404)
+        } else {
+            let listPostTG = await functions.getDatafind(NewTV365, { newGap: { $ne: 0 } });
+            return functions.success(res, "Lấy danh sách tin đăng thành công", listPostTG);
+
+        }
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm lấy danh sách tin tuyển dụng lương cao
+exports.listPostVLLC = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let now = new Date();
+        if (page && pageSize) {
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let listPostVLLC = await functions.pageFind(NewTV365, { hanNop: { $gt: now } }, [
+                ['newCao', -1],
+                ['updateTime', -1]
+            ], skip, limit);
+            const totalCount = await functions.findCount(NewTV365, { newCao: { $ne: 0 }, hanNop: { $gt: now } });
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (listPostVLLC) {
+                return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPostVLLC });
+            }
+            return functions.setError(res, 'không lấy được danh sách', 404)
+        } else {
+            let listPostVLLC = await functions.getDatafind(NewTV365, { newCao: { $ne: 0 } });
+            return functions.success(res, "Lấy danh sách tin đăng thành công", listPostVLLC);
+
+        }
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm lấy danh sách tin tuyển dụng hấp dẫn
+exports.listPostVLHD = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let now = new Date();
+        if (page && pageSize) {
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let listPostVLHD = await functions.pageFind(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now } }, { updateTime: -1 }, skip, limit);
+            const totalCount = await functions.findCount(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now } });
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (listPostVLHD) {
+                return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPostVLHD });
+            }
+            return functions.setError(res, 'không lấy được danh sách', 404)
+        } else {
+            let listPostVLHD = await functions.getDatafind(NewTV365, { newHot: { $ne: 0 } });
+            return functions.success(res, "Lấy danh sách tin đăng thành công", listPostVLHD);
+
+        }
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm viêc làm mới nhất
+exports.listJobNew = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let job = req.body.cate_id;
+        let city = req.body.city
+        let now = new Date();
+        let listJobNew = [];
+        if (page && pageSize) {
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            const totalCount = await functions.findCount(NewTV365, { hanNop: { $gt: now } });
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (job == undefined) {
+                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cityID: { $in: [city] } }, { updateTime: -1 }, skip, limit);
+            }
+            if (city == undefined) {
+                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cateID: { $in: [job] } }, { updateTime: -1 }, skip, limit);
+            }
+            if (city == undefined && job == undefined) {
+                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now } }, { updateTime: -1 }, skip, limit);
+            }
+            if (job && city) {
+                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cityID: { $in: [city] }, cateID: { $in: [job] } }, { updateTime: -1 }, skip, limit);
+            }
+            if (listJobNew) {
+                return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listJobNew });
+            }
+            return functions.setError(res, 'không lấy được danh sách', 404)
+        }
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)

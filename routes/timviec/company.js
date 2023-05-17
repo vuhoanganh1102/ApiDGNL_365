@@ -116,15 +116,12 @@ router.post('/listUVPoin', functions.checkToken, formData.parse(), company.delet
 router.post('/updateUvApplyJob', functions.checkToken, formData.parse(), company.updateUvApplyJob)
 
 //api chi tiết công ty trước khi đăng nhập
-router.post('/getDetailInfoCompany', formData.parse(), company.getDetailInfoCompany)
-
+router.post('/getDetailInfoCompany', formData.parse(), company.getDetailInfoCompany);
 //api hàm đánh giá uv
 router.post('/assessmentUV', functions.checkToken, formData.parse(), company.assessmentUV)
 
 //api cập nhập uv trong danh sách điểm lọc
 router.post('/updateUvWithPoint', functions.checkToken, formData.parse(), company.updateUvWithPoint)
 
-// //api đưa data vào base 
-router.post('/getData', company.getDataApi)
 
 module.exports = router;

@@ -1,193 +1,290 @@
 const mongoose = require('mongoose');
-const newTV365Schema = new mongoose.Schema(
-    {
-        _id:{
-            type: Number,
-            required: true,
-        },
-        userID:String,
-        // tiêu đề
-        title:String,
-        newMd5:String,
-        // tên tiêu đè không đấu
-        alias:String,
-        // link quay lại
-        redirect301:{
-            type:String,
-            default:""
-        },
-        // thể loại việc làm
-        cateID:{
-            type:Number,
-            ref:''
-        },
-        //thể loại tag
-        tagID:Number,
-        // thành phố
-        cityID:{
-            type:Number,
-        },
-        // quận huyện
-        districtID:{
-            type:String,
-        },
-        // dịa chỉ
-        address:String,
-        //giá trị trong option trong khoảng , nếu là 1 thì không phải option trong khoảng
-        money:Number,
-        // cấp bậc
-        capBac:Number,
-        //kinh nghiệm
-        exp:Number,
-        //giới tính
-        sex:Number,
-        //bằng cấp
-        bangCap:Number,
-        //sô lượng
-        soLuong:Number,
-        //hình thức
-        hinhThuc:Number,
-        // độ tuổi
-        doTuoi:Number,
-        // thời gian tạo bài đăng
-        createTime:Date,
-        // thới gian update
-        updateTime:Date,
-        // thời gian vip của bài post
-        vipTime:Date,
-        vip:Number,
-        cateTime:Date,
-        // 0 là chưa được duyệt 1 là ngược lại
-        active:Number,
-        // thể loại
-        type:Number,
-        //
-        over:Number,
-        // số lượng xem
-        viewCount:Number,
-        // hạn nộp
-        hanNop:Date,
-        post:Number,
-        renew:{
-            type:Number,
-            default:0
-        },
-        hot:{
-            type:Number,
-            default:0
-        },
-        do:{
-            type:Number,
-            default:0
-        },
-        cao:{
-            type:Number,
-            default:0
-        },
-        nganh:{
-            type:Number,
-            default:0
-        },
-        ghim:{
-            type:Number,
-            default:0
-        },
-        thuc:{
-            type:Number,
-            default:0
-        },
-        order:{
-            type:Number,
-            default:0
-        },
-        order:{
-            type:Number,
-            default:0
-        },
-        ut:{
-            type:Number,
-            default:0
-        },
-        hideAdmin:{
-            type:Number,
-            default:0
-        },
-        sendVip:{
-            type:Number,
-            default:0
-        },
-        newMutil:{
-            // mô tả công việc
-                moTa:String,
-            // yêu cầu    
-                yeuCau:String,
-            //quyền lợi
-                quyenLoi:String,
-            //hô sơ 
-                hoSo:{
-                    type:String,
-                },
-            //tiêu đề seo
-                titleSeo:{
-                    type:String,
-                },
-            // nọi dung seo
-                desSeo:{
-                    type:String,
-                },
-            // hoa hồng nhận được
-                hoaHong:{
-                    type:String,
-                },
-                tgtv:{
-                    type:String,
-                },
-                lv:{
-                    type:String,
-                },
-                baoLuu:String,
-                timeBaoLuu:{
-                    type:Date,
-                },
-                jobPosting:{
-                    type:Number,
-                },
-                // video bài post
-                videoType:{
-                    type:String,
-                },
-                videoActive:{
-                    type:String,
-                },
-                // link video
-                link:String,
-                // list ảnh bài post
-                images:
-                [
-                    {
-                    type:String,
-                }
-                ]
-
-        },
-        newMoney:{
-            // thể loại
-                type: {
-                    type: Number,
-                },
-            // từ mức    
-                minValue: Number,
-            //đến mức
-                maxValue: Number,
-            // loại tiền
-                unit: {
-                    type: Number,
-                }
-             },
-        
+const newTV365Schema = new mongoose.Schema({
+    _id: {
+        type: Number,
+        required: true,
     },
-    { collection: 'NewTV365',  
-    versionKey: false , 
-    timestamp:true
-  }  )
-  module.exports = mongoose.model("NewTV365", newTV365Schema);
+    userID: Number,
+    // tiêu đề
+    title: {
+        type: String,
+        default: null,
+    },
+    newMd5: {
+        type: String,
+        default: null,
+    },
+    // tên tiêu đè không đấu
+    alias: {
+        type: String,
+        default: null,
+    },
+    // link quay lại
+    redirect301: {
+        type: String,
+        default: ""
+    },
+    // thể loại việc làm
+    cateID: [{
+        type: String,
+        default: null,
+    }],
+    //thể loại tag
+    tagID: {
+        type: Number,
+        default: null,
+    },
+    // thành phố
+    cityID: [{
+        type: String,
+    }],
+    default: [],
+    // quận huyện
+    districtID: {
+        type: String,
+        default: null,
+    },
+    // dịa chỉ
+    address: {
+        type: String,
+        default: null,
+    },
+    //giá trị trong option trong khoảng , nếu là 1 thì không phải option trong khoảng
+    money: {
+        type: Number,
+        default: 0
+    },
+    // cấp bậc
+    capBac: {
+        type: Number,
+        default: 0
+    },
+    //kinh nghiệm
+    exp: {
+        type: Number,
+        default: 0
+    },
+    //giới tính
+    sex: String,
+    //bằng cấp
+    bangCap: {
+        type: Number,
+        default: 0
+    },
+    //sô lượng
+    soLuong: {
+        type: Number,
+        default: 0
+    },
+    //hình thức
+    hinhThuc: {
+        type: Number,
+        default: 0
+    },
+    // độ tuổi
+    doTuoi: {
+        type: Number,
+        default: 0
+    },
+    // thời gian tạo bài đăng
+    createTime: {
+        type: Date,
+        default: null,
+    },
+    // thới gian update
+    updateTime: {
+        type: Date,
+        default: null,
+    },
+    // thời gian vip của bài post
+    vipTime: {
+        type: Date,
+        default: null,
+    },
+    vip: Number,
+    cateTime: {
+        type: Date,
+        default: null,
+    },
+    // 0 là chưa được duyệt 1 là ngược lại
+    active: {
+        type: Number,
+        default: 0
+    },
+    // thể loại
+    type: {
+        type: Number,
+        default: 0
+    },
+    //
+    over: {
+        type: Number,
+        default: 0
+    },
+    // số lượng xem
+    viewCount: {
+        type: Number,
+        default: 0
+    },
+    // hạn nộp
+    hanNop: {
+        type: Date,
+        default: null,
+    },
+    post: {
+        type: Number,
+        default: 0
+    },
+    renew: {
+        type: Number,
+        default: 0
+    },
+    newHot: {
+        type: Number,
+        default: 0
+    },
+    newDo: {
+        type: Number,
+        default: 0
+    },
+    newCao: {
+        type: Number,
+        default: 0
+    },
+    newGap: {
+        type: Number,
+        default: 0
+    },
+    newNganh: {
+        type: Number,
+        default: 0
+    },
+    newGhim: {
+        type: Number,
+        default: 0
+    },
+    newThuc: {
+        type: Number,
+        default: 0
+    },
+    newOrder: {
+        type: Number,
+        default: 0
+    },
+    newUt: {
+        //
+        type: Number,
+        default: 0
+    },
+    hideAdmin: {
+        type: Number,
+        default: 0
+    },
+    sendVip: {
+        type: Number,
+        default: 0
+    },
+    newMutil: {
+        // mô tả công việc
+        moTa: {
+            type: String,
+            default: null,
+        },
+        // yêu cầu    
+        yeuCau: {
+            type: String,
+            default: null,
+        },
+        //quyền lợi
+        quyenLoi: {
+            type: String,
+            default: null,
+        },
+        //hô sơ  nhà tuyển dụng cần để ứng viên có
+        hoSo: {
+            type: String,
+            default: null,
+        },
+        //tiêu đề seo
+        titleSeo: {
+            type: String,
+            default: null,
+        },
+        // nọi dung seo
+        desSeo: {
+            type: String,
+        },
+        // hoa hồng nhận được
+        hoaHong: {
+            type: String,
+            default: null,
+        },
+        tgtv: {
+            type: String,
+            default: null,
+        },
+        lv: {
+            type: String,
+            default: null,
+        },
+        baoLuu: {
+            type: String,
+            default: null,
+        },
+        timeBaoLuu: {
+            type: Date,
+            default: null,
+        },
+        jobPosting: {
+            type: Number,
+        },
+        // video bài post
+        videoType: {
+            type: String,
+            default: null,
+        },
+        videoActive: {
+            type: String,
+            default: null,
+        },
+        // link video
+        link: {
+            type: String,
+            default: null,
+        },
+        // list ảnh bài post
+        images: [{
+            type: String,
+            default: null,
+        }]
+
+    },
+    newMoney: {
+        // thể loại
+        type: {
+            type: Number,
+            default: null
+        },
+        // từ mức    
+        minValue: {
+            type: Number,
+            default: null
+        },
+        //đến mức
+        maxValue: {
+            type: Number,
+            default: null
+        },
+        // loại tiền
+        unit: {
+            type: Number,
+            default: 1
+        }
+    },
+
+}, {
+    collection: 'NewTV365',
+    versionKey: false,
+    timestamp: true
+})
+module.exports = mongoose.model("NewTV365", newTV365Schema);

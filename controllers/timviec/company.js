@@ -1404,7 +1404,7 @@ exports.getDetailInfoCompany = async(req, res, next) => {
             let company = await functions.getDatafindOne(Users, { idTimViec365: idCompany });
             if (company) {
                 let listNew = await functions.getDatafind(NewTV365, { userID: idCompany })
-                let formCV = await CV.find().sort("_id", -1).limit(10)
+                let formCV = await CV.find().sort({ _id: -1 }).limit(10);
                 return functions.success(res, 'xem chi tiết thành công', { inForCompany: company, listNew, formCV })
             }
             return functions.setError(res, 'công ty không tồn tại', 404)
@@ -1439,88 +1439,6 @@ exports.assessmentUV = async(req, res, next) => {
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)
 
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
-
-// hafm add data
-exports.getDataApi = async(req, res, next) => {
-    try {
-
-        // let data = await functions.getDataAxios('https://timviec365.vn/api/get_user_admin.php?page=1')
-
-        // for (let i = 0; i < data.length; i++) {
-        //     let bophan = 0;
-        //     let stt = 0;
-        //     if (data[i].adm_bophan != 0) {
-        //         const maxIdKD = await AdminUser.findOne({ bophan: 1 }, {}, { sort: { stt: -1 } }) || 0;
-        //         stt = maxIdKD.stt || 0;
-        //         bophan = 1;
-        //     }
-        //     if (data[i].adm_ntd != 0) {
-        //         const maxIdNTD = await AdminUser.findOne({ bophan: 3 }, {}, { sort: { stt: -1 } }) || 0;
-        //         stt = maxIdNTD.stt || 0;
-        //         bophan = 3;
-
-        //     }
-        //     if (data[i].adm_nhaplieu != 0) {
-        //         bophan = 2;
-        //         const maxIdNL = await AdminUser.findOne({ bophan: 2 }, {}, { sort: { stt: -1 } }) || 0;
-        //         stt = maxIdNL.stt || 0;
-        //     }
-        //     const admin = new AdminUser({
-        //         _id: data[i].adm_id,
-        //         loginName: data[i].adm_loginname,
-        //         password: data[i].adm_password,
-        //         name: data[i].adm_name,
-        //         email: data[i].adm_email,
-        //         author: data[i].adm_author,
-        //         address: data[i].adm_address,
-        //         phone: data[i].adm_phone,
-        //         mobile: data[i].adm_mobile,
-        //         accesModule: data[i].adm_access_module,
-        //         accessCategory: data[i].adm_access_category,
-        //         date: data[i].adm_date,
-        //         isadmin: data[i].adm_isadmin,
-        //         active: data[i].adm_active,
-        //         langID: data[i].lang_id,
-        //         delete: data[i].adm_delete,
-        //         allCategory: data[i].adm_all_category,
-        //         editAll: data[i].adm_edit_all,
-        //         adminID: data[i].admin_id,
-        //         bophan: bophan,
-        //         stt: Number(stt) + 1 || null,
-        //         empID: data[i].emp_id,
-
-        //     })
-        //     await admin.save();
-        // }
-        // let data = await functions.getDataAxios('https://timviec365.vn/api/get_trang_vang.php?page=5')
-        // for (i = 0; i < data.length; i++) {
-        //     const decodedStringConten = Buffer.from(data[i].tag_content, 'base64').toString('utf-8'); // Giải mã chuỗi
-        //     const decodedStringNdgy = Buffer.from(data[i].tag_ndgy, 'base64').toString('utf-8'); // Giải mã chuỗi
-        //     let lv = new Linh_Vuc({
-        //         _id: data[i].id,
-        //         nameTag: data[i].name_tag,
-        //         cityTag: data[i].city_tag,
-        //         cateID: data[i].cate_id,
-        //         parentID: data[i].parent_id,
-        //         leverID: data[i].level_id,
-        //         keywordTag: data[i].keyword_tag,
-        //         TagContent: decodedStringConten,
-        //         link301: data[i].link_301,
-        //         tagVlgy: data[i].tag_vlgy,
-        //         tagNdgy: decodedStringNdgy,
-        //         tagIndex: data[i].tag_index,
-
-        //     })
-        //     await lv.save();
-        // }
-
-
-        return functions.success(res, 'thêm thành công', data)
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)

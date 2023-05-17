@@ -2,7 +2,8 @@
 const fs = require('fs');
 // upload file
 const multer = require('multer')
-    // gửi mail
+
+// gửi mail
 const nodemailer = require("nodemailer");
 // tạo biến môi trường
 const dotenv = require("dotenv");
@@ -10,7 +11,8 @@ const dotenv = require("dotenv");
 const crypto = require('crypto');
 // gọi api
 const axios = require('axios')
-    // check video
+
+// check video
 const path = require('path');
 //check ảnh
 const { promisify } = require('util');
