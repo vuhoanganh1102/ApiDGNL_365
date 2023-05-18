@@ -5,11 +5,14 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose')
 
-// var candidateRouter = require('./routes/timviec/candidate');
+var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
-var newTV365Router = require('./routes/timviec/newTV365')
-var adminRouter = require('./routes/timviec/admin')
 var cvRouter = require('./routes/timviec/cv');
+var donRouter = require('./routes/timviec/don');
+var thuRouter = require('./routes/timviec/thu');
+var syllRouter = require('./routes/timviec/syll');
+var newTV365Router = require('./routes/timviec/newTV365');
+var adminRouter = require('./routes/timviec/admin');
 
 // Quản lý chung
 var deparmentRouter = require('./routes/qlc/deparment')
@@ -31,12 +34,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/newTV365', newTV365Router)
-app.use('/api/timviec/admin', adminRouter)
-app.use('/api/timviec/company', companyRouter)
+app.use('/api/timviec/candidate', candidateRouter);
+app.use('/api/timviec/company', companyRouter);
 app.use('/api/timviec/cv', cvRouter);
+app.use('/api/timviec/don', donRouter);
+app.use('/api/timviec/thu', thuRouter);
+app.use('/api/timviec/syll', syllRouter);
+app.use('/api/timviec/admin', adminRouter);
 app.use('/api/tool', toolAddDataRouter);
+app.use('/api/timviec/newTV365', newTV365Router);
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
@@ -63,7 +69,7 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://127.0.0.1/timviec365';
+const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));

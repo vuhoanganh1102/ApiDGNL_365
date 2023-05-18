@@ -1,43 +1,42 @@
-import mongoose from 'mongoose';
-const NganhThuSchema = new mongoose.Schema(
-    {
-       _id:{
+const mongoose = require('mongoose');
+const NganhThuSchema = new mongoose.Schema({
+    _id: {
         type: Number,
         require: true
-       },
-       name:{
-        type: Number
-       },
-       alias:{
-        type: String
-       },
-       metaH1:{
-        type: String
-       },
-       content:{
-        type: String
-       },
-       cId:{
-        type: Number
-       },
-       metaTitle:{
-        type: String
-       },
-       metaKey:{
-        type: String
-       },
-       metaDes:{
-        type: String
-       },
-       metaTt:{
-        type: String
-       },
-       status:{
-        type: Number
-       }
     },
-    { collection: 'NganhThu',
-      versionKey: false}
-);
+    name: {
+        type: String,
+    },
+    alias: {
+        type: String
+    },
+    metaH1: {
+        type: String
+    },
+    content: {
+        type: String
+    },
+    cId: {
+        type: Number
+    },
+    metaTitle: {
+        type: String
+    },
+    metaKey: {
+        type: String
+    },
+    metaDes: {
+        type: String
+    },
+    metaTt: {
+        type: String
+    },
+    status: {
+        type: Number
+    }
+}, {
+    collection: 'NganhThu',
+    versionKey: false
+});
 
-export default mongoose.model("NganhThu", NganhThuSchema)
+module.exports = mongoose.model('NganhThu', NganhThuSchema);

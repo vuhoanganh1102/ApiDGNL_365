@@ -17,6 +17,8 @@ const { promisify } = require('util');
 // tọa token
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
+const DonXinViec = require('../models/Timviec365/CV/DonXinViec');
+
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -28,6 +30,7 @@ const MAX_IMG_SIZE = 2 * 1024 * 1024;
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
 dotenv.config();
+
 // check title
 const removeAccent = (str) => {
     const accents = "àáâãäåèéêëìíîïòóôõöùúûüýÿđ";
@@ -62,39 +65,41 @@ const removeAccent = (str) => {
     };
     return str.replace(accentRegex, (match) => accentMap[match]);
 };
+
 // check title
 exports.checkTilte = async(input, list) => {
-        const formattedInput = removeAccent(input).toLowerCase();
-        const foundKeyword = list.find((keyword) => {
-            const formattedKeyword = removeAccent(keyword).toLowerCase();
-            return formattedInput.includes(formattedKeyword);
-        });
+    const formattedInput = removeAccent(input).toLowerCase();
+    const foundKeyword = list.find((keyword) => {
+        const formattedKeyword = removeAccent(keyword).toLowerCase();
+        return formattedInput.includes(formattedKeyword);
+    });
 
-        if (foundKeyword) {
-            return false
-        } else {
-            return true
-        }
+    if (foundKeyword) {
+        return false
+    } else {
+        return true
     }
-    // hàm check title khi update
+};
+
+// hàm check title khi update
 exports.removeSimilarKeywords = (keyword, arr) => {
     return arr.filter(file => !file.startsWith(keyword));
 }
 
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
-exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"]
-    // hàm validate phone
+exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"];
+
+// hàm validate phone
 exports.checkPhoneNumber = async(phone) => {
         const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
         return phoneNumberRegex.test(phone)
     }
     // hàm validate email
 exports.checkEmail = async(email) => {
-        const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
-        return gmailRegex.test(email)
-    }
+  const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  return gmailRegex.test(email);
+}
     // hàm validate link
 exports.checkLink = async(link) => {
         const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
@@ -123,7 +128,7 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
     } else {
         return false;
     }
-}
+};
 exports.getDatafindOne = async(model, condition) => {
     return model.findOne(condition);
 };
@@ -141,6 +146,7 @@ exports.checkEmail = async(email) => {
     const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     return gmailRegex.test(email);
 };
+
 // hàm validate link
 exports.checkLink = async(link) => {
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
@@ -149,7 +155,7 @@ exports.checkLink = async(link) => {
 
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
-    return res.status(200).json({ data: { result: true, messsage, data, error: null } })
+  return res.status(200).json({ data: { result: true, messsage, data, error: null } })
 };
 
 // hàm thực thi khi thất bại
@@ -157,6 +163,7 @@ exports.setError = async(res, message, code = 500) => {
 
     return res.status(code).json({ code, message })
 };
+
 // hàm tìm id max
 exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -199,12 +206,13 @@ exports.checkVideo = async(filePath) => {
         return false;
     }
     return true;
-}
+};
 
 exports.getDataDeleteOne = async(model, condition) => {
-        return model.deleteOne(condition)
-    }
-    // storage để updload file
+    return model.deleteOne(condition)
+};
+
+// storage để updload file
 const storageMain = (destination) => {
     return multer.diskStorage({
         destination: function(req, file, cb) {
@@ -220,7 +228,8 @@ const storageMain = (destination) => {
             cb(null, file.fieldname + uniqueSuffix + '.' + file.originalname.split('.').pop())
         }
     })
-}
+};
+
 const storageFile = (destination) => {
     return multer.diskStorage({
         destination: function(req, file, cb) {
@@ -249,9 +258,10 @@ const storageFile = (destination) => {
             }
         }
     });
-}
+};
 
 exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/KhoAnh') })
+
 exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/KhoAnh') })
 
 //  hàm upload ảnh ở cập nhập avatar
@@ -260,7 +270,7 @@ exports.uploadImg = multer({ storage: storageMain('public/KhoAnh') })
 //  hàm upload ảnh ở kho ảnh
 exports.uploadImgKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
-//  hàm upload ảnh ở kho ảnh
+//  hàm upload video ở kho ảnh
 exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
 // hàm upload video ở cập nhập KhoAnh
@@ -270,23 +280,25 @@ exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
 exports.uploadFileUv = multer({ storage: storageFile('public/candidate') })
 
 const deleteFile = (filePath) => {
-        fs.unlink(filePath, (err) => {
-            if (err) throw err;
-            console.log('File was deleted');
-        });
-    }
-    // hàm xóa file
+    fs.unlink(filePath, (err) => {
+        if (err) throw err;
+        console.log('File was deleted');
+    });
+};
+
+// hàm xóa file
 exports.deleteImg = async(condition) => {
-        if (typeof(condition) == "string") {
-            return await deleteFile(condition)
-        }
-
-        if (typeof(condition) == "object") {
-            return await deleteFile(condition.path)
-        }
-
+    if (typeof(condition) == "string") {
+        return await deleteFile(condition)
     }
-    // storega check file
+
+    if (typeof(condition) == "object") {
+        return await deleteFile(condition.path)
+    }
+
+};
+
+// storega check file
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         cb(null, 'public/cvUpload')
@@ -297,16 +309,18 @@ const storage = multer.diskStorage({
 }
 `)
     },
-})
+});
 
 // hàm check file
 exports.uploadFile = multer({ storage: storageFile })
+
 exports.createError = async(code, message) => {
     const err = new Error();
     err.code = code;
     err.message = message;
     return { data: null, error: err };
 };
+
 // hàm cấu hình mail
 const transport = nodemailer.createTransport({
     host: process.env.NODE_MAILER_HOST,
@@ -318,6 +332,7 @@ const transport = nodemailer.createTransport({
         pass: process.env.AUTH_PASSWORD
     }
 });
+
 // hàm gửi mail
 exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
     let options = {
@@ -345,17 +360,17 @@ exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
 };
 
 exports.verifyPassword = async(inputPassword, hashedPassword) => {
-        const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
-        return md5Hash === hashedPassword;
-    }
-    // hàm check token
+    const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
+    return md5Hash === hashedPassword;
+};
+
+// hàm check token
 exports.checkToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
         return res.status(401).json({ message: "Missing token" });
     }
-
     jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
         if (err) {
             return res.status(403).json({ message: "Invalid token" });
@@ -364,6 +379,7 @@ exports.checkToken = (req, res, next) => {
         next();
     });
 };
+
 // hàm tạo token 
 exports.createToken = async(data, time) => {
     return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
@@ -394,36 +410,37 @@ exports.getDataCareer = async() => {
         "Thu Ngân", "Thư viện", "Thực phẩm - Đồ uống", "Thương Mại điện tử", "Thủy Sản", "Thị trường - Quảng cáo", "Tìm việc làm thêm", "Tổ chức sự kiện", "Trắc địa", "Truyển thông", "Tư vấn", "Vận chuyển giao nhận", "Vận tải - Lái xe", "Vật tư - Thiết bị",
         "Việc làm bán hàng", "Việc làm Tết", "Xây dựng", "Xuất - nhập khẩu", "Xuất khẩu lao động", "Y tế - Dược", "Đầu bếp - phụ bếp", "Điện - Điện tử", "Điện tử viễn thông", "ngàng nghề khác"
     ]
-}
+};
 
 // hàm lấy dữ liệu hình thức làm việc
 exports.getDataWorkingForm = async() => {
     return ["Toàn thời gian cố định", "Toàn thời gian tạm thời", "Bán thời gian", "Bán thời gian tạm thời", "Hợp đồng", "Việc làm từ xa", "Khác"]
-}
+};
 
 // hàm lấy dữ liệu cấp bậc làm việc
 exports.getDataWorkingRank = async() => {
     return ["Mới tốt nghiệp", "Thực tập sinh", "Nhân viên", "Trưởng nhóm", "Phó tổ trưởng", "Tổ trưởng", "Phó trưởng phòng", "Trưởng phòng", "Phó giám đốc", "Giám đóc", "Phó tổng giám đốc", "Tổng giám đốc", "Quản lý cấp trung", "Quản lý cấp cao"]
-}
+};
 
 // hàm lấy dữ liệu kinh nghiệm làm việc
 exports.getDataEXP = async() => {
-        return ["Không yêu cầu", "Chưa có kinh nghiệm", "0 - 1 năm kinh nghiệm", "Hơn 1 năm kinh nghiệm", "Hơn 2 năm kinh nghiệm", "Hơn 5 năm kinh nghiệm", "Hơn 10 năm kinh nghiệm"]
-    }
-    // hàm lấy dữ liệu bằng cấp làm việc
+    return ["Không yêu cầu", "Chưa có kinh nghiệm", "0 - 1 năm kinh nghiệm", "Hơn 1 năm kinh nghiệm", "Hơn 2 năm kinh nghiệm", "Hơn 5 năm kinh nghiệm", "Hơn 10 năm kinh nghiệm"]
+};
+// hàm lấy dữ liệu bằng cấp làm việc
 exports.getDataDegree = async() => {
-        return ["Không yêu cầu", "Đại học trở lên", "Cao đẳng trở lên", "THPT trở lên", "Trung học trở lên", "Chứng chỉ", "Trung cấp trở lên", "Cử nhân trở lên", "Thạc sĩ trở lên", "Thạc sĩ Nghệ thuật", "Thạc sĩ Thương mại", "Thạc sĩ Khoa học",
-            "Thạc sĩ Kiến trúc", "Thạc sĩ QTKD", "Thạc sĩ Kỹ thuật ứng dụng", "Thạc sĩ Luật", "Thạc sĩ Y học", "Thạc sĩ Dược phẩm", "Tiến sĩ", "Khác"
-        ]
-    }
-    // hàm lấy dữ liệu giới tính làm việc
+    return ["Không yêu cầu", "Đại học trở lên", "Cao đẳng trở lên", "THPT trở lên", "Trung học trở lên", "Chứng chỉ", "Trung cấp trở lên", "Cử nhân trở lên", "Thạc sĩ trở lên", "Thạc sĩ Nghệ thuật", "Thạc sĩ Thương mại", "Thạc sĩ Khoa học",
+        "Thạc sĩ Kiến trúc", "Thạc sĩ QTKD", "Thạc sĩ Kỹ thuật ứng dụng", "Thạc sĩ Luật", "Thạc sĩ Y học", "Thạc sĩ Dược phẩm", "Tiến sĩ", "Khác"
+    ]
+};
+
+// hàm lấy dữ liệu giới tính làm việc
 exports.getDataSex = async() => {
     return ["Nam", "Nữ", "Không yêu cầu"]
-}
+};
 
 exports.pageFind = async(model, condition, sort, skip, limit) => {
     return model.find(condition).sort(sort).skip(skip).limit(limit);
-}
+};
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
 exports.getDataCVSortById = async(condition) => {
@@ -446,8 +463,11 @@ exports.getDataCVSortByDownload = async(condition) => {
 //hàm kiểm tra string có phải number không
 exports.checkNumber = async(string) => {
     return !isNaN(string)
-}
+};
 
-exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {
-    return model.find(condition, select).sort(sort).skip(skip).limit(limit);
-}
+//base64 decrypt image
+exports.decrypt = async(req, res, next) => {
+    const base64 = req.body.base64;
+    req.file = Buffer.from(base64, 'base64').toString('utf-8');
+    return next();
+};
