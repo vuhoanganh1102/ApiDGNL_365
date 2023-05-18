@@ -23,12 +23,12 @@ router.post('/RegisterB2CvSite', functions.checkToken, uploadFileUv.single('imag
 
 //api đăng nhập ứng viên
 router.post('/loginUv', formData.parse(), candidate.loginUv);
-<<<<<<< HEAD
-// router.post('/login', formData.parse(), candidate.login);
-=======
+// <<<<<<< HEAD
+// // router.post('/login', formData.parse(), candidate.login);
+// =======
 
-//api hiển thị trang qlc trong hoàn thiện hồ sơ
->>>>>>> 748dd5dc348c7daf91c661b1ba3ac35519938a3b
+// //api hiển thị trang qlc trong hoàn thiện hồ sơ
+// >>>>>>> 748dd5dc348c7daf91c661b1ba3ac35519938a3b
 router.post('/completeProfileQlc', formData.parse(), functions.checkToken, candidate.completeProfileQlc);
 
 //api hiển thị danh sách cv xin việc của ứng viên

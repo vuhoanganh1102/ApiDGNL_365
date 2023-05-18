@@ -20,13 +20,13 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
-<<<<<<< HEAD
+// <<<<<<< HEAD
 var childCompanyRouter = require('./routes/qlc/childCompany')
 var managerUser = require('./routes/qlc/managerUser')
 
-=======
-var childCompanyRouter = require('./routes/qlc/childCompany');
->>>>>>> 748dd5dc348c7daf91c661b1ba3ac35519938a3b
+// =======
+// var childCompanyRouter = require('./routes/qlc/childCompany');
+// >>>>>>> 748dd5dc348c7daf91c661b1ba3ac35519938a3b
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();

@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
-<<<<<<< HEAD
-=======
-const Schema = mongoose.Schema
->>>>>>> 748dd5dc348c7daf91c661b1ba3ac35519938a3b
+// <<<<<<< HEAD
+// =======
+// const Schema = mongoose.Schema
+// >>>>>>> 748dd5dc348c7daf91c661b1ba3ac35519938a3b
 const CVSchema = new mongoose.Schema({
     _id: {
         type: Number,
