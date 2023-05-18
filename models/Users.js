@@ -378,6 +378,12 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
+            idparent : {
+                //id công ty mẹ
+                type: Number,
+                default: 0
+            },
+
             userContactName: {
                 // Tên người liên hệ
                 type: String,

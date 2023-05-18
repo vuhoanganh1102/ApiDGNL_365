@@ -12,8 +12,7 @@ router.post('/RegisterB2VideoUpload', uploadFile.single('videoUpload'), candidat
 router.post('/RegisterB2CvSite', uploadFile.single('imageUpload'), candidate.RegisterB2CvSite);
 
 router.post('/loginUv', formData.parse(), candidate.loginUv);
-router.post('/login', formData.parse(), candidate.login);
-router.post('/AddUserChat365', formData.parse(), candidate.AddUserChat365);
+// router.post('/login', formData.parse(), candidate.login);
 router.post('/completeProfileQlc', formData.parse(), functions.checkToken, candidate.completeProfileQlc);
 router.post('/cvXinViec', formData.parse(), functions.checkToken, candidate.cvXinViec);
 router.post('/RegisterB2CvUpload', uploadFile.any(), candidate.RegisterB2CvUpload);

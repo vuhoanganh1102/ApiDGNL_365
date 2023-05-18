@@ -1,20 +1,17 @@
-const childCompany = require("../../models/qlc/childCompany")
+const childCompany = require("../../models/Users")
 const functions = require("../../services/functions")
 
 //tìm danh sách công ty 
 exports.getListCompany= async (req, res) => {
     //Function tìm tất cả không có điều kiện rằng buộc
-    await functions.getDatafind(childCompany, {})
+    await functions.getDatafind(childCompany, {type :1 || 2 })
         //thành công trả models
         .then((childCompany) => functions.success(res, "", childCompany))
         // bắt lỗi 
         .catch((err) => functions.setError(res, err.message, 501));
 };
 //
-exports.getholdingcompany = async function(res) {
-    const company = await functions.getDatafindOne(user, {_is: _id });
-}
-//tìm 1 cty cụ thể 
+ 
 exports.getCompanyById = async (req, res) => {
     //tạo biến chứa param id 
     const _id = req.params.id;
