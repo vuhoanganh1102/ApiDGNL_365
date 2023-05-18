@@ -152,7 +152,7 @@ exports.checkLink = async(link) => {
 
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
-    return res.status(200).json({ result: true, messsage, data })
+    return res.status(200).json({ data: { result: true, messsage, data, error: null } })
 };
 
 // hàm thực thi khi thất bại
@@ -450,4 +450,8 @@ exports.getDataCVSortByDownload = async(condition) => {
 //hàm kiểm tra string có phải number không
 exports.checkNumber = async(string) => {
     return !isNaN(string)
+}
+
+exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {
+    return model.find(condition, select).sort(sort).skip(skip).limit(limit);
 }

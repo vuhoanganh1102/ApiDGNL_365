@@ -29,12 +29,25 @@ router.post('/updateSkills', formData.parse(), functions.checkToken, candidate.u
 router.post('/updateReferencePersonInfo', formData.parse(), functions.checkToken, candidate.updateReferencePersonInfo);
 router.post('/RefreshProfile', formData.parse(), functions.checkToken, candidate.RefreshProfile);
 router.post('/updateIntroVideo', functions.checkToken, uploadFileUv.single('videoUpload'), candidate.updateIntroVideo);
-router.post('/updateAvatarUser', functions.checkToken, uploadFileUv.single('imageUpload'), candidate.updateAvatarUser);
-router.post('/upLoadHoSo', functions.checkToken, uploadFileUv.single('hosoUpload'), candidate.upLoadHoSo);
-
-// đổi mật khẩu
+router.post('/updateAvatarUser', functions.checkToken, uploadFileUv.single('logo'), candidate.updateAvatarUser);
+router.post('/upLoadHoSo', functions.checkToken, uploadFileUv.single('cv'), candidate.upLoadHoSo);
+router.post('/addDegree', formData.parse(), functions.checkToken, candidate.addDegree);
+router.post('/updateDegree', formData.parse(), functions.checkToken, candidate.updateDegree);
+router.post('/deleteDegree', formData.parse(), functions.checkToken, candidate.deleteDegree);
+router.post('/addNgoaiNgu', formData.parse(), functions.checkToken, candidate.addNgoaiNgu);
+router.post('/updateNgoaiNgu', formData.parse(), functions.checkToken, candidate.updateNgoaiNgu);
+router.post('/deleteNgoaiNgu', formData.parse(), functions.checkToken, candidate.deleteNgoaiNgu);
+router.post('/addExp', formData.parse(), functions.checkToken, candidate.addExp);
+router.post('/updateExp', formData.parse(), functions.checkToken, candidate.updateExp);
+router.post('/deleteExp', formData.parse(), functions.checkToken, candidate.deleteExp);
+router.post('/randomUv', formData.parse(), functions.checkToken, candidate.randomUv);
+router.post('/selectiveUv', formData.parse(), functions.checkToken, candidate.selectiveUv);
+router.post('/candidateAI', formData.parse(), candidate.candidateAI);
+// quên mật khẩu
 router.post('/sendOTP', formData.parse(), candidate.sendOTP);
 router.post('/confirmOTP', formData.parse(), functions.checkToken, candidate.confirmOTP); // kiểm tra token( có + còn thời gian) -> xác nhận otp
 router.post('/changePassword', formData.parse(), functions.checkToken, candidate.changePassword); // kiểm tra token( có + còn thời gian) -> đổi mật khẩu
 
+//đổi mật khẩu
+router.post('/sendOTPChangePass', formData.parse(), functions.checkToken, candidate.sendOTPChangePass); //phần gửi otp khác với quên mật khẩu, còn phần xác nhận otp với phần đổi mật khẩu thì giống nhau
 module.exports = router;

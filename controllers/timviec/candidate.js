@@ -61,7 +61,8 @@ exports.RegisterB1 = async(req, res, next) => {
                         const maxIDUser = await Users.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
                         if (maxIDUser) {
                             newIDUser = Number(maxIDUser._id) + 1;
-                        }
+                        } else newIDUser = 1;
+
                         let findUserUv = await functions.getDatafindOne(userUnset, { usePhoneTk: phoneTK })
                         if (findUserUv) {
                             let updateUserUv = await functions.getDatafindOneAndUpdate(userUnset, { usePhoneTk: phoneTK }, {
@@ -103,7 +104,7 @@ exports.RegisterB1 = async(req, res, next) => {
                             let saveUserUV = UserUV.save()
                         }
                         req.body.password = md5(req.body.password)
-                        req.body._id = maxIDUser._id
+                        req.body._id = newIDUser
                         const token = await functions.createToken(req.body, "2d")
 
                         return functions.success(res, 'Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong', token)
@@ -221,7 +222,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
 
         if (req && req.body && req.files) {
             const birthday = req.body.birthday
-            const candiExp = req.body.candiExp
+            const exp = req.body.exp
             const candiHocVan = req.body.candiHocVan
             const candiSchool = req.body.candiSchool
             const fileUpload = req.files
@@ -258,13 +259,12 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                 const maxID = await Users.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
                 if (maxID) {
                     newID = Number(maxID._id) + 1;
-                }
+                } else newID = 1
                 const maxIDTimviec = await Users.findOne({ type: 0 }, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
                 if (maxIDTimviec) {
                     newIDTimviec = Number(maxIDTimviec.idTimViec365) + 1;
-                }
+                } else newIDTimviec = 1
                 if (videoUpload && !videoLink) { // check video tải lên là file video
-                    console.log(1)
                     let User = new Users({
                         _id: newID,
                         phoneTK: phoneTK,
@@ -285,7 +285,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
                             candiTitle: candiTitle,
-                            candiExp: candiExp,
+                            exp: exp,
                             candiHocVan: candiHocVan,
                             candiSchool: candiSchool,
                             video: videoUpload[0].filename,
@@ -318,7 +318,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
                             candiTitle: candiTitle,
-                            candiExp: candiExp,
+                            exp: exp,
                             candiHocVan: candiHocVan,
                             candiSchool: candiSchool,
                             video: videoLink,
@@ -341,7 +341,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
 
 }
 
-// đôit mật khẩu
+// quên mật khẩu
 // b1: gửi mã otp tới tên tài khoản được nhập
 exports.sendOTP = async(req, res, next) => {
     try {
@@ -436,6 +436,65 @@ exports.changePassword = async(req, res, next) => {
         return functions.setError(res, 'Đổi mật khẩu lỗi', );
     }
 };
+
+//đổi mật khẩu 
+//B1L gửi otp
+exports.sendOTPChangePass = async(req, res, next) => {
+    try {
+        const user = req.user.data.phoneTK;
+        if (await functions.checkPhoneNumber(user) && await functions.getDatafindOne(Users, { phoneTK: user })) {
+            await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { user })
+                .then((response) => {
+                    const otp = response.data.otp;
+                    if (otp) {
+                        return Users.updateOne({ phoneTK: user }, {
+                            $set: {
+                                otp: otp
+                            }
+                        });
+                    }
+                    functions.setError(res, "Gửi OTP lỗi 1", );
+                })
+                .then(() => {
+                    functions.getDatafindOne(Users, { phoneTK: user }, )
+                        .then(async(response) => {
+                            const token = await functions.createToken(response, '30m'); // tạo token chuyển lên headers
+                            res.setHeader('authorization', `Bearer ${token}`);
+                            return functions.success(res, 'Gửi OTP thành công');
+                        });
+                });
+
+        } else if (await functions.checkEmail(user) && await functions.getDatafindOne(Users, { email: user }, )) {
+            await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { user })
+                .then((response) => {
+                    const otp = response.data.otp;
+                    if (otp) {
+                        return Users.updateOne({ email: user }, {
+                            $set: {
+                                otp: otp
+                            }
+                        });
+                    }
+                    functions.setError(res, 'Gửi OTP lỗi 2', );
+                })
+                .then(() => {
+                    Users.findOne({ email: user })
+                        .then(async(response) => {
+                            const token = await functions.createToken(response, '30m');
+                            res.setHeader('authorization', `Bearer ${token}`);
+                            return functions.success(res, 'Gửi OTP thành công');
+                        });
+                });
+        } else {
+            return functions.setError(res, "Tài khoản không tồn tại. ", 404)
+        }
+    } catch (e) {
+        return functions.setError(res, "Gửi OTP lỗi3", )
+    }
+
+};
+
+//đăng kí = cách làm cv trên site
 exports.RegisterB2CvSite = async(req, res, next) => {
     try {
         if (req && req.body && req.file) {
@@ -772,18 +831,18 @@ exports.listJobCandidateSave = async(req, res, next) => {
 //cập nhật thông tin liên hệ
 exports.updateContactInfo = async(req, res, next) => {
     try {
-        if (req.user && req.body.userName && req.body.phone && req.body.address && req.body.birthday &&
-            req.body.gender && req.body.married && req.body.city && req.body.district) {
+        if (req.user && req.body.name && req.body.phone && req.body.address && req.body.birthday &&
+            req.body.gioitinh && req.body.honnhan && req.body.thanhpho && req.body.quanhuyen) {
 
             let userId = req.user.data._id
-            let userName = req.body.userName
+            let userName = req.body.name
             let phone = req.body.phone
             let address = req.body.address
             let birthday = req.body.birthday
-            let gender = req.body.gender
-            let married = req.body.married
-            let city = req.body.city
-            let district = req.body.district
+            let gender = req.body.gioitinh
+            let married = req.body.honnhan
+            let city = req.body.thanhpho
+            let district = req.body.quanhuyen
             let avatarUser = req.file
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
                 userName: userName,
@@ -814,25 +873,34 @@ exports.updateContactInfo = async(req, res, next) => {
 exports.updateDesiredJob = async(req, res, next) => {
     try {
         if (req.user && req.body.candiTitle && req.body.candiLoaiHinh && req.body.candiCityID && req.body.candiCateID &&
-            req.body.candiExp && req.body.candiCapBac && req.body.candiMoney) {
+            req.body.exp && req.body.candiCapBac && req.body.candiMoney) {
 
             let userId = req.user.data._id
-            let candiTitle = req.body.candiTitle
-            let candiLoaiHinh = req.body.candiLoaiHinh
-            let candiCityID = req.body.candiCityID
-            let candiCateID = req.body.candiCateID
-            let candiExp = req.body.candiExp
-            let candiCapBac = req.body.candiCapBac
-            let candiMoney = req.body.candiMoney
+            let candiTitle = req.body.title
+            let candiLoaiHinh = req.body.ht
+            let candiCityID = req.body.city
+            let candiCateID = req.body.cate
+            let exp = req.body.kn
+            let candiCapBac = req.body.capbac
+            let candiMoney = req.body.money_kg
+            let candiMoneyUnit = req.body.money_unit
+            let candiMoneyType = req.body.money_type
+            let candiMoneyMin = req.body.money_min
+            let candiMoneyMax = req.body.money_max
+
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
                 inForPerson: {
                     candiCateID: candiCateID,
-                    candiExp: candiExp,
+                    exp: exp,
                     candiCapBac: candiCapBac,
                     candiTitle: candiTitle,
                     candiLoaiHinh: candiLoaiHinh,
                     candiCityID: candiCityID,
                     candiMoney: candiMoney,
+                    candiMoneyUnit: candiMoneyUnit,
+                    candiMoneyType: candiMoneyType,
+                    candiMoneyMin: candiMoneyMin,
+                    candiMoneyMax: candiMoneyMax,
                 }
             })
             if (updateUser) {
@@ -850,10 +918,10 @@ exports.updateDesiredJob = async(req, res, next) => {
 //cập nhật mục tiêu nghề nghiệp
 exports.updateCareerGoals = async(req, res, next) => {
     try {
-        if (req.user && req.body.candiMucTieu) {
+        if (req.user && req.body.muctieu) {
 
             let userId = req.user.data._id
-            let candiMucTieu = req.body.candiMucTieu
+            let candiMucTieu = req.body.muctieu
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
                 inForPerson: {
                     candiMucTieu: candiMucTieu,
@@ -874,10 +942,10 @@ exports.updateCareerGoals = async(req, res, next) => {
 //cập nhật kỹ năng bản thân
 exports.updateSkills = async(req, res, next) => {
     try {
-        if (req.user && req.body.candiSkills) {
+        if (req.user && req.body.kynang) {
 
             let userId = req.user.data._id
-            let candiSkills = req.body.candiSkills
+            let candiSkills = req.body.kynang
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
                 inForPerson: {
                     candiSkills: candiSkills,
@@ -966,25 +1034,130 @@ exports.updateIntroVideo = async(req, res, next) => {
 }
 
 //Thêm dữ liệu bằng cấp học vấn
-exports.updateDegree = async(req, res, next) => {
+exports.addDegree = async(req, res, next) => {
     try {
-        if (req.user && req.body.candiSkills) {
+        if (req.user && req.body.bc && req.body.truonghoc && req.body.chuyennganh && req.body.xeploai && req.body.bosungth && req.body.onetime && req.body.twotime) {
 
             let userId = req.user.data._id
-            let candiSkills = req.body.candiSkills
+            let degree = req.body.bc
+            let school = req.body.truonghoc
+            let major = req.body.chuyennganh
+            let rate = req.body.xeploai
+            let implement = req.body.bosungth
+            let start = req.body.onetime
+            let end = req.body.twotime
+            const maxID = await Users.findOne({ _id: userId }, { "inForPerson.candiDegree.id": 1 }).sort({ "inForPerson.candiDegree.id": -1 }).limit(1).lean();
+            if (maxID.inForPerson.candiDegree[0]) {
+                newID = Number(maxID.inForPerson.candiDegree[maxID.inForPerson.candiDegree.length - 1].id + 1);
+            } else newID = 1
+            let addDegree = {
+                id: newID,
+                degree,
+                school,
+                major,
+                rate,
+                implement,
+                start,
+                end
+            }
+
             let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
-                inForPerson: {
-                    candiSkills: candiSkills,
+                $push: {
+                    "inForPerson.candiDegree": addDegree
                 }
             })
             if (updateUser) {
-                functions.success(res, "Cập nhật Kỹ năng bản thân thành công");
+                functions.success(res, "Thêm bằng cấp học vấn thành công");
             }
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
     } catch (e) {
-        console.log("Đã có lỗi xảy ra khi cập nhật kỹ năng bản thân", e);
+        console.log("Đã có lỗi xảy ra khi thêm bằng cấp học vấn", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//cập nhật bằng cấp học vấn
+exports.updateDegree = async(req, res, next) => {
+    try {
+        if (req.user && req.body.bc && req.body.truonghoc && req.body.chuyennganh && req.body.xeploai && req.body.bosungth && req.body.onetime && req.body.twotime && req.body.idhv) {
+
+            let userId = req.user.data._id
+            let degree = req.body.bc
+            let school = req.body.truonghoc
+            let major = req.body.chuyennganh
+            let rate = req.body.xeploai
+            let implement = req.body.bosungth
+            let start = req.body.onetime
+            let end = req.body.twotime
+            let id = Number(req.body.idhv)
+            let updateDegree = {
+                id: id,
+                degree,
+                school,
+                major,
+                rate,
+                implement,
+                start,
+                end
+            }
+
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiDegree.id": id }, {
+                $set: {
+                    "inForPerson.candiDegree.$": updateDegree
+                },
+            })
+            if (updateUser) {
+                functions.success(res, "Cập nhật bằng cấp học vấn thành công");
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi cập nhật bằng cấp học vấn", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//xóa bằng cấp học vấn
+exports.deleteDegree = async(req, res, next) => {
+    try {
+        if (req.user && req.body.bc && req.body.truonghoc && req.body.chuyennganh && req.body.xeploai && req.body.bosungth && req.body.onetime && req.body.twotime && req.body.idhv) {
+
+            let userId = req.user.data._id
+            let degree = req.body.bc
+            let school = req.body.truonghoc
+            let major = req.body.chuyennganh
+            let rate = req.body.xeploai
+            let implement = req.body.bosungth
+            let start = req.body.onetime
+            let end = req.body.twotime
+            let id = Number(req.body.idhv)
+            let deleteDegree = {
+                id: id,
+                degree,
+                school,
+                major,
+                rate,
+                implement,
+                start,
+                end
+            }
+
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiDegree.id": id }, {
+                $pull: {
+                    "inForPerson.candiDegree": deleteDegree
+                },
+            })
+            if (updateUser) {
+                functions.success(res, "Xóa bằng cấp học vấn thành công");
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi xóa bằng cấp học vấn", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
@@ -1036,7 +1209,7 @@ exports.updateAvatarUser = async(req, res, next) => {
 //tải hồ sơ của tôi lên (cv)
 exports.upLoadHoSo = async(req, res, next) => {
     try {
-        if (req.user && req.body.nameHoSo) {
+        if (req.user && req.body.cvname) {
             console.log(1)
             let userId = req.user.data._id
             let nameHoSo = req.body.nameHoSo
@@ -1088,6 +1261,366 @@ exports.upLoadHoSo = async(req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//Thêm dữ liệu Ngoại ngữ tin học
+exports.addNgoaiNgu = async(req, res, next) => {
+    try {
+        if (req.user && req.body.chungchi && req.body.sodiem && req.body.ngoaingu) {
+
+            let userId = req.user.data._id
+            let chungChi = req.body.chungchi
+            let point = req.body.sodiem
+            let ngoaiNgu = req.body.ngoaingu
+
+            const maxID = await Users.findOne({ _id: userId }, { "inForPerson.candiNgoaiNgu.id": 1 }).sort({ "inForPerson.candiNgoaiNgu.id": -1 }).limit(1).lean();
+            if (maxID.inForPerson.candiNgoaiNgu[0]) {
+                newID = Number(maxID.inForPerson.candiNgoaiNgu[maxID.inForPerson.candiNgoaiNgu.length - 1].id + 1);
+            } else newID = 1
+            let addNgoaiNgu = {
+                id: newID,
+                chungChi,
+                point,
+                ngoaiNgu,
+            }
+
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+                $push: {
+                    "inForPerson.candiNgoaiNgu": addNgoaiNgu
+                }
+            })
+            if (updateUser) {
+                functions.success(res, "Thêm ngoại ngữ thành công");
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi thêm ngoại ngữ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//cập nhật Ngoại ngữ tin học
+exports.updateNgoaiNgu = async(req, res, next) => {
+    try {
+        if (req.user && req.body.chungchi && req.body.sodiem && req.body.ngoaingu && req.body.idnn) {
+
+            let userId = req.user.data._id
+            let chungChi = req.body.chungchi
+            let point = req.body.sodiem
+            let ngoaiNgu = req.body.ngoaingu
+            let id = Number(req.body.idnn)
+            let updateNgoaiNgu = {
+                id: id,
+                chungChi,
+                point,
+                ngoaiNgu,
+            }
+
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiNgoaiNgu.id": id }, {
+                $set: {
+                    "inForPerson.candiNgoaiNgu.$": updateNgoaiNgu
+                },
+            })
+            if (updateUser) {
+                functions.success(res, "Cập nhật ngoại ngữ thành công");
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi cập nhật ngoại ngữ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//xóa Ngoại ngữ tin học
+exports.deleteNgoaiNgu = async(req, res, next) => {
+    try {
+        if (req.user && req.body.chungchi && req.body.sodiem && req.body.ngoaingu && req.body.idnn) {
+
+            let userId = req.user.data._id
+            let chungChi = req.body.chungchi
+            let point = req.body.sodiem
+            let ngoaiNgu = req.body.ngoaingu
+            let id = Number(req.body.idnn)
+            let deleteNgoaiNgu = {
+                id: id,
+                chungChi,
+                point,
+                ngoaiNgu,
+            }
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiNgoaiNgu.id": id }, {
+                $pull: {
+                    "inForPerson.candiNgoaiNgu": deleteNgoaiNgu
+                },
+            })
+            if (updateUser) {
+                functions.success(res, "Xóa Ngoại ngữ thành công");
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi xóa ngoại ngữ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//Thêm dữ liệu Kinh nghiệm làm việc
+exports.addExp = async(req, res, next) => {
+    try {
+        if (req.user && req.body.chucdanh && req.body.congty && req.body.motaexp && req.body.onetime && req.body.twotime) {
+
+            let userId = req.user.data._id
+            let jobTitle = req.body.chucdanh
+            let company = req.body.congty
+            let desExp = req.body.motaexp
+            let start = req.body.onetime
+            let end = req.body.twotime
+
+            const maxID = await Users.findOne({ _id: userId }, { "inForPerson.candiExp.id": 1 }).sort({ "inForPerson.candiExp.id": -1 }).limit(1).lean();
+            if (maxID.inForPerson.candiExp[0]) {
+                newID = Number(maxID.inForPerson.candiExp[maxID.inForPerson.candiExp.length - 1].id + 1);
+            } else newID = 1
+            let addExp = {
+                id: newID,
+                jobTitle,
+                company,
+                desExp,
+                start,
+                end
+            }
+
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+                $push: {
+                    "inForPerson.candiExp": addExp
+                }
+            })
+            if (updateUser) {
+                functions.success(res, "Thêm kinh nghiệm làm việc thành công");
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi thêm kinh nghiệm làm việc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//cập nhật Kinh nghiệm làm việc
+exports.updateExp = async(req, res, next) => {
+    try {
+        if (req.user && req.body.chucdanh && req.body.congty && req.body.motaexp && req.body.onetime && req.body.twotime && req.body.idkn) {
+
+            let userId = req.user.data._id
+            let jobTitle = req.body.chucdanh
+            let company = req.body.congty
+            let desExp = req.body.motaexp
+            let start = req.body.onetime
+            let end = req.body.twotime
+            let id = req.body.idkn
+            let updateExp = {
+                id,
+                jobTitle,
+                company,
+                desExp,
+                start,
+                end
+            }
+
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiExp.id": id }, {
+                $set: {
+                    "inForPerson.candiExp.$": updateExp
+                },
+            })
+            if (updateUser) {
+                functions.success(res, "Cập nhật kinh nghiệm làm việc thành công");
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi cập nhật kinh nghiệm làm việc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//xóa Kinh nghiệm làm việc
+exports.deleteExp = async(req, res, next) => {
+    try {
+        if (req.user && req.body.chucdanh && req.body.congty && req.body.motaexp && req.body.onetime && req.body.twotime && req.body.idkn) {
+
+            let userId = req.user.data._id
+            let jobTitle = req.body.chucdanh
+            let company = req.body.congty
+            let desExp = req.body.motaexp
+            let start = req.body.onetime
+            let end = req.body.twotime
+            let id = req.body.idkn
+            let updateExp = {
+                id,
+                jobTitle,
+                company,
+                desExp,
+                start,
+                end
+            }
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiExp.id": id }, {
+                $pull: {
+                    "inForPerson.candiExp": updateExp
+                },
+            })
+            if (updateUser) {
+                functions.success(res, "Xóa kinh nghiệm làm việc thành công");
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi xóa kinh nghiệm làm việc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//hiển thị danh sách ứng viên ngẫu nhiên
+exports.randomUv = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page)
+        let pageSize = Number(req.body.pageSize)
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+
+        let findRandomUv = await functions.pageFindV2(Users, { type: 0 }, {
+            userName: 1,
+            city: 1,
+            district: 1,
+            address: 1,
+            avatarUser: 1,
+            isOnline: 1,
+            inForPerson: 1
+        }, { updatedAt: -1 }, skip, limit)
+        const totalCount = await Users.countDocuments({ type: 0 })
+        const totalPages = Math.ceil(totalCount / pageSize)
+
+        if (findRandomUv) {
+            functions.success(res, "Hiển thị ứng viên ngẫu nhiên thành công", { totalCount, totalPages, listUv: findRandomUv });
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi hiển thị ứng viên ngẫu nhiên", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//hiển thị danh sách ứng viên theo tỉnh thành, vị trí
+exports.selectiveUv = async(req, res, next) => {
+    try {
+
+        let page = Number(req.body.page)
+        let pageSize = Number(req.body.pageSize)
+        let city = req.body.city
+        let cate = req.body.cate
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+
+        if (city && !cate) {
+            let findUv = await functions.pageFindV2(Users, { type: 0, city: city }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            const totalCount = await Users.countDocuments({ type: 0, city: city })
+            const totalPages = Math.ceil(totalCount / pageSize)
+            if (findUv) {
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: findUv });
+            }
+        } else if (!city && cate) {
+            let listUv = []
+            let findUv = await functions.pageFindV2(Users, { type: 0 }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            for (let i = 0; i < findUv.length; i++) {
+                let listCateId = findUv[i].inForPerson.candiCateID.split(',')
+                if (listCateId.includes(cate)) {
+                    listUv.push(findUv[i])
+                }
+            }
+            const totalCount = listUv.length
+            const totalPages = Math.ceil(totalCount / pageSize)
+            if (findUv) {
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+            }
+        } else if (city && cate) {
+
+            let listUv = []
+            let findUv = await functions.pageFindV2(Users, { type: 0, city: city }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            for (let i = 0; i < findUv.length; i++) {
+                let listCateId = findUv[i].inForPerson.candiCateID.split(',')
+                if (listCateId.includes(cate)) {
+                    listUv.push(findUv[i])
+                }
+            }
+            const totalCount = listUv.length
+            const totalPages = Math.ceil(totalCount / pageSize)
+            if (findUv) {
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+            }
+        } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
+
+
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi hiển thị ứng viên theo vị trí, ngành nghề", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//hiển thị ứng viên được gợi ý theo Ai365
+exports.candidateAI = async(req, res, next) => {
+    try {
+        let list = []
+        let uvAI = await functions.getDataAxios("http://43.239.223.10:4001/recommendation_ungvien", {
+            site: "uvtimviec365",
+            use_id: req.body.use_id,
+            pagination: 1,
+            size: 20,
+        })
+        for (let i = 0; i < uvAI.data.item.length; i++) {
+            let findUvAI = await functions.getDatafindOne(Users, { idTimViec365: uvAI.data.item[i].use_id })
+            if (findUvAI) {
+                list.push(findUvAI)
+            }
+            if (list.length == 12) {
+                break
+            }
+        }
+        console.log(uvAI.data.item)
+        if (uvAI) {
+            functions.success(res, "Hiển thị ứng viên ngẫu nhiên thành công", { list });
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi hiển thị ứng viên ngẫu nhiên", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
