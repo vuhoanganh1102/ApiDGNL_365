@@ -83,42 +83,39 @@ exports.removeSimilarKeywords = (keyword, arr) => {
 
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
-exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"];
-
-// hàm validate phone
+exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"]
+    // hàm validate phone
 exports.checkPhoneNumber = async(phone) => {
-    const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
-    return phoneNumberRegex.test(phone)
-};
-
-// hàm validate email
-exports.checkEmail = async(email) => {
-    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
-    return gmailRegex.test(email)
-};
-
-// hàm validate link
-exports.checkLink = async(link) => {
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-    return urlRegex.test(yourUrlVariable);
-};
-
-// hàm validate thơi gian
-exports.checkTime = async(time) => {
-    const currentTime = new Date(); // Lấy thời gian hiện tại
-    const inputTime = new Date(time); // Thời gian nhập vào
-    if (inputTime < currentTime) {
-        return false
-    } else {
-        return true
+        const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
+        return phoneNumberRegex.test(phone)
     }
-};
+    // hàm validate email
+exports.checkEmail = async(email) => {
+        const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
-// hàm check thời gian đăng tin 10p/1 lần
+        return gmailRegex.test(email)
+    }
+    // hàm validate link
+exports.checkLink = async(link) => {
+        const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+        return urlRegex.test(link);
+    }
+    // hàm validate thơi gian
+exports.checkTime = async(time) => {
+        const currentTime = new Date(); // Lấy thời gian hiện tại
+        const inputTime = new Date(time); // Thời gian nhập vào
+        if (inputTime < currentTime) {
+            return false
+        } else {
+            return true
+        }
+    }
+    // hàm check thời gian đăng tin 10p/1 lần
 exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
-    const now = new Date().getTime();
     const inputTime = Date.parse(timeInput);
+
+    const now = new Date().getTime();
+
     const diffInMinutes = (now - inputTime) / (1000 * 60);
 
     if (diffInMinutes >= 10) {
@@ -346,7 +343,6 @@ exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
         }
     })
 };
-
 
 exports.verifyPassword = async(inputPassword, hashedPassword) => {
         const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
