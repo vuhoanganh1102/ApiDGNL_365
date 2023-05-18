@@ -8,7 +8,7 @@ const HoSoUVSchema = new mongoose.Schema({
     userId: {
         type: Number
     },
-    tId: {
+    hoSoId: {
         type: Number
     },
     lang: {
@@ -28,4 +28,4 @@ const HoSoUVSchema = new mongoose.Schema({
     versionKey: false
 });
 
-module.exports = mongoose.model("HoSoUV", HoSoUVSchema)
+module.exports = mongoose.model('HoSoUV', HoSoUVSchema);

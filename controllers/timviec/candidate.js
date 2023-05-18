@@ -2,7 +2,7 @@ const Users = require('../../models/Users');
 const blog = require('../../models/Timviec365/Timviec/blog.model');
 const hoso = require('../../models/Timviec365/Timviec/hoso');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
-const donUV = require('../../models/Timviec365/CV/donUV');
+const donUV = require('../../models/Timviec365/CV/DonUV');
 const HoSoUV = require('../../models/Timviec365/CV/HoSoUV');
 const ThuUV = require('../../models/Timviec365/CV/ThuUV');
 const CV = require('../../models/Timviec365/CV/CV');
@@ -345,7 +345,6 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
 
 }
 
-// quên mật khẩu
 // b1: gửi mã otp tới tên tài khoản được nhập
 exports.sendOTP = async(req, res, next) => {
     try {
@@ -402,6 +401,7 @@ exports.sendOTP = async(req, res, next) => {
     }
 
 };
+
 // b2: xác nhận mã otp
 exports.confirmOTP = async(req, res, next) => {
     try {
@@ -421,6 +421,7 @@ exports.confirmOTP = async(req, res, next) => {
     }
 
 };
+
 //b3: đổi mật khẩu
 exports.changePassword = async(req, res, next) => {
     try {

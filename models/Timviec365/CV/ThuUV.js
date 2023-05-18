@@ -12,7 +12,7 @@ const ThuUVSchema = new mongoose.Schema({
         type: Number
     },
     lang: {
-        // ngôn ngữ thư
+    // ngôn ngữ thư
         type: String
     },
     html: {
@@ -32,4 +32,4 @@ const ThuUVSchema = new mongoose.Schema({
     versionKey: false
 })
 
-module.exports = mongoose.model("ThuUV", ThuUVSchema)
+module.exports = mongoose.model("ThuUV", ThuUVSchema);

@@ -7,9 +7,9 @@ var mongoose = require('mongoose')
 
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
-var newTV365Router = require('./routes/timviec/newTV365')
-var adminRouter = require('./routes/timviec/admin')
 var cvRouter = require('./routes/timviec/cv');
+var newTV365Router = require('./routes/timviec/newTV365');
+var adminRouter = require('./routes/timviec/admin');
 
 // Quản lý chung
 var deparmentRouter = require('./routes/qlc/deparment')
@@ -17,6 +17,7 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
+var childCompanyRouter = require('./routes/qlc/childCompany');
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
@@ -36,12 +37,15 @@ app.use('/api/timviec/newTV365', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
 app.use('/api/timviec/cv', cvRouter);
+app.use('/api/timviec/admin', adminRouter);
 app.use('/api/tool', toolAddDataRouter);
+app.use('/api/timviec/newTV365', newTV365Router);
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
 app.use("/api/qlc/group", groupRouter);
+app.use('/api/qlc/childCompany', childCompanyRouter)
 
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);

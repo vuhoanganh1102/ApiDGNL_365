@@ -536,6 +536,7 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            lv: String,
         },
         default: null
     }
