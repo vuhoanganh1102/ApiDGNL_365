@@ -1617,10 +1617,10 @@ exports.candidateAI = async(req, res, next) => {
         }
         console.log(uvAI.data.item)
         if (uvAI) {
-            functions.success(res, "Hiển thị ứng viên ngẫu nhiên thành công", { list });
+            functions.success(res, "Hiển thị ứng viên ngẫu nhiên theo ai thành công", { list });
         }
     } catch (e) {
-        console.log("Đã có lỗi xảy ra khi hiển thị ứng viên ngẫu nhiên", e);
+        console.log("Đã có lỗi xảy ra khi hiển thị ứng viên ngẫu nhiên theo ai", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
