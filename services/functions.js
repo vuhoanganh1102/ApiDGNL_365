@@ -133,32 +133,43 @@ exports.getDatafind = async(model, condition) => {
 }
 
 exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
-        return model.findOneAndUpdate(condition, projection);
-    }
-    // hàm khi thành công
-exports.success = async(res, messsage = "", data = []) => {
-        return res.status(200).json({ result: true, messsage, data })
+    return model.findOneAndUpdate(condition, projection);
+};
 
-    }
-    // hàm thực thi khi thất bại
+// hàm validate email
+exports.checkEmail = async(email) => {
+    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return gmailRegex.test(email);
+};
+// hàm validate link
+exports.checkLink = async(link) => {
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+    return urlRegex.test(yourUrlVariable);
+};
+
+// hàm khi thành công
+exports.success = async(res, messsage = "", data = []) => {
+    return res.status(200).json({ data: { result: true, messsage, data, error: null } })
+};
+
+// hàm thực thi khi thất bại
 exports.setError = async(res, message, code = 500) => {
 
-        return res.status(code).json({ code, message })
-    }
-    // hàm tìm id max 
+    return res.status(code).json({ code, message })
+};
+// hàm tìm id max
 exports.getMaxID = async(model) => {
-        const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-        return maxUser._id;
-    }
-    // hàm check định dạng ảnh
+    const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+    return maxUser._id;
+};
+
+// hàm check định dạng ảnh
 const isImage = async(filePath) => {
     const extname = path.extname(filePath).toLowerCase();
     return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(extname);
 };
 
 // hàm check ảnh
-
-
 exports.checkImage = async(filePath) => {
     if (typeof(filePath) !== 'string') {
         return false;
@@ -255,6 +266,9 @@ exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 // hàm upload video ở cập nhập KhoAnh
 exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
 
+//hàm upload file ứng viên
+exports.uploadFileUv = multer({ storage: storageFile('public/candidate') })
+
 const deleteFile = (filePath) => {
         fs.unlink(filePath, (err) => {
             if (err) throw err;
@@ -287,8 +301,6 @@ const storage = multer.diskStorage({
 
 // hàm check file
 exports.uploadFile = multer({ storage: storageFile })
-
-
 exports.createError = async(code, message) => {
     const err = new Error();
     err.code = code;
@@ -354,9 +366,10 @@ exports.checkToken = (req, res, next) => {
 };
 // hàm tạo token 
 exports.createToken = async(data, time) => {
-        return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
-    }
-    // hàm lấy data từ axios 
+    return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
+};
+
+// hàm lấy data từ axios 
 exports.getDataAxios = async(url, condition) => {
     return await await axios({
         method: "post",
@@ -409,7 +422,7 @@ exports.getDataSex = async() => {
 }
 
 exports.pageFind = async(model, condition, sort, skip, limit) => {
-    return model.find(condition).sort(sort).skip(skip).limit(limit)
+    return model.find(condition).sort(sort).skip(skip).limit(limit);
 }
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
@@ -433,4 +446,8 @@ exports.getDataCVSortByDownload = async(condition) => {
 //hàm kiểm tra string có phải number không
 exports.checkNumber = async(string) => {
     return !isNaN(string)
+}
+
+exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {
+    return model.find(condition, select).sort(sort).skip(skip).limit(limit);
 }
