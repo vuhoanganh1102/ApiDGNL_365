@@ -1,5 +1,4 @@
 const md5 = require('md5');
-const jwt = require('jsonwebtoken');
 
 const Users = require('../../models/Users');
 const functions = require('../../services/functions');
@@ -8,10 +7,11 @@ const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob.model')
 const NewTV365 = require('../../models/Timviec365/Timviec/newTV365.model');
 const SaveCandidate = require('../../models/Timviec365/Timviec/saveCandidate.model');
 const PointCompany = require('../../models/Timviec365/Timviec/pointCompany.model');
-const PointUsed = require('../../models/Timviec365/Timviec/pointUsed.model')
-const UserCompanyMultit = require('../../models/Timviec365/Timviec/userCompanyMutil')
-const AdminUser = require('../../models/Timviec365/Timviec/adminUser.model')
-    // hàm đăng ký
+const PointUsed = require('../../models/Timviec365/Timviec/pointUsed.model');
+const UserCompanyMultit = require('../../models/Timviec365/Timviec/userCompanyMutil');
+const AdminUser = require('../../models/Timviec365/Timviec/adminUser.model');
+const Modules = require('../../models/Timviec365/Timviec/modules.model');
+// hàm đăng ký
 exports.register = async(req, res, next) => {
     try {
         let request = req.body,
@@ -963,7 +963,7 @@ exports.uploadImg = async(req, res, next) => {
                                     await functions.deleteImg(img[i])
                                 }
                             }
-                            return functions.setError(res, 'tổng số ảnh đã quá 30 ảnh', 404)
+                            return functions.setError(res, 'ảnh thêm vào đã quá dung lượng của kho', 404)
                         }
                     } else {
                         if (img) {
@@ -979,7 +979,7 @@ exports.uploadImg = async(req, res, next) => {
                         await functions.deleteImg(img[i])
                     }
                 }
-                return functions.setError(res, ' giới hạn 30 ảnh ', 404)
+                return functions.setError(res, ' kho ảnh đã đầy', 404)
             }
             if (img) {
                 for (let i = 0; i < img.length; i++) {
@@ -1051,7 +1051,7 @@ exports.uploadVideo = async(req, res, next) => {
                                     await functions.deleteImg(video[i])
                                 }
                             }
-                            return functions.setError(res, 'đã quá 3 video', 404)
+                            return functions.setError(res, 'video thêm vào đã quá dung lượng của kho', 404)
                         }
                     } else {
                         if (video) {
@@ -1067,7 +1067,7 @@ exports.uploadVideo = async(req, res, next) => {
                         await functions.deleteImg(video[i])
                     }
                 }
-                return functions.setError(res, ' giới hạn 3 video ', 404)
+                return functions.setError(res, 'kho ảnh đã đầy', 404)
             }
             if (video) {
                 for (let i = 0; i < video.length; i++) {
@@ -1115,66 +1115,52 @@ exports.deleteImg = async(req, res, next) => {
     }
     // hàm xóa video
 exports.deleteVideo = async(req, res, next) => {
-        try {
-            let idCompany = req.user.data._id;
-            let idFile = req.body.idFile;
-            let user = await functions.getDatafindOne(Users, { _id: idCompany });
-            if (idFile && user) {
-                let listVideo = user.inForCompany.comVideos;
-                const index = listVideo.findIndex(video => video._id == idFile);
-                if (index != -1) {
-                    await listVideo.splice(index, 1);
-                    let nameFile = listVideo[index].name;
-                    await Users.updateOne({ _id: idCompany }, {
-                        $set: { 'inForCompany.comVideos': listVideo }
-                    });
-                    await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${nameFile}`)
-                    return functions.success(res, 'xoá thành công')
-                } else {
-                    return functions.setError(res, 'id không đúng', 404)
-                }
+    try {
+        let idCompany = req.user.data._id;
+        let idFile = req.body.idFile;
+        let user = await functions.getDatafindOne(Users, { _id: idCompany });
+        if (idFile && user) {
+            let listVideo = user.inForCompany.comVideos;
+            const index = listVideo.findIndex(video => video._id == idFile);
+            if (index != -1) {
+                await listVideo.splice(index, 1);
+                let nameFile = listVideo[index].name;
+                await Users.updateOne({ _id: idCompany }, {
+                    $set: { 'inForCompany.comVideos': listVideo }
+                });
+                await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${nameFile}`)
+                return functions.success(res, 'xoá thành công')
+            } else {
+                return functions.setError(res, 'id không đúng', 404)
             }
-            return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
-        } catch (error) {
-            console.log(error)
-            return functions.setError(res, error)
         }
+        return functions.setError(res, 'tên file không tồn tại hoặc người dùng không tồn tại', 404)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
     }
-    // exports.getDataApi = async(req, res, next) => {
-    //     try {
-    //         let data = await functions.getDataAxios('https://timviec365.vn/api/get_user_admin.php?page=1')
-    //         for (let i = 0; i < data.length; i++) {
-    //             const admin = new AdminUser({
-    //                 _id: data[i].adm_id,
-    //                 loginName: data[i].adm_loginname,
-    //                 password: data[i].adm_password,
-    //                 name: data[i].adm_name,
-    //                 email: data[i].adm_email,
-    //                 author: data[i].adm_author,
-    //                 address: data[i].adm_address,
-    //                 phone: data[i].adm_phone,
-    //                 mobile: data[i].adm_mobile,
-    //                 accesModule: data[i].adm_access_module,
-    //                 accessCategory: data[i].adm_access_category,
-    //                 date: data[i].adm_date,
-    //                 isadmin: data[i].adm_isadmin,
-    //                 active: data[i].adm_active,
-    //                 langID: data[i].lang_id,
-    //                 delete: data[i].adm_delete,
-    //                 allCategory: data[i].adm_all_category,
-    //                 editAll: data[i].adm_edit_all,
-    //                 adminID: data[i].admin_id,
-    //                 bophan: data[i].adm_bophan,
-    //                 ntd: data[i].adm_ntd,
-    //                 empID: data[i].emp_id,
-    //                 nhaplieu: data[i].adm_nhaplieu,
-    //                 rank: data[i].adm_rank,
-    //             })
-    //             await admin.save();
-    //         }
-    //         return functions.success(res, 'xoá thành công', data)
-    //     } catch (error) {
-    //         console.log(error)
-    //         return functions.setError(res, error)
-    //     }
-    // }
+}
+exports.getDataApi = async(req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://timviec365.vn/api/get_modules.php?page=1')
+        for (let i = 0; i < data.length; i++) {
+            const admin = new Modules({
+                _id: data[i].mod_id,
+                name: data[i].mod_name,
+                path: data[i].mod_path,
+                listName: data[i].mod_listname,
+                listFile: data[i].mod_listfile,
+                order: data[i].mod_order,
+                help: data[i].mod_help,
+                langID: data[i].lang_id,
+                checkLoca: data[i].mod_checkloca,
+
+            })
+            await admin.save();
+        }
+        return functions.success(res, 'xoá thành công', data)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}

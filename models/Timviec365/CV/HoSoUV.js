@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema
 const HoSoUVSchema = new mongoose.Schema({
     _id: {
         type: Number,

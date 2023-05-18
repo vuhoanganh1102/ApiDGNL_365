@@ -9,7 +9,6 @@ const cv = require('../../controllers/timviec/cv');
 
 // CV & hồ sơ
 router.post('/insertDataCV', formData.parse(), cv.insertDataCV);
-
 // tìm tất cả mẫu CV
 router.post('/getListCV', formData.parse(), cv.getListCV);
 
@@ -53,9 +52,5 @@ router.post('/updateNganhCV/:_id', functions.checkToken, formData.parse(), cv.up
 
 // xóa ngành cv vào danh sách NganhCV
 router.post('/deleteNganhCV/:_id', functions.checkToken, formData.parse(), cv.deleteNganhCV);
-
-
-
-
 
 module.exports = router;

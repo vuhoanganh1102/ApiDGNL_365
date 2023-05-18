@@ -88,44 +88,39 @@ exports.removeSimilarKeywords = (keyword, arr) => {
 
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
-
 exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"];
 
 // hàm validate phone
 exports.checkPhoneNumber = async(phone) => {
-    const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
-    return phoneNumberRegex.test(phone)
-};
-
-// hàm validate email
-exports.checkEmail = async(email) => {
-    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
-    return gmailRegex.test(email)
-};
-
-
-// hàm validate link
-exports.checkLink = async(link) => {
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-    return urlRegex.test(yourUrlVariable);
-};
-
-// hàm validate thơi gian
-exports.checkTime = async(time) => {
-    const currentTime = new Date(); // Lấy thời gian hiện tại
-    const inputTime = new Date(time); // Thời gian nhập vào
-    if (inputTime < currentTime) {
-        return false
-    } else {
-        return true
+        const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
+        return phoneNumberRegex.test(phone)
     }
-};
-
-// hàm check thời gian đăng tin 10p/1 lần
+    // hàm validate email
+exports.checkEmail = async(email) => {
+  const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  return gmailRegex.test(email);
+}
+    // hàm validate link
+exports.checkLink = async(link) => {
+        const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+        return urlRegex.test(link);
+    }
+    // hàm validate thơi gian
+exports.checkTime = async(time) => {
+        const currentTime = new Date(); // Lấy thời gian hiện tại
+        const inputTime = new Date(time); // Thời gian nhập vào
+        if (inputTime < currentTime) {
+            return false
+        } else {
+            return true
+        }
+    }
+    // hàm check thời gian đăng tin 10p/1 lần
 exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
-    const now = new Date().getTime();
     const inputTime = Date.parse(timeInput);
+
+    const now = new Date().getTime();
+
     const diffInMinutes = (now - inputTime) / (1000 * 60);
 
     if (diffInMinutes >= 10) {
@@ -134,7 +129,6 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
         return false;
     }
 };
-
 exports.getDatafindOne = async(model, condition) => {
     return model.findOne(condition);
 };
@@ -161,7 +155,7 @@ exports.checkLink = async(link) => {
 
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
-    return res.status(200).json({ result: true, messsage, data })
+  return res.status(200).json({ data: { result: true, messsage, data, error: null } })
 };
 
 // hàm thực thi khi thất bại
@@ -281,6 +275,9 @@ exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
 // hàm upload video ở cập nhập KhoAnh
 exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
+
+//hàm upload file ứng viên
+exports.uploadFileUv = multer({ storage: storageFile('public/candidate') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
