@@ -1,36 +1,30 @@
-// const mongoose = require('mongoose');
-// const Schema = mongoose.Schema
-// const donUVSchema = new mongoose.Schema({
-//     _id: {
-//         type: Number
-//     },
-//     userId: {
-//         //id người tạo đơn
-//         type: Number
-//     },
-//     tId: {
+const mongoose = require('mongoose');
+const DonUVSchema = new mongoose.Schema({
+    _id: {
+        type: Number,
+        require: true
+    },
+    userId: {
+        type: Number
+    },
+    donId: {
+        type: Number
+    },
+    lang: {
+        type: String
+    },
+    html: {
+        type: String
+    },
+    nameImg: {
+        type: String
+    },
+    status: {
+        type: Number
+    }
+}, {
+    collection: 'HoSoUV',
+    versionKey: false
+});
 
-//         type: Number
-//     },
-//     Status: {
-//         // trạng thái
-//         type: Number
-//     },
-//     lang: {
-//         //ngôn ngữ tạo đơn
-//         type: Number
-//     },
-//     html: {
-//         // nội dung đơn
-//         type: Number
-//     },
-//     nameImg: {
-//         // tên ảnh
-//         type: Number
-//     },
-// }, {
-//     collection: 'donUV',
-//     versionKey: false
-// });
-
-// module.exports = mongoose.model("donUV", donUVSchema);
+module.exports = mongoose.model('DonUV', DonUVSchema);
