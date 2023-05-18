@@ -1,95 +1,75 @@
-import mongoose from "mongoose";
-const keywordSchema = new mongoose.Schema(
-    {
-        _id:{
-            type: Number,
-            required: true,
-        },
-        name:{
-            type:String,
-            required:true
-        },
-        lq:{
-            type:Date,
-            required:true
-        },
-        cateID:{
-            type:Number,
-            required:true
-        },
-        cityID:{
-            type:Number,
-            required:true,
-            ref:'City'
-
-        },
-        qhID:{
-            type:Number,
-            required:true
-        },
-        cbID:{
-            type:Number,
-            required:true
-        },
-        teaser:{
-            type:String,
-            required:true
-        },
-        type:{
-            type:Number,
-            required:true
-        },
-        err:{
-            type:Number,
-            required:true
-        },
-        qhKcn:{
-            type:Number,
-            required:true
-        },
-        cateLq:{
-            type:Number,
-            required:true,
-            ref:'Category'
-        },
-        title:{
-            type:String,
-            required:true
-        },
-        description:{
-            type:String,
-            required:true
-        },
-        keyword:{
-            type:String,
-            required:true
-        },
-        h1:{
-            type:String,
-            required:true
-        },
-        createTime:{
-            type:Date,
-            required:true
-        },
-        redirect301:{
-            type:String,
-            required:true
-        },
-        index:{
-            type:Number,
-            required:true
-        },
-        baoHam:{
-            type:Number,
-            required:true
-        },
-        tdgy:{
-            type:String,
-            required:true
-        },
-        ndgy:{
-            type:String,
-            required:true
-        },
-    })
+const mongoose = require('mongoose');
+const keywordSchema = new mongoose.Schema({
+    _id: {
+        type: Number,
+    },
+    name: {
+        type: String,
+    },
+    lq: {
+        type: Date,
+    },
+    cateID: {
+        type: Number,
+    },
+    cityID: {
+        type: Number,
+        ref: 'City'
+    },
+    qhID: {
+        type: Number,
+    },
+    cbID: {
+        type: Number,
+    },
+    teaser: {
+        type: String,
+    },
+    type: {
+        type: Number,
+    },
+    err: {
+        type: Number,
+    },
+    qhKcn: {
+        type: Number,
+    },
+    cateLq: {
+        type: Number,
+    },
+    title: {
+        type: String,
+    },
+    description: {
+        type: String,
+    },
+    keyword: {
+        type: String,
+    },
+    h1: {
+        type: String,
+    },
+    createTime: {
+        type: Date,
+    },
+    redirect301: {
+        type: String,
+    },
+    index: {
+        type: Number,
+    },
+    baoHam: {
+        type: Number,
+    },
+    tdgy: {
+        type: String,
+    },
+    ndgy: {
+        type: String,
+    },
+}, {
+    collection: 'KeyWord',
+    versionKey: false,
+    timestamp: true
+})
+module.exports = mongoose.model("KeyWord", keywordSchema);

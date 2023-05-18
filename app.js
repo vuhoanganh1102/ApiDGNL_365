@@ -7,8 +7,12 @@ var mongoose = require('mongoose')
 
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
-var newTV365Router = require('./routes/timviec/newTV365');
 var cvRouter = require('./routes/timviec/cv');
+var donRouter = require('./routes/timviec/don');
+var thuRouter = require('./routes/timviec/thu');
+var syllRouter = require('./routes/timviec/syll');
+var newTV365Router = require('./routes/timviec/newTV365');
+var adminRouter = require('./routes/timviec/admin');
 
 // Quản lý chung
 var deparmentRouter = require('./routes/qlc/deparment')
@@ -16,9 +20,13 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
+<<<<<<< HEAD
 var childCompanyRouter = require('./routes/qlc/childCompany')
 var managerUser = require('./routes/qlc/managerUser')
 
+=======
+var childCompanyRouter = require('./routes/qlc/childCompany');
+>>>>>>> 748dd5dc348c7daf91c661b1ba3ac35519938a3b
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
@@ -34,10 +42,16 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/company',companyRouter);
-app.use('/api/timviec/newTV365', newTV365Router);
-app.use('/api/timviec/cv',cvRouter);
+app.use('/api/timviec/newTV365', newTV365Router)
+app.use('/api/timviec/admin', adminRouter)
+app.use('/api/timviec/company', companyRouter)
+app.use('/api/timviec/cv', cvRouter);
+app.use('/api/timviec/don', donRouter);
+app.use('/api/timviec/thu', thuRouter);
+app.use('/api/timviec/syll', syllRouter);
+app.use('/api/timviec/admin', adminRouter);
 app.use('/api/tool', toolAddDataRouter);
+app.use('/api/timviec/newTV365', newTV365Router);
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
@@ -52,12 +66,12 @@ app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
 
 // catch 404 and forward to error handler
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
     next(createError(404));
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function(err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
