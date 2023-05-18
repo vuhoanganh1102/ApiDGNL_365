@@ -5,7 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose')
 
-// var candidateRouter = require('./routes/timviec/candidate');
+var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
 var newTV365Router = require('./routes/timviec/newTV365')
 var adminRouter = require('./routes/timviec/admin')
@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/api/timviec/candidate', candidateRouter);
+app.use('/api/timviec/candidate', candidateRouter);
 app.use('/api/timviec/newTV365', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
@@ -63,7 +63,7 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://127.0.0.1/timviec365';
+const DB_URL = 'mongodb://127.0.0.1/api-base365';
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));

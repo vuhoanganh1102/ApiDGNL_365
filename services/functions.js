@@ -355,7 +355,6 @@ exports.checkToken = (req, res, next) => {
     if (!token) {
         return res.status(401).json({ message: "Missing token" });
     }
-
     jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
         if (err) {
             return res.status(403).json({ message: "Invalid token" });
@@ -448,6 +447,16 @@ exports.checkNumber = async(string) => {
     return !isNaN(string)
 }
 
+//hàm phân trang có chọn lọc những trường dc hiển thị
 exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {
     return model.find(condition, select).sort(sort).skip(skip).limit(limit);
+}
+
+//hàm check xem có truyền vào token hay không
+exports.checkTokenV2 = async(req, res, next) => {
+    if (req.headers.authorization) {
+        functions.checkToken(req, res, next);
+    } else {
+        next();
+    }
 }

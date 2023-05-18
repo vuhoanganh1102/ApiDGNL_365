@@ -1487,35 +1487,6 @@ exports.deleteExp = async(req, res, next) => {
     }
 }
 
-//hiển thị danh sách ứng viên ngẫu nhiên
-exports.randomUv = async(req, res, next) => {
-    try {
-        let page = Number(req.body.page)
-        let pageSize = Number(req.body.pageSize)
-        const skip = (page - 1) * pageSize;
-        const limit = pageSize;
-
-        let findRandomUv = await functions.pageFindV2(Users, { type: 0 }, {
-            userName: 1,
-            city: 1,
-            district: 1,
-            address: 1,
-            avatarUser: 1,
-            isOnline: 1,
-            inForPerson: 1
-        }, { updatedAt: -1 }, skip, limit)
-        const totalCount = await Users.countDocuments({ type: 0 })
-        const totalPages = Math.ceil(totalCount / pageSize)
-
-        if (findRandomUv) {
-            functions.success(res, "Hiển thị ứng viên ngẫu nhiên thành công", { totalCount, totalPages, listUv: findRandomUv });
-        }
-    } catch (e) {
-        console.log("Đã có lỗi xảy ra khi hiển thị ứng viên ngẫu nhiên", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
-    }
-}
-
 //hiển thị danh sách ứng viên theo tỉnh thành, vị trí
 exports.selectiveUv = async(req, res, next) => {
     try {
@@ -1565,7 +1536,6 @@ exports.selectiveUv = async(req, res, next) => {
                 functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
             }
         } else if (city && cate) {
-
             let listUv = []
             let findUv = await functions.pageFindV2(Users, { type: 0, city: city }, {
                 userName: 1,
@@ -1576,6 +1546,7 @@ exports.selectiveUv = async(req, res, next) => {
                 isOnline: 1,
                 inForPerson: 1
             }, { updatedAt: -1 }, skip, limit)
+            console.log(findUv)
             for (let i = 0; i < findUv.length; i++) {
                 let listCateId = findUv[i].inForPerson.candiCateID.split(',')
                 if (listCateId.includes(cate)) {
@@ -1587,7 +1558,23 @@ exports.selectiveUv = async(req, res, next) => {
             if (findUv) {
                 functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
             }
-        } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
+        } else if (!city && !cate) {
+            let findRandomUv = await functions.pageFindV2(Users, { type: 0 }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            const totalCount = await Users.countDocuments({ type: 0 })
+            const totalPages = Math.ceil(totalCount / pageSize)
+
+            if (findRandomUv) {
+                functions.success(res, "Hiển thị ứng viên ngẫu nhiên thành công", { totalCount, totalPages, listUv: findRandomUv });
+            }
+        }
 
 
     } catch (e) {

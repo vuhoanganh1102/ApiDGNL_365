@@ -87,9 +87,10 @@ router.post('/addExp', formData.parse(), functions.checkToken, candidate.addExp)
 router.post('/updateExp', formData.parse(), functions.checkToken, candidate.updateExp);
 router.post('/deleteExp', formData.parse(), functions.checkToken, candidate.deleteExp);
 
-//api danh sách ứng viên ( chưa gộp)
-router.post('/randomUv', formData.parse(), functions.checkToken, candidate.randomUv);
+//api danh sách ứng viên ngẫu nhiên, theo ngành nghề, vị trí
 router.post('/selectiveUv', formData.parse(), functions.checkToken, candidate.selectiveUv);
+
+//api danh sách ứng viên tương tự được AI gợi ý
 router.post('/candidateAI', formData.parse(), candidate.candidateAI);
 // quên mật khẩu
 router.post('/sendOTP', formData.parse(), candidate.sendOTP);
