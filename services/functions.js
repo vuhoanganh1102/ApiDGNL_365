@@ -467,6 +467,20 @@ exports.checkNumber = async(string) => {
     return !isNaN(string)
  }
 
+//hàm phân trang có chọn lọc những trường dc hiển thị
+exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {
+    return model.find(condition, select).sort(sort).skip(skip).limit(limit);
+}
+
+//hàm check xem có truyền vào token hay không
+exports.checkTokenV2 = async(req, res, next) => {
+    if (req.headers.authorization) {
+        functions.checkToken(req, res, next);
+    } else {
+        next();
+    }
+}
+
 // hàm dém count
 exports.findCount = async(model, filter) => {
     try {

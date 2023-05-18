@@ -35,7 +35,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/company', companyRouter);
+app.use('/api/timviec/newTV365', newTV365Router)
+app.use('/api/timviec/admin', adminRouter)
+app.use('/api/timviec/company', companyRouter)
 app.use('/api/timviec/cv', cvRouter);
 app.use('/api/timviec/don', donRouter);
 app.use('/api/timviec/thu', thuRouter);
@@ -69,7 +71,7 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
+const DB_URL = 'mongodb://127.0.0.1/api-base365';
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
