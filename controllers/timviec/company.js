@@ -212,6 +212,63 @@ exports.register = async(req, res, next) => {
     }
 }
 
+// hàm dăng nhập
+exports.login = async(req, res, next) => {
+
+    if (req.body.email && req.body.password) {
+        const type = 1;
+        const email = req.body.email
+        const password = req.body.password
+
+        let checkPhoneNumber = await functions.checkEmail(email);
+        if (checkPhoneNumber) {
+            let findUser = await functions.getDatafindOne(Users, { email })
+            if (!findUser) {
+                return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
+            }
+            let checkPassword = await functions.verifyPassword(password, findUser.password)
+            if (!checkPassword) {
+                return functions.setError(res, "Mật khẩu sai", 404)
+            }
+            if (findUser.type == type) {
+                const token = await functions.createToken(findUser, "1d")
+                const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
+                let data = {
+                    access_token: token,
+                    refresh_token: refreshToken,
+                    user_info: {
+                        usc_id: findUser._id,
+                        usc_email: findUser.email,
+                        usc_phone_tk: findUser.phoneTK,
+                        usc_pass: findUser.password,
+                        usc_company: findUser.userName,
+                        usc_logo: findUser.avatarUser,
+                        usc_phone: findUser.phone,
+                        usc_city: findUser.city,
+                        usc_qh: findUser.district,
+                        usc_address: findUser.address,
+                        usc_create_time: findUser.createdAt,
+                        usc_update_time: findUser.updatedAt,
+                        usc_active: findUser.lastActivedAt,
+                        usc_authentic: findUser.authentic,
+                        usc_lat: findUser.latitude,
+                        usc_long: findUser.longtitude,
+                        usc_name: findUser.inForCompany.userContactName,
+                        usc_name_add: findUser.inForCompany.userContactAddress,
+                        usc_name_phone: findUser.inForCompany.userContactPhone,
+                        usc_name_email: findUser.inForCompany.userContactEmail,
+                    }
+                }
+                return functions.success(res, 'Đăng nhập thành công', data)
+            } else return functions.setError(res, "tài khoản này không phải tài khoản công ty", 404)
+
+
+        } else {
+            return functions.setError(res, "không đúng định dạng email", 404)
+        }
+    }
+};
+
 // hàm lấy user khi đăng ký sai
 exports.registerFall = async(req, res, next) => {
         try {

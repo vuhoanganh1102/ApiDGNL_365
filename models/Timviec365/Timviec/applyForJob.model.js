@@ -8,6 +8,10 @@ const applyForJobSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    comID: {
+        //id công ty
+        type: Number
+    },
     newID: {
         type: Number,
         required: true,

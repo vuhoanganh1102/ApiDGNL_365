@@ -9,6 +9,9 @@ router.post('/register', functions.uploadVideoAndIMGRegister.fields([
     { name: 'videoType' }
 ]), company.register);
 
+// api đăng nhập
+router.post('/login', formData.parse(), company.login)
+
 // api đăng ký khi thiếu dữ liệu
 router.post('/registerfall', formData.parse(), company.registerFall);
 

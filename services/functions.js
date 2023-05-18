@@ -17,6 +17,7 @@ const { promisify } = require('util');
 // tọa token
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
+const Users = require('../models/Users');
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -459,4 +460,49 @@ exports.checkTokenV2 = async(req, res, next) => {
     } else {
         next();
     }
+}
+
+//hàm tìm kiếm finduser với idtimviec và type = 0 hoặc 2
+exports.findUser = async(userId, select, sort, skip, limit) => {
+    return Users.find({
+        $or: [{
+                idTimViec365: userId,
+                type: 0
+            },
+            {
+                idTimViec365: userId,
+                type: 2
+            },
+        ]
+    }, { select }).sort(sort).skip(skip).limit(limit)
+}
+
+//hàm tìm kiếm findOneuser với idtimviec và type = 0 hoặc 2
+exports.findOneUser = async(userId, select) => {
+    return Users.findOne({
+        $or: [{
+                idTimViec365: userId,
+                type: 0
+            },
+            {
+                idTimViec365: userId,
+                type: 2
+            },
+        ]
+    }, select)
+}
+
+//hàm tìm kiếm và cập nhật user với id timviec và type =0 hoặc type =2
+exports.findOneAndUpdateUser = async(userId, projection) => {
+    return Users.findOneAndUpdate({
+        $or: [{
+                idTimViec365: userId,
+                type: 0
+            },
+            {
+                idTimViec365: userId,
+                type: 2
+            },
+        ]
+    }, projection)
 }
