@@ -7,6 +7,20 @@ var mongoose = require('mongoose')
 
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
+var cvRouter = require('./routes/timviec/cv');
+var donRouter = require('./routes/timviec/don');
+var thuRouter = require('./routes/timviec/thu');
+var syllRouter = require('./routes/timviec/syll');
+var newTV365Router = require('./routes/timviec/newTV365');
+var adminRouter = require('./routes/timviec/admin');
+
+// Quản lý chung
+var deparmentRouter = require('./routes/qlc/deparment')
+var teamRouter = require('./routes/qlc/team');
+var groupRouter = require('./routes/qlc/group');
+var shiftRouter = require('./routes/qlc/shift');
+var calendarRouter = require('./routes/qlc/calendar');
+var childCompanyRouter = require('./routes/qlc/childCompany');
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
@@ -27,8 +41,26 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/timviec/candidate', candidateRouter);
+app.use('/api/timviec/newTV365', newTV365Router)
+app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
+app.use('/api/timviec/cv', cvRouter);
+app.use('/api/timviec/don', donRouter);
+app.use('/api/timviec/thu', thuRouter);
+app.use('/api/timviec/syll', syllRouter);
+app.use('/api/timviec/admin', adminRouter);
 app.use('/api/tool', toolAddDataRouter);
+app.use('/api/timviec/newTV365', newTV365Router);
+
+// API quản lí chung
+app.use('/api/qlc/deparment', deparmentRouter);
+app.use('/api/qlc/team', teamRouter);
+app.use("/api/qlc/group", groupRouter);
+app.use('/api/qlc/childCompany', childCompanyRouter)
+
+//API quẩn lý ca làm việc
+app.use("/api/qlc/shift", shiftRouter);
+app.use("/api/calendar", calendarRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -46,7 +78,7 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://localhost:27017/timviec365';
+const DB_URL = 'mongodb://127.0.0.1/api-base365';
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));

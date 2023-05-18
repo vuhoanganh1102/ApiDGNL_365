@@ -223,7 +223,7 @@ const UserSchema = new mongoose.Schema({
                 default: 0
             },
             exp: {
-                // Kinh nghiệm làm việc
+                // Kinh nghiệm làm việc trong thôn tin liên hệ
                 type: Number,
                 default: 0
             },
@@ -258,6 +258,26 @@ const UserSchema = new mongoose.Schema({
                 default: 0
             },
             candiMoney: {
+                // Mức lương mong muốn
+                type: Number,
+                default: 0
+            },
+            candiMoneyUnit: {
+                // Mức lương mong muốn (vnd/usd)
+                type: Number,
+                default: 0
+            },
+            candiMoneyType: {
+                // Mức lương mong muốn (thỏa thuận hoặc từ min đến max)
+                type: Number,
+                default: 0
+            },
+            candiMoneyMin: {
+                // Mức lương mong muốn
+                type: Number,
+                default: 0
+            },
+            candiMoneyMax: {
                 // Mức lương mong muốn
                 type: Number,
                 default: 0
@@ -312,6 +332,80 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            cv: {
+                //tên cv dc tải lên 
+                type: String,
+                default: null
+            },
+            candiDegree: [{
+                type: {
+                    id: {
+                        type: Number,
+                    },
+                    degree: {
+                        type: String,
+                    },
+                    school: {
+                        type: String,
+                    },
+                    start: {
+                        type: String,
+                    },
+                    end: {
+                        type: String,
+                    },
+                    major: {
+                        type: String,
+                    },
+                    rate: {
+                        type: Number,
+                    },
+                    implement: {
+                        type: String,
+                    },
+                },
+                default: null
+            }],
+            candiNgoaiNgu: [{
+                type: {
+                    id: {
+                        type: Number
+                    },
+                    chungChi: {
+                        type: String,
+                    },
+                    point: {
+                        type: String,
+                    },
+                    ngoaiNgu: {
+                        type: Number,
+                    }
+                },
+                default: null
+            }],
+            candiExp: [{
+                type: {
+                    id: {
+                        type: Number
+                    },
+                    jobTitle: {
+                        type: String,
+                    },
+                    company: {
+                        type: String,
+                    },
+                    start: {
+                        type: String,
+                    },
+                    end: {
+                        type: String,
+                    },
+                    desExp: {
+                        type: String
+                    }
+                },
+                default: null
+            }],
         },
         default: null
     },
@@ -343,7 +437,7 @@ const UserSchema = new mongoose.Schema({
             },
             videoType: {
                 // 1: Video tự up, 2: Video từ youtube hoặc tiktok
-                type: Number,
+                type: String,
                 default: 0
             },
             videoActive: {
@@ -351,11 +445,18 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            comImages: {
-                // Kho ảnh
-                type: Array,
-                default: []
-            },
+            //kho ảnh
+            comImages: [{
+                _id: Number,
+                name: String,
+                size: Number,
+            }],
+            // kho video
+            comVideos: [{
+                _id: Number,
+                name: String,
+                size: Number,
+            }],
             website: {
                 // Website công ty
                 type: String,
@@ -435,6 +536,7 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            lv: String,
         },
         default: null
     }

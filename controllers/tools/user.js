@@ -68,7 +68,7 @@ exports.addUserChat365 = async(req, res, next) => {
                                 longitude: element.longitude,
                             });
                             await user.save().then(() => {
-                                console.log("Thêm mới thành công " + account + ", ID là " + id);
+                                console.log("Thêm mới thành công " + account + ", ID: " + id);
                             }).catch(err => {
                                 console.log("ID là: " + element._id, checkUserByID, err);
                             });
@@ -100,6 +100,7 @@ exports.addUserCompanyTimviec365 = async(req, res, next) => {
 
             if (listUser.length > 0) {
                 for (let i = 0; i < listUser.length; i++) {
+                    let element = listUser[i];
                     let email = element.usc_email,
                         phoneTK = element.usc_phone_tk;
 
@@ -109,13 +110,12 @@ exports.addUserCompanyTimviec365 = async(req, res, next) => {
                         var checkUser = await fnc.getDatafindOne(Users, { phoneTK, type: 1 });
                     }
 
-                    var timeCreate = await element.usc_create_time != 0 ? new Date(element.usc_create_time * 1000) : null,
-                        timeUpdate = await element.usc_update_time != 0 ? new Date(element.usc_update_time * 1000) : null,
-                        timeLogin = await element.usc_time_login != 0 ? new Date(element.usc_time_login * 1000) : null;
-
+                    var timeCreate = element.usc_create_time != 0 ? new Date(element.usc_create_time * 1000) : null,
+                        timeUpdate = element.usc_update_time != 0 ? new Date(element.usc_update_time * 1000) : null,
+                        timeLogin = element.usc_time_login != 0 ? new Date(element.usc_time_login * 1000) : null;
                     if (checkUser == null) {
                         let maxID = await fnc.getMaxID(Users);
-                        const user = await new Users({
+                        const user = new Users({
                             _id: Number(maxID) + 1,
                             email,
                             phoneTK,
@@ -163,7 +163,9 @@ exports.addUserCompanyTimviec365 = async(req, res, next) => {
                                     // linkVideo: element.usc_video,
                             }
                         });
-                        await user.save().then().catch(() => {
+                        await user.save().then(() => {
+                            console.log("Thêm mới thành công id: " + idTimViec365);
+                        }).catch(() => {
 
                         });
                     } else {
@@ -204,6 +206,10 @@ exports.addUserCompanyTimviec365 = async(req, res, next) => {
                                     tagLinhVuc: element.usc_lv
                                 }
                             }
+                        }).then(() => {
+                            console.log("Cập nhật thành công ID:" + element.usc_id);
+                        }).catch(err => {
+                            console.log(err);
                         });
                     }
                 };
@@ -223,94 +229,151 @@ exports.addUserCandidateTimviec365 = async(req, res, next) => {
     try {
         let result = true,
             page = 1;
-        const getData = await axios.get("https://timviec365.vn/api_nodejs/get_list_user.php?page=1&curentPage=30"),
-            listUser = getData.data;
-        for (let i = 0; i < listUser.length; i++) {
-            let email = element.use_email,
-                phoneTK = element.use_phone_tk;
 
-            if (await email != null) {
-                var checkUser = await fnc.getDatafindOne(Users, {
-                    $and: [{
-                        $or: [
-                            { type: 2 },
-                            { type: 0 }
-                        ]
-                    }, { email }]
-                });
-            } else {
-                var checkUser = await fnc.getDatafindOne(Users, {
-                    $and: [{
-                            $or: [
-                                { type: 2 },
-                                { type: 0 }
+        do {
+            const getData = await axios.get("https://timviec365.vn/api_nodejs/get_list_user.php?page=" + page + "&curentPage=200"),
+                listUser = getData.data;
+
+            if (listUser.length > 0) {
+                for (let i = 0; i < listUser.length; i++) {
+                    let element = listUser[i];
+                    let email = element.use_email,
+                        phoneTK = element.use_phone_tk;
+
+                    if (email != null) {
+                        var checkUser = await fnc.getDatafindOne(Users, {
+                            $and: [{
+                                $or: [
+                                    { type: 2 },
+                                    { type: 0 }
+                                ]
+                            }, { email }]
+                        });
+                    } else {
+                        var checkUser = await fnc.getDatafindOne(Users, {
+                            $and: [{
+                                    $or: [
+                                        { type: 2 },
+                                        { type: 0 }
+                                    ]
+                                },
+                                { phoneTK }
                             ]
-                        },
-                        { phoneTK }
-                    ]
-                });
-            }
-            console.log("-------------- Lượt check data của email " + email);
-            if (await checkUser == null) {
-                let maxID = await fnc.getMaxID(Users);
+                        });
+                    }
+                    if (checkUser == null) {
+                        let maxID = await fnc.getMaxID(Users);
 
-                var timeCreate = await element.use_create_time != 0 ? new Date(element.use_create_time * 1000) : null,
-                    timeUpdate = await element.use_update_time != 0 ? new Date(element.use_update_time * 1000) : null,
-                    timebirthday = await element.use_birth_day != 0 ? new Date(element.use_birth_day * 1000) : null;
-                var newMaxID = await Number(maxID) + 1;
-                const checkUserByID = await fnc.getDatafindOne(Users, { _id: newMaxID });
-                if (await checkUserByID == null) {
-                    const user = await new Users({
-                        _id: newMaxID,
-                        email,
-                        phoneTK,
-                        userName: element.use_first_name,
-                        alias: slug(element.use_first_name),
-                        phone: element.use_phone,
-                        avatarUser: element.use_logo,
-                        type: 0,
-                        password: element.use_pass,
-                        city: element.use_city,
-                        district: element.use_quanhuyen,
-                        address: element.use_address,
-                        otp: element.user_xac_thuc,
-                        authentic: element.use_authentic,
-                        fromWeb: "timviec365",
-                        from: element.dk,
-                        createdAt: timeCreate,
-                        updatedAt: timeUpdate,
-                        role: 0,
-                        latitude: element.use_lat,
-                        longtitude: element.use_long,
-                        idQLC: element.id_qlc,
-                        idTimViec365: element.use_id,
-                        idRaoNhanh365: 0,
-                        chat365_secret: element.chat365_secret,
-                        inForPerson: {
-                            candiTitle: element.cv_title,
-                            candiCityID: element.cv_city_id,
-                            candiCateID: element.cv_cate_id,
-                            birthday: timebirthday,
-                            gender: element.use_gioi_tinh,
-                            married: element.use_hon_nhan,
-                            exp: element.cv_exp,
-                            candiHocVan: element.cv_hocvan,
-                            candiMucTieu: element.cv_muctieu,
-                            candiCapBac: element.cv_capbac_id,
-                            candiMoney: element.cv_money_id,
-                            candiLoaiHinh: element.cv_loaihinh_id,
-                            referencePersonName: element.cv_tc_name,
-                            referencePersonEmail: element.cv_tc_email,
-                            referencePersonPhone: element.cv_tc_phone,
-                            referencePersonPosition: element.cv_tc_cv,
-                            referencePersonAddress: element.cv_tc_dc,
-                            referencePersonCompany: element.cv_tc_company
+                        var timeCreate = element.use_create_time != 0 ? new Date(element.use_create_time * 1000) : null,
+                            timeUpdate = element.use_update_time != 0 ? new Date(element.use_update_time * 1000) : null,
+                            timebirthday = element.use_birth_day != 0 ? new Date(element.use_birth_day * 1000) : null;
+                        var newMaxID = Number(maxID) + 1;
+                        const checkUserByID = await fnc.getDatafindOne(Users, { _id: newMaxID });
+                        if (checkUserByID == null) {
+                            const user = await new Users({
+                                _id: newMaxID,
+                                email,
+                                phoneTK,
+                                userName: element.use_first_name,
+                                alias: slug(element.use_first_name),
+                                phone: element.use_phone,
+                                avatarUser: element.use_logo,
+                                type: 0,
+                                password: element.use_pass,
+                                city: element.use_city,
+                                district: element.use_quanhuyen,
+                                address: element.use_address,
+                                otp: element.user_xac_thuc,
+                                authentic: element.use_authentic,
+                                fromWeb: "timviec365",
+                                from: element.dk,
+                                createdAt: timeCreate,
+                                updatedAt: timeUpdate,
+                                role: 0,
+                                latitude: element.use_lat,
+                                longtitude: element.use_long,
+                                idQLC: element.id_qlc,
+                                idTimViec365: element.use_id,
+                                idRaoNhanh365: 0,
+                                chat365_secret: element.chat365_secret,
+                                inForPerson: {
+                                    candiTitle: element.cv_title,
+                                    candiCityID: element.cv_city_id,
+                                    candiCateID: element.cv_cate_id,
+                                    birthday: timebirthday,
+                                    gender: element.use_gioi_tinh,
+                                    married: element.use_hon_nhan,
+                                    exp: element.cv_exp,
+                                    candiHocVan: element.cv_hocvan,
+                                    candiMucTieu: element.cv_muctieu,
+                                    candiCapBac: element.cv_capbac_id,
+                                    candiMoney: element.cv_money_id,
+                                    candiLoaiHinh: element.cv_loaihinh_id,
+                                    referencePersonName: element.cv_tc_name,
+                                    referencePersonEmail: element.cv_tc_email,
+                                    referencePersonPhone: element.cv_tc_phone,
+                                    referencePersonPosition: element.cv_tc_cv,
+                                    referencePersonAddress: element.cv_tc_dc,
+                                    referencePersonCompany: element.cv_tc_company
+                                }
+                            });
+                            await user.save().then(() => {
+                                console.log("Thêm mới thành công ID: " + email + "," + phoneTK);
+                            }).catch((e) => {
+                                console.log(e);
+                            });
                         }
-                    });
-                    await user.save().then(() => {}).catch((e) => {});
-                }
-            } else {}
-        };
+                    } else {
+                        await Users.updateOne({ idTimViec365: element.use_id, type: 0 || 2 }, {
+                            $set: {
+                                phone: element.use_phone,
+                                emailContact: element.use_email_lienhe,
+                                avatarUser: element.use_logo,
+                                city: element.use_city,
+                                district: element.use_quanhuyen,
+                                address: element.use_address,
+                                otp: element.user_xac_thuc,
+                                authentic: element.usc_authentic,
+                                fromWeb: "timviec365",
+                                from: Number(element.dk),
+                                createdAt: timeCreate,
+                                updatedAt: timeUpdate,
+                                role: 2,
+                                latitude: element.use_lat,
+                                longtitude: element.use_long,
+                                idQLC: element.id_qlc,
+                                inForPerson: {
+                                    candiTitle: element.cv_title,
+                                    candiCityID: element.cv_city_id,
+                                    candiCateID: element.cv_cate_id,
+                                    birthday: timebirthday,
+                                    gender: element.use_gioi_tinh,
+                                    married: element.use_hon_nhan,
+                                    exp: element.cv_exp,
+                                    candiHocVan: element.cv_hocvan,
+                                    candiMucTieu: element.cv_muctieu,
+                                    candiCapBac: element.cv_capbac_id,
+                                    candiMoney: element.cv_money_id,
+                                    candiLoaiHinh: element.cv_loaihinh_id,
+                                    referencePersonName: element.cv_tc_name,
+                                    referencePersonEmail: element.cv_tc_email,
+                                    referencePersonPhone: element.cv_tc_phone,
+                                    referencePersonPosition: element.cv_tc_cv,
+                                    referencePersonAddress: element.cv_tc_dc,
+                                    referencePersonCompany: element.cv_tc_company
+                                }
+                            }
+                        }).then(() => {
+                            console.log("Cập nhật thành công ID:" + element.use_id);
+                        }).catch(err => {
+                            console.log(err);
+                        });
+                    }
+                };
+                page++;
+            }
+        } while (!result);
+
         await fnc.success(res, 'thành công');
     } catch (error) {
 
