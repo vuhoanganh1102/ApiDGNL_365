@@ -4,6 +4,10 @@ const applyForJobSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    comID: {
+        type: Number,
+        default: 0,
+    },
     userID: {
         type: Number,
         required: true,

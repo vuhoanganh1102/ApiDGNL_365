@@ -1,6 +1,6 @@
 const md5 = require('md5');
 
-const AdminUser = require('../../models/Timviec365/Timviec/adminUser.model');
+const AdminUser = require('../../models/Timviec365/Timviec/AdminUser.model');
 const Modules = require('../../models/Timviec365/Timviec/modules.model');
 const functions = require('../../services/functions');
 const AdminUserRight = require('../../models/Timviec365/Timviec/adminUserRight.model')

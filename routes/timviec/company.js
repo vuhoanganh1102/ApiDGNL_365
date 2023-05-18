@@ -117,6 +117,10 @@ router.post('/updateUvApplyJob', functions.checkToken, formData.parse(), company
 
 //api chi tiết công ty trước khi đăng nhập
 router.post('/getDetailInfoCompany', formData.parse(), company.getDetailInfoCompany);
+
+//api 10 mẫu CV
+router.post('/formCV', formData.parse(), company.formCV);
+
 //api hàm đánh giá uv
 router.post('/assessmentUV', functions.checkToken, formData.parse(), company.assessmentUV)
 

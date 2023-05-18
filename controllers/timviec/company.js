@@ -2,16 +2,14 @@ const md5 = require('md5');
 
 const Users = require('../../models/Users');
 const functions = require('../../services/functions');
-const CompanyUnset = require('../../models/Timviec365/Timviec/userCompanyUnset');
-const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob.model');
-const NewTV365 = require('../../models/Timviec365/Timviec/newTV365.model');
-const SaveCandidate = require('../../models/Timviec365/Timviec/saveCandidate.model');
-const PointCompany = require('../../models/Timviec365/Timviec/pointCompany.model');
-const PointUsed = require('../../models/Timviec365/Timviec/pointUsed.model');
-const UserCompanyMultit = require('../../models/Timviec365/Timviec/userCompanyMutil');
-const AdminUser = require('../../models/Timviec365/Timviec/adminUser.model');
-const Modules = require('../../models/Timviec365/Timviec/modules.model');
-const Linh_Vuc = require('../../models/Timviec365/Timviec/lv')
+const ApplyForJob = require('../../models/Timviec365/Timviec/ApplyForJob.model');
+const NewTV365 = require('../../models/Timviec365/Timviec/Company/New.model');
+const SaveCandidate = require('../../models/Timviec365/Timviec/Company/SaveCandidate.model');
+const PointCompany = require('../../models/Timviec365/Timviec/Company/PointCompany.model');
+const PointUsed = require('../../models/Timviec365/Timviec/Company/PointUsed.model');
+const CompanyUnset = require('../../models/Timviec365/Timviec/Company/UserCompanyUnset');
+const AdminUser = require('../../models/Timviec365/Timviec/AdminUser.model');
+const Linh_Vuc = require('../../models/Timviec365/Timviec/Lv.model')
 const CV = require('../../models/Timviec365/CV/CV')
 
 // hàm đăng ký
@@ -41,8 +39,8 @@ exports.register = async(req, res, next) => {
             listIDKD = [],
             idKD = 0,
             empID = 0;
-
-        // check dữ liệu không bị undefined
+        console.log(req.files)
+            // check dữ liệu không bị undefined
         if ((username && password && city && district &&
                 address && email && phone) !== undefined) {
             // validate email,phone
@@ -115,17 +113,19 @@ exports.register = async(req, res, next) => {
                     // lấy danh sách id bộ phận
                     let listKD = await functions.getDatafind(AdminUser, { bophan: 1 });
                     let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1);
-                    let idKDUser = listUser[0].inForCompany.idKD;
-                    for (let i = 0; i < listKD.length; i++) {
-                        listIDKD.push(listKD[i].stt)
-                    }
-                    // tìm vị trí của idKd của người đăng ký mới nhất
-                    let index = listIDKD.findIndex(id => id == idKDUser);
-                    if (index !== -1) {
-                        if (index === listIDKD.length - 1) {
-                            idKD = listIDKD[0];
-                        } else {
-                            idKD = listIDKD[index + 1];
+                    if (listUser.length > 0) {
+                        let idKDUser = listUser[0].inForCompany.idKD;
+                        for (let i = 0; i < listKD.length; i++) {
+                            listIDKD.push(listKD[i].stt)
+                        }
+                        // tìm vị trí của idKd của người đăng ký mới nhất
+                        let index = listIDKD.findIndex(id => id == idKDUser);
+                        if (index !== -1) {
+                            if (index === listIDKD.length - 1) {
+                                idKD = listIDKD[0];
+                            } else {
+                                idKD = listIDKD[index + 1];
+                            }
                         }
                     }
                     // tìm Id max trong DB
@@ -186,7 +186,7 @@ exports.register = async(req, res, next) => {
                         await functions.getDataDeleteOne(CompanyUnset, { email })
                     }
 
-                    return functions.success(res, 'đăng ký thành công', count)
+                    return functions.success(res, 'đăng ký thành công')
                 } else {
                     if (videoType) {
                         await functions.deleteImg(videoType[0])
@@ -412,7 +412,7 @@ exports.forgotPasswordCheckMail = async(req, res, next) => {
         let email = req.body.email;
         let checkEmail = await functions.checkEmail(email);
         if (checkEmail) {
-            let verify = await Users.findOne({ email });
+            let verify = await Users.findOne({ email: email, type: 1 });
             if (verify != null) {
                 // api lẫy mã OTP qua app Chat
                 let data = await functions.getDataAxios('http://43.239.223.142:9000/api/users/RegisterMailOtp', { email });
@@ -446,7 +446,7 @@ exports.forgotPasswordCheckOTP = async(req, res, next) => {
         let email = req.user.data.email;
         let otp = req.body.ma_xt;
         if (otp) {
-            let verify = await Users.findOne({ email, otp });
+            let verify = await Users.findOne({ email: email, otp: otp, type: 1 });
             if (verify != null) {
                 return functions.success(res, 'xác thực thành công')
             }
@@ -467,7 +467,7 @@ exports.updatePassword = async(req, res, next) => {
         let email = req.user.data.email,
             password = req.body.password;
         if (password) {
-            await Users.updateOne({ email: email }, {
+            await Users.updateOne({ email: email, type: 1 }, {
                 $set: {
                     password: md5(password)
                 }
@@ -500,7 +500,7 @@ exports.updateInfoCompany = async(req, res, next) => {
         if (phone && userCompany && city && address && description && site) {
             let checkPhone = await functions.checkPhoneNumber(phone)
             if (checkPhone) {
-                await Users.updateOne({ email: email }, {
+                await Users.updateOne({ email: email, type: 1 }, {
                     $set: {
                         'inForCompany.description': description,
                         'userName': userCompany,
@@ -539,10 +539,10 @@ exports.updateContactInfo = async(req, res, next) => {
             let checkEmail = await functions.checkEmail(userContactEmail);
 
             if (checkEmail && checkPhone) {
-                let user = await functions.getDatafindOne(Users, { email })
+                let user = await functions.getDatafindOne(Users, { email: email, type: 1 })
 
                 if (user != null) {
-                    await Users.updateOne({ email: email }, {
+                    await Users.updateOne({ email: email, type: 1 }, {
                         $set: {
                             'inForCompany.userContactName': userContactName,
                             'inForCompany.userContactPhone': userContactPhone,
@@ -589,9 +589,9 @@ exports.updateVideoOrLink = async(req, res, next) => {
                 return functions.setError(res, 'link không đúng định dạng ', 404)
             }
         }
-        let user = await functions.getDatafindOne(Users, { email })
+        let user = await functions.getDatafindOne(Users, { email, type: 1 })
         if (user != null) {
-            await Users.updateOne({ email: email }, {
+            await Users.updateOne({ email: email, type: 1 }, {
                 $set: {
                     'inForCompany.videoType': video,
                     'inForCompany.linkVideo': link
@@ -621,7 +621,7 @@ exports.changePasswordSendOTP = async(req, res, next) => {
             Message: `Chúng tôi nhận được yêu cầu tạo mật khẩu mới tài khoản ứng viên trên timviec365.vn. Mã OTP của bạn là: '${otp}'`
         }
         await functions.getDataAxios('http://43.239.223.142:9000/api/message/SendMessageIdChat', data)
-        await Users.updateOne({ email: email }, {
+        await Users.updateOne({ email: email, type: 1 }, {
             $set: {
                 otp: otp
             }
@@ -639,7 +639,7 @@ exports.changePasswordCheckOTP = async(req, res, next) => {
         let email = req.user.data.email
         let otp = req.body.otp
         if (otp) {
-            let verify = await Users.findOne({ email, otp });
+            let verify = await Users.findOne({ email, otp, type: 1 });
             if (verify != null) {
                 return functions.success(res, 'xác thực thành công')
             }
@@ -658,7 +658,7 @@ exports.changePassword = async(req, res, next) => {
         let email = req.user.data.email
         let password = req.body.password
         if (password) {
-            await Users.updateOne({ email: email }, {
+            await Users.updateOne({ email: email, type: 1 }, {
                 $set: {
                     password: md5(password),
                 }
@@ -682,7 +682,7 @@ exports.updateImg = async(req, res, next) => {
         if (avatarUser) {
             let checkImg = await functions.checkImage(avatarUser.path)
             if (checkImg) {
-                await Users.updateOne({ email: email }, {
+                await Users.updateOne({ email: email, type: 1 }, {
                     $set: {
                         avatarUser: avatarUser.filename,
                     }
@@ -706,8 +706,8 @@ exports.updateImg = async(req, res, next) => {
 // hàm lấy dữ liệu thông tin cập nhập
 exports.getDataCompany = async(req, res, next) => {
     try {
-        let id = req.user.data._id;
-        let user = await functions.getDatafindOne(Users, { _id: id });
+        let id = req.user.data.idTimViec365;
+        let user = await functions.getDatafindOne(Users, { idTimViec365: id, type: 1 });
         if (user) {
             return functions.success(res, 'lấy thông tin thành công', user)
         }
@@ -842,11 +842,11 @@ exports.listSaveUV = async(req, res, next) => {
 exports.manageFilterPoint = async(req, res, next) => {
     try {
         let idCompany = req.user.data.idTimViec365;
-        let point = await functions.getDatafindOne(PointCompany, { uscID: idCompany });
+        let point = await functions.getDatafindOne(PointCompany, { uscID: idCompany, type: 1 });
         let now = new Date();
         let pointUSC = 0;
         if (point) {
-            let checkReset0 = await functions.getDatafindOne(PointCompany, { uscID: idCompany, dayResetPoint0: { $lt: now } });
+            let checkReset0 = await functions.getDatafindOne(PointCompany, { uscID: idCompany, type: 1, dayResetPoint0: { $lt: now } });
             if (checkReset0 == null) {
                 pointUSC = point.pointUSC
             }
@@ -987,8 +987,8 @@ exports.submitFeedbackWeb = async(req, res, next) => {
 // hàm lấy ra kho ảnh
 exports.displayImages = async(req, res, next) => {
     try {
-        let idCompany = req.user.data._id;
-        let khoAnh = await functions.getDatafindOne(Users, { _id: idCompany });
+        let idCompany = req.user.data.idTimViec365;
+        let khoAnh = await functions.getDatafindOne(Users, { idTimViec365: idCompany, type: 1 });
         if (khoAnh) {
             let data = {
                 listImgs: khoAnh.inForCompany.comImages,
@@ -1006,11 +1006,11 @@ exports.displayImages = async(req, res, next) => {
 // hàm up ảnh ở kho ảnh
 exports.uploadImg = async(req, res, next) => {
     try {
-        let idCompany = req.user.data._id;
+        let idCompany = req.user.data.idTimViec365;
         let img = req.files;
         let imageMoment = 0;
         let sizeImg = 0;
-        let user = await functions.getDatafindOne(Users, { _id: idCompany });
+        let user = await functions.getDatafindOne(Users, { idTimViec365: idCompany, type: 1 });
         if (user) {
             let listImg = user.inForCompany.comImages;
             let listVideo = user.inForCompany.comVideos;
@@ -1043,7 +1043,7 @@ exports.uploadImg = async(req, res, next) => {
                                 return functions.setError(res, 'sai định dạng ảnh hoặc ảnh lớn hơn 2MB', 404)
                             }
                         }
-                        await Users.updateOne({ _id: idCompany }, {
+                        await Users.updateOne({ idTimViec365: idCompany, type: 1 }, {
                             $set: { 'inForCompany.comImages': listImg }
                         });
                         return functions.success(res, 'thêm ảnh thành công')
@@ -1092,12 +1092,11 @@ exports.uploadImg = async(req, res, next) => {
 // hàm up video ở kho ảnh
 exports.uploadVideo = async(req, res, next) => {
     try {
-        console.log(req.user)
-        let idCompany = req.user.data._id;
+        let idCompany = req.user.data.idTimViec365;
         let video = req.files;
         let imageMoment = 0;
         let sizeVideo = 0;
-        let user = await functions.getDatafindOne(Users, { _id: idCompany });
+        let user = await functions.getDatafindOne(Users, { idTimViec365: idCompany, type: 1 });
         if (user) {
             let listImg = user.inForCompany.comImages;
             let listVideo = user.inForCompany.comVideos;
@@ -1133,7 +1132,7 @@ exports.uploadVideo = async(req, res, next) => {
                                 return functions.setError(res, 'sai định dạng video hoặc video lớn hơn 100MB', 404)
                             }
                         }
-                        await Users.updateOne({ _id: idCompany }, {
+                        await Users.updateOne({ idTimViec365: idCompany, type: 1 }, {
                             $set: { 'inForCompany.comVideos': listVideo }
                         });
                         return functions.success(res, 'thêm video thành công')
@@ -1181,16 +1180,16 @@ exports.uploadVideo = async(req, res, next) => {
 // hàm xóa ảnh
 exports.deleteImg = async(req, res, next) => {
     try {
-        let idCompany = req.user.data._id;
+        let idCompany = req.user.data.idTimViec365;
         let idFile = req.body.idFile;
-        let user = await functions.getDatafindOne(Users, { _id: idCompany });
+        let user = await functions.getDatafindOne(Users, { idTimViec365: idCompany, type: 1 });
         if (idFile && user) {
             let listImg = user.inForCompany.comImages;
             const index = listImg.findIndex(img => img._id == idFile);
             if (index != -1) {
                 let nameFile = listImg[index].name;
                 await listImg.splice(index, 1);
-                await Users.updateOne({ _id: idCompany }, {
+                await Users.updateOne({ idTimViec365: idCompany, type: 1 }, {
                     $set: { 'inForCompany.comImages': listImg }
                 });
                 await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${nameFile}`)
@@ -1210,16 +1209,16 @@ exports.deleteImg = async(req, res, next) => {
 // hàm xóa video
 exports.deleteVideo = async(req, res, next) => {
     try {
-        let idCompany = req.user.data._id;
+        let idCompany = req.user.data.idTimViec365;
         let idFile = req.body.idFile;
-        let user = await functions.getDatafindOne(Users, { _id: idCompany });
+        let user = await functions.getDatafindOne(Users, { idTimViec365: idCompany, type: 1 });
         if (idFile && user) {
             let listVideo = user.inForCompany.comVideos;
             const index = listVideo.findIndex(video => video._id == idFile);
             if (index != -1) {
                 await listVideo.splice(index, 1);
                 let nameFile = listVideo[index].name;
-                await Users.updateOne({ _id: idCompany }, {
+                await Users.updateOne({ idTimViec365: idCompany, type: 1 }, {
                     $set: { 'inForCompany.comVideos': listVideo }
                 });
                 await functions.deleteImg(`public\\KhoAnh\\${idCompany}\\${nameFile}`)
@@ -1352,7 +1351,7 @@ exports.updateUvApplyJob = async(req, res, next) => {
         let type = req.body.type;
         if (newID && userID && type) {
             let news = await functions.getDatafindOne(NewTV365, { _id: newID });
-            let user = await functions.getDatafindOne(Users, { idTimViec365: userID });
+            let user = await functions.getDatafindOne(Users, { idTimViec365: userID, type: 1 });
             if (news && user) {
                 await ApplyForJob.updateOne({ userID: userID, newID: newID }, {
                     $set: { kq: type }
@@ -1401,15 +1400,26 @@ exports.getDetailInfoCompany = async(req, res, next) => {
     try {
         let idCompany = req.body.user_id;
         if (idCompany) {
-            let company = await functions.getDatafindOne(Users, { idTimViec365: idCompany });
+            let company = await functions.getDatafindOne(Users, { idTimViec365: idCompany, type: 1 });
             if (company) {
                 let listNew = await functions.getDatafind(NewTV365, { userID: idCompany })
-                let formCV = await CV.find().sort({ _id: -1 }).limit(10);
-                return functions.success(res, 'xem chi tiết thành công', { inForCompany: company, listNew, formCV })
+                return functions.success(res, 'xem chi tiết thành công', { inForCompany: company, listNew })
             }
             return functions.setError(res, 'công ty không tồn tại', 404)
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)
+
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm box mẫu cv
+exports.formCV = async(req, res, next) => {
+    try {
+        let formCV = await CV.find().sort({ _id: -1 }).limit(10);
+        return functions.success(res, 'lấy thành công', { formCV })
 
     } catch (error) {
         console.log(error)

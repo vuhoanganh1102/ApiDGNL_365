@@ -52,15 +52,33 @@ router.post('/getDataNew', formData.parse(), function(req, res, next) {
 
 
 // api danh sách việc làm hấp đãn
-router.post('/listPostVLHD', formData.parse(), newTV365.listPostVLHD)
+router.post('/listNewHot', formData.parse(), newTV365.listNewHot)
 
 // api danh sách việc làm lương cao
-router.post('/listPostVLLC', formData.parse(), newTV365.listPostVLLC)
+router.post('/listNewCao', formData.parse(), newTV365.listNewCao)
 
 // api danh sách việc làm tuyển gấp
-router.post('/listPostVLTG', formData.parse(), newTV365.listPostVLTG)
+router.post('/listNewGap', formData.parse(), newTV365.listNewGap)
 
 // api danh sách việc làm mới nhất
 router.post('/listJobNew', formData.parse(), newTV365.listJobNew)
+
+// api danh sách việc phù hợp nhất
+router.post('/listJobSuitable', formData.parse(), newTV365.listJobSuitable)
+
+// api danh sách việc lương cao
+router.post('/listJobHightSalary', formData.parse(), newTV365.listJobHightSalary)
+
+// api danh sách việc địa điểm tag
+router.post('/getJobListByLocation', formData.parse(), newTV365.getJobListByLocation)
+
+// api danh sách việc tên công ty tag
+router.post('/getJobListByCompany', formData.parse(), newTV365.getJobListByCompany)
+
+// api danh sách việc tên công ty tag
+router.post('/getJobListByJob', formData.parse(), newTV365.getJobListByJob)
+
+// api danh sách việc tiêu chí tag
+router.post('/getJobsByCriteria', formData.parse(), newTV365.getJobsByCriteria)
 
 module.exports = router;

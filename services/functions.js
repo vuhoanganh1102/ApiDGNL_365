@@ -99,9 +99,9 @@ exports.checkPhoneNumber = async(phone) => {
     }
     // hàm validate email
 exports.checkEmail = async(email) => {
-  const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-  return gmailRegex.test(email);
-}
+        const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+        return gmailRegex.test(email);
+    }
     // hàm validate link
 exports.checkLink = async(link) => {
         const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
@@ -157,7 +157,7 @@ exports.checkLink = async(link) => {
 
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
-  return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
+    return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
 };
 
 // hàm thực thi khi thất bại
@@ -264,7 +264,7 @@ const storageFile = (destination) => {
 
 exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/KhoAnh') })
 
-exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/KhoAnh') })
+exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/company') })
 
 //  hàm upload ảnh ở cập nhập avatar
 exports.uploadImg = multer({ storage: storageMain('public/KhoAnh') })
@@ -465,7 +465,7 @@ exports.getDataCVSortByDownload = async(condition) => {
 //hàm kiểm tra string có phải number không
 exports.checkNumber = async(string) => {
     return !isNaN(string)
- }
+}
 
 //hàm phân trang có chọn lọc những trường dc hiển thị
 exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {

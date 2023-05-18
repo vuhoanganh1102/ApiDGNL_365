@@ -1,9 +1,8 @@
 const fnc = require('../../services/functions');
-const NewTV365 = require('../../models/Timviec365/Timviec/newTV365.model')
-const AdminUser = require('../../models/Timviec365/Timviec/adminUser.model');
-const Modules = require('../../models/Timviec365/Timviec/modules.model');
-const Linh_Vuc = require('../../models/Timviec365/Timviec/lv')
-const KeyWord = require('../../models/Timviec365/Timviec/keyword.model');
+const NewTV365 = require('../../models/Timviec365/Timviec/Company/New.model')
+const AdminUser = require('../../models/Timviec365/Timviec/AdminUser.model');
+const Linh_Vuc = require('../../models/Timviec365/Timviec/Lv.model')
+const KeyWord = require('../../models/Timviec365/Timviec/Keyword.model');
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
@@ -14,14 +13,15 @@ exports.toolNewTV365 = async(req, res, next) => {
         let data = await fnc.getDataAxios('https://timviec365.vn/email2/testh4.php')
         if (data.length > 0) {
             data.forEach(async element => {
-                let cityArray = element.new_city.split(", ").map(Number);
+                let cityArray = element.new_city.split(",").map(String);
+                let districtArray = element.new_qh_id.split(",").map(String);
                 const newTV = new NewTV365({
                     _id: element.new_id,
                     userID: element.usc_id,
                     title: element.new_title,
                     cateID: element.new_cat_id,
                     cityID: cityArray,
-                    districtID: element.new_qh_id,
+                    districtID: districtArray,
                     address: element.new_addr,
                     capBac: element.new_cap_bac,
                     exp: element.new_exp,
