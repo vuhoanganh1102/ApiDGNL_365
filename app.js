@@ -17,6 +17,7 @@ var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
 var mail365Router = require('./routes/timviec/mail365');
+var adminRouter = require('./routes/timviec/admin');
 
 // Quản lý chung
 var deparmentRouter = require('./routes/qlc/deparment')
@@ -24,7 +25,7 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
-
+var childCompanyRouter = require('./routes/qlc/childCompany');
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
@@ -40,12 +41,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/timviec/candidate', candidateRouter);
+app.use('/api/timviec/newTV365', newTV365Router)
+app.use('/api/timviec/admin', adminRouter)
+app.use('/api/timviec/company', companyRouter)
+app.use('/api/timviec/cv', cvRouter);
 app.use('/api/timviec/don', donRouter);
 app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
-
 app.use('/api/tool', toolAddDataRouter);
-app.use('/api/timviec/company', companyRouter);
 app.use('/api/timviec/newTV365', newTV365Router);
 app.use('/api/timviec/cv', cvRouter);
 
@@ -60,6 +63,7 @@ app.use('/api/timviec/mail365', mail365Router);
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
 app.use("/api/qlc/group", groupRouter);
+app.use('/api/qlc/childCompany', childCompanyRouter)
 
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);

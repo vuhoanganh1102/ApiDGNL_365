@@ -2,7 +2,8 @@
 const fs = require('fs');
 // upload file
 const multer = require('multer')
-    // gửi mail
+
+// gửi mail
 const nodemailer = require("nodemailer");
 // tạo biến môi trường
 const dotenv = require("dotenv");
@@ -10,15 +11,16 @@ const dotenv = require("dotenv");
 const crypto = require('crypto');
 // gọi api
 const axios = require('axios')
-    // check video
+
+// check video
 const path = require('path');
 //check ảnh
 const { promisify } = require('util');
-// tọa token
+// tạo token
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
+const { error } = require('console');
 const DonXinViec = require('../models/Timviec365/CV/DonXinViec');
-
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -88,44 +90,39 @@ exports.removeSimilarKeywords = (keyword, arr) => {
 
 // hàm mã otp ngẫu nhiên có 6 chữ số
 exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
-
 exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"];
 
 // hàm validate phone
 exports.checkPhoneNumber = async(phone) => {
-    const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
-    return phoneNumberRegex.test(phone)
-};
-
-// hàm validate email
-exports.checkEmail = async(email) => {
-    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
-    return gmailRegex.test(email)
-};
-
-
-// hàm validate link
-exports.checkLink = async(link) => {
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-    return urlRegex.test(yourUrlVariable);
-};
-
-// hàm validate thơi gian
-exports.checkTime = async(time) => {
-    const currentTime = new Date(); // Lấy thời gian hiện tại
-    const inputTime = new Date(time); // Thời gian nhập vào
-    if (inputTime < currentTime) {
-        return false
-    } else {
-        return true
+        const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
+        return phoneNumberRegex.test(phone)
     }
-};
-
-// hàm check thời gian đăng tin 10p/1 lần
+    // hàm validate email
+exports.checkEmail = async(email) => {
+  const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  return gmailRegex.test(email);
+}
+    // hàm validate link
+exports.checkLink = async(link) => {
+        const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+        return urlRegex.test(link);
+    }
+    // hàm validate thơi gian
+exports.checkTime = async(time) => {
+        const currentTime = new Date(); // Lấy thời gian hiện tại
+        const inputTime = new Date(time); // Thời gian nhập vào
+        if (inputTime < currentTime) {
+            return false
+        } else {
+            return true
+        }
+    }
+    // hàm check thời gian đăng tin 10p/1 lần
 exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
-    const now = new Date().getTime();
     const inputTime = Date.parse(timeInput);
+
+    const now = new Date().getTime();
+
     const diffInMinutes = (now - inputTime) / (1000 * 60);
 
     if (diffInMinutes >= 10) {
@@ -134,7 +131,6 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
         return false;
     }
 };
-
 exports.getDatafindOne = async(model, condition) => {
     return model.findOne(condition);
 };
@@ -161,7 +157,7 @@ exports.checkLink = async(link) => {
 
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
-    return res.status(200).json({ result: true, messsage, data })
+  return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
 };
 
 // hàm thực thi khi thất bại
@@ -281,6 +277,9 @@ exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
 // hàm upload video ở cập nhập KhoAnh
 exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
+
+//hàm upload file ứng viên
+exports.uploadFileUv = multer({ storage: storageFile('public/candidate') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
@@ -466,8 +465,32 @@ exports.getDataCVSortByDownload = async(condition) => {
 //hàm kiểm tra string có phải number không
 exports.checkNumber = async(string) => {
     return !isNaN(string)
-};
+ }
 
+//hàm phân trang có chọn lọc những trường dc hiển thị
+exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {
+    return model.find(condition, select).sort(sort).skip(skip).limit(limit);
+}
+
+//hàm check xem có truyền vào token hay không
+exports.checkTokenV2 = async(req, res, next) => {
+    if (req.headers.authorization) {
+        functions.checkToken(req, res, next);
+    } else {
+        next();
+    }
+}
+
+// hàm dém count
+exports.findCount = async(model, filter) => {
+    try {
+        const count = await model.countDocuments(filter);
+        return count;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
 //base64 decrypt image
 exports.decrypt = async(req, res, next) => {
     const base64 = req.body.base64;

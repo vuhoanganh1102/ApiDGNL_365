@@ -4,106 +4,175 @@ const newTV365Schema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    userID: String,
+    userID: Number,
     // tiêu đề
-    title: String,
-    newMd5: String,
+    title: {
+        type: String,
+        default: null,
+    },
+    newMd5: {
+        type: String,
+        default: null,
+    },
     // tên tiêu đè không đấu
-    alias: String,
+    alias: {
+        type: String,
+        default: null,
+    },
     // link quay lại
     redirect301: {
         type: String,
         default: ""
     },
     // thể loại việc làm
-    cateID: {
-        type: Number,
-        ref: ''
-    },
+    cateID: [{
+        type: String,
+        default: null,
+    }],
     //thể loại tag
-    tagID: Number,
-    // thành phố
-    cityID: {
+    tagID: {
         type: Number,
+        default: null,
     },
+    // thành phố
+    cityID: [{
+        type: String,
+    }],
+    default: [],
     // quận huyện
     districtID: {
         type: String,
+        default: null,
     },
     // dịa chỉ
-    address: String,
+    address: {
+        type: String,
+        default: null,
+    },
     //giá trị trong option trong khoảng , nếu là 1 thì không phải option trong khoảng
-    money: Number,
+    money: {
+        type: Number,
+        default: 0
+    },
     // cấp bậc
-    capBac: Number,
+    capBac: {
+        type: Number,
+        default: 0
+    },
     //kinh nghiệm
-    exp: Number,
+    exp: {
+        type: Number,
+        default: 0
+    },
     //giới tính
-    sex: Number,
+    sex: String,
     //bằng cấp
-    bangCap: Number,
+    bangCap: {
+        type: Number,
+        default: 0
+    },
     //sô lượng
-    soLuong: Number,
+    soLuong: {
+        type: Number,
+        default: 0
+    },
     //hình thức
-    hinhThuc: Number,
+    hinhThuc: {
+        type: Number,
+        default: 0
+    },
     // độ tuổi
-    doTuoi: Number,
+    doTuoi: {
+        type: Number,
+        default: 0
+    },
     // thời gian tạo bài đăng
-    createTime: Date,
+    createTime: {
+        type: Date,
+        default: null,
+    },
     // thới gian update
-    updateTime: Date,
+    updateTime: {
+        type: Date,
+        default: null,
+    },
     // thời gian vip của bài post
-    vipTime: Date,
+    vipTime: {
+        type: Date,
+        default: null,
+    },
     vip: Number,
-    cateTime: Date,
+    cateTime: {
+        type: Date,
+        default: null,
+    },
     // 0 là chưa được duyệt 1 là ngược lại
-    active: Number,
+    active: {
+        type: Number,
+        default: 0
+    },
     // thể loại
-    type: Number,
+    type: {
+        type: Number,
+        default: 0
+    },
     //
-    over: Number,
+    over: {
+        type: Number,
+        default: 0
+    },
     // số lượng xem
-    viewCount: Number,
+    viewCount: {
+        type: Number,
+        default: 0
+    },
     // hạn nộp
-    hanNop: Date,
-    post: Number,
+    hanNop: {
+        type: Date,
+        default: null,
+    },
+    post: {
+        type: Number,
+        default: 0
+    },
     renew: {
         type: Number,
         default: 0
     },
-    hot: {
+    newHot: {
         type: Number,
         default: 0
     },
-    do: {
+    newDo: {
         type: Number,
         default: 0
     },
-    cao: {
+    newCao: {
         type: Number,
         default: 0
     },
-    nganh: {
+    newGap: {
         type: Number,
         default: 0
     },
-    ghim: {
+    newNganh: {
         type: Number,
         default: 0
     },
-    thuc: {
+    newGhim: {
         type: Number,
         default: 0
     },
-    order: {
+    newThuc: {
         type: Number,
         default: 0
     },
-    order: {
+    newOrder: {
         type: Number,
         default: 0
     },
-    ut: {
+    newUt: {
+        //
         type: Number,
         default: 0
     },
@@ -117,18 +186,29 @@ const newTV365Schema = new mongoose.Schema({
     },
     newMutil: {
         // mô tả công việc
-        moTa: String,
+        moTa: {
+            type: String,
+            default: null,
+        },
         // yêu cầu    
-        yeuCau: String,
+        yeuCau: {
+            type: String,
+            default: null,
+        },
         //quyền lợi
-        quyenLoi: String,
-        //hô sơ 
+        quyenLoi: {
+            type: String,
+            default: null,
+        },
+        //hô sơ  nhà tuyển dụng cần để ứng viên có
         hoSo: {
             type: String,
+            default: null,
         },
         //tiêu đề seo
         titleSeo: {
             type: String,
+            default: null,
         },
         // nọi dung seo
         desSeo: {
@@ -137,16 +217,23 @@ const newTV365Schema = new mongoose.Schema({
         // hoa hồng nhận được
         hoaHong: {
             type: String,
+            default: null,
         },
         tgtv: {
             type: String,
+            default: null,
         },
         lv: {
             type: String,
+            default: null,
         },
-        baoLuu: String,
+        baoLuu: {
+            type: String,
+            default: null,
+        },
         timeBaoLuu: {
             type: Date,
+            default: null,
         },
         jobPosting: {
             type: Number,
@@ -154,15 +241,21 @@ const newTV365Schema = new mongoose.Schema({
         // video bài post
         videoType: {
             type: String,
+            default: null,
         },
         videoActive: {
             type: String,
+            default: null,
         },
         // link video
-        link: String,
+        link: {
+            type: String,
+            default: null,
+        },
         // list ảnh bài post
         images: [{
             type: String,
+            default: null,
         }]
 
     },
@@ -170,14 +263,22 @@ const newTV365Schema = new mongoose.Schema({
         // thể loại
         type: {
             type: Number,
+            default: null
         },
         // từ mức    
-        minValue: Number,
+        minValue: {
+            type: Number,
+            default: null
+        },
         //đến mức
-        maxValue: Number,
+        maxValue: {
+            type: Number,
+            default: null
+        },
         // loại tiền
         unit: {
             type: Number,
+            default: 1
         }
     },
 
