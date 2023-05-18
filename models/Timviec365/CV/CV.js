@@ -51,19 +51,19 @@ const CVSchema = new mongoose.Schema({
         type: String
     },
     htmlVi: {
-        type: String
+        type: Object
     },
     htmlEn: {
-        type: String
+        type: Object
     },
     htmlJp: {
-        type: String
+        type: Object
     },
     htmlCn: {
-        type: String
+        type: Object
     },
     htmlKr: {
-        type: String
+        type: Object
     },
     cateId: {
         type: Number
@@ -81,23 +81,26 @@ const CVSchema = new mongoose.Schema({
         type: Number
     },
     metaTitle: {
-        Type: String
+        type: String
     },
     metaKey: {
-        Type: String
+        type: String
     },
     metaDes: {
-        Type: String
+        type: String
     },
     thuTu: {
-        Type: Number
+        type: Number
     },
     full: {
-        Type: String
+        type: String
     },
     status: {
-        Type: Number
-    }
+        type: Number
+    },
+    cvPoint: {
+        type: Number
+    },
 
 }, {
     collection: 'CV',

@@ -341,7 +341,6 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
 
 }
 
-// quên mật khẩu
 // b1: gửi mã otp tới tên tài khoản được nhập
 exports.sendOTP = async(req, res, next) => {
     try {
@@ -398,6 +397,7 @@ exports.sendOTP = async(req, res, next) => {
     }
 
 };
+
 // b2: xác nhận mã otp
 exports.confirmOTP = async(req, res, next) => {
     try {
@@ -417,6 +417,7 @@ exports.confirmOTP = async(req, res, next) => {
     }
 
 };
+
 //b3: đổi mật khẩu
 exports.changePassword = async(req, res, next) => {
     try {
