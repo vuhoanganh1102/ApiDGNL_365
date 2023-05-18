@@ -29,7 +29,8 @@ exports.postAdmin = async(req, res, next) => {
                 email = request.email,
                 modules = request.modules,
                 allCategory = request.allCategory,
-                category = request.accessCategory;
+                category = request.accessCategory,
+                langID = requestlangID;
             if (loginName && name && phone && password && email) {
                 let checkEmail = await functions.checkEmail(email);
                 let checkPhone = await functions.checkPhoneNumber(phone);
@@ -63,6 +64,7 @@ exports.postAdmin = async(req, res, next) => {
                             active: 0,
                             allCategory: allCategory || 0,
                             accessCategory: JSON.stringify(category) || null,
+                            langID: langID || 1,
                         })
                         await adminUser.save();
                         return functions.success(res, 'thêm mới thành công')

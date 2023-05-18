@@ -2,7 +2,8 @@
 const fs = require('fs');
 // upload file
 const multer = require('multer')
-    // gửi mail
+
+// gửi mail
 const nodemailer = require("nodemailer");
 // tạo biến môi trường
 const dotenv = require("dotenv");
@@ -10,15 +11,16 @@ const dotenv = require("dotenv");
 const crypto = require('crypto');
 // gọi api
 const axios = require('axios')
-    // check video
+
+// check video
 const path = require('path');
 //check ảnh
 const { promisify } = require('util');
-// tọa token
+// tạo token
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
+const { error } = require('console');
 const DonXinViec = require('../models/Timviec365/CV/DonXinViec');
-
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -155,7 +157,7 @@ exports.checkLink = async(link) => {
 
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
-  return res.status(200).json({ data: { result: true, messsage, data, error: null } })
+  return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
 };
 
 // hàm thực thi khi thất bại
@@ -463,8 +465,18 @@ exports.getDataCVSortByDownload = async(condition) => {
 //hàm kiểm tra string có phải number không
 exports.checkNumber = async(string) => {
     return !isNaN(string)
-};
+ }
 
+// hàm dém count
+exports.findCount = async(model, filter) => {
+    try {
+        const count = await model.countDocuments(filter);
+        return count;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
 //base64 decrypt image
 exports.decrypt = async(req, res, next) => {
     const base64 = req.body.base64;

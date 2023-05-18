@@ -39,30 +39,25 @@ const adminUserSchema = new mongoose.Schema({
     },
     editAll: {
         type: Number,
-        default: 0
+        default: 1
     },
     adminID: {
         type: Number,
-        default: 0
+        default: 4
     },
+    // 1 kinh doanh , 2 nhập liệu ,3 tuyển dụng
     bophan: {
         type: Number,
         default: 0
     },
-    ntd: {
+    // số thứ tự
+    stt: {
         type: Number,
         default: 0,
     },
     empID: {
         type: Number,
-    },
-    nhaplieu: {
-        type: Number,
-        default: 0,
-    },
-    rank: {
-        type: Number,
-    },
+    }
 }, {
     collection: 'AdminUser',
     versionKey: false,
