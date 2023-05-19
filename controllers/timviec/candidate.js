@@ -47,7 +47,7 @@ exports.RegisterB1 = async(req, res, next) => {
             let CheckPhoneNumber = await functions.checkPhoneNumber(phoneTK);
 
             if (CheckPhoneNumber) { //check định dạng sdt
-                let checkUser = await functions.getDatafindOne(Users, { phoneTK })
+                let checkUser = await functions.getDatafindOne(Users, { phoneTK, type: 0 })
 
                 if (checkUser) { // check trùng số điện thoại trong user
                     return functions.setError(res, "Số điện thoại đã được đăng kí", 200);
@@ -63,9 +63,9 @@ exports.RegisterB1 = async(req, res, next) => {
                             newIDUser = Number(maxIDUser._id) + 1;
                         } else newIDUser = 1;
 
-                        let findUserUv = await functions.getDatafindOne(userUnset, { usePhoneTk: phoneTK })
+                        let findUserUv = await functions.getDatafindOne(userUnset, { usePhoneTk: phoneTK, type: 0 })
                         if (findUserUv) {
-                            let updateUserUv = await functions.getDatafindOneAndUpdate(userUnset, { usePhoneTk: phoneTK }, {
+                            let updateUserUv = await functions.getDatafindOneAndUpdate(userUnset, { usePhoneTk: phoneTK, type: 0 }, {
                                 usePass: password,
                                 useFirstName: userName,
                                 useMail: email,
@@ -75,7 +75,8 @@ exports.RegisterB1 = async(req, res, next) => {
                                 uRegis: uRegis,
                                 useCvCate: candiCateID,
                                 useCvCity: candiCityID,
-                                useCvTitle: candiTitle
+                                useCvTitle: candiTitle,
+                                type: 0
                             })
 
                         } else {
@@ -136,8 +137,9 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
             const candiCateID = req.user.data.candiCateID
             const candiCityID = req.user.data.candiCityID
             const candiTitle = req.user.data.candiTitle
+            const type = req.user.data.type
 
-            let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK })
+            let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK, type: 0 })
             if (findUser && findUser.phoneTK && findUser.phoneTK == phoneTK) { // check tồn tại tài khoản chưa
                 return functions.setError(res, "Số điện thoại này đã được đăng kí", 200);
             } else {
@@ -145,7 +147,7 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                 if (maxID) {
                     newID = Number(maxID._id) + 1;
                 }
-                const maxIDTimviec = await Users.findOne({ type: 0 }, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
+                const maxIDTimviec = await Users.findOne({}, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
                 if (maxIDTimviec) {
                     newIDTimviec = Number(maxIDTimviec.idTimViec365) + 1;
                 }
@@ -204,7 +206,7 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                     })
                     let saveUser = User.save()
                 }
-                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK })
+                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
                 return functions.success(res, "Đăng kí thành công")
             }
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
@@ -238,6 +240,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
             const candiCateID = req.user.data.candiCateID
             const candiCityID = req.user.data.candiCityID
             const candiTitle = req.user.data.candiTitle
+            const type = req.user.data.type
             let cvUpload, videoUpload
 
             if (!fileUpload.cvUpload) {
@@ -252,7 +255,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                     return functions.setError(req, "dung lượng file vượt quá 100 MB", 200)
                 }
             }
-            let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK })
+            let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK, type: 0 })
             if (findUser && findUser.phoneTK && findUser.phoneTK == phoneTK) { // check tồn tại tài khoản chưa
                 return functions.setError(res, "Số điện thoại này đã được đăng kí", 200);
             } else {
@@ -260,7 +263,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                 if (maxID) {
                     newID = Number(maxID._id) + 1;
                 } else newID = 1
-                const maxIDTimviec = await Users.findOne({ type: 0 }, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
+                const maxIDTimviec = await Users.findOne({}, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
                 if (maxIDTimviec) {
                     newIDTimviec = Number(maxIDTimviec.idTimViec365) + 1;
                 } else newIDTimviec = 1
@@ -329,7 +332,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                     })
                     let saveUser = User.save()
                 }
-                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK })
+                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
                 return functions.success(res, "Đăng kí thành công")
             }
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
@@ -443,12 +446,13 @@ exports.changePassword = async(req, res, next) => {
 exports.sendOTPChangePass = async(req, res, next) => {
     try {
         const user = req.user.data.phoneTK;
-        if (await functions.checkPhoneNumber(user) && await functions.getDatafindOne(Users, { phoneTK: user })) {
+        const type = req.user.data.type
+        if (await functions.checkPhoneNumber(user) && await functions.getDatafindOne(Users, { phoneTK: user, type: type })) {
             await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { user })
                 .then((response) => {
                     const otp = response.data.otp;
                     if (otp) {
-                        return Users.updateOne({ phoneTK: user }, {
+                        return Users.updateOne({ phoneTK: user, type: type }, {
                             $set: {
                                 otp: otp
                             }
@@ -457,7 +461,7 @@ exports.sendOTPChangePass = async(req, res, next) => {
                     functions.setError(res, "Gửi OTP lỗi 1", );
                 })
                 .then(() => {
-                    functions.getDatafindOne(Users, { phoneTK: user }, )
+                    functions.getDatafindOne(Users, { phoneTK: user, type: type }, )
                         .then(async(response) => {
                             const token = await functions.createToken(response, '30m'); // tạo token chuyển lên headers
                             res.setHeader('authorization', `Bearer ${token}`);
@@ -465,12 +469,12 @@ exports.sendOTPChangePass = async(req, res, next) => {
                         });
                 });
 
-        } else if (await functions.checkEmail(user) && await functions.getDatafindOne(Users, { email: user }, )) {
+        } else if (await functions.checkEmail(user) && await functions.getDatafindOne(Users, { email: user, type: type }, )) {
             await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { user })
                 .then((response) => {
                     const otp = response.data.otp;
                     if (otp) {
-                        return Users.updateOne({ email: user }, {
+                        return Users.updateOne({ email: user, type: type }, {
                             $set: {
                                 otp: otp
                             }
@@ -479,7 +483,7 @@ exports.sendOTPChangePass = async(req, res, next) => {
                     functions.setError(res, 'Gửi OTP lỗi 2', );
                 })
                 .then(() => {
-                    Users.findOne({ email: user })
+                    Users.findOne({ email: user, type: type })
                         .then(async(response) => {
                             const token = await functions.createToken(response, '30m');
                             res.setHeader('authorization', `Bearer ${token}`);
@@ -518,9 +522,9 @@ exports.RegisterB2CvSite = async(req, res, next) => {
             const candiCateID = req.user.data.candiCateID
             const candiCityID = req.user.data.candiCityID
             const candiTitle = req.user.data.candiTitle
+            const type = req.user.data.type
 
-
-            let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK })
+            let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK, type: type })
             if (findUser && findUser.phoneTK && findUser.phoneTK == phoneTK) { // check tồn tại tài khoản chưa
                 return functions.setError(res, "Số điện thoại này đã được đăng kí", 200);
             } else {
@@ -528,7 +532,7 @@ exports.RegisterB2CvSite = async(req, res, next) => {
                 if (maxID) {
                     newID = Number(maxID._id) + 1;
                 }
-                const maxIDTimviec = await Users.findOne({ type: 0 }, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
+                const maxIDTimviec = await Users.findOne({}, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
                 if (maxIDTimviec) {
                     newIDTimviec = Number(maxIDTimviec.idTimViec365) + 1;
                 }
@@ -562,7 +566,7 @@ exports.RegisterB2CvSite = async(req, res, next) => {
                 User.save()
                 let CvUv = new CVUV({
                     _id: newIDCv,
-                    userId: newID,
+                    userId: newIDTimviec,
                     cvId: cvId,
                     lang: lang,
                     html: html,
@@ -575,7 +579,7 @@ exports.RegisterB2CvSite = async(req, res, next) => {
                 })
                 CvUv.save()
 
-                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK })
+                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: type })
                 return functions.success(res, "Đăng kí thành công")
             }
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
@@ -597,7 +601,7 @@ exports.loginUv = async(req, res, next) => {
 
         let checkPhoneNumber = await functions.checkPhoneNumber(phoneTK);
         if (checkPhoneNumber) {
-            let findUser = await functions.getDatafindOne(Users, { phoneTK })
+            let findUser = await functions.getDatafindOne(Users, { phoneTK, type: 0 })
             if (!findUser) {
                 return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 200)
             }
@@ -677,7 +681,7 @@ exports.cvXinViec = async(req, res, next) => {
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let findCvUv = await functions.pageFind(CVUV, { userId }, { _id: 1 }, skip, limit)
             const totalCount = await CVUV.countDocuments({ userId: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
@@ -705,7 +709,7 @@ exports.donXinViec = async(req, res, next) => {
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let findDonUv = await functions.pageFind(donUV, { userId }, { _id: 1 }, skip, limit)
             const totalCount = await donUV.countDocuments({ userId: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
@@ -733,7 +737,7 @@ exports.thuXinViec = async(req, res, next) => {
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let findThuUv = await functions.pageFind(ThuUV, { userId }, { _id: 1 }, skip, limit)
             const totalCount = await ThuUV.countDocuments({ userId: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
@@ -761,7 +765,7 @@ exports.hosoXinViec = async(req, res, next) => {
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let findHoSoUv = await functions.pageFind(HoSoUV, { userId }, { _id: 1 }, skip, limit)
             const totalCount = await HoSoUV.countDocuments({ userId: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
@@ -789,9 +793,9 @@ exports.listJobCandidateApply = async(req, res, next) => {
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let userId = req.user.data._id
-            let listJobUv = await functions.pageFind(nopHoSo, { userId }, { _id: 1 }, skip, limit)
-            const totalCount = await nopHoSo.countDocuments({ userId: userId })
+            let userId = req.user.data.idTimViec365
+            let listJobUv = await functions.pageFind(applyForJob, { userID: userId }, { _id: 1 }, skip, limit)
+            const totalCount = await applyForJob.countDocuments({ userID: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
             if (listJobUv) {
                 functions.success(res, "Hiển thị những việc làm ứng viên đã ứng tuyển thành công", { listJobCandidateApply: { totalCount, totalPages, listJob: listJobUv } });
@@ -813,9 +817,9 @@ exports.listJobCandidateSave = async(req, res, next) => {
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let userId = req.user.data._id
-            let listJobUvSave = await functions.pageFind(luuViecLam, { userId }, { _id: 1 }, skip, limit)
-            const totalCount = await nopHoSo.countDocuments({ userId: userId })
+            let userId = req.user.data.idTimViec365
+            let listJobUvSave = await functions.pageFind(userSavePost, { userID: userId }, { _id: 1 }, skip, limit)
+            const totalCount = await applyForJob.countDocuments({ userID: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
             if (listJobUvSave) {
                 functions.success(res, "Hiển thị những việc làm ứng viên đã ứng tuyển thành công", { listJobCandidateSave: { totalCount, totalPages, listJob: listJobUvSave } });
@@ -834,8 +838,7 @@ exports.updateContactInfo = async(req, res, next) => {
     try {
         if (req.user && req.body.name && req.body.phone && req.body.address && req.body.birthday &&
             req.body.gioitinh && req.body.honnhan && req.body.thanhpho && req.body.quanhuyen) {
-
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let userName = req.body.name
             let phone = req.body.phone
             let address = req.body.address
@@ -845,7 +848,7 @@ exports.updateContactInfo = async(req, res, next) => {
             let city = req.body.thanhpho
             let district = req.body.quanhuyen
             let avatarUser = req.file
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+            let updateUser = await functions.findOneAndUpdateUser(userId, {
                 userName: userName,
                 phone: phone,
                 address: address,
@@ -859,7 +862,7 @@ exports.updateContactInfo = async(req, res, next) => {
                 }
             })
             if (updateUser) {
-                functions.success(res, "Cập nhật thông tin liên hệ thành công");
+                functions.success(res, "Cập nhật thông tin liên hệ thành công,");
             }
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
@@ -876,7 +879,7 @@ exports.updateDesiredJob = async(req, res, next) => {
         if (req.user && req.body.candiTitle && req.body.candiLoaiHinh && req.body.candiCityID && req.body.candiCateID &&
             req.body.exp && req.body.candiCapBac && req.body.candiMoney) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let candiTitle = req.body.title
             let candiLoaiHinh = req.body.ht
             let candiCityID = req.body.city
@@ -889,7 +892,7 @@ exports.updateDesiredJob = async(req, res, next) => {
             let candiMoneyMin = req.body.money_min
             let candiMoneyMax = req.body.money_max
 
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+            let updateUser = await functions.findOneAndUpdateUser(userId, {
                 inForPerson: {
                     candiCateID: candiCateID,
                     exp: exp,
@@ -921,9 +924,9 @@ exports.updateCareerGoals = async(req, res, next) => {
     try {
         if (req.user && req.body.muctieu) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let candiMucTieu = req.body.muctieu
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+            let updateUser = await functions.findOneAndUpdateUser(userId, {
                 inForPerson: {
                     candiMucTieu: candiMucTieu,
                 }
@@ -945,9 +948,9 @@ exports.updateSkills = async(req, res, next) => {
     try {
         if (req.user && req.body.kynang) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let candiSkills = req.body.kynang
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+            let updateUser = await functions.findOneAndUpdateUser(userId, {
                 inForPerson: {
                     candiSkills: candiSkills,
                 }
@@ -970,13 +973,13 @@ exports.updateReferencePersonInfo = async(req, res, next) => {
         if (req.user && req.body.referencePersonName && req.body.referencePersonEmail &&
             req.body.referencePersonPhone && req.body.referencePersonPosition && req.body.referencePersonCompany) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let referencePersonName = req.body.referencePersonName
             let referencePersonEmail = req.body.referencePersonEmail
             let referencePersonPhone = req.body.referencePersonPhone
             let referencePersonPosition = req.body.referencePersonPosition
             let referencePersonCompany = req.body.referencePersonCompany
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+            let updateUser = await functions.findOneAndUpdateUser(userId, {
                 inForPerson: {
                     referencePersonName: referencePersonName,
                     referencePersonEmail: referencePersonEmail,
@@ -1001,11 +1004,11 @@ exports.updateReferencePersonInfo = async(req, res, next) => {
 exports.updateIntroVideo = async(req, res, next) => {
     try {
         if (req.user) {
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let videoLink = req.body.videoLink
             if (req.file && !videoLink) {
                 let videoName = req.file.filename
-                let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+                let updateUser = await functions.findOneAndUpdateUser(userId, {
                     inForPerson: {
                         video: videoName,
                         videoType: 0
@@ -1015,7 +1018,7 @@ exports.updateIntroVideo = async(req, res, next) => {
                     functions.success(res, "Cập nhật Video giới thiệu bản thân thành công");
                 }
             } else if (!req.body.file && videoLink) {
-                let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+                let updateUser = await functions.findOneAndUpdateUser(userId, {
                     inForPerson: {
                         video: videoLink,
                         videoType: 1
@@ -1039,7 +1042,7 @@ exports.addDegree = async(req, res, next) => {
     try {
         if (req.user && req.body.bc && req.body.truonghoc && req.body.chuyennganh && req.body.xeploai && req.body.bosungth && req.body.onetime && req.body.twotime) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let degree = req.body.bc
             let school = req.body.truonghoc
             let major = req.body.chuyennganh
@@ -1047,7 +1050,7 @@ exports.addDegree = async(req, res, next) => {
             let implement = req.body.bosungth
             let start = req.body.onetime
             let end = req.body.twotime
-            const maxID = await Users.findOne({ _id: userId }, { "inForPerson.candiDegree.id": 1 }).sort({ "inForPerson.candiDegree.id": -1 }).limit(1).lean();
+            const maxID = await Users.findOne({ idTimViec365: userId }, { "inForPerson.candiDegree.id": 1 }).sort({ "inForPerson.candiDegree.id": -1 }).limit(1).lean();
             if (maxID.inForPerson.candiDegree[0]) {
                 newID = Number(maxID.inForPerson.candiDegree[maxID.inForPerson.candiDegree.length - 1].id + 1);
             } else newID = 1
@@ -1062,7 +1065,7 @@ exports.addDegree = async(req, res, next) => {
                 end
             }
 
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+            let updateUser = await functions.findOneAndUpdateUser(userId, {
                 $push: {
                     "inForPerson.candiDegree": addDegree
                 }
@@ -1084,7 +1087,7 @@ exports.updateDegree = async(req, res, next) => {
     try {
         if (req.user && req.body.bc && req.body.truonghoc && req.body.chuyennganh && req.body.xeploai && req.body.bosungth && req.body.onetime && req.body.twotime && req.body.idhv) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let degree = req.body.bc
             let school = req.body.truonghoc
             let major = req.body.chuyennganh
@@ -1104,7 +1107,19 @@ exports.updateDegree = async(req, res, next) => {
                 end
             }
 
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiDegree.id": id }, {
+            let updateUser = await Users.findOneAndUpdate({
+                $or: [{
+                        idTimViec365: userId,
+                        type: 0,
+                        "inForPerson.candiDegree.id": id
+                    },
+                    {
+                        idTimViec365: userId,
+                        type: 2,
+                        "inForPerson.candiDegree.id": id
+                    },
+                ]
+            }, {
                 $set: {
                     "inForPerson.candiDegree.$": updateDegree
                 },
@@ -1126,7 +1141,7 @@ exports.deleteDegree = async(req, res, next) => {
     try {
         if (req.user && req.body.bc && req.body.truonghoc && req.body.chuyennganh && req.body.xeploai && req.body.bosungth && req.body.onetime && req.body.twotime && req.body.idhv) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let degree = req.body.bc
             let school = req.body.truonghoc
             let major = req.body.chuyennganh
@@ -1146,9 +1161,21 @@ exports.deleteDegree = async(req, res, next) => {
                 end
             }
 
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiDegree.id": id }, {
+            let updateUser = await Users.findOneAndUpdate({
+                $or: [{
+                        idTimViec365: userId,
+                        type: 0,
+                        "inForPerson.candiDegree.id": id
+                    },
+                    {
+                        idTimViec365: userId,
+                        type: 2,
+                        "inForPerson.candiDegree.id": id
+                    },
+                ]
+            }, {
                 $pull: {
-                    "inForPerson.candiDegree": deleteDegree
+                    "inForPerson.candiDegree.$": deleteDegree
                 },
             })
             if (updateUser) {
@@ -1167,9 +1194,8 @@ exports.deleteDegree = async(req, res, next) => {
 exports.RefreshProfile = async(req, res, next) => {
     try {
         if (req.user) {
-
-            let userId = req.user.data._id
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+            let userId = req.user.data.idTimViec365
+            let updateUser = await functions.findOneAndUpdateUser(userId, {
                 updatedAt: new Date(Date.now())
             })
             if (updateUser) {
@@ -1188,10 +1214,10 @@ exports.RefreshProfile = async(req, res, next) => {
 exports.updateAvatarUser = async(req, res, next) => {
     try {
         if (req.user) {
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             if (req.file) {
                 let imageName = req.file.filename
-                let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+                let updateUser = await functions.findOneAndUpdateUser(userId, {
                     avatarUser: imageName
                 })
                 if (updateUser) {
@@ -1211,8 +1237,7 @@ exports.updateAvatarUser = async(req, res, next) => {
 exports.upLoadHoSo = async(req, res, next) => {
     try {
         if (req.user && req.body.cvname) {
-            console.log(1)
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let nameHoSo = req.body.nameHoSo
             if (req.file) {
                 const targetDirectory = `public/candidate/${userId}`;
@@ -1271,12 +1296,12 @@ exports.addNgoaiNgu = async(req, res, next) => {
     try {
         if (req.user && req.body.chungchi && req.body.sodiem && req.body.ngoaingu) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let chungChi = req.body.chungchi
             let point = req.body.sodiem
             let ngoaiNgu = req.body.ngoaingu
 
-            const maxID = await Users.findOne({ _id: userId }, { "inForPerson.candiNgoaiNgu.id": 1 }).sort({ "inForPerson.candiNgoaiNgu.id": -1 }).limit(1).lean();
+            const maxID = await Users.findOne({ idTimViec365: userId }, { "inForPerson.candiNgoaiNgu.id": 1 }).sort({ "inForPerson.candiNgoaiNgu.id": -1 }).limit(1).lean();
             if (maxID.inForPerson.candiNgoaiNgu[0]) {
                 newID = Number(maxID.inForPerson.candiNgoaiNgu[maxID.inForPerson.candiNgoaiNgu.length - 1].id + 1);
             } else newID = 1
@@ -1287,7 +1312,7 @@ exports.addNgoaiNgu = async(req, res, next) => {
                 ngoaiNgu,
             }
 
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+            let updateUser = await functions.findOneAndUpdateUser(userId, {
                 $push: {
                     "inForPerson.candiNgoaiNgu": addNgoaiNgu
                 }
@@ -1309,7 +1334,7 @@ exports.updateNgoaiNgu = async(req, res, next) => {
     try {
         if (req.user && req.body.chungchi && req.body.sodiem && req.body.ngoaingu && req.body.idnn) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let chungChi = req.body.chungchi
             let point = req.body.sodiem
             let ngoaiNgu = req.body.ngoaingu
@@ -1321,7 +1346,19 @@ exports.updateNgoaiNgu = async(req, res, next) => {
                 ngoaiNgu,
             }
 
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiNgoaiNgu.id": id }, {
+            let updateUser = await Users.findOneAndUpdate({
+                $or: [{
+                        idTimViec365: userId,
+                        type: 0,
+                        "inForPerson.candiNgoaiNgu.id": id
+                    },
+                    {
+                        idTimViec365: userId,
+                        type: 2,
+                        "inForPerson.candiNgoaiNgu.id": id
+                    },
+                ]
+            }, {
                 $set: {
                     "inForPerson.candiNgoaiNgu.$": updateNgoaiNgu
                 },
@@ -1343,7 +1380,7 @@ exports.deleteNgoaiNgu = async(req, res, next) => {
     try {
         if (req.user && req.body.chungchi && req.body.sodiem && req.body.ngoaingu && req.body.idnn) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let chungChi = req.body.chungchi
             let point = req.body.sodiem
             let ngoaiNgu = req.body.ngoaingu
@@ -1354,9 +1391,21 @@ exports.deleteNgoaiNgu = async(req, res, next) => {
                 point,
                 ngoaiNgu,
             }
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiNgoaiNgu.id": id }, {
+            let updateUser = await Users.findOneAndUpdate({
+                $or: [{
+                        idTimViec365: userId,
+                        type: 0,
+                        "inForPerson.candiNgoaiNgu.id": id
+                    },
+                    {
+                        idTimViec365: userId,
+                        type: 2,
+                        "inForPerson.candiNgoaiNgu.id": id
+                    },
+                ]
+            }, {
                 $pull: {
-                    "inForPerson.candiNgoaiNgu": deleteNgoaiNgu
+                    "inForPerson.candiNgoaiNgu.$": deleteNgoaiNgu
                 },
             })
             if (updateUser) {
@@ -1376,14 +1425,14 @@ exports.addExp = async(req, res, next) => {
     try {
         if (req.user && req.body.chucdanh && req.body.congty && req.body.motaexp && req.body.onetime && req.body.twotime) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let jobTitle = req.body.chucdanh
             let company = req.body.congty
             let desExp = req.body.motaexp
             let start = req.body.onetime
             let end = req.body.twotime
 
-            const maxID = await Users.findOne({ _id: userId }, { "inForPerson.candiExp.id": 1 }).sort({ "inForPerson.candiExp.id": -1 }).limit(1).lean();
+            const maxID = await Users.findOne({ idTimViec365: userId }, { "inForPerson.candiExp.id": 1 }).sort({ "inForPerson.candiExp.id": -1 }).limit(1).lean();
             if (maxID.inForPerson.candiExp[0]) {
                 newID = Number(maxID.inForPerson.candiExp[maxID.inForPerson.candiExp.length - 1].id + 1);
             } else newID = 1
@@ -1396,7 +1445,7 @@ exports.addExp = async(req, res, next) => {
                 end
             }
 
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId }, {
+            let updateUser = await functions.findOneAndUpdateUser(userId, {
                 $push: {
                     "inForPerson.candiExp": addExp
                 }
@@ -1434,7 +1483,19 @@ exports.updateExp = async(req, res, next) => {
                 end
             }
 
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiExp.id": id }, {
+            let updateUser = await Users.findOneAndUpdate({
+                $or: [{
+                        idTimViec365: userId,
+                        type: 0,
+                        "inForPerson.candiExp.id": id
+                    },
+                    {
+                        idTimViec365: userId,
+                        type: 2,
+                        "inForPerson.candiExp.id": id
+                    },
+                ]
+            }, {
                 $set: {
                     "inForPerson.candiExp.$": updateExp
                 },
@@ -1456,14 +1517,14 @@ exports.deleteExp = async(req, res, next) => {
     try {
         if (req.user && req.body.chucdanh && req.body.congty && req.body.motaexp && req.body.onetime && req.body.twotime && req.body.idkn) {
 
-            let userId = req.user.data._id
+            let userId = req.user.data.idTimViec365
             let jobTitle = req.body.chucdanh
             let company = req.body.congty
             let desExp = req.body.motaexp
             let start = req.body.onetime
             let end = req.body.twotime
             let id = req.body.idkn
-            let updateExp = {
+            let deleteExp = {
                 id,
                 jobTitle,
                 company,
@@ -1471,9 +1532,21 @@ exports.deleteExp = async(req, res, next) => {
                 start,
                 end
             }
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { _id: userId, "inForPerson.candiExp.id": id }, {
+            let updateUser = await Users.findOneAndUpdate({
+                $or: [{
+                        idTimViec365: userId,
+                        type: 0,
+                        "inForPerson.candiExp.id": id
+                    },
+                    {
+                        idTimViec365: userId,
+                        type: 2,
+                        "inForPerson.candiExp.id": id
+                    },
+                ]
+            }, {
                 $pull: {
-                    "inForPerson.candiExp": updateExp
+                    "inForPerson.candiExp.$": deleteExp
                 },
             })
             if (updateUser) {
@@ -1609,6 +1682,126 @@ exports.candidateAI = async(req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi hiển thị ứng viên ngẫu nhiên theo ai", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//hiển thị thông tin chi tiết ứng viên theo 3 cách đăng kí
+exports.infoCandidate = async(req, res, next) => {
+    try {
+        if (req.body.iduser) {
+            let userId = req.body.iduser
+            let CvUv = functions.getDatafindOne(CVUV, { userId: userId })
+            let userInfo = await functions.findOneUser(userId)
+            if (userInfo) {
+                if (req.user && req.user.data.type == 1) {
+                    let companyId = req.user.data.idTimViec365
+                    let checkApplyForJob = await functions.getDatafindOne(applyForJob, { userID: userId, comID: companyId })
+                    let checkPoint = await functions.getDatafindOne(pointUsed, { uscID: companyId, useID: userId })
+                    if (checkApplyForJob && checkPoint) {
+                        userInfo.statusCheck = true
+                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
+                    } else {
+                        userInfo.phoneTK = "đăng nhập để xem sdt đăng kí"
+                        userInfo.phone = "đăng nhập để xem sdt"
+                        userInfo.email = "đăng nhập để xem email"
+                        userInfo.emailContact = "đăng nhập để xem email liên hệ"
+                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
+
+                    }
+
+                } else {
+                    userInfo.phoneTK = "đăng nhập để xem sdt đăng kí"
+                    userInfo.phone = "đăng nhập để xem sdt"
+                    userInfo.email = "đăng nhập để xem email"
+                    userInfo.emailContact = "đăng nhập để xem email liên hệ"
+                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
+                }
+            } else return functions.setError(res, "Không có thông tin user", 400);
+
+
+        } else return functions.setError(res, "thông tin truyền lên không đầy đủ", 400);
+
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi xóa kinh nghiệm làm việc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//ứng viên ứng tuyển 
+exports.candidateApply = async(req, res, next) => {
+    try {
+        if (req.user && req.body.idtin) {
+            let newId = req.body.idtin
+            let userId = req.user.data.idTimViec365
+            let cv = req.user.data.inForPerson.cv
+            let newIDMax
+            const maxID = await applyForJob.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            if (maxID) {
+                newIDMax = Number(maxID._id) + 1;
+            } else newIDMax = 1
+            let checkApplyForJob = await functions.getDatafindOne(applyForJob, { userID: userId, newID: newId })
+            let checkNew = await functions.getDatafindOne(newTV365, { _id: newId })
+            if (checkApplyForJob) {
+                return functions.setError(res, "Ứng viên đã nộp hồ sơ", 400);
+            } else if (!checkNew) {
+                return functions.setError(res, "Không tồn tại tin đăng này", 400);
+            } else {
+                let newApplyForJob = new applyForJob({
+                    _id: newIDMax,
+                    userID: userId,
+                    newID: newId,
+                    time: new Date(Date.now()),
+                    cv: cv
+                })
+                newApplyForJob.save()
+                if (newApplyForJob) {
+                    functions.success(res, "ứng viên ứng tuyển thành công")
+                }
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi xóa kinh nghiệm làm việc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//ứng viên lưu tin
+exports.candidateSavePost = async(req, res, next) => {
+    try {
+        if (req.user && req.body.idtin) {
+            let newId = req.body.idtin
+            let userId = req.user.data.idTimViec365
+            let newIDMax
+            const maxID = await userSavePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            if (maxID) {
+                newIDMax = Number(maxID._id) + 1;
+            } else newIDMax = 1
+            let checkUserSavePost = await functions.getDatafindOne(userSavePost, { userID: userId, newID: newId })
+            let checkNew = await functions.getDatafindOne(newTV365, { _id: newId })
+            if (checkUserSavePost) {
+                return functions.setError(res, "Ứng viên đã nộp hồ sơ", 400);
+            } else if (!checkNew) {
+                return functions.setError(res, "Không tồn tại tin đăng này", 400);
+            } else {
+                let newUserSavePost = new userSavePost({
+                    _id: newIDMax,
+                    userID: userId,
+                    newID: newId,
+                    saveTime: new Date(Date.now()),
+                })
+                newUserSavePost.save()
+                if (newUserSavePost) {
+                    functions.success(res, "ứng viên lưu tin ứng tuyển thành công")
+                }
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi ứng viên lưu tin ứng tuyển", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
