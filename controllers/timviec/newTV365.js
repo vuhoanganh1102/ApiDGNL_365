@@ -818,8 +818,8 @@ exports.listJobHightSalary = async(req, res, next) => {
                     hanNop: { $gt: now },
                     cityID: { $in: [city] },
                 }, {
-                    newGhim: -1,
                     money: -1,
+                    newGhim: -1,
                     updateTime: -1,
                 }, skip, limit);
             }
@@ -828,8 +828,8 @@ exports.listJobHightSalary = async(req, res, next) => {
                     hanNop: { $gt: now },
                     cateID: { $in: [job] },
                 }, {
-                    newGhim: -1,
                     money: -1,
+                    newGhim: -1,
                     updateTime: -1,
                 }, skip, limit);
             }
@@ -837,8 +837,8 @@ exports.listJobHightSalary = async(req, res, next) => {
                 listJobNew = await functions.pageFind(NewTV365, {
                     hanNop: { $gt: now },
                 }, {
-                    newGhim: -1,
                     money: -1,
+                    newGhim: -1,
                     updateTime: -1,
                 }, skip, limit);
             }
@@ -848,8 +848,8 @@ exports.listJobHightSalary = async(req, res, next) => {
                     cityID: { $in: [city] },
                     cateID: { $in: [job] },
                 }, {
-                    newGhim: -1,
                     money: -1,
+                    newGhim: -1,
                     updateTime: -1,
                 }, skip, limit);
             }
