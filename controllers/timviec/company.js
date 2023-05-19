@@ -2,13 +2,13 @@ const md5 = require('md5');
 
 const Users = require('../../models/Users');
 const functions = require('../../services/functions');
-const ApplyForJob = require('../../models/Timviec365/Timviec/ApplyForJob.model');
+const ApplyForJob = require('../../models/Timviec365/Timviec/Candicate/ApplyForJob.model');
 const NewTV365 = require('../../models/Timviec365/Timviec/Company/New.model');
 const SaveCandidate = require('../../models/Timviec365/Timviec/Company/SaveCandidate.model');
 const PointCompany = require('../../models/Timviec365/Timviec/Company/PointCompany.model');
 const PointUsed = require('../../models/Timviec365/Timviec/Company/PointUsed.model');
 const CompanyUnset = require('../../models/Timviec365/Timviec/Company/UserCompanyUnset');
-const AdminUser = require('../../models/Timviec365/Timviec/AdminUser.model');
+const AdminUser = require('../../models/Timviec365/Timviec/Admin/AdminUser.model');
 const Linh_Vuc = require('../../models/Timviec365/Timviec/Lv.model')
 const CV = require('../../models/Timviec365/CV/CV')
 

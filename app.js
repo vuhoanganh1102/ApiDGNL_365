@@ -5,14 +5,15 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose')
 
-// var candidateRouter = require('./routes/timviec/candidate');
+var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
-// var cvRouter = require('./routes/timviec/cv');
-// var donRouter = require('./routes/timviec/don');
-// var thuRouter = require('./routes/timviec/thu');
-// var syllRouter = require('./routes/timviec/syll');
+var cvRouter = require('./routes/timviec/cv');
+var donRouter = require('./routes/timviec/don');
+var thuRouter = require('./routes/timviec/thu');
+var syllRouter = require('./routes/timviec/syll');
 var newTV365Router = require('./routes/timviec/newTV365');
 var adminRouter = require('./routes/timviec/admin');
+var blogRouter = require('./routes/timviec/blog')
 
 // Quản lý chung
 var deparmentRouter = require('./routes/qlc/deparment')
@@ -35,14 +36,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/api/timviec/candidate', candidateRouter);
+app.use('/api/timviec/candidate', candidateRouter);
 app.use('/api/timviec/newTV365', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
-    // app.use('/api/timviec/cv', cvRouter);
-    // app.use('/api/timviec/don', donRouter);
-    // app.use('/api/timviec/thu', thuRouter);
-    // app.use('/api/timviec/syll', syllRouter);
+app.use('/api/timviec/blog', blogRouter)
+app.use('/api/timviec/cv', cvRouter);
+app.use('/api/timviec/don', donRouter);
+app.use('/api/timviec/thu', thuRouter);
+app.use('/api/timviec/syll', syllRouter);
 app.use('/api/tool', toolAddDataRouter);
 
 // API quản lí chung

@@ -3,8 +3,8 @@ const City = require('../../models/Timviec365/Timviec/City.model')
 const District = require('../../models/Timviec365/Timviec/District.model');
 const NewTV365 = require('../../models/Timviec365/Timviec/Company/New.model');
 const Users = require('../../models/Users')
-const ApplyForJob = require('../../models/Timviec365/Timviec/ApplyForJob.model');
-const UserSavePost = require('../../models/Timviec365/Timviec/UserSavePost.model')
+const ApplyForJob = require('../../models/Timviec365/Timviec/Candicate/ApplyForJob.model');
+const UserSavePost = require('../../models/Timviec365/Timviec/Candicate/UserSavePost.model')
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -279,7 +279,7 @@ exports.getListPost = async(req, res, next) => {
             return functions.setError(res, 'không lấy được danh sách', 404)
         } else {
             let listPost = await functions.getDatafind(NewTV365, { userID: idCompany });
-            return functions.success(res, "Lấy danh sách tin đăng thành công", listPost);
+            return functions.success(res, "Lấy danh sách tin đăng thành công", { listPost });
 
         }
 
@@ -295,7 +295,7 @@ exports.getPost = async(req, res, next) => {
         let id = req.body.new_id;
         let post = await functions.getDatafindOne(NewTV365, { _id: id })
         if (post) {
-            return functions.success(res, "Láy dữ liệu thành công", [post])
+            return functions.success(res, "Láy dữ liệu thành công", { post })
         }
         return functions.setError(res, 'sai id', 404)
 
@@ -969,7 +969,7 @@ exports.getJobListByCompany = async(req, res, next) => {
                 let listPost = await NewTV365.aggregate([
                     { $match: { hanNop: { $gt: now }, cityID: { $in: [city] }, districtID: { $in: [district] } } },
                     { $lookup: { from: 'Users', localField: 'userID', foreignField: 'idTimViec365', as: 'referencedData' } },
-                    { $project: { _id: 1, referencedData: { userName: 1 } } }, // Thay 'userName' bằng trường mà bạn muốn lấy
+                    { $project: { _id: 1, referencedData: { userName: 1 } } },
                     { $sort: { newGhim: -1, updateTime: -1 } },
                     { $skip: skip },
                     { $limit: limit }

@@ -1,9 +1,9 @@
 const md5 = require('md5');
 
-const AdminUser = require('../../models/Timviec365/Timviec/AdminUser.model');
-const Modules = require('../../models/Timviec365/Timviec/modules.model');
+const AdminUser = require('../../models/Timviec365/Timviec/Admin/AdminUser.model');
+const Modules = require('../../models/Timviec365/Timviec/Admin/Modules.model');
 const functions = require('../../services/functions');
-const AdminUserRight = require('../../models/Timviec365/Timviec/adminUserRight.model')
+const AdminUserRight = require('../../models/Timviec365/Timviec/Admin/AdminUserRight.model')
 
 // hàm lấy dữ liệu modules
 exports.getModules = async(req, res, next) => {

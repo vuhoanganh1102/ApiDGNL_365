@@ -1,8 +1,9 @@
 const fnc = require('../../services/functions');
 const NewTV365 = require('../../models/Timviec365/Timviec/Company/New.model')
-const AdminUser = require('../../models/Timviec365/Timviec/AdminUser.model');
+const AdminUser = require('../../models/Timviec365/Timviec/Admin/AdminUser.model');
 const Linh_Vuc = require('../../models/Timviec365/Timviec/Lv.model')
 const KeyWord = require('../../models/Timviec365/Timviec/Keyword.model');
+const CategoryBlog = require('../../models/Timviec365/Timviec/Blog/category')
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
@@ -223,6 +224,44 @@ exports.toolLV = async(req, res, next) => {
         }
         while (result)
         await fnc.success(res, 'thành công');
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm thêm dữ liệu category blog
+exports.toolCategoryBlog = async(req, res, next) => {
+    try {
+        let data = await fnc.getDataAxios('https://timviec365.vn/api_nodejs/get_list_category_blog.php')
+        if (data.length > 0) {
+            data.forEach(async element => {
+                const category = new CategoryBlog({
+                    _id: element.cat_id,
+                    name: element.cat_name,
+                    adminID: element.admin_id,
+                    langID: element.lang_id,
+                    title: element.cat_title,
+                    keyword: element.cat_keyword,
+                    nameRewrite: element.cat_name_rewrite,
+                    link: element.cat_link,
+                    picture: element.cat_picture,
+                    type: element.cat_type,
+                    form: element.cat_form,
+                    description: element.cat_description,
+                    parentID: element.cat_parent_id,
+                    hasChild: element.cat_has_child,
+                    order: element.cat_order,
+                    active: element.cat_active,
+                    show: element.cat_show,
+                    home: element.cat_home,
+                })
+                await category.save();
+
+            });
+        }
+        await fnc.success(res, 'thành công', { data });
+
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)

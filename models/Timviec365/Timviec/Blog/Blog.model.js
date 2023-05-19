@@ -12,59 +12,64 @@ const blogSchema = new mongoose.Schema({
         type: Number,
         default: 1
     },
-    title: String,
-    titleRewrite: String,
+    title: {
+        type: String,
+        default: null
+    },
+    titleRewrite: {
+        type: String,
+        default: null
+    },
     redirect301: {
         type: String,
-        required: true,
+        default: null
     },
     canonical: {
         type: String,
-        required: true,
+        default: null
     },
     mail: {
         type: Number,
         default: 0,
-        required: true,
     },
     picture: {
         type: String,
-        required: true,
+        default: null
     },
     teaser: {
         type: String,
-        required: true,
+        default: null
     },
     description: {
         type: String,
-        required: true,
+        default: null
     },
     thongTin: {
         type: String,
-        required: true,
+        default: null
     },
     des: {
         type: String,
-        required: true,
+        default: null
     },
-    keyword: String,
+    keyword: {
+        type: String,
+        default: null
+    },
     video: {
         type: String,
-        required: true,
+        default: null
     },
     categoryID: {
         type: Number,
-        required: true,
         default: 0
     },
     categoryCB: {
         type: Number,
-        required: true,
     },
     date: Date,
     adminEdit: {
         type: Number,
-        required: true,
         default: 0
     },
     dateLastEdit: {
@@ -85,7 +90,7 @@ const blogSchema = new mongoose.Schema({
     },
     cateUrl: {
         type: String,
-        required: true
+        default: null
     },
     hot: {
         type: Number,
@@ -101,26 +106,26 @@ const blogSchema = new mongoose.Schema({
     },
     urlLq: {
         type: String,
-        required: true
+        default: null
     },
     tagCate: {
         type: Number,
         default: 0,
-        required: true
     },
     Vl: {
         type: String,
-        required: true
+        default: null
     },
     tdgy: {
         type: String,
+        default: null
     },
     ndgy: {
         type: String,
+        default: null
     },
     audio: {
         type: Number,
-        required: true,
         default: 0
     },
 }, {
