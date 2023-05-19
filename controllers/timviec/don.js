@@ -1,7 +1,7 @@
 const functions = require('../../services/functions');
 const DonXinViec = require('../../models/Timviec365/CV/DonXinViec');
 const NganhDon = require('../../models/Timviec365/CV/NganhDon');
-const DonUV = require('../../models/Timviec365/CV/donUV');
+const DonUV = require('../../models/Timviec365/CV/DonUV');
 
 // lấy danh sách mẫu đơn
 exports.getDon = async(req, res, next) => {
