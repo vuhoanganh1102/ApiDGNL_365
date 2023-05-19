@@ -12,7 +12,9 @@ const newTV365 = require('../../models/Timviec365/Timviec/newTV365.model');
 const applyForJob = require('../../models/Timviec365/Timviec/applyForJob.model');
 const userSavePost = require('../../models/Timviec365/Timviec/userSavePost.model');
 const pointUsed = require('../../models/Timviec365/Timviec/pointUsed.model');
-//mã hóa mật khẩu
+const Category = require('../../models/Timviec365/Timviec/category.model')
+const CommentPost = require('../../models/Timviec365/Timviec/CommentPost')
+    //mã hóa mật khẩu
 const md5 = require('md5');
 //token
 var jwt = require('jsonwebtoken');
@@ -109,7 +111,7 @@ exports.RegisterB1 = async(req, res, next) => {
                         req.body._id = newIDUser
                         const token = await functions.createToken(req.body, "2d")
 
-                        return functions.success(res, 'Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong', token)
+                        return functions.success(res, 'Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong', { token: token })
                     } else return functions.setError(res, "Email không hợp lệ", 200);
                 }
             } else return functions.setError(res, "Số điện thoại không hợp lệ", 200);
@@ -612,7 +614,7 @@ exports.loginUv = async(req, res, next) => {
             }
             if (findUser.type == type) {
                 const token = await functions.createToken(findUser, "2d")
-                return functions.success(res, 'Đăng nhập thành công', token)
+                return functions.success(res, 'Đăng nhập thành công', { token: token })
             } else return functions.setError(res, "tài khoản này không phải tài khoản cá nhân", 200)
 
 
@@ -1737,12 +1739,15 @@ exports.candidateApply = async(req, res, next) => {
             let userId = req.user.data.idTimViec365
             let cv = req.user.data.inForPerson.cv
             let newIDMax
+
             const maxID = await applyForJob.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
             if (maxID) {
                 newIDMax = Number(maxID._id) + 1;
             } else newIDMax = 1
             let checkApplyForJob = await functions.getDatafindOne(applyForJob, { userID: userId, newID: newId })
             let checkNew = await functions.getDatafindOne(newTV365, { _id: newId })
+            let cateId = checkNew.cateID.split(',')[0]
+            let cate = await functions.getDatafindOne(Category, { _id: cateId })
             if (checkApplyForJob) {
                 return functions.setError(res, "Ứng viên đã nộp hồ sơ", 400);
             } else if (!checkNew) {
@@ -1758,6 +1763,15 @@ exports.candidateApply = async(req, res, next) => {
                 newApplyForJob.save()
                 if (newApplyForJob) {
                     functions.success(res, "ứng viên ứng tuyển thành công")
+                    functions.getDataAxios("http://43.239.223.142:9000/api/V2/Notification/NotificationTimviec365", {
+                        EmployeeId: req.user.data._id,
+                        CompanyId: checkNew.userID,
+                        Type: 2,
+                        // Link: ??,
+                        Position: checkNew.title,
+                        City: checkNew.cityID,
+                        Career: cate.name,
+                    })
                 }
             }
         } else {
@@ -1783,7 +1797,7 @@ exports.candidateSavePost = async(req, res, next) => {
             let checkUserSavePost = await functions.getDatafindOne(userSavePost, { userID: userId, newID: newId })
             let checkNew = await functions.getDatafindOne(newTV365, { _id: newId })
             if (checkUserSavePost) {
-                return functions.setError(res, "Ứng viên đã nộp hồ sơ", 400);
+                return functions.setError(res, "Ứng viên đã luu tin nay", 400);
             } else if (!checkNew) {
                 return functions.setError(res, "Không tồn tại tin đăng này", 400);
             } else {
@@ -1803,6 +1817,64 @@ exports.candidateSavePost = async(req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi ứng viên lưu tin ứng tuyển", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//comment tin ứng tuyển
+exports.commentPost = async(req, res, next) => {
+    try {
+        if (req.user && req.body.url && req.body.cm_id && req.body.name && req.body.comment) {
+
+            let userId = req.user.data.idTimViec365
+            let url = req.body.url
+            let parentCmId = req.body.cm_id
+            let imageComment = req.file
+            let CommentName = req.body.name
+            let comment = req.body.comment
+            let hasTag = req.body.cm_hastag
+            let author = req.body.author
+
+            const maxID = await CommentPost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            if (maxID) {
+                newID = Number(maxID._id) + 1;
+            } else newID = 1
+
+            if (req.file) {
+                let addNewComment = new CommentPost({
+                    _id: newID,
+                    urlCm: url,
+                    parentCmId: parentCmId,
+                    comment: comment,
+                    commentName: CommentName,
+                    commentAvatar: req.user.data.avatarUser,
+                    image: imageComment.filename,
+                    timeComment: new Date(Date.now()),
+                })
+                addNewComment.save()
+                if (addNewComment) {
+                    functions.success(res, "Thêm bình luận thành công");
+                }
+            } else {
+                let addNewComment = new CommentPost({
+                    _id: newID,
+                    urlCm: url,
+                    parentCmId: parentCmId,
+                    comment: comment,
+                    commentName: CommentName,
+                    commentAvatar: req.user.data.avatarUser,
+                    timeComment: new Date(Date.now()),
+                })
+                addNewComment.save()
+                if (addNewComment) {
+                    functions.success(res, "Thêm bình luận thành công");
+                }
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi thêm kinh nghiệm làm việc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
