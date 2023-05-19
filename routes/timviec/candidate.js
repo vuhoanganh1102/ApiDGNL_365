@@ -98,4 +98,14 @@ router.post('/changePassword', formData.parse(), functions.checkToken, candidate
 
 //đổi mật khẩu
 router.post('/sendOTPChangePass', formData.parse(), functions.checkToken, candidate.sendOTPChangePass); //phần gửi otp khác với quên mật khẩu, còn phần xác nhận otp với phần đổi mật khẩu thì giống nhau
+
+//Thông tin chi tiết ứng viên
+router.post('/infoCandidate', formData.parse(), functions.checkToken, candidate.infoCandidate);
+
+//ứng viên ứng tuyển 
+router.post('/candidateApply', formData.parse(), functions.checkToken, candidate.candidateApply);
+
+//ứng viên lưu tin 
+router.post('/candidateSavePost', formData.parse(), functions.checkToken, candidate.candidateSavePost);
+
 module.exports = router;

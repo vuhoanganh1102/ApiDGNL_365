@@ -19,8 +19,7 @@ const { promisify } = require('util');
 // tạo token
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
-const { error } = require('console');
-const DonXinViec = require('../models/Timviec365/CV/DonXinViec');
+const Users = require('../models/Users');
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -99,9 +98,9 @@ exports.checkPhoneNumber = async(phone) => {
     }
     // hàm validate email
 exports.checkEmail = async(email) => {
-  const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-  return gmailRegex.test(email);
-}
+        const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+        return gmailRegex.test(email);
+    }
     // hàm validate link
 exports.checkLink = async(link) => {
         const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
@@ -157,7 +156,7 @@ exports.checkLink = async(link) => {
 
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
-  return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
+    return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
 };
 
 // hàm thực thi khi thất bại
@@ -475,7 +474,7 @@ exports.getDataCVSortByDownload = async(condition) => {
 //hàm kiểm tra string có phải number không
 exports.checkNumber = async(string) => {
     return !isNaN(string)
- }
+}
 
 //hàm phân trang có chọn lọc những trường dc hiển thị
 exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {
@@ -491,19 +490,47 @@ exports.checkTokenV2 = async(req, res, next) => {
     }
 }
 
-// hàm dém count
-exports.findCount = async(model, filter) => {
-    try {
-        const count = await model.countDocuments(filter);
-        return count;
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-};
-//base64 decrypt image
-exports.decrypt = async(req, res, next) => {
-    const base64 = req.body.base64;
-    req.file = Buffer.from(base64, 'base64').toString('utf-8');
-    return next();
-};
+//hàm tìm kiếm finduser với idtimviec và type = 0 hoặc 2
+exports.findUser = async(userId, select, sort, skip, limit) => {
+    return Users.find({
+        $or: [{
+                idTimViec365: userId,
+                type: 0
+            },
+            {
+                idTimViec365: userId,
+                type: 2
+            },
+        ]
+    }, { select }).sort(sort).skip(skip).limit(limit)
+}
+
+//hàm tìm kiếm findOneuser với idtimviec và type = 0 hoặc 2
+exports.findOneUser = async(userId, select) => {
+    return Users.findOne({
+        $or: [{
+                idTimViec365: userId,
+                type: 0
+            },
+            {
+                idTimViec365: userId,
+                type: 2
+            },
+        ]
+    }, select)
+}
+
+//hàm tìm kiếm và cập nhật user với id timviec và type =0 hoặc type =2
+exports.findOneAndUpdateUser = async(userId, projection) => {
+    return Users.findOneAndUpdate({
+        $or: [{
+                idTimViec365: userId,
+                type: 0
+            },
+            {
+                idTimViec365: userId,
+                type: 2
+            },
+        ]
+    }, projection)
+}
