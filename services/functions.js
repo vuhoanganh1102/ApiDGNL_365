@@ -497,3 +497,15 @@ exports.decrypt = async(req, res, next) => {
     req.file = Buffer.from(base64, 'base64').toString('utf-8');
     return next();
 };
+exports.thresholds = [
+    { minValue: 1000000, maxValue: 3000000, money: 2 },
+    { minValue: 3000000, maxValue: 5000000, money: 3 },
+    { minValue: 5000000, maxValue: 7000000, money: 4 },
+    { minValue: 7000000, maxValue: 10000000, money: 5 },
+    { minValue: 10000000, maxValue: 15000000, money: 6 },
+    { minValue: 15000000, maxValue: 20000000, money: 7 },
+    { minValue: 20000000, maxValue: 30000000, money: 8 },
+    { minValue: 30000000, maxValue: 50000000, money: 9 },
+    { minValue: 50000000, maxValue: 100000000, money: 10 },
+    { minValue: 100000000, maxValue: Infinity, money: 11 }
+];

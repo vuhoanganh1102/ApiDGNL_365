@@ -71,9 +71,30 @@ exports.postNewTv365 = async(req, res, next) => {
                     minValue = null;
                     break;
                 case 2:
+                    for (const threshold of functions.thresholds) {
+                        if (minValue >= threshold.minValue && minValue < threshold.maxValue) {
+                            money = threshold.money;
+                            break;
+                        }
+                    }
                     maxValue = null;
                     break;
                 case 3:
+                    for (const threshold of functions.thresholds) {
+                        if (maxValue > threshold.minValue && maxValue <= threshold.maxValue) {
+                            money = threshold.money;
+                            break;
+                        }
+                    }
+                    minValue = null;
+                    break;
+                case 4:
+                    for (const threshold of functions.thresholds) {
+                        if (minValue >= threshold.minValue && maxValue <= threshold.maxValue) {
+                            money = threshold.money;
+                            break;
+                        }
+                    }
                     minValue = null;
                     break;
                 case 5:
@@ -166,9 +187,9 @@ exports.postNewTv365 = async(req, res, next) => {
                 userID: idCompany,
                 alias: '',
                 redirect301: '',
-                cateID: cateID,
-                cityID: city,
-                districtID: district,
+                cateID: [cateID],
+                cityID: [city],
+                districtID: [district],
                 address: address,
                 money: money,
                 capBac: capBac,
@@ -191,7 +212,7 @@ exports.postNewTv365 = async(req, res, next) => {
                     hoaHong: hoaHong || " ",
                     tgtv: tgtv || " ",
                     videoType: video || " ",
-                    images: listImg || " ",
+                    images: listImg || null,
                     link: link,
                     lv: lv,
                 },
@@ -205,12 +226,10 @@ exports.postNewTv365 = async(req, res, next) => {
             await newTV.save();
             await Users.updateOne({ idTimViec365: idCompany }, {
                 $set: {
-                    inForCompany: {
-                        userContactName: userContactName,
-                        userContactEmail: userContactEmail,
-                        userContactAddress: userContactAddress,
-                        userContactPhone: userContactPhone,
-                    }
+                    'inForCompany.userContactName': userContactName,
+                    'inForCompany.userContactPhone': userContactPhone,
+                    'inForCompany.userContactAddress': userContactAddress,
+                    'inForCompany.userContactEmail': userContactEmail,
                 }
             });
             return functions.success(res, "tạo bài tuyển dụng thành công")
@@ -405,9 +424,30 @@ exports.updateNewTv365 = async(req, res, next) => {
                     minValue = null;
                     break;
                 case 2:
+                    for (const threshold of functions.thresholds) {
+                        if (minValue >= threshold.minValue && minValue < threshold.maxValue) {
+                            money = threshold.money;
+                            break;
+                        }
+                    }
                     maxValue = null;
                     break;
                 case 3:
+                    for (const threshold of functions.thresholds) {
+                        if (maxValue > threshold.minValue && maxValue <= threshold.maxValue) {
+                            money = threshold.money;
+                            break;
+                        }
+                    }
+                    minValue = null;
+                    break;
+                case 4:
+                    for (const threshold of functions.thresholds) {
+                        if (minValue >= threshold.minValue && maxValue <= threshold.maxValue) {
+                            money = threshold.money;
+                            break;
+                        }
+                    }
                     minValue = null;
                     break;
                 case 5:
@@ -436,11 +476,20 @@ exports.updateNewTv365 = async(req, res, next) => {
             if (avatar && avatar.length >= 1 && avatar.length <= 6) {
                 for (let i = 0; i < avatar.length; i++) {
                     let checkImg = await functions.checkImage(avatar[i].path);
+                    let isValid = true;
                     if (checkImg) {
                         listImg.push(avatar[i].filename);
                     } else {
-                        await functions.deleteImg(avatar[i]);
-                        return functions.setError(res, `sai định dạng ảnh hoặc ảnh lớn hơn 2MB :${avatar[i].originalname}`, 404);
+                        isValid = false;
+                    }
+                    if (isValid == false) {
+                        for (let i = 0; i < avatar.length; i++) {
+                            await functions.deleteImg(avatar[i])
+                        }
+                        if (videoType) {
+                            await functions.deleteImg(videoType[0])
+                        }
+                        return functions.setError(res, 'đã có ảnh sai định dạng hoặc lớn hơn 2MB', 404)
                     }
                 }
             } else if (avatar && avatar.length > 6) {
@@ -480,9 +529,9 @@ exports.updateNewTv365 = async(req, res, next) => {
                 $set: {
                     title: title,
                     alias: '',
-                    cateID: cateID,
-                    cityID: city,
-                    districtID: district,
+                    cateID: [cateID],
+                    cityID: [city],
+                    districtID: [district],
                     address: address,
                     money: money,
                     capBac: capBac,
@@ -514,12 +563,10 @@ exports.updateNewTv365 = async(req, res, next) => {
             });
             await Users.updateOne({ idTimViec365: idCompany }, {
                 $set: {
-                    inForCompany: {
-                        userContactName: userContactName,
-                        userContactEmail: userContactEmail,
-                        userContactAddress: userContactAddress,
-                        userContactPhone: userContactPhone,
-                    }
+                    'inForCompany.userContactName': userContactName,
+                    'inForCompany.userContactPhone': userContactPhone,
+                    'inForCompany.userContactAddress': userContactAddress,
+                    'inForCompany.userContactEmail': userContactEmail,
                 }
             });
             return functions.success(res, "cập nhập bài tuyển dụng thành công")
