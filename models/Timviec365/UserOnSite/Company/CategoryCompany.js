@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const lvSchema = new mongoose.Schema({
+const CategoryCompanySchema = new mongoose.Schema({
     _id: {
         type: Number,
         required: true,
@@ -18,8 +18,8 @@ const lvSchema = new mongoose.Schema({
     tagIndex: Number
 
 }, {
-    collection: 'Linh_Vuc',
+    collection: 'CategoryCompany',
     versionKey: false,
     timestamp: true
 })
-module.exports = mongoose.model("Linh_Vuc", lvSchema);
+module.exports = mongoose.model("CategoryCompany", CategoryCompanySchema);
