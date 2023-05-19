@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema
 const donUVSchema = new mongoose.Schema({
     _id: {
         type: Number

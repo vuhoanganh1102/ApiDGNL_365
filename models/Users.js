@@ -420,6 +420,11 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            avatarCompany: {
+                //logo công ty 
+                type: String,
+                default: null
+            },
             idKD: {
                 // ID Kinh doanh phụ trách hỗ trợ
                 type: Number,

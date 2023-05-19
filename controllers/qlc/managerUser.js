@@ -4,7 +4,7 @@ const functions = require("../../services/functions")
 //tìm danh sách nhân viên của cty 
 exports.getListUser= async (req, res) => {
     //Function tìm user là TK nhân viên và TK Cty
-    await functions.getDatafind(managerUser, {type :1 || 2  } )
+    await functions.getDatafind(managerUser, {idQLC: idQLC,type : 2  } )
         //thành công trả models
         .then((manageUser) => functions.success(res, "", manageUser))
         // bắt lỗi 
@@ -16,10 +16,10 @@ exports.getUserById = async (req, res) => {
     const idQLC = req.params.idQLC;
     // nếu không có param id trả lỗi 
     if (isNaN(idQLC)) {
-        functions.setError(res, "Id must be a number", 502);
+        functions.setError(res, "IdQLC must be a number", 502);
     } else {
     //nếu tìm được idQLC của nhân viên  
-        const UserQLC = await UserQLC.findById(idQLC);
+        const UserQLC = await functions.getDatafindOne(managerUser, { idQLC: idQLC , type : 2 });
         if (!UserQLC) {
     //nếu biến idQLc trong usermodul rỗng
             functions.setError(res, "user cannot be found or does not exist", 503);
@@ -50,7 +50,7 @@ exports.createUser = async (req, res) => {
         functions.setError(res, "number phone must be a number", 508);
 
     } else {
-        //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
+        //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 0 có giá trị max thì bằng max + 1 
         let maxID = await functions.getMaxID(idQLC);
         if (!maxID) {
             maxID = 0
@@ -82,6 +82,8 @@ exports.createUser = async (req, res) => {
             })
     }
 };
+
+// chỉnh sửa
 exports.editUser = async (req, res) => {
     const idQLC = req.params.idQLC;
 
@@ -109,11 +111,11 @@ exports.editUser = async (req, res) => {
 
         } else {
 
-            const manager = await functions.getDatafindOne(managerUser, { idQLC: idQLC });
+            const manager = await functions.getDatafindOne(managerUser, { idQLC: idQLC , type : 2});
             if (!manager) {
                 functions.setError(res, "manager does not exist!", 510);
             } else {
-                await functions.getDatafindOneAndUpdate(managerUser, { idQLC: idQLC }, {
+                await functions.getDatafindOneAndUpdate(managerUser, { idQLC: idQLC, type : 2 }, {
                     userName : userName,
                     email : email,
                     phoneTK : phoneTK,
@@ -136,7 +138,7 @@ exports.deleteUser = async (req, res) => {
     if (iasNN(idQLC)) {
         functions.setError(res, "Id must be a number", 502);
     } else {// thì tìm trong 1 idQLC trong user model 
-        const manager = await functions.getDatafindOne(managerUser, { idQLC: idQLC });
+        const manager = await functions.getDatafindOne(managerUser, { idQLC: idQLC, type : 2 });
         if (!manager) {//nếu biến manager không tìm thấy  trả ra fnc lỗi 
             functions.setError(res, "manager not exist!", 510);
         } else {//tồn tại thì xóa 

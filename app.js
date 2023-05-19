@@ -20,13 +20,11 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
-// <<<<<<< HEAD
 var childCompanyRouter = require('./routes/qlc/childCompany')
 var managerUser = require('./routes/qlc/managerUser')
 
-// =======
-// var childCompanyRouter = require('./routes/qlc/childCompany');
-// >>>>>>> 748dd5dc348c7daf91c661b1ba3ac35519938a3b
+
+
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
@@ -46,7 +44,7 @@ app.use('/api/timviec/newTV365', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
 app.use('/api/timviec/cv', cvRouter);
-app.use('/api/timviec/don', donRouter);
+// app.use('/api/timviec/don', donRouter);
 app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
 app.use('/api/timviec/admin', adminRouter);
