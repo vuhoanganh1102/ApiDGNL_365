@@ -23,7 +23,4 @@ router.post('/toolLV', toolTimviec365.toolLV);
 // api quét data newTV365
 router.post('/toolNewTV365', toolTimviec365.toolNewTV365);
 
-// api quét data mẫu cv
-router.post('/toolCV', toolTimviec365.toolCV);
-
 module.exports = router;

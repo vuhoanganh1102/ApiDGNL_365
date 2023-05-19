@@ -4,10 +4,11 @@ const SalaryLevel = require('../../models/Timviec365/Timviec/SalaryLevel');
 
 exports.findSalary = async(req, res, next) => {
     try {
-        const cityID = [req.body.cityID];
+        const cityID = [req.body.cityID] || null;
         const keyword = req.body.keyword || '';
         let data = [];
-        if (cityID[0]) {
+        if (cityID) {
+            console.log(cityID)
             data = await New.aggregate([{
                     $match: {
                         cityID: { $in: cityID },
@@ -44,6 +45,7 @@ exports.findSalary = async(req, res, next) => {
                 }
             ]);
         } else {
+            console.log(1)
             data = await New.aggregate([{
                     $match: {
                         title: { $regex: `${keyword}`, $options: "i" }

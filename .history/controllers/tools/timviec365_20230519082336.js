@@ -4,7 +4,6 @@ const AdminUser = require('../../models/Timviec365/Timviec/adminUser.model');
 const Modules = require('../../models/Timviec365/Timviec/modules.model');
 const Linh_Vuc = require('../../models/Timviec365/Timviec/lv')
 const KeyWord = require('../../models/Timviec365/Timviec/keyword.model');
-const CV = require('../../models/Timviec365/CV/CV');
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
@@ -193,133 +192,86 @@ exports.toolAddAdminUSer = async(req, res, next) => {
 //hàm thêm dữ liệu của lĩnh vực
 exports.toolLV = async(req, res, next) => {
     try {
-        //         let result = true,
-        //             page = 1;
-        //         do {
-        //             let data = await fnc.getDataAxios('https://timviec365.vn/api/get_trang_vang.php?page=' + page)
-        //             if (data.length > 0) {
-        //                 for (i = 0; i < data.length; i++) {
-        //                     const decodedStringConten = Buffer.from(data[i].tag_content, 'base64').toString('utf-8'); // Giải mã chuỗi
-        //                     const decodedStringNdgy = Buffer.from(data[i].tag_ndgy, 'base64').toString('utf-8'); // Giải mã chuỗi
-        //                     let lv = new Linh_Vuc({
-        //                         _id: data[i].id,
-        //                         nameTag: data[i].name_tag,
-        //                         cityTag: data[i].city_tag,
-        //                         cateID: data[i].cate_id,
-        //                         parentID: data[i].parent_id,
-        //                         leverID: data[i].level_id,
-        //                         keywordTag: data[i].keyword_tag,
-        //                         TagContent: decodedStringConten,
-        //                         link301: data[i].link_301,
-        //                         tagVlgy: data[i].tag_vlgy,
-        //                         tagNdgy: decodedStringNdgy,
-        //                         tagIndex: data[i].tag_index,
+        let result = true,
+            page = 1;
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/api/get_trang_vang.php?page=' + page)
+            if (data.length > 0) {
+                for (i = 0; i < data.length; i++) {
+                    const decodedStringConten = Buffer.from(data[i].tag_content, 'base64').toString('utf-8'); // Giải mã chuỗi
+                    const decodedStringNdgy = Buffer.from(data[i].tag_ndgy, 'base64').toString('utf-8'); // Giải mã chuỗi
+                    let lv = new Linh_Vuc({
+                        _id: data[i].id,
+                        nameTag: data[i].name_tag,
+                        cityTag: data[i].city_tag,
+                        cateID: data[i].cate_id,
+                        parentID: data[i].parent_id,
+                        leverID: data[i].level_id,
+                        keywordTag: data[i].keyword_tag,
+                        TagContent: decodedStringConten,
+                        link301: data[i].link_301,
+                        tagVlgy: data[i].tag_vlgy,
+                        tagNdgy: decodedStringNdgy,
+                        tagIndex: data[i].tag_index,
 
-        //                     })
-        //                     await lv.save();
-        //                 }
-        //                 page++
-        //                 console.log(page)
-        //             } else result = false;
-        //         }
-        //         while (result)
-        //         await fnc.success(res, 'thành công');
-        //     } catch (error) {
-        //         console.log(error)
-        //         return fnc.setError(res, error)
-        //     }
-        // }
+                    })
+                    await lv.save();
+                }
+                page++
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
 
-        // // insert CV
-        // exports.toolCV = async(req, res, next) => {
-        //     try {
-        //         const data = await functions.getDataAxios('https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=1', {});
-        //         await data.forEach(async element => {
-        //             let htmlVi = {
-        //                 css: {
-        //                     color: ,
-        //                     font: ,
-        //                     font_size: ,
-        //                     font_spacing:
-        //                 },
-        //                 cv_title: ,
-        //                 avatar: ,
-        //                 name: ,
-        //                 position: ,
-        //                 introduction: ,
-        //                 menu: [{
-        //                         id: ,
-        //                         order: ,
-        //                         content: {
-        //                             title: ,
-        //                             content: {
-        //                                 type: ,
-        //                                 content: {
-        //                                     birthday: ,
-        //                                     sex: ,
-        //                                     phone: ,
-        //                                     email: ,
-        //                                     address: ,
-        //                                     face:
-        //                                 }
-        //                             }
-        //                         }
-        //                     },
+// insert CV
+exports.toolCV = async(req, res, next) => {
+    try {
+        const data = await functions.getDataAxios('https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=1', {});
+        await data.forEach(async element => {
+            const cv = {
+                _id: element.id,
+                name: element.name,
+                alias: element.alias,
+                urlAlias: element.url_alias,
+                urlCanonical: element.url_canonical,
+                image: element.image,
+                price: element.price,
+                color: element.colors,
+                view: element.view,
+                favorite: element.love,
+                download: element.download,
+                vip: element.vip,
+                cvIndex: element.cv_index,
+                cId: element.cid,
+                content: element.content,
+                motaCv: element.mota_cv,
+                htmlVi: element.html_vi,
+                htmlEn: element.html_en,
+                htmlJp: element.html_jp,
+                htmlCn: element.html_cn,
+                htmlKr: element.html_kr,
+                cateId: element.cate_id,
+                langId: element.lang_id,
+                designId: element.design_id,
+                exp: element.exp,
+                nhuCau: element.nhucau,
+                metaTitle: element.meta_title,
+                metaKey: element.meta_key,
+                metaDes: element.meta_des,
+                thuTu: element.thutu,
+                full: element.full,
+                status: element.status,
+                cvPoint: element.cv_point,
+            };
+            await CV.create(cv);
 
-        //                 ],
-        //                 experiences: [{
-        //                         id: ,
-        //                         order: 1,
-        //                         content: {
-        //                             title: ,
-        //                             content: [{
-        //                                 title: ,
-        //                                 date: ,
-        //                                 subtitle: content:
-        //                             }]
-        //                         }
-        //                     },
-
-        //                 ]
-        //             }
-        //             const cv = new CV({
-        //                 _id: element.id,
-        //                 name: element.name,
-        //                 alias: element.alias,
-        //                 urlAlias: element.url_alias,
-        //                 urlCanonical: element.url_canonical,
-        //                 image: element.image,
-        //                 price: element.price,
-        //                 color: element.colors,
-        //                 view: element.view,
-        //                 favorite: element.love,
-        //                 download: element.download,
-        //                 vip: element.vip,
-        //                 cvIndex: element.cv_index,
-        //                 cId: element.cid,
-        //                 content: element.content,
-        //                 motaCv: element.mota_cv,
-        //                 htmlVi: element.html_vi,
-        //                 htmlEn: element.html_en,
-        //                 htmlJp: element.html_jp,
-        //                 htmlCn: element.html_cn,
-        //                 htmlKr: element.html_kr,
-        //                 cateId: element.cate_id,
-        //                 langId: element.lang_id,
-        //                 designId: element.design_id,
-        //                 exp: element.exp,
-        //                 nhuCau: element.nhucau,
-        //                 metaTitle: element.meta_title,
-        //                 metaKey: element.meta_key,
-        //                 metaDes: element.meta_des,
-        //                 thuTu: element.thutu,
-        //                 full: element.full,
-        //                 status: element.status,
-        //                 cvPoint: element.cv_point,
-        //             });
-        //             await CV.create(cv);
-
-        //         });
+        });
         return await functions.success(res, "Thành công");
     } catch (err) {
         functions.setError(res, err.message);
