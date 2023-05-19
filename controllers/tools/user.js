@@ -28,14 +28,14 @@ exports.addUserChat365 = async(req, res, next) => {
             if (listUser.length > 0) {
                 for (let i = 0; i < listUser.length; i++) {
                     let element = listUser[i];
-                    let account = await element.email,
-                        type = await element.type365,
-                        name = await element.userName,
-                        password = await element.password,
-                        userName = await element.userName,
-                        avatarUser = await element.avatarUser,
-                        lastActive = await element.lastActivedAt,
-                        id = await element._id;
+                    let account = element.email,
+                        type = element.type365,
+                        name = element.userName,
+                        password = element.password,
+                        userName = element.userName,
+                        avatarUser = element.avatarUser,
+                        lastActive = element.lastActivedAt,
+                        id = element._id;
 
                     let CheckEmail = await fnc.checkEmail(account);
                     if (CheckEmail) {
@@ -51,7 +51,7 @@ exports.addUserChat365 = async(req, res, next) => {
                         console.log(id);
                         let checkUserByID = await fnc.getDatafindOne(Users, { _id: id });
                         if (checkUserByID == null) {
-                            let user = await new Users({
+                            let user = new Users({
                                 _id: id,
                                 email,
                                 phoneTK,
@@ -66,6 +66,24 @@ exports.addUserChat365 = async(req, res, next) => {
                                 chat365_secret: element.secretCode,
                                 latitude: element.latitude,
                                 longitude: element.longitude,
+                                configChat: {
+                                    notificationAcceptOffer: element.notificationAcceptOffer,
+                                    notificationAllocationRecall: element.notificationAllocationRecall,
+                                    notificationChangeSalary: element.notificationChangeSalary,
+                                    notificationCommentFromRaoNhanh: element.notificationCommentFromRaoNhanh,
+                                    notificationCommentFromTimViec: element.notificationCommentFromTimViec,
+                                    notificationDecilineOffer: element.notificationDecilineOffer,
+                                    notificationMissMessage: element.notificationMissMessage,
+                                    notificationNTDExpiredPin: element.notificationNTDExpiredPin,
+                                    notificationNTDExpiredRecruit: element.notificationNTDExpiredRecruit,
+                                    notificationNTDPoint: element.notificationNTDPoint,
+                                    notificationSendCandidate: element.notificationSendCandidate,
+                                    notificationTag: element.notificationTag,
+                                    HistoryAccess: element.HistoryAccess,
+                                    removeSugges: element.removeSugges,
+                                    userNameNoVn: element.userNameNoVn,
+                                    doubleVerify: element.doubleVerify
+                                }
                             });
                             await user.save().then(() => {
                                 console.log("Thêm mới thành công " + account + ", ID: " + id);
@@ -75,7 +93,8 @@ exports.addUserChat365 = async(req, res, next) => {
                         }
                     }
                 };
-                count += 20;
+                count += listUser.length;
+                // result = false
             } else result = false;
         }
         while (result)
