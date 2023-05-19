@@ -20,7 +20,7 @@ router.post('/registerfall', formData.parse(), company.registerFall);
 router.post('/sendOTP', formData.parse(), company.sendOTP);
 
 // api xác nhận OTP để xác minh tìa khoản
-router.post('/verify', formData.parse(), company.verify);
+router.post('/verify', functions.checkToken, formData.parse(), company.verify);
 
 // api api gửi mã OTP qua appChat (quên mật khẩu) 
 router.post('/forgotPasswordCheckMail', formData.parse(), company.forgotPasswordCheckMail);

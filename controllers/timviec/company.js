@@ -39,8 +39,7 @@ exports.register = async(req, res, next) => {
             listIDKD = [],
             idKD = 0,
             empID = 0;
-        console.log(req.files)
-            // check dữ liệu không bị undefined
+        // check dữ liệu không bị undefined
         if ((username && password && city && district &&
                 address && email && phone) !== undefined) {
             // validate email,phone
@@ -230,59 +229,64 @@ exports.register = async(req, res, next) => {
 
 // hàm dăng nhập
 exports.login = async(req, res, next) => {
+    try {
+        if (req.body.email && req.body.password) {
+            const type = 1;
+            const email = req.body.email
+            const password = req.body.password
 
-    if (req.body.email && req.body.password) {
-        const type = 1;
-        const email = req.body.email
-        const password = req.body.password
-
-        let checkPhoneNumber = await functions.checkEmail(email);
-        if (checkPhoneNumber) {
-            let findUser = await functions.getDatafindOne(Users, { email })
-            if (!findUser) {
-                return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
-            }
-            let checkPassword = await functions.verifyPassword(password, findUser.password)
-            if (!checkPassword) {
-                return functions.setError(res, "Mật khẩu sai", 404)
-            }
-            if (findUser.type == type) {
-                const token = await functions.createToken(findUser, "1d")
-                const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
-                let data = {
-                    access_token: token,
-                    refresh_token: refreshToken,
-                    user_info: {
-                        usc_id: findUser._id,
-                        usc_email: findUser.email,
-                        usc_phone_tk: findUser.phoneTK,
-                        usc_pass: findUser.password,
-                        usc_company: findUser.userName,
-                        usc_logo: findUser.avatarUser,
-                        usc_phone: findUser.phone,
-                        usc_city: findUser.city,
-                        usc_qh: findUser.district,
-                        usc_address: findUser.address,
-                        usc_create_time: findUser.createdAt,
-                        usc_update_time: findUser.updatedAt,
-                        usc_active: findUser.lastActivedAt,
-                        usc_authentic: findUser.authentic,
-                        usc_lat: findUser.latitude,
-                        usc_long: findUser.longtitude,
-                        usc_name: findUser.inForCompany.userContactName,
-                        usc_name_add: findUser.inForCompany.userContactAddress,
-                        usc_name_phone: findUser.inForCompany.userContactPhone,
-                        usc_name_email: findUser.inForCompany.userContactEmail,
-                    }
+            let checkPhoneNumber = await functions.checkEmail(email);
+            if (checkPhoneNumber) {
+                let findUser = await functions.getDatafindOne(Users, { email })
+                if (!findUser) {
+                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
-                return functions.success(res, 'Đăng nhập thành công', data)
-            } else return functions.setError(res, "tài khoản này không phải tài khoản công ty", 404)
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (!checkPassword) {
+                    return functions.setError(res, "Mật khẩu sai", 404)
+                }
+                if (findUser.type == type) {
+                    const token = await functions.createToken(findUser, "1d")
+                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
+                    let data = {
+                        access_token: token,
+                        refresh_token: refreshToken,
+                        user_info: {
+                            usc_id: findUser._id,
+                            usc_email: findUser.email,
+                            usc_phone_tk: findUser.phoneTK,
+                            usc_pass: findUser.password,
+                            usc_company: findUser.userName,
+                            usc_logo: findUser.avatarUser,
+                            usc_phone: findUser.phone,
+                            usc_city: findUser.city,
+                            usc_qh: findUser.district,
+                            usc_address: findUser.address,
+                            usc_create_time: findUser.createdAt,
+                            usc_update_time: findUser.updatedAt,
+                            usc_active: findUser.lastActivedAt,
+                            usc_authentic: findUser.authentic,
+                            usc_lat: findUser.latitude,
+                            usc_long: findUser.longtitude,
+                            usc_name: findUser.inForCompany.userContactName,
+                            usc_name_add: findUser.inForCompany.userContactAddress,
+                            usc_name_phone: findUser.inForCompany.userContactPhone,
+                            usc_name_email: findUser.inForCompany.userContactEmail,
+                        }
+                    }
+                    return functions.success(res, 'Đăng nhập thành công', data)
+                } else return functions.setError(res, "tài khoản này không phải tài khoản công ty", 404)
 
 
-        } else {
-            return functions.setError(res, "không đúng định dạng email", 404)
+            } else {
+                return functions.setError(res, "không đúng định dạng email", 404)
+            }
         }
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
     }
+
 };
 
 // hàm lấy user khi đăng ký sai
@@ -365,7 +369,11 @@ exports.sendOTP = async(req, res, next) => {
                         }
                     });
                     await functions.sendEmailVerificationRequest(otp, email, user.userName)
-                    return functions.success(res, 'Gửi mã OTP thành công', )
+                    const token = await functions.createToken({
+                        email: user.email,
+                        idTimViec365: user.idTimViec365
+                    }, '30m')
+                    return functions.success(res, 'Gửi mã OTP thành công', { token })
                 }
                 return functions.setError(res, 'tài khoản không tồn tại', 404)
             } else {
@@ -385,7 +393,7 @@ exports.sendOTP = async(req, res, next) => {
 exports.verify = async(req, res, next) => {
     try {
         let otp = req.body.ma_xt,
-            email = req.body.email;
+            email = req.user.data.email;
         if (otp && email) {
             let verify = await Users.findOne({ email, otp });
             if (verify != null) {
@@ -424,7 +432,7 @@ exports.forgotPasswordCheckMail = async(req, res, next) => {
                         }
                     });
                     const token = await functions.createToken(verify, '30m')
-                    return functions.success(res, 'xác thực thành công', token)
+                    return functions.success(res, 'xác thực thành công', { token })
                 }
                 return functions.setError(res, 'chưa lấy được mã otp', 404)
 
@@ -540,7 +548,6 @@ exports.updateContactInfo = async(req, res, next) => {
 
             if (checkEmail && checkPhone) {
                 let user = await functions.getDatafindOne(Users, { email: email, type: 1 })
-
                 if (user != null) {
                     await Users.updateOne({ email: email, type: 1 }, {
                         $set: {
