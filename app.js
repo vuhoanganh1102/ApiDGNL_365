@@ -10,6 +10,7 @@ var companyRouter = require('./routes/timviec/company');
 var cvRouter = require('./routes/timviec/cv');
 var newTV365Router = require('./routes/timviec/newTV365');
 var adminRouter = require('./routes/timviec/admin');
+var blogRouter = require('./routes/timviec/blog')
 
 // Quản lý chung
 var deparmentRouter = require('./routes/qlc/deparment')
@@ -41,10 +42,12 @@ app.use('/api/timviec/candidate', candidateRouter);
 app.use('/api/timviec/newTV365', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
+app.use('/api/timviec/blog', blogRouter)
 app.use('/api/timviec/cv', cvRouter);
-app.use('/api/timviec/admin', adminRouter);
+// app.use('/api/timviec/don', donRouter);
+// app.use('/api/timviec/thu', thuRouter);
+// app.use('/api/timviec/syll', syllRouter);
 app.use('/api/tool', toolAddDataRouter);
-app.use('/api/timviec/newTV365', newTV365Router);
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);

@@ -23,4 +23,7 @@ router.post('/toolLV', toolTimviec365.toolLV);
 // api quét data newTV365
 router.post('/toolNewTV365', toolTimviec365.toolNewTV365);
 
+// api quét data category blog
+router.post('/toolCategoryBlog', toolTimviec365.toolCategoryBlog);
+
 module.exports = router;
