@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const donUVSchema = new mongoose.Schema({
+const DonUVSchema = new mongoose.Schema({
     _id: {
         type: Number
     },
@@ -28,8 +28,8 @@ const donUVSchema = new mongoose.Schema({
         type: Number
     },
 }, {
-    collection: 'donUV',
+    collection: 'DonUV',
     versionKey: false
 });
 
-module.exports = mongoose.model("donUV", donUVSchema);
+module.exports = mongoose.model("DonUV", donUVSchema);
