@@ -41,12 +41,6 @@ app.use('/api/timviec/newTV365', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
 app.use('/api/timviec/cv', cvRouter);
-<<<<<<< HEAD
-// app.use('/api/timviec/don', donRouter);
-app.use('/api/timviec/thu', thuRouter);
-app.use('/api/timviec/syll', syllRouter);
-=======
->>>>>>> 2094c22612d9d007db3310237863c70b88ab82ff
 app.use('/api/timviec/admin', adminRouter);
 app.use('/api/tool', toolAddDataRouter);
 app.use('/api/timviec/newTV365', newTV365Router);
