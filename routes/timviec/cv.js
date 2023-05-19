@@ -21,7 +21,7 @@ router.post('/previewCV', formData.parse(), cv.previewCV);
 router.post('/detailCV', formData.parse(), cv.detailCV);
 
 // lưu và tải cv
-router.post('/saveCV', functions.checkToken, formData.parse(), functions.decrypt, cv.saveCV);
+// router.post('/saveCV', functions.checkToken, formData.parse(), functions.decrypt, cv.saveCV);
 
 // xem mẫu cv viết sẵn
 router.post('/viewAvailableCV', formData.parse(), cv.viewAvailable);
