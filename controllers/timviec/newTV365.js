@@ -122,7 +122,6 @@ exports.postNewTv365 = async(req, res, next) => {
                 } else
                 if (videoType.length > 1) {
                     await functions.deleteImgVideo(avatar, videoType)
-
                     return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
                 }
             }
