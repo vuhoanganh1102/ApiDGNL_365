@@ -51,7 +51,7 @@ exports.preview = async(req, res, next) => {
 // chi tiết email
 exports.viewDetail = async(req, res, next) => {
     try {
-        const user = req.user.data;
+        const user = req.user;
         const _id = req.body._id;
         const data = await Mail365.findOne(_id);
 

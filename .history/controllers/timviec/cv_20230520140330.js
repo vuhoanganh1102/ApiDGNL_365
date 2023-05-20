@@ -163,12 +163,12 @@ exports.saveCV = async(req, res, next) => {
 exports.viewAvailable = async(req, res, next) => {
     try {
         const cateId = req.body.cateId;
-        const data = await CV.findOne({ cateId }).sort('-cvPoint').select('');
+        const data = await CV.find({ cateId }).sort('-cvPoint').select('');
 
         if (!data) return await functions.setError(res, 'Không có dữ liệu', 404);
 
         // cập nhật số lượng xem 
-        await CV.updateOne({ _id: data._id }, { $set: { view: data.view + 1 } });
+        // await CV.updateOne({ _id: data._id }, { $set: { view: data.view + 1 } });
 
         return await functions.success(res, 'Thành công cv viết sẵn', { data });
     } catch (err) {

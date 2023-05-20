@@ -163,7 +163,7 @@ exports.saveCV = async(req, res, next) => {
 exports.viewAvailable = async(req, res, next) => {
     try {
         const cateId = req.body.cateId;
-        const data = await CV.findOne({ cateId }).sort('-cvPoint').select('');
+        const data = await CV.find({ cateId }).sort('-cvPoint').select('');
 
         if (!data) return await functions.setError(res, 'Không có dữ liệu', 404);
 

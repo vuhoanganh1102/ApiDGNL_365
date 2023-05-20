@@ -454,7 +454,7 @@ exports.getDataCVSortById = async(condition) => {
 
 // lấy danh sách mẫu CV sắp xếp lượt tải nn
 exports.getDataCVSortByDownload = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color').sort({ download: -1 });
+    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId colors').sort({ download: -1 });
     if (data.length > 0) {
         return data;
     };

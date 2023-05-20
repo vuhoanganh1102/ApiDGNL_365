@@ -117,7 +117,7 @@ exports.saveCV = async(req, res, next) => {
     try {
         const nameImage = req.file;
         const userId = req.user.data._id;
-        const data = req.body;
+        const data = req.body; // Id, html,   
         const checkAvatar = await functions.checkImage(nameImage.path);
         const cvUV = {
             userId: userId,
@@ -126,8 +126,8 @@ exports.saveCV = async(req, res, next) => {
             nameImage: nameImage.filename,
             lang: data.lang,
             status: data.status,
-            deleteCv: data.deleteCv || 0,
-            heightCv: data.heightCv || 0,
+            deleteCv: data.deleteCv,
+            heightCv: data.heightCv,
             scan: data.scan,
             state: data.state
         };
@@ -168,7 +168,7 @@ exports.viewAvailable = async(req, res, next) => {
         if (!data) return await functions.setError(res, 'Không có dữ liệu', 404);
 
         // cập nhật số lượng xem 
-        await CV.updateOne({ _id: data._id }, { $set: { view: data.view + 1 } });
+        await CV.updateOne({ _id: _id }, { $set: { view: data.view + 1 } });
 
         return await functions.success(res, 'Thành công cv viết sẵn', { data });
     } catch (err) {

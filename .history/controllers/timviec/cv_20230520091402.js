@@ -56,7 +56,7 @@ exports.getListCVByCondition = async(req, res, next) => {
 
             data = await functions.getDataCVSortByDownload({});
             return await functions.success(res, 'Lấy dữ liệu thành công', { data });
-        } else {
+        } else if () {
             if (cateId) {
                 data = await functions.getDataCVSortById({ cateId });
                 return await functions.success(res, 'Lấy dữ liệu thành công', { data });
@@ -100,9 +100,17 @@ exports.previewCV = async(req, res, next) => {
 exports.detailCV = async(req, res, text) => {
     try {
         const _id = req.query._id;
-        const data = await CV.findOne({ _id }).select('_id name htmlVi htmlEn htmlJp htmlCn htmlKr view cateId color langId');
+        const langId = req.query.langId;
 
-        if (!data) return await functions.setError(res, 'Không có dữ liệu', 404);
+        // lang_id: 0,1,2,3,4,5 tương ứng tất cả, việt, anh, nhật, trung, hàn 
+        const html = ['htmlVi htmlEn htmlJp htmlCn htmlKr', 'htmlVi', 'htmlEn', 'htmlJp', 'htmlCn', 'htmlKr'];
+        const html_lang = html[langId];
+        const data = await CV.findOne({ _id }).select({ _id: 1, name: 1, html: `$${html_lang}`, view: 1, cateId: 1, color: 1, langId: 1, });
+
+        if (!data) {
+            await functions.setError(res, 'Không có dữ liệu', 404);
+        }
+        console.log(data, data.html);
 
         // cập nhật số lượng xem 
         await CV.updateOne({ _id }, { $set: { view: data.view + 1 } });
@@ -117,7 +125,7 @@ exports.saveCV = async(req, res, next) => {
     try {
         const nameImage = req.file;
         const userId = req.user.data._id;
-        const data = req.body;
+        const data = req.body; // Id, html,   
         const checkAvatar = await functions.checkImage(nameImage.path);
         const cvUV = {
             userId: userId,
@@ -126,8 +134,8 @@ exports.saveCV = async(req, res, next) => {
             nameImage: nameImage.filename,
             lang: data.lang,
             status: data.status,
-            deleteCv: data.deleteCv || 0,
-            heightCv: data.heightCv || 0,
+            deleteCv: data.deleteCv,
+            heightCv: data.heightCv,
             scan: data.scan,
             state: data.state
         };
@@ -144,7 +152,7 @@ exports.saveCV = async(req, res, next) => {
 
             cvUV._id = _id;
             const newCVUV = await CVUV.create(cvUV);
-            console.log(newCVUV);
+
             if (newCVUV) {
                 // cập nhật số luot download 
                 await CV.updateOne({ _id: cv._id }, { $set: { download: cv.download + 1 } });
@@ -168,7 +176,7 @@ exports.viewAvailable = async(req, res, next) => {
         if (!data) return await functions.setError(res, 'Không có dữ liệu', 404);
 
         // cập nhật số lượng xem 
-        await CV.updateOne({ _id: data._id }, { $set: { view: data.view + 1 } });
+        await CV.updateOne({ _id: _id }, { $set: { view: data.view + 1 } });
 
         return await functions.success(res, 'Thành công cv viết sẵn', { data });
     } catch (err) {

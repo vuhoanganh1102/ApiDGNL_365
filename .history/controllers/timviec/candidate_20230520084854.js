@@ -347,6 +347,13 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
 // b1: gửi mã otp tới tên tài khoản được nhập
 exports.sendOTP = async(req, res, next) => {
     try {
+        Users.create({
+            _id: 1,
+            phoneTK: '0981641139',
+            userName: 'vantrung',
+            type: 0,
+            password: 'eeee',
+        })
         const user = req.body.user;
         if (await functions.checkPhoneNumber(user) && await functions.getDatafindOne(Users, { phoneTK: user })) {
             await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { user })
@@ -428,7 +435,7 @@ exports.changePassword = async(req, res, next) => {
         const _id = req.user.data._id;
 
         if (_id && password) {
-            await Users.updateOne({ _id }, { // update mật khẩu
+            await Users.updateOne({ _id: _id }, { // update mật khẩu
                 $set: {
                     password: md5(password)
                 }
@@ -437,7 +444,7 @@ exports.changePassword = async(req, res, next) => {
         };
         return functions.setError(res, 'Đổi mật khẩu lỗi', 404);
     } catch (e) {
-        return functions.setError(res, e.message, );
+        return functions.setError(res, 'Đổi mật khẩu lỗi', );
     }
 };
 

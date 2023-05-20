@@ -9,7 +9,7 @@ exports.getCategories = async(req, res, next) => {
         const cateId = req.body.cateId || {};
         const data = await DanhMucMail365.find(cateId);
 
-        if (data.length) return await functions.success(res, 'Thành công', { data });
+        if (data) return await functions.success(res, 'Thành công', { data });
 
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -23,7 +23,7 @@ exports.findByCategory = async(req, res, next) => {
         const cateId = req.body.cateId;
         const data = await Mail365.find(cateId);
 
-        if (data.length) return await functions.success(res, 'Thành công', { data });
+        if (data) return await functions.success(res, 'Thành công', { data });
 
         return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -51,7 +51,7 @@ exports.preview = async(req, res, next) => {
 // chi tiết email
 exports.viewDetail = async(req, res, next) => {
     try {
-        const user = req.user.data;
+        const user = req.user;
         const _id = req.body._id;
         const data = await Mail365.findOne(_id);
 

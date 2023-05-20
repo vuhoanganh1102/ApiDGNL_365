@@ -428,7 +428,7 @@ exports.changePassword = async(req, res, next) => {
         const _id = req.user.data._id;
 
         if (_id && password) {
-            await Users.updateOne({ _id }, { // update mật khẩu
+            await Users.updateOne({ _id: _id }, { // update mật khẩu
                 $set: {
                     password: md5(password)
                 }
@@ -437,7 +437,7 @@ exports.changePassword = async(req, res, next) => {
         };
         return functions.setError(res, 'Đổi mật khẩu lỗi', 404);
     } catch (e) {
-        return functions.setError(res, e.message, );
+        return functions.setError(res, 'Đổi mật khẩu lỗi', );
     }
 };
 

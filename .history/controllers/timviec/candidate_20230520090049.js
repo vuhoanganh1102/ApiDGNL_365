@@ -437,7 +437,7 @@ exports.changePassword = async(req, res, next) => {
         };
         return functions.setError(res, 'Đổi mật khẩu lỗi', 404);
     } catch (e) {
-        return functions.setError(res, e.message, );
+        return functions.setError(res, 'Đổi mật khẩu lỗi', );
     }
 };
 
