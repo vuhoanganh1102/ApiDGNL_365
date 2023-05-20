@@ -287,6 +287,11 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            candiSkill: {
+                //Kỹ năng bản thân
+                type: String,
+                default: null
+            },
             referencePersonName: {
                 // Tên người tham chiếu
                 type: String,

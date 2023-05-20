@@ -608,6 +608,9 @@ exports.loginUv = async(req, res, next) => {
             if (!checkPassword) {
                 return functions.setError(res, "Mật khẩu sai", 200)
             }
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { phoneTK, type: 0 }, {
+                updatedAt: new Date(Date.now())
+            })
             if (findUser.type == type) {
                 const token = await functions.createToken(findUser, "2d")
                 return functions.success(res, 'Đăng nhập thành công', { token: token })
@@ -675,7 +678,6 @@ exports.completeProfileQlc = async(req, res, next) => {
 // danh sách cv xin việc và cv yêu thích của ứng viên
 exports.cvXinViec = async(req, res, next) => {
     try {
-
         if (req.user) {
             let page = Number(req.body.page)
             let pageSize = Number(req.body.pageSize)
@@ -840,7 +842,7 @@ exports.listJobCandidateSave = async(req, res, next) => {
 exports.updateContactInfo = async(req, res, next) => {
     try {
         if (req.user && req.body.name && req.body.phone && req.body.address && req.body.birthday &&
-            req.body.gioitinh && req.body.honnhan && req.body.thanhpho && req.body.quanhuyen) {
+            req.body.gioitinh && req.body.honnhan && req.body.thanhpho && req.body.quanhuyen && req.file) {
             let userId = req.user.data.idTimViec365
             let userName = req.body.name
             let phone = req.body.phone
@@ -858,6 +860,7 @@ exports.updateContactInfo = async(req, res, next) => {
                 city: city,
                 district: district,
                 avatarUser: avatarUser.filename,
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
                     birthday: birthday,
                     gender: gender,
@@ -896,6 +899,7 @@ exports.updateDesiredJob = async(req, res, next) => {
             let candiMoneyMax = req.body.money_max
 
             let updateUser = await functions.findOneAndUpdateUser(userId, {
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
                     candiCateID: candiCateID,
                     exp: exp,
@@ -926,10 +930,10 @@ exports.updateDesiredJob = async(req, res, next) => {
 exports.updateCareerGoals = async(req, res, next) => {
     try {
         if (req.user && req.body.muctieu) {
-
             let userId = req.user.data.idTimViec365
             let candiMucTieu = req.body.muctieu
             let updateUser = await functions.findOneAndUpdateUser(userId, {
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
                     candiMucTieu: candiMucTieu,
                 }
@@ -952,10 +956,11 @@ exports.updateSkills = async(req, res, next) => {
         if (req.user && req.body.kynang) {
 
             let userId = req.user.data.idTimViec365
-            let candiSkills = req.body.kynang
+            let candiSkill = req.body.kynang
             let updateUser = await functions.findOneAndUpdateUser(userId, {
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
-                    candiSkills: candiSkills,
+                    candiSkill: candiSkill,
                 }
             })
             if (updateUser) {
@@ -983,6 +988,7 @@ exports.updateReferencePersonInfo = async(req, res, next) => {
             let referencePersonPosition = req.body.referencePersonPosition
             let referencePersonCompany = req.body.referencePersonCompany
             let updateUser = await functions.findOneAndUpdateUser(userId, {
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
                     referencePersonName: referencePersonName,
                     referencePersonEmail: referencePersonEmail,
@@ -1012,6 +1018,7 @@ exports.updateIntroVideo = async(req, res, next) => {
             if (req.file && !videoLink) {
                 let videoName = req.file.filename
                 let updateUser = await functions.findOneAndUpdateUser(userId, {
+                    updatedAt: new Date(Date.now()),
                     inForPerson: {
                         video: videoName,
                         videoType: 0
@@ -1022,6 +1029,7 @@ exports.updateIntroVideo = async(req, res, next) => {
                 }
             } else if (!req.body.file && videoLink) {
                 let updateUser = await functions.findOneAndUpdateUser(userId, {
+                    updatedAt: new Date(Date.now()),
                     inForPerson: {
                         video: videoLink,
                         videoType: 1
@@ -1071,8 +1079,10 @@ exports.addDegree = async(req, res, next) => {
             let updateUser = await functions.findOneAndUpdateUser(userId, {
                 $push: {
                     "inForPerson.candiDegree": addDegree
-                }
+                },
+                updatedAt: new Date(Date.now())
             })
+
             if (updateUser) {
                 functions.success(res, "Thêm bằng cấp học vấn thành công");
             }
@@ -1126,6 +1136,7 @@ exports.updateDegree = async(req, res, next) => {
                 $set: {
                     "inForPerson.candiDegree.$": updateDegree
                 },
+                updatedAt: new Date(Date.now())
             })
             if (updateUser) {
                 functions.success(res, "Cập nhật bằng cấp học vấn thành công");
@@ -1180,6 +1191,7 @@ exports.deleteDegree = async(req, res, next) => {
                 $pull: {
                     "inForPerson.candiDegree.$": deleteDegree
                 },
+                updatedAt: new Date(Date.now())
             })
             if (updateUser) {
                 functions.success(res, "Xóa bằng cấp học vấn thành công");
@@ -1221,12 +1233,13 @@ exports.updateAvatarUser = async(req, res, next) => {
             if (req.file) {
                 let imageName = req.file.filename
                 let updateUser = await functions.findOneAndUpdateUser(userId, {
+                    updatedAt: new Date(Date.now()),
                     avatarUser: imageName
                 })
                 if (updateUser) {
                     functions.success(res, "Cập nhật ảnh đại diện thành công");
                 }
-            }
+            } else functions.setError(res, "không truyền lên ảnh", 400);
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
@@ -1318,7 +1331,8 @@ exports.addNgoaiNgu = async(req, res, next) => {
             let updateUser = await functions.findOneAndUpdateUser(userId, {
                 $push: {
                     "inForPerson.candiNgoaiNgu": addNgoaiNgu
-                }
+                },
+                updatedAt: new Date(Date.now())
             })
             if (updateUser) {
                 functions.success(res, "Thêm ngoại ngữ thành công");
@@ -1365,6 +1379,7 @@ exports.updateNgoaiNgu = async(req, res, next) => {
                 $set: {
                     "inForPerson.candiNgoaiNgu.$": updateNgoaiNgu
                 },
+                updatedAt: new Date(Date.now())
             })
             if (updateUser) {
                 functions.success(res, "Cập nhật ngoại ngữ thành công");
@@ -1410,6 +1425,7 @@ exports.deleteNgoaiNgu = async(req, res, next) => {
                 $pull: {
                     "inForPerson.candiNgoaiNgu.$": deleteNgoaiNgu
                 },
+                updatedAt: new Date(Date.now())
             })
             if (updateUser) {
                 functions.success(res, "Xóa Ngoại ngữ thành công");
@@ -1451,7 +1467,8 @@ exports.addExp = async(req, res, next) => {
             let updateUser = await functions.findOneAndUpdateUser(userId, {
                 $push: {
                     "inForPerson.candiExp": addExp
-                }
+                },
+                updatedAt: new Date(Date.now())
             })
             if (updateUser) {
                 functions.success(res, "Thêm kinh nghiệm làm việc thành công");
@@ -1502,6 +1519,7 @@ exports.updateExp = async(req, res, next) => {
                 $set: {
                     "inForPerson.candiExp.$": updateExp
                 },
+                updatedAt: new Date(Date.now())
             })
             if (updateUser) {
                 functions.success(res, "Cập nhật kinh nghiệm làm việc thành công");
@@ -1551,6 +1569,7 @@ exports.deleteExp = async(req, res, next) => {
                 $pull: {
                     "inForPerson.candiExp.$": deleteExp
                 },
+                updatedAt: new Date(Date.now())
             })
             if (updateUser) {
                 functions.success(res, "Xóa kinh nghiệm làm việc thành công");
