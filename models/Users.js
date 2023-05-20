@@ -229,7 +229,7 @@ const UserSchema = new mongoose.Schema({
             },
             candiTitle: {
                 // Công việc mong muốn
-                type: Number,
+                type: String,
                 default: 0
             },
             candiHocVan: {
@@ -542,6 +542,90 @@ const UserSchema = new mongoose.Schema({
             lv: String,
         },
         default: null
+    },
+    configChat: {
+        notificationAcceptOffer: {
+            type: Number,
+            default: 1,
+        },
+        notificationAllocationRecall: {
+            type: Number,
+            default: 1,
+        },
+        notificationChangeSalary: {
+            type: Number,
+            default: 1,
+        },
+        notificationCommentFromRaoNhanh: {
+            type: Number,
+            default: 1,
+        },
+        notificationCommentFromTimViec: {
+            type: Number,
+            default: 1,
+        },
+        notificationDecilineOffer: {
+            type: Number,
+            default: 1,
+        },
+        notificationMissMessage: {
+            type: Number,
+            default: 1,
+        },
+        notificationNTDExpiredPin: {
+            type: Number,
+            default: 1,
+        },
+        notificationNTDExpiredRecruit: {
+            type: Number,
+            default: 1,
+        },
+        notificationNTDPoint: {
+            type: Number,
+            default: 1,
+        },
+        notificationSendCandidate: {
+            type: Number,
+            default: 1,
+        },
+        notificationTag: {
+            type: Number,
+            default: 1,
+        },
+        HistoryAccess: [{
+            IdDevice: {
+                type: String,
+                default: "",
+            },
+            IpAddress: {
+                type: String,
+                default: "",
+            },
+            NameDevice: {
+                type: String,
+                default: "",
+            },
+            Time: {
+                type: Date,
+                default: new Date(),
+            },
+            AccessPermision: {
+                type: Boolean,
+                default: false,
+            },
+        }],
+        removeSugges: {
+            type: [Number],
+            default: [],
+        },
+        userNameNoVn: {
+            type: String,
+            default: ""
+        },
+        doubleVerify: {
+            type: Number,
+            default: 0,
+        }
     }
 }, {
     collection: 'Users',
