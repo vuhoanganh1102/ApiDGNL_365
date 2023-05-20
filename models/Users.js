@@ -337,6 +337,7 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
+            //bằng cấp chứng chỉ
             candiDegree: [{
                 type: {
                     id: {
@@ -366,6 +367,7 @@ const UserSchema = new mongoose.Schema({
                 },
                 default: null
             }],
+            //ngoại ngữ tin học
             candiNgoaiNgu: [{
                 type: {
                     id: {
@@ -383,6 +385,7 @@ const UserSchema = new mongoose.Schema({
                 },
                 default: null
             }],
+            //kinh nghiệm làm việc
             candiExp: [{
                 type: {
                     id: {

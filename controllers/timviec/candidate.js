@@ -176,7 +176,6 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                             candiTitle: candiTitle,
                             video: videoUpload.filename,
                             videoType: 1,
-                            videoActive: 1
                         }
                     })
                     let saveUser = User.save()
@@ -204,12 +203,11 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                             candiTitle: candiTitle,
                             video: videoLink,
                             videoType: 2,
-                            videoActive: 1
                         }
                     })
                     let saveUser = User.save()
                 }
-                let deleteUser = UserUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
+                let deleteUser = await UserUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
                 return functions.success(res, "Đăng kí thành công")
             }
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
@@ -297,7 +295,6 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                             video: videoUpload[0].filename,
                             cv: cvUpload[0].filename,
                             videoType: 1,
-                            videoActive: 1
                         }
                     });
                     User.save();
@@ -330,12 +327,11 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                             video: videoLink,
                             cv: cvUpload[0].filename,
                             videoType: 2,
-                            videoActive: 1
                         }
                     })
                     let saveUser = User.save()
                 }
-                let deleteUser = UserUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
+                let deleteUser = await UserUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
                 return functions.success(res, "Đăng kí thành công")
             }
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
@@ -582,7 +578,7 @@ exports.RegisterB2CvSite = async(req, res, next) => {
                 })
                 CvUv.save()
 
-                let deleteUser = UserUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: type })
+                let deleteUser = await UserUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: type })
                 return functions.success(res, "Đăng kí thành công")
             }
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
@@ -679,13 +675,14 @@ exports.completeProfileQlc = async(req, res, next) => {
 // danh sách cv xin việc và cv yêu thích của ứng viên
 exports.cvXinViec = async(req, res, next) => {
     try {
+
         if (req.user) {
             let page = Number(req.body.page)
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let userId = req.user.data.idTimViec365
-            let findCvUv = await functions.pageFind(CVUV, { userId }, { _id: 1 }, skip, limit)
+            let findCvUv = await functions.pageFind(CVUV, { userId: userId }, { _id: 1 }, skip, limit)
             const totalCount = await CVUV.countDocuments({ userId: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
 
@@ -693,7 +690,10 @@ exports.cvXinViec = async(req, res, next) => {
             const totalCountFavor = await like.countDocuments({ userId: userId, type: 1 })
             const totalPagesFavor = Math.ceil(totalCountFavor / pageSize)
             if (findCvUv) {
-                functions.success(res, "Hiển thị những CV Đã tạo và yêu thích thành công", { CVUV: { totalCount, totalPages, listCv: findCvUv }, CVUVFavor: { totalCountFavor, totalPagesFavor, listCvFavor: findFavorCvUv } });
+                functions.success(res, "Hiển thị những CV Đã tạo và yêu thích thành công", {
+                    CVUV: { totalCount, totalPages, listCv: findCvUv },
+                    CVUVFavor: { totalCountFavor, totalPagesFavor, listCvFavor: findFavorCvUv }
+                });
             }
         } else {
             return functions.setError(res, "Token không hợp lệ", 400);
@@ -822,7 +822,7 @@ exports.listJobCandidateSave = async(req, res, next) => {
             const limit = pageSize;
             let userId = req.user.data.idTimViec365
             let listJobUvSave = await functions.pageFind(UserSavePost, { userID: userId }, { _id: 1 }, skip, limit)
-            const totalCount = await ApplyForJob.countDocuments({ userID: userId })
+            const totalCount = await UserSavePost.countDocuments({ userID: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
             if (listJobUvSave) {
                 functions.success(res, "Hiển thị những việc làm ứng viên đã ứng tuyển thành công", { listJobCandidateSave: { totalCount, totalPages, listJob: listJobUvSave } });
@@ -879,8 +879,8 @@ exports.updateContactInfo = async(req, res, next) => {
 //cập nhật công việc mong muốn
 exports.updateDesiredJob = async(req, res, next) => {
     try {
-        if (req.user && req.body.candiTitle && req.body.candiLoaiHinh && req.body.candiCityID && req.body.candiCateID &&
-            req.body.exp && req.body.candiCapBac && req.body.candiMoney) {
+        if (req.user && req.body.title && req.body.ht && req.body.city && req.body.cate &&
+            req.body.kn && req.body.capbac) {
 
             let userId = req.user.data.idTimViec365
             let candiTitle = req.body.title
