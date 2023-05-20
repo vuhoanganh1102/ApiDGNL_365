@@ -278,7 +278,7 @@ exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
 
 //hàm upload file ứng viên
-exports.uploadFileUv = multer({ storage: storageFile('Storage/Base365') })
+exports.uploadFileUv = multer({ storage: storageFile('../../Storage/Base365') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
