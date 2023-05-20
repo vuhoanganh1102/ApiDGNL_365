@@ -62,6 +62,7 @@ exports.postNewTv365 = async(req, res, next) => {
             // validate title
             let checkValidateTilte = await functions.checkTilte(title, functions.keywordsTilte);
             if ((checkValidateTilte == false || checkTile == false)) {
+                await functions.deleteImgVideo(avatar, videoType)
                 return functions.setError(res, 'tiêu đề đã có từ bài viết trước hoặc chưa từ khóa không cho phép', 404)
             }
             // check type của new money
@@ -113,11 +114,15 @@ exports.postNewTv365 = async(req, res, next) => {
                     if (checkVideo) {
                         video = videoType[0].filename
                     } else {
-                        await functions.deleteImg(videoType[0])
+                        videoType.forEach(async(element) => {
+                            await functions.deleteImg(element)
+                        })
                         return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
                     }
                 } else
                 if (videoType.length > 1) {
+                    await functions.deleteImgVideo(avatar, videoType)
+
                     return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
                 }
             }
@@ -134,15 +139,11 @@ exports.postNewTv365 = async(req, res, next) => {
                     }
                 }
                 if (isValid == false) {
-                    for (let i = 0; i < avatar.length; i++) {
-                        await functions.deleteImg(avatar[i])
-                    }
-                    if (videoType) {
-                        await functions.deleteImg(videoType[0])
-                    }
+                    await functions.deleteImgVideo(avatar, videoType)
                     return functions.setError(res, 'đã có ảnh sai định dạng hoặc lớn hơn 2MB', 404)
                 }
             } else if (avatar && avatar.length > 6) {
+                await functions.deleteImgVideo(avatar, videoType)
                 return functions.setError(res, 'chỉ được đưa lên tối đa 6 ảnh', 404)
             }
 
@@ -152,28 +153,14 @@ exports.postNewTv365 = async(req, res, next) => {
                 if (checkLink) {
                     link = linkVideo;
                 } else {
-                    if (avatar) {
-                        avatar.forEach(async(element) => {
-                            await functions.deleteImg(element)
-                        })
-                    }
-                    if (videoType) {
-                        await functions.deleteImg(videoType[0])
-                    }
+                    await functions.deleteImgVideo(avatar, videoType)
                     return functions.setError(res, 'link không đúng định dạng ', 404)
                 }
             }
             // check thời gian hạn nộp
             let checkTime = await functions.checkTime(hanNop)
             if (checkTime == false) {
-                if (avatar) {
-                    avatar.forEach(async(element) => {
-                        await functions.deleteImg(element)
-                    })
-                }
-                if (videoType) {
-                    await functions.deleteImg(videoType[0])
-                }
+                await functions.deleteImgVideo(avatar, videoType)
                 return functions.setError(res, 'thời gian hạn nộp phải lớn hơn thời gian hiện tại', 404)
             }
             let checkEmail = await functions.checkEmail(userContactEmail);
@@ -236,18 +223,14 @@ exports.postNewTv365 = async(req, res, next) => {
                 }
             });
             return functions.success(res, "tạo bài tuyển dụng thành công")
+        } else {
+            await functions.deleteImgVideo(avatar, videoType)
+            return functions.setError(res, 'thiếu dữ liệu', 404)
         }
-        return functions.setError(res, 'thiếu dữ liệu', 404)
+
     } catch (error) {
         console.log(error)
-        if (req.files.avatarUser) {
-            req.files.avatarUser.forEach(async(element) => {
-                await functions.deleteImg(element)
-            })
-        }
-        if (req.files.videoType) {
-            await functions.deleteImg(req.files.videoType[0])
-        }
+        await functions.deleteImgVideo(req.files.avatarUser, req.files.videoType)
         return functions.setError(res, error)
     }
 }
@@ -412,14 +395,7 @@ exports.updateNewTv365 = async(req, res, next) => {
                 // validate title
                 let checkValidateTilte = await functions.checkTilte(title, functions.keywordsTilte);
                 if ((checkValidateTilte == false || checkTile == false)) {
-                    if (avatar) {
-                        avatar.forEach(async(element) => {
-                            await functions.deleteImg(element)
-                        })
-                    }
-                    if (videoType) {
-                        await functions.deleteImg(videoType[0])
-                    }
+                    await functions.deleteImgVideo(avatar, videoType)
                     return functions.setError(res, 'tiêu đề đã có từ bài viết trước hoặc chưa từ khóa không cho phép', 404)
                 }
                 // check type của new money
@@ -476,6 +452,7 @@ exports.updateNewTv365 = async(req, res, next) => {
                         }
                     } else
                     if (videoType.length > 1) {
+                        await functions.deleteImgVideo(avatar, videoType)
                         return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
                     }
                 }
@@ -491,16 +468,13 @@ exports.updateNewTv365 = async(req, res, next) => {
                             isValid = false;
                         }
                         if (isValid == false) {
-                            for (let i = 0; i < avatar.length; i++) {
-                                await functions.deleteImg(avatar[i])
-                            }
-                            if (videoType) {
-                                await functions.deleteImg(videoType[0])
-                            }
+                            await functions.deleteImgVideo(avatar, videoType)
+
                             return functions.setError(res, 'đã có ảnh sai định dạng hoặc lớn hơn 2MB', 404)
                         }
                     }
                 } else if (avatar && avatar.length > 6) {
+                    await functions.deleteImgVideo(avatar, videoType)
                     return functions.setError(res, 'chỉ được đưa lên tối đa 6 ảnh', 404)
                 }
                 // check link video
@@ -509,28 +483,14 @@ exports.updateNewTv365 = async(req, res, next) => {
                     if (checkLink) {
                         link = linkVideo;
                     } else {
-                        if (avatar) {
-                            avatar.forEach(async(element) => {
-                                await functions.deleteImg(element)
-                            })
-                        }
-                        if (videoType) {
-                            await functions.deleteImg(videoType[0])
-                        }
+                        await functions.deleteImgVideo(avatar, videoType)
                         return functions.setError(res, 'link không đúng định dạng ', 404)
                     }
                 }
                 // check thời gian hạn nộp
                 let checkTime = await functions.checkTime(hanNop)
                 if (checkTime == false) {
-                    if (avatar) {
-                        avatar.forEach(async(element) => {
-                            await functions.deleteImg(element)
-                        })
-                    }
-                    if (videoType) {
-                        await functions.deleteImg(videoType[0])
-                    }
+                    await functions.deleteImgVideo(avatar, videoType)
                     return functions.setError(res, 'thời gian hạn nộp phải lớn hơn thời gian hiện tại', 404)
                 }
                 await NewTV365.updateOne({ _id: idNew }, {
@@ -579,19 +539,14 @@ exports.updateNewTv365 = async(req, res, next) => {
                 });
                 return functions.success(res, "cập nhập bài tuyển dụng thành công")
             }
+            await functions.deleteImgVideo(avatar, videoType)
             return functions.setError(res, 'bài viết không tồn tại', 404)
         }
+        await functions.deleteImgVideo(avatar, videoType)
         return functions.setError(res, 'thiếu dữ liệu', 404)
     } catch (error) {
         console.log(error)
-        if (req.files.avatarUser) {
-            req.files.avatarUser.forEach(async(element) => {
-                await functions.deleteImg(element)
-            })
-        }
-        if (req.files.videoType) {
-            await functions.deleteImg(req.files.videoType[0])
-        }
+        await functions.deleteImgVideo(req.files.avatarUser, req.files.videoType)
         return functions.setError(res, error)
     }
 }

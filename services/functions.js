@@ -552,3 +552,17 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
         ]
     }, projection)
 }
+
+// hàm  xóa  ảnh và video khi upload thất bại
+exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
+    if (avatar) {
+        avatar.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
+    }
+    if (video) {
+        video.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
+    }
+}

@@ -24,6 +24,7 @@ router.post('/updateNewTv365',
     ]),
     newTV365.updateNewTv365
 );
+
 // xóa tin
 router.delete('/deleteNewTv365/:idNew', functions.checkToken, newTV365.deleteNewTv365)
 

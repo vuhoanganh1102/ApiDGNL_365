@@ -56,13 +56,11 @@ exports.register = async(req, res, next) => {
                             if (checkVideo) {
                                 video = videoType[0].filename
                             } else {
-                                await functions.deleteImg(videoType[0])
-                                if (avatarUser) {
-                                    await functions.deleteImg(avatarUser[0])
-                                }
+                                await functions.deleteImgVideo(avatarUser, videoType)
                                 return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
                             }
                         } else if (videoType.length > 1) {
+                            await functions.deleteImgVideo(avatarUser, videoType)
                             return functions.setError(res, 'chỉ được đăng 1 video', 404)
                         }
                     }
@@ -74,13 +72,11 @@ exports.register = async(req, res, next) => {
                             if (checkImg) {
                                 avatar = avatarUser[0].filename
                             } else {
-                                if (videoType) {
-                                    await functions.deleteImg(videoType[0])
-                                }
-                                await functions.deleteImg(avatarUser[0]);
+                                await functions.deleteImgVideo(avatarUser, videoType)
                                 return functions.setError(res, `sai định dạng ảnh hoặc ảnh lớn hơn 2MB :${avatarUser[0].originalname}`, 404);
                             }
                         } else if (avatarUser.length > 1) {
+                            await functions.deleteImgVideo(avatarUser, videoType)
                             return functions.setError(res, 'chỉ được đăng 1 ảnh', 404)
                         }
                     }
@@ -91,12 +87,7 @@ exports.register = async(req, res, next) => {
                         if (checkLink) {
                             link = linkVideo;
                         } else {
-                            if (videoType) {
-                                await functions.deleteImg(videoType[0])
-                            }
-                            if (avatarUser) {
-                                await functions.deleteImg(avatarUser[0])
-                            }
+                            await functions.deleteImgVideo(avatarUser, videoType)
                             return functions.setError(res, 'link không đúng định dạng ', 404)
                         }
                     }
@@ -187,42 +178,21 @@ exports.register = async(req, res, next) => {
 
                     return functions.success(res, 'đăng ký thành công')
                 } else {
-                    if (videoType) {
-                        await functions.deleteImg(videoType[0])
-                    }
-                    if (avatarUser) {
-                        await functions.deleteImg(avatarUser[0])
-                    }
+                    await functions.deleteImgVideo(avatarUser, videoType)
                     return functions.setError(res, 'email đã tồn tại', 404)
                 }
             } else {
-                if (videoType) {
-                    await functions.deleteImg(videoType[0])
-                }
-                if (avatarUser) {
-                    await functions.deleteImg(avatarUser[0])
-                }
+                await functions.deleteImgVideo(avatarUser, videoType)
                 return functions.setError(res, 'email hoặc số điện thoại định dạng không hợp lệ', 404)
             }
 
         } else {
-            if (videoType) {
-                await functions.deleteImg(videoType[0])
-            }
-            if (avatarUser) {
-                await functions.deleteImg(avatarUser[0])
-            }
-
+            await functions.deleteImgVideo(avatarUser, videoType)
             return functions.setError(res, 'Thiếu dữ liệu', 404)
         }
     } catch (error) {
         console.log(error)
-        if (videoType) {
-            await functions.deleteImg(videoType[0])
-        }
-        if (avatarUser) {
-            await functions.deleteImg(avatarUser[0])
-        }
+        await functions.deleteImgVideo(avatarUser, videoType)
         return functions.setError(res, error)
     }
 }
