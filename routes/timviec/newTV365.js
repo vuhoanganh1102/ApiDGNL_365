@@ -14,6 +14,8 @@ router.post('/postNewTv365',
     ]),
     newTV365.postNewTv365
 );
+
+// sửa tin đăng 
 router.post('/updateNewTv365',
     functions.checkToken,
     functions.uploadVideoAndIMGNewTV.fields([
@@ -22,8 +24,10 @@ router.post('/updateNewTv365',
     ]),
     newTV365.updateNewTv365
 );
+// xóa tin
 router.delete('/deleteNewTv365/:idNew', functions.checkToken, newTV365.deleteNewTv365)
-    //api lấy dữ liệu của thành phố
+
+//api lấy dữ liệu của thành phố
 router.get('/getDataCIty', newTV365.getDataCity)
 
 //api lấy dữ liệu của quận huyện của 1 thành phố
