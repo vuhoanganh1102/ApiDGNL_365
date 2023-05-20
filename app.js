@@ -22,6 +22,11 @@ var childCompanyRouter = require('./routes/qlc/childCompany');
 var toolAddDataRouter = require('./routes/tools');
 
 var app = express();
+// app.listen(3001, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3001")
+// });
+
 //
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -75,4 +80,8 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
+// app.listen(3002, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3002")
+// })
 module.exports = app;

@@ -1,10 +1,10 @@
 const functions = require('../../services/functions')
-const City = require('../../models/Timviec365/Timviec/City.model')
-const District = require('../../models/Timviec365/Timviec/District.model');
-const NewTV365 = require('../../models/Timviec365/Timviec/Company/New.model');
+const City = require('../../models/City')
+const District = require('../../models/District');
+const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
 const Users = require('../../models/Users')
-const ApplyForJob = require('../../models/Timviec365/Timviec/Candicate/ApplyForJob.model');
-const UserSavePost = require('../../models/Timviec365/Timviec/Candicate/UserSavePost.model')
+const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
+const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost')
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
