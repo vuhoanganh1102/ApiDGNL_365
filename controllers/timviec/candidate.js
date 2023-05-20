@@ -1,18 +1,18 @@
 const Users = require('../../models/Users');
-const blog = require('../../models/Timviec365/Timviec/blog.model');
-const hoso = require('../../models/Timviec365/Timviec/hoso');
+const Blog = require('../../models/Timviec365/Timviec/Blog/Blog.model');
+const hoso = require('../../models/Timviec365/Timviec/Candicate/hoso');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
 const donUV = require('../../models/Timviec365/CV/DonUV');
 const HoSoUV = require('../../models/Timviec365/CV/HoSoUV');
 const ThuUV = require('../../models/Timviec365/CV/ThuUV');
 const CV = require('../../models/Timviec365/CV/CV');
 const like = require('../../models/Timviec365/CV/like');
-const userUnset = require('../../models/Timviec365/Timviec/userUnset');
-const newTV365 = require('../../models/Timviec365/Timviec/newTV365.model');
-const applyForJob = require('../../models/Timviec365/Timviec/applyForJob.model');
-const userSavePost = require('../../models/Timviec365/Timviec/userSavePost.model');
-const pointUsed = require('../../models/Timviec365/Timviec/pointUsed.model');
-const Category = require('../../models/Timviec365/Timviec/category.model')
+const UserUnset = require('../../models/Timviec365/Timviec/Candicate/UserUnset');
+const New = require('../../models/Timviec365/Timviec/Company/New.model');
+const ApplyForJob = require('../../models/Timviec365/Timviec/Candicate/ApplyForJob.model');
+const UserSavePost = require('../../models/Timviec365/Timviec/Candicate/UserSavePost.model');
+const PointUsed = require('../../models/Timviec365/Timviec/Company/PointUsed.model');
+const Category = require('../../models/Timviec365/Timviec/Company/Category.model')
 const CommentPost = require('../../models/Timviec365/Timviec/CommentPost')
     //mã hóa mật khẩu
 const md5 = require('md5');
@@ -57,7 +57,7 @@ exports.RegisterB1 = async(req, res, next) => {
                 } else {
                     if (!email || CheckEmail) { // check định dạng email
                         // const newID
-                        const maxID = await userUnset.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                        const maxID = await UserUnset.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
                         if (maxID) {
                             newID = Number(maxID._id) + 1;
                         } else newID = 1
@@ -66,9 +66,9 @@ exports.RegisterB1 = async(req, res, next) => {
                             newIDUser = Number(maxIDUser._id) + 1;
                         } else newIDUser = 1;
 
-                        let findUserUv = await functions.getDatafindOne(userUnset, { usePhoneTk: phoneTK, type: 0 })
+                        let findUserUv = await functions.getDatafindOne(UserUnset, { usePhoneTk: phoneTK, type: 0 })
                         if (findUserUv) {
-                            let updateUserUv = await functions.getDatafindOneAndUpdate(userUnset, { usePhoneTk: phoneTK, type: 0 }, {
+                            let updateUserUv = await functions.getDatafindOneAndUpdate(UserUnset, { usePhoneTk: phoneTK, type: 0 }, {
                                 usePass: password,
                                 useFirstName: userName,
                                 useMail: email,
@@ -83,7 +83,7 @@ exports.RegisterB1 = async(req, res, next) => {
                             })
 
                         } else {
-                            let UserUV = new userUnset({
+                            let UserUV = new UserUnset({
                                 _id: newID,
                                 usePhoneTk: phoneTK,
                                 usePass: password,
@@ -209,7 +209,7 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                     })
                     let saveUser = User.save()
                 }
-                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
+                let deleteUser = UserUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
                 return functions.success(res, "Đăng kí thành công")
             }
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
@@ -335,7 +335,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                     })
                     let saveUser = User.save()
                 }
-                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
+                let deleteUser = UserUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: 0 })
                 return functions.success(res, "Đăng kí thành công")
             }
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
@@ -582,7 +582,7 @@ exports.RegisterB2CvSite = async(req, res, next) => {
                 })
                 CvUv.save()
 
-                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: type })
+                let deleteUser = UserUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: type })
                 return functions.success(res, "Đăng kí thành công")
             }
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
@@ -651,7 +651,7 @@ exports.completeProfileQlc = async(req, res, next) => {
             listNewId[i] = Number(listNewId[i])
         }
 
-        let findNew = await functions.getDatafind(newTV365, { _id: { $in: listNewId } })
+        let findNew = await functions.getDatafind(New, { _id: { $in: listNewId } })
         for (let i = 0; i < findNew.length; i++) {
             newAI.push(findNew[i])
         }
@@ -662,7 +662,7 @@ exports.completeProfileQlc = async(req, res, next) => {
             newCv.push(findCv[i])
         }
 
-        let findBlog = await functions.getDatafind(blog, { categoryID: candiCateID })
+        let findBlog = await functions.getDatafind(Blog, { categoryID: candiCateID })
         for (let i = 0; i < findBlog.length; i++) {
             newBlog.push(findBlog[i])
         }
@@ -797,8 +797,8 @@ exports.listJobCandidateApply = async(req, res, next) => {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let userId = req.user.data.idTimViec365
-            let listJobUv = await functions.pageFind(applyForJob, { userID: userId }, { _id: 1 }, skip, limit)
-            const totalCount = await applyForJob.countDocuments({ userID: userId })
+            let listJobUv = await functions.pageFind(ApplyForJob, { userID: userId }, { _id: 1 }, skip, limit)
+            const totalCount = await ApplyForJob.countDocuments({ userID: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
             if (listJobUv) {
                 functions.success(res, "Hiển thị những việc làm ứng viên đã ứng tuyển thành công", { listJobCandidateApply: { totalCount, totalPages, listJob: listJobUv } });
@@ -821,8 +821,8 @@ exports.listJobCandidateSave = async(req, res, next) => {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let userId = req.user.data.idTimViec365
-            let listJobUvSave = await functions.pageFind(userSavePost, { userID: userId }, { _id: 1 }, skip, limit)
-            const totalCount = await applyForJob.countDocuments({ userID: userId })
+            let listJobUvSave = await functions.pageFind(UserSavePost, { userID: userId }, { _id: 1 }, skip, limit)
+            const totalCount = await ApplyForJob.countDocuments({ userID: userId })
             const totalPages = Math.ceil(totalCount / pageSize)
             if (listJobUvSave) {
                 functions.success(res, "Hiển thị những việc làm ứng viên đã ứng tuyển thành công", { listJobCandidateSave: { totalCount, totalPages, listJob: listJobUvSave } });
@@ -1699,8 +1699,8 @@ exports.infoCandidate = async(req, res, next) => {
             if (userInfo) {
                 if (req.user && req.user.data.type == 1) {
                     let companyId = req.user.data.idTimViec365
-                    let checkApplyForJob = await functions.getDatafindOne(applyForJob, { userID: userId, comID: companyId })
-                    let checkPoint = await functions.getDatafindOne(pointUsed, { uscID: companyId, useID: userId })
+                    let checkApplyForJob = await functions.getDatafindOne(ApplyForJob, { userID: userId, comID: companyId })
+                    let checkPoint = await functions.getDatafindOne(PointUsed, { uscID: companyId, useID: userId })
                     if (checkApplyForJob && checkPoint) {
                         userInfo.statusCheck = true
                         functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
@@ -1740,12 +1740,12 @@ exports.candidateApply = async(req, res, next) => {
             let cv = req.user.data.inForPerson.cv
             let newIDMax
 
-            const maxID = await applyForJob.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            const maxID = await ApplyForJob.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
             if (maxID) {
                 newIDMax = Number(maxID._id) + 1;
             } else newIDMax = 1
-            let checkApplyForJob = await functions.getDatafindOne(applyForJob, { userID: userId, newID: newId })
-            let checkNew = await functions.getDatafindOne(newTV365, { _id: newId })
+            let checkApplyForJob = await functions.getDatafindOne(ApplyForJob, { userID: userId, newID: newId })
+            let checkNew = await functions.getDatafindOne(New, { _id: newId })
             let cateId = checkNew.cateID.split(',')[0]
             let cate = await functions.getDatafindOne(Category, { _id: cateId })
             if (checkApplyForJob) {
@@ -1753,7 +1753,7 @@ exports.candidateApply = async(req, res, next) => {
             } else if (!checkNew) {
                 return functions.setError(res, "Không tồn tại tin đăng này", 400);
             } else {
-                let newApplyForJob = new applyForJob({
+                let newApplyForJob = new ApplyForJob({
                     _id: newIDMax,
                     userID: userId,
                     newID: newId,
@@ -1790,18 +1790,18 @@ exports.candidateSavePost = async(req, res, next) => {
             let newId = req.body.idtin
             let userId = req.user.data.idTimViec365
             let newIDMax
-            const maxID = await userSavePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            const maxID = await UserSavePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
             if (maxID) {
                 newIDMax = Number(maxID._id) + 1;
             } else newIDMax = 1
-            let checkUserSavePost = await functions.getDatafindOne(userSavePost, { userID: userId, newID: newId })
-            let checkNew = await functions.getDatafindOne(newTV365, { _id: newId })
+            let checkUserSavePost = await functions.getDatafindOne(UserSavePost, { userID: userId, newID: newId })
+            let checkNew = await functions.getDatafindOne(New, { _id: newId })
             if (checkUserSavePost) {
                 return functions.setError(res, "Ứng viên đã luu tin nay", 400);
             } else if (!checkNew) {
                 return functions.setError(res, "Không tồn tại tin đăng này", 400);
             } else {
-                let newUserSavePost = new userSavePost({
+                let newUserSavePost = new UserSavePost({
                     _id: newIDMax,
                     userID: userId,
                     newID: newId,
