@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
-const managerUserSchema = new Schema({
+const ManageUserSchema = new Schema({
     //ID nhân viên  
     _id: {
         type: Number,
@@ -43,4 +43,4 @@ const managerUserSchema = new Schema({
 })
 
 
-module.exports = mongoose.model('managerUser', managerUserSchema)
+module.exports = mongoose.model('ManageUser', ManageUserSchema)

@@ -1,7 +1,7 @@
 
 
 const router = require('express').Router();
-const managerUserController = require('../../controllers/qlc/managerUser')
+const managerUserController = require('../../controllers/qlc/ManageUser')
 
 //API lấy tất cả dữ liệu phòng ban 
 router.get("/",managerUserController.getListUser);
