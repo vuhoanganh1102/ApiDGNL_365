@@ -11,6 +11,7 @@ const CompanyUnset = require('../../models/Timviec365/UserOnSite/Company/UserCom
 const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
 const CategoryCompany = require('../../models/Timviec365/UserOnSite/Company/CategoryCompany')
 const CV = require('../../models/Timviec365/CV/CV')
+const Evaluation = require('../../models/Timviec365/UserOnSite/Company/Evaluation')
 
 // hàm đăng ký
 exports.register = async(req, res, next) => {
@@ -910,25 +911,23 @@ exports.seenUVWithPoint = async(req, res, next) => {
 exports.submitFeedbackCtv = async(req, res, next) => {
     try {
         let request = req.body,
-            idCompany = req.user.data.idTimViec365,
-            description = req.user.data.inForCompany.description;
+            idCompany = req.user.data.idTimViec365;
         if (request) {
-            let company = await functions.getDatafindOne(UserCompanyMultit, { uscID: idCompany });
+            let company = await functions.getDatafindOne(Evaluation, { uscID: idCompany });
             if (company) {
-                await UserCompanyMultit.updateOne({ uscID: idCompany }, {
+                await Evaluation.updateOne({ uscID: idCompany }, {
                     $set: {
-                        dgc: request,
+                        dgc: JSON.stringify(request),
                         dgTime: new Date().getTime(),
                     }
                 });
                 return functions.success(res, "Cập nhập thành công")
             } else {
-                let maxID = await functions.getMaxID(UserCompanyMultit) || 0;
-                const feedBack = new UserCompanyMultit({
+                let maxID = await functions.getMaxID(Evaluation) || 0;
+                const feedBack = new Evaluation({
                     _id: maxID,
                     uscID: idCompany,
-                    companyInfo: description,
-                    dgc: request,
+                    dgc: JSON.stringify(request),
                     dgTime: new Date().getTime(),
                 });
                 await feedBack.save();
@@ -946,25 +945,23 @@ exports.submitFeedbackCtv = async(req, res, next) => {
 exports.submitFeedbackWeb = async(req, res, next) => {
     try {
         let request = req.body,
-            idCompany = req.user.data.idTimViec365,
-            description = req.user.data.inForCompany.description;
+            idCompany = req.user.data.idTimViec365;
         if (request) {
-            let company = await functions.getDatafindOne(UserCompanyMultit, { uscID: idCompany });
+            let company = await functions.getDatafindOne(Evaluation, { uscID: idCompany });
             if (company) {
-                await UserCompanyMultit.updateOne({ uscID: idCompany }, {
+                await Evaluation.updateOne({ uscID: idCompany }, {
                     $set: {
-                        dgtv: request,
+                        dgtv: JSON.stringify(request),
                         dgTime: new Date().getTime(),
                     }
                 });
                 return functions.success(res, "Cập nhập thành công")
             } else {
-                let maxID = await functions.getMaxID(UserCompanyMultit) || 0;
-                const feedBack = new UserCompanyMultit({
+                let maxID = await functions.getMaxID(Evaluation) || 0;
+                const feedBack = new Evaluation({
                     _id: maxID,
                     uscID: idCompany,
-                    companyInfo: description,
-                    dgtv: request,
+                    dgtv: JSON.stringify(request),
                     dgTime: new Date().getTime(),
                 });
                 await feedBack.save();

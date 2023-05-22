@@ -28,7 +28,7 @@ exports.postNewTv365 = async(req, res, next) => {
             moTa = request.new_mota,
             yeuCau = request.new_yeucau,
             exp = request.new_exp,
-            bangCap = request.bangCap,
+            bangCap = request.new_bangcap,
             sex = request.new_gender,
             quyenLoi = request.new_quyenloi,
             hoSo = request.new_hoso,
@@ -316,7 +316,6 @@ exports.checkPostNew10p = async(req, res, next) => {
         let post = await NewTV365.findOne({ userID: id }).sort({ id: -1 });
         if (post) {
             let checkPost = await functions.isCurrentTimeGreaterThanInputTime(post.createTime);
-            console.log(checkPost)
             if (checkPost) {
                 return functions.success(res, "Láy dữ liệu thành công")
             }
@@ -353,7 +352,7 @@ exports.updateNewTv365 = async(req, res, next) => {
             moTa = request.new_mota,
             yeuCau = request.new_yeucau,
             exp = request.new_exp,
-            bangCap = request.bangCap,
+            bangCap = request.new_bangcap,
             sex = request.new_gender,
             quyenLoi = request.new_quyenloi,
             hoSo = request.new_hoso,
@@ -553,10 +552,14 @@ exports.updateNewTv365 = async(req, res, next) => {
 // hàm xóa tin
 exports.deleteNewTv365 = async(req, res, next) => {
     try {
-        let idNew = req.params.idNew;
+        let idNew = req.body.new_id;
         if (idNew) {
-            await functions.getDataDeleteOne(NewTV365, { _id: idNew })
-            return functions.success(res, "xóa bài tuyển dụng thành công")
+            let newTV = await functions.getDatafindOne(NewTV365, { _id: idNew });
+            if (newTV) {
+                await functions.getDataDeleteOne(NewTV365, { _id: idNew })
+                return functions.success(res, "xóa bài tuyển dụng thành công")
+            }
+            return functions.setError(res, 'bài viết không tồn tại', 404)
         }
         return functions.setError(res, 'thiếu dữ liệu', 404)
     } catch (error) {
@@ -652,7 +655,7 @@ exports.listNewGap = async(req, res, next) => {
         if (page && pageSize) {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let listPostVLLC = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, newCao: 0, newHot: 0, redirect301: "" }, [
+            let listPostVLLC = await functions.pageFind(NewTV365, { newGap: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newHot: 0, redirect301: "" }, [
                 ['newCao', -1],
                 ['updateTime', -1]
             ], skip, limit);
@@ -804,6 +807,8 @@ exports.listJobSuitable = async(req, res, next) => {
             }
             return functions.setError(res, 'không lấy được danh sách', 404)
         }
+        return functions.setError(res, 'không đủ dữ liệu', 404)
+
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
