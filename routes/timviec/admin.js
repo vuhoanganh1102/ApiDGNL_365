@@ -5,7 +5,7 @@ var formData = require('express-form-data');
 const functions = require('../../services/functions');
 
 // api lấy dữ liệu modules
-router.post('/getDataModules', admin.getModules);
+router.get('/getDataModules', admin.getModules);
 
 // api đăng ký admin
 router.post('/postNewAdmin', formData.parse(), admin.postAdmin);
@@ -17,7 +17,7 @@ router.post('/updateAdmin', functions.checkToken, formData.parse(), admin.update
 router.post('/getAdminDetail', functions.checkToken, formData.parse(), admin.getAdminDetail);
 
 // api lấy danh sách admin
-router.post('/getListAdmin', functions.checkToken, formData.parse(), admin.getListAdmin);
+router.get('/getListAdmin', functions.checkToken, formData.parse(), admin.getListAdmin);
 
 // api xóa admin  
 router.post('/deleteAdmin', functions.checkToken, formData.parse(), admin.deleteAdmin);
