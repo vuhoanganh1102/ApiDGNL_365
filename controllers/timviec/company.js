@@ -265,10 +265,10 @@ exports.registerFall = async(req, res, next) => {
         let request = req.body,
             email = request.email,
             phone = request.phone,
-            nameCompany = request.nameCompany,
-            city = request.city,
-            district = request.district,
-            address = request.address,
+            nameCompany = request.usc_name,
+            city = request.usc_city,
+            district = request.usc_qh,
+            address = request.usc_address,
             regis = request.regis;
         let maxID = await functions.getMaxID(CompanyUnset) || 1;
         if ((email) != undefined) {
@@ -614,7 +614,7 @@ exports.changePasswordSendOTP = async(req, res, next) => {
 exports.changePasswordCheckOTP = async(req, res, next) => {
     try {
         let email = req.user.data.email
-        let otp = req.body.otp
+        let otp = req.body.ma_xt
         if (otp) {
             let verify = await Users.findOne({ email, otp, type: 1 });
             if (verify != null) {
@@ -819,21 +819,40 @@ exports.listSaveUV = async(req, res, next) => {
 exports.manageFilterPoint = async(req, res, next) => {
     try {
         let idCompany = req.user.data.idTimViec365;
-        let point = await functions.getDatafindOne(PointCompany, { uscID: idCompany, type: 1 });
+        let page = Number(req.body.start);
+        let pageSize = Number(req.body.curent);
         let now = new Date();
         let pointUSC = 0;
-        if (point) {
-            let checkReset0 = await functions.getDatafindOne(PointCompany, { uscID: idCompany, type: 1, dayResetPoint0: { $lt: now } });
-            if (checkReset0 == null) {
-                pointUSC = point.pointUSC
+        if (page && pageSize) {
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let findUV = await functions.pageFind(PointUsed, { uscID: idCompany }, { _id: -1 }, skip, limit);
+            const totalCount = await functions.findCount(PointUsed, { uscID: idCompany });
+            const totalPages = Math.ceil(totalCount / pageSize);
+            let point = await functions.getDatafindOne(PointCompany, { uscID: idCompany, type: 1 });
+            if (findUV && point) {
+                let checkReset0 = await functions.getDatafindOne(PointCompany, { uscID: idCompany, type: 1, dayResetPoint0: { $lt: now } });
+                if (checkReset0 == null) {
+                    pointUSC = point.pointUSC
+                }
+                return functions.success(res, "lấy số lượng thành công", {
+                    point: {
+                        pointFree: 0,
+                        pointUSC: pointUSC,
+                        totalPoint: pointUSC,
+                    },
+                    listUV: {
+                        total: totalCount,
+                        items: findUV,
+                        totalPages: totalPages
+                    }
+                })
             }
-            return functions.success(res, "lấy số lượng thành công", {
-                pointFree: 0,
-                pointUSC: pointUSC,
-                totalPoint: pointUSC,
-            })
+            return functions.setError(res, 'không lấy được danh sách', 404)
+        } else {
+            let findUV = await functions.getDatafind(SaveCandidate, { uscID: idCompany });
+            return functions.success(res, "Lấy danh sách tất cả uv thành công", findUV);
         }
-        return functions.setError(res, 'không có dữ liệu', 404)
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -844,7 +863,7 @@ exports.manageFilterPoint = async(req, res, next) => {
 exports.seenUVWithPoint = async(req, res, next) => {
     try {
         let idCompany = req.user.data.idTimViec365;
-        let idUser = req.body.useID;
+        let idUser = req.body.user_id;
         let noteUV = req.body.noteUV;
         let ipUser = req.body.ipUser;
         let returnPoint = req.body.returnPoint;
@@ -1278,32 +1297,6 @@ exports.deleteUV = async(req, res, next) => {
     }
 }
 
-// danh sách sử dụng điểm của nhà tuyển dụng cho Uv
-exports.listUVPoin = async(req, res, next) => {
-    try {
-        let idCompany = req.user.data.idTimViec365;
-        let page = Number(req.body.start);
-        let pageSize = Number(req.body.curent);
-        if (page && pageSize) {
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let findUV = await functions.pageFind(PointUsed, { uscID: idCompany }, { _id: -1 }, skip, limit);
-            const totalCount = await functions.findCount(PointUsed, { uscID: idCompany });
-            const totalPages = Math.ceil(totalCount / pageSize);
-            if (findUV) {
-                return functions.success(res, "Lấy danh sách uv thành công", { total: totalCount, items: findUV });
-            }
-            return functions.setError(res, 'không lấy được danh sách', 404)
-        } else {
-            let findUV = await functions.getDatafind(SaveCandidate, { uscID: idCompany });
-            return functions.success(res, "Lấy danh sách tất cả uv thành công", findUV);
-        }
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
-
 // xóa uv trong danh sách dùng điểm
 exports.deleteUVUsePoin = async(req, res, next) => {
     try {
@@ -1323,19 +1316,18 @@ exports.deleteUVUsePoin = async(req, res, next) => {
 // hàm cập nhập ứng viên ứng tuyển 
 exports.updateUvApplyJob = async(req, res, next) => {
     try {
-        let newID = req.body.new_id;
-        let userID = req.body.user_id;
+        let id = req.body.id;
         let type = req.body.type;
-        if (newID && userID && type) {
-            let news = await functions.getDatafindOne(NewTV365, { _id: newID });
-            let user = await functions.getDatafindOne(Users, { idTimViec365: userID, type: 1 });
-            if (news && user) {
-                await ApplyForJob.updateOne({ userID: userID, newID: newID }, {
+        if (type) {
+            let uv = await functions.getDatafindOne(ApplyForJob, { _id: id })
+            if (uv) {
+                await ApplyForJob.updateOne({ _id: id }, {
                     $set: { kq: type }
                 });
                 return functions.success(res, 'cập nhập thành công', )
             }
-            return functions.setError(res, 'người dùng hoặc bài viết không tồn tại', 404)
+            return functions.setError(res, 'không tồn tại', 404)
+
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)
 
@@ -1348,13 +1340,13 @@ exports.updateUvApplyJob = async(req, res, next) => {
 // hàm cập nhập ứng viên qua điểm lọc
 exports.updateUvWithPoint = async(req, res, next) => {
     try {
-        let userID = req.body.user_id;
+        let id = req.body.id;
         let type = req.body.type;
         let note = req.body.note;
-        if (userID) {
-            let poin = await functions.getDatafindOne(PointUsed, { uscID: idCompany, useID: idUV });
-            if (poin) {
-                await PointUsed.updateOne({ uscID: idCompany, useID: idUV }, {
+        if (id) {
+            let uv = await functions.getDatafindOne(PointUsed, { _id: id })
+            if (uv) {
+                await PointUsed.updateOne({ _id: id }, {
                     $set: {
                         type: type,
                         noteUV: note,
@@ -1362,7 +1354,8 @@ exports.updateUvWithPoint = async(req, res, next) => {
                 });
                 return functions.success(res, 'cập nhập thành công', )
             }
-            return functions.setError(res, 'không tồn tại người dùng trong danh sách điểm lọc', 404)
+            return functions.setError(res, 'không tồn tại', 404)
+
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)
 

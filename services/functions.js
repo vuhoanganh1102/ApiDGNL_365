@@ -387,9 +387,9 @@ exports.createToken = async(data, time) => {
 };
 
 // hàm lấy data từ axios 
-exports.getDataAxios = async(url, condition) => {
+exports.getDataAxios = async(url, condition, method = "post") => {
     return await await axios({
-        method: "post",
+        method: method,
         url: url,
         data: condition,
         headers: { "Content-Type": "multipart/form-data" }
