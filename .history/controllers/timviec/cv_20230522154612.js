@@ -162,16 +162,28 @@ exports.saveCV = async(req, res, next) => {
             //Gửi ảnh về
             if (download === 1) {
                 const pdfBuffer = fs.readFileSync(uploadImage.pdfPath);
-                const senderId = 1191;
-                const text = '';
-                const data = {
-                    userId: userId,
-                    senderId: senderId,
-                    pdf: pdfBuffer,
-                    title: text,
-                };
-                const response = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
-                console.log(response.data);
+
+                const chat365 = await chat365.findOne({
+                    $or: [
+                        { email: req.user.data.email },
+                        { phoneTK: req.user.data.phoneTK }
+                    ]
+                });
+
+                if (chat365) {
+                    if (chatId.chat365_id !== 0) {
+                        const senderId = 1191;
+                        const text = '';
+                        const data = {
+                            userId: chatId.chat365_id,
+                            senderId: senderId,
+                            pdf: pdfBuffer,
+                            title: text,
+                        };
+                        const response = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
+                        console.log(response.data);
+                    }
+                }
             }
             return await functions.success(res, 'Lưu thành công', newCVUV);
         };

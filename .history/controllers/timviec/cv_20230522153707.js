@@ -122,7 +122,7 @@ exports.saveCV = async(req, res, next) => {
         const userId = req.user.data._id;
         const data = req.body;
 
-        // 0 : lưu(upload), 1: lưu và tải(upload,download)
+        // 0 : lưu(upload), 1: lưu và tải
         const download = req.query.download || 0;
         const checkImage = await functions.checkImage(imageFile.path);
 
@@ -142,6 +142,32 @@ exports.saveCV = async(req, res, next) => {
             scan: data.scan,
             state: data.state
         };
+        //Gửi ảnh về chat365
+        if (download === 1) {
+            const pdfBuffer = fs.readFileSync(uploadImage.pdfPath);
+
+            const chat365 = await chat365.findOne({
+                $or: [
+                    { email: req.user.data.email },
+                    { phoneTK: req.user.data.phoneTK }
+                ]
+            });
+
+            if (chat365) {
+                if (chatId.chat365_id !== 0) {
+                    const senderId = 1191;
+                    const text = '';
+                    const data = {
+                        userId: chatId.chat365_id,
+                        senderId: senderId,
+                        pdf: pdfBuffer,
+                        title: text,
+                    };
+                    const response = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
+                    console.log(response.data);
+                }
+            }
+        }
 
         const cv = await CV.findOne({ _id: data._id }).select('download');
         if (!cv) return await functions.setError(res, 'Lưu thất bại 1', 404);
@@ -159,20 +185,6 @@ exports.saveCV = async(req, res, next) => {
             // cập nhật số luot download 
             await CV.updateOne({ _id: cv._id }, { $set: { download: cv.download + 1 } });
 
-            //Gửi ảnh về
-            if (download === 1) {
-                const pdfBuffer = fs.readFileSync(uploadImage.pdfPath);
-                const senderId = 1191;
-                const text = '';
-                const data = {
-                    userId: userId,
-                    senderId: senderId,
-                    pdf: pdfBuffer,
-                    title: text,
-                };
-                const response = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
-                console.log(response.data);
-            }
             return await functions.success(res, 'Lưu thành công', newCVUV);
         };
         return await functions.setError(res, 'Lưu thất bại 2', 404);

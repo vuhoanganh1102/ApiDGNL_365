@@ -10,17 +10,14 @@ const PriceListSchema = new mongoose.Schema({
     //chiết khấu
     discount: String,
     // thành tiền
-    totalAmount: String,
-    // hạn dùng
-    expiryDate: String,
+    intoMoney: String,
+    hanDung: String,
     the: String,
     vat: String,
-    // quyền lợi
-    benefits: String,
-    //ưu đãi
-    incentive1: String,
-    incentive2: String,
-    incentive3: String,
+    quyenLoi: String,
+    uuDai1: String,
+    uuDai2: String,
+    uuDai3: String,
     cm1: String,
     cm2: String,
     cm3: String,

@@ -162,6 +162,11 @@ exports.saveCV = async(req, res, next) => {
             //Gửi ảnh về
             if (download === 1) {
                 const pdfBuffer = fs.readFileSync(uploadImage.pdfPath);
+
+
+
+
+
                 const senderId = 1191;
                 const text = '';
                 const data = {
@@ -172,6 +177,8 @@ exports.saveCV = async(req, res, next) => {
                 };
                 const response = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
                 console.log(response.data);
+
+
             }
             return await functions.success(res, 'Lưu thành công', newCVUV);
         };
