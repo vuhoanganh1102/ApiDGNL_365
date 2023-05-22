@@ -23,7 +23,11 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
-var childCompanyRouter = require('./routes/qlc/childCompany');
+var childCompanyRouter = require('./routes/qlc/childCompany')
+var managerUser = require('./routes/qlc/managerUser')
+
+
+
 var toolAddDataRouter = require('./routes/tools');
 
 var donRouter = require('./routes/timviec/don');
@@ -71,6 +75,8 @@ app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
 app.use("/api/qlc/group", groupRouter);
 app.use('/api/qlc/childCompany', childCompanyRouter)
+app.use('/api/qlc/managerUser', managerUser)
+
 
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);

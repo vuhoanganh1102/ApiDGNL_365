@@ -173,6 +173,16 @@ exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
 };
+// hàm tìm id max Quản Lí Chung
+exports.getMaxIDQLC = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
+    return maxUser.idQLC;
+};
+// hàm tìm idcompany max 
+exports.getMaxIDcompany = async(model) => {
+    const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
+    return maxIDcompany.companyId;
+};
 
 // hàm check định dạng ảnh
 const isImage = async(filePath) => {
