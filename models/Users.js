@@ -425,6 +425,11 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            // id kinh doanh cố định 
+            idKD_Re: {
+                type: Number,
+                default: 0
+            },
             canonical: {
                 // Mã sinh ra url phục vụ seo (canonical)
                 type: String,

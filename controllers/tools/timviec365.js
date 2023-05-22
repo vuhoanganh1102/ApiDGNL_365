@@ -9,58 +9,85 @@ const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
     try {
-        // let result = true;
-        // let count = 0;
-        // do {
-        let data = await fnc.getDataAxios('https://timviec365.vn/email2/testh4.php')
-        if (data.length > 0) {
-            data.forEach(async element => {
-                let cityArray = element.new_city.split(",").map(String);
-                let districtArray = element.new_qh_id.split(",").map(String);
-                const newTV = new NewTV365({
-                    _id: element.new_id,
-                    userID: element.usc_id,
-                    title: element.new_title,
-                    cateID: element.new_cat_id,
-                    cityID: cityArray,
-                    districtID: districtArray,
-                    address: element.new_addr,
-                    capBac: element.new_cap_bac,
-                    exp: element.new_exp,
-                    sex: element.new_gioi_tinh,
-                    bangCap: element.new_bang_cap,
-                    hinhThuc: element.new_hinh_thuc,
-                    doTuoi: element.key_301,
-                    money: element.new_money,
-                    createTime: new Date(element.new_create_time * 1000),
-                    updateTime: new Date(element.new_update_time * 1000),
-                    hanNop: new Date(element.new_han_nop * 1000),
-                    newHot: element.new_hot,
-                    newCao: element.new_cao,
-                    newGhim: element.new_ghim,
-                    newGap: element.new_gap,
-                    newMutil: {
-                        moTa: element.new_mota,
-                        yeuCau: element.new_yeucau,
-                        quyenLoi: element.new_quyenloi,
-                        hoSo: element.new_ho_so,
-                    },
-                    newMoney: {
-                        type: element.nm_type,
-                        minValue: element.nm_min_value,
-                        maxValue: element.nm_max_value,
-                        unit: element.nm_unit,
-                    }
-                })
-                await newTV.save();
+        let result = true;
+        let page = 1;
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/api_nodejs/get_list_new.php?page=' + page, {}, "get")
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let cityArray = data[i].new_city.split(",").map(String);
+                    let districtArray = data[i].new_qh_id.split(",").map(String);
+                    let lvArray = data[i].new_lv.split(",").map(String);
+                    const newTV = new NewTV365({
+                        _id: data[i].new_id,
+                        userID: data[i].usc_id,
+                        title: data[i].new_title,
+                        newMd5: data[i].new_md5,
+                        alias: data[i].new_alias,
+                        cateID: data[i].new_cat_id,
+                        realCate: data[i].new_real_cate,
+                        cityID: cityArray,
+                        districtID: districtArray,
+                        address: data[i].new_addr,
+                        capBac: data[i].new_cap_bac,
+                        exp: data[i].new_exp,
+                        sex: data[i].new_gioi_tinh,
+                        bangCap: data[i].new_bang_cap,
+                        hinhThuc: data[i].new_hinh_thuc,
+                        doTuoi: data[i].new_do_tuoi,
+                        money: data[i].new_money,
+                        createTime: new Date(data[i].new_create_time * 1000),
+                        updateTime: new Date(data[i].new_update_time * 1000),
+                        hanNop: new Date(data[i].new_han_nop * 1000),
+                        cateTime: new Date(data[i].new_cate_time * 1000),
+                        userRedirect: data[i].new_user_redirect,
+                        viewCount: data[i].new_view_count,
+                        renew: data[i].new_renew,
+                        newDo: data[i].new_do,
+                        over: data[i].new_over,
+                        newThuc: data[i].new_thuc,
+                        newOrder: data[i].new_order,
+                        newUt: data[i].new_ut,
+                        newHot: data[i].new_hot,
+                        newCao: data[i].new_cao,
+                        newGhim: data[i].new_ghim,
+                        newGap: data[i].new_gap,
+                        sendVip: data[i].send_vip,
+                        hideAdmin: data[i].new_hide_admin,
+                        sendVip: data[i].send_vip,
+                        newPoint: data[i].new_point,
+                        newMutil: {
+                            moTa: data[i].new_mota,
+                            yeuCau: data[i].new_yeucau,
+                            quyenLoi: data[i].new_quyenloi,
+                            hoSo: data[i].new_ho_so,
+                            titleSeo: data[i].new_title_seo,
+                            desSeo: data[i].new_des_seo,
+                            hoaHong: data[i].new_hoahong,
+                            tgtv: data[i].new_tgtv,
+                            lv: lvArray,
+                            baoLuu: data[i].new_ho_so,
+                            timeBaoLuu: data[i].time_bao_luu,
+                            jobPosting: data[i].no_jobposting,
+                            videoType: data[i].new_video_type,
+                            videoActive: data[i].new_video_active,
+                            images: data[i].new_images,
+                        },
+                        newMoney: {
+                            type: data[i].nm_type,
+                            minValue: data[i].nm_min_value,
+                            maxValue: data[i].nm_max_value,
+                            unit: data[i].nm_unit,
+                        }
+                    })
+                    await newTV.save();
 
-            });
+                };
+                page += 1;
+                console.log(page)
+            } else result = false;
         }
-        // count += 20;
-        // console.log(count)
-        //     } else result = false;
-        // }
-        // while (result)
+        while (result)
         await fnc.success(res, 'thành công', { data });
 
     } catch (error) {

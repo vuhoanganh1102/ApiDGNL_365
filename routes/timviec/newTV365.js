@@ -14,6 +14,8 @@ router.post('/postNewTv365',
     ]),
     newTV365.postNewTv365
 );
+
+// sửa tin đăng 
 router.post('/updateNewTv365',
     functions.checkToken,
     functions.uploadVideoAndIMGNewTV.fields([
@@ -22,8 +24,11 @@ router.post('/updateNewTv365',
     ]),
     newTV365.updateNewTv365
 );
-router.delete('/deleteNewTv365/:idNew', functions.checkToken, newTV365.deleteNewTv365)
-    //api lấy dữ liệu của thành phố
+
+// xóa tin
+router.delete('/deleteNewTv365', functions.checkToken, newTV365.deleteNewTv365)
+
+//api lấy dữ liệu của thành phố
 router.get('/getDataCIty', newTV365.getDataCity)
 
 //api lấy dữ liệu của quận huyện của 1 thành phố
@@ -39,7 +44,7 @@ router.get('/getDataPost', functions.checkToken, newTV365.getPost)
 router.get('/checkNew10p', functions.checkToken, newTV365.checkPostNew10p)
 
 // api làm mới tin
-router.get('/checkNew10p', functions.checkToken, newTV365.refreshNew)
+router.post('/refreshNew', functions.checkToken, newTV365.refreshNew)
 
 //api lấy 1 bài viết trước đăng nhập hoặc sau đăng nhập
 router.post('/getDataNew', formData.parse(), function(req, res, next) {
@@ -75,7 +80,7 @@ router.post('/getJobListByLocation', formData.parse(), newTV365.getJobListByLoca
 // api danh sách việc tên công ty tag
 router.post('/getJobListByCompany', formData.parse(), newTV365.getJobListByCompany)
 
-// api danh sách việc tên công ty tag
+// api danh sách việc địa điểm và ngành nghề tag
 router.post('/getJobListByJob', formData.parse(), newTV365.getJobListByJob)
 
 // api danh sách việc tiêu chí tag
