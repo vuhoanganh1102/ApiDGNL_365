@@ -1,10 +1,10 @@
 const functions = require('../../services/functions')
-const City = require('../../models/Timviec365/Timviec/city.model')
-const District = require('../../models/Timviec365/Timviec/district.model');
-const NewTV365 = require('../../models/Timviec365/Timviec/newTV365.model');
+const City = require('../../models/City')
+const District = require('../../models/District');
+const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
 const Users = require('../../models/Users')
-const ApplyForJob = require('../../models/Timviec365/Timviec/applyForJob.model');
-const UserSavePost = require('../../models/Timviec365/Timviec/userSavePost.model')
+const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
+const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost')
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -28,7 +28,7 @@ exports.postNewTv365 = async(req, res, next) => {
             moTa = request.new_mota,
             yeuCau = request.new_yeucau,
             exp = request.new_exp,
-            bangCap = request.bangCap,
+            bangCap = request.new_bangcap,
             sex = request.new_gender,
             quyenLoi = request.new_quyenloi,
             hoSo = request.new_hoso,
@@ -62,6 +62,7 @@ exports.postNewTv365 = async(req, res, next) => {
             // validate title
             let checkValidateTilte = await functions.checkTilte(title, functions.keywordsTilte);
             if ((checkValidateTilte == false || checkTile == false)) {
+                await functions.deleteImgVideo(avatar, videoType)
                 return functions.setError(res, 'tiêu đề đã có từ bài viết trước hoặc chưa từ khóa không cho phép', 404)
             }
             // check type của new money
@@ -71,9 +72,33 @@ exports.postNewTv365 = async(req, res, next) => {
                     minValue = null;
                     break;
                 case 2:
+                    for (const threshold of functions.thresholds) {
+                        if (minValue >= threshold.minValue && minValue < threshold.maxValue) {
+                            money = threshold.money;
+                            break;
+                        }
+                    }
                     maxValue = null;
                     break;
                 case 3:
+                    for (const threshold of functions.thresholds) {
+                        if (maxValue > threshold.minValue && maxValue <= threshold.maxValue) {
+                            money = threshold.money;
+                            break;
+                        }
+                    }
+                    minValue = null;
+                    break;
+                case 4:
+                    for (const threshold of functions.thresholds) {
+                        if (minValue >= threshold.minValue && maxValue <= threshold.maxValue) {
+                            money = threshold.money;
+                            break;
+                        }
+                        if (maxValue > threshold.maxValue) {
+                            money = threshold.money
+                        }
+                    }
                     minValue = null;
                     break;
                 case 5:
@@ -89,11 +114,14 @@ exports.postNewTv365 = async(req, res, next) => {
                     if (checkVideo) {
                         video = videoType[0].filename
                     } else {
-                        await functions.deleteImg(videoType[0])
+                        videoType.forEach(async(element) => {
+                            await functions.deleteImg(element)
+                        })
                         return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
                     }
                 } else
                 if (videoType.length > 1) {
+                    await functions.deleteImgVideo(avatar, videoType)
                     return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
                 }
             }
@@ -110,15 +138,11 @@ exports.postNewTv365 = async(req, res, next) => {
                     }
                 }
                 if (isValid == false) {
-                    for (let i = 0; i < avatar.length; i++) {
-                        await functions.deleteImg(avatar[i])
-                    }
-                    if (videoType) {
-                        await functions.deleteImg(videoType[0])
-                    }
+                    await functions.deleteImgVideo(avatar, videoType)
                     return functions.setError(res, 'đã có ảnh sai định dạng hoặc lớn hơn 2MB', 404)
                 }
             } else if (avatar && avatar.length > 6) {
+                await functions.deleteImgVideo(avatar, videoType)
                 return functions.setError(res, 'chỉ được đưa lên tối đa 6 ảnh', 404)
             }
 
@@ -128,28 +152,14 @@ exports.postNewTv365 = async(req, res, next) => {
                 if (checkLink) {
                     link = linkVideo;
                 } else {
-                    if (avatar) {
-                        avatar.forEach(async(element) => {
-                            await functions.deleteImg(element)
-                        })
-                    }
-                    if (videoType) {
-                        await functions.deleteImg(videoType[0])
-                    }
+                    await functions.deleteImgVideo(avatar, videoType)
                     return functions.setError(res, 'link không đúng định dạng ', 404)
                 }
             }
             // check thời gian hạn nộp
             let checkTime = await functions.checkTime(hanNop)
             if (checkTime == false) {
-                if (avatar) {
-                    avatar.forEach(async(element) => {
-                        await functions.deleteImg(element)
-                    })
-                }
-                if (videoType) {
-                    await functions.deleteImg(videoType[0])
-                }
+                await functions.deleteImgVideo(avatar, videoType)
                 return functions.setError(res, 'thời gian hạn nộp phải lớn hơn thời gian hiện tại', 404)
             }
             let checkEmail = await functions.checkEmail(userContactEmail);
@@ -166,9 +176,9 @@ exports.postNewTv365 = async(req, res, next) => {
                 userID: idCompany,
                 alias: '',
                 redirect301: '',
-                cateID: cateID,
-                cityID: city,
-                districtID: district,
+                cateID: [cateID],
+                cityID: [city],
+                districtID: [district],
                 address: address,
                 money: money,
                 capBac: capBac,
@@ -191,7 +201,7 @@ exports.postNewTv365 = async(req, res, next) => {
                     hoaHong: hoaHong || " ",
                     tgtv: tgtv || " ",
                     videoType: video || " ",
-                    images: listImg || " ",
+                    images: listImg || null,
                     link: link,
                     lv: lv,
                 },
@@ -205,27 +215,21 @@ exports.postNewTv365 = async(req, res, next) => {
             await newTV.save();
             await Users.updateOne({ idTimViec365: idCompany }, {
                 $set: {
-                    inForCompany: {
-                        userContactName: userContactName,
-                        userContactEmail: userContactEmail,
-                        userContactAddress: userContactAddress,
-                        userContactPhone: userContactPhone,
-                    }
+                    'inForCompany.userContactName': userContactName,
+                    'inForCompany.userContactPhone': userContactPhone,
+                    'inForCompany.userContactAddress': userContactAddress,
+                    'inForCompany.userContactEmail': userContactEmail,
                 }
             });
             return functions.success(res, "tạo bài tuyển dụng thành công")
+        } else {
+            await functions.deleteImgVideo(avatar, videoType)
+            return functions.setError(res, 'thiếu dữ liệu', 404)
         }
-        return functions.setError(res, 'thiếu dữ liệu', 404)
+
     } catch (error) {
         console.log(error)
-        if (req.files.avatarUser) {
-            req.files.avatarUser.forEach(async(element) => {
-                await functions.deleteImg(element)
-            })
-        }
-        if (req.files.videoType) {
-            await functions.deleteImg(req.files.videoType[0])
-        }
+        await functions.deleteImgVideo(req.files.avatarUser, req.files.videoType)
         return functions.setError(res, error)
     }
 }
@@ -279,7 +283,7 @@ exports.getListPost = async(req, res, next) => {
             return functions.setError(res, 'không lấy được danh sách', 404)
         } else {
             let listPost = await functions.getDatafind(NewTV365, { userID: idCompany });
-            return functions.success(res, "Lấy danh sách tin đăng thành công", listPost);
+            return functions.success(res, "Lấy danh sách tin đăng thành công", { listPost });
 
         }
 
@@ -295,7 +299,7 @@ exports.getPost = async(req, res, next) => {
         let id = req.body.new_id;
         let post = await functions.getDatafindOne(NewTV365, { _id: id })
         if (post) {
-            return functions.success(res, "Láy dữ liệu thành công", [post])
+            return functions.success(res, "Láy dữ liệu thành công", { post })
         }
         return functions.setError(res, 'sai id', 404)
 
@@ -312,7 +316,6 @@ exports.checkPostNew10p = async(req, res, next) => {
         let post = await NewTV365.findOne({ userID: id }).sort({ id: -1 });
         if (post) {
             let checkPost = await functions.isCurrentTimeGreaterThanInputTime(post.createTime);
-            console.log(checkPost)
             if (checkPost) {
                 return functions.success(res, "Láy dữ liệu thành công")
             }
@@ -349,7 +352,7 @@ exports.updateNewTv365 = async(req, res, next) => {
             moTa = request.new_mota,
             yeuCau = request.new_yeucau,
             exp = request.new_exp,
-            bangCap = request.bangCap,
+            bangCap = request.new_bangcap,
             sex = request.new_gender,
             quyenLoi = request.new_quyenloi,
             hoSo = request.new_hoso,
@@ -374,167 +377,174 @@ exports.updateNewTv365 = async(req, res, next) => {
         if (title && cateID && soLuong && capBac && hinhThuc && city && district && address &&
             until && moTa && yeuCau && exp && bangCap && sex && quyenLoi && hanNop && userContactName &&
             userContactAddress && userContactPhone && userContactEmail && typeNewMoney && idNew) {
-            // check title trùng với title đã đăng hay không
-            let listPost = await functions.getDatafind(NewTV365, { userID: idCompany });
             let newTV = await functions.getDatafindOne(NewTV365, { _id: idNew });
-            let oldTitle = newTV.title;
-            if (listPost.length > 0) {
-                for (let i = 0; i < listPost.length; i++) {
-                    listArrPost.push(listPost[i].title)
-                }
-                listTilte = await functions.removeSimilarKeywords(oldTitle, listArrPost)
-            }
-            let checkTile = await functions.checkTilte(title, listTilte);
-            // validate title
-            let checkValidateTilte = await functions.checkTilte(title, functions.keywordsTilte);
-            if ((checkValidateTilte == false || checkTile == false)) {
-                if (avatar) {
-                    avatar.forEach(async(element) => {
-                        await functions.deleteImg(element)
-                    })
-                }
-                if (videoType) {
-                    await functions.deleteImg(videoType[0])
-                }
-                return functions.setError(res, 'tiêu đề đã có từ bài viết trước hoặc chưa từ khóa không cho phép', 404)
-            }
-            // check type của new money
-            switch (Number(typeNewMoney)) {
-                case 1:
-                    maxValue = null;
-                    minValue = null;
-                    break;
-                case 2:
-                    maxValue = null;
-                    break;
-                case 3:
-                    minValue = null;
-                    break;
-                case 5:
-                    money = request.money;
-                    break;
-                default:
-                    break;
-            }
-            //check video
-            if (videoType) {
-                if (videoType.length == 1) {
-                    let checkVideo = await functions.checkVideo(videoType[0]);
-                    if (checkVideo) {
-                        video = videoType[0].filename
-                    } else {
-                        await functions.deleteImg(videoType[0])
-                        return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
-                    }
-                } else
-                if (videoType.length > 1) {
-                    return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
-                }
-            }
+            if (newTV) {
 
-            //check ảnh
-            if (avatar && avatar.length >= 1 && avatar.length <= 6) {
-                for (let i = 0; i < avatar.length; i++) {
-                    let checkImg = await functions.checkImage(avatar[i].path);
-                    if (checkImg) {
-                        listImg.push(avatar[i].filename);
-                    } else {
-                        await functions.deleteImg(avatar[i]);
-                        return functions.setError(res, `sai định dạng ảnh hoặc ảnh lớn hơn 2MB :${avatar[i].originalname}`, 404);
+                // check title trùng với title đã đăng hay không
+                let listPost = await functions.getDatafind(NewTV365, { userID: idCompany });
+                let oldTitle = newTV.title;
+                if (listPost.length > 0) {
+                    for (let i = 0; i < listPost.length; i++) {
+                        listArrPost.push(listPost[i].title)
                     }
+                    listTilte = await functions.removeSimilarKeywords(oldTitle, listArrPost)
                 }
-            } else if (avatar && avatar.length > 6) {
-                return functions.setError(res, 'chỉ được đưa lên tối đa 6 ảnh', 404)
-            }
-            // check link video
-            if (linkVideo) {
-                let checkLink = await functions.checkLink(linkVideo);
-                if (checkLink) {
-                    link = linkVideo;
-                } else {
-                    if (avatar) {
-                        avatar.forEach(async(element) => {
-                            await functions.deleteImg(element)
-                        })
-                    }
-                    if (videoType) {
-                        await functions.deleteImg(videoType[0])
-                    }
-                    return functions.setError(res, 'link không đúng định dạng ', 404)
+                let checkTile = await functions.checkTilte(title, listTilte);
+                // validate title
+                let checkValidateTilte = await functions.checkTilte(title, functions.keywordsTilte);
+                if ((checkValidateTilte == false || checkTile == false)) {
+                    await functions.deleteImgVideo(avatar, videoType)
+                    return functions.setError(res, 'tiêu đề đã có từ bài viết trước hoặc chưa từ khóa không cho phép', 404)
                 }
-            }
-            // check thời gian hạn nộp
-            let checkTime = await functions.checkTime(hanNop)
-            if (checkTime == false) {
-                if (avatar) {
-                    avatar.forEach(async(element) => {
-                        await functions.deleteImg(element)
-                    })
+                // check type của new money
+                switch (Number(typeNewMoney)) {
+                    case 1:
+                        maxValue = null;
+                        minValue = null;
+                        break;
+                    case 2:
+                        for (const threshold of functions.thresholds) {
+                            if (minValue >= threshold.minValue && minValue < threshold.maxValue) {
+                                money = threshold.money;
+                                break;
+                            }
+                        }
+                        maxValue = null;
+                        break;
+                    case 3:
+                        for (const threshold of functions.thresholds) {
+                            if (maxValue > threshold.minValue && maxValue <= threshold.maxValue) {
+                                money = threshold.money;
+                                break;
+                            }
+                        }
+                        minValue = null;
+                        break;
+                    case 4:
+                        for (const threshold of functions.thresholds) {
+                            if (minValue >= threshold.minValue && maxValue <= threshold.maxValue) {
+                                money = threshold.money;
+                                break;
+                            }
+                            if (maxValue > threshold.maxValue) {
+                                money = threshold.money
+                            }
+                        }
+                        minValue = null;
+                        break;
+                    case 5:
+                        money = request.money;
+                        break;
+                    default:
+                        break;
                 }
+                //check video
                 if (videoType) {
-                    await functions.deleteImg(videoType[0])
+                    if (videoType.length == 1) {
+                        let checkVideo = await functions.checkVideo(videoType[0]);
+                        if (checkVideo) {
+                            video = videoType[0].filename
+                        } else {
+                            await functions.deleteImg(videoType[0])
+                            return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
+                        }
+                    } else
+                    if (videoType.length > 1) {
+                        await functions.deleteImgVideo(avatar, videoType)
+                        return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
+                    }
                 }
-                return functions.setError(res, 'thời gian hạn nộp phải lớn hơn thời gian hiện tại', 404)
+
+                //check ảnh
+                if (avatar && avatar.length >= 1 && avatar.length <= 6) {
+                    for (let i = 0; i < avatar.length; i++) {
+                        let checkImg = await functions.checkImage(avatar[i].path);
+                        let isValid = true;
+                        if (checkImg) {
+                            listImg.push(avatar[i].filename);
+                        } else {
+                            isValid = false;
+                        }
+                        if (isValid == false) {
+                            await functions.deleteImgVideo(avatar, videoType)
+
+                            return functions.setError(res, 'đã có ảnh sai định dạng hoặc lớn hơn 2MB', 404)
+                        }
+                    }
+                } else if (avatar && avatar.length > 6) {
+                    await functions.deleteImgVideo(avatar, videoType)
+                    return functions.setError(res, 'chỉ được đưa lên tối đa 6 ảnh', 404)
+                }
+                // check link video
+                if (linkVideo) {
+                    let checkLink = await functions.checkLink(linkVideo);
+                    if (checkLink) {
+                        link = linkVideo;
+                    } else {
+                        await functions.deleteImgVideo(avatar, videoType)
+                        return functions.setError(res, 'link không đúng định dạng ', 404)
+                    }
+                }
+                // check thời gian hạn nộp
+                let checkTime = await functions.checkTime(hanNop)
+                if (checkTime == false) {
+                    await functions.deleteImgVideo(avatar, videoType)
+                    return functions.setError(res, 'thời gian hạn nộp phải lớn hơn thời gian hiện tại', 404)
+                }
+                await NewTV365.updateOne({ _id: idNew }, {
+                    $set: {
+                        title: title,
+                        alias: '',
+                        cateID: [cateID],
+                        cityID: [city],
+                        districtID: [district],
+                        address: address,
+                        money: money,
+                        capBac: capBac,
+                        exp: exp,
+                        sex: sex,
+                        bangCap: bangCap,
+                        soLuong: soLuong,
+                        hinhThuc: hinhThuc,
+                        hanNop: hanNop,
+                        updateTime: new Date().getTime(),
+                        newMutil: {
+                            moTa: moTa,
+                            yeuCau: yeuCau,
+                            quyenLoi: quyenLoi,
+                            hoSo: hoSo,
+                            hoaHong: hoaHong || " ",
+                            tgtv: tgtv || " ",
+                            videoType: video || " ",
+                            images: listImg || null,
+                            lv: lv,
+                        },
+                        newMoney: {
+                            type: typeNewMoney,
+                            minValue: minValue || null,
+                            maxValue: maxValue || null,
+                            until: until || 1,
+                        }
+                    }
+                });
+                await Users.updateOne({ idTimViec365: idCompany }, {
+                    $set: {
+                        'inForCompany.userContactName': userContactName,
+                        'inForCompany.userContactPhone': userContactPhone,
+                        'inForCompany.userContactAddress': userContactAddress,
+                        'inForCompany.userContactEmail': userContactEmail,
+                    }
+                });
+                return functions.success(res, "cập nhập bài tuyển dụng thành công")
             }
-            await NewTV365.updateOne({ _id: idNew }, {
-                $set: {
-                    title: title,
-                    alias: '',
-                    cateID: cateID,
-                    cityID: city,
-                    districtID: district,
-                    address: address,
-                    money: money,
-                    capBac: capBac,
-                    exp: exp,
-                    sex: sex,
-                    bangCap: bangCap,
-                    soLuong: soLuong,
-                    hinhThuc: hinhThuc,
-                    hanNop: hanNop,
-                    updateTime: new Date().getTime(),
-                    newMutil: {
-                        moTa: moTa,
-                        yeuCau: yeuCau,
-                        quyenLoi: quyenLoi,
-                        hoSo: hoSo,
-                        hoaHong: hoaHong || " ",
-                        tgtv: tgtv || " ",
-                        videoType: video || " ",
-                        images: listImg || null,
-                        lv: lv,
-                    },
-                    newMoney: {
-                        type: typeNewMoney,
-                        minValue: minValue || null,
-                        maxValue: maxValue || null,
-                        until: until || 1,
-                    }
-                }
-            });
-            await Users.updateOne({ idTimViec365: idCompany }, {
-                $set: {
-                    inForCompany: {
-                        userContactName: userContactName,
-                        userContactEmail: userContactEmail,
-                        userContactAddress: userContactAddress,
-                        userContactPhone: userContactPhone,
-                    }
-                }
-            });
-            return functions.success(res, "cập nhập bài tuyển dụng thành công")
+            await functions.deleteImgVideo(avatar, videoType)
+            return functions.setError(res, 'bài viết không tồn tại', 404)
         }
+        await functions.deleteImgVideo(avatar, videoType)
         return functions.setError(res, 'thiếu dữ liệu', 404)
     } catch (error) {
         console.log(error)
-        if (req.files.avatarUser) {
-            req.files.avatarUser.forEach(async(element) => {
-                await functions.deleteImg(element)
-            })
-        }
-        if (req.files.videoType) {
-            await functions.deleteImg(req.files.videoType[0])
-        }
+        await functions.deleteImgVideo(req.files.avatarUser, req.files.videoType)
         return functions.setError(res, error)
     }
 }
@@ -542,10 +552,14 @@ exports.updateNewTv365 = async(req, res, next) => {
 // hàm xóa tin
 exports.deleteNewTv365 = async(req, res, next) => {
     try {
-        let idNew = req.params.idNew;
+        let idNew = req.body.new_id;
         if (idNew) {
-            await functions.getDataDeleteOne(NewTV365, { _id: idNew })
-            return functions.success(res, "xóa bài tuyển dụng thành công")
+            let newTV = await functions.getDatafindOne(NewTV365, { _id: idNew });
+            if (newTV) {
+                await functions.getDataDeleteOne(NewTV365, { _id: idNew })
+                return functions.success(res, "xóa bài tuyển dụng thành công")
+            }
+            return functions.setError(res, 'bài viết không tồn tại', 404)
         }
         return functions.setError(res, 'thiếu dữ liệu', 404)
     } catch (error) {
@@ -575,21 +589,21 @@ exports.refreshNew = async(req, res, next) => {
 exports.getNew = async(req, res, next) => {
     try {
         let newID = req.body.new_id;
-        let statusApply = "";
-        let statusSavePost = "";
+        let statusApply = false
+        let statusSavePost = false
         if (req.user) {
             let userID = req.user.data.idTimViec365;
             let apply = await functions.getDatafindOne(ApplyForJob, { userID: userID, newID: newID });
             let savePost = await functions.getDatafindOne(UserSavePost, { userID: userID, newID: newID });
             if (apply) {
-                statusApply = "đã ứng tuyển"
+                statusApply = true
             } else {
-                statusApply = "chưa ứng tuyển"
+                statusApply = false
             }
             if (savePost) {
-                statusSavePost = "đã lưu"
+                statusSavePost = true
             } else {
-                statusSavePost = "chưa lưu"
+                statusSavePost = false
             }
         }
         if (newID) {
@@ -605,8 +619,8 @@ exports.getNew = async(req, res, next) => {
 }
 
 
-// hàm lấy danh sách tin tuyển dụng tuyển gấp
-exports.listPostVLTG = async(req, res, next) => {
+// hàm lấy danh sách tin tuyển dụng lương cao
+exports.listNewCao = async(req, res, next) => {
     try {
         let page = Number(req.body.page);
         let pageSize = Number(req.body.pageSize);
@@ -614,15 +628,15 @@ exports.listPostVLTG = async(req, res, next) => {
         if (page && pageSize) {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let listPostTG = await functions.pageFind(NewTV365, { newGap: { $ne: 0 }, hanNop: { $gt: now } }, { updateTime: -1 }, skip, limit);
-            const totalCount = await functions.findCount(NewTV365, { newGap: { $ne: 0 }, hanNop: { $gt: now } });
+            let listPostTG = await functions.pageFind(NewTV365, { newCao: { $ne: 0 }, hanNop: { $gt: now }, newGap: 0, newHot: 0, redirect301: "" }, { updateTime: -1 }, skip, limit);
+            const totalCount = await functions.findCount(NewTV365, { newCao: { $ne: 0 }, hanNop: { $gt: now }, newGap: 0, newHot: 0, redirect301: "" });
             const totalPages = Math.ceil(totalCount / pageSize);
             if (listPostTG) {
                 return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPostTG });
             }
             return functions.setError(res, 'không lấy được danh sách', 404)
         } else {
-            let listPostTG = await functions.getDatafind(NewTV365, { newGap: { $ne: 0 } });
+            let listPostTG = await functions.getDatafind(NewTV365, { newCao: { $ne: 0 } });
             return functions.success(res, "Lấy danh sách tin đăng thành công", listPostTG);
 
         }
@@ -632,8 +646,8 @@ exports.listPostVLTG = async(req, res, next) => {
     }
 }
 
-// hàm lấy danh sách tin tuyển dụng lương cao
-exports.listPostVLLC = async(req, res, next) => {
+// hàm lấy danh sách tin tuyển dụng tuyển gấp
+exports.listNewGap = async(req, res, next) => {
     try {
         let page = Number(req.body.page);
         let pageSize = Number(req.body.pageSize);
@@ -641,18 +655,18 @@ exports.listPostVLLC = async(req, res, next) => {
         if (page && pageSize) {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let listPostVLLC = await functions.pageFind(NewTV365, { hanNop: { $gt: now } }, [
+            let listPostVLLC = await functions.pageFind(NewTV365, { newGap: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newHot: 0, redirect301: "" }, [
                 ['newCao', -1],
                 ['updateTime', -1]
             ], skip, limit);
-            const totalCount = await functions.findCount(NewTV365, { newCao: { $ne: 0 }, hanNop: { $gt: now } });
+            const totalCount = await functions.findCount(NewTV365, { newGap: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newHot: 0, redirect301: "" });
             const totalPages = Math.ceil(totalCount / pageSize);
             if (listPostVLLC) {
                 return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPostVLLC });
             }
             return functions.setError(res, 'không lấy được danh sách', 404)
         } else {
-            let listPostVLLC = await functions.getDatafind(NewTV365, { newCao: { $ne: 0 } });
+            let listPostVLLC = await functions.getDatafind(NewTV365, { newGap: { $ne: 0 } });
             return functions.success(res, "Lấy danh sách tin đăng thành công", listPostVLLC);
 
         }
@@ -663,7 +677,7 @@ exports.listPostVLLC = async(req, res, next) => {
 }
 
 // hàm lấy danh sách tin tuyển dụng hấp dẫn
-exports.listPostVLHD = async(req, res, next) => {
+exports.listNewHot = async(req, res, next) => {
     try {
         let page = Number(req.body.page);
         let pageSize = Number(req.body.pageSize);
@@ -671,8 +685,8 @@ exports.listPostVLHD = async(req, res, next) => {
         if (page && pageSize) {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let listPostVLHD = await functions.pageFind(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now } }, { updateTime: -1 }, skip, limit);
-            const totalCount = await functions.findCount(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now } });
+            let listPostVLHD = await functions.pageFind(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newGGap: 0, redirect301: "" }, { updateTime: -1 }, skip, limit);
+            const totalCount = await functions.findCount(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newGGap: 0, redirect301: "" });
             const totalPages = Math.ceil(totalCount / pageSize);
             if (listPostVLHD) {
                 return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPostVLHD });
@@ -704,22 +718,333 @@ exports.listJobNew = async(req, res, next) => {
             const totalCount = await functions.findCount(NewTV365, { hanNop: { $gt: now } });
             const totalPages = Math.ceil(totalCount / pageSize);
             if (job == undefined) {
-                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cityID: { $in: [city] } }, { updateTime: -1 }, skip, limit);
+                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cityID: { $in: [city] } }, { newGhim: -1, updateTime: -1 }, skip, limit);
             }
             if (city == undefined) {
-                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cateID: { $in: [job] } }, { updateTime: -1 }, skip, limit);
+                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cateID: { $in: [job] } }, { newGhim: -1, updateTime: -1 }, skip, limit);
             }
             if (city == undefined && job == undefined) {
-                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now } }, { updateTime: -1 }, skip, limit);
+                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now } }, { newGhim: -1, updateTime: -1 }, skip, limit);
             }
             if (job && city) {
-                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cityID: { $in: [city] }, cateID: { $in: [job] } }, { updateTime: -1 }, skip, limit);
+                listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cityID: { $in: [city] }, cateID: { $in: [job] } }, { newGhim: -1, updateTime: -1 }, skip, limit);
             }
             if (listJobNew) {
                 return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listJobNew });
             }
             return functions.setError(res, 'không lấy được danh sách', 404)
         }
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm viêc làm phù hợp nhất
+exports.listJobSuitable = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let job = req.body.cate_id;
+        let city = req.body.city
+        let now = new Date();
+        let listJobNew = [];
+        if (page && pageSize) {
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            const totalCount = await functions.findCount(NewTV365, { hanNop: { $gt: now } });
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (job == undefined) {
+                listJobNew = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                }, {
+                    newHot: -1,
+                    newCao: -1,
+                    newGap: -1,
+                    newNganh: -1,
+                    updateTime: -1
+                }, skip, limit);
+            }
+            if (city == undefined) {
+                listJobNew = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cateID: { $in: [job] },
+                }, {
+                    newHot: -1,
+                    newCao: -1,
+                    newGap: -1,
+                    newNganh: -1,
+                    updateTime: -1
+                }, skip, limit);
+            }
+            if (city == undefined && job == undefined) {
+                listJobNew = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                }, {
+                    newHot: -1,
+                    newCao: -1,
+                    newGap: -1,
+                    newNganh: -1,
+                    updateTime: -1
+                }, skip, limit);
+            }
+            if (job && city) {
+                listJobNew = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    cateID: { $in: [job] },
+                }, {
+                    newHot: -1,
+                    newCao: -1,
+                    newGap: -1,
+                    newNganh: -1,
+                    updateTime: -1
+                }, skip, limit);
+            }
+            if (listJobNew) {
+                return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listJobNew });
+            }
+            return functions.setError(res, 'không lấy được danh sách', 404)
+        }
+        return functions.setError(res, 'không đủ dữ liệu', 404)
+
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm viêc làm lương cao nhất
+exports.listJobHightSalary = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let job = req.body.cate_id;
+        let city = req.body.city;
+        let now = new Date();
+        let listJobNew = [];
+        if (page && pageSize) {
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            const totalCount = await functions.findCount(NewTV365, { hanNop: { $gt: now } });
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (job == undefined) {
+                listJobNew = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                }, {
+                    money: -1,
+                    newGhim: -1,
+                    updateTime: -1,
+                }, skip, limit);
+            }
+            if (city == undefined) {
+                listJobNew = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cateID: { $in: [job] },
+                }, {
+                    money: -1,
+                    newGhim: -1,
+                    updateTime: -1,
+                }, skip, limit);
+            }
+            if (city == undefined && job == undefined) {
+                listJobNew = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                }, {
+                    money: -1,
+                    newGhim: -1,
+                    updateTime: -1,
+                }, skip, limit);
+            }
+            if (job && city) {
+                listJobNew = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    cateID: { $in: [job] },
+                }, {
+                    money: -1,
+                    newGhim: -1,
+                    updateTime: -1,
+                }, skip, limit);
+            }
+            if (listJobNew) {
+                return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listJobNew });
+            }
+            return functions.setError(res, 'không lấy được danh sách', 404)
+        }
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm danh sách job  địa điểm theo tag
+exports.getJobListByLocation = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let city = req.body.city;
+        let district = req.body.district;
+        let now = new Date();
+        if (city && district) {
+            if (page && pageSize) {
+                const skip = (page - 1) * pageSize;
+                const limit = pageSize;
+                let listPost = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    districtID: { $in: [district] },
+                }, { newGhim: -1, updateTime: -1 }, skip, limit);
+                const totalCount = await functions.findCount(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    districtID: { $in: [district] },
+                });
+                const totalPages = Math.ceil(totalCount / pageSize);
+                if (listPost) {
+                    return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPost });
+                }
+                return functions.setError(res, 'không lấy được danh sách', 404)
+            } else {
+                let listPost = await functions.getDatafind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    districtID: { $in: [district] },
+                });
+                return functions.success(res, "Lấy danh sách tin đăng thành công", listPost);
+            }
+        }
+        return functions.setError(res, 'thiếu đữ liệu', 404)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm danh sách job chức danh  theo tag
+exports.getJobListByJob = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let city = req.body.city;
+        let district = req.body.district;
+        let cate = req.body.cate_id;
+        let now = new Date();
+        if (city && district & cate) {
+            if (page && pageSize) {
+                const skip = (page - 1) * pageSize;
+                const limit = pageSize;
+                let listPost = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    districtID: { $in: [district] },
+                    cateID: { $in: [cate] },
+                }, { newGhim: -1, updateTime: -1 }, skip, limit);
+                const totalCount = await functions.findCount(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    districtID: { $in: [district] },
+                    cateID: { $in: [cate] },
+                });
+                const totalPages = Math.ceil(totalCount / pageSize);
+                if (listPost) {
+                    return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPost });
+                }
+                return functions.setError(res, 'không lấy được danh sách', 404)
+            } else {
+                let listPost = await functions.getDatafind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    districtID: { $in: [district] },
+                    cateID: { $in: [cate] }
+                });
+                return functions.success(res, "Lấy danh sách tin đăng thành công", listPost);
+            }
+        }
+        return functions.setError(res, 'thiếu đữ liệu', 404)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm danh sách job tên công ty theo tag
+exports.getJobListByCompany = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let city = req.body.city;
+        let district = req.body.district;
+        let now = new Date();
+        if (city && district) {
+            if (page && pageSize) {
+                const skip = (page - 1) * pageSize;
+                const limit = pageSize;
+                let listPost = await NewTV365.aggregate([
+                    { $match: { hanNop: { $gt: now }, cityID: { $in: [city] }, districtID: { $in: [district] } } },
+                    { $lookup: { from: 'Users', localField: 'userID', foreignField: 'idTimViec365', as: 'referencedData' } },
+                    { $project: { _id: 1, referencedData: { userName: 1 } } },
+                    { $sort: { newGhim: -1, updateTime: -1 } },
+                    { $skip: skip },
+                    { $limit: limit }
+                ]);
+                const totalCount = await functions.findCount(NewTV365, {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    districtID: { $in: [district] },
+                });
+                const totalPages = Math.ceil(totalCount / pageSize);
+                if (listPost) {
+                    return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPost });
+                }
+                return functions.setError(res, 'không lấy được danh sách', 404)
+            } else {
+                let listPostVLHD = await functions.getDatafind(NewTV365, { newHot: { $ne: 0 } });
+                return functions.success(res, "Lấy danh sách tin đăng thành công", listPostVLHD);
+            }
+        }
+        return functions.setError(res, 'thiếu đữ liệu', 404)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm danh sách job tiêu chí theo tag
+exports.getJobsByCriteria = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        let cate = req.body.cate_id;
+        let now = new Date();
+        if (cate) {
+            if (page && pageSize) {
+                const skip = (page - 1) * pageSize;
+                const limit = pageSize;
+                let listPost = await functions.pageFind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cateID: { $in: [cate] },
+                }, { newGhim: -1, updateTime: -1 }, skip, limit);
+                const totalCount = await functions.findCount(NewTV365, {
+                    hanNop: { $gt: now },
+                    cateID: { $in: [cate] },
+                });
+                const totalPages = Math.ceil(totalCount / pageSize);
+                if (listPost) {
+                    return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPost });
+                }
+                return functions.setError(res, 'không lấy được danh sách', 404)
+            } else {
+                let listPost = await functions.getDatafind(NewTV365, {
+                    hanNop: { $gt: now },
+                    cateID: { $in: [cate] },
+                });
+                return functions.success(res, "Lấy danh sách tin đăng thành công", listPost);
+            }
+        }
+        return functions.setError(res, 'thiếu đữ liệu', 404)
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)

@@ -1,7 +1,6 @@
+//cv
 const mongoose = require('mongoose');
-
 const Schema = mongoose.Schema
-
 const CVSchema = new mongoose.Schema({
     _id: {
         type: Number,
@@ -53,19 +52,19 @@ const CVSchema = new mongoose.Schema({
         type: String
     },
     htmlVi: {
-        type: Object
+        type: String
     },
     htmlEn: {
-        type: Object
+        type: String
     },
     htmlJp: {
-        type: Object
+        type: String
     },
     htmlCn: {
-        type: Object
+        type: String
     },
     htmlKr: {
-        type: Object
+        type: String
     },
     cateId: {
         type: Number

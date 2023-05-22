@@ -229,7 +229,7 @@ const UserSchema = new mongoose.Schema({
             },
             candiTitle: {
                 // Công việc mong muốn
-                type: Number,
+                type: String,
                 default: 0
             },
             candiHocVan: {
@@ -287,6 +287,11 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            candiSkill: {
+                //Kỹ năng bản thân
+                type: String,
+                default: null
+            },
             referencePersonName: {
                 // Tên người tham chiếu
                 type: String,
@@ -337,6 +342,7 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
+            //bằng cấp chứng chỉ
             candiDegree: [{
                 type: {
                     id: {
@@ -366,6 +372,7 @@ const UserSchema = new mongoose.Schema({
                 },
                 default: null
             }],
+            //ngoại ngữ tin học
             candiNgoaiNgu: [{
                 type: {
                     id: {
@@ -383,6 +390,7 @@ const UserSchema = new mongoose.Schema({
                 },
                 default: null
             }],
+            //kinh nghiệm làm việc
             candiExp: [{
                 type: {
                     id: {
@@ -427,6 +435,11 @@ const UserSchema = new mongoose.Schema({
             },
             idKD: {
                 // ID Kinh doanh phụ trách hỗ trợ
+                type: Number,
+                default: 0
+            },
+            // id kinh doanh cố định 
+            idKD_Re: {
                 type: Number,
                 default: 0
             },
@@ -550,6 +563,90 @@ const UserSchema = new mongoose.Schema({
             lv: String,
         },
         default: null
+    },
+    configChat: {
+        notificationAcceptOffer: {
+            type: Number,
+            default: 1,
+        },
+        notificationAllocationRecall: {
+            type: Number,
+            default: 1,
+        },
+        notificationChangeSalary: {
+            type: Number,
+            default: 1,
+        },
+        notificationCommentFromRaoNhanh: {
+            type: Number,
+            default: 1,
+        },
+        notificationCommentFromTimViec: {
+            type: Number,
+            default: 1,
+        },
+        notificationDecilineOffer: {
+            type: Number,
+            default: 1,
+        },
+        notificationMissMessage: {
+            type: Number,
+            default: 1,
+        },
+        notificationNTDExpiredPin: {
+            type: Number,
+            default: 1,
+        },
+        notificationNTDExpiredRecruit: {
+            type: Number,
+            default: 1,
+        },
+        notificationNTDPoint: {
+            type: Number,
+            default: 1,
+        },
+        notificationSendCandidate: {
+            type: Number,
+            default: 1,
+        },
+        notificationTag: {
+            type: Number,
+            default: 1,
+        },
+        HistoryAccess: [{
+            IdDevice: {
+                type: String,
+                default: "",
+            },
+            IpAddress: {
+                type: String,
+                default: "",
+            },
+            NameDevice: {
+                type: String,
+                default: "",
+            },
+            Time: {
+                type: Date,
+                default: new Date(),
+            },
+            AccessPermision: {
+                type: Boolean,
+                default: false,
+            },
+        }],
+        removeSugges: {
+            type: [Number],
+            default: [],
+        },
+        userNameNoVn: {
+            type: String,
+            default: ""
+        },
+        doubleVerify: {
+            type: Number,
+            default: 0,
+        }
     }
 }, {
     collection: 'Users',

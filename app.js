@@ -9,7 +9,13 @@ var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
 var cvRouter = require('./routes/timviec/cv');
 var newTV365Router = require('./routes/timviec/newTV365');
+
+var priceListRouter = require('./routes/timviec/priceList');
+var trangVangRouter = require('./routes/timviec/trangVang');
+var soSanhLuongRouter = require('./routes/timviec/ssl');
+var mail365Router = require('./routes/timviec/mail365');
 var adminRouter = require('./routes/timviec/admin');
+var blogRouter = require('./routes/timviec/blog')
 
 // Quản lý chung
 var deparmentRouter = require('./routes/qlc/deparment')
@@ -24,7 +30,16 @@ var managerUser = require('./routes/qlc/managerUser')
 
 var toolAddDataRouter = require('./routes/tools');
 
+var donRouter = require('./routes/timviec/don');
+var thuRouter = require('./routes/timviec/thu');
+var syllRouter = require('./routes/timviec/syll');
+
 var app = express();
+// app.listen(3001, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3001")
+// });
+
 //
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -40,10 +55,20 @@ app.use('/api/timviec/candidate', candidateRouter);
 app.use('/api/timviec/newTV365', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
+app.use('/api/timviec/blog', blogRouter)
 app.use('/api/timviec/cv', cvRouter);
-app.use('/api/timviec/admin', adminRouter);
+app.use('/api/timviec/don', donRouter);
+app.use('/api/timviec/thu', thuRouter);
+app.use('/api/timviec/syll', syllRouter);
 app.use('/api/tool', toolAddDataRouter);
 app.use('/api/timviec/newTV365', newTV365Router);
+
+app.use('/api/timviec/priceList', priceListRouter);
+app.use('/api/timviec/trangVang', trangVangRouter);
+app.use('/api/timviec/ssl', soSanhLuongRouter);
+app.use('/api/timviec/mail365', mail365Router);
+
+
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
@@ -73,9 +98,13 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://127.0.0.1/api-base365';
+const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
+// app.listen(3002, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3002")
+// })
 module.exports = app;
