@@ -105,7 +105,7 @@ exports.register = async(req, res, next) => {
                     let listKD = await functions.getDatafind(AdminUser, { bophan: 1 });
                     let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1);
                     if (listUser.length > 0) {
-                        let idKDUser = listUser[0].inForCompany.idKD;
+                        let idKDUser = listUser[0].inForCompany.idKD_Re;
                         for (let i = 0; i < listKD.length; i++) {
                             listIDKD.push(listKD[i].stt)
                         }
@@ -157,6 +157,7 @@ exports.register = async(req, res, next) => {
                         idTimViec365: (Number(newIDTimViec) + 1),
                         inForCompany: {
                             idKD: idKD,
+                            idKD_Re: idKD,
                             mst: mst,
                             videoType: video || null,
                             linkVideo: link || null,
