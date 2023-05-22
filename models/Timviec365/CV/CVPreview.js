@@ -1,3 +1,4 @@
+// Không dùng
 import mongoose from 'mongoose';
 const CVPreviewSchema = new mongoose.Schema({
     _id: {

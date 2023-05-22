@@ -2,14 +2,14 @@ const md5 = require('md5');
 
 const Users = require('../../models/Users');
 const functions = require('../../services/functions');
-const ApplyForJob = require('../../models/Timviec365/Timviec/Candicate/ApplyForJob.model');
-const NewTV365 = require('../../models/Timviec365/Timviec/Company/New.model');
-const SaveCandidate = require('../../models/Timviec365/Timviec/Company/SaveCandidate.model');
-const PointCompany = require('../../models/Timviec365/Timviec/Company/PointCompany.model');
-const PointUsed = require('../../models/Timviec365/Timviec/Company/PointUsed.model');
-const CompanyUnset = require('../../models/Timviec365/Timviec/Company/UserCompanyUnset');
-const AdminUser = require('../../models/Timviec365/Timviec/Admin/AdminUser.model');
-const Linh_Vuc = require('../../models/Timviec365/Timviec/Lv.model')
+const nopHoSo = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
+const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
+const SaveCandidate = require('../../models/Timviec365/UserOnSite/Company/SaveCandidate');
+const PointCompany = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany');
+const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed');
+const CompanyUnset = require('../../models/Timviec365/UserOnSite/Company/UserCompanyUnset');
+const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
+const CategoryCompany = require('../../models/Timviec365/UserOnSite/Company/CategoryCompany')
 const CV = require('../../models/Timviec365/CV/CV')
 
 // hàm đăng ký
@@ -1214,7 +1214,7 @@ exports.deleteVideo = async(req, res, next) => {
 // hàm gọi data lĩnh vực
 exports.getDataLV = async(req, res, next) => {
     try {
-        let data = await Linh_Vuc.find({}, { _id: 1, nameTag: 1 });
+        let data = await CategoryCompany.find({}, { _id: 1, nameTag: 1 });
         return functions.success(res, 'lấy thành công', { data })
     } catch (error) {
         console.log(error)
@@ -1227,7 +1227,7 @@ exports.getFieldsByIndustry = async(req, res, next) => {
     try {
         let catID = req.body.cat_id;
         if (catID) {
-            let data = await functions.getDatafind(Linh_Vuc, { tagIndex: catID })
+            let data = await functions.getDatafind(CategoryCompany, { tagIndex: catID })
             return functions.success(res, 'lấy thành công', { data })
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)

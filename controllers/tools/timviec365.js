@@ -1,9 +1,9 @@
 const fnc = require('../../services/functions');
-const NewTV365 = require('../../models/Timviec365/Timviec/Company/New.model')
-const AdminUser = require('../../models/Timviec365/Timviec/Admin/AdminUser.model');
-const Linh_Vuc = require('../../models/Timviec365/Timviec/Lv.model')
-const KeyWord = require('../../models/Timviec365/Timviec/Keyword.model');
-const CategoryBlog = require('../../models/Timviec365/Timviec/Blog/category')
+const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New')
+const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
+const Linh_Vuc = require('../../models/Timviec365/UserOnSite/Company/CategoryCompany')
+const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
+const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
