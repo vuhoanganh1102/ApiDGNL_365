@@ -29,6 +29,11 @@ const newTV365Schema = new mongoose.Schema({
         type: String,
         default: null,
     }],
+    realCate: {
+        type: String,
+        default: null,
+    },
+
     //thể loại tag
     tagID: {
         type: Number,
@@ -129,6 +134,10 @@ const newTV365Schema = new mongoose.Schema({
         type: Date,
         default: null,
     },
+    userRedirect: {
+        type: Number,
+        default: null
+    },
     post: {
         type: Number,
         default: 0
@@ -182,6 +191,10 @@ const newTV365Schema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    newPoint: {
+        type: Number,
+        default: 0
+    },
     newMutil: {
         // mô tả công việc
         moTa: {
@@ -221,10 +234,10 @@ const newTV365Schema = new mongoose.Schema({
             type: String,
             default: null,
         },
-        lv: {
+        lv: [{
             type: String,
             default: null,
-        },
+        }],
         baoLuu: {
             type: String,
             default: null,

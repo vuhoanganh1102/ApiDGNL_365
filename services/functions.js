@@ -387,9 +387,9 @@ exports.createToken = async(data, time) => {
 };
 
 // hàm lấy data từ axios 
-exports.getDataAxios = async(url, condition) => {
+exports.getDataAxios = async(url, condition, method = "post") => {
     return await await axios({
-        method: "post",
+        method: method,
         url: url,
         data: condition,
         headers: { "Content-Type": "multipart/form-data" }
@@ -551,4 +551,18 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
             },
         ]
     }, projection)
+}
+
+// hàm  xóa  ảnh và video khi upload thất bại
+exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
+    if (avatar) {
+        avatar.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
+    }
+    if (video) {
+        video.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
+    }
 }
