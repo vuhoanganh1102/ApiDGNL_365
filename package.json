@@ -29,6 +29,7 @@
         "nodemon": "^2.0.22",
         "normalize-path": "^3.0.0",
         "path": "^0.12.7",
+        "pdfkit": "^0.13.0",
         "process-nextick-args": "^2.0.1",
         "proxy-from-env": "^1.1.0",
         "raw-body": "^2.5.2",

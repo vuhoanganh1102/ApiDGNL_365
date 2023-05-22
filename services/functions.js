@@ -20,6 +20,7 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
 const Users = require('../models/Users');
+const fsPromises = require('fs').promises;
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -31,6 +32,8 @@ const MAX_IMG_SIZE = 2 * 1024 * 1024;
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
 dotenv.config();
+
+const PDFDocument = require('pdfkit');
 
 // check title
 const removeAccent = (str) => {
@@ -387,9 +390,9 @@ exports.createToken = async(data, time) => {
 };
 
 // hàm lấy data từ axios 
-exports.getDataAxios = async(url, condition) => {
+exports.getDataAxios = async(url, condition, method = "post") => {
     return await await axios({
-        method: "post",
+        method: method,
         url: url,
         data: condition,
         headers: { "Content-Type": "multipart/form-data" }
@@ -445,7 +448,7 @@ exports.pageFind = async(model, condition, sort, skip, limit) => {
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
 exports.getDataCVSortById = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ _id: -1 });
+    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color').sort({ _id: -1 });
     if (data.length > 0) {
         return data;
     };
@@ -454,7 +457,7 @@ exports.getDataCVSortById = async(condition) => {
 
 // lấy danh sách mẫu CV sắp xếp lượt tải nn
 exports.getDataCVSortByDownload = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ download: -1 });
+    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color').sort({ download: -1 });
     if (data.length > 0) {
         return data;
     };
@@ -493,7 +496,7 @@ exports.findCount = async(model, filter) => {
 //base64 decrypt image
 exports.decrypt = async(req, res, next) => {
     const base64 = req.body.base64;
-    req.file = Buffer.from(base64, 'base64').toString('utf-8');
+    req.file = JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
     return next();
 };
 exports.thresholds = [
@@ -551,4 +554,63 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
             },
         ]
     }, projection)
+  };
+
+//upload image cv,don, thu, syll
+
+exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
+    try {
+
+        const timestamp = Date.now();
+        const imagePath = await fsPromises.readFile(imageFile.path);
+        const uploadDir = `public/candidate/${userId}/${category}`;
+        const uploadFileName = `${timestamp}_${imageFile.originalFilename}`;
+        const uploadPath = path.join(uploadDir, uploadFileName);
+        await fsPromises.mkdir(uploadDir, { recursive: true });
+        await fsPromises.writeFile(uploadPath, imagePath);
+
+        await fsPromises.access(uploadPath);
+        const pdfPath = path.join(uploadDir, `${timestamp}_${imageFile.fieldName}.pdf`);
+        const doc = new PDFDocument();
+        const stream = fs.createWriteStream(pdfPath);
+
+        doc.pipe(stream);
+        doc.image(uploadPath, 0, 0, { fit: [612, 792] });
+        doc.end();
+
+        await new Promise((resolve, reject) => {
+            stream.on('finish', resolve);
+            stream.on('error', reject);
+        });
+
+        console.log('Chuyển đổi ảnh thành PDF thành công.');
+        return {
+            status: 'EXIT',
+            nameImage: uploadFileName,
+            pdfPath: pdfPath,
+        };
+
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return 'ENOENT'
+        } else {
+            return error.message
+        }
+    }
+
+
+
+// hàm  xóa  ảnh và video khi upload thất bại
+exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
+    if (avatar) {
+        avatar.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
+    }
+    if (video) {
+        video.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
+    }
 }

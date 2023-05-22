@@ -1,10 +1,10 @@
 const Users = require('../../models/Users');
 const blog = require('../../models/Timviec365/Blog/Posts');
-const hoso = require('../../models/Timviec365/UserOnSite/Candicate/hoso');
+const hoso = require('../../models/Timviec365/UserOnSite/Candicate/Profile');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
-const donUV = require('../../models/Timviec365/CV/DonUV');
-const HoSoUV = require('../../models/Timviec365/CV/HoSoUV');
-const ThuUV = require('../../models/Timviec365/CV/ThuUV');
+const donUV = require('../../models/Timviec365/CV/ApplicationUV');
+const HoSoUV = require('../../models/Timviec365/CV/ResumeUV');
+const ThuUV = require('../../models/Timviec365/CV/LetterUV');
 const CV = require('../../models/Timviec365/CV/CV');
 const like = require('../../models/Timviec365/CV/like');
 const UserUnset = require('../../models/Timviec365/UserOnSite/Candicate/UserUnset');
@@ -427,7 +427,7 @@ exports.changePassword = async(req, res, next) => {
         const _id = req.user.data._id;
 
         if (_id && password) {
-            await Users.updateOne({ _id: _id }, { // update mật khẩu
+            await Users.updateOne({ _id }, { // update mật khẩu
                 $set: {
                     password: md5(password)
                 }
@@ -436,7 +436,7 @@ exports.changePassword = async(req, res, next) => {
         };
         return functions.setError(res, 'Đổi mật khẩu lỗi', 404);
     } catch (e) {
-        return functions.setError(res, 'Đổi mật khẩu lỗi', );
+        return functions.setError(res, e.message, );
     }
 };
 
