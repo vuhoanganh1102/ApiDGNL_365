@@ -173,6 +173,16 @@ exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
 };
+// hàm tìm id max Quản Lí Chung
+exports.getMaxIDQLC = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
+    return maxUser.idQLC;
+};
+// hàm tìm idcompany max 
+exports.getMaxIDcompany = async(model) => {
+    const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
+    return maxIDcompany.companyId;
+};
 
 // hàm check định dạng ảnh
 const isImage = async(filePath) => {
@@ -281,7 +291,7 @@ exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
 
 //hàm upload file ứng viên
-exports.uploadFileUv = multer({ storage: storageFile('public/candidate') })
+exports.uploadFileUv = multer({ storage: storageFile('../Storage/Base365') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
@@ -390,9 +400,9 @@ exports.createToken = async(data, time) => {
 };
 
 // hàm lấy data từ axios 
-exports.getDataAxios = async(url, condition) => {
+exports.getDataAxios = async(url, condition, method = "post") => {
     return await await axios({
-        method: "post",
+        method: method,
         url: url,
         data: condition,
         headers: { "Content-Type": "multipart/form-data" }
@@ -558,7 +568,7 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
             },
         ]
     }, projection)
-};
+  };
 
 //upload image cv,don, thu, syll
 
@@ -606,5 +616,16 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
 
 
 
-
+// hàm  xóa  ảnh và video khi upload thất bại
+exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
+    if (avatar) {
+        avatar.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
+    }
+    if (video) {
+        video.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
+    }
 }
