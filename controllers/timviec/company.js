@@ -92,7 +92,7 @@ exports.register = async(req, res, next) => {
                             return functions.setError(res, 'link không đúng định dạng ', 404)
                         }
                     }
-                    if (lv == undefined) {
+                    if (lv == undefined || lv == "") {
                         let data = {
                             title_company: username,
                             description_company: description,
@@ -169,7 +169,7 @@ exports.register = async(req, res, next) => {
                             userContactAddress: address,
                             userContactEmail: email,
                             ipAddressRegister: ipAddressRegister,
-                            lv: lvID
+                            tagLinhVuc: lvID
                         }
                     });
                     await company.save();

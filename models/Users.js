@@ -490,7 +490,7 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
-            idparent : {
+            idparent: {
                 //id công ty mẹ
                 type: Number,
                 default: 0
@@ -560,7 +560,6 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            lv: String,
         },
         default: null
     },
