@@ -59,7 +59,7 @@ router.post('/createCVGroup', functions.checkToken, formData.parse(), cv.createC
 router.post('/findCVGroup', functions.checkToken, formData.parse(), cv.findCVGroup);
 router.post('/updateCVGroup', functions.checkToken, formData.parse(), cv.updateCVGroup);
 
-// xóa Nhom CV
+// xóa NganhCV
 router.post('/deleteCVGroup', functions.checkToken, formData.parse(), cv.deleteCVGroup);
 
 module.exports = router;

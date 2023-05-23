@@ -557,7 +557,7 @@ exports.updateCVGroup = async(req, res, next) => {
 exports.deleteCVGroup = async(req, res, next) => {
     try {
         const user = req.user.data;
-        // if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
         const data = await CVGroup.findOneAndDelete({ _id });
 

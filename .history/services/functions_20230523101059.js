@@ -591,7 +591,6 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
         return {
             status: 'EXIT',
             nameImage: uploadFileName,
-            imgPath: uploadPath,
             pdfPath: pdfPath,
         };
 

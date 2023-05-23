@@ -338,7 +338,7 @@ exports.updateCV = async(req, res, next) => {
 exports.deleteCV = async(req, res, next) => {
     try {
         const user = req.user.data;
-        if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        // if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
         const data = await CV.findOneAndDelete({ _id });
 
@@ -354,7 +354,7 @@ exports.deleteCV = async(req, res, next) => {
 exports.createNganhCV = async(req, res, next) => {
     try {
         const user = req.user.data;
-        // if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const data = {
             name: req.body.name,
             alias: req.body.alias,
@@ -376,9 +376,8 @@ exports.createNganhCV = async(req, res, next) => {
                 }
             });
         data._id = _id;
-        const respone = await NganhCV.create(data);
-        if (respone) return await functions.success(res, 'Tạo mới NganhcCV thành công', { respone });
-
+        await NganhCV.create(data);
+        return await functions.success(res, 'Tạo mới NganhcCV thành công', );
     } catch (err) {
         return functions.setError(res, err.message);
     }
@@ -431,7 +430,7 @@ exports.updateNganhCV = async(req, res, next) => {
 exports.deleteNganhCV = async(req, res, next) => {
     try {
         const user = req.user.data;
-        // if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
         const data = await NganhCV.findOneAndDelete({ _id });
 
@@ -492,7 +491,7 @@ exports.createCVGroup = async(req, res, next) => {
         };
 
         let _id = 1;
-        await functions.getMaxID(CVGroup)
+        await functions.getMaxID(NganhCV)
             .then(res => {
                 if (res) {
                     _id = res + 1;
@@ -500,8 +499,8 @@ exports.createCVGroup = async(req, res, next) => {
             });
         data.sort = _id;
         data._id = _id;
-        const respone = await CVGroup.create(data);
-        return await functions.success(res, 'Tạo mới nhóm CV thành công', { respone });
+        await CVGroup.create(data);
+        return await functions.success(res, 'Tạo mới nhóm CV thành công', );
     } catch (err) {
         return functions.setError(res, err.message);
     }
@@ -527,7 +526,7 @@ exports.findCVGroup = async(req, res, next) => {
 exports.updateCVGroup = async(req, res, next) => {
     try {
         const user = req.user.data;
-        // if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
         const cvGroup = {
             name: req.body.name,
@@ -545,7 +544,7 @@ exports.updateCVGroup = async(req, res, next) => {
         };
         const data = await CVGroup.findOneAndUpdate({ _id }, cvGroup);
 
-        if (data) return await functions.success(res, 'Cập nhật thành công', { data });
+        if (data) return await functions.success(res, 'Cập nhật thành công', );
 
         return await functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {
@@ -557,7 +556,7 @@ exports.updateCVGroup = async(req, res, next) => {
 exports.deleteCVGroup = async(req, res, next) => {
     try {
         const user = req.user.data;
-        // if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
         const data = await CVGroup.findOneAndDelete({ _id });
 
