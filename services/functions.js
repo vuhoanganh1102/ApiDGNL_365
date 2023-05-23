@@ -564,7 +564,7 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
             },
         ]
     }, projection)
-  };
+};
 
 //upload image cv,don, thu, syll
 
@@ -609,7 +609,7 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
         }
     }
 
-
+}
 
 // hàm  xóa  ảnh và video khi upload thất bại
 exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
