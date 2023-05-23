@@ -505,9 +505,13 @@ exports.findCount = async(model, filter) => {
 };
 //base64 decrypt image
 exports.decrypt = async(req, res, next) => {
-    const base64 = req.body.base64;
-    req.file = JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
-    return next();
+    try {
+        const base64 = req.body.base64;
+        req.file = JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
+        return next()
+    } catch (error) {
+        return next();
+    };
 };
 exports.thresholds = [
     { minValue: 1000000, maxValue: 3000000, money: 2 },
@@ -597,6 +601,7 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
         return {
             status: 'EXIT',
             nameImage: uploadFileName,
+            imgPath: uploadPath,
             pdfPath: pdfPath,
         };
 
