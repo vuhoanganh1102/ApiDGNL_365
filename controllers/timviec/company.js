@@ -103,7 +103,7 @@ exports.register = async(req, res, next) => {
                     }
                     // lấy danh sách id bộ phận
                     let listKD = await functions.getDatafind(AdminUser, { bophan: 1 });
-                    let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1);
+                    let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1) || 0;
                     if (listUser.length > 0) {
                         let idKDUser = listUser[0].inForCompany.idKD_Re;
                         for (let i = 0; i < listKD.length; i++) {
@@ -118,6 +118,8 @@ exports.register = async(req, res, next) => {
                                 idKD = listIDKD[index + 1];
                             }
                         }
+                    } else {
+                        idKD = 1;
                     }
                     // tìm Id max trong DB
                     let maxID = await functions.getMaxID(Users) || 0;
@@ -688,7 +690,7 @@ exports.getDataCompany = async(req, res, next) => {
         let id = req.user.data.idTimViec365;
         let user = await functions.getDatafindOne(Users, { idTimViec365: id, type: 1 });
         if (user) {
-            return functions.success(res, 'lấy thông tin thành công', user)
+            return functions.success(res, 'lấy thông tin thành công', { user })
         }
         return functions.setError(res, 'người dùng không tồn tại', 404)
 
