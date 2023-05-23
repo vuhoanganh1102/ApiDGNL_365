@@ -274,24 +274,24 @@ const storageFile = (destination) => {
     });
 };
 
-exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('../Storage') })
+exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('../Storage/TimViec365') })
 
-exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('../Storage') })
+exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('../Storage/TimViec365') })
 
 //  hàm upload ảnh ở cập nhập avatar
-exports.uploadImg = multer({ storage: storageMain('../Storage') })
+exports.uploadImg = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //  hàm upload ảnh ở kho ảnh
-exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage') })
+exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //  hàm upload video ở kho ảnh
-exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage') })
+exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
 
 // hàm upload video ở cập nhập KhoAnh
-exports.uploadVideo = multer({ storage: storageMain('../Storage') })
+exports.uploadVideo = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //hàm upload file ứng viên
-exports.uploadFileUv = multer({ storage: storageFile('../Storage') })
+exports.uploadFileUv = multer({ storage: storageFile('../Storage/TimViec365') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
