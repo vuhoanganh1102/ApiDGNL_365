@@ -287,7 +287,7 @@ exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage/TimViec365')
 //  hàm upload video ở kho ảnh
 exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
 
-// hàm upload video ở cập nhập KhoAnh
+// hàm upload video ở cập nhập video
 exports.uploadVideo = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //hàm upload file ứng viên
@@ -610,7 +610,7 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
     }
 }
 
-}
+
 
 // hàm  xóa  ảnh và video khi upload thất bại
 exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
