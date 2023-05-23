@@ -30,11 +30,11 @@ router.post('/viewAvailableCV', formData.parse(), cv.viewAvailable);
 router.post('/countPoints', formData.parse(), cv.countPoints);
 
 // tạo mới mẫu cv
-router.post('/createCV', formData.parse(), functions.checkToken, cv.createCV);
+router.post('/createCV', functions.checkToken, functions.uploadImgKhoAnh.single('image'), cv.createCV);
 
 // sửa mẫu cv - findCV & updateCV
 router.post('/findCV', functions.checkToken, formData.parse(), cv.findCV);
-router.post('/updateCV', formData.parse(), functions.checkToken, cv.updateCV);
+router.post('/updateCV', functions.checkToken, functions.uploadImgKhoAnh.single('image'), cv.updateCV);
 
 // xóa mẫu cv
 router.post('/deleteCV', functions.checkToken, formData.parse(), cv.deleteCV);
@@ -53,11 +53,11 @@ router.post('/deleteNganhCV', functions.checkToken, formData.parse(), cv.deleteN
 router.post('/getCVGroup', functions.checkToken, formData.parse(), cv.getCVGroup);
 
 // thêm mới nhóm cv
-router.post('/createCVGroup', functions.checkToken, formData.parse(), cv.createCVGroup);
+router.post('/createCVGroup', functions.checkToken, functions.uploadImgKhoAnh.single('image'), cv.createCVGroup);
 
 // sửa nhóm cv - findCVGroup & updateCVGroup
 router.post('/findCVGroup', functions.checkToken, formData.parse(), cv.findCVGroup);
-router.post('/updateCVGroup', functions.checkToken, formData.parse(), cv.updateCVGroup);
+router.post('/updateCVGroup', functions.checkToken, functions.uploadImgKhoAnh.single('image'), cv.updateCVGroup);
 
 // xóa Nhom CV
 router.post('/deleteCVGroup', functions.checkToken, formData.parse(), cv.deleteCVGroup);
