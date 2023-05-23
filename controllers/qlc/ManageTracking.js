@@ -1,25 +1,20 @@
-const ManageTracking = require("../../model/qlc/ManageTracking")
+const ManageTracking = require("../../model/Users")
 const functions = require("../../services/functions")
 
-//tìm list chấm công cty sử dụng 
+//tìm list cấu hình chấm công cty sử dụng 
 exports.getlistTracking = async (req,res) =>{
-    const { companyId } = req.body
+    //lấy và gán giá trị  
+    const  type_timekeeping = req.params.type_timekeeping
 
-    if(!companyId){
-        functions.setError(res,"id company required")
-    } else if (typeof companyId !=='number'){
-        functions.setError(res, "company id must be a number")
-    }else {
-        const Tracking = await functions.getDatafind(ManageTracking, { companyId: companyId})
-        if (!Tracking){
-            functions.setError(res, "Tracking cant be found or doesnt exist ")
+    if (!type_timekeeping) {
+        functions.setError(res, "type_keeping not found ");
+    } else {
+        const list = await functions.getDatafind(ManageTracking, { type_timekeeping: type_timekeeping });
+        if (!list) {
+            functions.setError(res, "list of manage tracking cannot be found or does not exist");
         } else {
-            functions.success(res, " Tracking found ", Tracking)
-
-            }
+            funtions.success(res, "Get list of manage tracking successfully", list);
         }
     }
-exports.editTracking = async(req,res) =>{
-    const QRtracking = await functions.getDatafindOne(ManageTracking, {name:"QRTracking",checkedValue : true })
-    // if(!QRtracking &&  )
-}
+};
+
