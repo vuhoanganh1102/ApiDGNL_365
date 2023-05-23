@@ -1,4 +1,5 @@
 const fnc = require('../../services/functions');
+const CV = require('../../models/Timviec365/CV/CV');
 const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New')
 const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
 const Linh_Vuc = require('../../models/Timviec365/UserOnSite/Company/CategoryCompany')
@@ -91,7 +92,7 @@ exports.toolNewTV365 = async(req, res, next) => {
 
     } catch (error) {
         console.log(error)
-        return functions.setError(res, error)
+        return fnc.setError(res, error)
     }
 }
 
@@ -136,7 +137,7 @@ exports.toolKeyword = async(req, res, next) => {
                         })
                         await key.save();
                     }
-                    return functions.setError(res, 'trùng _id')
+                    return fnc.setError(res, 'trùng _id')
 
                 });
                 page++
@@ -148,7 +149,7 @@ exports.toolKeyword = async(req, res, next) => {
 
     } catch (error) {
         console.log(error)
-        return functions.setError(res, error)
+        return fnc.setError(res, error)
     }
 }
 
@@ -156,7 +157,7 @@ exports.toolKeyword = async(req, res, next) => {
 exports.toolAddAdminUSer = async(req, res, next) => {
     try {
 
-        let data = await functions.getDataAxios('https://timviec365.vn/api/get_user_admin.php?page=1')
+        let data = await fnc.getDataAxios('https://timviec365.vn/api/get_user_admin.php?page=1')
 
         for (let i = 0; i < data.length; i++) {
             let bophan = 0;
@@ -206,14 +207,14 @@ exports.toolAddAdminUSer = async(req, res, next) => {
                 })
                 await admin.save();
             }
-            return functions.setError(res, 'trùng _id')
+            return fnc.setError(res, 'trùng _id')
         }
 
 
-        return functions.success(res, 'thêm thành công', data)
+        return fnc.success(res, 'thêm thành công', data)
     } catch (error) {
         console.log(error)
-        return functions.setError(res, error)
+        return fnc.setError(res, error)
     }
 }
 
@@ -223,7 +224,7 @@ exports.toolLV = async(req, res, next) => {
         let result = true,
             page = 1;
         do {
-            let data = await functions.getDataAxios('https://timviec365.vn/api/get_trang_vang.php?page=' + page)
+            let data = await fnc.getDataAxios('https://timviec365.vn/api/get_trang_vang.php?page=' + page)
             if (data.length > 0) {
                 for (i = 0; i < data.length; i++) {
                     const decodedStringConten = Buffer.from(data[i].tag_content, 'base64').toString('utf-8'); // Giải mã chuỗi
@@ -253,7 +254,7 @@ exports.toolLV = async(req, res, next) => {
         await fnc.success(res, 'thành công');
     } catch (error) {
         console.log(error)
-        return functions.setError(res, error)
+        return fnc.setError(res, error)
     }
 }
 
@@ -291,6 +292,56 @@ exports.toolCategoryBlog = async(req, res, next) => {
 
     } catch (error) {
         console.log(error)
-        return functions.setError(res, error)
+        return fnc.setError(res, error)
     }
+}
+
+// // insert CV
+exports.toolCV = async(req, res, next) => {
+    try {
+        const data = await fnc.getDataAxios('https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=1', {});
+        await data.forEach(async element => {
+
+            const cv = new CV({
+                _id: element.id,
+                name: element.name,
+                alias: element.alias,
+                urlAlias: element.url_alias,
+                urlCanonical: element.url_canonical,
+                image: element.image,
+                price: element.price,
+                color: element.colors,
+                view: element.view,
+                favorite: element.love,
+                download: element.download,
+                vip: element.vip,
+                cvIndex: element.cv_index,
+                cId: element.cid,
+                content: element.content,
+                motaCv: element.mota_cv,
+                htmlVi: JSON.stringify(element.html_vi),
+                htmlEn: JSON.stringify(element.html_en),
+                htmlJp: JSON.stringify(element.html_jp),
+                htmlCn: JSON.stringify(element.html_cn),
+                htmlKr: JSON.stringify(element.html_kr),
+                cateId: element.cate_id,
+                langId: element.lang_id,
+                designId: element.design_id,
+                exp: element.exp,
+                nhuCau: element.nhucau,
+                metaTitle: element.meta_title,
+                metaKey: element.meta_key,
+                metaDes: element.meta_des,
+                thuTu: element.thutu,
+                full: element.full,
+                status: element.status,
+                cvPoint: element.cv_point,
+            });
+            await CV.create(cv);
+
+        });
+        return await fnc.success(res, "Thành công", );
+    } catch (err) {
+        fnc.setError(res, err.message);
+    };
 }

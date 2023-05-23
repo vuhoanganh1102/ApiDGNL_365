@@ -1,29 +1,25 @@
-const childCompany = require("../../models/qlc/childCompany")
+const childCompany = require("../../models/Users")
 const functions = require("../../services/functions")
 
 //tìm danh sách công ty 
 exports.getListCompany= async (req, res) => {
-    //Function tìm tất cả không có điều kiện rằng buộc
-    await functions.getDatafind(childCompany, {})
+    //Function tìm tất cả cty theo model user có điều kiện là tài khoản cty
+    await functions.getDatafind(childCompany, { companyId : companyId , type : 1 })
         //thành công trả models
         .then((childCompany) => functions.success(res, "", childCompany))
         // bắt lỗi 
         .catch((err) => functions.setError(res, err.message, 501));
 };
-//
-exports.getholdingcompany = async function(res) {
-    const company = await functions.getDatafindOne(user, {_is: _id });
-}
-//tìm 1 cty cụ thể 
+//tìm id company qua model user
 exports.getCompanyById = async (req, res) => {
     //tạo biến chứa param id 
-    const _id = req.params.id;
-    // nếu không có param id trả lỗi 
-    if (isNaN(_id)) {
-        functions.setError(res, "Id must be a number", 502);
+    const companyId = req.params.companyId;
+    // nếu param id k phải số trả lỗi 
+    if (isNaN(companyId)) {
+        functions.setError(res, "companyId must be a number", 502);
     } else {
     //nếu tìm được id của cty 
-        const Company = await Company.findById(_id);
+        const Company = await childCompany.findOne({ companyId : companyId , type : 1  });
         if (!Company) {
     //nếu biến cty rỗng
             functions.setError(res, "childCompany cannot be found or does not exist", 503);
@@ -35,36 +31,36 @@ exports.getCompanyById = async (req, res) => {
 //tạo công ty
 exports.createCompany = async (req, res) => {
 
-    const { companyName, companyOrder } = req.body;
+    const { companyId, userContactPhone, userContactEmail } = req.body;
 
-    if (!companyName) {
-        //Kiểm tra tên phòng ban khác null
+    if (!companyId) {
+        //Kiểm tra id công ty  khác null
         functions.setError(res, "Company name required", 506);
-
-    } else if (!companyOrder) {
+    }else if (!userContactEmail) {
+        //kiển tra Email rỗng không 
+        functions.setError(res, "Company email required",)
+    } else if (!userContactPhone) {
         //Kiểm tra xếp thứ tự khác null
-        functions.setError(res, "Company order required", 507);
+        functions.setError(res, "Company phone required", 507);
 
-    } else if (typeof companyOrder !== "number") {
+    } else if (typeof userContactPhone !== "number") {
         //Kiểm tra xếp thứ tự có phải là số không
-        functions.setError(res, "Company order must be a number", 508);
+        functions.setError(res, "Company phone must be a number", 508);
 
     } else {
-        //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
-        let maxID = await functions.getMaxID(_id);
+        //tìm company ID max , nếu chưa có giá trị nào thì bằng 0 tìm thấy thì bằng max + 1
+        let maxID = await functions.getMaxIDcompany(childCompany);
         if (!maxID) {
             maxID = 0
         };
-        const _id = Number(maxID) + 1;
+        const CompanyId = Number(maxID) + 1;
         const company = new childCompany({
-            _id: _id,
-            companyName: companyName,
-            companyImage: companyImage,
-            holdingCompanyId:  holdingCompanyId,
-            companyPhone: companyPhone,
-            companyEmail: companyEmail,
-            companyAddress: companyAddress,
-            companyOrder:   companyOrder,
+            companyId: companyId,
+            avatarCompany: avatarCompany,
+            idparent:  idparent,
+            userContactEmail: userContactEmail,
+            userContactPhone: userContactPhone,
+            userContactAddress: userContactAddress,
         });
 
         await company.save()
@@ -78,52 +74,54 @@ exports.createCompany = async (req, res) => {
 };
 // sửa công ty con 
 exports.editCompany = async (req, res) => {
-    const _id = req.params.id;
+    const companyId = req.params.companyId;
 
-    if (isNaN(_id)) {
+    if (isNaN(companyId)) {
         functions.setError(res, "Id must be a number", 502)
     } else {
-        const {  companyName, companyOrder } = req.body;
+        const {  companyName, userContactEmail, userContactPhone } = req.body;
 
         if (!companyName) {
             //Kiểm tra tên cty
             functions.setError(res, "company name required", 506);
-
-        } else if (!companyOrder) {
+        }else if(!userContactEmail){
+            //kiem tra email 
+            functions.setError(res, "user contact email required", 506);
+        } else if (!userContactPhone) {
             //Kiểm tra xếp thứ tự có khác null
-            functions.setError(res, "company order required", 507);
-
-        } else if (typeof companyOrder !== "number") {
-            //Kiểm tra xếp thứ tự có phải là số không
-            functions.setError(res, "Deparment order must be a number", 508);
+            functions.setError(res, "company phone required", 507);         
+            //Kiểm tra phone có phải là số không
+        } else if (typeof userContactPhone !== "number") {
+            functions.setError(res, "company phone must be a number", 508);
 
         } else {
 
-            const company = await functions.getDatafindOne(childCompany, { _id: _id });
+            const company = await functions.getDatafindOne(childCompany, { companyId: companyId ,type : 1 });
             if (!company) {
                 functions.setError(res, "company does not exist!", 510);
             } else {
-                await functions.getDatafindOneAndUpdate(childCompany, { _id: _id }, {
+                await functions.getDatafindOneAndUpdate(childCompany, { companyId: companyId, type :1 }, {
                     companyName: companyName,
-                    companyOrder: companyOrder
+                    userContactPhone: userContactPhone,
+                    userContactEmail: userContactEmail
                 })
-                    .then((company) => functions.success(res, "Deparment edited successfully", company))
+                    .then((company) => functions.success(res, "Company edited successfully", company))
                     .catch((err) => functions.setError(res, err.message, 511));
             }
         }
     }
 };
 exports.deleteCompany = async (req, res) => {
-    const _id = req.params.id;
-
-    if (isNaN(_id)) {
+    const companyId = req.params.companyId;
+    //companyId
+    if (isNaN(companyId)) {
         functions.setError(res, "Id must be a number", 502);
     } else {
-        const company = await functions.getDatafindOne(childCompany, { _id: _id });
+        const company = await functions.getDatafindOne(childCompany, { companyId: companyId , type : 1});
         if (!company) {
             functions.setError(res, "company not exist!", 510);
         } else {
-            functions.getDataDeleteOne(childCompany, { _id: _id })
+            functions.getDataDeleteOne(childCompany, { companyId: companyId, type :1 })
                 .then(() => functions.success(res, "Delete company successfully!", company))
                 .catch(err => functions.setError(res, err.message, 512));
         }
@@ -132,7 +130,7 @@ exports.deleteCompany = async (req, res) => {
 
 
 exports.deleteAllCompanys = async (req, res) =>{
-    if (!await functions.getMaxID(childCompany)) {
+    if (!await functions.getMaxIDcompany(childCompany)) {
         functions.setError( res, "No company existed",513);
     }else {
         childCompany.deleteMany()

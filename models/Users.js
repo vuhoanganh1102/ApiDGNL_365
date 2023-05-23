@@ -287,6 +287,11 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            candiSkill: {
+                //Kỹ năng bản thân
+                type: String,
+                default: null
+            },
             referencePersonName: {
                 // Tên người tham chiếu
                 type: String,
@@ -337,6 +342,7 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
+            //bằng cấp chứng chỉ
             candiDegree: [{
                 type: {
                     id: {
@@ -366,6 +372,7 @@ const UserSchema = new mongoose.Schema({
                 },
                 default: null
             }],
+            //ngoại ngữ tin học
             candiNgoaiNgu: [{
                 type: {
                     id: {
@@ -383,6 +390,7 @@ const UserSchema = new mongoose.Schema({
                 },
                 default: null
             }],
+            //kinh nghiệm làm việc
             candiExp: [{
                 type: {
                     id: {
@@ -419,6 +427,11 @@ const UserSchema = new mongoose.Schema({
                 // Tổng lượt xem
                 type: Number,
                 default: 0
+            },
+            avatarCompany: {
+                //logo công ty 
+                type: String,
+                default: null
             },
             idKD: {
                 // ID Kinh doanh phụ trách hỗ trợ
@@ -477,6 +490,12 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
+            idparent : {
+                //id công ty mẹ
+                type: Number,
+                default: 0
+            },
+
             userContactName: {
                 // Tên người liên hệ
                 type: String,
