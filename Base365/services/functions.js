@@ -274,24 +274,24 @@ const storageFile = (destination) => {
     });
 };
 
-exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/KhoAnh') })
+exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('../Storage') })
 
-exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/company') })
+exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('../Storage') })
 
 //  hàm upload ảnh ở cập nhập avatar
-exports.uploadImg = multer({ storage: storageMain('public/KhoAnh') })
+exports.uploadImg = multer({ storage: storageMain('../Storage') })
 
 //  hàm upload ảnh ở kho ảnh
-exports.uploadImgKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
+exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage') })
 
 //  hàm upload video ở kho ảnh
-exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
+exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage') })
 
 // hàm upload video ở cập nhập KhoAnh
-exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
+exports.uploadVideo = multer({ storage: storageMain('../Storage') })
 
 //hàm upload file ứng viên
-exports.uploadFileUv = multer({ storage: storageFile('../Storage/Base365') })
+exports.uploadFileUv = multer({ storage: storageFile('../Storage') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
@@ -564,7 +564,7 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
             },
         ]
     }, projection)
-  };
+};
 
 //upload image cv,don, thu, syll
 
@@ -608,6 +608,7 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
             return error.message
         }
     }
+}
 
 
 
