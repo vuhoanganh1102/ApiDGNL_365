@@ -7,7 +7,7 @@ exports.getSYLL = async(req, res, next) => {
     try {
         const data = await HoSo.find({}).sort('-_id').select('price image name');
 
-        if (data) return await functions.success(res, 'Lấy mẫu SYLL thành công', { data });
+        if (data) return await functions.success(res, 'Lấy mẫu SYLL thành công', data);
 
         return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -24,7 +24,7 @@ exports.previewSYLL = async(req, res, next) => {
         if (!data) return await functions.setError(res, 'Không có dữ liệu', 404);
         // cập nhật số lượng xem 
         await HoSo.updateOne({ _id: _id }, { $set: { view: data.view + 1 } }, );
-        return await functions.success(res, 'Lấy mâũ SYLL thanh công', { data });
+        return await functions.success(res, 'Lấy mâũ SYLL thanh công', data);
     } catch (err) {
         return functions.setError(res, err.message);
     };
@@ -44,7 +44,7 @@ exports.detailSYLL = async(req, res, next) => {
             const token = await functions.createToken(user, '24h');
             res.setHeader('authorization', `Bearer ${token}`);
 
-            return await functions.success(res, 'Lấy SYLL thành công', { data });
+            return await functions.success(res, 'Lấy SYLL thành công', data);
         };
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -173,7 +173,7 @@ exports.findSYLL = async(req, res, next) => {
         const _id = req.body._id;
         const data = await HoSo.findOne({ _id: _id });
 
-        if (data) return functions.success(res, 'Thành công', { data });
+        if (data) return functions.success(res, 'Thành công', data);
 
         return functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {

@@ -300,56 +300,51 @@ exports.toolCategoryBlog = async(req, res, next) => {
 exports.toolCV = async(req, res, next) => {
     try {
         let page = 1;
-        let result = true;
         do {
-            result = false;
             const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=${page}`, {});
-            if (data.length) {
-                for (let i = 0; i < data.length; i++) {
+            for (let i = 0; i <= data.length; i++) {
 
-                    const cv = await new CV({
-                        _id: data[i].id,
-                        name: data[i].name,
-                        alias: data[i].alias,
-                        urlAlias: data[i].url_alias,
-                        urlCanonical: data[i].url_canonical,
-                        image: data[i].image,
-                        price: data[i].price,
-                        color: data[i].colors,
-                        view: data[i].view,
-                        favorite: data[i].love,
-                        download: data[i].download,
-                        vip: data[i].vip,
-                        cvIndex: data[i].cv_index,
-                        cId: data[i].cid,
-                        content: data[i].content,
-                        motaCv: data[i].mota_cv,
-                        htmlVi: JSON.stringify(data[i].html_vi),
-                        htmlEn: JSON.stringify(data[i].html_en),
-                        htmlJp: JSON.stringify(data[i].html_jp),
-                        htmlCn: JSON.stringify(data[i].html_cn),
-                        htmlKr: JSON.stringify(data[i].html_kr),
-                        cateId: data[i].cate_id,
-                        langId: data[i].lang_id,
-                        designId: data[i].design_id,
-                        exp: data[i].exp,
-                        nhuCau: data[i].nhucau,
-                        metaTitle: data[i].meta_title,
-                        metaKey: data[i].meta_key,
-                        metaDes: data[i].meta_des,
-                        thuTu: data[i].thutu,
-                        full: data[i].full,
-                        status: data[i].status,
-                        cvPoint: data[i].cv_point,
-                    });
-                    await CV.create(cv);
-                }
-                result = true;
-                page += 1;
-
+                const cv = new CV({
+                    _id: element.id,
+                    name: element.name,
+                    alias: element.alias,
+                    urlAlias: element.url_alias,
+                    urlCanonical: element.url_canonical,
+                    image: element.image,
+                    price: element.price,
+                    color: element.colors,
+                    view: element.view,
+                    favorite: element.love,
+                    download: element.download,
+                    vip: element.vip,
+                    cvIndex: element.cv_index,
+                    cId: element.cid,
+                    content: element.content,
+                    motaCv: element.mota_cv,
+                    htmlVi: JSON.stringify(element.html_vi),
+                    htmlEn: JSON.stringify(element.html_en),
+                    htmlJp: JSON.stringify(element.html_jp),
+                    htmlCn: JSON.stringify(element.html_cn),
+                    htmlKr: JSON.stringify(element.html_kr),
+                    cateId: element.cate_id,
+                    langId: element.lang_id,
+                    designId: element.design_id,
+                    exp: element.exp,
+                    nhuCau: element.nhucau,
+                    metaTitle: element.meta_title,
+                    metaKey: element.meta_key,
+                    metaDes: element.meta_des,
+                    thuTu: element.thutu,
+                    full: element.full,
+                    status: element.status,
+                    cvPoint: element.cv_point,
+                });
+                await CV.create(cv);
             }
+
+
+
         }
-        while (result)
         return await fnc.success(res, "Thành công", );
     } catch (err) {
         fnc.setError(res, err.message);

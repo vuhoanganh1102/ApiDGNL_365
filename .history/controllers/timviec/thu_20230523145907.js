@@ -141,7 +141,7 @@ exports.saveThu = async(req, res, next) => {
                     linkPdf: linkPdf,
                     Title: text,
                 };
-                const respone = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
+                const respone = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', { data });
 
                 message += ',tải';
 

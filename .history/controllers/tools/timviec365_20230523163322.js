@@ -304,7 +304,9 @@ exports.toolCV = async(req, res, next) => {
         do {
             result = false;
             const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=${page}`, {});
+            console.log(data[0])
             if (data.length) {
+                console.log(page);
                 for (let i = 0; i < data.length; i++) {
 
                     const cv = await new CV({

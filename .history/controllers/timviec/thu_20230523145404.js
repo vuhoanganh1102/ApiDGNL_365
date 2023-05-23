@@ -35,7 +35,7 @@ exports.getNganhThu = async(req, res, next) => {
     try {
         const data = await NganhThu.find().select('_id name');
 
-        if (data.length > 0) return functions.success(res, 'Danh sách ngành THU', { data });
+        if (data.length > 0) return functions.success(res, 'Danh sách ngành THU', data);
 
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -54,7 +54,7 @@ exports.previewThu = async(req, res, next) => {
 
         let view = data.view + 1; // cập nhật số lượng xem 
         await Thu.updateOne({ _id: _id }, { view: view });
-        return await functions.success(res, 'Lấy mâũ THU thanh công', { data });
+        return await functions.success(res, 'Lấy mâũ THU thanh công', data);
     } catch (err) {
         return functions.setError(res, err.message);
     };
@@ -75,7 +75,7 @@ exports.detailThu = async(req, res, next) => {
             const token = await functions.createToken(user, '24h');
             res.setHeader('authorization', `Bearer ${token}`);
 
-            return await functions.success(res, 'Lấy THU thành công', { data });
+            return await functions.success(res, 'Lấy THU thành công', data);
         };
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -200,7 +200,7 @@ exports.findNganhThu = async(req, res, next) => {
         const _id = req.body._id;
         const data = await NganhThu.findOne({ _id: _id });
 
-        if (data) return functions.success(res, 'Thành công', { data });
+        if (data) return functions.success(res, 'Thành công', data);
 
         return functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {
@@ -301,7 +301,7 @@ exports.findThu = async(req, res, next) => {
         const _id = req.body._id;
         const data = await Thu.findOne({ _id: _id });
 
-        if (data) return functions.success(res, 'Thành công', { data });
+        if (data) return functions.success(res, 'Thành công', data);
 
         return functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {

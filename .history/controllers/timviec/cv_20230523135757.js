@@ -464,7 +464,7 @@ exports.getCVGroup = async(req, res, next) => {
         const user = req.user.data;
         if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const data = await CVGroup.find();
-        if (data.length) return await functions.success(res, 'Thành công', { data });
+        if (data.length) return await functions.success(res, 'Thành công', data);
 
         return await functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {

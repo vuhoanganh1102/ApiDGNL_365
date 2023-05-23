@@ -300,53 +300,50 @@ exports.toolCategoryBlog = async(req, res, next) => {
 exports.toolCV = async(req, res, next) => {
     try {
         let page = 1;
-        let result = true;
         do {
-            result = false;
             const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=${page}`, {});
-            if (data.length) {
-                for (let i = 0; i < data.length; i++) {
+            if (data.lenght) {
 
-                    const cv = await new CV({
-                        _id: data[i].id,
-                        name: data[i].name,
-                        alias: data[i].alias,
-                        urlAlias: data[i].url_alias,
-                        urlCanonical: data[i].url_canonical,
-                        image: data[i].image,
-                        price: data[i].price,
-                        color: data[i].colors,
-                        view: data[i].view,
-                        favorite: data[i].love,
-                        download: data[i].download,
-                        vip: data[i].vip,
-                        cvIndex: data[i].cv_index,
-                        cId: data[i].cid,
-                        content: data[i].content,
-                        motaCv: data[i].mota_cv,
-                        htmlVi: JSON.stringify(data[i].html_vi),
-                        htmlEn: JSON.stringify(data[i].html_en),
-                        htmlJp: JSON.stringify(data[i].html_jp),
-                        htmlCn: JSON.stringify(data[i].html_cn),
-                        htmlKr: JSON.stringify(data[i].html_kr),
-                        cateId: data[i].cate_id,
-                        langId: data[i].lang_id,
-                        designId: data[i].design_id,
-                        exp: data[i].exp,
-                        nhuCau: data[i].nhucau,
-                        metaTitle: data[i].meta_title,
-                        metaKey: data[i].meta_key,
-                        metaDes: data[i].meta_des,
-                        thuTu: data[i].thutu,
-                        full: data[i].full,
-                        status: data[i].status,
-                        cvPoint: data[i].cv_point,
+
+                for (let i = 0; i <= data.length; i++) {
+
+                    const cv = new CV({
+                        _id: data[0].id,
+                        name: data[0].name,
+                        alias: data[0].alias,
+                        urlAlias: data[0].url_alias,
+                        urlCanonical: data[0].url_canonical,
+                        image: data[0].image,
+                        price: data[0].price,
+                        color: data[0].colors,
+                        view: data[0].view,
+                        favorite: data[0].love,
+                        download: data[0].download,
+                        vip: data[0].vip,
+                        cvIndex: data[0].cv_index,
+                        cId: data[0].cid,
+                        content: data[0].content,
+                        motaCv: data[0].mota_cv,
+                        htmlVi: JSON.stringify(data[0].html_vi),
+                        htmlEn: JSON.stringify(data[0].html_en),
+                        htmlJp: JSON.stringify(data[0].html_jp),
+                        htmlCn: JSON.stringify(data[0].html_cn),
+                        htmlKr: JSON.stringify(data[0].html_kr),
+                        cateId: data[0].cate_id,
+                        langId: data[0].lang_id,
+                        designId: data[0].design_id,
+                        exp: data[0].exp,
+                        nhuCau: data[0].nhucau,
+                        metaTitle: data[0].meta_title,
+                        metaKey: data[0].meta_key,
+                        metaDes: data[0].meta_des,
+                        thuTu: data[0].thutu,
+                        full: data[0].full,
+                        status: data[0].status,
+                        cvPoint: data[0].cv_point,
                     });
                     await CV.create(cv);
                 }
-                result = true;
-                page += 1;
-
             }
         }
         while (result)

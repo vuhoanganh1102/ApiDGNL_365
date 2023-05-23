@@ -304,10 +304,12 @@ exports.toolCV = async(req, res, next) => {
         do {
             result = false;
             const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=${page}`, {});
-            if (data.length) {
-                for (let i = 0; i < data.length; i++) {
+            if (data.lenght) {
+                result = true;
 
-                    const cv = await new CV({
+                for (let i = 0; i <= data.length; i++) {
+
+                    const cv = new CV({
                         _id: data[i].id,
                         name: data[i].name,
                         alias: data[i].alias,
@@ -344,9 +346,6 @@ exports.toolCV = async(req, res, next) => {
                     });
                     await CV.create(cv);
                 }
-                result = true;
-                page += 1;
-
             }
         }
         while (result)

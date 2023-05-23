@@ -1,14 +1,14 @@
 const functions = require('../../services/functions');
-const Thu = require('../../models/Timviec365/CV/Letter');
-const NganhThu = require('../../models/Timviec365/CV/LetterCategory');
-const ThuUV = require('../../models/Timviec365/CV/LetterUV');
+const DonXinViec = require('../../models/Timviec365/CV/Application');
+const NganhDon = require('../../models/Timviec365/CV/ApplicationCategory');
+const DonUV = require('../../models/Timviec365/CV/ApplicationUV');
 
-// lấy danh sách mẫu thư
-exports.getThu = async(req, res, next) => {
+// lấy danh sách mẫu đơn
+exports.getDon = async(req, res, next) => {
     try {
-        const data = await Thu.find({});
+        const data = await DonXinViec.find({});
 
-        if (data.length) return await functions.success(res, 'Lấy mẫu THU thành công', { data });
+        if (data.length) return await functions.success(res, 'Lấy mẫu DON thành công', { data });
 
         return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -16,13 +16,13 @@ exports.getThu = async(req, res, next) => {
     };
 };
 
-// tìm thư theo ngành
+// tìm đơn theo ngành
 exports.getByNganh = async(req, res, next) => {
     try {
         const cateId = req.body.cateId;
-        const data = await Thu.find({ cateId: cateId }); // tìm theo id Ngành
+        const data = await DonXinViec.find({ cateId }); // tìm theo id Ngành
 
-        if (data.length) return await functions.success(res, `THU theo ngành ${cateId}`, { data });
+        if (data.length) return await functions.success(res, `DON theo ngành ${cateId}`, { data });
 
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -30,12 +30,12 @@ exports.getByNganh = async(req, res, next) => {
     };
 };
 
-// lấy danh sách ngành thư
-exports.getNganhThu = async(req, res, next) => {
+// lấy danh sách ngành đơn
+exports.getNganhDon = async(req, res, next) => {
     try {
-        const data = await NganhThu.find().select('_id name');
+        const data = await NganhDon.find();
 
-        if (data.length > 0) return functions.success(res, 'Danh sách ngành THU', { data });
+        if (data.length) return functions.success(res, 'Danh sách ngành DON', { data });
 
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -44,38 +44,36 @@ exports.getNganhThu = async(req, res, next) => {
 };
 
 
-// xem trước 
-exports.previewThu = async(req, res, next) => {
+// xem trước
+exports.previewDon = async(req, res, next) => {
     try {
         const _id = req.body._id;
-        const data = await Thu.findOne({ _id: _id }).select('_id image view');
+        const data = await DonXinViec.findOne({ _id }).select('_id image view');
 
         if (!data) return await functions.setError(res, 'Không có dữ liệu', 404);
-
-        let view = data.view + 1; // cập nhật số lượng xem 
-        await Thu.updateOne({ _id: _id }, { view: view });
-        return await functions.success(res, 'Lấy mâũ THU thanh công', { data });
+        // cập nhật số lượng xem 
+        await DonXinViec.updateOne({ _id }, { $set: { view: data.view + 1 } });
+        return await functions.success(res, 'Lấy mâũ DON thanh công', { data });
     } catch (err) {
         return functions.setError(res, err.message);
     };
 };
 
-
-// xem chi tiết thư ( tạo)
-exports.detailThu = async(req, res, next) => {
+// xem chi tiết ( tạo)
+exports.detailDon = async(req, res, next) => {
     try {
         const _id = req.body._id;
         const user = req.user.data;
-        const data = await Thu.findOne({ _id: _id }).select('_id name htmlVi htmlCn htmlJp htmlKr htmlEn view color langId');
+        const data = await DonXinViec.findOne({ _id }).select('_id name htmlVi htmlCn htmlJp htmlKr htmlEn view color langId');
 
         if (data) {
-            let view = data.view + 1; // cập nhật số lượng xem 
-            await Thu.updateOne({ _id: _id }, { view: view });
+            // cập nhật số lượng xem 
+            await DonXinViec.updateOne({ _id }, { $set: { view: data.view + 1 } });
 
             const token = await functions.createToken(user, '24h');
             res.setHeader('authorization', `Bearer ${token}`);
 
-            return await functions.success(res, 'Lấy THU thành công', { data });
+            return await functions.success(res, 'Lấy DON thành công', { data });
         };
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -83,82 +81,55 @@ exports.detailThu = async(req, res, next) => {
     };
 };
 
-//lưu và tải thư
-exports.saveThu = async(req, res, next) => {
+//lưu và tải đơn
+exports.saveDon = async(req, res, next) => {
     try {
         const imageFile = req.file;
         const userId = req.user.data._id;
-        const data = req.body;
-
-        // 0 : lưu(upload), 1: lưu và tải(upload,download)
-        let message = 'Lưu';
-        const download = req.query.download || 0;
+        const data = req.body; // Id, html,  lang
         const checkImage = await functions.checkImage(imageFile.path);
+        if (checkImage == false) return await functions.setError(res, 'Lưu thất bại 2', 404);
 
-        if (checkImage == false) return functions.setError(res, 'Lỗi ảnh', 404);
-
-        const uploadImage = await functions.uploadAndCheckPathIMG(userId, imageFile, 'letter');
+        const uploadImage = await functions.uploadAndCheckPathIMG(userId, imageFile, 'application');
         if (uploadImage.status != 'EXIT') return await functions.setError(res, 'Upload ảnh thất bại', 404);
 
-        const thuUV = {
+        const donUV = {
             userId: userId,
-            tId: data._id,
+            donId: data._id,
             html: data.html,
             nameImage: uploadImage.nameImage,
             lang: data.lang,
             status: data.status,
         };
 
-
-        const thu = await HoSo.findOne({ _id: data._id }).select('download');
-        if (!thu) return await functions.setError(res, 'Lưu thất bại 1', 404);
+        const don = await DonXinViec.findOne({ _id: data._id }).select('download');
+        if (!don) return await functions.setError(res, 'Lưu thất bại 1', 404);
         let _id = 1;
-        await functions.getMaxID(ThuUV)
+        await functions.getMaxID(DonUV)
             .then(res => {
                 if (res) {
                     _id = res + 1;
                 }
             });
 
-        thuUV._id = _id;
-        const newThuUV = await ThuUV.create(thuUV);
+        donUV._id = _id;
+        const newDonUV = await DonUV.create(donUV);
 
-        if (newThuUV) {
+        if (newDonUV) {
             // cập nhật số lượt download 
-            await Thu.updateOne({ _id: cv._id }, { $set: { download: cv.download + 1 } });
+            await DonXinViec.updateOne({ _id: cv._id }, { $set: { download: cv.download + 1 } });
+            return await functions.success(res, 'Lưu thành công', newDonUV);;
 
-            //Gửi ảnh về
-            if (download == 1) {
-                const host = '';
-                const linkPdf = `${host}/${uploadImage.imgPath.slice(7)}`;
-                const linkImg = `${host}/${uploadImage.pdfPath.slice(7)}`;
-                const senderId = 1191;
-                const text = '';
-                const data = {
-                    userId: userId,
-                    senderId: senderId,
-                    linkImg: linkImg,
-                    linkPdf: linkPdf,
-                    Title: text,
-                };
-                const respone = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
-
-                message += ',tải';
-
-            }
-            return await functions.success(res, `${message} thành công`, newThuUV);
         };
-        return await functions.setError(res, 'Lưu thất bại 2', 404);
-
-
+        return functions.setError(res, 'Lỗi ảnh', 404);
 
     } catch (e) {
         functions.setError(res, e.message, );
     }
 };
 
-// thêm mới NganhThu
-exports.createNganhThu = async(req, res, next) => {
+// thêm mới NganhDon
+exports.createNganhDon = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
@@ -177,28 +148,28 @@ exports.createNganhThu = async(req, res, next) => {
         };
 
         let _id = 1;
-        await functions.getMaxID(NganhThu)
+        await functions.getMaxID(NganhDon)
             .then(res => {
                 if (res) {
                     _id = res + 1;
                 }
             });
         data._id = _id;
-        await NganhThu.create(data);
+        await NganhDon.create(data);
         return await functions.success(res, 'Tạo mới NganhcDon thành công', );
     } catch (err) {
         return functions.setError(res, err.message);
     }
 };
 
-// sửa NganhThu- findNganhThu & updateNganhThu
-exports.findNganhThu = async(req, res, next) => {
+// sửa NganhDon- findNganhDon & updateNganhDon
+exports.findNganhDon = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
 
         const _id = req.body._id;
-        const data = await NganhThu.findOne({ _id: _id });
+        const data = await NganhDon.findOne({ _id });
 
         if (data) return functions.success(res, 'Thành công', { data });
 
@@ -207,12 +178,12 @@ exports.findNganhThu = async(req, res, next) => {
         return functions.setError(res, err.message);
     };
 };
-exports.updateNganhThu = async(req, res, next) => {
+exports.updateNganhDon = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
-        const nganhThu = {
+        const nganhDon = {
 
             name: req.body.name,
             alias: req.body.alias,
@@ -225,7 +196,7 @@ exports.updateNganhThu = async(req, res, next) => {
             metaTt: req.body.metaTt,
             status: req.body.status,
         };
-        const data = await NganhThu.findOneAndUpdate({ _id: _id }, nganhThu);
+        const data = await NganhDon.findOneAndUpdate({ _id }, nganhDon);
 
         if (data) return functions.success(res, 'Cập nhật thành công', );
 
@@ -235,13 +206,13 @@ exports.updateNganhThu = async(req, res, next) => {
     };
 };
 
-//xóa NganhThu
-exports.deleteNganhThu = async(req, res, next) => {
+//xóa NganhDon
+exports.deleteNganhDon = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
-        const data = await NganhThu.findOneAndDelete({ _id: _id });
+        const data = await NganhDon.findOneAndDelete({ _id });
 
         if (data) return functions.success(res, 'Đã xóa thành công', );
 
@@ -251,55 +222,56 @@ exports.deleteNganhThu = async(req, res, next) => {
     };
 };
 
-// tạo mới mẫu Thu
-exports.createThu = async(req, res, next) => {
+// tạo mới mẫu DonXinViec
+exports.createDon = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập', 404);
         const data = {
 
             name: req.body.name,
+            nameSub: req.body.name,
             alias: req.body.alias,
             image: req.body.image,
             price: req.body.price,
-            color: req.body.color,
             view: 0,
-            favorite: 0,
-            download: 0,
-            vip: req.body.vip,
+            favourite: 0,
+            downLoad: 0,
+            color: req.body.color,
             htmlVi: req.body.htmlVi,
-            htmlEn: req.body.htmlEn,
-            htmlJp: req.body.htmlJp,
-            htmlCn: req.body.htmlCn,
-            htmlKr: req.body.htmlKr,
-            cateId: req.cateId,
+            cateId: req.body.cateId,
             status: req.body.status,
+            vip: req.body.vip,
+            htmlEn: req.body.htmlEn,
+            htmlCn: req.body.htmlCn,
+            htmlJp: req,
+            htmlKr: req.body.html,
             langId: req.body.langId,
         };
 
         let _id = 1;
-        await functions.getMaxID(Thu)
+        await functions.getMaxID(DonXinViec)
             .then(res => {
                 if (res) {
                     _id = res + 1;
                 }
             });
         data._id = _id;
-        await Thu.create(data);
-        return await functions.success(res, 'Tạo mới Thu thành công', );
+        await DonXinViec.create(data);
+        return await functions.success(res, 'Tạo mới DonXinViec thành công', );
     } catch (err) {
         return functions.setError(res, err.message);
     };
 };
 
-// sửa mẫu Thu - findThu & updateThu
-exports.findThu = async(req, res, next) => {
+// sửa mẫu Don - findDon & updateDon
+exports.findDon = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
 
         const _id = req.body._id;
-        const data = await Thu.findOne({ _id: _id });
+        const data = await DonXinViec.findOne({ _id });
 
         if (data) return functions.success(res, 'Thành công', { data });
 
@@ -308,52 +280,69 @@ exports.findThu = async(req, res, next) => {
         return functions.setError(res, err.message);
     };
 };
-exports.updateThu = async(req, res, next) => {
+exports.updateDon = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
-        const thu = {
+        const don = {
+
             name: req.body.name,
+            nameSub: req.body.name,
             alias: req.body.alias,
             image: req.body.image,
             price: req.body.price,
-            color: req.body.color,
             view: 0,
-            favorite: 0,
-            download: 0,
-            vip: req.body.vip,
+            favourite: 0,
+            downLoad: 0,
+            color: req.body.color,
             htmlVi: req.body.htmlVi,
-            htmlEn: req.body.htmlEn,
-            htmlJp: req.body.htmlJp,
-            htmlCn: req.body.htmlCn,
-            htmlKr: req.body.htmlKr,
-            cateId: req.cateId,
+            cateId: req.body.cateId,
             status: req.body.status,
+            vip: req.body.vip,
+            htmlEn: req.body.htmlEn,
+            htmlCn: req.body.htmlCn,
+            htmlJp: req,
+            htmlKr: req.body.html,
             langId: req.body.langId,
         };
-        const data = await Thu.findOneAndUpdate({ _id: _id }, thu);
+        const data = await DonXinViec.findOneAndUpdate({ _id }, don);
 
-        if (data) return functions.success(res, 'Cập nhật thành công', );
+        if (data) return await functions.success(res, 'Cập nhật thành công', );
 
-        return functions.setError(res, 'Không có dữ liêu', 404);
+        return await functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {
         return functions.setError(res, err.message);
     };
 };
 
-//xóa mẫu Thu
-exports.deleteThu = async(req, res, next) => {
+//xóa mẫu DonXinViec
+exports.deleteDon = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
-        const data = await Thu.findOneAndDelete({ _id: _id });
+        const data = await DonXinViec.findOneAndDelete({ _id });
 
-        if (data) return functions.success(res, 'Đã xóa thành công', );
+        if (data) return await functions.success(res, 'Đã xóa thành công', );
 
-        return functions.setError(res, 'Không có dữ liêu', 404);
+        return await functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {
-        return functions.setError(res, err.message);
+        return functions.setError(res, err.message)
+    };
+};
+
+// ds ngành đơn
+exports.getApplyCategory = async(req, res, next) => {
+    try {
+        const user = req.user.data;
+        if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        const data = await NganhDon.find();
+
+        if (data.length) return await functions.success(res, 'Thành công', );
+
+        return await functions.setError(res, 'Không có dữ liêu', 404);
+    } catch (err) {
+        return functions.setError(res, err.message)
     };
 };
