@@ -34,7 +34,10 @@ router.post('/toolCVCategory', toolTimviec365.toolCVCategory);
 // api quét data cv của ứng viên
 router.post('/toolCVUV', toolTimviec365.toolCVUV);
 
-
 // api quét data ngon ngu cv 
 router.post('/toolCVLang', toolTimviec365.toolCVLang);
+
+// api quét data mẫu đơn xin việc
+router.post('/toolApplication', toolTimviec365.toolApplication);
+
 module.exports = router;
