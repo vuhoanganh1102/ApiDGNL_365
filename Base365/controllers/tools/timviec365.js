@@ -462,7 +462,9 @@ exports.toolListImg = async(req, res, next) => {
 
                         const image_object = {
                             id: id_counter,
-                            name: image_name
+                            name: image_name,
+                            active: data[i].active,
+                            type: 1
                         };
 
                         resultImg.push(image_object);
@@ -472,12 +474,14 @@ exports.toolListImg = async(req, res, next) => {
                         const videoName = videoList[i];
 
                         const videoObject = {
-                            id: idCounter,
-                            name: videoName
+                            id: id_counter,
+                            name: videoName,
+                            active: data[i].active,
+                            type: 1
                         };
 
                         resultVideo.push(videoObject);
-                        idCounter++;
+                        id_counter++;
                     }
 
                     await Users.updateOne({ idTimViec365: listCategory[i].usc_id, type: 1 }, {

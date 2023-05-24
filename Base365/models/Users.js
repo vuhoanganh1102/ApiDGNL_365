@@ -468,12 +468,14 @@ const UserSchema = new mongoose.Schema({
                 _id: Number,
                 name: String,
                 size: Number,
+                type: Number
             }],
             // kho video
             comVideos: [{
                 _id: Number,
                 name: String,
                 size: Number,
+                type: Number,
             }],
             website: {
                 // Website công ty
