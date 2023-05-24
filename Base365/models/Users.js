@@ -462,6 +462,7 @@ const UserSchema = new mongoose.Schema({
             comImages: [{
                 _id: Number,
                 name: String,
+                active: Number,
                 size: Number,
                 type: Number
             }],
@@ -469,6 +470,7 @@ const UserSchema = new mongoose.Schema({
             comVideos: [{
                 _id: Number,
                 name: String,
+                active: Number,
                 size: Number,
                 type: Number,
             }],
