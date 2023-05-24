@@ -480,7 +480,7 @@ exports.toolListImg = async(req, res, next) => {
                         idCounter++;
                     }
 
-                    await Users.updateOne({ idTimViec365: listCategory[i].user_id, type: 1 }, {
+                    await Users.updateOne({ idTimViec365: listCategory[i].usc_id, type: 1 }, {
                         $set: {
                             'inForCompany.comVideos': resultImg,
                             'inForCompany.comImages': resultVideo,
