@@ -7,6 +7,7 @@ const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
 const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 const Blog = require('../../models/Timviec365/Blog/Posts')
 const CategoryJob = require('../../models/Timviec365/CategoryJob')
+const Users = require('../../models/Users')
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
@@ -433,6 +434,65 @@ exports.toolCategoryJob = async(req, res, next) => {
                 await category.save();
             };
         }
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+// hàm thêm dữ liệu vào kho ảnh
+exports.toolListImg = async(req, res, next) => {
+    try {
+        let result = true;
+        let page = 1;
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/api/get_usc_images.php?page=' + page, {})
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const image_list = data[i].list_img.split(',');
+                    const videoList = data[i].list_video.split(',');
+                    const resultImg = [];
+                    const resultVideo = [];
+                    let id_counter = 1;
+
+                    for (let i = 0; i < image_list.length; i++) {
+                        const image_name = image_list[i];
+
+                        const image_object = {
+                            id: id_counter,
+                            name: image_name
+                        };
+
+                        resultImg.push(image_object);
+                        id_counter++;
+                    }
+                    for (let i = 0; i < videoList.length; i++) {
+                        const videoName = videoList[i];
+
+                        const videoObject = {
+                            id: idCounter,
+                            name: videoName
+                        };
+
+                        resultVideo.push(videoObject);
+                        idCounter++;
+                    }
+
+                    await Users.updateOne({ idTimViec365: listCategory[i].user_id, type: 1 }, {
+                        $set: {
+                            'inForCompany.comVideos': resultImg,
+                            'inForCompany.comImages': resultVideo,
+                        }
+                    });
+
+                };
+                page += 1;
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
         await fnc.success(res, 'thành công');
 
     } catch (error) {

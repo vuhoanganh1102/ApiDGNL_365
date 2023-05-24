@@ -747,7 +747,6 @@ const newSchema = new mongoose.Schema({
                 type: String,
                 default: null
             }
-
         },
         infoSell: {
             groupType: {
