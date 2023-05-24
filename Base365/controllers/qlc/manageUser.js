@@ -4,7 +4,7 @@ const functions = require("../../services/functions")
 //tìm danh sách nhân viên của cty 
 exports.getListUser= async (req, res) => {
     //Function tìm user là TK nhân viên và TK Cty
-    await functions.getDatafind(manageUser, {idQLC: idQLC,type : 2  } )
+    await functions.getDatafind(manageUser, {idQLC: idQLC,role : 2  } )
         //thành công trả models
         .then((manageUser) => functions.success(res, "", manageUser))
         // bắt lỗi 
@@ -19,7 +19,7 @@ exports.getUserById = async (req, res) => {
         functions.setError(res, "IdQLC must be a number", 502);
     } else {
     //nếu tìm được idQLC của nhân viên  
-        const UserQLC = await functions.getDatafindOne(manageUser, { idQLC: idQLC , type : 2 });
+        const UserQLC = await functions.getDatafindOne(manageUser, { idQLC: idQLC , role : 2 });
         if (!UserQLC) {
     //nếu biến idQLc trong usermodul rỗng
             functions.setError(res, "user cannot be found or does not exist", 503);
@@ -111,11 +111,11 @@ exports.editUser = async (req, res) => {
 
         } else {
 
-            const manager = await functions.getDatafindOne(manageUser, { idQLC: idQLC , type : 2});
+            const manager = await functions.getDatafindOne(manageUser, { idQLC: idQLC , role : 2});
             if (!manager) {
                 functions.setError(res, "manager does not exist!", 510);
             } else {
-                await functions.getDatafindOneAndUpdate(manageUser, { idQLC: idQLC, type : 2 }, {
+                await functions.getDatafindOneAndUpdate(manageUser, { idQLC: idQLC, role : 2 }, {
                     userName : userName,
                     email : email,
                     phoneTK : phoneTK,
@@ -138,7 +138,7 @@ exports.deleteUser = async (req, res) => {
     if (iasNN(idQLC)) {
         functions.setError(res, "Id must be a number", 502);
     } else {// thì tìm trong 1 idQLC trong user model 
-        const manager = await functions.getDatafindOne(manageUser, { idQLC: idQLC, type : 2 });
+        const manager = await functions.getDatafindOne(manageUser, { idQLC: idQLC, role : 2 });
         if (!manager) {//nếu biến manager không tìm thấy  trả ra fnc lỗi 
             functions.setError(res, "manager not exist!", 510);
         } else {//tồn tại thì xóa 

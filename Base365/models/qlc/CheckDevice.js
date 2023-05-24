@@ -14,7 +14,7 @@ const CheckDevice = new mongoose.Schema({
         type: Number
     },
     //Id phòng ban 
-    departmentId: {
+    depID: {
         type : Number
     },
     // // ID thiết bị hiện tại 

@@ -28,18 +28,18 @@ exports.getALlCompanyDevice = async (req,res)=>{
 //loc danh sach theo cty va phong ban
 exports.getALlCompanyDevice = async (req,res)=>{
     const {companyId} =req.body
-    const {departmentId} = req.body
+    const {depID} = req.body
     if (!companyId) {
         functions.setError(res, "company Id required")
     }else if (typeof companyId !== "number") {
         functions.setError(res, "company Id must be a number")
-    }else if (!departmentId) {
+    }else if (!depID) {
         functions.setError(res,"department Id required")
-    }else if (typeof departmentId !== "number") {
+    }else if (typeof depID !== "number") {
         functions.setError(res, "department Id must be a number")
 
     }else {
-        const companyDevice = await functions.getDatafind(Device,{companyId : companyId},{departmentId : departmentId});
+        const companyDevice = await functions.getDatafind(Device,{companyId : companyId},{depID : depID});
         if(!companyDevice){
             functions.setError(res,"company device cannot be found or does not existed")
         }else {
@@ -50,15 +50,15 @@ exports.getALlCompanyDevice = async (req,res)=>{
 ////loc danh sach theo cty va phong ban và id  
 exports.getALlCompanyDevice = async (req,res)=>{
     const {companyId} =req.body
-    const {departmentId} = req.body
+    const {depID} = req.body
     const _id = req.params.id
     if (!companyId) {
         functions.setError(res, "company Id required")
     }else if (typeof companyId !== "number") {
         functions.setError(res, "company Id must be a number")
-    }else if (!departmentId) {
+    }else if (!depID) {
         functions.setError(res,"department Id required")
-    }else if (typeof departmentId !== "number") {
+    }else if (typeof depID !== "number") {
         functions.setError(res, "department Id must be a number")
     }else if (!_id) {
         functions.setError(res," _Id required")
@@ -66,7 +66,7 @@ exports.getALlCompanyDevice = async (req,res)=>{
         functions.setError(res, "_Id must be a number")
 
     }else {
-        const companyDevice = await functions.getDatafindOne(Device,{companyId : companyId},{departmentId : departmentId},{_id : _id});
+        const companyDevice = await functions.getDatafindOne(Device,{companyId : companyId},{depID : depID},{_id : _id});
         if(!companyDevice){
             functions.setError(res,"company device cannot be found or does not existed")
         }else {
@@ -92,7 +92,7 @@ exports.getDeviceById = async (req,res)=>{
 }
 //tao moi yeu cau
 exports.createDevice = async (req,res)=>{
-    const {userId , companyId, departmentId , curDeviceName , newDeviceName} =req.body 
+    const {userId , companyId, depID , curDeviceName , newDeviceName} =req.body 
     //check loi 
     if(!userId) {
         functions.setError(res,"userId required")
@@ -102,9 +102,9 @@ exports.createDevice = async (req,res)=>{
         functions.setError(res,"companyId required")
     }else if (functions.checkNumber(companyId)){
         functions.setError(res,"companyId required")
-    }else if (!departmentId) {
+    }else if (!depID) {
         functions.setError(res,"companyId required")
-    }else if (functions.checkNumber(departmentId)){
+    }else if (functions.checkNumber(depID)){
         functions.setError(res,"companyId required")
     }else if (!curDeviceName) {
         functions.setError(res,"companyId required")
@@ -121,7 +121,7 @@ exports.createDevice = async (req,res)=>{
             _id: _id,
             userId:userId,
             companyId: companyId,
-            departmentId: departmentId,
+            depID: depID,
             curDeviceName: curDeviceName,
             newDeviceName: newDeviceName,
         })
@@ -141,14 +141,14 @@ exports.editDevice = async (req,res)=>{
     if(functions.checkNumber(_id)){
         functions.setError(res, "id must be a number")
     } else {
-        const {userId , departmentId , curDeviceName , newDeviceName} = req.body;
+        const {userId , depID , curDeviceName , newDeviceName} = req.body;
         if(!userId) {
             functions.setError(res,"userId required")
         }else if (functions.checkNumber(userId)){
             functions.setError(res,"userId must be a number ")
-        }else if (!departmentId) {
+        }else if (!depID) {
             functions.setError(res,"companyId required")
-        }else if (functions.checkNumber(departmentId)){
+        }else if (functions.checkNumber(depID)){
             functions.setError(res,"companyId required")
         }else if (!curDeviceName) {
             functions.setError(res,"companyId required")
@@ -162,7 +162,7 @@ exports.editDevice = async (req,res)=>{
             
                 await functions.getDatafindOneAndUpdate(Device,{_id : _id},{
                     userId: userId,
-                    departmentId: departmentId,
+                    depID: depID,
                     curDeviceName: curDeviceName,
                     newDeviceName: newDeviceName
                 })
