@@ -5,6 +5,7 @@ const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
 const Linh_Vuc = require('../../models/Timviec365/UserOnSite/Company/CategoryCompany')
 const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
 const CategoryBlog = require('../../models/Timviec365/Blog/Category')
+const Blog = require('../../models/Timviec365/Blog/Posts')
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
@@ -344,4 +345,64 @@ exports.toolCV = async(req, res, next) => {
     } catch (err) {
         fnc.setError(res, err.message);
     };
+}
+
+// hàm thêm dữ liệu vào bảng blog
+exports.toolBlog = async(req, res, next) => {
+    try {
+        let result = true,
+            page = 1;
+
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/api/list_blog.php', { page: page })
+            let listBlog = data.data.items;
+            if (listBlog.length > 0) {
+                for (let i = 0; i < listBlog.length; i++) {
+                    const blog = new Blog({
+                        _id: listBlog[i].new_id,
+                        adminID: listBlog[i].admin_id,
+                        title: listBlog[i].new_title,
+                        mail: listBlog[i].new_mail,
+                        titleRewrite: listBlog[i].new_title_rewrite,
+                        redirect301: listBlog[i].new_301,
+                        canonical: listBlog[i].new_canonical,
+                        picture: listBlog[i].new_picture,
+                        sapo: listBlog[i].new_teaser,
+                        content: listBlog[i].key_type,
+                        seoTitle: listBlog[i].new_tt,
+                        seoDescription: listBlog[i].new_des,
+                        seoKeyword: listBlog[i].new_keyword,
+                        urlVideo: listBlog[i].new_video,
+                        categoryID: listBlog[i].new_category_id,
+                        categoryCB: listBlog[i].new_category_cb,
+                        createdAt: new Date(listBlog[i].new_date * 1000),
+                        updateAt: new Date(listBlog[i].new_date_last_edit * 1000),
+                        adminEdit: listBlog[i].new_admin_edit,
+                        order: listBlog[i].new_order,
+                        hits: listBlog[i].new_hits,
+                        active: listBlog[i].new_active,
+                        cateUrl: listBlog[i].new_cate_url,
+                        isHot: listBlog[i].new_hot,
+                        new: listBlog[i].new_new,
+                        view: listBlog[i].new_view,
+                        urlLq: listBlog[i].new_url_lq,
+                        tagCate: listBlog[i].new_tag_cate,
+                        jobKeyword: listBlog[i].new_vl,
+                        suggestTitle: listBlog[i].new_tdgy,
+                        suggestContent: listBlog[i].new_ndgy,
+                        audio: listBlog[i].new_audio,
+                    })
+                    await blog.save();
+                };
+                page++
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
 }

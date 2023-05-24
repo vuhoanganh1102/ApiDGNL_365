@@ -491,18 +491,148 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-        statusBDS: {
+        special: {
             // đặc diểm
             type: String,
             default: null
         },
-        style: {
-            // kiểu dáng
+        statusBDS: {
+            // tình trạng bát động sản 
             type: String,
             default: null
         },
-        style: {
-            // kiểu dáng
+        loaihinhsp: {
+            // 
+            type: String,
+            default: null
+        },
+        timeStart: {
+            // thời gian bắt đâu
+            type: Date,
+            default: null
+        },
+        timeEnd: {
+            // thời gian kết thúc
+            type: Date,
+            default: null
+        },
+        allDay: {
+            // Cả ngày
+            type: String,
+            default: null
+        },
+        vehicloType: {
+            // loại xe
+            type: String,
+            default: null
+        },
+        km: {
+            // số km đã đi 
+            type: String,
+            default: null
+        },
+        origin: {
+            // xuất xứ
+            type: String,
+            default: null
+        },
+        merchandiseType: {
+            // loại hàng hóa
+            type: String,
+            default: null
+        },
+        sports: {
+            // môn thể thao 
+            type: String,
+            default: null
+        },
+        Material: {
+            // chất liệu
+            type: String,
+            default: null
+        },
+        shape: {
+            // hinhfd dáng
+            type: String,
+            default: null
+        },
+        volumeUnit: {
+            // đươn vị dung tích
+            type: String,
+            default: null
+        },
+        productType: {
+            // loại sản phẩm
+            type: String,
+            default: null
+        },
+        deadlineStarts: {
+            // thời hạn bắt đầu
+            type: String,
+            default: null
+        },
+        expiry: {
+            // hạn sử dụng
+            type: String,
+            default: null
+        },
+        kindOfPet: {
+            // loại thú cưng
+            type: String,
+            default: null
+        },
+        age: {
+            // độ tuổi
+            type: String,
+            default: null
+        },
+        gender: {
+            // giới tính
+            type: String,
+            default: null
+        },
+        weigth: {
+            // khối lượng
+            type: String,
+            default: null
+        },
+        volume: {
+            // 
+            type: String,
+            default: null
+        },
+        volume: {
+            // 
+            type: String,
+            default: null
+        },
+        volume: {
+            // 
+            type: String,
+            default: null
+        },
+        volume: {
+            // 
+            type: String,
+            default: null
+        },
+        volume: {
+            // 
+            type: String,
+            default: null
+        },
+        volume: {
+            // 
+            type: String,
+            default: null
+        },
+        volume: {
+            // 
+            type: String,
+            default: null
+        },
+        volume: {
+            // 
             type: String,
             default: null
         }
