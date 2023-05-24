@@ -6,7 +6,7 @@ const Linh_Vuc = require('../../models/Timviec365/UserOnSite/Company/CategoryCom
 const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
 const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 const Blog = require('../../models/Timviec365/Blog/Posts')
-const CategoryJob = require('../../models/Timviec365/UserOnSite/CategoryJob')
+const CategoryJob = require('../../models/Timviec365/CategoryJob')
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
