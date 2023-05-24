@@ -38,7 +38,7 @@ router.post('/createThu', functions.checkToken, functions.uploadImgKhoAnh.single
 
 // sửa mẫu Thu - findThu & updateThu
 router.post('/findThu', functions.checkToken, formData.parse(), thu.findThu);
-router.post('/updateThu', functions.checkToken, functions.uploadImgKhoAnh.single('image'), thu.updateThu);
+router.post('/updateThu', formData.parse(), functions.checkToken, thu.updateThu);
 
 // xóa mẫu Thu
 router.post('/deleteThu', functions.checkToken, formData.parse(), thu.deleteThu);

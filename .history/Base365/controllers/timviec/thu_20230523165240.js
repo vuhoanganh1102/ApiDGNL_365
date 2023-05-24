@@ -129,10 +129,9 @@ exports.saveThu = async(req, res, next) => {
 
             //Gửi ảnh về
             if (download == 1) {
-                // host sẽ sửa sau
                 const host = '';
-                const linkPdf = `${host}/${uploadImage.imgPath.slice(11)}`;
-                const linkImg = `${host}/${uploadImage.pdfPath.slice(11)}`;
+                const linkPdf = `${host}/${uploadImage.imgPath.slice(7)}`;
+                const linkImg = `${host}/${uploadImage.pdfPath.slice(7)}`;
                 const senderId = 1191;
                 const text = '';
                 const data = {
@@ -261,7 +260,7 @@ exports.createThu = async(req, res, next) => {
 
             name: req.body.name,
             alias: req.body.alias,
-            image: req.file.fieldname,
+            image: req.body.image,
             price: req.body.price,
             color: req.body.color,
             view: 0,
@@ -317,7 +316,7 @@ exports.updateThu = async(req, res, next) => {
         const thu = {
             name: req.body.name,
             alias: req.body.alias,
-            image: req.file.fieldname,
+            image: req.body.image,
             price: req.body.price,
             color: req.body.color,
             view: 0,

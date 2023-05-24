@@ -132,7 +132,7 @@ exports.createSYLL = async(req, res, next) => {
         const data = {
             name: req.body.name,
             alias: req.body.alias,
-            image: req.file.fieldname,
+            image: req.body.image,
             price: req.body.price,
             view: 0,
             favourite: 0,
@@ -188,7 +188,7 @@ exports.updateSYLL = async(req, res, next) => {
         const SYLL = {
             name: req.body.name,
             alias: req.body.alias,
-            image: req.file.fieldname,
+            image: req.body.image,
             price: req.body.price,
             htmlVi: req.body.htmlVi,
             htmlEn: req.body.htmlEn,

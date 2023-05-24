@@ -47,7 +47,17 @@ const CVUVSchema = new mongoose.Schema({
     },
     state: {
         type: Number
-    }
+    },
+    timeDelete: {
+
+        type: Date,
+        default: Date.now
+    },
+    cv: {
+        // 0 hoặc 1 - 1: là cv dùng làm cv đại diện
+        type: Number,
+        default: 0
+    },
 }, {
     collection: 'CVUV',
     versionKey: false

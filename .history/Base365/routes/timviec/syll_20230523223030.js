@@ -22,7 +22,7 @@ router.post('/createSYLL', functions.checkToken, functions.uploadImgKhoAnh.singl
 
 // sửa mẫu SYLL - findSYLL & updateSYLL
 router.post('/findSYLL', functions.checkToken, formData.parse(), syll.findSYLL);
-router.post('/updateSYLL', functions.checkToken, functions.uploadImgKhoAnh.single('image'), syll.updateSYLL);
+router.post('/updateSYLL', formData.parse(), functions.checkToken, syll.updateSYLL);
 
 // xóa mẫu SYLL
 router.post('/deleteSYLL', functions.checkToken, formData.parse(), syll.deleteSYLL);

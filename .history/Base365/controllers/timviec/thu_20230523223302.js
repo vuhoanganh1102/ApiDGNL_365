@@ -317,7 +317,7 @@ exports.updateThu = async(req, res, next) => {
         const thu = {
             name: req.body.name,
             alias: req.body.alias,
-            image: req.file.fieldname,
+            image: req.body.image,
             price: req.body.price,
             color: req.body.color,
             view: 0,

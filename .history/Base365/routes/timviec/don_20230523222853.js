@@ -38,7 +38,7 @@ router.post('/createDon', functions.checkToken, functions.uploadImgKhoAnh.single
 
 // sửa mẫu Don - findDon & updateDon
 router.post('/findDon', functions.checkToken, formData.parse(), don.findDon);
-router.post('/updateDon', functions.checkToken, functions.uploadImgKhoAnh.single('image'), don.updateDon);
+router.post('/updateDon', formData.parse(), functions.checkToken, don.updateDon);
 
 // xóa mẫu Don
 router.post('/deleteDon', functions.checkToken, formData.parse(), don.deleteDon);

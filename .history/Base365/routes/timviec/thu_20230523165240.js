@@ -34,11 +34,11 @@ router.post('/updateNganhThu', functions.checkToken, formData.parse(), thu.updat
 router.post('/deleteNganhThu', functions.checkToken, formData.parse(), thu.deleteNganhThu);
 
 // tạo mới mẫu Thu
-router.post('/createThu', functions.checkToken, functions.uploadImgKhoAnh.single('image'), thu.createThu);
+router.post('/createThu', formData.parse(), functions.checkToken, thu.createThu);
 
 // sửa mẫu Thu - findThu & updateThu
 router.post('/findThu', functions.checkToken, formData.parse(), thu.findThu);
-router.post('/updateThu', functions.checkToken, functions.uploadImgKhoAnh.single('image'), thu.updateThu);
+router.post('/updateThu', formData.parse(), functions.checkToken, thu.updateThu);
 
 // xóa mẫu Thu
 router.post('/deleteThu', functions.checkToken, formData.parse(), thu.deleteThu);
