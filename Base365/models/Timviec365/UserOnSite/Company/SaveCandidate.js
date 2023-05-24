@@ -8,7 +8,7 @@ const saveCandidateSchema = new mongoose.Schema({
     uscID: {
         // id company
         type: Number,
-        required: true
+        default: 0
     },
 
     userID: {
@@ -20,7 +20,7 @@ const saveCandidateSchema = new mongoose.Schema({
     saveTime: {
         // thời gian lưu
         type: Date,
-        required: true
+        default: null
     }
 }, {
     collection: 'SaveCandidate',
