@@ -19,7 +19,7 @@ const ApplicationUVSchema = new mongoose.Schema({
     },
     lang: {
         //ngôn ngữ tạo đơn
-        type: Number
+        type: String
     },
     html: {
         type: String

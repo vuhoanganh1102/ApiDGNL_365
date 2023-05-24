@@ -9,6 +9,17 @@ const CVCate = require('../../models/Timviec365/CV/CVCategory');
 const CVLang = require('../../models/Timviec365/CV/CVLang');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
 const Application = require('../../models/Timviec365/CV/Application');
+const ApplicationUV = require('../../models/Timviec365/CV/ApplicationUV');
+const Letter = require('../../models/Timviec365/CV/Letter');
+const LetterUV = require('../../models/Timviec365/CV/LetterUV');
+const Resume = require('../../models/Timviec365/CV/Resume');
+const ResumeUV = require('../../models/Timviec365/CV/ResumeUV');
+const CVDesign = require('../../models/Timviec365/CV/CVDesign');
+const CVGroup = require('../../models/Timviec365/CV/CVGroup');
+const PriceList = require('../../models/Timviec365/PriceList/PriceList');
+const CVSection = require('../../models/Timviec365/CV/CVSection');
+
+
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
@@ -550,35 +561,390 @@ exports.toolApplicationUV = async(req, res, next) => {
         let page = 1;
         let result = true;
         do {
-            //đag làm ...
-            // const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_dm_nganhcv.php?page=${page}`, {});
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_don_ungvien.php?page=${page}`, {});
 
-            // if (data.length) {
-            //     for (let i = 0; i < data.length; i++) {
-            //         const html = Buffer.from(data[i].content, 'base64').toString('utf-8');
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+                    const html = Buffer.from(data[i].html, 'base64').toString('utf-8');
 
-            //         const cvCate = new CVCate({
-            //             _id: data[i].id,
-            //             name: data[i].name,
-            //             alias: data[i].alias,
-            //             metaH1: data[i].meta_h1,
-            //             content,
-            //             cId: +data[i].cid,
-            //             metaTitle: data[i].meta_title,
-            //             metaKey: data[i].meta_key,
-            //             metaDes: data[i].meta_des,
-            //             metaTt: data[i].meta_tt,
-            //             status: +data[i].status,
-            //         })
-            //         await CVCate.create(cvCate);
+                    const applicationUV = new ApplicationUV({
+                        _id: +data[i].id,
+                        userId: +data[i].uid,
+                        donId: +data[i].tid,
+                        status: +data[i].status,
+                        lang: data[i].lang,
+                        html,
+                        nameImg: data[i].name_img,
+                    })
+                    await ApplicationUV.create(applicationUV);
 
-            //     }
-            //     page++;
-            //     result = true;
-            // } else {
-            //     result = false;
-            // }
-            // console.log(page)
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolResumeUV = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_hoso_ungvien.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+                    const html = JSON.stringify(data[i].html);
+
+                    const resumeUV = new ResumeUV({
+                        _id: +data[i].id,
+                        userId: +data[i].uid,
+                        hoSoId: +data[i].tid,
+                        status: +data[i].status,
+                        lang: data[i].lang,
+                        html,
+                        nameImg: data[i].name_img,
+                    })
+                    await ResumeUV.create(resumeUV);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolLetterUV = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_thu_ungvien.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+                    const html = JSON.stringify(data[i].html);
+
+                    const letterUV = new LetterUV({
+                        _id: +data[i].id,
+                        userId: +data[i].uid,
+                        donId: +data[i].tid,
+                        status: +data[i].status,
+                        lang: data[i].lang,
+                        html,
+                        nameImg: data[i].name_img,
+                    })
+                    await LetterUV.create(letterUV);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolLetter = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_donxinviec.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+
+                    const htmlVi = JSON.stringify(data[i].html_vi);
+                    const htmlEn = JSON.stringify(data[i].html_en);
+                    const htmlCn = JSON.stringify(data[i].html_cn);
+                    const htmlJp = JSON.stringify(data[i].html_jp);
+                    const htmlKr = JSON.stringify(data[i].html_kr);
+
+                    const letter = new Letter({
+                        _id: +data[i].id,
+                        name: data[i].name,
+                        alias: data[i].alias,
+                        image: data[i].image,
+                        price: +data[i].price,
+                        color: data[i].colors,
+                        view: +data[i].view,
+                        favorite: +data[i].love,
+                        download: +data[i].download,
+                        vip: +data[i].vip,
+                        cateId: +data[i].cate_id,
+                        exp: +data[i].exp,
+                        nhuCau: +data[i].nhucau,
+                        status: +data[i].status,
+                        htmlVi,
+                        htmlEn,
+                        htmlCn,
+                        htmlJp,
+                        htmlKr,
+                    })
+                    await Letter.create(letter);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolResume = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_hoso.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+
+                    const html = JSON.stringify(data[i].html);
+
+                    const resume = new Resume({
+                        _id: +data[i].id,
+                        name: data[i].name,
+                        alias: data[i].alias,
+                        image: data[i].image,
+                        price: +data[i].price,
+                        color: data[i].colors,
+                        view: +data[i].view,
+                        favorite: +data[i].love,
+                        download: +data[i].download,
+                        vip: +data[i].vip,
+                        cateId: +data[i].cate_id,
+                        status: +data[i].status,
+                        html,
+                    })
+                    await Resume.create(resume);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolCVDesign = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_dm_thietkecv.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+
+                    const content = Buffer.from(data[i].content, 'base64').toString('utf-8');
+
+                    const cvDesign = new CVDesign({
+                        _id: +data[i].id,
+                        name: data[i].name,
+                        alias: data[i].alias,
+                        metaH1: data[i].meta_h1,
+                        content,
+                        metaTitle: data[i].meta_title,
+                        metaKey: data[i].meta_key,
+                        metaDes: data[i].meta_des,
+                        metaTt: data[i].meta_tt,
+                        status: +data[i].status,
+                    })
+                    await CVDesign.create(cvDesign);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolCVGroup = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_danhmuc_cv.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+
+
+
+                    const cvGroup = new CVGroup({
+                        _id: +data[i].id,
+                        name: data[i].name,
+                        shortName: data[i].short_name,
+                        alias: data[i].alias,
+                        image: data[i].image,
+                        sapo: data[i].sapo,
+                        content: data[i].content,
+                        menu: +data[i].menu,
+                        sort: +data[i].sort,
+                        metaTitle: data[i].meta_title,
+                        metaKey: data[i].meta_key,
+                        metaDes: data[i].meta_des,
+                        status: +data[i].status,
+
+                    })
+                    await CVGroup.create(cvGroup);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolPriceList = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/api/get_bang_gia.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+
+                    const benefits = Buffer.from(data[i].bg_quyenloi, 'base64').toString('utf-8');
+                    let incentive1 = '';
+                    let incentive2 = '';
+                    let incentive3 = '';
+                    if (data[i].bg_uudai1 != '') { incentive1 = Buffer.from(data[i].bg_uudai1, 'base64').toString('utf-8'); }
+                    if (data[i].bg_uudai2 != '') { incentive2 = Buffer.from(data[i].bg_uudai2, 'base64').toString('utf-8'); }
+                    if (data[i].bg_uudai3 != '') { incentive3 = Buffer.from(data[i].bg_uudai3, 'base64').toString('utf-8'); }
+
+                    const priceList = new PriceList({
+                        _id: +data[i].bg_id,
+                        week: data[i].bg_tuan,
+                        price: data[i].bg_gia,
+                        discount: data[i].bg_chiet_khau,
+
+                        totalAmount: data[i].bg_thanh_tien,
+
+                        expiryDate: data[i].bg_handung,
+                        the: data[i].bg_the,
+                        vat: data[i].bg_vat,
+
+                        benefits,
+
+                        incentive1,
+                        incentive2,
+                        incentive3,
+                        cm1: data[i].bg_cm1,
+                        cm2: data[i].bg_cm2,
+                        cm3: data[i].bg_cm3,
+                        cmLogo: data[i].bg_cm_logo,
+                        show: data[i].bg_show,
+                        tk: data[i].bg_tk,
+                        do: data[i].bg_do,
+                        hp: data[i].bg_hp,
+                        type: +data[i].bg_type,
+                        qlHD: data[i].bg_ql_hd,
+                        udHD: data[i].bg_ud_hd,
+                        crm: +data[i].api_crm,
+
+                    })
+                    await PriceList.create(priceList);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolCVSection = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_chuyenmuc.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+
+                    const content = Buffer.from(data[i].content, 'base64').toString('utf-8');
+
+                    const cvSection = new CVSection({
+                        _id: +data[i].id,
+                        name: data[i].name,
+                        alias: data[i].alias,
+                        content,
+                        image: data[i].image,
+                        parent: +data[i].parent,
+                        menu: +data[i].menu,
+                        sort: +data[i].sort,
+                        metaTitle: data[i].meta_title,
+                        metaKey: data[i].meta_key,
+                        metaDes: data[i].meta_des,
+                        status: +data[i].status,
+
+                    })
+                    await CVSection.create(cvSection);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
         } while (result);
         return fnc.success(res, 'Thành công')
     } catch (error) {
