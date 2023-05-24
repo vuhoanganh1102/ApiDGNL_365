@@ -458,11 +458,6 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: 0
             },
-            videoActive: {
-                // Duyệt video
-                type: Number,
-                default: 0
-            },
             //kho ảnh
             comImages: [{
                 _id: Number,
