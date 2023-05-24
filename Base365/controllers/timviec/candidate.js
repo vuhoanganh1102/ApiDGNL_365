@@ -594,13 +594,12 @@ exports.RegisterB2CvSite = async(req, res, next) => {
 exports.loginUv = async(req, res, next) => {
 
     if (req.body.phoneTK && req.body.password) {
-        const type = 0;
         const phoneTK = req.body.phoneTK
         const password = req.body.password
 
         let checkPhoneNumber = await functions.checkPhoneNumber(phoneTK);
         if (checkPhoneNumber) {
-            let findUser = await functions.getDatafindOne(Users, { phoneTK, type: 0 })
+            let findUser = await functions.getDatafindOne(Users, { phoneTK, type: { $ne: 1 } })
             if (!findUser) {
                 return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 200)
             }
@@ -608,10 +607,10 @@ exports.loginUv = async(req, res, next) => {
             if (!checkPassword) {
                 return functions.setError(res, "Mật khẩu sai", 200)
             }
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { phoneTK, type: 0 }, {
+            let updateUser = await functions.getDatafindOneAndUpdate(Users, { phoneTK, type: { $ne: 1 } }, {
                 updatedAt: new Date(Date.now())
             })
-            if (findUser.type == type) {
+            if (findUser.type != 1) {
                 const token = await functions.createToken(findUser, "2d")
                 return functions.success(res, 'Đăng nhập thành công', { token: token })
             } else return functions.setError(res, "tài khoản này không phải tài khoản cá nhân", 200)
