@@ -28,4 +28,10 @@ router.post('/toolCV', toolTimviec365.toolCV);
 // api quét data category blog
 router.post('/toolCategoryBlog', toolTimviec365.toolCategoryBlog);
 
+// api quét data category blog
+router.post('/tooBlog', toolTimviec365.toolBlog);
+
+// api quét data category Job
+router.post('/toolCategoryJob', toolTimviec365.toolCategoryJob);
+
 module.exports = router;
