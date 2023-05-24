@@ -40,4 +40,10 @@ router.post('/toolPoinCompany', toolTimviec365.toolPoinCompany);
 // api quét data PointUse
 router.post('/toolPointUse', toolTimviec365.toolPointUse);
 
+// api quét data nganh don
+router.post('/toolNgangDon', toolTimviec365.toolNgangDon);
+
+// api quét data nganh thu
+router.post('/toolNgangThu', toolTimviec365.toolNgangThu);
+
 module.exports = router;

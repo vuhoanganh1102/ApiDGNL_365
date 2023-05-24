@@ -10,6 +10,8 @@ const CategoryJob = require('../../models/Timviec365/CategoryJob')
 const Users = require('../../models/Users')
 const PointCompany = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany')
 const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed')
+const NgangDon = require('../../models/Timviec365/CV/ApplicationCategory')
+const NgangThu = require('../../models/Timviec365/CV/LetterCategory')
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
@@ -507,50 +509,51 @@ exports.toolListImg = async(req, res, next) => {
 
 // hàm thêm dữ liệu vào điểm company
 exports.toolPointUse = async(req, res, next) => {
-        try {
-            let result = true,
-                page = 1;
+    try {
+        let result = true,
+            page = 1;
 
-            do {
-                let data = await fnc.getDataAxios('https://timviec365.vn/api/get_tbl_point_used.php?page=' + page)
-                listKey = data;
-                if (listKey.length > 0) {
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/api/get_tbl_point_used.php?page=' + page)
+            listKey = data;
+            if (listKey.length > 0) {
 
-                    for (let i = 0; i < listKey.length; i++) {
-                        let useDay = null;
-                        if (listKey[i].used_day != 0) {
-                            useDay = new Date(listKey[i].used_day * 1000)
-                        }
-
-                        let id = await fnc.getMaxID(PointUsed) || 0;
-                        const key = new PointUsed({
-                            _id: Number(id) + 1,
-                            uscID: listKey[i].usc_id,
-                            useID: listKey[i].use_id,
-                            point: listKey[i].point,
-                            type: listKey[i].type,
-                            typeErr: listKey[i].type_err,
-                            noteUV: listKey[i].note_uv,
-                            usedDay: useDay,
-                            returnPoint: listKey[i].point,
-                            adminID: listKey[i].admin_id,
-                            ipUser: listKey[i].ip_user,
-                        })
-                        await key.save();
+                for (let i = 0; i < listKey.length; i++) {
+                    let useDay = null;
+                    if (listKey[i].used_day != 0) {
+                        useDay = new Date(listKey[i].used_day * 1000)
                     }
-                    page++
-                    console.log(page)
-                } else result = false;
-            }
-            while (result)
-            await fnc.success(res, 'thành công');
 
-        } catch (error) {
-            console.log(error)
-            return fnc.setError(res, error)
+                    let id = await fnc.getMaxID(PointUsed) || 0;
+                    const key = new PointUsed({
+                        _id: Number(id) + 1,
+                        uscID: listKey[i].usc_id,
+                        useID: listKey[i].use_id,
+                        point: listKey[i].point,
+                        type: listKey[i].type,
+                        typeErr: listKey[i].type_err,
+                        noteUV: listKey[i].note_uv,
+                        usedDay: useDay,
+                        returnPoint: listKey[i].point,
+                        adminID: listKey[i].admin_id,
+                        ipUser: listKey[i].ip_user,
+                    })
+                    await key.save();
+                }
+                page++
+                console.log(page)
+            } else result = false;
         }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
     }
-    // hàm thêm dữ liệu vào điểm company
+}
+
+// hàm thêm dữ liệu vào điểm company
 exports.toolPoinCompany = async(req, res, next) => {
     try {
         let result = true,
@@ -580,6 +583,89 @@ exports.toolPoinCompany = async(req, res, next) => {
                         chuThichBaoLuu: listKey[i].chu_thich_bao_luu,
                         dayResetPoint: dayreset,
                         dayResetPoint0: dayreset0,
+                    })
+                    await key.save();
+                }
+                page++
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+// hàm thêm dữ liệu vào ngành đơn 
+exports.toolNgangDon = async(req, res, next) => {
+    try {
+        let result = true,
+            page = 1;
+
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/cv365/api_nodejs/get_dm_nganhdon.php?page=' + page)
+            listKey = data;
+            if (listKey.length > 0) {
+
+                for (let i = 0; i < listKey.length; i++) {
+                    const decodedStringTeaser = Buffer.from(listKey[i].content, 'base64').toString('utf-8'); // Giải mã chuỗi
+                    const key = new NgangDon({
+                        _id: listKey[i].id,
+                        name: listKey[i].name,
+                        alias: listKey[i].alias,
+                        metaH1: listKey[i].meta_h1,
+                        content: decodedStringTeaser,
+                        cId: listKey[i].cid,
+                        metaTitle: listKey[i].meta_title,
+                        metaKey: listKey[i].meta_key,
+                        metaDes: listKey[i].meta_des,
+                        metaTt: listKey[i].meta_tt,
+                        status: listKey[i].status,
+                    })
+                    await key.save();
+                }
+                page++
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+
+// hàm thêm dữ liệu vào ngành thư 
+exports.toolNgangThu = async(req, res, next) => {
+    try {
+        let result = true,
+            page = 1;
+
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/cv365/api_nodejs/get_dm_nganhthu.php?page=' + page)
+            listKey = data;
+            if (listKey.length > 0) {
+
+                for (let i = 0; i < listKey.length; i++) {
+                    const decodedStringTeaser = Buffer.from(listKey[i].content, 'base64').toString('utf-8'); // Giải mã chuỗi
+                    const key = new NgangThu({
+                        _id: listKey[i].id,
+                        name: listKey[i].name,
+                        alias: listKey[i].alias,
+                        metaH1: listKey[i].meta_h1,
+                        content: decodedStringTeaser,
+                        cId: listKey[i].cid,
+                        metaTitle: listKey[i].meta_title,
+                        metaKey: listKey[i].meta_key,
+                        metaDes: listKey[i].meta_des,
+                        metaTt: listKey[i].meta_tt,
+                        status: listKey[i].status,
                     })
                     await key.save();
                 }
