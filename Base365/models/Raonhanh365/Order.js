@@ -16,16 +16,6 @@ const OrderSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    buyerUserName: {
-        //tên người mua hàng
-        type: String,
-        default: null
-    },
-    contactPhone: {
-        //số điện thoại liên hệ
-        type: String,
-        default: null
-    },
     paymentMethod: {
         //phương thức thanh toán
         type: String,
