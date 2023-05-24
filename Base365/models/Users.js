@@ -470,7 +470,10 @@ const UserSchema = new mongoose.Schema({
             comVideos: [{
                 _id: Number,
                 name: String,
-                active: Number,
+                active: {
+                    type: Number,
+                    default: 0
+                },
                 size: Number,
                 type: Number,
             }],

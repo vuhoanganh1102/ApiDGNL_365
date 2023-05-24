@@ -463,7 +463,6 @@ exports.toolListImg = async(req, res, next) => {
                         const image_object = {
                             id: id_counter,
                             name: image_name,
-                            active: data[i].active,
                             type: 1
                         };
 
@@ -476,7 +475,6 @@ exports.toolListImg = async(req, res, next) => {
                         const videoObject = {
                             id: id_counter,
                             name: videoName,
-                            active: data[i].active,
                             type: 1
                         };
 
