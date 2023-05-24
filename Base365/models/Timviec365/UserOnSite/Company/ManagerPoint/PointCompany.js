@@ -4,22 +4,34 @@ const pointCompanySchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    uscID: Number,
+    uscID: {
+        type: Number,
+        default: 0,
+    },
     point: {
         type: Number,
-        required: true,
+        default: 0,
     },
     pointUSC: {
         type: Number,
-        required: true,
+        default: 0,
     },
     pointBaoLuu: {
         type: Number,
-        required: true,
+        default: 0,
     },
-    chuThichBaoLuu: String,
-    dayResetPoint: Date,
-    dayResetPoint0: Date,
+    chuThichBaoLuu: {
+        type: String,
+        default: null,
+    },
+    dayResetPoint: {
+        type: Date,
+        default: null,
+    },
+    dayResetPoint0: {
+        type: Date,
+        default: null,
+    },
 }, {
     collection: 'PointCompany',
     versionKey: false,

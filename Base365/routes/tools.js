@@ -34,4 +34,10 @@ router.post('/tooBlog', toolTimviec365.toolBlog);
 // api quét data category Job
 router.post('/toolCategoryJob', toolTimviec365.toolCategoryJob);
 
+// api quét data poincompany
+router.post('/toolPoinCompany', toolTimviec365.toolPoinCompany);
+
+// api quét data PointUse
+router.post('/toolPointUse', toolTimviec365.toolPointUse);
+
 module.exports = router;
