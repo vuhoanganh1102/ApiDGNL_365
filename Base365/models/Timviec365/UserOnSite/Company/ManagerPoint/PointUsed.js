@@ -5,15 +5,19 @@ const pointUsedSchema = new mongoose.Schema({
     },
     uscID: {
         type: Number,
+        default: 0
     },
     useID: {
         type: Number,
+        default: 0
     },
     point: {
         type: Number,
+        default: 0
     },
     type: {
         type: Number,
+        default: 0
     },
     typeErr: {
         type: Number,
@@ -25,10 +29,12 @@ const pointUsedSchema = new mongoose.Schema({
     },
     usedDay: {
         type: Date,
-        default: Date()
+        default: null
     },
     returnPoint: {
         type: Number,
+        default: null
+
     },
     adminID: {
         type: Number,
@@ -36,6 +42,7 @@ const pointUsedSchema = new mongoose.Schema({
     },
     ipUser: {
         type: String,
+        default: null
     },
 }, {
     collection: 'PointUsed',

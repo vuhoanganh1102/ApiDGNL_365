@@ -749,10 +749,16 @@ const newSchema = new mongoose.Schema({
             }
 
         },
-        volume: {
-            // 
-            type: String,
-            default: null
+        infoSell: {
+            groupType: {
+                // nhóm phân loại
+                type: String,
+                default: null
+            },
+            classify: {
+                type: String,
+                default: null
+            }
         }
     }
 }, {

@@ -4,65 +4,66 @@ const jobSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    // tên ngành nghề
     name: {
+        // tên ngành nghề
         type: String,
         required: true
     },
-    // tiêu đề
     title: {
+        // tiêu đề
         type: String,
         default: null
     },
-    // name tag
+
     tags: {
+        // name tag
         type: String,
         default: null
     },
-    // chi tiết 
     description: {
+        // chi tiết 
         type: String,
         default: null
 
     },
-    // từ khóa
     keyword: {
+        // từ khóa
         type: String,
         default: null
 
     },
-    // mô tả
     des: {
+        // mô tả
         type: String,
         default: null
 
     },
-    // id cha
     parentID: {
+        // id cha
         type: Number,
         default: 0
 
     },
-    // 
     count: {
+        // 
         type: Number,
         default: 0
 
     },
-    // ưu tiên
     order: {
+        // ưu tiên
         type: Number,
         default: 0
 
     },
-    // kích hoạt
     active: {
+        // kích hoạt
         type: Number,
         default: 0
 
     },
-    // 
     hot: {
+        // 
         type: Number,
         default: 0
     }
