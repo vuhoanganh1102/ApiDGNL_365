@@ -309,7 +309,7 @@ const newSchema = new mongoose.Schema({
                 default: null
             },
             machineSeries: {
-                // hãng
+                // dòng xe
                 type: String,
                 default: null
             },
@@ -415,7 +415,17 @@ const newSchema = new mongoose.Schema({
                 // biern số xe
                 type: String,
                 default: null,
-            }
+            },
+            km: {
+                // số km đã đi 
+                type: String,
+                default: null
+            },
+            origin: {
+                // xuất xứ
+                type: String,
+                default: null
+            },
         },
         // bất động sản
         realEstate: {
@@ -523,6 +533,21 @@ const newSchema = new mongoose.Schema({
                 // mã căn hộ
                 type: Number,
                 default: null,
+            },
+            cornerUnit: {
+                // căn góc
+                type: String,
+                default: null
+            },
+            nameArea: {
+                // tên phân khu
+                type: String,
+                default: null
+            },
+            useArea: {
+                // diện tích sử dụng
+                type: String,
+                default: null
             }
         },
         //ship
@@ -553,15 +578,14 @@ const newSchema = new mongoose.Schema({
                 default: null
             },
         },
-        km: {
-            // số km đã đi 
-            type: String,
-            default: null
-        },
-        origin: {
-            // xuất xứ
-            type: String,
-            default: null
+
+        entertainmentService: {
+            // dịch vụ giải trí
+            brand: {
+                type: Number,
+                default: 0
+            },
+
         },
         merchandiseType: {
             // loại hàng hóa
@@ -641,75 +665,89 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-        jobType: {
-            // ngành nghề
-            type: String,
-            default: null
-        },
-        jobKind: {
-            // hình thức làm việc
-            type: String,
-            default: null
-        },
-        minAge: {
-            // tuổi nhỏ nhất
-            type: String,
-            default: null
-        },
-        maxAge: {
-            // tuổi lớn nhất
-            type: String,
-            default: null
-        },
-        exp: {
-            // kinh nghiệm
-            type: String,
-            default: null
-        },
-        level: {
-            // chứng chỉ
-            type: String,
-            default: null
-        },
-        skill: {
-            // kỹ năng 
-            type: String,
-            default: null
-        },
-        quantity: {
-            // số lượng
-            type: String,
-            default: null
-        },
-        city: {
-            // thành phố
-            type: String,
-            default: null
-        },
-        district: {
-            // quận huyện
-            type: String,
-            default: null
-        },
-        ward: {
-            // phường xã
-            type: String,
-            default: null
-        },
-        addressNumber: {
-            // số nhà
-            type: String,
-            default: null
-        },
-        payBy: {
-            // 
-            type: String,
-            default: null
-        },
-        logo: {
-            // 
-            type: String,
-            default: null
+        // tìm việc
+        Job: {
+            jobType: {
+                // ngành nghề
+                type: String,
+                default: null
+            },
+            jobKind: {
+                // hình thức làm việc
+                type: String,
+                default: null
+            },
+            minAge: {
+                // tuổi nhỏ nhất
+                type: String,
+                default: null
+            },
+            maxAge: {
+                // tuổi lớn nhất
+                type: String,
+                default: null
+            },
+            exp: {
+                // kinh nghiệm
+                type: String,
+                default: null
+            },
+            level: {
+                // chứng chỉ
+                type: String,
+                default: null
+            },
+            skill: {
+                // kỹ năng 
+                type: String,
+                default: null
+            },
+            quantity: {
+                // số lượng tuyển
+                type: String,
+                default: null
+            },
+            city: {
+                // thành phố
+                type: String,
+                default: null
+            },
+            district: {
+                // quận huyện
+                type: String,
+                default: null
+            },
+            ward: {
+                // phường xã
+                type: String,
+                default: null
+            },
+            addressNumber: {
+                // số nhà
+                type: String,
+                default: null
+            },
+            payBy: {
+                // hình thức trả lương
+                type: String,
+                default: null
+            },
+            logo: {
+                // ảnh công ty
+                type: String,
+                default: null
+            },
+            benefit: {
+                // quyền lợi
+                type: String,
+                default: null
+            },
+            logo: {
+                // ảnh công ty
+                type: String,
+                default: null
+            }
+
         },
         volume: {
             // 
