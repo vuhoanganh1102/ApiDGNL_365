@@ -5,6 +5,7 @@ const PriceListSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    price: String,
     // tuần
     week: String,
     //chiết khấu
@@ -29,7 +30,7 @@ const PriceListSchema = new mongoose.Schema({
     tk: String,
     do: Number,
     hp: Number,
-    type: String,
+    type: Number,
     qlHD: String,
     udHD: String,
     crm: Number,
