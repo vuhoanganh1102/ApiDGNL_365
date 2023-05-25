@@ -4,10 +4,6 @@ const applyForJobSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    comID: {
-        type: Number,
-        default: 0,
-    },
     userID: {
         type: Number,
         required: true,
@@ -16,7 +12,6 @@ const applyForJobSchema = new mongoose.Schema({
         //id công ty
         type: Number,
         default: 0,
-
     },
     newID: {
         type: Number,
@@ -63,7 +58,7 @@ const applyForJobSchema = new mongoose.Schema({
 
     type: {
         // 1 là ứng viên ứng tuyển , 2 là chuyên viên gửi ứng tuyển
-        type: String,
+        type: Number,
         default: 0,
     },
 }, {
