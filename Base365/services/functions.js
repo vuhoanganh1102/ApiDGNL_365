@@ -255,7 +255,7 @@ const storageFile = (destination) => {
                     fs.mkdirSync(userDestination, { recursive: true });
                 }
             } else {
-                userDestination = 'public/company'
+                userDestination = destination
             }
             cb(null, userDestination);
         },
@@ -287,7 +287,7 @@ exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage/TimViec365')
 //  hàm upload video ở kho ảnh
 exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
 
-// hàm upload video ở cập nhập KhoAnh
+// hàm upload video ở cập nhập video
 exports.uploadVideo = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //hàm upload file ứng viên

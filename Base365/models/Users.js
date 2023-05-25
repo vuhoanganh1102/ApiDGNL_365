@@ -458,22 +458,39 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: 0
             },
-            videoActive: {
-                // Duyệt video
-                type: Number,
-                default: 0
-            },
             //kho ảnh
             comImages: [{
                 _id: Number,
-                name: String,
+                name: {
+                    type: String,
+                    default: null
+                },
+                active: {
+                    type: Number,
+                    default: 0
+                },
                 size: Number,
+                type: {
+                    type: Number,
+                    default: 1
+                }
             }],
             // kho video
             comVideos: [{
                 _id: Number,
-                name: String,
+                name: {
+                    type: String,
+                    default: null
+                },
+                active: {
+                    type: Number,
+                    default: 0
+                },
                 size: Number,
+                type: {
+                    type: Number,
+                    default: 1
+                },
             }],
             website: {
                 // Website công ty
@@ -490,7 +507,7 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
-            idparent : {
+            idparent: {
                 //id công ty mẹ
                 type: Number,
                 default: 0
@@ -560,7 +577,6 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            lv: String,
         },
         default: null
     },

@@ -28,6 +28,9 @@ router.post('/toolCV', toolTimviec365.toolCV);
 // api quét data category blog
 router.post('/toolCategoryBlog', toolTimviec365.toolCategoryBlog);
 
+// api quét data category blog
+router.post('/tooBlog', toolTimviec365.toolBlog);
+
 // api quét data danh sách ngành cv
 router.post('/toolCVCategory', toolTimviec365.toolCVCategory);
 
@@ -70,5 +73,17 @@ router.post('/toolPriceList', toolTimviec365.toolPriceList);
 
 // api quét data chuyên mục
 router.post('/toolCVSection', toolTimviec365.toolCVSection);
+
+// api quét data poincompany
+router.post('/toolPoinCompany', toolTimviec365.toolPoinCompany);
+
+// api quét data PointUse
+router.post('/toolPointUse', toolTimviec365.toolPointUse);
+
+// api quét data nganh don
+router.post('/toolNgangDon', toolTimviec365.toolNgangDon);
+
+// api quét data nganh thu
+router.post('/toolNgangThu', toolTimviec365.toolNgangThu);
 
 module.exports = router;
