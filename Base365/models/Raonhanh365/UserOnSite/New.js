@@ -110,16 +110,11 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    address: {
+    address: [{
         // địa chỉ người mua/bán
         type: String,
-        default: 0
-    },
-    addressNext: {
-        // địa chỉ thêm
-        type: String,
         default: null
-    },
+    }],
     district: {
         // quận huyện
         type: Number,
@@ -271,512 +266,512 @@ const newSchema = new mongoose.Schema({
         default: 0
     },
     // chi tiết sản phẩm mua/bán
-    newDetail: {
-        description: {
-            // mô tả
-            type: String,
-            default: null
-        },
-        hashtag: {
-            // 
-            type: String,
-            default: null
-        },
-        // đô điện tử
-        electroniceDevice: {
-            microprocessor: {
-                // bộ vi xử lý
-                type: Number,
-                default: 0
-            },
-            ram: {
-                // ram 
-                type: Number,
-                default: 0
-            },
-            hardDrive: {
-                // ở cứng
-                type: Number,
-                default: 0
-            },
-            typeHarđrive: {
-                // loại ổ cứng
-                type: Number,
-                default: 0
-            },
-            screen: {
-                // màn hình
-                type: Number,
-                default: 0
-            },
-            size: {
-                // kích cỡ
-                type: Number,
-                default: 0
-            },
-            brand: {
-                // hãng
-                type: Number,
-                default: 0
-            },
-            machineSeries: {
-                // dòng xe
-                type: Number,
-                default: 0
-            },
-        },
-        // xe cộ
-        vehicle: {
-            brandMaterials: {
-                // hãng vật tư
-                type: Number,
-                default: 0
-            },
-            vehicles: {
-                // dòng xe
-                type: Number,
-                default: 0
-            },
-            accessary: {
-                // loại phụ tùng 
-                type: Number,
-                default: 0
-            },
-            interior: {
-                // loại nội thất
-                type: Number,
-                default: 0
-            },
-            device: {
-                // thiết bị
-                type: Number,
-                default: 0
-            },
-            color: {
-                // màu xắc
-                type: Number,
-                default: 0
-            },
-            capacity: {
-                // dung lượng
-                type: Number,
-                default: 0
-            },
-            connectInternet: {
-                // kết nối internet
-                type: String,
-                default: null
-            },
-            generalType: {
-                // loại chung
-                type: Number,
-                default: 0
-            },
-            resolution: {
-                // độ phân giải
-                type: Number,
-                default: 0
-            },
-            wattage: {
-                // công suất
-                type: Number,
-                default: 0
-            },
-            frameMaterial: {
-                // chất liêu khung
-                type: Number,
-                default: 0
-            },
-            volume: {
-                // dung tích
-                type: Number,
-                default: 0
-            },
-            manufacturingYear: {
-                // năm sản xuất
-                type: String,
-                default: null
-            },
-            fuel: {
-                // nhiên liệu
-                type: Number,
-                default: 0
-            },
-            numberOfSeats: {
-                // số chỗ ngồi 
-                type: Number,
-                default: 0
-            },
-            gearBox: {
-                // hộp số
-                type: Number,
-                default: 0
-            },
-            style: {
-                // kiểu dáng
-                type: Number,
-                default: 0
-            },
-            payload: {
-                // trọng tải
-                type: Number,
-                default: 0
-            },
-            carNumber: {
-                // biern số xe
-                type: String,
-                default: null,
-            },
-            km: {
-                // số km đã đi 
-                type: String,
-                default: null
-            },
-            origin: {
-                // xuất xứ
-                type: String,
-                default: null
-            },
-        },
-        // bất động sản
-        realEstate: {
-            statusSell: {
-                // cần bán / cho thuê
-                type: Number,
-                default: 0
-            },
-            nameApartment: {
-                // tên tòa nhà
-                type: String,
-                default: null
-            },
-            numberOfStoreys: {
-                // tổng số tầng
-                type: String,
-                default: null
-            },
-            storey: {
-                // số tầng
-                type: Number,
-                default: 0
-            },
-            mainDirection: {
-                // hướng chính của tòa
-                type: Number,
-                default: 0
-            },
-            balconyDirection: {
-                // hướng ban công
-                type: Number,
-                default: 0
-            },
-            legalDocuments: {
-                // giấy tờ pháp lý
-                type: String,
-                default: null
-            },
-            statusInterior: {
-                // tình trạng nội thất
-                type: Number,
-                default: 0
-            },
-            acreage: {
-                // diện tích 
-                type: String,
-                default: null
-            },
-            length: {
-                // chiều dài
-                type: String,
-                default: null
-            },
-            width: {
-                // chiều rộng 
-                type: String,
-                default: null
-            },
-            buyingArea: {
-                // khu vực mua
-                type: String,
-                default: null
-            },
-            kvCity: {
-                // khu vực thành phố
-                type: Number,
-                default: 0
-            },
-            kvDistrict: {
-                // khu vực quận huyện
-                type: Number,
-                default: 0
-            },
-            kvWard: {
-                // khu vực phường xã
-                type: Number,
-                default: 0
-            },
-            numberToletRoom: {
-                // số phòng wc 
-                type: Number,
-                default: 0
-            },
-            numberBedRoom: {
-                // số phòng ngủ
-                type: Number,
-                default: 0
-            },
-            typeOfApartment: {
-                // loại hình căn hộ
-                type: Number,
-                default: 0
-            },
-            special: {
-                // đặc diểm
-                type: String,
-                default: null
-            },
-            statusBDS: {
-                // tình trạng bát động sản 
-                type: Number,
-                default: 0
-            },
-            codeApartment: {
-                // mã căn hộ
-                type: Number,
-                default: null,
-            },
-            cornerUnit: {
-                // căn góc
-                type: Number,
-                default: 0
-            },
-            nameArea: {
-                // tên phân khu
-                type: String,
-                default: null
-            },
-            useArea: {
-                // diện tích sử dụng
-                type: String,
-                default: null
-            }
-        },
-        //ship
-        ship: {
-            product: {
-                // Loại hàng hóa giao
-                type: Number,
-                default: 0
-            },
-            timeStart: {
-                // thời gian bắt đâu
-                type: Date,
-                default: null
-            },
-            timeEnd: {
-                // thời gian kết thúc
-                type: Date,
-                default: null
-            },
-            allDay: {
-                // Cả ngày
-                type: Number,
-                default: 0
-            },
-            vehicloType: {
-                // loại xe
-                type: Number,
-                default: 0
-            },
-        },
-        // dịch vụ giải trí
-        entertainmentService: {
-            brand: {
-                // hãng
-                type: Number,
-                default: 0
-            },
-
-        },
-        // môn thể thao
-        sports: {
-            sport: {
-                // môn thể thao 
-                type: Number,
-                default: 0
-            },
-            type: {
-                // loại phụ kiện , loại thời trang
-                type: Number,
-                default: 0
-            },
-        },
-
-        material: {
-            // chất liệu trong danh mục nội thât 
+    description: {
+        // mô tả
+        type: String,
+        default: null
+    },
+    hashtag: {
+        // 
+        type: String,
+        default: null
+    },
+    // đô điện tử
+    electroniceDevice: {
+        microprocessor: {
+            // bộ vi xử lý
             type: Number,
             default: 0
         },
-        // thú cưng
-        pet: {
-            kindOfPet: {
-                // loại thú cưng
-                type: String,
-                default: null
-            },
-            age: {
-                // độ tuổi
-                type: String,
-                default: null
-            },
-            gender: {
-                // giới tính
-                type: String,
-                default: null
-            },
-            weigth: {
-                // khối lượng
-                type: String,
-                default: null
-            },
+        ram: {
+            // ram 
+            type: Number,
+            default: 0
         },
-        // đồ gia dụng
-        houseWare: {
-            typeDevice: {
-                // loại thiết bị
-                type: Number,
-                default: 0
-            },
-            typeProduct: {
-                // loại sản phẩm
-                type: Number,
-                default: 0
-            },
-            guarantee: {
-                // bảo hành
-                type: Number,
-                default: 0
-            },
+        hardDrive: {
+            // ở cứng
+            type: Number,
+            default: 0
+        },
+        typeHarđrive: {
+            // loại ổ cứng
+            type: Number,
+            default: 0
+        },
+        screen: {
+            // màn hình
+            type: Number,
+            default: 0
+        },
+        size: {
+            // kích cỡ
+            type: Number,
+            default: 0
+        },
+        brand: {
+            // hãng
+            type: Number,
+            default: 0
+        },
+        machineSeries: {
+            // dòng xe
+            type: Number,
+            default: 0
+        },
+    },
+    // xe cộ
+    vehicle: {
+        brandMaterials: {
+            // hãng vật tư
+            type: Number,
+            default: 0
+        },
+        vehicles: {
+            // dòng xe
+            type: Number,
+            default: 0
+        },
+        accessary: {
+            // loại phụ tùng 
+            type: Number,
+            default: 0
+        },
+        interior: {
+            // loại nội thất
+            type: Number,
+            default: 0
+        },
+        device: {
+            // thiết bị
+            type: Number,
+            default: 0
+        },
+        color: {
+            // màu xắc
+            type: Number,
+            default: 0
+        },
+        capacity: {
+            // dung lượng
+            type: Number,
+            default: 0
+        },
+        connectInternet: {
+            // kết nối internet
+            type: String,
+            default: null
+        },
+        generalType: {
+            // loại chung
+            type: Number,
+            default: 0
+        },
+        resolution: {
+            // độ phân giải
+            type: Number,
+            default: 0
+        },
+        wattage: {
+            // công suất
+            type: Number,
+            default: 0
+        },
+        frameMaterial: {
+            // chất liêu khung
+            type: Number,
+            default: 0
+        },
+        volume: {
+            // dung tích
+            type: Number,
+            default: 0
+        },
+        manufacturingYear: {
+            // năm sản xuất
+            type: String,
+            default: null
+        },
+        fuel: {
+            // nhiên liệu
+            type: Number,
+            default: 0
+        },
+        numberOfSeats: {
+            // số chỗ ngồi 
+            type: Number,
+            default: 0
+        },
+        gearBox: {
+            // hộp số
+            type: Number,
+            default: 0
+        },
+        style: {
+            // kiểu dáng
+            type: Number,
+            default: 0
+        },
+        payload: {
+            // trọng tải
+            type: Number,
+            default: 0
+        },
+        carNumber: {
+            // biern số xe
+            type: String,
+            default: null,
+        },
+        km: {
+            // số km đã đi 
+            type: String,
+            default: null
+        },
+        origin: {
+            // xuất xứ
+            type: String,
+            default: null
+        },
+    },
+    // bất động sản
+    realEstate: {
+        statusSell: {
+            // cần bán / cho thuê
+            type: Number,
+            default: 0
+        },
+        nameApartment: {
+            // tên tòa nhà
+            type: String,
+            default: null
+        },
+        numberOfStoreys: {
+            // tổng số tầng
+            type: String,
+            default: null
+        },
+        storey: {
+            // số tầng
+            type: Number,
+            default: 0
+        },
+        mainDirection: {
+            // hướng chính của tòa
+            type: Number,
+            default: 0
+        },
+        balconyDirection: {
+            // hướng ban công
+            type: Number,
+            default: 0
+        },
+        legalDocuments: {
+            // giấy tờ pháp lý
+            type: String,
+            default: null
+        },
+        statusInterior: {
+            // tình trạng nội thất
+            type: Number,
+            default: 0
+        },
+        acreage: {
+            // diện tích 
+            type: String,
+            default: null
+        },
+        length: {
+            // chiều dài
+            type: String,
+            default: null
+        },
+        width: {
+            // chiều rộng 
+            type: String,
+            default: null
+        },
+        buyingArea: {
+            // khu vực mua
+            type: String,
+            default: null
+        },
+        kvCity: {
+            // khu vực thành phố
+            type: Number,
+            default: 0
+        },
+        kvDistrict: {
+            // khu vực quận huyện
+            type: Number,
+            default: 0
+        },
+        kvWard: {
+            // khu vực phường xã
+            type: Number,
+            default: 0
+        },
+        numberToletRoom: {
+            // số phòng wc 
+            type: Number,
+            default: 0
+        },
+        numberBedRoom: {
+            // số phòng ngủ
+            type: Number,
+            default: 0
+        },
+        typeOfApartment: {
+            // loại hình căn hộ
+            type: Number,
+            default: 0
+        },
+        special: {
+            // đặc diểm
+            type: String,
+            default: null
+        },
+        statusBDS: {
+            // tình trạng bát động sản 
+            type: Number,
+            default: 0
+        },
+        codeApartment: {
+            // mã căn hộ
+            type: Number,
+            default: null,
+        },
+        cornerUnit: {
+            // căn góc
+            type: Number,
+            default: 0
+        },
+        nameArea: {
+            // tên phân khu
+            type: String,
+            default: null
+        },
+        useArea: {
+            // diện tích sử dụng
+            type: String,
+            default: null
+        }
+    },
+    //ship
+    ship: {
+        product: {
+            // Loại hàng hóa giao
+            type: Number,
+            default: 0
+        },
+        timeStart: {
+            // thời gian bắt đâu
+            type: Date,
+            default: null
+        },
+        timeEnd: {
+            // thời gian kết thúc
+            type: Date,
+            default: null
+        },
+        allDay: {
+            // Cả ngày
+            type: Number,
+            default: 0
+        },
+        vehicloType: {
+            // loại xe
+            type: Number,
+            default: 0
+        },
+    },
+    // dịch vụ giải trí
+    entertainmentService: {
+        brand: {
+            // hãng
+            type: Number,
+            default: 0
+        },
 
+    },
+    // môn thể thao
+    sports: {
+        sport: {
+            // môn thể thao 
+            type: Number,
+            default: 0
         },
-        // sức khỏe sắc đẹp
-        health: {
-            type: {
-                // loại sản phẩm , loại thực phẩm chức năng , loại phụ kiện, loại hình
-                type: Number,
-                default: 0,
-            },
-            kindCosmetics: {
-                // loại mỹ phẩm
-                type: Number,
-                default: 0
-            },
-            expiry: {
-                // hạn sử dụng
-                type: Date,
+        type: {
+            // loại phụ kiện , loại thời trang
+            type: Number,
+            default: 0
+        },
+    },
+
+    material: {
+        // chất liệu trong danh mục nội thât 
+        type: Number,
+        default: 0
+    },
+    // thú cưng
+    pet: {
+        kindOfPet: {
+            // loại thú cưng
+            type: String,
+            default: null
+        },
+        age: {
+            // độ tuổi
+            type: String,
+            default: null
+        },
+        gender: {
+            // giới tính
+            type: String,
+            default: null
+        },
+        weigth: {
+            // khối lượng
+            type: String,
+            default: null
+        },
+    },
+    // đồ gia dụng
+    houseWare: {
+        typeDevice: {
+            // loại thiết bị
+            type: Number,
+            default: 0
+        },
+        typeProduct: {
+            // loại sản phẩm
+            type: Number,
+            default: 0
+        },
+        guarantee: {
+            // bảo hành
+            type: Number,
+            default: 0
+        },
+
+    },
+    // sức khỏe sắc đẹp
+    health: {
+        type: {
+            // loại sản phẩm , loại thực phẩm chức năng , loại phụ kiện, loại hình
+            type: Number,
+            default: 0,
+        },
+        kindCosmetics: {
+            // loại mỹ phẩm
+            type: Number,
+            default: 0
+        },
+        expiry: {
+            // hạn sử dụng
+            type: Date,
+            default: null
+        },
+        brand: {
+            // hãng 
+            type: Number,
+            default: 0
+        }
+    },
+    // tìm việc
+    Job: {
+        jobType: {
+            // ngành nghề
+            type: String,
+            default: null
+        },
+        jobKind: {
+            // hình thức làm việc
+            type: String,
+            default: null
+        },
+        minAge: {
+            // tuổi nhỏ nhất
+            type: String,
+            default: null
+        },
+        maxAge: {
+            // tuổi lớn nhất
+            type: String,
+            default: null
+        },
+        exp: {
+            // kinh nghiệm
+            type: String,
+            default: null
+        },
+        level: {
+            // chứng chỉ
+            type: String,
+            default: null
+        },
+        skill: {
+            // kỹ năng 
+            type: String,
+            default: null
+        },
+        quantity: {
+            // số lượng tuyển
+            type: String,
+            default: null
+        },
+        city: {
+            // thành phố
+            type: String,
+            default: null
+        },
+        district: {
+            // quận huyện
+            type: String,
+            default: null
+        },
+        ward: {
+            // phường xã
+            type: String,
+            default: null
+        },
+        addressNumber: {
+            // số nhà
+            type: String,
+            default: null
+        },
+        payBy: {
+            // hình thức trả lương
+            type: String,
+            default: null
+        },
+        img: [{
+            // ảnh công ty
+            id: Number,
+            nameImg: {
+                type: String,
                 default: null
             },
-            brand: {
-                // hãng 
+            size: {
                 type: Number,
                 default: 0
             }
+        }],
+        benefit: {
+            // quyền lợi
+            type: String,
+            default: null
         },
-        // tìm việc
-        Job: {
-            jobType: {
-                // ngành nghề
-                type: String,
-                default: null
-            },
-            jobKind: {
-                // hình thức làm việc
-                type: String,
-                default: null
-            },
-            minAge: {
-                // tuổi nhỏ nhất
-                type: String,
-                default: null
-            },
-            maxAge: {
-                // tuổi lớn nhất
-                type: String,
-                default: null
-            },
-            exp: {
-                // kinh nghiệm
-                type: String,
-                default: null
-            },
-            level: {
-                // chứng chỉ
-                type: String,
-                default: null
-            },
-            skill: {
-                // kỹ năng 
-                type: String,
-                default: null
-            },
-            quantity: {
-                // số lượng tuyển
-                type: String,
-                default: null
-            },
-            city: {
-                // thành phố
-                type: String,
-                default: null
-            },
-            district: {
-                // quận huyện
-                type: String,
-                default: null
-            },
-            ward: {
-                // phường xã
-                type: String,
-                default: null
-            },
-            addressNumber: {
-                // số nhà
-                type: String,
-                default: null
-            },
-            payBy: {
-                // hình thức trả lương
-                type: String,
-                default: null
-            },
-            logo: {
-                // ảnh công ty
-                type: String,
-                default: null
-            },
-            benefit: {
-                // quyền lợi
-                type: String,
-                default: null
-            },
-            logo: {
-                // ảnh công ty
-                type: String,
-                default: null
-            }
+    },
+    // đồ ăn đồ uống
+    food: {
+        type: {
+            // loại đồ ăn dồ uống
+            type: Number,
+            default: 0
         },
-        // đồ ăn đồ uống
-        food: {
-            type: {
-                // loại đồ ăn dồ uống
-                type: Number,
-                default: 0
-            },
-            expiry: {
-                // hạn sử dụng
-                type: Date,
-                default: 0
-            }
+        expiry: {
+            // hạn sử dụng
+            type: Date,
+            default: 0
         },
         // thông tin chi tiết đăng tin mua
         newBuy: {
@@ -886,8 +881,8 @@ const newSchema = new mongoose.Schema({
     },
 
 }, {
-    collection: 'New',
+    collection: 'NewRN',
     versionKey: false,
     timestamp: true
 })
-module.exports = mongoose.model("New", newSchema);
+module.exports = mongoose.model("NewRN", newSchema);

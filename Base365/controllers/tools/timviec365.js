@@ -7,7 +7,6 @@ const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
 
 const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 const Blog = require('../../models/Timviec365/Blog/Posts')
-const CategoryJob = require('../../models/Timviec365/CategoryJob')
 const Users = require('../../models/Users')
 const PointCompany = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany')
 const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed')
@@ -366,7 +365,7 @@ exports.toolCV = async(req, res, next) => {
     } catch (err) {
         return fnc.setError(res, err.message);
     };
- };
+};
 
 exports.toolCVCategory = async(req, res, next) => {
     try {
@@ -947,9 +946,9 @@ exports.toolCVSection = async(req, res, next) => {
     } catch (error) {
         return fnc.setError(res, error.message);
     }
-}; 
-  
-}
+};
+
+
 
 // hàm thêm dữ liệu vào bảng blog
 exports.toolBlog = async(req, res, next) => {
@@ -1134,7 +1133,7 @@ exports.toolPointUse = async(req, res, next) => {
                         typeErr: listKey[i].type_err,
                         noteUV: listKey[i].note_uv,
                         usedDay: useDay,
-                        returnPoint: listKey[i].point,
+                        returnPoint: listKey[i].return_point,
                         adminID: listKey[i].admin_id,
                         ipUser: listKey[i].ip_user,
                     })
@@ -1178,11 +1177,11 @@ exports.toolPoinCompany = async(req, res, next) => {
                         _id: Number(id) + 1,
                         uscID: listKey[i].usc_id,
                         point: listKey[i].point,
-                        pointUSC: listKey[i].point_usc,
-                        pointBaoLuu: listKey[i].point_bao_luu,
-                        chuThichBaoLuu: listKey[i].chu_thich_bao_luu,
-                        dayResetPoint: dayreset,
-                        dayResetPoint0: dayreset0,
+                        pointCompany: listKey[i].point_usc,
+                        reservationPoint: listKey[i].point_bao_luu,
+                        note: listKey[i].chu_thich_bao_luu,
+                        dateResetPoint: dayreset,
+                        dateResetPointToZero: dayreset0,
                     })
                     await key.save();
                 }
@@ -1281,4 +1280,3 @@ exports.toolNgangThu = async(req, res, next) => {
         return fnc.setError(res, error)
     }
 }
-
