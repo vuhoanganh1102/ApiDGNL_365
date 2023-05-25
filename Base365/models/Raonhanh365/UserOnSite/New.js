@@ -270,6 +270,7 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    // chi tiết sản phẩm mua/bán
     newDetail: {
         description: {
             // mô tả
