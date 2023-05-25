@@ -4,24 +4,29 @@ const evaluationSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    // id company
+
     uscID: {
+        // id company
         type: Number,
         required: true
     },
-    //đánh giá chuyên viên
+
     dgc: {
+        //đánh giá chuyên viên
         type: String,
         default: null
     },
-    // đánh giá web
+
     dgtv: {
+        // đánh giá web
         type: String,
         default: null
     },
-    // thời gian đánh giá
+
     dgTime: {
+        // thời gian đánh giá
         type: Date,
+        default: null
     }
 }, {
     collection: 'Evaluation',

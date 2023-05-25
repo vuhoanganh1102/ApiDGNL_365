@@ -92,18 +92,20 @@ exports.register = async(req, res, next) => {
                             return functions.setError(res, 'link không đúng định dạng ', 404)
                         }
                     }
-                    if (lv == undefined) {
+                    if (lv == undefined || lv == "") {
                         let data = {
                             title_company: username,
                             description_company: description,
                             number: 1
                         }
-                        let dataLV = await functions.getDataAxios('http://43.239.223.10:5001/recognition_tag_company', data);
-                        lvID = dataLV.data.items[0].id_tag;
+                        let dataLV = await functions.getDataAxios('http://43.239.223.10:5001/recognition_tag_company', data) || 0;
+                        if (dataLV.data.items.length > 0) {
+                            lvID = dataLV.data.items[0].id_tag
+                        }
                     }
                     // lấy danh sách id bộ phận
                     let listKD = await functions.getDatafind(AdminUser, { bophan: 1 });
-                    let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1);
+                    let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1) || 0;
                     if (listUser.length > 0) {
                         let idKDUser = listUser[0].inForCompany.idKD_Re;
                         for (let i = 0; i < listKD.length; i++) {
@@ -118,6 +120,8 @@ exports.register = async(req, res, next) => {
                                 idKD = listIDKD[index + 1];
                             }
                         }
+                    } else {
+                        idKD = 1;
                     }
                     // tìm Id max trong DB
                     let maxID = await functions.getMaxID(Users) || 0;
@@ -167,7 +171,7 @@ exports.register = async(req, res, next) => {
                             userContactAddress: address,
                             userContactEmail: email,
                             ipAddressRegister: ipAddressRegister,
-                            lv: lvID
+                            tagLinhVuc: lvID
                         }
                     });
                     await company.save();
@@ -194,7 +198,7 @@ exports.register = async(req, res, next) => {
         }
     } catch (error) {
         console.log(error)
-        await functions.deleteImgVideo(avatarUser, videoType)
+        await functions.deleteImgVideo(req.files.logo, req.files.videoType)
         return functions.setError(res, error)
     }
 }
@@ -209,7 +213,7 @@ exports.login = async(req, res, next) => {
 
             let checkPhoneNumber = await functions.checkEmail(email);
             if (checkPhoneNumber) {
-                let findUser = await functions.getDatafindOne(Users, { email })
+                let findUser = await functions.getDatafindOne(Users, { email: email, type: 1 })
                 if (!findUser) {
                     return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
@@ -217,38 +221,35 @@ exports.login = async(req, res, next) => {
                 if (!checkPassword) {
                     return functions.setError(res, "Mật khẩu sai", 404)
                 }
-                if (findUser.type == type) {
-                    const token = await functions.createToken(findUser, "1d")
-                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
-                    let data = {
-                        access_token: token,
-                        refresh_token: refreshToken,
-                        user_info: {
-                            usc_id: findUser._id,
-                            usc_email: findUser.email,
-                            usc_phone_tk: findUser.phoneTK,
-                            usc_pass: findUser.password,
-                            usc_company: findUser.userName,
-                            usc_logo: findUser.avatarUser,
-                            usc_phone: findUser.phone,
-                            usc_city: findUser.city,
-                            usc_qh: findUser.district,
-                            usc_address: findUser.address,
-                            usc_create_time: findUser.createdAt,
-                            usc_update_time: findUser.updatedAt,
-                            usc_active: findUser.lastActivedAt,
-                            usc_authentic: findUser.authentic,
-                            usc_lat: findUser.latitude,
-                            usc_long: findUser.longtitude,
-                            usc_name: findUser.inForCompany.userContactName,
-                            usc_name_add: findUser.inForCompany.userContactAddress,
-                            usc_name_phone: findUser.inForCompany.userContactPhone,
-                            usc_name_email: findUser.inForCompany.userContactEmail,
-                        }
+                const token = await functions.createToken(findUser, "1d")
+                const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
+                let data = {
+                    access_token: token,
+                    refresh_token: refreshToken,
+                    user_info: {
+                        usc_id: findUser._id,
+                        usc_email: findUser.email,
+                        usc_phone_tk: findUser.phoneTK,
+                        usc_pass: findUser.password,
+                        usc_company: findUser.userName,
+                        usc_logo: findUser.avatarUser,
+                        usc_phone: findUser.phone,
+                        usc_city: findUser.city,
+                        usc_qh: findUser.district,
+                        usc_address: findUser.address,
+                        usc_create_time: findUser.createdAt,
+                        usc_update_time: findUser.updatedAt,
+                        usc_active: findUser.lastActivedAt,
+                        usc_authentic: findUser.authentic,
+                        usc_lat: findUser.latitude,
+                        usc_long: findUser.longtitude,
+                        usc_name: findUser.inForCompany.userContactName,
+                        usc_name_add: findUser.inForCompany.userContactAddress,
+                        usc_name_phone: findUser.inForCompany.userContactPhone,
+                        usc_name_email: findUser.inForCompany.userContactEmail,
                     }
-                    return functions.success(res, 'Đăng nhập thành công', data)
-                } else return functions.setError(res, "tài khoản này không phải tài khoản công ty", 404)
-
+                }
+                return functions.success(res, 'Đăng nhập thành công', data)
 
             } else {
                 return functions.setError(res, "không đúng định dạng email", 404)
@@ -332,7 +333,7 @@ exports.sendOTP = async(req, res, next) => {
         if (email != undefined) {
             let checkEmail = await functions.checkEmail(email)
             if (checkEmail) {
-                let user = await functions.getDatafindOne(Users, { email })
+                let user = await functions.getDatafindOne(Users, { email: email, type: 1 })
                 if (user) {
                     let otp = await functions.randomNumber
                     await Users.updateOne({ email: email }, {
@@ -367,7 +368,7 @@ exports.verify = async(req, res, next) => {
         let otp = req.body.ma_xt,
             email = req.user.data.email;
         if (otp && email) {
-            let verify = await Users.findOne({ email, otp });
+            let verify = await Users.findOne({ email, otp, type: 1 });
             if (verify != null) {
                 await Users.updateOne({ email: email }, {
                     $set: {
@@ -688,7 +689,7 @@ exports.getDataCompany = async(req, res, next) => {
         let id = req.user.data.idTimViec365;
         let user = await functions.getDatafindOne(Users, { idTimViec365: id, type: 1 });
         if (user) {
-            return functions.success(res, 'lấy thông tin thành công', user)
+            return functions.success(res, 'lấy thông tin thành công', { user })
         }
         return functions.setError(res, 'người dùng không tồn tại', 404)
 
@@ -1026,7 +1027,9 @@ exports.uploadImg = async(req, res, next) => {
                                 listImg.push({
                                     _id: Number(newID) + 1,
                                     name: img[i].filename,
-                                    size: img[i].size
+                                    size: img[i].size,
+                                    active: 0,
+                                    type: 1
                                 })
                             } else {
                                 if (img) {
@@ -1115,6 +1118,8 @@ exports.uploadVideo = async(req, res, next) => {
                                     _id: Number(newID) + 1,
                                     name: video[i].filename,
                                     size: video[i].size,
+                                    active: 0,
+                                    type: 1
                                 })
 
                             } else {

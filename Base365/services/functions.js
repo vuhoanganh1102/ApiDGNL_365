@@ -254,7 +254,7 @@ const storageFile = (destination) => {
                     fs.mkdirSync(userDestination, { recursive: true });
                 }
             } else {
-                userDestination = 'public/company'
+                userDestination = destination
             }
             cb(null, userDestination);
         },
@@ -286,7 +286,7 @@ exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage/TimViec365')
 //  hàm upload video ở kho ảnh
 exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
 
-// hàm upload video ở cập nhập KhoAnh
+// hàm upload video ở cập nhập video
 exports.uploadVideo = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //hàm upload file ứng viên
@@ -506,6 +506,7 @@ exports.findCount = async(model, filter) => {
 exports.decrypt = async(req, res, next) => {
     try {
         const base64 = req.body.base64;
+        console.log(base64);
         req.file = JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
         return next()
     } catch (error) {
@@ -576,7 +577,7 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
 
         const timestamp = Date.now();
         const imagePath = await fsPromises.readFile(imageFile.path);
-        const uploadDir = `public/candidate/${userId}/${category}`;
+        const uploadDir = `../Storage/TimViec365/${userId}/${category}`;
         const uploadFileName = `${timestamp}_${imageFile.originalFilename}`;
         const uploadPath = path.join(uploadDir, uploadFileName);
         await fsPromises.mkdir(uploadDir, { recursive: true });
