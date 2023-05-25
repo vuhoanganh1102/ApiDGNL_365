@@ -31,13 +31,17 @@ exports.getUserById = async (req, res) => {
 //tạo nhân viên 
 exports.createUser = async (req, res) => {
 
-    const { userName, email , phoneTK } = req.body;
+    const {idQLC, companyID, type, phoneTK, userName, password, phone, address, gender, birthday, candiHocVan,  married, exp, positionID, depID, groupID} = req.body;
 
     if (!userName) {
         //Kiểm tra tên nhân viên khác null
         functions.setError(res, "user name required", 506);
 
-    } else if (!email) {
+    } else if (!idQLC) {
+        //Kiểm tra sdt khác null
+        functions.setError(res, "idQLC required", 507);
+
+    } else if (!companyID) {
         //Kiểm tra email khác null
         functions.setError(res, "email required", 506);
 
@@ -49,28 +53,49 @@ exports.createUser = async (req, res) => {
         //Kiểm tra sdt có phải là số không
         functions.setError(res, "number phone must be a number", 508);
 
-    } else {
+    }else if (!password) {
+        //Kiểm tra sdt khác null
+        functions.setError(res, "password required", 507);
+
+    }else if (!address) {
+        //Kiểm tra sdt khác null
+        functions.setError(res, "address required", 507);
+
+    } else if (!birthday) {
+        //Kiểm tra sdt khác null
+        functions.setError(res, "birthday required", 507);
+
+    }else if (!exp) {
+        //Kiểm tra sdt khác null
+        functions.setError(res, "exp required", 507);
+
+    }else if (!candiHocVan) {
+        //Kiểm tra sdt khác null
+        functions.setError(res, "candiHocVan required", 507);
+
+    }
+    else {
         //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 0 có giá trị max thì bằng max + 1 
         let maxID = await functions.getMaxID(idQLC);
         if (!maxID) {
             maxID = 0
         };
-        const idQLC = Number(maxID) + 1;
+        idQLC = Number(maxID) + 1;
         const ManagerUser = new managerUser({
             idQLC : idQLC,
-            companyID : companyID,
+            'inForPerson.companyID' : companyID,
             userName : userName,
-            email : email,
             phoneTK :  phoneTK,
             password : password,
-            companyEmail : companyEmail,
-            gender : gender,
-            birthday : birthday,
+            phone: phone? phone: null,
+            'inForPerson.gender' : gender,
+            'inForPerson.birthday' : birthday,
             address : address,
-            positionID : positionID,
-            role : role,
-            depID : depID,
-            groupID : groupID,
+            'inForPerson.positionID' : positionID,
+            'inForPerson.married': married,
+            type : type,
+            'inForPerson.depID' : depID,
+            'inForPerson.groupID' : groupID,
         });
 
         await ManagerUser.save()
