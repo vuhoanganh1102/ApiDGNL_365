@@ -950,8 +950,6 @@ exports.toolCVSection = async(req, res, next) => {
     }
 };
 
-
-
 // hàm thêm dữ liệu vào bảng blog
 exports.toolBlog = async(req, res, next) => {
     try {

@@ -3,6 +3,7 @@ var router = express.Router();
 var toolUser = require('../controllers/tools/user');
 var toolTimviec365 = require('../controllers/tools/timviec365');
 const formData = require('express-form-data');
+const toolRaoNhanh = require('../controllers/tools/raonhanh365')
 
 // API quét data người dùng từ base chat
 router.post('/addUserChat365', formData.parse(), toolUser.addUserChat365);
@@ -88,5 +89,8 @@ router.post('/toolApplyForJob', toolTimviec365.toolApplyForJob);
 
 //api quét data ứng viên lưu việc làm
 router.post('/toolUserSavePost', toolTimviec365.toolUserSavePost);
+
+// api quét data new rao nhanh
+router.post('/toolNewRN', toolRaoNhanh.toolNewRN);
 
 module.exports = router;
