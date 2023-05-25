@@ -265,6 +265,22 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    img: [{
+        // danh sách ảnh
+        id: Number,
+        nameImg: {
+            type: String,
+            default: null
+        },
+        size: {
+            type: Number,
+            default: 0
+        }
+    }],
+    video: {
+        type: String,
+        default: null
+    },
     // chi tiết sản phẩm mua/bán
     description: {
         // mô tả
@@ -743,18 +759,7 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-        img: [{
-            // ảnh công ty
-            id: Number,
-            nameImg: {
-                type: String,
-                default: null
-            },
-            size: {
-                type: Number,
-                default: 0
-            }
-        }],
+
         benefit: {
             // quyền lợi
             type: String,
