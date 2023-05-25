@@ -461,32 +461,34 @@ exports.toolListImg = async(req, res, next) => {
                     const resultVideo = [];
                     let id_counter = 1;
 
-                    for (let i = 0; i < image_list.length; i++) {
+                    for (let j = 0; j < image_list.length; j++) {
                         const image_name = image_list[i];
 
                         const image_object = {
                             id: id_counter,
                             name: image_name,
-                            type: 1
+                            type: 1,
+                            size: data[i].arr_img[j].size
                         };
 
                         resultImg.push(image_object);
                         id_counter++;
                     }
-                    for (let i = 0; i < videoList.length; i++) {
+                    for (let j = 0; j < videoList.length; j++) {
                         const videoName = videoList[i];
 
                         const videoObject = {
                             id: id_counter,
                             name: videoName,
-                            type: 1
+                            type: 1,
+                            size: data[i].arr_video[j].size
                         };
 
                         resultVideo.push(videoObject);
                         id_counter++;
                     }
 
-                    await Users.updateOne({ idTimViec365: listCategory[i].usc_id, type: 1 }, {
+                    await Users.updateOne({ idTimViec365: data[i].usc_id, type: 1 }, {
                         $set: {
                             'inForCompany.comVideos': resultImg,
                             'inForCompany.comImages': resultVideo,
