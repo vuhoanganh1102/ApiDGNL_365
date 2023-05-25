@@ -139,7 +139,7 @@ const CateDetailSchema = mongoose.Schema({
         }],
         default: null,
     },
-    story: {
+    storyAndRoom: {
         // số tầng của nhà
         type: [{
             _id: {
@@ -148,7 +148,7 @@ const CateDetailSchema = mongoose.Schema({
             quantity: {
                 type: Number
             },
-            room: [{
+            type: [{
                 // số phòng
                 _id: {
                     type: Number
@@ -160,7 +160,8 @@ const CateDetailSchema = mongoose.Schema({
             }]
         }],
         default: null,
-    }
+    },
+
 
 }, {
     collection: 'CateDetail',

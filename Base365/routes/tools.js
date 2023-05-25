@@ -86,4 +86,11 @@ router.post('/toolNgangDon', toolTimviec365.toolNgangDon);
 // api quét data nganh thu
 router.post('/toolNgangThu', toolTimviec365.toolNgangThu);
 
+// api quét data email 365
+router.post('/toolEmail365', toolTimviec365.toolEmail365);
+
+// api quét data danh mục email
+
+router.post('/toolEmail365Cate', toolTimviec365.toolEmail365Cate);
+
 module.exports = router;

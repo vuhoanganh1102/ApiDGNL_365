@@ -8,38 +8,29 @@ const Mail365CategorySchema = new mongoose.Schema({
     name: {
         type: String
     },
-    type: {
-        type: {
-            _id: {
-                type: Number,
-            },
-            name: {
-                type: String
-            },
-            alias: {
-                type: String
-            },
-            cateId: {
-                type: Number
-            },
-            sapo: {
-                type: String
-            },
-            content: {
-                type: String
-            },
-            menu: {
-                type: Number
-            },
-            sort: {
-                type: Number
-            },
-            status: {
-                type: Number
-            }
-        },
-        default: null
-
+    alias: {
+        type: String
+    },
+    parent: {
+        type: Number
+    },
+    metaTitle: {
+        type: String
+    },
+    metaKey: {
+        type: String
+    },
+    metaDes: {
+        type: String
+    },
+    sort: {
+        type: Number
+    },
+    content: {
+        type: String
+    },
+    status: {
+        type: Number
     },
 
 
