@@ -322,26 +322,6 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
-            video: {
-                // Video khi ứng viên đăng ký tài khoản
-                type: String,
-                default: null
-            },
-            videoType: {
-                // 1: Video tự tải, 2: Video từ youtube, tiktok
-                type: Number,
-                default: 0
-            },
-            videoActive: {
-                // Video được duyệt hay chưa (0: chưa duyệt, 1: được duyệt)
-                type: Number,
-                default: 0
-            },
-            cv: {
-                //tên cv dc tải lên 
-                type: String,
-                default: null
-            },
             //bằng cấp chứng chỉ
             candiDegree: [{
                 type: {
@@ -414,6 +394,63 @@ const UserSchema = new mongoose.Schema({
                 },
                 default: null
             }],
+            candiProfile: [{
+                type: {
+                    id: {
+                        //id của hồ sơ
+                        type: Number,
+                        required: true
+                    },
+                    cvName: {
+                        //tên hồ sơ 
+                        type: String,
+                    },
+                    link: {
+                        //link xem hồ sơ
+                        type: String
+                    },
+                    cvId: {
+                        //idcv mẫu
+                        type: Number
+                    },
+                    createTime: {
+                        //thời gian tải hs
+                        type: Date
+                    },
+                    active: {
+                        type: String
+                    },
+                    linkHide: {
+                        type: String
+                    },
+                    scan: {
+                        type: Number
+                    },
+                    linkError: {
+                        //link sau khi ẩn chi tiết hồ sơ
+                        type: String
+                    },
+                    state: {
+                        type: Number
+                    },
+                    video: {
+                        // Video khi ứng viên đăng ký tài khoản
+                        type: String,
+                        default: null
+                    },
+                    videoType: {
+                        // 1: Video tự tải, 2: Video từ youtube, tiktok
+                        type: Number,
+                        default: 0
+                    },
+                    videoActive: {
+                        // Video được duyệt hay chưa (0: chưa duyệt, 1: được duyệt)
+                        type: Number,
+                        default: 0
+                    },
+                },
+                default: null
+            }]
         },
         default: null
     },
@@ -458,22 +495,39 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: 0
             },
-            videoActive: {
-                // Duyệt video
-                type: Number,
-                default: 0
-            },
             //kho ảnh
             comImages: [{
                 _id: Number,
-                name: String,
+                name: {
+                    type: String,
+                    default: null
+                },
+                active: {
+                    type: Number,
+                    default: 0
+                },
                 size: Number,
+                type: {
+                    type: Number,
+                    default: 1
+                }
             }],
             // kho video
             comVideos: [{
                 _id: Number,
-                name: String,
+                name: {
+                    type: String,
+                    default: null
+                },
+                active: {
+                    type: Number,
+                    default: 0
+                },
                 size: Number,
+                type: {
+                    type: Number,
+                    default: 1
+                },
             }],
             website: {
                 // Website công ty

@@ -122,7 +122,7 @@ exports.saveCV = async(req, res, next) => {
         const imageFile = req.file;
         const userId = req.user.data._id;
         const data = req.body;
-
+        console.log(imageFile);
         // 0 : lưu(upload), 1: lưu và tải(upload,download)
         let message = 'Lưu';
         const download = req.query.download || 0;
@@ -131,6 +131,7 @@ exports.saveCV = async(req, res, next) => {
         if (checkImage == false) return functions.setError(res, 'Lỗi ảnh', 404);
 
         const uploadImage = await functions.uploadAndCheckPathIMG(userId, imageFile, 'cv');
+
         if (uploadImage.status != 'EXIT') return await functions.setError(res, 'Upload ảnh thất bại', 404);
         const cvUV = {
             userId: userId,
@@ -164,8 +165,8 @@ exports.saveCV = async(req, res, next) => {
             //Gửi ảnh về
             if (download == 1) {
                 const host = '';
-                const linkPdf = `${host}/${uploadImage.imgPath.slice(7)}`;
-                const linkImg = `${host}/${uploadImage.pdfPath.slice(7)}`;
+                const linkPdf = `${host}/${uploadImage.imgPath.slice(11)}`;
+                const linkImg = `${host}/${uploadImage.pdfPath.slice(11)}`;
                 const senderId = 1191;
                 const text = '';
                 const data = {
@@ -240,7 +241,7 @@ exports.createCV = async(req, res, next) => {
             urlCanonical: req.body.urlCanonical,
             cvIndex: req.body.cvIndex,
             cId: req.body.cId,
-            image: req.body.image,
+            image: req.file.fieldname,
             price: req.body.price,
             full: req.body.full,
             designId: req.body.designId,
@@ -305,7 +306,7 @@ exports.updateCV = async(req, res, next) => {
             urlCanonical: req.body.urlCanonical,
             cvIndex: req.body.cvIndex,
             cId: req.body.cId,
-            image: req.body.image,
+            image: req.file.fieldname,
             price: req.body.price,
             full: req.body.full,
             designId: req.body.designId,
@@ -354,7 +355,7 @@ exports.deleteCV = async(req, res, next) => {
 exports.createNganhCV = async(req, res, next) => {
     try {
         const user = req.user.data;
-        // if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const data = {
             name: req.body.name,
             alias: req.body.alias,
@@ -377,7 +378,7 @@ exports.createNganhCV = async(req, res, next) => {
             });
         data._id = _id;
         const respone = await NganhCV.create(data);
-        if (respone) return await functions.success(res, 'Tạo mới NganhcCV thành công', { respone });
+        if (respone) return await functions.success(res, 'Tạo mới NganhcCV thành công', );
 
     } catch (err) {
         return functions.setError(res, err.message);
@@ -431,7 +432,7 @@ exports.updateNganhCV = async(req, res, next) => {
 exports.deleteNganhCV = async(req, res, next) => {
     try {
         const user = req.user.data;
-        // if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
         const data = await NganhCV.findOneAndDelete({ _id });
 
@@ -450,7 +451,7 @@ exports.getCVCategory = async(req, res, next) => {
         if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const data = await NganhCV.find();
 
-        if (data.length) return await functions.success(res, 'Thành công', );
+        if (data.length) return await functions.success(res, 'Thành công', { data });
 
         return await functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {
@@ -481,7 +482,7 @@ exports.createCVGroup = async(req, res, next) => {
             name: req.body.name,
             shortName: req.body.shortName,
             alias: req.body.alias,
-            image: req.body.image,
+            image: req.file.fieldname,
             sapo: req.body.sapo,
             content: req.body.content,
             menu: req.body.menu,
@@ -500,8 +501,8 @@ exports.createCVGroup = async(req, res, next) => {
             });
         data.sort = _id;
         data._id = _id;
-        const respone = await CVGroup.create(data);
-        return await functions.success(res, 'Tạo mới nhóm CV thành công', { respone });
+        await CVGroup.create(data);
+        return await functions.success(res, 'Tạo mới nhóm CV thành công', );
     } catch (err) {
         return functions.setError(res, err.message);
     }
@@ -527,13 +528,13 @@ exports.findCVGroup = async(req, res, next) => {
 exports.updateCVGroup = async(req, res, next) => {
     try {
         const user = req.user.data;
-        // if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
+        if (user.isadmin != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.body._id;
         const cvGroup = {
             name: req.body.name,
             shortName: req.body.shortName,
             alias: req.body.alias,
-            image: req.body.image,
+            image: req.file.fieldname,
             sapo: req.body.sapo,
             content: req.body.content,
             menu: req.body.menu,
@@ -545,7 +546,7 @@ exports.updateCVGroup = async(req, res, next) => {
         };
         const data = await CVGroup.findOneAndUpdate({ _id }, cvGroup);
 
-        if (data) return await functions.success(res, 'Cập nhật thành công', { data });
+        if (data) return await functions.success(res, 'Cập nhật thành công');
 
         return await functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {

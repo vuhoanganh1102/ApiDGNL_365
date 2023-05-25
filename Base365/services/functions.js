@@ -164,7 +164,6 @@ exports.success = async(res, messsage = "", data = []) => {
 
 // hàm thực thi khi thất bại
 exports.setError = async(res, message, code = 500) => {
-
     return res.status(code).json({ code, message })
 };
 
@@ -255,7 +254,7 @@ const storageFile = (destination) => {
                     fs.mkdirSync(userDestination, { recursive: true });
                 }
             } else {
-                userDestination = 'public/company'
+                userDestination = destination
             }
             cb(null, userDestination);
         },
@@ -507,6 +506,7 @@ exports.findCount = async(model, filter) => {
 exports.decrypt = async(req, res, next) => {
     try {
         const base64 = req.body.base64;
+        console.log(base64);
         req.file = JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
         return next()
     } catch (error) {
@@ -556,7 +556,7 @@ exports.findOneUser = async(userId, select) => {
 }
 
 //hàm tìm kiếm và cập nhật user với id timviec và type =0 hoặc type =2
-exports.findOneAndUpdateUser = async(userId, projection) => {
+exports.findOneAndUpdateUser = async(userId, projection, select) => {
     return Users.findOneAndUpdate({
         $or: [{
                 idTimViec365: userId,
@@ -567,7 +567,7 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
                 type: 2
             },
         ]
-    }, projection)
+    }, projection, select)
 };
 
 //upload image cv,don, thu, syll
@@ -577,7 +577,7 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
 
         const timestamp = Date.now();
         const imagePath = await fsPromises.readFile(imageFile.path);
-        const uploadDir = `public/candidate/${userId}/${category}`;
+        const uploadDir = `../Storage/TimViec365/${userId}/${category}`;
         const uploadFileName = `${timestamp}_${imageFile.originalFilename}`;
         const uploadPath = path.join(uploadDir, uploadFileName);
         await fsPromises.mkdir(uploadDir, { recursive: true });

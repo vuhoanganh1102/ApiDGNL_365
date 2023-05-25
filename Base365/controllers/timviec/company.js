@@ -98,8 +98,10 @@ exports.register = async(req, res, next) => {
                             description_company: description,
                             number: 1
                         }
-                        let dataLV = await functions.getDataAxios('http://43.239.223.10:5001/recognition_tag_company', data);
-                        lvID = dataLV.data.items[0].id_tag;
+                        let dataLV = await functions.getDataAxios('http://43.239.223.10:5001/recognition_tag_company', data) || 0;
+                        if (dataLV.data.items.length > 0) {
+                            lvID = dataLV.data.items[0].id_tag
+                        }
                     }
                     // lấy danh sách id bộ phận
                     let listKD = await functions.getDatafind(AdminUser, { bophan: 1 });
@@ -196,7 +198,7 @@ exports.register = async(req, res, next) => {
         }
     } catch (error) {
         console.log(error)
-        await functions.deleteImgVideo(avatarUser, videoType)
+        await functions.deleteImgVideo(req.files.logo, req.files.videoType)
         return functions.setError(res, error)
     }
 }
@@ -1025,7 +1027,9 @@ exports.uploadImg = async(req, res, next) => {
                                 listImg.push({
                                     _id: Number(newID) + 1,
                                     name: img[i].filename,
-                                    size: img[i].size
+                                    size: img[i].size,
+                                    active: 0,
+                                    type: 1
                                 })
                             } else {
                                 if (img) {
@@ -1114,6 +1118,8 @@ exports.uploadVideo = async(req, res, next) => {
                                     _id: Number(newID) + 1,
                                     name: video[i].filename,
                                     size: video[i].size,
+                                    active: 0,
+                                    type: 1
                                 })
 
                             } else {

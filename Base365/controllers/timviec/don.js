@@ -126,8 +126,8 @@ exports.saveDon = async(req, res, next) => {
             //Gửi ảnh về
             if (download == 1) {
                 const host = '';
-                const linkPdf = `${host}/${uploadImage.imgPath.slice(7)}`;
-                const linkImg = `${host}/${uploadImage.pdfPath.slice(7)}`;
+                const linkPdf = `${host}/${uploadImage.imgPath.slice(11)}`;
+                const linkImg = `${host}/${uploadImage.pdfPath.slice(11)}`;
                 const senderId = 1191;
                 const text = '';
                 const data = {
@@ -256,7 +256,7 @@ exports.createDon = async(req, res, next) => {
             name: req.body.name,
             nameSub: req.body.name,
             alias: req.body.alias,
-            image: req.body.image,
+            image: req.file.fieldname,
             price: req.body.price,
             view: 0,
             favourite: 0,
@@ -314,7 +314,7 @@ exports.updateDon = async(req, res, next) => {
             name: req.body.name,
             nameSub: req.body.name,
             alias: req.body.alias,
-            image: req.body.image,
+            image: req.file.fieldname,
             price: req.body.price,
             view: 0,
             favourite: 0,

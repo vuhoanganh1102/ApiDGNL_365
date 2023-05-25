@@ -18,11 +18,11 @@ router.post('/detailSYLL', formData.parse(), functions.checkToken, syll.detailSY
 router.post('/saveSYLL', functions.checkToken, formData.parse(), functions.decrypt, syll.saveSYLL);
 
 // tạo mới mẫu SYLL
-router.post('/createSYLL', formData.parse(), functions.checkToken, syll.createSYLL);
+router.post('/createSYLL', functions.checkToken, functions.uploadImgKhoAnh.single('image'), syll.createSYLL);
 
 // sửa mẫu SYLL - findSYLL & updateSYLL
 router.post('/findSYLL', functions.checkToken, formData.parse(), syll.findSYLL);
-router.post('/updateSYLL', formData.parse(), functions.checkToken, syll.updateSYLL);
+router.post('/updateSYLL', functions.checkToken, functions.uploadImgKhoAnh.single('image'), syll.updateSYLL);
 
 // xóa mẫu SYLL
 router.post('/deleteSYLL', functions.checkToken, formData.parse(), syll.deleteSYLL);
