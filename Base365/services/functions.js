@@ -164,7 +164,6 @@ exports.success = async(res, messsage = "", data = []) => {
 
 // hàm thực thi khi thất bại
 exports.setError = async(res, message, code = 500) => {
-
     return res.status(code).json({ code, message })
 };
 
@@ -557,7 +556,7 @@ exports.findOneUser = async(userId, select) => {
 }
 
 //hàm tìm kiếm và cập nhật user với id timviec và type =0 hoặc type =2
-exports.findOneAndUpdateUser = async(userId, projection) => {
+exports.findOneAndUpdateUser = async(userId, projection, select) => {
     return Users.findOneAndUpdate({
         $or: [{
                 idTimViec365: userId,
@@ -568,7 +567,7 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
                 type: 2
             },
         ]
-    }, projection)
+    }, projection, select)
 };
 
 //upload image cv,don, thu, syll

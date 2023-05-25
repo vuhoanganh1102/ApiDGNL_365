@@ -26,6 +26,8 @@ const CVDesign = require('../../models/Timviec365/CV/CVDesign');
 const CVGroup = require('../../models/Timviec365/CV/CVGroup');
 const PriceList = require('../../models/Timviec365/PriceList/PriceList');
 const CVSection = require('../../models/Timviec365/CV/CVSection');
+const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
+const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
@@ -1263,6 +1265,93 @@ exports.toolNgangThu = async(req, res, next) => {
                         metaDes: listKey[i].meta_des,
                         metaTt: listKey[i].meta_tt,
                         status: listKey[i].status,
+                    })
+                    await key.save();
+                }
+                page++
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+// hàm thêm dữ liệu vào bảng ứng viên ứng tuyển (Apply for Job)
+exports.toolApplyForJob = async(req, res, next) => {
+    try {
+        let result = true,
+            page = 1;
+        let timePV, timeTVS, timeTVE
+
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/api/get_nop_ho_so.php?page=' + page)
+            listKey = data;
+            if (listKey.length > 0) {
+
+                for (let i = 0; i < listKey.length; i++) {
+                    if (Number(listKey[i].nhs_time_pv == 0)) {
+                        timePV = null
+                    } else timePV = new Date(Number(listKey[i].nhs_time_pv) * 1000)
+
+                    if (Number(listKey[i].nhs_time_pv == 0)) {
+                        timeTVS = null
+                    } else timeTV = new Date(Number(listKey[i].nhs_time_tvs) * 1000)
+
+                    if (Number(listKey[i].nhs_time_pv == 0)) {
+                        timeTVE = null
+                    } else timeTVE = new Date(Number(listKey[i].nhs_time_tve) * 1000)
+
+                    const key = new ApplyForJob({
+                        _id: Number(listKey[i].nhs_id),
+                        userID: Number(listKey[i].nhs_use_id),
+                        newID: Number(listKey[i].nhs_new_id),
+                        time: new Date(Number(listKey[i].nhs_time) * 1000),
+                        active: Number(listKey[i].nhs_active),
+                        kq: Number(listKey[i].nhs_kq),
+                        timePV: timePV,
+                        timeTVS: timeTVS,
+                        timeTVE: timeTVE,
+                        text: listKey[i].nhs_text,
+                        cv: listKey[i].nhs_cv,
+                        type: Number(listKey[i].check_ut)
+                    })
+                    await key.save();
+                }
+                page++
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+//hàm thêm dữ liệu vào bảng ứng viên lưu việc làm (UserSavePost)
+exports.toolUserSavePost = async(req, res, next) => {
+    try {
+        let result = true,
+            page = 1;
+
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/api/get_luu_viec_lam.php?page=' + page)
+            listKey = data;
+            if (listKey.length > 0) {
+
+                for (let i = 0; i < listKey.length; i++) {
+                    const key = new UserSavePost({
+                        _id: Number(listKey[i].id),
+                        userID: Number(listKey[i].use_id),
+                        newID: Number(listKey[i].new_id),
+                        saveTime: new Date(Number(listKey[i].save_time) * 1000),
                     })
                     await key.save();
                 }

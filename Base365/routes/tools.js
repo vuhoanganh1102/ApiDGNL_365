@@ -84,6 +84,12 @@ router.post('/toolNgangDon', toolTimviec365.toolNgangDon);
 // api quét data nganh thu
 router.post('/toolNgangThu', toolTimviec365.toolNgangThu);
 
+//api quét data ứng viên ứng tuyển ( Apply For Job)
+router.post('/toolApplyForJob', toolTimviec365.toolApplyForJob);
+
+//api quét data ứng viên lưu việc làm
+router.post('/toolUserSavePost', toolTimviec365.toolUserSavePost);
+
 // api quét data new rao nhanh
 router.post('/toolNewRN', toolRaoNhanh.toolNewRN);
 

@@ -24,7 +24,7 @@ var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
 var childCompanyRouter = require('./routes/qlc/childCompany')
-var managerUser = require('./routes/qlc/managerUser')
+var manageUserRouter = require('./routes/qlc/manageUser')
 
 
 
@@ -75,8 +75,8 @@ app.use('/api/timviec/mail365', mail365Router);
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
 app.use("/api/qlc/group", groupRouter);
-app.use('/api/qlc/childCompany', childCompanyRouter)
-app.use('/api/qlc/managerUser', managerUser)
+app.use('/api/qlc/childCompany', childCompanyRouter);
+app.use('/api/qlc/manageUser', manageUserRouter);
 
 
 //API quẩn lý ca làm việc
