@@ -507,6 +507,7 @@ exports.findCount = async(model, filter) => {
 exports.decrypt = async(req, res, next) => {
     try {
         const base64 = req.body.base64;
+        console.log(base64);
         req.file = JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
         return next()
     } catch (error) {
@@ -577,7 +578,7 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
 
         const timestamp = Date.now();
         const imagePath = await fsPromises.readFile(imageFile.path);
-        const uploadDir = `public/candidate/${userId}/${category}`;
+        const uploadDir = `../Storage/TimViec365/${userId}/${category}`;
         const uploadFileName = `${timestamp}_${imageFile.originalFilename}`;
         const uploadPath = path.join(uploadDir, uploadFileName);
         await fsPromises.mkdir(uploadDir, { recursive: true });
