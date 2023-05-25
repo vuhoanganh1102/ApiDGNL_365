@@ -7,7 +7,6 @@ const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
 
 const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 const Blog = require('../../models/Timviec365/Blog/Posts')
-const CategoryJob = require('../../models/Timviec365/CategoryJob')
 const Users = require('../../models/Users')
 const PointCompany = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany')
 const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed')
@@ -366,7 +365,7 @@ exports.toolCV = async(req, res, next) => {
     } catch (err) {
         return fnc.setError(res, err.message);
     };
- };
+};
 
 exports.toolCVCategory = async(req, res, next) => {
     try {
@@ -947,9 +946,9 @@ exports.toolCVSection = async(req, res, next) => {
     } catch (error) {
         return fnc.setError(res, error.message);
     }
-}; 
-  
-}
+};
+
+
 
 // hàm thêm dữ liệu vào bảng blog
 exports.toolBlog = async(req, res, next) => {
@@ -1281,4 +1280,3 @@ exports.toolNgangThu = async(req, res, next) => {
         return fnc.setError(res, error)
     }
 }
-
