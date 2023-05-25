@@ -47,6 +47,9 @@ router.post('/toolApplicationUV', toolTimviec365.toolApplicationUV);
 // api quét data thu của UV
 router.post('/toolLetterUV', toolTimviec365.toolLetterUV);
 
+// api quét data danh sách ngành syll
+router.post('/toolResumeCategory', toolTimviec365.toolResumeCategory);
+
 // api quét data syll của UV
 router.post('/toolResumeUV', toolTimviec365.toolResumeUV);
 

@@ -457,8 +457,9 @@ exports.pageFind = async(model, condition, sort, skip, limit) => {
 };
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
-exports.getDataCVSortById = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color').sort({ _id: -1 });
+exports.getDataCVSortById = async(condition, pageNumber) => {
+    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color')
+        .sort({ _id: -1 }).skip((pageNumber - 1) * 20).limit(20);
     if (data.length > 0) {
         return data;
     };
@@ -467,7 +468,8 @@ exports.getDataCVSortById = async(condition) => {
 
 // lấy danh sách mẫu CV sắp xếp lượt tải nn
 exports.getDataCVSortByDownload = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color').sort({ download: -1 });
+    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color')
+        .sort({ download: -1 }).skip((pageNumber - 1) * 20).limit(20);
     if (data.length > 0) {
         return data;
     };

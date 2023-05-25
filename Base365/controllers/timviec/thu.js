@@ -6,7 +6,8 @@ const ThuUV = require('../../models/Timviec365/CV/LetterUV');
 // lấy danh sách mẫu thư
 exports.getThu = async(req, res, next) => {
     try {
-        const data = await Thu.find({});
+        const pageNumber = req.query.pageNumber || 1;
+        const data = await Thu.find({}).skip((pageNumber - 1) * 20).limit(20);
 
         if (data.length) return await functions.success(res, 'Lấy mẫu THU thành công', { data });
 
@@ -19,8 +20,9 @@ exports.getThu = async(req, res, next) => {
 // tìm thư theo ngành
 exports.getByNganh = async(req, res, next) => {
     try {
+        const pageNumber = req.query.pageNumber || 1;
         const cateId = req.body.cateId;
-        const data = await Thu.find({ cateId: cateId }); // tìm theo id Ngành
+        const data = await Thu.find({ cateId: cateId }).skip((pageNumber - 1) * 20).limit(20); // tìm theo id Ngành
 
         if (data.length) return await functions.success(res, `THU theo ngành ${cateId}`, { data });
 

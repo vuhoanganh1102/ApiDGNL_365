@@ -7,10 +7,11 @@ const fs = require('fs');
 const axios = require('axios')
 
 
-// lấy tất cả danh sách mẫu CV
+
 exports.getListCV = async(req, res, next) => {
     try {
-        const data = await functions.getDataCVSortById({});
+        const pageNumber = req.query.pageNumber || 1;
+        const data = await functions.getDataCVSortById({}, pageNumber);
         if (data) {
             return await functions.success(res, 'Lấy mẫu CV thành công', { data });
         };
@@ -36,6 +37,7 @@ exports.getNganhCV = async(req, res, next) => {
 // lấy theo điều kiện --- func getDataCV nhận 2 tham số là điều kiện và cách sắp xếp( cập nhật mới hoặc download)
 exports.getListCVByCondition = async(req, res, next) => {
     try {
+        const pageNumber = req.query.pageNumber || 1;
         const cateId = req.query.cateId;
         const langId = req.query.langId;
         const designId = req.query.designId;
@@ -45,35 +47,35 @@ exports.getListCVByCondition = async(req, res, next) => {
         if (sort == 1) {
             if (cateId || langId || designId) {
                 if (cateId) {
-                    data = await functions.getDataCVSortByDownload({ cateId });
+                    data = await functions.getDataCVSortByDownload({ cateId }, pageNumber);
                     return await functions.success(res, 'Lấy dữ liệu thành công', { data });
                 };
                 if (langId) {
-                    data = await functions.getDataCVSortByDownload({ langId });
+                    data = await functions.getDataCVSortByDownload({ langId }, pageNumber);
                     return await functions.success(res, 'Lấy dữ liệu thành công', { data });
                 };
                 if (designId) {
-                    data = await functions.getDataCVSortByDownload({ designId });
+                    data = await functions.getDataCVSortByDownload({ designId }, pageNumber);
                     return await functions.success(res, 'Lấy dữ liệu thành công', { data });
                 };
             };
 
-            data = await functions.getDataCVSortByDownload({});
+            data = await functions.getDataCVSortByDownload({}, pageNumber);
             return await functions.success(res, 'Lấy dữ liệu thành công', { data });
         } else {
             if (cateId) {
-                data = await functions.getDataCVSortById({ cateId });
+                data = await functions.getDataCVSortById({ cateId }, pageNumber);
                 return await functions.success(res, 'Lấy dữ liệu thành công', { data });
             };
             if (langId) {
-                data = await functions.getDataCVSortById({ langId });
+                data = await functions.getDataCVSortById({ langId }, pageNumber);
                 return await functions.success(res, 'Lấy dữ liệu thành công', { data });
             };
             if (designId) {
-                data = await functions.getDataCVSortById({ designId });
+                data = await functions.getDataCVSortById({ designId }, pageNumber);
                 return await functions.success(res, 'Lấy dữ liệu thành công', { data });
             };
-            data = await functions.getDataCVSortById({});
+            data = await functions.getDataCVSortById({}, pageNumber);
             return await functions.success(res, 'Lấy dữ liệu thành công', { data });
         };
     } catch (e) {

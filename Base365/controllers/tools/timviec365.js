@@ -8,16 +8,17 @@ const CategoryBlog = require('../../models/Timviec365/Blog/Category');
 const CVCate = require('../../models/Timviec365/CV/CVCategory');
 const CVLang = require('../../models/Timviec365/CV/CVLang');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
+const CVDesign = require('../../models/Timviec365/CV/CVDesign');
+const CVGroup = require('../../models/Timviec365/CV/CVGroup');
+const CVSection = require('../../models/Timviec365/CV/CVSection');
 const Application = require('../../models/Timviec365/CV/Application');
 const ApplicationUV = require('../../models/Timviec365/CV/ApplicationUV');
 const Letter = require('../../models/Timviec365/CV/Letter');
 const LetterUV = require('../../models/Timviec365/CV/LetterUV');
 const Resume = require('../../models/Timviec365/CV/Resume');
 const ResumeUV = require('../../models/Timviec365/CV/ResumeUV');
-const CVDesign = require('../../models/Timviec365/CV/CVDesign');
-const CVGroup = require('../../models/Timviec365/CV/CVGroup');
+const ResumeCategory = require('../../models/Timviec365/CV/ResumeCategory');
 const PriceList = require('../../models/Timviec365/PriceList/PriceList');
-const CVSection = require('../../models/Timviec365/CV/CVSection');
 
 
 
@@ -937,6 +938,46 @@ exports.toolCVSection = async(req, res, next) => {
 
                     })
                     await CVSection.create(cvSection);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolResumeCategory = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_dm_nganhcv.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+                    const content = Buffer.from(data[i].content, 'base64').toString('utf-8');
+
+                    const resumeCategory = new CVCResumeCategoryate({
+                        _id: data[i].id,
+                        name: data[i].name,
+                        alias: data[i].alias,
+                        metaH1: data[i].meta_h1,
+                        content,
+                        cId: +data[i].cid,
+                        metaTitle: data[i].meta_title,
+                        metaKey: data[i].meta_key,
+                        metaDes: data[i].meta_des,
+                        // metaTt: data[i].meta_tt,
+                        status: +data[i].status,
+                    })
+                    await ResumeCategory.create(resumeCategory);
 
                 }
                 page++;

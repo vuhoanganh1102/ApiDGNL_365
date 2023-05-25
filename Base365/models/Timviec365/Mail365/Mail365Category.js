@@ -2,33 +2,46 @@
 const mongoose = require('mongoose');
 const Mail365CategorySchema = new mongoose.Schema({
     _id: {
-        type: Number
+        type: Number,
+        require: true
     },
     name: {
         type: String
     },
-    alias: {
-        type: String
+    type: {
+        type: {
+            _id: {
+                type: Number,
+            },
+            name: {
+                type: String
+            },
+            alias: {
+                type: String
+            },
+            cateId: {
+                type: Number
+            },
+            sapo: {
+                type: String
+            },
+            content: {
+                type: String
+            },
+            menu: {
+                type: Number
+            },
+            sort: {
+                type: Number
+            },
+            status: {
+                type: Number
+            }
+        },
+        default: null
+
     },
-    // gồm 1.thư mời ứng viên || 2. thư mời hợp tác || 3. thư mời hội họp 
-    cateId: {
-        type: Number
-    },
-    sapo: {
-        type: String
-    },
-    content: {
-        type: String
-    },
-    menu: {
-        type: Number
-    },
-    sort: {
-        type: Number
-    },
-    status: {
-        type: Number
-    }
+
 
 }, {
     collection: 'Mail365Category',

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Mail365Schema = new mongoose.Schema({
     _id: {
-        type: Number
+        type: Number,
+        require: true
     },
     name: {
         type: String

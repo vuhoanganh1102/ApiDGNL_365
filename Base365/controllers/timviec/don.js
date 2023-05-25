@@ -6,7 +6,8 @@ const DonUV = require('../../models/Timviec365/CV/ApplicationUV');
 // lấy danh sách mẫu đơn
 exports.getDon = async(req, res, next) => {
     try {
-        const data = await DonXinViec.find({});
+        const pageNumber = req.query.pageNumber || 1;
+        const data = await DonXinViec.find({}).skip((pageNumber - 1) * 20).limit(20);
 
         if (data.length) return await functions.success(res, 'Lấy mẫu DON thành công', { data });
 
@@ -19,8 +20,9 @@ exports.getDon = async(req, res, next) => {
 // tìm đơn theo ngành
 exports.getByNganh = async(req, res, next) => {
     try {
+        const pageNumber = req.query.pageNumber || 1;
         const cateId = req.body.cateId;
-        const data = await DonXinViec.find({ cateId }); // tìm theo id Ngành
+        const data = await DonXinViec.find({ cateId }).skip((pageNumber - 1) * 20).limit(20); // tìm theo id Ngành
 
         if (data.length) return await functions.success(res, `DON theo ngành ${cateId}`, { data });
 

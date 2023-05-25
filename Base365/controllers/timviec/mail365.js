@@ -20,8 +20,9 @@ exports.getCategories = async(req, res, next) => {
 // ds email theo mẫu
 exports.findByCategory = async(req, res, next) => {
     try {
+        const pageNumber = req.query.pageNumber;
         const cateId = req.body.cateId;
-        const data = await Mail365.find(cateId);
+        const data = await Mail365.find(cateId).skip((pageNumber - 1) * 6).limit(6);
 
         if (data.length) return await functions.success(res, 'Thành công', { data });
 

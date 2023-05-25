@@ -12,8 +12,13 @@ const CategorySchema = mongoose.Schema({
         type: String
     },
     type: {
-        _id: Number,
-        name: String
+        type: {
+            _id: Number,
+            name: String,
+        },
+        default: null
+
+
     },
     description: {
         type: String
