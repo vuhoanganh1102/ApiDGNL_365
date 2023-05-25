@@ -52,6 +52,7 @@ const BlogSchema = new mongoose.Schema({
         default: null
     },
     sapo: {
+        //tom tắt
         type: String,
         default: null
     },
@@ -132,8 +133,38 @@ const BlogSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-
-
+    active: {
+        //có cho hiển thị ra ngoài tin tức ko: 1 có
+        type: Number,
+        default: 0
+    },
+    hot: {
+        //tin tức này có hot hay ko
+        type: Number,
+        default: 0
+    },
+    new: {
+        //tin tức này có mới hay không
+        type: Number,
+        default: 0
+    },
+    toc: {
+        type: Number,
+        default: 1
+    },
+    auto: {
+        type: Number,
+        default: 0
+    },
+    titleRelate: {
+        //tiêu đề liên quan
+        type: String,
+        default: null
+    },
+    contentRelate: {
+        type: String,
+        default: null
+    }
 
 }, {
     collection: 'Blog',
