@@ -25,7 +25,7 @@ const ApplicationSchema = new mongoose.Schema({
     favourite: {
         type: Number
     },
-    downLoad: {
+    download: {
         type: Number
     },
     color: {
@@ -63,9 +63,6 @@ const ApplicationSchema = new mongoose.Schema({
     },
     htmlKr: {
         type: String
-    },
-    langId: {
-        type: Number
     },
 }, {
     collection: 'Application',
