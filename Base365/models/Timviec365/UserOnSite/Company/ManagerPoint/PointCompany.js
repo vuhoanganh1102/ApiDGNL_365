@@ -12,23 +12,28 @@ const pointCompanySchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    pointUSC: {
+    pointCompany: {
+        // điểm công ty
         type: Number,
         default: 0,
     },
-    pointBaoLuu: {
+    reservationPoint: {
+        // điểm bảo lưu
         type: Number,
         default: 0,
     },
-    chuThichBaoLuu: {
+    note: {
+        // chú thích bảo lưu
         type: String,
         default: null,
     },
-    dayResetPoint: {
+    dateResetPoint: {
+        // ngày reset point
         type: Date,
         default: null,
     },
-    dayResetPoint0: {
+    dateResetPointToZero: {
+        // ngày reset point về 0
         type: Date,
         default: null,
     },

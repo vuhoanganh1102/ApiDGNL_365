@@ -536,7 +536,7 @@ exports.toolPointUse = async(req, res, next) => {
                         typeErr: listKey[i].type_err,
                         noteUV: listKey[i].note_uv,
                         usedDay: useDay,
-                        returnPoint: listKey[i].point,
+                        returnPoint: listKey[i].return_point,
                         adminID: listKey[i].admin_id,
                         ipUser: listKey[i].ip_user,
                     })
@@ -580,11 +580,11 @@ exports.toolPoinCompany = async(req, res, next) => {
                         _id: Number(id) + 1,
                         uscID: listKey[i].usc_id,
                         point: listKey[i].point,
-                        pointUSC: listKey[i].point_usc,
-                        pointBaoLuu: listKey[i].point_bao_luu,
-                        chuThichBaoLuu: listKey[i].chu_thich_bao_luu,
-                        dayResetPoint: dayreset,
-                        dayResetPoint0: dayreset0,
+                        pointCompany: listKey[i].point_usc,
+                        reservationPoint: listKey[i].point_bao_luu,
+                        note: listKey[i].chu_thich_bao_luu,
+                        dateResetPoint: dayreset,
+                        dateResetPointToZero: dayreset0,
                     })
                     await key.save();
                 }
