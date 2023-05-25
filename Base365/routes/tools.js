@@ -28,6 +28,9 @@ router.post('/toolCV', toolTimviec365.toolCV);
 // api quét data category blog
 router.post('/toolCategoryBlog', toolTimviec365.toolCategoryBlog);
 
+// api quét data category blog
+router.post('/tooBlog', toolTimviec365.toolBlog);
+
 // api quét data danh sách ngành cv
 router.post('/toolCVCategory', toolTimviec365.toolCVCategory);
 

@@ -4,7 +4,10 @@ const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New')
 const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
 const Linh_Vuc = require('../../models/Timviec365/UserOnSite/Company/CategoryCompany')
 const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
-const CategoryBlog = require('../../models/Timviec365/Blog/Category');
+
+const CategoryBlog = require('../../models/Timviec365/Blog/Category')
+const Blog = require('../../models/Timviec365/Blog/Posts')
+const CategoryJob = require('../../models/Timviec365/CategoryJob');
 const CVCate = require('../../models/Timviec365/CV/CVCategory');
 const CVLang = require('../../models/Timviec365/CV/CVLang');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
@@ -18,8 +21,6 @@ const CVDesign = require('../../models/Timviec365/CV/CVDesign');
 const CVGroup = require('../../models/Timviec365/CV/CVGroup');
 const PriceList = require('../../models/Timviec365/PriceList/PriceList');
 const CVSection = require('../../models/Timviec365/CV/CVSection');
-
-
 
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
@@ -314,62 +315,52 @@ exports.toolCategoryBlog = async(req, res, next) => {
 // insert CV
 exports.toolCV = async(req, res, next) => {
     try {
-        let page = 1;
-        let result = true;
-        do {
-            result = false;
-            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=${page}`, {});
-            if (data.length) {
-                for (let i = 0; i < data.length; i++) {
+        const data = await fnc.getDataAxios('https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=1', {});
+        await data.forEach(async element => {
 
-                    const cv = await new CV({
-                        _id: data[i].id,
-                        name: data[i].name,
-                        alias: data[i].alias,
-                        urlAlias: data[i].url_alias,
-                        urlCanonical: data[i].url_canonical,
-                        image: data[i].image,
-                        price: data[i].price,
-                        color: data[i].colors,
-                        view: data[i].view,
-                        favorite: data[i].love,
-                        download: data[i].download,
-                        vip: data[i].vip,
-                        cvIndex: data[i].cv_index,
-                        cId: data[i].cid,
-                        content: data[i].content,
-                        motaCv: data[i].mota_cv,
-                        htmlVi: JSON.stringify(data[i].html_vi),
-                        htmlEn: JSON.stringify(data[i].html_en),
-                        htmlJp: JSON.stringify(data[i].html_jp),
-                        htmlCn: JSON.stringify(data[i].html_cn),
-                        htmlKr: JSON.stringify(data[i].html_kr),
-                        cateId: data[i].cate_id,
-                        langId: data[i].lang_id,
-                        designId: data[i].design_id,
-                        exp: data[i].exp,
-                        nhuCau: data[i].nhucau,
-                        metaTitle: data[i].meta_title,
-                        metaKey: data[i].meta_key,
-                        metaDes: data[i].meta_des,
-                        thuTu: data[i].thutu,
-                        full: data[i].full,
-                        status: data[i].status,
-                        cvPoint: data[i].cv_point,
-                    });
-                    await CV.create(cv);
-                }
-                result = true;
-                page += 1;
+            const cv = new CV({
+                _id: element.id,
+                name: element.name,
+                alias: element.alias,
+                urlAlias: element.url_alias,
+                urlCanonical: element.url_canonical,
+                image: element.image,
+                price: element.price,
+                color: element.colors,
+                view: element.view,
+                favorite: element.love,
+                download: element.download,
+                vip: element.vip,
+                cvIndex: element.cv_index,
+                cId: element.cid,
+                content: element.content,
+                motaCv: element.mota_cv,
+                htmlVi: JSON.stringify(element.html_vi),
+                htmlEn: JSON.stringify(element.html_en),
+                htmlJp: JSON.stringify(element.html_jp),
+                htmlCn: JSON.stringify(element.html_cn),
+                htmlKr: JSON.stringify(element.html_kr),
+                cateId: element.cate_id,
+                langId: element.lang_id,
+                designId: element.design_id,
+                exp: element.exp,
+                nhuCau: element.nhucau,
+                metaTitle: element.meta_title,
+                metaKey: element.meta_key,
+                metaDes: element.meta_des,
+                thuTu: element.thutu,
+                full: element.full,
+                status: element.status,
+                cvPoint: element.cv_point,
+            });
+            await CV.create(cv);
 
-            }
-        }
-        while (result)
+        });
         return await fnc.success(res, "Thành công", );
     } catch (err) {
         return fnc.setError(res, err.message);
     };
-};
+ };
 
 exports.toolCVCategory = async(req, res, next) => {
     try {
@@ -950,4 +941,99 @@ exports.toolCVSection = async(req, res, next) => {
     } catch (error) {
         return fnc.setError(res, error.message);
     }
-};
+}; 
+  
+}
+
+// hàm thêm dữ liệu vào bảng blog
+exports.toolBlog = async(req, res, next) => {
+    try {
+        let result = true,
+            page = 1;
+
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/api/list_blog.php', { page: page })
+            let listBlog = data.data.items;
+            if (listBlog.length > 0) {
+                for (let i = 0; i < listBlog.length; i++) {
+                    const blog = new Blog({
+                        _id: listBlog[i].new_id,
+                        adminID: listBlog[i].admin_id,
+                        title: listBlog[i].new_title,
+                        mail: listBlog[i].new_mail,
+                        titleRewrite: listBlog[i].new_title_rewrite,
+                        redirect301: listBlog[i].new_301,
+                        canonical: listBlog[i].new_canonical,
+                        picture: listBlog[i].new_picture,
+                        sapo: listBlog[i].new_teaser,
+                        content: listBlog[i].key_type,
+                        seoTitle: listBlog[i].new_tt,
+                        seoDescription: listBlog[i].new_des,
+                        seoKeyword: listBlog[i].new_keyword,
+                        urlVideo: listBlog[i].new_video,
+                        categoryID: listBlog[i].new_category_id,
+                        categoryCB: listBlog[i].new_category_cb,
+                        createdAt: new Date(listBlog[i].new_date * 1000),
+                        updateAt: new Date(listBlog[i].new_date_last_edit * 1000),
+                        adminEdit: listBlog[i].new_admin_edit,
+                        order: listBlog[i].new_order,
+                        hits: listBlog[i].new_hits,
+                        active: listBlog[i].new_active,
+                        cateUrl: listBlog[i].new_cate_url,
+                        isHot: listBlog[i].new_hot,
+                        new: listBlog[i].new_new,
+                        view: listBlog[i].new_view,
+                        urlLq: listBlog[i].new_url_lq,
+                        tagCate: listBlog[i].new_tag_cate,
+                        jobKeyword: listBlog[i].new_vl,
+                        suggestTitle: listBlog[i].new_tdgy,
+                        suggestContent: listBlog[i].new_ndgy,
+                        audio: listBlog[i].new_audio,
+                    })
+                    await blog.save();
+                };
+                page++
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+// hàm thêm dữ liệu vào bảng ngành nghề viecj làm
+exports.toolCategoryJob = async(req, res, next) => {
+    try {
+
+        let data = await fnc.getDataAxios('https://timviec365.vn/api/get_tbl_category.php');
+        let listCategory = data;
+        if (listCategory.length > 0) {
+            for (let i = 0; i < listCategory.length; i++) {
+                const category = new CategoryJob({
+                    _id: listCategory[i].cat_id,
+                    name: listCategory[i].cat_name,
+                    title: listCategory[i].cat_title,
+                    tags: data[i].cat_tags,
+                    description: listCategory[i].cat_description,
+                    keyword: data[i].cat_keyword,
+                    des: listCategory[i].cat_mota,
+                    parentID: listCategory[i].cat_parent_id,
+                    count: listCategory[i].cat_count,
+                    order: listCategory[i].cat_order,
+                    active: listCategory[i].cat_active,
+                    hot: listCategory[i].cat_hot,
+                })
+                await category.save();
+            };
+        }
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}

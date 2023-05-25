@@ -19,6 +19,11 @@ const PostsTV365Schema = new mongoose.Schema({
         type: String,
         default: null
     },
+    mail: {
+        // 
+        type: Number,
+        default: 0
+    },
     redirect301: {
         // Link điều hướng 301
         type: String,
@@ -122,8 +127,8 @@ const PostsTV365Schema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    listIDRelated: {
-        // Danh sách ID liên quan (có thể giờ ko dùng nữa)
+    urlLq: {
+        // 
         type: String,
         default: null
     },
