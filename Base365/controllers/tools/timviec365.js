@@ -7,7 +7,6 @@ const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
 
 const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 const Blog = require('../../models/Timviec365/Blog/Posts')
-const CategoryJob = require('../../models/Timviec365/CategoryJob')
 const Users = require('../../models/Users')
 const PointCompany = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany')
 const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed')
@@ -1176,7 +1175,7 @@ exports.toolPointUse = async(req, res, next) => {
                         typeErr: listKey[i].type_err,
                         noteUV: listKey[i].note_uv,
                         usedDay: useDay,
-                        returnPoint: listKey[i].point,
+                        returnPoint: listKey[i].return_point,
                         adminID: listKey[i].admin_id,
                         ipUser: listKey[i].ip_user,
                     })
@@ -1220,11 +1219,11 @@ exports.toolPoinCompany = async(req, res, next) => {
                         _id: Number(id) + 1,
                         uscID: listKey[i].usc_id,
                         point: listKey[i].point,
-                        pointUSC: listKey[i].point_usc,
-                        pointBaoLuu: listKey[i].point_bao_luu,
-                        chuThichBaoLuu: listKey[i].chu_thich_bao_luu,
-                        dayResetPoint: dayreset,
-                        dayResetPoint0: dayreset0,
+                        pointCompany: listKey[i].point_usc,
+                        reservationPoint: listKey[i].point_bao_luu,
+                        note: listKey[i].chu_thich_bao_luu,
+                        dateResetPoint: dayreset,
+                        dateResetPointToZero: dayreset0,
                     })
                     await key.save();
                 }
@@ -1374,7 +1373,7 @@ exports.toolEmail365Cate = async(req, res, next) => {
 
             if (data.length) {
                 for (let i = 0; i < data.length; i++) {
-
+                    const content = Buffer.from(data[i].content, 'base64').toString('utf-8');
                     const mail365Cate = new Mail365Cate({
                         _id: +data[i].id,
                         name: data[i].name,
@@ -1384,7 +1383,7 @@ exports.toolEmail365Cate = async(req, res, next) => {
                         metaTitle: data[i].meta_title,
                         metaKey: data[i].meta_key,
                         metaDes: data[i].meta_des,
-                        content: data[i].content,
+                        content,
                         status: +data[i].status,
                     })
                     await Mail365Cate.create(mail365Cate);

@@ -6,7 +6,8 @@ const DanhMucMail365 = require('../../models/Timviec365/Mail365/Mail365Category'
 // ds danh mục email trang chủ 
 exports.getCategories = async(req, res, next) => {
     try {
-        const data = await DanhMucMail365.find();
+        const parent = req.body.parent || {};
+        const data = await DanhMucMail365.find(parent);
 
         if (data.length) return await functions.success(res, 'Thành công', { data });
 

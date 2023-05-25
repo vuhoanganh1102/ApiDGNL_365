@@ -1027,7 +1027,9 @@ exports.uploadImg = async(req, res, next) => {
                                 listImg.push({
                                     _id: Number(newID) + 1,
                                     name: img[i].filename,
-                                    size: img[i].size
+                                    size: img[i].size,
+                                    active: 0,
+                                    type: 1
                                 })
                             } else {
                                 if (img) {
@@ -1116,6 +1118,8 @@ exports.uploadVideo = async(req, res, next) => {
                                     _id: Number(newID) + 1,
                                     name: video[i].filename,
                                     size: video[i].size,
+                                    active: 0,
+                                    type: 1
                                 })
 
                             } else {
