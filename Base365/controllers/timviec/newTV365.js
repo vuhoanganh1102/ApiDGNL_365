@@ -667,7 +667,7 @@ exports.listNewGap = async(req, res, next) => {
             return functions.setError(res, 'không lấy được danh sách', 404)
         } else {
             let listPostVLLC = await functions.getDatafind(NewTV365, { newGap: { $ne: 0 } });
-            return functions.success(res, "Lấy danh sách tin đăng thành công", listPostVLLC);
+            return functions.success(res, "Lấy danh sách tin đăng thành công", { listPostVLLC });
 
         }
     } catch (error) {
