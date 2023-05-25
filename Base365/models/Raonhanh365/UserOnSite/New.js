@@ -589,9 +589,8 @@ const newSchema = new mongoose.Schema({
                 default: 0
             },
         },
-
+        // dịch vụ giải trí
         entertainmentService: {
-            // dịch vụ giải trí
             brand: {
                 // hãng
                 type: Number,
@@ -614,7 +613,7 @@ const newSchema = new mongoose.Schema({
         },
 
         material: {
-            // chất liệu trong danh nội thât 
+            // chất liệu trong danh mục nội thât 
             type: Number,
             default: 0
         },

@@ -255,7 +255,7 @@ const storageFile = (destination) => {
                     fs.mkdirSync(userDestination, { recursive: true });
                 }
             } else {
-                userDestination = 'public/company'
+                userDestination = destination
             }
             cb(null, userDestination);
         },
