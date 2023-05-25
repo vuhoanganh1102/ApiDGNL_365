@@ -685,8 +685,8 @@ exports.listNewHot = async(req, res, next) => {
         if (page && pageSize) {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let listPostVLHD = await functions.pageFind(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newGGap: 0, redirect301: "" }, { updateTime: -1 }, skip, limit);
-            const totalCount = await functions.findCount(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newGGap: 0, redirect301: "" });
+            let listPostVLHD = await functions.pageFind(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newGap: 0, redirect301: "" }, { updateTime: -1 }, skip, limit);
+            const totalCount = await functions.findCount(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newGap: 0, redirect301: "" });
             const totalPages = Math.ceil(totalCount / pageSize);
             if (listPostVLHD) {
                 return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPostVLHD });
@@ -694,7 +694,7 @@ exports.listNewHot = async(req, res, next) => {
             return functions.setError(res, 'không lấy được danh sách', 404)
         } else {
             let listPostVLHD = await functions.getDatafind(NewTV365, { newHot: { $ne: 0 } });
-            return functions.success(res, "Lấy danh sách tin đăng thành công", listPostVLHD);
+            return functions.success(res, "Lấy danh sách tin đăng thành công", { listPostVLHD });
 
         }
     } catch (error) {
