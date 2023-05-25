@@ -390,11 +390,11 @@ exports.verify = async(req, res, next) => {
 // hàm bước 1 của quên mật khẩu
 exports.forgotPasswordCheckMail = async(req, res, next) => {
     try {
-        let email = req.body.email;
+        let email = req.body.email;//user nhập email
         let checkEmail = await functions.checkEmail(email);
         if (checkEmail) {
             let verify = await Users.findOne({ email: email, type: 1 });
-            if (verify != null) {
+            if (verify != null) {//nếu tìm được 
                 // api lẫy mã OTP qua app Chat
                 let data = await functions.getDataAxios('http://43.239.223.142:9000/api/users/RegisterMailOtp', { email });
                 let otp = data.data.otp
