@@ -5,6 +5,6 @@ const formData = require('express-form-data');
 const functions = require('../../services/functions')
 const newRN = require('../../controllers/raonhanh365/new');
 
-router.post('/postNew', newRN.postNewMain, newRN.postNewElectron);
+router.post('/postNew', formData.parse(), newRN.postNewMain, newRN.postNewElectron);
 
 module.exports = router;
