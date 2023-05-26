@@ -3,6 +3,7 @@ const New = require('../../models/Raonhanh365/UserOnSite/New');
 const Category = require('../../models/Raonhanh365/Category');
 const axios = require('axios');
 const FormData = require('form-data');
+const CateDetail = require('../../models/Raonhanh365/CateDetail');
 
 
 
@@ -316,9 +317,436 @@ exports.updateNewDescription = async() => {
 }
 
 
+
+// exports.toolCateDetail = async(req, res, next) => {
+//     try {
+//         let page = 1;
+//         let result = true;
+//         do {
+//             const form = new FormData();
+//             form.append('page', page);
+//             const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
+//                 headers: {
+//                     'Content-Type': 'multipart/form-data',
+//                 },
+//             });
+
+//             let data = response.data.data.items;
+//             if (data.length) {
+//                 for (let i = 0; i < data.length; i++) {
+//                     const newItem = {
+//                         _id: data[i].id,
+//                         name: data[i].ten_dong,
+//                     };
+//                     await CateDetail.findOneAndUpdate({ "brand": { $elemMatch: { "_id": data[i].id_hang } } }, { $push: { "brand.$.line": newItem } }, { new: true });
+
+//                 }
+//                 page++;
+//             } else {
+//                 result = false;
+//             }
+
+//             console.log(page);
+//         } while (result);
+
+//         return fnc.success(res, "Thành công");
+//     } catch (error) {
+//         return fnc.setError(res, error.message);
+//     }
+// };
+
+
+
 exports.toolCateDetail = async(req, res, next) => {
     try {
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
 
+            //1. nhóm sp
+            // const response = await axios.post('https://raonhanh365.vn/api/select_ds_nhomsp.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].name,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productGroup: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+
+            // 2.nhóm chất liệu
+            // const response = await axios.post('https://raonhanh365.vn/api/select_ds_nspchatlieu.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].name,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productMaterial: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+
+            // 3. nhóm sp hìn dạng
+            // const response = await axios.post('https://raonhanh365.vn/api/select_ds_nsphinhdang.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].name,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productShape: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            //4. giống pet
+            // const response = await axios.post('https://raonhanh365.vn/api/select_ds_giongthucung.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].giong_thucung,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { petPurebred: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            //5. thông tin pet
+            // const response = await axios.post('https://raonhanh365.vn/api/select_ds_ttthucung.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].contents_name,
+            //             type: data[i].type,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { petInfo: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            // 6. xuất sứ
+            // const response = await axios.post('https://raonhanh365.vn/api/select_ds_xuatxu.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id_xuatxu,
+            //             name: data[i].noi_xuatxu,
+            //             parent: data[i].id_parents,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { origin: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            //7. dung lượng
+            // const response = await axios.post('https://raonhanh365.vn/api/select_ds_dungluong.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id_dl,
+            //             name: data[i].ten_dl,
+            //             type: data[i].phan_loai,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { capacity: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            // 8.màn hình 
+            // const response = await axios.post('https://raonhanh365.vn/api/select_ds_manhinh.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id_manhinh,
+            //             name: data[i].ten_manhinh,
+            //             type: data[i].phan_loai,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { screen: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            //9. bảo hành
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_baohanh.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id_baohanh,
+            //             warrantyTime: data[i].tgian_baohanh,
+            //             parent: data[i].id_parents,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { warranty: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            //10.bộ vi xl
+            // const response = await axios.post(' https://raonhanh365.vn/api/select_tbl_bovixuly.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].bovi_id,
+            //             name: data[i].bovi_ten,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].bovi_id_danhmuc }, { $addToSet: { processor: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            // 11. năm sản xuất
+            // const response = await axios.post(' https://raonhanh365.vn/api/select_tbl_namsanxuat.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             year: data[i].nam_san_xuat,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { yearManufacture: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            // 12. mau sac
+            // const response = await axios.post(' https://raonhanh365.vn/api/select_tbl_mausac.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id_color,
+            //             name: data[i].mau_sac,
+            //             parent: data[i].id_parents,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_dm }, { $addToSet: { colors: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            // 13.hãng
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_hang.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].ten_hang,
+            //             parent: data[i].id_parent,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            //14. dòng ( dòng của hãng)
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+
+            // let data = response.data.data.items;
+            // if (data.length) {
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].ten_dong,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ "brand": { $elemMatch: { "_id": data[i].id_hang } } }, { $push: { "brand.$.line": newItem } }, { new: true });
+
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            // 15. tầng phòng
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_tangphong.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             quantity: data[i].so_luong,
+            //             type: data[i].type_zoom,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { storyAndRoom: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            //16. Thể thao
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_monthethao.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].ten_mon,
+            //             type: data[i].phan_loai,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: 74 }, { $addToSet: { sport: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+
+            //17. loại chung
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
+
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].ten_loai,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
+
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
     } catch (error) {
         return fnc.setError(res, error.message, )
     }

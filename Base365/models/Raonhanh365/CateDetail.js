@@ -24,11 +24,14 @@ const CateDetailSchema = mongoose.Schema({
             name: {
                 type: String
             },
+            parent: {
+                type: Number
+            },
         }],
         default: null,
     },
-    productQuality: {
-        // nhóm sản phẩm có chất lượng
+    productMaterial: {
+        // nhóm sản phẩm có chất liệu
         type: [{
             _id: {
                 type: Number
@@ -36,24 +39,30 @@ const CateDetailSchema = mongoose.Schema({
             name: {
                 type: String
             },
+            parent: {
+                type: Number
+            },
         }],
         default: null,
     },
     petPurebred: {
         // giống thú cưng
-        type: {
+        type: [{
             _id: {
                 type: Number
             },
             name: {
                 type: String
-            }
-        },
+            },
+            parent: {
+                type: Number
+            },
+        }],
         default: null,
     },
     petInfo: {
         // thông tin thú cưng
-        type: {
+        type: [{
             _id: {
                 type: Number
             },
@@ -64,7 +73,7 @@ const CateDetailSchema = mongoose.Schema({
                 // phân loại theo : 1.Độ tuổi 2.Kích cỡ 3.Giống( đực|| cái)
                 type: Number
             }
-        },
+        }],
         default: null,
     },
     origin: {
@@ -76,6 +85,9 @@ const CateDetailSchema = mongoose.Schema({
             name: {
                 type: String
             },
+            parent: {
+                type: Number
+            },
         }],
         default: null,
     },
@@ -83,13 +95,16 @@ const CateDetailSchema = mongoose.Schema({
         //dung lượng
         type: [{
             _id: {
-                type: String
+                type: Number
             },
             name: {
                 type: String
             },
             type: {
                 // phân loại: 1. Ram 2.Ổ cứng 3.Dung tích xe
+                type: Number
+            },
+            parent: {
                 type: Number
             }
         }],
@@ -107,6 +122,9 @@ const CateDetailSchema = mongoose.Schema({
             type: {
                 // phân loại: 1: card, 2: kích cỡ, 3: kích thước khung
                 type: Number,
+            },
+            parent: {
+                type: Number
             }
         }],
         default: null,
@@ -120,6 +138,9 @@ const CateDetailSchema = mongoose.Schema({
             warrantyTime: {
                 //thời gian bảo hành
                 type: String
+            },
+            parent: {
+                type: Number
             },
         }],
         default: null,
@@ -145,6 +166,9 @@ const CateDetailSchema = mongoose.Schema({
             year: {
                 type: String
             },
+            parent: {
+                type: Number
+            }
         }],
         default: null,
     },
@@ -157,6 +181,9 @@ const CateDetailSchema = mongoose.Schema({
             name: {
                 type: String
             },
+            parent: {
+                type: Number
+            }
         }],
         default: null,
     },
@@ -169,7 +196,10 @@ const CateDetailSchema = mongoose.Schema({
             name: {
                 type: String
             },
-            line: [{
+            parent: {
+                type: Number
+            },
+            line: {
 
                 // dòng sp
                 type: [{
@@ -182,7 +212,7 @@ const CateDetailSchema = mongoose.Schema({
                 }],
                 default: null,
 
-            }]
+            }
         }],
         default: null,
     },
@@ -193,8 +223,8 @@ const CateDetailSchema = mongoose.Schema({
                 type: Number
             },
             quantity: {
-                //số lượng
-                type: Number
+                //số lượng- String
+                type: String
             },
             type: {
                 // loại: 1.tầng 2.Phòng ngủ 3.Nhà vệ sinh
@@ -214,19 +244,22 @@ const CateDetailSchema = mongoose.Schema({
             },
             type: {
                 //phân loại
-                type: String
+                type: Number
             }
         }],
         default: null,
     },
-    loai_chung: {
-        // chưa hiểu...
+    allType: {
+        // loai_chung: chưa hiểu...
         type: [{
             _id: {
                 type: Number
             },
             name: {
                 type: String
+            },
+            parent: {
+                type: Number
             }
         }],
         default: null,
