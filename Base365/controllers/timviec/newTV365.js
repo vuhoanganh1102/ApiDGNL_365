@@ -685,8 +685,46 @@ exports.listNewHot = async(req, res, next) => {
         if (page && pageSize) {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let listPostVLHD = await functions.pageFind(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newGap: 0, redirect301: "" }, { updateTime: -1 }, skip, limit);
-            const totalCount = await functions.findCount(NewTV365, { newHot: { $ne: 0 }, hanNop: { $gt: now }, newCao: 0, newGap: 0, redirect301: "" });
+            let listPostVLHD = await NewTV365.aggregate([{
+                    $match: {
+                        newHot: { $ne: 0 },
+                        hanNop: { $gt: now },
+                        newCao: 0,
+                        newGap: 0,
+                        redirect301: ""
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "userID",
+                        foreignField: "_id",
+                        as: "user"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        "user.userName": 1,
+                        "user.usc_alias": 1,
+                        "user.usc_logo": 1,
+                        "user.usc_create_time": 1,
+                        "user.usc_company": 1,
+                        "user.usc_type": 1,
+                        "user.chat365_id": 1,
+                        "user.usc_time_login": 1
+                    }
+                },
+                {
+                    $sort: {
+                        updateTime: -1
+                    }
+                },
+                {
+                    $count: "totalCount"
+                }
+            ]);
+            let totalCount = listPostVLHD[0].totalCount;
             const totalPages = Math.ceil(totalCount / pageSize);
             if (listPostVLHD) {
                 return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPostVLHD });

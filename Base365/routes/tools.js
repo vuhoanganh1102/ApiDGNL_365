@@ -93,4 +93,7 @@ router.post('/toolUserSavePost', toolTimviec365.toolUserSavePost);
 // api quét data new rao nhanh
 router.post('/toolNewRN', toolRaoNhanh.toolNewRN);
 
+// api update thông tin bán hàng  new rao nhanh
+router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
+
 module.exports = router;
