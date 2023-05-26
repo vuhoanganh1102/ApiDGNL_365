@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var toolUser = require('../controllers/tools/user');
 var toolTimviec365 = require('../controllers/tools/timviec365');
+var toolRaonhanh365 = require('../controllers/tools/raonhanh365');
 const formData = require('express-form-data');
 
 // API quét data người dùng từ base chat
@@ -92,5 +93,9 @@ router.post('/toolEmail365', toolTimviec365.toolEmail365);
 // api quét data danh mục email
 
 router.post('/toolEmail365Cate', toolTimviec365.toolEmail365Cate);
+
+// api quét data danh mục sản phẩm _ Raonhanh
+router.post('/toolCateRaonhanh', toolRaonhanh365.toolCategory);
+
 
 module.exports = router;

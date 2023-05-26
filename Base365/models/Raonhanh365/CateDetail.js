@@ -8,6 +8,13 @@ const CateDetailSchema = mongoose.Schema({
         type: String,
         default: null,
     },
+    productGroup: {
+        type: [{
+            _id: Number,
+            name: String,
+        }],
+        default: null,
+    },
     productShape: {
         // nhóm sản phẩm có hình dạng
         type: [{
@@ -32,10 +39,31 @@ const CateDetailSchema = mongoose.Schema({
         }],
         default: null,
     },
+    petPurebred: {
+        // giống thú cưng
+        type: {
+            _id: {
+                type: Number
+            },
+            name: {
+                type: String
+            }
+        },
+        default: null,
+    },
     petInfo: {
         // thông tin thú cưng
         type: {
-
+            _id: {
+                type: Number
+            },
+            name: {
+                type: String
+            },
+            type: {
+                // phân loại theo : 1.Độ tuổi 2.Kích cỡ 3.Giống( đực|| cái)
+                type: Number
+            }
         },
         default: null,
     },
@@ -54,15 +82,33 @@ const CateDetailSchema = mongoose.Schema({
     capacity: {
         //dung lượng
         type: {
-
+            _id: {
+                type: String
+            },
+            name: {
+                type: String
+            },
+            type: {
+                // phân loại: 1. Ram 2.Ổ cứng 3.Dung tích xe
+                type: Number
+            }
         },
         default: null,
     },
     screen: {
         //màn hình
-        type: {
-
-        },
+        type: [{
+            _id: {
+                type: Number,
+            },
+            name: {
+                type: String,
+            },
+            type: {
+                // phân loại: 1: card, 2: kích cỡ, 3: kích thước khung
+                type: Number,
+            }
+        }],
         default: null,
     },
     warranty: {
@@ -71,7 +117,8 @@ const CateDetailSchema = mongoose.Schema({
             _id: {
                 type: Number
             },
-            name: {
+            warrantyTime: {
+                //thời gian bảo hành
                 type: String
             },
         }],
@@ -95,7 +142,7 @@ const CateDetailSchema = mongoose.Schema({
             _id: {
                 type: Number
             },
-            name: {
+            year: {
                 type: String
             },
         }],
@@ -140,27 +187,51 @@ const CateDetailSchema = mongoose.Schema({
         default: null,
     },
     storyAndRoom: {
-        // số tầng của nhà
+        // số tầng, phòng của nhà
         type: [{
             _id: {
                 type: Number
             },
             quantity: {
+                //số lượng
                 type: Number
             },
-            type: [{
-                // số phòng
-                _id: {
-                    type: Number
-                },
-                description: {
-                    type: String
-                },
-
-            }]
+            type: {
+                // loại: 1.tầng 2.Phòng ngủ 3.Nhà vệ sinh
+                type: Number
+            },
         }],
         default: null,
     },
+    sport: {
+        // môn thể thao
+        type: {
+            _id: {
+                type: Number
+            },
+            name: {
+                type: String
+            },
+            type: {
+                //phân loại
+                type: String
+            }
+        }
+    },
+    loai_chung: {
+        // chưa hiểu...
+        type: {
+            _id: {
+                type: Number
+            },
+            name: {
+                type: String
+            }
+        },
+        default: null,
+    },
+
+
 
 
 }, {

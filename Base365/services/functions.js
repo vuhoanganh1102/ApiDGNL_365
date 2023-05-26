@@ -577,7 +577,7 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
 
 exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
     try {
-
+        // upload
         const timestamp = Date.now();
         const imagePath = await fsPromises.readFile(imageFile.path);
         const uploadDir = `../Storage/TimViec365/${userId}/${category}`;
@@ -585,9 +585,9 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
         const uploadPath = path.join(uploadDir, uploadFileName);
         await fsPromises.mkdir(uploadDir, { recursive: true });
         await fsPromises.writeFile(uploadPath, imagePath);
-
+        // tìm và chuyển img sang pdf
         await fsPromises.access(uploadPath);
-        const pdfPath = path.join(uploadDir, `${timestamp}_${imageFile.fieldName}.pdf`);
+        const pdfPath = path.join(uploadDir, `${uploadFileName.slice(0,-4)}.pdf`);
         const doc = new PDFDocument();
         const stream = fs.createWriteStream(pdfPath);
 

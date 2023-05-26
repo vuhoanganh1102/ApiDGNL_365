@@ -88,13 +88,37 @@ exports.detailThu = async(req, res, next) => {
 //lưu và tải thư
 exports.saveThu = async(req, res, next) => {
     try {
+        // 0 : ko, 1 có 
+        const upload = req.query.upload || 1;
+        const download = req.query.download || 0;
         const imageFile = req.file;
         const userId = req.user.data._id;
         const data = req.body;
+        if (upload == 0 && download == 1) {
+            if (fs.existsSync(`../Storage/TimViec365/${userId}/letter/${data.nameImage.slice(0,-4)}.pdf`) &&
+                fs.existsSync(`../Storage/TimViec365/${userId}/letter/${data.nameImage}`)) {
+                //pdf img tồn tại
+                const host = '';
+                const linkPdf = `${host}/TimViec365/${userId}/letter/${data.nameImage}`;
+                const linkImg = `${host}/TimViec365/${userId}/letter/${data.nameImage.slice(0,-4)}.pdf`;
+                const senderId = 1191;
+                const text = '';
+                const data = {
+                    userId: userId,
+                    senderId: senderId,
+                    linkImg: linkImg,
+                    linkPdf: linkPdf,
+                    Title: text,
+                };
+                await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
+                return await functions.success(res, `Tải thành công`, );
 
-        // 0 : lưu(upload), 1: lưu và tải(upload,download)
+            }
+            return functions.setError(res, 'Chưa upload ảnh', 404);
+        };
+
+
         let message = 'Lưu';
-        const download = req.query.download || 0;
         const checkImage = await functions.checkImage(imageFile.path);
 
         if (checkImage == false) return functions.setError(res, 'Lỗi ảnh', 404);
