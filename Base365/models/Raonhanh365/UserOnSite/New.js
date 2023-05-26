@@ -304,8 +304,6 @@ const newSchema = new mongoose.Schema({
     },
     // đô điện tử
     electroniceDevice: {
-        type: Object,
-        default: null,
         microprocessor: {
             // bộ vi xử lý
             type: Number,
@@ -349,8 +347,6 @@ const newSchema = new mongoose.Schema({
     },
     // xe cộ
     vehicle: {
-        type: Object,
-        default: null,
         brandMaterials: {
             // hãng vật tư
             type: Number,
@@ -361,7 +357,7 @@ const newSchema = new mongoose.Schema({
             type: Number,
             default: 0
         },
-        accessary: {
+        spareParts: {
             // loại phụ tùng 
             type: Number,
             default: 0
@@ -403,6 +399,15 @@ const newSchema = new mongoose.Schema({
         },
         wattage: {
             // công suất
+            type: Number,
+            default: 0
+        },
+        engine: {
+            // động cơ
+            type: Number,
+            default: 0
+        },
+        accessary: {
             type: Number,
             default: 0
         },
@@ -461,11 +466,13 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
+        version: {
+            type: Number,
+            default: 0
+        }
     },
     // bất động sản
     realEstate: {
-        type: Object,
-        default: null,
         statusSell: {
             // cần bán / cho thuê
             type: Number,
@@ -585,12 +592,30 @@ const newSchema = new mongoose.Schema({
             // diện tích sử dụng
             type: String,
             default: null
+        },
+        landType: {
+            // loại hình đất
+            type: Number,
+            default: 0
+        },
+        officeType: {
+            // loại hình văn phòng
+            type: Number,
+            default: 0
+        },
+        block: {
+            // block tháp
+            type: String,
+            default: null
+        },
+        htmchrt: {
+            // hiển thị mã căn hộ rao tin
+            type: Number,
+            default: 0
         }
     },
     //ship
     ship: {
-        type: Object,
-        default: null,
         product: {
             // Loại hàng hóa giao
             type: Number,
@@ -649,8 +674,6 @@ const newSchema = new mongoose.Schema({
     },
     // thú cưng
     pet: {
-        type: Object,
-        default: null,
         kindOfPet: {
             // loại thú cưng
             type: String,
@@ -674,8 +697,6 @@ const newSchema = new mongoose.Schema({
     },
     // đồ gia dụng
     houseWare: {
-        type: Object,
-        default: null,
         typeDevice: {
             // loại thiết bị
             type: Number,
@@ -695,8 +716,6 @@ const newSchema = new mongoose.Schema({
     },
     // sức khỏe sắc đẹp
     health: {
-        type: Object,
-        default: null,
         typeProduct: {
             // loại sản phẩm , loại thực phẩm chức năng , loại phụ kiện, loại hình
             type: Number,
@@ -720,8 +739,6 @@ const newSchema = new mongoose.Schema({
     },
     // tìm việc
     Job: {
-        type: Object,
-        default: null,
         jobType: {
             // ngành nghề
             type: String,
@@ -796,8 +813,6 @@ const newSchema = new mongoose.Schema({
     },
     // đồ ăn đồ uống
     food: {
-        type: Object,
-        default: null,
         typeFood: {
             // loại đồ ăn dồ uống
             type: Number,
@@ -866,8 +881,6 @@ const newSchema = new mongoose.Schema({
     },
     // thông tin bán hàng
     infoSell: {
-        type: Object,
-        default: null,
         groupType: {
             // nhóm phân loại
             type: String,

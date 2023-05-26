@@ -1,7 +1,7 @@
 const fnc = require('../../services/functions');
 const CV = require('../../models/Timviec365/CV/CV');
 const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New')
-const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
+const AdminUser = require('../../models/AdminUser');
 const Linh_Vuc = require('../../models/Timviec365/UserOnSite/Company/CategoryCompany')
 const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
 
@@ -45,7 +45,7 @@ exports.toolNewTV365 = async(req, res, next) => {
                     let lvArray = data[i].new_lv.split(",").map(String);
                     const newTV = new NewTV365({
                         _id: data[i].new_id,
-                        userID: data[i].usc_id,
+                        userID: data[i].new_user_id,
                         title: data[i].new_title,
                         newMd5: data[i].new_md5,
                         alias: data[i].new_alias,
@@ -267,7 +267,6 @@ exports.toolLV = async(req, res, next) => {
                         tagVlgy: data[i].tag_vlgy,
                         tagNdgy: decodedStringNdgy,
                         tagIndex: data[i].tag_index,
-
                     })
                     await lv.save();
                 }

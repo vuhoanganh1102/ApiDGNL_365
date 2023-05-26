@@ -78,7 +78,7 @@ const newTV365Schema = new mongoose.Schema({
 
     sex: {
         //giới tính
-        type: Number,
+        type: String,
         default: 0
     },
 

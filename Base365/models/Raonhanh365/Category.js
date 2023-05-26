@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-
-const CategorySchema = mongoose.Schema({
+const Schema = mongoose.Schema
+const CategoryRaoNhanh365Schema = mongoose.Schema({
     _id: {
         type: Number,
         required: true
@@ -65,9 +65,9 @@ const CategorySchema = mongoose.Schema({
         default: 0,
     },
 }, {
-    collection: 'CateRaonhanh',
+    collection: 'CategoryRaoNhanh365',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model('CateRaonhanh', CategorySchema);
+module.exports = mongoose.model('CategoryRaoNhanh365', CategoryRaoNhanh365Schema);
