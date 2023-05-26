@@ -28,21 +28,37 @@ exports.getUserById = async (req, res) => {
         }
     }
 };
+
 //tạo nhân viên 
-exports.createUser = async (req, res) => {
+exports.createEmployee = async (req, res) => {
+    const idQLC = req.body.idQLC;
+    const companyID = req.body.companyID;
+    const type = 2;
+    const phoneTK = req.body.phoneTK;
+    const userName = req.body.userName;
+    const password = req.body.password;
+    const phone = req.body.phone;
+    const address = req.body.address;
+    const gender = req.body.gender;
+    const birthday = req.body.birthday;
+    const candiHocVan = req.body.candiHocVan;
+    const married = req.body.married;
+    const exp = req.body.exp;
+    const positionID = req.body.positionID;
+    const depID = req.body.depID;
+    const groupID = req.body.groupID;
 
-    const {idQLC, companyID, type, phoneTK, userName, password, phone, address, gender, birthday, candiHocVan,  married, exp, positionID, depID, groupID} = req.body;
-
+    
     if (!userName) {
         //Kiểm tra tên nhân viên khác null
         functions.setError(res, "user name required", 506);
 
     } else if (!idQLC) {
-        //Kiểm tra sdt khác null
+        //Kiểm tra idQLC khác null
         functions.setError(res, "idQLC required", 507);
 
     } else if (!companyID) {
-        //Kiểm tra email khác null
+        //Kiểm tra id company khác null
         functions.setError(res, "email required", 506);
 
     } else if (!phoneTK) {
@@ -50,28 +66,111 @@ exports.createUser = async (req, res) => {
         functions.setError(res, "number phone required", 507);
 
     } else if (typeof phoneTK !== "number") {
-        //Kiểm tra sdt có phải là số không
+        //Kiểm tra sdt dan ky tk có phải là số không
         functions.setError(res, "number phone must be a number", 508);
 
     }else if (!password) {
-        //Kiểm tra sdt khác null
+        //Kiểm tra password khác null
         functions.setError(res, "password required", 507);
 
     }else if (!address) {
-        //Kiểm tra sdt khác null
+        //Kiểm tra address khác null
         functions.setError(res, "address required", 507);
 
     } else if (!birthday) {
-        //Kiểm tra sdt khác null
+        //Kiểm tra ngay sinh khác null
         functions.setError(res, "birthday required", 507);
 
     }else if (!exp) {
-        //Kiểm tra sdt khác null
+        //Kiểm tra kinh nghiem lam viec khác null
         functions.setError(res, "exp required", 507);
 
     }else if (!candiHocVan) {
-        //Kiểm tra sdt khác null
+        //Kiểm tra trinh do hoc van khác null
         functions.setError(res, "candiHocVan required", 507);
+
+    }
+    else {
+        let checkPhoneNumber = await functions.checkPhoneNumber(phoneTK);
+        if(checkPhoneNumber) {
+            let checkUser = await functions.getDatafindOne(managerUser, { phoneTK:phoneTK, type: 2 });
+            if(checkUser) {
+                return functions.setError(res, "Số điện thoại đã được đăng kí", 200);
+            }
+        }
+        //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 0 có giá trị max thì bằng max + 1 
+        let maxID = await functions.getMaxID(idQLC);
+        if (!maxID) {
+            maxID = 0
+        };
+        idQLC = Number(maxID) + 1;
+        const maxIDUser = await managerUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIDUser;
+        if (maxIDUser) {
+            newIDUser = Number(maxIDUser._id) + 1;
+        } else newIDUser = 1;
+        const Employee = new managerUser({
+            _id: newIDUser,
+            idQLC : idQLC,
+            userName : userName,
+            phoneTK :  phoneTK,
+            password : password,
+            phone: phone? phone: null,
+            address : address,
+            type : type,
+            inForPerson: {
+                companyID: companyID,
+                gender: gender,
+                birthday: birthday,
+                positionID: positionID,
+                married: married,
+                depID: depID,
+                groupID: groupID
+            },
+            // 'inForPerson.groupID' : groupID,
+        });
+
+        await Employee.save()
+            .then(() => {
+                functions.success(res, "user created successfully", Employee)
+            })
+            .catch((err) => {
+                functions.setError(res, err.message, 509);
+            })
+    }
+};
+
+exports.createIndividual = async (req, res) => {
+    const idQLC = req.body.idQLC;
+    const type = 0;
+    const phoneTK = req.body.phoneTK;
+    const userName = req.body.userName;
+    const password = req.body.password;
+    const phone = req.body.phone;
+    const address = req.body.address;
+
+    let checkPhoneNumber = await functions.checkPhoneNumber(phoneTK);
+    if(checkPhoneNumber) {
+        let checkUser = await functions.getDatafindOne(managerUser, { phoneTK:phoneTK, type: type });
+        if(checkUser) {
+            return functions.setError(res, "Số điện thoại đã được đăng kí", 200);
+        }
+    }
+    if (!userName) {
+        //Kiểm tra tên nhân viên khác null
+        functions.setError(res, "user name required", 506);
+
+    } else if (!phoneTK) {
+        //Kiểm tra sdt khác null
+        functions.setError(res, "number phone required", 507);
+
+    }else if (!password) {
+        //Kiểm tra password khác null
+        functions.setError(res, "password required", 507);
+
+    }else if (!address) {
+        //Kiểm tra address khác null
+        functions.setError(res, "address required", 507);
 
     }
     else {
@@ -81,31 +180,86 @@ exports.createUser = async (req, res) => {
             maxID = 0
         };
         idQLC = Number(maxID) + 1;
-        const ManagerUser = new managerUser({
+        const maxIDUser = await managerUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIDUser;
+        if (maxIDUser) {
+            newIDUser = Number(maxIDUser._id) + 1;
+        } else newIDUser = 1;
+        const Individual = new managerUser({
+            _id: newIDUser,
             idQLC : idQLC,
-            'inForPerson.companyID' : companyID,
             userName : userName,
             phoneTK :  phoneTK,
             password : password,
             phone: phone? phone: null,
-            'inForPerson.gender' : gender,
-            'inForPerson.birthday' : birthday,
             address : address,
-            'inForPerson.positionID' : positionID,
-            'inForPerson.married': married,
-            type : type,
-            'inForPerson.depID' : depID,
-            'inForPerson.groupID' : groupID,
+            type : type
         });
 
-        await ManagerUser.save()
+        await Individual.save()
             .then(() => {
-                functions.success(res, "user created successfully", ManagerUser)
+                functions.success(res, "user created successfully", Individual)
             })
             .catch((err) => {
                 functions.setError(res, err.message, 509);
             })
     }
+};
+
+// b1: gửi mã otp tới tên tài khoản được nhập
+exports.sendOTP = async(req, res, next) => {
+    try {
+        const phoneTK = req.body.phoneTK;
+        if (await functions.checkPhoneNumber(phoneTK) && await functions.getDatafindOne(managerUser, { phoneTK: phoneTK })) {
+            await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { phoneTK })
+                .then((response) => {
+
+                    const otp = response.data.otp;
+                    if (otp) {
+                        return managerUser.updateOne({ phoneTK: phoneTK }, {
+                            $set: {
+                                otp: otp
+                            }
+                        });
+                    }
+                    functions.setError(res, "Gửi OTP lỗi 1", );
+                })
+                .then(() => {
+                    functions.getDatafindOne(managerUser, { phoneTK: phoneTK }, )
+                        .then(async(response) => {
+                            const token = await functions.createToken(response, '30m'); // tạo token chuyển lên headers
+                            res.setHeader('authorization', `Bearer ${token}`);
+                            return functions.success(res, 'Gửi OTP thành công');
+                        });
+                });
+
+        } else {
+            return functions.setError(res, "Tài khoản không tồn tại. ", 404)
+        }
+    } catch (e) {
+        return functions.setError(res, "Gửi OTP lỗi3", )
+    }
+
+};
+
+// b2: xác nhận mã otp
+exports.confirmOTP = async(req, res, next) => {
+    try {
+        const _id = req.user.data._id;
+        const otp = req.body.otp;
+        const verify = await managerUser.findOne({ _id: _id, otp }); // tìm user với dk có otp === otp người dùng nhập
+
+        if (verify) {
+            const token = await functions.createToken(verify, '30m');
+            res.setHeader('authorization', `Bearer ${token}`);
+            return functions.success(res, 'Xác thực OTP thành công', );
+        } else {
+            return functions.setError(res, "Otp không chính xác 1", 404);
+        }
+    } catch (e) {
+        return functions.setError(res, 'Xác nhận OTP lỗi', );
+    }
+
 };
 
 // chỉnh sửa
