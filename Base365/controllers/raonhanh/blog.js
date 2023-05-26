@@ -1,7 +1,7 @@
 const functions = require('../../services/functions')
-const Blog = require('../../models/Timviec365/Blog/Posts')
+const Blog = require('../../models/Raonhanh365/Admin/Blog')
 const AdminUser = require('../../models/AdminUser')
-const CategoryBlog = require('../../models/Timviec365/Blog/Category')
+const Category = require('../../models/Raonhanh365/Category')
 
 // hàm lấy danh sách blog
 exports.listBlog = async(req, res, next) => {
@@ -14,7 +14,7 @@ exports.listBlog = async(req, res, next) => {
             let blogs = await Blog.aggregate([{
                     $lookup: {
                         from: "AdminUser",
-                        localField: "adminID",
+                        localField: "adminId",
                         foreignField: "_id",
                         as: "AdminUser"
                     }
@@ -33,7 +33,7 @@ exports.listBlog = async(req, res, next) => {
                 { $skip: skip },
                 { $limit: limit }
             ]);
-
+            console.log(blogs)
             const totalCount = blogs.length > 0 ? blogs[0].totalCount : 0;
             const totalPages = Math.ceil(totalCount / pageSize);
             if (blogs) {
@@ -71,11 +71,12 @@ exports.listBlog = async(req, res, next) => {
     }
 }
 
+//thông tin 1 blog
 exports.getBlogDetail = async(req, res, next) => {
     try {
-        let idBlog = req.body.blog_id;
-        if (idBlog) {
-            let blog = await functions.getDatafindOne(Blog, { _id: idBlog });
+        let BlogId = req.body.BlogId;
+        if (BlogId) {
+            let blog = await functions.getDatafindOne(Blog, { _id: BlogId });
             if (blog) {
                 return functions.success(res, "Lấy danh sách blog thành công", { blog });
             }
@@ -89,18 +90,20 @@ exports.getBlogDetail = async(req, res, next) => {
     }
 }
 
+//thông tin blog của tác giả
 exports.getAuthorDetail = async(req, res, next) => {
     try {
-        let idAdmin = req.body.admin_id;
+        let adminId = req.body.adminId;
         let page = Number(req.body.page);
         let pageSize = Number(req.body.pageSize);
-        if (idAdmin && page && pageSize) {
-            let admin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
+        if (adminId && page && pageSize) {
+            let admin = await functions.getDatafindOne(AdminUser, { _id: adminId });
             if (admin) {
                 const skip = (page - 1) * pageSize;
                 const limit = pageSize;
-                const blogs = await functions.pageFind(Blog, { adminID: idAdmin }, { _id: -1 }, skip, limit);
-                const totalCount = await functions.findCount(Blog, { adminID: idAdmin });
+                const blogs = await functions.pageFind(Blog, { adminId: adminId }, { _id: -1 }, skip, limit);
+                const totalCount = await functions.findCount(Blog, { adminId: adminId });
+                console.log(totalCount)
                 const totalPages = Math.ceil(totalCount / pageSize);
                 return functions.success(res, "Lấy danh sách blog thành công", { admin: admin, totalCount: totalCount, totalPages: totalPages, blogs: blogs });
             }
@@ -117,7 +120,7 @@ exports.getAuthorDetail = async(req, res, next) => {
 // hàm lấy ra danh sách danh mục 
 exports.getListCategoryBlog = async(req, res, next) => {
     try {
-        let categories = await functions.getDatafind(CategoryBlog)
+        let categories = await functions.getDatafind(Category)
         return functions.success(res, "Lấy danh sách blog thành công", { categories });
     } catch (error) {
         console.log(error)
@@ -125,12 +128,12 @@ exports.getListCategoryBlog = async(req, res, next) => {
     }
 }
 
-// hàm lấy ra danh sách danh mục  của blog
+// hàm lấy ra danh sách blog của 1 danh mục  của blog
 exports.getCategoryBlog = async(req, res, next) => {
     try {
-        let cateID = req.body.cate_id;
-        if (cateID) {
-            let categories = await functions.getDatafind(Blog, { categoryID: cateID })
+        let cateId = req.body.cateId;
+        if (cateId) {
+            let categories = await functions.getDatafind(Blog, { categoryId: cateId })
             return functions.success(res, "Lấy danh sách blog thành công", { categories });
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)
@@ -138,5 +141,20 @@ exports.getCategoryBlog = async(req, res, next) => {
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
+    }
+}
+
+//admin tạo 1 blog
+exports.CreateBlog = async(req, res, next) => {
+    try {
+        if (req.user) {
+
+
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi thêm kinh nghiệm làm việc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }

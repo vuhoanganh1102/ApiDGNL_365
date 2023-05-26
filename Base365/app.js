@@ -26,7 +26,8 @@ var calendarRouter = require('./routes/qlc/calendar');
 var childCompanyRouter = require('./routes/qlc/childCompany')
 var manageUserRouter = require('./routes/qlc/manageUser')
 
-
+//Raonhanh365
+var blogRaoNhanh365Router = require('./routes/raonhanh/blog')
 
 var toolAddDataRouter = require('./routes/tools');
 
@@ -82,6 +83,10 @@ app.use('/api/qlc/manageUser', manageUserRouter);
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
+
+
+//đường dẫn API raonhanh
+app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
