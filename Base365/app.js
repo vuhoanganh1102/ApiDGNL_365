@@ -10,6 +10,9 @@ var companyRouter = require('./routes/timviec/company');
 var cvRouter = require('./routes/timviec/cv');
 var newTV365Router = require('./routes/timviec/newTV365');
 
+// rao nhanh
+var newRN365Router = require('./routes/raonhanh365/new');
+
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -69,6 +72,8 @@ app.use('/api/timviec/trangVang', trangVangRouter);
 app.use('/api/timviec/ssl', soSanhLuongRouter);
 app.use('/api/timviec/mail365', mail365Router);
 
+// api rao nhanh
+app.use('/api/raonhanh/new', newRN365Router);
 
 
 // API quản lí chung

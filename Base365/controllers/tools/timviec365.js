@@ -12,20 +12,22 @@ const PointCompany = require('../../models/Timviec365/UserOnSite/Company/Manager
 const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed')
 const NgangDon = require('../../models/Timviec365/CV/ApplicationCategory')
 const NgangThu = require('../../models/Timviec365/CV/LetterCategory')
-const CategoryJob = require('../../models/Timviec365/CategoryJob');
 const CVCate = require('../../models/Timviec365/CV/CVCategory');
 const CVLang = require('../../models/Timviec365/CV/CVLang');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
+const CVDesign = require('../../models/Timviec365/CV/CVDesign');
+const CVGroup = require('../../models/Timviec365/CV/CVGroup');
+const CVSection = require('../../models/Timviec365/CV/CVSection');
 const Application = require('../../models/Timviec365/CV/Application');
 const ApplicationUV = require('../../models/Timviec365/CV/ApplicationUV');
 const Letter = require('../../models/Timviec365/CV/Letter');
 const LetterUV = require('../../models/Timviec365/CV/LetterUV');
 const Resume = require('../../models/Timviec365/CV/Resume');
 const ResumeUV = require('../../models/Timviec365/CV/ResumeUV');
-const CVDesign = require('../../models/Timviec365/CV/CVDesign');
-const CVGroup = require('../../models/Timviec365/CV/CVGroup');
+const ResumeCategory = require('../../models/Timviec365/CV/ResumeCategory');
 const PriceList = require('../../models/Timviec365/PriceList/PriceList');
-const CVSection = require('../../models/Timviec365/CV/CVSection');
+const Mail365 = require('../../models/Timviec365/Mail365/Mail365');
+const Mail365Cate = require('../../models/Timviec365/Mail365/Mail365Category');
 const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
 const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
 
@@ -43,7 +45,7 @@ exports.toolNewTV365 = async(req, res, next) => {
                     let lvArray = data[i].new_lv.split(",").map(String);
                     const newTV = new NewTV365({
                         _id: data[i].new_id,
-                        userID: data[i].usc_id,
+                        userID: data[i].new_user_id,
                         title: data[i].new_title,
                         newMd5: data[i].new_md5,
                         alias: data[i].new_alias,
@@ -950,6 +952,46 @@ exports.toolCVSection = async(req, res, next) => {
     }
 };
 
+exports.toolResumeCategory = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_dm_nganhhoso.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+                    const content = Buffer.from(data[i].content, 'base64').toString('utf-8');
+
+                    const resumeCategory = new ResumeCategory({
+                        _id: data[i].id,
+                        name: data[i].name,
+                        alias: data[i].alias,
+                        metaH1: data[i].meta_h1,
+                        content,
+                        cId: +data[i].cid,
+                        metaTitle: data[i].meta_title,
+                        metaKey: data[i].meta_key,
+                        metaDes: data[i].meta_des,
+                        status: +data[i].status,
+                    })
+                    await ResumeCategory.create(resumeCategory);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+
 // hàm thêm dữ liệu vào bảng blog
 exports.toolBlog = async(req, res, next) => {
     try {
@@ -1279,7 +1321,87 @@ exports.toolNgangThu = async(req, res, next) => {
         console.log(error)
         return fnc.setError(res, error)
     }
-}
+};
+
+exports.toolEmail365 = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/api/get_tbl_mail.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+
+                    const html = JSON.stringify(data[i].html);
+
+                    const mail365 = new Mail365({
+                        _id: +data[i].id,
+                        name: data[i].title,
+                        alias: data[i].alias,
+                        image: data[i].image,
+                        color: data[i].colors,
+                        view: +data[i].view,
+                        favorite: +data[i].love,
+                        download: +data[i].download,
+                        cateId: +data[i].cid,
+                        status: +data[i].status,
+                        html,
+                    })
+                    await Mail365.create(mail365);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolEmail365Cate = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const data = await fnc.getDataAxios(`https://timviec365.vn/api/get_tbl_danhmuc_mail.php?page=${page}`, {});
+
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+                    const content = Buffer.from(data[i].content, 'base64').toString('utf-8');
+                    const mail365Cate = new Mail365Cate({
+                        _id: +data[i].id,
+                        name: data[i].name,
+                        alias: data[i].alias,
+                        parent: +data[i].parent,
+                        sort: +data[i].sort,
+                        metaTitle: data[i].meta_title,
+                        metaKey: data[i].meta_key,
+                        metaDes: data[i].meta_des,
+                        content,
+                        status: +data[i].status,
+                    })
+                    await Mail365Cate.create(mail365Cate);
+
+                }
+                page++;
+                result = true;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
 
 // hàm thêm dữ liệu vào bảng ứng viên ứng tuyển (Apply for Job)
 exports.toolApplyForJob = async(req, res, next) => {
