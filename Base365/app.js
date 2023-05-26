@@ -99,13 +99,15 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
+//const DB_URL = 'mongodb://127.0.0.1/api-base365'; 
+// timviec365 -> api-base365
+const DB_URL = 'mongodb+srv://dung136ptit:dcmtml102@cluster0.fmwheli.mongodb.net/'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-// app.listen(3002, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3002")
-// })
+app.listen(3002, () => {
+    console.log("Connected to databse");
+    console.log("Backend is running on http://localhost:3002")
+})
 module.exports = app;

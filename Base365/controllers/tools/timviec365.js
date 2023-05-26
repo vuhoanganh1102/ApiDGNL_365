@@ -13,7 +13,7 @@ const PointCompany = require('../../models/Timviec365/UserOnSite/Company/Manager
 const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed')
 const NgangDon = require('../../models/Timviec365/CV/ApplicationCategory')
 const NgangThu = require('../../models/Timviec365/CV/LetterCategory')
-const CategoryJob = require('../../models/Timviec365/CategoryJob');
+// const CategoryJob = require('../../models/Timviec365/CategoryJob');
 const CVCate = require('../../models/Timviec365/CV/CVCategory');
 const CVLang = require('../../models/Timviec365/CV/CVLang');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
@@ -948,8 +948,6 @@ exports.toolCVSection = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }; 
-  
-}
 
 // hàm thêm dữ liệu vào bảng blog
 exports.toolBlog = async(req, res, next) => {

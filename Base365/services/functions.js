@@ -571,6 +571,21 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
     }, projection)
 };
 
+//hàm tìm kiếm và cập nhật user với phoneTK và type =0 hoặc type =2
+exports.findOneAndUpdateUserByPhoneTK = async(phoneTK, projection) => {
+    return Users.findOneAndUpdate({
+        $or: [{
+                phoneTK: phoneTK,
+                type: 0
+            },
+            {
+                idTimViec365: phoneTK,
+                type: 2
+            },
+        ]
+    }, projection)
+};
+
 //upload image cv,don, thu, syll
 
 exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {

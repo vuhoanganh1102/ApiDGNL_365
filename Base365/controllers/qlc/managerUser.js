@@ -31,7 +31,7 @@ exports.getUserById = async (req, res) => {
 
 //tạo nhân viên 
 exports.createEmployee = async (req, res) => {
-    const idQLC = req.body.idQLC;
+
     const companyID = req.body.companyID;
     const type = 2;
     const phoneTK = req.body.phoneTK;
@@ -49,29 +49,26 @@ exports.createEmployee = async (req, res) => {
     const groupID = req.body.groupID;
 
     
-    if (!userName) {
-        //Kiểm tra tên nhân viên khác null
-        functions.setError(res, "user name required", 506);
-
-    } else if (!idQLC) {
-        //Kiểm tra idQLC khác null
-        functions.setError(res, "idQLC required", 507);
-
-    } else if (!companyID) {
+    if (!companyID) {
         //Kiểm tra id company khác null
-        functions.setError(res, "email required", 506);
+        functions.setError(res, "companyID required", 504);
+
+    } else if (!userName) {
+       
+         //Kiểm tra tên nhân viên khác null
+        functions.setError(res, "user name required", 506);
 
     } else if (!phoneTK) {
         //Kiểm tra sdt khác null
         functions.setError(res, "number phone required", 507);
 
-    } else if (typeof phoneTK !== "number") {
+    } else if (!await functions.checkPhoneNumber(phoneTK)) {
         //Kiểm tra sdt dan ky tk có phải là số không
-        functions.setError(res, "number phone must be a number", 508);
+        functions.setError(res, "number phone invalid", 508);
 
     }else if (!password) {
         //Kiểm tra password khác null
-        functions.setError(res, "password required", 507);
+        functions.setError(res, "password required", 509);
 
     }else if (!address) {
         //Kiểm tra address khác null
@@ -99,11 +96,11 @@ exports.createEmployee = async (req, res) => {
             }
         }
         //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 0 có giá trị max thì bằng max + 1 
-        let maxID = await functions.getMaxID(idQLC);
+        let maxID = await functions.getMaxIDQLC(managerUser);
         if (!maxID) {
             maxID = 0
         };
-        idQLC = Number(maxID) + 1;
+        let idQLC = Number(maxID) + 1;
         const maxIDUser = await managerUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
         let newIDUser;
         if (maxIDUser) {
@@ -122,8 +119,10 @@ exports.createEmployee = async (req, res) => {
                 companyID: companyID,
                 gender: gender,
                 birthday: birthday,
-                positionID: positionID,
+                candiHocVan: candiHocVan,
                 married: married,
+                exp: exp,
+                positionID: positionID,
                 depID: depID,
                 groupID: groupID
             },
@@ -141,7 +140,7 @@ exports.createEmployee = async (req, res) => {
 };
 
 exports.createIndividual = async (req, res) => {
-    const idQLC = req.body.idQLC;
+  
     const type = 0;
     const phoneTK = req.body.phoneTK;
     const userName = req.body.userName;
@@ -175,11 +174,11 @@ exports.createIndividual = async (req, res) => {
     }
     else {
         //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 0 có giá trị max thì bằng max + 1 
-        let maxID = await functions.getMaxID(idQLC);
+        let maxID = await functions.getMaxIDQLC(managerUser);
         if (!maxID) {
             maxID = 0
         };
-        idQLC = Number(maxID) + 1;
+        let idQLC = Number(maxID) + 1;
         const maxIDUser = await managerUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
         let newIDUser;
         if (maxIDUser) {
@@ -309,6 +308,173 @@ exports.editUser = async (req, res) => {
         }
     }
 };
+//chinh sua thong tin nhan vien
+exports.editEmployee = async (req, res) => {
+    console.log(req.body);
+    const idQLC = req.body.idQLC;
+    const companyID = req.body.companyID;
+    const type = 2;
+    const userName = req.body.userName;
+    const emailContact = req.body.emailContact;
+    const phone = req.body.phone;
+    const address = req.body.address;
+    const gender = req.body.gender;
+    const birthday = req.body.birthday;
+    const candiHocVan = req.body.candiHocVan;
+    const married = req.body.married;
+    const exp = req.body.exp;
+    const startWorkingTime = req.body.startWorkingTime;
+    const positionID = req.body.positionID;
+    const depID = req.body.depID;
+    const groupID = req.body.groupID;
+
+    
+    if (!userName) {
+        //Kiểm tra tên nhân viên khác null
+        functions.setError(res, "user name required", 506);
+
+    } else if (!idQLC) {
+        //Kiểm tra idQLC khác null
+        functions.setError(res, "idQLC required", 507);
+
+    } else if (!companyID) {
+        //Kiểm tra id company khác null
+        functions.setError(res, "email required", 508);
+
+    } else if (!emailContact) {
+        //Kiểm tra sdt khác null
+        functions.setError(res, "number phone required", 509);
+
+    } else if (!await functions.checkEmail(emailContact)) {
+        //Kiểm tra sdt dan ky tk có phải là số không
+        functions.setError(res, "Email invalided", 510);
+
+    }else if (!married) {
+        //Kiểm tra password khác null
+        functions.setError(res, "married required", 511);
+
+    }else if (!address) {
+        //Kiểm tra address khác null
+        functions.setError(res, "address required", 512);
+
+    } else if (!birthday) {
+        //Kiểm tra ngay sinh khác null
+        functions.setError(res, "birthday required", 513);
+
+    }else if (!exp) {
+        //Kiểm tra kinh nghiem lam viec khác null
+        functions.setError(res, "exp required", 514);
+
+    }else if (!candiHocVan) {
+        //Kiểm tra trinh do hoc van khác null
+        functions.setError(res, "candiHocVan required", 515);
+
+    } else {
+        const employee = await functions.getDatafindOne(managerUser, { idQLC: idQLC , type : 2});
+        if (!employee) {
+            functions.setError(res, "employee does not exist!", 510);
+        } else {
+            await functions.getDatafindOneAndUpdate(managerUser, { idQLC: idQLC, type : 2 }, {
+                userName : userName,
+                emailContact: emailContact,
+                phone: phone,
+                address: address,
+                inForPerson: {
+                    gender: gender,
+                    birthday: birthday,
+                    candiHocVan: candiHocVan,
+                    married: married,
+                    exp: exp,
+                    startWorkingTime: startWorkingTime,
+                    positionID: positionID,
+                    depID: depID,
+                    groupID: groupID
+                }
+            })
+
+                .then((manager) => functions.success(res, "Deparment edited successfully", manager))
+                .catch((err) => functions.setError(res, err.message, 511));
+        }
+    }
+};
+
+//chinh sua thong tin ca nhan
+exports.editIndividual = async (req, res) => {
+    const idQLC = req.body.idQLC;
+    const type = 0;
+    const userName = req.body.userName;
+    const emailContact = req.body.emailContact;
+    const phone = req.body.phone;
+    const address = req.body.address;
+    const gender = req.body.gender;
+    const birthday = req.body.birthday;
+    const candiHocVan = req.body.candiHocVan;
+    const married = req.body.married;
+    const exp = req.body.exp;
+
+    if(!idQLC){
+        functions.setError(res, "idQLC required", 501);
+    } else if (!userName) {
+        //Kiểm tra tên nhân viên khác null
+        functions.setError(res, "user name required", 506);
+
+    } else if (!phone) {
+        //Kiểm tra phone khác null
+        functions.setError(res, "phone required", 507);
+
+    } else if (!emailContact) {
+        //Kiểm tra sdt khác null
+        functions.setError(res, "email required", 508);
+
+    } else if (!await functions.checkEmail(emailContact)) {
+        //Kiểm tra sdt dan ky tk có phải là số không
+        functions.setError(res, "Email invalid", 509);
+
+    }else if (!address) {
+        //Kiểm tra address khác null
+        functions.setError(res, "address required", 510);
+
+    } else if (!gender) {
+        //Kiểm tra gender khác null
+        functions.setError(res, "gender required", 510);
+
+    } else if (!birthday) {
+        //Kiểm tra ngay sinh khác null
+        functions.setError(res, "birthday required", 511);
+
+    }else if (!exp) {
+        //Kiểm tra kinh nghiem lam viec khác null
+        functions.setError(res, "exp required", 512);
+
+    }else if (!candiHocVan) {
+        //Kiểm tra trinh do hoc van khác null
+        functions.setError(res, "candiHocVan required", 513);
+
+    } else {
+        const individual = await functions.getDatafindOne(managerUser, { idQLC: idQLC , type : 0});
+        if (!individual) {
+            functions.setError(res, "individual does not exist!", 510);
+        } else {
+            await functions.getDatafindOneAndUpdate(managerUser, { idQLC: idQLC, type : 0 }, {
+                userName : userName,
+                emailContact: emailContact,
+                phone: phone,
+                address: address,
+                inForPerson: {
+                    gender: gender,
+                    birthday: birthday,
+                    candiHocVan: candiHocVan,
+                    married: married,
+                    exp: exp,
+                }
+            })
+
+                .then((manager) => functions.success(res, "Individual edited successfully", manager))
+                .catch((err) => functions.setError(res, err.message, 511));
+        }
+    }
+};
+
 
 exports.deleteUser = async (req, res) => {
     //tạo biến đọc idQLC
