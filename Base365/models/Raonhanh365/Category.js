@@ -6,21 +6,64 @@ const CategoryRaoNhanh365Schema = mongoose.Schema({
         required: true
     },
     adminId: {
-        type: Number
+        // id admin
+        type: Number,
+        default: null
     },
     name: {
-        type: String
+        //tên danh mục
+        type: String,
+        default: null
+    },
+    order: {
+        //số thứ tự
+        type: Number,
+        default: null
     },
     type: {
-        _id: Number,
-        name: String
+        // chưa rõ
+        type: Number,
+        default: 0
+    },
+    hasChild: {
+        // có danh mục con hay không
+        type: Number,
+        default: 0
+    },
+    active: {
+        // hoạt động: 0||1
+        type: Number,
+        default: 1
+    },
+    parentId: {
+        // nếu là 0:nó danh mục cha, 1 là danh mục con của 1,...   
+        type: Number,
+        default: 0,
+    },
+    show: {
+        //chưa rõ
+        type: Number,
+        default: 1,
+    },
+    langId: {
+        // ngôn ngữ: 1.tiếng Việt
+        type: Number,
+        default: null,
     },
     description: {
-        type: String
+        // mô tả danh mục
+        type: String,
+        default: null,
     },
-    image: {
-        type: String
-    }
+    md5: {
+        type: String,
+        default: null,
+    },
+    isCheck: {
+        // nếu là 1 thì không có trong đăng tin mua
+        type: Number,
+        default: 0,
+    },
 }, {
     collection: 'CategoryRaoNhanh365',
     versionKey: false,
