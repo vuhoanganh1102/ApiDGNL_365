@@ -15,9 +15,10 @@ const CustomerGroupSchema = new mongoose.Schema({
     },
     groupDescription: {
         //mô tả nhóm khách hàng
-        type: String
+        type: String,
+        default: null
     },
-    groupParent: {
+    groupParents: {
         //tên nhóm khách hàng cha
         type: Number,
         default: 0
@@ -29,16 +30,23 @@ const CustomerGroupSchema = new mongoose.Schema({
     },
     departmentId: {
         //id phòng ban chia sẻ, nếu chọn tất cả truyền vào "all"
-        type: String
+        type: [String],
+        default: "All"
     },
     employeeShare: {
         //danh sách nhân viên được chia sẻ
         type: [{
             employeeId: { //id nhân viên được chia sẻ
-                type: Number
+                type: Number,
+                default: 0
             },
             employeeName: {
-                type: String //Tên nhân viên được chia sẻ
+                type: String, //Tên nhân viên được chia sẻ
+                default: null
+            },
+            employeeDepartmentId: {
+                type: Number,
+                default: null
             }
         }],
         default: []
@@ -46,12 +54,11 @@ const CustomerGroupSchema = new mongoose.Schema({
     countCustomer: {
         //số lượng khác hàng thuộc nhóm
         type: Number,
-        required: true
+        default: 0
     },
     isDelete: {
         //trạng thái đã xoá hay chưa
         type: Boolean,
-        required: true,
         default: false
     },
 

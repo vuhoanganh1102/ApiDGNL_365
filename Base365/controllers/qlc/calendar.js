@@ -1,13 +1,13 @@
 const Calendar = require("../../models/qlc/Calendar");
 const functions = require("../../services/functions");
 
-exports.getAllCalendar = async (req, res) => {
+exports.getAllCalendar = async(req, res) => {
     await functions.getDatafind(Calendar, {})
         .then((calendars) => functions.success(res, "Get data successfully", calendars))
         .catch((err) => functions.setError(res, err.message));
 };
 
-exports.getAllCalendarCompany = async (req, res) => {
+exports.getAllCalendarCompany = async(req, res) => {
     const { compnayId } = req.body
 
     if (!compnayId) {
@@ -24,7 +24,7 @@ exports.getAllCalendarCompany = async (req, res) => {
     }
 };
 
-exports.getCalendarById = async (req, res) => {
+exports.getCalendarById = async(req, res) => {
     const _id = req.params.id
 
     if (functions.checkNumber(_id)) {
@@ -39,7 +39,7 @@ exports.getCalendarById = async (req, res) => {
     }
 };
 
-exports.createCalendar = async (req, res) => {
+exports.createCalendar = async(req, res) => {
     const { companyId, calendarName, idCalendarWork, timeApply, timeStart, calendarDate } = req.body;
 
     if (!companyId) {
@@ -101,7 +101,7 @@ exports.createCalendar = async (req, res) => {
     }
 }
 
-exports.editCalendar = async (req, res) => {
+exports.editCalendar = async(req, res) => {
 
     const _id = req.params.id;
 
@@ -145,16 +145,16 @@ exports.editCalendar = async (req, res) => {
                 functions.setError(res, "Calendar does not exist");
             } else {
                 await functions.getDatafindOneAndUpdate(Calendar, { _id: _id }, {
-                    companyId: companyId,
-                    calendarName: calendarName,
-                    idCalendarWork: idCalendarWork,
-                    workCalendar: workCalendar,
-                    timeApply: timeApply,
-                    timeStart: timeStart,
-                    isCopy: false,
-                    timeCopy: null,
-                    calendar: calendarDate
-                })
+                        companyId: companyId,
+                        calendarName: calendarName,
+                        idCalendarWork: idCalendarWork,
+                        workCalendar: workCalendar,
+                        timeApply: timeApply,
+                        timeStart: timeStart,
+                        isCopy: false,
+                        timeCopy: null,
+                        calendar: calendarDate
+                    })
                     .then(() => functions.success(res, "Calendar edited successfully", shift))
                     .catch((err) => functions.setError(res, err.message));
             }
@@ -162,7 +162,7 @@ exports.editCalendar = async (req, res) => {
     }
 }
 
-exports.copyCalendar = async (req, res) => {
+exports.copyCalendar = async(req, res) => {
     const _id = req.params.id;
 
     if (functions.checkNumber(_id)) {
@@ -178,7 +178,8 @@ exports.copyCalendar = async (req, res) => {
             }
             const newId = Number(maxId) + 1;
             const newCalendar = new Calendar({
-                ...calendar, _id: newId,
+                ...calendar,
+                _id: newId,
             })
 
             await newCalendar.save()
@@ -190,7 +191,7 @@ exports.copyCalendar = async (req, res) => {
     }
 }
 
-exports.deleteCalendar = async (req, res) => {
+exports.deleteCalendar = async(req, res) => {
     const _id = req.params.id;
 
     if (functions.checkNumber(_id)) {
@@ -207,7 +208,7 @@ exports.deleteCalendar = async (req, res) => {
     }
 }
 
-exports.deleteCompanyCalendar = async (req, res) => {
+exports.deleteCompanyCalendar = async(req, res) => {
     const { companyId } = req.body;
 
     if (!companyId) {
@@ -226,13 +227,12 @@ exports.deleteCompanyCalendar = async (req, res) => {
     }
 }
 
-exports.deleteAllCalendars = async (req, res) => {
-    if(!await functions.getMaxID(Calendar)){
+exports.deleteAllCalendars = async(req, res) => {
+    if (!await functions.getMaxID(Calendar)) {
         functions.setError(res, "No Calendar existed")
     } else {
         Calendar.deleteMany()
-        .then(() => functions.success(res, "Delete all calendars successfully"))
-        .catch(err => functions.setError(res, err.message))
+            .then(() => functions.success(res, "Delete all calendars successfully"))
+            .catch(err => functions.setError(res, err.message))
     }
 };
-
