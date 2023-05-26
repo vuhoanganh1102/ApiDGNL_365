@@ -1,7 +1,7 @@
 const fnc = require('../../services/functions');
 const CV = require('../../models/Timviec365/CV/CV');
 const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New')
-const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
+const AdminUser = require('../../models/AdminUser');
 const Linh_Vuc = require('../../models/Timviec365/UserOnSite/Company/CategoryCompany')
 const KeyWord = require('../../models/Timviec365/UserOnSite/Company/Keywords');
 
