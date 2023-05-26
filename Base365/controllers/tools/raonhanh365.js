@@ -7,8 +7,6 @@ const FormData = require('form-data');
 
 
 // danh mục sản phẩm
-
-
 exports.toolCategory = async(req, res, next) => {
     try {
         let page = 1;
@@ -316,3 +314,12 @@ exports.updateNewDescription = async() => {
         return fnc.setError(res, err)
     }
 }
+
+
+exports.toolCateDetail = async(req, res, next) => {
+    try {
+
+    } catch (error) {
+        return fnc.setError(res, error.message, )
+    }
+};

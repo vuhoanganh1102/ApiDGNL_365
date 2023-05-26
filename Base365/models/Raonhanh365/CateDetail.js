@@ -27,7 +27,7 @@ const CateDetailSchema = mongoose.Schema({
         }],
         default: null,
     },
-    ProductQuality: {
+    productQuality: {
         // nhóm sản phẩm có chất lượng
         type: [{
             _id: {
@@ -81,7 +81,7 @@ const CateDetailSchema = mongoose.Schema({
     },
     capacity: {
         //dung lượng
-        type: {
+        type: [{
             _id: {
                 type: String
             },
@@ -92,7 +92,7 @@ const CateDetailSchema = mongoose.Schema({
                 // phân loại: 1. Ram 2.Ổ cứng 3.Dung tích xe
                 type: Number
             }
-        },
+        }],
         default: null,
     },
     screen: {
@@ -205,7 +205,7 @@ const CateDetailSchema = mongoose.Schema({
     },
     sport: {
         // môn thể thao
-        type: {
+        type: [{
             _id: {
                 type: Number
             },
@@ -216,18 +216,19 @@ const CateDetailSchema = mongoose.Schema({
                 //phân loại
                 type: String
             }
-        }
+        }],
+        default: null,
     },
     loai_chung: {
         // chưa hiểu...
-        type: {
+        type: [{
             _id: {
                 type: Number
             },
             name: {
                 type: String
             }
-        },
+        }],
         default: null,
     },
 
@@ -235,9 +236,9 @@ const CateDetailSchema = mongoose.Schema({
 
 
 }, {
-    collection: 'CateDetail',
+    collection: 'CateDetailRn',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model('Category', CateDetailSchema);
+module.exports = mongoose.model('CateDetailRn', CateDetailSchema);
