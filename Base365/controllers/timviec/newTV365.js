@@ -806,7 +806,10 @@ exports.listJobNew = async(req, res, next) => {
             },
             {
                 $sort: {
-                    newGhim: -1,
+                    newHot: -1,
+                    newCao: -1,
+                    newGap: -1,
+                    newNganh: -1,
                     updateTime: -1
                 }
             },
