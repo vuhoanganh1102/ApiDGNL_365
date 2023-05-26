@@ -267,7 +267,6 @@ exports.toolLV = async(req, res, next) => {
                         tagVlgy: data[i].tag_vlgy,
                         tagNdgy: decodedStringNdgy,
                         tagIndex: data[i].tag_index,
-
                     })
                     await lv.save();
                 }

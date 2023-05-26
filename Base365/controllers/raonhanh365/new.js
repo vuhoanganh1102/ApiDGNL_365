@@ -3,6 +3,8 @@ const functions = require('../../services/functions');
 // đăng tin
 exports.postNewMain = async(req, res, next) => {
     try {
+        let img = req.files.img;
+        let video = req.files.video;
         let request = req.body,
             cateID = request.cate_id,
             title = request.title,
@@ -17,8 +19,7 @@ exports.postNewMain = async(req, res, next) => {
             phone = request.phone,
             detailCategory = request.detailCategory,
             district = request.district;
-        if (cateID && title && name && email && address &&
-            phone && detailCategory && district) {
+        if (money) {
             req.info = {
                 cateID: cateID,
                 title: title,
@@ -34,7 +35,7 @@ exports.postNewMain = async(req, res, next) => {
                 detailCategory: detailCategory,
                 district: district
             }
-            next()
+            return next()
         }
         return functions.setError(res, 'Thiếu dữ liệu ', 404)
     } catch (err) {
@@ -47,7 +48,7 @@ exports.postNewMain = async(req, res, next) => {
 exports.postNewElectron = async(req, res, next) => {
     try {
         console.log(req.info)
-        return functions.setError(res, '4 ', 404)
+        return functions.setError(res, 'T41 ', 404)
     } catch (err) {
         console.log(err);
         return functions.setError(res, err)
