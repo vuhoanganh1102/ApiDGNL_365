@@ -51,6 +51,9 @@ router.post('/toolApplicationUV', toolTimviec365.toolApplicationUV);
 // api quét data thu của UV
 router.post('/toolLetterUV', toolTimviec365.toolLetterUV);
 
+// api quét data danh sách ngành syll
+router.post('/toolResumeCategory', toolTimviec365.toolResumeCategory);
+
 // api quét data syll của UV
 router.post('/toolResumeUV', toolTimviec365.toolResumeUV);
 
@@ -84,6 +87,16 @@ router.post('/toolNgangDon', toolTimviec365.toolNgangDon);
 // api quét data nganh thu
 router.post('/toolNgangThu', toolTimviec365.toolNgangThu);
 
+// api quét data email 365
+router.post('/toolEmail365', toolTimviec365.toolEmail365);
+
+// api quét data danh mục email
+
+router.post('/toolEmail365Cate', toolTimviec365.toolEmail365Cate);
+
+// api quét data danh mục sản phẩm _ Raonhanh
+router.post('/toolCateRaonhanh', toolRaoNhanh.toolCategory);
+
 //api quét data ứng viên ứng tuyển ( Apply For Job)
 router.post('/toolApplyForJob', toolTimviec365.toolApplyForJob);
 
@@ -92,5 +105,8 @@ router.post('/toolUserSavePost', toolTimviec365.toolUserSavePost);
 
 // api quét data new rao nhanh
 router.post('/toolNewRN', toolRaoNhanh.toolNewRN);
+
+// api quét data các phần của chi tiết danh mục Raonhanh
+router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
 
 module.exports = router;
