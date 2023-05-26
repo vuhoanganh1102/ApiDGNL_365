@@ -106,7 +106,10 @@ router.post('/toolUserSavePost', toolTimviec365.toolUserSavePost);
 // api quét data new rao nhanh
 router.post('/toolNewRN', toolRaoNhanh.toolNewRN);
 
+// api update thông tin bán hàng  new rao nhanh
+router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
+
 // api quét data các phần của chi tiết danh mục Raonhanh
-router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
+// router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
 
 module.exports = router;

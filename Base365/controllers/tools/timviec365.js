@@ -45,7 +45,7 @@ exports.toolNewTV365 = async(req, res, next) => {
                     let lvArray = data[i].new_lv.split(",").map(String);
                     const newTV = new NewTV365({
                         _id: data[i].new_id,
-                        userID: data[i].usc_id,
+                        userID: data[i].new_user_id,
                         title: data[i].new_title,
                         newMd5: data[i].new_md5,
                         alias: data[i].new_alias,
