@@ -1496,7 +1496,7 @@ exports.getJobListByJob = async(req, res, next) => {
         let now = new Date();
         let totalCount = 0;
         let totalPages = 0;
-        if (district & cate) {
+        if (district && city && cate) {
             if (page && pageSize) {
                 const skip = (page - 1) * pageSize;
                 const limit = pageSize;
