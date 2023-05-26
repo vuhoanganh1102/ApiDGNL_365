@@ -24,6 +24,7 @@ exports.createAccCom = async (req,res)=>{
                             fromWeb: "quanlichung.timviec365",
                             role: 1,
                             idQLC: req.body.idQLC,
+                            avatarCompany: null
                     })
                     await user.save().then(() => {
                         console.log("Thêm mới thành công ID Công ty: " + email + "," + phoneTK);
@@ -62,14 +63,15 @@ exports.loginCom = async (req,res)=>{
                     let data = {
                         access_token: token,
                         refresh_token: refreshToken,
-                        user_info: {
-                            usc_id: findUser._id,
-                            usc_email: findUser.email,
-                            usc_phone_tk: findUser.phoneTK,
-                            usc_pass: findUser.password,
-                            usc_company: findUser.userName,
-                            usc_address: findUser.address,
-                            usc_authentic: findUser.authentic,
+                        com_info: {
+                            com_id: findUser._id,
+                            com_email: findUser.email,
+                            com_phone_tk: findUser.phoneTK,
+                            com_pass: findUser.md5(password),
+                            com_name: findUser.userName,
+                            com_address: findUser.address,
+                            com_authentic: findUser.authentic,
+                            com_avatar: findUser.avatarCompany,
 
                         }
                     }
@@ -143,6 +145,95 @@ exports.verify = async(req, res, next) => {
             return functions.setError(res, error)
         }
     }
+
+// hàm đổi mật khẩu 
+    exports.updatePassword = async(req, res, next) => {
+        try {
+            let email = req.user.data.email;
+            let password = req.body.password;
+            if (email) {
+                let company = await functions.getDatafindOne(Users, { idQLC: idQLC,type : 1})
+                if (company) {
+                    await Users.updateOne({ idQLC: idQLC }, {
+                        $set: {
+                            password: md5(password),
+                        }
+                    });
+                    return functions.success(res, 'cập nhập thành công')
+                }
+                return functions.setError(res, 'nguoi dung không tồn tại', 404)
+            }
+            return functions.setError(res, 'không đủ dữ liệu', 404)
+        } catch (error) {
+            console.log(error)
+            return functions.setError(res, error)
+        }
+    }
+
+// hàm cập nhập thông tin công ty
+exports.updateInfoCompany = async(req, res, next) => {
+    try {
+        let email = req.user.data.email
+        let request = req.body,
+            phone = request.phone,
+            companyName = request.userName,
+            address = request.address,
+            avatarCompany = request.avatarCompany
+            depID = request.depID
+              = request.groupID
+        if (phone || companyName || email || avatarCompany || address) {
+            let checkPhone = await functions.checkPhoneNumber(phone)
+            if (checkPhone) {
+                await Users.updateOne({ email: email, type: 1 }, {
+                    $set: {
+                        'userName': companyName,
+                        'phone': phone,
+                        'email': email,
+                        'address': address,
+                        'avatarCompany': avatarCompany || null,
+                        'department': depID || null,
+                        'group' : groupID || null,
+                    }
+                });
+                return functions.success(res, 'update thành công', 404)
+            }
+            return functions.setError(res, 'sai định dạng số điện thoại', 404)
+        }
+        return functions.setError(res, 'không có dữ liệu cần cập nhật', 404)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// hàm cập nhập avatar
+exports.updateImg = async(req, res, next) => {
+    try {
+        let email = req.user.data.email,
+            avatarCompany = req.file;
+        if (avatarCompany) {
+            let checkImg = await functions.checkImage(avatarCompany.path)
+            if (checkImg) {
+                await Users.updateOne({ email: email, type: 1 }, {
+                    $set: {
+                        avatarCompany: avatarCompany.filename,
+                    }
+                });
+                return functions.success(res, 'thay đổi ảnh thành công')
+            } else {
+                await functions.deleteImg(avatarCompany)
+                return functions.setError(res, 'sai định dạng ảnh hoặc ảnh lớn hơn 2MB', 404)
+            }
+        } else {
+            await functions.deleteImg(avatarCompany)
+            return functions.setError(res, 'chưa có ảnh', 404)
+        }
+    } catch (error) {
+        console.log(error)
+        await functions.deleteImg(req.file)
+        return functions.setError(res, error)
+    }
+}
 
 // hàm bước 1 của quên mật khẩu
 exports.forgotPasswordCheckMail = async(req, res, next) => {
@@ -221,68 +312,3 @@ exports.updatePassword = async(req, res, next) => {
     }
 }
 
-// hàm đổi mật khẩu bước 1
-exports.changePasswordSendOTP = async(req, res, next) => {
-    try {
-        let email = req.user.data.email
-        let id = req.user.data._id
-        let otp = await functions.randomNumber;
-        let data = {
-            UserID: id,
-            SenderID: 1191,
-            MessageType: 'text',
-            Message: `Chúng tôi nhận được yêu cầu tạo mật khẩu mới tài khoản ứng viên trên timviec365.vn. Mã OTP của bạn là: '${otp}'`
-        }
-        await functions.getDataAxios('http://43.239.223.142:9000/api/message/SendMessageIdChat', data)
-        await Users.updateOne({ email: email, type: 1 }, {
-            $set: {
-                otp: otp
-            }
-        });
-        return functions.success(res, 'update thành công')
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
-
-// hàm bước 2  đổi mật khẩu
-exports.changePasswordCheckOTP = async(req, res, next) => {
-    try {
-        let email = req.user.data.email
-        let otp = req.body.ma_xt
-        if (otp) {
-            let verify = await Users.findOne({ email, otp, type: 1 });
-            if (verify != null) {
-                return functions.success(res, 'xác thực thành công')
-            }
-            return functions.setError(res, 'mã otp không đúng', 404)
-        }
-        return functions.setError(res, 'thiếu otp', 404)
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
-
-// hàm đổi mật khẩu bước 3
-exports.changePassword = async(req, res, next) => {
-    try {
-        let email = req.user.data.email
-        let password = req.body.password
-        if (password) {
-            await Users.updateOne({ email: email, type: 1 }, {
-                $set: {
-                    password: md5(password),
-                }
-            });
-            return functions.success(res, 'đổi mật khẩu thành công')
-        }
-        return functions.setError(res, 'thiếu mật khẩu', 404)
-
-
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
