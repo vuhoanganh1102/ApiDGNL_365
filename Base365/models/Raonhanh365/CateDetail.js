@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const CateDetailSchema = mongoose.Schema({
+const CateDetailRaonhanh365Schema = mongoose.Schema({
     _id: {
         type: Number,
         required: true
@@ -264,14 +264,10 @@ const CateDetailSchema = mongoose.Schema({
         }],
         default: null,
     },
-
-
-
-
 }, {
-    collection: 'CateDetailRn',
+    collection: 'CateDetailRaonhanh365',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model('CateDetailRn', CateDetailSchema);
+module.exports = mongoose.model('CateDetailRaonhanh365', CateDetailRaonhanh365Schema);
