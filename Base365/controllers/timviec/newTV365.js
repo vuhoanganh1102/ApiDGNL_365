@@ -1446,31 +1446,31 @@ exports.homePage = async(req, res, next) => {
             },
         ]);
 
-        let newAI = []
+        // let newAI = []
 
-        let candiCateID = req.body.candiCateID
+        // let candiCateID = req.body.candiCateID
 
-        let takeData = await axios({
-            method: "post",
-            url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
-            data: {
-                site_job: "timviec365",
-                site_uv: "uvtimviec365",
-                new_id: candiCateID,
-                size: 20,
-                pagination: 1,
-            },
-            headers: { "Content-Type": "multipart/form-data" }
-        });
-        let listNewId = takeData.data.data.list_id.split(",")
-        for (let i = 0; i < listNewId.length; i++) {
-            listNewId[i] = Number(listNewId[i])
-        }
+        // let takeData = await axios({
+        //     method: "post",
+        //     url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
+        //     data: {
+        //         site_job: "timviec365",
+        //         site_uv: "uvtimviec365",
+        //         new_id: candiCateID,
+        //         size: 20,
+        //         pagination: 1,
+        //     },
+        //     headers: { "Content-Type": "multipart/form-data" }
+        // });
+        // let listNewId = takeData.data.data.list_id.split(",")
+        // for (let i = 0; i < listNewId.length; i++) {
+        //     listNewId[i] = Number(listNewId[i])
+        // }
 
-        let findNew = await functions.getDatafind(NewTV365, { _id: { $in: listNewId } })
-        for (let i = 0; i < findNew.length; i++) {
-            newAI.push(findNew[i])
-        }
+        // let findNew = await functions.getDatafind(NewTV365, { _id: { $in: listNewId } })
+        // for (let i = 0; i < findNew.length; i++) {
+        //     newAI.push(findNew[i])
+        // }
 
         return functions.success(res, "Lấy danh sách tin đăng thành công", { VLHD: listPostVLHD, VLTH: listPostVLTH, VLTG: listPostVLTG });
     } catch (error) {
