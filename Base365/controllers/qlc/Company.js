@@ -3,7 +3,7 @@ const functions = require('../../services/functions');
 const md5 = require('md5');
 
 //Đăng kí tài khoản công ty 
-exports.createAccCom = async (req,res)=>{
+exports.register = async (req,res)=>{
     const { userName, email , phoneTK, password, companyId,  } = req.body;
 
         if ((userName && password && companyId && email && phoneTK) !== undefined) {
@@ -41,7 +41,7 @@ exports.createAccCom = async (req,res)=>{
 }
 
 //Đăng nhập tài khoản công ty
-exports.loginCom = async (req,res)=>{
+exports.login = async (req,res)=>{
         try {
             if (req.body.email && req.body.password) {
                 const type = 1;
@@ -147,7 +147,7 @@ exports.verify = async(req, res, next) => {
     }
 
 // hàm đổi mật khẩu 
-    exports.updatePassword = async(req, res, next) => {
+    exports.updateNewPassword = async(req, res, next) => {
         try {
             let email = req.user.data.email;
             let password = req.body.password;
@@ -243,10 +243,12 @@ exports.forgotPasswordCheckMail = async(req, res, next) => {
         if (checkEmail) {
             let verify = await Users.findOne({ email: email, type: 1 });
             if (verify != null) {
-                // api lẫy mã OTP qua app Chat
-                let data = await functions.getDataAxios('http://43.239.223.142:9000/api/users/RegisterMailOtp', { email });
-                let otp = data.data.otp
-                if (otp) {
+                //tạo otp
+                let otp = await functions.randomNumber
+                // gửi OTP qua mail 
+                let send = await functions.sendEmailVerificationRequest(otp, email, verify.userName)
+                let RecOPT = send.otp
+                if (otp == RecOPT) {
                     await Users.updateOne({ email: email }, {
                         $set: {
                             otp: otp
