@@ -86,4 +86,7 @@ router.post('/getJobListByJob', formData.parse(), newTV365.getJobListByJob)
 // api danh sách việc tiêu chí tag
 router.post('/getJobsByCriteria', formData.parse(), newTV365.getJobsByCriteria)
 
+//trang chủ
+router.post('/homePage', formData.parse(), newTV365.homePage)
+
 module.exports = router;
