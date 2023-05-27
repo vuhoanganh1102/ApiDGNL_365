@@ -363,9 +363,11 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         interior: {
-            // loại nội thất
-            type: Number,
-            default: 0
+            type: {
+                // loại nội thất
+                type: Number,
+                default: 0
+            },
         },
         device: {
             // thiết bị

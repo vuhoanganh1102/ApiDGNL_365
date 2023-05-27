@@ -165,6 +165,7 @@ exports.postNewTv365 = async(req, res, next) => {
             let checkEmail = await functions.checkEmail(userContactEmail);
             let checkPhone = await functions.checkPhoneNumber(userContactPhone);
             if (checkEmail == false || checkPhone == false) {
+                await functions.deleteImgVideo(avatar, videoType)
                 return functions.setError(res, 'email hoặc số điện thoại không đúng định dạng', 404)
             }
             //check kho ảnh

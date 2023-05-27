@@ -30,6 +30,9 @@ var calendarRouter = require('./routes/qlc/calendar');
 var childCompanyRouter = require('./routes/qlc/childCompany')
 var manageUserRouter = require('./routes/qlc/manageUser')
 
+// crm_import
+var groupCustomerRouter = require('./routes/crm/groupCustomer')
+
 
 var toolAddDataRouter = require('./routes/tools');
 
@@ -88,6 +91,7 @@ app.use('/api/qlc/manageUser', manageUserRouter);
 app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
 
+app.use("/api/crm/customer/group", groupCustomerRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
