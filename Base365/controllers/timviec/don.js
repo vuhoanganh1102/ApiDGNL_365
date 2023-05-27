@@ -6,7 +6,8 @@ const DonUV = require('../../models/Timviec365/CV/ApplicationUV');
 // lấy danh sách mẫu đơn
 exports.getDon = async(req, res, next) => {
     try {
-        const data = await DonXinViec.find({});
+        const pageNumber = req.query.pageNumber || 1;
+        const data = await DonXinViec.find({}).skip((pageNumber - 1) * 20).limit(20);
 
         if (data.length) return await functions.success(res, 'Lấy mẫu DON thành công', { data });
 
@@ -19,8 +20,9 @@ exports.getDon = async(req, res, next) => {
 // tìm đơn theo ngành
 exports.getByNganh = async(req, res, next) => {
     try {
+        const pageNumber = req.query.pageNumber || 1;
         const cateId = req.body.cateId;
-        const data = await DonXinViec.find({ cateId }); // tìm theo id Ngành
+        const data = await DonXinViec.find({ cateId }).skip((pageNumber - 1) * 20).limit(20); // tìm theo id Ngành
 
         if (data.length) return await functions.success(res, `DON theo ngành ${cateId}`, { data });
 
@@ -84,13 +86,37 @@ exports.detailDon = async(req, res, next) => {
 //lưu và tải đơn
 exports.saveDon = async(req, res, next) => {
     try {
+        // 0 : ko, 1 có 
+        const upload = req.query.upload || 1;
+        const download = req.query.download || 0;
         const imageFile = req.file;
         const userId = req.user.data._id;
         const data = req.body;
+        if (upload == 0 && download == 1) {
+            if (fs.existsSync(`../Storage/TimViec365/${userId}/application/${data.nameImage.slice(0,-4)}.pdf`) &&
+                fs.existsSync(`../Storage/TimViec365/${userId}/application/${data.nameImage}`)) {
+                //pdf img tồn tại
+                const host = '';
+                const linkPdf = `${host}/TimViec365/${userId}/application/${data.nameImage}`;
+                const linkImg = `${host}/TimViec365/${userId}/application/${data.nameImage.slice(0,-4)}.pdf`;
+                const senderId = 1191;
+                const text = '';
+                const data = {
+                    userId: userId,
+                    senderId: senderId,
+                    linkImg: linkImg,
+                    linkPdf: linkPdf,
+                    Title: text,
+                };
+                await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
+                return await functions.success(res, `Tải thành công`, );
 
-        // 0 : lưu(upload), 1: lưu và tải(upload,download)
+            }
+            return functions.setError(res, 'Chưa upload ảnh', 404);
+        };
+
+
         let message = 'Lưu';
-        const download = req.query.download || 0;
         const checkImage = await functions.checkImage(imageFile.path);
         if (checkImage == false) return await functions.setError(res, 'Lưu thất bại 2', 404);
 
