@@ -739,7 +739,7 @@ exports.listNewHot = async(req, res, next) => {
                 $match: {
                     newCao: 0,
                     newGap: 0,
-                    hanNop: { $gt: now },
+                    hanNop: { $gt: new Date(Date.now()) },
                     redirect301: ""
                 }
             },
@@ -760,20 +760,19 @@ exports.listNewHot = async(req, res, next) => {
                 }
             },
             {
-                $sort: {
-                    newHot: -1,
-                    updateTime: -1
-                }
-            },
-            {
                 $skip: 0
             },
             {
                 $limit: Number(pageSize)
             },
+            // {
+            //     $sort: {
+            //         newHot: -1,
+            //         updateTime: -1
+            //     }
+            // },
         ]);
-        let list = listPostVLHD;
-        return functions.success(res, "Lấy danh sách tin đăng thành công", { list });
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { list: listPostVLHD });
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
