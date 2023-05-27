@@ -618,34 +618,39 @@ exports.RegisterB2CvSite = async(req, res, next) => {
 
 //ứng viên đăng nhập
 exports.loginUv = async(req, res, next) => {
+    try {
+        if (req.body.phoneTK && req.body.password) {
+            const phoneTK = req.body.phoneTK
+            const password = req.body.password
 
-    if (req.body.phoneTK && req.body.password) {
-        const phoneTK = req.body.phoneTK
-        const password = req.body.password
+            let checkPhoneNumber = await functions.checkPhoneNumber(phoneTK);
+            if (checkPhoneNumber) {
+                let findUser = await functions.getDatafindOne(Users, { phoneTK, type: { $ne: 1 } })
+                if (!findUser) {
+                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 200)
+                }
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (!checkPassword) {
+                    return functions.setError(res, "Mật khẩu sai", 200)
+                }
+                let updateUser = await functions.getDatafindOneAndUpdate(Users, { phoneTK, type: { $ne: 1 } }, {
+                    updatedAt: new Date(Date.now())
+                })
+                if (findUser.type != 1) {
+                    const token = await functions.createToken(findUser, "2d")
+                    return functions.success(res, 'Đăng nhập thành công', { token: token })
+                } else return functions.setError(res, "tài khoản này không phải tài khoản cá nhân", 200)
 
-        let checkPhoneNumber = await functions.checkPhoneNumber(phoneTK);
-        if (checkPhoneNumber) {
-            let findUser = await functions.getDatafindOne(Users, { phoneTK, type: { $ne: 1 } })
-            if (!findUser) {
-                return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 200)
+
+            } else {
+                return functions.setError(res, "không đúng định dạng số điện thoại", 200)
             }
-            let checkPassword = await functions.verifyPassword(password, findUser.password)
-            if (!checkPassword) {
-                return functions.setError(res, "Mật khẩu sai", 200)
-            }
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { phoneTK, type: { $ne: 1 } }, {
-                updatedAt: new Date(Date.now())
-            })
-            if (findUser.type != 1) {
-                const token = await functions.createToken(findUser, "2d")
-                return functions.success(res, 'Đăng nhập thành công', { token: token })
-            } else return functions.setError(res, "tài khoản này không phải tài khoản cá nhân", 200)
-
-
-        } else {
-            return functions.setError(res, "không đúng định dạng số điện thoại", 200)
         }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi đăng kí", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 200)
     }
+
 }
 
 // trang qlc trong hoàn thiện hồ sơ

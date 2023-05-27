@@ -734,47 +734,86 @@ exports.listNewHot = async(req, res, next) => {
         let pageSize = req.body.pageSize;
         let now = new Date();
         if (pageSize == undefined) {
-            pageSize = 30;
+            pageSize = 60;
         }
-        let listPostVLHD = await NewTV365.aggregate([{
-                $match: {
-                    newCao: 0,
-                    newGap: 0,
-                    hanNop: { $gt: now },
-                    redirect301: ""
-                }
-            },
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "userID",
-                    foreignField: "idTimViec365",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
-            },
-            {
-                $match: {
-                    "user.type": 1
-                }
-            },
-            {
-                $sort: {
-                    newHot: -1,
-                    updateTime: -1
-                }
-            },
-            {
-                $skip: 0
-            },
-            {
-                $limit: Number(pageSize)
-            },
-        ]);
-        let list = listPostVLHD;
-        return functions.success(res, "Lấy danh sách tin đăng thành công", { list });
+        // let listPostVLHD = await NewTV365.aggregate([{
+        //         $sort: {
+        //             newHot: -1,
+        //             updateTime: -1
+        //         }
+        //     },
+        //     {
+        //         $match: {
+        //             newCao: 0,
+        //             newGap: 0,
+        //             hanNop: { $gt: new Date(Date.now()) },
+        //             redirect301: ""
+        //         }
+        //     },
+        //     {
+        //         $skip: 0
+        //     },
+        //     {
+        //         $limit: Number(pageSize)
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "Users",
+        //             localField: "userID",
+        //             foreignField: "idTimViec365",
+        //             as: "user"
+        //         }
+        //     },
+        //     {
+        //         $unwind: "$user"
+        //     },
+        //     {
+        //         $match: {
+        //             "user.type": 1
+        //         }
+        //     },
+        //     {
+        //         $project: {
+        //             title: 1,
+        //             "user.userName": 1,
+        //             "user.avatarUser": 1,
+        //             cityID: 1,
+        //             newMoney: 1,
+        //             hanNop: 1,
+        //             alias: 1,
+        //             updateTime: 1,
+        //             newHot: 1
+        //         }
+        //     },
+
+        // ]);
+
+        let listNewTV365 = await NewTV365.find({
+            newCao: 0,
+            newGap: 0,
+            hanNop: { $gt: new Date(Date.now()) },
+            redirect301: ""
+        }, {
+            userID: 1,
+            title: 1,
+            cityID: 1,
+            newMoney: 1,
+            hanNop: 1,
+            alias: 1,
+            updateTime: 1,
+            newHot: 1
+        }).sort({ newHot: -1, updateTime: -1 }).limit(100).lean();
+        let listId = [];
+        for (let i = 0; i < listNewTV365.length; i++) {
+            listId.push(listNewTV365[i].userID)
+        }
+        let listUser = await Users.find({ idTimViec365: { $in: listId } }, { userName: 1, avatarUser: 1, idTimViec365: 1 }).limit(100)
+
+        for (let i = 0; i < listNewTV365.length; i++) {
+            let findUser = listUser.find((mem) => mem.idTimViec365 == listNewTV365[i].userID)
+            listNewTV365[i].userInfo = findUser
+        }
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { list: listNewTV365 });
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
