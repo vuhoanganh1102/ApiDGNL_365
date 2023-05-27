@@ -2,6 +2,7 @@ const router = require('express').Router();
 const ManageTrackingController = require('../../controllers/qlc/ManageTracking')
 
 
+//tìm list cấu hình chấm công cty sử dụng 
 router.get ("/", ManageTrackingController.getlistTracking);
 
 
