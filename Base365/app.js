@@ -12,6 +12,7 @@ var newTV365Router = require('./routes/timviec/newTV365');
 
 // rao nhanh
 var newRN365Router = require('./routes/raonhanh365/new');
+var blogRaoNhanh365Router = require('./routes/raonhanh365/blog')
 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
@@ -29,8 +30,6 @@ var calendarRouter = require('./routes/qlc/calendar');
 var childCompanyRouter = require('./routes/qlc/childCompany')
 var manageUserRouter = require('./routes/qlc/manageUser')
 
-//Raonhanh365
-var blogRaoNhanh365Router = require('./routes/raonhanh/blog')
 
 var toolAddDataRouter = require('./routes/tools');
 
@@ -75,7 +74,7 @@ app.use('/api/timviec/mail365', mail365Router);
 
 // api rao nhanh
 app.use('/api/raonhanh/new', newRN365Router);
-
+app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
@@ -89,9 +88,6 @@ app.use('/api/qlc/manageUser', manageUserRouter);
 app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
 
-
-//đường dẫn API raonhanh
-app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
