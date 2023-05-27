@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var blog = require('../../controllers/raonhanh/blog');
+var blog = require('../../controllers/raonhanh365/blog');
 var formData = require('express-form-data');
 const functions = require('../../services/functions');
 
