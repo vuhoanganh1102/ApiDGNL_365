@@ -680,7 +680,7 @@ exports.completeProfileQlc = async(req, res, next) => {
             listNewId[i] = Number(listNewId[i])
         }
 
-        let findNew = await functions.getDatafind(New, { _id: { $in: listNewId } })
+        let findNew = await functions.getDatafind(NewTV365, { _id: { $in: listNewId } })
         for (let i = 0; i < findNew.length; i++) {
             newAI.push(findNew[i])
         }
