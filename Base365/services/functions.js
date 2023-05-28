@@ -456,6 +456,10 @@ exports.pageFind = async(model, condition, sort, skip, limit) => {
     return model.find(condition).sort(sort).skip(skip).limit(limit);
 };
 
+exports.pageFindWithFields = async(model, condition, fields, sort, skip, limit) => {
+    return model.find(condition, fields).sort(sort).skip(skip).limit(limit);
+};
+
 // lấy danh sách mẫu CV sắp xếp mới nhất
 exports.getDataCVSortById = async(condition) => {
     const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color').sort({ _id: -1 });
@@ -539,6 +543,10 @@ exports.findUser = async(userId, select, sort, skip, limit) => {
             },
         ]
     }, { select }).sort(sort).skip(skip).limit(limit)
+}
+
+exports.findAll = async(model, fields)=>{
+    return model.find({}, fields);
 }
 
 //hàm tìm kiếm findOneuser với idtimviec và type = 0 hoặc 2

@@ -10,18 +10,13 @@ router.get("/",managerUserController.getListUser);
 router.get("/:id",managerUserController.getUserById);
 
 //API tạo mới một phUser
-router.post("/",managerUserController.createEmployee);
+// router.post("/",managerUserController.createEmployee);
 
-//create tk nhan vien
-router.post("/nhanvien/create",managerUserController.createEmployee);
 //create tk ca nhan
 router.post("/canhan/create",managerUserController.createIndividual);
 
 //API thay dổi thông tin của một phòng ban
 router.post("/:id",managerUserController.editUser);
-
-//API thay doi thong tin nhan vien
-router.post("/nhanvien/edit",managerUserController.editEmployee);
 
 //API thay doi thong tin ca nhan
 router.post("/canhan/edit",managerUserController.editIndividual);
