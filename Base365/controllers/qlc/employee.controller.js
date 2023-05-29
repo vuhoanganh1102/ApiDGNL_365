@@ -349,10 +349,8 @@ exports.getListEmployeeByFields = async(req, res, next) => {
             }else {
                  return functions.setError(res, "Missing input field", 404);
             }
-            
-            const totalPages = Math.ceil(totalCount / pageSize)
             if (listEmployee) {
-                functions.success(res, "get list employee by fields", { employees: { totalCount, totalPages, listEmployee: listEmployee } });
+                functions.success(res, "get list employee by fields success", { employees: listEmployee });
             }
         } else {
             return functions.setError(res, "Missing input data", 400);

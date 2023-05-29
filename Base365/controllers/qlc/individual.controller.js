@@ -67,36 +67,6 @@ exports.createIndividual = async (req, res) => {
     }
 };
 
-// lay ra danh sach tat ca ca nhan
-exports.getIndividual = async(req, res, next) => {
-    try {
-        let idQLC = req.query.idQLC;
-        let type = 0;
-        if (idQLC) {
-            let individual = await Individual.findOne({idQLC: idQLC, type: type}, 
-                {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:1, birthday:1, condiHocVan:1, married:1, positionID:1, depID:1, groupID:1}
-                });
-            if (individual) {
-                return functions.success(res, "Get individual by idQLC success", { individual: individual});
-            }else {
-                return functions.setError(res, "Individual not found", 500);
-            }
-        } else {
-            //lay ra tat ca ca nhan bao gom cac truong phoneTK, useName, ...
-            let individuals = await Individual.find({type: type}, {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, inForPerson: {gender:1, birthday:1, condiHocVan:1, married:1, positionID:1, depID:1, groupID:1}});
-            if (individuals) {
-                return functions.success(res, "Get all individual success", { individuals: individuals});
-            }else {
-                return functions.setError(res, "Individuals not found", 500);
-            }
-        }
-    } catch (e) {
-        console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
-    }
-}
-
 //chinh sua thong tin ca nhan
 exports.editIndividual = async (req, res) => {
     console.log(req.body);
@@ -120,7 +90,7 @@ exports.editIndividual = async (req, res) => {
     
     if (!userName) {
         //Kiểm tra tên nhân viên khác null
-        functions.setError(res, "user name required", 506);
+        functions.setError(res, "user name required", 406);
 
     } else if (!idQLC) {
         //Kiểm tra idQLC khác null
@@ -205,65 +175,72 @@ exports.deleteIndividual = async(req, res, next) => {
 
 exports.getListIndividualByFields = async(req, res, next) => {
     try {
-        if (req.body) {
-            if(!req.body.page){
-                return functions.setError(res, "Missing input page", 401);
-            }
-            if(!req.body.pageSize){
-                return functions.setError(res, "Missing input pageSize", 402);
-            }
-            
-            let page = Number(req.body.page);
-            let pageSize = Number(req.body.pageSize);
-            let exp = Number(req.body.exp);
-            let candiHocVan = Number(req.body.candiHocVan);
+        if (req.body) { 
             let type = 0;
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let listIndividual=[];
-            let totalCount=0;
+            let fieldsGet = 
+            {   
+                phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                inForPerson: {gender:1, birthday:1, candiHocVan:1, married:1, positionID:1, depID:1, groupID:1}
+            } 
+            // tim kiem theo idQLC
+            if(req.body.idQLC){
+                let idQLC = req.body.idQLC;
+                let individual = await functions.getDatafindOne(Individual, 
+                    {type: type, idQLC: idQLC}, 
+                    fieldsGet, 
+                );
+                if(individual){
+                    return functions.success(res, "get individual by idQLC success", { individual: individual });
+                }else{
+                    return functions.setError(res, `individual with idQLC = ${idQLC} not found` , 200);
+                }
 
-            //tim kiem theo kinh nghiem va hoc van
-            if(req.body.exp && req.body.candiHocVan){
-                listIndividual = await functions.pageFindWithFields(Individual, 
-                    {type: type, "inForPerson.exp": exp, "inForPerson.candiHocVan": candiHocVan}, 
-                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                        inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                    }, 
-                    { _id: 1 }
-                    , skip, 
-                    limit
-                );
-                totalCount = await Individual.countDocuments({ "inForPerson.exp": exp, "inForPerson.candiHocVan": candiHocVan, type: type });
-            }else if(req.body.exp){
-                listIndividual = await functions.pageFindWithFields(Individual, 
-                    {type: type, "inForPerson.exp": exp}, 
-                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                        inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                    }, 
-                    { _id: 1 }
-                    , skip, 
-                    limit
-                );
-                totalCount = await Individual.countDocuments({ "inForPerson.exp": exp, type: type });
-            }else if(req.body.candiHocVan){
-                listIndividual = await functions.pageFindWithFields(Individual, 
-                    {type: type, "inForPerson.candiHocVan": candiHocVan}, 
-                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                        inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                    }, 
-                    { _id: 1 }
-                    , skip, 
-                    limit
-                );
-                totalCount = await Individual.countDocuments({"inForPerson.candiHocVan": candiHocVan, type: type });
             }else {
-                return functions.setError(res, "Missing input field", 404);
-            }
-            
-            const totalPages = Math.ceil(totalCount / pageSize);
-            if (listIndividual) {
-                functions.success(res, "get list individual by experience success", { individuals: { totalCount, totalPages, listIndividual: listIndividual } });
+                let page = Number(req.body.page);
+                let pageSize = Number(req.body.pageSize);
+                const skip = (page - 1) * pageSize;
+                const limit = pageSize;
+                let exp = Number(req.body.exp);
+                let candiHocVan = Number(req.body.candiHocVan);
+                let listIndividual=[];
+                if(!req.body.page){
+                return functions.setError(res, "Missing input page", 401);
+                }
+                if(!req.body.pageSize){
+                    return functions.setError(res, "Missing input pageSize", 402);
+                }
+                //tim kiem theo kinh nghiem va hoc van
+                if(req.body.exp && req.body.candiHocVan){
+                    listIndividual = await functions.pageFindWithFields(Individual, 
+                        {type: type, "inForPerson.exp": exp, "inForPerson.candiHocVan": candiHocVan}, 
+                        fieldsGet, 
+                        { _id: 1 }, 
+                        skip, 
+                        limit
+                    );
+                }else if(req.body.exp){
+                    listIndividual = await functions.pageFindWithFields(Individual, 
+                        {type: type, "inForPerson.exp": exp}, 
+                        fieldsGet, 
+                        { _id: 1 },
+                        skip, 
+                        limit
+                    );
+                }else if(req.body.candiHocVan){
+                    listIndividual = await functions.pageFindWithFields(Individual, 
+                        {type: type, "inForPerson.candiHocVan": candiHocVan}, 
+                        fieldsGet, 
+                        { _id: 1 },
+                        skip, 
+                        limit
+                    );
+                }else {
+                    listIndividual = await Individual.find({type: type}, fieldsGet);
+                }
+                // const totalPages = Math.ceil(totalCount / pageSize);
+                if (listIndividual) {
+                    return functions.success(res, "get list individual success", { individuals: listIndividual });
+                }
             }
         } else {
             return functions.setError(res, "Missing input data", 400);
