@@ -371,7 +371,14 @@ exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
         }
     })
 };
-
+//hàm gửi phone number
+exports.sendPhoneNumberVerificationReq = async (req,res)=>{
+    let option = {
+        from : process.env.AUTH_PHONE,
+        to : phoneTK,
+        message: `Your OTP is: ${otp}`
+    }
+}
 exports.verifyPassword = async(inputPassword, hashedPassword) => {
     const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
     return md5Hash === hashedPassword;

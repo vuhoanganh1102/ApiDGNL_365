@@ -3,13 +3,37 @@ const functions = require("../../services/functions")
 
 //tìm danh sách nhân viên của cty 
 exports.getListUser= async (req, res) => {
-    //Function tìm user là TK nhân viên và TK Cty
-    await functions.getDatafind(manageUser, {idQLC: idQLC,type : 2  } )
-        //thành công trả models
-        .then((manageUser) => functions.success(res, "", manageUser))
-        // bắt lỗi 
-        .catch((err) => functions.setError(res, err.message, 501));
-};
+    try {
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        if (page && pageSize) {
+            let user = await functions.getDatafind(manageUser, {idQLC: idQLC,type : 2  } );
+            if (user) {
+                const skip = (page - 1) * pageSize;
+                const limit = pageSize;
+                const blogs = await functions.pageFind(Blog, { adminId: adminId }, { _id: -1 }, skip, limit);
+                const totalCount = await functions.findCount(Blog, { adminId: adminId });
+                console.log(totalCount)
+                const totalPages = Math.ceil(totalCount / pageSize);
+                return functions.success(res, "Lấy danh sách blog thành công", { admin: admin, totalCount: totalCount, totalPages: totalPages, blogs: blogs });
+            }
+            return functions.setError(res, 'không tồn tại', 404)
+        }
+        return functions.setError(res, 'không đủ dữ liệu', 404)
+
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+//     //Function tìm user là TK nhân viên và TK Cty
+//     await functions.getDatafind(manageUser, {idQLC: idQLC,type : 2  } )
+//         //thành công trả models
+//         .then((manageUser) => functions.success(res, "", manageUser))
+//         // bắt lỗi 
+//         .catch((err) => functions.setError(res, err.message, 501));
+// };
 //tìm 1 ứng viên cụ thể 
 exports.getUserById = async (req, res) => {
     //tạo biến chứa param id 

@@ -10,7 +10,7 @@ router.post('/sendOTP', company.sendOTP);
 // api xác nhận OTP để xác minh tìa khoản
 router.post('/verify', company.verify);
 // hàm đổi mật khẩu 
-router.post('/updateNewPassword', company.updateNewPassword);
+router.post('/updateNewPassword', company.updatePassword);
 // hàm cập nhập thông tin công ty
 router.post('/updateInfoCompany', company.updateInfoCompany);
 // hàm cập nhập avatar
