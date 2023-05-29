@@ -17,16 +17,7 @@ router.put("/",employeeController.editEmployee);
 router.delete("/", employeeController.deleteEmployee);
 
 //-------------------------------API search by fields-------------------------------
-//search by experience
-router.post("/emp_exp", employeeController.getListEmployeeByExp);
-//by education
-router.post("/emp_edu", employeeController.getListEmployeeByEducation);
-//by depID
-router.post("/emp_dep", employeeController.getListEmployeeByDepartment);
-//by position ID
-router.post("/emp_pos", employeeController.getListEmployeeByPosition);
-//by phone
-router.post("/emp_birthday", employeeController.getListEmployeeByBirthday);
-
+//search by muti fields
+router.post("/search", employeeController.getListEmployeeByFields);
 
 module.exports = router

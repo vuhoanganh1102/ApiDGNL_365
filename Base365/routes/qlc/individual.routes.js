@@ -20,11 +20,6 @@ router.delete("/", individualController.deleteIndividual);
 
 //-------------------------------API search by fields-------------------------------
 
-//search by experience
-router.post("/ind_exp", individualController.getListIndividualByExp);
-//by education
-router.post("/ind_edu", individualController.getListIndividualByEducation);
-//by birthday
-router.post("/ind_birthday", individualController.getListIndividualByBirthday);
+router.post("/search", individualController.getListIndividualByFields);
 
 module.exports = router

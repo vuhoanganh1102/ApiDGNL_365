@@ -120,7 +120,7 @@ exports.getEmployee = async(req, res, next) => {
         if (idQLC) {
             let employee = await Employee.findOne({idQLC: idQLC}, 
                 {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:1, birthday:1, condiHocVan:1, married:1, positionID:1, depID:1, groupID:1}
+                    inForPerson: {gender:1, birthday:1, candiHocVan:1, married:1, positionID:1, depID:1, groupID:1}
                 });
             if (employee) {
                 return functions.success(res, "Get employee by idQLC success", { employee: employee});
@@ -129,7 +129,7 @@ exports.getEmployee = async(req, res, next) => {
             }
         } else {
             //lay ra tat ca nhan vien bao gom cac truong phoneTK, useName, ...
-            let employees = await Employee.find({type: type}, {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, inForPerson: {gender:1, birthday:1, condiHocVan:1, married:1, positionID:1, depID:1, groupID:1}});
+            let employees = await Employee.find({type: type}, {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, inForPerson: {gender:1, birthday:1, candiHocVan:1, married:1, positionID:1, depID:1, groupID:1}});
             if (employees) {
                 return functions.success(res, "Get all employee success", { employees: employees});
             }else {
@@ -249,8 +249,8 @@ exports.deleteEmployee = async(req, res, next) => {
 }
 
 //tim kiem danh sach nhan vien theo cac dieu kien---------------------------------------------------------------------------
-//theo exp
-exports.getListEmployeeByExp = async(req, res, next) => {
+
+exports.getListEmployeeByFields = async(req, res, next) => {
     try {
         if (req.body) {
             if(!req.body.page){
@@ -258,194 +258,101 @@ exports.getListEmployeeByExp = async(req, res, next) => {
             }
             if(!req.body.pageSize){
                 return functions.setError(res, "Missing input pageSize", 402);
-            }
-            if(!req.body.exp){
-                return functions.setError(res, "Missing input exp", 403);
             }
             let page = Number(req.body.page);
             let pageSize = Number(req.body.pageSize);
             let exp = Number(req.body.exp);
+            let candiHocVan =  Number(req.body.exp);
+            let positionID = Number(req.body.exp);
+            let depID = Number(req.body.exp);
             let type=2;
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let listEmployee = await functions.pageFindWithFields(Employee, 
-                { "inForPerson.exp": {"$eq" : exp, "$exists" : true}, type: type }, 
-                {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                }, 
-                { _id: 1 }
-                , skip, 
-                limit
-            )
-            const totalCount = await Employee.countDocuments({ "inForPerson.exp": exp, type: type })
-            const totalPages = Math.ceil(totalCount / pageSize)
-            if (listEmployee) {
-                functions.success(res, "get list employee by experience success", { employees: { totalCount, totalPages, listEmployee: listEmployee } });
-            }
-        } else {
-            return functions.setError(res, "Missing input data", 400);
-        }
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
-    }
-}
+            let listEmployee;
+            let totalCount;
 
-//theo education
-exports.getListEmployeeByEducation = async(req, res, next) => {
-    try {
-        if (req.body) {
-            if(!req.body.page){
-                return functions.setError(res, "Missing input page", 401);
+            //tim theo kinh nghiem lam viec va hoc van
+            if(req.body.exp && req.body.candiHocVan){
+                listEmployee = await functions.pageFindWithFields(Employee, 
+                    { "inForPerson.exp": exp, "inForPerson.candiHocVan":candiHocVan, type: type }, 
+                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                        inForPerson: {gender:true, birthday:true, candiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
+                    }, 
+                    { _id: 1 }
+                    , skip, 
+                    limit
+                )
+                totalCount = await Employee.countDocuments({ "inForPerson.exp": exp, "inForPerson.candiHocVan":candiHocVan, type: type });
+            } 
+            //tim theo kinh nghiem lam viec va cap bac
+            else if(req.body.exp && req.body.positionID) {
+                listEmployee = await functions.pageFindWithFields(Employee, 
+                    { "inForPerson.exp": exp, "inForPerson.positionID":positionID, type: type }, 
+                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                        inForPerson: {gender:true, birthday:true, candiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
+                    }, 
+                    { _id: 1 }
+                    , skip, 
+                    limit
+                )
+                totalCount = await Employee.countDocuments({ "inForPerson.exp": exp, "inForPerson.positionID":positionID, type: type });
+            } 
+            //tim theo kinh nghiem lam viec
+            else if(req.body.exp){
+                listEmployee = await functions.pageFindWithFields(Employee, 
+                    { "inForPerson.exp": {"$eq" : exp, "$exists" : true}, type: type }, 
+                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                        inForPerson: {gender:true, birthday:true, candiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
+                    }, 
+                    { _id: 1 }
+                    , skip, 
+                    limit
+                );
+                 totalCount = await Employee.countDocuments({ "inForPerson.exp": exp, type: type });
+            } 
+            //tim theo hoc van
+            else if(req.body.candiHocVan){
+                listEmployee = await functions.pageFindWithFields(Employee, 
+                    { "inForPerson.candiHocVan": candiHocVan, type: type }, 
+                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                        inForPerson: {gender:true, birthday:true, candiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
+                    }, 
+                    { _id: 1 }
+                    , skip, 
+                    limit
+                );
+                 totalCount = await Employee.countDocuments({ "inForPerson.candiHocVan": candiHocVan, type: type });
+            }//tim theo vi tri
+            else if(req.body.positionID){
+                listEmployee = await functions.pageFindWithFields(Employee, 
+                    { "inForPerson.positionID": positionID, type: type }, 
+                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                        inForPerson: {gender:true, birthday:true, candiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
+                    }, 
+                    { _id: 1 }
+                    , skip, 
+                    limit
+                );
+                 totalCount = await Employee.countDocuments({ "inForPerson.positionID": positionID, type: type });
+            }//tim theo phong ban
+            else if(req.body.depID){
+                listEmployee = await functions.pageFindWithFields(Employee, 
+                    { "inForPerson.depID": depID, type: type }, 
+                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                        inForPerson: {gender:true, birthday:true, candiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
+                    }, 
+                    { _id: 1 }
+                    , skip, 
+                    limit
+                );
+                 totalCount = await Employee.countDocuments({ "inForPerson.depID": depID, type: type });
+            }else {
+                 return functions.setError(res, "Missing input field", 404);
             }
-            if(!req.body.pageSize){
-                return functions.setError(res, "Missing input pageSize", 402);
-            }
-            if(!req.body.candiHocVan){
-                return functions.setError(res, "Missing input candiHocVan", 403);
-            }
-            let page = Number(req.body.page);
-            let pageSize = Number(req.body.pageSize);
-            let candiHocVan = Number(req.body.candiHocVan);
-            let type=2;
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let listEmployee = await functions.pageFindWithFields(Employee, 
-                { "inForPerson.candiHocVan": {"$eq" : candiHocVan, "$exists" : true}, type: type }, 
-                {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                }, 
-                { _id: 1 }
-                , skip, 
-                limit
-            )
-            const totalCount = await Employee.countDocuments({ "inForPerson.candiHocVan": candiHocVan, type: type })
+            
             const totalPages = Math.ceil(totalCount / pageSize)
             if (listEmployee) {
-                functions.success(res, "get list employee by education success", { employees: { totalCount, totalPages, listEmployee: listEmployee } });
-            }
-        } else {
-            return functions.setError(res, "Missing input data", 400);
-        }
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
-    }
-}
-
-//theo department
-exports.getListEmployeeByDepartment = async(req, res, next) => {
-    try {
-        if (req.body) {
-            let page = Number(req.body.page);
-            let pageSize = Number(req.body.pageSize);
-            let depID = Number(req.body.depID);
-            if(!page){
-                return functions.setError(res, "Missing input page", 401);
-            }
-            if(!pageSize){
-                return functions.setError(res, "Missing input pageSize", 402);
-            }
-            if(!depID){
-                return functions.setError(res, "Missing input page", 403);
-            }
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let listEmployee = await functions.pageFindWithFields(Employee, 
-                { "inForPerson.depID": {"$eq" : depID, "$exists" : true}, type: type }, 
-                {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                }, 
-                { _id: 1 }
-                , skip, 
-                limit
-            )
-            const totalCount = await Employee.countDocuments({ "inForPerson.depID": depID, type: type })
-            const totalPages = Math.ceil(totalCount / pageSize)
-            if (listEmployee) {
-                functions.success(res, "get list employee by department success", { employees: { totalCount, totalPages, listEmployee: listEmployee } });
-            }
-        } else {
-            return functions.setError(res, "Missing input data", 400);
-        }
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
-    }
-}
-//theo position
-exports.getListEmployeeByPosition = async(req, res, next) => {
-    try {
-        if (req.body) {
-            let page = Number(req.body.page);
-            let pageSize = Number(req.body.pageSize);
-            let positionID = Number(req.body.positionID);
-            let type=2;
-            if(!page){
-                return functions.setError(res, "Missing input page", 401);
-            }
-            if(!pageSize){
-                return functions.setError(res, "Missing input pageSize", 402);
-            }
-            if(positionID==undefined){
-                return functions.setError(res, "Missing input positionID", 403);
-            }
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let listEmployee = await functions.pageFindWithFields(Employee, 
-                { "inForPerson.positionID": {"$eq" : positionID, "$exists" : true}, type: type }, 
-                {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, positionID:true, groupID:true}
-                }, 
-                { _id: 1 }
-                , skip, 
-                limit
-            )
-            const totalCount = await Employee.countDocuments({ "inForPerson.positionID": positionID, type: type })
-            const totalPages = Math.ceil(totalCount / pageSize)
-            if (listEmployee) {
-                functions.success(res, "get list employee by position success", { employees: { totalCount, totalPages, listEmployee: listEmployee } });
-            }
-        } else {
-            return functions.setError(res, "Missing input data", 400);
-        }
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
-    }
-}
-//theo phone
-exports.getListEmployeeByBirthday = async(req, res, next) => {
-    try {
-        if (req.body) {
-            let page = Number(req.body.page);
-            let pageSize = Number(req.body.pageSize);
-            let birthday = req.body.birthday;
-            let type=2;
-            if(!page){
-                return functions.setError(res, "Missing input page", 401);
-            }
-            if(!pageSize){
-                return functions.setError(res, "Missing input pageSize", 402);
-            }
-            if(birthday==undefined){
-                return functions.setError(res, "Missing input birthday", 403);
-            }
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let listEmployee = await functions.pageFindWithFields(Employee, 
-                { "inForPerson.birthday": {"$eq" : birthday, "$exists" : true}, type: type }, 
-                {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                }, 
-                { _id: 1 }
-                , skip, 
-                limit
-            )
-            const totalCount = await Employee.countDocuments({ "inForPerson.birthday": birthday, type: type })
-            const totalPages = Math.ceil(totalCount / pageSize)
-            if (listEmployee) {
-                functions.success(res, "get list employee by birthday success", { employees: { totalCount, totalPages, listEmployee: listEmployee } });
+                functions.success(res, "get list employee by fields", { employees: { totalCount, totalPages, listEmployee: listEmployee } });
             }
         } else {
             return functions.setError(res, "Missing input data", 400);

@@ -202,8 +202,8 @@ exports.deleteIndividual = async(req, res, next) => {
 }
 
 //tim kiem danh sach ca nhan theo cac dieu kien---------------------------------------------------------------------------
-//theo exp
-exports.getListIndividualByExp = async(req, res, next) => {
+
+exports.getListIndividualByFields = async(req, res, next) => {
     try {
         if (req.body) {
             if(!req.body.page){
@@ -212,112 +212,58 @@ exports.getListIndividualByExp = async(req, res, next) => {
             if(!req.body.pageSize){
                 return functions.setError(res, "Missing input pageSize", 402);
             }
-            if(!req.body.exp){
-                return functions.setError(res, "Missing input exp", 403);
-            }
+            
             let page = Number(req.body.page);
             let pageSize = Number(req.body.pageSize);
             let exp = Number(req.body.exp);
+            let candiHocVan = Number(req.body.candiHocVan);
             let type = 0;
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
-            let listIndividual = await functions.pageFindWithFields(Individual, 
-                {type: type, "inForPerson.exp": {"$eq" : exp, "$exists" : true} }, 
-                {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                }, 
-                { _id: 1 }
-                , skip, 
-                limit
-            )
-            const totalCount = await Individual.countDocuments({ "inForPerson.exp": exp, type: type })
-            const totalPages = Math.ceil(totalCount / pageSize)
+            let listIndividual=[];
+            let totalCount=0;
+
+            //tim kiem theo kinh nghiem va hoc van
+            if(req.body.exp && req.body.candiHocVan){
+                listIndividual = await functions.pageFindWithFields(Individual, 
+                    {type: type, "inForPerson.exp": exp, "inForPerson.candiHocVan": candiHocVan}, 
+                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                        inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
+                    }, 
+                    { _id: 1 }
+                    , skip, 
+                    limit
+                );
+                totalCount = await Individual.countDocuments({ "inForPerson.exp": exp, "inForPerson.candiHocVan": candiHocVan, type: type });
+            }else if(req.body.exp){
+                listIndividual = await functions.pageFindWithFields(Individual, 
+                    {type: type, "inForPerson.exp": exp}, 
+                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                        inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
+                    }, 
+                    { _id: 1 }
+                    , skip, 
+                    limit
+                );
+                totalCount = await Individual.countDocuments({ "inForPerson.exp": exp, type: type });
+            }else if(req.body.candiHocVan){
+                listIndividual = await functions.pageFindWithFields(Individual, 
+                    {type: type, "inForPerson.candiHocVan": candiHocVan}, 
+                    {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
+                        inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
+                    }, 
+                    { _id: 1 }
+                    , skip, 
+                    limit
+                );
+                totalCount = await Individual.countDocuments({"inForPerson.candiHocVan": candiHocVan, type: type });
+            }else {
+                return functions.setError(res, "Missing input field", 404);
+            }
+            
+            const totalPages = Math.ceil(totalCount / pageSize);
             if (listIndividual) {
                 functions.success(res, "get list individual by experience success", { individuals: { totalCount, totalPages, listIndividual: listIndividual } });
-            }
-        } else {
-            return functions.setError(res, "Missing input data", 400);
-        }
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
-    }
-}
-
-//theo education
-exports.getListIndividualByEducation = async(req, res, next) => {
-    try {
-        if (req.body) {
-            if(!req.body.page){
-                return functions.setError(res, "Missing input page", 401);
-            }
-            if(!req.body.pageSize){
-                return functions.setError(res, "Missing input pageSize", 402);
-            }
-            if(!req.body.candiHocVan){
-                return functions.setError(res, "Missing input candiHocVan", 403);
-            }
-            let page = Number(req.body.page);
-            let pageSize = Number(req.body.pageSize);
-            let candiHocVan = Number(req.body.candiHocVan);
-            let type=0;
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let listIndividual = await functions.pageFindWithFields(Individual, 
-                { "inForPerson.candiHocVan": {"$eq" : candiHocVan, "$exists" : true}, type: type }, 
-                {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                }, 
-                { _id: 1 }
-                , skip, 
-                limit
-            )
-            const totalCount = await Individual.countDocuments({ "inForPerson.candiHocVan": candiHocVan, type: type })
-            const totalPages = Math.ceil(totalCount / pageSize)
-            if (listIndividual) {
-                functions.success(res, "get list individual by education success", { individuals: { totalCount, totalPages, listIndividual: listIndividual } });
-            }
-        } else {
-            return functions.setError(res, "Missing input data", 400);
-        }
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
-    }
-}
-
-//theo birthday
-exports.getListIndividualByBirthday = async(req, res, next) => {
-    try {
-        if (req.body) {
-            let page = Number(req.body.page);
-            let pageSize = Number(req.body.pageSize);
-            let birthday = req.body.birthday;
-            let type = 0;
-            if(!page){
-                return functions.setError(res, "Missing input page", 401);
-            }
-            if(!pageSize){
-                return functions.setError(res, "Missing input pageSize", 402);
-            }
-            if(birthday==undefined){
-                return functions.setError(res, "Missing input birthday", 403);
-            }
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let listIndividual = await functions.pageFindWithFields(Individual, 
-                { "inForPerson.birthday": {"$eq" : birthday, "$exists" : true}, type: type }, 
-                {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
-                    inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
-                }, 
-                { _id: 1 }
-                , skip, 
-                limit
-            )
-            const totalCount = await Individual.countDocuments({ "inForPerson.birthday": birthday, type: type })
-            const totalPages = Math.ceil(totalCount / pageSize)
-            if (listIndividual) {
-                functions.success(res, "get list individual by birthday success", { individuals: { totalCount, totalPages, listIndividual: listIndividual } });
             }
         } else {
             return functions.setError(res, "Missing input data", 400);
