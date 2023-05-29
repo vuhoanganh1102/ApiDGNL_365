@@ -184,8 +184,9 @@ exports.editIndividual = async (req, res) => {
 exports.deleteIndividual = async(req, res, next) => {
     try {
         let idQLC = req.query.idQLC;
+        let type = 0;
         if (idQLC) {
-            let individual = await functions.getDataDeleteOne(Individual ,{idQLC: idQLC});
+            let individual = await functions.getDataDeleteOne(Individual ,{idQLC: idQLC, type: type});
             if (individual.deletedCount===1) {
                 return functions.success(res, "Delete individual by idQLC success");
             }else{
@@ -205,13 +206,23 @@ exports.deleteIndividual = async(req, res, next) => {
 exports.getListIndividualByExp = async(req, res, next) => {
     try {
         if (req.body) {
+            if(!req.body.page){
+                return functions.setError(res, "Missing input page", 401);
+            }
+            if(!req.body.pageSize){
+                return functions.setError(res, "Missing input pageSize", 402);
+            }
+            if(!req.body.exp){
+                return functions.setError(res, "Missing input exp", 403);
+            }
             let page = Number(req.body.page);
             let pageSize = Number(req.body.pageSize);
             let exp = Number(req.body.exp);
+            let type = 0;
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let listIndividual = await functions.pageFindWithFields(Individual, 
-                { "inForPerson.exp": {"$eq" : exp, "$exists" : true} }, 
+                {type: type, "inForPerson.exp": {"$eq" : exp, "$exists" : true} }, 
                 {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
                     inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
                 }, 
@@ -219,7 +230,7 @@ exports.getListIndividualByExp = async(req, res, next) => {
                 , skip, 
                 limit
             )
-            const totalCount = await Individual.countDocuments({ "inForPerson.exp": exp })
+            const totalCount = await Individual.countDocuments({ "inForPerson.exp": exp, type: type })
             const totalPages = Math.ceil(totalCount / pageSize)
             if (listIndividual) {
                 functions.success(res, "get list individual by experience success", { individuals: { totalCount, totalPages, listIndividual: listIndividual } });
@@ -237,13 +248,23 @@ exports.getListIndividualByExp = async(req, res, next) => {
 exports.getListIndividualByEducation = async(req, res, next) => {
     try {
         if (req.body) {
+            if(!req.body.page){
+                return functions.setError(res, "Missing input page", 401);
+            }
+            if(!req.body.pageSize){
+                return functions.setError(res, "Missing input pageSize", 402);
+            }
+            if(!req.body.candiHocVan){
+                return functions.setError(res, "Missing input candiHocVan", 403);
+            }
             let page = Number(req.body.page);
             let pageSize = Number(req.body.pageSize);
             let candiHocVan = Number(req.body.candiHocVan);
+            let type=0;
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let listIndividual = await functions.pageFindWithFields(Individual, 
-                { "inForPerson.candiHocVan": {"$eq" : candiHocVan, "$exists" : true} }, 
+                { "inForPerson.candiHocVan": {"$eq" : candiHocVan, "$exists" : true}, type: type }, 
                 {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
                     inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
                 }, 
@@ -251,7 +272,7 @@ exports.getListIndividualByEducation = async(req, res, next) => {
                 , skip, 
                 limit
             )
-            const totalCount = await Individual.countDocuments({ "inForPerson.candiHocVan": candiHocVan })
+            const totalCount = await Individual.countDocuments({ "inForPerson.candiHocVan": candiHocVan, type: type })
             const totalPages = Math.ceil(totalCount / pageSize)
             if (listIndividual) {
                 functions.success(res, "get list individual by education success", { individuals: { totalCount, totalPages, listIndividual: listIndividual } });
@@ -265,13 +286,14 @@ exports.getListIndividualByEducation = async(req, res, next) => {
     }
 }
 
-//theo phone
+//theo birthday
 exports.getListIndividualByBirthday = async(req, res, next) => {
     try {
         if (req.body) {
             let page = Number(req.body.page);
             let pageSize = Number(req.body.pageSize);
             let birthday = req.body.birthday;
+            let type = 0;
             if(!page){
                 return functions.setError(res, "Missing input page", 401);
             }
@@ -279,12 +301,12 @@ exports.getListIndividualByBirthday = async(req, res, next) => {
                 return functions.setError(res, "Missing input pageSize", 402);
             }
             if(birthday==undefined){
-                return functions.setError(res, "Missing input page", 403);
+                return functions.setError(res, "Missing input birthday", 403);
             }
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let listIndividual = await functions.pageFindWithFields(Individual, 
-                { "inForPerson.birthday": {"$eq" : birthday, "$exists" : true} }, 
+                { "inForPerson.birthday": {"$eq" : birthday, "$exists" : true}, type: type }, 
                 {phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
                     inForPerson: {gender:true, birthday:true, condiHocVan:true, married:true, positionID:true, depID:true, groupID:true}
                 }, 
@@ -292,7 +314,7 @@ exports.getListIndividualByBirthday = async(req, res, next) => {
                 , skip, 
                 limit
             )
-            const totalCount = await Individual.countDocuments({ "inForPerson.birthday": birthday })
+            const totalCount = await Individual.countDocuments({ "inForPerson.birthday": birthday, type: type })
             const totalPages = Math.ceil(totalCount / pageSize)
             if (listIndividual) {
                 functions.success(res, "get list individual by birthday success", { individuals: { totalCount, totalPages, listIndividual: listIndividual } });
