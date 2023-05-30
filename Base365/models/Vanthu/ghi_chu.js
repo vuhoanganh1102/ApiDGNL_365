@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const ghi_chu = new Schema({
+const Vanthu_ghi_chu = new Schema({
     id_note : {
         type : Number,
         required : true
@@ -15,4 +15,4 @@ const ghi_chu = new Schema({
     }
 
 })
-module.exports = mongoose.model("ghi_chu", ghi_chu);
+module.exports = mongoose.model("Vanthu_ghi_chu", Vanthu_ghi_chu);

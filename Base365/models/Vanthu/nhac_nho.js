@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const nhac_nho = new Schema({
+const Vanthu_nhac_nho = new Schema({
     id_nhac_nho : {
         type : Number
     },
@@ -12,4 +12,4 @@ const nhac_nho = new Schema({
         type : Date
     }
 })
-module.exports = mongoose.model("nhac_nho", nhac_nho)
+module.exports = mongoose.model("Vanthu_nhac_nho", Vanthu_nhac_nho)

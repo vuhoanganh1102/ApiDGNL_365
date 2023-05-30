@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const ly_do = new Schema({
+const Vanthu_ly_do = new Schema({
     id_ld : {
         type : Number,
         required : true
@@ -19,4 +19,4 @@ const ly_do = new Schema({
         type : Date
     }
 })
-module.exports = mongoose.model("ly_do",ly_do)
+module.exports = mongoose.model("Vanthu_ly_do",Vanthu_ly_do)

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const cate_de_xuatSchema = new Schema({
+const Vanthu_cate_de_xuatSchema = new Schema({
     id_cate_dx: { // id của loại đề xuất
         type: Number,
         required: true
@@ -68,4 +68,4 @@ const cate_de_xuatSchema = new Schema({
 
     }
 })
-module.exports = mongoose.model("cate_de_xuat", cate_de_xuatSchema);
+module.exports = mongoose.model("Vanthu_cate_de_xuat", Vanthu_cate_de_xuatSchema);

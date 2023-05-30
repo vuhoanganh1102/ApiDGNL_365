@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const group_van_ban = new Schema({
+const Vanthu_group_van_ban = new Schema({
     id_group_vb : {
         type : Number,
         required : true
@@ -28,4 +28,4 @@ const group_van_ban = new Schema({
     }
 
 })
-module.exports = mongoose.model("group_van_ban",group_van_ban);
+module.exports = mongoose.model("Vanthu_group_van_ban",Vanthu_group_van_ban);

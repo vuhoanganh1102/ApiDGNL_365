@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const phong_ban = new Schema({
+const Vanthu_phong_ban = new Schema({
     id_phong_ban : {
         type : Number
     },
@@ -16,4 +16,4 @@ const phong_ban = new Schema({
     }
 
 })
-module.exports = mongoose.model("phong_ban",phong_ban)
+module.exports = mongoose.model("Vanthu_phong_ban",Vanthu_phong_ban)

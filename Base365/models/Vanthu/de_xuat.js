@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const de_xuat = new Schema({
+const Vanthu_de_xuat = new Schema({
     id_de_xuat : {
         type : Number,
         required: true
@@ -79,4 +79,4 @@ const de_xuat = new Schema({
         type : Number,
     }
 })
-module.exports = mongoose.model("de_xuat", de_xuat);
+module.exports = mongoose.model("Vanthu_de_xuat", Vanthu_de_xuat);

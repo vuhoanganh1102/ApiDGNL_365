@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const delete_dx = new Schema({
+const Vanthu_delete_dx = new Schema({
     id_del : {
         type : Number,
         required : true
@@ -19,4 +19,4 @@ const delete_dx = new Schema({
         type : Date
     }
 })
-module.exports = mongoose.model("delete_dx", delete_dx);
+module.exports = mongoose.model("Vanthu_delete_dx", Vanthu_delete_dx);

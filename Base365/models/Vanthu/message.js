@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const message = new Schema({
+const Vanthu_message = new Schema({
     id_mes : {
         type : Number
     },
@@ -18,4 +18,4 @@ const message = new Schema({
         type : String
     }
 })
-module.exports = mongoose.model("message",message)
+module.exports = mongoose.model("Vanthu_message",Vanthu_message)

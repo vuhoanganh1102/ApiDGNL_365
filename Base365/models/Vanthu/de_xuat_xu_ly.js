@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const de_xuat_xu_ly = new Schema({
+const Vanthu_de_xuat_xu_ly = new Schema({
     id_dx: {
         type: Number,
         required : true
@@ -19,4 +19,4 @@ const de_xuat_xu_ly = new Schema({
         type : String
     }
 })
-module.exports = mongoose.model("de_xuat_xu_ly", de_xuat_xu_ly);
+module.exports = mongoose.model("Vanthu_de_xuat_xu_ly", Vanthu_de_xuat_xu_ly);

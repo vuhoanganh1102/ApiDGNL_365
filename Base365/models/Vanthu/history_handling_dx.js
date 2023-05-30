@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const history_handling_dx = new  Schema({
+const Vanthu_history_handling_dx = new  Schema({
     id_his : {
         type : Number,
         required : true
@@ -22,4 +22,4 @@ const history_handling_dx = new  Schema({
     }
 
 })
-module.exports = mongoose.model("history_handling_dx",history_handling_dx)
+module.exports = mongoose.model("Vanthu_history_handling_dx",Vanthu_history_handling_dx)
