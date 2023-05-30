@@ -558,6 +558,7 @@ exports.findOneAndUpdateUser = async(userId, projection, select) => {
 
 exports.getUrlLogoCompany = async(createTime, logo) => {
     try {
+        
         if (logo != null) {
             const time = new Date(createTime);
             let d = time.getDate();

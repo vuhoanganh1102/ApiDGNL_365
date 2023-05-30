@@ -1,7 +1,8 @@
 const functions = require('../../services/functions');
 const Category = require('../../models/Raonhanh365/Category');
 const New = require('../../models/Raonhanh365/UserOnSite/New')
-const CategoryRaoNhanh365 = require('../../models/Raonhanh365/Category')
+const CategoryRaoNhanh365 = require('../../models/Raonhanh365/Category');
+const User = require('../../models/Users');
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
     try {
@@ -228,27 +229,42 @@ exports.postNewVehicle = async (req, res, next) => {
 // lấy tin trước đăng nhập
 exports.getNewsBeforeLogin = async (req, res, next) => {
     try {
-        // tạo mảng
-        let output = [];
-        // tìm tin được ưu tiên đẩy lên đầu với trường pinHome và pinCate
-        let data_pinHome = await New.find({ pinHome: 1 }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber');
+        let searchitem = {_id: 1, title: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1}
 
+        // tìm tin được ưu tiên đẩy lên đầu với trường pinHome
+        let data_pinHome = await New.find({ pinHome: 1 }, searchitem).limit(50);
         if (data_pinHome) {
+            // lặp để chèn link ảnh
             for (let i = 0; i < data_pinHome.length; i++) {
-                // thêm tin vào mảng 
-                output.push(data_pinHome[i])
+                // chèn link ảnh
+                data_pinHome[i].image = await functions.getUrlLogoCompany(data_pinHome[i].createTime, data_pinHome[i].image);
+                if (data_pinHome[i].img.length !== 0) {
+                    for (let j = 0; j < data_pinHome[i].img.length; j++) {
+                        // chèn link ảnh
+                        data_pinHome[i].img[j].nameImg = await functions.getUrlLogoCompany(data_pinHome[i].createTime, data_pinHome[i].img[j].nameImg);
+                    }
+                }
             }
         }
         // nếu dữ liệu ưu tiên ít hơn 50 thì thêm dữ liệu thường vào
-        if (output.length < 50) {
+        if (data_pinHome.length < 50) {
             // lấy data với những tin có ngày cập nhật mới nhất
-            let data = await New.find({}).sort({ updatedAt: -1 }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50 - output.length);
+            let data = await New.find({}, searchitem).sort({ updateTime: -1 }).limit(50 - data_pinHome.length);
+            // lặp để chèn link ảnh
             for (let i = 0; i < data.length; i++) {
-                // thêm tin vào mảng 
-                output.push(data[i])
+                // chèn link ảnh
+                data[i].image = await functions.getUrlLogoCompany(data[i].createTime, data[i].image);
+                if (data[i].img.length !== 0) {
+                    for (let j = 0; j < data[i].img.length; j++) {
+                        // chèn link ảnh
+                        data[i].img[j].nameImg = await functions.getUrlLogoCompany(data[i].createTime, data[i].img[j].nameImg);
+                    }
+                }
+                data_pinHome.push(data[i]);
             }
+
         }
-        return functions.success(res, "get data success", { output })
+        return functions.success(res, "get data success", { data_pinHome })
     } catch (error) {
         return functions.setError(res, error)
     }
@@ -256,64 +272,83 @@ exports.getNewsBeforeLogin = async (req, res, next) => {
 // tìm kiếm tin 
 exports.searchNews = async (req, res, next) => {
     try {
-        // tạo mảng
-        let output = [];
+        let searchItem = {_id: 1, title: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1}
         // trường hợp không nhập gì mà tìm kiếm
         if (!req.body.key || req.body.key === undefined) {
-            let data = await New.find({}).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
+            let data = await New.find({}, searchItem).sort({ updateTime: -1 }).limit(50);
             for (let i = 0; i < data.length; i++) {
-                // thêm tin vào mảng 
-                output.push(data[i])
+                data[i].image = await functions.getUrlLogoCompany(data[i].createTime, data[i].image);
+                if (data[i].img.length !== 0) {
+                    for (let j = 0; j < data[i].img.length; j++) {
+                        data[i].img[j].nameImg = await functions.getUrlLogoCompany(data[i].createTime, data[i].img[j].nameImg);
+                    }
+                }         
             }
-        } else {
-            // lấy giá trị search key
-            let search = req.body.key;
-            // đưa câu truy vấn về chữ thường
-            let key_lower = search.toLowerCase();
-            // đổi chữ cái đầu thành chữ hoa
-            let key = key_lower.charAt(0).toUpperCase() + key_lower.slice(1);
-            // tìm kiếm danh mục với key
-            let query = await CategoryRaoNhanh365.find({ name: key })
-            if (!query || query.length === 0) {
-                //tạo biểu thức chính quy cho phép truy vấn key không phân biệt hoa thường
-                const regex = new RegExp(key, "i");
-                // tìm data với biểu thức chính quy 
-                let data_search = await CategoryRaoNhanh365.find({ name: regex });
-                if (data_search) {
-                    // lấy data nếu có trong danh mục
-                    let data = await New.find({ cateID: data_search[0]._id }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
-                    if (data) {
-                        for (let i = 0; i < data.length; i++) {
-                            output.push(data[i])
-                        }
-                    }
-                    else {
-                        // lấy data với tên của sản phẩm
-                        let data = await New.find({ name: regex }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
-                        for (let i = 0; i < data.length; i++) {
-                            output.push(data[i])
-                        }
-                    }
-                }
-
-            } else {
-                // tìm kiếm tin với id của danh mục đã tìm được
-                let data = await New.find({ cateID: query[0]._id }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
-                // đẩy dữ liệu vào mảng
+         return functions.success(res, "get data success", { data })
+        }
+        // lấy giá trị search key
+        let search = req.body.key;
+        // đưa câu truy vấn về chữ thường
+        let key_lower = search.toLowerCase();
+        // đổi chữ cái đầu thành chữ hoa
+        let key = key_lower.charAt(0).toUpperCase() + key_lower.slice(1);
+        // tìm kiếm danh mục với key
+        let query = await CategoryRaoNhanh365.find({ name: key })
+        if (!query || query.length === 0) {
+            //tạo biểu thức chính quy cho phép truy vấn key không phân biệt hoa thường
+            const regex = new RegExp(key, "i");
+            // tìm data với biểu thức chính quy 
+            let data_search = await CategoryRaoNhanh365.find({ name: regex });
+            if (data_search) {
+                // lấy data nếu có trong danh mục
+                let data = await New.find({ cateID: data_search[0]._id },searchItem).sort({ updateTime: -1 }).limit(50);
                 if (data) {
                     for (let i = 0; i < data.length; i++) {
-                        output.push(data[i])
+                        data[i].image = await functions.getUrlLogoCompany(data[i].createTime, data[i].image);
+                        if (data[i].img.length !== 0) {
+                            for (let j = 0; j < data[i].img.length; j++) {
+                                data[i].img[j].nameImg = await functions.getUrlLogoCompany(data[i].createTime, data[i].img[j].nameImg);
+                            }
+                        }                      
                     }
+                  return functions.success(res, "get data success", { data })
                 }
                 else {
-                    return functions.setError(res, "get data failed")
+                    // lấy data với tên của sản phẩm
+                    let data = await New.find({ name: regex },searchItem).limit(50);
+                    for (let i = 0; i < data.length; i++) {
+                        data[i].image = await functions.getUrlLogoCompany(data[i].createTime, data[i].image);
+                        if (data[i].img.length !== 0) {
+                            for (let j = 0; j < data[i].img.length; j++) {
+                                data[i].img[j].nameImg = await functions.getUrlLogoCompany(data[i].createTime, data[i].img[j].nameImg);
+                            }
+                        }
+                    }
+                    return functions.success(res, "get data success", { data })
                 }
             }
 
+        } else {
+            // tìm kiếm tin với id của danh mục đã tìm được
+            let data = await New.find({ cateID: query[0]._id },searchItem).limit(50);
+            // đẩy dữ liệu vào mảng
+            if (data) {
+                for (let i = 0; i < data.length; i++) {
+                    data[i].image = await functions.getUrlLogoCompany(data[i].createTime, data[i].image);
+                    if (data[i].img.length !== 0) {
+                        for (let j = 0; j < data[i].img.length; j++) {
+                            data[i].img[j].nameImg = await functions.getUrlLogoCompany(data[i].createTime, data[i].img[j].nameImg);
+                        }
+                    }
+                }
+                return  functions.success(res, "get data success", { data })
+            }
+            else {
+                return functions.setError(res, "get data failed")
+            }
         }
         return functions.success(res, "get data success", { output })
     } catch (error) {
-        return functions.setError(res, error)
+        return functions.setError(res, "get data failed")
     }
 }
-//db.collection.find({ field: /query/i })
