@@ -2,20 +2,20 @@ const manageUser = require("../../models/Users")
 const functions = require("../../services/functions")
 
 //tìm danh sách nhân viên của cty 
-exports.getListUser= async (req, res) => {
+exports.getListPageUser= async (req, res) => {
     try {
         let page = Number(req.body.page);
-        let pageSize = Number(req.body.pageSize);
+        let pageSize = Number(req.body.pageSize); //limit
         if (page && pageSize) {
             let user = await functions.getDatafind(manageUser, {idQLC: idQLC,type : 2  } );
             if (user) {
-                const skip = (page - 1) * pageSize;
+                const skip = (page - 1) * pageSize;//start index
                 const limit = pageSize;
-                const blogs = await functions.pageFind(Blog, { adminId: adminId }, { _id: -1 }, skip, limit);
-                const totalCount = await functions.findCount(Blog, { adminId: adminId });
+                const users = await functions.pageFind(manageUser, { idQLC: idQLC }, { _id: -1 }, skip, limit);
+                const totalCount = await functions.findCount(manageUser, { idQLC: idQLC });
                 console.log(totalCount)
                 const totalPages = Math.ceil(totalCount / pageSize);
-                return functions.success(res, "Lấy danh sách blog thành công", { admin: admin, totalCount: totalCount, totalPages: totalPages, blogs: blogs });
+                return functions.success(res, "Lấy danh sách NV thành công", { totalCount: totalCount, totalPages: totalPages, users: users });
             }
             return functions.setError(res, 'không tồn tại', 404)
         }
@@ -27,13 +27,14 @@ exports.getListUser= async (req, res) => {
     }
 }
 
-//     //Function tìm user là TK nhân viên và TK Cty
-//     await functions.getDatafind(manageUser, {idQLC: idQLC,type : 2  } )
-//         //thành công trả models
-//         .then((manageUser) => functions.success(res, "", manageUser))
-//         // bắt lỗi 
-//         .catch((err) => functions.setError(res, err.message, 501));
-// };
+    // tìm user là TK nhân viên và TK Cty
+exports.getListUser= async (req, res) => {
+    await functions.getDatafind(manageUser, {idQLC: idQLC,type : 2  } )
+        //thành công trả models
+        .then((manageUser) => functions.success(res, "", manageUser))
+        // bắt lỗi 
+        .catch((err) => functions.setError(res, err.message, 501));
+};
 //tìm 1 ứng viên cụ thể 
 exports.getUserById = async (req, res) => {
     //tạo biến chứa param id 

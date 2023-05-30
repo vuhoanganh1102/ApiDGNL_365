@@ -3,6 +3,9 @@
 const router = require('express').Router();
 const manageUserController = require('../../controllers/qlc/manageUser')
 
+//API lấy tất cả dữ liệu phòng ban theo page
+router.get("/page",manageUserController.getListPageUser);
+
 //API lấy tất cả dữ liệu phòng ban 
 router.get("/",manageUserController.getListUser);
 

@@ -4,7 +4,7 @@ const functions = require("../../services/functions")
 //tìm danh sách công ty 
 exports.getListCompany= async (req, res) => {
     //Function tìm tất cả cty theo model user có điều kiện là tài khoản cty
-    await functions.getDatafind(childCompany, { companyId : companyId , type : 1 })
+    await functions.getDatafind(childCompany, { companyID : companyID , type : 1 })
         //thành công trả models
         .then((childCompany) => functions.success(res, "", childCompany))
         // bắt lỗi 
@@ -13,13 +13,13 @@ exports.getListCompany= async (req, res) => {
 //tìm id company qua model user
 exports.getCompanyById = async (req, res) => {
     //tạo biến chứa param id 
-    const companyId = req.params.companyId;
+    const companyID = req.params.companyID;
     // nếu param id k phải số trả lỗi 
-    if (isNaN(companyId)) {
-        functions.setError(res, "companyId must be a number", 502);
+    if (isNaN(companyID)) {
+        functions.setError(res, "companyID must be a number", 502);
     } else {
     //nếu tìm được id của cty 
-        const Company = await childCompany.findOne({ companyId : companyId , type : 1  });
+        const Company = await childCompany.findOne({ companyID : companyID , type : 1  });
         if (!Company) {
     //nếu biến cty rỗng
             functions.setError(res, "childCompany cannot be found or does not exist", 503);
@@ -31,9 +31,9 @@ exports.getCompanyById = async (req, res) => {
 //tạo công ty
 exports.createCompany = async (req, res) => {
 
-    const { companyId, userContactPhone, userContactEmail } = req.body;
+    const { companyID, userContactPhone, userContactEmail } = req.body;
 
-    if (!companyId) {
+    if (!companyID) {
         //Kiểm tra id công ty  khác null
         functions.setError(res, "Company name required", 506);
     }else if (!userContactEmail) {
@@ -53,9 +53,9 @@ exports.createCompany = async (req, res) => {
         if (!maxID) {
             maxID = 0
         };
-        const CompanyId = Number(maxID) + 1;
+        const companyID = Number(maxID) + 1;
         const company = new childCompany({
-            companyId: companyId,
+            companyID: companyID,
             avatarCompany: avatarCompany,
             idparent:  idparent,
             userContactEmail: userContactEmail,
@@ -74,9 +74,9 @@ exports.createCompany = async (req, res) => {
 };
 // sửa công ty con 
 exports.editCompany = async (req, res) => {
-    const companyId = req.params.companyId;
+    const companyID = req.params.companyID;
 
-    if (isNaN(companyId)) {
+    if (isNaN(companyID)) {
         functions.setError(res, "Id must be a number", 502)
     } else {
         const {  companyName, userContactEmail, userContactPhone } = req.body;
@@ -96,11 +96,11 @@ exports.editCompany = async (req, res) => {
 
         } else {
 
-            const company = await functions.getDatafindOne(childCompany, { companyId: companyId ,type : 1 });
+            const company = await functions.getDatafindOne(childCompany, { companyID: companyID ,type : 1 });
             if (!company) {
                 functions.setError(res, "company does not exist!", 510);
             } else {
-                await functions.getDatafindOneAndUpdate(childCompany, { companyId: companyId, type :1 }, {
+                await functions.getDatafindOneAndUpdate(childCompany, { companyID: companyID, type :1 }, {
                     companyName: companyName,
                     userContactPhone: userContactPhone,
                     userContactEmail: userContactEmail
@@ -112,16 +112,16 @@ exports.editCompany = async (req, res) => {
     }
 };
 exports.deleteCompany = async (req, res) => {
-    const companyId = req.params.companyId;
-    //companyId
-    if (isNaN(companyId)) {
+    const companyID = req.params.companyID;
+    //companyID
+    if (isNaN(companyID)) {
         functions.setError(res, "Id must be a number", 502);
     } else {
-        const company = await functions.getDatafindOne(childCompany, { companyId: companyId , type : 1});
+        const company = await functions.getDatafindOne(childCompany, { companyID: companyID , type : 1});
         if (!company) {
             functions.setError(res, "company not exist!", 510);
         } else {
-            functions.getDataDeleteOne(childCompany, { companyId: companyId, type :1 })
+            functions.getDataDeleteOne(childCompany, { companyID: companyID, type :1 })
                 .then(() => functions.success(res, "Delete company successfully!", company))
                 .catch(err => functions.setError(res, err.message, 512));
         }

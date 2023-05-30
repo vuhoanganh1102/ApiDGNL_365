@@ -25,41 +25,29 @@ exports.getDeparmentById = async (req, res) => {
 
 exports.createDeparment = async (req, res) => {
 
-    const { companyId, deparmentName, deparmentOrder } = req.body;
+    const { companyID, deparmentName } = req.body;
 
-    if (!companyId) {
+    if (!companyID) {
         //Kiểm tra Id công ty khác null
         functions.setError(res, "Company Id required", 504);
 
-    } else if (typeof companyId !== "number") {
+    } else if (typeof companyID !== "number") {
         //Kiểm tra Id company có phải số không
         functions.setError(res, "Company Id must be a number", 505);
 
     } else if (!deparmentName) {
-        //Kiểm tra tên phòng ban khác null
-        functions.setError(res, "Deparment name required", 506);
-
-    } else if (!deparmentOrder) {
-        //Kiểm tra xếp thứ tự khác null
-        functions.setError(res, "Deparment order required", 507);
-
-    } else if (typeof deparmentOrder !== "number") {
-        //Kiểm tra xếp thứ tự có phải là số không
-        functions.setError(res, "Deparment order must be a number", 508);
+        //Kiểm tra ID phòng ban khác null
+        functions.setError(res, "name Deparment required", 506);
 
     } else {
         //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
         let maxID = await functions.getMaxID(Deparment);
-        if (!maxID) {
-            maxID = 0
-        };
-        const _id = Number(maxID) + 1;
         const deparment = new Deparment({
-            _id: _id,
-            companyId: companyId,
+            _id: Number(maxID) + 1 || 1,
+            companyID: companyID,
             deparmentName: deparmentName,
-            managerId: null,
-            deparmentOrder: deparmentOrder
+            managerId: managerId || null,
+            deputyId: deputyId || null,
         });
 
         await deparment.save()
@@ -78,25 +66,25 @@ exports.editDeparment = async (req, res) => {
     if (isNaN(_id)) {
         functions.setError(res, "Id must be a number", 502)
     } else {
-        const { companyId, deparmentName, deparmentOrder } = req.body;
+        const { companyID, deparmentName, managerId } = req.body;
 
-        if (!companyId) {
+        if (!companyID) {
             //Kiểm tra Id công ty khác null
             functions.setError(res, "Company ID required", 504);
 
-        } else if (typeof companyId !== "number") {
+        } else if (typeof companyID !== "number") {
             //Kiểm tra Id công ty có phải số không
             functions.setError(res, "Company ID must be a number", 505);
 
         } else if (!deparmentName) {
-            //Kiểm tra tên phòng ban
-            functions.setError(res, "Deparment name required", 506);
+            //Kiểm tra ID phòng ban
+            functions.setError(res, "ID Deparment required", 506);
 
-        } else if (!deparmentOrder) {
+        } else if (!managerId) {
             //Kiểm tra xếp thứ tự có khác null
             functions.setError(res, "Deparment order required", 507);
 
-        } else if (typeof deparmentOrder !== "number") {
+        } else if (typeof managerId !== "number") {
             //Kiểm tra xếp thứ tự có phải là số không
             functions.setError(res, "Deparment order must be a number", 508);
 
@@ -107,9 +95,10 @@ exports.editDeparment = async (req, res) => {
                 functions.setError(res, "Deparment does not exist!", 510);
             } else {
                 await functions.getDatafindOneAndUpdate(Deparment, { _id: _id }, {
-                    companyId: companyId,
+                    companyID: companyID,
                     deparmentName: deparmentName,
-                    deparmentOrder: deparmentOrder
+                    managerId: managerId,
+                    deputyId: deputyId || null,
                 })
                     .then((deparment) => functions.success(res, "Deparment edited successfully", deparment))
                     .catch((err) => functions.setError(res, err.message, 511));

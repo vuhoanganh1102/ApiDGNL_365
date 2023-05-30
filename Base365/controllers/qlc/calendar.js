@@ -13,7 +13,7 @@ exports.getAllCalendarCompany = async(req, res) => {
     if (!compnayId) {
         functions.setError(res, "Company Id required")
     } else if (typeof compnayId !== "number") {
-        functtions.setError(res, "Company Id must be a number");
+        functions.setError(res, "Company Id must be a number");
     } else {
         const calendar = await functions.getDatafind(Calendar, { companyId: compnayId })
         if (!calendar) {
@@ -34,7 +34,7 @@ exports.getCalendarById = async(req, res) => {
         if (!calendars) {
             functions.setError(res, "Calendar cannot be found or does not exist");
         } else {
-            funtions.success(res, "Get calendar successfully", calendars);
+            functions.success(res, "Get calendar successfully", calendars);
         }
     }
 };
@@ -47,17 +47,17 @@ exports.createCalendar = async(req, res) => {
     } else if (typeof companyId === "number") {
         functions.setError(res, "Company id must be a number");
     } else if (!calendarName) {
-        functions.setErroe(res, "Calendar name required");
+        functions.setError(res, "Calendar name required");
     } else if (!idCalendarWork) {
         functions.setError(res, "Calendar work required");
     } else if (typeof idCalendarWork !== "number") {
         functions.setError(res, "Calendar work must be a number")
     } else if (!Number.isInteger(idCalendarWork) || idCalendarWork <= 0 || idCalendarWork >= 3) {
-        funtions.setError(res, "Calendar is invalid");
+        functions.setError(res, "Calendar is invalid");
     } else if (!timeApply) {
         functions.setError(res, "Time apply required");
     } else if (!timeStart) {
-        funtions.setError(res, "Time start required");
+        functions.setError(res, "Time start required");
     } else if (timeApply.getMonth() !== timeStart.getMonth()) {
         functions.setError(res, "Time start must be in the same month as time apply");
     } else if (!calendarDate) {
@@ -115,13 +115,13 @@ exports.editCalendar = async(req, res) => {
         } else if (typeof companyId === "number") {
             functions.setError(res, "Company id must be a number");
         } else if (!calendarName) {
-            functions.setErroe(res, "Calendar name required");
+            functions.setError(res, "Calendar name required");
         } else if (!idCalendarWork) {
             functions.setError(res, "Calendar work required");
         } else if (typeof idCalendarWork !== "number") {
             functions.setError(res, "Calendar work must be a number")
         } else if (!Number.isInteger(idCalendarWork) || idCalendarWork <= 0 || idCalendarWork >= 3) {
-            funtions.setError(res, "Calendar is invalid");
+            functions.setError(res, "Calendar is invalid");
         } else if (!timeApply) {
             functions.setError(res, "Time apply required");
         } else if (!timeStart) {

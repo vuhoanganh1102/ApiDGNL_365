@@ -13,7 +13,7 @@ exports.getlistTracking = async (req,res) =>{
         if (!list) {
             functions.setError(res, "list of manage tracking cannot be found or does not exist");
         } else {
-            funtions.success(res, "Get list of manage tracking successfully", list);
+            functions.success(res, "Get list of manage tracking successfully", list);
         }
     }
 };
