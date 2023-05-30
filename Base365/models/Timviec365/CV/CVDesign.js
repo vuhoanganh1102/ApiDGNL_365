@@ -6,7 +6,7 @@
          require: true
      },
      name: {
-         type: String
+         type: Number
      },
      alias: {
          type: String

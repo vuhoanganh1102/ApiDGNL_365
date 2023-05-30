@@ -43,9 +43,6 @@ const CVSectionSchema = new mongoose.Schema({
         //chú thích chuyên mục
         type: String
     },
-    status: {
-        type: Number
-    }
 
 }, {
     collection: 'CVSection',

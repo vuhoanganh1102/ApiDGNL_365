@@ -147,6 +147,7 @@ const UserSchema = new mongoose.Schema({
     },
     inForPerson: {
         type: {
+            // Thông tin dành cho luồng chuyển đổi số
             companyID: {
                 // ID của công ty chủ quyền nếu là nhân viên (giá trị = 0 là cá nhân)
                 type: Number,
@@ -227,6 +228,7 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            // Thông tin dùng trên timviec365
             candiTitle: {
                 // Công việc mong muốn
                 type: String,
@@ -237,8 +239,13 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            candiMucTieu: {
+            candiTarget: {
                 // Mục tiêu làm việc
+                type: String,
+                default: null
+            },
+            candiSkill: {
+                // Kỹ năng làm việc
                 type: String,
                 default: null
             },
@@ -286,11 +293,6 @@ const UserSchema = new mongoose.Schema({
                 // Loại hình làm việc (fulltime, parttime,...)
                 type: Number,
                 default: 0
-            },
-            candiSkill: {
-                //Kỹ năng bản thân
-                type: String,
-                default: null
             },
             referencePersonName: {
                 // Tên người tham chiếu
@@ -342,7 +344,6 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
-            //bằng cấp chứng chỉ
             candiDegree: [{
                 type: {
                     id: {
@@ -372,7 +373,6 @@ const UserSchema = new mongoose.Schema({
                 },
                 default: null
             }],
-            //ngoại ngữ tin học
             candiNgoaiNgu: [{
                 type: {
                     id: {
@@ -390,7 +390,6 @@ const UserSchema = new mongoose.Schema({
                 },
                 default: null
             }],
-            //kinh nghiệm làm việc
             candiExp: [{
                 type: {
                     id: {
@@ -419,6 +418,7 @@ const UserSchema = new mongoose.Schema({
     },
     inForCompany: {
         type: {
+            // Thông tin công ty luồng timviec365
             comMd5: {
                 type: String,
                 default: null
@@ -428,18 +428,8 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            avatarCompany: {
-                //logo công ty 
-                type: String,
-                default: null
-            },
             idKD: {
                 // ID Kinh doanh phụ trách hỗ trợ
-                type: Number,
-                default: 0
-            },
-            // id kinh doanh cố định 
-            idKD_Re: {
                 type: Number,
                 default: 0
             },
@@ -458,39 +448,22 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: 0
             },
+            videoActive: {
+                // Duyệt video
+                type: Number,
+                default: 0
+            },
             //kho ảnh
             comImages: [{
                 _id: Number,
-                name: {
-                    type: String,
-                    default: null
-                },
-                active: {
-                    type: Number,
-                    default: 0
-                },
+                name: String,
                 size: Number,
-                type: {
-                    type: Number,
-                    default: 1
-                }
             }],
             // kho video
             comVideos: [{
                 _id: Number,
-                name: {
-                    type: String,
-                    default: null
-                },
-                active: {
-                    type: Number,
-                    default: 0
-                },
+                name: String,
                 size: Number,
-                type: {
-                    type: Number,
-                    default: 1
-                },
             }],
             website: {
                 // Website công ty
@@ -507,12 +480,6 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
-            idparent: {
-                //id công ty mẹ
-                type: Number,
-                default: 0
-            },
-
             userContactName: {
                 // Tên người liên hệ
                 type: String,
@@ -534,6 +501,7 @@ const UserSchema = new mongoose.Schema({
                 default: null
             },
             tagLinhVuc: {
+                // Lĩnh vực của công ty
                 type: String,
                 default: null
             },
@@ -542,6 +510,7 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
+            // Thông tin công ty luồng chuyển đổi số
             type_timekeeping: {
                 // 1: là khuôn mặt, 2: là QR, 3: là chấm công công ty, 4: là chấm công web, 5: là PC365, 6: là giới hạn IP nhân viên, 7 là giới hạn IP công ty; 8: chấm công trên app chat365; 9: chấm công qr app chat
                 type: String,
@@ -576,7 +545,7 @@ const UserSchema = new mongoose.Schema({
                 // Số lượng nhận viên đạt vip
                 type: Number,
                 default: 0
-            },
+            }
         },
         default: null
     },

@@ -20,7 +20,6 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
 const Users = require('../models/Users');
-const fsPromises = require('fs').promises;
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -32,8 +31,6 @@ const MAX_IMG_SIZE = 2 * 1024 * 1024;
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
 dotenv.config();
-
-const PDFDocument = require('pdfkit');
 
 // check title
 const removeAccent = (str) => {
@@ -134,11 +131,11 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
     }
 };
 exports.getDatafindOne = async(model, condition) => {
-    return model.findOne(condition);
+    return model.findOne(condition).lean();
 };
 
 exports.getDatafind = async(model, condition) => {
-    return model.find(condition);
+    return model.find(condition).lean();
 }
 
 exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
@@ -172,16 +169,6 @@ exports.setError = async(res, message, code = 500) => {
 exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
-};
-// hàm tìm id max Quản Lí Chung
-exports.getMaxIDQLC = async(model) => {
-    const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
-    return maxUser.idQLC;
-};
-// hàm tìm idcompany max 
-exports.getMaxIDcompany = async(model) => {
-    const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
-    return maxIDcompany.companyId;
 };
 
 // hàm check định dạng ảnh
@@ -255,7 +242,7 @@ const storageFile = (destination) => {
                     fs.mkdirSync(userDestination, { recursive: true });
                 }
             } else {
-                userDestination = destination
+                userDestination = 'public/company'
             }
             cb(null, userDestination);
         },
@@ -274,24 +261,24 @@ const storageFile = (destination) => {
     });
 };
 
-exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('../Storage/TimViec365') })
+exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/KhoAnh') })
 
-exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('../Storage/TimViec365') })
+exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/company') })
 
 //  hàm upload ảnh ở cập nhập avatar
-exports.uploadImg = multer({ storage: storageMain('../Storage/TimViec365') })
+exports.uploadImg = multer({ storage: storageMain('public/KhoAnh') })
 
 //  hàm upload ảnh ở kho ảnh
-exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
+exports.uploadImgKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
 //  hàm upload video ở kho ảnh
-exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
+exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
-// hàm upload video ở cập nhập video
-exports.uploadVideo = multer({ storage: storageMain('../Storage/TimViec365') })
+// hàm upload video ở cập nhập KhoAnh
+exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
 
 //hàm upload file ứng viên
-exports.uploadFileUv = multer({ storage: storageFile('../Storage/TimViec365') })
+exports.uploadFileUv = multer({ storage: storageFile('public/candidate') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
@@ -400,9 +387,9 @@ exports.createToken = async(data, time) => {
 };
 
 // hàm lấy data từ axios 
-exports.getDataAxios = async(url, condition, method = "post") => {
-    return await await axios({
-        method: method,
+exports.getDataAxios = async(url, condition) => {
+    return await axios({
+        method: "post",
         url: url,
         data: condition,
         headers: { "Content-Type": "multipart/form-data" }
@@ -453,12 +440,12 @@ exports.getDataSex = async() => {
 };
 
 exports.pageFind = async(model, condition, sort, skip, limit) => {
-    return model.find(condition).sort(sort).skip(skip).limit(limit);
+    return model.find(condition).sort(sort).skip(skip).limit(limit).lean();
 };
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
 exports.getDataCVSortById = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color').sort({ _id: -1 });
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ _id: -1 });
     if (data.length > 0) {
         return data;
     };
@@ -467,7 +454,7 @@ exports.getDataCVSortById = async(condition) => {
 
 // lấy danh sách mẫu CV sắp xếp lượt tải nn
 exports.getDataCVSortByDownload = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color').sort({ download: -1 });
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ download: -1 });
     if (data.length > 0) {
         return data;
     };
@@ -505,14 +492,9 @@ exports.findCount = async(model, filter) => {
 };
 //base64 decrypt image
 exports.decrypt = async(req, res, next) => {
-    try {
-        const base64 = req.body.base64;
-        console.log(base64);
-        req.file = JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
-        return next()
-    } catch (error) {
-        return next();
-    };
+    const base64 = req.body.base64;
+    req.file = Buffer.from(base64, 'base64').toString('utf-8');
+    return next();
 };
 exports.thresholds = [
     { minValue: 1000000, maxValue: 3000000, money: 2 },
@@ -569,65 +551,31 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
             },
         ]
     }, projection)
-};
+}
 
-//upload image cv,don, thu, syll
-
-exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
+exports.getUrlLogoCompany = async(createTime, logo) => {
     try {
-
-        const timestamp = Date.now();
-        const imagePath = await fsPromises.readFile(imageFile.path);
-        const uploadDir = `../Storage/TimViec365/${userId}/${category}`;
-        const uploadFileName = `${timestamp}_${imageFile.originalFilename}`;
-        const uploadPath = path.join(uploadDir, uploadFileName);
-        await fsPromises.mkdir(uploadDir, { recursive: true });
-        await fsPromises.writeFile(uploadPath, imagePath);
-
-        await fsPromises.access(uploadPath);
-        const pdfPath = path.join(uploadDir, `${timestamp}_${imageFile.fieldName}.pdf`);
-        const doc = new PDFDocument();
-        const stream = fs.createWriteStream(pdfPath);
-
-        doc.pipe(stream);
-        doc.image(uploadPath, 0, 0, { fit: [612, 792] });
-        doc.end();
-
-        await new Promise((resolve, reject) => {
-            stream.on('finish', resolve);
-            stream.on('error', reject);
-        });
-
-        console.log('Chuyển đổi ảnh thành PDF thành công.');
-        return {
-            status: 'EXIT',
-            nameImage: uploadFileName,
-            imgPath: uploadPath,
-            pdfPath: pdfPath,
-        };
-
-
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            return 'ENOENT'
+        if (logo != null) {
+            const time = new Date(createTime);
+            let d = time.getDate();
+            d = d < 10 ? "0" + d : d;
+            let m = time.getMonth() + 1;
+            m = m < 10 ? "0" + m : m;
+            const y = time.getFullYear();
+            return `http://210.245.108.202:3001/base365/timviec365/pictures/${y}/${m}/${d}/${logo}`;
         } else {
-            return error.message
+            return logo;
         }
+    } catch (error) {
+        console.log(error);
     }
 }
 
-
-
-// hàm  xóa  ảnh và video khi upload thất bại
-exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
-    if (avatar) {
-        avatar.forEach(async(element) => {
-            await this.deleteImg(element)
-        })
-    }
-    if (video) {
-        video.forEach(async(element) => {
-            await this.deleteImg(element)
-        })
+exports.getTokenUser = async(req, res, next) => {
+    if (req.headers.authorization) {
+        const token = req.headers.authorization;
+        return jwt.decode(token).data;
+    } else {
+        return null;
     }
 }
