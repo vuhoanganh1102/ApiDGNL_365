@@ -12,4 +12,5 @@ router.post('/toolHideCateDX',toolVanThu.toolhideCateDX);
 router.post('/toolHistoryHandlingDX',toolVanThu.toolHistoryHDX);
 router.post('/toolLyDo',toolVanThu.toolLyDo);
 router.post('/toolPhongBan',toolVanThu.toolPhongBan);
+router.post('/toolSettingDX',toolVanThu.toolSettingDX);
 module.exports = router

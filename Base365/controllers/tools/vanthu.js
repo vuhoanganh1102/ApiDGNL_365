@@ -11,6 +11,7 @@ const HideCateDX = require('../../models/Vanthu/hide_cate_dx');
 const HistoryHDX = require('../../models/Vanthu/history_handling_dx');
 const LyDo = require('../../models/Vanthu/ly_do');
 const PhongBan = require('../../models/Vanthu/phong_ban')
+const SettingDX = require('../../models/Vanthu/setting_dx')
 
 // danh mục các loại đề xuất
 exports.toolCateDeXuat = async (req,res, next) =>{
@@ -392,6 +393,68 @@ exports.toolPhongBan = async (req,res,next) => {
         }while (result)
         await fnc.success(res,'thanh cong')
 
+    }catch (err){
+        console.log(err)
+        return fnc.setError(res,err)
+    }
+
+}
+
+exports.toolSettingDX = async (req,res,next)=> {
+    try{
+        do{
+            let page = 1;
+            let result = true;
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_setting_dx.php',{ page: page, pb: 0 });
+            let data = listItems.data.items;
+            if(data.length > 0) {
+                for (let i = 0 ; i < data.length; i++) {
+                    let timeLimit = null;
+                    let timeLimitl = null;
+                    let timeTp = null;
+                    let timeHh = null;
+                    let timeCreated = null;
+                    let updateTime = null;
+                    if(data[i].time_limit != 0) {
+                        timeLimit = new Date(data[i].time_limit * 1000)
+                    }
+                    if(data[i].time_tp != 0){
+                        timeTp = new Date(data[i].time_tp * 1000)
+                    }
+                    if(data[i].time_hh != 0) {
+                        timeHh = new Date(data[i].time_hh * 1000)
+                    }
+                    if(data[i].time_created != 0){
+                        timeCreated = new Date(data[i].time_created * 1000)
+                    }
+                    if(data[i].update_time != 0){
+                        updateTime = new Date(data[i].update_time * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(SettingDX,{id_setting : data[i].id_setting})
+                    if (post == null) {
+                        let newSDX = new SettingDX({
+                            id_setting : data[i].id_setting,
+                            com_id : data[i].com_id,
+                            type_setting : data[i].type_setting,
+                            type_browse : data[i].type_browse,
+                            time_limit : new Date(data[i].time_limit * 1000),
+                            shift_id : data[i].shift_id,
+                            time_limit_l : data[i].time_limit_l,
+                            list_user : data[i].list_user,
+                            time_tp : new Date(data[i].time_tp * 1000),
+                            time_hh : new Date(data[i].time_hh * 1000),
+                            time_created : new Date(data[i].time_created * 1000),
+                            update_time : new Date(data[i].update_time * 1000)
+                        });
+                        await newSDX.save();
+                    }
+                }
+                page += 1;
+                console.log(page)
+            }
+            else result = false;
+        }while (result)
+        await fnc.success(res,'thanh cong')
     }catch (err){
         console.log(err)
         return fnc.setError(res,err)
