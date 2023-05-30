@@ -1,7 +1,7 @@
 const functions = require('../../services/functions');
-const Thu = require('../../models/Timviec365/CV/Thu');
-const NganhThu = require('../../models/Timviec365/CV/NganhThu');
-const ThuUV = require('../../models/Timviec365/CV/ThuUV');
+const Thu = require('../../models/Timviec365/CV/Letter');
+const NganhThu = require('../../models/Timviec365/CV/LetterCategory');
+const ThuUV = require('../../models/Timviec365/CV/LetterUV');
 
 // lấy danh sách mẫu thư
 exports.getThu = async(req, res, next) => {

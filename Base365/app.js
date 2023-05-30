@@ -27,7 +27,7 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
-var childCompanyRouter = require('./routes/qlc/childCompany')
+// var childCompanyRouter = require('./routes/qlc/childCompany')
 var manageUserRouter = require('./routes/qlc/manageUser')
 
 // crm_import
@@ -83,7 +83,7 @@ app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
 app.use("/api/qlc/group", groupRouter);
-app.use('/api/qlc/childCompany', childCompanyRouter);
+// app.use('/api/qlc/childCompany', childCompanyRouter);
 app.use('/api/qlc/manageUser', manageUserRouter);
 
 

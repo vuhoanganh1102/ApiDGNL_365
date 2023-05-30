@@ -645,8 +645,12 @@ exports.loginUv = async(req, res, next) => {
             }
 
         }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi đăng nhập", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
+
 
 // trang qlc trong hoàn thiện hồ sơ
 exports.completeProfileQlc = async(req, res, next) => {

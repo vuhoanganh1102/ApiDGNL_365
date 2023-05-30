@@ -1,6 +1,6 @@
 const functions = require('../../services/functions');
-const HoSo = require('../../models/Timviec365/CV/HoSo');
-const HoSoUV = require('../../models/Timviec365/CV/HoSoUV');
+const HoSo = require('../../models/Timviec365/CV/Resume');
+const HoSoUV = require('../../models/Timviec365/CV/ResumeUV');
 
 // lấy danh sách mẫu syll
 exports.getSYLL = async(req, res, next) => {
