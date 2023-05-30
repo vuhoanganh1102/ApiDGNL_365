@@ -1,5 +1,6 @@
 const Individual = require("../../models/Users");
 const functions = require("../../services/functions");
+const md5 = require('md5');
 
 //tao moi 1 ca nhan
 exports.createIndividual = async (req, res) => {
@@ -24,15 +25,14 @@ exports.createIndividual = async (req, res) => {
     }else if (!address) {
         //Kiểm tra address khác null
         functions.setError(res, "address required", 408);
+    }else if(!await functions.checkPhoneNumber(phoneTK)){
 
+        functions.setError(res, "phonenumber is not valid", 409);
     }
     else {
-        let checkPhoneNumber = await functions.checkPhoneNumber(phoneTK);
-        if(checkPhoneNumber) {
-            let checkUser = await functions.getDatafindOne(Individual, { phoneTK:phoneTK, type: type });
-            if(checkUser) {
-                return functions.setError(res, "Số điện thoại đã được đăng kí", 200);
-            }
+        let checkUser = await functions.getDatafindOne(Individual, { phoneTK:phoneTK, type: type });
+        if(checkUser) {
+            return functions.setError(res, "registered phonenumber", 200);
         }
         //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 0 có giá trị max thì bằng max + 1 
         let maxID = await functions.getMaxIDQLC(Individual);
@@ -50,7 +50,7 @@ exports.createIndividual = async (req, res) => {
             idQLC : idQLC,
             userName : userName,
             phoneTK :  phoneTK,
-            password : password,
+            password : md5(password),
             phone: phone? phone: null,
             address : address,
             type : type,
@@ -71,7 +71,6 @@ exports.createIndividual = async (req, res) => {
 exports.editIndividual = async (req, res) => {
     console.log(req.body);
     const idQLC = req.body.idQLC;
-    // const companyID = req.body.companyID;
     const type = 0;
     const userName = req.body.userName;
     const emailContact = req.body.emailContact;
@@ -83,71 +82,44 @@ exports.editIndividual = async (req, res) => {
     const married = req.body.married;
     const exp = req.body.exp;
     const startWorkingTime = req.body.startWorkingTime;
-    // const positionID = req.body.positionID;
-    // const depID = req.body.depID;
-    // const groupID = req.body.groupID;
-
-    
-    if (!userName) {
-        //Kiểm tra tên nhân viên khác null
-        functions.setError(res, "user name required", 406);
-
-    } else if (!idQLC) {
-        //Kiểm tra idQLC khác null
-        functions.setError(res, "idQLC required", 407);
-
-    } else if (!emailContact) {
-        //Kiểm tra sdt khác null
-        functions.setError(res, "number phone required", 409);
-
-    } else if (!await functions.checkEmail(emailContact)) {
-        //Kiểm tra sdt dan ky tk có phải là số không
-        functions.setError(res, "Email invalided", 410);
-
-    }else if (!married) {
-        //Kiểm tra password khác null
-        functions.setError(res, "married required", 411);
-
-    }else if (!address) {
-        //Kiểm tra address khác null
-        functions.setError(res, "address required", 412);
-
-    } else if (!birthday) {
-        //Kiểm tra ngay sinh khác null
-        functions.setError(res, "birthday required", 413);
-
-    }else if (!exp) {
-        //Kiểm tra kinh nghiem lam viec khác null
-        functions.setError(res, "exp required", 414);
-
-    }else if (!candiHocVan) {
-        //Kiểm tra trinh do hoc van khác null
-        functions.setError(res, "candiHocVan required", 415);
-
+    let fields = [
+        idQLC,
+        userName,
+        emailContact,
+        phone,
+        address,
+        gender,
+        birthday,
+        candiHocVan,
+        married,
+        exp,
+        startWorkingTime
+    ];
+    for(let i=0; i<fields.length; i++){
+        if(!fields[i]) 
+            return functions.setError(res, `Missing input`, 400);
+    }
+    const individual = await functions.getDatafindOne(Individual, { idQLC: idQLC , type : type});
+    if (!individual) {
+        functions.setError(res, "individual does not exist!", 500);
     } else {
-        const individual = await functions.getDatafindOne(Individual, { idQLC: idQLC , type : type});
-        if (!individual) {
-            functions.setError(res, "individual does not exist!", 510);
-        } else {
-            await functions.getDatafindOneAndUpdate(Individual, { idQLC: idQLC, type : type }, {
-                userName : userName,
-                emailContact: emailContact,
-                phone: phone,
-                address: address,
-                updatedAt: new Date(Date.now()),
-                inForPerson: {
-                    gender: gender,
-                    birthday: birthday,
-                    candiHocVan: candiHocVan,
-                    married: married,
-                    exp: exp,
-                    startWorkingTime: startWorkingTime
-                }
-            })
-
-                .then((manager) => functions.success(res, "Individual edited successfully", manager))
-                .catch((err) => functions.setError(res, err.message, 511));
-        }
+        await functions.getDatafindOneAndUpdate(Individual, { idQLC: idQLC, type : type }, {
+            userName : userName,
+            emailContact: emailContact,
+            phone: phone,
+            address: address,
+            updatedAt: new Date(Date.now()),
+            inForPerson: {
+                gender: gender,
+                birthday: birthday,
+                candiHocVan: candiHocVan,
+                married: married,
+                exp: exp,
+                startWorkingTime: startWorkingTime
+            }
+        })
+        .then((manager) => functions.success(res, "Individual edited successfully", manager))
+        .catch((err) => functions.setError(res, err.message, 500));
     }
 };
 
@@ -175,73 +147,44 @@ exports.deleteIndividual = async(req, res, next) => {
 
 exports.getListIndividualByFields = async(req, res, next) => {
     try {
-        if (req.body) { 
+        if (req.body) {
             let type = 0;
+            if(!req.body.page){
+                return functions.setError(res, "Missing input page", 401);
+            }
+            if(!req.body.pageSize){
+                return functions.setError(res, "Missing input pageSize", 402);
+            }
+            let page = Number(req.body.page);
+            let pageSize = Number(req.body.pageSize);
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let idQLC = req.body.idQLC;
+            let exp = req.body.exp;
+            let candiHocVan = req.body.candiHocVan;
+            let phoneTK = req.body.phoneTK;
+            let phone = req.body.phone;
+            let userName = req.body.userName;
+            let address = req.body.address;
+            let listIndividual=[];
+            let listCondition = {type: type};
+
+            // dua dieu kien vao ob listCondition
+            if(idQLC) listCondition.idQLC = idQLC;
+            if(phone) listCondition.phone =  new RegExp(phone);
+            if(phoneTK) listCondition.phoneTK = new RegExp(phoneTK);
+            if(userName) listCondition.userName = new RegExp(userName);
+            if(address) listCondition.address = new RegExp(address);
+            if(exp) listCondition[`inForPerson.exp`] = Number(exp);
+            if(candiHocVan) listCondition[`inForPerson.candiHocVan`] = Number(candiHocVan);
+
             let fieldsGet = 
             {   
                 phoneTK: 1, userName:1, phone:1, emailContact:1, address:1, 
                 inForPerson: {gender:1, birthday:1, candiHocVan:1, married:1, positionID:1, depID:1, groupID:1}
-            } 
-            // tim kiem theo idQLC
-            if(req.body.idQLC){
-                let idQLC = req.body.idQLC;
-                let individual = await functions.getDatafindOne(Individual, 
-                    {type: type, idQLC: idQLC}, 
-                    fieldsGet, 
-                );
-                if(individual){
-                    return functions.success(res, "get individual by idQLC success", { individual: individual });
-                }else{
-                    return functions.setError(res, `individual with idQLC = ${idQLC} not found` , 200);
-                }
-
-            }else {
-                let page = Number(req.body.page);
-                let pageSize = Number(req.body.pageSize);
-                const skip = (page - 1) * pageSize;
-                const limit = pageSize;
-                let exp = Number(req.body.exp);
-                let candiHocVan = Number(req.body.candiHocVan);
-                let listIndividual=[];
-                if(!req.body.page){
-                return functions.setError(res, "Missing input page", 401);
-                }
-                if(!req.body.pageSize){
-                    return functions.setError(res, "Missing input pageSize", 402);
-                }
-                //tim kiem theo kinh nghiem va hoc van
-                if(req.body.exp && req.body.candiHocVan){
-                    listIndividual = await functions.pageFindWithFields(Individual, 
-                        {type: type, "inForPerson.exp": exp, "inForPerson.candiHocVan": candiHocVan}, 
-                        fieldsGet, 
-                        { _id: 1 }, 
-                        skip, 
-                        limit
-                    );
-                }else if(req.body.exp){
-                    listIndividual = await functions.pageFindWithFields(Individual, 
-                        {type: type, "inForPerson.exp": exp}, 
-                        fieldsGet, 
-                        { _id: 1 },
-                        skip, 
-                        limit
-                    );
-                }else if(req.body.candiHocVan){
-                    listIndividual = await functions.pageFindWithFields(Individual, 
-                        {type: type, "inForPerson.candiHocVan": candiHocVan}, 
-                        fieldsGet, 
-                        { _id: 1 },
-                        skip, 
-                        limit
-                    );
-                }else {
-                    listIndividual = await Individual.find({type: type}, fieldsGet);
-                }
-                // const totalPages = Math.ceil(totalCount / pageSize);
-                if (listIndividual) {
-                    return functions.success(res, "get list individual success", { individuals: listIndividual });
-                }
             }
+            listIndividual = await functions.pageFindWithFields(Individual, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
+            return functions.success(res, "get individual success", { data: listIndividual });
         } else {
             return functions.setError(res, "Missing input data", 400);
         }
