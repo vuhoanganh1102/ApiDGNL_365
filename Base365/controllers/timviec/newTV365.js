@@ -5,6 +5,7 @@ const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
 const Users = require('../../models/Users')
 const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
 const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost')
+const axios = require('axios');
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -176,6 +177,7 @@ exports.postNewTv365 = async(req, res, next) => {
             let checkEmail = await functions.checkEmail(userContactEmail);
             let checkPhone = await functions.checkPhoneNumber(userContactPhone);
             if (checkEmail == false || checkPhone == false) {
+                await functions.deleteImgVideo(avatar, videoType)
                 return functions.setError(res, 'email hoặc số điện thoại không đúng định dạng', 404)
             }
             //check kho ảnh
@@ -652,504 +654,575 @@ exports.detail = async(req, res, next) => {
 }
 
 // hàm lấy danh sách tin tuyển dụng lương cao
-// exports.listNewCao = async(req, res, next) => {
-//     try {
-//         let pageSize = req.body.pageSize;
-//         let now = new Date();
-//         if (pageSize == undefined) {
-//             pageSize = 30;
-//         }
-//         let listPostVLHD = await NewTV365.aggregate([{
-//                 $match: {
-//                     newHot: 0,
-//                     newGap: 0,
-//                     hanNop: { $gt: now },
-//                     redirect301: ""
-//                 }
-//             },
-//             {
-//                 $lookup: {
-//                     from: "Users",
-//                     localField: "userID",
-//                     foreignField: "idTimViec365",
-//                     as: "user"
-//                 }
-//             },
-//             {
-//                 $unwind: "$user"
-//             },
-//             {
-//                 $match: {
-//                     "user.type": 1
-//                 }
-//             },
-//             {
-//                 $sort: {
-//                     newCao: -1,
-//                     updateTime: -1
-//                 }
-//             },
-//             {
-//                 $skip: 0
-//             },
-//             {
-//                 $limit: Number(pageSize)
-//             },
-//         ]);
-//         let list = listPostVLHD;
-//         return functions.success(res, "Lấy danh sách tin đăng thành công", { list });
+exports.listNewCao = async(req, res, next) => {
+    try {
+        let pageSize = req.body.pageSize;
+        let now = new Date();
+        if (pageSize == undefined) {
+            pageSize = 30;
+        }
+        let listPostVLHD = await NewTV365.aggregate([{
+                $match: {
+                    newHot: 0,
+                    newGap: 0,
+                    hanNop: { $gt: now },
+                    redirect301: ""
+                }
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $match: {
+                    "user.type": 1
+                }
+            },
+            {
+                $sort: {
+                    newCao: -1,
+                    updateTime: -1
+                }
+            },
+            {
+                $skip: 0
+            },
+            {
+                $limit: Number(pageSize)
+            },
+        ]);
+        let list = listPostVLHD;
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { list });
 
-//     } catch (error) {
-//         console.log(error)
-//         return functions.setError(res, error)
-//     }
-// }
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
 
 // hàm lấy danh sách tin tuyển dụng tuyển gấp
-// exports.listNewGap = async(req, res, next) => {
-//     try {
-//         let pageSize = req.body.pageSize;
-//         let now = new Date();
-//         if (pageSize == undefined) {
-//             pageSize = 30;
-//         }
-//         let listPostVLHD = await NewTV365.aggregate([{
-//                 $match: {
-//                     newCao: 0,
-//                     newHot: 0,
-//                     hanNop: { $gt: now },
-//                     redirect301: ""
-//                 }
-//             },
-//             {
-//                 $lookup: {
-//                     from: "Users",
-//                     localField: "userID",
-//                     foreignField: "idTimViec365",
-//                     as: "user"
-//                 }
-//             },
-//             {
-//                 $unwind: "$user"
-//             },
-//             {
-//                 $match: {
-//                     "user.type": 1
-//                 }
-//             },
-//             {
-//                 $sort: {
-//                     newGap: -1,
-//                     updateTime: -1
-//                 }
-//             },
-//             {
-//                 $skip: 0
-//             },
-//             {
-//                 $limit: Number(pageSize)
-//             },
-//         ]);
-//         let list = listPostVLHD;
-//         return functions.success(res, "Lấy danh sách tin đăng thành công", { list });
+exports.listNewGap = async(req, res, next) => {
+    try {
+        let pageSize = req.body.pageSize;
+        let now = new Date();
+        if (pageSize == undefined) {
+            pageSize = 30;
+        }
+        let listPostVLHD = await NewTV365.aggregate([{
+                $match: {
+                    newCao: 0,
+                    newHot: 0,
+                    hanNop: { $gt: now },
+                    redirect301: ""
+                }
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $match: {
+                    "user.type": 1
+                }
+            },
+            {
+                $sort: {
+                    newGap: -1,
+                    updateTime: -1
+                }
+            },
+            {
+                $skip: 0
+            },
+            {
+                $limit: Number(pageSize)
+            },
+        ]);
+        let list = listPostVLHD;
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { list });
 
-//     } catch (error) {
-//         console.log(error)
-//         return functions.setError(res, error)
-//     }
-// }
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
 
 // hàm lấy danh sách tin tuyển dụng hấp dẫn
-// exports.listNewHot = async(req, res, next) => {
-//     try {
-//         let pageSize = req.body.pageSize;
-//         if (pageSize == undefined) {
-//             pageSize = 60;
-//         }
-//         let listPostVLHD = await NewTV365.aggregate([{
-//                 $sort: {
-//                     newHot: -1,
-//                     updateTime: -1
-//                 }
-//             },
-//             {
-//                 $match: {
-//                     newCao: 0,
-//                     newGap: 0,
-//                     hanNop: { $gt: new Date(Date.now()) },
-//                     redirect301: ""
-//                 }
-//             },
-//             {
-//                 $project: {
-//                     title: 1,
-//                     cityID: 1,
-//                     newMoney: 1,
-//                     hanNop: 1,
-//                     alias: 1,
-//                     updateTime: 1,
-//                     newHot: 1,
-//                     userID: 1
-//                 }
-//             },
-//             {
-//                 $skip: 0
-//             },
-//             {
-//                 $limit: Number(pageSize)
-//             },
-//             {
-//                 $lookup: {
-//                     from: "Users",
-//                     localField: "userID",
-//                     foreignField: "idTimViec365",
-//                     as: "user"
-//                 }
-//             },
-//             {
-//                 $unwind: "$user"
-//             },
-//             {
-//                 $match: {
-//                     "user.type": 1
-//                 }
-//             },
-//             {
-//                 $project: {
-//                     title: 1,
-//                     "user.userName": 1,
-//                     "user.avatarUser": 1,
-//                     cityID: 1,
-//                     newMoney: 1,
-//                     hanNop: 1,
-//                     alias: 1,
-//                     updateTime: 1,
-//                     newHot: 1
-//                 }
-//             },
-//         ]);
+exports.listNewHot = async(req, res, next) => {
+    try {
+        let pageSize = req.body.pageSize;
+        if (pageSize == undefined) {
+            pageSize = 60;
+        }
+        let listPostVLHD = await NewTV365.aggregate([{
+                $sort: {
+                    newHot: -1,
+                    updateTime: -1
+                }
+            },
+            {
+                $match: {
+                    newCao: 0,
+                    newGap: 0,
+                    hanNop: { $gt: new Date(Date.now()) },
+                    redirect301: ""
+                }
+            },
+            {
+                $skip: 0
+            },
+            {
+                $limit: Number(pageSize)
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $match: {
+                    "user.type": 1
+                }
+            },
+            {
+                $project: {
+                    title: 1,
+                    "user.userName": 1,
+                    "user.avatarUser": 1,
+                    cityID: 1,
+                    newMoney: 1,
+                    hanNop: 1,
+                    alias: 1,
+                    updateTime: 1,
+                    newHot: 1
+                }
+            },
+        ]);
 
-//         return functions.success(res, "Lấy danh sách tin đăng thành công", { list: listPostVLHD });
-//     } catch (error) {
-//         console.log(error)
-//         return functions.setError(res, error)
-//     }
-// }
+        // let listNewTV365 = await NewTV365.find({
+        //     newCao: 0,
+        //     newGap: 0,
+        //     hanNop: { $gt: new Date(Date.now()) },
+        //     redirect301: ""
+        // }, {
+        //     userID: 1,
+        //     title: 1,
+        //     cityID: 1,
+        //     newMoney: 1,
+        //     hanNop: 1,
+        //     alias: 1,
+        //     updateTime: 1,
+        //     newHot: 1
+        // }).sort({ newHot: -1, updateTime: -1 }).limit(30).lean();
+        // let listId = [];
+        // for (let i = 0; i < listNewTV365.length; i++) {
+        //     listId.push(listNewTV365[i].userID)
+        // }
+        // let listUser = await Users.find({ idTimViec365: { $in: listId } }, { userName: 1, avatarUser: 1, idTimViec365: 1 }).limit(100)
+
+        // for (let i = 0; i < listNewTV365.length; i++) {
+        //     let findUser = listUser.find((mem) => mem.idTimViec365 == listNewTV365[i].userID)
+        //     listNewTV365[i].userInfo = findUser
+        // }
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { list: listPostVLHD });
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
 
 // hàm viêc làm mới nhất
-// exports.listJobNew = async(req, res, next) => {
-//     try {
-//         let page = Number(req.body.page);
-//         let pageSize = Number(req.body.pageSize);
-//         let job = req.body.cate_id;
-//         let city = req.body.city
-//         let now = new Date();
-//         let listJobNew = [];
-//         if (page && pageSize) {
-//             const skip = (page - 1) * pageSize;
-//             const limit = pageSize;
-//             const totalCount = await functions.findCount(NewTV365, { hanNop: { $gt: now } });
-//             const totalPages = Math.ceil(totalCount / pageSize);
-//             if (job == undefined) {
-//                 listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cityID: { $in: [city] } }, { newGhim: -1, updateTime: -1 }, skip, limit);
-//             }
-//             if (city == undefined) {
-//                 listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cateID: { $in: [job] } }, { newGhim: -1, updateTime: -1 }, skip, limit);
-//             }
-//             if (city == undefined && job == undefined) {
-//                 listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now } }, { newGhim: -1, updateTime: -1 }, skip, limit);
-//             }
-//             if (job && city) {
-//                 listJobNew = await functions.pageFind(NewTV365, { hanNop: { $gt: now }, cityID: { $in: [city] }, cateID: { $in: [job] } }, { newGhim: -1, updateTime: -1 }, skip, limit);
-//             }
-//             if (listJobNew) {
-//                 return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listJobNew });
-//             }
-//             return functions.setError(res, 'không lấy được danh sách', 404)
-//         }
-//     } catch (error) {
-//         console.log(error)
-//         return functions.setError(res, error)
-//     }
-// }
+exports.listJobNew = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 30;
+        let job = req.body.cate_id;
+        let city = req.body.city
+        let now = new Date();
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let listJobNew = [];
+        let totalCount = 0;
+
+        const commonQuery = [{
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $sort: {
+                    newHot: -1,
+                    newCao: -1,
+                    newGap: -1,
+                    newNganh: -1,
+                    updateTime: -1
+                }
+            },
+            {
+                $facet: {
+                    data: [
+                        { $skip: skip },
+                        { $limit: limit }
+                    ],
+                    count: [
+                        { $count: "totalCount" }
+                    ]
+                }
+            }
+        ];
+
+        if (!job && !city) {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now }
+                }
+            });
+        } else if (job && !city) {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                    cateID: { $in: [job] }
+                }
+            });
+        } else if (!job && city) {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] }
+                }
+            });
+        } else {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    cateID: { $in: [job] }
+                }
+            });
+        }
+
+        const listJob = await NewTV365.aggregate(commonQuery);
+        listJobNew = listJob[0].data;
+        totalCount = listJob[0].count[0] ? listJob[0].count[0].totalCount : 0;
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, listPost: listJobNew });
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
 
 // hàm viêc làm phù hợp nhất
-// exports.listJobSuitable = async(req, res, next) => {
-//     try {
-//         let page = Number(req.body.page);
-//         let pageSize = Number(req.body.pageSize);
-//         let cate_id = req.body.cate_id;
-//         let city = req.body.city
-//         let now = new Date();
-//         let listJobNew = [];
-//         if (page && pageSize) {
-//             const skip = (page - 1) * pageSize;
-//             const limit = pageSize;
+exports.listJobSuitable = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 30;
+        let job = req.body.cate_id;
+        let city = req.body.city
+        let now = new Date();
+        let listJobNew = [];
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let totalCount = 0;
+        const commonQuery = [{
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $sort: {
+                    newHot: -1,
+                    newCao: -1,
+                    newGap: -1,
+                    newNganh: -1,
+                    updateTime: -1
+                }
+            },
+            {
+                $facet: {
+                    data: [
+                        { $skip: skip },
+                        { $limit: limit }
+                    ],
+                    count: [
+                        { $count: "totalCount" }
+                    ]
+                }
+            }
+        ];
+        if (!job && !city) {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                }
+            });
+        }
 
-//             if (cate_id != undefined) {
-//                 var condition = {
-//                     hanNop: { $gt: now },
-//                     cateID: { $in: [cate_id] },
-//                 };
-//             } else if (city != undefined) {
-//                 var condition = {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                 };
-//             } else if (city != undefined && cate_id != undefined) {
-//                 var condition = {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                     cateID: { $in: [cate_id] },
-//                 };
+        if (!job && city) {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] }
+                }
+            });
+        } else if (job && !city) {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                    cateID: { $in: [job] }
+                }
+            });
+        } else {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    cateID: { $in: [job] }
+                }
+            });
+        }
 
-//             } else {
-//                 return functions.setError(res, 'Thiếu tham số truyền lên', 404)
-//             }
-
-//             listJobNew = await functions.pageFind(NewTV365, condition, {
-//                 newHot: -1,
-//                 newCao: -1,
-//                 newGap: -1,
-//                 newNganh: -1,
-//                 updateTime: -1
-//             }, skip, limit);
-//             listJobNew = await NewTV365.aggregate([{
-//                     $sort: {
-//                         newHot: -1,
-//                         newCao: -1,
-//                         newGap: -1,
-//                         newNganh: -1,
-//                         updateTime: -1
-//                     }
-//                 },
-//                 {
-//                     $match: condition
-//                 },
-//                 {
-//                     $project: {
-//                         title: 1,
-//                         cityID: 1,
-//                         newMoney: 1,
-//                         hanNop: 1,
-//                         alias: 1,
-//                         updateTime: 1,
-//                         newHot: 1,
-//                         userID: 1
-//                     }
-//                 },
-//                 {
-//                     $skip: 0
-//                 },
-//                 {
-//                     $limit: Number(pageSize)
-//                 },
-//                 {
-//                     $lookup: {
-//                         from: "Users",
-//                         localField: "userID",
-//                         foreignField: "idTimViec365",
-//                         as: "user"
-//                     }
-//                 },
-//                 {
-//                     $unwind: "$user"
-//                 },
-//                 {
-//                     $match: {
-//                         "user.type": 1
-//                     }
-//                 },
-//                 {
-//                     $project: {
-//                         title: 1,
-//                         "user._id": 1,
-//                         "user.userName": 1,
-//                         "user.avatarUser": 1,
-//                         "user.alias": 1,
-//                         "user.isOnline": 1,
-//                         "user.type": 1,
-//                         "user.time_login": 1,
-//                         cityID: 1,
-//                         newMoney: 1,
-//                         hanNop: 1,
-//                         alias: 1,
-//                         updateTime: 1,
-//                         newHot: 1,
-//                         userID: 1,
-//                         newDo: 1,
-//                         newGhim: 1,
-//                         money: 1,
-//                         newThuc: 1,
-//                         active: 1,
-//                         hinhThuc: 1,
-//                         createTime: 1
-//                     }
-//                 },
-//             ]);
-//             const total = await functions.findCount(NewTV365, condition);
-//             return functions.success(res, "Lấy danh sách tin đăng thành công", { total, items: listJobNew });
-//         }
-//     } catch (error) {
-//         console.log(error)
-//         return functions.setError(res, error)
-//     }
-// }
+        const listJob = await NewTV365.aggregate(commonQuery);
+        listJobNew = listJob[0].data;
+        totalCount = listJob[0].count[0] ? listJob[0].count[0].totalCount : 0;
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, listPost: listJobNew });
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
 
 // hàm viêc làm lương cao nhất
-// exports.listJobHightSalary = async(req, res, next) => {
-//     try {
-//         let page = Number(req.body.page);
-//         let pageSize = Number(req.body.pageSize);
-//         let job = req.body.cate_id;
-//         let city = req.body.city;
-//         let now = new Date();
-//         let listJobNew = [];
-//         if (page && pageSize) {
-//             const skip = (page - 1) * pageSize;
-//             const limit = pageSize;
-//             const totalCount = await functions.findCount(NewTV365, { hanNop: { $gt: now } });
-//             const totalPages = Math.ceil(totalCount / pageSize);
-//             if (job == undefined) {
-//                 listJobNew = await functions.pageFind(NewTV365, {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                 }, {
-//                     money: -1,
-//                     newGhim: -1,
-//                     updateTime: -1,
-//                 }, skip, limit);
-//             }
-//             if (city == undefined) {
-//                 listJobNew = await functions.pageFind(NewTV365, {
-//                     hanNop: { $gt: now },
-//                     cateID: { $in: [job] },
-//                 }, {
-//                     money: -1,
-//                     newGhim: -1,
-//                     updateTime: -1,
-//                 }, skip, limit);
-//             }
-//             if (city == undefined && job == undefined) {
-//                 listJobNew = await functions.pageFind(NewTV365, {
-//                     hanNop: { $gt: now },
-//                 }, {
-//                     money: -1,
-//                     newGhim: -1,
-//                     updateTime: -1,
-//                 }, skip, limit);
-//             }
-//             if (job && city) {
-//                 listJobNew = await functions.pageFind(NewTV365, {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                     cateID: { $in: [job] },
-//                 }, {
-//                     money: -1,
-//                     newGhim: -1,
-//                     updateTime: -1,
-//                 }, skip, limit);
-//             }
-//             if (listJobNew) {
-//                 return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listJobNew });
-//             }
-//             return functions.setError(res, 'không lấy được danh sách', 404)
-//         }
-//     } catch (error) {
-//         console.log(error)
-//         return functions.setError(res, error)
-//     }
-// }
+exports.listJobHightSalary = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 30;
+        let job = req.body.cate_id;
+        let city = req.body.city;
+        let now = new Date();
+        let listJobNew = [];
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let totalCount = 0;
+        const commonQuery = [{
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $sort: {
+                    money: -1,
+                    newGhim: -1,
+                    updateTime: -1,
+                }
+            },
+            {
+                $facet: {
+                    data: [
+                        { $skip: skip },
+                        { $limit: limit }
+                    ],
+                    count: [
+                        { $count: "totalCount" }
+                    ]
+                }
+            }
+        ];
+        if (!job && !city) {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                }
+            });
+        }
+        if (!job && city) {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] }
+                }
+            });
+        } else if (job && !city) {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                    cateID: { $in: [job] }
+                }
+            });
+        } else {
+            commonQuery.unshift({
+                $match: {
+                    hanNop: { $gt: now },
+                    cityID: { $in: [city] },
+                    cateID: { $in: [job] }
+                }
+            });
+        }
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, listPost: listJobNew });
+
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
 
 // hàm danh sách job  địa điểm theo tag
-// exports.getJobListByLocation = async(req, res, next) => {
-//     try {
-//         let page = Number(req.body.page);
-//         let pageSize = Number(req.body.pageSize);
-//         let city = req.body.city;
-//         let district = req.body.district;
-//         let now = new Date();
-//         if (city && district) {
-//             if (page && pageSize) {
-//                 const skip = (page - 1) * pageSize;
-//                 const limit = pageSize;
-//                 let listPost = await functions.pageFind(NewTV365, {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                     districtID: { $in: [district] },
-//                 }, { newGhim: -1, updateTime: -1 }, skip, limit);
-//                 const totalCount = await functions.findCount(NewTV365, {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                     districtID: { $in: [district] },
-//                 });
-//                 const totalPages = Math.ceil(totalCount / pageSize);
-//                 if (listPost) {
-//                     return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPost });
-//                 }
-//                 return functions.setError(res, 'không lấy được danh sách', 404)
-//             } else {
-//                 let listPost = await functions.getDatafind(NewTV365, {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                     districtID: { $in: [district] },
-//                 });
-//                 return functions.success(res, "Lấy danh sách tin đăng thành công", listPost);
-//             }
-//         }
-//         return functions.setError(res, 'thiếu đữ liệu', 404)
-//     } catch (error) {
-//         console.log(error)
-//         return functions.setError(res, error)
-//     }
-// }
+exports.getJobListByLocation = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 30;
+        let city = req.body.city;
+        let district = req.body.district;
+        let now = new Date();
+        let totalCount = 0;
+        if (city && district) {
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+
+            const listJob = await NewTV365.aggregate([{
+                    $match: {
+                        hanNop: { $gt: now },
+                        cityID: { $in: [city] },
+                        districtID: { $in: [district] },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "userID",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $sort: {
+                        newGhim: -1,
+                        updateTime: -1,
+                    }
+                },
+                {
+                    $facet: {
+                        data: [
+                            { $skip: skip },
+                            { $limit: limit }
+                        ],
+                        count: [
+                            { $count: "totalCount" }
+                        ]
+                    }
+                }
+            ]);
+            let listPost = listJob[0].data;
+            totalCount = listJob[0].count[0] ? listJob[0].count[0].totalCount : 0;
+            return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, listPost: listPost });
+        }
+        return functions.setError(res, 'thiếu đữ liệu', 404)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
 
 // hàm danh sách job chức danh  theo tag
-// exports.getJobListByJob = async(req, res, next) => {
-//     try {
-//         let page = Number(req.body.page);
-//         let pageSize = Number(req.body.pageSize);
-//         let city = req.body.city;
-//         let district = req.body.district;
-//         let cate = req.body.cate_id;
-//         let now = new Date();
-//         if (city && district & cate) {
-//             if (page && pageSize) {
-//                 const skip = (page - 1) * pageSize;
-//                 const limit = pageSize;
-//                 let listPost = await functions.pageFind(NewTV365, {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                     districtID: { $in: [district] },
-//                     cateID: { $in: [cate] },
-//                 }, { newGhim: -1, updateTime: -1 }, skip, limit);
-//                 const totalCount = await functions.findCount(NewTV365, {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                     districtID: { $in: [district] },
-//                     cateID: { $in: [cate] },
-//                 });
-//                 const totalPages = Math.ceil(totalCount / pageSize);
-//                 if (listPost) {
-//                     return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, totalPages, listPost: listPost });
-//                 }
-//                 return functions.setError(res, 'không lấy được danh sách', 404)
-//             } else {
-//                 let listPost = await functions.getDatafind(NewTV365, {
-//                     hanNop: { $gt: now },
-//                     cityID: { $in: [city] },
-//                     districtID: { $in: [district] },
-//                     cateID: { $in: [cate] }
-//                 });
-//                 return functions.success(res, "Lấy danh sách tin đăng thành công", listPost);
-//             }
-//         }
-//         return functions.setError(res, 'thiếu đữ liệu', 404)
-//     } catch (error) {
-//         console.log(error)
-//         return functions.setError(res, error)
-//     }
-// }
+exports.getJobListByJob = async(req, res, next) => {
+    try {
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 30;
+        let city = req.body.city;
+        let district = req.body.district;
+        let cate = req.body.cate_id;
+        let now = new Date();
+        let totalCount = 0;
+        if (district && city && cate) {
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            const listJob = await NewTV365.aggregate([{
+                    $match: {
+                        hanNop: { $gt: now },
+                        cityID: { $in: [city] },
+                        districtID: { $in: [district] },
+                        cateID: { $in: [cate] },
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "userID",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $sort: {
+                        newGhim: -1,
+                        updateTime: -1,
+                    }
+                },
+                {
+                    $facet: {
+                        data: [
+                            { $skip: skip },
+                            { $limit: limit }
+                        ],
+                        count: [
+                            { $count: "totalCount" }
+                        ]
+                    }
+                }
+            ]);
+            let listPost = listJob[0].data;
+            totalCount = listJob[0].count[0] ? listJob[0].count[0].totalCount : 0;
+            return functions.success(res, "Lấy danh sách tin đăng thành công", { totalCount, listPost: listPost });
+        }
+        return functions.setError(res, 'thiếu đữ liệu', 404)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
 
 // hàm danh sách job tên công ty theo tag
 // exports.getJobListByCompany = async(req, res, next) => {
@@ -1546,6 +1619,194 @@ exports.listJobBySearch = async(req, res, next) => {
 
         const total = await functions.findCount(NewTV365, condition);
         return functions.success(res, "Lấy danh sách tin đăng thành công", { total, items: listJobNew });
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+//trang chủ timviec
+exports.homePage = async(req, res, next) => {
+    try {
+        let pageSizeHD = req.body.pageSizeHD;
+        let pageSizeTH = req.body.pageSizeTH;
+        let pageSizeTG = req.body.pageSizeTG;
+        let now = new Date();
+        if (pageSizeHD == undefined) {
+            pageSizeHD = 30;
+        }
+        if (pageSizeTH == undefined) {
+            pageSizeTH = 30;
+        }
+        if (pageSizeTG == undefined) {
+            pageSizeTG = 30;
+        }
+        let listPostVLHD = await NewTV365.aggregate([{
+                $sort: {
+                    newHot: -1,
+                    updateTime: -1
+                }
+            },
+            {
+                $match: {
+                    newCao: 0,
+                    newGap: 0,
+                    hanNop: { $gt: new Date(Date.now()) },
+                    redirect301: ""
+                }
+            },
+            {
+                $project: {
+                    title: 1,
+                    cityID: 1,
+                    newMoney: 1,
+                    hanNop: 1,
+                    alias: 1,
+                    updateTime: 1,
+                    newHot: 1,
+                    userID: 1
+                }
+            },
+            {
+                $skip: 0
+            },
+            {
+                $limit: Number(pageSizeHD)
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $match: {
+                    "user.type": 1
+                }
+            },
+            {
+                $project: {
+                    title: 1,
+                    "user.userName": 1,
+                    "user.avatarUser": 1,
+                    cityID: 1,
+                    newMoney: 1,
+                    hanNop: 1,
+                    alias: 1,
+                    updateTime: 1,
+                    newHot: 1
+                }
+            },
+        ]);
+
+        let listPostVLTH = await NewTV365.aggregate([{
+                $sort: {
+                    newCao: -1,
+                    updateTime: -1
+                }
+            }, {
+                $match: {
+                    newHot: 0,
+                    newGap: 0,
+                    hanNop: { $gt: now },
+                    redirect301: ""
+                }
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $match: {
+                    "user.type": 1
+                }
+            },
+
+            {
+                $skip: 0
+            },
+            {
+                $limit: Number(pageSizeTH)
+            },
+        ]);
+
+        let listPostVLTG = await NewTV365.aggregate([{
+                $sort: {
+                    newGap: -1,
+                    updateTime: -1
+                }
+            }, {
+                $match: {
+                    newCao: 0,
+                    newHot: 0,
+                    hanNop: { $gt: now },
+                    redirect301: ""
+                }
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $match: {
+                    "user.type": 1
+                }
+            },
+
+            {
+                $skip: 0
+            },
+            {
+                $limit: Number(pageSizeTG)
+            },
+        ]);
+
+        // let newAI = []
+
+        // let candiCateID = req.body.candiCateID
+
+        // let takeData = await axios({
+        //     method: "post",
+        //     url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
+        //     data: {
+        //         site_job: "timviec365",
+        //         site_uv: "uvtimviec365",
+        //         new_id: candiCateID,
+        //         size: 20,
+        //         pagination: 1,
+        //     },
+        //     headers: { "Content-Type": "multipart/form-data" }
+        // });
+        // let listNewId = takeData.data.data.list_id.split(",")
+        // for (let i = 0; i < listNewId.length; i++) {
+        //     listNewId[i] = Number(listNewId[i])
+        // }
+
+        // let findNew = await functions.getDatafind(NewTV365, { _id: { $in: listNewId } })
+        // for (let i = 0; i < findNew.length; i++) {
+        //     newAI.push(findNew[i])
+        // }
+
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { VLHD: listPostVLHD, VLTH: listPostVLTH, VLTG: listPostVLTG });
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)

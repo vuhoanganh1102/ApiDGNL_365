@@ -3,6 +3,7 @@ var router = express.Router();
 var toolUser = require('../controllers/tools/user');
 var toolTimviec365 = require('../controllers/tools/timviec365');
 const formData = require('express-form-data');
+const toolRaoNhanh = require('../controllers/tools/raonhanh365')
 
 // API quét data người dùng từ base chat
 router.get('/addUserChat365', formData.parse(), toolUser.addUserChat365);
@@ -56,6 +57,9 @@ router.get('/toolApplicationUV', toolTimviec365.toolApplicationUV);
 // api quét data thu của UV
 router.get('/toolLetterUV', toolTimviec365.toolLetterUV);
 
+// api quét data danh sách ngành syll
+router.post('/toolResumeCategory', toolTimviec365.toolResumeCategory);
+
 // api quét data syll của UV
 router.get('/toolResumeUV', toolTimviec365.toolResumeUV);
 
@@ -88,5 +92,30 @@ router.get('/toolNgangDon', toolTimviec365.toolNgangDon);
 
 // api quét data nganh thu
 router.get('/toolNgangThu', toolTimviec365.toolNgangThu);
+
+// api quét data email 365
+router.post('/toolEmail365', toolTimviec365.toolEmail365);
+
+// api quét data danh mục email
+
+router.post('/toolEmail365Cate', toolTimviec365.toolEmail365Cate);
+
+// api quét data danh mục sản phẩm _ Raonhanh
+router.post('/toolCateRaonhanh', toolRaoNhanh.toolCategory);
+
+//api quét data ứng viên ứng tuyển ( Apply For Job)
+router.post('/toolApplyForJob', toolTimviec365.toolApplyForJob);
+
+//api quét data ứng viên lưu việc làm
+router.post('/toolUserSavePost', toolTimviec365.toolUserSavePost);
+
+// api quét data new rao nhanh
+router.post('/toolNewRN', toolRaoNhanh.toolNewRN);
+
+// api update thông tin bán hàng  new rao nhanh
+router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
+
+// api quét data các phần của chi tiết danh mục Raonhanh
+// router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
 
 module.exports = router;

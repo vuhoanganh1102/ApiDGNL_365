@@ -21,6 +21,8 @@ const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
 const Users = require('../models/Users');
 
+const functions = require('../services/functions')
+
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 // danh sách các loại video cho phép
@@ -161,7 +163,6 @@ exports.success = async(res, messsage = "", data = []) => {
 
 // hàm thực thi khi thất bại
 exports.setError = async(res, message, code = 500) => {
-
     return res.status(code).json({ code, message })
 };
 
@@ -444,8 +445,9 @@ exports.pageFind = async(model, condition, sort, skip, limit) => {
 };
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
-exports.getDataCVSortById = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ _id: -1 });
+exports.getDataCVSortById = async(condition, pageNumber) => {
+    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color')
+        .sort({ _id: -1 }).skip((pageNumber - 1) * 20).limit(20);
     if (data.length > 0) {
         return data;
     };
@@ -454,7 +456,8 @@ exports.getDataCVSortById = async(condition) => {
 
 // lấy danh sách mẫu CV sắp xếp lượt tải nn
 exports.getDataCVSortByDownload = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ download: -1 });
+    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color')
+        .sort({ download: -1 }).skip((pageNumber - 1) * 20).limit(20);
     if (data.length > 0) {
         return data;
     };
@@ -539,7 +542,7 @@ exports.findOneUser = async(userId, select) => {
 }
 
 //hàm tìm kiếm và cập nhật user với id timviec và type =0 hoặc type =2
-exports.findOneAndUpdateUser = async(userId, projection) => {
+exports.findOneAndUpdateUser = async(userId, projection, select) => {
     return Users.findOneAndUpdate({
         $or: [{
                 idTimViec365: userId,
@@ -550,8 +553,8 @@ exports.findOneAndUpdateUser = async(userId, projection) => {
                 type: 2
             },
         ]
-    }, projection)
-}
+    }, projection, select)
+};
 
 exports.getUrlLogoCompany = async(createTime, logo) => {
     try {

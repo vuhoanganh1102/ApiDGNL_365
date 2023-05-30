@@ -123,7 +123,7 @@ exports.RegisterB1 = async(req, res, next) => {
 //đăng kí ứng viên B2 bằng video
 exports.RegisterB2VideoUpload = async(req, res, next) => {
     try {
-        if (req && req.body && req.file) {
+        if (req && req.body) {
             const videoUpload = req.file
             const videoLink = req.body.videoLink
             const phoneTK = req.user.data.phoneTK
@@ -151,6 +151,7 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                 if (maxIDTimviec) {
                     newIDTimviec = Number(maxIDTimviec.idTimViec365) + 1;
                 }
+
                 if (videoUpload && !videoLink) { // check video tải lên là file video
                     let User = new Users({
                         _id: newID,
@@ -171,10 +172,14 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
                             candiTitle: candiTitle,
-                            video: videoUpload.filename,
-                            videoType: 1,
-                            videoActive: 1
-                        }
+                            candiProfile: {
+                                id: 1,
+                                video: videoUpload.filename,
+                                videoType: 1,
+                                createTime: new Date(Date.now()),
+                            }
+                        },
+
                     })
                     let saveUser = User.save()
                 }
@@ -199,9 +204,13 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
                             candiTitle: candiTitle,
-                            video: videoLink,
-                            videoType: 2,
-                            videoActive: 1
+                            candiProfile: {
+                                id: 1,
+                                video: videoLink,
+                                videoType: 2,
+                                createTime: new Date(Date.now()),
+                            }
+
                         }
                     })
                     let saveUser = User.save()
@@ -222,7 +231,7 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
 exports.RegisterB2CvUpload = async(req, res, next) => {
     try {
 
-        if (req && req.body && req.files) {
+        if (req && req.body) {
             const birthday = req.body.birthday
             const exp = req.body.exp
             const candiHocVan = req.body.candiHocVan
@@ -244,7 +253,7 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
             let cvUpload, videoUpload
 
             if (!fileUpload.cvUpload) {
-                return functions.setError(req, "không tải Cv", 200)
+                return functions.setError(res, "không tải Cv", 200)
             }
             if (fileUpload.cvUpload) {
                 cvUpload = fileUpload.cvUpload
@@ -252,10 +261,12 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
             if (fileUpload.videoUpload) {
                 videoUpload = fileUpload.videoUpload
                 if (videoUpload.size > (100 * 1024 * 1024)) {
-                    return functions.setError(req, "dung lượng file vượt quá 100 MB", 200)
+                    return functions.setError(res, "dung lượng file vượt quá 100 MB", 200)
                 }
             }
+
             let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK, type: 0 })
+            console.log(type)
             if (findUser && findUser.phoneTK && findUser.phoneTK == phoneTK) { // check tồn tại tài khoản chưa
                 return functions.setError(res, "Số điện thoại này đã được đăng kí", 200);
             } else {
@@ -291,10 +302,13 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                             exp: exp,
                             candiHocVan: candiHocVan,
                             candiSchool: candiSchool,
-                            video: videoUpload[0].filename,
-                            cv: cvUpload[0].filename,
-                            videoType: 1,
-                            videoActive: 1
+                            candiProfile: {
+                                id: 1,
+                                cvName: cvUpload[0].filename,
+                                video: videoUpload[0].filename,
+                                videoType: 1,
+                                createTime: new Date(Date.now()),
+                            }
                         }
                     });
                     User.save();
@@ -324,10 +338,13 @@ exports.RegisterB2CvUpload = async(req, res, next) => {
                             exp: exp,
                             candiHocVan: candiHocVan,
                             candiSchool: candiSchool,
-                            video: videoLink,
-                            cv: cvUpload[0].filename,
-                            videoType: 2,
-                            videoActive: 1
+                            candiProfile: {
+                                id: 1,
+                                cvName: cvUpload[0].filename,
+                                video: videoLink,
+                                videoType: 2,
+                                createTime: new Date(Date.now()),
+                            }
                         }
                     })
                     let saveUser = User.save()
@@ -561,6 +578,11 @@ exports.RegisterB2CvSite = async(req, res, next) => {
                         candiCateID: candiCateID,
                         candiCityID: candiCityID,
                         candiTitle: candiTitle,
+                        candiProfile: {
+                            id: 1,
+                            cvId: cvId,
+                            createTime: new Date(Date.now()),
+                        }
                     }
                 })
                 User.save()
@@ -593,29 +615,36 @@ exports.RegisterB2CvSite = async(req, res, next) => {
 
 //ứng viên đăng nhập
 exports.loginUv = async(req, res, next) => {
+    try {
+        if (req.body.phoneTK && req.body.password) {
+            const phoneTK = req.body.phoneTK
+            const password = req.body.password
 
-    if (req.body.account && req.body.password) {
-        const type = 0;
-        const account = req.body.account;
-        const password = req.body.password;
+            if (req.body.account && req.body.password) {
+                const type = 0;
+                const account = req.body.account;
+                const password = req.body.password;
 
-        let checkPhoneNumber = await functions.checkPhoneNumber(account);
-        if (checkPhoneNumber) {
-            var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: 0 });
-        } else {
-            var findUser = await functions.getDatafindOne(Users, { email: account, type: 0 });
+                let checkPhoneNumber = await functions.checkPhoneNumber(account);
+                if (checkPhoneNumber) {
+                    var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: 0 });
+                } else {
+                    var findUser = await functions.getDatafindOne(Users, { email: account, type: 0 });
+                }
+
+                if (!findUser) {
+                    return functions.setError(res, "Không tồn tại tài khoản", 200)
+                }
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (!checkPassword) {
+                    return functions.setError(res, "Mật khẩu sai", 200)
+                }
+
+                const token = await functions.createToken(findUser, "2d");
+                return functions.success(res, 'Đăng nhập thành công', { token });
+            }
+
         }
-
-        if (!findUser) {
-            return functions.setError(res, "Không tồn tại tài khoản", 200)
-        }
-        let checkPassword = await functions.verifyPassword(password, findUser.password)
-        if (!checkPassword) {
-            return functions.setError(res, "Mật khẩu sai", 200)
-        }
-
-        const token = await functions.createToken(findUser, "2d");
-        return functions.success(res, 'Đăng nhập thành công', { token });
     }
 }
 
@@ -646,7 +675,7 @@ exports.completeProfileQlc = async(req, res, next) => {
             listNewId[i] = Number(listNewId[i])
         }
 
-        let findNew = await functions.getDatafind(newTV365, { _id: { $in: listNewId } })
+        let findNew = await functions.getDatafind(NewTV365, { _id: { $in: listNewId } })
         for (let i = 0; i < findNew.length; i++) {
             newAI.push(findNew[i])
         }
@@ -1236,9 +1265,12 @@ exports.upLoadHoSo = async(req, res, next) => {
     try {
         if (req.user && req.body.cvname) {
             let userId = req.user.data.idTimViec365
-            let nameHoSo = req.body.nameHoSo
+            let id = req.user.data._id
+            let nameHoSo = req.body.cvname
+            let type = req.user.data.type
+            console.log(req.file.path)
             if (req.file) {
-                const targetDirectory = `public/candidate/${userId}`;
+                const targetDirectory = `../Storage/TimViec365/${id}`;
                 // Đặt lại tên file
                 const originalname = req.file.originalname;
                 const extension = originalname.split('.').pop();
@@ -1259,23 +1291,25 @@ exports.upLoadHoSo = async(req, res, next) => {
                     }
                 })
 
-                const maxID = await hoso.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-                if (maxID) {
-                    newID = Number(maxID._id) + 1;
-                } else newID = 1
+                const maxIDHoSo = await Users.findOne({ idTimViec365: userId, type: type }, { "inForPerson.candiProfile.id": 1 }).sort({ "inForPerson.candiProfile.id": -1 }).limit(1).lean();
+                if (maxIDHoSo.inForPerson.candiProfile[0]) {
+                    newIDHoSo = Number(maxIDHoSo.inForPerson.candiProfile[maxIDHoSo.inForPerson.candiProfile.length - 1].id + 1);
+                } else newIDHoSo = 1
 
-                let findhoso = await functions.getDatafind(hoso, { userId })
-                if (findhoso.length < 3) {
-                    let hosoUv = new hoso({
-                        _id: newID,
-                        userId: userId,
-                        name: newFilename,
-                        createTime: new Date(Date.now()),
-                    })
-                    let savehosoUv = hosoUv.save()
-                    findhoso.push(hosoUv)
-                    if (savehosoUv) {
-                        functions.success(res, "Tải lên hồ sơ thành công", findhoso);
+                let findhoso = await functions.findOneUser(userId)
+                if (findhoso.inForPerson.candiProfile.length < 3) {
+                    let updateUser = await functions.findOneAndUpdateUser(userId, {
+                        $push: {
+                            "inForPerson.candiProfile": {
+                                id: newIDHoSo,
+                                cvName: newFilename,
+                                createTime: new Date(Date.now())
+                            }
+                        },
+                        updatedAt: new Date(Date.now())
+                    }, { new: true })
+                    if (updateUser) {
+                        functions.success(res, "Tải lên hồ sơ thành công", updateUser.inForPerson.candiProfile);
                     }
 
                 } else return functions.setError(res, "Bạn chỉ có thể upload tối đa 3 hồ sơ", 400);
@@ -1697,17 +1731,17 @@ exports.infoCandidate = async(req, res, next) => {
                     let checkApplyForJob = await functions.getDatafindOne(applyForJob, { userID: userId, comID: companyId })
                     let checkPoint = await functions.getDatafindOne(pointUsed, { uscID: companyId, useID: userId })
                     if (checkApplyForJob && checkPoint) {
-                        userInfo.statusCheck = true
                         functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
                     } else {
-                        userInfo.phoneTK = "đăng nhập để xem sdt đăng kí"
-                        userInfo.phone = "đăng nhập để xem sdt"
-                        userInfo.email = "đăng nhập để xem email"
-                        userInfo.emailContact = "đăng nhập để xem email liên hệ"
+                        userInfo.phoneTK = "bạn chưa sử dụng điểm để xem sdt đăng kí"
+                        userInfo.phone = "bạn chưa sử dụng điểm để xem sdt"
+                        userInfo.email = "bạn chưa sử dụng điểm để xem email"
+                        userInfo.emailContact = "bạn chưa sử dụng điểm để xem email liên hệ"
                         functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
 
                     }
-
+                } else if (req.user && req.user.data.idTimViec365 == userId) {
+                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
                 } else {
                     userInfo.phoneTK = "đăng nhập để xem sdt đăng kí"
                     userInfo.phone = "đăng nhập để xem sdt"
@@ -1715,6 +1749,8 @@ exports.infoCandidate = async(req, res, next) => {
                     userInfo.emailContact = "đăng nhập để xem email liên hệ"
                     functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
                 }
+
+
             } else return functions.setError(res, "Không có thông tin user", 400);
 
 

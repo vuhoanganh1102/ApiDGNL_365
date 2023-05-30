@@ -66,9 +66,13 @@ const newTV365Schema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    //giới tính
-    sex: String,
-    //bằng cấp
+
+    sex: {
+        //giới tính
+        type: String,
+        default: 0
+    },
+
     bangCap: {
         type: Number,
         default: 0

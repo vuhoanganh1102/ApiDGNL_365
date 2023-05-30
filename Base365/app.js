@@ -10,6 +10,10 @@ var companyRouter = require('./routes/timviec/company');
 var cvRouter = require('./routes/timviec/cv');
 var newTV365Router = require('./routes/timviec/newTV365');
 
+// rao nhanh
+var newRN365Router = require('./routes/raonhanh365/new');
+var blogRaoNhanh365Router = require('./routes/raonhanh365/blog')
+
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -24,8 +28,10 @@ var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
 var childCompanyRouter = require('./routes/qlc/childCompany')
-var managerUser = require('./routes/qlc/managerUser')
+var manageUserRouter = require('./routes/qlc/manageUser')
 
+// crm_import
+var groupCustomerRouter = require('./routes/crm/groupCustomer')
 
 
 var toolAddDataRouter = require('./routes/tools');
@@ -69,19 +75,23 @@ app.use('/api/timviec/trangVang', trangVangRouter);
 app.use('/api/timviec/ssl', soSanhLuongRouter);
 app.use('/api/timviec/mail365', mail365Router);
 
-
+// api rao nhanh
+app.use('/api/raonhanh/new', newRN365Router);
+app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
 app.use("/api/qlc/group", groupRouter);
-app.use('/api/qlc/childCompany', childCompanyRouter)
-app.use('/api/qlc/managerUser', managerUser)
+app.use('/api/qlc/childCompany', childCompanyRouter);
+app.use('/api/qlc/manageUser', manageUserRouter);
 
 
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
+
+app.use("/api/crm/customer/group", groupCustomerRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -6,7 +6,8 @@ const ThuUV = require('../../models/Timviec365/CV/ThuUV');
 // lấy danh sách mẫu thư
 exports.getThu = async(req, res, next) => {
     try {
-        const data = await functions.getDataDonThu(Thu, {});
+        const pageNumber = req.query.pageNumber || 1;
+        const data = await Thu.find({}).skip((pageNumber - 1) * 20).limit(20);
 
         if (data) return await functions.success(res, 'Lấy mẫu THU thành công', data);
 
@@ -19,8 +20,9 @@ exports.getThu = async(req, res, next) => {
 // tìm thư theo ngành
 exports.getByNganh = async(req, res, next) => {
     try {
-        const cateId = req.params.cateId;
-        const data = await functions.getDataDonThu(Thu, { cateId: cateId }); // tìm theo id Ngành
+        const pageNumber = req.query.pageNumber || 1;
+        const cateId = req.body.cateId;
+        const data = await Thu.find({ cateId: cateId }).skip((pageNumber - 1) * 20).limit(20); // tìm theo id Ngành
 
         if (data) return await functions.success(res, `THU theo ngành ${cateId}`, data);
 
@@ -86,10 +88,44 @@ exports.detailThu = async(req, res, next) => {
 //lưu và tải thư
 exports.saveThu = async(req, res, next) => {
     try {
-        const nameImage = req.file;
+        // 0 : ko, 1 có 
+        const upload = req.query.upload || 1;
+        const download = req.query.download || 0;
+        const imageFile = req.file;
         const userId = req.user.data._id;
-        const data = req.body; //  Id, html, lang
-        const checkImage = await functions.checkImage(nameImage.path);
+        const data = req.body;
+        if (upload == 0 && download == 1) {
+            if (fs.existsSync(`../Storage/TimViec365/${userId}/letter/${data.nameImage.slice(0,-4)}.pdf`) &&
+                fs.existsSync(`../Storage/TimViec365/${userId}/letter/${data.nameImage}`)) {
+                //pdf img tồn tại
+                const host = '';
+                const linkPdf = `${host}/TimViec365/${userId}/letter/${data.nameImage}`;
+                const linkImg = `${host}/TimViec365/${userId}/letter/${data.nameImage.slice(0,-4)}.pdf`;
+                const senderId = 1191;
+                const text = '';
+                const data = {
+                    userId: userId,
+                    senderId: senderId,
+                    linkImg: linkImg,
+                    linkPdf: linkPdf,
+                    Title: text,
+                };
+                await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
+                return await functions.success(res, `Tải thành công`, );
+
+            }
+            return functions.setError(res, 'Chưa upload ảnh', 404);
+        };
+
+
+        let message = 'Lưu';
+        const checkImage = await functions.checkImage(imageFile.path);
+
+        if (checkImage == false) return functions.setError(res, 'Lỗi ảnh', 404);
+
+        const uploadImage = await functions.uploadAndCheckPathIMG(userId, imageFile, 'letter');
+        if (uploadImage.status != 'EXIT') return await functions.setError(res, 'Upload ảnh thất bại', 404);
+
         const thuUV = {
             userId: userId,
             tId: data._id,

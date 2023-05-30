@@ -91,4 +91,7 @@ router.post('/listJobBySearch', formData.parse(), newTV365.listJobBySearch)
 
 
 
+//trang chủ
+router.post('/homePage', formData.parse(), newTV365.homePage)
+
 module.exports = router;
