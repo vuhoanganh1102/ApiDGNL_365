@@ -31,45 +31,51 @@ exports.createGroup = async (req, res) => {
     // check to cua nhom co ton tai khong
     const team = await functions.getDatafindOne(Team, { _id: teamId});
     if (!team) {
-        return functions.setError(res, "team does not exist!", 500);
+        return functions.setError(res, "team does not exist!", 501);
     }
 
     //check phong cua nhom co ton tai khon
     const dep = await functions.getDatafindOne(Deparment, { _id: depId});
     if (!dep) {
-        return functions.setError(res, "dep does not exist!", 500);
+        return functions.setError(res, "dep does not exist!", 502);
     }
 
     //check cong ty co ton tai khong
     const company = await functions.getDatafindOne(Users, { _id: companyId});
     if (!company) {
-        return functions.setError(res, "company does not exist!", 500);
+        return functions.setError(res, "company does not exist!", 503);
     }
 
     //check nhom truong co ton tai khong
     const manager = await functions.getDatafindOne(Users, { _id: managerId});
     if (!manager) {
-        return functions.setError(res, "manager does not exist!", 500);
+        return functions.setError(res, "manager does not exist!", 504);
     }
 
     //check nhom pho co ton tai khong
     const deputyManager = await functions.getDatafindOne(Users, { _id: deputyManagerId});
     if (!deputyManager) {
-        return functions.setError(res, "deputy manager does not exist!", 500);
+        return functions.setError(res, "deputy manager does not exist!", 505);
     }
 
     //check to day da ton tai chua
     let group = await functions.getDatafindOne(Group, {groupName: groupName, teamId: teamId, depId: depId});
     if (group) {
-        return functions.setError(res, "group already exists in db!", 500);
+        return functions.setError(res, "group already exists in db!", 506);
     }
 
-    //check xem trong cac nhom da co nhan vien nay chua
-    let employee = await functions.getDatafindOne(Group, {$or:[ {managerId:managerId}, {deputyManagerId:deputyManagerId}]});
-    if (employee) {
-        return functions.setError(res, "employee already exists in other group!", 500);
+    //check truong nhom da o trong nhom nao chua
+    let emp = await functions.getDatafindOne(Users, {idQLC: managerId, "inForPerson.groupID": !0});
+    if (emp) {
+        return functions.setError(res, "manager already exists in other group!", 507);
     }
-    
+
+    //check nhom pho da o trong nhom nao chua
+    emp = await functions.getDatafindOne(Users, {idQLC: deputyManagerId, "inForPerson.groupID": !0});
+    if (emp) {
+        console.log(emp);
+        return functions.setError(res, "deputy manager already exists in other group!", 508);
+    }
     
     let maxID = await functions.getMaxID(Group);
     if (!maxID) {
