@@ -1,125 +1,123 @@
-const Group = require('../../models/qlc/Group')
-const functions = require("../../services/functions")
-exports.getListGroup = async (req, res) => {
-    await functions.getDatafind(Group, {})
-        .then((group) => functions.success(res, "", group))
-        .catch((err => functions.setError(res, err.message, 701)));
-};
+const functions = require("../../services/functions");
+const Group = require('../../models/qlc/Group');
+const Team = require('../../models/qlc/Team');
+const Deparment = require('../../models/qlc/Deparment');
+const Users = require('../../models/Users');
 
-exports.getGroupById = async (req, res) => {
-    const _id = req.params.id;
-
-    if (isNaN(_id)) {
-        functions.setError(res, "Id must be a number", 702);
-    } else {
-        const group = await Group.findById(_id)
-        if (!group) {
-            functions.setError(res, "Group cannot be found or does not exist", 703);
-        } else {
-            functions.success(res, "Group found", group);
-        }
-    }
-
-
-};
 
 exports.createGroup = async (req, res) => {
-    const { teamId, groupName, groupOrder } = req.body;
+    const companyId = req.body.companyId;
+    const groupName = req.body.groupName;
+    const managerId = req.body.managerId;
+    const deputyManagerId = req.body.deputyManagerId;
+    const depId = req.body.depId;
+    const teamId = req.body.teamId;
 
-    if (!teamId) {
-        //Kiểm tra Id tổ khác null
-        functions.setError(res, "Team Id required", 704);
+    const fields = [
+        companyId,
+        groupName,
+        managerId,
+        deputyManagerId,
+        depId,
+        teamId
+    ];
 
-    } else if (typeof teamId !== "number") {
-        //Kiểm tra Id tổ có phải số không
-        functions.setError(res, "Team Id must be a number", 705);
-
-    } else if (!groupName) {
-        //Kiểm tra tên nhóm khác null
-        functions.setError(res, "Group name required", 706);
-
-    } else if (!groupOrder) {
-        //Kiểm tra xếp thứ tự khác null
-        functions.setError(res, "Group order required", 707);
-
-    } else if (typeof groupOrder !== "number") {
-        //Kiểm tra xếp thứ tự có phải là số không
-        functions.setError(res, "Group order must be a number", 708);
-
-    } else {
-        //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
-        let maxID = await functions.getMaxID(Group);
-        if (!maxID) {
-            maxID = 0;
-        };
-        const _id = Number(maxID) + 1;
-
-        const group = new Group({
-            _id: _id,
-            teamId: teamId,
-            groupName: groupName,
-            managerId: null,
-            groupOrder: groupOrder
-        });
-
-        await group.save()
-            .then(() => {
-                functions.success(res, "Group created successfully", group)
-            })
-            .catch((err) => {
-                functions.setError(res, err.message, 709);
-            });
+    //check cac truong not null
+    for(let i=0; i<fields.length; i++){
+        if(!fields[i]) 
+            return functions.setError(res, `Missing input`, 400);
     }
+
+    // check to cua nhom co ton tai khong
+    const team = await functions.getDatafindOne(Team, { _id: teamId});
+    if (!team) {
+        return functions.setError(res, "team does not exist!", 500);
+    }
+
+    //check phong cua nhom co ton tai khon
+    const dep = await functions.getDatafindOne(Deparment, { _id: depId});
+    if (!dep) {
+        return functions.setError(res, "dep does not exist!", 500);
+    }
+
+    //check cong ty co ton tai khong
+    const company = await functions.getDatafindOne(Users, { _id: companyId});
+    if (!company) {
+        return functions.setError(res, "company does not exist!", 500);
+    }
+
+    //check nhom truong co ton tai khong
+    const manager = await functions.getDatafindOne(Users, { _id: managerId});
+    if (!manager) {
+        return functions.setError(res, "manager does not exist!", 500);
+    }
+
+    //check nhom pho co ton tai khong
+    const deputyManager = await functions.getDatafindOne(Users, { _id: deputyManagerId});
+    if (!deputyManager) {
+        return functions.setError(res, "deputy manager does not exist!", 500);
+    }
+
+    //check to day da ton tai chua
+    let group = await functions.getDatafindOne(Group, {groupName: groupName, teamId: teamId, depId: depId});
+    if (group) {
+        return functions.setError(res, "group already exists in db!", 500);
+    }
+
+    //check xem trong cac nhom da co nhan vien nay chua
+    let employee = await functions.getDatafindOne(Group, {$or:[ {managerId:managerId}, {deputyManagerId:deputyManagerId}]});
+    if (employee) {
+        return functions.setError(res, "employee already exists in other group!", 500);
+    }
+    
+    
+    let maxID = await functions.getMaxID(Group);
+    if (!maxID) {
+        maxID = 0;
+    };
+    const _id = Number(maxID) + 1;
+
+    group = new Group({
+        _id: _id,
+        groupName: groupName,
+        teamId: teamId,
+        depId: depId,
+        managerId: managerId,
+        deputyManagerId: deputyManagerId
+    });
+
+    await group.save()
+        .then(() => {
+            functions.success(res, "Group created successfully", group)
+        })
+        .catch((err) => {
+            functions.setError(res, err.message, 709);
+        });
 };
 
 exports.editGroup = async (req, res) => {
-    const _id = req.params.id;
+    const idGroup = req.body._id;
+    const groupName = req.body.groupName;
+    const managerId = req.body.managerId;
+    const deputyManagerId = req.body.deputyManagerId;
 
-    if (isNaN(_id)) {
-        functions.setError(res, "Id must be a number", 702);
-    } else {
-        const { teamId, groupName, groupOrder } = req.body;
-
-        if (!teamId) {
-            //Kiểm tra Id tổ khác null
-            functions.setError(res, "Team Id required", 704);
-
-        } else if (typeof teamId !== "number") {
-            //Kiểm tra Id tổ có phải số không
-            functions.setError(res, "Team Id must be a number", 705);
-
-        } else if (!groupName) {
-            //Kiểm tra tên nhóm khác null
-            functions.setError(res, "Group name required", 706);
-
-        } else if (!groupOrder) {
-            //Kiểm tra xếp thứ tự khác null
-            functions.setError(res, "Group order required", 707);
-
-        } else if (typeof groupOrder !== "number") {
-            //Kiểm tra xếp thứ tự có phải là số không
-            functions.setError(res, "Group order must be a number", 708);
-
-        } else {
-            const group = await functions.getDatafindOne(Group, { _id: _id });
-            if (!group) {
-                functions.setError(res, "Group does not exist", 710);
-            } else {
-
-                await functions.getDatafindOneAndUpdate(Team, { _id: _id }, {
-                    teamId: teamId,
-                    groupName: groupName,
-                    groupOrder: groupOrder,
-                })
-                    .then((group) => functions.success(res, "Group edited successfully".group))
-                    .catch(err => functions.setError(res, err.message), 711);
-            }
-        }
+    //check idGroup not null
+    if(!idGroup){
+        return functions.setError(res, "Missing input value!", 400);
     }
+
+    const group = await functions.getDatafindOne(Group, { _id: idGroup});
+    if (!group) {
+        return functions.setError(res, "group does not exist!", 500);
+    }
+
+    await functions.getDatafindOneAndUpdate(Group, { _id: idGroup }, {groupName, managerId, deputyManagerId})
+        .then((manager) => functions.success(res, "edit group success", manager))
+        .catch((err) => functions.setError(res, err.message, 500));
 };
 
 exports.deleteGroup = async (req, res) => {
-    const _id = req.params.id;
+    const _id = req.query._id;
 
     if (isNaN(_id)) {
         functions.setError(res, "Id must be a number", 702);
@@ -133,16 +131,41 @@ exports.deleteGroup = async (req, res) => {
                 .catch(err => functions.setError(res, err.message, 712));
         }
     }
-
-
 };
 
-exports.deleteAllGroups = async (req, res) => {
-    if (!await functions.getMaxID(Group)) {
-        functions.setError(res, "No group existed", 713);
-    } else {
-        Group.deleteMany()
-            .then(() => functions.success(res, "Delete all groups successfully"))
-            .catch(() => functions.error(res, err.message, 714));
+
+exports.getListGroupByFields = async(req, res, next) => {
+    try {
+        if (req.body) {
+            if(!req.body.page){
+                return functions.setError(res, "Missing input page", 401);
+            }
+            if(!req.body.pageSize){
+                return functions.setError(res, "Missing input pageSize", 402);
+            }
+            let page = Number(req.body.page);
+            let pageSize = Number(req.body.pageSize);
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let _id = req.body._id;
+            let groupName = req.body.groupName;
+            let teamId = req.body.teamId;
+            let depId = req.body.depId;
+            let listGroup=[];
+            let listCondition = {};
+
+            // dua dieu kien vao ob listCondition
+            if(_id) listCondition._id = _id;
+            if(teamId) listCondition.teamId =  Number(teamId);
+            if(depId) listCondition.depId = Number(depId);
+            if(groupName) listCondition.groupName = new RegExp(groupName);
+            listGroup = await functions.pageFind(Group, listCondition, { _id: 1 }, skip, limit); 
+            return functions.success(res, "get individual success", { data: listGroup });
+        } else {
+            return functions.setError(res, "Missing input data", 400);
+        }
+    } catch (e) {
+        console.log("Err from server", e);
+        return functions.setError(res, "Err from server", 500);
     }
 }
