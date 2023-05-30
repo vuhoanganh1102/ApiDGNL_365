@@ -1643,6 +1643,12 @@ exports.listJobBySearch = async(req, res, next) => {
             ]);
             element.user.countComment = ListcommentPost.length
             element.user.commentName = ListcommentPost
+            if (user) {
+                let checkNopHoSo = await functions.getDatafindOne(ApplyForJob, { _id: element._id, userID: user.idTimViec365 })
+                if (checkNopHoSo) {
+                    element.user.isNopHoSo = true
+                } else element.user.isNopHoSo = false
+            }
         }
 
 
