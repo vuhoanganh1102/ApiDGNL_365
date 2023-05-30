@@ -118,4 +118,6 @@ router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 // api quét data các phần của chi tiết danh mục Raonhanh
 // router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
 
+
+
 module.exports = router;

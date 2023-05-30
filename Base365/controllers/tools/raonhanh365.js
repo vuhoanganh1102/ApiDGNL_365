@@ -23,7 +23,7 @@ exports.toolCategory = async(req, res, next) => {
             });
 
             let data = response.data.data.items;
-            if (data.length) {
+            if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const cate = new Category({
                         _id: data[i].cat_id,
