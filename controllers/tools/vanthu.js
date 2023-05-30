@@ -466,12 +466,12 @@ exports.tool_VanBan = async (req, res, next) => {
 
 
 
-                    console.log(typeof (listData[i].thoi_gian_duyet));
+                    // console.log(typeof (listData[i].thoi_gian_duyet));
                     // let thoiGianDuyet = null;
-                    // if (listData[i].thoi_gian_duyet != 0) {
-                    //     thoiGianDuyet = new Date(listData[i].thoi_gian_duyet);
+                    if (listData[i].id == 49) {
+                        console.log((listData[i].thoi_gian_duyet));
 
-                    // };
+                    };
 
                     const vanBan = new VanBan({
                         id: listData[i].id,
@@ -480,8 +480,8 @@ exports.tool_VanBan = async (req, res, next) => {
                         so_vb: listData[i].so_vb,
                         nd_vb: listData[i].nd_vb,
                         book_vb: listData[i].book_vb,
-                        time_ban_hanh: listData[i].time_ban_hanh,
-                        time_hieu_luc: listData[i].time_hieu_luc,
+                        time_ban_hanh: (listData[i].time_ban_hanh * 1000) > 0 ? listData[i].thoi_gian_duyet * 1000 : null,
+                        time_hieu_luc: (listData[i].time_hieu_luc * 1000) > 0 ? listData[i].thoi_gian_duyet * 1000 : null,
                         nhom_vb: listData[i].nhom_vb,
                         user_send: listData[i].user_send,
                         name_user_send: listData[i].name_user_send,
@@ -497,7 +497,7 @@ exports.tool_VanBan = async (req, res, next) => {
                         trang_thai_vb: listData[i].trang_thai_vb,
                         duyet_vb: listData[i].duyet_vb,
                         type_xet_duyet: listData[i].type_xet_duyet,
-                        thoi_gian_duyet: new Date(thoiGianDuyet),
+                        thoi_gian_duyet: (listData[i].thoi_gian_duyet * 1000) > 0 ? listData[i].thoi_gian_duyet * 1000 : null,
                         nguoi_xet_duyet: listData[i].nguoi_xet_duyet,
                         nguoi_theo_doi: listData[i].nguoi_theo_doi,
                         nguoi_ky: listData[i].nguoi_ky,
@@ -511,7 +511,7 @@ exports.tool_VanBan = async (req, res, next) => {
                         type_duyet_chuyen_tiep: listData[i].type_duyet_chuyen_tiep,
                         type_nhan_chuyen_tiep: listData[i].type_nhan_chuyen_tiep,
                         type_thay_the: listData[i].type_thay_the,
-                        created_date: listData[i].created_date,
+                        created_date: new Date(listData[i].created_date * 1000),
                         type_duyet: listData[i].type_duyet,
                         update_time: listData[i].update_time,
                     });

@@ -132,7 +132,7 @@ const vanBan = new mongoose.Schema({
         type: Number
     },
     created_date: {
-        type: Date
+        type: Number
     },
     type_duyet: {
         type: Number,
