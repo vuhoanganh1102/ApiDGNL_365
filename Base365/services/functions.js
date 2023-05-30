@@ -22,6 +22,8 @@ const CV = require('../models/Timviec365/CV/CV');
 const Users = require('../models/Users');
 const fsPromises = require('fs').promises;
 
+const functions = require('../services/functions')
+
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 // danh sách các loại video cho phép
