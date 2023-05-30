@@ -10,7 +10,7 @@ exports.getModules = async(req, res, next) => {
     try {
         let modules = await functions.getDatafind(Modules);
         if (modules) {
-            return functions.success(res, 'lấy dữ liệu thành công', { modules })
+            return functions.success(res, 'lấy dữ liệu thành công', modules)
         }
     } catch (error) {
         console.log(error)
@@ -26,11 +26,11 @@ exports.postAdmin = async(req, res, next) => {
                 name = request.name,
                 phone = request.phone,
                 password = request.password,
-                email = request.emaisl,
+                email = request.email,
                 modules = request.modules,
                 allCategory = request.allCategory,
                 category = request.accessCategory,
-                langID = request.langID;
+                langID = requestlangID;
             if (loginName && name && phone && password && email) {
                 let checkEmail = await functions.checkEmail(email);
                 let checkPhone = await functions.checkPhoneNumber(phone);
@@ -82,8 +82,8 @@ exports.postAdmin = async(req, res, next) => {
     // hàm cập nhập admin 
 exports.updateAdmin = async(req, res, next) => {
         try {
+            let idAdmin = req.user.data._id;
             let request = req.body,
-                idaAdmin = request.admin_id,
                 name = request.name,
                 phone = request.phone,
                 password = request.password,
@@ -142,11 +142,11 @@ exports.updateAdmin = async(req, res, next) => {
     // hàm lấy thông tin chi tiết admin
 exports.getAdminDetail = async(req, res, next) => {
     try {
-        let id = req.body.admin_id;
-        if (id) {
+        let id = req.user.data._id;
+        if (idAdmin) {
             let admin = await functions.getDatafindOne(AdminUser, { _id: id });
             if (admin) {
-                return functions.success(res, 'lấy dữ liệu thành công', { admin })
+                return functions.success(res, 'lấy dữ liệu thành công', admin)
             }
             return functions.setError(res, 'admin không tồn tại', 404)
         }
@@ -160,7 +160,7 @@ exports.getAdminDetail = async(req, res, next) => {
 exports.getListAdmin = async(req, res, next) => {
         try {
             let listADmin = await functions.getDatafind(AdminUser);
-            return functions.success(res, 'lấy dữ liệu thành công', { listADmin })
+            return functions.success(res, 'lấy dữ liệu thành công', listADmin)
 
         } catch (error) {
             console.log(error)
@@ -170,7 +170,7 @@ exports.getListAdmin = async(req, res, next) => {
     // hàm xóa admin
 exports.deleteAdmin = async(req, res, next) => {
         try {
-            let id = req.body.admin_id;
+            let id = req.user.data._id;
             if (id) {
                 await AdminUser.deleteOne({ _id: id });
                 let adminRight = await functions.getDatafind(AdminUserRight, { adminID: id })
@@ -187,7 +187,7 @@ exports.deleteAdmin = async(req, res, next) => {
     // hàm cập nhập active
 exports.updateActive = async(req, res, next) => {
         try {
-            let id = req.body.admin_id;
+            let id = req.user.data._id;
             let active = req.body.active;
             if (id) {
                 let admin = await functions.getDatafindOne(AdminUser, { _id: id })
@@ -210,7 +210,7 @@ exports.updateActive = async(req, res, next) => {
     // hàm đổi mật khẩu 
 exports.updatePassword = async(req, res, next) => {
     try {
-        let id = req.body.admin_id;
+        let id = req.user.data._id;
         let password = req.body.password;
         if (id) {
             let admin = await functions.getDatafindOne(AdminUser, { _id: id })

@@ -59,6 +59,9 @@ const LetterSchema = new mongoose.Schema({
     status: {
         Type: Number
     },
+    langId: {
+        type: Number
+    },
 
 }, {
     collection: 'Letter',

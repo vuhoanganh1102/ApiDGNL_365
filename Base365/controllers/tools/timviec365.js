@@ -31,79 +31,85 @@ const Mail365Cate = require('../../models/Timviec365/Mail365/Mail365Category');
 const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
 const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
 
+// Kết nối API
+const axios = require('axios');
+
 // hàm thêm dữ liệu vào bảng newTV365
 exports.toolNewTV365 = async(req, res, next) => {
     try {
         let result = true;
         let page = 1;
         do {
-            let data = await fnc.getDataAxios('https://timviec365.vn/api_nodejs/get_list_new.php?page=' + page, {}, "get")
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-                    let cityArray = data[i].new_city.split(",").map(String);
-                    let districtArray = data[i].new_qh_id.split(",").map(String);
-                    let lvArray = data[i].new_lv.split(",").map(String);
+            const getData = await axios.get("https://timviec365.vn/api_nodejs/get_list_new.php?page=" + page),
+                lists = getData.data;
+            if (lists.length > 0) {
+                for (let i = 0; i < lists.length; i++) {
+                    let item = lists[i];
+                    let cityArray = item.new_city.split(",").map(String);
+                    let districtArray = item.new_qh_id.split(",").map(String);
+                    let lvArray = item.new_lv.split(",").map(String);
                     const newTV = new NewTV365({
-                        _id: data[i].new_id,
-                        userID: data[i].new_user_id,
-                        title: data[i].new_title,
-                        newMd5: data[i].new_md5,
-                        alias: data[i].new_alias,
-                        cateID: data[i].new_cat_id,
-                        realCate: data[i].new_real_cate,
+                        _id: item.new_id,
+                        userID: item.new_user_id,
+                        title: item.new_title,
+                        newMd5: item.new_md5,
+                        alias: item.new_alias,
+                        redirect301: item.new_301,
+                        cateID: item.new_cat_id,
+                        realCate: item.new_real_cate,
                         cityID: cityArray,
                         districtID: districtArray,
-                        address: data[i].new_addr,
-                        capBac: data[i].new_cap_bac,
-                        exp: data[i].new_exp,
-                        sex: data[i].new_gioi_tinh,
-                        bangCap: data[i].new_bang_cap,
-                        hinhThuc: data[i].new_hinh_thuc,
-                        doTuoi: data[i].new_do_tuoi,
-                        money: data[i].new_money,
-                        createTime: new Date(data[i].new_create_time * 1000),
-                        updateTime: new Date(data[i].new_update_time * 1000),
-                        hanNop: new Date(data[i].new_han_nop * 1000),
-                        cateTime: new Date(data[i].new_cate_time * 1000),
-                        userRedirect: data[i].new_user_redirect,
-                        viewCount: data[i].new_view_count,
-                        renew: data[i].new_renew,
-                        newDo: data[i].new_do,
-                        over: data[i].new_over,
-                        newThuc: data[i].new_thuc,
-                        newOrder: data[i].new_order,
-                        newUt: data[i].new_ut,
-                        newHot: data[i].new_hot,
-                        newCao: data[i].new_cao,
-                        newGhim: data[i].new_ghim,
-                        newGap: data[i].new_gap,
-                        sendVip: data[i].send_vip,
-                        hideAdmin: data[i].new_hide_admin,
-                        sendVip: data[i].send_vip,
-                        newPoint: data[i].new_point,
-                        newMutil: {
-                            moTa: data[i].new_mota,
-                            yeuCau: data[i].new_yeucau,
-                            quyenLoi: data[i].new_quyenloi,
-                            hoSo: data[i].new_ho_so,
-                            titleSeo: data[i].new_title_seo,
-                            desSeo: data[i].new_des_seo,
-                            hoaHong: data[i].new_hoahong,
-                            tgtv: data[i].new_tgtv,
-                            lv: lvArray,
-                            baoLuu: data[i].new_ho_so,
-                            timeBaoLuu: data[i].time_bao_luu,
-                            jobPosting: data[i].no_jobposting,
-                            videoType: data[i].new_video_type,
-                            videoActive: data[i].new_video_active,
-                            images: data[i].new_images,
-                        },
-                        newMoney: {
-                            type: data[i].nm_type,
-                            minValue: data[i].nm_min_value,
-                            maxValue: data[i].nm_max_value,
-                            unit: data[i].nm_unit,
-                        }
+                        address: item.new_addr,
+                        capBac: item.new_cap_bac,
+                        exp: item.new_exp,
+                        sex: item.new_gioi_tinh,
+                        bangCap: item.new_bang_cap,
+                        hinhThuc: item.new_hinh_thuc,
+                        doTuoi: item.new_do_tuoi,
+                        money: item.new_money,
+                        createTime: new Date(item.new_create_time * 1000),
+                        updateTime: new Date(item.new_update_time * 1000),
+                        hanNop: new Date(item.new_han_nop * 1000),
+                        cateTime: item.new_cate_time != 0 ? new Date(item.new_cate_time * 1000) : null,
+                        userRedirect: item.new_user_redirect,
+                        viewCount: item.new_view_count,
+                        renew: item.new_renew,
+                        newDo: item.new_do,
+                        over: item.new_over,
+                        newThuc: item.new_thuc,
+                        newOrder: item.new_order,
+                        newUt: item.new_ut,
+                        newHot: item.new_hot,
+                        newCao: item.new_cao,
+                        newGhim: item.new_ghim,
+                        newGap: item.new_gap,
+                        sendVip: item.send_vip,
+                        hideAdmin: item.new_hide_admin,
+                        sendVip: item.send_vip,
+                        newPoint: item.new_point,
+                        // newMutil: {
+                        //     moTa: item.new_mota,
+                        //     yeuCau: item.new_yeucau,
+                        //     quyenLoi: item.new_quyenloi,
+                        //     hoSo: item.new_ho_so,
+                        //     titleSeo: item.new_title_seo,
+                        //     desSeo: item.new_des_seo,
+                        //     hoaHong: item.new_hoahong,
+                        //     tgtv: item.new_tgtv,
+                        //     lv: lvArray,
+                        //     baoLuu: item.new_ho_so,
+                        //     timeBaoLuu: item.time_bao_luu,
+                        //     jobPosting: item.no_jobposting,
+                        //     videoType: item.new_video_type,
+                        //     videoActive: item.new_video_active,
+                        //     images: item.new_images,
+                        // },
+                        // newMoney: {
+                        //     type: item.nm_type,
+                        //     minValue: item.nm_min_value,
+                        //     maxValue: item.nm_max_value,
+                        //     unit: item.nm_unit,
+                        // }
                     })
                     await newTV.save();
 
@@ -113,10 +119,105 @@ exports.toolNewTV365 = async(req, res, next) => {
             } else result = false;
         }
         while (result)
-        await fnc.success(res, 'thành công', { data });
+        await fnc.success(res, 'thành công');
 
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        return fnc.setError(res, error)
+    }
+}
+
+// Thêm dữ liệu từ bảng new multi
+exports.toolNewMultiTV365 = async(req, res, next) => {
+    try {
+        let result = true;
+        let page = 1;
+        do {
+            const getData = await axios.get("https://timviec365.vn/api_nodejs/get_list_new_multi.php?page=" + page),
+                lists = getData.data;
+            if (lists.length > 0) {
+                for (let i = 0; i < lists.length; i++) {
+                    let item = lists[i];
+                    let lvArray = item.new_lv.split(",").map(String);
+
+                    await NewTV365.updateOne({ _id: item.new_id }, {
+                        $set: {
+                            newMutil: {
+                                moTa: item.new_mota,
+                                yeuCau: item.new_yeucau,
+                                quyenLoi: item.new_quyenloi,
+                                hoSo: item.new_ho_so,
+                                titleSeo: item.new_title_seo,
+                                desSeo: item.new_des_seo,
+                                hoaHong: item.new_hoahong,
+                                tgtv: item.new_tgtv,
+                                lv: lvArray,
+                                baoLuu: item.new_ho_so,
+                                timeBaoLuu: item.time_bao_luu,
+                                jobPosting: item.no_jobposting,
+                                videoType: item.new_video_type,
+                                videoActive: item.new_video_active,
+                                images: item.new_images,
+                            }
+                        }
+                    }).then(() => {
+
+                    }).catch(err => {
+                        console.log(err);
+                    });
+
+                };
+                page += 1;
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error)
+    }
+}
+
+// Thêm dữ liệu từ bảng new money
+exports.toolNewMoney = async(req, res, next) => {
+    try {
+        let result = true;
+        let page = 1;
+        do {
+            const getData = await axios.get("https://timviec365.vn/api_nodejs/get_list_new_money.php?page=" + page),
+                lists = getData.data;
+            if (lists.length > 0) {
+                for (let i = 0; i < lists.length; i++) {
+                    let item = lists[i];
+
+                    await NewTV365.updateOne({ _id: item.nm_new_id }, {
+                        $set: {
+                            newMoney: {
+                                id: item.nm_id,
+                                type: item.nm_type,
+                                minValue: item.nm_min_value,
+                                maxValue: item.nm_max_value,
+                                unit: item.nm_unit,
+                            }
+                        }
+                    }).then(() => {
+
+                    }).catch(err => {
+                        console.log(err);
+                    });
+
+                };
+                page += 1;
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error);
         return fnc.setError(res, error)
     }
 }
@@ -131,40 +232,70 @@ exports.toolKeyword = async(req, res, next) => {
             let data = await fnc.getDataAxios('https://timviec365.vn/api/get_keyword.php?page=' + page)
             listKey = data;
             if (listKey.length > 0) {
-                listKey.forEach(async element => {
-                    let keyWord = await fnc.getDatafindOne(KeyWord, { _id: element.key_id })
-                    if (keyWord == null) {
-                        const decodedStringNdgy = Buffer.from(element.key_ndgy, 'base64').toString('utf-8'); // Giải mã chuỗi
-                        const decodedStringTeaser = Buffer.from(element.key_teaser, 'base64').toString('utf-8'); // Giải mã chuỗi
-                        const key = new KeyWord({
-                            _id: element.key_id,
-                            name: element.key_name,
-                            lq: element.key_lq,
-                            cateID: element.key_cate_id,
-                            cityID: element.key_city_id,
-                            qhID: element.key_qh_id,
-                            cbID: element.key_cb_id,
-                            teaser: decodedStringTeaser,
-                            type: element.key_type,
-                            err: element.key_err,
-                            qhKcn: element.key_qh_kcn,
-                            cateLq: element.key_cate_lq,
-                            title: element.key_tit,
-                            description: element.key_desc,
-                            keyword: element.key_key,
-                            h1: element.key_h1,
-                            createTime: new Date(element.key_time * 1000),
-                            redirect301: element.key_301,
-                            index: element.key_index,
-                            baoHam: element.key_bao_ham,
-                            tdgy: element.key_tdgy,
-                            ndgy: decodedStringNdgy,
-                        })
-                        await key.save();
-                    }
-                    return fnc.setError(res, 'trùng _id')
+                for (let i = 0; i < listKey.length; i++) {
+                    const element = listKey[i];
+                    const decodedStringNdgy = Buffer.from(element.key_ndgy, 'base64').toString('utf-8'); // Giải mã chuỗi
+                    const decodedStringTeaser = Buffer.from(element.key_teaser, 'base64').toString('utf-8'); // Giải mã chuỗi
+                    const key = new KeyWord({
+                        _id: element.key_id,
+                        name: element.key_name,
+                        lq: element.key_lq,
+                        cateID: element.key_cate_id,
+                        cityID: element.key_city_id,
+                        qhID: element.key_qh_id,
+                        cbID: element.key_cb_id,
+                        teaser: decodedStringTeaser,
+                        type: element.key_type,
+                        err: element.key_err,
+                        qhKcn: element.key_qh_kcn,
+                        cateLq: element.key_cate_lq,
+                        title: element.key_tit,
+                        description: element.key_desc,
+                        keyword: element.key_key,
+                        h1: element.key_h1,
+                        createTime: new Date(element.key_time * 1000),
+                        redirect301: element.key_301,
+                        index: element.key_index,
+                        baoHam: element.key_bao_ham,
+                        tdgy: element.key_tdgy,
+                        ndgy: decodedStringNdgy,
+                    })
+                    await key.save();
+                }
+                // listKey.forEach(async element => {
+                //     let keyWord = await fnc.getDatafindOne(KeyWord, { _id: element.key_id })
+                //     if (keyWord == null) {
+                //         const decodedStringNdgy = Buffer.from(element.key_ndgy, 'base64').toString('utf-8'); // Giải mã chuỗi
+                //         const decodedStringTeaser = Buffer.from(element.key_teaser, 'base64').toString('utf-8'); // Giải mã chuỗi
+                //         const key = new KeyWord({
+                //             _id: element.key_id,
+                //             name: element.key_name,
+                //             lq: element.key_lq,
+                //             cateID: element.key_cate_id,
+                //             cityID: element.key_city_id,
+                //             qhID: element.key_qh_id,
+                //             cbID: element.key_cb_id,
+                //             teaser: decodedStringTeaser,
+                //             type: element.key_type,
+                //             err: element.key_err,
+                //             qhKcn: element.key_qh_kcn,
+                //             cateLq: element.key_cate_lq,
+                //             title: element.key_tit,
+                //             description: element.key_desc,
+                //             keyword: element.key_key,
+                //             h1: element.key_h1,
+                //             createTime: new Date(element.key_time * 1000),
+                //             redirect301: element.key_301,
+                //             index: element.key_index,
+                //             baoHam: element.key_bao_ham,
+                //             tdgy: element.key_tdgy,
+                //             ndgy: decodedStringNdgy,
+                //         })
+                //         await key.save();
+                //     }
+                //     return fnc.setError(res, 'trùng _id')
 
-                });
+                // });
                 page++
                 console.log(page)
             } else result = false;
@@ -320,7 +451,7 @@ exports.toolCategoryBlog = async(req, res, next) => {
     }
 }
 
-// insert CV
+// // insert CV
 exports.toolCV = async(req, res, next) => {
     try {
         const data = await fnc.getDataAxios('https://timviec365.vn/cv365/api_nodejs/get_tbl_cv.php?page=1', {});
@@ -366,9 +497,110 @@ exports.toolCV = async(req, res, next) => {
         });
         return await fnc.success(res, "Thành công", );
     } catch (err) {
-        return fnc.setError(res, err.message);
+        fnc.setError(res, err.message);
     };
-};
+}
+
+
+// hàm thêm dữ liệu vào bảng ngành nghề viecj làm
+exports.toolCategoryJob = async(req, res, next) => {
+    try {
+
+        let data = await fnc.getDataAxios('https://timviec365.vn/api_nodejs/get_list_category.php');
+        let listCategory = data;
+        if (listCategory.length > 0) {
+            for (let i = 0; i < listCategory.length; i++) {
+                const category = new CategoryJob({
+                    _id: listCategory[i].cat_id,
+                    name: listCategory[i].cat_name,
+                    title: listCategory[i].cat_title,
+                    tags: data[i].cat_tags,
+                    seoDescription: listCategory[i].cat_description,
+                    seoKeyword: data[i].cat_keyword,
+                    description: listCategory[i].cat_mota,
+                    parentID: listCategory[i].cat_parent_id,
+                    countCandi: listCategory[i].cat_count,
+                    countJob: listCategory[i].cat_count_vl,
+                    order: listCategory[i].cat_order,
+                    active: listCategory[i].cat_active,
+                    hot: listCategory[i].hot,
+                    cat_ut: listCategory[i].cat_ut,
+                    cat_only: listCategory[i].cat_only,
+                    cat_except: listCategory[i].cat_except,
+                    cat_tlq: listCategory[i].cat_tlq,
+                    cat_name_new: listCategory[i].cat_name_new,
+                    cat_order_show: listCategory[i].cat_order_show,
+                })
+                await category.save();
+            };
+        }
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+// hàm thêm dữ liệu vào bảng blog
+exports.toolBlog = async(req, res, next) => {
+    try {
+        let result = true,
+            page = 1;
+
+        do {
+            let data = await fnc.getDataAxios('https://timviec365.vn/api/list_blog.php', { page: page })
+            let listBlog = data.data.items;
+            if (listBlog.length > 0) {
+                for (let i = 0; i < listBlog.length; i++) {
+                    const blog = new Blog({
+                        _id: listBlog[i].new_id,
+                        adminID: listBlog[i].admin_id,
+                        title: listBlog[i].new_title,
+                        mail: listBlog[i].new_mail,
+                        titleRewrite: listBlog[i].new_title_rewrite,
+                        redirect301: listBlog[i].new_301,
+                        canonical: listBlog[i].new_canonical,
+                        picture: listBlog[i].new_picture,
+                        sapo: listBlog[i].new_teaser,
+                        content: listBlog[i].key_type,
+                        seoTitle: listBlog[i].new_tt,
+                        seoDescription: listBlog[i].new_des,
+                        seoKeyword: listBlog[i].new_keyword,
+                        urlVideo: listBlog[i].new_video,
+                        categoryID: listBlog[i].new_category_id,
+                        categoryCB: listBlog[i].new_category_cb,
+                        createdAt: new Date(listBlog[i].new_date * 1000),
+                        updateAt: new Date(listBlog[i].new_date_last_edit * 1000),
+                        adminEdit: listBlog[i].new_admin_edit,
+                        order: listBlog[i].new_order,
+                        hits: listBlog[i].new_hits,
+                        active: listBlog[i].new_active,
+                        cateUrl: listBlog[i].new_cate_url,
+                        isHot: listBlog[i].new_hot,
+                        new: listBlog[i].new_new,
+                        view: listBlog[i].new_view,
+                        urlLq: listBlog[i].new_url_lq,
+                        tagCate: listBlog[i].new_tag_cate,
+                        jobKeyword: listBlog[i].new_vl,
+                        suggestTitle: listBlog[i].new_tdgy,
+                        suggestContent: listBlog[i].new_ndgy,
+                        audio: listBlog[i].new_audio,
+                    })
+                    await blog.save();
+                };
+                page++
+                console.log(page)
+            } else result = false;
+        }
+        while (result)
+        await fnc.success(res, 'thành công');
+
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
 
 exports.toolCVCategory = async(req, res, next) => {
     try {
@@ -448,42 +680,29 @@ exports.toolCVLang = async(req, res, next) => {
     }
 };
 
-exports.toolCVUV = async(req, res, next) => {
+exports.toolCVLang = async(req, res, next) => {
     try {
-        let page = 1288;
+        let page = 1;
         let result = true;
-        let count = 0;
         do {
-            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_cv_ungvien.php?page=${page}`, {});
+            const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_dm_nn_cv.php?page=${page}`, {});
             if (data.length) {
                 for (let i = 0; i < data.length; i++) {
-                    const html = JSON.stringify(data[i].html);
-                    let timeEdit = data[i].time_edit;
-                    if (timeEdit == 0) {
-                        timeEdit = null;
-                    };
-                    let timeDelete = data[i].delete_time;
-                    if (timeDelete == 0) {
-                        timeDelete = null;
-                    }
-                    const cvUV = new CVUV({
-                        _id: +data[i].id,
-                        userId: +data[i].uid,
-                        cvId: +data[i].cvid,
-                        lang: data[i].lang,
-                        html,
-                        nameImage: data[i].name_img,
-                        timeEdit,
+                    const content = Buffer.from(data[i].content, 'base64').toString('utf-8');
+
+                    const cvLang = new CVLang({
+                        _id: data[i].id,
+                        name: data[i].name,
+                        alias: data[i].alias,
+                        metaH1: data[i].meta_h1,
+                        content,
+                        metaTitle: data[i].meta_title,
+                        metaKey: data[i].meta_key,
+                        metaDes: data[i].meta_des,
+                        metaTt: data[i].meta_tt,
                         status: +data[i].status,
-                        deleteCv: +data[i].delete_cv,
-                        heightCv: +data[i].height_cv,
-                        scan: +data[i].scan,
-                        state: +data[i].state,
-                        cv: +data[i].cv,
-                        timeDelete,
                     })
-                    count++;
-                    await CVUV.create(cvUV);
+                    await CVLang.create(cvLang);
 
                 }
                 page++;
@@ -492,10 +711,62 @@ exports.toolCVUV = async(req, res, next) => {
                 result = false;
             }
             console.log(page)
-            console.log(count);
         } while (result);
         return fnc.success(res, 'Thành công')
     } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolCVUV = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            // const data = await fnc.getDataAxios(`https://timviec365.vn/cv365/api_nodejs/get_tbl_cv_ungvien.php?page=${page}`, {});
+            const data = await axios.get("https://timviec365.vn/cv365/api_nodejs/get_tbl_cv_ungvien.php?page" + page);
+
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+                    let timeEdit = element.time_edit;
+                    if (timeEdit == 0) {
+                        timeEdit = null;
+                    };
+                    let timeDelete = element.delete_time;
+                    if (timeDelete == 0) {
+                        timeDelete = null;
+                    }
+                    const CVUV = new CVUV({
+                        _id: element.id,
+                        userId: element.uid,
+                        cvId: element.cvid,
+                        lang: element.lang,
+                        html,
+                        nameImage: element.name_img,
+                        timeEdit,
+                        status: element.status,
+                        deleteCv: element.delete_cv,
+                        heightCv: element.height_cv,
+                        scan: element.scan,
+                        state: element.state,
+                        cv: element.cv,
+                        timeDelete,
+                    })
+                    await CVUV.save().then().error(err => {
+                        console.log(err);
+                    });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
         return fnc.setError(res, error.message);
     }
 };
