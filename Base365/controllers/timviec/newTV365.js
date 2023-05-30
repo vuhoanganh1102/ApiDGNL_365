@@ -6,6 +6,7 @@ const Users = require('../../models/Users')
 const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
 const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost')
 const axios = require('axios');
+const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -1615,198 +1616,38 @@ exports.listJobBySearch = async(req, res, next) => {
             const element = listJobNew[i];
             let avatarUser = await functions.getUrlLogoCompany(element.user.createdAt, element.user.avatarUser);
             element.user.avatarUser = avatarUser;
+            let ListcommentPost = await CommentPost.aggregate([{
+                    $match: {
+                        idPost: 861871,
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "commentPersonId",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $skip: 0
+                },
+                {
+                    $project: {
+                        "user.userName": 1
+                    }
+                },
+            ]);
+            element.user.countComment = ListcommentPost.length
+            element.user.commentName = ListcommentPost
         }
+
 
         const total = await functions.findCount(NewTV365, condition);
         return functions.success(res, "Lấy danh sách tin đăng thành công", { total, items: listJobNew });
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
-
-//trang chủ timviec
-exports.homePage = async(req, res, next) => {
-    try {
-        let pageSizeHD = req.body.pageSizeHD;
-        let pageSizeTH = req.body.pageSizeTH;
-        let pageSizeTG = req.body.pageSizeTG;
-        let now = new Date();
-        if (pageSizeHD == undefined) {
-            pageSizeHD = 30;
-        }
-        if (pageSizeTH == undefined) {
-            pageSizeTH = 30;
-        }
-        if (pageSizeTG == undefined) {
-            pageSizeTG = 30;
-        }
-        let listPostVLHD = await NewTV365.aggregate([{
-                $sort: {
-                    newHot: -1,
-                    updateTime: -1
-                }
-            },
-            {
-                $match: {
-                    newCao: 0,
-                    newGap: 0,
-                    hanNop: { $gt: new Date(Date.now()) },
-                    redirect301: ""
-                }
-            },
-            {
-                $project: {
-                    title: 1,
-                    cityID: 1,
-                    newMoney: 1,
-                    hanNop: 1,
-                    alias: 1,
-                    updateTime: 1,
-                    newHot: 1,
-                    userID: 1
-                }
-            },
-            {
-                $skip: 0
-            },
-            {
-                $limit: Number(pageSizeHD)
-            },
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "userID",
-                    foreignField: "idTimViec365",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
-            },
-            {
-                $match: {
-                    "user.type": 1
-                }
-            },
-            {
-                $project: {
-                    title: 1,
-                    "user.userName": 1,
-                    "user.avatarUser": 1,
-                    cityID: 1,
-                    newMoney: 1,
-                    hanNop: 1,
-                    alias: 1,
-                    updateTime: 1,
-                    newHot: 1
-                }
-            },
-        ]);
-
-        let listPostVLTH = await NewTV365.aggregate([{
-                $sort: {
-                    newCao: -1,
-                    updateTime: -1
-                }
-            }, {
-                $match: {
-                    newHot: 0,
-                    newGap: 0,
-                    hanNop: { $gt: now },
-                    redirect301: ""
-                }
-            },
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "userID",
-                    foreignField: "idTimViec365",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
-            },
-            {
-                $match: {
-                    "user.type": 1
-                }
-            },
-
-            {
-                $skip: 0
-            },
-            {
-                $limit: Number(pageSizeTH)
-            },
-        ]);
-
-        let listPostVLTG = await NewTV365.aggregate([{
-                $sort: {
-                    newGap: -1,
-                    updateTime: -1
-                }
-            }, {
-                $match: {
-                    newCao: 0,
-                    newHot: 0,
-                    hanNop: { $gt: now },
-                    redirect301: ""
-                }
-            },
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "userID",
-                    foreignField: "idTimViec365",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
-            },
-            {
-                $match: {
-                    "user.type": 1
-                }
-            },
-
-            {
-                $skip: 0
-            },
-            {
-                $limit: Number(pageSizeTG)
-            },
-        ]);
-
-        // let newAI = []
-
-        // let candiCateID = req.body.candiCateID
-
-        // let takeData = await axios({
-        //     method: "post",
-        //     url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
-        //     data: {
-        //         site_job: "timviec365",
-        //         site_uv: "uvtimviec365",
-        //         new_id: candiCateID,
-        //         size: 20,
-        //         pagination: 1,
-        //     },
-        //     headers: { "Content-Type": "multipart/form-data" }
-        // });
-        // let listNewId = takeData.data.data.list_id.split(",")
-        // for (let i = 0; i < listNewId.length; i++) {
-        //     listNewId[i] = Number(listNewId[i])
-        // }
-
-        // let findNew = await functions.getDatafind(NewTV365, { _id: { $in: listNewId } })
-        // for (let i = 0; i < findNew.length; i++) {
-        //     newAI.push(findNew[i])
-        // }
-
-        return functions.success(res, "Lấy danh sách tin đăng thành công", { VLHD: listPostVLHD, VLTH: listPostVLTH, VLTG: listPostVLTG });
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)

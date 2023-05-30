@@ -4,11 +4,14 @@ const CommentPostSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    urlCm: {
-        type: String,
+    idPost: {
+        type: Number,
     },
     parentCmId: {
         type: Number
+    },
+    commentPersonId: {
+        type: String
     },
     comment: {
         type: String,
