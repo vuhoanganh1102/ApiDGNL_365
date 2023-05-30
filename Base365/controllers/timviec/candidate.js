@@ -1756,7 +1756,6 @@ exports.infoCandidate = async(req, res, next) => {
                     let checkApplyForJob = await functions.getDatafindOne(ApplyForJob, { userID: userId, comID: companyId })
                     let checkPoint = await functions.getDatafindOne(PointUsed, { uscID: companyId, useID: userId })
                     if (checkApplyForJob && checkPoint) {
-                        userInfo.statusCheck = true
                         functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
                     } else {
                         userInfo.phoneTK = "bạn chưa sử dụng điểm để xem sdt đăng kí"
@@ -1766,7 +1765,8 @@ exports.infoCandidate = async(req, res, next) => {
                         functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
 
                     }
-
+                } else if (req.user && req.user.data.idTimViec365 == userId) {
+                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
                 } else {
                     userInfo.phoneTK = "đăng nhập để xem sdt đăng kí"
                     userInfo.phone = "đăng nhập để xem sdt"
@@ -1774,6 +1774,8 @@ exports.infoCandidate = async(req, res, next) => {
                     userInfo.emailContact = "đăng nhập để xem email liên hệ"
                     functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
                 }
+
+
             } else return functions.setError(res, "Không có thông tin user", 400);
 
 
