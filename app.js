@@ -57,7 +57,7 @@ var tlLuuTru = require('./routes/vanthu/tl_LuuTru');
 var thongBao = require('./routes/vanthu/thong_bao');
 var NguoiDuyetVanBan = require('./routes/vanthu/user_duyet_vb');
 var UserModel = require('./routes/vanthu/user_model');
-
+var VanBan = require('./routes/vanthu/van_ban');
 var app = express();
 // app.listen(3001, () => {
 //     console.log("Connected to databse");
@@ -83,6 +83,7 @@ app.use('/api/vanthu', tlLuuTru);
 app.use('/api/vanthu', thongBao);
 app.use('/api/vanthu', NguoiDuyetVanBan);
 app.use('/api/vanthu', UserModel);
+app.use('/api/vanthu', VanBan);
 
 
 

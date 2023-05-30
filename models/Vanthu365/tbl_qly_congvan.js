@@ -158,4 +158,4 @@ const tbl_qly_congvan = new mongoose.Schema({
         default: null
     }
 });
-module.exports = mongoose.model("tbl_quanLiCongVan", tbl_qly_congvan);
+module.exports = mongoose.model("Vanthu_quanLiCongVan", tbl_qly_congvan);

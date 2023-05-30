@@ -21,4 +21,4 @@ const tblFeedback = new mongoose.Schema({
 
 });
 
-module.exports = mongoose.model("tbl_feedback", tblFeedback);
+module.exports = mongoose.model("Vanthu_feedback", tblFeedback);

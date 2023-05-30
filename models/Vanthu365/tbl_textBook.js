@@ -27,4 +27,4 @@ const textBook = new mongoose.Schema({
 
 });
 
-module.exports = mongoose.model('tbl_text_book', textBook);
+module.exports = mongoose.model('Vanthu_text_book', textBook);

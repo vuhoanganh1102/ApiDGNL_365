@@ -23,4 +23,4 @@ const tl_ThongBao = new mongoose.Schema({
     }
 
 });
-module.exports = mongoose.model("tl_thong_bao", tl_ThongBao);
+module.exports = mongoose.model("Vanthu_thong_bao", tl_ThongBao);

@@ -27,4 +27,4 @@ const userModel = new mongoose.Schema({
     }
 
 });
-module.exports = mongoose.model('user_model', userModel);
+module.exports = mongoose.model('Vanthu_user_model', userModel);

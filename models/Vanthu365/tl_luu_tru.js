@@ -35,4 +35,4 @@ const tl_luu_tru = new mongoose.Schema({
         max: 255
     }
 });
-module.exports = mongoose.model('tl_luu_tru', tl_luu_tru);
+module.exports = mongoose.model('Vanthu_tl_luu_tru', tl_luu_tru);

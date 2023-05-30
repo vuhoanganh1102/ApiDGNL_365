@@ -24,4 +24,4 @@ const tbl_qlcv_edit = new mongoose.Schema({
         type: Number
     }
 })
-module.exports = mongoose.model("tbl_qlcv_edit", tbl_qlcv_edit);
+module.exports = mongoose.model("vanthu_qlcv_edit", tbl_qlcv_edit);

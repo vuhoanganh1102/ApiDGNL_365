@@ -26,4 +26,4 @@ var vanBanThayThe = new mongoose.Schema({
 
     }
 })
-module.exports = mongoose.model("tbl_thay_the", vanBanThayThe);
+module.exports = mongoose.model("Vanthu_thay_the", vanBanThayThe);

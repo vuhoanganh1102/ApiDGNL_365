@@ -13,6 +13,6 @@ const settingDx = new mongoose.Schema({
     timeCreate: { type: Number },
     updateTime: { type: Number },
 
-})
+});
 
-module.exports = mongoose.model("SettingDx", settingDx);
+module.exports = mongoose.model('Vanthu_Setting_Dx', settingDx);

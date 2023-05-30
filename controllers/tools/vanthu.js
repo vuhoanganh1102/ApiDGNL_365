@@ -458,27 +458,21 @@ exports.tool_VanBan = async (req, res, next) => {
         let result = true;
         page = 1;
         do {
-            let data = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_user_model.php', { page: page, pb: 1 });
+            let data = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_van_ban.php', { page: page });
             let listData = data.data.items;
             if (listData.length > 0) {
-                for (let i = 0; i < listData.length; i++) {
-                    let timeHieuLuc = null;
-                    if (listData[i].time_hieu_luc != 0) {
-                        timeHieuLuc = new Date(listData[i].time_hieu_luc * 1000);
-                    }
-                    let timeBanHanh = null;
-                    if (listData[i].time_ban_hanh != 0) {
-                        timeBanHanh = new Date(listData[i].time_ban_hanh);
-                    }
-                    let timeDuyet = null;
-                    if (listData[i].thoi_gian_duyet != 0) {
-                        timeDuyet = new Date(timeDuyet);
-                    }
 
-                    let creatDate = null;
-                    if (listData[i].created_date != 0) {
-                        creatDate = new Date(listData[i].created_date);
-                    }
+                for (let i = 0; i < listData.length; i++) {
+
+
+
+                    console.log(typeof (listData[i].thoi_gian_duyet));
+                    // let thoiGianDuyet = null;
+                    // if (listData[i].thoi_gian_duyet != 0) {
+                    //     thoiGianDuyet = new Date(listData[i].thoi_gian_duyet);
+
+                    // };
+
                     const vanBan = new VanBan({
                         id: listData[i].id,
                         title_vb: listData[i].title_vb,
@@ -486,8 +480,8 @@ exports.tool_VanBan = async (req, res, next) => {
                         so_vb: listData[i].so_vb,
                         nd_vb: listData[i].nd_vb,
                         book_vb: listData[i].book_vb,
-                        time_ban_hanh: timeBanHanh,
-                        time_hieu_luc: timeHieuLuc,
+                        time_ban_hanh: listData[i].time_ban_hanh,
+                        time_hieu_luc: listData[i].time_hieu_luc,
                         nhom_vb: listData[i].nhom_vb,
                         user_send: listData[i].user_send,
                         name_user_send: listData[i].name_user_send,
@@ -503,7 +497,7 @@ exports.tool_VanBan = async (req, res, next) => {
                         trang_thai_vb: listData[i].trang_thai_vb,
                         duyet_vb: listData[i].duyet_vb,
                         type_xet_duyet: listData[i].type_xet_duyet,
-                        thoi_gian_duyet: timeDuyet,
+                        thoi_gian_duyet: new Date(thoiGianDuyet),
                         nguoi_xet_duyet: listData[i].nguoi_xet_duyet,
                         nguoi_theo_doi: listData[i].nguoi_theo_doi,
                         nguoi_ky: listData[i].nguoi_ky,
@@ -517,11 +511,12 @@ exports.tool_VanBan = async (req, res, next) => {
                         type_duyet_chuyen_tiep: listData[i].type_duyet_chuyen_tiep,
                         type_nhan_chuyen_tiep: listData[i].type_nhan_chuyen_tiep,
                         type_thay_the: listData[i].type_thay_the,
-                        created_date: creatDate,
+                        created_date: listData[i].created_date,
                         type_duyet: listData[i].type_duyet,
                         update_time: listData[i].update_time,
                     });
                     await vanBan.save();
+
                 }
                 page++;
                 console.log(page);

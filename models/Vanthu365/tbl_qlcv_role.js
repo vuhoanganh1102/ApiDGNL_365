@@ -12,4 +12,4 @@ const tbl_qlcv_role = mongoose.Schema({
 
 });
 
-module.exports = mongoose.model("tbl_qlcv_role", tbl_qlcv_role);
+module.exports = mongoose.model("Vanthu_qlcv_role", tbl_qlcv_role);

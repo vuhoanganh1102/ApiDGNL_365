@@ -144,4 +144,4 @@ const vanBan = new mongoose.Schema({
 
 
 });
-module.exports = mongoose.model('van_ban', vanBan);
+module.exports = mongoose.model('Vanthu_van_ban', vanBan);

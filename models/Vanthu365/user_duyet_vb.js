@@ -13,4 +13,4 @@ const nguoiDuyetVanBan = new mongoose.Schema({
         type: Number
     }
 });
-module.exports = mongoose.model("user_duyet_vb", nguoiDuyetVanBan);
+module.exports = mongoose.model("Vanthu_user_duyet_vb", nguoiDuyetVanBan);

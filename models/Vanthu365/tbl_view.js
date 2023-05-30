@@ -13,4 +13,4 @@ const View = new mongoose.Schema({
         type: Number,
     }
 });
-module.exports = mongoose.model("tbl_view", View);
+module.exports = mongoose.model("Vanthu_view", View);
