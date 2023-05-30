@@ -76,7 +76,7 @@ app.use('/api/timviec/ssl', soSanhLuongRouter);
 app.use('/api/timviec/mail365', mail365Router);
 
 // api rao nhanh
-app.use('/api/raonhanh/new', newRN365Router);
+app.use('/api/raonhanh/news', newRN365Router);
 app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 
 // API quản lí chung

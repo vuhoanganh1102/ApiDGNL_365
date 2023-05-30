@@ -7,4 +7,8 @@ const newRN = require('../../controllers/raonhanh365/new');
 
 router.post('/postNew', formData.parse(), newRN.postNewMain, newRN.postNewElectron);
 
+router.get('/getNewsBeforeLogin', newRN.getNewsBeforeLogin);
+
+router.get('/searchNews', newRN.searchNews);
+
 module.exports = router;
