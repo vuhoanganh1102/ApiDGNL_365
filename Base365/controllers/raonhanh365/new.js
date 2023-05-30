@@ -2,8 +2,8 @@ const functions = require('../../services/functions');
 const Category = require('../../models/Raonhanh365/Category');
 const New = require('../../models/Raonhanh365/UserOnSite/New')
 const CategoryRaoNhanh365 = require('../../models/Raonhanh365/Category')
-// đăng tin
-exports.postNewMain = async (req, res, next) => {
+    // đăng tin
+exports.postNewMain = async(req, res, next) => {
     try {
         let img = req.files.img;
         let video = req.files.video;
@@ -50,16 +50,16 @@ exports.postNewMain = async (req, res, next) => {
                     if (checkVideo) {
                         nameVideo = video[0].filename
                     } else {
-                        video.forEach(async (element) => {
+                        video.forEach(async(element) => {
                             await functions.deleteImg(element)
                         })
                         return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
                     }
                 } else
-                    if (video.length > 1) {
-                        await functions.deleteImgVideo(img, video)
-                        return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
-                    }
+                if (video.length > 1) {
+                    await functions.deleteImgVideo(img, video)
+                    return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
+                }
             }
             req.info = {
                 cateID: cateID,
@@ -89,7 +89,7 @@ exports.postNewMain = async (req, res, next) => {
 }
 
 // đăng tin
-exports.postNewElectron = async (req, res, next) => {
+exports.postNewElectron = async(req, res, next) => {
     try {
         let listID = [];
         let listCategory = await functions.getDatafind(Category, { parentId: 1 });
@@ -116,7 +116,7 @@ exports.postNewElectron = async (req, res, next) => {
 }
 
 // đăng tin
-exports.postNewVehicle = async (req, res, next) => {
+exports.postNewVehicle = async(req, res, next) => {
     try {
         let listID = [];
         let listCategory = await functions.getDatafind(Category, { parentId: 2 });
@@ -178,7 +178,7 @@ exports.postNewVehicle = async (req, res, next) => {
 }
 
 // đăng tin
-exports.postNewVehicle = async (req, res, next) => {
+exports.postNewVehicle = async(req, res, next) => {
     try {
         let listID = [];
         let listCategory = await functions.getDatafind(Category, { parentId: 3 });
@@ -226,94 +226,92 @@ exports.postNewVehicle = async (req, res, next) => {
 
 
 // lấy tin trước đăng nhập
-exports.getNewsBeforeLogin = async (req, res, next) => {
-    try {
-        // tạo mảng
-        let output = [];
-        // tìm tin được ưu tiên đẩy lên đầu với trường pinHome và pinCate
-        let data_pinHome = await New.find({ pinHome: 1 }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber');
+exports.getNewsBeforeLogin = async(req, res, next) => {
+        try {
+            // tạo mảng
+            let output = [];
+            // tìm tin được ưu tiên đẩy lên đầu với trường pinHome và pinCate
+            let data_pinHome = await New.find({ pinHome: 1 }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber');
 
-        if (data_pinHome) {
-            for (let i = 0; i < data_pinHome.length; i++) {
-                // thêm tin vào mảng 
-                output.push(data_pinHome[i])
+            if (data_pinHome) {
+                for (let i = 0; i < data_pinHome.length; i++) {
+                    // thêm tin vào mảng 
+                    output.push(data_pinHome[i])
+                }
             }
-        }
-        // nếu dữ liệu ưu tiên ít hơn 50 thì thêm dữ liệu thường vào
-        if (output.length < 50) {
-            // lấy data với những tin có ngày cập nhật mới nhất
-            let data = await New.find({}).sort({ updatedAt: -1 }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50 - output.length);
-            for (let i = 0; i < data.length; i++) {
-                // thêm tin vào mảng 
-                output.push(data[i])
+            // nếu dữ liệu ưu tiên ít hơn 50 thì thêm dữ liệu thường vào
+            if (output.length < 50) {
+                // lấy data với những tin có ngày cập nhật mới nhất
+                let data = await New.find({}).sort({ updatedAt: -1 }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50 - output.length);
+                for (let i = 0; i < data.length; i++) {
+                    // thêm tin vào mảng 
+                    output.push(data[i])
+                }
             }
+            return functions.success(res, "get data success", { output })
+        } catch (error) {
+            return functions.setError(res, error)
         }
-        return functions.success(res, "get data success", { output })
-    } catch (error) {
-        return functions.setError(res, error)
     }
-}
-// tìm kiếm tin 
-exports.searchNews = async (req, res, next) => {
-    try {
-        // tạo mảng
-        let output = [];
-        // trường hợp không nhập gì mà tìm kiếm
-        if (!req.body.key || req.body.key === undefined) {
-            let data = await New.find({}).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
-            for (let i = 0; i < data.length; i++) {
-                // thêm tin vào mảng 
-                output.push(data[i])
-            }
-        } else {
-            // lấy giá trị search key
-            let search = req.body.key;
-            // đưa câu truy vấn về chữ thường
-            let key_lower = search.toLowerCase();
-            // đổi chữ cái đầu thành chữ hoa
-            let key = key_lower.charAt(0).toUpperCase() + key_lower.slice(1);
-            // tìm kiếm danh mục với key
-            let query = await CategoryRaoNhanh365.find({ name: key })
-            if (!query || query.length === 0) {
-                //tạo biểu thức chính quy cho phép truy vấn key không phân biệt hoa thường
-                const regex = new RegExp(key, "i");
-                // tìm data với biểu thức chính quy 
-                let data_search = await CategoryRaoNhanh365.find({ name: regex });
-                if (data_search) {
-                    // lấy data nếu có trong danh mục
-                    let data = await New.find({ cateID: data_search[0]._id }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
+    // tìm kiếm tin 
+exports.searchNews = async(req, res, next) => {
+        try {
+            // tạo mảng
+            let output = [];
+            // trường hợp không nhập gì mà tìm kiếm
+            if (!req.body.key || req.body.key === undefined) {
+                let data = await New.find({}).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
+                for (let i = 0; i < data.length; i++) {
+                    // thêm tin vào mảng 
+                    output.push(data[i])
+                }
+            } else {
+                // lấy giá trị search key
+                let search = req.body.key;
+                // đưa câu truy vấn về chữ thường
+                let key_lower = search.toLowerCase();
+                // đổi chữ cái đầu thành chữ hoa
+                let key = key_lower.charAt(0).toUpperCase() + key_lower.slice(1);
+                // tìm kiếm danh mục với key
+                let query = await CategoryRaoNhanh365.find({ name: key })
+                if (!query || query.length === 0) {
+                    //tạo biểu thức chính quy cho phép truy vấn key không phân biệt hoa thường
+                    const regex = new RegExp(key, "i");
+                    // tìm data với biểu thức chính quy 
+                    let data_search = await CategoryRaoNhanh365.find({ name: regex });
+                    if (data_search) {
+                        // lấy data nếu có trong danh mục
+                        let data = await New.find({ cateID: data_search[0]._id }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
+                        if (data) {
+                            for (let i = 0; i < data.length; i++) {
+                                output.push(data[i])
+                            }
+                        } else {
+                            // lấy data với tên của sản phẩm
+                            let data = await New.find({ name: regex }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
+                            for (let i = 0; i < data.length; i++) {
+                                output.push(data[i])
+                            }
+                        }
+                    }
+
+                } else {
+                    // tìm kiếm tin với id của danh mục đã tìm được
+                    let data = await New.find({ cateID: query[0]._id }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
+                    // đẩy dữ liệu vào mảng
                     if (data) {
                         for (let i = 0; i < data.length; i++) {
                             output.push(data[i])
                         }
-                    }
-                    else {
-                        // lấy data với tên của sản phẩm
-                        let data = await New.find({ name: regex }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
-                        for (let i = 0; i < data.length; i++) {
-                            output.push(data[i])
-                        }
+                    } else {
+                        return functions.setError(res, "get data failed")
                     }
                 }
 
-            } else {
-                // tìm kiếm tin với id của danh mục đã tìm được
-                let data = await New.find({ cateID: query[0]._id }).select('_id title linkTitle money cateID type city image video buySell createTime updateTime active detailCategory viewCount name phone email address district img description hashtag poster producType moneyPinning free status apartmentNumber').limit(50);
-                // đẩy dữ liệu vào mảng
-                if (data) {
-                    for (let i = 0; i < data.length; i++) {
-                        output.push(data[i])
-                    }
-                }
-                else {
-                    return functions.setError(res, "get data failed")
-                }
             }
-
+            return functions.success(res, "get data success", { output })
+        } catch (error) {
+            return functions.setError(res, error)
         }
-        return functions.success(res, "get data success", { output })
-    } catch (error) {
-        return functions.setError(res, error)
     }
-}
-//db.collection.find({ field: /query/i })
+    //db.collection.find({ field: /query/i })

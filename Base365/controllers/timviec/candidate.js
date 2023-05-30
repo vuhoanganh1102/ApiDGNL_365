@@ -616,34 +616,30 @@ exports.RegisterB2CvSite = async(req, res, next) => {
 //ứng viên đăng nhập
 exports.loginUv = async(req, res, next) => {
     try {
-        if (req.body.phoneTK && req.body.password) {
-            const phoneTK = req.body.phoneTK
-            const password = req.body.password
 
-            if (req.body.account && req.body.password) {
-                const type = 0;
-                const account = req.body.account;
-                const password = req.body.password;
 
-                let checkPhoneNumber = await functions.checkPhoneNumber(account);
-                if (checkPhoneNumber) {
-                    var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: 0 });
-                } else {
-                    var findUser = await functions.getDatafindOne(Users, { email: account, type: 0 });
-                }
+        if (req.body.account && req.body.password) {
+            const type = 0;
+            const account = req.body.account;
+            const password = req.body.password;
 
-                if (!findUser) {
-                    return functions.setError(res, "Không tồn tại tài khoản", 200)
-                }
-                let checkPassword = await functions.verifyPassword(password, findUser.password)
-                if (!checkPassword) {
-                    return functions.setError(res, "Mật khẩu sai", 200)
-                }
-
-                const token = await functions.createToken(findUser, "2d");
-                return functions.success(res, 'Đăng nhập thành công', { token });
+            let checkPhoneNumber = await functions.checkPhoneNumber(account);
+            if (checkPhoneNumber) {
+                var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: 0 });
+            } else {
+                var findUser = await functions.getDatafindOne(Users, { email: account, type: 0 });
             }
 
+            if (!findUser) {
+                return functions.setError(res, "Không tồn tại tài khoản", 200)
+            }
+            let checkPassword = await functions.verifyPassword(password, findUser.password)
+            if (!checkPassword) {
+                return functions.setError(res, "Mật khẩu sai", 200)
+            }
+
+            const token = await functions.createToken(findUser, "2d");
+            return functions.success(res, 'Đăng nhập thành công', { token });
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi đăng nhập", e);
