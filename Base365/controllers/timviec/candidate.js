@@ -1759,10 +1759,10 @@ exports.infoCandidate = async(req, res, next) => {
                         userInfo.statusCheck = true
                         functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
                     } else {
-                        userInfo.phoneTK = "đăng nhập để xem sdt đăng kí"
-                        userInfo.phone = "đăng nhập để xem sdt"
-                        userInfo.email = "đăng nhập để xem email"
-                        userInfo.emailContact = "đăng nhập để xem email liên hệ"
+                        userInfo.phoneTK = "bạn chưa sử dụng điểm để xem sdt đăng kí"
+                        userInfo.phone = "bạn chưa sử dụng điểm để xem sdt"
+                        userInfo.email = "bạn chưa sử dụng điểm để xem email"
+                        userInfo.emailContact = "bạn chưa sử dụng điểm để xem email liên hệ"
                         functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
 
                     }
