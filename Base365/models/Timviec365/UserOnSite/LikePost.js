@@ -6,7 +6,11 @@ const LikePostSchema = new mongoose.Schema({
     },
     idNew: {
         // ID tin tuyển dụng
+<<<<<<< HEAD
         type: String,
+=======
+        type: Number,
+>>>>>>> fbd89e45e8aa5f334543c57bdbc3952f995e6833
     },
     type: {
         // 1 là like, 2 là tim, 3 là ngạc nhiên, 4 là cười trái tim, 5 là phẫn nộ, 6 là khóc, 7 là haha, 8 là chia sẻ
@@ -14,12 +18,20 @@ const LikePostSchema = new mongoose.Schema({
     },
     idCommentLike: {
         // ID của comment mà được thả cảm xúc
+<<<<<<< HEAD
         type: String,
+=======
+        type: Number,
+>>>>>>> fbd89e45e8aa5f334543c57bdbc3952f995e6833
         default: 0
     },
     idUserLike: {
         // ID tìm việc
+<<<<<<< HEAD
         type: String,
+=======
+        type: Number,
+>>>>>>> fbd89e45e8aa5f334543c57bdbc3952f995e6833
     },
     IPLike: {
         type: String

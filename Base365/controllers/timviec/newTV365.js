@@ -7,6 +7,8 @@ const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyF
 const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost')
 const axios = require('axios');
 const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
+const { getDatafindOne } = require('../../services/functions');
+const LikePost = require('../../models/Timviec365/UserOnSite/LikePost');
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -1643,6 +1645,7 @@ exports.listJobBySearch = async(req, res, next) => {
             const element = listJobNew[i];
             let avatarUser = await functions.getUrlLogoCompany(element.user.createdAt, element.user.avatarUser);
             element.user.avatarUser = avatarUser;
+
             let ListcommentPost = await CommentPost.aggregate([{
                     $match: {
                         idPost: Number(element._id),
@@ -1670,6 +1673,66 @@ exports.listJobBySearch = async(req, res, next) => {
             ]);
             element.user.countComment = ListcommentPost.length
             element.user.commentName = ListcommentPost
+
+            let ListLikePost = await LikePost.aggregate([{
+                    $match: {
+                        idNew: Number(element._id),
+                        type: { $ne: 8 },
+                        idCommentLike: 0
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "idUserLike",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $skip: 0
+                },
+                {
+                    $project: {
+                        "user.userName": 1
+                    }
+                },
+            ]);
+            element.user.countLike = ListLikePost.length
+            element.user.likeName = ListLikePost
+
+            let ListSharePost = await LikePost.aggregate([{
+                    $match: {
+                        idNew: Number(element._id),
+                        type: { $eq: 8 },
+                        idCommentLike: 0
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "idUserLike",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $skip: 0
+                },
+                {
+                    $project: {
+                        "user.userName": 1
+                    }
+                },
+            ]);
+            element.user.countShare = ListSharePost.length
+            element.user.shareName = ListSharePost
             if (user) {
                 let checkNopHoSo = await functions.getDatafindOne(ApplyForJob, { _id: element._id, userID: user.idTimViec365 })
                 if (checkNopHoSo) {
@@ -1677,10 +1740,74 @@ exports.listJobBySearch = async(req, res, next) => {
                 } else element.user.isNopHoSo = false
             }
         }
-
-
         const total = await functions.findCount(NewTV365, condition);
         return functions.success(res, "Lấy danh sách tin đăng thành công", { total, items: listJobNew });
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// like tin
+exports.likeNew = async(req, res, next) => {
+    try {
+        let idNew = req.body.new_id;
+        let type = req.body.type;
+        let IPLike = req.body.IPLike
+        let idComment = req.body.idComment
+        if (idNew && req.user) {
+            let userId = req.user.data.idTimViec365
+            if (!idComment) {
+                let findLike = await functions.getDatafindOne(LikePost, { idNew: idNew, idUserLike: userId, idCommentLike: 0 })
+                if (findLike) {
+                    let deleteLike = await functions.getDataDeleteOne(LikePost, { idNew: idNew, idUserLike: userId })
+                    if (deleteLike) {
+                        return functions.success(res, "bỏ like tin thành công")
+                    }
+                } else {
+                    const maxID = await LikePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                    if (maxID) {
+                        newID = Number(maxID._id) + 1;
+                    } else newID = 1
+                    let insertLike = new LikePost({
+                        _id: newID,
+                        idNew: idNew,
+                        type: type,
+                        idUserLike: userId,
+                        IPLike: IPLike,
+                        timeComment: new Date(Date.now())
+                    })
+                    insertLike.save()
+                    return functions.success(res, "like tin thành công")
+                }
+            } else {
+                let findLike = await functions.getDatafindOne(LikePost, { idNew: idNew, idUserLike: userId, idCommentLike: idComment })
+                if (findLike) {
+                    let deleteLikeComment = await functions.getDataDeleteOne(LikePost, { idNew: idNew, idUserLike: userId, idCommentLike: idComment })
+                    if (deleteLikeComment) {
+                        return functions.success(res, "bỏ like bình luận thành công")
+                    }
+                } else {
+                    const maxID = await LikePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                    if (maxID) {
+                        newID = Number(maxID._id) + 1;
+                    } else newID = 1
+                    let insertLike = new LikePost({
+                        _id: newID,
+                        idNew: idNew,
+                        type: type,
+                        idCommentLike: idComment,
+                        idUserLike: userId,
+                        IPLike: IPLike,
+                        timeComment: new Date(Date.now())
+                    })
+                    insertLike.save()
+                    return functions.success(res, "like bình luận tin thành công")
+                }
+            }
+            return functions.success(res, "làm mới bài tuyển dụng thành công")
+        }
+        return functions.setError(res, 'thiếu dữ liệu', 404)
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
