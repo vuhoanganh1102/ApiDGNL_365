@@ -88,7 +88,7 @@ router.post('/updateExp', formData.parse(), functions.checkToken, candidate.upda
 router.post('/deleteExp', formData.parse(), functions.checkToken, candidate.deleteExp);
 
 //api danh sách ứng viên ngẫu nhiên, theo ngành nghề, vị trí
-router.post('/selectiveUv', formData.parse(), functions.checkToken, candidate.selectiveUv);
+router.post('/list', formData.parse(), functions.checkToken, candidate.list);
 
 //api danh sách ứng viên tương tự được AI gợi ý
 router.post('/candidateAI', formData.parse(), candidate.candidateAI);
@@ -108,5 +108,8 @@ router.post('/candidateApply', formData.parse(), functions.checkToken, candidate
 
 //ứng viên lưu tin 
 router.post('/candidateSavePost', formData.parse(), functions.checkToken, candidate.candidateSavePost);
+
+//ứng viên comment tin tuyển dụng
+router.post('/commentPost', functions.checkToken, uploadFileUv.single('img'), candidate.commentPost);
 
 module.exports = router;

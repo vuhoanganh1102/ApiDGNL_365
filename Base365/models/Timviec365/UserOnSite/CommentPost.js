@@ -4,10 +4,13 @@ const CommentPostSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    urlCm: {
-        type: String,
+    idPost: {
+        type: Number,
     },
     parentCmId: {
+        type: Number
+    },
+    commentPersonId: {
         type: Number
     },
     comment: {
@@ -31,6 +34,10 @@ const CommentPostSchema = new mongoose.Schema({
     timeComment: {
         type: Date,
     },
+    author: {
+        type: Number,
+        default: 0
+    }
 }, {
     collection: 'CommentPost',
     versionKey: false,
