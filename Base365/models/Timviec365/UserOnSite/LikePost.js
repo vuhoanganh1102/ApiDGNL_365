@@ -13,6 +13,7 @@ const LikePostSchema = new mongoose.Schema({
     },
     idCommentLike: {
         type: String,
+        default: 0
     },
     idUserLike: {
         type: String,
