@@ -7,8 +7,8 @@ const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyF
 const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost')
 const axios = require('axios');
 const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
-const { getDatafindOne } = require('../../services/functions');
 const LikePost = require('../../models/Timviec365/UserOnSite/LikePost');
+const Keyword = require('../../models/Timviec365/UserOnSite/Company/Keywords')
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -648,7 +648,7 @@ exports.detail = async(req, res, next) => {
             let post = await functions.getDatafindOne(NewTV365, { _id: newID });
             let ListcommentPost = await CommentPost.aggregate([{
                     $match: {
-                        idPost: Number(post._id),
+                        idPost: Number(newID),
                     }
                 },
                 {
@@ -673,7 +673,98 @@ exports.detail = async(req, res, next) => {
             ]);
             post.countComment = ListcommentPost.length
             post.commentName = ListcommentPost
-            return functions.success(res, "làm mới bài tuyển dụng thành công", { data: post, statusApply, statusSavePost })
+
+            let ListLikePost = await LikePost.aggregate([{
+                    $match: {
+                        idNew: Number(newID),
+                        type: { $ne: 8 },
+                        idCommentLike: 0
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "idUserLike",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $skip: 0
+                },
+                {
+                    $project: {
+                        "user.userName": 1
+                    }
+                },
+            ]);
+            post.countLike = ListLikePost.length
+            post.likeName = ListLikePost
+
+            let ListSharePost = await LikePost.aggregate([{
+                    $match: {
+                        idNew: Number(newID),
+                        type: { $eq: 8 },
+                        idCommentLike: 0
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "idUserLike",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $skip: 0
+                },
+                {
+                    $project: {
+                        "user.userName": 1
+                    }
+                },
+            ]);
+            post.countShare = ListSharePost.length
+            post.shareName = ListSharePost
+
+
+            let findAddress = await Keyword.findOne({
+                cbID: 0,
+                cateID: 0,
+                name: '',
+                qhID: { $ne: 0 },
+                cityID: { $in: post.cityID },
+            }, {
+                _id: 1,
+                cateID: 1,
+                cityID: 1,
+                qhID: 1,
+                type: 1
+            })
+
+            let keyName = ["thực tập", "chuyên viên", "nhân viên", "trưởng phòng", "trưởng nhóm",
+                "trợ lý", "phó trưởng phòng", "phó giám đốc", "giám đốc", "quản lý", "quản đốc"
+            ]
+            let findChucDanh = await Keyword.findOne({
+                name: { $in: keyName },
+                cateLq: { $in: post.cateID },
+                cityID: { $in: post.cityID },
+                qhID: { $in: post.districtID }
+            }, {
+                _id: 1,
+                cateID: 1,
+                cityID: 1,
+                qhID: 1,
+                type: 1
+            })
+            return functions.success(res, "làm mới bài tuyển dụng thành công", { data: post, statusApply, statusSavePost, findAddress, findChucDanh })
         }
         return functions.setError(res, 'thiếu dữ liệu', 404)
 
