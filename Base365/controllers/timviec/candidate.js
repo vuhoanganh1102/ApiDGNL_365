@@ -110,7 +110,7 @@ exports.RegisterB1 = async(req, res, next) => {
                         req.body._id = newIDUser
                         const token = await functions.createToken(req.body, "2d")
 
-                        return functions.success(res, 'Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong', token)
+                        return functions.success(res, 'Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong', { token })
                     } else return functions.setError(res, "Email không hợp lệ", 200);
                 }
             } else return functions.setError(res, "Số điện thoại không hợp lệ", 200);
