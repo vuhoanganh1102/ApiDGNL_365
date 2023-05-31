@@ -232,24 +232,8 @@ exports.getNewsBeforeLogin = async (req, res, next) => {
         let searchitem = {_id: 1, title: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1}
 
         // tìm tin được ưu tiên đẩy lên đầu với trường pinHome
-        let data_pinHome = await New.find({ pinHome: 1 }, searchitem).limit(50);
-        if (data_pinHome) {
-            // lặp để chèn link ảnh
-            for (let i = 0; i < data_pinHome.length; i++) {
-                // chèn link ảnh
-                data_pinHome[i].image = await functions.getUrlLogoCompany(data_pinHome[i].createTime, data_pinHome[i].image);
-                if (data_pinHome[i].img.length !== 0) {
-                    for (let j = 0; j < data_pinHome[i].img.length; j++) {
-                        // chèn link ảnh
-                        data_pinHome[i].img[j].nameImg = await functions.getUrlLogoCompany(data_pinHome[i].createTime, data_pinHome[i].img[j].nameImg);
-                    }
-                }
-            }
-        }
-        // nếu dữ liệu ưu tiên ít hơn 50 thì thêm dữ liệu thường vào
-        if (data_pinHome.length < 50) {
-            // lấy data với những tin có ngày cập nhật mới nhất
-            let data = await New.find({}, searchitem).sort({ updateTime: -1 }).limit(50 - data_pinHome.length);
+        let data = await New.find({ pinHome: 1 }, searchitem).limit(50);
+        if (data) {
             // lặp để chèn link ảnh
             for (let i = 0; i < data.length; i++) {
                 // chèn link ảnh
@@ -260,11 +244,27 @@ exports.getNewsBeforeLogin = async (req, res, next) => {
                         data[i].img[j].nameImg = await functions.getUrlLogoCompany(data[i].createTime, data[i].img[j].nameImg);
                     }
                 }
-                data_pinHome.push(data[i]);
+            }
+        }
+        // nếu dữ liệu ưu tiên ít hơn 50 thì thêm dữ liệu thường vào
+        if (data.length < 50) {
+            // lấy data với những tin có ngày cập nhật mới nhất
+            let data_new = await New.find({}, searchitem).sort({ updateTime: -1 }).limit(50 - data.length);
+            // lặp để chèn link ảnh
+            for (let i = 0; i < data_new.length; i++) {
+                // chèn link ảnh
+                data_new[i].image = await functions.getUrlLogoCompany(data_new[i].createTime, data_new[i].image);
+                if (data_new[i].img.length !== 0) {
+                    for (let j = 0; j < data_new[i].img.length; j++) {
+                        // chèn link ảnh
+                        data_new[i].img[j].nameImg = await functions.getUrlLogoCompany(data_new[i].createTime, data_new[i].img[j].nameImg);
+                    }
+                }
+                data.push(data_new[i]);
             }
 
         }
-        return functions.success(res, "get data success", { data_pinHome })
+        return functions.success(res, "get data success", { data })
     } catch (error) {
         return functions.setError(res, error)
     }
@@ -347,7 +347,7 @@ exports.searchNews = async (req, res, next) => {
                 return functions.setError(res, "get data failed")
             }
         }
-        return functions.success(res, "get data success", { output })
+        return functions.success(res, "get data success", { data })
     } catch (error) {
         return functions.setError(res, "get data failed")
     }
