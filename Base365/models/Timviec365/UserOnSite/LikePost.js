@@ -5,6 +5,7 @@ const LikePostSchema = new mongoose.Schema({
         required: true,
     },
     idNew: {
+        // ID tin tuyển dụng
         type: String,
     },
     type: {
@@ -12,10 +13,12 @@ const LikePostSchema = new mongoose.Schema({
         type: Number
     },
     idCommentLike: {
+        // ID của comment mà được thả cảm xúc
         type: String,
         default: 0
     },
     idUserLike: {
+        // ID tìm việc
         type: String,
     },
     IPLike: {

@@ -1815,7 +1815,7 @@ exports.candidateApply = async(req, res, next) => {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
     } catch (e) {
-        console.log("Đã có lỗi xảy ra khi xóa kinh nghiệm làm việc", e);
+        console.log("Đã có lỗi xảy ra khi ứng tuyển", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
