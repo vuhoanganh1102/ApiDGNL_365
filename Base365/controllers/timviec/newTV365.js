@@ -644,6 +644,33 @@ exports.detail = async(req, res, next) => {
         }
         if (newID) {
             let post = await functions.getDatafindOne(NewTV365, { _id: newID });
+            let ListcommentPost = await CommentPost.aggregate([{
+                    $match: {
+                        idPost: Number(post._id),
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "commentPersonId",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $skip: 0
+                },
+                {
+                    $project: {
+                        "user.userName": 1
+                    }
+                },
+            ]);
+            post.countComment = ListcommentPost.length
+            post.commentName = ListcommentPost
             return functions.success(res, "làm mới bài tuyển dụng thành công", { data: post, statusApply, statusSavePost })
         }
         return functions.setError(res, 'thiếu dữ liệu', 404)
@@ -1618,7 +1645,7 @@ exports.listJobBySearch = async(req, res, next) => {
             element.user.avatarUser = avatarUser;
             let ListcommentPost = await CommentPost.aggregate([{
                     $match: {
-                        idPost: 861871,
+                        idPost: Number(element._id),
                     }
                 },
                 {

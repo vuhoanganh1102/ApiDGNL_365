@@ -77,6 +77,7 @@ exports.toolCateDeXuat = async (req, res, next) => {
     }
 };
 
+//exports.toolDeXuat = async (req, res, next) => {
 exports.toolDeXuat = async (req, res, next) => {
     try {
         let page = 1;
@@ -271,6 +272,7 @@ exports.toolGroupVanBan = async (req, res, next) => {
         return fnc.setError(res, err)
     }
 }
+
 
 exports.toolhideCateDX = async (req, res, next) => {
     try {
