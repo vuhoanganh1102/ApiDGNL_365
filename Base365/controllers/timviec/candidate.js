@@ -126,6 +126,10 @@ exports.RegisterB1 = async(req, res, next) => {
 exports.RegisterB2VideoUpload = async(req, res, next) => {
     try {
         if (req && req.body) {
+            const birthday = req.body.birthday
+            const exp = req.body.exp
+            const candiHocVan = req.body.candiHocVan
+            const candiSchool = req.body.candiSchool
             const videoUpload = req.file
             const videoLink = req.body.videoLink
             const phoneTK = req.user.data.phoneTK
@@ -168,12 +172,16 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                         from: from,
                         idTimViec365: newIDTimviec,
                         authentic: 0,
+                        birthday: birthday,
                         createdAt: new Date(Date.now()),
                         inForPerson: {
                             user_id: 0,
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
                             candiTitle: candiTitle,
+                            exp: exp,
+                            candiHocVan: candiHocVan,
+                            candiSchool: candiSchool,
                             candiProfile: {
                                 id: 1,
                                 video: videoUpload.filename,
@@ -200,12 +208,16 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                         from: from,
                         idTimViec365: newIDTimviec,
                         authentic: 0,
+                        birthday: birthday,
                         createdAt: new Date(Date.now()),
                         inForPerson: {
                             user_id: 0,
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
                             candiTitle: candiTitle,
+                            exp: exp,
+                            candiHocVan: candiHocVan,
+                            candiSchool: candiSchool,
                             candiProfile: {
                                 id: 1,
                                 video: videoLink,
