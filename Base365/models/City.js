@@ -42,7 +42,6 @@ const citySchema = new mongoose.Schema({
         type: String,
         required: true
     },
-
     imgCity: {
         // img của thành phố
         type: String,

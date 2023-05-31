@@ -14,8 +14,6 @@ router.post('/postNewTv365',
     ]),
     newTV365.postNewTv365
 );
-
-// sửa tin đăng 
 router.post('/updateNewTv365',
     functions.checkToken,
     functions.uploadVideoAndIMGNewTV.fields([
@@ -24,15 +22,12 @@ router.post('/updateNewTv365',
     ]),
     newTV365.updateNewTv365
 );
-
-// xóa tin
-router.delete('/deleteNewTv365', functions.checkToken, newTV365.deleteNewTv365)
-
-//api lấy dữ liệu của thành phố
-router.get('/getDataCIty', newTV365.getDataCity)
+router.delete('/deleteNewTv365/:idNew', functions.checkToken, newTV365.deleteNewTv365)
+    //api lấy dữ liệu của thành phố
+    // router.get('/getDataCIty', newTV365.getDataCity)
 
 //api lấy dữ liệu của quận huyện của 1 thành phố
-router.post('/getDataDistric', newTV365.getDataDistrict)
+// router.post('/getDataDistric', newTV365.getDataDistrict)
 
 // api lấy danh sách bài post
 router.get('/getDataListPost', functions.checkToken, newTV365.getListPost)
@@ -44,46 +39,59 @@ router.get('/getDataPost', functions.checkToken, newTV365.getPost)
 router.get('/checkNew10p', functions.checkToken, newTV365.checkPostNew10p)
 
 // api làm mới tin
-router.post('/refreshNew', functions.checkToken, newTV365.refreshNew)
+router.get('/checkNew10p', functions.checkToken, newTV365.refreshNew)
 
 //api lấy 1 bài viết trước đăng nhập hoặc sau đăng nhập
-router.post('/getDataNew', formData.parse(), function(req, res, next) {
+router.post('/detail', formData.parse(), function(req, res, next) {
     if (req.headers.authorization) {
         functions.checkToken(req, res, next);
     } else {
         next();
     }
-}, newTV365.getNew)
+}, newTV365.detail)
 
 
 // api danh sách việc làm hấp đãn
-router.post('/listNewHot', formData.parse(), newTV365.listNewHot)
+// router.post('/listNewHot', formData.parse(), newTV365.listNewHot)
 
 // api danh sách việc làm lương cao
-router.post('/listNewCao', formData.parse(), newTV365.listNewCao)
+// router.post('/listNewCao', formData.parse(), newTV365.listNewCao)
 
 // api danh sách việc làm tuyển gấp
-router.post('/listNewGap', formData.parse(), newTV365.listNewGap)
+// router.post('/listNewGap', formData.parse(), newTV365.listNewGap)
 
 // api danh sách việc làm mới nhất
-router.post('/listJobNew', formData.parse(), newTV365.listJobNew)
+// router.post('/listJobNew', formData.parse(), newTV365.listJobNew)
 
 // api danh sách việc phù hợp nhất
-router.post('/listJobSuitable', formData.parse(), newTV365.listJobSuitable)
+// router.post('/listJobSuitable', formData.parse(), newTV365.listJobSuitable)
 
 // api danh sách việc lương cao
-router.post('/listJobHightSalary', formData.parse(), newTV365.listJobHightSalary)
+// router.post('/listJobHightSalary', formData.parse(), newTV365.listJobHightSalary)
 
 // api danh sách việc địa điểm tag
-router.post('/getJobListByLocation', formData.parse(), newTV365.getJobListByLocation)
+// router.post('/getJobListByLocation', formData.parse(), newTV365.getJobListByLocation)
 
 // api danh sách việc tên công ty tag
-router.post('/getJobListByCompany', formData.parse(), newTV365.getJobListByCompany)
+// router.post('/getJobListByCompany', formData.parse(), newTV365.getJobListByCompany)
 
-// api danh sách việc địa điểm và ngành nghề tag
-router.post('/getJobListByJob', formData.parse(), newTV365.getJobListByJob)
+// api danh sách việc tên công ty tag
+// router.post('/getJobListByJob', formData.parse(), newTV365.getJobListByJob)
 
 // api danh sách việc tiêu chí tag
-router.post('/getJobsByCriteria', formData.parse(), newTV365.getJobsByCriteria)
+// router.post('/getJobsByCriteria', formData.parse(), newTV365.getJobsByCriteria)
+
+
+// Mới
+
+//trang chủ
+router.post('/homePage', formData.parse(), newTV365.homePage)
+    //trang chủ
+router.post('/listJobBySearch', formData.parse(), newTV365.listJobBySearch)
+
+
+
+//trang chủ
+router.post('/homePage', formData.parse(), newTV365.homePage)
 
 module.exports = router;

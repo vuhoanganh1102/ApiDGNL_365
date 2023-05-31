@@ -9,7 +9,7 @@ exports.getThu = async(req, res, next) => {
         const pageNumber = req.query.pageNumber || 1;
         const data = await Thu.find({}).skip((pageNumber - 1) * 20).limit(20);
 
-        if (data.length) return await functions.success(res, 'Lấy mẫu THU thành công', { data });
+        if (data) return await functions.success(res, 'Lấy mẫu THU thành công', data);
 
         return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -24,7 +24,7 @@ exports.getByNganh = async(req, res, next) => {
         const cateId = req.body.cateId;
         const data = await Thu.find({ cateId: cateId }).skip((pageNumber - 1) * 20).limit(20); // tìm theo id Ngành
 
-        if (data.length) return await functions.success(res, `THU theo ngành ${cateId}`, { data });
+        if (data) return await functions.success(res, `THU theo ngành ${cateId}`, data);
 
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -37,7 +37,7 @@ exports.getNganhThu = async(req, res, next) => {
     try {
         const data = await NganhThu.find().select('_id name');
 
-        if (data.length > 0) return functions.success(res, 'Danh sách ngành THU', { data });
+        if (data.length > 0) return functions.success(res, 'Danh sách ngành THU', data);
 
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -49,14 +49,14 @@ exports.getNganhThu = async(req, res, next) => {
 // xem trước 
 exports.previewThu = async(req, res, next) => {
     try {
-        const _id = req.body._id;
+        const _id = req.params._id;
         const data = await Thu.findOne({ _id: _id }).select('_id image view');
 
         if (!data) return await functions.setError(res, 'Không có dữ liệu', 404);
 
         let view = data.view + 1; // cập nhật số lượng xem 
         await Thu.updateOne({ _id: _id }, { view: view });
-        return await functions.success(res, 'Lấy mâũ THU thanh công', { data });
+        return await functions.success(res, 'Lấy mâũ THU thanh công', data);
     } catch (err) {
         return functions.setError(res, err.message);
     };
@@ -66,7 +66,7 @@ exports.previewThu = async(req, res, next) => {
 // xem chi tiết thư ( tạo)
 exports.detailThu = async(req, res, next) => {
     try {
-        const _id = req.body._id;
+        const _id = req.params._id;
         const user = req.user.data;
         const data = await Thu.findOne({ _id: _id }).select('_id name htmlVi htmlCn htmlJp htmlKr htmlEn view color langId');
 
@@ -77,7 +77,7 @@ exports.detailThu = async(req, res, next) => {
             const token = await functions.createToken(user, '24h');
             res.setHeader('authorization', `Bearer ${token}`);
 
-            return await functions.success(res, 'Lấy THU thành công', { data });
+            return await functions.success(res, 'Lấy THU thành công', data);
         };
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -130,54 +130,32 @@ exports.saveThu = async(req, res, next) => {
             userId: userId,
             tId: data._id,
             html: data.html,
-            nameImage: uploadImage.nameImage,
+            nameImage: nameImage.filename,
             lang: data.lang,
-            status: data.status,
         };
 
+        if (checkImage == true) {
+            const thu = await HoSo.findOne({ _id: data._id }).select('download');
+            if (!thu) return await functions.setError(res, 'Lưu thất bại 1', 404);
+            let _id = 1;
+            await functions.getMaxID(ThuUV)
+                .then(res => {
+                    if (res) {
+                        _id = res + 1;
+                    }
+                });
 
-        const thu = await HoSo.findOne({ _id: data._id }).select('download');
-        if (!thu) return await functions.setError(res, 'Lưu thất bại 1', 404);
-        let _id = 1;
-        await functions.getMaxID(ThuUV)
-            .then(res => {
-                if (res) {
-                    _id = res + 1;
-                }
-            });
+            thuUV._id = _id;
+            const newThuUV = await ThuUV.create(thuUV);
 
-        thuUV._id = _id;
-        const newThuUV = await ThuUV.create(thuUV);
-
-        if (newThuUV) {
-            // cập nhật số lượt download 
-            await Thu.updateOne({ _id: cv._id }, { $set: { download: cv.download + 1 } });
-
-            //Gửi ảnh về
-            if (download == 1) {
-                // host sẽ sửa sau
-                const host = '';
-                const linkPdf = `${host}/${uploadImage.imgPath.slice(11)}`;
-                const linkImg = `${host}/${uploadImage.pdfPath.slice(11)}`;
-                const senderId = 1191;
-                const text = '';
-                const data = {
-                    userId: userId,
-                    senderId: senderId,
-                    linkImg: linkImg,
-                    linkPdf: linkPdf,
-                    Title: text,
-                };
-                const respone = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
-
-                message += ',tải';
-
-            }
-            return await functions.success(res, `${message} thành công`, newThuUV);
+            if (newThuUV) {
+                // cập nhật số lượt download 
+                await Thu.updateOne({ _id: cv._id }, { $set: { download: cv.download + 1 } });
+                return await functions.success(res, 'Lưu thành công', newThuUV);
+            };
+            return await functions.setError(res, 'Lưu thất bại 2', 404);
         };
-        return await functions.setError(res, 'Lưu thất bại 2', 404);
-
-
+        return functions.setError(res, 'Lỗi ảnh', 404);
 
     } catch (e) {
         functions.setError(res, e.message, );
@@ -189,19 +167,7 @@ exports.createNganhThu = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
-        const data = {
-
-            name: req.body.name,
-            alias: req.body.alias,
-            metaH1: req.body.metaH1,
-            content: req.body.content,
-            cId: req.body.cId,
-            metaTitle: req.body.metaTitle,
-            metaKey: req.body.metaKey,
-            metaDes: req.body.metaDes,
-            metaTt: req.body.metaTt,
-            status: req.body.status,
-        };
+        const data = req.body;
 
         let _id = 1;
         await functions.getMaxID(NganhThu)
@@ -218,41 +184,30 @@ exports.createNganhThu = async(req, res, next) => {
     }
 };
 
-// sửa NganhThu- findNganhThu & updateNganhThu
+// lấy dữ liệu NganhThu cũ
 exports.findNganhThu = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
 
-        const _id = req.body._id;
+        const _id = req.params._id;
         const data = await NganhThu.findOne({ _id: _id });
 
-        if (data) return functions.success(res, 'Thành công', { data });
+        if (data) return functions.success(res, 'Thành công', data);
 
         return functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {
         return functions.setError(res, err.message);
     };
 };
+
+// update NganhThu
 exports.updateNganhThu = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
-        const _id = req.body._id;
-        const nganhThu = {
-
-            name: req.body.name,
-            alias: req.body.alias,
-            metaH1: req.body.metaH1,
-            content: req.body.content,
-            cId: req.body.cId,
-            metaTitle: req.body.metaTitle,
-            metaKey: req.body.metaKey,
-            metaDes: req.body.metaDes,
-            metaTt: req.body.metaTt,
-            status: req.body.status,
-        };
-        const data = await NganhThu.findOneAndUpdate({ _id: _id }, nganhThu);
+        const _id = req.params._id;
+        const data = await NganhThu.findOneAndUpdate({ _id: _id }, req.body);
 
         if (data) return functions.success(res, 'Cập nhật thành công', );
 
@@ -267,7 +222,7 @@ exports.deleteNganhThu = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
-        const _id = req.body._id;
+        const _id = req.params._id;
         const data = await NganhThu.findOneAndDelete({ _id: _id });
 
         if (data) return functions.success(res, 'Đã xóa thành công', );
@@ -283,26 +238,7 @@ exports.createThu = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập', 404);
-        const data = {
-
-            name: req.body.name,
-            alias: req.body.alias,
-            image: req.file.fieldname,
-            price: req.body.price,
-            color: req.body.color,
-            view: 0,
-            favorite: 0,
-            download: 0,
-            vip: req.body.vip,
-            htmlVi: req.body.htmlVi,
-            htmlEn: req.body.htmlEn,
-            htmlJp: req.body.htmlJp,
-            htmlCn: req.body.htmlCn,
-            htmlKr: req.body.htmlKr,
-            cateId: req.cateId,
-            status: req.body.status,
-            langId: req.body.langId,
-        };
+        const data = req.body;
 
         let _id = 1;
         await functions.getMaxID(Thu)
@@ -319,47 +255,30 @@ exports.createThu = async(req, res, next) => {
     };
 };
 
-// sửa mẫu Thu - findThu & updateThu
+// lấy dữ liệu mẫu Thu cũ
 exports.findThu = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
 
-        const _id = req.body._id;
+        const _id = req.params._id;
         const data = await Thu.findOne({ _id: _id });
 
-        if (data) return functions.success(res, 'Thành công', { data });
+        if (data) return functions.success(res, 'Thành công', data);
 
         return functions.setError(res, 'Không có dữ liêu', 404);
     } catch (err) {
         return functions.setError(res, err.message);
     };
 };
+
+// update dữ liệu mẫu Thu
 exports.updateThu = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
-        const _id = req.body._id;
-        const thu = {
-            name: req.body.name,
-            alias: req.body.alias,
-            image: req.file.fieldname,
-            price: req.body.price,
-            color: req.body.color,
-            view: 0,
-            favorite: 0,
-            download: 0,
-            vip: req.body.vip,
-            htmlVi: req.body.htmlVi,
-            htmlEn: req.body.htmlEn,
-            htmlJp: req.body.htmlJp,
-            htmlCn: req.body.htmlCn,
-            htmlKr: req.body.htmlKr,
-            cateId: req.cateId,
-            status: req.body.status,
-            langId: req.body.langId,
-        };
-        const data = await Thu.findOneAndUpdate({ _id: _id }, thu);
+        const _id = req.params._id;
+        const data = await Thu.findOneAndUpdate({ _id: _id }, req.body);
 
         if (data) return functions.success(res, 'Cập nhật thành công', );
 
@@ -374,7 +293,7 @@ exports.deleteThu = async(req, res, next) => {
     try {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
-        const _id = req.body._id;
+        const _id = req.params._id;
         const data = await Thu.findOneAndDelete({ _id: _id });
 
         if (data) return functions.success(res, 'Đã xóa thành công', );
