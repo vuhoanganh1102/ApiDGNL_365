@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose')
+var authJwt = require('./middleware/authJwt');
 
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
@@ -76,7 +77,7 @@ app.use('/api/timviec/mail365', mail365Router);
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
-app.use("/api/qlc/group", groupRouter);
+app.use("/api/qlc/group",[authJwt.checkToken, authJwt.isCompany], groupRouter);
 app.use('/api/qlc/childCompany', childCompanyRouter)
 app.use('/api/qlc/managerUser', managerUser)
 app.use('/api/qlc/employee', employeeRoutes);
