@@ -1612,7 +1612,7 @@ exports.deleteExp = async(req, res, next) => {
 }
 
 //hiển thị danh sách ứng viên theo tỉnh thành, vị trí
-exports.selectiveUv = async(req, res, next) => {
+exports.list = async(req, res, next) => {
     try {
 
         let page = Number(req.body.page)
@@ -1640,24 +1640,29 @@ exports.selectiveUv = async(req, res, next) => {
         } else if (!city && cate) {
             let listUv = []
             let findUv = await functions.pageFindV2(Users, { type: 0 }, {
-                userName: 1,
-                city: 1,
-                district: 1,
-                address: 1,
-                avatarUser: 1,
-                isOnline: 1,
-                inForPerson: 1
-            }, { updatedAt: -1 }, skip, limit)
-            for (let i = 0; i < findUv.length; i++) {
-                let listCateId = findUv[i].inForPerson.candiCateID.split(',')
-                if (listCateId.includes(cate)) {
-                    listUv.push(findUv[i])
-                }
-            }
-            const totalCount = listUv.length
-            const totalPages = Math.ceil(totalCount / pageSize)
+                    userName: 1,
+                    city: 1,
+                    district: 1,
+                    address: 1,
+                    avatarUser: 1,
+                    isOnline: 1,
+                    inForPerson: 1
+                }, { updatedAt: -1 }, skip, limit)
+                // for (let i = 0; i < findUv.length; i++) {
+                //     let listCateId = findUv[i].inForPerson.candiCateID.split(',')
+                //     if (listCateId.includes(cate)) {
+                //         listUv.push(findUv[i])
+                //     }
+                // }
+                // const totalCount = listUv.length
+                // const totalPages = Math.ceil(totalCount / pageSize)
+                // if (findUv) {
+                //     functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+                // }
+            let cateId = 1
+            let findUser = await Users.find({ "inForPerson.candiCateID": { "$regex": "\\b" + cateId + "\\b", "$not": { "$regex": "\\b" + cateId + "1\\b" } } })
             if (findUv) {
-                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { listUv: findUser });
             }
         } else if (city && cate) {
             let listUv = []
@@ -1861,10 +1866,10 @@ exports.candidateSavePost = async(req, res, next) => {
 //comment tin ứng tuyển
 exports.commentPost = async(req, res, next) => {
     try {
-        if (req.user && req.body.url && req.body.cm_id && req.body.name && req.body.comment) {
+        if (req.user && req.body.idPost && req.body.cm_id && req.body.name && req.body.comment) {
 
             let userId = req.user.data.idTimViec365
-            let url = req.body.url
+            let idPost = req.body.idPost
             let parentCmId = req.body.cm_id
             let imageComment = req.file
             let CommentName = req.body.name
@@ -1876,17 +1881,19 @@ exports.commentPost = async(req, res, next) => {
             if (maxID) {
                 newID = Number(maxID._id) + 1;
             } else newID = 1
-
             if (req.file) {
                 let addNewComment = new CommentPost({
                     _id: newID,
-                    urlCm: url,
+                    idPost: idPost,
                     parentCmId: parentCmId,
+                    commentPersonId: userId,
                     comment: comment,
                     commentName: CommentName,
                     commentAvatar: req.user.data.avatarUser,
                     image: imageComment.filename,
                     timeComment: new Date(Date.now()),
+                    tag: hasTag,
+                    author: author
                 })
                 addNewComment.save()
                 if (addNewComment) {
@@ -1895,12 +1902,15 @@ exports.commentPost = async(req, res, next) => {
             } else {
                 let addNewComment = new CommentPost({
                     _id: newID,
-                    urlCm: url,
+                    idPost: idPost,
                     parentCmId: parentCmId,
+                    commentPersonId: userId,
                     comment: comment,
                     commentName: CommentName,
                     commentAvatar: req.user.data.avatarUser,
                     timeComment: new Date(Date.now()),
+                    tag: hasTag,
+                    author: author
                 })
                 addNewComment.save()
                 if (addNewComment) {

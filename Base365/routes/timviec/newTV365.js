@@ -89,9 +89,7 @@ router.post('/homePage', formData.parse(), newTV365.homePage)
     //trang chủ
 router.post('/listJobBySearch', formData.parse(), newTV365.listJobBySearch)
 
-
-
-//trang chủ
-router.post('/homePage', formData.parse(), newTV365.homePage)
+//Like và bỏ like tin hoặc bình luận
+router.post('/likeNew', formData.parse(), functions.checkToken, newTV365.likeNew)
 
 module.exports = router;
