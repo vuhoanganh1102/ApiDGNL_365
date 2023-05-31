@@ -82,7 +82,7 @@ app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
 app.use('/api/tool', toolAddDataRouter);
 
-app.use('/api/timviec/priceList', priceListRouter);
+// app.use('/api/timviec/priceList', priceListRouter);
 app.use('/api/timviec/trangVang', trangVangRouter);
 app.use('/api/timviec/ssl', soSanhLuongRouter);
 app.use('/api/timviec/mail365', mail365Router);
@@ -95,8 +95,8 @@ app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
 app.use("/api/qlc/group",[authJwt.checkToken, authJwt.isCompany], groupRouter);
-app.use('/api/qlc/childCompany', childCompanyRouter)
-app.use('/api/qlc/managerUser', managerUser)
+// app.use('/api/qlc/childCompany', childCompanyRouter)
+// app.use('/api/qlc/managerUser', managerUser)
 app.use('/api/qlc/employee', employeeRoutes);
 app.use('/api/qlc/individual', individualRoutes);
 

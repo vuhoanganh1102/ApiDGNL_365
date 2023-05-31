@@ -12,16 +12,17 @@ exports.checkToken = (req, res, next) => {
         if (err) {
             return res.status(403).json({ message: "Invalid token" });
         }
-        req.userId = decoded.userId;
+        req.userId = decoded.data._id;
         next();
     });
 };
 
 exports.isCompany = (req, res, next)=>{
-    let userId = req.userId;
+  let userId = req.userId;
     const company = Users.find({idQLC: userId});
     if(company){
         next();
+        return;
     }
     return res.status(403).json({ message: "is not company" });
 }
