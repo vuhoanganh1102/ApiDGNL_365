@@ -872,36 +872,45 @@ exports.seenUVWithPoint = async(req, res, next) => {
         let ipUser = req.body.ipUser;
         let returnPoint = req.body.returnPoint;
         let point = 0;
-        if (idUser && ipUser) {
-            let companyPoint = await functions.getDatafindOne(PointCompany, { uscID: idCompany });
-            if (companyPoint) {
-                point = companyPoint.pointUSC - 1;
-                if (point >= 0 && companyPoint.pointUSC > 0) {
-                    await PointCompany.updateOne({ uscID: idCompany }, {
-                        $set: {
-                            pointUSC: point,
-                        }
-                    });
-                    let maxID = await functions.getMaxID(PointUsed) || 0;
-                    const pointUsed = new PointUsed({
-                        _id: Number(maxID) + 1,
-                        uscID: idCompany,
-                        useID: idUser,
-                        point: 1,
-                        type: 1,
-                        noteUV: noteUV || " ",
-                        usedDay: new Date().getTime(),
-                        returnPoint: returnPoint || 0,
-                        ipUser: ipUser
+        if (idUser) {
+            // Kiểm tra xem đã mất điểm hay chưa
+            const checkUsePoint = await functions.getDatafindOne(PointUsed, {
+                uscID: idCompany,
+                useID: idUser
+            });
+            if (!checkUsePoint) {
+                let companyPoint = await functions.getDatafindOne(PointCompany, { uscID: idCompany });
+                if (companyPoint) {
+                    let pointUSC = companyPoint.pointCompany;
+                    if (pointUSC > 0) {
+                        await PointCompany.updateOne({ uscID: idCompany }, {
+                            $set: {
+                                pointUSC: pointUSC - 1,
+                            }
+                        });
+                        let maxID = await functions.getMaxID(PointUsed) || 0;
+                        const pointUsed = new PointUsed({
+                            _id: Number(maxID) + 1,
+                            uscID: idCompany,
+                            useID: idUser,
+                            point: 1,
+                            type: 1,
+                            noteUV: noteUV || " ",
+                            usedDay: new Date().getTime(),
+                            returnPoint: returnPoint || 0,
+                            ipUser: ipUser
+                        })
+                        await pointUsed.save();
+                        return functions.success(res, "Xem thành công")
+                    }
+                    return functions.success(res, "Điểm còn lại là 0", {
+                        point: 0
                     })
-                    await pointUsed.save();
-                    return functions.success(res, "Xem thành công")
                 }
-                return functions.success(res, "Điểm còn lại là 0", {
-                    point: 0
-                })
+                return functions.setError(res, 'nhà tuyển dụng không có điểm', 404);
+            } else {
+                return functions.setError(res, 'Ứng viên này đã được xem thông tin', 200);
             }
-            return functions.setError(res, 'nhà tuyển dụng không có điểm', 404)
         }
         return functions.setError(res, 'không có dữ liệu', 404)
     } catch (error) {
@@ -1439,9 +1448,9 @@ exports.assessmentUV = async(req, res, next) => {
         let type = req.body.type;
         let note = req.body.note;
         if (idCompany) {
-            let poin = await functions.getDatafindOne(PointUsed, { uscID: 425711, useID: idUV });
+            let poin = await functions.getDatafindOne(PointUsed, { uscID: idCompany, useID: idUV });
             if (poin) {
-                await PointUsed.updateOne({ uscID: 425711, useID: idUV }, {
+                await PointUsed.updateOne({ uscID: idCompany, useID: idUV }, {
                     $set: {
                         type: type,
                         noteUV: note,
