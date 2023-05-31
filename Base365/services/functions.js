@@ -243,7 +243,7 @@ const storageFile = (destination) => {
                     fs.mkdirSync(userDestination, { recursive: true });
                 }
             } else {
-                userDestination = 'public/company'
+                userDestination = destination
             }
             cb(null, userDestination);
         },
@@ -262,24 +262,24 @@ const storageFile = (destination) => {
     });
 };
 
-exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/KhoAnh') })
+exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('../Storage/TimViec365') })
 
-exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/company') })
+exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('../Storage/TimViec365') })
 
 //  hàm upload ảnh ở cập nhập avatar
-exports.uploadImg = multer({ storage: storageMain('public/KhoAnh') })
+exports.uploadImg = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //  hàm upload ảnh ở kho ảnh
-exports.uploadImgKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
+exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //  hàm upload video ở kho ảnh
-exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
+exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
 
 // hàm upload video ở cập nhập KhoAnh
-exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
+exports.uploadVideo = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //hàm upload file ứng viên
-exports.uploadFileUv = multer({ storage: storageFile('public/candidate') })
+exports.uploadFileUv = multer({ storage: storageFile('../Storage/TimViec365') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
@@ -580,5 +580,75 @@ exports.getTokenUser = async(req, res, next) => {
         return jwt.decode(token).data;
     } else {
         return null;
+    }
+}
+
+// hàm tìm id max Quản Lí Chung
+exports.getMaxIDQLC = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
+    return maxUser.idQLC;
+};
+// hàm tìm idcompany max 
+exports.getMaxIDcompany = async(model) => {
+    const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
+    return maxIDcompany.companyId;
+};
+
+//upload image cv,don, thu, syll
+
+exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
+    try {
+        // upload
+        const timestamp = Date.now();
+        const imagePath = await fsPromises.readFile(imageFile.path);
+        const uploadDir = `../Storage/TimViec365/${userId}/${category}`;
+        const uploadFileName = `${timestamp}_${imageFile.originalFilename}`;
+        const uploadPath = path.join(uploadDir, uploadFileName);
+        await fsPromises.mkdir(uploadDir, { recursive: true });
+        await fsPromises.writeFile(uploadPath, imagePath);
+        // tìm và chuyển img sang pdf
+        await fsPromises.access(uploadPath);
+        const pdfPath = path.join(uploadDir, `${uploadFileName.slice(0,-4)}.pdf`);
+        const doc = new PDFDocument();
+        const stream = fs.createWriteStream(pdfPath);
+
+        doc.pipe(stream);
+        doc.image(uploadPath, 0, 0, { fit: [612, 792] });
+        doc.end();
+
+        await new Promise((resolve, reject) => {
+            stream.on('finish', resolve);
+            stream.on('error', reject);
+        });
+
+        console.log('Chuyển đổi ảnh thành PDF thành công.');
+        return {
+            status: 'EXIT',
+            nameImage: uploadFileName,
+            imgPath: uploadPath,
+            pdfPath: pdfPath,
+        };
+
+
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return 'ENOENT'
+        } else {
+            return error.message
+        }
+    }
+}
+
+// hàm  xóa  ảnh và video khi upload thất bại
+exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
+    if (avatar) {
+        avatar.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
+    }
+    if (video) {
+        video.forEach(async(element) => {
+            await this.deleteImg(element)
+        })
     }
 }
