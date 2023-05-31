@@ -7,7 +7,7 @@ const ShiftSchema = new Schema({
         type: Number,
     },
     //Id của công ty
-    companyId: {
+    companyID: {
         type: Number
     },
     //Thời điểm tạo ca làm việc

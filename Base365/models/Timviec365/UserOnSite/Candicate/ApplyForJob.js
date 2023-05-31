@@ -15,40 +15,40 @@ const applyForJobSchema = new mongoose.Schema({
     },
     newID: {
         type: Number,
-        default: 0,
+        required: true,
     },
     time: {
         //thời gian ứng tuyển
         type: Date,
-        default: null,
+        required: true
     },
     active: {
         // xác nhận ứng tuyển 
         type: Number,
-        default: 0,
+        required: true
     },
     kq: {
         // kết quả ứng tuyển
         type: Number,
-        default: 0,
+        required: true
     },
     timePV: {
         // thời gian phỏng vấn
         type: Date,
-        default: null,
+        required: true
     },
     timeTVS: {
         type: Date,
-        default: null,
+        required: true
     },
     timeTVE: {
         type: Date,
-        default: null,
+        required: true
     },
     text: {
         // lời giới thiệu bản thân 
         type: String,
-        default: null,
+        required: true
     },
     cv: {
         // file cv
@@ -61,6 +61,8 @@ const applyForJobSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    // 1 là ứng viên ứng tuyển , 2 là chuyên viên gửi ứng tuyển
+    type: Number,
 }, {
     collection: 'ApplyForJob',
     versionKey: false,

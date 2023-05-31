@@ -8,7 +8,7 @@ const CalendarSchema = new Schema({
         require: true
     },
     // ID của công ty tạo lịch làm việc
-    companyId: {
+    companyID: {
         type: Number,
     },
     //Tên của lịch làm việc
@@ -46,7 +46,7 @@ const CalendarSchema = new Schema({
         type: Date
     },
     // Lịch chi tiết cho từng ngày
-    calendar: {
+    calendarDetail: {
         type: [{
             type:Schema.Types.ObjectId,
             ref: 'ShiftCalendars'

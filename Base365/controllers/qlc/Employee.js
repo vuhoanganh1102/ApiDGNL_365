@@ -4,17 +4,17 @@ const md5 = require('md5');
 //đăng kí tài khoản nhân viên 
 exports.register = async (req,res)=>{
     
-        const { userName, email , phoneTK, password, companyId, address } = req.body;
+        const { userName, email , phoneTK, password, companyID, address } = req.body;
     
-            if ((userName && password && companyId &&
+            if ((userName && password && companyID &&
                 address && email && phoneTK) !== undefined) {
     
                     //  check email co trong trong database hay khong
                     let user = await functions.getDatafindOne(Users, { email: email , type : 2})
-                    let MaxIdQLC = await functions.getMaxIDQLC(Users) || 0
+                    let MaxId = await functions.getMaxID(Users) || 0
                     if (user == null) {
-                            const user = await new Users({
-                                _id: _id,
+                            const user = new Users({
+                                _id: Number(MaxId) + 1||1 ,
                                 email,
                                 phoneTK,
                                 userName: req.body.userName,
@@ -24,11 +24,11 @@ exports.register = async (req,res)=>{
                                 password: md5(password),
                                 address: req.body.address,
                                 otp: req.body.otp,
-                                authentic: null,
+                                authentic: null||0,
                                 fromWeb: "quanlichung.timviec365",
                                 role: 0,
-                                avatarUser: null ,
-                                idQLC: (Number(MaxIdQLC) + 1),
+                                avatarUser: null,
+                                idQLC: (Number(MaxId) + 1),
                                 companyID: req.body.companyID,
                                 depID: req.body.depID,
                                 groupID: req.body.groupID,
@@ -38,7 +38,7 @@ exports.register = async (req,res)=>{
                                 exp: req.body.exp,
                                 startWorkingTime: req.body.startWorkingTime,
                                 candiHocVan: req.body.candiHocVan,
-                        })
+                            })
                         await user.save().then(() => {
                             console.log("Thêm mới thành công ID Công ty: " + email + "," + phoneTK);
                         }).catch((e) => {
@@ -62,7 +62,7 @@ exports.sendOTP = async (req,res)=>{
             if(checkEmail){
                 let user = await functions.getDatafindOne(User,{email , type :2})
                 if(user) {
-                    let otp = await functions.randomNumber
+                    let otp = functions.randomNumber
                     await Users.updateOne({email:email},{
                         $set:{
                             otp : otp
@@ -120,9 +120,16 @@ exports.login = async (req,res)=>{
         password = req.body.password
         type = 2
         if (email && password) {
-            let checkMail = await fnc.checkEmail(email)
+            let checkMail = await functions.checkEmail(email)
             if(checkMail){
-                let findUser = await fnc.getDatafindOne(Users, { email, password: md5(password), type: 2 })
+                let findUser = await functions.getDatafindOne(Users, { email, type: 2 })
+                if (!findUser) {
+                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
+                }
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (!checkPassword) {
+                    return functions.setError(res, "Mật khẩu sai", 404)
+                }
                 if (findUser != null) {
                 const token = await functions.createToken(findUser, "1d");
                 const refreshToken = await functions.createToken({userId : findUser._id}, "1y")
@@ -133,7 +140,7 @@ exports.login = async (req,res)=>{
                         user_id : findUser._id,
                         user_email :findUser.email,
                         user_phoneTK : findUser.phoneTK,
-                        user_password :findUser.md5(password),
+                        user_password :findUser.password,
                         user_name : findUser.userName,
                         user_address : findUser.address,
                         user_authentic : findUser.authentic,
@@ -161,7 +168,7 @@ exports.login = async (req,res)=>{
     }
     }catch(e){
         console.log(e);
-        return functions.setError(res, error)
+        return functions.setError(res, e)
     }
 }
     // hàm đổi mật khẩu 

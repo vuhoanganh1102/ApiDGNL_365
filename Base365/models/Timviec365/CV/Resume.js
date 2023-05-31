@@ -25,7 +25,19 @@ const ResumeSchema = new mongoose.Schema({
     downLoad: {
         type: Number
     },
-    html: {
+    htmlVi: {
+        type: String
+    },
+    htmlEn: {
+        type: String
+    },
+    htmlJp: {
+        type: String
+    },
+    htmlCn: {
+        type: String
+    },
+    htmlKr: {
         type: String
     },
     color: {

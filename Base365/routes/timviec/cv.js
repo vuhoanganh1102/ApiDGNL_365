@@ -2,9 +2,13 @@ const express = require('express');
 const formData = require('express-form-data');
 const router = express.Router();
 const functions = require('../../services/functions');
+const multer = require('multer')
 
 const cv = require('../../controllers/timviec/cv');
 
+
+// CV & hồ sơ
+// router.post('/insertDataCV', formData.parse(), cv.insertDataCV);
 // tìm tất cả mẫu CV
 router.post('/getListCV', formData.parse(), cv.getListCV);
 
@@ -15,51 +19,38 @@ router.post('/getNganhCV', formData.parse(), cv.getNganhCV);
 router.post('/getListCVByCondition', formData.parse(), cv.getListCVByCondition);
 
 // xem trước cv
-router.post('/previewCV', formData.parse(), cv.previewCV);
+router.post('/previewCV/:_id', formData.parse(), cv.previewCV);
 
 // chi tiết cv 
 router.post('/detailCV', formData.parse(), cv.detailCV);
 
 // lưu và tải cv
-router.post('/saveCV', functions.checkToken, formData.parse(), functions.decrypt, cv.saveCV);
+// router.post('/saveCV', functions.checkToken, formData.parse(), functions.decrypt, cv.saveCV);
 
 // xem mẫu cv viết sẵn
-router.post('/viewAvailableCV', formData.parse(), cv.viewAvailable);
+router.post('/viewAvailableCV/:cateId', formData.parse(), cv.viewAvailable);
 
 // tính điểm cv
 router.post('/countPoints', formData.parse(), cv.countPoints);
 
 // tạo mới mẫu cv
-router.post('/createCV', functions.checkToken, functions.uploadImgKhoAnh.single('image'), cv.createCV);
+router.post('/createCV', formData.parse(), functions.checkToken, cv.createCV);
 
 // sửa mẫu cv - findCV & updateCV
-router.post('/findCV', functions.checkToken, formData.parse(), cv.findCV);
-router.post('/updateCV', functions.checkToken, functions.uploadImgKhoAnh.single('image'), cv.updateCV);
+router.post('/findCV/:_id', functions.checkToken, cv.findCV);
+router.post('/updateCV/:_id', formData.parse(), functions.checkToken, cv.updateCV);
 
 // xóa mẫu cv
-router.post('/deleteCV', functions.checkToken, formData.parse(), cv.deleteCV);
+router.post('/deleteCV/:_id', functions.checkToken, cv.deleteCV);
 
-// thêm NganhCV
+// thêm ngành cv vào danh sách NganhCV
 router.post('/createNganhCV', formData.parse(), functions.checkToken, cv.createNganhCV);
 
-// sửa NganhCV- findNganhCV & updateNganhCV
-router.post('/findNganhCV', functions.checkToken, formData.parse(), cv.findNganhCV);
-router.post('/updateNganhCV', functions.checkToken, formData.parse(), cv.updateNganhCV);
+// sửa ngành cv vào danh sách NganhCV- findNganhCV & updateNganhCV
+router.post('/findNganhCV/:_id', functions.checkToken, cv.findNganhCV);
+router.post('/updateNganhCV/:_id', functions.checkToken, formData.parse(), cv.updateNganhCV);
 
-// xóa NganhCV
-router.post('/deleteNganhCV', functions.checkToken, formData.parse(), cv.deleteNganhCV);
-
-// danh sách nhóm cv
-router.post('/getCVGroup', functions.checkToken, formData.parse(), cv.getCVGroup);
-
-// thêm mới nhóm cv
-router.post('/createCVGroup', functions.checkToken, functions.uploadImgKhoAnh.single('image'), cv.createCVGroup);
-
-// sửa nhóm cv - findCVGroup & updateCVGroup
-router.post('/findCVGroup', functions.checkToken, formData.parse(), cv.findCVGroup);
-router.post('/updateCVGroup', functions.checkToken, functions.uploadImgKhoAnh.single('image'), cv.updateCVGroup);
-
-// xóa Nhom CV
-router.post('/deleteCVGroup', functions.checkToken, formData.parse(), cv.deleteCVGroup);
+// xóa ngành cv vào danh sách NganhCV
+router.post('/deleteNganhCV/:_id', functions.checkToken, formData.parse(), cv.deleteNganhCV);
 
 module.exports = router;

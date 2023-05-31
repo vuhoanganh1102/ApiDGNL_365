@@ -1,45 +1,42 @@
 const Users = require("../../models/Users")
-const fnc = require("../../services/functions")
+const functions = require("../../services/functions")
 const md5 = require("md5")
 
 //đăng kí tài khoản cá nhân 
 exports.register = async (req, res) => {
-    const { userName, email, password, phoneTK, companyId, address } = req.body
+    const { userName, email, password, phoneTK, address } = req.body
 
-    if (userName && email && password && phoneTK && companyId && address) {
+    if (userName && email && password && phoneTK  && address) {
 
-        let User = await fnc.getDatafindOne(User, { email, phoneTK, type: 0 });
+        let User = await functions.getDatafindOne(Users, { email, phoneTK, type: 0 });
 
-        let MaxIdQLC = await fnc.getMaxIDQLC(Users) || 0
-
+        let MaxId = await functions.getMaxID(Users) || 0
         if (User == null) {
-
-            const User = new Users({
-
-                _id: _id,
+                const Inuser = new Users({
+                _id: Number(MaxId) + 1||1 ,
                 email: req.body.email,
                 userName: req.body.userName,
                 phoneTK: req.body.phoneTK,
-                password: req.body.md5(password),
+                password: md5(password),
                 address: req.body.address,
                 type: 0,
                 role: 0,
                 otp: null,
                 authentic: null,
-                idQLC: (Number(MaxIdQLC) + 1),
+                idQLC: (Number(MaxId) + 1),
 
             })
-                (await User.save()).authentic(() => {
+                await Inuser.save().then(() => {
                     console.log(`hêm mới tài khoản cá nhân thành công ${email} , ${phoneTK}`)
                 }).catch((e) => {
                     console.log(e);
 
                 });
         } else {
-            await fnc.setError(res, " email đã tồn tại")
+            await functions.setError(res, " email đã tồn tại")
         }
     } else {
-        fnc.setError(res, "thiếu thông tin để đăng kí ")
+        functions.setError(res, "thiếu thông tin để đăng kí ")
     }
 }
 
@@ -61,7 +58,7 @@ exports.sendOTP = async (req, res) => {
         }
     } catch (e) {
         console.log(e);
-        return fnc.setError(res, error)
+        return functions.setError(res, error)
     }
 }
 //hàm xác thực otp bước 2: người dùng điền otp để xác thưc tài khoản
@@ -69,34 +66,41 @@ exports.verify = async (req, res) => {
     let otp = req.body.ma_xt,
         phoneTK = req.user.data.phoneTK
     if (otp && phoneTK) {
-        let data = await fnc.getDatafindOne(Users, { phoneTK, otp, type: 0 })
+        let data = await functions.getDatafindOne(Users, { phoneTK, otp, type: 0 })
         if (data != null) {
             await Users.updateOne({ phoneTK }, {
                 $set: {
                     authentic: 1
                 }
             })
-            return fnc.success(res, "xác thực thành công")
+            return functions.success(res, "xác thực thành công")
         } else {
-            return fnc.setError(res, "sai ma xac thuc")
+            return functions.setError(res, "sai ma xac thuc")
         }
     } else {
-        return fnc.setError(res, "thieu thong tin")
+        return functions.setError(res, "thieu thong tin")
     }
 }
 exports.login = async (req, res) => {
 
     try {
         let email = req.body.email
-        password = req.body.password
-        type = 0
+            password = req.body.password
+            type = 0
         if (email && password) {
-            let checkMail = await fnc.checkEmail(email)
+            let checkMail = await functions.checkEmail(email)
             if (checkMail) {
-                let findUser = await fnc.getDatafindOne(Users, { email, password: md5(password), type: 0 })
+                let findUser = await functions.getDatafindOne(Users, { email, type: 0 })
+                if (!findUser) {
+                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
+                }
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (!checkPassword) {
+                    return functions.setError(res, "Mật khẩu sai", 404)
+                }
                 if (findUser != null) {
-                    const token = await fnc.createToken(findUser, "1d")
-                    const refreshToken = await fnc.createToken({ userId: findUser._id }, "1y")
+                    const token = await functions.createToken(findUser, "1d")
+                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
                     let data = {
                         access_token: token,
                         refresh_token: refreshToken,
@@ -104,7 +108,7 @@ exports.login = async (req, res) => {
                             user_id: findUser._id,
                             user_email: findUser.email,
                             user_phoneTK: findUser.phoneTK,
-                            user_password: findUser.md5(password),
+                            user_password: findUser.password,
                             user_name: findUser.userName,
                             user_address: findUser.address,
                             user_authentic: findUser.authentic,

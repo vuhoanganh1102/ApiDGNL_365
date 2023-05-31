@@ -5,8 +5,8 @@ const newTV365Schema = new mongoose.Schema({
         required: true,
     },
     userID: Number,
+    // tiêu đề
     title: {
-        // tiêu đề
         type: String,
         default: null,
     },
@@ -14,20 +14,18 @@ const newTV365Schema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    // tên tiêu đè không đấu
     alias: {
-        // tên tiêu đè không đấu
         type: String,
         default: null,
     },
-
+    // link quay lại
     redirect301: {
-        // link quay lại
         type: String,
         default: ""
     },
-
+    // thể loại việc làm
     cateID: [{
-        // thể loại việc làm
         type: String,
         default: null,
     }],
@@ -35,43 +33,36 @@ const newTV365Schema = new mongoose.Schema({
         type: String,
         default: null,
     },
-
-
+    //thể loại tag
     tagID: {
-        //thể loại tag
         type: Number,
         default: null,
     },
-
+    // thành phố
     cityID: [{
-        // thành phố
         type: String,
     }],
-
+    // quận huyện
     districtID: [{
-        // quận huyện
         type: String,
     }],
-
+    // dịa chỉ
     address: {
-        // dịa chỉ
         type: String,
         default: null,
     },
+    //giá trị trong option trong khoảng , nếu là 1 thì không phải option trong khoảng
     money: {
-        //giá trị trong option trong khoảng , nếu là 1 thì không phải option trong khoảng
         type: Number,
         default: 0
     },
-
+    // cấp bậc
     capBac: {
-        // cấp bậc
         type: Number,
         default: 0
     },
-
+    //kinh nghiệm
     exp: {
-        //kinh nghiệm
         type: Number,
         default: 0
     },
@@ -83,80 +74,66 @@ const newTV365Schema = new mongoose.Schema({
     },
 
     bangCap: {
-        //bằng cấp
         type: Number,
         default: 0
     },
-
+    //sô lượng
     soLuong: {
-        //sô lượng
         type: Number,
         default: 0
     },
-
+    //hình thức
     hinhThuc: {
-        //hình thức
         type: Number,
         default: 0
     },
-
+    // độ tuổi
     doTuoi: {
-        // độ tuổi
         type: Number,
         default: 0
     },
-
+    // thời gian tạo bài đăng
     createTime: {
-        // thời gian tạo bài đăng
         type: Date,
         default: null,
     },
-
+    // thới gian update
     updateTime: {
-        // thới gian update
         type: Date,
         default: null,
     },
-
+    // thời gian vip của bài post
     vipTime: {
-        // thời gian vip của bài post
         type: Date,
         default: null,
     },
-    vip: {
-        type: Number,
-        default: 0
-    },
+    vip: Number,
     cateTime: {
         type: Date,
         default: null,
     },
-
+    // 0 là chưa được duyệt 1 là ngược lại
     active: {
-        // 0 là chưa được duyệt 1 là ngược lại
         type: Number,
         default: 0
     },
-
+    // thể loại
     type: {
-        // thể loại
         type: Number,
         default: 0
     },
+    //
     over: {
-        //
         type: Number,
         default: 0
     },
-
+    // số lượng xem
     viewCount: {
-        // số lượng xem
         type: Number,
         default: 0
     },
-
+    // hạn nộp
     hanNop: {
-        // hạn nộp
         type: Date,
         default: null,
     },
@@ -222,9 +199,8 @@ const newTV365Schema = new mongoose.Schema({
         default: 0
     },
     newMutil: {
-
+        // mô tả công việc
         moTa: {
-            // mô tả công việc
             type: String,
             default: null,
         },
@@ -233,15 +209,13 @@ const newTV365Schema = new mongoose.Schema({
             type: String,
             default: null,
         },
-
+        //quyền lợi
         quyenLoi: {
-            //quyền lợi
             type: String,
             default: null,
         },
-
+        //hô sơ  nhà tuyển dụng cần để ứng viên có
         hoSo: {
-            //hô sơ  nhà tuyển dụng cần để ứng viên có
             type: String,
             default: null,
         },
@@ -250,15 +224,12 @@ const newTV365Schema = new mongoose.Schema({
             type: String,
             default: null,
         },
-
+        // nọi dung seo
         desSeo: {
-            // nọi dung seo
             type: String,
-            default: null
         },
-
+        // hoa hồng nhận được
         hoaHong: {
-            // hoa hồng nhận được
             type: String,
             default: null,
         },
@@ -280,10 +251,10 @@ const newTV365Schema = new mongoose.Schema({
         },
         jobPosting: {
             type: Number,
+            default: 0
         },
-
+        // video bài post
         videoType: {
-            // video bài post
             type: String,
             default: null,
         },
@@ -291,42 +262,37 @@ const newTV365Schema = new mongoose.Schema({
             type: String,
             default: null,
         },
-
+        // link video
         link: {
-            // link video
             type: String,
             default: null,
         },
-
+        // list ảnh bài post
         images: [{
-            // list ảnh bài post
             type: String,
             default: null,
         }]
 
     },
     newMoney: {
-
+        id: { type: Number },
+        // thể loại
         type: {
-            // thể loại
             type: Number,
             default: null
         },
-
+        // từ mức    
         minValue: {
-            // từ mức
             type: Number,
             default: null
         },
-
+        //đến mức
         maxValue: {
-            //đến mức
             type: Number,
             default: null
         },
-
+        // loại tiền
         unit: {
-            // loại tiền
             type: Number,
             default: 1
         }

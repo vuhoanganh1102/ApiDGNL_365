@@ -4,21 +4,21 @@ const TeamController = require('../../controllers/qlc/team')
 const functions = require("../../services/functions")
 
 //Lấy toàn bộ dữ liệu tổ
-router.get("/", TeamController.getListTeam);
+router.get("/",functions.checkToken, TeamController.getListTeam);
 
 //Lấy dữ liệu của một tổ
-router.get("/:id", TeamController.getTeamById);
+router.get("/:id",functions.checkToken, TeamController.getTeamById);
 
 //Tạo mới dữ liệu của một tổ
-router.post("/", TeamController.createTeam);
+router.post("/",functions.checkToken, TeamController.createTeam);
 
 //Chỉnh sửa dự liệu của một tổ
-router.post("/:id", TeamController.editTeam);
+router.post("/:id",functions.checkToken, TeamController.editTeam);
 
 //Xóa dữ liệu của một tổ
-router.delete("/:id", TeamController.deleteTeam);
+router.delete("/:id",functions.checkToken, TeamController.deleteTeam);
 
 //Xoá toàn bộ dữ liệu tổ
-router.delete("/", TeamController.deleteAllTeams)
+router.delete("/",functions.checkToken, TeamController.deleteAllTeams)
 
 module.exports = router

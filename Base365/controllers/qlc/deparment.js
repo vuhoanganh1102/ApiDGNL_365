@@ -1,9 +1,14 @@
 const Deparment = require("../../models/qlc/Deparment")
 const functions = require("../../services/functions")
-
+const Users = require("../../models/Users")
 exports.getListDeparment = async (req, res) => {
     await functions.getDatafind(Deparment, {})
         .then((deparments) => functions.success(res, "", deparments))
+        .catch((err) => functions.setError(res, err.message, 501));
+}
+exports.countUserInDepartment = async (req, res) => {
+    await functions.findCount(Users, {depID})
+        .then((numberUser) => functions.success(res, "", numberUser))
         .catch((err) => functions.setError(res, err.message, 501));
 }
 

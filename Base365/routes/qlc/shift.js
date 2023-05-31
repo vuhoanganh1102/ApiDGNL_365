@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const ShiftController = require('../../controllers/qlc/shift')
-
+var formData = require('express-form-data')
 //API lấy toàn bộ danh sách ca làm việc
 router.get("/", ShiftController.getListShifts)
 
@@ -12,7 +12,7 @@ router.get("/:id", ShiftController.getShiftById)
 router.get("/all/company", ShiftController.getShiftByComId)
 
 //API tạo một ca làm việc mới
-router.post("/", ShiftController.createShift)
+router.post("/",formData.parse(), ShiftController.createShift)
 
 //API chỉnh sửa thông tin của một ca làm việc
 router.post("/:id", ShiftController.editShift)
