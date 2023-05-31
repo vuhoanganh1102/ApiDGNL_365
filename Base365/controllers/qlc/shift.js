@@ -1,12 +1,12 @@
 const Shift = require('../../models/qlc/Shift');
 const functions = require("../../services/functions");
-
+//lấy danh sách ca làm việc
 exports.getListShifts = async (req, res) => {
     await functions.getDatafind(Shift, {})
         .then((shifts) => functions.success(res, "Get shift's data successfully", shifts))
         .catch(err => functions.setError(res, err.message, 620));
 };
-
+//lấy danh sách ca làm việc theo id
 exports.getShiftById = async (req, res) => {
 
     const _id = req.params.id;
@@ -65,11 +65,11 @@ exports.createShift = async (req, res) => {
     } else if (!timeCheckOut) {
         functions.setError(res, "Time check out required");
     }
-    else if (!timeCheckInEarliest) {
-     functions.setError(res, "Time check in earliest required");
-    } else if (!timeCheckOutLastest) {
-       functions.setError(res, "Time check out lastest required");
-    }
+    // else if (!timeCheckInEarliest) {
+    //     functions.setError(res, "Time check in earliest required");
+    // } else if (!timeCheckOutLastest) {
+    //     functions.setError(res, "Time check out lastest required");
+    // }
     else if (!idTypeCalculateWork) {
         functions.setError(res, "Id type calculation work required");
     } else {

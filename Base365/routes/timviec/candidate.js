@@ -21,9 +21,10 @@ router.post('/RegisterB2CvUpload', functions.checkToken, uploadFileUv.fields([
 //api đăng kí bước 2 bằng cách tạo cv trên site
 router.post('/RegisterB2CvSite', functions.checkToken, uploadFileUv.single('imageUpload'), candidate.RegisterB2CvSite);
 
-// //api đăng nhập ứng viên
+//api đăng nhập ứng viên
 router.post('/loginUv', formData.parse(), candidate.loginUv);
 
+//api hiển thị trang qlc trong hoàn thiện hồ sơ
 router.post('/completeProfileQlc', formData.parse(), functions.checkToken, candidate.completeProfileQlc);
 
 //api hiển thị danh sách cv xin việc của ứng viên
@@ -100,7 +101,7 @@ router.post('/changePassword', formData.parse(), functions.checkToken, candidate
 router.post('/sendOTPChangePass', formData.parse(), functions.checkToken, candidate.sendOTPChangePass); //phần gửi otp khác với quên mật khẩu, còn phần xác nhận otp với phần đổi mật khẩu thì giống nhau
 
 //Thông tin chi tiết ứng viên
-router.post('/infoCandidate', formData.parse(), functions.checkToken, candidate.infoCandidate);
+router.post('/infoCandidate', formData.parse(), functions.checkTokenV2, candidate.infoCandidate);
 
 //ứng viên ứng tuyển 
 router.post('/candidateApply', formData.parse(), functions.checkToken, candidate.candidateApply);

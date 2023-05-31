@@ -1,6 +1,6 @@
 const functions = require('../../services/functions')
 const Blog = require('../../models/Timviec365/Blog/Posts')
-const AdminUser = require('../../models/Timviec365/Admin/AdminUser')
+const AdminUser = require('../../models/AdminUser')
 const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 
 // hàm lấy danh sách blog

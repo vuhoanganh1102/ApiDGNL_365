@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Mail365Schema = new mongoose.Schema({
     _id: {
-        type: Number
+        type: Number,
+        require: true
     },
     name: {
         type: String
@@ -11,9 +12,6 @@ const Mail365Schema = new mongoose.Schema({
     },
     image: {
         type: String
-    },
-    price: {
-        type: Number
     },
     view: {
         type: Number
@@ -36,12 +34,7 @@ const Mail365Schema = new mongoose.Schema({
     status: {
         type: Number
     },
-    vip: {
-        type: Number
-    },
-    langId: {
-        type: Number
-    },
+
 }, {
     collection: 'Mail365',
     versionKey: false
