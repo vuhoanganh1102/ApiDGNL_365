@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const settingDx = new Schema({
+const settingDx = new mongoose.Schema({
     idSetting: { type: Number },
     ComId: { type: Number },
     typeSetting: { type: Number },
@@ -13,6 +13,6 @@ const settingDx = new Schema({
     timeCreate: { type: Number },
     updateTime: { type: Number },
 
-})
+});
 
-module.exports = mongoose.model("Setting_dx", settingDx);
+module.exports = mongoose.model('Vanthu_Setting_Dx', settingDx);
