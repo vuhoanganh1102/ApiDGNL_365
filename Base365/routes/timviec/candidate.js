@@ -109,4 +109,7 @@ router.post('/candidateApply', formData.parse(), functions.checkToken, candidate
 //ứng viên lưu tin 
 router.post('/candidateSavePost', formData.parse(), functions.checkToken, candidate.candidateSavePost);
 
+//ứng viên comment tin tuyển dụng
+router.post('/commentPost', functions.checkToken, uploadFileUv.single('img'), candidate.commentPost);
+
 module.exports = router;
