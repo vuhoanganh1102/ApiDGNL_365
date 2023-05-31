@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 const CategoryCVSchema = new mongoose.Schema({
     _id: {
         type: Number,
@@ -43,4 +43,4 @@ const CategoryCVSchema = new mongoose.Schema({
     versionKey: false
 });
 
-export default mongoose.model("CategoryCV", CategoryCVSchema)
+module.exports = mongoose.model("CategoryCV", CategoryCVSchema);

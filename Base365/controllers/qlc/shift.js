@@ -65,11 +65,11 @@ exports.createShift = async (req, res) => {
     } else if (!timeCheckOut) {
         functions.setError(res, "Time check out required");
     }
-    else if (!timeCheckInEarliest) {
-     functions.setError(res, "Time check in earliest required");
-    } else if (!timeCheckOutLastest) {
-       functions.setError(res, "Time check out lastest required");
-    }
+    // else if (!timeCheckInEarliest) {
+    //     functions.setError(res, "Time check in earliest required");
+    // } else if (!timeCheckOutLastest) {
+    //     functions.setError(res, "Time check out lastest required");
+    // }
     else if (!idTypeCalculateWork) {
         functions.setError(res, "Id type calculation work required");
     } else {

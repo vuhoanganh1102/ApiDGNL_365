@@ -20,7 +20,8 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
 const Users = require('../models/Users');
-const fsPromises = require('fs').promises;
+
+const functions = require('../services/functions')
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -32,8 +33,6 @@ const MAX_IMG_SIZE = 2 * 1024 * 1024;
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
 dotenv.config();
-
-const PDFDocument = require('pdfkit');
 
 // check title
 const removeAccent = (str) => {
@@ -134,11 +133,11 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
     }
 };
 exports.getDatafindOne = async(model, condition) => {
-    return model.findOne(condition);
+    return model.findOne(condition).lean();
 };
 
 exports.getDatafind = async(model, condition) => {
-    return model.find(condition);
+    return model.find(condition).lean();
 }
 
 exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
@@ -171,16 +170,6 @@ exports.setError = async(res, message, code = 500) => {
 exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
-};
-// hàm tìm id max Quản Lí Chung
-exports.getMaxIDQLC = async(model) => {
-    const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
-    return maxUser.idQLC;
-};
-// hàm tìm idcompany max 
-exports.getMaxIDcompany = async(model) => {
-    const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
-    return maxIDcompany.companyId;
 };
 
 // hàm check định dạng ảnh
@@ -286,7 +275,7 @@ exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage/TimViec365')
 //  hàm upload video ở kho ảnh
 exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
 
-// hàm upload video ở cập nhập video
+// hàm upload video ở cập nhập KhoAnh
 exports.uploadVideo = multer({ storage: storageMain('../Storage/TimViec365') })
 
 //hàm upload file ứng viên
@@ -399,9 +388,9 @@ exports.createToken = async(data, time) => {
 };
 
 // hàm lấy data từ axios 
-exports.getDataAxios = async(url, condition, method = "post") => {
-    return await await axios({
-        method: method,
+exports.getDataAxios = async(url, condition) => {
+    return await axios({
+        method: "post",
         url: url,
         data: condition,
         headers: { "Content-Type": "multipart/form-data" }
@@ -452,7 +441,7 @@ exports.getDataSex = async() => {
 };
 
 exports.pageFind = async(model, condition, sort, skip, limit) => {
-    return model.find(condition).sort(sort).skip(skip).limit(limit);
+    return model.find(condition).sort(sort).skip(skip).limit(limit).lean();
 };
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
@@ -506,14 +495,9 @@ exports.findCount = async(model, filter) => {
 };
 //base64 decrypt image
 exports.decrypt = async(req, res, next) => {
-    try {
-        const base64 = req.body.base64;
-        console.log(base64);
-        req.file = JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
-        return next()
-    } catch (error) {
-        return next();
-    };
+    const base64 = req.body.base64;
+    req.file = Buffer.from(base64, 'base64').toString('utf-8');
+    return next();
 };
 exports.thresholds = [
     { minValue: 1000000, maxValue: 3000000, money: 2 },
@@ -572,6 +556,44 @@ exports.findOneAndUpdateUser = async(userId, projection, select) => {
     }, projection, select)
 };
 
+exports.getUrlLogoCompany = async(createTime, logo) => {
+    try {
+        if (logo != null) {
+            const time = new Date(createTime);
+            let d = time.getDate();
+            d = d < 10 ? "0" + d : d;
+            let m = time.getMonth() + 1;
+            m = m < 10 ? "0" + m : m;
+            const y = time.getFullYear();
+            return `http://210.245.108.202:3001/base365/timviec365/pictures/${y}/${m}/${d}/${logo}`;
+        } else {
+            return logo;
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+exports.getTokenUser = async(req, res, next) => {
+    if (req.headers.authorization) {
+        const token = req.headers.authorization;
+        return jwt.decode(token).data;
+    } else {
+        return null;
+    }
+}
+
+// hàm tìm id max Quản Lí Chung
+exports.getMaxIDQLC = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
+    return maxUser.idQLC;
+};
+// hàm tìm idcompany max 
+exports.getMaxIDcompany = async(model) => {
+    const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
+    return maxIDcompany.companyId;
+};
+
 //upload image cv,don, thu, syll
 
 exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
@@ -616,8 +638,6 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
         }
     }
 }
-
-
 
 // hàm  xóa  ảnh và video khi upload thất bại
 exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {

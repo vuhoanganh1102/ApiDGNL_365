@@ -100,7 +100,7 @@ const CVSchema = new mongoose.Schema({
         type: Number
     },
     cvPoint: {
-        type: Number,
+        type: Number
     },
 
 }, {

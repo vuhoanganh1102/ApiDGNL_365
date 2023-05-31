@@ -1,30 +1,30 @@
 const mongoose = require('mongoose');
-const saveCandidateSchema = new mongoose.Schema({
-    _id: {
-        type: Number,
-        required: true,
-    },
-
-    uscID: {
+const saveCandidateSchema = new mongoose.Schema(
+    {
+        _id:{
+            type: Number,
+            required: true,
+        },
         // id company
-        type: Number,
-        default: 0
-    },
-
-    userID: {
+        uscID: {
+            type: Number,
+            required: true
+        },
         //id  ứng viên
-        type: Number,
-        default: 0
-    },
-
-    saveTime: {
+        userID: {
+            type: Number,
+            default: 0
+        },
         // thời gian lưu
-        type: Date,
-        default: null
-    }
-}, {
-    collection: 'SaveCandidate',
-    versionKey: false,
-    timestamp: true
-})
-module.exports = mongoose.model("SaveCandidate", saveCandidateSchema);
+        saveTime: {
+            type: Date,
+            required: true
+        }
+    },
+    { collection: 'SaveCandidate',  
+    versionKey: false , 
+    timestamp:true
+  }  
+  )
+  module.exports = mongoose.model("SaveCandidate", saveCandidateSchema);
+
