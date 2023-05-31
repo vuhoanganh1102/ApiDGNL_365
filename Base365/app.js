@@ -66,7 +66,7 @@ app.use(express.static(path.join(__dirname, '../Storage')));
 
 
 app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/newTV365', newTV365Router)
+app.use('/api/timviec/new', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
 app.use('/api/timviec/blog', blogRouter)
@@ -75,7 +75,6 @@ app.use('/api/timviec/don', donRouter);
 app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
 app.use('/api/tool', toolAddDataRouter);
-app.use('/api/timviec/newTV365', newTV365Router);
 
 app.use('/api/timviec/priceList', priceListRouter);
 app.use('/api/timviec/trangVang', trangVangRouter);
