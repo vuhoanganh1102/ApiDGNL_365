@@ -9,9 +9,11 @@ const CV = require('../../models/Timviec365/CV/CV');
 const like = require('../../models/Timviec365/CV/like');
 const userUnset = require('../../models/Timviec365/UserOnSite/Candicate/UserUnset');
 const newTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
-const nopHoSo = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
-const luuViecLam = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
-//mã hóa mật khẩu
+const applyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
+const userSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
+const pointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed');
+const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost')
+    //mã hóa mật khẩu
 const md5 = require('md5');
 //token
 var jwt = require('jsonwebtoken');
@@ -616,37 +618,37 @@ exports.RegisterB2CvSite = async(req, res, next) => {
 //ứng viên đăng nhập
 exports.loginUv = async(req, res, next) => {
     try {
-        if (req.body.phoneTK && req.body.password) {
-            const phoneTK = req.body.phoneTK
-            const password = req.body.password
 
-            if (req.body.account && req.body.password) {
-                const type = 0;
-                const account = req.body.account;
-                const password = req.body.password;
 
-                let checkPhoneNumber = await functions.checkPhoneNumber(account);
-                if (checkPhoneNumber) {
-                    var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: 0 });
-                } else {
-                    var findUser = await functions.getDatafindOne(Users, { email: account, type: 0 });
-                }
+        if (req.body.account && req.body.password) {
+            const type = 0;
+            const account = req.body.account;
+            const password = req.body.password;
 
-                if (!findUser) {
-                    return functions.setError(res, "Không tồn tại tài khoản", 200)
-                }
-                let checkPassword = await functions.verifyPassword(password, findUser.password)
-                if (!checkPassword) {
-                    return functions.setError(res, "Mật khẩu sai", 200)
-                }
-
-                const token = await functions.createToken(findUser, "2d");
-                return functions.success(res, 'Đăng nhập thành công', { token });
+            let checkPhoneNumber = await functions.checkPhoneNumber(account);
+            if (checkPhoneNumber) {
+                var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: 0 });
+            } else {
+                var findUser = await functions.getDatafindOne(Users, { email: account, type: 0 });
             }
 
+            if (!findUser) {
+                return functions.setError(res, "Không tồn tại tài khoản", 200)
+            }
+            let checkPassword = await functions.verifyPassword(password, findUser.password)
+            if (!checkPassword) {
+                return functions.setError(res, "Mật khẩu sai", 200)
+            }
+
+            const token = await functions.createToken(findUser, "2d");
+            return functions.success(res, 'Đăng nhập thành công', { token });
         }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi đăng nhập", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
+
 
 // trang qlc trong hoàn thiện hồ sơ
 exports.completeProfileQlc = async(req, res, next) => {
@@ -882,6 +884,7 @@ exports.updateContactInfo = async(req, res, next) => {
                 city: city,
                 district: district,
                 avatarUser: avatarUser.filename,
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
                     birthday: birthday,
                     gender: gender,
@@ -920,6 +923,7 @@ exports.updateDesiredJob = async(req, res, next) => {
             let candiMoneyMax = req.body.money_max
 
             let updateUser = await functions.findOneAndUpdateUser(userId, {
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
                     candiCateID: candiCateID,
                     exp: exp,
@@ -954,6 +958,7 @@ exports.updateCareerGoals = async(req, res, next) => {
             let userId = req.user.data.idTimViec365
             let candiMucTieu = req.body.muctieu
             let updateUser = await functions.findOneAndUpdateUser(userId, {
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
                     candiMucTieu: candiMucTieu,
                 }
@@ -978,6 +983,7 @@ exports.updateSkills = async(req, res, next) => {
             let userId = req.user.data.idTimViec365
             let candiSkills = req.body.kynang
             let updateUser = await functions.findOneAndUpdateUser(userId, {
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
                     candiSkills: candiSkills,
                 }
@@ -1007,6 +1013,7 @@ exports.updateReferencePersonInfo = async(req, res, next) => {
             let referencePersonPosition = req.body.referencePersonPosition
             let referencePersonCompany = req.body.referencePersonCompany
             let updateUser = await functions.findOneAndUpdateUser(userId, {
+                updatedAt: new Date(Date.now()),
                 inForPerson: {
                     referencePersonName: referencePersonName,
                     referencePersonEmail: referencePersonEmail,
@@ -1036,6 +1043,7 @@ exports.updateIntroVideo = async(req, res, next) => {
             if (req.file && !videoLink) {
                 let videoName = req.file.filename
                 let updateUser = await functions.findOneAndUpdateUser(userId, {
+                    updatedAt: new Date(Date.now()),
                     inForPerson: {
                         video: videoName,
                         videoType: 0
@@ -1095,7 +1103,8 @@ exports.addDegree = async(req, res, next) => {
             let updateUser = await functions.findOneAndUpdateUser(userId, {
                 $push: {
                     "inForPerson.candiDegree": addDegree
-                }
+                },
+                updatedAt: new Date(Date.now()),
             })
             if (updateUser) {
                 functions.success(res, "Thêm bằng cấp học vấn thành công");
@@ -1150,6 +1159,7 @@ exports.updateDegree = async(req, res, next) => {
                 $set: {
                     "inForPerson.candiDegree.$": updateDegree
                 },
+                updatedAt: new Date(Date.now()),
             })
             if (updateUser) {
                 functions.success(res, "Cập nhật bằng cấp học vấn thành công");
@@ -1204,6 +1214,7 @@ exports.deleteDegree = async(req, res, next) => {
                 $pull: {
                     "inForPerson.candiDegree.$": deleteDegree
                 },
+                updatedAt: new Date(Date.now()),
             })
             if (updateUser) {
                 functions.success(res, "Xóa bằng cấp học vấn thành công");
@@ -1245,7 +1256,8 @@ exports.updateAvatarUser = async(req, res, next) => {
             if (req.file) {
                 let imageName = req.file.filename
                 let updateUser = await functions.findOneAndUpdateUser(userId, {
-                    avatarUser: imageName
+                    avatarUser: imageName,
+                    updatedAt: new Date(Date.now()),
                 })
                 if (updateUser) {
                     functions.success(res, "Cập nhật ảnh đại diện thành công");
@@ -1347,7 +1359,8 @@ exports.addNgoaiNgu = async(req, res, next) => {
             let updateUser = await functions.findOneAndUpdateUser(userId, {
                 $push: {
                     "inForPerson.candiNgoaiNgu": addNgoaiNgu
-                }
+                },
+                updatedAt: new Date(Date.now()),
             })
             if (updateUser) {
                 functions.success(res, "Thêm ngoại ngữ thành công");
@@ -1394,6 +1407,7 @@ exports.updateNgoaiNgu = async(req, res, next) => {
                 $set: {
                     "inForPerson.candiNgoaiNgu.$": updateNgoaiNgu
                 },
+                updatedAt: new Date(Date.now()),
             })
             if (updateUser) {
                 functions.success(res, "Cập nhật ngoại ngữ thành công");
@@ -1439,6 +1453,7 @@ exports.deleteNgoaiNgu = async(req, res, next) => {
                 $pull: {
                     "inForPerson.candiNgoaiNgu.$": deleteNgoaiNgu
                 },
+                updatedAt: new Date(Date.now()),
             })
             if (updateUser) {
                 functions.success(res, "Xóa Ngoại ngữ thành công");
@@ -1480,7 +1495,8 @@ exports.addExp = async(req, res, next) => {
             let updateUser = await functions.findOneAndUpdateUser(userId, {
                 $push: {
                     "inForPerson.candiExp": addExp
-                }
+                },
+                updatedAt: new Date(Date.now()),
             })
             if (updateUser) {
                 functions.success(res, "Thêm kinh nghiệm làm việc thành công");
@@ -1531,6 +1547,7 @@ exports.updateExp = async(req, res, next) => {
                 $set: {
                     "inForPerson.candiExp.$": updateExp
                 },
+                updatedAt: new Date(Date.now()),
             })
             if (updateUser) {
                 functions.success(res, "Cập nhật kinh nghiệm làm việc thành công");
@@ -1580,6 +1597,7 @@ exports.deleteExp = async(req, res, next) => {
                 $pull: {
                     "inForPerson.candiExp.$": deleteExp
                 },
+                updatedAt: new Date(Date.now()),
             })
             if (updateUser) {
                 functions.success(res, "Xóa kinh nghiệm làm việc thành công");
@@ -1836,6 +1854,64 @@ exports.candidateSavePost = async(req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi ứng viên lưu tin ứng tuyển", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//comment tin ứng tuyển
+exports.commentPost = async(req, res, next) => {
+    try {
+        if (req.user && req.body.url && req.body.cm_id && req.body.name && req.body.comment) {
+
+            let userId = req.user.data.idTimViec365
+            let url = req.body.url
+            let parentCmId = req.body.cm_id
+            let imageComment = req.file
+            let CommentName = req.body.name
+            let comment = req.body.comment
+            let hasTag = req.body.cm_hastag
+            let author = req.body.author
+
+            const maxID = await CommentPost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            if (maxID) {
+                newID = Number(maxID._id) + 1;
+            } else newID = 1
+
+            if (req.file) {
+                let addNewComment = new CommentPost({
+                    _id: newID,
+                    urlCm: url,
+                    parentCmId: parentCmId,
+                    comment: comment,
+                    commentName: CommentName,
+                    commentAvatar: req.user.data.avatarUser,
+                    image: imageComment.filename,
+                    timeComment: new Date(Date.now()),
+                })
+                addNewComment.save()
+                if (addNewComment) {
+                    functions.success(res, "Thêm bình luận thành công");
+                }
+            } else {
+                let addNewComment = new CommentPost({
+                    _id: newID,
+                    urlCm: url,
+                    parentCmId: parentCmId,
+                    comment: comment,
+                    commentName: CommentName,
+                    commentAvatar: req.user.data.avatarUser,
+                    timeComment: new Date(Date.now()),
+                })
+                addNewComment.save()
+                if (addNewComment) {
+                    functions.success(res, "Thêm bình luận thành công");
+                }
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi thêm kinh nghiệm làm việc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
