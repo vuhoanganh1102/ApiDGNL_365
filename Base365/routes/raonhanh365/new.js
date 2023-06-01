@@ -11,7 +11,12 @@ router.post('/postNew', formData.parse(), newRN.postNewMain, newRN.postNewElectr
 
 router.get('/getNewBeforeLogin', newRN.getNewBeforeLogin);
 
+// tìm kiếm tin
 router.get('/searchNew', newRN.searchNew);
 
+// tạo mới tin mua
 router.post('/createBuyNew',functions.checkToken, uploadFileImage.any(), newRN.createBuyNew)
+
+// update tin mua
+router.put('/updateBuyNew',functions.checkToken, uploadFileImage.any(), newRN.updateBuyNew)
 module.exports = router;

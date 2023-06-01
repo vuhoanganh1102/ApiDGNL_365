@@ -359,73 +359,241 @@ exports.searchNew = async (req, res, next) => {
 // tạo tin mua 
 exports.createBuyNew = async (req, res, next) => {
     try {
+        // lấy thông tin file từ req
         let File = req.files;
+        // khởi tạo các biến có thể có
         let tenderFile = null;
+
         let fileContentProcedureApply = null;
+
         let contentOnline = null;
+
         let instructionFile = null;
-        let { cateID, title, name, city, district, ward, apartmentNumber, description, bidExpirationTime, timeReceivebidding, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, until_tu, until_den, until_bidFee, phone, email } = req.body;
-        let userID = req.user.data._id;
-        let img = [];
-        let _id = await functions.getMaxID(New) + 1;
+
         let cityProcedure = req.body.cityProcedure || null;
+
         let districtProcedure = req.body.districtProcedure || null;
+
         let wardProcedure = req.body.wardProcedure || null;
+
+        // khai báo và gán giá trị các biến bắt buộc 
+        let { cateID, title, name, city, district, ward, apartmentNumber, description, bidExpirationTime, timeReceivebidding, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, until_tu, until_den, until_bidFee, phone, email } = req.body;
+
+        // lấy id user từ req
+        let userID = req.user.data._id;
+
+        //  tạo mảng img
+        let img = [];
+
+        //  lấy giá trị id lớn nhất rồi cộng thêm 1 tạo ra id mới
+        let _id = await functions.getMaxID(New) + 1;
+
+        // lấy thời gian hiện tại
         let createTime = new Date(Date.now());
+
+        // khai báo đây là tin mua với giá trị là 1
         let buySell = 1;
+
+        // kiểm tra các điều kiện bắt buộc 
         if (cateID && title && name && city && district && ward
             && apartmentNumber && description && timeReceivebidding
             && bidExpirationTime && status && timeNotiBiddingStart
             && timeNotiBiddingEnd && instructionContent && bidFee &&
             startvalue && endvalue && phone && email && until_tu && until_den && until_bidFee) {
+
+            // tạolink title từ title người dùng nhập
             let linkTitle = functions.createLinkTilte(title);
+
+            // kiểm tra title đã được người dùng tạo chưa
             let checktitle = await New.find({ userID, linkTitle });
             if (checktitle && checktitle.length !== 0) {
                 return functions.setError(res, 'The title already has a previous new word or does not have a keyword that is not allowed', 404)
             } else
+                // kiểm tra tiền nhập vào có phải số không
                 if (isNaN(bidFee) === true || isNaN(startvalue) === true || isNaN(endvalue) === true) {
                     return functions.setError(res, 'The input price is not a number');
                 }
+                // kiểm tra số điện thoại
                 else if (functions.checkPhoneNumber(phone) === false) {
                     return functions.setError(res, 'Invalid phone number');
                 }
+                // kiểm tra email
                 else if (functions.checkEmail(email) === false) {
                     return functions.setError(res, 'Invalid email');
                 }
-                else
-                    if (File && File.length !== 0) {
-                        for (let i = 0; i < File.length; i++) {
-                            if (File[i].fieldname === 'Image') {
-                                img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename) });
-                            }
-                            else if (File[i].fieldname === 'tenderFile') {
-                                tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
-                            } else if (File[i].fieldname === 'fileContentProcedureApply') {
-                                fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
-                            } else if (File[i].fieldname === 'instructionFile') {
-                                instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
-                            }
+                // kiểm tra file có tồn tại không
+                else if (File && File.length !== 0) {
+
+                    // khởi tạo vòng lặp
+                    for (let i = 0; i < File.length; i++) {
+
+                        // nếu trường gửi lên có tên Image
+                        if (File[i].fieldname === 'Image') {
+
+                            // thêm link của file vào mảng img
+                            img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename) });
                         }
 
-                    } else if (functions.checkDate(timeReceivebidding) && functions.checkDate(bidExpirationTime) && functions.checkDate(timeNotiBiddingStart) && functions.checkDate(timeNotiBiddingEnd)) {
-                        if (functions.checkTime(timeReceivebidding) === false || functions.checkTime(bidExpirationTime) === false || functions.checkTime(timeNotiBiddingStart) === false || functions.checkTime(timeNotiBiddingEnd) === false) {
-                            return functions.setError(res, 'Invalid date', 404)
+                        // tương tự
+                        else if (File[i].fieldname === 'tenderFile') {
+                            tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
+                            // tương tự
+                        } else if (File[i].fieldname === 'fileContentProcedureApply') {
+                            fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
+                            // tương tự
+                        } else if (File[i].fieldname === 'instructionFile') {
+                            instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
                         }
-
-
-                    } else {
-                        return functions.setError(res, 'Invalid date format', 404)
                     }
-          
+
+                }
+            if (functions.checkDate(timeReceivebidding) === true && functions.checkDate(bidExpirationTime) === true && functions.checkDate(timeNotiBiddingStart) === true && functions.checkDate(timeNotiBiddingEnd) === true) {
+                //  kiểm tra thời gian có nhỏ hơn thời gian hiện tại không
+                if (await functions.checkTime(timeReceivebidding) && await functions.checkTime(bidExpirationTime) && await functions.checkTime(timeNotiBiddingStart) && await functions.checkTime(timeNotiBiddingEnd)) {
+                    //  kiểm tra thời gian nộp hồ sơ và thời gian thông báo có hợp lệ không
+                    let date1 = new Date(timeReceivebidding);
+                    let date2 = new Date(bidExpirationTime);
+                    let date3 = new Date(timeNotiBiddingStart);
+                    let date4 = new Date(timeNotiBiddingEnd);
+                    if (date1 > date2 || date3 > date4 || date3 < date2) {
+                        return functions.setError(res, 'Nhập ngày không hợp lệ', 404)
+                    }
+                } else {
+                    return functions.setError(res, 'Ngày nhập vào nhỏ hơn ngày hiện tại', 404)
+                }
+            }
+            else {
+                return functions.setError(res, 'Invalid date format', 404)
+            }
+            // lưu dữ liệu vào DB
             const postNew = new New({ _id, cateID, title, linkTitle, userID, buySell, createTime, img, tenderFile, fileContentProcedureApply, contentOnline, instructionFile, cityProcedure, districtProcedure, wardProcedure, name, city, district, ward, apartmentNumber, description, timeReceivebidding, bidExpirationTime, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, phone, email, until_tu, until_den, until_bidFee });
             await postNew.save();
         } else {
             return functions.setError(res, 'missing data', 404)
         }
-
         return functions.success(res, "post new success")
     } catch (error) {
         return functions.setError(res, error)
     }
 }
 
+// sửa tin mua
+exports.updateBuyNew = async (req, res, next) => {
+    try {
+        // lấy thông tin file từ req
+        let File = req.files;
+        // khởi tạo các biến có thể có
+        let tenderFile = null;
+
+        let fileContentProcedureApply = null;
+
+        let contentOnline = null;
+
+        let instructionFile = null;
+
+        let cityProcedure = req.body.cityProcedure || null;
+
+        let districtProcedure = req.body.districtProcedure || null;
+
+        let wardProcedure = req.body.wardProcedure || null;
+
+        // khai báo và gán giá trị các biến bắt buộc 
+        let {id, cateID, title, name, city, district, ward, apartmentNumber, description, bidExpirationTime, timeReceivebidding, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, until_tu, until_den, until_bidFee, phone, email } = req.body;
+
+        // lấy id user từ req
+        let userID = req.user.data._id;
+
+        //  tạo mảng img
+        let img = [];
+
+        // lấy thời gian hiện tại
+        let updateTime = new Date(Date.now());
+
+
+        // kiểm tra các điều kiện bắt buộc 
+        if (id && cateID && title && name && city && district && ward
+            && apartmentNumber && description && timeReceivebidding
+            && bidExpirationTime && status && timeNotiBiddingStart
+            && timeNotiBiddingEnd && instructionContent && bidFee &&
+            startvalue && endvalue && phone && email && until_tu && until_den && until_bidFee) {
+
+            // kiểm tra tin có tồn tại không
+            let data_New = await New.findById(id);
+            if(!data_New){
+                return functions.setError(res, 'New is not exits');
+            }
+            
+            // tạolink title từ title người dùng nhập
+            let linkTitle = functions.createLinkTilte(title);
+
+            // kiểm tra title đã được người dùng tạo chưa
+            let checktitle = await New.find({ userID, linkTitle });
+            if (checktitle && checktitle.length > 1) {
+                return functions.setError(res, 'The title already has a previous new word or does not have a keyword that is not allowed', 404)
+            } else
+                // kiểm tra tiền nhập vào có phải số không
+                if (isNaN(bidFee) === true || isNaN(startvalue) === true || isNaN(endvalue) === true) {
+                    return functions.setError(res, 'The input price is not a number');
+                }
+                // kiểm tra số điện thoại
+                else if (functions.checkPhoneNumber(phone) === false) {
+                    return functions.setError(res, 'Invalid phone number');
+                }
+                // kiểm tra email
+                else if (functions.checkEmail(email) === false) {
+                    return functions.setError(res, 'Invalid email');
+                }
+                // kiểm tra file có tồn tại không
+                else if (File && File.length !== 0) {
+
+                    // khởi tạo vòng lặp
+                    for (let i = 0; i < File.length; i++) {
+
+                        // nếu trường gửi lên có tên Image
+                        if (File[i].fieldname === 'Image') {
+
+                            // thêm link của file vào mảng img
+                            img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename) });
+                        }
+
+                        // tương tự
+                        else if (File[i].fieldname === 'tenderFile') {
+                            tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
+                            // tương tự
+                        } else if (File[i].fieldname === 'fileContentProcedureApply') {
+                            fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
+                            // tương tự
+                        } else if (File[i].fieldname === 'instructionFile') {
+                            instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
+                        }
+                    }
+
+                }
+            if (functions.checkDate(timeReceivebidding) === true && functions.checkDate(bidExpirationTime) === true && functions.checkDate(timeNotiBiddingStart) === true && functions.checkDate(timeNotiBiddingEnd) === true) {
+                //  kiểm tra thời gian có nhỏ hơn thời gian hiện tại không
+                if (await functions.checkTime(timeReceivebidding) && await functions.checkTime(bidExpirationTime) && await functions.checkTime(timeNotiBiddingStart) && await functions.checkTime(timeNotiBiddingEnd)) {
+                    //  kiểm tra thời gian nộp hồ sơ và thời gian thông báo có hợp lệ không
+                    let date1 = new Date(timeReceivebidding);
+                    let date2 = new Date(bidExpirationTime);
+                    let date3 = new Date(timeNotiBiddingStart);
+                    let date4 = new Date(timeNotiBiddingEnd);
+                    if (date1 > date2 || date3 > date4 || date3 < date2) {
+                        return functions.setError(res, 'Nhập ngày không hợp lệ', 404)
+                    }
+                } else {
+                    return functions.setError(res, 'Ngày nhập vào nhỏ hơn ngày hiện tại', 404)
+                }
+            }
+            else {
+                return functions.setError(res, 'Invalid date format', 404)
+            }
+           
+           await New.findByIdAndUpdate(id,{ title, linkTitle,updateTime, img, tenderFile, fileContentProcedureApply, contentOnline, instructionFile, cityProcedure, districtProcedure, wardProcedure, name, city, district, ward, apartmentNumber, description, timeReceivebidding, bidExpirationTime, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, phone, email, until_tu, until_den, until_bidFee });
+        } else {
+            return functions.setError(res, 'missing data', 404)
+        }
+        return functions.success(res, "post new success")
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
