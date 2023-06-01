@@ -1826,6 +1826,15 @@ exports.candidateApply = async(req, res, next) => {
                 newApplyForJob.save()
                 if (newApplyForJob) {
                     functions.success(res, "ứng viên ứng tuyển thành công")
+                    functions.getDataAxios("http://43.239.223.142:9000/api/V2/Notification/NotificationTimviec365", {
+                        EmployeeId: req.user.data._id,
+                        CompanyId: checkNew.userID,
+                        Type: 2,
+                        // Link: ??,
+                        Position: checkNew.title,
+                        City: checkNew.cityID,
+                        Career: cate.name,
+                    })
                 }
             }
         } else {
@@ -1851,7 +1860,10 @@ exports.candidateSavePost = async(req, res, next) => {
             let checkUserSavePost = await functions.getDatafindOne(userSavePost, { userID: userId, newID: newId })
             let checkNew = await functions.getDatafindOne(newTV365, { _id: newId })
             if (checkUserSavePost) {
-                return functions.setError(res, "Ứng viên đã nộp hồ sơ", 400);
+                let deleteSavePost = await userSavePost.deleteOne({ userID: userId, newID: newId })
+                if (deleteSavePost) {
+                    functions.success(res, "ứng viên bỏ lưu tin ứng tuyển thành công")
+                }
             } else if (!checkNew) {
                 return functions.setError(res, "Không tồn tại tin đăng này", 400);
             } else {

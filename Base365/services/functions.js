@@ -144,18 +144,6 @@ exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
 };
 
-// hàm validate email
-exports.checkEmail = async(email) => {
-    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-    return gmailRegex.test(email);
-};
-
-// hàm validate link
-exports.checkLink = async(link) => {
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-    return urlRegex.test(yourUrlVariable);
-};
-
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
     return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
