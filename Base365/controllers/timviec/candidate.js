@@ -19,6 +19,7 @@ const md5 = require('md5');
 var jwt = require('jsonwebtoken');
 const axios = require('axios');
 const functions = require('../../services/functions');
+const sendMail = require('../../services/sendMail');
 const { token } = require('morgan');
 const fs = require('fs');
 const path = require('path');
@@ -1852,32 +1853,36 @@ exports.candidateSavePost = async(req, res, next) => {
         if (req.user && req.body.idtin) {
             let newId = req.body.idtin
             let userId = req.user.data.idTimViec365
-            let newIDMax
-            const maxID = await userSavePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            if (maxID) {
-                newIDMax = Number(maxID._id) + 1;
-            } else newIDMax = 1
-            let checkUserSavePost = await functions.getDatafindOne(userSavePost, { userID: userId, newID: newId })
+
             let checkNew = await functions.getDatafindOne(newTV365, { _id: newId })
-            if (checkUserSavePost) {
-                let deleteSavePost = await userSavePost.deleteOne({ userID: userId, newID: newId })
-                if (deleteSavePost) {
-                    functions.success(res, "ứng viên bỏ lưu tin ứng tuyển thành công")
-                }
-            } else if (!checkNew) {
-                return functions.setError(res, "Không tồn tại tin đăng này", 400);
-            } else {
-                let newUserSavePost = new userSavePost({
-                    _id: newIDMax,
-                    userID: userId,
-                    newID: newId,
-                    saveTime: new Date(Date.now()),
-                })
-                newUserSavePost.save()
-                if (newUserSavePost) {
-                    functions.success(res, "ứng viên lưu tin ứng tuyển thành công")
+                //check xem có tin hay ko
+            if (checkNew) {
+                let checkUserSavePost = await functions.getDatafindOne(userSavePost, { userID: userId, newID: newId })
+                    //check ứng viên đã lưu tin hay ko
+                if (checkUserSavePost) {
+                    let deleteSavePost = await userSavePost.deleteOne({ userID: userId, newID: newId })
+                    if (deleteSavePost) {
+                        functions.success(res, "ứng viên bỏ lưu tin ứng tuyển thành công")
+                    }
+                } else {
+                    let newIDMax
+                    const maxID = await userSavePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                    if (maxID) {
+                        newIDMax = Number(maxID._id) + 1;
+                    } else newIDMax = 1
+                    let newUserSavePost = new userSavePost({
+                        _id: newIDMax,
+                        userID: userId,
+                        newID: newId,
+                        saveTime: new Date(Date.now()),
+                    })
+                    newUserSavePost.save()
+                    if (newUserSavePost) {
+                        functions.success(res, "ứng viên lưu tin ứng tuyển thành công")
+                    }
                 }
             }
+
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
