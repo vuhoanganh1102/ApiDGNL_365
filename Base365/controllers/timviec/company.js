@@ -47,7 +47,7 @@ exports.register = async(req, res, next) => {
                 CheckPhoneNumber = await functions.checkPhoneNumber(phone);
             if ((CheckPhoneNumber && CheckEmail) == true) {
                 //  check email co trong trong database hay khong
-                let user = await functions.getDatafindOne(Users, { email })
+                let user = await functions.getDatafindOne(Users, { email: email, type: 1 })
                 if (user == null) {
                     //check video
                     if (req.files.videoType) {
@@ -180,9 +180,9 @@ exports.register = async(req, res, next) => {
                     await company.save();
                     // gửi cho bộ phận nhân sự qua appchat
                     // await functions.getDataAxios('http://43.239.223.142:9000/api/message/SendMessage_v2', dataSendChatApp)
-                    let companyUnset = await functions.getDatafindOne(CompanyUnset, { email })
+                    let companyUnset = await functions.getDatafindOne(CompanyUnset, { email: email, type: 1 })
                     if (companyUnset != null) {
-                        await functions.getDataDeleteOne(CompanyUnset, { email })
+                        await functions.getDataDeleteOne(CompanyUnset, { email: email, type: 1 })
                     }
 
                     return functions.success(res, 'đăng ký thành công')
@@ -1268,17 +1268,29 @@ exports.luuUV = async(req, res, next) => {
     try {
         let idCompany = req.user.data.idTimViec365;
         let idUser = req.body.user_id;
+        let type = req.body.type
         if (idUser) {
-            let maxID = await functions.getMaxID(SaveCandidate) || 0;
-            let newID = maxID._id || 0;
-            const uv = new SaveCandidate({
-                _id: Number(newID) + 1,
-                uscID: idCompany,
-                userID: idUser,
-                saveTime: new Date().getTime()
-            })
-            await uv.save();
-            return functions.success(res, 'lưu thành công', )
+            if (type == 1) {
+                let maxID = await functions.getMaxID(SaveCandidate) || 0;
+                let newID = maxID._id || 0;
+                const uv = new SaveCandidate({
+                    _id: Number(newID) + 1,
+                    uscID: idCompany,
+                    userID: idUser,
+                    saveTime: new Date().getTime()
+                })
+                await uv.save();
+                return functions.success(res, 'lưu thành công', )
+            }
+            if (type == 2) {
+                let deleteUv = await functions.getDataDeleteOne(SaveCandidate, {
+                    uscID: idCompany,
+                    userID: idUser,
+                })
+                if (deleteUv) {
+                    return functions.success(res, 'bỏ lưu thành công', )
+                }
+            }
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)
     } catch (error) {
