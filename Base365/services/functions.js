@@ -652,3 +652,36 @@ exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
         })
     }
 }
+
+//thay thế các kí tự đặc biệt trong tiêu đề
+exports.replaceKeywordSearch = async(lower, keyword) => {
+    if (lower === 1) {
+        keyword = keyword.toLowerCase();
+    }
+    const arrRep = ["'", '"', "-", "\\+", "=", "\\*", "\\?", "\\/", "!", "~", "#", "@", "%", "$", "\\^", "&", "\\(", "\\)", ";", ":", "\\\\", "\\.", ",", "\\[", "\\]", "{", "}", "‘", "’", '“', '”', '<', '>'];
+    keyword = arrRep.reduce((str, rep) => {
+        return str.replace(new RegExp(rep, "g"), " ");
+    }, keyword);
+    keyword = keyword.replace(/ {2,}/g, " ");
+    return keyword;
+};
+
+exports.replaceMQ = async(text) => {
+    text = text.replace(/\\'/g, "'");
+    text = text.replace(/'/g, "");
+    text = text.replace(/\\/g, "");
+    text = text.replace(/"/g, "");
+    return text;
+}
+
+//bỏ những từ khóa trong tiêu đề
+exports.removerTinlq = async(string) => {
+    var arr_remove = ["lương", "nhân", "trình", "viên", "chuyên", "cao", "tuyển", "dụng", "hấp", "dẫn", "chi", "tiết", "công", "ty", "tnhh", "sx", "tm", "dv", "phòng", "tại", "biết", "về"];
+    var result = arr_remove.reduce(function(str, remove) {
+        return str.replace(new RegExp(remove, "gi"), "");
+    }, string);
+
+    result = result.trim().replace(/\s+/g, " "); // Loại bỏ khoảng trắng dư thừa
+
+    return result;
+}

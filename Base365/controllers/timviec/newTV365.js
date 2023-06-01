@@ -9,6 +9,7 @@ const axios = require('axios');
 const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
 const LikePost = require('../../models/Timviec365/UserOnSite/LikePost');
 const Keyword = require('../../models/Timviec365/UserOnSite/Company/Keywords')
+const Blog = require('../../models/Timviec365/Blog/Posts')
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -735,7 +736,7 @@ exports.detail = async(req, res, next) => {
             post.shareName = ListSharePost
 
 
-            let findAddress = await Keyword.findOne({
+            let findAddress = await Keyword.find({
                 cbID: 0,
                 cateID: 0,
                 name: '',
@@ -747,24 +748,79 @@ exports.detail = async(req, res, next) => {
                 cityID: 1,
                 qhID: 1,
                 type: 1
-            })
+            }).limit(20)
+
+            let title = post.title.toLowerCase()
 
             let keyName = ["thực tập", "chuyên viên", "nhân viên", "trưởng phòng", "trưởng nhóm",
                 "trợ lý", "phó trưởng phòng", "phó giám đốc", "giám đốc", "quản lý", "quản đốc"
             ]
-            let findChucDanh = await Keyword.findOne({
-                name: { $in: keyName },
+
+            let keyTitle
+            for (let i = 0; i < keyName.length; i++) {
+                if (title.includes(keyName[i]) == true) {
+                    keyTitle = keyName[i]
+                    break;
+                }
+            }
+
+            let findChucDanh = await Keyword.find({
+                name: { $regex: keyTitle, $options: 'i' },
                 cateLq: { $in: post.cateID },
                 cityID: { $in: post.cityID },
-                qhID: { $in: post.districtID }
+                $or: [
+                    { qhID: { $in: post.districtID } },
+                    { qhID: { $nin: post.districtID } }
+                ]
             }, {
                 _id: 1,
                 cateID: 1,
                 cityID: 1,
                 qhID: 1,
                 type: 1
+            }).sort({ qhID: { $in: post.districtID } ? -1 : 1 }).limit(20)
+
+
+            let keyNameLq1 = ["tuyển", "gấp", "hot", "tại", "thực tập", "nhân viên", "chuyên viên", "giám đốc",
+                "trưởng phòng", "trưởng nhóm", "trợ lý", "phó trưởng phòng", "phó giám đốc", "quản lý", "quản đốc"
+            ]
+
+            const keyNameLq2 = `(${keyNameLq1.join('|')})`;
+            let findTuKhoaLienQuan = await Keyword.find({
+                name: { $not: { $regex: keyNameLq2, $options: 'i' } },
+                name: { $ne: "" },
+                cityID: 0,
+                cateLq: { $in: post.cateID },
+                cbID: 0,
+                $or: [
+                    { qhID: { $in: post.districtID } },
+                    { qhID: { $nin: post.districtID } }
+                ]
+            }, {
+                _id: 1,
+                cateID: 1,
+                cityID: 1,
+                qhID: 1,
+                type: 1
+            }).sort({ qhID: { $in: post.districtID } ? -1 : 1 }).limit(20);
+
+            let keyBlogLienQuan1 = await functions.replaceMQ(post.title)
+            let keyBlogLienQuan2 = await functions.replaceKeywordSearch(1, keyBlogLienQuan1)
+            let keyBlogLienQuan3 = await functions.removerTinlq(keyBlogLienQuan2)
+            let regexKeyBlog = new RegExp(keyBlogLienQuan3.replace(/\s+/g, ".*"), "i");
+
+            let huongDan = await Blog.find({
+                title: { $regex: regexKeyBlog }
+            }, { _id: 1, title: 1, titleRewrite: 1 }).limit(20);
+            return functions.success(res, "làm mới bài tuyển dụng thành công", {
+                data: post,
+                statusApply,
+                statusSavePost,
+                Address: findAddress,
+                ChucDanh: findChucDanh,
+                TuKhoaLienQuan: findTuKhoaLienQuan,
+                HuongDan: huongDan
             })
-            return functions.success(res, "làm mới bài tuyển dụng thành công", { data: post, statusApply, statusSavePost, findAddress, findChucDanh })
         }
         return functions.setError(res, 'thiếu dữ liệu', 404)
 
