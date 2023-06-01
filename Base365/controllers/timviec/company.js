@@ -39,8 +39,7 @@ exports.register = async(req, res, next) => {
             listIDKD = [],
             idKD = 0,
             empID = 0;
-        console.log(req.files)
-            // check dữ liệu không bị undefined
+        // check dữ liệu không bị undefined
         if ((username && password && city && district &&
                 address && email && phone) !== undefined) {
             // validate email,phone
@@ -51,7 +50,7 @@ exports.register = async(req, res, next) => {
                 let user = await functions.getDatafindOne(Users, { email })
                 if (user == null) {
                     //check video
-                    if (videoType) {
+                    if (req.files.videoType) {
                         if (videoType.length == 1) {
                             let checkVideo = await functions.checkVideo(videoType[0]);
                             if (checkVideo) {
@@ -69,7 +68,7 @@ exports.register = async(req, res, next) => {
                     }
 
                     //check ảnh
-                    if (avatarUser) {
+                    if (req.files.logo) {
                         if (avatarUser.length == 1) {
                             let checkImg = await functions.checkImage(avatarUser[0].path);
                             if (checkImg) {
@@ -112,7 +111,7 @@ exports.register = async(req, res, next) => {
                     }
                     // lấy danh sách id bộ phận
                     let listKD = await functions.getDatafind(AdminUser, { bophan: 1 });
-                    let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1);
+                    let listUser = await Users.find({ inForCompany: { $ne: null }, 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1);
                     if (listUser.length > 0) {
                         let idKDUser = listUser[0].inForCompany.idKD;
                         for (let i = 0; i < listKD.length; i++) {
@@ -188,29 +187,29 @@ exports.register = async(req, res, next) => {
 
                     return functions.success(res, 'đăng ký thành công')
                 } else {
-                    if (videoType) {
+                    if (req.files.videoType) {
                         await functions.deleteImg(videoType[0])
                     }
-                    if (avatarUser) {
+                    if (req.files.logo) {
                         await functions.deleteImg(avatarUser[0])
                     }
                     return functions.setError(res, 'email đã tồn tại', 404)
                 }
             } else {
-                if (videoType) {
+                if (req.files.videoType) {
                     await functions.deleteImg(videoType[0])
                 }
-                if (avatarUser) {
+                if (req.files.logo) {
                     await functions.deleteImg(avatarUser[0])
                 }
                 return functions.setError(res, 'email hoặc số điện thoại định dạng không hợp lệ', 404)
             }
 
         } else {
-            if (videoType) {
+            if (req.files.videoType) {
                 await functions.deleteImg(videoType[0])
             }
-            if (avatarUser) {
+            if (req.files.logo) {
                 await functions.deleteImg(avatarUser[0])
             }
 
@@ -218,10 +217,10 @@ exports.register = async(req, res, next) => {
         }
     } catch (error) {
         console.log(error)
-        if (videoType) {
+        if (req.files.videoType) {
             await functions.deleteImg(videoType[0])
         }
-        if (avatarUser) {
+        if (req.files.logo) {
             await functions.deleteImg(avatarUser[0])
         }
         return functions.setError(res, error)
