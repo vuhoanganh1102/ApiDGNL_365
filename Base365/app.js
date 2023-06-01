@@ -76,7 +76,7 @@ app.use('/api/timviec/ssl', soSanhLuongRouter);
 app.use('/api/timviec/mail365', mail365Router);
 
 // api rao nhanh
-app.use('/api/raonhanh/news', newRN365Router);
+app.use('/api/raonhanh/new', newRN365Router);
 app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 
 // API quản lí chung
@@ -114,8 +114,8 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-app.listen(3002, () => {
-    console.log("Connected to databse");
-    console.log("Backend is running on http://localhost:3002")
-})
+// app.listen(3000, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3002")
+// })
 module.exports = app;

@@ -21,11 +21,16 @@ const newSchema = new mongoose.Schema({
     },
     money: {
         // giá tiền đăng
-        type: String,
+        type: Number,
         default: 0,
     },
+    startvalue:{
+        // giá sàn dự kiến
+        type: Number,
+        default: 0
+    },
     endvalue: {
-        // Giá kết thúc
+        // Giá sàn kết thúc
         type: Number,
         default: 0
     },
@@ -110,6 +115,7 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    
     address: [{
         // địa chỉ người mua/bán
         type: String,
@@ -205,10 +211,95 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    timeReceivebidding :{
+        // thời gian nhận hồ sơ mời thầu
+        type: Date,
+        default: null
+    },
+    timeEndReceivebidding :{
+        // thời gian kết thúc nhận hồ sơ mời thầu
+        type: Date,
+        default: null
+    },
+    timeNotiBiddingStart:{
+        // thời gian bắt đầu thông báo kết quả trúng thầu
+        type: Date,
+        default: null
+    },
+    timeNotiBiddingEnd:{
+        // thời gian bắt đầu thông báo kết quả trúng thầu
+        type: Date,
+        default: null
+    },
     authen: {
         // 
         type: Number,
         default: 0
+    },
+    tenderFile: {
+        // file thông tin đấu thầu
+        type: String,
+        default: null,
+    },
+    fileContentProcedureApply: {
+        // Thủ tục nộp hồ sơ mời thầu
+        type: String,
+        default: null
+    },
+    contentOnline:{
+         // nội dung nộp hồ sơ online
+         type: String,
+         default: null
+    },
+    fileContent: {
+        // file nộp hồ sơ
+        type: String,
+        default: null
+    },
+    instructionContent: {
+        // nội dung chỉ dẫn
+        type: String,
+        default: null
+    },
+    instructionFile: {
+        // file chỉ dẫn
+        type: String,
+        default: null
+    },
+    until_tu: {
+        // loại tiền từ mức. 1 VND , 2 USD ,3 EURO
+        type: String,
+        default: 1
+    },
+    until_den: {
+        // loại tiền đến mức. 1 VND , 2 USD ,3 EURO
+        type: String,
+        default: 1
+    },
+    until_bidFee: {
+        // loại tiền phí dự thầu. 1 VND , 2 USD ,3 EURO
+        type: String,
+        default: 1
+    },
+    bidFee: {
+        // phí dự thầu
+        type: Number,
+        default: null
+    },
+    desFile: {
+        // file mô tả
+        type: String,
+        default: null,
+    },
+    procedureFile: {
+        // file thủ tục
+        type: String,
+        default: null
+    },
+    file: {
+        // file hồ sơ
+        type: String,
+        default: null
     },
     pinCount: {
         // số lượng tin ghim
@@ -239,6 +330,21 @@ const newSchema = new mongoose.Schema({
         // số lượng đã bán
         type: Number,
         default: 0
+    },
+    cityProcedure:{
+        // địa chỉ nộp hồ sơ đấu thầu offline
+        type: String,
+        default: null
+    },
+    districtProcedure:{
+        // địa chỉ nộp hồ sơ đấu thầu offline
+        type: String,
+        default: null
+    },
+    wardProcedure:{
+        // địa chỉ nộp hồ sơ đấu thầu offline
+        type: String,
+        default: null
     },
     totalSold: {
         // tổng số lượng
@@ -825,61 +931,7 @@ const newSchema = new mongoose.Schema({
             type: Date,
             default: 0
         },
-        // thông tin chi tiết đăng tin mua
-        newBuy: {
-            type: Object,
-            default: null,
-            tenderFile: {
-                // file dấu thầu
-                type: String,
-                default: null,
-            },
-            fileContenApply: {
-                // nội dung nộp hồ sơ
-                type: String,
-                default: null
-            },
-            fileContent: {
-                // file nộp hồ sơ
-                type: String,
-                default: null
-            },
-            instructionContent: {
-                // nội dung chỉ dẫn
-                type: String,
-                default: null
-            },
-            instructionFile: {
-                // file chỉ dẫn
-                type: String,
-                default: null
-            },
-            until: {
-                // 1 VND , 2 USD ,3 EURO
-                type: Number,
-                default: 1
-            },
-            bidFee: {
-                // phí dự thầu
-                type: String,
-                default: null
-            },
-            desFile: {
-                // file mô tả
-                type: String,
-                default: null,
-            },
-            procedureFile: {
-                // file thủ tục
-                type: String,
-                default: null
-            },
-            file: {
-                // file hồ sơ
-                type: String,
-                default: null
-            }
-        }
+
     },
     // thông tin bán hàng
     infoSell: {

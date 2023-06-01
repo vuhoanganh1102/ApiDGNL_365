@@ -227,12 +227,11 @@ exports.postNewVehicle = async (req, res, next) => {
 
 
 // lấy tin trước đăng nhập
-exports.getNewsBeforeLogin = async (req, res, next) => {
+exports.getNewBeforeLogin = async (req, res, next) => {
     try {
-        let searchitem = {_id: 1, title: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1}
-
+        let searchitem = { _id: 1, title: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
         // tìm tin được ưu tiên đẩy lên đầu với trường pinHome
-        let data = await New.find({ pinHome: 1 }, searchitem).limit(50);
+        let data = await New.find({ pinHome: 1, buySell: 2 }, searchitem).limit(50);
         if (data) {
             // lặp để chèn link ảnh
             for (let i = 0; i < data.length; i++) {
@@ -249,7 +248,7 @@ exports.getNewsBeforeLogin = async (req, res, next) => {
         // nếu dữ liệu ưu tiên ít hơn 50 thì thêm dữ liệu thường vào
         if (data.length < 50) {
             // lấy data với những tin có ngày cập nhật mới nhất
-            let data_new = await New.find({}, searchitem).sort({ updateTime: -1 }).limit(50 - data.length);
+            let data_new = await New.find({ buySell: 2 }, searchitem).sort({ updateTime: -1 }).limit(50 - data.length);
             // lặp để chèn link ảnh
             for (let i = 0; i < data_new.length; i++) {
                 // chèn link ảnh
@@ -270,21 +269,26 @@ exports.getNewsBeforeLogin = async (req, res, next) => {
     }
 }
 // tìm kiếm tin 
-exports.searchNews = async (req, res, next) => {
+exports.searchNew = async (req, res, next) => {
     try {
-        let searchItem = {_id: 1, title: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1}
+        let user = await User.findOne({ _id: 5 });
+        let token = await functions.createToken(user, "2d");
+        token1 = 'Bear ' + token;
+        console.log("🚀 ~ file: new.js:278 ~ exports.searchNews= ~ token:", token1)
+        let searchItem = { _id: 1, title: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
+
         // trường hợp không nhập gì mà tìm kiếm
         if (!req.body.key || req.body.key === undefined) {
-            let data = await New.find({}, searchItem).sort({ updateTime: -1 }).limit(50);
+            let data = await New.find({ buySell: 2 }, searchItem).sort({ updateTime: -1 }).limit(50);
             for (let i = 0; i < data.length; i++) {
                 data[i].image = await functions.getUrlLogoCompany(data[i].createTime, data[i].image);
                 if (data[i].img.length !== 0) {
                     for (let j = 0; j < data[i].img.length; j++) {
                         data[i].img[j].nameImg = await functions.getUrlLogoCompany(data[i].createTime, data[i].img[j].nameImg);
                     }
-                }         
+                }
             }
-         return functions.success(res, "get data success", { data })
+            return functions.success(res, "get data success", { data })
         }
         // lấy giá trị search key
         let search = req.body.key;
@@ -301,7 +305,7 @@ exports.searchNews = async (req, res, next) => {
             let data_search = await CategoryRaoNhanh365.find({ name: regex });
             if (data_search) {
                 // lấy data nếu có trong danh mục
-                let data = await New.find({ cateID: data_search[0]._id },searchItem).sort({ updateTime: -1 }).limit(50);
+                let data = await New.find({ cateID: data_search[0]._id, buySell: 2 }, searchItem).sort({ updateTime: -1 }).limit(50);
                 if (data) {
                     for (let i = 0; i < data.length; i++) {
                         data[i].image = await functions.getUrlLogoCompany(data[i].createTime, data[i].image);
@@ -309,13 +313,13 @@ exports.searchNews = async (req, res, next) => {
                             for (let j = 0; j < data[i].img.length; j++) {
                                 data[i].img[j].nameImg = await functions.getUrlLogoCompany(data[i].createTime, data[i].img[j].nameImg);
                             }
-                        }                      
+                        }
                     }
-                  return functions.success(res, "get data success", { data })
+                    return functions.success(res, "get data success", { data })
                 }
                 else {
                     // lấy data với tên của sản phẩm
-                    let data = await New.find({ name: regex },searchItem).limit(50);
+                    let data = await New.find({ name: regex, buySell: 2 }, searchItem).limit(50);
                     for (let i = 0; i < data.length; i++) {
                         data[i].image = await functions.getUrlLogoCompany(data[i].createTime, data[i].image);
                         if (data[i].img.length !== 0) {
@@ -330,7 +334,7 @@ exports.searchNews = async (req, res, next) => {
 
         } else {
             // tìm kiếm tin với id của danh mục đã tìm được
-            let data = await New.find({ cateID: query[0]._id },searchItem).limit(50);
+            let data = await New.find({ cateID: query[0]._id, buySell: 2 }, searchItem).limit(50);
             // đẩy dữ liệu vào mảng
             if (data) {
                 for (let i = 0; i < data.length; i++) {
@@ -341,7 +345,7 @@ exports.searchNews = async (req, res, next) => {
                         }
                     }
                 }
-                return  functions.success(res, "get data success", { data })
+                return functions.success(res, "get data success", { data })
             }
             else {
                 return functions.setError(res, "get data failed")
@@ -352,3 +356,76 @@ exports.searchNews = async (req, res, next) => {
         return functions.setError(res, "get data failed")
     }
 }
+// tạo tin mua 
+exports.createBuyNew = async (req, res, next) => {
+    try {
+        let File = req.files;
+        let tenderFile = null;
+        let fileContentProcedureApply = null;
+        let contentOnline = null;
+        let instructionFile = null;
+        let { cateID, title, name, city, district, ward, apartmentNumber, description, bidExpirationTime, timeReceivebidding, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, until_tu, until_den, until_bidFee, phone, email } = req.body;
+        let userID = req.user.data._id;
+        let img = [];
+        let _id = await functions.getMaxID(New) + 1;
+        let cityProcedure = req.body.cityProcedure || null;
+        let districtProcedure = req.body.districtProcedure || null;
+        let wardProcedure = req.body.wardProcedure || null;
+        let createTime = new Date(Date.now());
+        let buySell = 1;
+        if (cateID && title && name && city && district && ward
+            && apartmentNumber && description && timeReceivebidding
+            && bidExpirationTime && status && timeNotiBiddingStart
+            && timeNotiBiddingEnd && instructionContent && bidFee &&
+            startvalue && endvalue && phone && email && until_tu && until_den && until_bidFee) {
+            let linkTitle = functions.createLinkTilte(title);
+            let checktitle = await New.find({ userID, linkTitle });
+            if (checktitle && checktitle.length !== 0) {
+                return functions.setError(res, 'The title already has a previous new word or does not have a keyword that is not allowed', 404)
+            } else
+                if (isNaN(bidFee) === true || isNaN(startvalue) === true || isNaN(endvalue) === true) {
+                    return functions.setError(res, 'The input price is not a number');
+                }
+                else if (functions.checkPhoneNumber(phone) === false) {
+                    return functions.setError(res, 'Invalid phone number');
+                }
+                else if (functions.checkEmail(email) === false) {
+                    return functions.setError(res, 'Invalid email');
+                }
+                else
+                    if (File && File.length !== 0) {
+                        for (let i = 0; i < File.length; i++) {
+                            if (File[i].fieldname === 'Image') {
+                                img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename) });
+                            }
+                            else if (File[i].fieldname === 'tenderFile') {
+                                tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
+                            } else if (File[i].fieldname === 'fileContentProcedureApply') {
+                                fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
+                            } else if (File[i].fieldname === 'instructionFile') {
+                                instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
+                            }
+                        }
+
+                    } else if (functions.checkDate(timeReceivebidding) && functions.checkDate(bidExpirationTime) && functions.checkDate(timeNotiBiddingStart) && functions.checkDate(timeNotiBiddingEnd)) {
+                        if (functions.checkTime(timeReceivebidding) === false || functions.checkTime(bidExpirationTime) === false || functions.checkTime(timeNotiBiddingStart) === false || functions.checkTime(timeNotiBiddingEnd) === false) {
+                            return functions.setError(res, 'Invalid date', 404)
+                        }
+
+
+                    } else {
+                        return functions.setError(res, 'Invalid date format', 404)
+                    }
+          
+            const postNew = new New({ _id, cateID, title, linkTitle, userID, buySell, createTime, img, tenderFile, fileContentProcedureApply, contentOnline, instructionFile, cityProcedure, districtProcedure, wardProcedure, name, city, district, ward, apartmentNumber, description, timeReceivebidding, bidExpirationTime, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, phone, email, until_tu, until_den, until_bidFee });
+            await postNew.save();
+        } else {
+            return functions.setError(res, 'missing data', 404)
+        }
+
+        return functions.success(res, "post new success")
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+

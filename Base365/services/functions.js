@@ -83,7 +83,27 @@ exports.checkTilte = async(input, list) => {
         return true
     }
 };
-
+// hàm tạo link title
+exports.createLinkTilte = (input)=>{
+    input = input.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
+    str = input.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a"); 
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e"); 
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g,"i"); 
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o"); 
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u"); 
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y"); 
+    str = str.replace(/đ/g,"d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    str = str.toLowerCase();
+    str = str.replaceAll(' ','-')
+    return str
+}
 // hàm check title khi update
 exports.removeSimilarKeywords = (keyword, arr) => {
     return arr.filter(file => !file.startsWith(keyword));
@@ -262,6 +282,7 @@ const storageFile = (destination) => {
     });
 };
 
+
 exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/KhoAnh') })
 
 exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/company') })
@@ -281,6 +302,8 @@ exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
 //hàm upload file ứng viên
 exports.uploadFileUv = multer({ storage: storageFile('public/candidate') })
 
+// hàm upload ảnh
+exports.uploadFileImage = multer({ storage: storageFile('../Storage/base365/raonhanh365/pictures/avt_tindangmua') })
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
         if (err) throw err;
@@ -582,4 +605,14 @@ exports.getTokenUser = async(req, res, next) => {
     } else {
         return null;
     }
+}
+// hàm tạo link file rao nhanh 365
+exports.createLinkFileRaonhanh = (folder,id,name) =>{
+    let link = 'http://localhost:3000/base365/raonhanh365/pictures/'+folder+'/'+ id+'/'+name;
+    return link; 
+}
+// hàm kiểm tra đầu vào có phải ngày không 
+exports.checkDate  = (date)=>{
+    let data = new Date(date)
+    return data instanceof Date && !isNaN(data);
 }
