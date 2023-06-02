@@ -34,6 +34,9 @@ var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
 // var childCompanyRouter = require('./routes/qlc/childCompany')
 var manageUserRouter = require('./routes/qlc/manageUser')
+var HisOfTrackingRouter = require("./routes/qlc/HisTracking")
+var CalendarWorkEmployee = require("./routes/qlc/CalendarWorkEmployee")
+
 
 // crm_import
 var groupCustomerRouter = require('./routes/crm/groupCustomer')
@@ -102,6 +105,8 @@ app.use('/api/qlc/manageUser', manageUserRouter);
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
+app.use("/api/qlc/HisOfTracking",HisOfTrackingRouter)
+app.use("/api/qlc/CalendarWorkEmployee",CalendarWorkEmployee)
 
 
 //API văn thu

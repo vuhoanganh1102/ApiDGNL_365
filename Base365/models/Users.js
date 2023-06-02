@@ -168,6 +168,16 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            calendarID: {
+                // ID lịch làm việc của nhân viên trong công ty
+                type: Number,
+                default: 0
+            },
+            shiftID: {
+                // ID ca làm việc của nhân viên trong công ty
+                type: Number,
+                default: 0
+            },
             startWorkingTime: {
                 // Thời gian bắt đầu làm việc
                 type: String,

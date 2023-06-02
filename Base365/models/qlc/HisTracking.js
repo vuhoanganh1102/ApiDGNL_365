@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const HisOfTracking = new mongoose.Schema({
+    //id nhaan vieen
     _id: {
         type : Number,
         required : true
@@ -25,38 +26,49 @@ const HisOfTracking = new mongoose.Schema({
         default: null
     },
     Location:{
+        //vị trí
         type : String
     },
     NameWifi:{
+        //tên wifi
         type : String
     },
     IpWifi:{
+        //ip wifi
         type : String
     },
     MacWifi:{
+        //mac wifi
         type : String
     },
     shiftID:{
+        //id ca làm việc
         type : String
     },
-    companyId:{
+    companyID:{
+        //id công ty
         type : String
     },
     Note:{
+        //note
         type : String
     },
     BluetoothAdrr:{
+        //địa chỉ bluetooth
         type : String
     },
     role:{
+        //vai trò
         type : Number
-    },
-    Err:{
-        type : Boolean
-    },
-    Success:{
-        type : Boolean
-    },
-    
+    // },
+    // Err:{
+    //     type : Boolean
+    // },
+    // Success:{
+    //     type : Boolean
+    // },
+    }
 
 }) 
+
+module.exports = mongoose.model("HistoryOfTracking",HisOfTracking)

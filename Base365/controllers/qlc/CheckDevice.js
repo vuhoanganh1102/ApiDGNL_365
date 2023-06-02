@@ -14,7 +14,7 @@ exports.getALlCompanyDevice = async (req,res)=>{
     
     if (!companyId) {
         functions.setError(res, "company Id required")
-    }else if (typeof companyId !== "number") {
+    }else if (isNaN(companyId)) {
         functions.setError(res, "company Id must be a number")
     }else {
         const companyDevice = await functions.getDatafind(Device,{companyId : companyId});

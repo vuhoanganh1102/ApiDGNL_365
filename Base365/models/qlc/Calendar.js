@@ -5,11 +5,16 @@ const CalendarSchema = new Schema({
     //Id lịch làm việc
     _id: {
         type: Number,
-        require: true
+        // require: true
     },
     // ID của công ty tạo lịch làm việc
     companyID: {
         type: Number,
+    },
+    // ID ca lam viec
+    shiftID: {
+        type: Number,
+        
     },
     //Tên của lịch làm việc
     calendarName: {

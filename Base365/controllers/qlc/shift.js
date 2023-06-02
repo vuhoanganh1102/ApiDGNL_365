@@ -22,14 +22,14 @@ exports.getShiftById = async (req, res) => {
         }
     }
 };
-
+//API lấy danh sách ca làm việc theo Id công ty
 exports.getShiftByComId = async (req, res) => {
 
-    const { companyID } = req.body;
-
+    const companyID = req.body.companyID;
+    console.log(companyID)
     if (!companyID) {
         functions.setError(res, "Company id required");
-    } else if (typeof companyID !== "number") {
+    } else if ( isNaN(companyID)) {
         functions.setError(res, "Company id must be a number");
     } else {
         await functions.getDatafind(Shifts, { companyID: companyID })
@@ -51,9 +51,8 @@ exports.createShift = async (req, res) => {
     const idTypeCalculateWork = req.body.idTypeCalculateWork;
     let numOfWorkPerShift = req.body.numOfWorkPerShift;
     let money = req.body.money;
-
-
-
+    
+    
     if (!companyID) {
         functions.setError(res, "Company id required");
     // } else if (typeof companyID !== "number") {
@@ -74,31 +73,13 @@ exports.createShift = async (req, res) => {
         functions.setError(res, "Id type calculation work required");
     } else {
         let typeCalculateWork = "";
-        if (idTypeCalculateWork === 2) {
-            if (!numOfWorkPerShift) {
-                functions.setError(res, "Number of work per shift required");
-                return
-            } else {
-                money = null;
-                typeCalculateWork = "Tính công theo số ca";
-            }
-        } else if (idTypeCalculateWork === 3) {
-            if (!money) {
-                functions.setError(res, "Money of shift required");
-                return
-            } else {
-                numOfWorkPerShift = null;
-                typeCalculateWork = "Tính công theo tiền";
-            }
-        }
-
-        if (idTypeCalculateWork === 1) {
-            numOfWorkPerShift = null;
-            money = null;
-            typeCalculateWork = "Tính công theo giờ";
-        }
-
+       
+        
         let maxId = await functions.getMaxID(Shifts);
+        const   timeIn = timeCheckIn != 0 ? new Date(timeCheckIn * 1000) : null,
+                timeOut = timeCheckOut != 0 ? new Date(timeCheckOut * 1000) : null,
+                tEarliest = timeCheckInEarliest != 0 ? new Date(timeCheckInEarliest * 1000) : null,
+                tLastest = timeCheckOutLastest != 0 ? new Date(timeCheckOutLastest * 1000) : null
         if (!maxId) {
             maxId = 0;
         }
@@ -107,32 +88,69 @@ exports.createShift = async (req, res) => {
             _id: _id,
             companyID: companyID,
             shiftName: shiftName,
-            timeCheckIn: timeCheckIn,
-            timeCheckOut: timeCheckOut,
-            timeCheckInEarliest: timeCheckInEarliest,
-            timeCheckOutLastest: timeCheckOutLastest,
+            timeCheckIn: timeIn,
+            timeCheckOut: timeOut,
+            timeCheckInEarliest: tEarliest,
+            timeCheckOutLastest: tLastest,
             idTypeCalculateWork: idTypeCalculateWork,
             typeCalculateWork: typeCalculateWork,
             numOfWorkPerShift: numOfWorkPerShift,
             money: money,
-
+        
         });
+        if (idTypeCalculateWork === 2) {
+            if (!numOfWorkPerShift) {
+                await functions.setError(res, "Number of work per shift required");
+            } else {
+                money = null;
+                typeCalculateWork = "Tính công theo số ca";
+                await shift.save()
+                .then(() => {
+                    functions.success(res, "Shifts saved successfully", shift);
+                })
+                .catch(err => {
+                    functions.setError(res, err.message);
+                })
+            }
+        } else if (idTypeCalculateWork === 3) {
+            if (!money) {
+                await functions.setError(res, "Money of shift required");
+                return
+            } else {
+                numOfWorkPerShift = null;
+                typeCalculateWork = "Tính công theo tiền";
+                await shift.save()
+                .then(() => {
+                    functions.success(res, "Shifts saved successfully", shift);
+                })
+                .catch(err => {
+                    functions.setError(res, err.message);
+                })
+            }
+        } else if (idTypeCalculateWork === 1) {
+            numOfWorkPerShift = null;
+            money = null;
+            typeCalculateWork = "Tính công theo giờ";
 
-        await shift.save()
+            await shift.save()
             .then(() => {
                 functions.success(res, "Shifts saved successfully", shift);
             })
             .catch(err => {
                 functions.setError(res, err.message);
             })
+        } else {
+            functions.setError()
+        }
+       
     }
 
 };
 
 exports.editShift = async (req, res) => {
-    const _id = req.params.id;
-
-    if (!functions.checkNumber(_id)) {
+    const _id = req.body.id;
+    console.log(_id)
+    if (isNaN(_id)) {
         functions.setError(res, "Id must be a number");
     } else {
         const companyID = req.body.companyID;;
@@ -146,8 +164,9 @@ exports.editShift = async (req, res) => {
         const money = req.body.money;
 
         if (!companyID) {
+            console.log(companyID)
             functions.setError(res, "Company id required");
-        } else if (typeof companyID !== "number") {
+        } else if (isNaN(companyID)) {
             functions.setError(res, "Company id must be a number");
         } else if (!shiftName) {
             functions.setError(res, "Shifts name required");
@@ -156,14 +175,15 @@ exports.editShift = async (req, res) => {
         } else if (!timeCheckOut) {
             functions.setError(res, "Time check out required");
         }
-        // else if (!timeCheckInEarliest) {
-        //     functions.setError(res, "Time check in earliest required");
-        // } else if (!timeCheckOutLastest) {
-        //     functions.setError(res, "Time check out lastest required");
-        // } 
+        else if (!timeCheckInEarliest) {
+            functions.setError(res, "Time check in earliest required");
+        } else if (!timeCheckOutLastest) {
+            functions.setError(res, "Time check out lastest required");
+        } 
         else if (!idTypeCalculateWork) {
             functions.setError(res, "Id type calculation work required");
         } else {
+            let typeCalculateWork = ""
             if (idTypeCalculateWork === 2) {
                 if (!numOfWorkPerShift) {
                     functions.setError(res, "Number of work per shift required");
@@ -190,7 +210,7 @@ exports.editShift = async (req, res) => {
             if (!shift) {
                 functions.setError(res, "Shifts does not exist!");
             } else {
-                await functions.getDatafindOneAndUpdate({ _id: _id }, {
+                await functions.getDatafindOneAndUpdate(Shifts,{ _id: _id }, {
                     companyID: companyID,
                     shiftName: shiftName,
                     timeCheckIn: timeCheckIn,
@@ -211,11 +231,12 @@ exports.editShift = async (req, res) => {
 
 exports.deleteShift = async (req, res) => {
     const _id = req.params.id;
-
+    console.log(_id)
     if (!functions.checkNumber(_id)) {
         functions.setError(res, "Id must be a number", 621);
     } else {
         const shift = await functions.getDatafindOne(Shifts, { _id: _id });
+        console.log(shift)
         if (!shift) {
             functions.setError(res, "Shifts does not exist");
         } else {
@@ -231,7 +252,7 @@ exports.deleteShiftCompany = async (req, res) => {
 
     if (!companyID) {
         functions.setError(res, "Company id required");
-    } else if (typeof companyID !== "number") {
+    } else if (isNaN(companyID)) {
         functions.setError(res, "Company id must be a number");
     } else {
         const shifts = await functions.getDatafind(Shifts, { companyID: companyID });

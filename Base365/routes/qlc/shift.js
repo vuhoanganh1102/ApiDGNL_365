@@ -3,27 +3,27 @@ const router = require('express').Router();
 const ShiftController = require('../../controllers/qlc/shift')
 var formData = require('express-form-data')
 //API lấy toàn bộ danh sách ca làm việc
-router.get("/", ShiftController.getListShifts)
+router.get("/",formData.parse(), ShiftController.getListShifts)
 
 //API lấy ca làm việc theo id
-router.get("/:id", ShiftController.getShiftById)
+router.get("/:id",formData.parse(), ShiftController.getShiftById)
 
 //API lấy danh sách ca làm việc theo Id công ty
-router.get("/all/company", ShiftController.getShiftByComId)
+router.get("/all/company",formData.parse(), ShiftController.getShiftByComId)
 
 //API tạo một ca làm việc mới
 router.post("/",formData.parse(), ShiftController.createShift)
 
 //API chỉnh sửa thông tin của một ca làm việc
-router.post("/:id", ShiftController.editShift)
+router.post("/:id",formData.parse(), ShiftController.editShift)
 
 //API xóa một ca làm việc theo Id
-router.delete("/:id", ShiftController.deleteShift)
+router.delete("/:id",formData.parse(), ShiftController.deleteShift)
 
 //API xóa toàn bộ ca làm việc của một công ty
-router.delete("/all/company", ShiftController.deleteShiftCompany)
+router.delete("/all/company",formData.parse(), ShiftController.deleteShiftCompany)
 
 //API xóa toàn bộ ca làm việc đã có trong hệ thống
-router.delete("/", ShiftController.deleteAllShifts)
+router.delete("/",formData.parse(), ShiftController.deleteAllShifts)
 
 module.exports = router

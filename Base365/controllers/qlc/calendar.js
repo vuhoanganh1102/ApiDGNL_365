@@ -1,49 +1,79 @@
 const Calendar = require("../../models/qlc/Calendar");
 const functions = require("../../services/functions");
+// const shiftID = require("../../models/Users")
 //Lấy danh sách toàn bộ lịch làm việc
-exports.getAllCalendar = async(req, res) => {
+exports.getAllCalendar = async (req, res) => {
     await functions.getDatafind(Calendar, {})
         .then((calendars) => functions.success(res, "Get data successfully", calendars))
         .catch((err) => functions.setError(res, err.message));
 };
 //:ấy danh sách lịch làm việc của một công ty
 
-exports.getAllCalendarCompany = async(req, res) => {
-    const  companyID = req.body.companyID
+exports.getAllCalendarCompany = async (req, res) => {
 
-    if (!companyID) {
-       await functions.setError(res, "Company Id required")
-    } else if (typeof companyID !== "number") {
-       await functions.setError(res, "Company Id must be a number");
-    } else {
-        const calendar = await functions.getDatafind(Calendar, { companyID: companyID })
-        if (!calendar) {
-            functions.setError(res, "Calendar cannot be found or does not exist");
-        } else {
-            functions.success(res, "Calendar found", calendar)
-        }
-    }
-};
+    // const  companyID = req.body.companyID
+
+    // if (!companyID) {
+    //     functions.setError(res, "Company Id required")
+    // } else if (typeof companyID !== "number") {
+    //     functions.setError(res, "Company Id must be a number");
+    // } else {
+    //     const calendar = await functions.getDatafind(Calendar, { companyID: companyID })
+    //     if (!calendar) {
+    //         functions.setError(res, "Calendar cannot be found or does not exist");
+    //     } else {
+    //         functions.success(res, "Calendar found", calendar)
+    //     }
+    // }
+    try {
+        const companyID = req.body.companyID;
+        const data = await functions.getDatafind(Calendar, { companyID: companyID });
+        if (data) {
+            return await functions.success(res, 'Lấy lich thành công', data);
+        };
+        return functions.setError(res, 'Không có dữ liệu', 404);
+    } catch (err) {
+        functions.setError(res, err.message);
+    };
+
+}
+
 //Lấy thông tin của 1 lịch làm việc
 
-exports.getCalendarById = async(req, res) => {
-    const _id = req.params.id
+exports.getCalendarById = async (req, res) => {
+    //     const _id = req.params.id
 
-    if (functions.checkNumber(_id)) {
-        functions.setError(res, "Id must be a number");
-    } else {
-        const calendars = await functions.getDatafindOne(Calendar, { _id: _id });
-        if (!calendars) {
-            functions.setError(res, "Calendar cannot be found or does not exist");
-        } else {
-            functions.success(res, "Get calendar successfully", calendars);
-        }
-    }
-};
+    //     if (functions.checkNumber(_id)) {
+    //         functions.setError(res, "Id must be a number");
+    //     } else {
+    //         const calendars = await functions.getDataFindOne(Calendar, { _id: _id });
+    //         if (!calendars) {
+    //             functions.setError(res, "Calendar cannot be found or does not exist");
+    //         } else {
+    //             functions.success(res, "Get calendar successfully", calendars);
+    //         }
+    //     }
+    // };
+    try {
+        const _id = req.params.id;
+        console.log(_id)
+        // const companyID = req.user.data.companyID
+        const data = await functions.getDatafindOne(Calendar, { _id: _id });
+        console.log(data)
+        // const data = await Calendar.findOne({ _id: _id }).select(" companyID calendarName idCalendarWork").exec();
+        if (data) {
+            return await functions.success(res, 'Lấy lich thành công', data);
+        };
+        return functions.setError(res, 'Không có dữ liệu', 404);
+    } catch (err) {
+        functions.setError(res, err.message);
+    };
+
+}
 //Tạo một lịch làm việc mới
 
-exports.createCalendar = async(req, res) => {
-    const { companyID, calendarName, idCalendarWork, timeApply, timeStart, calendarDetail } = req.body;
+exports.createCalendar = async (req, res) => {
+    const { companyID, calendarName, idCalendarWork, timeApply, timeStart, calendarDetail,shiftID } = req.body;
 
     if (!companyID) {
         functions.setError(res, "Company id required");
@@ -57,22 +87,23 @@ exports.createCalendar = async(req, res) => {
         functions.setError(res, "Time apply required");
     } else if (!timeStart) {
         functions.setError(res, "Time start required");
-    // } else if (getMonth(timeApply) !== getMonth(timeStart)) {
-    //     functions.setError(res, "Time start must be in the same month as time apply");
-    // } else if (!calendarDetail) {
-    //     functions.setError(res, "calendarDetail required");
+        // } else if (getMonth(timeApply) !== getMonth(timeStart)) {
+        //     functions.setError(res, "Time start must be in the same month as time apply");
+        // } else if (!calendarDetail) {
+        //     functions.setError(res, "calendarDetail required");
     } else {
         let maxId = await functions.getMaxID(Calendar);
         if (!maxId) {
             maxId = 0;
         }
-        const   _id = Number(maxId) + 1;
-        const   tCreate = timeApply != 0 ? new Date(timeApply * 1000) : null,
-                tUpdate = timeStart != 0 ? new Date(timeStart * 1000) : null
+        const _id = Number(maxId) + 1;
+        const tCreate = timeApply != 0 ? new Date(timeApply * 1000) : null,
+              tUpdate = timeStart != 0 ? new Date(timeStart * 1000) : null
 
         const calendar = new Calendar({
             _id: _id,
             companyID: companyID,
+            shiftID: shiftID||0,
             calendarName: calendarName,
             idCalendarWork: idCalendarWork,
             timeApply: tCreate,
@@ -91,14 +122,14 @@ exports.createCalendar = async(req, res) => {
 }
 //Chỉnh sửa một lịch làm việc đã có sẵn
 
-exports.editCalendar = async(req, res) => {
+exports.editCalendar = async (req, res) => {
 
-    const _id = req.params.id;
-
-    if (functions.checkNumber(_id)) {
+    const _id = req.body.id;
+      console.log(_id)
+    if (isNaN(_id)) {
         functions.setError(res, "Id must be a number");
     } else {
-        const { companyID, calendarName, idCalendarWork, timeApply, timeStart, calendarDetail } = req.body;
+        const { companyID, calendarName, idCalendarWork, timeApply, timeStart, calendarDetail,shiftID } = req.body;
 
         if (!companyID) {
             functions.setError(res, "Company id required");
@@ -108,34 +139,36 @@ exports.editCalendar = async(req, res) => {
             functions.setError(res, "Calendar name required");
         } else if (!idCalendarWork) {
             functions.setError(res, "Calendar work required");
-        } else if (typeof idCalendarWork !== "number") {
-            functions.setError(res, "Calendar work must be a number")
-        } else if (!Number.isInteger(idCalendarWork) || idCalendarWork <= 0 || idCalendarWork >= 3) {
-            functions.setError(res, "Calendar is invalid");
+        // } else if (typeof idCalendarWork !== "number") {
+        //     functions.setError(res, "Calendar work must be a number")
+        // } else if (!Number.isInteger(idCalendarWork) || idCalendarWork <= 0 || idCalendarWork >= 3) {
+        //     functions.setError(res, "Calendar is invalid");
         } else if (!timeApply) {
             functions.setError(res, "Time apply required");
         } else if (!timeStart) {
             funtions.setError(res, "Time start required");
-        } else if (timeApply.getMonth() !== timeStart.getMonth()) {
+        // } else if (timeApply.getMonth() !== timeStart.getMonth()) {
             functions.setError(res, "Time start must be in the same month as time apply");
-        } else if (!calendarDetail) {
-            functions.setError(res, "Calendar required");
+        // } else if (!calendarDetail) {
+        //     functions.setError(res, "Calendar required");
         } else {
             const calendar = await functions.getDatafindOne(Calendar, { _id: _id });
+            console.log(calendar)
             if (!calendar) {
                 functions.setError(res, "Calendar does not exist");
             } else {
                 await functions.getDatafindOneAndUpdate(Calendar, { _id: _id }, {
-                        companyID: companyID,
-                        calendarName: calendarName,
-                        idCalendarWork: idCalendarWork,
-                        timeApply: timeApply,
-                        timeStart: timeStart,
-                        isCopy: false,
-                        timeCopy: null,
-                        calendarDetail: calendarDetail
-                    })
-                    .then(() => functions.success(res, "Calendar edited successfully", shift))
+                    companyID: companyID,
+                    shiftID: shiftID || 0,
+                    calendarName: calendarName,
+                    idCalendarWork: idCalendarWork,
+                    timeApply: timeApply,
+                    timeStart: timeStart,
+                    isCopy: false,
+                    timeCopy: null,
+                    calendarDetail: calendarDetail
+                })
+                    .then((data) => functions.success(res, "Calendar edited successfully",data))
                     .catch((err) => functions.setError(res, err.message));
             }
         }
@@ -143,10 +176,10 @@ exports.editCalendar = async(req, res) => {
 }
 //Copy một lịch làm việc đã có sẵn
 
-exports.copyCalendar = async(req, res) => {
-    const _id = req.params.id;
+exports.copyCalendar = async (req, res) => {
+    const _id = req.body.id;
 
-    if (functions.checkNumber(_id)) {
+    if (isNaN(_id)) {
         functions.setError(res, "Id must be a number");
     } else {
         const calendar = await functions.getDatafindOne(Calendar, { _id: _id });
@@ -173,10 +206,10 @@ exports.copyCalendar = async(req, res) => {
 }
 //Xóa một lịch làm việc đã có sẵn
 
-exports.deleteCalendar = async(req, res) => {
-    const _id = req.params.id;
+exports.deleteCalendar = async (req, res) => {
+    const _id = req.body.id;
 
-    if (functions.checkNumber(_id)) {
+    if (isNaN(_id)) {
         functions.setError(res, "Id must be a number");
     } else {
         const calendar = await functions.getDatafindOne(Calendar, { _id: _id });
@@ -191,17 +224,18 @@ exports.deleteCalendar = async(req, res) => {
 }
 //Xóa toàn bộ lịch làm việc của một công ty
 
-exports.deleteCompanyCalendar = async(req, res) => {
+exports.deleteCompanyCalendar = async (req, res) => {
     const { companyID } = req.body;
-
+    console.log(companyID)
     if (!companyID) {
         functions.setError(res, "Company id required");
-    } else if (typeof companyID !== "number") {
+    } else if (typeof companyID == "number") {
         functions.setError(res, "Company id must be a number");
     } else {
         const calendars = await functions.getDatafind(Calendar, { companyID: companyID });
+        console.log(calendars)
         if (!calendars) {
-            functions.setError(res, "No calendars found in this company");
+            await functions.setError(res, "No calendars found in this company");
         } else {
             await Calendar.deleteMany({ companyID: companyID })
                 .then(() => functions.success(res, "Calendars deleted successfully", calendars))
@@ -211,7 +245,7 @@ exports.deleteCompanyCalendar = async(req, res) => {
 }
 //Xóa toàn bộ lịch làm việc của hệ thống
 
-exports.deleteAllCalendars = async(req, res) => {
+exports.deleteAllCalendars = async (req, res) => {
     if (!await functions.getMaxID(Calendar)) {
         functions.setError(res, "No Calendar existed")
     } else {
