@@ -2,7 +2,7 @@ const md5 = require('md5');
 
 const Users = require('../../models/Users');
 const functions = require('../../services/functions');
-const nopHoSo = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
+const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
 const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
 const SaveCandidate = require('../../models/Timviec365/UserOnSite/Company/SaveCandidate');
 const PointCompany = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany');
@@ -494,9 +494,9 @@ exports.updateInfoCompany = async(req, res, next) => {
             site = request.quymo,
             website = request.web,
             description = request.gt,
-            mst = request.thue;
-
-        if (phone && userCompany && city && address && description && site) {
+            mst = request.thue,
+            tagLinhVuc = request.tagLinhVuc
+        if (phone && userCompany && city && address && description) {
             let checkPhone = await functions.checkPhoneNumber(phone)
             if (checkPhone) {
                 await Users.updateOne({ email: email, type: 1 }, {
@@ -510,6 +510,7 @@ exports.updateInfoCompany = async(req, res, next) => {
                         'inForCompany.mst': mst || null,
                         'inForCompany.website': website || null,
                         'inForCompany.com_size': site,
+                        "inForCompany.tagLinhVuc": tagLinhVuc
 
                     }
                 });
@@ -829,7 +830,7 @@ exports.listSaveUV = async(req, res, next) => {
             return functions.setError(res, 'không lấy được danh sách', 404)
         } else {
             let findUV = await functions.getDatafind(SaveCandidate, { uscID: idCompany });
-            return functions.success(res, "Lấy danh sách tất cả uv thành công", findUV);
+            return functions.success(res, "Lấy danh sách tất cả uv thành công", { findUV });
         }
     } catch (error) {
         console.log(error)
