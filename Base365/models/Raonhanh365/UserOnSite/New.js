@@ -206,7 +206,7 @@ const newSchema = new mongoose.Schema({
         default: 0
     },
     authen: {
-        // 
+        // xac thuc
         type: Number,
         default: 0
     },
@@ -746,6 +746,12 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
+        jobDetail: {
+            // chi thiet cong việc
+            type: String,
+            default: null
+        },
+
         jobKind: {
             // hình thức làm việc
             type: String,
@@ -761,6 +767,16 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
+        salary: {
+            // luong
+            type: String,
+            default: null
+        },
+        gender: {
+            // luong
+            type: Number,
+            default: 0
+        },
         exp: {
             // kinh nghiệm
             type: String,
@@ -768,6 +784,11 @@ const newSchema = new mongoose.Schema({
         },
         level: {
             // chứng chỉ
+            type: String,
+            default: null
+        },
+        degree: {
+            // bang cap
             type: String,
             default: null
         },
