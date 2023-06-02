@@ -109,8 +109,12 @@ router.post('/toolApplyForJob', toolTimviec365.toolApplyForJob);
 //api quét data ứng viên lưu việc làm
 router.post('/toolUserSavePost', toolTimviec365.toolUserSavePost);
 
+
+//--------------------TOOLS RAONHANH365
 // api quét data new rao nhanh
 router.post('/toolNewRN', toolRaoNhanh.toolNewRN);
+
+router.post('/toolCategory', toolRaoNhanh.toolCategory);
 
 // api update thông tin bán hàng  new rao nhanh
 router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);

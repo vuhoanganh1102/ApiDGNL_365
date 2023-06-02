@@ -15,7 +15,7 @@ var newTV365Router = require('./routes/timviec/newTV365');
 
 // rao nhanh
 var newRN365Router = require('./routes/raonhanh365/new');
-var blogRaoNhanh365Router = require('./routes/raonhanh365/blog')
+var blogRaoNhanh365Router = require('./routes/raonhanh365/blog');
 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
@@ -35,7 +35,6 @@ var managerUser = require('./routes/qlc/managerUser')
 var employeeRoutes = require('./routes/qlc/employee.routes');
 var individualRoutes = require('./routes/qlc/individual.routes');
 
-// var childCompanyRouter = require('./routes/qlc/childCompany')
 var manageUserRouter = require('./routes/qlc/manageUser')
 
 // crm_import
@@ -89,7 +88,7 @@ app.use('/api/timviec/mail365', mail365Router);
 
 // api rao nhanh
 app.use('/api/raonhanh/news', newRN365Router);
-app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
+app.use('/api/raonhanh/blog', blogRaoNhanh365Router);
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
