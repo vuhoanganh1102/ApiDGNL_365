@@ -13,7 +13,8 @@ const applyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyF
 const userSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
 const pointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed');
 const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost')
-    //mã hóa mật khẩu
+
+//mã hóa mật khẩu
 const md5 = require('md5');
 //token
 var jwt = require('jsonwebtoken');
@@ -1896,7 +1897,6 @@ exports.candidateSavePost = async(req, res, next) => {
 exports.commentPost = async(req, res, next) => {
     try {
         if (req.user && req.body.idPost && req.body.cm_id && req.body.name && req.body.comment) {
-
             let userId = req.user.data.idTimViec365
             let idPost = req.body.idPost
             let parentCmId = req.body.cm_id
@@ -1906,46 +1906,81 @@ exports.commentPost = async(req, res, next) => {
             let hasTag = req.body.cm_hastag
             let author = req.body.author
 
-            const maxID = await CommentPost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            if (maxID) {
-                newID = Number(maxID._id) + 1;
-            } else newID = 1
-            if (req.file) {
-                let addNewComment = new CommentPost({
-                    _id: newID,
-                    idPost: idPost,
-                    parentCmId: parentCmId,
-                    commentPersonId: userId,
-                    comment: comment,
-                    commentName: CommentName,
-                    commentAvatar: req.user.data.avatarUser,
-                    image: imageComment.filename,
-                    timeComment: new Date(Date.now()),
-                    tag: hasTag,
-                    author: author
-                })
-                addNewComment.save()
-                if (addNewComment) {
-                    functions.success(res, "Thêm bình luận thành công");
-                }
-            } else {
-                let addNewComment = new CommentPost({
-                    _id: newID,
-                    idPost: idPost,
-                    parentCmId: parentCmId,
-                    commentPersonId: userId,
-                    comment: comment,
-                    commentName: CommentName,
-                    commentAvatar: req.user.data.avatarUser,
-                    timeComment: new Date(Date.now()),
-                    tag: hasTag,
-                    author: author
-                })
-                addNewComment.save()
-                if (addNewComment) {
-                    functions.success(res, "Thêm bình luận thành công");
-                }
-            }
+            let timeCheck = new Date(Date.now() - 30000)
+            let findComment = await functions.getDatafind(CommentPost, { idPost: idPost, commentPersonId: userId, timeComment: { $gt: timeCheck } })
+            let findNew = await newTV365.findOne({ _id: idPost }, { userID: 1 })
+            if (findNew) {
+                if (findComment && findComment.length < 10) {
+                    const maxID = await CommentPost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                    if (maxID) {
+                        newID = Number(maxID._id) + 1;
+                    } else newID = 1
+
+                    if (req.file) {
+                        let addNewComment = new CommentPost({
+                            _id: newID,
+                            idPost: idPost,
+                            parentCmId: parentCmId,
+                            commentPersonId: userId,
+                            comment: comment,
+                            commentName: CommentName,
+                            commentAvatar: req.user.data.avatarUser,
+                            image: imageComment.filename,
+                            timeComment: new Date(Date.now()),
+                            tag: hasTag,
+                            author: author
+                        })
+                        addNewComment.save()
+                        if (addNewComment) {
+                            functions.success(res, "Thêm bình luận thành công");
+                            axios({
+                                method: "post",
+                                url: "http://43.239.223.142:9000/api/V2/Notification/SendNotification",
+                                data: {
+                                    'Title': 'Thông báo bình luận',
+                                    'Message': `bài viết bạn đã được bình luận bởi ${CommentName}`,
+                                    'Type': 'SendCandidate',
+                                    'UserId': `${findNew.userID}`,
+                                    'SenderId': `${req.user.data._id}`,
+                                    // 'Link': link,
+                                },
+                                headers: { "Content-Type": "multipart/form-data" }
+                            })
+                        }
+                    } else {
+                        let addNewComment = new CommentPost({
+                            _id: newID,
+                            idPost: idPost,
+                            parentCmId: parentCmId,
+                            commentPersonId: userId,
+                            comment: comment,
+                            commentName: CommentName,
+                            commentAvatar: req.user.data.avatarUser,
+                            timeComment: new Date(Date.now()),
+                            tag: hasTag,
+                            author: author
+                        })
+                        addNewComment.save()
+                        if (addNewComment) {
+                            functions.success(res, "Thêm bình luận thành công");
+                            axios({
+                                method: "post",
+                                url: "http://43.239.223.142:9000/api/V2/Notification/SendNotification",
+                                data: {
+                                    'Title': 'Thông báo bình luận',
+                                    'Message': `bài viết bạn đã được bình luận bởi ${CommentName}`,
+                                    'Type': 'SendCandidate',
+                                    'UserId': `${findNew.userID}`,
+                                    'SenderId': `${req.user.data._id}`,
+                                    // 'Link': link,
+                                },
+                                headers: { "Content-Type": "multipart/form-data" }
+                            })
+                        }
+                    }
+                } else return functions.setError(res, "bạn đã bình luận quá nhanh", 400);
+            } else return functions.setError(res, "không tồn tại tin tuyển dụng này", 400);
+
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
