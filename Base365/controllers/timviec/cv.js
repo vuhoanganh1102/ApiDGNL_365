@@ -5,12 +5,39 @@ const NganhCV = require('../../models/Timviec365/CV/Category');
 const CVGroup = require('../../models/Timviec365/CV/CVGroup');
 
 
-exports.getListCV = async(req, res, next) => {
+// lấy tất cả danh sách mẫu CV
+exports.getList = async(req, res, next) => {
     try {
-        const pageNumber = req.query.pageNumber || 1;
-        const data = await functions.getDataCVSortById({}, pageNumber);
+        const request = req.body;
+        let pageNumber = request.pageNumber || 1,
+            pageSize = request.pageSize || 20,
+            skip = (pageNumber - 1) * pageSize,
+            lang = request.lang,
+            cate = request.cate,
+            designID = request.designID,
+            sortBy = request.sortBy || "new",
+            condition = {},
+            sort = { _id: -1 };
+
+        if (lang != undefined) {
+            condition.langId = lang;
+        }
+        if (cate != undefined) {
+            condition.cateID = cate;
+        }
+        if (designID != undefined) {
+            condition.designId = designID;
+        }
+
+        if (sortBy != "new") {
+            sort = {
+                download: -1
+            };
+        }
+
+        const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color').sort(sort);
         if (data) {
-            return await functions.success(res, 'Lấy mẫu CV thành công', data);
+            return await functions.success(res, 'Lấy mẫu CV thành công', { data });
         };
         return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -82,14 +109,14 @@ exports.getListCVByCondition = async(req, res, next) => {
 //xem trước CV
 exports.previewCV = async(req, res, next) => {
     try {
-        const _id = req.params._id;
-        const data = await CV.findOne({ _id: _id }).select('_id lang_id name image mota_cv colors view ');
+        const _id = req.body._id;
+        const data = await CV.findOne({ _id: _id }).select('_id lang_id name image mota_cv color view');
 
         if (data) {
             let view = data.view + 1; // cập nhật số lượng xem 
             await CV.updateOne({ _id: _id }, { view: view });
 
-            return await functions.success(res, 'Lấy mẫu cv thành công', data);
+            return await functions.success(res, 'Lấy mẫu cv thành công', { data });
         }
         return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (e) {
@@ -99,22 +126,25 @@ exports.previewCV = async(req, res, next) => {
 };
 
 // chi tiết cv ( tạo cv)
-exports.detailCV = async(req, res, text) => {
+exports.detail = async(req, res, text) => {
     try {
-        const _id = req.query._id;
-        const lang_id = req.query.lang_id;
+        const _id = req.body._id;
+        let data = await CV.findOne({ _id: _id });
 
-        // lang_id: 0,1,2,3,4,5 tương ứng tất cả, việt, anh, nhật, trung, hàn 
-        const html = ['html_vi html_en html_jp html_cn html_kr', 'html_vi', 'html_en', 'html_jp', 'html_cn', 'html_kr'];
-        const html_lang = html[lang_id];
-        const data = await CV.findOne({ _id: _id }).select(`_id name ${html_lang} view cate_id color lang`);
+        if (data) {
+            let view = data.view + 1; // cập nhật số lượng xem 
+            await CV.updateOne({ _id: _id }, { view: view });
+            return await functions.success(res, 'Lấy CV thành công', { data });
 
-        if (!data) {
+            const user = functions.getTokenUser(req, res, next);
+            if (user != null) {
+
+            }
+
+        } else {
             await functions.setError(res, 'Không có dữ liệu', 404);
         }
-        let view = data.view + 1; // cập nhật số lượng xem 
-        await CV.updateOne({ _id: _id }, { view: view });
-        return await functions.success(res, 'Lấy CV thành công', data);
+
     } catch (e) {
         functions.setError(res, e.message, );
     };
