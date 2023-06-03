@@ -3,6 +3,7 @@ const CV = require('../../models/Timviec365/CV/CV');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
 const NganhCV = require('../../models/Timviec365/CV/Category');
 const CVGroup = require('../../models/Timviec365/CV/CVGroup');
+const fs = require('fs');
 
 
 // lấy tất cả danh sách mẫu CV
@@ -153,19 +154,84 @@ exports.detail = async(req, res, text) => {
 //lưu và tải cv
 exports.saveCV = async(req, res, next) => {
     try {
-        // 0 : ko, 1 có 
-        const upload = req.query.upload || 1;
-        const download = req.query.download || 0;
-        const imageFile = req.file;
-        const userId = req.user.data._id;
-        const data = req.body;
-        if (upload == 0 && download == 1) {
-            if (fs.existsSync(`../Storage/TimViec365/${userId}/cv/${data.nameImage.slice(0,-4)}.pdf`) &&
-                fs.existsSync(`../Storage/TimViec365/${userId}/cv/${data.nameImage}`)) {
-                //pdf tồn tại
+        if (req.body.cvid && req.body.nameImage) {
+            const download = req.query.download || 0;
+            const userId = req.user.data._id;
+            const cvId = req.body.cvid
+            const allowSendChat = req.body.allowSendChat
+            const nameImage = `${req.body.nameImage}_${Date.now()}`
+
+            const html = req.body.html
+            const lang = req.body.lang
+            console.log(nameImage)
+                // Chuỗi Base64 của ảnh
+            const base64String = req.body.base64;
+
+            if (typeof(userId) !== "number") {
+                return functions.setError(res, 'userId không phải là số', 404);
+            }
+
+            if (!fs.existsSync(`../Storage/TimViec365`)) {
+                fs.mkdirSync(`../Storage/TimViec365`);
+            }
+            if (!fs.existsSync(`../Storage/TimViec365/cv365`)) {
+                fs.mkdirSync(`../Storage/TimViec365/cv365`);
+            }
+
+            if (!fs.existsSync(`../Storage/TimViec365/cv365/ungvien`)) {
+                fs.mkdirSync(`../Storage/TimViec365/cv365/ungvien`);
+            }
+
+            if (!fs.existsSync(`../Storage/TimViec365/cv365/ungvien/uv_${userId}`)) {
+                fs.mkdirSync(`../Storage/TimViec365/cv365/ungvien/uv_${userId}`);
+            }
+
+            // Đường dẫn tới nơi bạn muốn lưu ảnh
+            const outputPath = `../Storage/TimViec365/cv365/ungvien/uv_${userId}/${nameImage}.jpg`;
+            if (fs.existsSync(`./Storage/TimViec365/cv365/ungvien/uv_${userId}/${nameImage}.jpg`)) {
+                return functions.setError(res, 'đã có file này hoặc tên file trùng với file trên hệ thống', 404);
+            }
+            // Xóa đầu mục của chuỗi Base64 (ví dụ: "data:image/png;base64,")
+            const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+
+            // Giải mã chuỗi Base64 thành dữ liệu nhị phân
+            const imageBuffer = Buffer.from(base64Data, 'base64');
+
+            // Ghi dữ liệu nhị phân vào tệp ảnh
+            fs.writeFile(outputPath, imageBuffer, (error) => {
+                if (error) {
+                    console.error('Lỗi khi ghi tệp ảnh:', error);
+                } else {
+                    console.log('Chuyển đổi thành công! Tệp ảnh đã được lưu tại:', outputPath);
+                }
+            });
+            let message = 'Lưu';
+            const checkImage = await functions.checkImage(outputPath);
+            if (checkImage == false) return functions.setError(res, 'Lỗi ảnh', 404);
+
+            const cvUV = {
+                userId: userId,
+                cvId: cvId,
+                html: html,
+                nameImage: nameImage,
+                lang: lang,
+            };
+
+            let _id = 1;
+            await functions.getMaxID(CVUV)
+                .then(res => {
+                    if (res) {
+                        _id = res + 1;
+                    }
+                });
+            cvUV._id = _id;
+            const newCVUV = await CVUV.create(cvUV);
+
+            //Gửi ảnh về
+            if (download == 1) {
                 const host = '';
-                const linkPdf = `${host}/TimViec365/${userId}/cv/${data.nameImage}`;
-                const linkImg = `${host}/TimViec365/${userId}/cv/${data.nameImage.slice(0,-4)}.pdf`;
+                const linkPdf = `${host}/TimViec365/${userId}/cv/${nameImage}.jpg`;
+                const linkImg = `${host}/TimViec365/${userId}/cv/${nameImage}.jpg`;
                 const senderId = 1191;
                 const text = '';
                 const data = {
@@ -175,72 +241,113 @@ exports.saveCV = async(req, res, next) => {
                     linkPdf: linkPdf,
                     Title: text,
                 };
-                await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
-                return await functions.success(res, `Tải thành công`, );
+                const respone = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
 
-            }
-            return functions.setError(res, 'Chưa upload ảnh', 404);
-        };
+                message += ',tải';
 
-        let message = 'Lưu';
-        const checkImage = await functions.checkImage(imageFile.path);
-
-        if (checkImage == false) return functions.setError(res, 'Lỗi ảnh', 404);
-
-        const uploadImage = await functions.uploadAndCheckPathIMG(userId, imageFile, 'cv');
-        if (uploadImage.status != 'EXIT') return await functions.setError(res, 'Upload ảnh thất bại', 404);
-        const cvUV = {
-            userId: userId,
-            cvId: data._id,
-            html: data.html,
-            nameImage: nameImage.filename,
-            lang: data.lang,
-        };
-        if (checkAvatar == true) {
-            const cv = await CV.findOne({ _id: data._id }).select('download');
-            if (!cv) return await functions.setError(res, 'Lưu thất bại 1', 404);
-            let _id = 1;
-            await functions.getMaxID(CVUV)
-                .then(res => {
-                    if (res) {
-                        _id = res + 1;
-                    }
-                });
-
-            cvUV._id = _id;
-            const newCVUV = await CVUV.create(cvUV);
-            if (newCVUV) {
-                // cập nhật số luot download 
-                await CV.updateOne({ _id: cv._id }, { $set: { download: cv.download + 1 } });
-
-                //Gửi ảnh về
-                if (download == 1) {
-                    const host = '';
-                    const linkPdf = `${host}/${uploadImage.imgPath.slice(11)}`;
-                    const linkImg = `${host}/${uploadImage.pdfPath.slice(11)}`;
-                    const senderId = 1191;
-                    const text = '';
-                    const data = {
-                        userId: userId,
-                        senderId: senderId,
-                        linkImg: linkImg,
-                        linkPdf: linkPdf,
-                        Title: text,
-                    };
-                    const respone = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
-
-                    message += ',tải';
-
-                };
-                return await functions.success(res, `${message} thành công`, { newCVUV });
             };
-            return functions.setError(res, 'Lỗi ảnh', 404);
-
+            return await functions.success(res, `${message} thành công`, { newCVUV });
         }
+        return functions.setError(res, 'Thông tin truyền lên không đầy đủ', 404);
+
+
     } catch (e) {
-        functions.setError(res, e.message, );
+        console.log("đã có lỗi xảy ra", e);
+        return functions.setError(res, 'Đã có lỗi xảy ra', 404);
     }
 }
+
+// exports.saveCV = async(req, res, next) => {
+//     try {
+//         // 0 : ko, 1 có 
+//         const upload = req.query.upload || 1;
+//         const download = req.query.download || 0;
+//         const imageFile = req.file;
+//         console.log(req.file)
+//         const userId = req.user.data._id;
+//         const data = req.body;
+//         if (upload == 0 && download == 1) {
+//             if (fs.existsSync(`../Storage/TimViec365/${userId}/cv/${data.nameImage.slice(0,-4)}.pdf`) &&
+//                 fs.existsSync(`../Storage/TimViec365/${userId}/cv/${data.nameImage}`)) {
+//                 //pdf tồn tại
+//                 const host = '';
+//                 const linkPdf = `${host}/TimViec365/${userId}/cv/${data.nameImage}`;
+//                 const linkImg = `${host}/TimViec365/${userId}/cv/${data.nameImage.slice(0,-4)}.pdf`;
+//                 const senderId = 1191;
+//                 const text = '';
+//                 const data = {
+//                     userId: userId,
+//                     senderId: senderId,
+//                     linkImg: linkImg,
+//                     linkPdf: linkPdf,
+//                     Title: text,
+//                 };
+//                 await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
+//                 return await functions.success(res, `Tải thành công`, );
+
+//             }
+//             return functions.setError(res, 'Chưa upload ảnh', 404);
+//         };
+
+//         let message = 'Lưu';
+//         const checkImage = await functions.checkImage(imageFile.path);
+
+//         if (checkImage == false) return functions.setError(res, 'Lỗi ảnh', 404);
+
+//         const uploadImage = await functions.uploadAndCheckPathIMG(userId, imageFile, 'cv');
+//         if (uploadImage.status != 'EXIT') return await functions.setError(res, 'Upload ảnh thất bại', 404);
+//         const cvUV = {
+//             userId: userId,
+//             cvId: data._id,
+//             html: data.html,
+//             nameImage: nameImage.filename,
+//             lang: data.lang,
+//         };
+//         if (checkAvatar == true) {
+//             const cv = await CV.findOne({ _id: data._id }).select('download');
+//             if (!cv) return await functions.setError(res, 'Lưu thất bại 1', 404);
+//             let _id = 1;
+//             await functions.getMaxID(CVUV)
+//                 .then(res => {
+//                     if (res) {
+//                         _id = res + 1;
+//                     }
+//                 });
+
+//             cvUV._id = _id;
+//             const newCVUV = await CVUV.create(cvUV);
+//             if (newCVUV) {
+//                 // cập nhật số luot download 
+//                 await CV.updateOne({ _id: cv._id }, { $set: { download: cv.download + 1 } });
+
+//                 //Gửi ảnh về
+//                 if (download == 1) {
+//                     const host = '';
+//                     const linkPdf = `${host}/${uploadImage.imgPath.slice(11)}`;
+//                     const linkImg = `${host}/${uploadImage.pdfPath.slice(11)}`;
+//                     const senderId = 1191;
+//                     const text = '';
+//                     const data = {
+//                         userId: userId,
+//                         senderId: senderId,
+//                         linkImg: linkImg,
+//                         linkPdf: linkPdf,
+//                         Title: text,
+//                     };
+//                     const respone = await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
+
+//                     message += ',tải';
+
+//                 };
+//                 return await functions.success(res, `${message} thành công`, { newCVUV });
+//             };
+//             return functions.setError(res, 'Lỗi ảnh', 404);
+
+//         }
+//     } catch (e) {
+//         functions.setError(res, e.message, );
+//     }
+// }
 
 // xem CV viết sẵn
 exports.viewAvailable = async(req, res, next) => {

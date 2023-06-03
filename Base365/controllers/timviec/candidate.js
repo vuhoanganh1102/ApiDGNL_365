@@ -836,6 +836,7 @@ exports.hosoXinViec = async(req, res, next) => {
 exports.listJobCandidateApply = async(req, res, next) => {
     try {
         if (req.user) {
+
             let page = Number(req.body.page)
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
