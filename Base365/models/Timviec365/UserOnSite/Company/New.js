@@ -40,7 +40,7 @@ const newTV365Schema = new mongoose.Schema({
     },
     // thành phố
     cityID: [{
-        type: String,
+        type: Number,
     }],
     // quận huyện
     districtID: [{
