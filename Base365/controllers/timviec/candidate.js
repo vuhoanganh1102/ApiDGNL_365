@@ -403,7 +403,6 @@ exports.sendOTP = async(req, res, next) => {
                             return functions.success(res, 'Gửi OTP thành công');
                         });
                 });
-
         } else if (await functions.checkEmail(user) && await functions.getDatafindOne(Users, { email: user }, )) {
             await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { user })
                 .then((response) => {
@@ -697,14 +696,19 @@ exports.completeProfileQlc = async(req, res, next) => {
         }
 
         let findCv = await functions.getDatafind(CV, {})
-
         for (let i = 0; i < findCv.length; i++) {
             newCv.push(findCv[i])
+            if (newCv.length > 10) {
+                break
+            }
         }
 
         let findBlog = await functions.getDatafind(blog, { categoryID: candiCateID })
         for (let i = 0; i < findBlog.length; i++) {
             newBlog.push(findBlog[i])
+            if (newBlog.length > 10) {
+                break
+            }
         }
 
 
@@ -832,6 +836,7 @@ exports.hosoXinViec = async(req, res, next) => {
 exports.listJobCandidateApply = async(req, res, next) => {
     try {
         if (req.user) {
+
             let page = Number(req.body.page)
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;

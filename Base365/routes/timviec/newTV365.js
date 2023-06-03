@@ -39,7 +39,7 @@ router.get('/getDataPost', functions.checkToken, newTV365.getPost)
 router.get('/checkNew10p', functions.checkToken, newTV365.checkPostNew10p)
 
 // api làm mới tin
-router.get('/checkNew10p', functions.checkToken, newTV365.refreshNew)
+router.get('/refreshNew', functions.checkToken, newTV365.refreshNew)
 
 //api lấy 1 bài viết trước đăng nhập hoặc sau đăng nhập
 router.post('/detail', formData.parse(), function(req, res, next) {

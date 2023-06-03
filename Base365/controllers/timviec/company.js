@@ -675,7 +675,7 @@ exports.changePassword = async(req, res, next) => {
 }
 
 // hàm cập nhập avatar
-exports.updateImg = async(req, res, next) => {
+exports.uploadAvatar = async(req, res, next) => {
     try {
         let email = req.user.data.email,
             avatarUser = req.file;
