@@ -1736,19 +1736,29 @@ exports.candidateAI = async(req, res, next) => {
             pagination: 1,
             size: 20,
         })
-        for (let i = 0; i < uvAI.data.item.length; i++) {
-            let findUvAI = await functions.getDatafindOne(Users, { idTimViec365: uvAI.data.item[i].use_id })
-            if (findUvAI) {
-                list.push(findUvAI)
+        if (uvAI && uvAI.length > 0) {
+            for (let i = 0; i < uvAI.data.item.length; i++) {
+
+                let findUvAI = await Users.findOne({ idTimViec365: uvAI.data.item[i].use_id }, {
+                    _id: 1,
+                    userName: 1,
+                    avatarUser: 1,
+                    lastActivedAt: 1,
+                    "inForPerson.candiTitle": 1,
+                    "inForPerson.candiCityID": 1,
+                    "inForPerson.candiMoney": 1
+                })
+                if (findUvAI) {
+                    findUvAI.avatarUser = await functions.getUrlLogoCompany(findUvAI.createdAt, findUvAI.avatarUser)
+                    list.push(findUvAI)
+                }
+                if (list.length == 12) {
+                    break
+                }
             }
-            if (list.length == 12) {
-                break
-            }
-        }
-        console.log(uvAI.data.item)
-        if (uvAI) {
             functions.success(res, "Hiển thị ứng viên ngẫu nhiên theo ai thành công", { list });
-        }
+        } else return functions.setError(res, "Không có ứng viên phù hợp", 400);
+
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi hiển thị ứng viên ngẫu nhiên theo ai", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
@@ -1762,32 +1772,33 @@ exports.infoCandidate = async(req, res, next) => {
             let userId = req.body.iduser
             let CvUv = functions.getDatafindOne(CVUV, { userId: userId })
             let userInfo = await functions.findOneUser(userId)
+
             if (userInfo) {
+                let candidateAI = await functions.getDataAxios('http://localhost:3000/api/timviec/candidate/candidateAI', { use_id: userId })
                 if (req.user && req.user.data.type == 1) {
                     let companyId = req.user.data.idTimViec365
                     let checkApplyForJob = await functions.getDatafindOne(applyForJob, { userID: userId, comID: companyId })
                     let checkPoint = await functions.getDatafindOne(pointUsed, { uscID: companyId, useID: userId })
+
                     if (checkApplyForJob && checkPoint) {
-                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
+                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true, candidateAI: candidateAI });
                     } else {
                         userInfo.phoneTK = "bạn chưa sử dụng điểm để xem sdt đăng kí"
                         userInfo.phone = "bạn chưa sử dụng điểm để xem sdt"
                         userInfo.email = "bạn chưa sử dụng điểm để xem email"
                         userInfo.emailContact = "bạn chưa sử dụng điểm để xem email liên hệ"
-                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
+                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false, candidateAI: candidateAI });
 
                     }
                 } else if (req.user && req.user.data.idTimViec365 == userId) {
-                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
+                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true, candidateAI: candidateAI });
                 } else {
                     userInfo.phoneTK = "đăng nhập để xem sdt đăng kí"
                     userInfo.phone = "đăng nhập để xem sdt"
                     userInfo.email = "đăng nhập để xem email"
                     userInfo.emailContact = "đăng nhập để xem email liên hệ"
-                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
+                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false, candidateAI: candidateAI });
                 }
-
-
             } else return functions.setError(res, "Không có thông tin user", 400);
 
 
