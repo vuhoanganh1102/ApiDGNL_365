@@ -381,6 +381,13 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    // tin được yêu thích
+    loveNew:[{
+        userID:{
+            type:Number,
+            require:true
+        }
+    }],
     img: [{
         // danh sách ảnh
         _id: Number,

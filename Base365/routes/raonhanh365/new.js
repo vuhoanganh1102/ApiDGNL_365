@@ -15,8 +15,17 @@ router.get('/getNewBeforeLogin', newRN.getNewBeforeLogin);
 router.get('/searchNew', newRN.searchNew);
 
 // tạo mới tin mua
-router.post('/createBuyNew',functions.checkToken, uploadFileImage.any(), newRN.createBuyNew)
+router.post('/createBuyNew',formData.parse(), functions.checkToken, newRN.createBuyNew)
 
 // update tin mua
-router.put('/updateBuyNew',functions.checkToken, uploadFileImage.any(), newRN.updateBuyNew)
+router.put('/updateBuyNew',formData.parse(), functions.checkToken, newRN.updateBuyNew)
+
+// lấy tất cả tin 
+router.get('/getAllNew/:sort/:page',newRN.getAllNew)
+
+// chi tiết tin 
+router.get('/getDetailNew',newRN.getDetailNew)
+
+// yêu thích tin
+router.post('/loveNew',functions.checkToken,newRN.loveNew)
 module.exports = router;

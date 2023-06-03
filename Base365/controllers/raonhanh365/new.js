@@ -3,6 +3,7 @@ const Category = require('../../models/Raonhanh365/Category');
 const New = require('../../models/Raonhanh365/UserOnSite/New')
 const CategoryRaoNhanh365 = require('../../models/Raonhanh365/Category');
 const User = require('../../models/Users');
+const fs = require('fs');
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
     try {
@@ -229,7 +230,7 @@ exports.postNewVehicle = async (req, res, next) => {
 // lấy tin trước đăng nhập
 exports.getNewBeforeLogin = async (req, res, next) => {
     try {
-        let searchitem = { _id: 1, title: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
+        let searchitem = { _id: 1, title: 1, loveNew: 1, address: 1, viewCount: 1, money: 1, updateTime: 1, apartmentNumber: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
         // tìm tin được ưu tiên đẩy lên đầu với trường pinHome
         let data = await New.find({ pinHome: 1, buySell: 2 }, searchitem).limit(50);
         if (data) {
@@ -275,7 +276,7 @@ exports.searchNew = async (req, res, next) => {
         let token = await functions.createToken(user, "2d");
         token1 = 'Bear ' + token;
         console.log("🚀 ~ file: new.js:278 ~ exports.searchNews= ~ token:", token1)
-        let searchItem = { _id: 1, title: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
+        let searchItem = { _id: 1, title: 1, viewCount: 1, loveNew: 1, address: 1, money: 1, apartmentNumber: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
 
         // trường hợp không nhập gì mà tìm kiếm
         if (!req.body.key || req.body.key === undefined) {
@@ -357,10 +358,11 @@ exports.searchNew = async (req, res, next) => {
     }
 }
 // tạo tin mua 
-exports.createBuyNew = async (req, res, next) => {
+exports.createBuyNew = async (req, res) => {
     try {
-        // lấy thông tin file từ req
-        let File = req.files;
+        // lấy id user từ req
+        let userID = req.user.data._id;
+
         // khởi tạo các biến có thể có
         let tenderFile = null;
 
@@ -378,10 +380,6 @@ exports.createBuyNew = async (req, res, next) => {
 
         // khai báo và gán giá trị các biến bắt buộc 
         let { cateID, title, name, city, district, ward, apartmentNumber, description, bidExpirationTime, timeReceivebidding, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, until_tu, until_den, until_bidFee, phone, email } = req.body;
-
-        // lấy id user từ req
-        let userID = req.user.data._id;
-
         //  tạo mảng img
         let img = [];
 
@@ -394,6 +392,9 @@ exports.createBuyNew = async (req, res, next) => {
         // khai báo đây là tin mua với giá trị là 1
         let buySell = 1;
 
+        let File = req.files;
+
+        let type = 0;
         // kiểm tra các điều kiện bắt buộc 
         if (cateID && title && name && city && district && ward
             && apartmentNumber && description && timeReceivebidding
@@ -421,32 +422,7 @@ exports.createBuyNew = async (req, res, next) => {
                 else if (functions.checkEmail(email) === false) {
                     return functions.setError(res, 'Invalid email');
                 }
-                // kiểm tra file có tồn tại không
-                else if (File && File.length !== 0) {
 
-                    // khởi tạo vòng lặp
-                    for (let i = 0; i < File.length; i++) {
-
-                        // nếu trường gửi lên có tên Image
-                        if (File[i].fieldname === 'Image') {
-
-                            // thêm link của file vào mảng img
-                            img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename) });
-                        }
-
-                        // tương tự
-                        else if (File[i].fieldname === 'tenderFile') {
-                            tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
-                            // tương tự
-                        } else if (File[i].fieldname === 'fileContentProcedureApply') {
-                            fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
-                            // tương tự
-                        } else if (File[i].fieldname === 'instructionFile') {
-                            instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
-                        }
-                    }
-
-                }
             if (functions.checkDate(timeReceivebidding) === true && functions.checkDate(bidExpirationTime) === true && functions.checkDate(timeNotiBiddingStart) === true && functions.checkDate(timeNotiBiddingEnd) === true) {
                 //  kiểm tra thời gian có nhỏ hơn thời gian hiện tại không
                 if (await functions.checkTime(timeReceivebidding) && await functions.checkTime(bidExpirationTime) && await functions.checkTime(timeNotiBiddingStart) && await functions.checkTime(timeNotiBiddingEnd)) {
@@ -465,9 +441,38 @@ exports.createBuyNew = async (req, res, next) => {
             else {
                 return functions.setError(res, 'Invalid date format', 404)
             }
-            // lưu dữ liệu vào DB
-            const postNew = new New({ _id, cateID, title, linkTitle, userID, buySell, createTime, img, tenderFile, fileContentProcedureApply, contentOnline, instructionFile, cityProcedure, districtProcedure, wardProcedure, name, city, district, ward, apartmentNumber, description, timeReceivebidding, bidExpirationTime, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, phone, email, until_tu, until_den, until_bidFee });
+
+            if (File.Image) {
+                if (File.Image.length) {
+                    if (File.Image.length > 10) return functions.setError(res, 'Gửi quá nhiều ảnh');
+                    for (let i = 0; i < File.Image.length; i++) {
+                        functions.uploadFileRaoNhanh(userID, File.Image[i]);
+                        img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.Image[i].name) });
+                    }
+                } else {
+                    functions.uploadFileRaoNhanh(userID, File.Image);
+                    img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.Image.name) });
+                }
+            }
+            if (File.tenderFile) {
+                if (File.tenderFile.length) return functions.setError(res, 'Gửi quá nhiều file');
+                functions.uploadFileRaoNhanh(userID, File.tenderFile);
+                tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.tenderFile.name)
+            }
+            if (File.instructionFile) {
+                if (File.instructionFile.length) return functions.setError(res, 'Gửi quá nhiều file');
+                functions.uploadFileRaoNhanh(userID, File.instructionFile);
+                instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.instructionFile.name)
+            }
+            if (File.fileContentProcedureApply) {
+                if (File.fileContentProcedureApply.length) return functions.setError(res, 'Gửi quá nhiều file');
+                functions.uploadFileRaoNhanh(userID, File.fileContentProcedureApply);
+                fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.fileContentProcedureApply.name)
+            }
+            //lưu dữ liệu vào DB
+            const postNew = new New({ _id, cateID, title, type, linkTitle, userID, buySell, createTime, img, tenderFile, fileContentProcedureApply, contentOnline, instructionFile, cityProcedure, districtProcedure, wardProcedure, name, city, district, ward, apartmentNumber, description, timeReceivebidding, bidExpirationTime, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, phone, email, until_tu, until_den, until_bidFee });
             await postNew.save();
+            // await New.deleteMany({userID:5})
         } else {
             return functions.setError(res, 'missing data', 404)
         }
@@ -480,8 +485,8 @@ exports.createBuyNew = async (req, res, next) => {
 // sửa tin mua
 exports.updateBuyNew = async (req, res, next) => {
     try {
-        // lấy thông tin file từ req
-        let File = req.files;
+        // lấy id user từ req
+        let userID = req.user.data._id;
         // khởi tạo các biến có thể có
         let tenderFile = null;
 
@@ -498,31 +503,23 @@ exports.updateBuyNew = async (req, res, next) => {
         let wardProcedure = req.body.wardProcedure || null;
 
         // khai báo và gán giá trị các biến bắt buộc 
-        let {id, cateID, title, name, city, district, ward, apartmentNumber, description, bidExpirationTime, timeReceivebidding, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, until_tu, until_den, until_bidFee, phone, email } = req.body;
-
-        // lấy id user từ req
-        let userID = req.user.data._id;
-
+        let { id, title, name, city, district, ward, apartmentNumber, description, bidExpirationTime, timeReceivebidding, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, until_tu, until_den, until_bidFee, phone, email } = req.body;
         //  tạo mảng img
         let img = [];
+
 
         // lấy thời gian hiện tại
         let updateTime = new Date(Date.now());
 
+        let File = req.files;
 
         // kiểm tra các điều kiện bắt buộc 
-        if (id && cateID && title && name && city && district && ward
+        if (title && name && city && district && ward
             && apartmentNumber && description && timeReceivebidding
             && bidExpirationTime && status && timeNotiBiddingStart
             && timeNotiBiddingEnd && instructionContent && bidFee &&
             startvalue && endvalue && phone && email && until_tu && until_den && until_bidFee) {
 
-            // kiểm tra tin có tồn tại không
-            let data_New = await New.findById(id);
-            if(!data_New){
-                return functions.setError(res, 'New is not exits');
-            }
-            
             // tạolink title từ title người dùng nhập
             let linkTitle = functions.createLinkTilte(title);
 
@@ -543,32 +540,7 @@ exports.updateBuyNew = async (req, res, next) => {
                 else if (functions.checkEmail(email) === false) {
                     return functions.setError(res, 'Invalid email');
                 }
-                // kiểm tra file có tồn tại không
-                else if (File && File.length !== 0) {
 
-                    // khởi tạo vòng lặp
-                    for (let i = 0; i < File.length; i++) {
-
-                        // nếu trường gửi lên có tên Image
-                        if (File[i].fieldname === 'Image') {
-
-                            // thêm link của file vào mảng img
-                            img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename) });
-                        }
-
-                        // tương tự
-                        else if (File[i].fieldname === 'tenderFile') {
-                            tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
-                            // tương tự
-                        } else if (File[i].fieldname === 'fileContentProcedureApply') {
-                            fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
-                            // tương tự
-                        } else if (File[i].fieldname === 'instructionFile') {
-                            instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File[i].filename)
-                        }
-                    }
-
-                }
             if (functions.checkDate(timeReceivebidding) === true && functions.checkDate(bidExpirationTime) === true && functions.checkDate(timeNotiBiddingStart) === true && functions.checkDate(timeNotiBiddingEnd) === true) {
                 //  kiểm tra thời gian có nhỏ hơn thời gian hiện tại không
                 if (await functions.checkTime(timeReceivebidding) && await functions.checkTime(bidExpirationTime) && await functions.checkTime(timeNotiBiddingStart) && await functions.checkTime(timeNotiBiddingEnd)) {
@@ -587,13 +559,148 @@ exports.updateBuyNew = async (req, res, next) => {
             else {
                 return functions.setError(res, 'Invalid date format', 404)
             }
-           
-           await New.findByIdAndUpdate(id,{ title, linkTitle,updateTime, img, tenderFile, fileContentProcedureApply, contentOnline, instructionFile, cityProcedure, districtProcedure, wardProcedure, name, city, district, ward, apartmentNumber, description, timeReceivebidding, bidExpirationTime, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, phone, email, until_tu, until_den, until_bidFee });
+            let files_old = await New.findById(id, { img: 1, tenderFile: 1, instructionFile: 1, fileContentProcedureApply: 1 })
+            if (files_old.tenderFile) {
+
+                let text = files_old.tenderFile.split('/').reverse()[0]
+                functions.deleteFileRaoNhanh(userID, text)
+            }
+            if (files_old.img) {
+                for (let i = 0; i < files_old.img.length; i++) {
+                    let text = files_old.img[i].nameImg.split('/').reverse()[0];
+                    functions.deleteFileRaoNhanh(userID, text)
+                }
+            }
+            if (files_old.fileContentProcedureApply) {
+
+                let text = files_old.fileContentProcedureApply.split('/').reverse()[0]
+                functions.deleteFileRaoNhanh(userID, text)
+            }
+            if (files_old.instructionFile) {
+
+                let text = files_old.instructionFile.split('/').reverse()[0]
+                functions.deleteFileRaoNhanh(userID, text)
+            }
+
+
+            if (File.Image) {
+                if (File.Image.length) {
+                    if (File.Image.length > 10) return functions.setError(res, 'Gửi quá nhiều ảnh');
+                    for (let i = 0; i < File.Image.length; i++) {
+                        functions.uploadFileRaoNhanh(userID, File.Image[i]);
+                        img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.Image[i].name) });
+                    }
+                } else {
+                    functions.uploadFileRaoNhanh(userID, File.Image);
+                    img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.Image[i].name) });
+                }
+            }
+            if (File.tenderFile) {
+                if (File.tenderFile.length) return functions.setError(res, 'Gửi quá nhiều file');
+                functions.uploadFileRaoNhanh(userID, File.tenderFile);
+                tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.tenderFile.name)
+            }
+            if (File.instructionFile) {
+                if (File.instructionFile.length) return functions.setError(res, 'Gửi quá nhiều file');
+                functions.uploadFileRaoNhanh(userID, File.instructionFile);
+                instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.instructionFile.name)
+            }
+            if (File.fileContentProcedureApply) {
+                if (File.fileContentProcedureApply.length) return functions.setError(res, 'Gửi quá nhiều file');
+                functions.uploadFileRaoNhanh(userID, File.fileContentProcedureApply);
+                fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.fileContentProcedureApply.name)
+            }
+
+            await New.findByIdAndUpdate(id, { title, linkTitle, img, tenderFile, updateTime, fileContentProcedureApply, contentOnline, instructionFile, cityProcedure, districtProcedure, wardProcedure, name, city, district, ward, apartmentNumber, description, timeReceivebidding, bidExpirationTime, status, timeNotiBiddingStart, timeNotiBiddingEnd, instructionContent, bidFee, startvalue, endvalue, phone, email, until_tu, until_den, until_bidFee })
+
         } else {
             return functions.setError(res, 'missing data', 404)
         }
-        return functions.success(res, "post new success")
+        return functions.success(res, "update new success")
     } catch (error) {
         return functions.setError(res, error)
+    }
+}
+
+// toàn bộ danh sách tin
+exports.getAllNew = async (req, res, next) => {
+    try {
+        let searchitem = { _id: 1, loveNew: 1, title: 1, viewCount: 1, apartmentNumber: 1, money: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
+        let pageSize = 10;
+        let { page, sort } = req.params;
+        if (!functions.checkNumber(page) || !functions.checkNumber(sort)) {
+            functions.setError(res, "invalid number", 404)
+        }
+        sort = Number(sort);
+        page = Number(page);
+        let skip = (page - 1) * pageSize;
+        let data = [];
+        let totalCount = 0;
+        if (sort === 1) {
+            data = await New.find({ buySell: 2 }, searchitem).sort({ viewCount: -1 }).skip(skip).limit(pageSize);
+            totalCount = await New.countDocuments({ buySell: 2 });
+            totalPages = Math.ceil(totalCount / pageSize)
+        }
+        else if (sort === 2) {
+            data = await New.find({ buySell: 2 }, searchitem).sort({ updateTime: -1 }).skip(skip).limit(pagesize);
+            totalCount = await New.countDocuments({ buySell: 2 });
+            totalPages = Math.ceil(totalCount / pageSize)
+        } else if (sort === 3) {
+            data = await New.find({ type: 0, buySell: 2 }, searchitem).sort({ updateTime: -1 }).skip(skip).limit(pagesize);
+            totalCount = await New.countDocuments({ buySell: 2, type: 0 });
+            totalPages = Math.ceil(totalCount / pageSize)
+        } else if (sort === 4) {
+            data = await New.find({ type: 1, buySell: 2 }, searchitem).sort({ updateTime: -1 }).skip(skip).limit(pagesize);
+            totalCount = await New.countDocuments({ buySell: 1, type: 0 });
+            totalPages = Math.ceil(totalCount / pageSize)
+        }
+
+        functions.success(res, 'get data success ', { totalCount, totalPages, data })
+
+    } catch (error) {
+        functions.setError(res, error)
+    }
+}
+
+// chi tiết tin 
+exports.getDetailNew = async (req, res, next) => {
+    try {
+        let searchitem = { title: 1, userID: 1, cateID: 1, viewCount: 1, totalSold: 1, buySell: 1, apartmentNumber: 1, money: 1, address: 1, updateTime: 1, linkTitle: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
+        let id_new = req.body.id;
+        let data = await New.findById(id_new, searchitem);
+        if (!data) {
+            functions.setError(res, "get data failed")
+        }
+        let cateID = Number(data.cateID);
+        let nameCateParent = null;
+        let dataCate = await CategoryRaoNhanh365.findById(cateID, { parentId: 1, name: 1 });
+        let nameCate = dataCate.name;
+        if (dataCate.parentId !== 0) {
+            nameCateParent = await CategoryRaoNhanh365.findById(dataCate.parentId, { name: 1 })
+        }
+        functions.success(res, 'get data success', { nameCate, nameCateParent, data })
+    } catch (error) {
+        functions.setError(res, error)
+    }
+}
+
+
+// yêu thích tin 
+exports.loveNew = async (req, res, next) => {
+    try {
+        let id = req.body.id;
+        let user = req.user.data;
+
+        let checkLoveNew = await New.find({_id:id}, { loveNew: 1 });
+        
+       // console.log("🚀 ~ file: new.js:695 ~ exports.loveNew= ~ checkLoveNew:", checkLoveNew)
+        // if(checkLoveNew.loveNew === 0){
+        //     await New.findByIdAndUpdate(id,{loveNew:1})
+        // }else{
+        //     await New.findByIdAndUpdate(id,{loveNew:0})
+        // }
+        functions.success(res, "love new success")
+    } catch (error) {
+        functions.setError(res, error)
     }
 }
