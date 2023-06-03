@@ -49,11 +49,7 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    city: {
-        // mã thành phố
-        type: Number,
-        default: 0
-    },
+    
     image: {
         // ảnh bài viết
         type: String,
@@ -115,6 +111,11 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     }],
+    city: {
+        // mã thành phố
+        type: Number,
+        default: 0
+    },
     district: {
         // quận huyện
         type: Number,
@@ -265,8 +266,13 @@ const newSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
-    producType: {
-        // loại sản phẩm , nhóm sản phẩm
+    productType: {
+        // loại sản phẩm 
+        type: Number,
+        default: 0
+    },
+    productGroup: {
+        // nhóm sản phẩm
         type: Number,
         default: 0
     },
@@ -301,6 +307,24 @@ const newSchema = new mongoose.Schema({
         // 
         type: String,
         default: null
+    },
+    //thuong hieu(dung chung cho cac danh muc health, vehicle, electrionic device, entertament)
+    brand: {
+        // 
+        type: Number,
+        default: null
+    },
+    // han su dung(dung chung health, food)
+    expiry: {
+         // 
+        type: Date,
+        default: null
+    },
+
+    //cong suat(vehicle, houseWare)
+    wattage: {
+        type: Number,
+        default: 0
     },
     // đô điện tử
     electroniceDevice: {

@@ -24,9 +24,13 @@ exports.postNewMain = async(req, res, next) => {
             phone = request.phone,
             status = request.status,
             detailCategory = request.detailCategory,
-            district = request.district,
             buySell = request.buySell,
-            producType = request.producType;
+            productType = request.productType,
+            productGroup = request.productGroup,
+            city = request.city,
+            district = request.district,
+            ward = request.ward,
+            brand = request.brand;
         let fields = [userID, cateID, title, money, until, description, free, poster, name, email, address, phone, status, detailCategory];
         for(let i=0; i<fields.length; i++){
             if(!fields[i])
@@ -95,7 +99,13 @@ exports.postNewMain = async(req, res, next) => {
                 detailCategory: detailCategory,
                 district: district,
                 img: listImg,
-                video: nameVideo
+                video: nameVideo,
+                productGroup: productGroup,
+                productType: productType,
+                city,
+                district,
+                ward,
+                brand
             }
             return next()
         }
@@ -169,9 +179,6 @@ exports.postNewsGeneral = async(req, res, next) => {
                 length: request.length,
                 width: request.width,
                 buyingArea: request.buyingArea,
-                kvCity: request.kvCity,
-                kvDistrict: request.kvDistrict,
-                kvWard: request.kvWard,
                 numberToletRoom: request.numberToletRoom,
                 numberBedRoom: request.numberBedRoom,
                 typeOfApartment: request.typeOfApartment,
@@ -186,20 +193,86 @@ exports.postNewsGeneral = async(req, res, next) => {
                 block: request.block,
                 htmchrt: request.htmchrt
             };
+            // cac truong cua ship
+            let fieldsShip = {
+                product: request.product,
+                timeStart: Date(request.timeStart),
+                timeEnd: Date(request.timeEnd),
+                allDay: request.allDay,
+                vehicloType: request.vehicloType
+            };
+            //cac truong cua danh muc thu cung
+            let fieldsPet = {
+                age: req.body.age,
+                gender: req.body.gender,
+                weigth: req.body.weigth,
+            };
+            //cac truong cua danh muc cong viec
+            let fieldsJob = {
+                minAge: req.body.minAge,
+                exp: req.body.exp,
+                level: req.body.level,
+                skill: req.body.skill,
+                quantity: req.body.quantity,
+                addressNumber: req.body.addressNumber,
+                payBy: req.body.payBy,
+                benefit: req.body.benefit,
+                salary: req.body.salary,
+                gender: req.body.gender,
+                degree: req.body.degree,
+            };
 
             //
-            fields.createTime = new Date(Date.now());
             fields.electroniceDevice = fieldsElectroniceDevice;
             fields.vehicle = fieldsVehicle;
-            fields.fieldsRealEstate = fieldsRealEstate;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news electronic device success");
+            fields.realEstate = fieldsRealEstate;
+            fields.ship = fieldsShip;
+            fields.pet = fieldsPet;
+            fields.Job = fieldsJob;
+
+            req.fields = fields;
+            return next();
+            
         }
-        return functions.setError(res, "Category electronic device not found!", 505);
+        return functions.setError(res, "Category not found!", 505);
     } catch (err) {
         console.log(err);
         return functions.setError(res, err)
+    }
+}
+
+exports.createNews = async(req, res, next)=>{
+    try {
+        let fields = req.fields;
+        fields.createTime = new Date(Date.now());
+        const news = new New(fields);
+        await news.save();
+        return functions.success(res, "create news success");
+    }catch(err){
+        console.log(err);
+        return functions.setError(res, err)
+    }
+}
+
+//chinh sua tat ca cac loai tin
+exports.updateNews = async(req, res, next) => {
+    try {
+        let idNews = Number(req.body.news_id);
+        if(!idNews)
+            return functions.setError(res, "Missing input news_id!", 405);
+        let existsNews = await New.find({_id: idNews});
+        let fields = req.fields;
+        fields.updateTime = new Date(Date.now());
+        if (existsNews ) {
+            // console.log(existsNews);
+            console.log(fields);
+            await New.findByIdAndUpdate(idNews, fields);
+            return functions.success(res, "News edited successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    } catch (err) {
+        console.log(err);
+        return functions.setError(res, err);
     }
 }
 
@@ -237,369 +310,6 @@ exports.postNewElectron = async(req, res, next) => {
     }
 }
 
-// đăng tin xe co
-exports.postNewVehicle = async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 2 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let subFields = {
-                brandMaterials : request.brandMaterials,
-                vehicles : request.vehicles,
-                spareParts : request.spareParts,
-                interior : request.interior,
-                device : request.device,
-                color : request.color,
-                capacity : request.capacity,
-                connectInternet : request.connectInternet,
-                generalType : request.generalType,
-                wattage : request.wattage,
-                resolution : request.resolution,
-                engine : request.engine,
-                accessary : request.accessary,
-                frameMaterial : request.frameMaterial,
-                volume : request.volume,
-                manufacturingYear : request.manufacturingYear,
-                fuel : request.fuel,
-                numberOfSeats : request.numberOfSeats,
-                gearBox : request.gearBox,
-                style : request.style,
-                payload : request.payload,
-                carNumber : request.carNumber,
-                km : request.km,
-                origin : request.origin,
-                version : request.version
-            }
-            
-            fields.createTime = new Date(Date.now());
-            fields.vehicle = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news vihicle success!");
-        }else {
-            return functions.setError(res, "Category vihicle not found!", 505); 
-        }
-
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
-
-
-// đăng tin nha dat
-exports.postNewRealEstate = async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 3 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let request = req.body;
-            let subFields = {
-                statusSell: request.statusSell,
-                nameApartment: request.nameApartment,
-                numberOfStoreys: request.numberOfStoreys,
-                storey: request.storey,
-                mainDirection: request.mainDirection,
-                balconyDirection: request.balconyDirection,
-                legalDocuments: request.legalDocuments,
-                statusInterior: request.statusInterior,
-                acreage: request.acreage,
-                length: request.length,
-                width: request.width,
-                buyingArea: request.buyingArea,
-                kvCity: request.kvCity,
-                kvDistrict: request.kvDistrict,
-                kvWard: request.kvWard,
-                numberToletRoom: request.numberToletRoom,
-                numberBedRoom: request.numberBedRoom,
-                typeOfApartment: request.typeOfApartment,
-                special: request.special,
-                statusBDS: request.statusBDS,
-                codeApartment: request.codeApartment,
-                cornerUnit: request.cornerUnit,
-                nameArea: request.nameArea,
-                useArea: request.useArea,
-                landType: request.landType,
-                officeType: request.officeType,
-                block: request.block,
-                htmchrt: request.htmchrt
-            };
-            fields.createTime = new Date(Date.now());
-            fields.realEstate = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news realEstate success");
-        }
-        return functions.setError(res, "Category realEstate not found!", 505);
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
-
-// đăng tin ship
-exports.postNewShip= async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 4 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let request = req.body;
-            let subFields = {
-                product: request.product,
-                timeStart: Date(request.timeStart),
-                timeEnd: Date(request.timeEnd),
-                allDay: request.allDay,
-                vehicloType: request.vehicloType
-            };
-            let kvShip = {
-                kvCity: request.kvCity,
-                kvDistrict: request.kvDistrict
-            }
-            fields.createTime = new Date(Date.now());
-            fields.ship = subFields;
-            fields.realEstate = kvShip; // them ke dia chi ship vao truong realEstate
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news ship success");
-        }
-        return functions.setError(res, "Category ship not found!", 505);
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
-
-// đăng tin dich vu - giai tri
-exports.postNewEntertainmentService= async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 13 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let subFields = {
-                brand: req.body.brand
-            };
-            fields.createTime = new Date(Date.now());
-            fields.entertainmentService = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news Entertainment Service success");
-        }
-        return functions.setError(res, "Category Entertainment Servicee not found!", 505);
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
-
-
-// đăng tin the thao
-exports.postNewSport= async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 75 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let subFields = {
-                sport: req.body.sport,
-                typeSport: req.body.typeSport
-            };
-            fields.createTime = new Date(Date.now());
-            fields.sports = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news sport success");
-        }
-        return functions.setError(res, "Category sport not found!", 505);
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
-
-// đăng tin do gia dung
-exports.postNewHouseWare= async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 21 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            
-            let subFields = {
-                typeDevice: req.body.typeDevice,
-                typeProduct: req.body.typeProduct,
-                guarantee: req.body.guarantee,
-            };
-            fields.createTime = new Date(Date.now());
-            fields.houseWare = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news house ware success");
-        }
-        return functions.setError(res, "Category house ware not found!", 505);
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
-
-// đăng tin suc khoe sac dep
-exports.postNewHealth= async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 22 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let subFields = {
-                typeProduct: req.body.typeProduct,
-                kindCosmetics: req.body.kindCosmetics,
-                expiry: Date(req.body.expiry),
-                brand: req.body.brand
-            };
-            fields.createTime = new Date(Date.now());
-            fields.houseWare = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news health success");
-        }
-        return functions.setError(res, "Category health not found!", 505);
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
-
-// đăng tin tim viec
-exports.postNewJob= async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 119 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let subFields = {
-                jobType: req.body.jobType,
-                jobKind: req.body.jobKind,
-                minAge: req.body.minAge,
-                exp: req.body.exp,
-                level: req.body.level,
-                skill: req.body.skill,
-                quantity: req.body.quantity,
-                city: req.body.city,
-                district: req.body.district,
-                ward: req.body.ward,
-                addressNumber: req.body.addressNumber,
-                payBy: req.body.payBy,
-                benefit: req.body.benefit,
-                jobDetail: req.body.jobDetail,
-                salary: req.body.salary,
-                gender: req.body.gender,
-                degree: req.body.degree,
-            };
-            fields.createTime = new Date(Date.now());
-            fields.Job = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news job success");
-        }
-        return functions.setError(res, "Category job not found!", 505);
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
-
-// đăng tin do an do uong
-exports.postNewFood= async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 93 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let subFields = {
-                typeFood: req.body.typeFood,
-                expiry: req.body.expiry,
-            };
-            fields.createTime = new Date(Date.now());
-            fields.food = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news food success");
-        }
-        return functions.setError(res, "Category food not found!", 505);
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
-
-// đăng tin do an do uong
-exports.postNewPet= async(req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 51 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let subFields = {
-                kindOfPet: req.body.kindOfPet,
-                age: req.body.age,
-                gender: req.body.gender,
-                weigth: req.body.weigth,
-            };
-            fields.createTime = new Date(Date.now());
-            fields.pet = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news pet success");
-        }
-        return functions.setError(res, "Category pet not found!", 505);
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
-    }
-}
 // lấy tin trước đăng nhập
 exports.getNewsBeforeLogin = async(req, res, next) => {
         try {
