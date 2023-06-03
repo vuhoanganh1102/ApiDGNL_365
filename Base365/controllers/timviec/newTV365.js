@@ -339,7 +339,7 @@ exports.checkPostNew10p = async(req, res, next) => {
             let checkPost = await functions.isCurrentTimeGreaterThanInputTime(post.createTime);
             console.log(checkPost)
             if (checkPost) {
-                return functions.success(res, "Láy dữ liệu thành công")
+                return functions.success(res, "đủ điều kiện đăng tin")
             }
             return functions.setError(res, 'chưa đủ 10p', 404)
         }
