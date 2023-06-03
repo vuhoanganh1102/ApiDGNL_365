@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="743cec86-3bb5-47a7-b11e-02232bb8715b" name="Changes" comment="" />
+    <list default="true" id="743cec86-3bb5-47a7-b11e-02232bb8715b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Base365/models/Vanthu/setting_dx.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Base365/routes/vanthu/SettingRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/tools/vanthu.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/tools/vanthu.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/Setting.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/Setting.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/tools.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/tools.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/RoutertoolVT.js" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,6 +33,12 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "D:/File CT/FIle Cong Ty/API-BASE365",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
@@ -34,6 +52,7 @@
       <option name="presentableId" value="Default" />
       <updated>1684999784286</updated>
       <workItem from="1684999790516" duration="102000" />
+      <workItem from="1685494780805" duration="825000" />
     </task>
     <servers />
   </component>

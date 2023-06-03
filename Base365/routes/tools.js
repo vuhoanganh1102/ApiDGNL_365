@@ -4,7 +4,7 @@ var toolUser = require('../controllers/tools/user');
 var toolTimviec365 = require('../controllers/tools/timviec365');
 const formData = require('express-form-data');
 const toolRaoNhanh = require('../controllers/tools/raonhanh365')
-
+const toolVanThu = require("../controllers/tools/vanthu");
 // API quét data người dùng từ base chat
 router.get('/addUserChat365', formData.parse(), toolUser.addUserChat365);
 router.get('/addUserCompanyTimviec365', toolUser.addUserCompanyTimviec365);
@@ -118,6 +118,18 @@ router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 // api quét data các phần của chi tiết danh mục Raonhanh
 // router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
 
+// api quet tool van thu
+router.post('/toolCateDexuat',toolVanThu.toolCateDeXuat);
+router.post('/toolDeXuat',toolVanThu.toolDeXuat);
+router.post('/toolDeXuatXuLy',toolVanThu.toolDeXuatXuLy);
+router.post('/toolDeleteDeXuat',toolVanThu.toolDeleteDX);
+router.post('/toolGhiChu',toolVanThu.toolGhiChu);
+router.post('/toolGroupVanBan',toolVanThu.toolGroupVanBan);
+router.post('/toolHideCateDX',toolVanThu.toolhideCateDX);
+router.post('/toolHistoryHandlingDX',toolVanThu.toolHistoryHDX);
+router.post('/toolLyDo',toolVanThu.toolLyDo);
+router.post('/toolPhongBan',toolVanThu.toolPhongBan);
+router.post('/toolSettingDX',toolVanThu.toolSettingDX);
 
 
 module.exports = router;

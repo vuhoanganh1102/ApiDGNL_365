@@ -4,14 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0cedf0da-db5d-41b7-8113-5f6f0c2cbe62" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/controllers/timviec/company.js" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/timviec/company.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/timviec/Company.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/timviec/Company.js" afterDir="false" />
-    </list>
+    <list default="true" id="0cedf0da-db5d-41b7-8113-5f6f0c2cbe62" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -64,6 +64,7 @@
       <updated>1682558656036</updated>
       <workItem from="1682558657322" duration="2030000" />
       <workItem from="1683356269846" duration="26000" />
+      <workItem from="1685610829715" duration="3000" />
     </task>
     <servers />
   </component>

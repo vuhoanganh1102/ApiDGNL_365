@@ -262,6 +262,26 @@ const storageFile = (destination) => {
     });
 };
 
+
+
+
+
+// const storageVT = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         // Đường dẫn đến thư mục lưu trữ tệp
+//         cb(null, 'uploads/');
+//     },
+//     filename: function (req, file, cb) {
+//         // Tên tệp khi lưu trữ (có thể tùy chỉnh tùy theo nhu cầu)
+//         cb(null, Date.now() + '-' + file.originalname);
+//     }
+// });
+//
+// module.exports = { storageVT };
+
+
+
+
 exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('../Storage/TimViec365') })
 
 exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('../Storage/TimViec365') })
@@ -312,6 +332,7 @@ const storage = multer.diskStorage({
 `)
     },
 });
+
 
 // hàm check file
 exports.uploadFile = multer({ storage: storageFile })

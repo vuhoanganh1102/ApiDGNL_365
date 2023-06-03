@@ -43,7 +43,18 @@ var donRouter = require('./routes/timviec/don');
 var thuRouter = require('./routes/timviec/thu');
 var syllRouter = require('./routes/timviec/syll');
 
-var toolVT = require('./routes/vanthu/RoutertoolVT')
+//
+var toolVT = require('./routes/tools')
+var settingDX = require('./routes/vanthu/SettingRoutes')
+var dexuatTC = require('./routes/vanthu/deXuat/DeXuatTangCaRoutes')
+var dexuatTS = require('./routes/vanthu/deXuat/DeXuatThaiSanRoutes');
+var dexuatPH = require('./routes/vanthu/deXuat/DeXuatPhongHopRoutes');
+var dexuatXC = require('./routes/vanthu/deXuat/DeXuatDangKiSuDungXeRoutes');
+var dexuatTT = require('./routes/vanthu/deXuat/DeXuatThanhToanRoutes');
+var dexuatCC = require('./routes/vanthu/deXuat/DeXuatCongRoutes');
+var dexuatVC = require('./routes/vanthu/deXuat/DeXuatCoSoVatChatRoutes');
+var dexuatKN = require('./routes/vanthu/deXuat/DeXuatKhieuNaiRoutes');
+
 
 const {router} = require("express/lib/application");
 
@@ -99,7 +110,20 @@ app.use("/api/calendar", calendarRouter);
 
 
 //API văn thu
-app.use("/api/tool",toolVT)
+app.use("/api/tool",toolVT);
+app.use("/api/settingdx",settingDX);
+app.use("/api/dexuat",dexuatTC);
+app.use("/api/dexuat",dexuatTS);
+app.use("/api/dexuat",dexuatPH);
+app.use("/api/dexuat",dexuatXC);
+app.use("/api/dexuat",dexuatVC);
+app.use("/api/dexuat",dexuatTT);
+app.use("/api/dexuat",dexuatCC);
+app.use("/api/dexuat",dexuatKN);
+
+
+
+// app.use("/api/vt",)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
