@@ -13,12 +13,14 @@ const applyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyF
 const userSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
 const pointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed');
 const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost')
-    //mã hóa mật khẩu
+
+//mã hóa mật khẩu
 const md5 = require('md5');
 //token
 var jwt = require('jsonwebtoken');
 const axios = require('axios');
 const functions = require('../../services/functions');
+const sendMail = require('../../services/sendMail');
 const { token } = require('morgan');
 const fs = require('fs');
 const path = require('path');
@@ -110,7 +112,7 @@ exports.RegisterB1 = async(req, res, next) => {
                         req.body._id = newIDUser
                         const token = await functions.createToken(req.body, "2d")
 
-                        return functions.success(res, 'Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong', token)
+                        return functions.success(res, 'Them moi hoặc cập nhật UV chua hoan thanh ho so thanh cong', { token })
                     } else return functions.setError(res, "Email không hợp lệ", 200);
                 }
             } else return functions.setError(res, "Số điện thoại không hợp lệ", 200);
@@ -126,6 +128,10 @@ exports.RegisterB1 = async(req, res, next) => {
 exports.RegisterB2VideoUpload = async(req, res, next) => {
     try {
         if (req && req.body) {
+            const birthday = req.body.birthday
+            const exp = req.body.exp
+            const candiHocVan = req.body.candiHocVan
+            const candiSchool = req.body.candiSchool
             const videoUpload = req.file
             const videoLink = req.body.videoLink
             const phoneTK = req.user.data.phoneTK
@@ -168,12 +174,16 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                         from: from,
                         idTimViec365: newIDTimviec,
                         authentic: 0,
+                        birthday: birthday,
                         createdAt: new Date(Date.now()),
                         inForPerson: {
                             user_id: 0,
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
                             candiTitle: candiTitle,
+                            exp: exp,
+                            candiHocVan: candiHocVan,
+                            candiSchool: candiSchool,
                             candiProfile: {
                                 id: 1,
                                 video: videoUpload.filename,
@@ -200,12 +210,16 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                         from: from,
                         idTimViec365: newIDTimviec,
                         authentic: 0,
+                        birthday: birthday,
                         createdAt: new Date(Date.now()),
                         inForPerson: {
                             user_id: 0,
                             candiCateID: candiCateID,
                             candiCityID: candiCityID,
                             candiTitle: candiTitle,
+                            exp: exp,
+                            candiHocVan: candiHocVan,
+                            candiSchool: candiSchool,
                             candiProfile: {
                                 id: 1,
                                 video: videoLink,
@@ -1814,6 +1828,15 @@ exports.candidateApply = async(req, res, next) => {
                 newApplyForJob.save()
                 if (newApplyForJob) {
                     functions.success(res, "ứng viên ứng tuyển thành công")
+                    functions.getDataAxios("http://43.239.223.142:9000/api/V2/Notification/NotificationTimviec365", {
+                        EmployeeId: req.user.data._id,
+                        CompanyId: checkNew.userID,
+                        Type: 2,
+                        // Link: ??,
+                        Position: checkNew.title,
+                        City: checkNew.cityID,
+                        Career: cate.name,
+                    })
                 }
             }
         } else {
@@ -1831,29 +1854,36 @@ exports.candidateSavePost = async(req, res, next) => {
         if (req.user && req.body.idtin) {
             let newId = req.body.idtin
             let userId = req.user.data.idTimViec365
-            let newIDMax
-            const maxID = await userSavePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            if (maxID) {
-                newIDMax = Number(maxID._id) + 1;
-            } else newIDMax = 1
-            let checkUserSavePost = await functions.getDatafindOne(userSavePost, { userID: userId, newID: newId })
+
             let checkNew = await functions.getDatafindOne(newTV365, { _id: newId })
-            if (checkUserSavePost) {
-                return functions.setError(res, "Ứng viên đã nộp hồ sơ", 400);
-            } else if (!checkNew) {
-                return functions.setError(res, "Không tồn tại tin đăng này", 400);
-            } else {
-                let newUserSavePost = new userSavePost({
-                    _id: newIDMax,
-                    userID: userId,
-                    newID: newId,
-                    saveTime: new Date(Date.now()),
-                })
-                newUserSavePost.save()
-                if (newUserSavePost) {
-                    functions.success(res, "ứng viên lưu tin ứng tuyển thành công")
+                //check xem có tin hay ko
+            if (checkNew) {
+                let checkUserSavePost = await functions.getDatafindOne(userSavePost, { userID: userId, newID: newId })
+                    //check ứng viên đã lưu tin hay ko
+                if (checkUserSavePost) {
+                    let deleteSavePost = await userSavePost.deleteOne({ userID: userId, newID: newId })
+                    if (deleteSavePost) {
+                        functions.success(res, "ứng viên bỏ lưu tin ứng tuyển thành công")
+                    }
+                } else {
+                    let newIDMax
+                    const maxID = await userSavePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                    if (maxID) {
+                        newIDMax = Number(maxID._id) + 1;
+                    } else newIDMax = 1
+                    let newUserSavePost = new userSavePost({
+                        _id: newIDMax,
+                        userID: userId,
+                        newID: newId,
+                        saveTime: new Date(Date.now()),
+                    })
+                    newUserSavePost.save()
+                    if (newUserSavePost) {
+                        functions.success(res, "ứng viên lưu tin ứng tuyển thành công")
+                    }
                 }
             }
+
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
@@ -1867,7 +1897,6 @@ exports.candidateSavePost = async(req, res, next) => {
 exports.commentPost = async(req, res, next) => {
     try {
         if (req.user && req.body.idPost && req.body.cm_id && req.body.name && req.body.comment) {
-
             let userId = req.user.data.idTimViec365
             let idPost = req.body.idPost
             let parentCmId = req.body.cm_id
@@ -1877,46 +1906,81 @@ exports.commentPost = async(req, res, next) => {
             let hasTag = req.body.cm_hastag
             let author = req.body.author
 
-            const maxID = await CommentPost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            if (maxID) {
-                newID = Number(maxID._id) + 1;
-            } else newID = 1
-            if (req.file) {
-                let addNewComment = new CommentPost({
-                    _id: newID,
-                    idPost: idPost,
-                    parentCmId: parentCmId,
-                    commentPersonId: userId,
-                    comment: comment,
-                    commentName: CommentName,
-                    commentAvatar: req.user.data.avatarUser,
-                    image: imageComment.filename,
-                    timeComment: new Date(Date.now()),
-                    tag: hasTag,
-                    author: author
-                })
-                addNewComment.save()
-                if (addNewComment) {
-                    functions.success(res, "Thêm bình luận thành công");
-                }
-            } else {
-                let addNewComment = new CommentPost({
-                    _id: newID,
-                    idPost: idPost,
-                    parentCmId: parentCmId,
-                    commentPersonId: userId,
-                    comment: comment,
-                    commentName: CommentName,
-                    commentAvatar: req.user.data.avatarUser,
-                    timeComment: new Date(Date.now()),
-                    tag: hasTag,
-                    author: author
-                })
-                addNewComment.save()
-                if (addNewComment) {
-                    functions.success(res, "Thêm bình luận thành công");
-                }
-            }
+            let timeCheck = new Date(Date.now() - 30000)
+            let findComment = await functions.getDatafind(CommentPost, { idPost: idPost, commentPersonId: userId, timeComment: { $gt: timeCheck } })
+            let findNew = await newTV365.findOne({ _id: idPost }, { userID: 1 })
+            if (findNew) {
+                if (findComment && findComment.length < 10) {
+                    const maxID = await CommentPost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                    if (maxID) {
+                        newID = Number(maxID._id) + 1;
+                    } else newID = 1
+
+                    if (req.file) {
+                        let addNewComment = new CommentPost({
+                            _id: newID,
+                            idPost: idPost,
+                            parentCmId: parentCmId,
+                            commentPersonId: userId,
+                            comment: comment,
+                            commentName: CommentName,
+                            commentAvatar: req.user.data.avatarUser,
+                            image: imageComment.filename,
+                            timeComment: new Date(Date.now()),
+                            tag: hasTag,
+                            author: author
+                        })
+                        addNewComment.save()
+                        if (addNewComment) {
+                            functions.success(res, "Thêm bình luận thành công");
+                            axios({
+                                method: "post",
+                                url: "http://43.239.223.142:9000/api/V2/Notification/SendNotification",
+                                data: {
+                                    'Title': 'Thông báo bình luận',
+                                    'Message': `bài viết bạn đã được bình luận bởi ${CommentName}`,
+                                    'Type': 'SendCandidate',
+                                    'UserId': `${findNew.userID}`,
+                                    'SenderId': `${req.user.data._id}`,
+                                    // 'Link': link,
+                                },
+                                headers: { "Content-Type": "multipart/form-data" }
+                            })
+                        }
+                    } else {
+                        let addNewComment = new CommentPost({
+                            _id: newID,
+                            idPost: idPost,
+                            parentCmId: parentCmId,
+                            commentPersonId: userId,
+                            comment: comment,
+                            commentName: CommentName,
+                            commentAvatar: req.user.data.avatarUser,
+                            timeComment: new Date(Date.now()),
+                            tag: hasTag,
+                            author: author
+                        })
+                        addNewComment.save()
+                        if (addNewComment) {
+                            functions.success(res, "Thêm bình luận thành công");
+                            axios({
+                                method: "post",
+                                url: "http://43.239.223.142:9000/api/V2/Notification/SendNotification",
+                                data: {
+                                    'Title': 'Thông báo bình luận',
+                                    'Message': `bài viết bạn đã được bình luận bởi ${CommentName}`,
+                                    'Type': 'SendCandidate',
+                                    'UserId': `${findNew.userID}`,
+                                    'SenderId': `${req.user.data._id}`,
+                                    // 'Link': link,
+                                },
+                                headers: { "Content-Type": "multipart/form-data" }
+                            })
+                        }
+                    }
+                } else return functions.setError(res, "bạn đã bình luận quá nhanh", 400);
+            } else return functions.setError(res, "không tồn tại tin tuyển dụng này", 400);
+
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
