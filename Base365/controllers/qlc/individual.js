@@ -24,7 +24,8 @@ exports.register = async (req, res) => {
                 otp: null,
                 authentic: null,
                 idQLC: (Number(MaxId) + 1),
-
+                "inForPerson.companyID": req.body.companyID,
+                "inForPerson.depID": req.body.depID,
             })
                 await Inuser.save().then(() => {
                     console.log(`hêm mới tài khoản cá nhân thành công ${email} , ${phoneTK}`)

@@ -1,17 +1,37 @@
 const Deparment = require("../../models/qlc/Deparment")
 const functions = require("../../services/functions")
 const Users = require("../../models/Users")
+
+
+//API lấy tất cả dữ liệu phòng ban 
 exports.getListDeparment = async (req, res) => {
     await functions.getDatafind(Deparment, {})
         .then((deparments) => functions.success(res, "", deparments))
         .catch((err) => functions.setError(res, err.message, 501));
 }
+
+//API đếm số lượng nhân viên phòng ban 
 exports.countUserInDepartment = async (req, res) => {
-    await functions.findCount(Users, {depID})
-        .then((numberUser) => functions.success(res, "", numberUser))
-        .catch((err) => functions.setError(res, err.message, 501));
+   try{
+    const {depID, companyID} = req.body;
+    console.log(depID, companyID)
+     const numberUser = await functions.findCount(Users,{ "inForPerson.companyID":companyID , "inForPerson.depID": depID, type: 2})
+        // .then(() => functions.success(res, "",{numberUser}))
+        // .catch((err) => functions.setError(res, err.message, 501));
+        console.log(numberUser)
+        if (!numberUser) {
+            functions.setError(res, "Deparment cannot be found or does not exist", 503);
+        } else {
+            functions.success(res, "Deparment found", {numberUser});
+        }
+   }catch(e){
+    console.log(e)
+    functions.setError(res, "Deparment does not exist", 503);
+   }
 }
 
+
+//API lấy dữ liệu một phòng ban
 exports.getDeparmentById = async (req, res) => {
     const _id = req.params.id;
     if (isNaN(_id)) {
@@ -27,16 +47,16 @@ exports.getDeparmentById = async (req, res) => {
     //
 
 };
-
+//API tạo mới một phòng ban
 exports.createDeparment = async (req, res) => {
 
-    const { companyID, deparmentName } = req.body;
-
+    const { companyID, deparmentName ,managerId,deputyId } = req.body;
+    console.log(companyID)
     if (!companyID) {
         //Kiểm tra Id công ty khác null
         functions.setError(res, "Company Id required", 504);
 
-    } else if (typeof companyID !== "number") {
+    } else if (isNaN(companyID)) {
         //Kiểm tra Id company có phải số không
         functions.setError(res, "Company Id must be a number", 505);
 
@@ -64,7 +84,7 @@ exports.createDeparment = async (req, res) => {
             })
     }
 };
-
+//API thay dổi thông tin của một phòng ban
 exports.editDeparment = async (req, res) => {
     const _id = req.params.id;
 
@@ -111,7 +131,7 @@ exports.editDeparment = async (req, res) => {
         }
     }
 };
-
+//API xóa một phòng ban theo id
 exports.deleteDeparment = async (req, res) => {
     const _id = req.params.id;
 
@@ -128,7 +148,7 @@ exports.deleteDeparment = async (req, res) => {
         }
     }
 };
-
+// API xóa toàn bộ phòng ban hiện có
 exports.deleteAllDeparmants = async (req, res) => {
 
     if (!await functions.getMaxID(Deparment)) {

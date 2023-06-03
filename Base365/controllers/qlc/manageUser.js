@@ -28,6 +28,8 @@ exports.getUserById = async(req, res) => {
         }
     }
 };
+//tìm danh sách admin
+exports.getlistAdmin
 //tạo nhân viên 
 exports.createUser = async(req, res) => {
 
@@ -45,7 +47,7 @@ exports.createUser = async(req, res) => {
         //Kiểm tra sdt khác null
         functions.setError(res, "number phone required", 507);
 
-    } else if (typeof phoneTK !== "number") {
+    } else if (isNaN(phoneTK)) {
         //Kiểm tra sdt có phải là số không
         functions.setError(res, "number phone must be a number", 508);
 
@@ -71,6 +73,7 @@ exports.createUser = async(req, res) => {
             role: role,
             depID: depID,
             groupID: groupID,
+            teamID:teamID
         });
 
         await ManagerUser.save()
@@ -104,7 +107,7 @@ exports.editUser = async(req, res) => {
             //Kiểm tra sdt khác null
             functions.setError(res, "number phone required", 507);
 
-        } else if (typeof phoneTK !== "number") {
+        } else if (isNaN(phoneTK)) {
             //Kiểm tra sdt có phải là số không
             functions.setError(res, "number phone must be a number", 508);
 
@@ -121,7 +124,7 @@ exports.editUser = async(req, res) => {
                         phoneTK: phoneTK,
                         depID: depID,
                         positionID: positionID,
-
+                        teamID: teamID
 
                     })
                     .then((manager) => functions.success(res, "Deparment edited successfully", manager))

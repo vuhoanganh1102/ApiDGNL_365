@@ -48,9 +48,12 @@ exports.createShift = async (req, res) => {
     const timeCheckOut = req.body.timeCheckOut;
     const timeCheckInEarliest = req.body.timeCheckInEarliest;
     const timeCheckOutLastest = req.body.timeCheckOutLastest;
-    const idTypeCalculateWork = req.body.idTypeCalculateWork;
+    let idTypeCalculateWork = req.body.idTypeCalculateWork;
     let numOfWorkPerShift = req.body.numOfWorkPerShift;
+    let typeCalculateWork = "";
     let money = req.body.money;
+    
+    // console.log(idTypeCalculateWork)
     
     
     if (!companyID) {
@@ -72,9 +75,31 @@ exports.createShift = async (req, res) => {
     else if (!idTypeCalculateWork) {
         functions.setError(res, "Id type calculation work required");
     } else {
-        let typeCalculateWork = "";
-       
         
+        if (idTypeCalculateWork === 2) {
+            console.log(idTypeCalculateWork)
+            if (!numOfWorkPerShift) {
+                await functions.setError(res, "Number of work per shift required");
+            } else {
+                return  money = null,
+                        typeCalculateWork = "Tính công theo số ca";
+            }
+        } else if (idTypeCalculateWork === 3) {
+            if (!money) {
+                await functions.setError(res, "Money of shift required");
+            } else {
+                return  numOfWorkPerShift = null,
+                        typeCalculateWork = "Tính công theo tiền";
+            }
+        } else if (idTypeCalculateWork === 1) {
+            return  numOfWorkPerShift = null,
+                    money = null,
+                    typeCalculateWork = "Tính công theo giờ";
+            
+        }
+        // } else {
+        //     return functions.setError(res, "");
+        // }
         let maxId = await functions.getMaxID(Shifts);
         const   timeIn = timeCheckIn != 0 ? new Date(timeCheckIn * 1000) : null,
                 timeOut = timeCheckOut != 0 ? new Date(timeCheckOut * 1000) : null,
@@ -83,6 +108,7 @@ exports.createShift = async (req, res) => {
         if (!maxId) {
             maxId = 0;
         }
+        
         const _id = Number(maxId) + 1;
         const shift = new Shifts({
             _id: _id,
@@ -98,52 +124,19 @@ exports.createShift = async (req, res) => {
             money: money,
         
         });
-        if (idTypeCalculateWork === 2) {
-            if (!numOfWorkPerShift) {
-                await functions.setError(res, "Number of work per shift required");
-            } else {
-                money = null;
-                typeCalculateWork = "Tính công theo số ca";
-                await shift.save()
-                .then(() => {
-                    functions.success(res, "Shifts saved successfully", shift);
-                })
-                .catch(err => {
-                    functions.setError(res, err.message);
-                })
-            }
-        } else if (idTypeCalculateWork === 3) {
-            if (!money) {
-                await functions.setError(res, "Money of shift required");
-                return
-            } else {
-                numOfWorkPerShift = null;
-                typeCalculateWork = "Tính công theo tiền";
-                await shift.save()
-                .then(() => {
-                    functions.success(res, "Shifts saved successfully", shift);
-                })
-                .catch(err => {
-                    functions.setError(res, err.message);
-                })
-            }
-        } else if (idTypeCalculateWork === 1) {
-            numOfWorkPerShift = null;
-            money = null;
-            typeCalculateWork = "Tính công theo giờ";
-
-            await shift.save()
-            .then(() => {
-                functions.success(res, "Shifts saved successfully", shift);
-            })
-            .catch(err => {
-                functions.setError(res, err.message);
-            })
-        } else {
-            functions.setError()
-        }
+        
+        await shift.save()
+        .then(() => {
+            functions.success(res, "Shifts saved successfully", shift);
+        })
+        .catch(err => {
+            functions.setError(res, err.message);
+        })
        
     }
+    
+    
+    
 
 };
 

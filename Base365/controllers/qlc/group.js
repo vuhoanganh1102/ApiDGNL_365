@@ -1,11 +1,13 @@
 const Group = require('../../models/qlc/Group')
 const functions = require("../../services/functions")
+
+//API lấy tất cả dữ liệu nhóm
 exports.getListGroup = async (req, res) => {
     await functions.getDatafind(Group, {})
         .then((group) => functions.success(res, "", group))
         .catch((err => functions.setError(res, err.message, 701)));
 };
-
+//API lấy dữ liệu một nhóm
 exports.getGroupById = async (req, res) => {
     const _id = req.params.id;
 
@@ -19,10 +21,28 @@ exports.getGroupById = async (req, res) => {
             functions.success(res, "Group found", group);
         }
     }
+}
+//API đếm số lượng nhân viên trong nhóm
+exports.countUserInGroup = async (req, res) => {
+    try{
+     const {depID, companyID, teamID, groupID} = req.body;
+     console.log(companyID, depID, teamID, groupID)
+      const numberUser = await functions.findCount(Users,{ "inForPerson.companyID":companyID , "inForPerson.depID": depID,"inForPerson.teamID": teamID,"inForPerson.groupID": groupID, type: 2})
+         // .then(() => functions.success(res, "",{numberUser}))
+         // .catch((err) => functions.setError(res, err.message, 501));
+         console.log(numberUser)
+         if (!numberUser) {
+             functions.setError(res, "Deparment cannot be found or does not exist", 503);
+         } else {
+             functions.success(res, "Deparment found", {numberUser});
+         }
+    }catch(e){
+     console.log(e)
+     functions.setError(res, "Deparment does not exist", 503);
+    }
+}
 
-
-};
-
+//Api tạo một nhóm mới
 exports.createGroup = async (req, res) => {
     const { teamId, groupName, groupOrder } = req.body;
 
@@ -30,7 +50,7 @@ exports.createGroup = async (req, res) => {
         //Kiểm tra Id tổ khác null
         functions.setError(res, "Team Id required", 704);
 
-    } else if (typeof teamId !== "number") {
+    } else if (isNaN(teamId) ) {
         //Kiểm tra Id tổ có phải số không
         functions.setError(res, "Team Id must be a number", 705);
 
@@ -42,7 +62,7 @@ exports.createGroup = async (req, res) => {
         //Kiểm tra xếp thứ tự khác null
         functions.setError(res, "Group order required", 707);
 
-    } else if (typeof groupOrder !== "number") {
+    } else if (isNaN(groupOrder)) {
         //Kiểm tra xếp thứ tự có phải là số không
         functions.setError(res, "Group order must be a number", 708);
 
@@ -71,7 +91,7 @@ exports.createGroup = async (req, res) => {
             });
     }
 };
-
+//API thay đổi thông tin của một nhóm
 exports.editGroup = async (req, res) => {
     const _id = req.params.id;
 
@@ -84,7 +104,7 @@ exports.editGroup = async (req, res) => {
             //Kiểm tra Id tổ khác null
             functions.setError(res, "Team Id required", 704);
 
-        } else if (typeof teamId !== "number") {
+        } else if (isNaN(teamId)  ) {
             //Kiểm tra Id tổ có phải số không
             functions.setError(res, "Team Id must be a number", 705);
 
@@ -96,7 +116,7 @@ exports.editGroup = async (req, res) => {
             //Kiểm tra xếp thứ tự khác null
             functions.setError(res, "Group order required", 707);
 
-        } else if (typeof groupOrder !== "number") {
+        } else if (isNaN(groupOrder)) {
             //Kiểm tra xếp thứ tự có phải là số không
             functions.setError(res, "Group order must be a number", 708);
 
@@ -111,13 +131,13 @@ exports.editGroup = async (req, res) => {
                     groupName: groupName,
                     groupOrder: groupOrder,
                 })
-                    .then((group) => functions.success(res, "Group edited successfully".group))
+                    .then((group) => functions.success(res, "Group edited successfully",group))
                     .catch(err => functions.setError(res, err.message), 711);
             }
         }
     }
 };
-
+//API Xóa một nhóm theo id
 exports.deleteGroup = async (req, res) => {
     const _id = req.params.id;
 
@@ -136,7 +156,7 @@ exports.deleteGroup = async (req, res) => {
 
 
 };
-
+//API xóa toàn bộ nhóm hiện có
 exports.deleteAllGroups = async (req, res) => {
     if (!await functions.getMaxID(Group)) {
         functions.setError(res, "No group existed", 713);

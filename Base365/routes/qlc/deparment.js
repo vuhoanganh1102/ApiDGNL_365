@@ -1,24 +1,25 @@
 const router = require('express').Router();
 const DeparmentController = require('../../controllers/qlc/deparment')
 const functions= require ("../../services/functions")
+const formData = require('express-form-data')
 //API lấy tất cả dữ liệu phòng ban 
-router.get("/",functions.checkToken, DeparmentController.getListDeparment);
-//API lấy tất cả dữ liệu phòng ban 
-router.get("/count",functions.checkToken, DeparmentController.countUserInDepartment);
+router.get("/", DeparmentController.getListDeparment);
+//API đếm số lượng nhân viên phòng ban 
+router.post("/count",formData.parse(), DeparmentController.countUserInDepartment);
 
 //API lấy dữ liệu một phòng ban
-router.get("/:id",functions.checkToken,  DeparmentController.getDeparmentById);
+router.get("/:id",  DeparmentController.getDeparmentById);
 
 //API tạo mới một phòng ban
-router.post("/", functions.checkToken, DeparmentController.createDeparment);
+router.post("/",formData.parse(),DeparmentController.createDeparment);
 
 //API thay dổi thông tin của một phòng ban
-router.post("/:id", functions.checkToken, DeparmentController.editDeparment);
+router.post("/:id",formData.parse(),DeparmentController.editDeparment);
 
 //API xóa một phòng ban theo id
-router.delete("/:id",functions.checkToken,  DeparmentController.deleteDeparment);
+router.delete("/:id", formData.parse(), DeparmentController.deleteDeparment);
 
 // API xóa toàn bộ phòng ban hiện có
-router.delete("/", functions.checkToken, DeparmentController.deleteAllDeparmants);
+router.delete("/",formData.parse(), DeparmentController.deleteAllDeparmants);
 
 module.exports = router

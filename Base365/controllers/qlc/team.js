@@ -23,7 +23,26 @@ exports.getTeamById = async (req, res) => {
 
 
 };
-
+//API đếm số lượng nhân viên trong tổ
+exports.countUserInTeam = async (req, res) => {
+    try{
+     const {depID, companyID, teamID} = req.body;
+     console.log(depID, companyID, teamID)
+      const numberUser = await functions.findCount(Users,{ "inForPerson.companyID":companyID , "inForPerson.depID": depID,"inForPerson.teamID": teamID, type: 2})
+         // .then(() => functions.success(res, "",{numberUser}))
+         // .catch((err) => functions.setError(res, err.message, 501));
+         console.log(numberUser)
+         if (!numberUser) {
+             functions.setError(res, "Deparment cannot be found or does not exist", 503);
+         } else {
+             functions.success(res, "Deparment found", {numberUser});
+         }
+    }catch(e){
+     console.log(e)
+     functions.setError(res, "Deparment does not exist", 503);
+    }
+ }
+ //Tạo mới dữ liệu của một tổ
 exports.createTeam = async (req, res) => {
 
     const { depID, teamName, companyID } = req.body;
@@ -31,7 +50,7 @@ exports.createTeam = async (req, res) => {
     if (!depID) {
         //Kiểm tra Id phòng ban có khác null
         functions.setError(res, "Deparment Id required", 604);
-    } else if (typeof depID !== "number") {
+    } else if (isNaN(depID) ) {
         //Kiểm tra Id phòng ban có thuộc kiểu number không
         functions.setError(res, "Deparment Id must be a number", 605);
     } else if (!teamName) {
@@ -40,7 +59,7 @@ exports.createTeam = async (req, res) => {
     } else if (!companyID) {
         //Kiểm tra sắp xếp thứ tự có khác null
         functions.setError(res, "Team order required", 607);
-    } else if (typeof companyID !== "number") {
+    } else if (isNaN(companyID)  ) {
         //Kiểm tra sắp xếp thứ tự có phải kiểu number hay không
         functions.setError(res, "Team order must be a number", 608);
     } else {
@@ -65,7 +84,7 @@ exports.createTeam = async (req, res) => {
             })
     }
 };
-
+//Chỉnh sửa dự liệu của một tổ
 exports.editTeam = async (req, res) => {
     const _id = req.params.id;
 
@@ -77,7 +96,7 @@ exports.editTeam = async (req, res) => {
         if (!depID) {
             //Kiểm tra Id phòng ban có khác null
             functions.setError(res, "Deparment Id required", 604);
-        } else if (typeof depID !== "number") {
+        } else if (isNaN(depID)  ) {
             //Kiểm tra Id phòng ban có thuộc kiểu number không
             functions.setError(res, "Deparment Id must be a number", 605);
         } else if (!teamName) {
@@ -86,7 +105,7 @@ exports.editTeam = async (req, res) => {
         } else if (!companyID) {
             //Kiểm tra sắp xếp thứ tự có khác null
             functions.setError(res, "Team order required", 607);
-        } else if (typeof companyID !== "number") {
+        } else if (isNaN(companyID)  ) {
             //Kiểm tra sắp xếp thứ tự có phải kiểu number hay không
             functions.setError(res, "Team order must be a number", 608)
         } else {
@@ -110,7 +129,7 @@ exports.editTeam = async (req, res) => {
 
 
 };
-
+//Xóa dữ liệu của một tổ
 exports.deleteTeam = async (req, res) => {
     const _id = req.params.id;
 
@@ -129,7 +148,7 @@ exports.deleteTeam = async (req, res) => {
 
 
 };
-
+//Xoá toàn bộ dữ liệu tổ
 exports.deleteAllTeams = async (req, res) => {
     if (!await functions.getMaxID(Team)) {
         functions.setError(res, "No Team existed", 613);
