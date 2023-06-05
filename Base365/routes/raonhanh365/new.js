@@ -20,12 +20,21 @@ router.post('/createBuyNew',formData.parse(), functions.checkToken, newRN.create
 // update tin mua
 router.put('/updateBuyNew',formData.parse(), functions.checkToken, newRN.updateBuyNew)
 
-// lấy tất cả tin 
+// lấy tất cả tin bán
 router.get('/getAllNew/:sort/:page',newRN.getAllNew)
 
-// chi tiết tin 
+// lấy tất cả tin mua
+router.get('/getAllBuyNew/:sort/:page',newRN.getAllNew)
+
+// chi tiết tin bán
 router.get('/getDetailNew',newRN.getDetailNew)
+
+// chi tiết tin mua
+router.get('/getDetailBuyNew',newRN.getDetailBuyNew)
 
 // yêu thích tin
 router.post('/loveNew',functions.checkToken,newRN.loveNew)
+
+// cập nhật thông tin user
+router.put('/updateInfoUserRaoNhanh',formData.parse(),functions.checkToken,newRN.updateInfoUserRaoNhanh)
 module.exports = router;

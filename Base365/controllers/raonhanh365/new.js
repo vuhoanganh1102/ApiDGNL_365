@@ -1,9 +1,9 @@
 const functions = require('../../services/functions');
 const Category = require('../../models/Raonhanh365/Category');
-const New = require('../../models/Raonhanh365/UserOnSite/New')
+const New = require('../../models/Raonhanh365/UserOnSite/New');
 const CategoryRaoNhanh365 = require('../../models/Raonhanh365/Category');
 const User = require('../../models/Users');
-const fs = require('fs');
+const LoveNews = require('../../models/Raonhanh365/UserOnSite/LoveNews');
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
     try {
@@ -230,7 +230,7 @@ exports.postNewVehicle = async (req, res, next) => {
 // lấy tin trước đăng nhập
 exports.getNewBeforeLogin = async (req, res, next) => {
     try {
-        let searchitem = { _id: 1, title: 1, loveNew: 1, address: 1, viewCount: 1, money: 1, updateTime: 1, apartmentNumber: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
+        let searchitem = { _id: 1, title: 1, address: 1, viewCount: 1, money: 1, updateTime: 1, apartmentNumber: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
         // tìm tin được ưu tiên đẩy lên đầu với trường pinHome
         let data = await New.find({ pinHome: 1, buySell: 2 }, searchitem).limit(50);
         if (data) {
@@ -272,11 +272,7 @@ exports.getNewBeforeLogin = async (req, res, next) => {
 // tìm kiếm tin 
 exports.searchNew = async (req, res, next) => {
     try {
-        let user = await User.findOne({ _id: 5 });
-        let token = await functions.createToken(user, "2d");
-        token1 = 'Bear ' + token;
-        console.log("🚀 ~ file: new.js:278 ~ exports.searchNews= ~ token:", token1)
-        let searchItem = { _id: 1, title: 1, viewCount: 1, loveNew: 1, address: 1, money: 1, apartmentNumber: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
+        let searchItem = { _id: 1, title: 1, viewCount: 1, address: 1, money: 1, apartmentNumber: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
 
         // trường hợp không nhập gì mà tìm kiếm
         if (!req.body.key || req.body.key === undefined) {
@@ -415,11 +411,11 @@ exports.createBuyNew = async (req, res) => {
                     return functions.setError(res, 'The input price is not a number');
                 }
                 // kiểm tra số điện thoại
-                else if (functions.checkPhoneNumber(phone) === false) {
+                else if (await functions.checkPhoneNumber(phone) === false) {
                     return functions.setError(res, 'Invalid phone number');
                 }
                 // kiểm tra email
-                else if (functions.checkEmail(email) === false) {
+                else if (await functions.checkEmail(email) === false) {
                     return functions.setError(res, 'Invalid email');
                 }
 
@@ -533,11 +529,11 @@ exports.updateBuyNew = async (req, res, next) => {
                     return functions.setError(res, 'The input price is not a number');
                 }
                 // kiểm tra số điện thoại
-                else if (functions.checkPhoneNumber(phone) === false) {
+                else if (await functions.checkPhoneNumber(phone) === false) {
                     return functions.setError(res, 'Invalid phone number');
                 }
                 // kiểm tra email
-                else if (functions.checkEmail(email) === false) {
+                else if (await functions.checkEmail(email) === false) {
                     return functions.setError(res, 'Invalid email');
                 }
 
@@ -625,7 +621,7 @@ exports.updateBuyNew = async (req, res, next) => {
 // toàn bộ danh sách tin
 exports.getAllNew = async (req, res, next) => {
     try {
-        let searchitem = { _id: 1, loveNew: 1, title: 1, viewCount: 1, apartmentNumber: 1, money: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
+        let searchitem = { _id: 1, title: 1, viewCount: 1, apartmentNumber: 1, money: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
         let pageSize = 10;
         let { page, sort } = req.params;
         if (!functions.checkNumber(page) || !functions.checkNumber(sort)) {
@@ -651,23 +647,23 @@ exports.getAllNew = async (req, res, next) => {
             totalPages = Math.ceil(totalCount / pageSize)
         } else if (sort === 4) {
             data = await New.find({ type: 1, buySell: 2 }, searchitem).sort({ updateTime: -1 }).skip(skip).limit(pagesize);
-            totalCount = await New.countDocuments({ buySell: 1, type: 0 });
+            totalCount = await New.countDocuments({ buySell: 2, type: 1 });
             totalPages = Math.ceil(totalCount / pageSize)
         }
 
-        functions.success(res, 'get data success ', { totalCount, totalPages, data })
+        return functions.success(res, 'get data success ', { totalCount, totalPages, data })
 
     } catch (error) {
-        functions.setError(res, error)
+        return functions.setError(res, error)
     }
 }
 
-// chi tiết tin 
+// chi tiết tin bán
 exports.getDetailNew = async (req, res, next) => {
     try {
         let searchitem = { title: 1, userID: 1, cateID: 1, viewCount: 1, totalSold: 1, buySell: 1, apartmentNumber: 1, money: 1, address: 1, updateTime: 1, linkTitle: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
-        let id_new = req.body.id;
-        let data = await New.findById(id_new, searchitem);
+        let id = req.body.id;
+        let data = await New.find({ _id: id, buySell: 2 }, searchitem);
         if (!data) {
             functions.setError(res, "get data failed")
         }
@@ -684,23 +680,112 @@ exports.getDetailNew = async (req, res, next) => {
     }
 }
 
-
 // yêu thích tin 
 exports.loveNew = async (req, res, next) => {
     try {
         let id = req.body.id;
         let user = req.user.data;
-
-        let checkLoveNew = await New.find({_id:id}, { loveNew: 1 });
-        
-       // console.log("🚀 ~ file: new.js:695 ~ exports.loveNew= ~ checkLoveNew:", checkLoveNew)
-        // if(checkLoveNew.loveNew === 0){
-        //     await New.findByIdAndUpdate(id,{loveNew:1})
-        // }else{
-        //     await New.findByIdAndUpdate(id,{loveNew:0})
-        // }
-        functions.success(res, "love new success")
+        user._id = 19;
+        let checkLove = await LoveNews.find({ id_new: id, id_user: user._id });
+        if (checkLove.length !== 0) {
+            await LoveNews.findOneAndDelete({ id_new: id, id_user: user._id })
+        } else {
+            createdAt = new Date(Date.now());
+            let _id = await functions.getMaxID(LoveNews) + 1;
+            await LoveNews.create({ _id, id_new: id, id_user: user._id, createdAt })
+        }
+        return functions.success(res, "love new success")
     } catch (error) {
-        functions.setError(res, error)
+        return functions.setError(res, error)
+    }
+}
+
+// danh sách tin mua
+exports.getAllBuyNew = async (req, res, next) => {
+    try {
+        let searchitem = { _id: 1, title: 1, viewCount: 1, apartmentNumber: 1, money: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
+        let pageSize = 10;
+        let { page, sort } = req.params;
+        if (!functions.checkNumber(page) || !functions.checkNumber(sort)) {
+            functions.setError(res, "invalid number", 404)
+        }
+        sort = Number(sort);
+        page = Number(page);
+        let skip = (page - 1) * pageSize;
+        let data = [];
+        let totalCount = 0;
+        if (sort === 1) {
+            data = await New.find({ buySell: 1 }, searchitem).sort({ viewCount: -1 }).skip(skip).limit(pageSize);
+            totalCount = await New.countDocuments({ buySell: 1 });
+            totalPages = Math.ceil(totalCount / pageSize)
+        }
+        else if (sort === 2) {
+            data = await New.find({ buySell: 1 }, searchitem).sort({ updateTime: -1 }).skip(skip).limit(pagesize);
+            totalCount = await New.countDocuments({ buySell: 1 });
+            totalPages = Math.ceil(totalCount / pageSize)
+        } else if (sort === 3) {
+            data = await New.find({ type: 0, buySell: 1 }, searchitem).sort({ updateTime: -1 }).skip(skip).limit(pagesize);
+            totalCount = await New.countDocuments({ buySell: 1, type: 0 });
+            totalPages = Math.ceil(totalCount / pageSize)
+        } else if (sort === 4) {
+            data = await New.find({ type: 1, buySell: 1 }, searchitem).sort({ updateTime: -1 }).skip(skip).limit(pagesize);
+            totalCount = await New.countDocuments({ buySell: 1, type: 1 });
+            totalPages = Math.ceil(totalCount / pageSize)
+        }
+
+        return functions.success(res, 'get data success ', { totalCount, totalPages, data })
+
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// chi tiết tin mua
+exports.getDetailBuyNew = async (req, res, next) => {
+    try {
+        let searchitem = { _id: 1, cateID: 1, title: 1, type: 1, linkTitle: 1, userID: 1, buySell: 1, createTime: 1, img: 1, tenderFile: 1, fileContentProcedureApply: 1, contentOnline: 1, instructionFile: 1, cityProcedure: 1, districtProcedure: 1, wardProcedure: 1, name: 1, city: 1, district: 1, ward: 1, apartmentNumber: 1, description: 1, timeReceivebidding: 1, bidExpirationTime: 1, status: 1, timeNotiBiddingStart: 1, timeNotiBiddingEnd: 1, instructionContent: 1, bidFee: 1, startvalue: 1, endvalue: 1, phone: 1, email: 1, until_tu: 1, until_den: 1, until_bidFee: 1 }
+        let id = req.body.id;
+        let data = await New.find({ _id: id, buySell: 1 }, searchitem);
+        if (!data) {
+            functions.setError(res, "get data failed")
+        }
+        let cateID = Number(data.cateID);
+        let nameCateParent = null;
+        let dataCate = await CategoryRaoNhanh365.findById(cateID, { parentId: 1, name: 1 });
+        let nameCate = dataCate.name;
+        if (dataCate.parentId !== 0) {
+            nameCateParent = await CategoryRaoNhanh365.findById(dataCate.parentId, { name: 1 })
+        }
+        return functions.success(res, 'get data success', { nameCate, nameCateParent, data })
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// chỉnh sửa thông tin tài khoản
+exports.updateInfoUserRaoNhanh = async (req, res, next) => {
+    try {
+        let _id = req.user.data._id;
+        let { userName, email, address } = req.body;
+        let avatarUser = req.body.avatarUser || null;
+
+        if (await functions.checkEmail(email) === false) {
+            return functions.setError(res, 'invalid email')
+        } else {
+            let check_email = await User.findById(_id);
+            if (check_email !== email) {
+                let check_email_lan2 = await User.find({ email });
+                if (check_email_lan2.length !== 0) {
+                    return functions.setError(res, "email is exits")
+                }
+            }
+        }
+        if (avatarUser) {
+
+        }
+
+        return functions.success(res, 'get update data user success')
+    } catch (error) {
+        return functions.setError(res, error)
     }
 }

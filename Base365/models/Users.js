@@ -30,11 +30,6 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    emailContact: {
-        // Email của người liên hệ
-        type: String,
-        default: null
-    },
     avatarUser: {
         // Ảnh đại diện
         type: String,
