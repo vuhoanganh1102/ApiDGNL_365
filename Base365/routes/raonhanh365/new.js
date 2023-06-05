@@ -8,8 +8,8 @@ const newRN = require('../../controllers/raonhanh365/new');
 //api co the tao tat ca cac loai tin
 router.post('/createSellNews', formData.parse(), newRN.postNewMain, newRN.postNewsGeneral, newRN.createNews);
 router.put('/updateSellNews', formData.parse(), newRN.postNewMain, newRN.postNewsGeneral, newRN.updateNews);
-
-router.delete('/deleteAllNews', newRN.deleteAllNews);
+router.post('/searchSellNews', formData.parse(), newRN.searchSellNews);
+router.delete('/deleteNews', newRN.deleteNews);
 
 router.get('/getNewsBeforeLogin', newRN.getNewsBeforeLogin);
 router.get('/searchNews', newRN.searchNews);

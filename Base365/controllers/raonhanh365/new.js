@@ -102,10 +102,11 @@ exports.postNewMain = async(req, res, next) => {
                 video: nameVideo,
                 productGroup: productGroup,
                 productType: productType,
-                city,
-                district,
-                ward,
-                brand
+                city: city,
+                district: district,
+                ward: ward,
+                brand: brand,
+                buySell: 2
             }
             return next()
         }
@@ -258,14 +259,15 @@ exports.createNews = async(req, res, next)=>{
 exports.updateNews = async(req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
+        console.log(idNews);
         if(!idNews)
             return functions.setError(res, "Missing input news_id!", 405);
         let existsNews = await New.find({_id: idNews});
         let fields = req.fields;
         fields.updateTime = new Date(Date.now());
         if (existsNews ) {
-            // console.log(existsNews);
-            console.log(fields);
+            // xoa truong _id
+            delete fields._id;
             await New.findByIdAndUpdate(idNews, fields);
             return functions.success(res, "News edited successfully");
         }
@@ -275,6 +277,54 @@ exports.updateNews = async(req, res, next) => {
         return functions.setError(res, err);
     }
 }
+
+exports.searchSellNews = async(req, res, next)=>{
+    try{
+        if (req.body) {
+            let buySell = 2;
+            if(!req.body.page){
+                return functions.setError(res, "Missing input page", 401);
+            }
+            if(!req.body.pageSize){
+                return functions.setError(res, "Missing input pageSize", 402);
+            }
+            let page = Number(req.body.page);
+            let pageSize = Number(req.body.pageSize);
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let idNews = req.body.idNews;
+            let title = req.body.title;
+            let description = req.body.description;
+            let city = req.body.city;
+            let district = req.body.district;
+            let ward = req.body.ward;
+            let listNews=[];
+            let listCondition = {buySell: buySell};
+
+            // dua dieu kien vao ob listCondition
+            if(idNews) listCondition.idNews = idNews;
+            if(title) listCondition.title =  new RegExp(title, "i");
+            if(description) listCondition.description = new RegExp(description);
+            if(city) listCondition.city = Number(city);
+            if(district) listCondition.district = Number(district);
+            if(ward) listCondition.ward = Number(ward);
+
+            let fieldsGet = 
+            {   
+                userID:1, title:1, linkTitle:1, money:1,endvalue:1,downPayment:1,until:1,cateID:1,type:1,image:1,video:1,buySell:1,createTime:1,updateTime:1, city: 1, district: 1
+            }
+            listNews = await functions.pageFindWithFields(New, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
+            totalCount = await New.countDocuments(listCondition);
+            return functions.success(res, "get buy news success", { data: {totalCount, listNews} });
+        } else {
+            return functions.setError(res, "Missing input data", 400);
+        }
+    }catch(err){
+        console.log(err);
+        return functions.setError(res, err);
+    }
+}
+
 
 // đăng tin do dien tu
 exports.postNewElectron = async(req, res, next) => {
@@ -401,14 +451,30 @@ exports.searchNews = async(req, res, next) => {
     }
 
 
-exports.deleteAllNews = async (req, res) => {
-
-    if (!await functions.getMaxID(New)) {
-        functions.setError(res, "No deparment existed", 513);
-    } else {
-        New.deleteMany()
-            .then(() => functions.success(res, "Delete all news successfully"))
-            .catch(err => functions.setError(res, err.message, 514));
+exports.deleteNews = async (req, res) => {
+    try {
+        let idNews = req.query.idNews;
+        let buySell = 2;
+        if (idNews) {
+            let news = await functions.getDataDeleteOne(New ,{_id: idNews, buySell: buySell});
+            if (news.deletedCount===1) {
+                return functions.success(res, "Delete sell news by id success");
+            }else{
+                return functions.success(res, "Buy news not found");
+            }
+        } else {
+            if (!await functions.getMaxID(New)) {
+                functions.setError(res, "No news existed", 513);
+            } else {
+                New.deleteMany({buySell: buySell})
+                    .then(() => functions.success(res, "Delete all news successfully"))
+                    .catch(err => functions.setError(res, err.message, 514));
+            }
+        }
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
     }
+    
 
 };
