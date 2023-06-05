@@ -5,6 +5,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose')
 
+
+
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
 var cvRouter = require('./routes/timviec/cv');
@@ -34,11 +36,16 @@ var manageUserRouter = require('./routes/qlc/manageUser')
 var groupCustomerRouter = require('./routes/crm/groupCustomer')
 
 
+//
 var toolAddDataRouter = require('./routes/tools');
 
 var donRouter = require('./routes/timviec/don');
 var thuRouter = require('./routes/timviec/thu');
 var syllRouter = require('./routes/timviec/syll');
+
+var toolVT = require('./routes/vanthu/RoutertoolVT')
+
+const {router} = require("express/lib/application");
 
 var app = express();
 // app.listen(3001, () => {
@@ -59,7 +66,7 @@ app.use(express.static(path.join(__dirname, '../Storage')));
 
 
 app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/newTV365', newTV365Router)
+app.use('/api/timviec/new', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
 app.use('/api/timviec/blog', blogRouter)
@@ -68,7 +75,6 @@ app.use('/api/timviec/don', donRouter);
 app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
 app.use('/api/tool', toolAddDataRouter);
-app.use('/api/timviec/newTV365', newTV365Router);
 
 app.use('/api/timviec/priceList', priceListRouter);
 app.use('/api/timviec/trangVang', trangVangRouter);
@@ -91,7 +97,12 @@ app.use('/api/qlc/manageUser', manageUserRouter);
 app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
 
+
+//API văn thu
+app.use("/api/tool",toolVT)
+
 app.use("/api/crm/customer/group", groupCustomerRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

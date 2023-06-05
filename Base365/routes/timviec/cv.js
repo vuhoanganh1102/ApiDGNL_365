@@ -9,8 +9,9 @@ const cv = require('../../controllers/timviec/cv');
 
 // CV & hồ sơ
 // router.post('/insertDataCV', formData.parse(), cv.insertDataCV);
+
 // tìm tất cả mẫu CV
-router.post('/getListCV', formData.parse(), cv.getListCV);
+router.post('/getList', formData.parse(), cv.getList);
 
 // danh sách ngành cv
 router.post('/getNganhCV', formData.parse(), cv.getNganhCV);
@@ -19,13 +20,13 @@ router.post('/getNganhCV', formData.parse(), cv.getNganhCV);
 router.post('/getListCVByCondition', formData.parse(), cv.getListCVByCondition);
 
 // xem trước cv
-router.post('/previewCV/:_id', formData.parse(), cv.previewCV);
+router.post('/preview', formData.parse(), cv.previewCV);
 
 // chi tiết cv 
-router.post('/detailCV', formData.parse(), cv.detailCV);
+router.post('/detail', formData.parse(), cv.detail);
 
 // lưu và tải cv
-// router.post('/saveCV', functions.checkToken, formData.parse(), functions.decrypt, cv.saveCV);
+router.post('/saveCV', functions.checkToken, formData.parse(), cv.saveCV);
 
 // xem mẫu cv viết sẵn
 router.post('/viewAvailableCV/:cateId', formData.parse(), cv.viewAvailable);

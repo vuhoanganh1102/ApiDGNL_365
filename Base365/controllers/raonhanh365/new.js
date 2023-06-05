@@ -52,16 +52,16 @@ exports.postNewMain = async (req, res, next) => {
                     if (checkVideo) {
                         nameVideo = video[0].filename
                     } else {
-                        video.forEach(async (element) => {
+                        video.forEach(async(element) => {
                             await functions.deleteImg(element)
                         })
                         return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
                     }
                 } else
-                    if (video.length > 1) {
-                        await functions.deleteImgVideo(img, video)
-                        return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
-                    }
+                if (video.length > 1) {
+                    await functions.deleteImgVideo(img, video)
+                    return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
+                }
             }
             req.info = {
                 cateID: cateID,
@@ -91,7 +91,7 @@ exports.postNewMain = async (req, res, next) => {
 }
 
 // đăng tin
-exports.postNewElectron = async (req, res, next) => {
+exports.postNewElectron = async(req, res, next) => {
     try {
         let listID = [];
         let listCategory = await functions.getDatafind(Category, { parentId: 1 });
@@ -118,7 +118,7 @@ exports.postNewElectron = async (req, res, next) => {
 }
 
 // đăng tin
-exports.postNewVehicle = async (req, res, next) => {
+exports.postNewVehicle = async(req, res, next) => {
     try {
         let listID = [];
         let listCategory = await functions.getDatafind(Category, { parentId: 2 });
@@ -180,7 +180,7 @@ exports.postNewVehicle = async (req, res, next) => {
 }
 
 // đăng tin
-exports.postNewVehicle = async (req, res, next) => {
+exports.postNewVehicle = async(req, res, next) => {
     try {
         let listID = [];
         let listCategory = await functions.getDatafind(Category, { parentId: 3 });
