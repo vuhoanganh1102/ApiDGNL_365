@@ -253,6 +253,10 @@ const newTV365Schema = new mongoose.Schema({
             type: Number,
             default: 0
         },
+        video: {
+            type: String,
+            default: null,
+        },
         // video bài post
         videoType: {
             type: String,
