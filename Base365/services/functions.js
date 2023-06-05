@@ -290,6 +290,7 @@ exports.uploadVideo = multer({ storage: storageMain('../Storage/TimViec365') })
 exports.uploadFileUv = multer({ storage: storageFile('../Storage/TimViec365') })
 
 
+
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
         if (err) throw err;
@@ -455,6 +456,10 @@ exports.pageFind = async (model, condition, sort, skip, limit) => {
     return model.find(condition).sort(sort).skip(skip).limit(limit).lean();
 };
 
+exports.pageFindWithFields = async(model, condition, fields, sort, skip, limit) => {
+    return model.find(condition, fields).sort(sort).skip(skip).limit(limit);
+};
+
 // lấy danh sách mẫu CV sắp xếp mới nhất
 exports.getDataCVSortById = async (condition, pageNumber) => {
     const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color')
@@ -535,6 +540,10 @@ exports.findUser = async (userId, select, sort, skip, limit) => {
         },
         ]
     }, { select }).sort(sort).skip(skip).limit(limit)
+}
+
+exports.findAll = async(model, fields)=>{
+    return model.find({}, fields);
 }
 
 //hàm tìm kiếm findOneuser với idtimviec và type = 0 hoặc 2
@@ -637,6 +646,21 @@ exports.getMaxIDQLC = async(model) => {
 exports.getMaxIDcompany = async(model) => {
     const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
     return maxIDcompany.companyId;
+};
+
+//hàm tìm kiếm và cập nhật user với phoneTK và type =0 hoặc type =2
+exports.findOneAndUpdateUserByPhoneTK = async(phoneTK, projection) => {
+    return Users.findOneAndUpdate({
+        $or: [{
+                phoneTK: phoneTK,
+                type: 0
+            },
+            {
+                idTimViec365: phoneTK,
+                type: 2
+            },
+        ]
+    }, projection)
 };
 
 //upload image cv,don, thu, syll

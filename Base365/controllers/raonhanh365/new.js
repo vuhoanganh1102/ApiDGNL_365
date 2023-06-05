@@ -12,6 +12,7 @@ exports.postNewMain = async (req, res, next) => {
         let listImg = [];
         let nameVideo = '';
         let request = req.body,
+            userID = request.user_id,
             cateID = request.cate_id,
             title = request.title,
             money = request.money,
@@ -25,25 +26,44 @@ exports.postNewMain = async (req, res, next) => {
             phone = request.phone,
             status = request.status,
             detailCategory = request.detailCategory,
-            district = request.district;
+            buySell = request.buySell,
+            productType = request.productType,
+            productGroup = request.productGroup,
+            city = request.city,
+            district = request.district,
+            ward = request.ward,
+            brand = request.brand;
+        let fields = [userID, cateID, title, money, until, description, free, poster, name, email, address, phone, status, detailCategory];
+        for(let i=0; i<fields.length; i++){
+            if(!fields[i])
+                return functions.setError(res, 'Missing input value', 404)
+        }
+        const maxIDNews = await New.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIDNews;
+        if (maxIDNews) {
+            newIDNews = Number(maxIDNews._id) + 1;
+        } else newIDNews = 1;
         if (money) {
             if (img && img.length >= 1 && img.length <= 10) {
                 let isValid = true;
                 for (let i = 0; i < img.length; i++) {
                     let checkImg = await functions.checkImage(img[i].path);
                     if (checkImg) {
-                        listImg.push(img[i].filename);
+                        // day mot object gom 2 truong(nameImg, size) vao listImg
+                        listImg.push({nameImg: img[i].originalFilename, size: img[i].size});
                     } else {
                         isValid = false;
                     }
                 }
                 if (isValid == false) {
                     await functions.deleteImgVideo(img, video)
-                    return functions.setError(res, 'đã có ảnh sai định dạng hoặc lớn hơn 2MB', 404)
+                    return functions.setError(res, 'đã có ảnh sai định dạng hoặc lớn hơn 2MB', 405)
                 }
-            } else if (img && img.length > 6) {
+            } else if (img && img.length > 10) {
                 await functions.deleteImgVideo(img, video)
-                return functions.setError(res, 'chỉ được đưa lên tối đa 10 ảnh', 404)
+                return functions.setError(res, 'chỉ được đưa lên tối đa 10 ảnh', 406)
+            }else{
+                return functions.setError(res, 'Missing input image', 406)
             }
 
             if (video) {
@@ -55,15 +75,17 @@ exports.postNewMain = async (req, res, next) => {
                         video.forEach(async(element) => {
                             await functions.deleteImg(element)
                         })
-                        return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
+                        return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 407)
                     }
-                } else
-                if (video.length > 1) {
+                } 
+                else if (video.length > 1) {
                     await functions.deleteImgVideo(img, video)
-                    return functions.setError(res, 'chỉ được đưa lên 1 video', 404)
+                    return functions.setError(res, 'chỉ được đưa lên 1 video', 408)
                 }
             }
             req.info = {
+                _id: newIDNews,
+                userID: userID,
                 cateID: cateID,
                 title: title,
                 money: money,
@@ -79,18 +101,234 @@ exports.postNewMain = async (req, res, next) => {
                 detailCategory: detailCategory,
                 district: district,
                 img: listImg,
-                video: nameVideo
+                video: nameVideo,
+                productGroup: productGroup,
+                productType: productType,
+                city: city,
+                district: district,
+                ward: ward,
+                brand: brand,
+                buySell: 2
             }
             return next()
         }
         return functions.setError(res, 'Thiếu dữ liệu ', 404)
     } catch (err) {
         console.log(err);
+        return functions.setError(res, err);
+    }
+}
+
+// đăng tin chung cho tat ca cac tin
+exports.postNewsGeneral = async(req, res, next) => {
+    try {
+        let exists = await Category.find({ _id: req.cateID }); 
+        let fields = req.info;
+        if (exists) {
+            let request = req.body;
+            
+            //cac truong khi dang tin do dien tu
+            let fieldsElectroniceDevice = {
+                microprocessor : request.microprocessor,
+                ram : request.ram,
+                hardDrive : request.hardDrive,
+                typeHarđrive : request.typeHarđrive,
+                screen : request.screen,
+                size : request.size,
+                brand : request.brand,
+                machineSeries : request.machineSeries
+            }
+
+            //cac truong khi dang tin do xe co
+            let fieldsVehicle = {
+                brandMaterials : request.brandMaterials,
+                vehicles : request.vehicles,
+                spareParts : request.spareParts,
+                interior : request.interior,
+                device : request.device,
+                color : request.color,
+                capacity : request.capacity,
+                connectInternet : request.connectInternet,
+                generalType : request.generalType,
+                wattage : request.wattage,
+                resolution : request.resolution,
+                engine : request.engine,
+                accessary : request.accessary,
+                frameMaterial : request.frameMaterial,
+                volume : request.volume,
+                manufacturingYear : request.manufacturingYear,
+                fuel : request.fuel,
+                numberOfSeats : request.numberOfSeats,
+                gearBox : request.gearBox,
+                style : request.style,
+                payload : request.payload,
+                carNumber : request.carNumber,
+                km : request.km,
+                origin : request.origin,
+                version : request.version
+            }
+
+            // cac truong khi dang tin bat dong san
+            let fieldsRealEstate = {
+                statusSell: request.statusSell,
+                nameApartment: request.nameApartment,
+                numberOfStoreys: request.numberOfStoreys,
+                storey: request.storey,
+                mainDirection: request.mainDirection,
+                balconyDirection: request.balconyDirection,
+                legalDocuments: request.legalDocuments,
+                statusInterior: request.statusInterior,
+                acreage: request.acreage,
+                length: request.length,
+                width: request.width,
+                buyingArea: request.buyingArea,
+                numberToletRoom: request.numberToletRoom,
+                numberBedRoom: request.numberBedRoom,
+                typeOfApartment: request.typeOfApartment,
+                special: request.special,
+                statusBDS: request.statusBDS,
+                codeApartment: request.codeApartment,
+                cornerUnit: request.cornerUnit,
+                nameArea: request.nameArea,
+                useArea: request.useArea,
+                landType: request.landType,
+                officeType: request.officeType,
+                block: request.block,
+                htmchrt: request.htmchrt
+            };
+            // cac truong cua ship
+            let fieldsShip = {
+                product: request.product,
+                timeStart: Date(request.timeStart),
+                timeEnd: Date(request.timeEnd),
+                allDay: request.allDay,
+                vehicloType: request.vehicloType
+            };
+            //cac truong cua danh muc thu cung
+            let fieldsPet = {
+                age: req.body.age,
+                gender: req.body.gender,
+                weigth: req.body.weigth,
+            };
+            //cac truong cua danh muc cong viec
+            let fieldsJob = {
+                minAge: req.body.minAge,
+                exp: req.body.exp,
+                level: req.body.level,
+                skill: req.body.skill,
+                quantity: req.body.quantity,
+                addressNumber: req.body.addressNumber,
+                payBy: req.body.payBy,
+                benefit: req.body.benefit,
+                salary: req.body.salary,
+                gender: req.body.gender,
+                degree: req.body.degree,
+            };
+
+            //
+            fields.electroniceDevice = fieldsElectroniceDevice;
+            fields.vehicle = fieldsVehicle;
+            fields.realEstate = fieldsRealEstate;
+            fields.ship = fieldsShip;
+            fields.pet = fieldsPet;
+            fields.Job = fieldsJob;
+
+            req.fields = fields;
+            return next();
+            
+        }
+        return functions.setError(res, "Category not found!", 505);
+    } catch (err) {
+        console.log(err);
         return functions.setError(res, err)
     }
 }
 
-// đăng tin
+exports.createNews = async(req, res, next)=>{
+    try {
+        let fields = req.fields;
+        fields.createTime = new Date(Date.now());
+        const news = new New(fields);
+        await news.save();
+        return functions.success(res, "create news success");
+    }catch(err){
+        console.log(err);
+        return functions.setError(res, err)
+    }
+}
+
+//chinh sua tat ca cac loai tin
+exports.updateNews = async(req, res, next) => {
+    try {
+        let idNews = Number(req.body.news_id);
+        console.log(idNews);
+        if(!idNews)
+            return functions.setError(res, "Missing input news_id!", 405);
+        let existsNews = await New.find({_id: idNews});
+        let fields = req.fields;
+        fields.updateTime = new Date(Date.now());
+        if (existsNews ) {
+            // xoa truong _id
+            delete fields._id;
+            await New.findByIdAndUpdate(idNews, fields);
+            return functions.success(res, "News edited successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    } catch (err) {
+        console.log(err);
+        return functions.setError(res, err);
+    }
+}
+
+exports.searchSellNews = async(req, res, next)=>{
+    try{
+        if (req.body) {
+            let buySell = 2;
+            if(!req.body.page){
+                return functions.setError(res, "Missing input page", 401);
+            }
+            if(!req.body.pageSize){
+                return functions.setError(res, "Missing input pageSize", 402);
+            }
+            let page = Number(req.body.page);
+            let pageSize = Number(req.body.pageSize);
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let idNews = req.body.idNews;
+            let title = req.body.title;
+            let description = req.body.description;
+            let city = req.body.city;
+            let district = req.body.district;
+            let ward = req.body.ward;
+            let listNews=[];
+            let listCondition = {buySell: buySell};
+
+            // dua dieu kien vao ob listCondition
+            if(idNews) listCondition.idNews = idNews;
+            if(title) listCondition.title =  new RegExp(title, "i");
+            if(description) listCondition.description = new RegExp(description);
+            if(city) listCondition.city = Number(city);
+            if(district) listCondition.district = Number(district);
+            if(ward) listCondition.ward = Number(ward);
+
+            let fieldsGet = 
+            {   
+                userID:1, title:1, linkTitle:1, money:1,endvalue:1,downPayment:1,until:1,cateID:1,type:1,image:1,video:1,buySell:1,createTime:1,updateTime:1, city: 1, district: 1
+            }
+            listNews = await functions.pageFindWithFields(New, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
+            totalCount = await New.countDocuments(listCondition);
+            return functions.success(res, "get buy news success", { data: {totalCount, listNews} });
+        } else {
+            return functions.setError(res, "Missing input data", 400);
+        }
+    }catch(err){
+        console.log(err);
+        return functions.setError(res, err);
+    }
+}
+
+
+// đăng tin do dien tu
 exports.postNewElectron = async(req, res, next) => {
     try {
         let listID = [];
@@ -98,7 +336,8 @@ exports.postNewElectron = async(req, res, next) => {
         for (let i = 0; i < listCategory.length; i++) {
             listID.push(listCategory[i]._id)
         }
-        const exists = listID.includes(req.info.cateID);
+        let fields = req.info;
+        const exists = listID.includes(Number(fields.cateID));
         if (exists) {
             let request = req.body,
                 microprocessor = request.microprocessor,
@@ -109,8 +348,14 @@ exports.postNewElectron = async(req, res, next) => {
                 size = request.size,
                 brand = request.brand,
                 machineSeries = request.machineSeries;
+            let subFields = {microprocessor, ram, hardDrive, typeHarđrive, screen, size, brand, machineSeries};
+            fields.createTime = new Date(Date.now());
+            fields.electroniceDevice = subFields;
+            const news = new New(fields);
+            await news.save();
+            return functions.success(res, "create news electronic device success");
         }
-        return next();
+        return functions.setError(res, "Category electronic device not found!", 505);
     } catch (err) {
         console.log(err);
         return functions.setError(res, err)

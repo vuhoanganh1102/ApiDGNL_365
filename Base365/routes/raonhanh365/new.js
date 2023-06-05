@@ -13,6 +13,11 @@ router.get('/getNewBeforeLogin', newRN.getNewBeforeLogin);
 
 // tìm kiếm tin
 router.get('/searchNew', newRN.searchNew);
+//api co the tao tat ca cac loai tin
+router.post('/createSellNews', formData.parse(), newRN.postNewMain, newRN.postNewsGeneral, newRN.createNews);
+router.put('/updateSellNews', formData.parse(), newRN.postNewMain, newRN.postNewsGeneral, newRN.updateNews);
+router.post('/searchSellNews', formData.parse(), newRN.searchSellNews);
+// router.delete('/deleteNews', newRN.deleteNews);
 
 // tạo mới tin mua
 router.post('/createBuyNew',formData.parse(), functions.checkToken, newRN.createBuyNew)

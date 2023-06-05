@@ -21,7 +21,6 @@ exports.toolCategory = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -59,6 +58,8 @@ exports.toolNewRN = async(req, res, next) => {
     try {
         let result = true;
         let page = 1;
+        // let listNews = await fnc.getDataAxios('https://raonhanh365.vn/api/select_tbl_new.php', {});
+        // console.log("check list new", listNews.data.items);
         do {
             let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 0 })
             let data = listItems.data.items;
@@ -181,7 +182,7 @@ exports.toolNewRN = async(req, res, next) => {
                 console.log(page)
             } else result = false;
         } while (result);
-        await fnc.success(res, 'thành công');
+        await fnc.success(res, 'thành công', {data: listNews.data.items});
 
     } catch (err) {
         console.log(err);
