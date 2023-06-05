@@ -630,12 +630,49 @@ exports.detail = async(req, res, next) => {
         let newID = req.body.new_id;
         let statusApply = false
         let statusSavePost = false
-        let userID = req.user.data.idTimViec365;
+
         if (newID) {
             let post = await functions.getDatafindOne(NewTV365, { _id: newID });
+            let post1 = await NewTV365.aggregate([{
+                    $match: {
+                        _id: Number(newID),
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "userID",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $skip: 0
+                },
+                {
+                    $project: {
+                        _id: Number(newID),
+                        new_title: '$title',
+                        new_alias: '$alias',
+                        new_cat_id: '$cateID',
+                        new_lv: '$lv',
+                        new_addr: '$address',
+                        "user.userName": 1,
+                        "user.avatarUser": 1,
+                        "user.address": 1,
+                        "user.createdAt": 1,
+                        "user._id": 1
+                    }
+                },
+            ]);
+            console.log(post1)
             if (post) {
                 //check ứng viên ứng tuyển hoặc lưu tin
                 if (req.user) {
+                    let userID = req.user.data.idTimViec365;
                     let apply = await functions.getDatafindOne(ApplyForJob, { userID: userID, newID: newID });
                     let savePost = await functions.getDatafindOne(UserSavePost, { userID: userID, newID: newID });
                     if (apply) {
@@ -656,7 +693,7 @@ exports.detail = async(req, res, next) => {
                         $lookup: {
                             from: "Users",
                             localField: "commentPersonId",
-                            foreignField: "_id",
+                            foreignField: "idTimViec365",
                             as: "user"
                         }
                     },
@@ -754,24 +791,15 @@ exports.detail = async(req, res, next) => {
                     type: 1
                 }).limit(20)
 
+                //box chức danh
                 let title = post.title.toLowerCase()
 
                 let keyName = ["thực tập", "chuyên viên", "nhân viên", "trưởng phòng", "trưởng nhóm",
                     "trợ lý", "phó trưởng phòng", "phó giám đốc", "giám đốc", "quản lý", "quản đốc"
                 ]
 
-                let keyTitle
-                for (let i = 0; i < keyName.length; i++) {
-                    if (title.includes(keyName[i]) == true) {
-                        keyTitle = keyName[i]
-                        break;
-                    }
-                }
-
-
-                //box chức danh
                 let findChucDanh = await Keyword.find({
-                    name: { $regex: keyTitle, $options: 'i' },
+                    name: { $in: keyName.map(name => new RegExp(name, "i")) },
                     cateLq: { $in: post.cateID },
                     cityID: { $in: post.cityID },
                     $or: [

@@ -491,8 +491,6 @@ exports.updateInfoCompany = async(req, res, next) => {
             userCompany = request.name,
             city = request.city,
             address = request.address,
-            site = request.quymo,
-            website = request.web,
             description = request.gt,
             mst = request.thue,
             tagLinhVuc = request.tagLinhVuc
@@ -505,11 +503,8 @@ exports.updateInfoCompany = async(req, res, next) => {
                         'userName': userCompany,
                         'phone': phone,
                         'city': city,
-                        'website': website || null,
                         'address': address,
                         'inForCompany.mst': mst || null,
-                        'inForCompany.website': website || null,
-                        'inForCompany.com_size': site,
                         "inForCompany.tagLinhVuc": tagLinhVuc
 
                     }

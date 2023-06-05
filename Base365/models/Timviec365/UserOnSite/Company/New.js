@@ -26,7 +26,7 @@ const newTV365Schema = new mongoose.Schema({
     },
     // thể loại việc làm
     cateID: [{
-        type: String,
+        type: Number,
         default: null,
     }],
     realCate: {
