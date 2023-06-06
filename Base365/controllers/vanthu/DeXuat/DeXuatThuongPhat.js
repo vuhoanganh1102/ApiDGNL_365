@@ -3,8 +3,7 @@ const { storageVT } = require('../../../services/functions');
 const multer = require('multer');
 const functions = require("../../../services/functions");
 
-
-exports.dxCong = async (req, res) => {
+exports.dxThuongPhat = async (req, res) => {
     try {
         let {
             name_dx,
@@ -24,10 +23,11 @@ exports.dxCong = async (req, res) => {
             time_tiep_nhan,
             time_duyet,
             active,
-            del_type,
+            so_tien_thuong ,
+            so_tien_phat,
+            nguoi_phat,
+            ngay_ap_dung,
             ly_do,
-            ca_xnc,
-            time_xnc
         } = req.body;
         if(!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
@@ -38,14 +38,16 @@ exports.dxCong = async (req, res) => {
 
                 _id = Number(maxID) + 1;
             }
-            let createDXC = new DeXuat({
+            let createDXTP = new DeXuat({
                 _id : _id,
                 name_dx: name_dx,
                 type_dx: type_dx,
                 noi_dung: {
-                    cong_cong: {
-                        time_xnc: new Date(time_xnc * 1000)  ,
-                        ca_xnc : ca_xnc,
+                    thuong_phat: {
+                        so_tien_thuong: so_tien_thuong ,
+                        so_tien_phat : so_tien_phat,
+                        nguoi_phat : nguoi_phat,
+                        ngay_ap_dung : ngay_ap_dung,
                         ly_do : ly_do,
                     },
                 },
@@ -66,23 +68,13 @@ exports.dxCong = async (req, res) => {
                 del_type: del_type
             });
 
-            let savedDXC = await createDXC.save();
-            res.status(200).json(savedDXC);
+            let savedDXTP = await createDXTP.save();
+            res.status(200).json(savedDXTP);
         };
 
 
 
     } catch (error) {
-        console.error('Failed to add', error);
-        res.status(500).json({error: 'Failed to add'});
-    }
-}
-
-exports.updateCong = async (req,res)=>{
-    try{
-        let id = req.body._id
-        let check = await DeXuat.findOne({_id : id})
-    }catch (error) {
         console.error('Failed to add', error);
         res.status(500).json({error: 'Failed to add'});
     }

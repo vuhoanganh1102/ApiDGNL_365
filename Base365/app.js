@@ -54,7 +54,8 @@ var dexuatTT = require('./routes/vanthu/deXuat/DeXuatThanhToanRoutes');
 var dexuatCC = require('./routes/vanthu/deXuat/DeXuatCongRoutes');
 var dexuatVC = require('./routes/vanthu/deXuat/DeXuatCoSoVatChatRoutes');
 var dexuatKN = require('./routes/vanthu/deXuat/DeXuatKhieuNaiRoutes');
-
+var dexuatTP = require('./routes/vanthu/deXuat/DeXuatThuongPhatRoutes');
+var dexuatHH = require('./routes/vanthu/deXuat/DeXuatHoaHongRoutes');
 
 const {router} = require("express/lib/application");
 
@@ -120,6 +121,8 @@ app.use("/api/dexuat",dexuatVC);
 app.use("/api/dexuat",dexuatTT);
 app.use("/api/dexuat",dexuatCC);
 app.use("/api/dexuat",dexuatKN);
+app.use("/api/dexuat",dexuatTP);
+app.use("/api/dexuat",dexuatHH);
 
 
 
