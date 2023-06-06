@@ -29,6 +29,11 @@ const HisOfTracking = new mongoose.Schema({
         //vị trí
         type : String
     },
+    CreateAt:{
+        //thời điểm chấm công 
+        type : Date,
+        default : Date.now()
+    },
     NameWifi:{
         //tên wifi
         type : String
@@ -43,11 +48,15 @@ const HisOfTracking = new mongoose.Schema({
     },
     shiftID:{
         //id ca làm việc
-        type : String
+        type : Number
     },
     companyID:{
         //id công ty
-        type : String
+        type : Number
+    },
+    depID:{
+        //id công ty
+        type : Number
     },
     Note:{
         //note
@@ -60,14 +69,18 @@ const HisOfTracking = new mongoose.Schema({
     role:{
         //vai trò
         type : Number
-    // },
-    // Err:{
-    //     type : Boolean
-    // },
-    // Success:{
-    //     type : Boolean
-    // },
-    }
+    },
+    status:{
+        //trạng thái của công: 1 là công chấm mặt, 2 là công chấm QR, 3 là bù công',
+        type : Number
+    },
+    Err:{//trạng thái thất bại
+        type : Boolean,
+    },
+    Success:{//trạng thái Thành công
+        type : Boolean,
+    },
+    
 
 }) 
 

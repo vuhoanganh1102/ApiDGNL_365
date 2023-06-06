@@ -36,6 +36,7 @@ var calendarRouter = require('./routes/qlc/calendar');
 var manageUserRouter = require('./routes/qlc/manageUser')
 var HisOfTrackingRouter = require("./routes/qlc/HisTracking")
 var CalendarWorkEmployee = require("./routes/qlc/CalendarWorkEmployee")
+var SetIpRouter = require("./routes/qlc/settingIP")
 
 
 // crm_import
@@ -100,7 +101,7 @@ app.use('/api/qlc/team', teamRouter);
 app.use("/api/qlc/group", groupRouter);
 // app.use('/api/qlc/childCompany', childCompanyRouter);
 app.use('/api/qlc/manageUser', manageUserRouter);
-
+app.use('/api/qlc/settingIP',SetIpRouter)
 
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);
@@ -140,4 +141,5 @@ mongoose.connect(DB_URL)
 //     console.log("Connected to databse");
 //     console.log("Backend is running on http://localhost:3002")
 // })
+
 module.exports = app;

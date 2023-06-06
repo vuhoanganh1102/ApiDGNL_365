@@ -7,6 +7,31 @@ const formData = require("express-form-data")
 router.post('/',formData.parse(),HisTrackingController.CreateTracking)
 
 
+router.post('/com/success',formData.parse(),HisTrackingController.getListUserTrackingSuccess)
+
+
+router.post('/com/false',formData.parse(),HisTrackingController.getListUserTrackingFalse)
+
+
+router.post('/com/time',formData.parse(),HisTrackingController.getTrackingtime)
+
+
+router.post('/com/all/condition',formData.parse(),HisTrackingController.getTrackingALLCondition)
+
+
+router.post('/com/all/condition/NotTime',formData.parse(),HisTrackingController.getTrackingALLConNotTime)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 module.exports = router
