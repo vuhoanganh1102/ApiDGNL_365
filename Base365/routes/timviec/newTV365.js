@@ -39,7 +39,7 @@ router.get('/getDataPost', functions.checkToken, newTV365.getPost)
 router.get('/checkNew10p', functions.checkToken, newTV365.checkPostNew10p)
 
 // api làm mới tin
-router.get('/checkNew10p', functions.checkToken, newTV365.refreshNew)
+router.get('/refreshNew', functions.checkToken, newTV365.refreshNew)
 
 //api lấy 1 bài viết trước đăng nhập hoặc sau đăng nhập
 router.post('/detail', formData.parse(), function(req, res, next) {
@@ -89,9 +89,7 @@ router.post('/homePage', formData.parse(), newTV365.homePage)
     //trang chủ
 router.post('/listJobBySearch', formData.parse(), newTV365.listJobBySearch)
 
-
-
-//trang chủ
-router.post('/homePage', formData.parse(), newTV365.homePage)
+//Like và bỏ like tin hoặc bình luận
+router.post('/likeNew', formData.parse(), functions.checkToken, newTV365.likeNew)
 
 module.exports = router;

@@ -144,18 +144,6 @@ exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
 };
 
-// hàm validate email
-exports.checkEmail = async(email) => {
-    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-    return gmailRegex.test(email);
-};
-
-// hàm validate link
-exports.checkLink = async(link) => {
-    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-    return urlRegex.test(yourUrlVariable);
-};
-
 // hàm khi thành công
 exports.success = async(res, messsage = "", data = []) => {
     return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
@@ -691,4 +679,37 @@ exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
             await this.deleteImg(element)
         })
     }
+}
+
+//thay thế các kí tự đặc biệt trong tiêu đề
+exports.replaceKeywordSearch = async(lower, keyword) => {
+    if (lower === 1) {
+        keyword = keyword.toLowerCase();
+    }
+    const arrRep = ["'", '"', "-", "\\+", "=", "\\*", "\\?", "\\/", "!", "~", "#", "@", "%", "$", "\\^", "&", "\\(", "\\)", ";", ":", "\\\\", "\\.", ",", "\\[", "\\]", "{", "}", "‘", "’", '“', '”', '<', '>'];
+    keyword = arrRep.reduce((str, rep) => {
+        return str.replace(new RegExp(rep, "g"), " ");
+    }, keyword);
+    keyword = keyword.replace(/ {2,}/g, " ");
+    return keyword;
+};
+
+exports.replaceMQ = async(text) => {
+    text = text.replace(/\\'/g, "'");
+    text = text.replace(/'/g, "");
+    text = text.replace(/\\/g, "");
+    text = text.replace(/"/g, "");
+    return text;
+}
+
+//bỏ những từ khóa trong tiêu đề
+exports.removerTinlq = async(string) => {
+    var arr_remove = ["lương", "nhân", "trình", "viên", "chuyên", "cao", "tuyển", "dụng", "hấp", "dẫn", "chi", "tiết", "công", "ty", "tnhh", "sx", "tm", "dv", "phòng", "tại", "biết", "về"];
+    var result = arr_remove.reduce(function(str, remove) {
+        return str.replace(new RegExp(remove, "gi"), "");
+    }, string);
+
+    result = result.trim().replace(/\s+/g, " "); // Loại bỏ khoảng trắng dư thừa
+
+    return result;
 }

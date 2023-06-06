@@ -26,7 +26,7 @@ const newTV365Schema = new mongoose.Schema({
     },
     // thể loại việc làm
     cateID: [{
-        type: String,
+        type: Number,
         default: null,
     }],
     realCate: {
@@ -40,7 +40,7 @@ const newTV365Schema = new mongoose.Schema({
     },
     // thành phố
     cityID: [{
-        type: String,
+        type: Number,
     }],
     // quận huyện
     districtID: [{
@@ -252,6 +252,10 @@ const newTV365Schema = new mongoose.Schema({
         jobPosting: {
             type: Number,
             default: 0
+        },
+        video: {
+            type: String,
+            default: null,
         },
         // video bài post
         videoType: {
