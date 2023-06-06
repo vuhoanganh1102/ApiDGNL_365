@@ -20,6 +20,7 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
 const Users = require('../models/Users');
+const AdminUserRaoNhanh365 = require('../models/Raonhanh365/Admin/AdminUser');
 
 const functions = require('../services/functions')
 
@@ -203,6 +204,11 @@ exports.checkImage = async (filePath) => {
     }
 
     return true;
+};
+
+exports.checkFileCV = async (filePath) => {
+    const extname = path.extname(filePath).toLowerCase();
+    return ['.pdf', '.doc', '.docx'].includes(extname);
 };
 
 // hàm check video
@@ -389,10 +395,17 @@ exports.checkToken = (req, res, next) => {
             return res.status(403).json({ message: "Invalid token" });
         }
         req.user = user;
-
         next();
     });
 };
+
+// ham check admin rao nhanh 365
+exports.isAdminRN365 = async(req, res, next)=>{
+    let user = req.user.data;
+    let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, isAdmin: 1, active: 1 });
+    if(admin) return next();
+    return res.status(403).json({ message: "is not admin RN365" });
+}
 
 // hàm tạo token 
 exports.createToken = async (data, time) => {
