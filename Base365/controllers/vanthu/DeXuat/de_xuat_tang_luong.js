@@ -42,9 +42,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
                     mucluong_tang: mucluong_tang,
                     date_tang_luong: date_tang_luong,
                     ly_do: ly_do
-
                 }
-
             },
             name_user: name_user,
             id_user: id_user,
@@ -58,8 +56,8 @@ exports.de_xuat_tang_luong = async (req, res) => {
             type_time: 0,
             time_start_out: " ",
             time_create: new Date(),
-            time_tiep_nhan: null,
-            time_duyet: null,
+            time_tiep_nhan: 0,
+            time_duyet: 0,
             active: 1,//1-bên 3 đã đồng ý , 2 - bên 3 không đồng ý 
             del_type: 1,//1-active , 2 --delete
         })

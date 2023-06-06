@@ -70,7 +70,7 @@ const removeAccent = (str) => {
 };
 
 // check title
-exports.checkTilte = async(input, list) => {
+exports.checkTilte = async (input, list) => {
     const formattedInput = removeAccent(input).toLowerCase();
     const foundKeyword = list.find((keyword) => {
         const formattedKeyword = removeAccent(keyword).toLowerCase();
@@ -94,31 +94,31 @@ exports.randomNumber = Math.floor(Math.random() * 900000) + 100000;
 exports.keywordsTilte = ["hot", "tuyển gấp", "cần gấp", "lương cao"];
 
 // hàm validate phone
-exports.checkPhoneNumber = async(phone) => {
-        const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
-        return phoneNumberRegex.test(phone)
+exports.checkPhoneNumber = async (phone) => {
+    const phoneNumberRegex = /^(?:\+84|0|\+1)?([1-9][0-9]{8,9})$/;
+    return phoneNumberRegex.test(phone)
+}
+// hàm validate email
+exports.checkEmail = async (email) => {
+    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return gmailRegex.test(email);
+}
+// hàm validate link
+exports.checkLink = async (link) => {
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+    return urlRegex.test(link);
+}
+// hàm validate thơi gian
+exports.checkTime = async (time) => {
+    const currentTime = new Date(); // Lấy thời gian hiện tại
+    const inputTime = new Date(time); // Thời gian nhập vào
+    if (inputTime < currentTime) {
+        return false
+    } else {
+        return true
     }
-    // hàm validate email
-exports.checkEmail = async(email) => {
-        const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-        return gmailRegex.test(email);
-    }
-    // hàm validate link
-exports.checkLink = async(link) => {
-        const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-        return urlRegex.test(link);
-    }
-    // hàm validate thơi gian
-exports.checkTime = async(time) => {
-        const currentTime = new Date(); // Lấy thời gian hiện tại
-        const inputTime = new Date(time); // Thời gian nhập vào
-        if (inputTime < currentTime) {
-            return false
-        } else {
-            return true
-        }
-    }
-    // hàm check thời gian đăng tin 10p/1 lần
+}
+// hàm check thời gian đăng tin 10p/1 lần
 exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
     const inputTime = Date.parse(timeInput);
 
@@ -132,43 +132,43 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
         return false;
     }
 };
-exports.getDatafindOne = async(model, condition) => {
+exports.getDatafindOne = async (model, condition) => {
     return model.findOne(condition).lean();
 };
 
-exports.getDatafind = async(model, condition) => {
+exports.getDatafind = async (model, condition) => {
     return model.find(condition).lean();
 }
 
-exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
+exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
 };
 
 // hàm khi thành công
-exports.success = async(res, messsage = "", data = []) => {
+exports.success = async (res, messsage = "", data = []) => {
     return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
 };
 
 // hàm thực thi khi thất bại
-exports.setError = async(res, message, code = 500) => {
+exports.setError = async (res, message, code = 500) => {
     return res.status(code).json({ code, message })
 };
 
 // hàm tìm id max
-exports.getMaxID = async(model) => {
+exports.getMaxID = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
 };
 
 // hàm check định dạng ảnh
-const isImage = async(filePath) => {
+const isImage = async (filePath) => {
     const extname = path.extname(filePath).toLowerCase();
     return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].includes(extname);
 };
 
 // hàm check ảnh
-exports.checkImage = async(filePath) => {
-    if (typeof(filePath) !== 'string') {
+exports.checkImage = async (filePath) => {
+    if (typeof (filePath) !== 'string') {
         return false;
     }
 
@@ -186,7 +186,7 @@ exports.checkImage = async(filePath) => {
 };
 
 // hàm check video
-exports.checkVideo = async(filePath) => {
+exports.checkVideo = async (filePath) => {
     // kiểm tra loại file
     if (!allowedTypes.includes(path.extname(filePath.originalname).toLowerCase())) {
         return false;
@@ -198,14 +198,14 @@ exports.checkVideo = async(filePath) => {
     return true;
 };
 
-exports.getDataDeleteOne = async(model, condition) => {
+exports.getDataDeleteOne = async (model, condition) => {
     return model.deleteOne(condition)
 };
 
 // storage để updload file
 const storageMain = (destination) => {
     return multer.diskStorage({
-        destination: function(req, file, cb) {
+        destination: function (req, file, cb) {
             const userId = req.user.data._id; // Lấy id người dùng từ request
             const userDestination = `${destination}/${userId}`; // Tạo đường dẫn đến thư mục của người dùng
             if (!fs.existsSync(userDestination)) { // Nếu thư mục chưa tồn tại thì tạo mới
@@ -213,7 +213,7 @@ const storageMain = (destination) => {
             }
             cb(null, userDestination);
         },
-        filename: function(req, file, cb) {
+        filename: function (req, file, cb) {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
             cb(null, file.fieldname + uniqueSuffix + '.' + file.originalname.split('.').pop())
         }
@@ -222,7 +222,7 @@ const storageMain = (destination) => {
 
 const storageFile = (destination) => {
     return multer.diskStorage({
-        destination: function(req, file, cb) {
+        destination: function (req, file, cb) {
             let userDestination = " "
             if (req.user) {
                 const userId = req.user.data._id; // Lấy id người dùng từ request
@@ -235,11 +235,11 @@ const storageFile = (destination) => {
             }
             cb(null, userDestination);
         },
-        filename: function(req, file, cb) {
+        filename: function (req, file, cb) {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
             cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop())
         },
-        fileFilter: function(req, file, cb) {
+        fileFilter: function (req, file, cb) {
             const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'video/webm', 'video/quicktime'];
             if (allowedTypes.includes(file.mimetype)) {
                 cb(null, true);
@@ -277,12 +277,12 @@ const deleteFile = (filePath) => {
 };
 
 // hàm xóa file
-exports.deleteImg = async(condition) => {
-    if (typeof(condition) == "string") {
+exports.deleteImg = async (condition) => {
+    if (typeof (condition) == "string") {
         return await deleteFile(condition)
     }
 
-    if (typeof(condition) == "object") {
+    if (typeof (condition) == "object") {
         return await deleteFile(condition.path)
     }
 
@@ -290,10 +290,10 @@ exports.deleteImg = async(condition) => {
 
 // storega check file
 const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         cb(null, 'public/cvUpload')
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
         cb(null, file.fieldname + uniqueSuffix + `.$ { file.originalname.split('.').slice(-1)[0]
 }
@@ -304,7 +304,7 @@ const storage = multer.diskStorage({
 // hàm check file
 exports.uploadFile = multer({ storage: storageFile })
 
-exports.createError = async(code, message) => {
+exports.createError = async (code, message) => {
     const err = new Error();
     err.code = code;
     err.message = message;
@@ -324,7 +324,7 @@ const transport = nodemailer.createTransport({
 });
 
 // hàm gửi mail
-exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
+exports.sendEmailVerificationRequest = async (otp, email, nameCompany) => {
     let options = {
         from: process.env.AUTH_EMAIL,
         to: email,
@@ -349,7 +349,7 @@ exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
     })
 };
 
-exports.verifyPassword = async(inputPassword, hashedPassword) => {
+exports.verifyPassword = async (inputPassword, hashedPassword) => {
     const md5Hash = crypto.createHash('md5').update(inputPassword).digest('hex');
     return md5Hash === hashedPassword;
 };
@@ -371,24 +371,24 @@ exports.checkToken = (req, res, next) => {
 };
 
 // hàm tạo token 
-exports.createToken = async(data, time) => {
+exports.createToken = async (data, time) => {
     return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
 };
 
 // hàm lấy data từ axios 
-exports.getDataAxios = async(url, condition) => {
+exports.getDataAxios = async (url, condition) => {
     return await axios({
         method: "post",
         url: url,
         data: condition,
         headers: { "Content-Type": "multipart/form-data" }
-    }).then(async(response) => {
+    }).then(async (response) => {
         return response.data
     })
 };
 
 // hàm lấy dữ liệu ngành nghề
-exports.getDataCareer = async() => {
+exports.getDataCareer = async () => {
     return ["An toàn lao động", "Báo chí - Truyền hình", "Bảo hiểm", "Bảo trì", "Bảo vệ", "Biên - Phiên dịch",
         "Bưu chính viễn thông", "Chăm sóc khách hàng", "Chăn nuôi - Thú y", "Cơ khí - Chế tạo", "Công chức - Viên chức", "Công nghệ cao", "Công nghệ thực phẩm", "copywrite",
         "Dầu khí - Địa chất", "Dệt may - Da dày", "Dịch vụ", "Du lịch", "Freelancer", "Giáo dục - Đào tạo", "Giao thông vận tải -Thủy lợi - Cầu đường", "Giúp việc", "Hàng hải", "Hàng không",
@@ -403,37 +403,37 @@ exports.getDataCareer = async() => {
 };
 
 // hàm lấy dữ liệu hình thức làm việc
-exports.getDataWorkingForm = async() => {
+exports.getDataWorkingForm = async () => {
     return ["Toàn thời gian cố định", "Toàn thời gian tạm thời", "Bán thời gian", "Bán thời gian tạm thời", "Hợp đồng", "Việc làm từ xa", "Khác"]
 };
 
 // hàm lấy dữ liệu cấp bậc làm việc
-exports.getDataWorkingRank = async() => {
+exports.getDataWorkingRank = async () => {
     return ["Mới tốt nghiệp", "Thực tập sinh", "Nhân viên", "Trưởng nhóm", "Phó tổ trưởng", "Tổ trưởng", "Phó trưởng phòng", "Trưởng phòng", "Phó giám đốc", "Giám đóc", "Phó tổng giám đốc", "Tổng giám đốc", "Quản lý cấp trung", "Quản lý cấp cao"]
 };
 
 // hàm lấy dữ liệu kinh nghiệm làm việc
-exports.getDataEXP = async() => {
+exports.getDataEXP = async () => {
     return ["Không yêu cầu", "Chưa có kinh nghiệm", "0 - 1 năm kinh nghiệm", "Hơn 1 năm kinh nghiệm", "Hơn 2 năm kinh nghiệm", "Hơn 5 năm kinh nghiệm", "Hơn 10 năm kinh nghiệm"]
 };
 // hàm lấy dữ liệu bằng cấp làm việc
-exports.getDataDegree = async() => {
+exports.getDataDegree = async () => {
     return ["Không yêu cầu", "Đại học trở lên", "Cao đẳng trở lên", "THPT trở lên", "Trung học trở lên", "Chứng chỉ", "Trung cấp trở lên", "Cử nhân trở lên", "Thạc sĩ trở lên", "Thạc sĩ Nghệ thuật", "Thạc sĩ Thương mại", "Thạc sĩ Khoa học",
         "Thạc sĩ Kiến trúc", "Thạc sĩ QTKD", "Thạc sĩ Kỹ thuật ứng dụng", "Thạc sĩ Luật", "Thạc sĩ Y học", "Thạc sĩ Dược phẩm", "Tiến sĩ", "Khác"
     ]
 };
 
 // hàm lấy dữ liệu giới tính làm việc
-exports.getDataSex = async() => {
+exports.getDataSex = async () => {
     return ["Nam", "Nữ", "Không yêu cầu"]
 };
 
-exports.pageFind = async(model, condition, sort, skip, limit) => {
+exports.pageFind = async (model, condition, sort, skip, limit) => {
     return model.find(condition).sort(sort).skip(skip).limit(limit).lean();
 };
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
-exports.getDataCVSortById = async(condition, pageNumber) => {
+exports.getDataCVSortById = async (condition, pageNumber) => {
     const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color')
         .sort({ _id: -1 }).skip((pageNumber - 1) * 20).limit(20);
     if (data.length > 0) {
@@ -443,7 +443,7 @@ exports.getDataCVSortById = async(condition, pageNumber) => {
 };
 
 // lấy danh sách mẫu CV sắp xếp lượt tải nn
-exports.getDataCVSortByDownload = async(condition) => {
+exports.getDataCVSortByDownload = async (condition) => {
     const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color')
         .sort({ download: -1 }).skip((pageNumber - 1) * 20).limit(20);
     if (data.length > 0) {
@@ -453,17 +453,17 @@ exports.getDataCVSortByDownload = async(condition) => {
 };
 
 //hàm kiểm tra string có phải number không
-exports.checkNumber = async(string) => {
+exports.checkNumber = async (string) => {
     return !isNaN(string)
 }
 
 //hàm phân trang có chọn lọc những trường dc hiển thị
-exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {
+exports.pageFindV2 = async (model, condition, select, sort, skip, limit) => {
     return model.find(condition, select).sort(sort).skip(skip).limit(limit);
 }
 
 //hàm check xem có truyền vào token hay không
-exports.checkTokenV2 = async(req, res, next) => {
+exports.checkTokenV2 = async (req, res, next) => {
     if (req.headers.authorization) {
         functions.checkToken(req, res, next);
     } else {
@@ -472,7 +472,7 @@ exports.checkTokenV2 = async(req, res, next) => {
 }
 
 // hàm dém count
-exports.findCount = async(model, filter) => {
+exports.findCount = async (model, filter) => {
     try {
         const count = await model.countDocuments(filter);
         return count;
@@ -482,7 +482,7 @@ exports.findCount = async(model, filter) => {
     }
 };
 //base64 decrypt image
-exports.decrypt = async(req, res, next) => {
+exports.decrypt = async (req, res, next) => {
     const base64 = req.body.base64;
     req.file = Buffer.from(base64, 'base64').toString('utf-8');
     return next();
@@ -500,51 +500,51 @@ exports.thresholds = [
     { minValue: 100000000, maxValue: Infinity, money: 11 }
 ];
 //hàm tìm kiếm finduser với idtimviec và type = 0 hoặc 2
-exports.findUser = async(userId, select, sort, skip, limit) => {
+exports.findUser = async (userId, select, sort, skip, limit) => {
     return Users.find({
         $or: [{
-                idTimViec365: userId,
-                type: 0
-            },
-            {
-                idTimViec365: userId,
-                type: 2
-            },
+            idTimViec365: userId,
+            type: 0
+        },
+        {
+            idTimViec365: userId,
+            type: 2
+        },
         ]
     }, { select }).sort(sort).skip(skip).limit(limit)
 }
 
 //hàm tìm kiếm findOneuser với idtimviec và type = 0 hoặc 2
-exports.findOneUser = async(userId, select) => {
+exports.findOneUser = async (userId, select) => {
     return Users.findOne({
         $or: [{
-                idTimViec365: userId,
-                type: 0
-            },
-            {
-                idTimViec365: userId,
-                type: 2
-            },
+            idTimViec365: userId,
+            type: 0
+        },
+        {
+            idTimViec365: userId,
+            type: 2
+        },
         ]
     }, select)
 }
 
 //hàm tìm kiếm và cập nhật user với id timviec và type =0 hoặc type =2
-exports.findOneAndUpdateUser = async(userId, projection, select) => {
+exports.findOneAndUpdateUser = async (userId, projection, select) => {
     return Users.findOneAndUpdate({
         $or: [{
-                idTimViec365: userId,
-                type: 0
-            },
-            {
-                idTimViec365: userId,
-                type: 2
-            },
+            idTimViec365: userId,
+            type: 0
+        },
+        {
+            idTimViec365: userId,
+            type: 2
+        },
         ]
     }, projection, select)
 };
 
-exports.getUrlLogoCompany = async(createTime, logo) => {
+exports.getUrlLogoCompany = async (createTime, logo) => {
     try {
         if (logo != null) {
             const time = new Date(createTime);
@@ -562,7 +562,7 @@ exports.getUrlLogoCompany = async(createTime, logo) => {
     }
 }
 
-exports.getTokenUser = async(req, res, next) => {
+exports.getTokenUser = async (req, res, next) => {
     if (req.headers.authorization) {
         const token = req.headers.authorization;
         return jwt.decode(token).data;
@@ -572,19 +572,19 @@ exports.getTokenUser = async(req, res, next) => {
 }
 
 // hàm tìm id max Quản Lí Chung
-exports.getMaxIDQLC = async(model) => {
+exports.getMaxIDQLC = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
     return maxUser.idQLC;
 };
 // hàm tìm idcompany max 
-exports.getMaxIDcompany = async(model) => {
+exports.getMaxIDcompany = async (model) => {
     const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
     return maxIDcompany.companyId;
 };
 
 //upload image cv,don, thu, syll
 
-exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
+exports.uploadAndCheckPathIMG = async (userId, imageFile, category) => {
     try {
         // upload
         const timestamp = Date.now();
@@ -596,7 +596,7 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
         await fsPromises.writeFile(uploadPath, imagePath);
         // tìm và chuyển img sang pdf
         await fsPromises.access(uploadPath);
-        const pdfPath = path.join(uploadDir, `${uploadFileName.slice(0,-4)}.pdf`);
+        const pdfPath = path.join(uploadDir, `${uploadFileName.slice(0, -4)}.pdf`);
         const doc = new PDFDocument();
         const stream = fs.createWriteStream(pdfPath);
 
@@ -628,21 +628,21 @@ exports.uploadAndCheckPathIMG = async(userId, imageFile, category) => {
 }
 
 // hàm  xóa  ảnh và video khi upload thất bại
-exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
+exports.deleteImgVideo = async (avatar = undefined, video = undefined) => {
     if (avatar) {
-        avatar.forEach(async(element) => {
+        avatar.forEach(async (element) => {
             await this.deleteImg(element)
         })
     }
     if (video) {
-        video.forEach(async(element) => {
+        video.forEach(async (element) => {
             await this.deleteImg(element)
         })
     }
 }
 
 //thay thế các kí tự đặc biệt trong tiêu đề
-exports.replaceKeywordSearch = async(lower, keyword) => {
+exports.replaceKeywordSearch = async (lower, keyword) => {
     if (lower === 1) {
         keyword = keyword.toLowerCase();
     }
@@ -654,7 +654,7 @@ exports.replaceKeywordSearch = async(lower, keyword) => {
     return keyword;
 };
 
-exports.replaceMQ = async(text) => {
+exports.replaceMQ = async (text) => {
     text = text.replace(/\\'/g, "'");
     text = text.replace(/'/g, "");
     text = text.replace(/\\/g, "");
@@ -663,9 +663,9 @@ exports.replaceMQ = async(text) => {
 }
 
 //bỏ những từ khóa trong tiêu đề
-exports.removerTinlq = async(string) => {
+exports.removerTinlq = async (string) => {
     var arr_remove = ["lương", "nhân", "trình", "viên", "chuyên", "cao", "tuyển", "dụng", "hấp", "dẫn", "chi", "tiết", "công", "ty", "tnhh", "sx", "tm", "dv", "phòng", "tại", "biết", "về"];
-    var result = arr_remove.reduce(function(str, remove) {
+    var result = arr_remove.reduce(function (str, remove) {
         return str.replace(new RegExp(remove, "gi"), "");
     }, string);
 

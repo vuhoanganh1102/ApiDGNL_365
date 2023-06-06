@@ -409,7 +409,7 @@ const Vanthu_de_xuat = new Schema({
     },
     time_duyet: {
         type: Number,
-        default: 0
+
 
     },
     active: {//người duyệt đồng ý hay chưa
@@ -418,8 +418,6 @@ const Vanthu_de_xuat = new Schema({
     del_type: {//trạng thái còn hay xóa     
         type: Number,
     },
-
-
 
 })
 module.exports = mongoose.model("Vanthu_de_xuat", Vanthu_de_xuat);

@@ -8,14 +8,16 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         name_user,
         id_user,
         com_id,
-        //kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+        kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
         id_user_duyet,
         id_user_theo_doi,
         file_kem,
 
         ly_do,
         tien_tam_ung,
-        ngay_tam_ung
+        ngay_tam_ung,
+
+
     } = req.body;
     if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");

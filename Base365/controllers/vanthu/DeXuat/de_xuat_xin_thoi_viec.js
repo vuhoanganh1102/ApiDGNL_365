@@ -1,5 +1,8 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const Cate_Dx = require('../../../models/Vanthu/cate_de_xuat');
+const multer = require("multer");
+const path = require('path');
+
 
 exports.de_xuat_xin_thoi_Viec = async (req, res) => {
     let {

@@ -103,6 +103,16 @@ var DeXuat_XinBoNhiem = require('./routes/vanthu/DeXuat/de_xuat_bo_nhiem');
 var DeXuat_LuanChuyenCongTac = require('./routes/vanthu/DeXuat/de_xuat_luan_chuyen_cong_tac');
 var DeXuat_ThamGiaDuAn = require('./routes/vanthu/DeXuat/de_xuat_tham_gia_du_an');
 
+//xoa de xuat 
+var Delete_deXuat = require('./routes/vanthu/DeXuat/delete_Dx');
+app.use('/api/vanthu/xoa_De_Xuat', Delete_deXuat);
+
+//edit de xuat
+var edit_Route = require('./routes/vanthu/DeXuat/edit_deXuat');
+app.use('/api/vanthu/edit_DeXuat', edit_Route);
+
+var get_deXuat_user = require('./routes/vanthu/DeXuat/User_Dx');
+app.use('/api/vanthu/DeXuat', get_deXuat_user);
 
 app.use('/api/vanthu/DeXuat', DeXuat_XinNghi);
 app.use('/api/vanthu/DeXuat', DeXuat_XinDoiCa),
