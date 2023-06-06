@@ -93,7 +93,7 @@ const UserSchema = new mongoose.Schema({
     updatedAt: {
         // Thời gian cập nhật
         type: Date,
-        default: null
+        default: Date()
     },
     lastActivedAt: {
         // Thời gian hoạt động gần nhất

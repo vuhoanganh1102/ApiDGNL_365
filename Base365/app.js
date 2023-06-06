@@ -18,6 +18,7 @@ var newTV365Router = require('./routes/timviec/newTV365');
 // rao nhanh
 var newRN365Router = require('./routes/raonhanh365/new');
 var blogRaoNhanh365Router = require('./routes/raonhanh365/blog');
+var companyRaoNhanh365Router = require('./routes/raonhanh365/company');
 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
@@ -90,7 +91,8 @@ app.use('/api/timviec/mail365', mail365Router);
 
 // api rao nhanh
 app.use('/api/raonhanh/new', newRN365Router);
-app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
+app.use('/api/raonhanh/blog', blogRaoNhanh365Router);
+app.use('/api/raonhanh/com', companyRaoNhanh365Router);
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
@@ -133,7 +135,7 @@ app.use(function(err, req, res, next) {
 
 //const DB_URL = 'mongodb://127.0.0.1/api-base365'; 
 // timviec365 -> api-base365
-const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
+const DB_URL = 'mongodb+srv://dung136ptit:dcmtml102@cluster0.fmwheli.mongodb.net/'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
