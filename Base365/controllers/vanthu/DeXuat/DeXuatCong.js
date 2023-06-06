@@ -78,12 +78,12 @@ exports.dxCong = async (req, res) => {
     }
 }
 
-exports.updateCong = async (req,res)=>{
-    try{
-        let id = req.body._id
-        let check = await DeXuat.findOne({_id : id})
-    }catch (error) {
-        console.error('Failed to add', error);
-        res.status(500).json({error: 'Failed to add'});
-    }
-}
+// exports.updateCong = async (req,res)=>{
+//     try{
+//         let id = req.body._id
+//         let check = await DeXuat.findOne({_id : id})
+//     }catch (error) {
+//         console.error('Failed to add', error);
+//         res.status(500).json({error: 'Failed to add'});
+//     }
+// }

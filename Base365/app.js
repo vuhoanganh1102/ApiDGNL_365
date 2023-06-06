@@ -56,7 +56,9 @@ var dexuatVC = require('./routes/vanthu/deXuat/DeXuatCoSoVatChatRoutes');
 var dexuatKN = require('./routes/vanthu/deXuat/DeXuatKhieuNaiRoutes');
 var dexuatTP = require('./routes/vanthu/deXuat/DeXuatThuongPhatRoutes');
 var dexuatHH = require('./routes/vanthu/deXuat/DeXuatHoaHongRoutes');
-
+var cateDX = require("./routes/vanthu/deXuat/cateDeXuatRoutes")
+var historyDX = require("./routes/vanthu/deXuat/historyDeXuatRoutes")
+var vanBan = require('./routes/vanthu/vanBan/VanBanRoutes')
 const {router} = require("express/lib/application");
 
 var app = express();
@@ -123,8 +125,9 @@ app.use("/api/dexuat",dexuatCC);
 app.use("/api/dexuat",dexuatKN);
 app.use("/api/dexuat",dexuatTP);
 app.use("/api/dexuat",dexuatHH);
-
-
+app.use("/api/catedexuat",cateDX);
+app.use("/api/historydx",historyDX);
+app.use("/api/vanban",vanBan)
 
 // app.use("/api/vt",)
 
@@ -152,8 +155,8 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-// app.listen(3002, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3002")
-// })
+app.listen(3005, () => {
+    console.log("Connected to databse");
+    console.log("Backend is running on http://localhost:3005")
+})
 module.exports = app;

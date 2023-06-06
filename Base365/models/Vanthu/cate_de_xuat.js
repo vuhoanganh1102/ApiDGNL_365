@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Vanthu_cate_de_xuatSchema = new Schema({
-    id_cate_dx: { // id của loại đề xuất
+   _id: { // id của loại đề xuất
         type: Number,
         required: true
     },

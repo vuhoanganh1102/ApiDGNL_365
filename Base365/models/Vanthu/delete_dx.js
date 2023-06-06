@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Vanthu_delete_dx = new Schema({
-    id_del : {
+    _id : {
         type : Number,
         required : true
     },

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Vanthu_history_handling_dx = new  Schema({
-    id_his : {
+    _id : {
         type : Number,
         required : true
     },
@@ -14,7 +14,7 @@ const Vanthu_history_handling_dx = new  Schema({
         type : Number,
         default : null
     },
-    type_handling : {
+    type_handling : {  //Trạng thái xử lý: 1: tiếp nhận, 2: duyệt, 3 : hủy duyệt'
         type : Number
     },
     time :{

@@ -1,7 +1,7 @@
 const AdminUser = require('../../../models/AdminUser');
 const SettingDX = require('../../../models/Vanthu/setting_dx');
 const functions = require("../../../services/functions");
-const Group = require("../../../models/qlc/Group");
+
 
 // Hàm lấy dữ liệu Setting
 exports.getSettings = async (req, res) => {
