@@ -32,8 +32,8 @@ exports.getListBlogByFields = async(req, res, next) => {
             if(des) listCondition.des =  new RegExp(des);
             let fieldsGet = 
             {   
-                adminId: 1, langId: 1,title: 1,url: 1,titleRewrite: 1,image: 1,imageWeb: 1,teaser: 1,keyword: 1,sapo: 1,des: 1,sameId: 1,search: 1,source: 1,
-                cache: 1,link: 1,linkMd5: 1,categoryId: 1,vgId: 1,status: 1,date: 1,adminEdit: 1,dateLastEdit: 1,order: 1,totalVoteYes: 1,totalVoteNo: 1,hit: 1,active: 1
+                adminId: 1, langId: 1,title: 1,url: 1,titleRewrite: 1,image: 1,imageWeb: 1,teaser: 1,keyword: 1,sapo: 1,des: 1,
+                categoryId: 1,status: 1,date: 1,adminEdit: 1,dateLastEdit: 1,order: 1,totalVoteYes: 1,totalVoteNo: 1,hit: 1,active: 1, new: 1, titleRelate: 1, contentRelate: 1
             }
             const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
             const totalCount = await functions.findCount(Blog, listCondition);
@@ -51,8 +51,8 @@ exports.getAndCheckData = async(req, res, next) => {
     try {
         let image = req.files.image;
         let imageWeb = req.files.imageWeb;
-        let {adminId,langId,title,url,titleRewrite,des,categoryId,status} = req.body;
-        let fields = [adminId, title, url, image, imageWeb, des, categoryId, status];
+        let {adminId,title,url,titleRewrite,des,categoryId,status,keyword, sapo, active, hot, detailDes , titleRelate, contentRelate, newStatus} = req.body;
+        let fields = [adminId, title, url, image, imageWeb, des,keyword,  sapo, detailDes, titleRelate, contentRelate];
         for(let i=0; i<fields.length; i++){
             if(!fields[i])
                 return functions.setError(res, `Missing input value ${i+1}`, 404);
@@ -71,13 +71,19 @@ exports.getAndCheckData = async(req, res, next) => {
         req.info = {
             adminId: adminId,
             title: title,
-            titleRewrite: titleRewrite,
             url: url,
             image: imgName,
             imageWeb: imgWebName,
             des: des,
-            categoryId: categoryId,
-            status: status
+            status: status,
+            keyword: keyword,
+            sapo: sapo,
+            active: active,
+            hot: hot,
+            new: newStatus,
+            detailDes: detailDes,
+            titleRelate: titleRelate,
+            contentRelate: contentRelate
         }
         return next();
     } catch (e) {
@@ -97,6 +103,7 @@ exports.createBlog = async(req, res, next) => {
             newIdBlog = Number(maxIdBlog._id) + 1;
         } else newIdBlog = 1;
         fields._id = newIdBlog;
+        fields.date = Date(Date.now());
         let blog = new Blog(fields);
         await blog.save();
         return functions.success(res, 'Create blog RN365 success!');
@@ -112,6 +119,7 @@ exports.updateBlog = async(req, res, next) => {
             return functions.setError(res, "Missing input value id blog!", 404);
         let _id = req.body._id;
         let fields = req.info;
+        fields.dateLastEdit = Date(Date.now());
         let existsBlog = await Blog.findOne({_id: _id});
         if (existsBlog) {
             await Blog.findByIdAndUpdate(_id, fields);

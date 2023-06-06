@@ -28,41 +28,65 @@ exports.getAndCheckData = async(req, res, next) => {
         let request = req.body,
             email = request.email,
             phoneTK = request.phoneTK,
-            username = request.username,
+            userName = request.userName,
             password = request.password,
-            city = request.usc_city,
-            district = request.usc_qh,
-            address = request.usc_address,
-            mst = request.thue,
+            city = request.city,
+            district = request.district,
+            address = request.address,
+            mst = request.mst,
+            website = request.website,
             linkVideo = request.linkVideo,
-            description = request.usc_mota,
+            description = request.des,
             fromDevice = request.fromDevice,
             fromWeb = request.fromWeb,
             avatarUser = req.files.logo,
+            image = req.files.image,
             ipAddressRegister = request.ipAddressRegister,
             videoType = req.files.videoType,
-            lv = request.usc_lv,
+            lv = request.lv,
             video = '',
             link = '',
             avatar = "",
             lvID = 0,
             listIDKD = [],
             idKD = 0,
-            empID = 0;
-            type = 1;// tai khoan cong ty
-        let fields = [username, phoneTK, password, address];
+            empID = 0,
+            type = 1,// tai khoan cong ty
+            arr_idchat = request.arr_idchat,
+            arr_idNotificationy=request.arr_idNotification;
+        let fields = [userName, phoneTK, password, address];
         for(let i=0; i<fields.length; i++){
             if(!fields[i])
-                return functions.setError(res, `Missing input value ${i+1}`, 404);
+                return fnc.setError(res, `Missing input value ${i+1}`, 404);
         }
         let avatarName;
         if(avatarUser){
-            if(!await functions.checkImage(avatarUser.path)) {
-                await functions.deleteImgVideo(avatarUser)
-                return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405)
+            if(!await fnc.checkImage(avatarUser.path)) {
+                await fnc.deleteImgVideo(avatarUser)
+                return fnc.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405)
             }
             avatarName = avatarUser.originalFilename;
         }
+        let listImg=[];
+        if (image) {
+            if(!await fnc.checkImage(image.path)) {
+                await fnc.deleteImgVideo(image)
+                return fnc.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405)
+            }
+            listImg.push({_id: 1, name: image.originalFilename, size: image.size});
+        }
+
+        // if(arr_idchat.length!==0){
+        //     for(let i=0; i<arr_idchat; i++){
+        //         let user = await CompanyRN.findOne({_id: arr_idchat[i]})
+        //         console.log(user);
+        //         if(user){
+        //             user.findByIdAndUpdate(arr_idchat[i], {
+        //                 arr
+        //             })
+        //         }
+        //     }
+        // }
         
         req.info = {
             phoneTK: phoneTK,
@@ -77,13 +101,14 @@ exports.getAndCheckData = async(req, res, next) => {
             inForCompany: {
                 website: website,
                 description: description,
-                mst: mst
+                mst: mst,
+                comImages: listImg
             }
         }
         return next();
     } catch (err) {
         console.log("Err from server", err);
-        return functions.setError(res, "Err from server", 500);
+        return fnc.setError(res, "Err from server", 500);
     }
 }
 
@@ -96,29 +121,30 @@ exports.createCompany = async(req, res, next)=>{
             newIdCompany = Number(maxIdCompany._id) + 1;
         } else newIdCompany = 1;
         fields._id = newIdCompany;
+        fields.createdAt = Date(Date.now());
         let company = new CompanyRN(fields);
         await company.save();
-        return functions.success(res, 'Create CompanyRN365 success!');
+        return fnc.success(res, 'Create CompanyRN365 success!');
     }catch(err){
         console.log("Err from server", err);
-        return functions.setError(res, "Err from server", 500);
+        return fnc.setError(res, "Err from server", 500);
     }
 }
 
 exports.updateCompany = async(req, res, next) => {
     try{
         if(!req.body._id)
-            return functions.setError(res, "Missing input value id company!", 404);
+            return fnc.setError(res, "Missing input value id company!", 404);
         let _id = req.body._id;
         let fields = req.info;
         let existsCompany = await CompanyRN.findOne({_id: _id});
         if (existsCompany) {
             await CompanyRN.findByIdAndUpdate(_id, fields);
-            return functions.success(res, "Company edited successfully");
+            return fnc.success(res, "Company edited successfully");
         }
-        return functions.setError(res, "Company not found!", 505);
+        return fnc.setError(res, "Company not found!", 505);
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return fnc.setError(res, "Err from server!", 500);
     }
 }

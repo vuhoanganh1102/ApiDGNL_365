@@ -618,7 +618,7 @@ exports.getTokenUser = async (req, res, next) => {
 }
 // hàm tạo link file rao nhanh 365
 exports.createLinkFileRaonhanh = (folder, id, name) => {
-    let link = 'http://localhost:3000/base365/raonhanh365/pictures/' + folder + '/' + id + '/' + name;
+    let link = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/' + folder + '/' + id + '/' + name;
     return link;
 }
 // hàm kiểm tra đầu vào có phải ngày không 
@@ -627,11 +627,16 @@ exports.checkDate = (date) => {
     return data instanceof Date && !isNaN(data);
 }
 
-exports.uploadFileRaoNhanh = (id, file) => {
-    let path = `../Storage/base365/raonhanh365/pictures/avt_tindangmua/${id}/`;
-    let filePath = `../Storage/base365/raonhanh365/pictures/avt_tindangmua/${id}/` + file.name;
-    if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới     
-        fs.mkdirSync(path, { recursive: true });
+exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
+    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
+    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+    let fileCheck = path.extname(filePath);
+    console.log(folder)
+    if(allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false){
+        return false
+    }
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
     }
     fs.readFile(file.path, (err, data) => {
         if (err) {
@@ -639,10 +644,11 @@ exports.uploadFileRaoNhanh = (id, file) => {
         }
         fs.writeFile(filePath, data, (err) => {
             if (err) {
-                console.log(err)
+            console.log(err)
             }
         });
     });
+    return true;
 }
 exports.deleteFileRaoNhanh = (id, file) => {
     let filePath = `../Storage/base365/raonhanh365/pictures/avt_tindangmua/${id}/` + file;
