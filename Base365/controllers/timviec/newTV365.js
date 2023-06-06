@@ -10,6 +10,7 @@ const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
 const LikePost = require('../../models/Timviec365/UserOnSite/LikePost');
 const Keyword = require('../../models/Timviec365/UserOnSite/Company/Keywords')
 const Blog = require('../../models/Timviec365/Blog/Posts')
+const Category = require('../../models/Timviec365/UserOnSite/Company/Category.model')
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -339,7 +340,7 @@ exports.checkPostNew10p = async(req, res, next) => {
             let checkPost = await functions.isCurrentTimeGreaterThanInputTime(post.createTime);
             console.log(checkPost)
             if (checkPost) {
-                return functions.success(res, "Láy dữ liệu thành công")
+                return functions.success(res, "đủ điều kiện đăng tin")
             }
             return functions.setError(res, 'chưa đủ 10p', 404)
         }
@@ -630,12 +631,85 @@ exports.detail = async(req, res, next) => {
         let newID = req.body.new_id;
         let statusApply = false
         let statusSavePost = false
-        let userID = req.user.data.idTimViec365;
+
         if (newID) {
-            let post = await functions.getDatafindOne(NewTV365, { _id: newID });
-            if (post) {
+
+            let post = await NewTV365.aggregate([{
+                    $match: {
+                        _id: Number(newID),
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "userID",
+                        foreignField: "idTimViec365",
+                        as: "user"
+                    }
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $skip: 0
+                },
+                {
+                    $project: {
+                        _id: Number(newID),
+                        new_title: '$title',
+                        new_alias: '$alias',
+                        new_cat_id: '$cateID',
+                        new_lv: '$lv',
+                        new_addr: '$address',
+                        new_city: '$cityID',
+                        new_qh_id: '$districtID',
+                        new_user_id: '$userID',
+                        new_money: '$money',
+                        new_cap_bac: '$capBac',
+                        new_exp: '$exp',
+                        new_bang_cap: '$bangCap',
+                        new_gioi_tinh: '$sex',
+                        new_so_luong: '$soLuong',
+                        new_hinh_thuc: '$hinhThuc',
+                        new_update_time: '$updateTime',
+                        new_view_count: '$viewCount',
+                        new_han_nop: '$hanNop',
+                        new_hot: '$newHot',
+                        new_tgtv: '$tgtv',
+                        new_images: '$images',
+                        new_video: '$video',
+                        new_video_type: '$videoType',
+                        new_mota: '$newMutil.moTa',
+                        new_quyenloi: '$newMutil.quyenLoi',
+                        new_hoahong: 'newMutil.$hoaHong',
+                        new_do: '$newDo',
+                        new_ho_so: '$newMutil.hoSo',
+                        nm_type: '$newMoney.type',
+                        nm_id: '$newMoney.id',
+                        nm_min_value: '$newMoney.minValue',
+                        nm_max_value: '$newMoney.maxValue',
+                        nm_unit: '$newMoney.unit',
+                        new_user_id: '$user._id',
+                        usc_company: '$user.userName',
+                        usc_logo: '$user.avatarUser',
+                        usc_address: '$user.address',
+                        usc_create_time: '$user.createdAt',
+
+                    }
+                },
+            ]);
+
+            let city = await functions.getDatafindOne(City, { _id: Number(post[0].new_city) })
+            let district = await functions.getDatafindOne(District, { _id: Number(post[0].new_qh_id) })
+            let category = await functions.getDatafindOne(Category, { _id: Number(post[0].new_cat_id) })
+            post[0].cit_name = city.name
+            post[0].cat_name = Category.name
+            post[0].qh_name = district.name
+
+            if (post[0]) {
                 //check ứng viên ứng tuyển hoặc lưu tin
                 if (req.user) {
+                    let userID = req.user.data.idTimViec365;
                     let apply = await functions.getDatafindOne(ApplyForJob, { userID: userID, newID: newID });
                     let savePost = await functions.getDatafindOne(UserSavePost, { userID: userID, newID: newID });
                     if (apply) {
@@ -656,7 +730,7 @@ exports.detail = async(req, res, next) => {
                         $lookup: {
                             from: "Users",
                             localField: "commentPersonId",
-                            foreignField: "_id",
+                            foreignField: "idTimViec365",
                             as: "user"
                         }
                     },
@@ -672,8 +746,8 @@ exports.detail = async(req, res, next) => {
                         }
                     },
                 ]);
-                post.countComment = ListcommentPost.length
-                post.commentName = ListcommentPost
+                post[0].countComment = ListcommentPost.length
+                post[0].commentName = ListcommentPost
 
                 //lấy ra những người like, like và tổng số like
                 let ListLikePost = await LikePost.aggregate([{
@@ -703,8 +777,8 @@ exports.detail = async(req, res, next) => {
                         }
                     },
                 ]);
-                post.countLike = ListLikePost.length
-                post.likeName = ListLikePost
+                post[0].countLike = ListLikePost.length
+                post[0].likeName = ListLikePost
 
 
                 //lấy ra những người chia sẻ và số lần chia sẻ
@@ -735,9 +809,8 @@ exports.detail = async(req, res, next) => {
                         }
                     },
                 ]);
-                post.countShare = ListSharePost.length
-                post.shareName = ListSharePost
-
+                post[0].countShare = ListSharePost.length
+                post[0].shareName = ListSharePost
 
                 //box đia điểm
                 let findAddress = await Keyword.find({
@@ -745,7 +818,7 @@ exports.detail = async(req, res, next) => {
                     cateID: 0,
                     name: '',
                     qhID: { $ne: 0 },
-                    cityID: { $in: post.cityID },
+                    cityID: { $in: Number(post[0].new_city) },
                 }, {
                     _id: 1,
                     cateID: 1,
@@ -754,29 +827,20 @@ exports.detail = async(req, res, next) => {
                     type: 1
                 }).limit(20)
 
-                let title = post.title.toLowerCase()
+                //box chức danh
+                let title = post[0].new_title.toLowerCase()
 
                 let keyName = ["thực tập", "chuyên viên", "nhân viên", "trưởng phòng", "trưởng nhóm",
                     "trợ lý", "phó trưởng phòng", "phó giám đốc", "giám đốc", "quản lý", "quản đốc"
                 ]
 
-                let keyTitle
-                for (let i = 0; i < keyName.length; i++) {
-                    if (title.includes(keyName[i]) == true) {
-                        keyTitle = keyName[i]
-                        break;
-                    }
-                }
-
-
-                //box chức danh
                 let findChucDanh = await Keyword.find({
-                    name: { $regex: keyTitle, $options: 'i' },
-                    cateLq: { $in: post.cateID },
-                    cityID: { $in: post.cityID },
+                    name: { $in: keyName.map(name => new RegExp(name, "i")) },
+                    cateLq: { $in: post[0].new_cat_id },
+                    cityID: { $in: post[0].new_city },
                     $or: [
-                        { qhID: { $in: post.districtID } },
-                        { qhID: { $nin: post.districtID } }
+                        { qhID: { $in: post[0].new_qh_id } },
+                        { qhID: { $nin: post[0].new_qh_id } }
                     ]
                 }, {
                     _id: 1,
@@ -784,7 +848,7 @@ exports.detail = async(req, res, next) => {
                     cityID: 1,
                     qhID: 1,
                     type: 1
-                }).sort({ qhID: { $in: post.districtID } ? -1 : 1 }).limit(20)
+                }).sort({ qhID: { $in: post[0].new_qh_id } ? -1 : 1 }).limit(20)
 
                 //box từ khóa liên quan
 
@@ -797,11 +861,11 @@ exports.detail = async(req, res, next) => {
                     name: { $not: { $regex: keyNameLq2, $options: 'i' } },
                     name: { $ne: "" },
                     cityID: 0,
-                    cateLq: { $in: post.cateID },
+                    cateLq: { $in: post[0].new_cat_id },
                     cbID: 0,
                     $or: [
-                        { qhID: { $in: post.districtID } },
-                        { qhID: { $nin: post.districtID } }
+                        { qhID: { $in: post[0].new_qh_id } },
+                        { qhID: { $nin: post[0].new_qh_id } }
                     ]
                 }, {
                     _id: 1,
@@ -809,9 +873,9 @@ exports.detail = async(req, res, next) => {
                     cityID: 1,
                     qhID: 1,
                     type: 1
-                }).sort({ qhID: { $in: post.districtID } ? -1 : 1 }).limit(20);
+                }).sort({ qhID: { $in: post[0].new_qh_id } ? -1 : 1 }).limit(20);
 
-                let keyBlogLienQuan1 = await functions.replaceMQ(post.title)
+                let keyBlogLienQuan1 = await functions.replaceMQ(post[0].new_title)
                 let keyBlogLienQuan2 = await functions.replaceKeywordSearch(1, keyBlogLienQuan1)
                 let keyBlogLienQuan3 = await functions.removerTinlq(keyBlogLienQuan2)
                 let regexKeyBlog = new RegExp(keyBlogLienQuan3.replace(/\s+/g, ".*"), "i");

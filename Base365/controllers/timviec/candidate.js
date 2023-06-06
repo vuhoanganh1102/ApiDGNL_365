@@ -24,6 +24,7 @@ const sendMail = require('../../services/sendMail');
 const { token } = require('morgan');
 const fs = require('fs');
 const path = require('path');
+const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed');
 
 
 exports.index = (req, res, next) => {
@@ -403,7 +404,6 @@ exports.sendOTP = async(req, res, next) => {
                             return functions.success(res, 'Gửi OTP thành công');
                         });
                 });
-
         } else if (await functions.checkEmail(user) && await functions.getDatafindOne(Users, { email: user }, )) {
             await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { user })
                 .then((response) => {
@@ -671,9 +671,13 @@ exports.completeProfileQlc = async(req, res, next) => {
         let newAI = []
         let newCv = []
         let newBlog = []
-        console.log(req.user.data)
-        let candiCateID = Number(req.user.data.inForPerson.candiCateID.split(",")[0])
 
+        let userId = req.user.data.idTimViec365
+        let candiCateID = Number(req.user.data.inForPerson.candiCateID[0])
+        let candiCityID = Number(req.user.data.inForPerson.candiCityID[0])
+        console.log(candiCateID)
+        console.log(candiCityID)
+            //việc làm AI
         let takeData = await axios({
             method: "post",
             url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
@@ -691,24 +695,38 @@ exports.completeProfileQlc = async(req, res, next) => {
             listNewId[i] = Number(listNewId[i])
         }
 
-        let findNew = await functions.getDatafind(NewTV365, { _id: { $in: listNewId } })
+        let findNew = await functions.getDatafind(newTV365, { _id: { $in: listNewId } })
         for (let i = 0; i < findNew.length; i++) {
             newAI.push(findNew[i])
         }
 
+        //Mẫu CV đề xuất
         let findCv = await functions.getDatafind(CV, {})
-
         for (let i = 0; i < findCv.length; i++) {
             newCv.push(findCv[i])
+            if (newCv.length > 10) {
+                break
+            }
         }
+
+        //số việc làm đã ứng tuyển
+        let listJobUv = await functions.getDatafind(applyForJob, { userID: userId })
+
+        //việc làm phù hợp
+        let listJobFit = await newTV365.find({ cateID: 1, cityID: 1 }, { _id: 1 })
+        console.log(listJobFit.length)
+            //nhà tuyển dụng xem hồ sơ
+        let ntdCheckHoso = await functions.getDatafind(PointUsed, { useID: candiCateID, type: candiCateID })
 
         let findBlog = await functions.getDatafind(blog, { categoryID: candiCateID })
         for (let i = 0; i < findBlog.length; i++) {
             newBlog.push(findBlog[i])
+            if (newBlog.length > 10) {
+                break
+            }
         }
 
-
-        functions.success(res, "Hiển thị qlc thành công", { newAI, newCv, newBlog })
+        functions.success(res, "Hiển thị qlc thành công", { newAI, newCv, newBlog, vldut: listJobUv.length, vlph: listJobFit.length, ntdxhs: ntdCheckHoso })
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
@@ -832,6 +850,7 @@ exports.hosoXinViec = async(req, res, next) => {
 exports.listJobCandidateApply = async(req, res, next) => {
     try {
         if (req.user) {
+
             let page = Number(req.body.page)
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;

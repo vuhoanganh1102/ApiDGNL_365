@@ -50,7 +50,7 @@ router.post('/changePasswordCheckOTP', formData.parse(), functions.checkToken, c
 router.post('/changePassword', formData.parse(), functions.checkToken, company.changePassword);
 
 // api cập nhập ảnh đại diện
-router.post('/uploadAvatar', functions.checkToken, functions.uploadImg.single('avatarUser'), company.updateImg);
+router.post('/uploadAvatar', functions.checkToken, functions.uploadImg.single('avatarUser'), company.uploadAvatar);
 
 //api lấy dữ liệu nhà tuyển dụng
 router.get('/getDataCompany', functions.checkToken, company.getDataCompany)

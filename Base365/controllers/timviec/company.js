@@ -491,8 +491,6 @@ exports.updateInfoCompany = async(req, res, next) => {
             userCompany = request.name,
             city = request.city,
             address = request.address,
-            site = request.quymo,
-            website = request.web,
             description = request.gt,
             mst = request.thue,
             tagLinhVuc = request.tagLinhVuc
@@ -505,11 +503,8 @@ exports.updateInfoCompany = async(req, res, next) => {
                         'userName': userCompany,
                         'phone': phone,
                         'city': city,
-                        'website': website || null,
                         'address': address,
                         'inForCompany.mst': mst || null,
-                        'inForCompany.website': website || null,
-                        'inForCompany.com_size': site,
                         "inForCompany.tagLinhVuc": tagLinhVuc
 
                     }
@@ -675,7 +670,7 @@ exports.changePassword = async(req, res, next) => {
 }
 
 // hàm cập nhập avatar
-exports.updateImg = async(req, res, next) => {
+exports.uploadAvatar = async(req, res, next) => {
     try {
         let email = req.user.data.email,
             avatarUser = req.file;
