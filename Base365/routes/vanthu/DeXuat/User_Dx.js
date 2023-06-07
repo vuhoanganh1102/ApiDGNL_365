@@ -20,5 +20,8 @@ router.post('/deXuat_follow', formData.parse(), controller.de_xuat_theo_doi);
 router.get('/deXuat_follow_cho_duyet', formData.parse(), controller.deXuat_Follow_cho_duyet);//đang chờ duyệt
 router.get('/deXuat_follow_da_duyet', formData.parse(), controller.deXuat_Follow_da_duyet);// đã đòng ý 
 router.get('/deXuat_follow_da_tu_choi', formData.parse(), controller.deXuat_Follow_da_tu_choi);// đã từ chối 
-//hết hạn duyệt 
+router.get('/deXuat_het_han_duyet', formData.parse(), controller.deXuat_het_han_duyet)//hết hạn duyệt 
+
+//admin
+router.post('/admin_danh_sach_de_xuat', formData.parse(), controller.admin_danh_sach_de_xuat);
 module.exports = router;

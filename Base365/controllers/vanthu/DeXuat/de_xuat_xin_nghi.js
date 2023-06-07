@@ -1,42 +1,9 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const functions = require('../../../services/vanThu');
-//const Cate_Dx = require('../../../models/Vanthu/cate_de_xuat');
-// const multer = require('multer');
+const multer = require('multer');
+const path = require('path');
 
 
-
-// const storageFile = (destination) => {
-//     return multer.diskStorage({
-//         destination: function (req, file, cb) {
-//             let userDestination = " "
-//             if (req.user) {
-//                 const userId = req.user.data._id; // Lấy id người dùng từ request
-//                 userDestination = `${destination}/${userId}`; // Tạo đường dẫn đến thư mục của người dùng
-//                 if (!fs.existsSync(userDestination)) { // Nếu thư mục chưa tồn tại thì tạo mới
-//                     fs.mkdirSync(userDestination, { recursive: true });
-//                 }
-//             } else {
-//                 userDestination = destination
-//             }
-//             cb(null, userDestination);
-//         },
-//         filename: function (req, file, cb) {
-//             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-//             cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop())
-//         },
-//         fileFilter: function (req, file, cb) {
-//             const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'video/webm', 'video/quicktime'];
-//             if (allowedTypes.includes(file.mimetype)) {
-//                 cb(null, true);
-//             } else {
-//                 cb(new Error('Only .jpeg, .png, .mp4, .webm and .mov format allowed!'));
-//             }
-//         }
-//     })
-// };
-
-
-// exports.uploadFileDeXuat = multer({ storage: storageFile('../Storage/VanThuLuuTru') })
 
 exports.de_xuat_xin_nghi = async (req, res) => {
     let {
@@ -48,6 +15,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
         id_user_duyet,
         id_user_theo_doi,
+        phong_ban,
         // file_kem,
         ly_do,
 
@@ -60,8 +28,8 @@ exports.de_xuat_xin_nghi = async (req, res) => {
 
 
     let file_kem = req.files.fileKem;
-    console.log(file_kem);
-    await functions.uploadFileVanThu(id_user, file_kem);
+    // console.log(file_kem);
+    //await functions.uploadFileVanThu(id_user, file_kem);
 
 
 
@@ -86,6 +54,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             _id: (maxID + 1),
             name_dx: name_dx,
             type_dx: type_dx,
+            phong_ban: phong_ban,
             noi_dung: {
                 nghi_phep: {
                     ly_do: ly_do,

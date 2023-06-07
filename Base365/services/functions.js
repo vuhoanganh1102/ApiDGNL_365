@@ -250,6 +250,7 @@ const storageFile = (destination) => {
     });
 };
 
+
 exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('../Storage/TimViec365') })
 
 exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('../Storage/TimViec365') })

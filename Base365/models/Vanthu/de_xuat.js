@@ -15,7 +15,10 @@ const Vanthu_de_xuat = new Schema({
         type: Number,
 
     },
-
+    phong_ban: {
+        type: Number,
+        default: 0
+    },
     noi_dung: {
         nghi_phep: {
             bd_nghi: {//ngày bắt đầu nghỉ
@@ -398,7 +401,7 @@ const Vanthu_de_xuat = new Schema({
 
     },
     time_create: {
-        type: Number,
+        type: Date,
         default: null
 
     },
