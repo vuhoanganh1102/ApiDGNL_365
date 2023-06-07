@@ -1,11 +1,13 @@
 const mongoose = require("mongoose");
 const vanBan = new mongoose.Schema({
     _id: {
-        type: Number
+        type: Number,
+        required : true
     },
     title_vb: {
         type: String,
-        max: 255
+        max: 255,
+        required : true
     },
     des_vb: {
         type: String,
@@ -81,7 +83,8 @@ const vanBan = new mongoose.Schema({
         type: Number
     },
     thoi_gian_duyet: {
-        type: Date
+        type: Date,
+        default : 0
     },
     nguoi_xet_duyet: {
         type: String,
@@ -107,7 +110,8 @@ const vanBan = new mongoose.Schema({
     },
     chuc_vu_nguoi_ky: {
         type: String,
-        max: 255
+        max: 255,
+       default : 0
     },
     ghi_chu: {
         type: String,
@@ -132,7 +136,8 @@ const vanBan = new mongoose.Schema({
         type: Number
     },
     created_date: {
-        type: Number
+        type: Number,
+        default : Date.now
     },
     type_duyet: {
         type: Number,

@@ -45,7 +45,6 @@ exports.dxTangCa = async (req, res) => {
                 com_id,
                 id_user_duyet,
                 id_user_theo_doi,
-                file_kem,
                 type_duyet,
                 type_time,
                 time_start_out,
@@ -61,6 +60,8 @@ exports.dxTangCa = async (req, res) => {
             if(!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
                 return res.status(404).json('bad request')
             }else {
+                let file_kem = req.files.file_kem
+                functions.uploadVanthu(id_user,file_kem)
                 let maxID = await functions.getMaxID(DeXuat);
                 let _id = 0;
                 if (maxID) {
@@ -84,7 +85,6 @@ exports.dxTangCa = async (req, res) => {
                         kieu_duyet: kieu_duyet,
                         id_user_duyet: id_user_duyet,
                         id_user_theo_doi: id_user_theo_doi,
-                        file_kem: file_kem,
                         type_duyet: type_duyet,
                         type_time: type_time,
                         time_start_out: time_start_out,

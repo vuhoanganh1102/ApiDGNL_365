@@ -16,7 +16,6 @@ exports.dxCoSoVatChat = async (req, res) => {
             com_id,
             id_user_duyet,
             id_user_theo_doi,
-            file_kem,
             type_duyet,
             type_time,
             time_start_out,
@@ -27,22 +26,16 @@ exports.dxCoSoVatChat = async (req, res) => {
             del_type,
             input_csv,
             ly_do
-        } = req.body;     
+        } = req.body;    
+        
         if(!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
            
-            let File = req.files;
-            if(File.file_kem){
-                if(File.file_kem.length) {
-                    if(File.file_kem.length > 10) {
-                      return functions.setError(res, 'Gửi quá nhiều file');
-                    }else {
-                        functions.uploadVanthu(1,File.file_kem)
-                    }
-                }
-            }
-            console.log(File.file_kem)
+
+            let file_kem = req.files.file_kem
+            functions.uploadVanthu(id_user,file_kem)
+        
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -64,7 +57,6 @@ exports.dxCoSoVatChat = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem:  file_kem, 
                 type_duyet: type_duyet,
                 type_time: type_time,
                 time_start_out: time_start_out,
