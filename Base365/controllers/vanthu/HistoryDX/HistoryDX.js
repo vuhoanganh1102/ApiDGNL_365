@@ -68,15 +68,17 @@ exports.Isend = async (req, res) => {
   }
 };
 
-
+// Hàm hiển thi những đề xuất gửi dến tôi
 exports.SendToMe = async(req,res) => {
     try{
-        const { id_user } = req.body;
+        const {id_user_duyet} = req.body;
     // Kiểm tra nếu id_user không được gửi
-        if(!id_user){
-            return res.status(400).json({ error: 'id_user không được bỏ trống.' });
+        if(!id_user_duyet){
+            return res.status(400).json({ error: 'id_user_duyet không được bỏ trống.' });
         }
-     // Lấy danh sách các đề xuất đã tạo bởi id_user và người nhận là id_user_duyet    
+    //  // Lấy danh sách các đề xuất đã tạo bởi id_user và người nhận là id_user_duyet 
+        const findduyet = await DeXuat.find({id_user_duyet})
+        res.status(200).json(findduyet)
 
     }catch (error) {
         res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });

@@ -9,7 +9,7 @@ router.get('/',vanBanRoutes.showAll)
 
 //tạo mới văn bản gửi trong công ty
 
-router.post('/addincompany',formData.parse().vanBanRoutes.inCompany)
+// router.post('/addincompany',formData.parse().vanBanRoutes.inCompany)
 
 //tạo mới văn bản gửi ngoài công ty
 

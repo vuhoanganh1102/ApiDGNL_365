@@ -356,9 +356,9 @@ const transport = nodemailer.createTransport({
     }
 });
 
-exports.uploadVanthu = (id, file) => {
-    let path = `../Storage/base365/vanthu/tailieu/${id}/`;
-    let filePath = `../Storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
+exports.uploadVanthuDeXuat = (id, file) => {
+    let path = `../Storage/base365/vanthu/dexuat/${id}/`;
+    let filePath = `../Storage/base365/vanthu/dexuat/${id}/` + file.originalFilename;
     if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới     
         fs.mkdirSync(path, { recursive: true });
     }

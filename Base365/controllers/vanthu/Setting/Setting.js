@@ -14,14 +14,15 @@ exports.getSettings = async (req, res) => {
     }
 };
 
+// tìm cài đặt của công ty đó
 exports.findOneSetting = async (req,res) => {
     try {
-        let id_setting = req.body._id
+        let {com_id} = req.body
 
-        if(isNaN(id_setting)) {
+        if(isNaN(com_id)) {
             functions.setError(res, "Id must be a number", 702);
         }else {
-            let settingCom = await SettingDX.findOne({_id : id_setting} )
+            let settingCom = await SettingDX.findOne({com_id} )
             res.status(200).json(settingCom)
         }
 
@@ -37,6 +38,7 @@ exports.findOneSetting = async (req,res) => {
 exports.createSettingDx = async (req,res) => {
 
         let {com_id,type_setting,type_browse,time_limit,shift_id,time_limit_l,list_user,time_tp,time_hh,time_created,update_time} = req.body;
+        let timecreate = new Date(Date.now());
         if(!com_id){
             //Kiểm tra Id công ty khác null
             functions.setError(res, "Com Id required", 704);
@@ -60,17 +62,18 @@ exports.createSettingDx = async (req,res) => {
             functions.setError(res, "time_tp required", 704);
         }else if(!time_hh) {
             functions.setError(res, "time_hh required", 704);
-        }else if(!time_created){
-            functions.setError(res, "time_created required", 704);
-        }else if(!update_time) {
-            functions.setError(res, "update_time required", 704);
         } else {
-            //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
+            const checkComId = await SettingDX.findOne({com_id} )
+            if (checkComId) {
+                functions.setError(res, "không thể tạo cài đặt bạn đã có cài đặt rồi", 712);
+              }else{
+                //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
             let maxID = await functions.getMaxID(SettingDX);
-            if (!maxID) {
-                maxID = 0;
-            };
-            const _id = Number(maxID) + 1;
+            let _id = 0;
+            if (maxID) {
+
+                _id = Number(maxID) + 1;
+            }
 
             const settingDx = new SettingDX({
                 _id : _id,
@@ -83,7 +86,7 @@ exports.createSettingDx = async (req,res) => {
                 list_user : list_user,
                 time_tp : time_tp,
                 time_hh : time_hh,
-                time_created : time_created,
+                time_created : timecreate,
                 update_time : update_time
 
             })
@@ -94,6 +97,8 @@ exports.createSettingDx = async (req,res) => {
                 .catch((err) => {
                     functions.setError(res, err.message, 709);
                 });
+              } 
+
         }
 
 }
@@ -104,17 +109,16 @@ exports.createSettingDx = async (req,res) => {
 //hàm sửa setting
 exports.editSettingDx = async (req,res) => {
 
-        const _id  = req.params.id;
+        let {_id,com_id,type_setting,type_browse,time_limit,shift_id,time_limit_l,list_user,time_tp,time_hh,time_created} = req.body;
+            let updatetime = new Date(Date.now())
         if(isNaN(_id)){
             functions.setError(res, "Id must be a number", 702);
         }else {
-            let {com_id,type_setting,type_browse,time_limit,shift_id,time_limit_l,list_user,time_tp,time_hh,time_created,update_time} = req.body;
             if(!com_id){
                 //Kiểm tra Id công ty khác null
                 functions.setError(res, "Com Id required", 704);
-            }else if(typeof com_id != "number") {
-                functions.setError(res, "Com Id must be a number", 705);
-
+            // }else if(typeof com_id != "number") {
+            //     functions.setError(res, "Com Id must be a number", 705);
             }else if(!type_setting){
                 //Kiểm tra loại setting khác null
                 functions.setError(res, "type setting required", 704);
@@ -127,23 +131,20 @@ exports.editSettingDx = async (req,res) => {
                 functions.setError(res, "shift_id required", 704);
             }else if(!time_limit_l) {
                 functions.setError(res, "time_limit_l required", 704);
-            }else if(list_user) {
+            }else if(!list_user) {
                 functions.setError(res, "list_user required", 704);
-            }else if(time_tp){
+            }else if(!time_tp){
                 functions.setError(res, "time_tp required", 704);
-            }else if(time_hh) {
+            }else if(!time_hh) {
                 functions.setError(res, "time_hh required", 704);
-            }else if(time_created){
+            }else if(!time_created){
                 functions.setError(res, "time_created required", 704);
-            }else if(update_time) {
-                functions.setError(res, "update_time required", 704);
             }else {
-                const editSetting = await functions.getDatafindOne(SettingDX,{_id : _id});
+                let editSetting = await SettingDX.findOne({com_id} )
                 if(!editSetting){
                     functions.setError(res, "editSetting does not exist", 710);
                 }else {
-                    await functions.getDatafindOneAndUpdate(SettingDX,{_id : _id},{
-                        com_id : com_id,
+                    await functions.getDatafindOneAndUpdate(SettingDX,{com_id},{
                         type_setting : type_setting,
                         type_browse : type_browse,
                         time_limit : time_limit,
@@ -153,7 +154,7 @@ exports.editSettingDx = async (req,res) => {
                         time_tp : time_tp,
                         time_hh : time_hh,
                         time_created : time_created,
-                        update_time : update_time
+                        update_time : updatetime
                     })
                         .then((group) => functions.success(res, "Group edited successfully".group))
                         .catch(err => functions.setError(res, err.message), 711);

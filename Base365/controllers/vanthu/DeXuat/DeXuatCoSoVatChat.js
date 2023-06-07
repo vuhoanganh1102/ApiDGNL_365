@@ -1,3 +1,4 @@
+const { log } = require("console");
 const DeXuat = require("../../../models/Vanthu/de_xuat");
 const functions = require("../../../services/functions");
 const fs = require('fs');
@@ -34,7 +35,10 @@ exports.dxCoSoVatChat = async (req, res) => {
            
 
             let file_kem = req.files.file_kem
-            functions.uploadVanthu(id_user,file_kem)
+            functions.uploadVanthuDeXuat(id_user,file_kem)
+            const imagePath = path.resolve(__dirname,`../Storage/base365/vanthu/tailieu/${id_user}` , file_kem.name);
+            const pathString = imagePath.toString();
+            console.log(pathString)
         
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
@@ -57,6 +61,7 @@ exports.dxCoSoVatChat = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
+                file_kem : pathString,
                 type_duyet: type_duyet,
                 type_time: type_time,
                 time_start_out: time_start_out,

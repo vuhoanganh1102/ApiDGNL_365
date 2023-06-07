@@ -401,7 +401,7 @@ const Vanthu_de_xuat = new Schema({
     },
     id_user_duyet: {
         type: String,
-
+    
     },
     id_user_theo_doi: {
         type: String,
