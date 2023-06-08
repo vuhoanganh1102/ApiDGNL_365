@@ -673,10 +673,9 @@ exports.completeProfileQlc = async(req, res, next) => {
         let newBlog = []
 
         let userId = req.user.data.idTimViec365
+        console.log(userId)
         let candiCateID = Number(req.user.data.inForPerson.candiCateID[0])
         let candiCityID = Number(req.user.data.inForPerson.candiCityID[0])
-        console.log(candiCateID)
-        console.log(candiCityID)
             //việc làm AI
         let takeData = await axios({
             method: "post",
@@ -684,7 +683,7 @@ exports.completeProfileQlc = async(req, res, next) => {
             data: {
                 site_job: "timviec365",
                 site_uv: "uvtimviec365",
-                new_id: candiCateID,
+                new_id: 860426, //candiCateID,
                 size: 20,
                 pagination: 1,
             },
@@ -695,10 +694,79 @@ exports.completeProfileQlc = async(req, res, next) => {
             listNewId[i] = Number(listNewId[i])
         }
 
-        let findNew = await functions.getDatafind(newTV365, { _id: { $in: listNewId } })
-        for (let i = 0; i < findNew.length; i++) {
-            newAI.push(findNew[i])
+        let post = await newTV365.aggregate([{
+                $match: {
+                    _id: { $in: listNewId },
+                }
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $skip: 0
+            },
+            {
+                $project: {
+                    usc_company: '$user.userName',
+                    usc_logo: '$user.avatarUser',
+                    new_title: '$title',
+                    new_city: '$cityID',
+                    new_han_nop: '$hanNop',
+                    new_hot: '$newHot',
+                    money: '$money',
+                    nm_type: '$newMoney.type',
+                    nm_id: '$newMoney.id',
+                    nm_min_value: '$newMoney.minValue',
+                    nm_max_value: '$newMoney.maxValue',
+                    nm_unit: '$newMoney.unit',
+                }
+            },
+        ]);
+        for (let i = 0; i < post.length; i++) {
+            post[i].new_money = await functions.new_money_tv(post[i].nm_id, post[i].nm_type, post[i].nm_unit, post[i].nm_min_value, post[i].nm_max_value, post[i].money)
+            delete post[i].money
+            delete post[i].nm_type
+            delete post[i].nm_id
+            delete post[i].nm_min_value
+            delete post[i].nm_max_value
+            delete post[i].nm_unit
         }
+
+        //Mẫu Cv của tôi
+        let myCv = await CVUV.aggregate([{
+                $match: {
+                    userId: userId
+                }
+            },
+            {
+                $lookup: {
+                    from: "CV",
+                    localField: "cvId",
+                    foreignField: "_id",
+                    as: "cv"
+                }
+            },
+            {
+                $unwind: "$cv"
+            },
+            {
+                $skip: 0
+            },
+            {
+                $project: {
+                    img: '$'
+                }
+            },
+        ]);
+
 
         //Mẫu CV đề xuất
         let findCv = await functions.getDatafind(CV, {})
@@ -714,8 +782,8 @@ exports.completeProfileQlc = async(req, res, next) => {
 
         //việc làm phù hợp
         let listJobFit = await newTV365.find({ cateID: 1, cityID: 1 }, { _id: 1 })
-        console.log(listJobFit.length)
-            //nhà tuyển dụng xem hồ sơ
+
+        //nhà tuyển dụng xem hồ sơ
         let ntdCheckHoso = await functions.getDatafind(PointUsed, { useID: candiCateID, type: candiCateID })
 
         let findBlog = await functions.getDatafind(blog, { categoryID: candiCateID })
@@ -726,7 +794,7 @@ exports.completeProfileQlc = async(req, res, next) => {
             }
         }
 
-        functions.success(res, "Hiển thị qlc thành công", { newAI, newCv, newBlog, vldut: listJobUv.length, vlph: listJobFit.length, ntdxhs: ntdCheckHoso })
+        functions.success(res, "Hiển thị qlc thành công", { itesm_vl: post, newCv, newBlog, vldut: listJobUv.length, vlph: listJobFit.length, ntdxhs: ntdCheckHoso })
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
@@ -856,11 +924,14 @@ exports.listJobCandidateApply = async(req, res, next) => {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let userId = req.user.data.idTimViec365
-            let listJobUv = await functions.pageFind(applyForJob, { userID: userId }, { _id: 1 }, skip, limit)
+            let listJobUv = await functions.pageFind(applyForJob, { userID: userId }, { _id: 1 }, skip, limit, { _id: 1 })
+            let items = listJobUv.map(item => {
+                return { new_id: item._id };
+            });
             const totalCount = await applyForJob.countDocuments({ userID: userId })
-            const totalPages = Math.ceil(totalCount / pageSize)
+
             if (listJobUv) {
-                functions.success(res, "Hiển thị những việc làm ứng viên đã ứng tuyển thành công", { listJobCandidateApply: { totalCount, totalPages, listJob: listJobUv } });
+                functions.success(res, "Hiển thị những việc làm ứng viên đã ứng tuyển thành công", { total: totalCount, items });
             }
         } else {
             return functions.setError(res, "Token không hợp lệ", 400);
@@ -2016,6 +2087,27 @@ exports.commentPost = async(req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi thêm kinh nghiệm làm việc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//Xóa việc làm ừng tuyển
+exports.deleteJobCandidateApply = async(req, res, next) => {
+    try {
+        if (req.user && req.body.new_id) {
+
+            let userId = req.user.data.idTimViec365
+            let newId = req.body.new_id
+            let deleteJobUv = await functions.getDataDeleteOne(applyForJob, { _id: newId, userID: userId })
+
+            if (deleteJobUv) {
+                functions.success(res, "Xóa thông tin thành công");
+            } else return functions.setError(res, "Xóa không thành công", 400);
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
