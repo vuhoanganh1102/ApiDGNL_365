@@ -5,7 +5,7 @@ const CVUV = require('../../models/Timviec365/CV/CVUV');
 const donUV = require('../../models/Timviec365/CV/ApplicationUV');
 const HoSoUV = require('../../models/Timviec365/CV/ResumeUV');
 const ThuUV = require('../../models/Timviec365/CV/LetterUV');
-const CV = require('../../models/Timviec365/CV/Cv365');
+const CV = require('../../models/Timviec365/CV/CV');
 const like = require('../../models/Timviec365/CV/like');
 const userUnset = require('../../models/Timviec365/UserOnSite/Candicate/UserUnset');
 const newTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
@@ -13,6 +13,7 @@ const applyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyF
 const userSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
 const pointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed');
 const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
+const categoryBlog = require('../../models/Timviec365/Blog/Category');
 
 //mã hóa mật khẩu
 const md5 = require('md5');
@@ -20,7 +21,11 @@ const md5 = require('md5');
 var jwt = require('jsonwebtoken');
 const axios = require('axios');
 const functions = require('../../services/functions');
+
+const functionsBlog = require('../../services/serviceBlog');
+
 const sendMail = require('../../services/sendMail');
+
 const { token } = require('morgan');
 const fs = require('fs');
 const path = require('path');
@@ -584,48 +589,191 @@ exports.completeProfileQlc = async(req, res, next) => {
         let newCv = []
         let newBlog = []
 
+        let userId = req.user.data.idTimViec365
+        console.log(userId)
         let candiCateID = Number(req.user.data.inForPerson.candiCateID[0])
-
+        let candiCityID = Number(req.user.data.inForPerson.candiCityID[0])
+            //việc làm AI
         let takeData = await axios({
             method: "post",
             url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
             data: {
                 site_job: "timviec365",
                 site_uv: "uvtimviec365",
-                new_id: candiCateID,
+                new_id: 860426, //candiCateID,
                 size: 20,
                 pagination: 1,
             },
             headers: { "Content-Type": "multipart/form-data" }
         });
+        if (takeData.data.error.message == "Không gợi ý được") {
+            return functions.setError(res, "AI ko trả ra kết quả", 400);
+        }
         let listNewId = takeData.data.data.list_id.split(",")
         for (let i = 0; i < listNewId.length; i++) {
             listNewId[i] = Number(listNewId[i])
         }
 
-        let findNew = await functions.getDatafind(newTV365, { _id: { $in: listNewId } })
-        for (let i = 0; i < findNew.length; i++) {
-            newAI.push(findNew[i])
+        let post = await newTV365.aggregate([{
+                $match: {
+                    _id: { $in: listNewId },
+                }
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $skip: 0
+            },
+            {
+                $project: {
+                    usc_company: '$user.userName',
+                    usc_logo: '$user.avatarUser',
+                    new_title: '$title',
+                    new_city: '$cityID',
+                    new_han_nop: '$hanNop',
+                    new_hot: '$newHot',
+                    money: '$money',
+                    nm_type: '$newMoney.type',
+                    nm_id: '$newMoney.id',
+                    nm_min_value: '$newMoney.minValue',
+                    nm_max_value: '$newMoney.maxValue',
+                    nm_unit: '$newMoney.unit',
+                }
+            },
+        ]);
+
+        for (let i = 0; i < post.length; i++) {
+            post[i].new_money = await functions.new_money_tv(post[i].nm_id, post[i].nm_type, post[i].nm_unit, post[i].nm_min_value, post[i].nm_max_value, post[i].money)
+            delete post[i].money
+            delete post[i].nm_type
+            delete post[i].nm_id
+            delete post[i].nm_min_value
+            delete post[i].nm_max_value
+            delete post[i].nm_unit
         }
 
-        let findCv = await functions.getDatafind(CV, {})
+
+        //Mẫu Cv của tôi
+        let myCv = await CVUV.aggregate([{
+                $match: {
+                    userId: userId
+                }
+            },
+            {
+                $lookup: {
+                    from: "CV",
+                    localField: "cvId",
+                    foreignField: "_id",
+                    as: "cv"
+                }
+            },
+            {
+                $unwind: "$cv"
+            },
+            {
+                $skip: 0
+            },
+            {
+                $project: {
+                    img: '$nameImage',
+                    title: '$cv.name',
+                    link_edit: '$cv.alias',
+                    cv_id: '$cv._id',
+                    cv_xoa: 'deleteCv',
+                    cv_daidien: `0`
+                }
+            },
+        ]);
+
+        for (let i = 0; i < myCv.length; i++) {
+            myCv[i].img = `upload/ungvien/uv_${userId}/${myCv[i].img}`
+            myCv[i].img = await functions.hostCv(myCv[i].img)
+            myCv[i].link_edit = await functions.hostCv(myCv[i].link_edit)
+            myCv[i].link_dowload = `download-cvpdf/cv.php?cvid=${ myCv[i].cv_id}&uid=${userId}&cvname=${myCv[i].title}`
+            myCv[i].link_dowload = await functions.hostCv(myCv[i].link_dowload)
+        }
+        //Mẫu CV đề xuất
+        let findCv = await CV.find({}, { image: 1, alias: 1 }).sort({ _id: -1 }).limit(10)
+
         for (let i = 0; i < findCv.length; i++) {
-            newCv.push(findCv[i])
-            if (newCv.length > 10) {
-                break
-            }
+            text = `upload/cv/thumb/${findCv[i].image}`
+            findCv[i].image = await functions.hostCv(text)
+            findCv[i].alias = await functions.hostCv(findCv[i].alias)
         }
 
-        let findBlog = await functions.getDatafind(blog, { categoryID: candiCateID })
-        for (let i = 0; i < findBlog.length; i++) {
-            newBlog.push(findBlog[i])
-            if (newBlog.length > 10) {
-                break
-            }
+        //số việc làm đã ứng tuyển
+        let listJobUv = await functions.getDatafind(applyForJob, { userID: userId })
+
+        //việc làm phù hợp
+        let listJobFit = await newTV365.find({ cateID: 1, cityID: 1 }, { _id: 1 })
+
+        //nhà tuyển dụng xem hồ sơ
+        let ntdCheckHoso = await functions.getDatafind(pointUsed, { useID: candiCateID, type: candiCateID })
+
+
+        let itesm_dem = {
+            "ut": listJobUv.length,
+            'vl': listJobFit.length,
+            'ntd': ntdCheckHoso.length
+
+
+
+
+        let myBlog = await blog.aggregate([{
+                $match: {
+                    categoryID: candiCateID
+                }
+            },
+            {
+                $lookup: {
+                    from: "CategoryBlog",
+                    localField: "categoryID",
+                    foreignField: "_id",
+                    as: "cate"
+                }
+            },
+            {
+                $unwind: "$cate"
+            },
+            {
+                $skip: 0
+            },
+            {
+                $project: {
+                    name: '$cate.name',
+                    link: '$titleRewrite',
+                    img: '$picture',
+                    title: '$title'
+                }
+            },
+        ]);
+
+        let itesm_qc = {}
+        itesm_qc.name = myBlog[0].name
+        itesm_qc.items = []
+
+        for (let i = 0; i < myBlog.length; i++) {
+            myBlog[i].link = await functionsBlog.hostBlog(myBlog[i].link, myBlog[i]._id)
+            myBlog[i].img = await functions.getPictureBlogTv365(myBlog[i].img)
+            itesm_qc.items.push(myBlog[i])
         }
-
-
-        functions.success(res, "Hiển thị qlc thành công", { newAI, newCv, newBlog })
+        const newData = {...itesm_qc }; // Tạo bản sao của đối tượng data
+        newData.items = newData.items.map(item => {
+            const newItem = {...item }; // Tạo bản sao của phần tử
+            delete newItem.name; // Xóa trường name trong phần tử
+            return newItem;
+        });
+        console.log(newData);
+        functions.success(res, "Hiển thị qlc thành công", { itesm_vl: post, itesm_cv: myCv, itesm_cvdx: findCv, itesm_dem, itesm_qc })
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
@@ -2096,6 +2244,128 @@ exports.commentPost = async(req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi thêm kinh nghiệm làm việc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//Xóa việc làm ừng tuyển
+exports.deleteJobCandidateApply = async(req, res, next) => {
+    try {
+        if (req.user && req.body.new_id) {
+
+            let userId = req.user.data.idTimViec365
+            let newId = req.body.new_id
+            let deleteJobUv = await functions.getDataDeleteOne(applyForJob, { _id: newId, userID: userId })
+
+            if (deleteJobUv) {
+                functions.success(res, "Xóa thông tin thành công");
+            } else return functions.setError(res, "Xóa không thành công", 400);
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//hiển thị danh sách ứng viên theo tỉnh thành, vị trí
+exports.list = async(req, res, next) => {
+    try {
+
+        let page = Number(req.body.page)
+        let pageSize = Number(req.body.pageSize)
+        let city = req.body.city
+        let cate = req.body.cate
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+
+        if (city && !cate) {
+            let findUv = await functions.pageFindV2(Users, { type: 0, city: city }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            const totalCount = await Users.countDocuments({ type: 0, city: city })
+            const totalPages = Math.ceil(totalCount / pageSize)
+            if (findUv) {
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: findUv });
+            }
+        } else if (!city && cate) {
+            let listUv = []
+            let findUv = await functions.pageFindV2(Users, { type: 0 }, {
+                    userName: 1,
+                    city: 1,
+                    district: 1,
+                    address: 1,
+                    avatarUser: 1,
+                    isOnline: 1,
+                    inForPerson: 1
+                }, { updatedAt: -1 }, skip, limit)
+                // for (let i = 0; i < findUv.length; i++) {
+                //     let listCateId = findUv[i].inForPerson.candiCateID.split(',')
+                //     if (listCateId.includes(cate)) {
+                //         listUv.push(findUv[i])
+                //     }
+                // }
+                // const totalCount = listUv.length
+                // const totalPages = Math.ceil(totalCount / pageSize)
+                // if (findUv) {
+                //     functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+                // }
+            let cateId = 1
+            let findUser = await Users.find({ "inForPerson.candiCateID": { "$regex": "\\b" + cateId + "\\b", "$not": { "$regex": "\\b" + cateId + "1\\b" } } })
+            if (findUv) {
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { listUv: findUser });
+            }
+        } else if (city && cate) {
+            let listUv = []
+            let findUv = await functions.pageFindV2(Users, { type: 0, city: city }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            console.log(findUv)
+            for (let i = 0; i < findUv.length; i++) {
+                let listCateId = findUv[i].inForPerson.candiCateID.split(',')
+                if (listCateId.includes(cate)) {
+                    listUv.push(findUv[i])
+                }
+            }
+            const totalCount = listUv.length
+            const totalPages = Math.ceil(totalCount / pageSize)
+            if (findUv) {
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+            }
+        } else if (!city && !cate) {
+            let findRandomUv = await functions.pageFindV2(Users, { type: 0 }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            const totalCount = await Users.countDocuments({ type: 0 })
+            const totalPages = Math.ceil(totalCount / pageSize)
+
+            if (findRandomUv) {
+                functions.success(res, "Hiển thị ứng viên ngẫu nhiên thành công", { totalCount, totalPages, listUv: findRandomUv });
+            }
+        }
+
+
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi hiển thị ứng viên theo vị trí, ngành nghề", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }

@@ -484,8 +484,9 @@ exports.getDataSex = async () => {
     return ["Nam", "Nữ", "Không yêu cầu"]
 };
 
-exports.pageFind = async (model, condition, sort, skip, limit) => {
-    return model.find(condition).sort(sort).skip(skip).limit(limit).lean();
+
+exports.pageFind = async(model, condition, sort, skip, limit, select) => {
+    return model.find(condition, select).sort(sort).skip(skip).limit(limit).lean();
 };
 
 exports.pageFindWithFields = async(model, condition, fields, sort, skip, limit) => {
@@ -901,6 +902,58 @@ exports.removerTinlq = async(string) => {
     return result;
 }
 
+exports.new_money_tv = async(nm_id, nm_type, nm_unit, nm_min_value, nm_max_value, new_money) => {
+    let array_muc_luong = [
+        "Chọn mức lương",
+        "Thỏa thuận",
+        "1 - 3 triệu",
+        "3 - 5 triệu",
+        "5 - 7 triệu",
+        "7 - 10 triệu",
+        "10 - 15 triệu",
+        "15 - 20 triệu",
+        "20 - 30 triệu",
+        "Trên 30 triệu",
+        "Trên 50 triệu",
+        "Trên 100 triệu"
+    ];
+    let array_tien_te = {
+        1: "VNĐ",
+        2: "USD",
+        3: "EUR"
+    };
+    if (nm_id !== '') {
+        var rd_muc_luong = '';
+        switch (nm_type) {
+            case 2:
+                rd_muc_luong = 'Từ ' + formatMoney(nm_min_value) + ' ' + array_tien_te[nm_unit];
+                break;
+            case 3:
+                rd_muc_luong = 'Đến ' + formatMoney(nm_max_value) + ' ' + array_tien_te[nm_unit];
+                break;
+            case 4:
+                rd_muc_luong = 'Từ ' + formatMoney(nm_min_value) + ' ' + array_tien_te[nm_unit] + ' Đến ' + formatMoney(nm_max_value) + ' ' + array_tien_te[nm_unit];
+                break;
+            default:
+                rd_muc_luong = array_muc_luong[new_money];
+                break;
+        }
+    } else {
+        rd_muc_luong = array_muc_luong[new_money];
+    }
+    if (rd_muc_luong === '' || rd_muc_luong === 'Chọn mức lương') {
+        rd_muc_luong = "Thỏa Thuận";
+    }
+    return rd_muc_luong;
+}
+
+
+
+exports.hostCv = async(text) => {
+    const hostCv = "https://timviec365.vn/cv365"
+    const link = `${hostCv}/${text}`;
+    return link;
+};
 exports.getMaxUserID = async(type = "user") => {
     let condition = {};
     if (type == "user") {
