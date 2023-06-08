@@ -9,7 +9,7 @@ exports.getLV = async(req, res, next) => {
 
         if (data.length > 0) return functions.success(res, 'Thành công', { data });
 
-        return await functions.setError(ré, 'Không có dữ liệu', 404);
+        else return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
         return functions.setError(res, err.message);
     };
@@ -18,10 +18,10 @@ exports.getLV = async(req, res, next) => {
 // tìm kiếm công ty theo điều kiện
 exports.findCompany = async(req, res, next) => {
     try {
-        const keyword = req.query.keyword || '';
-        const diadiem = req.query.diadiem || 0;
+        const keyword = req.body.keyword || '';
+        const diadiem = req.body.diadiem || 0;
         let data = 0;
-
+        console.log(keyword)
         if (diadiem == 0) {
             data = await Users.find({ type: 1 }, { 'inForCompany.tagLinhVuc': { $regex: keyword } })
         } else {
