@@ -18,6 +18,8 @@ var newTV365Router = require('./routes/timviec/newTV365');
 // rao nhanh
 var newRN365Router = require('./routes/raonhanh365/new');
 var blogRaoNhanh365Router = require('./routes/raonhanh365/blog');
+var orderRaoNhanh = require('./routes/raonhanh365/order');
+var userRaoNhanh = require('./routes/raonhanh365/user');
 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
@@ -91,6 +93,8 @@ app.use('/api/timviec/mail365', mail365Router);
 // api rao nhanh
 app.use('/api/raonhanh/new', newRN365Router);
 app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
+app.use('/api/raonhanh/orderRaoNhanh', orderRaoNhanh)
+app.use('/api/raonhanh/userRaoNhanh', userRaoNhanh)
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);

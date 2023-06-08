@@ -46,7 +46,7 @@ const newSchema = new mongoose.Schema({
     },
     cateID: {
         // danh mục của bài đăng
-        type: String,
+        type: Number,
         default: 0
     },
     type: {
@@ -67,7 +67,7 @@ const newSchema = new mongoose.Schema({
         default: 0
     },
     buySell: {
-        // 1 laf tin mua 2 là tin bán
+        // 1 là tin mua 2 là tin bán
         type: Number,
         default: 0
     },
@@ -84,7 +84,7 @@ const newSchema = new mongoose.Schema({
     active: {
         // kích hoạt
         type: Number,
-        default: 0
+        default: 1
     },
     detailCategory: {
         // chi tiết danh mục
@@ -322,11 +322,6 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: null
     },
-    bidExpirationTime: {
-        // thời gian hết hạn thầu
-        type: Date,
-        default: null
-    },
     quantitySold: {
         // số lượng đã bán
         type: Number,
@@ -470,7 +465,7 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         machineSeries: {
-            // dòng xe
+            // dòng máy
             type: Number,
             default: 0
         },

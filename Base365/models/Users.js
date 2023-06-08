@@ -140,6 +140,11 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    money:{
+        // Số dư tài khoản
+        type:Number,
+        default: 0
+    },
     inForPerson: {
         type: {
             // Thông tin dành cho luồng chuyển đổi số
