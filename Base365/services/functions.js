@@ -21,8 +21,6 @@ const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
 const Users = require('../models/Users');
 
-const functions = require('../services/functions')
-
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 // danh sách các loại video cho phép
@@ -226,12 +224,17 @@ const storageFile = (destination) => {
             let userDestination = " "
             if (req.user) {
                 const userId = req.user.data._id; // Lấy id người dùng từ request
-                userDestination = `${destination}/${userId}`; // Tạo đường dẫn đến thư mục của người dùng
+                const d = new Date(),
+                    day = d.getDate() < 10 ? "0" + d.getDate() : d.getDate(),
+                    month = d.getMonth() < 10 ? "0" + Number(d.getMonth() + 1) : d.getMonth(),
+                    year = d.getFullYear();
+                userDestination = `${destination}/${year}/${month}/${day}`; // Tạo đường dẫn đến thư mục của người dùng
+
                 if (!fs.existsSync(userDestination)) { // Nếu thư mục chưa tồn tại thì tạo mới
                     fs.mkdirSync(userDestination, { recursive: true });
                 }
             } else {
-                userDestination = destination
+                userDestination = 'public/company'
             }
             cb(null, userDestination);
         },
@@ -250,24 +253,24 @@ const storageFile = (destination) => {
     });
 };
 
-exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('../Storage/TimViec365') })
+exports.uploadVideoAndIMGNewTV = multer({ storage: storageFile('public/KhoAnh') })
 
-exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('../Storage/TimViec365') })
+exports.uploadVideoAndIMGRegister = multer({ storage: storageFile('public/company') })
 
 //  hàm upload ảnh ở cập nhập avatar
-exports.uploadImg = multer({ storage: storageMain('../Storage/TimViec365') })
+exports.uploadImg = multer({ storage: storageMain('public/KhoAnh') })
 
 //  hàm upload ảnh ở kho ảnh
-exports.uploadImgKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
+exports.uploadImgKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
 //  hàm upload video ở kho ảnh
-exports.uploadVideoKhoAnh = multer({ storage: storageMain('../Storage/TimViec365') })
+exports.uploadVideoKhoAnh = multer({ storage: storageMain('public/KhoAnh') })
 
 // hàm upload video ở cập nhập KhoAnh
-exports.uploadVideo = multer({ storage: storageMain('../Storage/TimViec365') })
+exports.uploadVideo = multer({ storage: storageMain('public/KhoAnh') })
 
 //hàm upload file ứng viên
-exports.uploadFileUv = multer({ storage: storageFile('../Storage/TimViec365') })
+exports.uploadFileUv = multer({ storage: storageFile('../storage/timviec365/pictures/cv') })
 
 const deleteFile = (filePath) => {
     fs.unlink(filePath, (err) => {
@@ -370,6 +373,21 @@ exports.checkToken = (req, res, next) => {
     });
 };
 
+const checkTokenV3 = (req, res, next) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Missing token" });
+    }
+    jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: "Invalid token" });
+        }
+        req.user = user;
+        next();
+    });
+}
+
 // hàm tạo token 
 exports.createToken = async(data, time) => {
     return jwt.sign({ data }, process.env.NODE_SERCET, { expiresIn: time });
@@ -433,9 +451,8 @@ exports.pageFind = async(model, condition, sort, skip, limit) => {
 };
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
-exports.getDataCVSortById = async(condition, pageNumber) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color')
-        .sort({ _id: -1 }).skip((pageNumber - 1) * 20).limit(20);
+exports.getDataCVSortById = async(condition) => {
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ _id: -1 });
     if (data.length > 0) {
         return data;
     };
@@ -444,8 +461,7 @@ exports.getDataCVSortById = async(condition, pageNumber) => {
 
 // lấy danh sách mẫu CV sắp xếp lượt tải nn
 exports.getDataCVSortByDownload = async(condition) => {
-    const data = await CV.find(condition).select('_id image name alias price status view love download langId designId cateId color')
-        .sort({ download: -1 }).skip((pageNumber - 1) * 20).limit(20);
+    const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ download: -1 });
     if (data.length > 0) {
         return data;
     };
@@ -465,7 +481,7 @@ exports.pageFindV2 = async(model, condition, select, sort, skip, limit) => {
 //hàm check xem có truyền vào token hay không
 exports.checkTokenV2 = async(req, res, next) => {
     if (req.headers.authorization) {
-        functions.checkToken(req, res, next);
+        checkTokenV3(req, res, next);
     } else {
         next();
     }
@@ -526,11 +542,11 @@ exports.findOneUser = async(userId, select) => {
                 type: 2
             },
         ]
-    }, select)
+    }, select).lean()
 }
 
 //hàm tìm kiếm và cập nhật user với id timviec và type =0 hoặc type =2
-exports.findOneAndUpdateUser = async(userId, projection, select) => {
+exports.findOneAndUpdateUser = async(userId, projection) => {
     return Users.findOneAndUpdate({
         $or: [{
                 idTimViec365: userId,
@@ -541,8 +557,8 @@ exports.findOneAndUpdateUser = async(userId, projection, select) => {
                 type: 2
             },
         ]
-    }, projection, select)
-};
+    }, projection)
+}
 
 exports.getUrlLogoCompany = async(createTime, logo) => {
     try {
@@ -553,7 +569,7 @@ exports.getUrlLogoCompany = async(createTime, logo) => {
             let m = time.getMonth() + 1;
             m = m < 10 ? "0" + m : m;
             const y = time.getFullYear();
-            return `http://210.245.108.202:3001/base365/timviec365/pictures/${y}/${m}/${d}/${logo}`;
+            return hostImage() + `/pictures/${y}/${m}/${d}/${logo}`;
         } else {
             return logo;
         }
@@ -672,4 +688,107 @@ exports.removerTinlq = async(string) => {
     result = result.trim().replace(/\s+/g, " "); // Loại bỏ khoảng trắng dư thừa
 
     return result;
+}
+
+exports.getMaxUserID = async(type = "user") => {
+    let condition = {};
+    if (type == "user") {
+        condition = { type: { $ne: 1 } };
+    } else {
+        condition = { type: 1 }
+    }
+
+    // ID Chat
+    const maxID = await Users.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+    if (maxID) {
+        _id = Number(maxID._id) + 1;
+    } else _id = 1;
+
+    // ID timviec365
+    const maxIDTimviec = await Users.findOne(condition, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
+    if (maxIDTimviec) {
+        _idTV365 = Number(maxIDTimviec.idTimViec365) + 1;
+    } else _idTV365 = 1;
+
+    // ID chuyển đổi số
+    const maxIdQLC = await Users.findOne(condition, { idQLC: 1 }).sort({ idQLC: -1 }).lean();
+    if (maxIdQLC) {
+        _idQLC = Number(maxIdQLC.idQLC) + 1;
+    } else _idQLC = 1;
+
+    // ID raonhanh365
+    const maxIdRN365 = await Users.findOne(condition, { idRaoNhanh365: 1 }).sort({ idRaoNhanh365: -1 }).lean();
+    if (maxIdRN365) {
+        _idRN365 = Number(maxIdRN365.idRaoNhanh365) + 1;
+    } else _idRN365 = 1;
+
+    return { _id, _idTV365, _idQLC, _idRN365 }
+}
+
+const hostImage = () => {
+    return "https://cdn.timviec365.vn";
+}
+
+exports.hostCND = () => {
+    return hostImage();
+}
+
+exports.getPictureBlogTv365 = (picture) => {
+    return hostImage() + "/pictures/news/" + picture
+}
+
+exports.getPictureCv = (picture) => {
+    return hostImage() + "/cv365/upload/cv/thumb/" + picture
+}
+
+exports.getPictureAppli = (picture) => {
+    return hostImage() + "/cv365/upload/donxinviec/thumb/" + picture
+}
+
+exports.getPictureLetter = (picture) => {
+    return hostImage() + "/cv365/upload/letter/thumb/" + picture
+}
+
+exports.clean_sp = (string) => {
+    var arr_str = ["<", ">", "/"];
+    var string = string.replace(new RegExp(arr_str.join('|'), 'g'), ' ');
+    var array = {
+        '    ': ' ',
+        '   ': ' ',
+        '  ': ' '
+    };
+    string = string.trim().replace(/ {2,}/g, function(match) {
+        return array[match];
+    });
+    return string;
+}
+
+exports.processBase64 = async(userId, nameImage, base64String) => {
+    const dir = `../storage/base365/timviec365/cv365/upload/ungvien/uv_${userId}`;
+
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
+
+    // Đường dẫn tới nơi bạn muốn lưu ảnh
+    const outputPath = `${dir}/${nameImage}.jpg`;
+
+    // Xóa đầu mục của chuỗi Base64 (ví dụ: "data:image/png;base64,")
+    const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+
+    // Giải mã chuỗi Base64 thành dữ liệu nhị phân
+    const imageBuffer = Buffer.from(base64Data, 'base64');
+
+    // Ghi dữ liệu nhị phân vào tệp ảnh
+    fs.writeFile(outputPath, imageBuffer, (error) => {
+        if (error) {
+            console.error('Lỗi khi ghi tệp ảnh');
+            return false;
+        } else {
+            console.log('Chuyển đổi thành công! Tệp ảnh đã được lưu tại:' + outputPath);
+        }
+    });
+    const checkImage = await this.checkImage(outputPath);
+
+    return checkImage;
 }
