@@ -12,6 +12,7 @@ const PointCompany = require('../../models/Timviec365/UserOnSite/Company/Manager
 const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed')
 const NgangDon = require('../../models/Timviec365/CV/ApplicationCategory')
 const NgangThu = require('../../models/Timviec365/CV/LetterCategory')
+
 const CVCate = require('../../models/Timviec365/CV/CVCategory');
 const CVLang = require('../../models/Timviec365/CV/CVLang');
 const CVUV = require('../../models/Timviec365/CV/CVUV');
@@ -30,6 +31,7 @@ const Mail365 = require('../../models/Timviec365/Mail365/Mail365');
 const Mail365Cate = require('../../models/Timviec365/Mail365/Mail365Category');
 const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
 const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
+
 
 // Kết nối API
 const axios = require('axios');
@@ -1220,7 +1222,9 @@ exports.toolCVSection = async(req, res, next) => {
     } catch (error) {
         return fnc.setError(res, error.message);
     }
-};
+
+}; 
+
 
 exports.toolResumeCategory = async(req, res, next) => {
     try {

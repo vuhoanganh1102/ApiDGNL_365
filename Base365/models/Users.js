@@ -30,11 +30,6 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    emailContact: {
-        // Email của người liên hệ
-        type: String,
-        default: null
-    },
     avatarUser: {
         // Ảnh đại diện
         type: String,
@@ -144,6 +139,11 @@ const UserSchema = new mongoose.Schema({
         // Mã chat
         type: String,
         default: null
+    },
+    money:{
+        // Số dư tài khoản
+        type:Number,
+        default: 0
     },
     inForPerson: {
         type: {
