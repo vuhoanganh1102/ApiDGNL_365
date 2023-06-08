@@ -674,8 +674,6 @@ exports.removerTinlq = async(string) => {
     return result;
 }
 
-
-
 exports.new_money_tv = async(nm_id, nm_type, nm_unit, nm_min_value, nm_max_value, new_money) => {
     let array_muc_luong = [
         "Chọn mức lương",
@@ -720,3 +718,11 @@ exports.new_money_tv = async(nm_id, nm_type, nm_unit, nm_min_value, nm_max_value
     }
     return rd_muc_luong;
 }
+
+
+
+exports.hostCv = async(text) => {
+    const hostCv = "https://timviec365.vn/cv365"
+    const link = `${hostCv}/${text}`;
+    return link;
+};
