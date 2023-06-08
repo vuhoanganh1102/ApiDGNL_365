@@ -64,7 +64,7 @@ const newSchema = new mongoose.Schema({
     video: {
         // video của bài viết
         type: String,
-        default: 0
+        default: null
     },
     buySell: {
         // 1 là tin mua 2 là tin bán
@@ -394,10 +394,6 @@ const newSchema = new mongoose.Schema({
             default: 0
         }
     }],
-    video: {
-        type: String,
-        default: null
-    },
     // chi tiết sản phẩm mua/bán
     description: {
         // mô tả
@@ -958,6 +954,10 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
+        cv: {
+            type: String,
+            default:null
+        }
     },
     // đồ ăn đồ uống
     food: {

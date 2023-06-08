@@ -1,6 +1,6 @@
 const functions = require('../../services/functions');
 const Category = require('../../models/Raonhanh365/Category');
-const New = require('../../models/Raonhanh365/UserOnSite/New');
+const New = require('../../models/Raonhanh365/UserOnSite/New')
 const CategoryRaoNhanh365 = require('../../models/Raonhanh365/Category');
 const User = require('../../models/Users');
 const LoveNews = require('../../models/Raonhanh365/UserOnSite/LoveNews');
@@ -8,6 +8,7 @@ const Bidding = require('../../models/Raonhanh365/Bidding');
 
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
+
     try {
         let img = req.files.img;
         let video = req.files.video;
@@ -39,13 +40,17 @@ exports.postNewMain = async (req, res, next) => {
         for (let i = 0; i < fields.length; i++) {
             if (!fields[i])
                 return functions.setError(res, 'Missing input value', 404)
+        let fields = [userID, cateID, title, money, until, description, free, poster, name, email, address, phone, status, detailCategory, img];
+        for(let i=0; i<fields.length; i++){
+            if(!fields[i])
+                return functions.setError(res, 'Missing input value', 404);
         }
         const maxIDNews = await New.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
         let newIDNews;
         if (maxIDNews) {
             newIDNews = Number(maxIDNews._id) + 1;
         } else newIDNews = 1;
-        if (money) {
+        if (img) {
             if (img && img.length >= 1 && img.length <= 10) {
                 let isValid = true;
                 for (let i = 0; i < img.length; i++) {
@@ -64,28 +69,29 @@ exports.postNewMain = async (req, res, next) => {
             } else if (img && img.length > 10) {
                 await functions.deleteImgVideo(img, video)
                 return functions.setError(res, 'chỉ được đưa lên tối đa 10 ảnh', 406)
-            } else {
-                return functions.setError(res, 'Missing input image', 406)
             }
-
-            if (video) {
-                if (video.length == 1) {
-                    let checkVideo = await functions.checkVideo(video[0]);
-                    if (checkVideo) {
-                        nameVideo = video[0].filename
-                    } else {
-                        video.forEach(async (element) => {
-                            await functions.deleteImg(element)
-                        })
-                        return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 407)
-                    }
+        }else{
+            return functions.setError(res, 'Missing input image', 406)
+        }
+        
+        if (video) {
+            if (video.length == 1) {
+                let checkVideo = await functions.checkVideo(video[0]);
+                if (checkVideo) {
+                    nameVideo = video[0].filename
+                } else {
+                    video.forEach(async(element) => {
+                        await functions.deleteImg(element)
+                    })
+                    return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 407)
                 }
-                else if (video.length > 1) {
-                    await functions.deleteImgVideo(img, video)
-                    return functions.setError(res, 'chỉ được đưa lên 1 video', 408)
-                }
+            } 
+            else if (video.length > 1) {
+                await functions.deleteImgVideo(img, video)
+                return functions.setError(res, 'chỉ được đưa lên 1 video', 408)
             }
-            req.info = {
+        }
+        req.info = {
                 _id: newIDNews,
                 userID: userID,
                 cateID: cateID,
@@ -110,16 +116,16 @@ exports.postNewMain = async (req, res, next) => {
                 district: district,
                 ward: ward,
                 brand: brand,
-                buySell: 2
+                buySell: 2,// tin ban
+                active: 1// hien thi tin
             }
-            return next()
-        }
-        return functions.setError(res, 'Thiếu dữ liệu ', 404)
-    } catch (err) {
+        return next()
+    }} catch (err) {
         console.log(err);
         return functions.setError(res, err);
     }
 }
+
 
 // đăng tin chung cho tat ca cac tin
 exports.postNewsGeneral = async (req, res, next) => {
@@ -212,6 +218,16 @@ exports.postNewsGeneral = async (req, res, next) => {
                 gender: req.body.gender,
                 weigth: req.body.weigth,
             };
+
+            let cv = req.files.cv;
+            let nameFileCV = "";
+            if(cv){
+                if(await functions.checkFileCV(cv.path)){
+                    nameFileCV = cv.originalFilename;
+                }else {
+                    return functions.setError(res, "Vui lòng chọn file có định đạng: PDF", 506);
+                }
+            }
             //cac truong cua danh muc cong viec
             let fieldsJob = {
                 minAge: req.body.minAge,
@@ -225,6 +241,7 @@ exports.postNewsGeneral = async (req, res, next) => {
                 salary: req.body.salary,
                 gender: req.body.gender,
                 degree: req.body.degree,
+                cv: nameFileCV
             };
 
             //
@@ -264,7 +281,7 @@ exports.updateNews = async (req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
         console.log(idNews);
-        if (!idNews)
+        if(!idNews)
             return functions.setError(res, "Missing input news_id!", 405);
         let existsNews = await New.find({ _id: idNews });
         let fields = req.fields;
@@ -282,11 +299,28 @@ exports.updateNews = async (req, res, next) => {
     }
 }
 
-exports.searchSellNews = async (req, res, next) => {
-    try {
+exports.hideNews = async(req, res, next)=>{
+    try{
+        let idNews = Number(req.body.news_id);
+        if(!idNews)
+            return functions.setError(res, "Missing input news_id!", 405);
+        let existsNews = await New.find({_id: idNews});
+        if (existsNews ) {
+            await New.findByIdAndUpdate(idNews, {active: 0, updateTime: new Date(Date.now())});
+            return functions.success(res, "Hide news successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    }catch(err){
+        console.log(err);
+        return functions.setError(res, err);
+    }
+}
+
+exports.searchSellNews = async(req, res, next)=>{
+    try{
         if (req.body) {
-            let buySell = 2;
-            if (!req.body.page) {
+            
+            if(!req.body.page){
                 return functions.setError(res, "Missing input page", 401);
             }
             if (!req.body.pageSize) {
@@ -302,16 +336,20 @@ exports.searchSellNews = async (req, res, next) => {
             let city = req.body.city;
             let district = req.body.district;
             let ward = req.body.ward;
-            let listNews = [];
-            let listCondition = { buySell: buySell };
+            let listNews=[];
+            let listCondition = {};
+            let cateID = Number(req.body.cateID);
+            let buySell =  Number(req.body.buySell);
 
             // dua dieu kien vao ob listCondition
-            if (idNews) listCondition.idNews = idNews;
-            if (title) listCondition.title = new RegExp(title, "i");
-            if (description) listCondition.description = new RegExp(description);
-            if (city) listCondition.city = Number(city);
-            if (district) listCondition.district = Number(district);
-            if (ward) listCondition.ward = Number(ward);
+            if(idNews) listCondition._id = idNews;
+            if(cateID) listCondition.cateID = cateID;
+            if(buySell) listCondition.buySell = buySell;
+            if(title) listCondition.title =  new RegExp(title, "i");
+            if(description) listCondition.description = new RegExp(description);
+            if(city) listCondition.city = Number(city);
+            if(district) listCondition.district = Number(district);
+            if(ward) listCondition.ward = Number(ward);
 
             let fieldsGet =
             {
@@ -364,7 +402,7 @@ exports.postNewElectron = async (req, res, next) => {
 }
 
 // đăng tin
-exports.postNewVehicle = async (req, res, next) => {
+exports.postNewVehicle = async(req, res, next) => {
     try {
         let listID = [];
         let listCategory = await functions.getDatafind(Category, { parentId: 2 });
@@ -425,52 +463,32 @@ exports.postNewVehicle = async (req, res, next) => {
     }
 }
 
-// đăng tin
-exports.postNewVehicle = async (req, res, next) => {
+
+exports.deleteNews = async (req, res) => {
     try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 3 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id)
+        let idNews = req.query.idNews;
+        let buySell = 2;
+        if (idNews) {
+            let news = await functions.getDataDeleteOne(New ,{_id: idNews, buySell: buySell});
+            if (news.deletedCount===1) {
+                return functions.success(res, "Delete sell news by id success");
+            }else{
+                return functions.success(res, "Buy news not found");
+            }
+        } else {
+            if (!await functions.getMaxID(New)) {
+                functions.setError(res, "No news existed", 513);
+            } else {
+                New.deleteMany({buySell: buySell})
+                    .then(() => functions.success(res, "Delete all news successfully"))
+                    .catch(err => functions.setError(res, err.message, 514));
+            }
         }
-        const exists = listID.includes(req.info.cateID);
-        if (exists) {
-            let request = req.body,
-                statusSell = request.statusSell,
-                nameApartment = request.nameApartment,
-                numberOfStoreys = request.numberOfStoreys,
-                storey = request.storey,
-                mainDirection = request.mainDirection,
-                balconyDirection = request.balconyDirection,
-                legalDocuments = request.legalDocuments,
-                statusInterior = request.statusInterior,
-                acreage = request.acreage,
-                length = request.length,
-                width = request.width,
-                buyingArea = request.buyingArea,
-                kvCity = request.kvCity,
-                kvDistrict = request.kvDistrict,
-                kvWard = request.kvWard,
-                numberToletRoom = request.numberToletRoom,
-                numberBedRoom = request.numberBedRoom,
-                typeOfApartment = request.typeOfApartment,
-                special = request.special,
-                statusBDS = request.statusBDS,
-                codeApartment = request.codeApartment,
-                cornerUnit = request.cornerUnit,
-                nameArea = request.nameArea,
-                useArea = request.useArea,
-                officeType = request.officeType,
-                block = request.block,
-                htmchrt = request.htmchrt,
-                landType = request.landType;
-        }
-        return next();
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err)
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
     }
-}
+};
 
 // trang chủ trước đăng nhập
 exports.getNewBeforeLogin = async (req, res, next) => {
@@ -1195,5 +1213,4 @@ exports.listCate = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
-
  

@@ -11,11 +11,13 @@ router.post('/postNew', formData.parse(), newRN.postNewMain, newRN.postNewElectr
 
 // tìm kiếm tin
 router.get('/searchNew', newRN.searchNew);
-//api co the tao tat ca cac loai tin
-router.post('/createSellNews', formData.parse(), newRN.postNewMain, newRN.postNewsGeneral, newRN.createNews);
-router.put('/updateSellNews', formData.parse(), newRN.postNewMain, newRN.postNewsGeneral, newRN.updateNews);
+//------------------------api lien quan den tin ban---------------------------
+router.post('/createSellNews', formData.parse(),[functions.checkToken], newRN.postNewMain, newRN.postNewsGeneral, newRN.createNews);
+router.put('/updateSellNews', formData.parse(),[functions.checkToken], newRN.postNewMain, newRN.postNewsGeneral, newRN.updateNews);
+router.delete('/deleteNews',[functions.checkToken, functions.isAdminRN365], newRN.deleteNews);
 router.post('/searchSellNews', formData.parse(), newRN.searchSellNews);
-// router.delete('/deleteNews', newRN.deleteNews);
+router.post('/hideNews', formData.parse(), [functions.checkToken], newRN.hideNews);
+
 
 
 // trang chủ 

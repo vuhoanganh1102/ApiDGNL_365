@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const Users = require('../models/Users');
 const dotenv = require("dotenv");
+const AdminUser = require("../models/AdminUser");
+const functions = require("../services/functions");
 dotenv.config();
 
 exports.checkToken = (req, res, next) => {
@@ -25,4 +27,11 @@ exports.isCompany = (req, res, next)=>{
         return;
     }
     return res.status(403).json({ message: "is not company" });
+}
+
+exports.isAdmin = async(req, res, next)=>{
+    let userId = req.userId;
+    let admin = await functions.getDatafindOne(AdminUser, { _id: userId });
+    if(admin) return next();
+    return res.status(403).json({ message: "is not admin" });
 }

@@ -1,5 +1,6 @@
 // check ảnh và video
 const fs = require('fs');
+
 // upload file
 const multer = require('multer')
 
@@ -16,10 +17,12 @@ const axios = require('axios')
 const path = require('path');
 //check ảnh
 const { promisify } = require('util');
+
 // tạo token
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
 const Users = require('../models/Users');
+const AdminUserRaoNhanh365 = require('../models/Raonhanh365/Admin/AdminUser');
 
 const functions = require('../services/functions')
 
@@ -203,6 +206,11 @@ exports.checkImage = async (filePath) => {
     }
 
     return true;
+};
+
+exports.checkFileCV = async (filePath) => {
+    const extname = path.extname(filePath).toLowerCase();
+    return ['.pdf', '.doc', '.docx'].includes(extname);
 };
 
 // hàm check video
@@ -389,10 +397,17 @@ exports.checkToken = (req, res, next) => {
             return res.status(403).json({ message: "Invalid token" });
         }
         req.user = user;
-
         next();
     });
 };
+
+// ham check admin rao nhanh 365
+exports.isAdminRN365 = async(req, res, next)=>{
+    let user = req.user.data;
+    let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, isAdmin: 1, active: 1 });
+    if(admin) return next();
+    return res.status(403).json({ message: "is not admin RN365" });
+}
 
 // hàm tạo token 
 exports.createToken = async (data, time) => {
@@ -630,30 +645,61 @@ exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
         if (err) {
             console.log(err)
         }
+        console.log("check", data);
         fs.writeFile(filePath, data, (err) => {
             if (err) {
-                console.log(err)
+            console.log(err)
             }
         });
     });
     return true
 }
+
+exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
+    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
+    // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    var matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (matches.length !== 3) {
+        return false;
+    }
+
+    let type = matches[1];
+    let data = Buffer.from(matches[2], 'base64');
+
+    const imageName = `${Date.now()}.${type.split("/")[1]}`;
+    fs.writeFile(path1+imageName, data, (err) => {
+        if (err) {
+        console.log(err)
+        }
+    });
+}
+
 exports.deleteFileRaoNhanh = (id, file) => {
     let filePath = `../Storage/base365/raonhanh365/pictures/avt_tindangmua/${id}/` + file;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });
+}
 
-    // hàm tìm id max Quản Lí Chung
-    exports.getMaxIDQLC = async (model) => {
-        const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
-        return maxUser.idQLC;
-    };
-    // hàm tìm idcompany max 
-    exports.getMaxIDcompany = async (model) => {
-        const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
-        return maxIDcompany.companyId;
-    };
+exports.deleteImgRaoNhanh = (folder, id, file) => {
+    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file;
+    fs.unlink(filePath, (err) => {
+        if (err) console.log(err);
+    });
+}
+// hàm tìm id max Quản Lí Chung
+exports.getMaxIDQLC = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
+    return maxUser.idQLC;
+};
+// hàm tìm idcompany max 
+exports.getMaxIDcompany = async(model) => {
+    const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
+    return maxIDcompany.companyId;
+};
 
     //hàm tìm kiếm và cập nhật user với phoneTK và type =0 hoặc type =2
     exports.findOneAndUpdateUserByPhoneTK = async (phoneTK, projection) => {
@@ -761,7 +807,7 @@ exports.deleteFileRaoNhanh = (id, file) => {
 
         return result;
     }
-}
+
 exports.checkNameCateRaoNhanh = async(data)=>{
     switch (data)
     {
@@ -793,3 +839,14 @@ exports.getRandomInt = (min, max)=> {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+//bỏ những từ khóa trong tiêu đề
+exports.removerTinlq = async(string) => {
+    var arr_remove = ["lương", "nhân", "trình", "viên", "chuyên", "cao", "tuyển", "dụng", "hấp", "dẫn", "chi", "tiết", "công", "ty", "tnhh", "sx", "tm", "dv", "phòng", "tại", "biết", "về"];
+    var result = arr_remove.reduce(function(str, remove) {
+        return str.replace(new RegExp(remove, "gi"), "");
+    }, string);
+
+    result = result.trim().replace(/\s+/g, " "); // Loại bỏ khoảng trắng dư thừa
+
+    return result;
+}
