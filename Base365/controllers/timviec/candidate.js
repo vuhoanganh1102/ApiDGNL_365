@@ -21,6 +21,7 @@ const md5 = require('md5');
 var jwt = require('jsonwebtoken');
 const axios = require('axios');
 const functions = require('../../services/functions');
+const functionsBlog = require('../../services/serviceBlog');
 const { token } = require('morgan');
 const fs = require('fs');
 const path = require('path');
@@ -600,6 +601,9 @@ exports.completeProfileQlc = async(req, res, next) => {
             },
             headers: { "Content-Type": "multipart/form-data" }
         });
+        if (takeData.data.error.message == "Không gợi ý được") {
+            return functions.setError(res, "AI ko trả ra kết quả", 400);
+        }
         let listNewId = takeData.data.data.list_id.split(",")
         for (let i = 0; i < listNewId.length; i++) {
             listNewId[i] = Number(listNewId[i])
@@ -716,35 +720,53 @@ exports.completeProfileQlc = async(req, res, next) => {
             'ntd': ntdCheckHoso.length
         }
 
-        let findBlog = await functions.getDatafind(blog, { categoryID: candiCateID })
-            // let blog = await blog.aggregate([{
-            //         $match: {
-            //             categoryID: candiCateID
-            //         }
-            //     },
-            //     {
-            //         $lookup: {
-            //             from: "categoryBlog",
-            //             localField: "categoryID",
-            //             foreignField: "_id",
-            //             as: "cate"
-            //         }
-            //     },
-            //     {
-            //         $unwind: "$cate"
-            //     },
-            //     {
-            //         $skip: 0
-            //     },
-            //     {
-            //         $project: {
-            //             name: '$cate.name'
-            //             link: '$'
-            //         }
-            //     },
-            // ]);
 
-        functions.success(res, "Hiển thị qlc thành công", { itesm_cv: myCv, itesm_cvdx: findCv, itesm_dem })
+        let myBlog = await blog.aggregate([{
+                $match: {
+                    categoryID: candiCateID
+                }
+            },
+            {
+                $lookup: {
+                    from: "CategoryBlog",
+                    localField: "categoryID",
+                    foreignField: "_id",
+                    as: "cate"
+                }
+            },
+            {
+                $unwind: "$cate"
+            },
+            {
+                $skip: 0
+            },
+            {
+                $project: {
+                    name: '$cate.name',
+                    link: '$titleRewrite',
+                    img: '$picture',
+                    title: '$title'
+                }
+            },
+        ]);
+
+        let itesm_qc = {}
+        itesm_qc.name = myBlog[0].name
+        itesm_qc.items = []
+
+        for (let i = 0; i < myBlog.length; i++) {
+            myBlog[i].link = await functionsBlog.hostBlog(myBlog[i].link, myBlog[i]._id)
+            myBlog[i].img = await functions.getPictureBlogTv365(myBlog[i].img)
+            itesm_qc.items.push(myBlog[i])
+        }
+        const newData = {...itesm_qc }; // Tạo bản sao của đối tượng data
+        newData.items = newData.items.map(item => {
+            const newItem = {...item }; // Tạo bản sao của phần tử
+            delete newItem.name; // Xóa trường name trong phần tử
+            return newItem;
+        });
+        console.log(newData);
+        functions.success(res, "Hiển thị qlc thành công", { itesm_vl: post, itesm_cv: myCv, itesm_cvdx: findCv, itesm_dem, itesm_qc })
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
