@@ -9,12 +9,14 @@ exports.getListShifts = async (req, res) => {
 //lấy danh sách ca làm việc theo id
 exports.getShiftById = async (req, res) => {
 
-    const _id = req.params.id;
-
-    if (!functions.checkNumber(_id)) {
+    const _id = req.body.id;
+    const companyID = req.body.companyID
+    if((_id && companyID) == undefined){
+        functions.setError(res, "input required", 621);
+    }else if (isNaN(_id && companyID)) {
         functions.setError(res, "Id must be a number", 621);
     } else {
-        const shift = await functions.getDatafindOne(Shifts, { _id: _id });
+        const shift = await functions.getDatafindOne(Shifts, { _id: _id, companyID:companyID });
         if (shift) {
             functions.success(res, "Get data successfully", shift);
         } else {

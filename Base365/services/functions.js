@@ -132,6 +132,18 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
         return false;
     }
 };
+// hàm so sánh phần tử trùng lặp
+ exports.arrfil = function removeDuplicates(array, comparator) {
+    return array.filter(function(item, index) {
+    for (var i = 0; i < index; i++) {
+    if (comparator(item, array[i])) {
+    return false;
+    }
+    }
+    return true;
+    });
+    }
+    
 exports.getDatafindOne = async(model, condition) => {
     return model.findOne(condition).lean();
 };

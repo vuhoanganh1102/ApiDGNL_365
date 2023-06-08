@@ -1,13 +1,13 @@
 const Tracking = require('../../models/qlc/HisTracking');
 const functions = require('../../services/functions')
-
+// const shift = require('../../models/qlc/shift')
 //thêm chấm công 
 exports.CreateTracking = async (req,res)=>{
     // const idQLC = req.body.idQLC;
     // const companyID = req.body.companyID;
     // const role = req.body.role;
     // const imageTrack = req.body.imageTrack;
-    // const curDeviceName = req.body.curDeviceName;
+    // const curDeviceidQLC = req.body.curDeviceName;
     // const latitude = req.body.latitude;
     // const longtitude = req.body.longtitude;
     // const Location = req.body.Location;
@@ -80,17 +80,29 @@ exports.getListUserTrackingSuccess = async (req,res)=>{
     try {
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
-        let companyID = request.companyID,
-            Success = request.Success || true
-        if((companyID && Success)==undefined){
+        let companyID = request.companyID
+            shiftID = request.shiftID
+            CreateAt = request.CreateAt || true
+            inputNew = request.inputNew 
+            inputOld = request.inputOld
+        if((companyID&&shiftID)==undefined){
             functions.setError(res,"lack of input")
-        }else if(isNaN(companyID)){
+        }else if(isNaN(companyID&&shiftID)){
             functions.setError(res,"id must be a Number")
         }else{
-            const data = await Tracking.find({companyID: companyID, Success : Success}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
-            if (data) {
-                return await functions.success(res, 'Lấy thành công', { data }, {pageNumber});
-            };
+            const data = await Tracking.find({companyID: companyID ,shiftID : shiftID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC imageTrack Location CreateAt shiftID status Success ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
+            if (data) {//lấy thành công danh sách NV đã chấm công 
+                //so sanh phan tu trung lap
+                function compare(personA, personB) {
+                    return personA.idQLC === personB.idQLC && personA.shiftID === personB.shiftID;
+                    }
+                
+                let newData = functions.arrfil(data, compare);
+                console.log(newData)
+                    
+            
+                return await functions.success(res, 'Lấy thành công', { newData } );
+            }
             return functions.setError(res, 'Không có dữ liệu', 404);
         }
    
@@ -109,13 +121,20 @@ exports.getListUserTrackingFalse = async (req,res)=>{
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
         let companyID = request.companyID,
-            Err = request.Err || true
-        if((companyID && Err)==undefined){
+            idQLC = request.idQLC 
+        if((companyID && idQLC)==undefined){
             functions.setError(res,"lack of input")
-        }else if(isNaN(companyID)){
+        }else if(isNaN(companyID&&idQLC)){
             functions.setError(res,"id must be a Number")
         }else{
-            const data = await Tracking.find({companyID: companyID, Err : Err}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
+            const data =  await Tracking.aggregate([{
+                $lookup: {
+                    from: "shift",
+                    localField: "adminID",
+                    foreignField: "_id",
+                    as: "AdminUser"
+                }
+            }])
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
@@ -169,28 +188,90 @@ exports.getTrackingALLCondition = async (req,res)=>{
     try {
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
-        let idQLC = request.idQLC || true
+        let idQLC = request.idQLC || null
             companyID = request.companyID,
-            depID = request.depID || true
+            depID = request.depID || null
             CreateAt = request.CreateAt || true
             inputNew = request.inputNew || null
             inputOld = request.inputOld || null
+            if((companyID && CreateAt )==undefined){
+                functions.setError(res,"lack of input")
+            }else if(isNaN(companyID)){
+                functions.setError(res,"id must be a Number")
+            }else{
+                if(depID == undefined){// tìm kiếm theo tất cả lịch sử chấm công của cty   
+                const data = await Tracking.find({companyID: companyID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
+                    if (data) {
+                        return await functions.success(res, 'Lấy thành công', { data });
+                    };
+                    return functions.setError(res, 'Không có dữ liệu', 404);
+                }else if(idQLC == undefined){//tìm kiếm lịch sử chấm công theo phòng ban 
+                    const data0 = await Tracking.find({companyID: companyID, depID:depID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
+                    if (data0) {
+                        return await functions.success(res, 'Lấy thành công', { data0 });
+                    };
+                    return functions.setError(res, 'Không có dữ liệu', 404);
+                // // }else if(idQLC){//tìm kiếm theo tên nhân viên 
+                // //     const data3 = await Tracking.find({companyID: companyID, idQLC : idQLC }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                // //     if (data3) {
+                // //         return await functions.success(res, 'Lấy thành công', { data3 });
+                // //     };
+                // //     return functions.setError(res, 'Không có dữ liệu', 404);
+                }else if((inputNew && inputOld )==undefined){//tìm kiếm theo tên nhân viên va phong ban
+                    // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                    const data1 = await Tracking.find({companyID: companyID,idQLC : idQLC ,depID:depID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                    if (data1) {
+                        return await functions.success(res, 'Lấy thành công', { data1 });
+                    };
+                    return functions.setError(res, 'Không có dữ liệu', 404);
+                // }else if(inputNew && inputOld ){//tìm kiếm theo tgian
+                //     const data4 = await Tracking.find({companyID: companyID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //     if (data4) {
+                //         return await functions.success(res, 'Lấy thành công', { data4 });
+                //     };
+                //     return functions.setError(res, 'Không có dữ liệu', 404);
+                }else{// tìm kiếm theo  tất cả điều kiện
+                    // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                    const data2 = await Tracking.find({companyID: companyID,idQLC : idQLC ,depID:depID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                    if (data2) {
+                        return await functions.success(res, 'Lấy thành công', { data2 });
+                    };
+                    return functions.setError(res, 'Không có dữ liệu', 404);
+                }}
+                                // if(depID) {
+                //     const data0 = await Tracking.find({companyID: companyID, depID:depID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //     // console.log(data0)
+                //       functions.success(res, 'Lấy thành công', { data0 });
 
+                //     if(idQLC){
+                //         const data01 = await Tracking.find({companyID: companyID, depID:depID, idQLC:idQLC}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //         // console.log(data01)
+                //          functions.success(res, 'Lấy thành công', { data01 });
 
+                //     }
+                // } 
+                // if(idQLC){
+                //     const data1 = await Tracking.find({companyID: companyID,idQLC : idQLC}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //     // console.log(data1)
+                //      functions.success(res, 'Lấy thành công', { data1 });
 
-        if((companyID && CreateAt  )==undefined){
-            functions.setError(res,"lack of input")
-        }else if(isNaN(companyID)){
-            functions.setError(res,"id must be a Number")
-        }else{
-            // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
-            const data = await Tracking.find({companyID: companyID,idQLC : idQLC ,depID:depID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
-            if (data) {
-                return await functions.success(res, 'Lấy thành công', { data });
-            };
-            return functions.setError(res, 'Không có dữ liệu', 404);
-        }
-   
+                //     if(inputNew && inputOld){
+                //         const data11 = await Tracking.find({companyID: companyID,idQLC : idQLC, CreateAt: { $gte: inputOld , $lte: inputNew }}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //         // console.log(data11)
+                //          functions.success(res, 'Lấy thành công', { data11 });
+
+                //     }
+                // }
+                // if(inputNew && inputOld){
+                //     const data2 = await Tracking.find({companyID: companyID,CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //     // console.log(data2)
+                //      functions.success(res, 'Lấy thành công', { data2 });
+
+                //     if(depID){
+                //         const data21 = await Tracking.find({companyID: companyID,CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //         // console.log(data21)
+                //          functions.success(res, 'Lấy thành công', { data21 });
+                //     }
 
     } catch (err) {
         functions.setError(res, err.message);

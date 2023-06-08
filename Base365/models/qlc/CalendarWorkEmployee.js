@@ -12,6 +12,9 @@ const CalendarWorkEmployee = new Schema({
     companyID: {//ID cty
         type: Number
     },
+    shiftID: {//ID ca 
+        type: Number
+    },
     calendarID: {//ID lịch làm việc
         type: Number
     },

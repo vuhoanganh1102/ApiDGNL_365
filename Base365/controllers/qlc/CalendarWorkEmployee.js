@@ -45,7 +45,7 @@ exports.getAllCalendarEmpByCom = async (req, res) => {
 //tạo danh sách lịch làm việc cho nhân viên
 exports.createCalEmp = async (req,res)=>{
     // const email = req.user.data.email;
-    const {employeeID ,companyID ,calendarID , timeApply, Detail } = req.body;
+    const {employeeID ,companyID ,calendarID , timeApply, Detail ,shiftID } = req.body;
     if(!employeeID) {
         functions.setError(res,"employeeID required")
     }else if (isNaN(employeeID)){
@@ -74,6 +74,7 @@ exports.createCalEmp = async (req,res)=>{
             employeeID: employeeID,
             companyID :companyID,
             calendarID :calendarID,
+            shiftID: shiftID,
             timeApply: tApply,
             Detail: Detail
         })
@@ -130,7 +131,7 @@ exports.editCalendar = async (req, res) => {
     }
 }
 //Xóa một lịch làm việc đã có sẵn
-
+ 
 exports.deleteCalendar = async (req, res) => {
     const _id = req.body.id;
 
