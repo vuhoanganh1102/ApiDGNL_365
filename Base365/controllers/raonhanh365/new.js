@@ -526,7 +526,7 @@ exports.searchNew = async (req, res, next) => {
             ,fuel,numberOfSeats,gearBox,style,payload,carNumber,km,origin,version,statusSell,nameApartment,numberOfStoreys,storey,mainDirection
             ,balconyDirection,legalDocuments,statusInterior,acreage,length,width,buyingArea,kvCity,kvDistrict,kvWard,numberToletRoom
         ,numberBedRoom,typeOfApartment,special,statusBDS,codeApartment,cornerUnit,nameArea,useArea,landType,officeType,block,kindOfPet
-    ,age,gender,exp,level,degree,jobType,jobDetail,jobKind,salary,benefit,skill,city,district,ward,payBy}
+    ,age,gender,exp,level,degree,jobType,jobDetail,jobKind,salary,benefit,skill,city,district,ward,payBy,giaTu,giaDen}
             = req.query; 
         if(link === 'tat-ca-tin-dang-ban.html')
         {
@@ -623,6 +623,10 @@ exports.searchNew = async (req, res, next) => {
         if(ward) condition["Job.ward"] = ward;
         if(payBy) condition["Job.payBy"] = payBy;
         if(benefit) condition["Job.benefit"] = benefit; 
+        if(giaTu && buySell === 1) condition.startvalue = {$gte:startvalue}; 
+        if(giaDen && buySell === 1) condition.endvalue = {$lte:endvalue}; 
+        if(giaTu && buySell === 2) condition.money = {$gte:giaTu}; 
+        if(giaTu && buySell === 2) condition.money = {$gte:giaTu}; 
         let data  = await New.find(condition,searchItem).limit(10);
         return functions.success(res, "get data success",{data})
     } catch (error) {
