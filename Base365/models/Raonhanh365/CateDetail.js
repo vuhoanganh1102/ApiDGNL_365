@@ -8,7 +8,9 @@ const CateDetailRaonhanh365Schema = mongoose.Schema({
         type: String,
         default: null,
     },
+    
     productGroup: {
+        // nhóm sản phẩm
         type: [{
             _id: Number,
             name: String,
@@ -92,7 +94,7 @@ const CateDetailRaonhanh365Schema = mongoose.Schema({
         default: null,
     },
     capacity: {
-        //dung lượng
+        //dung lượng đối với sản phẩm điện tử
         type: [{
             _id: {
                 type: Number

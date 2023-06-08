@@ -110,4 +110,4 @@ const AdminUserRaoNhanh365Schema = new mongoose.Schema({
     timestamp: true
 })
 
-module.exports = mongoose.model("AdminUserRaoNhanh365", BlogRaoNhanh365Schema);
+module.exports = mongoose.model("AdminUserRaoNhanh365", AdminUserRaoNhanh365Schema);

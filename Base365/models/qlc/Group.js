@@ -13,6 +13,11 @@ const GroupSchema = new Schema({
         type: Number,
     },
 
+    //ID phong của nhóm
+    depId: {
+        type: Number,
+    },
+
     // Tên của nhóm
     groupName: {
         type: String,
@@ -27,6 +32,17 @@ const GroupSchema = new Schema({
     //ID quản lý nhóm
     managerId: {
         type: Number
+    },
+
+    //ID pho quan ly nhom
+    deputyManagerId: {
+        type: Number
+    },
+
+    //so luong thanh vien
+    numberMember: {
+        type: Number,
+        default: 0
     },
 
     //Sắp xếp theo thứ tự
