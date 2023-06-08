@@ -10,15 +10,17 @@ const Vanthu_settingDx = new mongoose.Schema({
         type: Number
      },
     type_browse: { // loại duyệt duyệt 1 nguoi, duyệt 2 nguoi
-        type: Number
+        type: Number,
+        default : 1
      },
     time_limit: { //thời gian duyệt đột xuất
         type: Number
      },
     shift_id: { //id thay đổi
-        type: Number
+        type: Number,
+        default : 0
      },
-    time_limit_l: { 
+    time_limit_l: { // ? 
         type: String
      },
     list_user: { 

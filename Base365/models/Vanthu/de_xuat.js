@@ -344,19 +344,24 @@ const Vanthu_de_xuat = new Schema({
 
         thuong_phat: {
             so_tien_thuong: {
-                type: Number
+                type: Number,
+                default: null
             },
             so_tien_phat :{
-                type : Number
+                type : Number,
+                default: null
             },
             nguoi_phat : {
-                type : String
+                type : String,
+                default: null
             },
-            ngay_ap_dung : {
-                type : Date
+            time_tp : {
+                type : Date,
+                default: 0
             },
             ly_do : {
-                type : String
+                type : String,
+                default: null
             }
 
         },
@@ -366,16 +371,24 @@ const Vanthu_de_xuat = new Schema({
 
         hoa_hong : {
             chu_ky : {
-                type : Date
+                type : Date,
+                default: null
             },
             doanh_thu_td : {
-                type : Number
+                type : Number,
+                default: null
+            },
+            time_hh : {
+                type : Date,
+                default: 0
             },
             muc_doanh_thu : {
-                type : Number
+                type : Number,
+                default: null
             },
             ly_do : {
-                type : String
+                type : String,
+                default: null
             }
         }
 
@@ -434,7 +447,7 @@ const Vanthu_de_xuat = new Schema({
 
     },
     time_duyet: {
-        type: Number,
+        type: Date,
         default: 0
 
     },

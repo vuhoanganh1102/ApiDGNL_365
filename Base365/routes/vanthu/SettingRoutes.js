@@ -15,10 +15,10 @@ router.post('/addSetting', formData.parse(),settingVanthu.createSettingDx);
 
 
 // Api sửa setting
-router.put('/editSetting',formData.parse(),settingVanthu.editSettingDx);
+router.patch('/editSetting',formData.parse(),settingVanthu.editSettingDx);
 
 
 //Api xóa setting
-router.delete('/:id',settingVanthu.removeSetting);
+router.delete('/',formData.parse(),settingVanthu.removeSetting);
 
 module.exports = router

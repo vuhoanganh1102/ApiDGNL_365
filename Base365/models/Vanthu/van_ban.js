@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 const vanBan = new mongoose.Schema({
-    _id: {
+    _id: { //id của văn bản
         type: Number,
         required : true
     },
-    title_vb: {
+    title_vb: { // tên của văn bản
         type: String,
         max: 255,
         required : true

@@ -374,6 +374,24 @@ exports.uploadVanthuDeXuat = (id, file) => {
     });
 }
 
+exports.uploadVanthuCongVan = (id,file) => {
+    let path = `../Storage/base365/vanthu/congvan/${id}/`;
+    let filePath = `../Storage/base365/vanthu/congvan/${id}/` + file.originalFilename;
+    if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới     
+        fs.mkdirSync(path, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+}
+
 // hàm gửi mail
 exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
     let options = {
