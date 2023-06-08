@@ -16,4 +16,7 @@ router.put('/updateBlog', formData.parse(), [functions.checkToken, functions.isA
 //api xoa 1 blog by id hoac xoa tat ca
 router.delete('/deleteBlog', [functions.checkToken, functions.isAdminRN365], blog.deleteBlog);
 
+//api get anh trong chi tiet bai viet
+router.post('/detailBlog', formData.parse(), blog.getDetailBlog);
+
 module.exports = router;

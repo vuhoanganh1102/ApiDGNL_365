@@ -61,32 +61,21 @@ exports.getAndCheckData = async(req, res, next) => {
         }
         let avatarName;
         if(avatarUser){
-            if(!await fnc.checkImage(avatarUser.path)) {
-                await fnc.deleteImgVideo(avatarUser)
-                return fnc.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405)
+            if(!await fnc.checkImage(avatarUser.path)){
+                return fnc.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
             }
-            avatarName = avatarUser.originalFilename;
+            fnc.uploadFileRaoNhanh('avt_com',1,avatarUser);
+            avatarName = fnc.createLinkFileRaonhanh('avt_com', 1, avatarUser.name);
         }
         let listImg=[];
         if (image) {
             if(!await fnc.checkImage(image.path)) {
-                await fnc.deleteImgVideo(image)
                 return fnc.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405)
             }
-            listImg.push({_id: 1, name: image.originalFilename, size: image.size});
+            fnc.uploadFileRaoNhanh('avt_com',1,image);
+            imageName = fnc.createLinkFileRaonhanh('avt_com', 1, image.name);
+            listImg.push({_id: 1, name: imageName, size: image.size});
         }
-
-        // if(arr_idchat.length!==0){
-        //     for(let i=0; i<arr_idchat; i++){
-        //         let user = await CompanyRN.findOne({_id: arr_idchat[i]})
-        //         console.log(user);
-        //         if(user){
-        //             user.findByIdAndUpdate(arr_idchat[i], {
-        //                 arr
-        //             })
-        //         }
-        //     }
-        // }
         
         req.info = {
             phoneTK: phoneTK,
@@ -138,11 +127,36 @@ exports.updateCompany = async(req, res, next) => {
         let _id = req.body._id;
         let fields = req.info;
         let existsCompany = await CompanyRN.findOne({_id: _id});
+        if(fields.avatarUser && existsCompany.avatarUser) {
+            let nameFile = existsCompany.avatarUser.split("/");
+            let len = nameFile.length;
+            await fnc.deleteImgRaoNhanh(1, 'avt_com', nameFile[len-1])
+        }
         if (existsCompany) {
             await CompanyRN.findByIdAndUpdate(_id, fields);
             return fnc.success(res, "Company edited successfully");
         }
         return fnc.setError(res, "Company not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return fnc.setError(res, "Err from server!", 500);
+    }
+}
+
+
+exports.saveImage = async(req, res, next)=>{
+    try{
+        if(!req.body._id)
+            return fnc.setError(res, "Missing input value id company!", 404);
+        let _id = req.body._id;
+        let fields = req.info;
+        let existsCompany = await CompanyRN.findOne({_id: _id});
+        if (existsCompany) {
+            await CompanyRN.findByIdAndUpdate(_id, fields);
+            return fnc.success(res, "Company edited successfully");
+        }
+        return fnc.setError(res, "Company not found!", 505);
+        
     }catch(err){
         console.log("Err from server!", err);
         return fnc.setError(res, "Err from server!", 500);

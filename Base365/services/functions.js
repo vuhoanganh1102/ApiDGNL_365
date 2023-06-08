@@ -1,5 +1,6 @@
 // check ảnh và video
 const fs = require('fs');
+
 // upload file
 const multer = require('multer')
 
@@ -16,6 +17,7 @@ const axios = require('axios')
 const path = require('path');
 //check ảnh
 const { promisify } = require('util');
+
 // tạo token
 const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/CV');
@@ -627,14 +629,9 @@ exports.checkDate = (date) => {
     return data instanceof Date && !isNaN(data);
 }
 
-exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
+exports.uploadFileRaoNhanh = async(folder, id, file,allowedExtensions) => {
     let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
     let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
-    let fileCheck = path.extname(filePath);
-    console.log(folder)
-    if(allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false){
-        return false
-    }
     if (!fs.existsSync(path1)) {
         fs.mkdirSync(path1, { recursive: true });
     }
@@ -642,6 +639,7 @@ exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
         if (err) {
             console.log(err)
         }
+        console.log("check", data);
         fs.writeFile(filePath, data, (err) => {
             if (err) {
             console.log(err)
@@ -650,12 +648,42 @@ exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
     });
     return true;
 }
+
+exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
+    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
+    // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    var matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (matches.length !== 3) {
+        return false;
+    }
+
+    let type = matches[1];
+    let data = Buffer.from(matches[2], 'base64');
+
+    const imageName = `${Date.now()}.${type.split("/")[1]}`;
+    fs.writeFile(path1+imageName, data, (err) => {
+        if (err) {
+        console.log(err)
+        }
+    });
+}
+
 exports.deleteFileRaoNhanh = (id, file) => {
     let filePath = `../Storage/base365/raonhanh365/pictures/avt_tindangmua/${id}/` + file;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });
+}
 
+exports.deleteImgRaoNhanh = (folder, id, file) => {
+    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file;
+    fs.unlink(filePath, (err) => {
+        if (err) console.log(err);
+    });
+}
 // hàm tìm id max Quản Lí Chung
 exports.getMaxIDQLC = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
@@ -772,4 +800,4 @@ exports.removerTinlq = async(string) => {
     result = result.trim().replace(/\s+/g, " "); // Loại bỏ khoảng trắng dư thừa
 
     return result;
-}}
+}

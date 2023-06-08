@@ -3,6 +3,7 @@ const Blog = require('../../models/Raonhanh365/Admin/Blog')
 const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser');
 const Category = require('../../models/Raonhanh365/Category');
 const md5 = require('md5');
+const folderImg = 'img_blog';
 
 exports.getListBlogByFields = async(req, res, next) => {
     try {
@@ -32,8 +33,8 @@ exports.getListBlogByFields = async(req, res, next) => {
             if(des) listCondition.des =  new RegExp(des);
             let fieldsGet = 
             {   
-                adminId: 1, langId: 1,title: 1,url: 1,titleRewrite: 1,image: 1,imageWeb: 1,teaser: 1,keyword: 1,sapo: 1,des: 1,
-                categoryId: 1,status: 1,date: 1,adminEdit: 1,dateLastEdit: 1,order: 1,totalVoteYes: 1,totalVoteNo: 1,hit: 1,active: 1, new: 1, titleRelate: 1, contentRelate: 1
+                adminId: 1, langId: 1,title: 1,url: 1,image: 1,keyword: 1,sapo: 1,des: 1,detailDes: 1,
+                categoryId: 1,status: 1,date: 1,adminEdit: 1,dateLastEdit: 1,order: 1,active: 1, new: 1, hot: 1, titleRelate: 1, contentRelate: 1
             }
             const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
             const totalCount = await functions.findCount(Blog, listCondition);
@@ -51,29 +52,18 @@ exports.getAndCheckData = async(req, res, next) => {
     try {
         let image = req.files.image;
         let imageWeb = req.files.imageWeb;
-        let {adminId,title,url,titleRewrite,des,categoryId,status,keyword, sapo, active, hot, detailDes , titleRelate, contentRelate, newStatus} = req.body;
-        let fields = [adminId, title, url, image, imageWeb, des,keyword,  sapo, detailDes, titleRelate, contentRelate];
+        let {adminId,title,url,des,status,keyword, sapo, active, hot, detailDes , titleRelate, contentRelate, newStatus, date, dateLastEdit} = req.body;
+        let fields = [adminId, title, url, image, des,keyword, sapo, detailDes, titleRelate, contentRelate];
         for(let i=0; i<fields.length; i++){
             if(!fields[i])
                 return functions.setError(res, `Missing input value ${i+1}`, 404);
         }
-        if(!await functions.checkImage(image.path)) {
-            await functions.deleteImgVideo(image)
-            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405)
-        }
-        if(!await functions.checkImage(imageWeb.path)) {
-            await functions.deleteImgVideo(imageWeb)
-            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 406)
-        }
-        let imgName = image.originalFilename;
-        let imgWebName = imageWeb.originalFilename;
         // them cac truong muon them hoac sua
         req.info = {
             adminId: adminId,
             title: title,
             url: url,
-            image: imgName,
-            imageWeb: imgWebName,
+            image: image,
             des: des,
             status: status,
             keyword: keyword,
@@ -83,7 +73,9 @@ exports.getAndCheckData = async(req, res, next) => {
             new: newStatus,
             detailDes: detailDes,
             titleRelate: titleRelate,
-            contentRelate: contentRelate
+            contentRelate: contentRelate,
+            date: date,
+            dateLastEdit: dateLastEdit
         }
         return next();
     } catch (e) {
@@ -103,7 +95,17 @@ exports.createBlog = async(req, res, next) => {
             newIdBlog = Number(maxIdBlog._id) + 1;
         } else newIdBlog = 1;
         fields._id = newIdBlog;
-        fields.date = Date(Date.now());
+
+        if(!fields.date) {
+            fields.date = Date(Date.now());
+        }
+        //luu anh
+        let image = fields.image;
+        if(!await functions.checkImage(image.path)){
+            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
+        }
+        functions.uploadFileRaoNhanh(folderImg,newIdBlog,image);
+        fields.image = functions.createLinkFileRaonhanh(folderImg, newIdBlog, image.name);
         let blog = new Blog(fields);
         await blog.save();
         return functions.success(res, 'Create blog RN365 success!');
@@ -119,11 +121,47 @@ exports.updateBlog = async(req, res, next) => {
             return functions.setError(res, "Missing input value id blog!", 404);
         let _id = req.body._id;
         let fields = req.info;
-        fields.dateLastEdit = Date(Date.now());
+        if(!fields.dateLastEdit){
+            fields.dateLastEdit = Date(Date.now());
+        }
+        let image = fields.image;
+        if(!await functions.checkImage(image.path)){
+            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
+        }
         let existsBlog = await Blog.findOne({_id: _id});
         if (existsBlog) {
+            // xu ly anh
+            let linkImg = existsBlog.image.split("/");
+            let len = linkImg.length;
+            functions.deleteImgRaoNhanh(folderImg, linkImg[len-2], linkImg[len-1]);
+            functions.uploadFileRaoNhanh(folderImg, _id, image);
+            fields.image = functions.createLinkFileRaonhanh(folderImg, _id, image.name);
+
+            //cap nhat du lieu
             await Blog.findByIdAndUpdate(_id, fields);
             return functions.success(res, "Blog edited successfully");
+        }
+
+        return functions.setError(res, "Blog not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+
+exports.getDetailBlog = async(req, res, next) => {
+    try{
+        let idBlog = req.body.idBlog;
+        if(!idBlog)
+            return functions.setError(res, "Missing input value id blog!", 404);
+        let fields = {title: 1,url: 1,imgName: 1,imgWebName: 1,des: 1,status: 1,keyword: 1,sapo: 1,active:1,hot:1,new:1,detailDes: 1,titleRelate:1,contentRelate: 1}
+        listImgBase64 = req.body.listImgBase64;
+        let image = req.files.image;
+        functions.uploadFileBase64RaoNhanh(folderImg, idBlog, listImgBase64, image);
+        let existsBlog = await Blog.findOne({_id: idBlog}, fields);
+        if (existsBlog) {
+            return functions.success(res, "get detail blog successfully", {blog:existsBlog, listImage: listImgBase64});
         }
         return functions.setError(res, "Blog not found!", 505);
     }catch(err){
@@ -131,6 +169,7 @@ exports.updateBlog = async(req, res, next) => {
         return functions.setError(res, "Err from server!", 500);
     }
 }
+
 
 exports.deleteBlog = async(req, res, next) => {
     try {
