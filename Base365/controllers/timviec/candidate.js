@@ -563,7 +563,7 @@ exports.loginUv = async(req, res, next) => {
 
         let checkPhoneNumber = await functions.checkPhoneNumber(account);
         if (checkPhoneNumber) {
-            var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: { $ne: 1 } });
+            var findUser = await functions.getDatafindOne(Users, { phoneTK: "0123456794" });
         } else {
             var findUser = await functions.getDatafindOne(Users, { email: account, type: { $ne: 1 } });
         }
@@ -724,9 +724,7 @@ exports.completeProfileQlc = async(req, res, next) => {
             "ut": listJobUv.length,
             'vl': listJobFit.length,
             'ntd': ntdCheckHoso.length
-
-
-
+        }
 
         let myBlog = await blog.aggregate([{
                 $match: {
