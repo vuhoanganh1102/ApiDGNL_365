@@ -6,7 +6,7 @@ const CalendarWorkEmployee = new Schema({
         type: Number,
         required: true
     },
-    employeeID: {
+    idQLC: {
         type: Number
     },
     companyID: {//ID cty

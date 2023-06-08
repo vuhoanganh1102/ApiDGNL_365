@@ -35,6 +35,7 @@ exports.getUserById = async(req, res) => {
         }
     }
 };
+<<<<<<< HEAD
 //tìm danh sách admin
 exports.getlistAdmin = async(req, res) => {
     try{
@@ -51,6 +52,9 @@ exports.getlistAdmin = async(req, res) => {
     functions.setError(res,err.message)
     }
 };
+=======
+
+>>>>>>> eb6b50e45493328fa0e68250c8b89f201cfe0328
 //tạo nhân viên 
 exports.createUser = async(req, res) => {
 
@@ -105,6 +109,62 @@ exports.createUser = async(req, res) => {
                 functions.setError(res, err.message, 509);
             })
     }
+};
+
+// b1: gửi mã otp tới tên tài khoản được nhập
+exports.sendOTP = async(req, res, next) => {
+    try {
+        const phoneTK = req.body.phoneTK;
+        if (await functions.checkPhoneNumber(phoneTK) && await functions.getDatafindOne(managerUser, { phoneTK: phoneTK })) {
+            await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { phoneTK })
+                .then((response) => {
+
+                    const otp = response.data.otp;
+                    if (otp) {
+                        return managerUser.updateOne({ phoneTK: phoneTK }, {
+                            $set: {
+                                otp: otp
+                            }
+                        });
+                    }
+                    functions.setError(res, "Gửi OTP lỗi 1", );
+                })
+                .then(() => {
+                    functions.getDatafindOne(managerUser, { phoneTK: phoneTK }, )
+                        .then(async(response) => {
+                            const token = await functions.createToken(response, '30m'); // tạo token chuyển lên headers
+                            res.setHeader('authorization', `Bearer ${token}`);
+                            return functions.success(res, 'Gửi OTP thành công');
+                        });
+                });
+
+        } else {
+            return functions.setError(res, "Tài khoản không tồn tại. ", 404)
+        }
+    } catch (e) {
+        return functions.setError(res, "Gửi OTP lỗi3", )
+    }
+
+};
+
+// b2: xác nhận mã otp
+exports.confirmOTP = async(req, res, next) => {
+    try {
+        const _id = req.user.data._id;
+        const otp = req.body.otp;
+        const verify = await managerUser.findOne({ _id: _id, otp }); // tìm user với dk có otp === otp người dùng nhập
+
+        if (verify) {
+            const token = await functions.createToken(verify, '30m');
+            res.setHeader('authorization', `Bearer ${token}`);
+            return functions.success(res, 'Xác thực OTP thành công', );
+        } else {
+            return functions.setError(res, "Otp không chính xác 1", 404);
+        }
+    } catch (e) {
+        return functions.setError(res, 'Xác nhận OTP lỗi', );
+    }
+
 };
 
 // chỉnh sửa
