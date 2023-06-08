@@ -79,7 +79,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../Storage')));
 
 
-app.use('/api/timviec/candidate', candidateRouter);
+// app.use('/api/timviec/candidate', candidateRouter);
 app.use('/api/timviec/new', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
