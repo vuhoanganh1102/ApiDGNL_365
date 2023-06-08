@@ -5,5 +5,6 @@ const edit_Controller = require('../../../controllers/vanthu/DeXuat/edit_deXuat'
 router.put('/edit_delType/:id/:delType', data.parse(), edit_Controller.edit_del_type);
 
 
-router.put('/edit_active/:id/:active', data.parse(), edit_Controller.edit_active);
+router.post('/edit_active', data.parse(), edit_Controller.edit_active);
+router.post('/edit_time_tiep_nhan', data.parse(), edit_Controller.edit_tiep_nhan);
 module.exports = router;

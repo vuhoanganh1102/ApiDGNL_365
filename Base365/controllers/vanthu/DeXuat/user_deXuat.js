@@ -15,13 +15,82 @@ exports.deXuat_user_send = async (req, res) => {
     let id_user = req.body.id_user;
     // console.log(typeof (id_user));
     let nguoi_nhan_de_xuat = req.body.id_user_duyet ? req.body.id_user_duyet : 0;
+    let danh_sach_nguoi_nhan = [];
+    console.log(typeof (nguoi_nhan_de_xuat));
+
+
+    if (nguoi_nhan_de_xuat != 0) {
+        danh_sach_nguoi_nhan = nguoi_nhan_de_xuat.split(",");
+    }
+    for (let i = 0; i < danh_sach_nguoi_nhan.length; i++) {
+        console.log("phan tu thu " + i + " : " + danh_sach_nguoi_nhan[i])
+    }
+
     let time_send_from = req.body.time_send_from ? req.body.time_send_from : new Date('1970-01-01').getTime();
-    // console.log("time_send_from " + time_send_from);
+
     let time_send_to = req.body.time_send_to ? req.body.time_send_to : new Date().getTime();
-    // console.log("time_send_to" + time_send_to);
+
+    if (id_user) {
+        if (!isNaN(id_user)) {
+
+            info_de_xuat_All = [];
+            info_de_xuat_cho_duyet = [];
+            info_de_xuat_da_duyet = [];
+            info_de_xuat_da_tu_choi = [];
+            de_Xuat = [];
+
+            de_Xuat = await De_Xuat.find({ id_user: id_user });
+            console.log(de_Xuat);
+            if (de_Xuat) {
+
+                for (let i = 0; i < de_Xuat.length; i++) {
+                    let de_xuat = {
+                        _id: de_Xuat[i]._id,
+                        name_use: de_Xuat[i].name_user,
+                        name_dx: de_Xuat[i].name_dx,
+                        // type_duyet: item.type_duyet,//3- huy 5-duyệt 6 -bắt buộc đi làm 7- đã tiếp nhận
+                        active: de_Xuat[i].active,//đòng ý hoặc từ chối 
+                        time_create: de_Xuat[i].time_create,
+                    }
+                    if (nguoi_nhan_de_xuat === 0) {
+                        if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to) {
+                            // console.log("nguoi nhan rong ")
+                            info_de_xuat_All.push(de_xuat);
+                            // console.log("de xuat_all : " + info_de_xuat_All);
+                        }
+                    } else {
+
+                        if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to && de_Xuat[i].id_user_duyet == nguoi_nhan_de_xuat) {
+                            info_de_xuat_All.push(de_xuat);
+                        }
+                    }
+                }
+                for (let i = 0; i < info_de_xuat_All.length; i++) {
+                    //theo model cũ trong mysql 1- là bên thứ 3 đòng ý 2- là bên thứ 3 không đồng ý 
+                    if (info_de_xuat_All[i].active == 0) {
+                        info_de_xuat_cho_duyet.push(info_de_xuat_All[i]);
+                    }
+                    if (info_de_xuat_All[i].active == 1) {
+                        info_de_xuat_da_duyet.push(info_de_xuat_All[i]);
+                    }
+
+                    if (info_de_xuat_All[i].active == 2) {
+                        info_de_xuat_da_tu_choi.push(info_de_xuat_All[i]);
+                    }
+                }
+                return res.status(200).json({ message: 'thanh cong ' });
+            } else {
+                return res.status(200).json({ message: " khong co de xuat nao cho user " });
+            }
+        } else {
+            return res.status(200).json({ message: "id_user have to a Number" })
+        }
+        //   return res.status(200).json({ message: 'thanh cong ' });
+    } else {
+        return res.status(404).json('bad request');
+    }
 
 
-    c
 
 
 }
