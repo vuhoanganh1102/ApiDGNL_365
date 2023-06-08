@@ -698,7 +698,6 @@ exports.detail = async(req, res, next) => {
                     }
                 },
             ]);
-
             let city = await functions.getDatafindOne(City, { _id: Number(post[0].new_city) })
             let district = await functions.getDatafindOne(District, { _id: Number(post[0].new_qh_id) })
             let category = await functions.getDatafindOne(Category, { _id: Number(post[0].new_cat_id) })
