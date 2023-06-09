@@ -11,6 +11,10 @@ const BiddingSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    userID:{
+        type:Number,
+        require:true
+    },
     userName: {
         //tên người dự thầu
         type: String,
@@ -58,7 +62,7 @@ const BiddingSchema = new mongoose.Schema({
     },
     priceUnit: {
         //đơn vị giá dự thầu
-        type: Number,
+        type: String,
         default: 0
     },
     promotion: {
@@ -86,6 +90,10 @@ const BiddingSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    updatedAt:{
+        type: Date,
+        default: null
+    }
 }, {
     collection: 'Bidding',
     versionKey: false,

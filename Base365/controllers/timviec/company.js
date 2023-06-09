@@ -184,8 +184,9 @@ exports.register = async(req, res, next) => {
                     if (companyUnset != null) {
                         await functions.getDataDeleteOne(CompanyUnset, { email: email, type: 1 })
                     }
-
+                    await sendMail.SendRegisterNTD(`${email}`, `${username}`, "link")
                     return functions.success(res, 'đăng ký thành công')
+
                 } else {
                     if (req.files.videoType) {
                         await functions.deleteImg(videoType[0])
@@ -491,8 +492,6 @@ exports.updateInfoCompany = async(req, res, next) => {
             userCompany = request.name,
             city = request.city,
             address = request.address,
-            site = request.quymo,
-            website = request.web,
             description = request.gt,
             mst = request.thue,
             tagLinhVuc = request.tagLinhVuc
@@ -505,11 +504,8 @@ exports.updateInfoCompany = async(req, res, next) => {
                         'userName': userCompany,
                         'phone': phone,
                         'city': city,
-                        'website': website || null,
                         'address': address,
                         'inForCompany.mst': mst || null,
-                        'inForCompany.website': website || null,
-                        'inForCompany.com_size': site,
                         "inForCompany.tagLinhVuc": tagLinhVuc
 
                     }

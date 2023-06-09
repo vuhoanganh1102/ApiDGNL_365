@@ -18,6 +18,8 @@ var newTV365Router = require('./routes/timviec/newTV365');
 // rao nhanh
 var newRN365Router = require('./routes/raonhanh365/new');
 var blogRaoNhanh365Router = require('./routes/raonhanh365/blog');
+var orderRaoNhanh = require('./routes/raonhanh365/order');
+var userRaoNhanh = require('./routes/raonhanh365/user');
 var companyRaoNhanh365Router = require('./routes/raonhanh365/company');
 var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
 var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
@@ -55,7 +57,7 @@ var syllRouter = require('./routes/timviec/syll');
 
 var toolVT = require('./routes/vanthu/RoutertoolVT')
 
-const {router} = require("express/lib/application");
+const { router } = require("express/lib/application");
 
 var app = express();
 // app.listen(3001, () => {
@@ -93,7 +95,9 @@ app.use('/api/timviec/mail365', mail365Router);
 
 // api rao nhanh
 app.use('/api/raonhanh/new', newRN365Router);
-app.use('/api/raonhanh/blog', blogRaoNhanh365Router);
+app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
+app.use('/api/raonhanh/orderRaoNhanh', orderRaoNhanh)
+app.use('/api/raonhanh/userRaoNhanh', userRaoNhanh)
 app.use('/api/raonhanh/com', companyRaoNhanh365Router);
 app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
 app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
@@ -101,7 +105,7 @@ app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
-app.use("/api/qlc/group",[authJwt.checkToken, authJwt.isCompany], groupRouter);
+app.use("/api/qlc/group", [authJwt.checkToken, authJwt.isCompany], groupRouter);
 // app.use('/api/qlc/childCompany', childCompanyRouter)
 // app.use('/api/qlc/managerUser', managerUser)
 app.use('/api/qlc/employee', employeeRoutes);
@@ -116,7 +120,7 @@ app.use("/api/calendar", calendarRouter);
 
 
 //API văn thu
-app.use("/api/tool",toolVT)
+app.use("/api/tool", toolVT)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
@@ -137,9 +141,9 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-//const DB_URL = 'mongodb://127.0.0.1/api-base365'; 
+
 // timviec365 -> api-base365
-const DB_URL = 'mongodb+srv://dung136ptit:dcmtml102@cluster0.fmwheli.mongodb.net/'; // timviec365 -> api-base365
+const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));

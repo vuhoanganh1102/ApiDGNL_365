@@ -2,7 +2,7 @@ const fnc = require('../../services/functions');
 const New = require('../../models/Raonhanh365/UserOnSite/New');
 const CompanyRN = require('../../models/Users');
 const md5 = require('md5');
-
+const raoNhanh = require('../../services/rao nhanh/raoNhanh');
 // thông tin tài khoản
 exports.comInfo = async(req, res, next) => {
     try {
@@ -64,7 +64,7 @@ exports.getAndCheckData = async(req, res, next) => {
             if(!await fnc.checkImage(avatarUser.path)){
                 return fnc.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
             }
-            fnc.uploadFileRaoNhanh('avt_com',1,avatarUser);
+            raoNhanh.uploadFileRaoNhanh('avt_com',1,avatarUser);
             avatarName = fnc.createLinkFileRaonhanh('avt_com', 1, avatarUser.name);
         }
         let listImg=[];
@@ -72,7 +72,7 @@ exports.getAndCheckData = async(req, res, next) => {
             if(!await fnc.checkImage(image.path)) {
                 return fnc.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405)
             }
-            fnc.uploadFileRaoNhanh('avt_com',1,image);
+            raoNhanh.uploadFileRaoNhanh('avt_com',1,image);
             imageName = fnc.createLinkFileRaonhanh('avt_com', 1, image.name);
             listImg.push({_id: 1, name: imageName, size: image.size});
         }
