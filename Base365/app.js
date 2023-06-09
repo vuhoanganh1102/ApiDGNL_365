@@ -4,6 +4,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose')
+var authJwt = require('./middleware/authJwt');
+
+
 
 
 
@@ -14,7 +17,10 @@ var newTV365Router = require('./routes/timviec/newTV365');
 
 // rao nhanh
 var newRN365Router = require('./routes/raonhanh365/new');
-var blogRaoNhanh365Router = require('./routes/raonhanh365/blog')
+var blogRaoNhanh365Router = require('./routes/raonhanh365/blog');
+var orderRaoNhanh = require('./routes/raonhanh365/order');
+var userRaoNhanh = require('./routes/raonhanh365/user');
+var companyRaoNhanh365Router = require('./routes/raonhanh365/company');
 
 
 
@@ -32,7 +38,11 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
-// var childCompanyRouter = require('./routes/qlc/childCompany')
+var childCompanyRouter = require('./routes/qlc/childCompany')
+var managerUser = require('./routes/qlc/managerUser')
+var employeeRoutes = require('./routes/qlc/employee.routes');
+var individualRoutes = require('./routes/qlc/individual.routes');
+
 var manageUserRouter = require('./routes/qlc/manageUser')
 
 // crm_import
@@ -110,7 +120,7 @@ app.use('/api/vanthu/xoa_De_Xuat', Delete_deXuat);
 //edit de xuat
 var edit_Route = require('./routes/vanthu/DeXuat/edit_deXuat');
 app.use('/api/vanthu/edit_DeXuat', edit_Route);
-
+//user_dx
 var get_deXuat_user = require('./routes/vanthu/DeXuat/User_Dx');
 app.use('/api/vanthu/DeXuat', get_deXuat_user);
 
@@ -144,22 +154,29 @@ app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
 app.use('/api/tool', toolAddDataRouter);
 
-app.use('/api/timviec/priceList', priceListRouter);
+// app.use('/api/timviec/priceList', priceListRouter);
 app.use('/api/timviec/trangVang', trangVangRouter);
 app.use('/api/timviec/ssl', soSanhLuongRouter);
 app.use('/api/timviec/mail365', mail365Router);
 
 // api rao nhanh
-app.use('/api/raonhanh/news', newRN365Router);
+app.use('/api/raonhanh/new', newRN365Router);
 app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
+app.use('/api/raonhanh/orderRaoNhanh', orderRaoNhanh)
+app.use('/api/raonhanh/userRaoNhanh', userRaoNhanh)
+app.use('/api/raonhanh/com', companyRaoNhanh365Router);
 
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
-app.use("/api/qlc/group", groupRouter);
+app.use("/api/qlc/group", [authJwt.checkToken, authJwt.isCompany], groupRouter);
+// app.use('/api/qlc/childCompany', childCompanyRouter)
+// app.use('/api/qlc/managerUser', managerUser)
+app.use('/api/qlc/employee', employeeRoutes);
+app.use('/api/qlc/individual', individualRoutes);
+
 // app.use('/api/qlc/childCompany', childCompanyRouter);
-app.use('/api/qlc/manageUser', manageUserRouter);
 
 
 //API quẩn lý ca làm việc
@@ -189,13 +206,15 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
+const DB_URL = 'mongodb://127.0.0.1/api-base365';
+// timviec365 -> api-base365
+// const DB_URL = 'mongodb+srv://dung136ptit:dcmtml102@cluster0.fmwheli.mongodb.net/'; 
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-// app.listen(3002, () => {
+// app.listen(3004, () => {
 //     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3002")
+//     console.log("Backend is running on http://localhost:3004")
 // })
 module.exports = app;

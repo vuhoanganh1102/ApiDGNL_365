@@ -61,6 +61,11 @@ const BlogRaoNhanh365Schema = new mongoose.Schema({
         type: String,
         default: null
     },
+    detailDes: {
+        //mo ta chi tiet
+        type: String,
+        default: null
+    },
     sameId: {
         type: String,
         default: null

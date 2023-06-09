@@ -1,6 +1,6 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const Cate_Dx = require('../../../models/Vanthu/cate_de_xuat');
-
+const functions = require('../../../services/vanthu');
 exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
     let {
         name_dx,
@@ -11,7 +11,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         // kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
         id_user_duyet,
         id_user_theo_doi,
-        file_kem,
+        //  file_kem,
         ly_do,
 
         danh_sach_tai_san,
@@ -20,6 +20,14 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
 
 
     } = req.body;
+    let file_kem = req.files.fileKem;
+    // console.log(file_kem);
+    await functions.uploadFileVanThu(id_user, file_kem);
+    const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
+    const pathString = imagePath.toString();
+    console.log(pathString)
+
+
     if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
@@ -50,7 +58,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: file_kem,
+            file_kem: pathString,
             kieu_duyet: 0,
             type_duyet: 0,
             type_time: 0,

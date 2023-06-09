@@ -2,6 +2,7 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const cate_de_xuat = require('../../../models/Vanthu/cate_de_xuat');
 const settingdx = require('../../../models/Vanthu365/setting_dx');
+//onst setting_dx = require('../../../models/Vanthu365/setting_dx');
 let info_de_xuat_All = [];
 let info_de_xuat_cho_duyet = [];
 let info_de_xuat_da_duyet = [];
@@ -16,8 +17,8 @@ exports.deXuat_user_send = async (req, res) => {
     // console.log(typeof (id_user));
     let nguoi_nhan_de_xuat = req.body.id_user_duyet ? req.body.id_user_duyet : 0;
     let danh_sach_nguoi_nhan = [];
-    console.log(typeof (nguoi_nhan_de_xuat));
 
+    console.log(typeof (nguoi_nhan_de_xuat));
 
     if (nguoi_nhan_de_xuat != 0) {
         danh_sach_nguoi_nhan = nguoi_nhan_de_xuat.split(",");
@@ -131,7 +132,11 @@ exports.de_xuat_send_to_me = async (req, res) => {
     let time_send_to = req.body.time_send_to ? req.body.time_send_to : new Date().getTime();
     //console.log(id_user_duyet);
 
-    if (id_user_duyet) {
+    let page = Number(req.body.page) ? Number(req.body.page) : 1;
+    let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
+    const skip = (page - 1) * pageSize;
+
+    if (!isNan(id_user_duyet)) {
         if (!isNaN(id_user_duyet)) {
 
             info_de_xuat_All = [];
@@ -140,7 +145,7 @@ exports.de_xuat_send_to_me = async (req, res) => {
             info_de_xuat_da_tu_choi = [];
             de_Xuat = [];
 
-            de_Xuat = await De_Xuat.find({ id_user_duyet: id_user_duyet });
+            de_Xuat = await De_Xuat.find({ id_user_duyet: id_user_duyet }).skip(skip).limit(pageSize);
             console.log(de_Xuat);
             if (de_Xuat) {
 
@@ -154,14 +159,14 @@ exports.de_xuat_send_to_me = async (req, res) => {
                         time_create: de_Xuat[i].time_create,
                     }
                     if (id_user === 0) {
-                        if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to) {
+                        if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to && de_Xuat[i].del_type == 1) {
                             // console.log("nguoi nhan rong ")
                             info_de_xuat_All.push(de_xuat);
                             // console.log("de xuat_all : " + info_de_xuat_All);
                         }
                     } else {
 
-                        if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to && de_Xuat[i].id_user == id_user) {
+                        if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to && de_Xuat[i].id_user == id_user && de_Xuat[i].del_type == 1) {
                             info_de_xuat_All.push(de_xuat);
                         }
                     }
@@ -223,12 +228,15 @@ exports.deXuat_SendToMe_da_tu_choi = async (req, res) => {
 //đề xuất tôi là người theo dõi 
 exports.de_xuat_theo_doi = async (req, res) => {
     let id_user_theo_doi = req.body.id_user_theo_doi;
-    let han_duyet = 0;
+    let page = Number(req.body.page) ? Number(req.body.page) : 1;
+    let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
+    const skip = (page - 1) * pageSize;
     const setting_Dx = await settingdx.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     console.log("serttting dx: " + setting_Dx);
     //  console.log(setting_Dx);
-    han_duyet = (setting_Dx.timeLimit * 60 * 60) / 1000;// tính theo giờ
-    console.log(han_duyet);
+
+
+
 
     console.log(id_user_theo_doi);
 
@@ -241,7 +249,7 @@ exports.de_xuat_theo_doi = async (req, res) => {
             info_de_xuat_da_tu_choi = [];
             de_Xuat = [];
 
-            de_Xuat = await De_Xuat.find({ id_user_theo_doi: id_user_theo_doi });
+            de_Xuat = await De_Xuat.find({ id_user_theo_doi: id_user_theo_doi }).skip(skip).limit(pageSize);
             // console.log(de_Xuat);
             if (de_Xuat) {
 
@@ -254,6 +262,11 @@ exports.de_xuat_theo_doi = async (req, res) => {
                         type_duyet: de_Xuat[i].type_duyet,//3- huy 5-duyệt 6 -bắt buộc đi làm 7- đã tiếp nhận
                         active: de_Xuat[i].active,//đòng ý hoặc từ chối 
                         time_create: de_Xuat[i].time_create,
+                        com_id: de_Xuat[i].com_id,
+                        type_time: de_Xuat[i].type_time,
+                        kieu_duyet: de_Xuat[i].kieu_duyet
+
+
 
                     }
                     //console.log(new Date().getTime() - de_xuat.time_create)
@@ -273,8 +286,30 @@ exports.de_xuat_theo_doi = async (req, res) => {
                         info_de_xuat_da_tu_choi.push(info_de_xuat_All[i]);
                     }
 
+                    let han_duyet = 0;
+                    let com_id = info_de_xuat_All[i].com_id;//1761
+                    let type_setting = info_de_xuat_All[i].type_time;// đề xuất có kế hoạch hoặc không //0
+                    let typeBrowse = info_de_xuat_All[i].kieu_duyet;// có 2 người duyệt trở lên //1
+                    let type_dx = info_de_xuat_All[i].type_dx;
 
-                    if (info_de_xuat_All[i].time_create + han_duyet < new Date().getTime()) {
+                    if (type_dx == 19) {// dề xuất thưởng phạt
+                        let Setting_dx = await settingdx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
+                        han_duyet = Setting_dx.timeTP;
+
+                    }
+                    else if (type_dx == 20) {// thưởng doanh thu 
+                        let Setting_dx = await settingdx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
+                        han_duyet = Setting_dx.timeHH;
+
+                    } else {
+                        let Setting_dx = await settingdx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
+                        han_duyet = Setting_dx.timeLimit;
+                    }
+                    let time_han_duyet = (setting_Dx.timeLimit * 60 * 60) / 1000;
+                    console.log(han_duyet);
+
+
+                    if (info_de_xuat_All[i].time_create + time_han_duyet < new Date().getTime()) {
                         het_han_duyet.push(info_de_xuat_All[i]);
                     }
 
@@ -320,7 +355,7 @@ exports.deXuat_Follow_da_tu_choi = async (req, res) => {
 
 exports.deXuat_het_han_duyet = async (req, res) => {
     if (het_han_duyet.length > 0) {
-        return res.status(200).json({ data: het_han_duyet, message: ' thanh cng ' })
+        return res.status(200).json({ data: het_han_duyet, message: ' thanh cong ' })
     } else {
 
     }
@@ -331,17 +366,41 @@ exports.admin_danh_sach_de_xuat = async (req, res) => {
     let id_phong_ban = req.body.id_phong_ban ? req.body.id_phong_ban : 0;
     let id_user = req.body.id_user ? req.body.id_user : 0;
     let loai_de_xuat = req.body.loai_de_xuat ? req.body.loai_de_xuat : 0;
-    let trang_thai_de_xuat = req.body.active ? trang_thai_de_xuat : 0;
+    let trang_thai_de_xuat = req.body.active ? req.body.active : 0;
     let time_send_from = req.body.time_send_form ? req.body.time_send_form : new Date('1970-01-01').getTime();
     let time_send_to = req.body.time_send_to ? req.body.time_send_to : new Date().getTime();
+
+    let page = Number(req.body.page) ? Number(req.body.page) : 1;
+    let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
+    const skip = (page - 1) * pageSize;
+
     console.log("id_phong_ban: " + id_phong_ban);
     console.log("id_user: " + id_user);
     console.log("loai_de_xuat: " + loai_de_xuat);
     console.log("trang_thai_de_xuat: " + trang_thai_de_xuat);
 
+    let condition = {};
+    if (id_phong_ban) {
+        condition.phong_ban = Number(id_phong_ban);
+        console.log("  condition.phong_ban" + condition.phong_ban)
+    }
+    if (id_user) {
+        condition.id_user = Number(id_user);
+    }
+    if (loai_de_xuat) {
+        condition.type_dx = loai_de_xuat;
+    }
+    if (trang_thai_de_xuat) {
+        condition.active = Number(trang_thai_de_xuat);
+        console.log("  condition.active" + condition.active);
+    }
+    console.log("  condition" + condition);
+    console.log("  condition.phong_ban" + condition.phong_ban)
+    console.log("  condition.active" + condition.active);
     let filterArray = [];
 
-    de_Xuat = await De_Xuat.find({});
+    de_Xuat = await De_Xuat.find(condition).skip(skip).limit(pageSize);
+    console.log("de_Xuat" + de_Xuat)
     if (de_Xuat) {
 
         for (let i = 0; i < de_Xuat.length; i++) {
@@ -354,84 +413,91 @@ exports.admin_danh_sach_de_xuat = async (req, res) => {
                 active: de_Xuat[i].active,//đòng ý hoặc từ chối 
                 time_create: de_Xuat[i].time_create,
                 phong_ban: de_Xuat[i].phong_ban,
-
             }
-            if (id_phong_ban === 0 && id_user === 0 && loai_de_xuat === 0 && trang_thai_de_xuat === 0) {
+            if (de_xuat.time_create >= time_send_from && de_xuat.time_create <= time_send_to) {
+
                 filterArray.push(de_xuat);
-            } else if (id_phong_ban === 0 && id_user === 0) {
-                return res.status(404).json({ massage: 'id user null' })
-            }
 
-
-            if (id_phong_ban !== 0 && id_user !== 0 && loai_de_xuat === 0 && trang_thai_de_xuat === 0) {
-                console.log(" de_xuat.phong_ban: " + de_xuat.phong_ban);
-                console.log(" de_xuat.id_user: " + de_xuat.id_user);
-                if (de_xuat.time_create >= time_send_from && de_xuat.time_create <= time_send_to &&
-                    de_xuat.phong_ban == id_phong_ban && de_xuat.id_user == id_user) {
-
-                    filterArray.push(de_xuat);
-
-                }
-            }
-            if (id_phong_ban !== 0 && id_user !== 0 && loai_de_xuat !== 0 && trang_thai_de_xuat === 0) {
-                if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
-                    de_Xuat[i].phong_ban == id_phong_ban && de_Xuat[i].id_user == id_user && de_Xuat[i].type_dx == loai_de_xuat) {
-                    filterArray.push(de_xuat);
-
-                }
-
-            }
-            if (id_phong_ban !== 0 && id_user !== 0 && loai_de_xuat !== 0 && trang_thai_de_xuat !== 0) {
-                if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
-                    de_Xuat[i].phong_ban == id_phong_ban && de_Xuat[i].id_user == id_user && de_Xuat[i].type_dx == loai_de_xuat
-                    && de_Xuat[i].type_duyet === trang_thai_de_xuat) {
-                    filterArray.push(de_xuat);
-
-                }
-            }
-            if (id_user !== 0 && loai_de_xuat === 0 && trang_thai_de_xuat === 0) {
-                if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
-                    de_Xuat[i].id_user == id_user) {
-                    filterArray.push(de_xuat);
-
-                }
-            }
-            if (id_user !== 0 && loai_de_xuat === 0 && trang_thai_de_xuat !== 0) {
-                if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
-                    de_Xuat[i].id_user == id_user && de_Xuat[i].type_duyet == trang_thai_de_xuat) {
-                    filterArray.push(de_xuat);
-
-                }
-            }
-            if (id_phong_ban === 0 && id_user !== 0 && loai_de_xuat !== 0 && trang_thai_de_xuat === 0) {
-                if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
-                    de_Xuat[i].id_user == id_user && de_Xuat[i].type_dx == loai_de_xuat) {
-                    filterArray.push(de_xuat);
-
-                }
-            }
-            if (id_phong_ban === 0 && id_user !== 0 && loai_de_xuat !== 0 && trang_thai_de_xuat !== 0) {
-                if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
-                    de_Xuat[i].id_user == id_user && de_Xuat[i].type_dx == loai_de_xuat && de_Xuat[i].type_duyet == trang_thai_de_xuat) {
-                    filterArray.push(de_xuat);
-
-                }
-            }
-            if (id_phong_ban === 0 && id_user === 0 && loai_de_xuat !== 0 && trang_thai_de_xuat === 0) {
-                if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
-                    de_Xuat[i].type_dx == loai_de_xuat) {
-                    filterArray.push(de_xuat);
-
-                }
-            }
-            if (id_phong_ban === 0 && id_user === 0 && loai_de_xuat === 0 && trang_thai_de_xuat !== 0) {
-                if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
-                    de_Xuat[i].type_duyet == trang_thai_de_xuat) {
-                    filterArray.push(de_xuat);
-
-                }
             }
         }
+
+        //         }
+        //         if (id_phong_ban === 0 && id_user === 0 && loai_de_xuat === 0 && trang_thai_de_xuat === 0) {
+        //             filterArray.push(de_xuat);
+        //         } else if (id_phong_ban === 0 && id_user === 0) {
+        //             return res.status(404).json({ massage: 'id user null' })
+        //         }
+
+
+        //         if (id_phong_ban !== 0 && id_user !== 0 && loai_de_xuat === 0 && trang_thai_de_xuat === 0) {
+        //             console.log(" de_xuat.phong_ban: " + de_xuat.phong_ban);
+        //             console.log(" de_xuat.id_user: " + de_xuat.id_user);
+        //             if (de_xuat.time_create >= time_send_from && de_xuat.time_create <= time_send_to &&
+        //                 de_xuat.phong_ban == id_phong_ban && de_xuat.id_user == id_user) {
+
+        //                 filterArray.push(de_xuat);
+
+        //             }
+        //         }
+        //         if (id_phong_ban !== 0 && id_user !== 0 && loai_de_xuat !== 0 && trang_thai_de_xuat === 0) {
+        //             if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
+        //                 de_Xuat[i].phong_ban == id_phong_ban && de_Xuat[i].id_user == id_user && de_Xuat[i].type_dx == loai_de_xuat) {
+        //                 filterArray.push(de_xuat);
+
+        //             }
+
+        //         }
+        //         if (id_phong_ban !== 0 && id_user !== 0 && loai_de_xuat !== 0 && trang_thai_de_xuat !== 0) {
+        //             if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
+        //                 de_Xuat[i].phong_ban == id_phong_ban && de_Xuat[i].id_user == id_user && de_Xuat[i].type_dx == loai_de_xuat
+        //                 && de_Xuat[i].type_duyet === trang_thai_de_xuat) {
+        //                 filterArray.push(de_xuat);
+
+        //             }
+        //         }
+        //         if (id_phong_ban == 0 && id_user !== 0 && loai_de_xuat === 0 && trang_thai_de_xuat === 0) {
+        //             if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
+        //                 de_Xuat[i].id_user == id_user) {
+        //                 filterArray.push(de_xuat);
+
+        //             }
+        //         }
+        //         if (id_user !== 0 && loai_de_xuat === 0 && trang_thai_de_xuat !== 0) {
+        //             if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
+        //                 de_Xuat[i].id_user == id_user && de_Xuat[i].type_duyet == trang_thai_de_xuat) {
+        //                 filterArray.push(de_xuat);
+
+        //             }
+        //         }
+        //         if (id_phong_ban === 0 && id_user !== 0 && loai_de_xuat !== 0 && trang_thai_de_xuat === 0) {
+        //             if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
+        //                 de_Xuat[i].id_user == id_user && de_Xuat[i].type_dx == loai_de_xuat) {
+        //                 filterArray.push(de_xuat);
+
+        //             }
+        //         }
+        //         if (id_phong_ban === 0 && id_user !== 0 && loai_de_xuat !== 0 && trang_thai_de_xuat !== 0) {
+        //             if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
+        //                 de_Xuat[i].id_user == id_user && de_Xuat[i].type_dx == loai_de_xuat && de_Xuat[i].type_duyet == trang_thai_de_xuat) {
+        //                 filterArray.push(de_xuat);
+
+        //             }
+        //         }
+        //         if (id_phong_ban === 0 && id_user === 0 && loai_de_xuat !== 0 && trang_thai_de_xuat === 0) {
+        //             if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
+        //                 de_Xuat[i].type_dx == loai_de_xuat) {
+        //                 filterArray.push(de_xuat);
+
+        //             }
+        //         }
+        //         if (id_phong_ban === 0 && id_user === 0 && loai_de_xuat === 0 && trang_thai_de_xuat !== 0) {
+        //             if (de_Xuat[i].time_create >= time_send_from && de_Xuat[i].time_create <= time_send_to &&
+        //                 de_Xuat[i].type_duyet == trang_thai_de_xuat) {
+        //                 filterArray.push(de_xuat);
+
+        //             }
+        //}
+        //}
         return res.status(200).json({ data: filterArray, massage: 'thanh cong ' });
     } else {
         return res.satus(200).json("khong co de xuat nao ");

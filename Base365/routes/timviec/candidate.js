@@ -110,6 +110,13 @@ router.post('/candidateApply', formData.parse(), functions.checkToken, candidate
 router.post('/candidateSavePost', formData.parse(), functions.checkToken, candidate.candidateSavePost);
 
 //ứng viên comment tin tuyển dụng
-router.post('/commentPost', functions.checkToken, uploadFileUv.single('img'), candidate.commentPost);
+// router.post('/commentPost', functions.checkToken, uploadFileUv.single('img'), candidate.commentPost);
+
+//xóa tin ứng viên đã ứng tuyển
+router.post('/deleteJobCandidateApply', formData.parse(), functions.checkToken, candidate.deleteJobCandidateApply);
+
+
+router.post('/test', formData.parse(), candidate.test);
+
 
 module.exports = router;

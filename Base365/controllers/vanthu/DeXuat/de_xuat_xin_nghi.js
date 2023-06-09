@@ -1,5 +1,5 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
-const functions = require('../../../services/vanThu');
+const functions = require('../../../services/vanthu');
 const multer = require('multer');
 const path = require('path');
 
@@ -29,7 +29,10 @@ exports.de_xuat_xin_nghi = async (req, res) => {
 
     let file_kem = req.files.fileKem;
     // console.log(file_kem);
-    //await functions.uploadFileVanThu(id_user, file_kem);
+    await functions.uploadFileVanThu(id_user, file_kem);
+    const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
+    const pathString = imagePath.toString();
+    console.log(pathString)
 
 
 
@@ -71,7 +74,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            //   file_kem: file_kem,
+            file_kem: pathString,
             kieu_duyet: 0,
             type_duyet: 0,
             type_time: type_time,
