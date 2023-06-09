@@ -553,112 +553,117 @@ exports.sendOTPChangePass = async(req, res, next) => {
 
 //ứng viên đăng nhập
 exports.loginUv = async(req, res, next) => {
+    try {
+        if (req.body.account && req.body.password) {
+            const type = 0;
+            const account = req.body.account;
+            const password = req.body.password;
 
-    if (req.body.account && req.body.password) {
-        const type = 0;
-        const account = req.body.account;
-        const password = req.body.password;
+            let checkPhoneNumber = await functions.checkPhoneNumber(account);
+            if (checkPhoneNumber) {
+                var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: { $ne: 1 } });
+            } else {
+                var findUser = await functions.getDatafindOne(Users, { email: account, type: { $ne: 1 } });
+            }
 
-        let checkPhoneNumber = await functions.checkPhoneNumber(account);
-        if (checkPhoneNumber) {
-            var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: { $ne: 1 } });
-        } else {
-            var findUser = await functions.getDatafindOne(Users, { email: account, type: { $ne: 1 } });
+            if (!findUser) {
+                return functions.setError(res, "Không tồn tại tài khoản", 200)
+            }
+            let checkPassword = await functions.verifyPassword(password, findUser.password)
+            if (!checkPassword) {
+                return functions.setError(res, "Mật khẩu sai", 200)
+            }
+
+            const token = await functions.createToken(findUser, "2d");
+            return functions.success(res, 'Đăng nhập thành công', { token, authentic: findUser.authentic, user_id: findUser.idTimViec365 });
         }
-
-        if (!findUser) {
-            return functions.setError(res, "Không tồn tại tài khoản", 200)
-        }
-        let checkPassword = await functions.verifyPassword(password, findUser.password)
-        if (!checkPassword) {
-            return functions.setError(res, "Mật khẩu sai", 200)
-        }
-
-        const token = await functions.createToken(findUser, "2d");
-        return functions.success(res, 'Đăng nhập thành công', { token, authentic: findUser.authentic, user_id: findUser.idTimViec365 });
+    } catch (e) {
+        return functions.setError(res, "Đã có lỗi xảy ra", )
     }
+
 }
 
 // trang qlc trong hoàn thiện hồ sơ
 exports.completeProfileQlc = async(req, res, next) => {
     try {
         let phoneTK = String(req.user.data.phoneTK)
-        let newAI = []
-        let newCv = []
-        let newBlog = []
 
+        let postAI = []
         let userId = req.user.data.idTimViec365
         console.log(userId)
         let candiCateID = Number(req.user.data.inForPerson.candiCateID[0])
         let candiCityID = Number(req.user.data.inForPerson.candiCityID[0])
             //việc làm AI
-        let takeData = await axios({
-            method: "post",
-            url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
-            data: {
-                site_job: "timviec365",
-                site_uv: "uvtimviec365",
-                new_id: 860426, //candiCateID,
-                size: 20,
-                pagination: 1,
-            },
-            headers: { "Content-Type": "multipart/form-data" }
-        });
-        if (takeData.data.error.message == "Không gợi ý được") {
-            return functions.setError(res, "AI ko trả ra kết quả", 400);
-        }
-        let listNewId = takeData.data.data.list_id.split(",")
-        for (let i = 0; i < listNewId.length; i++) {
-            listNewId[i] = Number(listNewId[i])
-        }
+        try {
+            let takeData = await axios({
+                method: "post",
+                url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
+                data: {
+                    site_job: "timviec365",
+                    site_uv: "uvtimviec365",
+                    new_id: candiCateID,
+                    size: 20,
+                    pagination: 1,
+                },
+                headers: { "Content-Type": "multipart/form-data" }
+            });
 
-        let post = await newTV365.aggregate([{
-                $match: {
-                    _id: { $in: listNewId },
-                }
-            },
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "userID",
-                    foreignField: "idTimViec365",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
-            },
-            {
-                $skip: 0
-            },
-            {
-                $project: {
-                    usc_company: '$user.userName',
-                    usc_logo: '$user.avatarUser',
-                    new_title: '$title',
-                    new_city: '$cityID',
-                    new_han_nop: '$hanNop',
-                    new_hot: '$newHot',
-                    money: '$money',
-                    nm_type: '$newMoney.type',
-                    nm_id: '$newMoney.id',
-                    nm_min_value: '$newMoney.minValue',
-                    nm_max_value: '$newMoney.maxValue',
-                    nm_unit: '$newMoney.unit',
-                }
-            },
-        ]);
+            if (takeData.data.data != null && takeData.data.data.list_id != '') {
 
-        for (let i = 0; i < post.length; i++) {
-            post[i].new_money = await functions.new_money_tv(post[i].nm_id, post[i].nm_type, post[i].nm_unit, post[i].nm_min_value, post[i].nm_max_value, post[i].money)
-            delete post[i].money
-            delete post[i].nm_type
-            delete post[i].nm_id
-            delete post[i].nm_min_value
-            delete post[i].nm_max_value
-            delete post[i].nm_unit
+                let listNewId = takeData.data.data.list_id.split(",").map(Number)
+
+                postAI = await newTV365.aggregate([{
+                        $match: {
+                            _id: { $in: listNewId },
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "Users",
+                            localField: "userID",
+                            foreignField: "idTimViec365",
+                            as: "user"
+                        }
+                    },
+                    {
+                        $unwind: "$user"
+                    },
+                    {
+                        $skip: 0
+                    },
+                    {
+                        $project: {
+                            usc_company: '$user.userName',
+                            usc_logo: '$user.avatarUser',
+                            new_title: '$title',
+                            new_city: '$cityID',
+                            new_han_nop: '$hanNop',
+                            new_hot: '$newHot',
+                            money: '$money',
+                            nm_type: '$newMoney.type',
+                            nm_id: '$newMoney.id',
+                            nm_min_value: '$newMoney.minValue',
+                            nm_max_value: '$newMoney.maxValue',
+                            nm_unit: '$newMoney.unit',
+                        }
+                    },
+                ]);
+
+                for (let i = 0; i < postAI.length; i++) {
+                    const element = postAI[i]
+                    element.new_money = await functions.new_money_tv(element.nm_id, element.nm_type, element.nm_unit, element.nm_min_value, element.nm_max_value, element.money)
+                    delete element.money
+                    delete element.nm_type
+                    delete element.nm_id
+                    delete element.nm_min_value
+                    delete element.nm_max_value
+                    delete element.nm_unit
+                }
+            }
+        } catch (e) {
+            console.log(e)
+
         }
-
 
         //Mẫu Cv của tôi
         let myCv = await CVUV.aggregate([{
@@ -768,8 +773,8 @@ exports.completeProfileQlc = async(req, res, next) => {
             delete newItem.name; // Xóa trường name trong phần tử
             return newItem;
         });
-        console.log(newData);
-        functions.success(res, "Hiển thị qlc thành công", { itesm_vl: post, itesm_cv: myCv, itesm_cvdx: findCv, itesm_dem, itesm_qc })
+
+        functions.success(res, "Hiển thị qlc thành công", { itesm_vl: postAI, itesm_cv: myCv, itesm_cvdx: findCv, itesm_dem, itesm_qc })
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
