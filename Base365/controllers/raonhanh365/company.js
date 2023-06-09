@@ -143,6 +143,29 @@ exports.updateCompany = async(req, res, next) => {
     }
 }
 
+exports.getCompanyById = async(req, res, next) => {
+    try {
+        let comId = req.query.comId;
+        if(!comId) {
+            return fnc.setError(res, "Missing input comId value", 403);
+        }
+        
+        let fields = {phoneTK: 1, userName: 1,phone: 1, email: 1, address: 1, avatarUser: 1, city: 1,type: 1,
+            inForCompany: {
+                website: 1, description: 1, mst: 1, comImages: 1
+            }
+        }
+        let company = await CompanyRN.findOne({_id: comId}, fields);
+        if(!company){
+            return fnc.setError(res, "Company not found", 503);
+        }
+        return fnc.success(res, "get company by id success", {data: company });
+    } catch (e) {
+        console.log("Err from server", e);
+        return fnc.setError(res, "Err from server", 500);
+    }
+}
+
 
 exports.saveImage = async(req, res, next)=>{
     try{

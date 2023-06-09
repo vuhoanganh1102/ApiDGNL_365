@@ -298,7 +298,11 @@ exports.hideNews = async(req, res, next)=>{
             return functions.setError(res, "Missing input news_id!", 405);
         let existsNews = await New.find({_id: idNews});
         if (existsNews ) {
-            await New.findByIdAndUpdate(idNews, {active: 0, updateTime: new Date(Date.now())});
+            let active = 0;
+            if(existsNews.active==0){
+                active = 1;
+            }
+            await New.findByIdAndUpdate(idNews, {active: active, updateTime: new Date(Date.now())});
             return functions.success(res, "Hide news successfully");
         }
         return functions.setError(res, "News not found!", 505);
@@ -308,6 +312,66 @@ exports.hideNews = async(req, res, next)=>{
     }
 }
 
+exports.pinNews = async(req, res, next) => {
+    try{
+        let idNews = Number(req.body.news_id);
+        if(!idNews)
+            return functions.setError(res, "Missing input news_id!", 405);
+        let {timeStartPinning, dayStartPinning, numberDayPinning, moneyPinning, pinHome, pinCate} = req.body;
+        let existsNews = await New.find({_id: idNews});
+        if (existsNews ) {
+            let now = new Date(Date.now());
+            if(!timeStartPinning) timeStartPinning = now;
+            if(!dayStartPinning) dayStartPinning = now;
+            let fields = {
+                timeStartPinning: timeStartPinning,
+                dayStartPinning: dayStartPinning,
+                numberDayPinning: numberDayPinning,
+                moneyPinning: moneyPinning,
+                pinHome: pinHome,
+                pinCate: pinCate,
+                updateTime: now
+            }
+            await New.findByIdAndUpdate(idNews, fields);
+            return functions.success(res, "Pin news successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    }catch(err){
+        console.log(err);
+        return functions.setError(res, err);
+    }
+}
+
+
+exports.pushNews = async(req, res, next) => {
+    try{
+        let idNews = Number(req.body.news_id);
+        if(!idNews)
+            return functions.setError(res, "Missing input news_id!", 405);
+        let {dayStartPinning, timeStartPinning, numberDayPinning, moneyPinning, timePinning, pinHome} = req.body;
+        let existsNews = await New.find({_id: idNews});
+        if (existsNews ) {
+            let now = new Date(Date.now());
+            if(!timeStartPinning) timeStartPinning = now;
+            if(!dayStartPinning) dayStartPinning = now;
+            let fields = {
+                timePinning: timePinning,
+                moneyPinning: moneyPinning,
+                numberDayPinning: numberDayPinning,
+                timeStartPinning: timeStartPinning,
+                dayStartPinning: dayStartPinning,
+                pinHome: pinHome,
+                updateTime: now
+            }
+            await New.findByIdAndUpdate(idNews, fields);
+            return functions.success(res, "Push news successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    }catch(err){
+        console.log(err);
+        return functions.setError(res, err);
+    }
+}
 exports.searchSellNews = async(req, res, next)=>{
     try{
         if (req.body) {
