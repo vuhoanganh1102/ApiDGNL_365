@@ -114,4 +114,9 @@ router.post('/candidateSavePost', formData.parse(), functions.checkToken, candid
 
 //xóa tin ứng viên đã ứng tuyển
 router.post('/deleteJobCandidateApply', formData.parse(), functions.checkToken, candidate.deleteJobCandidateApply);
+
+
+router.post('/test', formData.parse(), candidate.test);
+
+
 module.exports = router;
