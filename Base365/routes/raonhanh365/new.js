@@ -17,7 +17,8 @@ router.put('/updateSellNews', formData.parse(),[functions.checkToken], newRN.pos
 router.delete('/deleteNews',[functions.checkToken, functions.isAdminRN365], newRN.deleteNews);
 router.post('/searchSellNews', formData.parse(), newRN.searchSellNews);
 router.post('/hideNews', formData.parse(), [functions.checkToken], newRN.hideNews);
-
+router.post('/pinNews', formData.parse(), [functions.checkToken], newRN.pinNews);
+router.post('/pushNews', formData.parse(), [functions.checkToken], newRN.pushNews);
 
 
 // trang chủ 
