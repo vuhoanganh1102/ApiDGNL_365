@@ -587,18 +587,15 @@ exports.loginUv = async(req, res, next) => {
 exports.completeProfileQlc = async(req, res, next) => {
     try {
         let phoneTK = String(req.user.data.phoneTK)
-        let newAI = []
-        let newCv = []
-        let newBlog = []
 
+        let postAI = []
         let userId = req.user.data.idTimViec365
         console.log(userId)
         let candiCateID = Number(req.user.data.inForPerson.candiCateID[0])
         let candiCityID = Number(req.user.data.inForPerson.candiCityID[0])
-        let takeData
             //việc làm AI
         try {
-            takeData = await axios({
+            let takeData = await axios({
                 method: "post",
                 url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
                 data: {
@@ -610,62 +607,63 @@ exports.completeProfileQlc = async(req, res, next) => {
                 },
                 headers: { "Content-Type": "multipart/form-data" }
             });
+
+            if (takeData.data.data != null && takeData.data.data.list_id != '') {
+
+                let listNewId = takeData.data.data.list_id.split(",").map(Number)
+
+                postAI = await newTV365.aggregate([{
+                        $match: {
+                            _id: { $in: listNewId },
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "Users",
+                            localField: "userID",
+                            foreignField: "idTimViec365",
+                            as: "user"
+                        }
+                    },
+                    {
+                        $unwind: "$user"
+                    },
+                    {
+                        $skip: 0
+                    },
+                    {
+                        $project: {
+                            usc_company: '$user.userName',
+                            usc_logo: '$user.avatarUser',
+                            new_title: '$title',
+                            new_city: '$cityID',
+                            new_han_nop: '$hanNop',
+                            new_hot: '$newHot',
+                            money: '$money',
+                            nm_type: '$newMoney.type',
+                            nm_id: '$newMoney.id',
+                            nm_min_value: '$newMoney.minValue',
+                            nm_max_value: '$newMoney.maxValue',
+                            nm_unit: '$newMoney.unit',
+                        }
+                    },
+                ]);
+
+                for (let i = 0; i < postAI.length; i++) {
+                    const element = postAI[i]
+                    element.new_money = await functions.new_money_tv(element.nm_id, element.nm_type, element.nm_unit, element.nm_min_value, element.nm_max_value, element.money)
+                    delete element.money
+                    delete element.nm_type
+                    delete element.nm_id
+                    delete element.nm_min_value
+                    delete element.nm_max_value
+                    delete element.nm_unit
+                }
+            }
         } catch (e) {
             console.log(e)
-            return functions.setError(res, "api AI lỗi", )
-        }
-        let listNewId = takeData.data.data.list_id.split(",")
-        for (let i = 0; i < listNewId.length; i++) {
-            listNewId[i] = Number(listNewId[i])
-        }
 
-        let post = await newTV365.aggregate([{
-                $match: {
-                    _id: { $in: listNewId },
-                }
-            },
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "userID",
-                    foreignField: "idTimViec365",
-                    as: "user"
-                }
-            },
-            {
-                $unwind: "$user"
-            },
-            {
-                $skip: 0
-            },
-            {
-                $project: {
-                    usc_company: '$user.userName',
-                    usc_logo: '$user.avatarUser',
-                    new_title: '$title',
-                    new_city: '$cityID',
-                    new_han_nop: '$hanNop',
-                    new_hot: '$newHot',
-                    money: '$money',
-                    nm_type: '$newMoney.type',
-                    nm_id: '$newMoney.id',
-                    nm_min_value: '$newMoney.minValue',
-                    nm_max_value: '$newMoney.maxValue',
-                    nm_unit: '$newMoney.unit',
-                }
-            },
-        ]);
-
-        for (let i = 0; i < post.length; i++) {
-            post[i].new_money = await functions.new_money_tv(post[i].nm_id, post[i].nm_type, post[i].nm_unit, post[i].nm_min_value, post[i].nm_max_value, post[i].money)
-            delete post[i].money
-            delete post[i].nm_type
-            delete post[i].nm_id
-            delete post[i].nm_min_value
-            delete post[i].nm_max_value
-            delete post[i].nm_unit
         }
-
 
         //Mẫu Cv của tôi
         let myCv = await CVUV.aggregate([{
@@ -776,7 +774,7 @@ exports.completeProfileQlc = async(req, res, next) => {
             return newItem;
         });
 
-        functions.success(res, "Hiển thị qlc thành công", { itesm_vl: post, itesm_cv: myCv, itesm_cvdx: findCv, itesm_dem, itesm_qc })
+        functions.success(res, "Hiển thị qlc thành công", { itesm_vl: postAI, itesm_cv: myCv, itesm_cvdx: findCv, itesm_dem, itesm_qc })
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
