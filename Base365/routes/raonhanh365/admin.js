@@ -1,16 +1,16 @@
 var express = require('express');
 var router = express.Router();
-var cart = require('../../controllers/raonhanh365/cart');
+var admin = require('../../controllers/raonhanh365/admin');
 var formData = require('express-form-data');
 const functions = require('../../services/functions');
+const serviceRN = require('../../services/rao nhanh/raoNhanh');
 
-//api lay ra danh sach tin trong gio hang theo userId
-router.post('/getCart', formData.parse(), functions.checkToken, cart.getListCartByUserId);
 
-//api them tin vao gio hang
-router.post('/addCart', formData.parse(), functions.checkToken, cart.addCart);
+//api quan ly tai khoan
+router.post('/account/createAcc', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.loginAdminUser);
 
-//api xoa 1 cart by id hoac xoa tat ca
-router.delete('/removeCart', functions.checkToken, cart.removeCart);
+
+//api quan ly danh muc
+router.post('/category/getListCate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListCategory);
 
 module.exports = router;

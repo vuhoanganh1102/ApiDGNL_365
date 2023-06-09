@@ -1,5 +1,6 @@
-const functions = require('../../services/functions')
-const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser')
+const functions = require('../../services/functions');
+const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser');
+const Category = require('../../models/Raonhanh365/Category');
 
 //đăng nhập admin
 exports.loginAdminUser = async(req, res, next) => {
@@ -27,4 +28,15 @@ exports.loginAdminUser = async(req, res, next) => {
         return functions.setError(res, error)
     }
 
+}
+
+exports.getListCategory = async(req, res, next)=>{
+    try{
+        console.log(req.body.data);
+        let listCategory = await Category.find({});
+        return functions.success(res, 'Get list category success', { data: listCategory })
+    }catch(error){
+        console.log(error)
+        return functions.setError(res, error)
+    }
 }

@@ -28,6 +28,11 @@ const MAX_IMG_SIZE = 2 * 1024 * 1024;
 // giới hạn dung lượng kho ảnh
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
+const functions = require('../functions');
+
+// import model
+const AdminUserRaoNhanh365 = require('../../models/Raonhanh365/Admin/AdminUser');
+
 dotenv.config();
 
 // hàm tạo link title
@@ -105,4 +110,12 @@ exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
         });
     });
     return true
+}
+
+// ham check admin rao nhanh 365
+exports.isAdminRN365 = async(req, res, next)=>{
+    let user = req.user.data;
+    let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, isAdmin: 1, active: 1 });
+    if(admin) return next();
+    return res.status(403).json({ message: "is not admin RN365" });
 }
