@@ -18,33 +18,40 @@ exports.order = async (req, res, next) => {
         let codeOrder = functions.getRandomInt(100000, 999999);
         let name = req.body.name || null;
         let phone = req.body.phone || null;
-        if (amountPaid && id_new && paymentMethod && quantity && unitPrice && promotionType && promotionValue && paymentType && totalProductCost) {
-            if (await functions.checkNumber(paymentMethod)
-                && await functions.checkNumber(quantity)
-                && await functions.checkNumber(unitPrice)
-                && await functions.checkNumber(promotionType)
-                && await functions.checkNumber(promotionValue)
-                && await functions.checkNumber(paymentType)
-                && await functions.checkNumber(totalProductCost)
-                && await functions.checkNumber(amountPaid)) {
-                if(quantity <= 0)
-                {
-                    return functions.setError(res,'Nhập số lượng lớn hơn 0',400)
-                }
-                if (paymentMethod === 0)
-                    await User.findByIdAndUpdate(userID, { $inc: { money: -amountPaid } });
-                let check = await New.findById(id_new);
-                if (check && check.length !== 0) {
-                    sellerId = check.userID
-                }
-                if (!sellerId) return functions.setError(res, 'Tin bán không tồn tại', 404)
-                let _id = await functions.getMaxID(Order) + 1 || 1;
-                await Order.create({ _id, newId: id_new, sellerId, name, phone, paymentMethod, buyerId: userID, status, codeOrder, deliveryAddress, note, classify, quantity, unitPrice, promotionType, promotionValue, paymentType, totalProductCost })
-            } else {
-                return functions.setError(res, 'invalid data', 404)
-            }
+        let cateID = req.body.cateID;
+        let check = await New.findById(id_new);
+        if (check && check.length !== 0) {
+            sellerId = check.userID
+        }
+        if (!sellerId) return functions.setError(res, 'Tin bán không tồn tại', 404)
+        let _id = await functions.getMaxID(Order) + 1 || 1;
+        if (cateID == 120) {
+
+            await Order.create({ _id, newId: id_new, sellerId, buyerId: userID, status: 4 })
+
         } else {
-            return functions.setError(res, 'missing data', 404)
+            if (amountPaid && id_new && paymentMethod && quantity && unitPrice && promotionType && promotionValue && paymentType && totalProductCost) {
+                if (await functions.checkNumber(paymentMethod)
+                    && await functions.checkNumber(quantity)
+                    && await functions.checkNumber(unitPrice)
+                    && await functions.checkNumber(promotionType)
+                    && await functions.checkNumber(promotionValue)
+                    && await functions.checkNumber(paymentType)
+                    && await functions.checkNumber(totalProductCost)
+                    && await functions.checkNumber(amountPaid)) {
+                    if (quantity <= 0) {
+                        return functions.setError(res, 'Nhập số lượng lớn hơn 0', 400)
+                    }
+                    if (paymentMethod === 0)
+                        await User.findByIdAndUpdate(userID, { $inc: { money: -amountPaid } });
+
+                    await Order.create({ _id, newId: id_new, sellerId, name, phone, paymentMethod, buyerId: userID, status, codeOrder, deliveryAddress, note, classify, quantity, unitPrice, promotionType, promotionValue, paymentType, totalProductCost })
+                } else {
+                    return functions.setError(res, 'invalid data', 404)
+                }
+            } else {
+                return functions.setError(res, 'missing data', 404)
+            }
         }
         return functions.success(res, 'order success')
     } catch (error) {
@@ -141,10 +148,10 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.buyerId": buyerId,"Order.status": 0 }
+                    $match: { "Order.buyerId": buyerId, "Order.status": 0 }
                 },
-                 {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                {
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-mua.html') {
@@ -158,12 +165,12 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.buyerId": buyerId,status: 1 }
+                    $match: { "Order.buyerId": buyerId, status: 1 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-mua.html') {
+        } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-mua.html') {
             data = await New.aggregate([
                 {
                     $lookup: {
@@ -174,12 +181,12 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.buyerId": buyerId,status: 2 }
+                    $match: { "Order.buyerId": buyerId, status: 2 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-mua.html') {
+        } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-mua.html') {
             data = await New.aggregate([
                 {
                     $lookup: {
@@ -190,12 +197,12 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.buyerId": buyerId,status: 3 }
+                    $match: { "Order.buyerId": buyerId, status: 3 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-mua.html') {
+        } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-mua.html') {
             data = await New.aggregate([
                 {
                     $lookup: {
@@ -206,12 +213,12 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.buyerId": buyerId,status: 4 }
+                    $match: { "Order.buyerId": buyerId, status: 4 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-mua.html') {
+        } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-mua.html') {
             data = await New.aggregate([
                 {
                     $lookup: {
@@ -222,21 +229,21 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.buyerId": buyerId,status: 5 }
+                    $match: { "Order.buyerId": buyerId, status: 5 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else{
-            return functions.setError(res,'link not exits',404)
+        } else {
+            return functions.setError(res, 'link not exits', 404)
         }
-        return functions.success(res, 'get data success', {sl_choXacNhan,sl_dangXuLy,sl_dangGiao,sl_daGiao,sl_daHuy,sl_hoanTat,data })
+        return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
         return functions.setError(res, error)
     }
 }
 
-// quản lý đơn hàng mua
+// quản lý đơn hàng bán
 exports.manageOrderSell = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
@@ -259,10 +266,10 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.sellerId": sellerId,"Order.status": 0 }
+                    $match: { "Order.sellerId": sellerId, "Order.status": 0 }
                 },
-                 {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                {
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-ban.html') {
@@ -276,12 +283,12 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.sellerId": sellerId,status: 1 }
+                    $match: { "Order.sellerId": sellerId, status: 1 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-ban.html') {
+        } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-ban.html') {
             data = await New.aggregate([
                 {
                     $lookup: {
@@ -292,12 +299,12 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.sellerId": sellerId,status: 2 }
+                    $match: { "Order.sellerId": sellerId, status: 2 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-ban.html') {
+        } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-ban.html') {
             data = await New.aggregate([
                 {
                     $lookup: {
@@ -308,12 +315,12 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.sellerId": sellerId,status: 3 }
+                    $match: { "Order.sellerId": sellerId, status: 3 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-ban.html') {
+        } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-ban.html') {
             data = await New.aggregate([
                 {
                     $lookup: {
@@ -324,12 +331,12 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.sellerId": sellerId,status: 4 }
+                    $match: { "Order.sellerId": sellerId, status: 4 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-ban.html') {
+        } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-ban.html') {
             data = await New.aggregate([
                 {
                     $lookup: {
@@ -340,16 +347,112 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 {
-                    $match: { "Order.sellerId": sellerId,status: 5 }
+                    $match: { "Order.sellerId": sellerId, status: 5 }
                 }, {
-                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
-        }else{
-            return functions.setError(res,'link not exits',404)
+        } else {
+            return functions.setError(res, 'link not exits', 404)
         }
-        return functions.success(res, 'get data success', {sl_choXacNhan,sl_dangXuLy,sl_dangGiao,sl_daGiao,sl_daHuy,sl_hoanTat,data })
+        return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// trạng thái đơn hàng
+exports.statusOrder = async (req, res, next) => {
+    try {
+        let status = req.body.status;
+        let orderId = req.body.orderId;
+        let userID  = req.user.data._id;
+        let check = await Order.findById(orderId);
+        if (!check || check.length === 0) {
+            return functions.setError(res, 'không tìm thấy đơn hàng', 400)
+        }
+        if (await functions.checkNumber(status) === false) {
+            return functions.setError(res, 'invalid data', 400)
+        }
+        if(userID === check[0].sellerId){
+            if (status === 1) {
+                let sellerConfirmTime = new Date(Date.now());
+                await Order.findByIdAndUpdate({orderId}, {sellerConfirmTime,status})
+            }else if (status === 2) {
+                let deliveryStartTime = new Date(Date.now());
+                await Order.findByIdAndUpdate({orderId}, {deliveryStartTime,status})
+            }else if (status === 3) {
+                let totalDeliveryTime = new Date(Date.now());
+                await Order.findByIdAndUpdate({orderId}, {totalDeliveryTime,status})
+            }else
+            if (status === 4) {
+                let deliveryEndTime = new Date(Date.now());
+                await Order.findByIdAndUpdate({orderId}, {deliveryEndTime,status
+                })
+            }else if (status === 5) {
+                let deliveryFailedTime = new Date(Date.now());
+                let deliveryFailureReason = req.body.deliveryFailureReason || null;
+                await Order.findByIdAndUpdate({orderId}, {deliveryFailedTime,deliveryFailureReason})
+            }else{
+                return functions.setError(res, 'invalid data', 400)
+            }
+        }else if(userID === check[0].buyerId)
+            {
+                if (status === 6) {
+                    let buyerConfirm = 1;
+                    let buyerConfirmTime = new Date(Date.now());
+                    await Order.findByIdAndUpdate({orderId},{buyerConfirm, buyerConfirmTime})
+                }else{
+                    return functions.setError(res, 'invalid data', 400)
+                }
+            }else{
+                return functions.setError(res, 'invalid data', 400)
+            }
+        return functions.success(res, 'change status success')
+    }
+    catch (error) {
+        return functions.setError(res, error)
+    }
+}
+// Huỷ đơn hàng
+exports.cancelOrder = async (req, res, next) => {
+    try {
+        let orderId = req.body.orderId;
+        let userID  = req.user.data._id;
+        let orderCancellationReason = req.body.orderCancellationReason || null;
+        let check = await Order.findById(orderId);
+        if (!check || check.length === 0) {
+            return functions.setError(res, 'không tìm thấy đơn hàng', 400)
+        }
+        if(check[0].status === 4)
+        {
+            return functions.setError(res, 'không thể huỷ đơn hàng trong thời điểm này', 400)
+        }
+        if(userID === check[0].sellerId){
+            let orderCancellationTime = new Date();
+            await Order.findByIdAndUpdate(orderId,{cancelerId:userID,orderCancellationTime,orderCancellationReason,status:5})
+        }
+        else{
+            if(check[0].status === 2 )
+            {
+                return functions.setError(res, 'không thể huỷ đơn hàng trong thời điểm này', 400)
+            }
+            if(check[0].status !== 3)
+            {
+                let orderCancellationTime = new Date();
+                await Order.findByIdAndUpdate(orderId,{cancelerId:userID,orderCancellationTime,orderCancellationReason,status:5})
+            }
+            if(check[0].status === 3)
+            {
+                let buyerCancelsDelivered =  1;
+                let buyerCancelsDeliveredTime = new Date();
+                await Order.findByIdAndUpdate(orderId,{cancelerId:userID,buyerCancelsDelivered,buyerCancelsDeliveredTime,status:5,orderCancellationReason})
+            }
+        }
+        return functions.success(res, 'Huỷ đơn hàng thành công')
+    }
+    catch (error) {
+        console.log("🚀 ~ file: order.js:478 ~ exports.cancelOrder= ~ error:", error)
         return functions.setError(res, error)
     }
 }

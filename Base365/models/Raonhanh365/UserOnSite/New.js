@@ -138,7 +138,7 @@ const newSchema = new mongoose.Schema({
         default: 0
     },
     status: {
-        // tình trạng
+        // tình trạng  0 đã tìm ứng viên, 1 tìm ứng viên
         type: Number,
         default: 0
     },
@@ -367,6 +367,17 @@ const newSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    promotionType: {
+        // loại khuyến mãi
+        type: Number,
+        default: 0,
+    },
+    promotionValue: {
+        // giá trị khuyến mãi
+        type: String,
+        default: null
+    },
+
     productType: {
         // loại sản phẩm 
         type: Number,
@@ -904,16 +915,7 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-        promotionType: {
-            // loại khuyến mãi
-            type: Number,
-            default: 0,
-        },
-        promotionValue: {
-            // giá trị khuyến mãi
-            type: String,
-            default: null
-        },
+        
         transport: {
             // vận chuyển
             type: Number,

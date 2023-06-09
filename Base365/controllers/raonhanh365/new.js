@@ -40,58 +40,58 @@ exports.postNewMain = async (req, res, next) => {
         for (let i = 0; i < fields.length; i++) {
             if (!fields[i])
                 return functions.setError(res, 'Missing input value', 404)
-        let fields = [userID, cateID, title, money, until, description, free, poster, name, email, address, phone, status, detailCategory, img];
-        for(let i=0; i<fields.length; i++){
-            if(!fields[i])
-                return functions.setError(res, 'Missing input value', 404);
-        }
-        const maxIDNews = await New.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-        let newIDNews;
-        if (maxIDNews) {
-            newIDNews = Number(maxIDNews._id) + 1;
-        } else newIDNews = 1;
-        if (img) {
-            if (img && img.length >= 1 && img.length <= 10) {
-                let isValid = true;
-                for (let i = 0; i < img.length; i++) {
-                    let checkImg = await functions.checkImage(img[i].path);
-                    if (checkImg) {
-                        // day mot object gom 2 truong(nameImg, size) vao listImg
-                        listImg.push({ nameImg: img[i].originalFilename, size: img[i].size });
+            let fields = [userID, cateID, title, money, until, description, free, poster, name, email, address, phone, status, detailCategory, img];
+            for (let i = 0; i < fields.length; i++) {
+                if (!fields[i])
+                    return functions.setError(res, 'Missing input value', 404);
+            }
+            const maxIDNews = await New.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            let newIDNews;
+            if (maxIDNews) {
+                newIDNews = Number(maxIDNews._id) + 1;
+            } else newIDNews = 1;
+            if (img) {
+                if (img && img.length >= 1 && img.length <= 10) {
+                    let isValid = true;
+                    for (let i = 0; i < img.length; i++) {
+                        let checkImg = await functions.checkImage(img[i].path);
+                        if (checkImg) {
+                            // day mot object gom 2 truong(nameImg, size) vao listImg
+                            listImg.push({ nameImg: img[i].originalFilename, size: img[i].size });
+                        } else {
+                            isValid = false;
+                        }
+                    }
+                    if (isValid == false) {
+                        await functions.deleteImgVideo(img, video)
+                        return functions.setError(res, 'đã có ảnh sai định dạng hoặc lớn hơn 2MB', 405)
+                    }
+                } else if (img && img.length > 10) {
+                    await functions.deleteImgVideo(img, video)
+                    return functions.setError(res, 'chỉ được đưa lên tối đa 10 ảnh', 406)
+                }
+            } else {
+                return functions.setError(res, 'Missing input image', 406)
+            }
+
+            if (video) {
+                if (video.length == 1) {
+                    let checkVideo = await functions.checkVideo(video[0]);
+                    if (checkVideo) {
+                        nameVideo = video[0].filename
                     } else {
-                        isValid = false;
+                        video.forEach(async (element) => {
+                            await functions.deleteImg(element)
+                        })
+                        return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 407)
                     }
                 }
-                if (isValid == false) {
+                else if (video.length > 1) {
                     await functions.deleteImgVideo(img, video)
-                    return functions.setError(res, 'đã có ảnh sai định dạng hoặc lớn hơn 2MB', 405)
+                    return functions.setError(res, 'chỉ được đưa lên 1 video', 408)
                 }
-            } else if (img && img.length > 10) {
-                await functions.deleteImgVideo(img, video)
-                return functions.setError(res, 'chỉ được đưa lên tối đa 10 ảnh', 406)
             }
-        }else{
-            return functions.setError(res, 'Missing input image', 406)
-        }
-        
-        if (video) {
-            if (video.length == 1) {
-                let checkVideo = await functions.checkVideo(video[0]);
-                if (checkVideo) {
-                    nameVideo = video[0].filename
-                } else {
-                    video.forEach(async(element) => {
-                        await functions.deleteImg(element)
-                    })
-                    return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 407)
-                }
-            } 
-            else if (video.length > 1) {
-                await functions.deleteImgVideo(img, video)
-                return functions.setError(res, 'chỉ được đưa lên 1 video', 408)
-            }
-        }
-        req.info = {
+            req.info = {
                 _id: newIDNews,
                 userID: userID,
                 cateID: cateID,
@@ -119,8 +119,9 @@ exports.postNewMain = async (req, res, next) => {
                 buySell: 2,// tin ban
                 active: 1// hien thi tin
             }
-        return next()
-    }} catch (err) {
+            return next()
+        }
+    } catch (err) {
         console.log(err);
         return functions.setError(res, err);
     }
@@ -220,10 +221,10 @@ exports.postNewsGeneral = async (req, res, next) => {
 
             let cv = req.files.cv;
             let nameFileCV = "";
-            if(cv){
-                if(await functions.checkFileCV(cv.path)){
+            if (cv) {
+                if (await functions.checkFileCV(cv.path)) {
                     nameFileCV = cv.originalFilename;
-                }else {
+                } else {
                     return functions.setError(res, "Vui lòng chọn file có định đạng: PDF", 506);
                 }
             }
@@ -280,7 +281,7 @@ exports.updateNews = async (req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
         console.log(idNews);
-        if(!idNews)
+        if (!idNews)
             return functions.setError(res, "Missing input news_id!", 405);
         let existsNews = await New.find({ _id: idNews });
         let fields = req.fields;
@@ -298,10 +299,10 @@ exports.updateNews = async (req, res, next) => {
     }
 }
 
-exports.hideNews = async(req, res, next)=>{
-    try{
+exports.hideNews = async (req, res, next) => {
+    try {
         let idNews = Number(req.body.news_id);
-        if(!idNews)
+        if (!idNews)
             return functions.setError(res, "Missing input news_id!", 405);
         let existsNews = await New.find({_id: idNews});
         if (existsNews ) {
@@ -310,14 +311,16 @@ exports.hideNews = async(req, res, next)=>{
                 active = 1;
             }
             await New.findByIdAndUpdate(idNews, {active: active, updateTime: new Date(Date.now())});
+
             return functions.success(res, "Hide news successfully");
         }
         return functions.setError(res, "News not found!", 505);
-    }catch(err){
+    } catch (err) {
         console.log(err);
         return functions.setError(res, err);
     }
 }
+
 
 exports.pinNews = async(req, res, next) => {
     try{
@@ -379,11 +382,12 @@ exports.pushNews = async(req, res, next) => {
         return functions.setError(res, err);
     }
 }
-exports.searchSellNews = async(req, res, next)=>{
-    try{
+
+exports.searchSellNews = async (req, res, next) => {
+    try {
         if (req.body) {
-            
-            if(!req.body.page){
+
+            if (!req.body.page) {
                 return functions.setError(res, "Missing input page", 401);
             }
             if (!req.body.pageSize) {
@@ -399,20 +403,20 @@ exports.searchSellNews = async(req, res, next)=>{
             let city = req.body.city;
             let district = req.body.district;
             let ward = req.body.ward;
-            let listNews=[];
+            let listNews = [];
             let listCondition = {};
             let cateID = Number(req.body.cateID);
-            let buySell =  Number(req.body.buySell);
+            let buySell = Number(req.body.buySell);
 
             // dua dieu kien vao ob listCondition
-            if(idNews) listCondition._id = idNews;
-            if(cateID) listCondition.cateID = cateID;
-            if(buySell) listCondition.buySell = buySell;
-            if(title) listCondition.title =  new RegExp(title, "i");
-            if(description) listCondition.description = new RegExp(description);
-            if(city) listCondition.city = Number(city);
-            if(district) listCondition.district = Number(district);
-            if(ward) listCondition.ward = Number(ward);
+            if (idNews) listCondition._id = idNews;
+            if (cateID) listCondition.cateID = cateID;
+            if (buySell) listCondition.buySell = buySell;
+            if (title) listCondition.title = new RegExp(title, "i");
+            if (description) listCondition.description = new RegExp(description);
+            if (city) listCondition.city = Number(city);
+            if (district) listCondition.district = Number(district);
+            if (ward) listCondition.ward = Number(ward);
 
             let fieldsGet =
             {
@@ -465,7 +469,7 @@ exports.postNewElectron = async (req, res, next) => {
 }
 
 // đăng tin
-exports.postNewVehicle = async(req, res, next) => {
+exports.postNewVehicle = async (req, res, next) => {
     try {
         let listID = [];
         let listCategory = await functions.getDatafind(Category, { parentId: 2 });
@@ -532,17 +536,17 @@ exports.deleteNews = async (req, res) => {
         let idNews = req.query.idNews;
         let buySell = 2;
         if (idNews) {
-            let news = await functions.getDataDeleteOne(New ,{_id: idNews, buySell: buySell});
-            if (news.deletedCount===1) {
+            let news = await functions.getDataDeleteOne(New, { _id: idNews, buySell: buySell });
+            if (news.deletedCount === 1) {
                 return functions.success(res, "Delete sell news by id success");
-            }else{
+            } else {
                 return functions.success(res, "Buy news not found");
             }
         } else {
             if (!await functions.getMaxID(New)) {
                 functions.setError(res, "No news existed", 513);
             } else {
-                New.deleteMany({buySell: buySell})
+                New.deleteMany({ buySell: buySell })
                     .then(() => functions.success(res, "Delete all news successfully"))
                     .catch(err => functions.setError(res, err.message, 514));
             }
@@ -563,12 +567,12 @@ exports.getNewBeforeLogin = async (req, res, next) => {
         }
 
         // tìm tin được ưu tiên đẩy lên đầu với trường pinHome
-        let data = await New.find({ pinHome: 1, buySell: 2 }, searchitem).limit(50);
+        let data = await New.find({ pinHome: 1, buySell: 2, active:1 }, searchitem).limit(50);
 
         // nếu dữ liệu ưu tiên ít hơn 50 thì thêm dữ liệu thường vào
         if (data.length < 50) {
             // lấy data với những tin có ngày cập nhật mới nhất
-            let data_new = await New.find({ buySell: 2 }, searchitem).sort({ updateTime: -1 }).limit(50 - data.length);
+            let data_new = await New.find({ buySell: 2, active:1 }, searchitem).sort({ updateTime: -1 }).limit(50 - data.length);
             for (let i = 0; i < 50 - data.length; i++) {
                 data.push(data_new[i]);
             }
@@ -583,118 +587,127 @@ exports.getNewBeforeLogin = async (req, res, next) => {
 exports.searchNew = async (req, res, next) => {
     try {
         let link = req.params.link;
-        let buySell = 2;
+        let buySell = 1;
         let searchItem = {};
-        let {search_key,cateID,brand,wattage,microprocessor,ram,hardDrive,typeHardrive,screen,size,brandMaterials,vehicles,spareParts,
-            interior,device,color,capacity,connectInternet,generalType,resolution,machineSeries,engine,accessary,frameMaterial,volume,manufacturingYear
-            ,fuel,numberOfSeats,gearBox,style,payload,carNumber,km,origin,version,statusSell,nameApartment,numberOfStoreys,storey,mainDirection
-            ,balconyDirection,legalDocuments,statusInterior,acreage,length,width,buyingArea,kvCity,kvDistrict,kvWard,numberToletRoom
-        ,numberBedRoom,typeOfApartment,special,statusBDS,codeApartment,cornerUnit,nameArea,useArea,landType,officeType,block,kindOfPet
-    ,age,gender,exp,level,degree,jobType,jobDetail,jobKind,salary,benefit,skill,city,district,ward,payBy,giaTu,giaDen}
-            = req.query; 
-        if(link === 'tat-ca-tin-dang-ban.html')
-        {
-            buySell = 2;
-            searchItem = { _id: 1, title: 1, viewCount: 1, address: 1, money: 1, apartmentNumber: 1, img: 1, updateTime: 1,  name: 1, address: 1, district: 1, ward: 1 }
-        }else if(link === 'tat-ca-tin-dang-mua.html')
-        {
-            buySell = 1;
-            searchItem = { _id: 1, title: 1, viewCount: 1, address: 1, money: 1,startvalue:1,timeReceivebidding:1,timeEndReceivebidding:1,img:1, apartmentNumber: 1, updateTime: 1,  createTime: 1, name: 1, address: 1, district: 1, ward: 1,}
-
-        }else{
-            return functions.setError(res,"page not found",404)
+        let { page, pageSize, search_key, cateID, brand, wattage, microprocessor, ram, hardDrive, typeHardrive, screen, size, brandMaterials, vehicles, spareParts,
+            interior, device, color, capacity, connectInternet, generalType, resolution, machineSeries, engine, accessary, frameMaterial, volume, manufacturingYear
+            , fuel, numberOfSeats, gearBox, style, payload, carNumber, km, origin, version, statusSell, nameApartment, numberOfStoreys, storey, mainDirection
+            , balconyDirection, legalDocuments, statusInterior, acreage, length, width, buyingArea, kvCity, kvDistrict, kvWard, numberToletRoom
+            , numberBedRoom, typeOfApartment, special, statusBDS, codeApartment, cornerUnit, nameArea, useArea, landType, officeType, block, kindOfPet
+            , age, gender, exp, level, degree, jobType, jobDetail, jobKind, salary, benefit, skill, city, district, ward, payBy, giaTu, giaDen }
+            = req.query;
+        if(!page && !pageSize){
+            return functions.setError(res,'missing data',400)
+          
         }
-        let condition = {buySell};
-        if(search_key){
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        if(await functions.checkNumber(page) === false || await functions.checkNumber(page) === false)
+        {
+            return functions.setError(res,'page not found',404)
+        }
+        if (link === 'tat-ca-tin-dang-ban.html') {
+            buySell = 2;
+            searchItem = { _id: 1, active:1, title: 1, viewCount: 1, address: 1, money: 1, apartmentNumber: 1, img: 1, updateTime: 1, name: 1, address: 1, district: 1, ward: 1 }
+        } else if (link === 'tat-ca-tin-dang-mua.html') {
+            buySell = 1;
+            searchItem = { _id: 1,active:1, title: 1, viewCount: 1, address: 1, money: 1, startvalue: 1, timeReceivebidding: 1, timeEndReceivebidding: 1, img: 1, apartmentNumber: 1, updateTime: 1, createTime: 1, name: 1, address: 1, district: 1, ward: 1, }
+
+        } else {
+            return functions.setError(res, "page not found", 404)
+        }
+        let condition = { buySell };
+        if (search_key) {
             let query = raoNhanh.createLinkTilte(search_key);
             condition.linkTitle = { $regex: `.*${query}.*` };
-        } 
-        if(cateID) condition.cateID = cateID;
-        if(brand)  condition.brand  = brand;
-        if(wattage) condition.wattage = wattage;
-        if(microprocessor) condition["electroniceDevice.microprocessor"] = microprocessor;
-        if(ram) condition["electroniceDevice.ram"] = ram;
-        if(hardDrive) condition["electroniceDevice.hardDrive"] = hardDrive;
-        if(typeHardrive) condition["electroniceDevice.typeHardrive"] = typeHardrive;
-        if(screen) condition["electroniceDevice.screen"] = screen;
-        if(size) condition["electroniceDevice.size"] = size;
-        if(machineSeries) condition["electroniceDevice.machineSeries"] = machineSeries;
-        if(brandMaterials) condition["vehicle.brandMaterials"] = brandMaterials;
-        if(vehicles) condition["vehicle.vehicles"] = vehicles;
-        if(spareParts) condition["vehicle.spareParts"] = spareParts;
-        if(interior) condition["vehicle.interior"] = interior;
-        if(device) condition["vehicle.device"] = device;
-        if(color) condition["vehicle.color"] = color;
-        if(capacity) condition["vehicle.capacity"] = capacity;
-        if(connectInternet) condition["vehicle.connectInternet"] = connectInternet;
-        if(generalType) condition["vehicle.generalType"] = generalType;
-        if(resolution) condition["vehicle.resolution"] = resolution;
-        if(engine) condition["vehicle.engine"] = engine;
-        if(accessary) condition["vehicle.accessary"] = accessary;
-        if(frameMaterial) condition["vehicle.frameMaterial"] = frameMaterial;
-        if(volume) condition["vehicle.volume"] = volume;
-        if(manufacturingYear) condition["vehicle.manufacturingYear"] = manufacturingYear;
-        if(fuel) condition["vehicle.fuel"] = fuel;
-        if(numberOfSeats) condition["vehicle.numberOfSeats"] = numberOfSeats;
-        if(gearBox) condition["vehicle.gearBox"] = gearBox;
-        if(style) condition["vehicle.style"] = style;
-        if(payload) condition["vehicle.payload"] = payload;
-        if(carNumber) condition["vehicle.carNumber"] = carNumber;
-        if(km) condition["vehicle.km"] = km;
-        if(origin) condition["vehicle.origin"] = origin;
-        if(version) condition["vehicle.version"] = version;
-        if(statusSell) condition["realEstate.statusSell"] = statusSell;
-        if(nameApartment) condition["realEstate.nameApartment"] = nameApartment;
-        if(numberOfStoreys) condition["realEstate.numberOfStoreys"] = numberOfStoreys;
-        if(storey) condition["realEstate.storey"] = storey;
-        if(mainDirection) condition["realEstate.mainDirection"] = mainDirection;
-        if(balconyDirection) condition["realEstate.balconyDirection"] = balconyDirection;
-        if(legalDocuments) condition["realEstate.legalDocuments"] = legalDocuments;
-        if(statusInterior) condition["realEstate.statusInterior"] = statusInterior;
-        if(acreage) condition["realEstate.acreage"] = acreage;
-        if(length) condition["realEstate.length"] = length;
-        if(width) condition["realEstate.width"] = width;
-        if(buyingArea) condition["realEstate.buyingArea"] = buyingArea;
-        if(kvCity) condition["realEstate.kvCity"] = kvCity;
-        if(kvDistrict) condition["realEstate.kvDistrict"] = kvDistrict;
-        if(kvWard) condition["realEstate.kvWard"] = kvWard;
-        if(numberToletRoom) condition["realEstate.numberToletRoom"] = numberToletRoom;
-        if(numberBedRoom) condition["realEstate.numberBedRoom"] = numberBedRoom;
-        if(typeOfApartment) condition["realEstate.typeOfApartment"] = typeOfApartment;
-        if(special) condition["realEstate.special"] = special;
-        if(statusBDS) condition["realEstate.statusBDS"] = statusBDS;
-        if(codeApartment) condition["realEstate.codeApartment"] = codeApartment;
-        if(cornerUnit) condition["realEstate.cornerUnit"] = cornerUnit;
-        if(nameArea) condition["realEstate.nameArea"] = nameArea;
-        if(useArea) condition["realEstate.useArea"] = useArea;
-        if(landType) condition["realEstate.landType"] = landType;
-        if(officeType) condition["realEstate.officeType"] = officeType;
-        if(block) condition["pet.block"] = block;
-        if(kindOfPet) condition["pet.kindOfPet"] = kindOfPet;
-        if(age) condition["pet.age"] = age;
-        if(gender) condition["pet.gender"] = gender;
-        if(jobType) condition["Job.jobType"] = jobType;
-        if(jobDetail) condition["Job.jobDetail"] = jobDetail;
-        if(jobKind) condition["Job.jobKind"] = jobKind;
-        if(salary) condition["Job.salary"] = salary;
-        if(gender) condition["Job.gender"] = gender;
-        if(exp) condition["Job.exp"] = exp;
-        if(level) condition["Job.level"] = level;
-        if(degree) condition["Job.degree"] = degree;
-        if(skill) condition["Job.skill"] = skill;
-        if(city) condition["Job.city"] = city;
-        if(district) condition["Job.district"] = district;
-        if(ward) condition["Job.ward"] = ward;
-        if(payBy) condition["Job.payBy"] = payBy;
-        if(benefit) condition["Job.benefit"] = benefit; 
-        if(giaTu && buySell === 1) condition.startvalue = {$gte:startvalue}; 
-        if(giaDen && buySell === 1) condition.endvalue = {$lte:endvalue}; 
-        if(giaTu && buySell === 2) condition.money = {$gte:giaTu}; 
-        if(giaTu && buySell === 2) condition.money = {$gte:giaTu}; 
-        let data  = await New.find(condition,searchItem).limit(10);
-        return functions.success(res, "get data success",{data})
+        }
+        if (cateID) condition.cateID = cateID;
+        if (brand) condition.brand = brand;
+        if (wattage) condition.wattage = wattage;
+        if (microprocessor) condition["electroniceDevice.microprocessor"] = microprocessor;
+        if (ram) condition["electroniceDevice.ram"] = ram;
+        if (hardDrive) condition["electroniceDevice.hardDrive"] = hardDrive;
+        if (typeHardrive) condition["electroniceDevice.typeHardrive"] = typeHardrive;
+        if (screen) condition["electroniceDevice.screen"] = screen;
+        if (size) condition["electroniceDevice.size"] = size;
+        if (machineSeries) condition["electroniceDevice.machineSeries"] = machineSeries;
+        if (brandMaterials) condition["vehicle.brandMaterials"] = brandMaterials;
+        if (vehicles) condition["vehicle.vehicles"] = vehicles;
+        if (spareParts) condition["vehicle.spareParts"] = spareParts;
+        if (interior) condition["vehicle.interior"] = interior;
+        if (device) condition["vehicle.device"] = device;
+        if (color) condition["vehicle.color"] = color;
+        if (capacity) condition["vehicle.capacity"] = capacity;
+        if (connectInternet) condition["vehicle.connectInternet"] = connectInternet;
+        if (generalType) condition["vehicle.generalType"] = generalType;
+        if (resolution) condition["vehicle.resolution"] = resolution;
+        if (engine) condition["vehicle.engine"] = engine;
+        if (accessary) condition["vehicle.accessary"] = accessary;
+        if (frameMaterial) condition["vehicle.frameMaterial"] = frameMaterial;
+        if (volume) condition["vehicle.volume"] = volume;
+        if (manufacturingYear) condition["vehicle.manufacturingYear"] = manufacturingYear;
+        if (fuel) condition["vehicle.fuel"] = fuel;
+        if (numberOfSeats) condition["vehicle.numberOfSeats"] = numberOfSeats;
+        if (gearBox) condition["vehicle.gearBox"] = gearBox;
+        if (style) condition["vehicle.style"] = style;
+        if (payload) condition["vehicle.payload"] = payload;
+        if (carNumber) condition["vehicle.carNumber"] = carNumber;
+        if (km) condition["vehicle.km"] = km;
+        if (origin) condition["vehicle.origin"] = origin;
+        if (version) condition["vehicle.version"] = version;
+        if (statusSell) condition["realEstate.statusSell"] = statusSell;
+        if (nameApartment) condition["realEstate.nameApartment"] = nameApartment;
+        if (numberOfStoreys) condition["realEstate.numberOfStoreys"] = numberOfStoreys;
+        if (storey) condition["realEstate.storey"] = storey;
+        if (mainDirection) condition["realEstate.mainDirection"] = mainDirection;
+        if (balconyDirection) condition["realEstate.balconyDirection"] = balconyDirection;
+        if (legalDocuments) condition["realEstate.legalDocuments"] = legalDocuments;
+        if (statusInterior) condition["realEstate.statusInterior"] = statusInterior;
+        if (acreage) condition["realEstate.acreage"] = acreage;
+        if (length) condition["realEstate.length"] = length;
+        if (width) condition["realEstate.width"] = width;
+        if (buyingArea) condition["realEstate.buyingArea"] = buyingArea;
+        if (kvCity) condition["realEstate.kvCity"] = kvCity;
+        if (kvDistrict) condition["realEstate.kvDistrict"] = kvDistrict;
+        if (kvWard) condition["realEstate.kvWard"] = kvWard;
+        if (numberToletRoom) condition["realEstate.numberToletRoom"] = numberToletRoom;
+        if (numberBedRoom) condition["realEstate.numberBedRoom"] = numberBedRoom;
+        if (typeOfApartment) condition["realEstate.typeOfApartment"] = typeOfApartment;
+        if (special) condition["realEstate.special"] = special;
+        if (statusBDS) condition["realEstate.statusBDS"] = statusBDS;
+        if (codeApartment) condition["realEstate.codeApartment"] = codeApartment;
+        if (cornerUnit) condition["realEstate.cornerUnit"] = cornerUnit;
+        if (nameArea) condition["realEstate.nameArea"] = nameArea;
+        if (useArea) condition["realEstate.useArea"] = useArea;
+        if (landType) condition["realEstate.landType"] = landType;
+        if (officeType) condition["realEstate.officeType"] = officeType;
+        if (block) condition["pet.block"] = block;
+        if (kindOfPet) condition["pet.kindOfPet"] = kindOfPet;
+        if (age) condition["pet.age"] = age;
+        if (gender) condition["pet.gender"] = gender;
+        if (jobType) condition["Job.jobType"] = jobType;
+        if (jobDetail) condition["Job.jobDetail"] = jobDetail;
+        if (jobKind) condition["Job.jobKind"] = jobKind;
+        if (salary) condition["Job.salary"] = salary;
+        if (gender) condition["Job.gender"] = gender;
+        if (exp) condition["Job.exp"] = exp;
+        if (level) condition["Job.level"] = level;
+        if (degree) condition["Job.degree"] = degree;
+        if (skill) condition["Job.skill"] = skill;
+        if (city) condition["Job.city"] = city;
+        if (district) condition["Job.district"] = district;
+        if (ward) condition["Job.ward"] = ward;
+        if (payBy) condition["Job.payBy"] = payBy;
+        if (benefit) condition["Job.benefit"] = benefit;
+        if (giaTu && buySell === 1) condition.startvalue = { $gte: startvalue };
+        if (giaDen && buySell === 1) condition.endvalue = { $lte: endvalue };
+        if (giaTu && buySell === 2) condition.money = { $gte: giaTu };
+        if (giaTu && buySell === 2) condition.money = { $gte: giaTu };
+        let data = await New.find(condition, searchItem).skip(skip).limit(limit);
+        const totalCount = await New.countDocuments({buySell})
+        const totalPages = Math.ceil(totalCount / pageSize)
+        return functions.success(res, "get data success", {totalCount,totalPages, data })
     } catch (error) {
-        console.log("🚀 ~ file: new.js:542 ~ exports.searchNew= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -969,46 +982,6 @@ exports.updateBuyNew = async (req, res, next) => {
     }
 }
 
-// toàn bộ danh sách tin
-exports.getAllNew = async (req, res, next) => {
-    try {
-        let searchitem = { _id: 1, title: 1, viewCount: 1, apartmentNumber: 1, money: 1, address: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
-        let pageSize = 10;
-        let { page, sort } = req.params;
-        if (!functions.checkNumber(page) || !functions.checkNumber(sort)) {
-            functions.setError(res, "invalid number", 404)
-        }
-        sort = Number(sort);
-        page = Number(page);
-        let skip = (page - 1) * pageSize;
-        let data = [];
-        let totalCount = 0;
-        if (sort === 1) {
-            data = await New.find({ buySell: 2 }, searchitem).sort({ viewCount: -1 }).skip(skip).limit(pageSize);
-            totalCount = await New.countDocuments({ buySell: 2 });
-            totalPages = Math.ceil(totalCount / pageSize)
-        }
-        else if (sort === 2) {
-            data = await New.find({ buySell: 2 }, searchitem).sort({ createTime: -1 }).skip(skip).limit(pagesize);
-            totalCount = await New.countDocuments({ buySell: 2 });
-            totalPages = Math.ceil(totalCount / pageSize)
-        } else if (sort === 3) {
-            data = await New.find({ type: 0, buySell: 2 }, searchitem).sort({ createTime: -1 }).skip(skip).limit(pagesize);
-            totalCount = await New.countDocuments({ buySell: 2, type: 0 });
-            totalPages = Math.ceil(totalCount / pageSize)
-        } else if (sort === 4) {
-            data = await New.find({ type: 1, buySell: 2 }, searchitem).sort({ createTime: -1 }).skip(skip).limit(pagesize);
-            totalCount = await New.countDocuments({ buySell: 2, type: 1 });
-            totalPages = Math.ceil(totalCount / pageSize)
-        }
-
-        return functions.success(res, 'get data success ', { totalCount, totalPages, data })
-
-    } catch (error) {
-        return functions.setError(res, error)
-    }
-}
-
 // chi tiết tin trước đăng nhập    
 exports.getDetailNew = async (req, res, next) => {
     try {
@@ -1029,10 +1002,9 @@ exports.getDetailNew = async (req, res, next) => {
         if (await functions.checkNumber(id_new) === false) {
             return functions.setError(res, 'invalid number', 404)
         }
-        let check = await New.findById(631733, { cateID: 1, userID: 1 });
-        if(!check)  
-        {
-            return functions.setError(res,'not found',404)
+        let check = await New.findById(id_new, { cateID: 1, userID: 1 });
+        if (!check) {
+            return functions.setError(res, 'not found', 404)
         }
         cate1 = await CategoryRaoNhanh365.findById(check.cateID);
         danh_muc1 = cate1.name;
@@ -1064,11 +1036,11 @@ exports.getDetailNew = async (req, res, next) => {
                 fileContent: 1, instructionContent: 1, instructionFile: 1,
                 startvalue: 1, endvalue: 1, until_tu: 1, until_den: 1, bidFee: 1, until_bidFee: 1, phone: 1, img: 1,
                 address: 1, updateTime: 1, status: 1, description: 1, city: 1, district: 1, ward: 1, apartmentNumber: 1,
-                detailCategory: 1, user: { userName: 1, type: 1, createdAt: 1 }
+                detailCategory: 1,viewCount:1, user: { userName: 1, type: 1, createdAt: 1 }
             };
         } else if (buy === 'b') {
             buysell = 2;
-            searchitem = { title: 1, money: 1, name: 1, phone: 1, address: 1, updateTime: 1, img: 1, status: 1, description: 1, detailCategory: 1, user: { userName: 1, type: 1, createdAt: 1 } };
+            searchitem = { title: 1,viewCount:1, money: 1, name: 1, phone: 1, address: 1, updateTime: 1, img: 1, status: 1, description: 1, detailCategory: 1, user: { userName: 1, type: 1, createdAt: 1 } };
 
         } else {
             return functions.setError(res, 'not found data', 404)
@@ -1088,18 +1060,17 @@ exports.getDetailNew = async (req, res, next) => {
             }, {
                 $project: searchitem
             }, {
-                $match: { _id: id_new }
+                $match: { _id: 631733  }
             }
         ]);
-        tintuongtu = await New.find({ cateID: check.cateID }, searchitem).limit(6)
-        if (tintuongtu) {
-            for (let i = 0; i < tintuongtu.length; i++) {
-                data.push({ tintuongtu: tintuongtu[i] })
-            }
+        tintuongtu = await New.find({ cateID: check.cateID }, searchitem).limit(6);
+
+        await New.findByIdAndUpdate(id_new,{$inc:{viewCount:+1}})
+        if (tintuongtu) {   
+             data.push({ tintuongtu: tintuongtu })
         }
         functions.success(res, 'get data success', { danh_muc1, danh_muc2, danh_muc3, data })
     } catch (error) {
-        console.log("🚀 ~ file: new.js:974 ~ exports.getDetailNew= ~ error:", error)
         functions.setError(res, error)
     }
 }
@@ -1208,7 +1179,7 @@ exports.newfavorite = async (req, res, next) => {
 }
 
 // quản lí tin mua
-exports.managenewbuy = async (req, res, next) => {
+exports.managenew = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
         let userID = req.user.data._id;
@@ -1243,7 +1214,7 @@ exports.newisbidding = async (req, res, next) => {
         let userID = req.user.data._id;
         let sl_tatCaTin = await Bidding.find({ userID }).count()
         let sl_tinConHan = 0;
-        let searchItem = { title: 1, timeEndReceivebidding: 1, city: 1, district: 1, ward: 1, apartmentNumber: 1, endvalue: 1, until_den: 1,Bidding:{status:1} }
+        let searchItem = { title: 1, timeEndReceivebidding: 1, city: 1, district: 1, ward: 1, apartmentNumber: 1, endvalue: 1, until_den: 1, Bidding: { status: 1 } }
         let tinConHan = await New.aggregate([
             {
                 $lookup: {
@@ -1290,7 +1261,7 @@ exports.newisbidding = async (req, res, next) => {
                         foreignField: 'newId',
                         as: 'Bidding'
                     }
-                }, 
+                },
                 {
                     $match: { 'Bidding.userID': userID, timeEndReceivebidding: { $gte: new Date(Date.now()) } }
                 },
@@ -1308,7 +1279,7 @@ exports.newisbidding = async (req, res, next) => {
                         as: 'Bidding'
                     }
                 }, {
-                    $match: {'Bidding.userID': userID, timeEndReceivebidding: { $lte: new Date(Date.now()) } }
+                    $match: { 'Bidding.userID': userID, timeEndReceivebidding: { $lte: new Date(Date.now()) } }
                 },
                 {
                     $project: searchItem
@@ -1327,18 +1298,129 @@ exports.newisbidding = async (req, res, next) => {
 // danh sách danh mục/ tỉnh thành
 exports.listCate = async (req, res, next) => {
     try {
-        let link = req.params.link;     
-        let data =[];
-        if(link === 'cate'){
-            data = await CategoryRaoNhanh365.find({parentId:0},{name:1})
-        }else if(link === 'city'){
+        let link = req.params.link;
+        let data = [];
+        if (link === 'cate') {
+            data = await CategoryRaoNhanh365.find({ parentId: 0 }, { name: 1 })
+        } else if (link === 'city') {
             data = await city.find();
-        }else{
+        } else {
             return functions.setError(res, 'page not found')
         }
-        return functions.success(res, 'get data success', {data})
+        return functions.success(res, 'get data success', { data })
     } catch (error) {
         return functions.setError(res, error)
     }
 }
 
+// quản lí tin bán 
+exports.manageNewBuySell = async (req, res, next) => {
+    try {
+        let linkTitle = req.params.linkTitle;
+        let userID = req.user.data._id;
+        let data = [];
+        let tong_soluong = await New.find({ userID, buySell: 2 }).count(); 
+        let tinDangDang  = await New.find({ userID,sold:1, buySell: 2 }).count();
+        let tinDaBan = await New.find({ userID, sold:0, buySell: 2 }).count();
+        let tinDangAn = await New.find({ userID,active:0, buySell: 2 }).count();
+        let searchItem = { title: 1, pinHome:1,pinCate:1, city: 1, district: 1, ward: 1, apartmentNumber: 1,address:1, money: 1 }
+        if (linkTitle === 'quan-ly-tin-ban.html') {
+            data = await New.find({ userID, buySell: 2 }, searchItem)
+        } else if (linkTitle === 'tin-dang-dang.html') {
+            data = await New.find({ userID,sold:1, buySell: 2 }, searchItem)
+        } else if (linkTitle === 'tin-da-ban.html') {
+            data = await New.find({  userID, sold:0, buySell: 2 }, searchItem)
+        } else if (linkTitle === 'tin-dang-an.html') {
+            data = await New.find({ userID,active:0, buySell: 2 }, searchItem)
+        } else {
+            return functions.setError(res, 'page not found ', 404)
+        }
+        return functions.success(res, 'get data success', { tong_soluong, tinDangDang, tinDangAn, tinDaBan, data })
+    }
+    catch (error) {
+        console.log("🚀 ~ file: new.js:1315 ~ exports.manageNewBuySell= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// danh sách tin tìm ứng viên
+exports.listCanNew = async (req, res, next) => {
+    try {
+        let linkTitle = req.params.linkTitle;
+        let userID = req.user.data._id;
+        let data = [];
+        let tong_soluong = await New.find({ userID, cateID:120 }).count(); 
+        let tinDangTimUngVien = await New.find({ userID, status:1, cateID:120  }).count();
+        let tinDaTimUngVien = await New.find({ userID, status:0, cateID:120 }).count();
+        let searchItem = { title: 1,  city: 1, district: 1, ward: 1, apartmentNumber: 1,address:1, benefit: 1 }
+        if (linkTitle === 'quan-ly-tin-tim-ung-vien.html') {
+            data = await New.find({ userID, cateID:120 }, searchItem)
+        } else if (linkTitle === 'tin-dang-tim.html') {
+            data = await New.find({ userID, status:1, cateID:120 }, searchItem)
+        } else if (linkTitle === 'tin-da-tim.html') {
+            data = await New.find({ userID, status:0, cateID:120 }, searchItem)
+        } else {
+            return functions.setError(res, 'page not found ', 404)
+        }
+        return functions.success(res, 'get data success', { tong_soluong, tinDangTimUngVien, tinDaTimUngVien, data })
+    }
+    catch (error) {
+        console.log("🚀 ~ file: new.js:1315 ~ exports.manageNewBuySell= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// // danh sách tin đang ứng tuyển
+// exports.listJobNewApply = async (req, res, next) => {
+//     try {
+//         let userID = req.user.data._id;
+//         let data = [];
+//         data = await User.aggregate([
+//             {
+//                 $lookup: {
+//                     from: "Order",
+//                     localField: "_id",
+//                     foreignField: "sellerId",
+//                     as: "Order"
+//                 }
+//             },
+//             {
+//                 $match: { "Order.buyerId": 5}
+//             },
+//              {
+//                 $project: { title: 1,img:1,userName:1, Order: {status:1,newId:1,createdAt:1 } }
+//             }
+//         ])
+//         return functions.success(res, 'get data success', {data})
+//     }
+//     catch (error) {
+//         return functions.setError(res, error)
+//     }
+// }
+
+// danh sách tin tìm việc làm 
+exports.listJobNew = async (req, res, next) => {
+    try {
+        let linkTitle = req.params.linkTitle;
+        let userID = req.user.data._id;
+        let data = [];
+        let tong_soluong = await New.find({ userID, cateID:121 }).count(); 
+        let tinDangTimViec = await New.find({ userID, status:1, cateID:121  }).count();
+        let tinDaTimViec = await New.find({ userID, status:0, cateID:121 }).count();
+        let searchItem = { title: 1,  city: 1, district: 1, ward: 1, apartmentNumber: 1,address:1, benefit: 1 }
+        if (linkTitle === 'quan-ly-tin-tim-viec-lam.html') {
+            data = await New.find({ userID, cateID:121 }, searchItem)
+        } else if (linkTitle === 'tin-dang-tim.html') {
+            data = await New.find({ userID, status:1, cateID:121 }, searchItem)
+        } else if (linkTitle === 'tin-da-tim.html') {
+            data = await New.find({ userID, status:0, cateID:121 }, searchItem)
+        } else {
+            return functions.setError(res, 'page not found ', 404)
+        }
+        return functions.success(res, 'get data success', { tong_soluong, tinDangTimViec, tinDaTimViec  , data })
+    }
+    catch (error) {
+        console.log("🚀 ~ file: new.js:1315 ~ exports.manageNewBuySell= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
