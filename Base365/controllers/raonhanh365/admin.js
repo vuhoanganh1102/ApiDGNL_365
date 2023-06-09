@@ -26,5 +26,4 @@ exports.loginAdminUser = async(req, res, next) => {
         console.log(error)
         return functions.setError(res, error)
     }
-
 }

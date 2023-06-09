@@ -22,3 +22,5 @@ router.post('/announceResult',formData.parse(),functions.checkToken,userRN.annou
 router.get('/listUserOnline/:link',userRN.listUserOnline)
 
 module.exports = router;
+
+
