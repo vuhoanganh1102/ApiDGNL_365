@@ -5,7 +5,7 @@ const CategoryRaoNhanh365 = require('../../models/Raonhanh365/Category');
 const User = require('../../models/Users');
 const LoveNews = require('../../models/Raonhanh365/UserOnSite/LoveNews');
 const Bidding = require('../../models/Raonhanh365/Bidding');
-
+const raoNhanh = require('../../services/rao nhanh/raoNhanh')
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
 
@@ -125,7 +125,6 @@ exports.postNewMain = async (req, res, next) => {
         return functions.setError(res, err);
     }
 }
-
 
 // đăng tin chung cho tat ca cac tin
 exports.postNewsGeneral = async (req, res, next) => {
@@ -506,7 +505,6 @@ exports.getNewBeforeLogin = async (req, res, next) => {
         if (data.length < 50) {
             // lấy data với những tin có ngày cập nhật mới nhất
             let data_new = await New.find({ buySell: 2 }, searchitem).sort({ updateTime: -1 }).limit(50 - data.length);
-
             for (let i = 0; i < 50 - data.length; i++) {
                 data.push(data_new[i]);
             }
@@ -520,59 +518,120 @@ exports.getNewBeforeLogin = async (req, res, next) => {
 // tìm kiếm tin 
 exports.searchNew = async (req, res, next) => {
     try {
-        let searchItem = { _id: 1, title: 1, cateID: 1, viewCount: 1, address: 1, money: 1, apartmentNumber: 1, updateTime: 1, linkTitle: 1, image: 1, img: 1, description: 1, createTime: 1, video: 1, name: 1, phone: 1, email: 1, address: 1, district: 1, ward: 1, quantitySold: 1, totalSold: 1 }
-        // let pageSize = 10;
-        // let { page, sort } = req.params;
-        // sort = Number(sort);
-        // page = Number(page);
-        // let skip = (page - 1) * pageSize;
-        // if (!functions.checkNumber(page) || !functions.checkNumber(sort)) {
-        //     functions.setError(res, "invalid number", 404)
-        // }
-        let data = [];
-        let totalCount = 0;
-        let search_query = req.query.search_query || null;
-        let danh_muc = req.query.cateID || null;
-        let danh_muc1 = null;
-        let danh_muc2 = null;
-        let danh_muc3 = null;
-        let nhom = null;
-        let danh_muc_cuoi = null
-        if (search_query && !danh_muc) {
-            let query_danhmuc = await CategoryRaoNhanh365.find({ name: search_query }, searchItem)
-            if (query_danhmuc.length !== 0) {
-                data = await New.find({ cateID: query_danhmuc[0]._id })
-            } else {
-                let query = functions.createLinkTilte(search_query);
-                data = await New.find({ linkTitle: { $regex: `.*${query}.*` } })
-            }
-        } else {
-            danh_muc1 = await CategoryRaoNhanh365.findById(danh_muc);
-            if (danh_muc1.parentId !== 0) {
-                danh_muc2 = await CategoryRaoNhanh365.findById(danh_muc1.parentId);
-                if (danh_muc2.parentId !== 0) {
-                    danh_muc3 = await CategoryRaoNhanh365.findById(danh_muc2.parentId);
-                }
-            }
-            if (danh_muc3) {
-                danh_muc_cuoi = await functions.checkNameCateRaoNhanh(danh_muc3);
-            } else {
-                if (danh_muc2) {
-                    danh_muc_cuoi = await functions.checkNameCateRaoNhanh(danh_muc2);
-                } else {
-                    danh_muc_cuoi = await functions.checkNameCateRaoNhanh(danh_muc1);
-                }
-            }
-            data = await New.find({ danh_muc_cuoi: req.params })
+        let link = req.params.link;
+        let buySell = 2;
+        let searchItem = {};
+        let {search_key,cateID,brand,wattage,microprocessor,ram,hardDrive,typeHardrive,screen,size,brandMaterials,vehicles,spareParts,
+            interior,device,color,capacity,connectInternet,generalType,resolution,machineSeries,engine,accessary,frameMaterial,volume,manufacturingYear
+            ,fuel,numberOfSeats,gearBox,style,payload,carNumber,km,origin,version,statusSell,nameApartment,numberOfStoreys,storey,mainDirection
+            ,balconyDirection,legalDocuments,statusInterior,acreage,length,width,buyingArea,kvCity,kvDistrict,kvWard,numberToletRoom
+        ,numberBedRoom,typeOfApartment,special,statusBDS,codeApartment,cornerUnit,nameArea,useArea,landType,officeType,block,kindOfPet
+    ,age,gender,exp,level,degree,jobType,jobDetail,jobKind,salary,benefit,skill,city,district,ward,payBy,giaTu,giaDen}
+            = req.query; 
+        if(link === 'tat-ca-tin-dang-ban.html')
+        {
+            buySell = 2;
+            searchItem = { _id: 1, title: 1, viewCount: 1, address: 1, money: 1, apartmentNumber: 1, img: 1, updateTime: 1,  name: 1, address: 1, district: 1, ward: 1 }
+        }else if(link === 'tat-ca-tin-dang-mua.html')
+        {
+            buySell = 1;
+            searchItem = { _id: 1, title: 1, viewCount: 1, address: 1, money: 1,startvalue:1,timeReceivebidding:1,timeEndReceivebidding:1,img:1, apartmentNumber: 1, updateTime: 1,  createTime: 1, name: 1, address: 1, district: 1, ward: 1,}
 
+        }else{
+            return functions.setError(res,"page not found",404)
         }
-
-
-
-
-        return functions.success(res, "get data success", { data })
+        let condition = {buySell};
+        if(search_key){
+            let query = raoNhanh.createLinkTilte(search_key);
+            condition.linkTitle = { $regex: `.*${query}.*` };
+        } 
+        if(cateID) condition.cateID = cateID;
+        if(brand)  condition.brand  = brand;
+        if(wattage) condition.wattage = wattage;
+        if(microprocessor) condition["electroniceDevice.microprocessor"] = microprocessor;
+        if(ram) condition["electroniceDevice.ram"] = ram;
+        if(hardDrive) condition["electroniceDevice.hardDrive"] = hardDrive;
+        if(typeHardrive) condition["electroniceDevice.typeHardrive"] = typeHardrive;
+        if(screen) condition["electroniceDevice.screen"] = screen;
+        if(size) condition["electroniceDevice.size"] = size;
+        if(machineSeries) condition["electroniceDevice.machineSeries"] = machineSeries;
+        if(brandMaterials) condition["vehicle.brandMaterials"] = brandMaterials;
+        if(vehicles) condition["vehicle.vehicles"] = vehicles;
+        if(spareParts) condition["vehicle.spareParts"] = spareParts;
+        if(interior) condition["vehicle.interior"] = interior;
+        if(device) condition["vehicle.device"] = device;
+        if(color) condition["vehicle.color"] = color;
+        if(capacity) condition["vehicle.capacity"] = capacity;
+        if(connectInternet) condition["vehicle.connectInternet"] = connectInternet;
+        if(generalType) condition["vehicle.generalType"] = generalType;
+        if(resolution) condition["vehicle.resolution"] = resolution;
+        if(engine) condition["vehicle.engine"] = engine;
+        if(accessary) condition["vehicle.accessary"] = accessary;
+        if(frameMaterial) condition["vehicle.frameMaterial"] = frameMaterial;
+        if(volume) condition["vehicle.volume"] = volume;
+        if(manufacturingYear) condition["vehicle.manufacturingYear"] = manufacturingYear;
+        if(fuel) condition["vehicle.fuel"] = fuel;
+        if(numberOfSeats) condition["vehicle.numberOfSeats"] = numberOfSeats;
+        if(gearBox) condition["vehicle.gearBox"] = gearBox;
+        if(style) condition["vehicle.style"] = style;
+        if(payload) condition["vehicle.payload"] = payload;
+        if(carNumber) condition["vehicle.carNumber"] = carNumber;
+        if(km) condition["vehicle.km"] = km;
+        if(origin) condition["vehicle.origin"] = origin;
+        if(version) condition["vehicle.version"] = version;
+        if(statusSell) condition["realEstate.statusSell"] = statusSell;
+        if(nameApartment) condition["realEstate.nameApartment"] = nameApartment;
+        if(numberOfStoreys) condition["realEstate.numberOfStoreys"] = numberOfStoreys;
+        if(storey) condition["realEstate.storey"] = storey;
+        if(mainDirection) condition["realEstate.mainDirection"] = mainDirection;
+        if(balconyDirection) condition["realEstate.balconyDirection"] = balconyDirection;
+        if(legalDocuments) condition["realEstate.legalDocuments"] = legalDocuments;
+        if(statusInterior) condition["realEstate.statusInterior"] = statusInterior;
+        if(acreage) condition["realEstate.acreage"] = acreage;
+        if(length) condition["realEstate.length"] = length;
+        if(width) condition["realEstate.width"] = width;
+        if(buyingArea) condition["realEstate.buyingArea"] = buyingArea;
+        if(kvCity) condition["realEstate.kvCity"] = kvCity;
+        if(kvDistrict) condition["realEstate.kvDistrict"] = kvDistrict;
+        if(kvWard) condition["realEstate.kvWard"] = kvWard;
+        if(numberToletRoom) condition["realEstate.numberToletRoom"] = numberToletRoom;
+        if(numberBedRoom) condition["realEstate.numberBedRoom"] = numberBedRoom;
+        if(typeOfApartment) condition["realEstate.typeOfApartment"] = typeOfApartment;
+        if(special) condition["realEstate.special"] = special;
+        if(statusBDS) condition["realEstate.statusBDS"] = statusBDS;
+        if(codeApartment) condition["realEstate.codeApartment"] = codeApartment;
+        if(cornerUnit) condition["realEstate.cornerUnit"] = cornerUnit;
+        if(nameArea) condition["realEstate.nameArea"] = nameArea;
+        if(useArea) condition["realEstate.useArea"] = useArea;
+        if(landType) condition["realEstate.landType"] = landType;
+        if(officeType) condition["realEstate.officeType"] = officeType;
+        if(block) condition["pet.block"] = block;
+        if(kindOfPet) condition["pet.kindOfPet"] = kindOfPet;
+        if(age) condition["pet.age"] = age;
+        if(gender) condition["pet.gender"] = gender;
+        if(jobType) condition["Job.jobType"] = jobType;
+        if(jobDetail) condition["Job.jobDetail"] = jobDetail;
+        if(jobKind) condition["Job.jobKind"] = jobKind;
+        if(salary) condition["Job.salary"] = salary;
+        if(gender) condition["Job.gender"] = gender;
+        if(exp) condition["Job.exp"] = exp;
+        if(level) condition["Job.level"] = level;
+        if(degree) condition["Job.degree"] = degree;
+        if(skill) condition["Job.skill"] = skill;
+        if(city) condition["Job.city"] = city;
+        if(district) condition["Job.district"] = district;
+        if(ward) condition["Job.ward"] = ward;
+        if(payBy) condition["Job.payBy"] = payBy;
+        if(benefit) condition["Job.benefit"] = benefit; 
+        if(giaTu && buySell === 1) condition.startvalue = {$gte:startvalue}; 
+        if(giaDen && buySell === 1) condition.endvalue = {$lte:endvalue}; 
+        if(giaTu && buySell === 2) condition.money = {$gte:giaTu}; 
+        if(giaTu && buySell === 2) condition.money = {$gte:giaTu}; 
+        let data  = await New.find(condition,searchItem).limit(10);
+        return functions.success(res, "get data success",{data})
     } catch (error) {
-        return functions.setError(res, "get data failed")
+        console.log("🚀 ~ file: new.js:542 ~ exports.searchNew= ~ error:", error)
+        return functions.setError(res, error)
     }
 }
 // tạo tin mua 
@@ -621,7 +680,7 @@ exports.createBuyNew = async (req, res) => {
             startvalue && endvalue && phone && email && until_tu && until_den && until_bidFee) {
 
             // tạolink title từ title người dùng nhập
-            let linkTitle = functions.createLinkTilte(title);
+            let linkTitle = raoNhanh.createLinkTilte(title);
 
             //kiểm tra title đã được người dùng tạo chưa
             let checktitle = await New.find({ userID, linkTitle });
@@ -664,27 +723,27 @@ exports.createBuyNew = async (req, res) => {
                 if (File.Image.length) {
                     if (File.Image.length > 10) return functions.setError(res, 'Gửi quá nhiều ảnh', 400);
                     for (let i = 0; i < File.Image.length; i++) {
-                        functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.Image[i], ['.jpg', '.png']);
+                        raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.Image[i], ['.jpg', '.png']);
                         img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.Image[i].name) });
                     }
                 } else {
-                    functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.Image, ['.jpg', '.png']);
+                    raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.Image, ['.jpg', '.png']);
                     img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.Image.name) });
                 }
             }
             if (File.tenderFile) {
                 if (File.tenderFile.length) return functions.setError(res, 'Gửi quá nhiều file');
-                functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.tenderFile, ['.jpg', '.png', '.docx', '.pdf']);
+                raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.tenderFile, ['.jpg', '.png', '.docx', '.pdf']);
                 tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.tenderFile.name)
             }
             if (File.instructionFile) {
                 if (File.instructionFile.length) return functions.setError(res, 'Gửi quá nhiều file');
-                functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.instructionFile, ['.jpg', '.png', '.docx', '.pdf']);
+                raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.instructionFile, ['.jpg', '.png', '.docx', '.pdf']);
                 instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.instructionFile.name)
             }
             if (File.fileContentProcedureApply) {
                 if (File.fileContentProcedureApply.length) return functions.setError(res, 'Gửi quá nhiều file');
-                functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.fileContentProcedureApply, ['.jpg', '.png', '.docx', '.pdf']);
+                raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.fileContentProcedureApply, ['.jpg', '.png', '.docx', '.pdf']);
                 fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.fileContentProcedureApply.name)
             }
             //lưu dữ liệu vào DB
@@ -739,7 +798,7 @@ exports.updateBuyNew = async (req, res, next) => {
             startvalue && endvalue && phone && email && until_tu && until_den && until_bidFee) {
 
             // tạolink title từ title người dùng nhập
-            let linkTitle = functions.createLinkTilte(title);
+            let linkTitle = raoNhanh.createLinkTilte(title);
 
             // kiểm tra title đã được người dùng tạo chưa
             let checktitle = await New.find({ userID, linkTitle });
@@ -786,51 +845,51 @@ exports.updateBuyNew = async (req, res, next) => {
                 if (File.Image.length) {
                     if (File.Image.length > 10) return functions.setError(res, 'Gửi quá nhiều ảnh');
                     for (let i = 0; i < File.Image.length; i++) {
-                        functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.Image[i], ['.jpg', '.png']);
+                        raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.Image[i], ['.jpg', '.png']);
                         img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.Image[i].name) });
                     }
                 } else {
-                    functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.Image, ['.jpg', '.png']);
+                    raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.Image, ['.jpg', '.png']);
                     img.push({ nameImg: functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.Image.name) });
                 }
                 if (files_old.img) {
                     for (let i = 0; i < files_old.img.length; i++) {
                         let text = files_old.img[i].nameImg.split('/').reverse()[0];
-                        functions.deleteFileRaoNhanh(userID, text)
+                        raoNhanh.deleteFileRaoNhanh(userID, text)
                     }
                 }
                 updateItem.img = img;
             }
             if (File.tenderFile) {
                 if (File.tenderFile.length) return functions.setError(res, 'Gửi quá nhiều file');
-                functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.tenderFile, ['.jpg', '.png', '.docx', '.pdf']);
+                raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.tenderFile, ['.jpg', '.png', '.docx', '.pdf']);
                 tenderFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.tenderFile.name)
                 if (files_old.tenderFile) {
 
                     let text = files_old.tenderFile.split('/').reverse()[0]
-                    functions.deleteFileRaoNhanh(userID, text)
+                    raoNhanh.deleteFileRaoNhanh(userID, text)
                 }
                 updateItem.tenderFile = tenderFile;
             }
             if (File.instructionFile) {
                 if (File.instructionFile.length) return functions.setError(res, 'Gửi quá nhiều file');
-                functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.instructionFile, ['.jpg', '.png', '.docx', '.pdf']);
+                raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.instructionFile, ['.jpg', '.png', '.docx', '.pdf']);
                 instructionFile = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.instructionFile.name)
                 if (files_old.fileContentProcedureApply) {
 
                     let text = files_old.fileContentProcedureApply.split('/').reverse()[0]
-                    functions.deleteFileRaoNhanh(userID, text)
+                    raoNhanh.deleteFileRaoNhanh(userID, text)
                 }
                 updateItem.instructionFile = instructionFile;
             }
             if (File.fileContentProcedureApply) {
                 if (File.fileContentProcedureApply.length) return functions.setError(res, 'Gửi quá nhiều file');
-                functions.uploadFileRaoNhanh('avt_tindangmua', userID, File.fileContentProcedureApply, ['.jpg', '.png', '.docx', '.pdf']);
+                raoNhanh.uploadFileRaoNhanh('avt_tindangmua', userID, File.fileContentProcedureApply, ['.jpg', '.png', '.docx', '.pdf']);
                 fileContentProcedureApply = functions.createLinkFileRaonhanh('avt_tindangmua', userID, File.fileContentProcedureApply.name)
                 if (files_old.instructionFile) {
 
                     let text = files_old.instructionFile.split('/').reverse()[0]
-                    functions.deleteFileRaoNhanh(userID, text)
+                    raoNhanh.deleteFileRaoNhanh(userID, text)
                 }
                 updateItem.fileContentProcedureApply = fileContentProcedureApply;
             }
@@ -906,7 +965,11 @@ exports.getDetailNew = async (req, res, next) => {
         if (await functions.checkNumber(id_new) === false) {
             return functions.setError(res, 'invalid number', 404)
         }
-        let check = await New.findById(id_new, { cateID: 1, userID: 1 });
+        let check = await New.findById(631733, { cateID: 1, userID: 1 });
+        if(!check)  
+        {
+            return functions.setError(res,'not found',404)
+        }
         cate1 = await CategoryRaoNhanh365.findById(check.cateID);
         danh_muc1 = cate1.name;
 
@@ -919,12 +982,12 @@ exports.getDetailNew = async (req, res, next) => {
             }
         }
         if (danh_muc3) {
-            cate_Special = await functions.checkNameCateRaoNhanh(danh_muc3);
+            cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc3);
         } else {
             if (danh_muc2) {
-                cate_Special = await functions.checkNameCateRaoNhanh(danh_muc2);
+                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc2);
             } else {
-                cate_Special = await functions.checkNameCateRaoNhanh(danh_muc1);
+                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc1);
             }
         }
 
@@ -972,6 +1035,7 @@ exports.getDetailNew = async (req, res, next) => {
         }
         functions.success(res, 'get data success', { danh_muc1, danh_muc2, danh_muc3, data })
     } catch (error) {
+        console.log("🚀 ~ file: new.js:974 ~ exports.getDetailNew= ~ error:", error)
         functions.setError(res, error)
     }
 }
@@ -1018,7 +1082,7 @@ exports.updateInfoUserRaoNhanh = async (req, res, next) => {
             }
         }
         if (File) {
-            let upload = functions.uploadFileRaoNhanh('avt_dangtin', _id, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+            let upload = raoNhanh.uploadFileRaoNhanh('avt_dangtin', _id, File.avatarUser, ['.jpeg', '.jpg', '.png']);
             if (!upload) {
                 return functions.setError(res, 'Định dạng ảnh không hợp lệ')
             }
@@ -1213,4 +1277,4 @@ exports.listCate = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
- 
+

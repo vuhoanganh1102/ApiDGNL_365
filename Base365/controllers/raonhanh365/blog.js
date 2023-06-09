@@ -4,7 +4,7 @@ const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser');
 const Category = require('../../models/Raonhanh365/Category');
 const md5 = require('md5');
 const folderImg = 'img_blog';
-
+const raoNhanh = require('../../services/rao nhanh/raoNhanh')
 exports.getListBlogByFields = async(req, res, next) => {
     try {
         if (req.body) {
@@ -104,7 +104,7 @@ exports.createBlog = async(req, res, next) => {
         if(!await functions.checkImage(image.path)){
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        functions.uploadFileRaoNhanh(folderImg,newIdBlog,image);
+        raoNhanh.uploadFileRaoNhanh(folderImg,newIdBlog,image);
         fields.image = functions.createLinkFileRaonhanh(folderImg, newIdBlog, image.name);
         let blog = new Blog(fields);
         await blog.save();
@@ -134,7 +134,7 @@ exports.updateBlog = async(req, res, next) => {
             let linkImg = existsBlog.image.split("/");
             let len = linkImg.length;
             functions.deleteImgRaoNhanh(folderImg, linkImg[len-2], linkImg[len-1]);
-            functions.uploadFileRaoNhanh(folderImg, _id, image);
+            raoNhanh.uploadFileRaoNhanh(folderImg, _id, image);
             fields.image = functions.createLinkFileRaonhanh(folderImg, _id, image.name);
 
             //cap nhat du lieu

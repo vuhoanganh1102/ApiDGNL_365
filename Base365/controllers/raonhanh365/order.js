@@ -3,7 +3,7 @@ const New = require('../../models/Raonhanh365/UserOnSite/New');
 const User = require('../../models/Users');
 const Order = require('../../models/Raonhanh365/Order');
 const Bidding = require('../../models/Raonhanh365/Bidding');
-
+const raoNhanh = require('../../services/rao nhanh/raoNhanh')
 // đặt hàng
 exports.order = async (req, res, next) => {
     try {
@@ -75,15 +75,15 @@ exports.bidding = async (req, res, next) => {
         }
         if (uploadfile.userFile) {
             if (uploadfile.userFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
-            functions.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userFile, ['.jpg', '.png', '.docx', '.pdf'])
+            raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userFile, ['.jpg', '.png', '.docx', '.pdf'])
             userFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.userFile.name)
         } else if (uploadfile.userProfileFile) {
             if (uploadfile.userProfileFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
-            functions.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userProfileFile, ['.jpg', '.png', '.docx', '.pdf'])
+            raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userProfileFile, ['.jpg', '.png', '.docx', '.pdf'])
             userProfileFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.userProfileFile.name)
         } else if (uploadfile.promotionFile) {
             if (uploadfile.promotionFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
-            functions.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
+            raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
             promotionFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.promotionFile.name)
         }
         await Bidding.create({ _id, newId, userID, productName, productDesc, status, price, priceUnit, product_link, user_intro, userFile, userProfile, userProfileFile, promotion, promotionFile })
@@ -118,7 +118,7 @@ exports.announceResult = async (req, res, next) => {
     }
 }
 
-// quản lý đơn mua
+// quản lý đơn hàng mua
 exports.manageOrderBuy = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
@@ -144,7 +144,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                     $match: { "Order.buyerId": buyerId,"Order.status": 0 }
                 },
                  {
-                    $project: { title: 1, Order: { codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-mua.html') {
@@ -160,7 +160,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                 {
                     $match: { "Order.buyerId": buyerId,status: 1 }
                 }, {
-                    $project: { title: 1, Order: { codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
         }else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-mua.html') {
@@ -176,7 +176,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                 {
                     $match: { "Order.buyerId": buyerId,status: 2 }
                 }, {
-                    $project: { title: 1, Order: { codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
         }else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-mua.html') {
@@ -192,7 +192,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                 {
                     $match: { "Order.buyerId": buyerId,status: 3 }
                 }, {
-                    $project: { title: 1, Order: { codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
         }else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-mua.html') {
@@ -208,7 +208,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                 {
                     $match: { "Order.buyerId": buyerId,status: 4 }
                 }, {
-                    $project: { title: 1, Order: { codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
         }else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-mua.html') {
@@ -224,7 +224,125 @@ exports.manageOrderBuy = async (req, res, next) => {
                 {
                     $match: { "Order.buyerId": buyerId,status: 5 }
                 }, {
-                    $project: { title: 1, Order: { codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                }
+            ])
+        }else{
+            return functions.setError(res,'link not exits',404)
+        }
+        return functions.success(res, 'get data success', {sl_choXacNhan,sl_dangXuLy,sl_dangGiao,sl_daGiao,sl_daHuy,sl_hoanTat,data })
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// quản lý đơn hàng mua
+exports.manageOrderSell = async (req, res, next) => {
+    try {
+        let linkTitle = req.params.linkTitle;
+        let sellerId = req.user.data._id;
+        let data = [];
+        let sl_choXacNhan = await Order.find({ sellerId, status: 0 }).count();
+        let sl_dangXuLy = await Order.find({ sellerId, status: 1 }).count();
+        let sl_dangGiao = await Order.find({ sellerId, status: 2 }).count();
+        let sl_daGiao = await Order.find({ sellerId, status: 3 }).count();
+        let sl_daHuy = await Order.find({ sellerId, status: 4 }).count();
+        let sl_hoanTat = await Order.find({ sellerId, status: 5 }).count();
+        if (linkTitle === 'quan-ly-don-hang-ban.html') {
+            data = await New.aggregate([
+                {
+                    $lookup: {
+                        from: "Order",
+                        localField: "_id",
+                        foreignField: "newId",
+                        as: "Order"
+                    }
+                },
+                {
+                    $match: { "Order.sellerId": sellerId,"Order.status": 0 }
+                },
+                 {
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                }
+            ])
+        } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-ban.html') {
+            data = await New.aggregate([
+                {
+                    $lookup: {
+                        from: "Order",
+                        localField: "_id",
+                        foreignField: "newId",
+                        as: "Order"
+                    }
+                },
+                {
+                    $match: { "Order.sellerId": sellerId,status: 1 }
+                }, {
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                }
+            ])
+        }else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-ban.html') {
+            data = await New.aggregate([
+                {
+                    $lookup: {
+                        from: "Order",
+                        localField: "_id",
+                        foreignField: "newId",
+                        as: "Order"
+                    }
+                },
+                {
+                    $match: { "Order.sellerId": sellerId,status: 2 }
+                }, {
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                }
+            ])
+        }else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-ban.html') {
+            data = await New.aggregate([
+                {
+                    $lookup: {
+                        from: "Order",
+                        localField: "_id",
+                        foreignField: "newId",
+                        as: "Order"
+                    }
+                },
+                {
+                    $match: { "Order.sellerId": sellerId,status: 3 }
+                }, {
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                }
+            ])
+        }else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-ban.html') {
+            data = await New.aggregate([
+                {
+                    $lookup: {
+                        from: "Order",
+                        localField: "_id",
+                        foreignField: "newId",
+                        as: "Order"
+                    }
+                },
+                {
+                    $match: { "Order.sellerId": sellerId,status: 4 }
+                }, {
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
+                }
+            ])
+        }else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-ban.html') {
+            data = await New.aggregate([
+                {
+                    $lookup: {
+                        from: "Order",
+                        localField: "_id",
+                        foreignField: "newId",
+                        as: "Order"
+                    }
+                },
+                {
+                    $match: { "Order.sellerId": sellerId,status: 5 }
+                }, {
+                    $project: { title: 1, Order: {status:1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
         }else{
