@@ -24,7 +24,7 @@ const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 // danh sách các loại video cho phép
 const allowedTypes = ['.mp4', '.mov', '.avi', '.wmv', '.flv'];
 // giới hạn dung lượng ảnh < 2MB
-const MAX_IMG_SIZE = 2 * 1024 * 1024;
+const MAX_IMG_SIZE = 10 * 1024 * 1024;
 // giới hạn dung lượng kho ảnh
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
@@ -81,14 +81,17 @@ exports.checkNameCateRaoNhanh = async(data)=>{
         
     } 
 }
-exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
+exports.uploadFileRaoNhanh = async (folder, id, file,allowedExtensions) => {
     let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
     let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
     let fileCheck =  path.extname(filePath);
-    console.log(folder)
     if(allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false)
     {
         return false
+    }
+    const { size } = await promisify(fs.stat)(filePath);
+    if (size > MAX_IMG_SIZE) {
+        return false;
     }
     if (!fs.existsSync(path1)) {   
         fs.mkdirSync(path1, { recursive: true });

@@ -141,10 +141,40 @@ exports.listUserOnline = async (req,res,next)=>{
         let data = [];
         if(link === 'trang-chu.html')
         {
-            data = await User.find({isOnline:1},{userName:1,avatarUser:1}).limit(20);
+            data = await User.aggregate([
+                {
+                    $lookup: {
+                        from: "NewRN",
+                        localField: "_id",
+                        foreignField: "userID",
+                        as: "new"
+                    }
+                },
+                {
+                    $match: { isOnline:1 }
+                }, {
+                    $project: { userName:1,avatarUser:1,"new.title":1  }
+                },{
+                    $limit:20
+                }
+            ])
         }else if(link === 'danh-sach-khach-hang-online.html')
         {
-            data = await User.find({isOnline:1},{userName:1,avatarUser:1}); 
+            data = await User.aggregate([
+                {
+                    $lookup: {
+                        from: "NewRN",
+                        localField: "_id",
+                        foreignField: "userID",
+                        as: "new"
+                    }
+                },
+                {
+                    $match: { isOnline:1 }
+                }, {
+                    $project: { userName:1,avatarUser:1,"new.title":1  }
+                }
+            ]) 
         }
         return functions.success(res, 'get data success',{data})    
     } catch (error) {
