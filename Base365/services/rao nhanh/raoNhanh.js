@@ -86,6 +86,12 @@ exports.checkNameCateRaoNhanh = async(data)=>{
         
     } 
 }
+// hàm tạo link file rao nhanh 365
+exports.createLinkFileRaonhanh = (folder, id, name) => {
+    let link = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/' + folder + '/' + id + '/' + name;
+    return link;
+}
+
 exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
     let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
     let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
@@ -110,6 +116,47 @@ exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
         });
     });
     return true
+}
+
+exports.uploadFileRN2 = (folder, id, file) => {
+    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
+    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+    let fileCheck =  path.extname(filePath);
+    if (!fs.existsSync(path1)) {   
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath, data, (err) => {
+            if (err) {
+            console.log(err)
+            }
+        });
+    });
+    return true
+}
+exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
+    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
+    // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    var matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (matches.length !== 3) {
+        return false;
+    }
+
+    let type = matches[1];
+    let data = Buffer.from(matches[2], 'base64');
+
+    const imageName = `${Date.now()}.${type.split("/")[1]}`;
+    fs.writeFile(path1+imageName, data, (err) => {
+        if (err) {
+        console.log(err)
+        }
+    });
 }
 
 // ham check admin rao nhanh 365
