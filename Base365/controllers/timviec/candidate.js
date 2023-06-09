@@ -553,30 +553,34 @@ exports.sendOTPChangePass = async(req, res, next) => {
 
 //ứng viên đăng nhập
 exports.loginUv = async(req, res, next) => {
+    try {
+        if (req.body.account && req.body.password) {
+            const type = 0;
+            const account = req.body.account;
+            const password = req.body.password;
 
-    if (req.body.account && req.body.password) {
-        const type = 0;
-        const account = req.body.account;
-        const password = req.body.password;
+            let checkPhoneNumber = await functions.checkPhoneNumber(account);
+            if (checkPhoneNumber) {
+                var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: { $ne: 1 } });
+            } else {
+                var findUser = await functions.getDatafindOne(Users, { email: account, type: { $ne: 1 } });
+            }
 
-        let checkPhoneNumber = await functions.checkPhoneNumber(account);
-        if (checkPhoneNumber) {
-            var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: { $ne: 1 } });
-        } else {
-            var findUser = await functions.getDatafindOne(Users, { email: account, type: { $ne: 1 } });
+            if (!findUser) {
+                return functions.setError(res, "Không tồn tại tài khoản", 200)
+            }
+            let checkPassword = await functions.verifyPassword(password, findUser.password)
+            if (!checkPassword) {
+                return functions.setError(res, "Mật khẩu sai", 200)
+            }
+
+            const token = await functions.createToken(findUser, "2d");
+            return functions.success(res, 'Đăng nhập thành công', { token, authentic: findUser.authentic, user_id: findUser.idTimViec365 });
         }
-
-        if (!findUser) {
-            return functions.setError(res, "Không tồn tại tài khoản", 200)
-        }
-        let checkPassword = await functions.verifyPassword(password, findUser.password)
-        if (!checkPassword) {
-            return functions.setError(res, "Mật khẩu sai", 200)
-        }
-
-        const token = await functions.createToken(findUser, "2d");
-        return functions.success(res, 'Đăng nhập thành công', { token, authentic: findUser.authentic, user_id: findUser.idTimViec365 });
+    } catch (e) {
+        return functions.setError(res, "Đã có lỗi xảy ra", )
     }
+
 }
 
 // trang qlc trong hoàn thiện hồ sơ
@@ -591,21 +595,24 @@ exports.completeProfileQlc = async(req, res, next) => {
         console.log(userId)
         let candiCateID = Number(req.user.data.inForPerson.candiCateID[0])
         let candiCityID = Number(req.user.data.inForPerson.candiCityID[0])
+        let takeData
             //việc làm AI
-        let takeData = await axios({
-            method: "post",
-            url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
-            data: {
-                site_job: "timviec365",
-                site_uv: "uvtimviec365",
-                new_id: 860426, //candiCateID,
-                size: 20,
-                pagination: 1,
-            },
-            headers: { "Content-Type": "multipart/form-data" }
-        });
-        if (takeData.data.error.message == "Không gợi ý được") {
-            return functions.setError(res, "AI ko trả ra kết quả", 400);
+        try {
+            takeData = await axios({
+                method: "post",
+                url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
+                data: {
+                    site_job: "timviec365",
+                    site_uv: "uvtimviec365",
+                    new_id: candiCateID,
+                    size: 20,
+                    pagination: 1,
+                },
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+        } catch (e) {
+            console.log(e)
+            return functions.setError(res, "api AI lỗi", )
         }
         let listNewId = takeData.data.data.list_id.split(",")
         for (let i = 0; i < listNewId.length; i++) {
@@ -768,7 +775,7 @@ exports.completeProfileQlc = async(req, res, next) => {
             delete newItem.name; // Xóa trường name trong phần tử
             return newItem;
         });
-        console.log(newData);
+
         functions.success(res, "Hiển thị qlc thành công", { itesm_vl: post, itesm_cv: myCv, itesm_cvdx: findCv, itesm_dem, itesm_qc })
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
