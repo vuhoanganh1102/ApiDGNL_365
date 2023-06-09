@@ -15,4 +15,10 @@ router.get('/manageOrderBuy/:linkTitle',functions.checkToken,orderRN.manageOrder
 
 // quản lý đơn bán
 router.get('/manageOrderSell/:linkTitle',functions.checkToken,orderRN.manageOrderSell)
+
+// trạng thái đơn hàng
+router.post('/statusOrder',functions.checkToken,orderRN.statusOrder)
+
+// Huỷ đơn hàng
+router.post('/cancelOrder',formData.parse(),functions.checkToken,orderRN.cancelOrder)
 module.exports = router;
