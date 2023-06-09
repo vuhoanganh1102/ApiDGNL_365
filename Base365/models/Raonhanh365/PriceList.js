@@ -53,9 +53,9 @@ const PriceListSchema = new mongoose.Schema({
     }
 
 }, {
-    collection: 'PriceList',
+    collection: 'PriceListRN',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("PriceList", PriceListSchema);
+module.exports = mongoose.model("PriceListRN", PriceListSchema);

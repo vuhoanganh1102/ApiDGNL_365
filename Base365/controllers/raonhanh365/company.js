@@ -2,7 +2,7 @@ const fnc = require('../../services/functions');
 const New = require('../../models/Raonhanh365/UserOnSite/New');
 const CompanyRN = require('../../models/Users');
 const md5 = require('md5');
-
+const raoNhanh = require('../../services/rao nhanh/raoNhanh');
 // thông tin tài khoản
 exports.comInfo = async(req, res, next) => {
     try {
@@ -64,7 +64,7 @@ exports.getAndCheckData = async(req, res, next) => {
             if(!await fnc.checkImage(avatarUser.path)){
                 return fnc.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
             }
-            fnc.uploadFileRaoNhanh('avt_com',1,avatarUser);
+            raoNhanh.uploadFileRaoNhanh('avt_com',1,avatarUser);
             avatarName = fnc.createLinkFileRaonhanh('avt_com', 1, avatarUser.name);
         }
         let listImg=[];
@@ -72,7 +72,7 @@ exports.getAndCheckData = async(req, res, next) => {
             if(!await fnc.checkImage(image.path)) {
                 return fnc.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405)
             }
-            fnc.uploadFileRaoNhanh('avt_com',1,image);
+            raoNhanh.uploadFileRaoNhanh('avt_com',1,image);
             imageName = fnc.createLinkFileRaonhanh('avt_com', 1, image.name);
             listImg.push({_id: 1, name: imageName, size: image.size});
         }
@@ -140,6 +140,29 @@ exports.updateCompany = async(req, res, next) => {
     }catch(err){
         console.log("Err from server!", err);
         return fnc.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.getCompanyById = async(req, res, next) => {
+    try {
+        let comId = req.query.comId;
+        if(!comId) {
+            return fnc.setError(res, "Missing input comId value", 403);
+        }
+        
+        let fields = {phoneTK: 1, userName: 1,phone: 1, email: 1, address: 1, avatarUser: 1, city: 1,type: 1,
+            inForCompany: {
+                website: 1, description: 1, mst: 1, comImages: 1
+            }
+        }
+        let company = await CompanyRN.findOne({_id: comId}, fields);
+        if(!company){
+            return fnc.setError(res, "Company not found", 503);
+        }
+        return fnc.success(res, "get company by id success", {data: company });
+    } catch (e) {
+        console.log("Err from server", e);
+        return fnc.setError(res, "Err from server", 500);
     }
 }
 

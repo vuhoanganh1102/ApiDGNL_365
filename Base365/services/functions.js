@@ -84,27 +84,7 @@ exports.checkTilte = async (input, list) => {
         return true
     }
 };
-// hàm tạo link title
-exports.createLinkTilte = (input) => {
-    input = input.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
-    str = input.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
-    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
-    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
-    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
-    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
-    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
-    str = str.replace(/đ/g, "d");
-    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
-    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
-    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
-    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
-    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
-    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
-    str = str.replace(/Đ/g, "D");
-    str = str.toLowerCase();
-    str = str.replaceAll(' ', '-')
-    return str
-}
+
 // hàm check title khi update
 exports.removeSimilarKeywords = (keyword, arr) => {
     return arr.filter(file => !file.startsWith(keyword));
@@ -484,8 +464,9 @@ exports.getDataSex = async () => {
     return ["Nam", "Nữ", "Không yêu cầu"]
 };
 
-exports.pageFind = async (model, condition, sort, skip, limit) => {
-    return model.find(condition).sort(sort).skip(skip).limit(limit).lean();
+
+exports.pageFind = async(model, condition, sort, skip, limit, select) => {
+    return model.find(condition, select).sort(sort).skip(skip).limit(limit).lean();
 };
 
 exports.pageFindWithFields = async(model, condition, fields, sort, skip, limit) => {
@@ -644,31 +625,7 @@ exports.checkDate = (date) => {
     return data instanceof Date && !isNaN(data);
 }
 
-exports.uploadFileRaoNhanh = (folder, id, file,allowedExtensions) => {
-    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
-    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
-    let fileCheck =  path.extname(filePath);
-    console.log(folder)
-    if(allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false)
-    {
-        return false
-    }
-    if (!fs.existsSync(path1)) {   
-        fs.mkdirSync(path1, { recursive: true });
-    }
-    fs.readFile(file.path, (err, data) => {
-        if (err) {
-            console.log(err)
-        }
-        console.log("check", data);
-        fs.writeFile(filePath, data, (err) => {
-            if (err) {
-            console.log(err)
-            }
-        });
-    });
-    return true
-}
+
 
 exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
     let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
@@ -692,19 +649,6 @@ exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
     });
 }
 
-exports.deleteFileRaoNhanh = (id, file) => {
-    let filePath = `../Storage/base365/raonhanh365/pictures/avt_tindangmua/${id}/` + file;
-    fs.unlink(filePath, (err) => {
-        if (err) console.log(err);
-    });
-}
-
-exports.deleteImgRaoNhanh = (folder, id, file) => {
-    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file;
-    fs.unlink(filePath, (err) => {
-        if (err) console.log(err);
-    });
-}
 // hàm tìm id max Quản Lí Chung
 exports.getMaxIDQLC = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
@@ -823,30 +767,7 @@ exports.getMaxIDcompany = async(model) => {
         return result;
     }
 
-exports.checkNameCateRaoNhanh = async(data)=>{
-    switch (data)
-    {
-        case 'Đồ điện tử':
-            return 'electroniceDevice'
-        case 'Xe cộ':
-            return 'vehicle'
-        case 'Bất động sản':
-            return 'realEstate'
-        case 'Ship':
-            return 'ship'
-        case 'Đồ gia dụng':
-            return 'houseWare'
-        case 'Sức khỏe - Sắc đẹp':
-            return 'health'
-        case 'Dịch vụ - Giải trí':
-            return 'entertainmentService'   
-        case 'Việc làm':
-            return 'job'
-        case 'Thực phẩm, Đồ uống':
-            return 'food'
-        
-    } 
-}
+
 
 // hàm random 
 exports.getRandomInt = (min, max)=> {
@@ -901,6 +822,58 @@ exports.removerTinlq = async(string) => {
     return result;
 }
 
+exports.new_money_tv = async(nm_id, nm_type, nm_unit, nm_min_value, nm_max_value, new_money) => {
+    let array_muc_luong = [
+        "Chọn mức lương",
+        "Thỏa thuận",
+        "1 - 3 triệu",
+        "3 - 5 triệu",
+        "5 - 7 triệu",
+        "7 - 10 triệu",
+        "10 - 15 triệu",
+        "15 - 20 triệu",
+        "20 - 30 triệu",
+        "Trên 30 triệu",
+        "Trên 50 triệu",
+        "Trên 100 triệu"
+    ];
+    let array_tien_te = {
+        1: "VNĐ",
+        2: "USD",
+        3: "EUR"
+    };
+    if (nm_id !== '') {
+        var rd_muc_luong = '';
+        switch (nm_type) {
+            case 2:
+                rd_muc_luong = 'Từ ' + formatMoney(nm_min_value) + ' ' + array_tien_te[nm_unit];
+                break;
+            case 3:
+                rd_muc_luong = 'Đến ' + formatMoney(nm_max_value) + ' ' + array_tien_te[nm_unit];
+                break;
+            case 4:
+                rd_muc_luong = 'Từ ' + formatMoney(nm_min_value) + ' ' + array_tien_te[nm_unit] + ' Đến ' + formatMoney(nm_max_value) + ' ' + array_tien_te[nm_unit];
+                break;
+            default:
+                rd_muc_luong = array_muc_luong[new_money];
+                break;
+        }
+    } else {
+        rd_muc_luong = array_muc_luong[new_money];
+    }
+    if (rd_muc_luong === '' || rd_muc_luong === 'Chọn mức lương') {
+        rd_muc_luong = "Thỏa Thuận";
+    }
+    return rd_muc_luong;
+}
+
+
+
+exports.hostCv = async(text) => {
+    const hostCv = "https://timviec365.vn/cv365"
+    const link = `${hostCv}/${text}`;
+    return link;
+};
 exports.getMaxUserID = async(type = "user") => {
     let condition = {};
     if (type == "user") {

@@ -7,7 +7,7 @@ const LoveNews = require('../../models/Raonhanh365/UserOnSite/LoveNews');
 const Order = require('../../models/Raonhanh365/Order');
 const Bidding = require('../../models/Raonhanh365/Bidding');
 const md5 = require('md5');
-
+const raoNhanh = require('../../services/rao nhanh/raoNhanh')
 // gửi otp
 exports.changePasswordSendOTP = async (req, res, next) => {
     try {
@@ -96,7 +96,7 @@ exports.updateInfoUserRaoNhanh = async (req, res, next) => {
             }
         }
         if (File.avatarUser) {
-            let upload = functions.uploadFileRaoNhanh('avt_dangtin', _id, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+            let upload = raoNhanh.uploadFileRaoNhanh('avt_dangtin', _id, File.avatarUser, ['.jpeg', '.jpg', '.png']);
             if (!upload) {
                 return functions.setError(res, 'Định dạng ảnh không hợp lệ',400)
             }
