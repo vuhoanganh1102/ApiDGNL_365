@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const ReportNewschema = new mongoose.Schema({
-    _idReport:{
+    _id:{
         type:Number,
         require:true
     },
@@ -20,9 +20,13 @@ const ReportNewschema = new mongoose.Schema({
         type: String,
         require:true
     },
-    createdAt:{
-        type:Date,
-        require:true
+    startDate: {
+        type: Date,
+        required: true
+    },
+    endDate: {
+        type: Date,
+        required: true
     }
 });
 module.exports = mongoose.model("ReportNews", ReportNewschema);

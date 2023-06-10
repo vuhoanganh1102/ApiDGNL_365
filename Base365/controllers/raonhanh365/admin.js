@@ -6,10 +6,13 @@ const PriceList = require('../../models/Raonhanh365/PriceList');
 const Users = require('../../models/Users');
 const History = require('../../models/Raonhanh365/History');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
+const ReportNews = require('../../models/Raonhanh365/UserOnSite/NewReport');
+
 
 const serviceRN = require('../../services/rao nhanh/raoNhanh');
 const folderImg = "img_blog";
 const md5 = require('md5');
+const Cart = require("../../models/Raonhanh365/Cart");
 
 //đăng nhập admin
 exports.loginAdminUser = async(req, res, next) => {
@@ -37,6 +40,118 @@ exports.loginAdminUser = async(req, res, next) => {
         return functions.setError(res, error)
     }
 
+}
+
+exports.getListAdminUser = async(req, res, next)=>{
+    try{
+        //lay cac tham so dieu kien tim kiem tin
+        if(!req.body.page){
+            return functions.setError(res, "Missing input page", 401);
+        }
+        if(!req.body.pageSize){
+            return functions.setError(res, "Missing input pageSize", 402);
+        }
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let idAdmin = req.body.idAdmin;
+        let condition = {};
+        if(idAdmin) condition._id = Number(idAdmin);
+
+        let fields = {loginName: 1, name: 1, email: 1, phone: 1, editAll:1, langId:1, active: 1};
+        const listAdminUser = await functions.pageFindWithFields(AdminUser, condition, fields, { _id: 1 }, skip, limit);
+        const totalCount = await functions.findCount(AdminUser, condition);
+        return functions.success(res, "get list blog success", {totalCount: totalCount, data: listAdminUser });
+    }catch(error){
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+
+exports.getAndCheckDataAdminUser = async(req, res, next) => {
+    try {
+        let {loginName, name, phone, email, editAll, langId, active, accessModule} = req.body;
+
+        if(!loginName || !phone || !phone) {
+            return functions.setError(res, "Missing input value", 404)
+        }
+        // them cac truong muon them hoac sua
+        req.info = {
+            loginName: loginName,
+            name: name,
+            phone: phone,
+            email: email,
+            langId: langId,
+            editAll: editAll,
+            active: active,
+            accessModule: accessModule,
+        }
+        return next();
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.createAdminUser = async(req, res, next) => {
+    try{
+        let fields = req.info;
+
+        //tao _id tu dong tang
+        const maxIdAdminUser = await AdminUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIdAdminUser;
+        if (maxIdAdminUser) {
+            newIdAdminUser = Number(maxIdAdminUser._id) + 1;
+        } else newIdAdminUser = 1;
+        fields._id = newIdAdminUser;
+
+        let news = new AdminUser(fields);
+        await news.save();
+        return functions.success(res, 'Create news RN365 success!');
+    }catch(e){
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.updateAdminUser = async(req, res, next) => {
+    try{
+        if(!req.body.adminID)
+            return functions.setError(res, "Missing input value id admin!", 404);
+        let adminID = req.body.adminID;
+        let fields = req.info;
+
+        let existsAdminUser = await AdminUser.findOne({_id: adminID});
+        if (existsAdminUser) {
+
+            await AdminUser.findOneAndUpdate({_id: adminID}, fields);
+            return functions.success(res, "AdminUser edited successfully");
+        }
+        return functions.setError(res, "AdminUser not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.deleteAdminUser = async(req, res, next) => {
+    try {
+        let userID = Number(req.query.userID);
+        if (userID) {
+            let user = await functions.getDataDeleteOne(Users ,{_id: userID});
+            if (user.deletedCount===1) {
+                return functions.success(res, `Delete user with _id=${userID} success`);
+            }else{
+                return functions.success(res, "User not found");
+            }
+        }
+        return functions.setError(res, "Missing input userID", 500);
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
 }
 
 //-----------------------------------------------------------controller quan ly danh muc----------------------------------------------------------------
@@ -810,7 +925,7 @@ exports.failRegister = async (req,res, next) => {
         const usersWithDuplicateEmail = await Users.aggregate([
             {
                 $match: {
-                    email: { $ne: null } // Chỉ lấy những Users có phoneTK không phải null
+                    email: { $ne: null } // Chỉ lấy những Users có email không phải null
                 }
             },
             {
@@ -830,7 +945,7 @@ exports.failRegister = async (req,res, next) => {
             },
             {
                 $match: {
-                    "users.1": { $exists: true } // lấy những Users có phoneTK trùng nhau
+                    "users.1": { $exists: true } // lấy những Users có email trùng nhau
                 }
             },
             {
@@ -842,9 +957,94 @@ exports.failRegister = async (req,res, next) => {
             }
         ]);
         let FailUser = [];
+        // đẩy dữ liệu đã  lọc vào mảng
         FailUser.push(usersWithDuplicatePhoneTK,usersWithDuplicateEmail)
         return functions.success(res, 'List Fail User', { data: FailUser })
     } catch (error) {
         return functions.setError(res, error)
     }
 }
+//-------------------------------------------------------API báo cáo tin-------------------------
+// tạo mới
+exports.createReport = async (req,res,next) => {
+    try {
+            const reportNewsData = req.body;
+        console.log(reportNewsData)
+            const newReportNews = new ReportNews(reportNewsData);
+            const savedReportNews = await newReportNews.save();
+        console.log(savedReportNews)
+            res.status(201).json(savedReportNews);
+    }  catch (error) {
+        return functions.setError(res, error)
+    }
+}
+// api danh sách tìm kiếm tin báo cáo
+exports.getListNewReports = async (req,res, next)=> {
+    try {
+        if(req.body){
+            let { id_user, userName, problem, startDate, endDate} = req.body;
+            // nếu mục tìm kiếm có tồn tại tên người báo cáo
+            if (userName && id_user == null){
+                const userReportWithUserName = await Users.findOne({userName: userName });
+                // nếu có người dùng gán id tìm kiếm = id người dùng
+                if (userReportWithUserName) {
+                    id_user = userReportWithUserName.id
+                }
+                // nếu req tìm kiếm có tồn tại id người báo cáo && không có tên người báo cáo
+            } else if (id_user && userName == null){
+                const userReportWithIdUser = await Users.findOne({ _id: id_user });
+                // nếu tồn tại userReportWithIdUser thì lấy ra userReportWithIdUser.userName
+                if (userReportWithIdUser) {
+                    userName = userReportWithIdUser.userName
+                }
+            }
+            let query = {};
+            if (id_user) {
+                query.id_user = id_user;
+            }
+            if (userName) {
+                query.userName = userName;
+            }
+            if (problem) {
+                query.problem = problem;
+            }
+            if(startDate){
+                query.startDate = startDate;
+            }
+            if(endDate){
+                query.endDate = endDate;
+            }
+            console.log(query)
+            let fields = {id_user: 1, problem: 1, reportDetail: 1};
+            const ReportList = await ReportNews.find({
+                $or: [
+                    { id_user: query.id_user },
+                    { userName: query.userName },
+                    { problem: query.problem },
+                    { startDate: query.startDate },
+                    { endDate: query.endDate },
+                ]
+            })
+            console.log(ReportList)
+            const ReportListWithUserName = []
+            ReportListWithUserName.push(ReportList,userName)
+            return functions.success(res, 'Get List Search News Reports', { data: ReportListWithUserName })
+        } else {
+        let reportNewss= await ReportNews.find();
+        const reportNews = await functions.pageFind(ReportNews);
+        console.log(reportNewss)
+        console.log(reportNews)
+        for (let i = 0; i < reportNews.length; i++ ){
+            let Userss = await Users.findOne({_id: reportNews[i].id_user});
+            reportNews[i].userName = Userss.userName
+        }
+        return functions.success(res, "get list report success", {data: reportNews });
+        }
+    } catch (error) {
+        console.log("Err from server", e);
+        return functions.setError(res, error)
+    }
+}
+
+
+

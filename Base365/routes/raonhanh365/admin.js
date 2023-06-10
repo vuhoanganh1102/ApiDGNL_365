@@ -65,5 +65,10 @@ router.put('/priceList/getListPricePush/:id',formData.parse(), [functions.checkT
 //api danh sách lỗi đăng ký
 router.post('/failRegisterUser',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.failRegister);
 
+//------------------------------------------------api báo cáo tin
+// api tạo mới tin báo cáo
+router.post('/newReportt',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.createReport)
+// api danh sách và tìm kiếm báo cáo tin
+router.post('/newReport',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.getListNewReports)
 module.exports = router;
 
