@@ -51,8 +51,8 @@ router.get('/manageNewBuySell/:linkTitle',functions.checkToken,newRN.manageNewBu
 // tin đang dự thầu
 router.get('/newisbidding/:linkTitle',functions.checkToken,newRN.newisbidding)
 
-// danh sách danh mục
-router.get('/listCate/:link',newRN.listCate)
+// danh sách danh mục cha va con
+router.post('/getListCate',formData.parse(), newRN.getListCate);
 
 // quản lí tin tìm ứng viên
 router.get('/listCanNew/:linkTitle',functions.checkToken,newRN.listCanNew)
@@ -62,5 +62,11 @@ router.get('/listCanNew/:linkTitle',functions.checkToken,newRN.listCanNew)
 
 // quản lý tin tìm việc làm
 router.get('/listJobNew/:linkTitle',functions.checkToken,newRN.listJobNew)
+
+//api thich tin
+router.post('/likeNews', formData.parse(), functions.checkToken, newRN.likeNews);
+
+router.post('/candiApply', formData.parse(),functions.checkToken, newRN.createApplyNews);
+router.delete('/deleteCandiApply',functions.checkToken, newRN.deleteUv);
 
 module.exports = router;
