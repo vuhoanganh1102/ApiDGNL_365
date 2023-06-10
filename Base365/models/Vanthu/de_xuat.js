@@ -48,7 +48,7 @@ const Vanthu_de_xuat = new Schema({
         doi_ca: {
 
             ngay_can_doi: {//chọn ngày ca cần đổi
-                type: Date,
+                type: Number,
                 default: null,
             },
             ca_can_doi: {
@@ -57,7 +57,7 @@ const Vanthu_de_xuat = new Schema({
             },
 
             ngay_muon_doi: {//chọn ngày ca được đỏi
-                type: Date,
+                type: Number,
                 default: null,
 
             },
@@ -390,10 +390,12 @@ const Vanthu_de_xuat = new Schema({
     },
     type_duyet: {
         type: Number,
+        default: 0
 
     },
     type_time: {//đề xuất nghỉ đột xuất or có kế hoạch
         type: Number,
+        default: 0
 
     },
     time_start_out: {
@@ -402,7 +404,7 @@ const Vanthu_de_xuat = new Schema({
     },
     time_create: {
         type: Date,
-        default: null
+        default: 0
 
     },
     time_tiep_nhan: {
@@ -412,14 +414,17 @@ const Vanthu_de_xuat = new Schema({
     },
     time_duyet: {
         type: Number,
+        default: 0
 
 
     },
     active: {//người duyệt đồng ý hay chưa
         type: Number,
+        default: 0
     },
     del_type: {//trạng thái còn hay xóa     
         type: Number,
+        default: 1
     },
 
 })

@@ -3,8 +3,8 @@ const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const delete_Dx = require('../../../models/Vanthu/delete_dx');
 const his_handle = require('../../../models/Vanthu/history_handling_dx');
 exports.delete_dx = async (req, res) => {
-    let id_use = req.body.id_user;
-    console.log(id_use);
+    let id_user = req.body.id_user;
+    console.log(id_user);
     let id = req.body.id;
     console.log("id la :  " + id);
     let de_xuat = [];
@@ -24,7 +24,7 @@ exports.delete_dx = async (req, res) => {
 
             let del_dx = new delete_Dx({
                 id_del: maxID + 1,
-                user_del: id_use,
+                user_del: id_user,
                 user_del_com: de_xuat.com_id,
                 id_dx_del: id,
                 time_del: Date.now()
@@ -58,22 +58,36 @@ exports.delete_dx = async (req, res) => {
 }
 
 exports.de_xuat_da_xoa_All = async (req, res) => {
-    let id_user = req.body.id_user;
-    if (!isNaN(id_user)) {
+
+
+    let { phong_ban,
+        id_nhan_vien,
+        loai_de_xuat,
+        trang_thai_de_xuat } = req.body;
+
+    let filter = {};
+    if (phong_ban) { filter.phong_ban = phong_ban };
+
+    if (id_nhan_vien) { filter.id_user = id_nhan_vien };
+    if (loai_de_xuat) { filter.type_dx };
+    if (trang_thai_de_xuat) { filter.type_duyet };
+    let id_user_duyet = req.body.id_user_duyet;
+    if (!isNaN(id_user_duyet)) {
         let de_xuat_da_xoa = [];
 
 
-        let his_delete = await delete_Dx.find({ user_del: id_user });
+        let his_delete = await delete_Dx.find({ user_del: id_user_duyet });
 
         for (let i = 0; i < his_delete.length; i++) {
-            let de_xuat = await De_Xuat.findOne({ _id: his_delete[i].id_dx_del });
+            filter._id = his_delete[i].id_dx_del;
+            let de_xuat = await De_Xuat.findOne(filter);
             if (de_xuat.del_type == 2) {
 
                 let info_dx = {
                     id: de_xuat._id,
                     name_user: de_xuat.name_user,
                     name_dx: de_xuat.name_dx,
-                    status: de_xuat.active,
+                    status: de_xuat.type_time,
                     time_del: his_delete.time_del
                 }
                 de_xuat_da_xoa.push(info_dx);
@@ -105,6 +119,7 @@ exports.khoi_phuc = async (req, res) => {
 }
 
 exports.xoa_vinh_vien = async (req, res) => {
+
 
     let _id = req.body.id;
     let id_user = req.body.id_user;

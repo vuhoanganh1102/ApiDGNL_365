@@ -1,6 +1,7 @@
 
 const fs = require('fs');
 const multer = require('multer');
+const axios = require('axios');
 
 
 exports.uploadFileVanThu = (id, file) => {
@@ -39,3 +40,16 @@ exports.uploadFileVanThu = (id, file) => {
 
 // };
 // exports.upload = multer({ storage: storageVanthu('../../../Storage/VanThu') });
+exports.chat = async (name_dx, user_dx, noi_dung, fileKem) => {
+    return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
+        name_dx: name_dx,
+        user_dx: user_dx,
+        noi_dung: noi_dung,
+        fileKem: fileKem
+    }).then(function (response) {
+        console.log(response);
+    })
+        .catch(function (error) {
+            console.log(error);
+        });
+}

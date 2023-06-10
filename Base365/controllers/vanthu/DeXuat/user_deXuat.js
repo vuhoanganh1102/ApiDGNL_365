@@ -79,7 +79,7 @@ exports.deXuat_user_send = async (req, res) => {
                         info_de_xuat_da_tu_choi.push(info_de_xuat_All[i]);
                     }
                 }
-                return res.status(200).json({ message: 'thanh cong ' });
+                return res.status(200).json({ data: info_de_xuat_All, message: 'thanh cong ' });
             } else {
                 return res.status(200).json({ message: " khong co de xuat nao cho user " });
             }
@@ -128,15 +128,19 @@ exports.de_xuat_send_to_me = async (req, res) => {
     let id_user_duyet = req.body.id_user_duyet;
     let id_user = req.body.id_user ? req.body.id_user : 0;
     let time_send_from = req.body.time_send_from ? req.body.time_send_from : new Date('1970-01-01').getTime();
-    // console.log("time_send_from " + time_send_from);
     let time_send_to = req.body.time_send_to ? req.body.time_send_to : new Date().getTime();
-    //console.log(id_user_duyet);
+    let tieu_de_de_xuat = req.body.tieu_de_de_xuat;
+    let loai_de_xuat = req.body.loai_de_xuat;
 
+    let filter = {};
+    if (tieu_de_de_xuat) { filter.name_dx = tieu_de_de_xuat; }
+    if (loai_de_xuat) { filter.type_dx = loai_de_xuat };
+    filter.id_user_duyet = id_user_duyet;
     let page = Number(req.body.page) ? Number(req.body.page) : 1;
     let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
     const skip = (page - 1) * pageSize;
 
-    if (!isNan(id_user_duyet)) {
+    if (!isNaN(id_user_duyet)) {
         if (!isNaN(id_user_duyet)) {
 
             info_de_xuat_All = [];
@@ -145,7 +149,7 @@ exports.de_xuat_send_to_me = async (req, res) => {
             info_de_xuat_da_tu_choi = [];
             de_Xuat = [];
 
-            de_Xuat = await De_Xuat.find({ id_user_duyet: id_user_duyet }).skip(skip).limit(pageSize);
+            de_Xuat = await De_Xuat.find(filter).skip(skip).limit(pageSize);
             console.log(de_Xuat);
             if (de_Xuat) {
 
@@ -154,7 +158,7 @@ exports.de_xuat_send_to_me = async (req, res) => {
                         _id: de_Xuat[i]._id,
                         name_use: de_Xuat[i].name_user,
                         name_dx: de_Xuat[i].name_dx,
-                        type_duyet: item.type_duyet,//3- huy 5-duyệt 6 -bắt buộc đi làm 7- đã tiếp nhận
+                        type_duyet: de_Xuat[i].type_duyet,//3- huy 5-duyệt 6 -bắt buộc đi làm 7- đã tiếp nhận
                         active: de_Xuat[i].active,//đòng ý hoặc từ chối 
                         time_create: de_Xuat[i].time_create,
                     }
@@ -300,10 +304,12 @@ exports.de_xuat_theo_doi = async (req, res) => {
                     else if (type_dx == 20) {// thưởng doanh thu 
                         let Setting_dx = await settingdx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
                         han_duyet = Setting_dx.timeHH;
+                        console.log(Setting_dx);
 
                     } else {
                         let Setting_dx = await settingdx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
                         han_duyet = Setting_dx.timeLimit;
+                        console.log(Setting_dx);
                     }
                     let time_han_duyet = (setting_Dx.timeLimit * 60 * 60) / 1000;
                     console.log(han_duyet);

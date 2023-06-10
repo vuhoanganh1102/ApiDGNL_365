@@ -17,7 +17,6 @@ exports.getModules = async(req, res, next) => {
         return functions.setError(res, error)
     }
 };
-
 // hàm đăng ký 
 exports.postAdmin = async(req, res, next) => {
         try {
@@ -229,4 +228,28 @@ exports.updatePassword = async(req, res, next) => {
         console.log(error)
         return functions.setError(res, error)
     }
+}
+
+//hàm đăng nhập admin
+exports.loginAdmin = async(req, res, next) => {
+    try {
+        if (req.body.account && req.body.password) {
+            const username = await functions.replaceMQ(req.body.username);
+            const password = await functions.replaceMQ(req.body.password);
+            var findUser = await functions.getDatafindOne(AdminUser, { loginName: username, active: 1, delete: 0 });
+            if (!findUser) {
+                return functions.setError(res, "Không tồn tại tài khoản Admin", 200)
+            }
+            let checkPassword = await functions.verifyPassword(password, findUser.password)
+            if (!checkPassword) {
+                return functions.setError(res, "Mật khẩu sai", 200)
+            }
+
+            const token = await functions.createToken(findUser, "2d");
+            return functions.success(res, 'Đăng nhập thành công', { token, adminId: findUser._id });
+        }
+    } catch (e) {
+        return functions.setError(res, "Đã có lỗi xảy ra", )
+    }
+
 }

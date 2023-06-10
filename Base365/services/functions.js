@@ -84,27 +84,7 @@ exports.checkTilte = async (input, list) => {
         return true
     }
 };
-// hàm tạo link title
-exports.createLinkTilte = (input) => {
-    input = input.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
-    str = input.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
-    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
-    str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
-    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
-    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
-    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
-    str = str.replace(/đ/g, "d");
-    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
-    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
-    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
-    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
-    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
-    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
-    str = str.replace(/Đ/g, "D");
-    str = str.toLowerCase();
-    str = str.replaceAll(' ', '-')
-    return str
-}
+
 // hàm check title khi update
 exports.removeSimilarKeywords = (keyword, arr) => {
     return arr.filter(file => !file.startsWith(keyword));
@@ -645,30 +625,6 @@ exports.checkDate = (date) => {
     return data instanceof Date && !isNaN(data);
 }
 
-exports.uploadFileRaoNhanh = (folder, id, file, allowedExtensions) => {
-    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
-    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
-    let fileCheck = path.extname(filePath);
-    console.log(folder)
-    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
-        return false
-    }
-    if (!fs.existsSync(path1)) {
-        fs.mkdirSync(path1, { recursive: true });
-    }
-    fs.readFile(file.path, (err, data) => {
-        if (err) {
-            console.log(err)
-        }
-        console.log("check", data);
-        fs.writeFile(filePath, data, (err) => {
-            if (err) {
-                console.log(err)
-            }
-        });
-    });
-    return true
-}
 
 exports.uploadFileBase64RaoNhanh = async (folder, id, base64String, file) => {
     let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
@@ -692,19 +648,6 @@ exports.uploadFileBase64RaoNhanh = async (folder, id, base64String, file) => {
     });
 }
 
-exports.deleteFileRaoNhanh = (id, file) => {
-    let filePath = `../Storage/base365/raonhanh365/pictures/avt_tindangmua/${id}/` + file;
-    fs.unlink(filePath, (err) => {
-        if (err) console.log(err);
-    });
-}
-
-exports.deleteImgRaoNhanh = (folder, id, file) => {
-    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file;
-    fs.unlink(filePath, (err) => {
-        if (err) console.log(err);
-    });
-}
 // hàm tìm id max Quản Lí Chung
 exports.getMaxIDQLC = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
@@ -803,49 +746,6 @@ exports.replaceKeywordSearch = async (lower, keyword) => {
     return keyword;
 };
 
-exports.replaceMQ = async (text) => {
-    text = text.replace(/\\'/g, "'");
-    text = text.replace(/'/g, "");
-    text = text.replace(/\\/g, "");
-    text = text.replace(/"/g, "");
-    return text;
-}
-
-//bỏ những từ khóa trong tiêu đề
-exports.removerTinlq = async (string) => {
-    var arr_remove = ["lương", "nhân", "trình", "viên", "chuyên", "cao", "tuyển", "dụng", "hấp", "dẫn", "chi", "tiết", "công", "ty", "tnhh", "sx", "tm", "dv", "phòng", "tại", "biết", "về"];
-    var result = arr_remove.reduce(function (str, remove) {
-        return str.replace(new RegExp(remove, "gi"), "");
-    }, string);
-
-    result = result.trim().replace(/\s+/g, " "); // Loại bỏ khoảng trắng dư thừa
-
-    return result;
-}
-
-exports.checkNameCateRaoNhanh = async (data) => {
-    switch (data) {
-        case 'Đồ điện tử':
-            return 'electroniceDevice'
-        case 'Xe cộ':
-            return 'vehicle'
-        case 'Bất động sản':
-            return 'realEstate'
-        case 'Ship':
-            return 'ship'
-        case 'Đồ gia dụng':
-            return 'houseWare'
-        case 'Sức khỏe - Sắc đẹp':
-            return 'health'
-        case 'Dịch vụ - Giải trí':
-            return 'entertainmentService'
-        case 'Việc làm':
-            return 'job'
-        case 'Thực phẩm, Đồ uống':
-            return 'food'
-
-    }
-}
 
 // hàm random 
 exports.getRandomInt = (min, max) => {

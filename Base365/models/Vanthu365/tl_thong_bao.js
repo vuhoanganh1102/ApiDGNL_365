@@ -1,25 +1,32 @@
 const mongoose = require('mongoose');
 const tl_ThongBao = new mongoose.Schema({
     id_thong_bao: {
-        type: Number
+        type: Number,
+        default: 0
     },
     id_user: {
-        type: Number
+        type: Number,
+        default: 0
     },
     id_user_nhan: {
-        type: Number
+        type: Number,
+        default: 0
     },
     id_van_ban: {
-        type: Number
+        type: Number,
+        default: 0
     },
     type: {
-        type: Number
+        type: Number,
+        default: 0
     },
     view: {
-        type: Number
+        type: Number,
+        default: 0
     },
     created_date: {
-        type: Number
+        type: Number,
+        default: 0
     }
 
 });

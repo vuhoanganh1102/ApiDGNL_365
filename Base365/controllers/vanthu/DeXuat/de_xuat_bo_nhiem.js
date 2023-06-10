@@ -1,6 +1,7 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const Cate_Dx = require('../../../models/Vanthu/cate_de_xuat');
 const functions = require('../../../services/vanthu');
+const path = require('path');
 exports.de_xuat_xin_bo_nhiem = async (req, res) => {
     let {
         name_dx,
