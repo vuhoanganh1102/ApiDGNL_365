@@ -1,5 +1,7 @@
 const Calendar = require("../../models/qlc/Calendar");
 const functions = require("../../services/functions");
+const Users = require("../../models/Users");
+
 // const shiftID = require("../../models/Users")
 //Lấy danh sách toàn bộ lịch làm việc
 exports.getAllCalendar = async (req, res) => {
@@ -7,29 +9,83 @@ exports.getAllCalendar = async (req, res) => {
         .then((calendars) => functions.success(res, "Get data successfully", calendars))
         .catch((err) => functions.setError(res, err.message));
 };
-//:ấy danh sách lịch làm việc của một công ty
+exports.getShiftById = async (req, res) => {
 
+    const _id = req.body.id;
+    const companyID = req.body.companyID
+    if((_id && companyID) == undefined){
+        functions.setError(res, "input required", 621);
+    }else if (isNaN(_id && companyID)) {
+        functions.setError(res, "Id must be a number", 621);
+    } else {
+        const shift = await functions.getDatafindOne(Shifts, { _id: _id, companyID:companyID });
+        if (shift) {
+            functions.success(res, "Get data successfully", shift);
+        } else {
+            functions.setError(res, "Shifts cannot be found or does not exist", 622);
+        }
+    }
+};
+exports.getShiftByComId = async (req, res) => {
+
+    const companyID = req.body.companyID;
+    console.log(companyID)
+    if (!companyID) {
+        functions.setError(res, "Company id required");
+    } else if ( isNaN(companyID)) {
+        functions.setError(res, "Company id must be a number");
+    } else {
+        await functions.getDatafind(Shifts, { companyID: companyID })
+            .then((shifts) => functions.success(res, "Get shift's data successfully", shifts))
+            .catch(err => functions.setError(res, err.message, 623));
+    }
+
+
+};
+exports.getTrackingtime = async (req,res)=>{
+
+
+    try {
+        const pageNumber = req.body.pageNumber || 1;
+        const request = req.body;
+        let companyID = request.companyID,
+            CreateAt = request.CreateAt || true
+            inputNew = request.inputNew 
+            inputOld = request.inputOld
+
+
+
+        if((companyID && CreateAt && inputNew && inputOld )==undefined){
+            functions.setError(res,"lack of input")
+        }else if(isNaN(companyID)){
+            functions.setError(res,"id must be a Number")
+        }else{
+            // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+            const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+            if (data) {
+                return await functions.success(res, 'Lấy thành công', { data });
+            };
+            return functions.setError(res, 'Không có dữ liệu', 404);
+        }
+   
+
+    } catch (err) {
+        functions.setError(res, err.message);
+    };
+
+
+}
+//:ấy danh sách lịch làm việc của một công ty
 exports.getAllCalendarCompany = async (req, res) => {
 
-    // const  companyID = req.body.companyID
-
-    // if (!companyID) {
-    //     functions.setError(res, "Company Id required")
-    // } else if (typeof companyID !== "number") {
-    //     functions.setError(res, "Company Id must be a number");
-    // } else {
-    //     const calendar = await functions.getDatafind(Calendar, { companyID: companyID })
-    //     if (!calendar) {
-    //         functions.setError(res, "Calendar cannot be found or does not exist");
-    //     } else {
-    //         functions.success(res, "Calendar found", calendar)
-    //     }
-    // }
     try {
         const companyID = req.body.companyID;
-        const data = await functions.getDatafind(Calendar, { companyID: companyID });
+        const calendarID = req.body.calendarID;
+        const numberUser = await functions.findCount(Users,{ "inForPerson.companyID":companyID , "inForPerson.calendarID": calendarID, type: 2})
+
+        const data = await functions.getDatafind(Calendar, { companyID: companyID  });
         if (data) {
-            return await functions.success(res, 'Lấy lich thành công', data);
+            return await functions.success(res, 'Lấy lich thành công', {data,numberUser});
         };
         return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -41,19 +97,7 @@ exports.getAllCalendarCompany = async (req, res) => {
 //Lấy thông tin của 1 lịch làm việc
 
 exports.getCalendarById = async (req, res) => {
-    //     const _id = req.params.id
-
-    //     if (functions.checkNumber(_id)) {
-    //         functions.setError(res, "Id must be a number");
-    //     } else {
-    //         const calendars = await functions.getDataFindOne(Calendar, { _id: _id });
-    //         if (!calendars) {
-    //             functions.setError(res, "Calendar cannot be found or does not exist");
-    //         } else {
-    //             functions.success(res, "Get calendar successfully", calendars);
-    //         }
-    //     }
-    // };
+  
     try {
         const _id = req.params.id;
         console.log(_id)

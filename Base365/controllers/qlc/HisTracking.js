@@ -1,24 +1,9 @@
 const Tracking = require('../../models/qlc/HisTracking');
 const functions = require('../../services/functions')
-// const shift = require('../../models/qlc/shift')
+const calEmp = require('../../models/qlc/CalendarWorkEmployee')
 //thêm chấm công 
 exports.CreateTracking = async (req,res)=>{
-    // const idQLC = req.body.idQLC;
-    // const companyID = req.body.companyID;
-    // const role = req.body.role;
-    // const imageTrack = req.body.imageTrack;
-    // const curDeviceidQLC = req.body.curDeviceName;
-    // const latitude = req.body.latitude;
-    // const longtitude = req.body.longtitude;
-    // const Location = req.body.Location;
-    // const NameWifi = req.body.NameWifi;
-    // const IpWifi = req.body.IpWifi;
-    // const MacWifi = req.body.MacWifi;
-    // const shiftID = req.body.shiftID;
-    // const BluetoothAdrr = req.body.BluetoothAdrr;
-    // // const Err = req.body.Err;
-    // // const Success = req.body.Success;
-    // const Note = req.body.Note;
+    
 
     const {idQLC, companyID, role,imageTrack,curDeviceName,latitude,longtitude,Location,NameWifi,IpWifi,MacWifi,shiftID ,BluetoothAdrr,Note,CreateAt,status,Err,Success,depID } = req.body;
 
@@ -114,39 +99,55 @@ exports.getListUserTrackingSuccess = async (req,res)=>{
 
 };
 
-exports.getListUserTrackingFalse = async (req,res)=>{
+exports.getlistUserNoneHistoryOfTracking = async (req, res) => {
 
 
-    try {
-        const pageNumber = req.body.pageNumber || 1;
-        const request = req.body;
-        let companyID = request.companyID,
-            idQLC = request.idQLC 
-        if((companyID && idQLC)==undefined){
-            functions.setError(res,"lack of input")
-        }else if(isNaN(companyID&&idQLC)){
-            functions.setError(res,"id must be a Number")
-        }else{
-            const data =  await Tracking.aggregate([{
-                $lookup: {
-                    from: "shift",
-                    localField: "adminID",
-                    foreignField: "_id",
-                    as: "AdminUser"
-                }
-            }])
-            if (data) {
-                return await functions.success(res, 'Lấy thành công', { data });
-            };
-            return functions.setError(res, 'Không có dữ liệu', 404);
+    const   pageNumber = req.body.pageNumber || 1;
+            CreateAt = req.body.CreateAt || true
+            inputNew = req.body.inputNew  || null
+            inputOld = req.body.inputOld   || null
+            companyID = req.body.companyID;
+            shiftID = req.body.shiftID
+    //ta tìm danh sách lịch sử nhân viên của công ty đã chấm công   
+    const data = await Tracking.find({ companyID: companyID,shiftID : shiftID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC shiftID ')
+    //ta tìm danh sách nhân viên đã có lịch làm việc của công ty
+    const data2 = await calEmp.find({ companyID: companyID,shiftID : shiftID,  }).select('_id idQLC shiftID  ')
+    //ta so sánh 2 mảng 
+    // Lọc ra các phần tử không giống nhau trong cả hai mảng
+
+    function compareObjects(obj1, obj2) {
+        return JSON.stringify(obj1.idQLC) === JSON.stringify(obj2.idQLC) ;
+    }
+
+    function removeSimilarElements(data, data2) {
+        const newArray = data.filter(
+            (item1) => !data2.some((item2) => compareObjects(item1, item2))
+        );
+
+        return newArray.concat(
+            data2.filter(
+                (item2) => !data.some((item1) => compareObjects(item1, item2))
+            )
+        );
+    }
+    const ketQua = removeSimilarElements(data, data2);
+    //LỌC PHẦN TỬ LẶP LẠI 
+    function compare(personA, personB) {
+        return personA.idQLC === personB.idQLC && personA.shiftID === personB.shiftID;
         }
-   
+    
+    let newData = functions.arrfil(ketQua, compare);
+    // console.log(newData)
 
-    } catch (err) {
-        functions.setError(res, err.message);
-    };
+    const pageSize = 20;
+    const startIndex = (pageNumber - 1) * pageSize;
+    const endIndex = pageNumber * pageSize;
+    const results = newData.slice(startIndex, endIndex);
 
-
+    if (newData) {//lấy thành công danh sách NV 
+        return await functions.success(res, 'Lấy thành công', { results, pageNumber });
+    }
+    return functions.setError(res, 'Không có dữ liệu', 404);
 }
 
 exports.getTrackingtime = async (req,res)=>{
@@ -285,20 +286,27 @@ exports.getTrackingALLConNotTime = async (req,res)=>{
     try {
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
-        let idQLC = request.idQLC || true
+        let idQLC = request.idQLC || null
             companyID = request.companyID,
-            depID = request.depID || true
-
-
-
-
-        if((companyID && CreateAt  )==undefined){
-            functions.setError(res,"lack of input")
-        }else if(isNaN(companyID)){
-            functions.setError(res,"id must be a Number")
-        }else{
+            depID = request.depID || null
+            CreateAt = request.CreateAt || true
+            inputNew = request.inputNew || null
+            inputOld = request.inputOld || null
+            let data = [];
+            let listCondition = {};
+        
+            if((companyID)==undefined){
+                functions.setError(res,"lack of input")
+            }else if(isNaN(companyID)){
+                functions.setError(res,"id must be a Number")
+            }else{
+            
+            if(idQLC) listCondition.idQLC = idQLC;
+            if(depID) listCondition.depID =  depID;
+            if(inputNew) listCondition.inputNew = inputNew;
+            if(inputOld) listCondition.inputOld = inputOld;
             // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
-            const data = await Tracking.find({companyID: companyID,idQLC : idQLC ,depID:depID }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
+             data = await Tracking.find(listCondition).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };

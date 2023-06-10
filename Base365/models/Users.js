@@ -183,6 +183,11 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            childID: {
+                // ID cty con cua công ty
+                type: Number,
+                default: 0
+            },
             startWorkingTime: {
                 // Thời gian bắt đầu làm việc
                 type: String,

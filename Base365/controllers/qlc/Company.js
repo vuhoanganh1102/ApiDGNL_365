@@ -28,9 +28,7 @@ exports.register = async (req, res) => {
                 idQLC: (Number(MaxId) + 1),
                 avatarCompany: null
             })
-            await user.save().then(() => {
-                console.log("Thêm mới thành công ID Công ty: " + email + "," + phoneTK);
-            }).catch((e) => {
+            await user.save().then(() =>  functions.success(res,"tạo tài khoản thành công",{user})).catch((e) => {
                 console.log(e);
             });
         } else {
@@ -78,7 +76,7 @@ exports.login = async (req, res, next) => {
 
                         }
                     }
-                    return functions.success(res, 'Đăng nhập thành công', data)
+                    return functions.success(res, 'Đăng nhập thành công', {data})
 
                 }else {
                     return functions.setError(res, "sai tai khoan hoac mat khau")

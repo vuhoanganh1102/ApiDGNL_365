@@ -1,12 +1,13 @@
 const calEmp = require("../../models/qlc/CalendarWorkEmployee")
 const functions = require("../../services/functions")
+
 //lấy tất cả lịch làm việc nhân viên
 exports.getAllCalendarEmp = async (req, res) => {
     await functions.getDatafind(calEmp, {})
         .then((calendars) => functions.success(res, "Get data successfully", calendars))
         .catch((err) => functions.setError(res, err.message));
 };
-//lấy danh sách lịch làm việc của nhân viên theo id
+//lấy danh sách nv có lịch làm việc 
 exports.getCalendarById = async (req, res) => {
 
     try {
@@ -27,29 +28,31 @@ exports.getCalendarById = async (req, res) => {
 
 //lấy danh sách lịch làm việc của nhân viên theo cty
 exports.getAllCalendarEmpByCom = async (req, res) => {
-    const companyID = req.user.data.companyID
+    const companyID = req.body.companyID
+    const calendarID = req.body.calendarID
     console.log(companyID)
     if (!companyID) {
         await functions.setError(res, 'thiếu dữ liệu công ty')
     } else {
-        const data = await functions.getDatafind(calEmp, { companyID :companyID })
+
+        const data = await calEmp.find({ companyID :companyID }).select("calendarID ")
         console.log(data)
         if(!data){
             return  functions.setError(res,"không tìm thấy lịch làm việc cuẩ công ty")
         }else{
-            return  functions.success(res,"lấy dữ liệu thành công", {data})
+            return  functions.success(res,"lấy dữ liệu thành công", {dat})
         }
     }
 }
 
-//tạo danh sách lịch làm việc cho nhân viên
+//tạo danh sách cho nhân viên cho lịch làm việc
 exports.createCalEmp = async (req,res)=>{
     // const email = req.user.data.email;
-    const {employeeID ,companyID ,calendarID , timeApply, Detail ,shiftID } = req.body;
-    if(!employeeID) {
-        functions.setError(res,"employeeID required")
-    }else if (isNaN(employeeID)){
-        functions.setError(res,"employeeID must be a number ")
+    const {idQLC ,companyID ,calendarID , timeApply, Detail ,shiftID } = req.body;
+    if(!idQLC) {
+        functions.setError(res,"idQLC required")
+    }else if (isNaN(idQLC)){
+        functions.setError(res,"idQLC must be a number ")
     }else if (!companyID) {
         functions.setError(res,"companyID required")
     }else if (isNaN(companyID) ){
@@ -71,7 +74,7 @@ exports.createCalEmp = async (req,res)=>{
         const tApply = timeApply != 0 ? new Date(timeApply *1000) : null
         const empCal = new calEmp({
             _id : Number(maxID) + 1,
-            employeeID: employeeID,
+            idQLC: idQLC,
             companyID :companyID,
             calendarID :calendarID,
             shiftID: shiftID,
@@ -91,12 +94,12 @@ exports.editCalendar = async (req, res) => {
     if (isNaN(_id)) {
         functions.setError(res, "Id must be a number");
     } else {
-        const { companyID, calendarID, timeApply, employeeID, Detail, } = req.body;
+        const { companyID, calendarID, timeApply, idQLC, Detail, } = req.body;
 
-        if(!employeeID) {
-            functions.setError(res,"employeeID required")
-        }else if (isNaN(employeeID)){
-            functions.setError(res,"employeeID must be a number ")
+        if(!idQLC) {
+            functions.setError(res,"idQLC required")
+        }else if (isNaN(idQLC)){
+            functions.setError(res,"idQLC must be a number ")
         }else if (!companyID) {
             functions.setError(res,"companyID required")
         }else if (isNaN(companyID) ){
@@ -118,7 +121,7 @@ exports.editCalendar = async (req, res) => {
                 functions.setError(res, "Calendar does not exist");
             } else {
                 await functions.getDatafindOneAndUpdate(calEmp, { _id: _id }, {
-                    employeeID: employeeID,
+                    idQLC: idQLC,
                     companyID :companyID,
                     calendarID :calendarID,
                     timeApply: tApply,

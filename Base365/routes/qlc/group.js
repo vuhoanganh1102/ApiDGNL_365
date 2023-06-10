@@ -11,7 +11,7 @@ const formData =require('express-form-data')
 router.post("/",formData.parse(), GroupController.createGroup);
 
 //API đếm số lượng nhân viên trong nhóm
-router.post("/count", formData.parse(), GroupController.countUserInGroup);
+// router.post("/count", formData.parse(), GroupController.countUserInGroup);
 
 //API thay đổi thông tin của một nhóm
 router.put("/", GroupController.editGroup);

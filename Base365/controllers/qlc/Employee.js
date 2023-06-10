@@ -39,9 +39,7 @@ exports.register = async (req,res)=>{
                                 startWorkingTime: req.body.startWorkingTime,
                                 candiHocVan: req.body.candiHocVan,
                             })
-                        await user.save().then(() => {
-                            console.log("Thêm mới thành công ID Công ty: " + email + "," + phoneTK);
-                        }).catch((e) => {
+                        await user.save().then(() => functions.success(res,"tạo tài khoản thành công",{user})).catch((e) => {
                             console.log(e);
                         });
                     } else {
@@ -158,7 +156,7 @@ exports.login = async (req,res)=>{
                     }
 
                 }
-                return functions.success(res,"dang nhap thanh cong",data)
+                return functions.success(res,"dang nhap thanh cong",{data})
             }else{
                 await functions.setError(res,"mail khong ton tai ")
             }

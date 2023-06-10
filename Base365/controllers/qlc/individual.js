@@ -27,9 +27,7 @@ exports.register = async (req, res) => {
                 "inForPerson.companyID": req.body.companyID,
                 "inForPerson.depID": req.body.depID,
             })
-                await Inuser.save().then(() => {
-                    console.log(`hêm mới tài khoản cá nhân thành công ${email} , ${phoneTK}`)
-                }).catch((e) => {
+                await Inuser.save().then(() =>  functions.success(res,"tạo tài khoản thành công",{Inuser})).catch((e) => {
                     console.log(e);
 
                 });
@@ -127,7 +125,7 @@ exports.login = async (req, res) => {
                         }
 
                     }
-                    return functions.success(res, "dang nhap thanh cong", data)
+                    return functions.success(res, "dang nhap thanh cong", {data})
                 } else {
                     await functions.setError(res, "mail khong ton tai ")
                 }

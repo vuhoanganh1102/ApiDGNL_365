@@ -10,7 +10,7 @@ router.post('/',formData.parse(),HisTrackingController.CreateTracking)
 router.post('/com/success',formData.parse(),HisTrackingController.getListUserTrackingSuccess)
 
 
-router.post('/com/false',formData.parse(),HisTrackingController.getListUserTrackingFalse)
+router.post('/com/false',formData.parse(),HisTrackingController.getlistUserNoneHistoryOfTracking)
 
 
 router.post('/com/time',formData.parse(),HisTrackingController.getTrackingtime)

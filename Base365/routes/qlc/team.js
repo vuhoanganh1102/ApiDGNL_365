@@ -4,22 +4,22 @@ const formData = require('express-form-data')
 const functions = require("../../services/functions")
 
 //Lấy toàn bộ dữ liệu tổ
-router.get("/",functions.checkToken, TeamController.getListTeam);
+router.post("/search", formData.parse(),TeamController.getListTeam);
 
 //Lấy dữ liệu của một tổ
-router.get("/:id",functions.checkToken, TeamController.getTeamById);
+// router.get("/:id", TeamController.getTeamById);
 
 //Tạo mới dữ liệu của một tổ
-router.post("/",functions.checkToken,formData.parse(), TeamController.createTeam);
+router.post("/",formData.parse(), TeamController.createTeam);
 //API đếm số lượng nhân viên trong tổ
-router.post("/team",functions.checkToken,formData.parse(), TeamController.countUserInTeam);
+router.post("/team",formData.parse(), TeamController.countUserInTeam);
 //Chỉnh sửa dự liệu của một tổ
-router.post("/:id",functions.checkToken,formData.parse(), TeamController.editTeam);
+router.post("/:id",formData.parse(), TeamController.editTeam);
 
 //Xóa dữ liệu của một tổ
-router.delete("/:id",functions.checkToken,formData.parse(), TeamController.deleteTeam);
+router.delete("/:id",formData.parse(), TeamController.deleteTeam);
 
 //Xoá toàn bộ dữ liệu tổ
-router.delete("/",functions.checkToken, TeamController.deleteAllTeams)
+router.delete("/", TeamController.deleteAllTeams)
 
 module.exports = router

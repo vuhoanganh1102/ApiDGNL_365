@@ -1,28 +1,42 @@
 const Team = require('../../models/qlc/Team');
 const functions = require("../../services/functions");
+const Users = require("../../models/Users")
+
 //tìm kiếm danh sách tổ
-exports.getListTeam = async (req, res) => {
-    await functions.getDatafind(Team, {})
-        .then((team) => functions.success(res, "", team))
-        .catch(err => functions.setError(err, 601, err.message));
-};
-//tìm kiếm tổ theo id
-exports.getTeamById = async (req, res) => {
-    const _id = req.params.id;
-
-    if (isNaN(_id)) {
-        functions.setError(res, "Id must be a number", 602);
-    } else {
-        const team = await Team.findById(_id);
-        if (!team) {
-            functions.setError(res, "Team cannot be or does not exist", 603);
-        } else {
-            functions.success(res, "Team found", team);
+   
+    exports.getListTeam = async(req, res) => {
+        try{
+            let companyID = req.body.companyID
+            let _id = req.body.id
+            let teamID = req.body.teamID || null
+            console.log(_id,companyID)
+            let data = []
+            let numberUser = {}
+            let condition = {};
+            if((companyID)==undefined){
+                functions.setError(res,"lack of input")
+            }else if(isNaN(companyID)){
+                functions.setError(res,"id must be a Number")
+            }else{
+                if(companyID) condition.companyID = companyID
+                if(_id) condition._id = _id
+                console.log(_id,companyID)
+                numberUser = await functions.findCount(Users,{ "inForPerson.companyID":companyID , "inForPerson.teamID": teamID, type: 2})
+                console.log(numberUser)
+                
+                data = await Team.find(condition).select('teamName depID deputyTeamId managerTeamId ')
+                if (data) {
+                    return await functions.success(res, 'Lấy thành công', { data,numberUser });
+                };
+                return functions.setError(res, 'Không có dữ liệu', 404);
+            }
+       
+        }catch(err){
+        console.log(err);
+        
+        functions.setError(res,err.message)
         }
-    }
-
-
-};
+    };
 //API đếm số lượng nhân viên trong tổ
 exports.countUserInTeam = async (req, res) => {
     try{
@@ -45,7 +59,7 @@ exports.countUserInTeam = async (req, res) => {
  //Tạo mới dữ liệu của một tổ
 exports.createTeam = async (req, res) => {
 
-    const { depID, teamName, companyID } = req.body;
+    const { depID, teamName, companyID ,deputyTeamId,managerTeamId } = req.body;
 
     if (!depID) {
         //Kiểm tra Id phòng ban có khác null
@@ -53,9 +67,6 @@ exports.createTeam = async (req, res) => {
     } else if (isNaN(depID) ) {
         //Kiểm tra Id phòng ban có thuộc kiểu number không
         functions.setError(res, "Deparment Id must be a number", 605);
-    } else if (!teamName) {
-        //Kiểm tra tên của tổ có khác null
-        functions.setError(res, "Team name required", 606);
     } else if (!companyID) {
         //Kiểm tra sắp xếp thứ tự có khác null
         functions.setError(res, "Team order required", 607);
@@ -77,7 +88,7 @@ exports.createTeam = async (req, res) => {
 
         await team.save()
             .then(() => {
-                functions.success(res, "Team created successfully", team)
+                functions.success(res, "Team created successfully", {team})
             })
             .catch(err => {
                 functions.setError(res, err.message, 609);
@@ -86,12 +97,12 @@ exports.createTeam = async (req, res) => {
 };
 //Chỉnh sửa dự liệu của một tổ
 exports.editTeam = async (req, res) => {
-    const _id = req.params.id;
+    const _id = req.body._id;
 
     if (isNaN(_id)) {
         functions.setError(res, "Id must be a number", 602)
     } else {
-        const { depID, teamName, companyID } = req.body
+        const { depID, teamName, companyID ,deputyTeamId,managerTeamId} = req.body
 
         if (!depID) {
             //Kiểm tra Id phòng ban có khác null
@@ -113,14 +124,14 @@ exports.editTeam = async (req, res) => {
             if (!team) {
                 functions.setError(res, "Team not exist", 610);
             } else {
-                await functions.getDatafindOneAndUpdate(Team, { _id: _id }, {
-                    depID: dearmentId,
+                await functions.getDatafindOneAndUpdate(Team, {companyID: companyID, _id: _id }, {
+                    depID: depID,
                     teamName: teamName,
                     companyID: companyID,
                     deputyTeamId: deputyTeamId || null,
                     managerTeamId: managerTeamId ||null
                 })
-                    .then((team) => functions.success(res, "Team edited successfully", team))
+                    .then((team) => functions.success(res, "Team edited successfully", {team}))
                     .catch((err) => functions.setError(res, err.message, 611));
             }
 

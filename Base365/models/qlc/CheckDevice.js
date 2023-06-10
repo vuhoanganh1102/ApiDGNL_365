@@ -33,7 +33,7 @@ const CheckDevice = new mongoose.Schema({
     newDeviceName:{
         type : String
     },
-    //Thời điểm tạo điểm danh
+    //Thời điểm tạo 
     createdAt: {
         type: Date,
         default: Date.now()

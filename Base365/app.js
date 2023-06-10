@@ -38,12 +38,20 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
-var childCompanyRouter = require('./routes/qlc/childCompany')
+var childCompanyRouter = require('./routes/qlc/ChildCompany')
 var managerUser = require('./routes/qlc/managerUser')
+var DelAppData = require('./routes/qlc/DelAppData')
+var TrackingQR = require('./routes/qlc/TrackingQR')
+var TrackingWifi = require('./routes/qlc/TrackingWifi')
+
+
+
 var employeeRoutes = require('./routes/qlc/employee.routes');
 var individualRoutes = require('./routes/qlc/individual.routes');
 
-var manageUserRouter = require('./routes/qlc/manageUser')
+
+
+// var manageUserRouter = require('./routes/qlc/managerUser')
 var HisOfTrackingRouter = require("./routes/qlc/HisTracking")
 var CalendarWorkEmployee = require("./routes/qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./routes/qlc/settingIP")
@@ -113,8 +121,11 @@ app.use('/api/qlc/individual',individualRouterQLC);
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
 app.use("/api/qlc/group",[authJwt.checkToken, authJwt.isCompany], groupRouter);
-// app.use('/api/qlc/childCompany', childCompanyRouter)
-// app.use('/api/qlc/managerUser', managerUser)
+app.use('/api/qlc/ChildCompany', childCompanyRouter)
+app.use('/api/qlc/managerUser', managerUser)
+app.use('/api/qlc/DelAppData', DelAppData)
+app.use('/api/qlc/TrackingQR', TrackingQR)
+app.use('/api/qlc/TrackingWifi', TrackingWifi)
 app.use('/api/qlc/employee', employeeRoutes);
 app.use('/api/qlc/individual', individualRoutes);
 
@@ -153,13 +164,13 @@ app.use(function(err, req, res, next) {
 
 //const DB_URL = 'mongodb://127.0.0.1/api-base365'; 
 // timviec365 -> api-base365
-const DB_URL = 'mongodb+srv://dung136ptit:dcmtml102@cluster0.fmwheli.mongodb.net/'; // timviec365 -> api-base365
+const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-app.listen(3004, () => {
-    console.log("Connected to databse");
-    console.log("Backend is running on http://localhost:3004")
-})
+// app.listen(3004, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3004")
+// })
 module.exports = app;

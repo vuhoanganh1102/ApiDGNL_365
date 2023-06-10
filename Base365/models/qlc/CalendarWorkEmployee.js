@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const CalendarWorkEmployee = new Schema({
-    _id: {//ID danh sách lịch làm việc cho nhân viên
+    _id: {//ID danh sách nhân viên có lịch làm việc
         type: Number,
         required: true
     },

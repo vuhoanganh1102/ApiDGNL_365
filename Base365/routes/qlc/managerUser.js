@@ -2,23 +2,24 @@
 
 const router = require('express').Router();
 const managerUserController = require('../../controllers/qlc/manageUser');
+const formData = require('express-form-data')
 
-//API lấy tất cả dữ liệu phòng ban 
-router.get("/",managerUserController.getListUser);
+//API lấy tất cả danh sách nhân viên 
+// router.get("/",formData.parse(),managerUserController.getlistUser);
 
-//API lấy dữ liệu một phòng ban
-router.get("/:id",managerUserController.getUserById);
+//API lấy danh sách nhân viên
+router.post("/user",formData.parse(),managerUserController.getlistAdmin);
 
-//API tạo mới một phUser
-// router.post("/",managerUserController.createEmployee);
+//API tạo mới một User
+router.post("/",formData.parse(),managerUserController.createUser);
 
-//API thay dổi thông tin của một phòng ban
-router.post("/:id",managerUserController.editUser);
+//API thay dổi thông tin của một user
+router.post("/:id",formData.parse(),managerUserController.editUser);
 
-//API xóa một phòng ban theo id
-router.delete("/:id",managerUserController.deleteUser);
+//API xóa một user theo id
+router.delete("/:id",formData.parse(),managerUserController.deleteUser);
 
-// API xóa toàn bộ phòng ban hiện có
+// API xóa toàn bộ nv hiện có
 router.delete("/",managerUserController.deleteAllUser);
 
 module.exports = router
