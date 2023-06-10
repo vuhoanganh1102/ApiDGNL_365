@@ -7,10 +7,6 @@ const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyF
 const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost')
 const axios = require('axios');
 const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
-const LikePost = require('../../models/Timviec365/UserOnSite/LikePost');
-const Keyword = require('../../models/Timviec365/UserOnSite/Company/Keywords')
-const Blog = require('../../models/Timviec365/Blog/Posts')
-const Category = require('../../models/Timviec365/UserOnSite/Company/Category.model')
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -340,7 +336,7 @@ exports.checkPostNew10p = async(req, res, next) => {
             let checkPost = await functions.isCurrentTimeGreaterThanInputTime(post.createTime);
             console.log(checkPost)
             if (checkPost) {
-                return functions.success(res, "đủ điều kiện đăng tin")
+                return functions.success(res, "Láy dữ liệu thành công")
             }
             return functions.setError(res, 'chưa đủ 10p', 404)
         }
@@ -631,18 +627,32 @@ exports.detail = async(req, res, next) => {
         let newID = req.body.new_id;
         let statusApply = false
         let statusSavePost = false
-
+        if (req.user) {
+            let userID = req.user.data.idTimViec365;
+            let apply = await functions.getDatafindOne(ApplyForJob, { userID: userID, newID: newID });
+            let savePost = await functions.getDatafindOne(UserSavePost, { userID: userID, newID: newID });
+            if (apply) {
+                statusApply = true
+            } else {
+                statusApply = false
+            }
+            if (savePost) {
+                statusSavePost = true
+            } else {
+                statusSavePost = false
+            }
+        }
         if (newID) {
-
-            let post = await NewTV365.aggregate([{
+            let post = await functions.getDatafindOne(NewTV365, { _id: newID });
+            let ListcommentPost = await CommentPost.aggregate([{
                     $match: {
-                        _id: Number(newID),
+                        idPost: Number(post._id),
                     }
                 },
                 {
                     $lookup: {
                         from: "Users",
-                        localField: "userID",
+                        localField: "commentPersonId",
                         foreignField: "idTimViec365",
                         as: "user"
                     }
@@ -655,247 +665,13 @@ exports.detail = async(req, res, next) => {
                 },
                 {
                     $project: {
-                        _id: Number(newID),
-                        new_title: '$title',
-                        new_alias: '$alias',
-                        new_cat_id: '$cateID',
-                        new_lv: '$lv',
-                        new_addr: '$address',
-                        new_city: '$cityID',
-                        new_qh_id: '$districtID',
-                        new_user_id: '$userID',
-                        new_money: '$money',
-                        new_cap_bac: '$capBac',
-                        new_exp: '$exp',
-                        new_bang_cap: '$bangCap',
-                        new_gioi_tinh: '$sex',
-                        new_so_luong: '$soLuong',
-                        new_hinh_thuc: '$hinhThuc',
-                        new_update_time: '$updateTime',
-                        new_view_count: '$viewCount',
-                        new_han_nop: '$hanNop',
-                        new_hot: '$newHot',
-                        new_tgtv: '$tgtv',
-                        new_images: '$images',
-                        new_video: '$video',
-                        new_video_type: '$videoType',
-                        new_mota: '$newMutil.moTa',
-                        new_quyenloi: '$newMutil.quyenLoi',
-                        new_hoahong: 'newMutil.$hoaHong',
-                        new_do: '$newDo',
-                        new_ho_so: '$newMutil.hoSo',
-                        nm_type: '$newMoney.type',
-                        nm_id: '$newMoney.id',
-                        nm_min_value: '$newMoney.minValue',
-                        nm_max_value: '$newMoney.maxValue',
-                        nm_unit: '$newMoney.unit',
-                        new_user_id: '$user._id',
-                        usc_company: '$user.userName',
-                        usc_logo: '$user.avatarUser',
-                        usc_address: '$user.address',
-                        usc_create_time: '$user.createdAt',
-
+                        "user.userName": 1
                     }
                 },
             ]);
-
-            let city = await functions.getDatafindOne(City, { _id: Number(post[0].new_city) })
-            let district = await functions.getDatafindOne(District, { _id: Number(post[0].new_qh_id) })
-            let category = await functions.getDatafindOne(Category, { _id: Number(post[0].new_cat_id) })
-            post[0].cit_name = city.name
-            post[0].cat_name = Category.name
-            post[0].qh_name = district.name
-
-            if (post[0]) {
-                //check ứng viên ứng tuyển hoặc lưu tin
-                if (req.user) {
-                    let userID = req.user.data.idTimViec365;
-                    let apply = await functions.getDatafindOne(ApplyForJob, { userID: userID, newID: newID });
-                    let savePost = await functions.getDatafindOne(UserSavePost, { userID: userID, newID: newID });
-                    if (apply) {
-                        statusApply = true
-                    }
-                    if (savePost) {
-                        statusSavePost = true
-                    }
-                }
-
-                //lấy ra những người comment, comment và tổng số comment
-                let ListcommentPost = await CommentPost.aggregate([{
-                        $match: {
-                            idPost: Number(newID),
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: "Users",
-                            localField: "commentPersonId",
-                            foreignField: "idTimViec365",
-                            as: "user"
-                        }
-                    },
-                    {
-                        $unwind: "$user"
-                    },
-                    {
-                        $skip: 0
-                    },
-                    {
-                        $project: {
-                            "user.userName": 1
-                        }
-                    },
-                ]);
-                post[0].countComment = ListcommentPost.length
-                post[0].commentName = ListcommentPost
-
-                //lấy ra những người like, like và tổng số like
-                let ListLikePost = await LikePost.aggregate([{
-                        $match: {
-                            idNew: Number(newID),
-                            type: { $ne: 8 },
-                            idCommentLike: 0
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: "Users",
-                            localField: "idUserLike",
-                            foreignField: "idTimViec365",
-                            as: "user"
-                        }
-                    },
-                    {
-                        $unwind: "$user"
-                    },
-                    {
-                        $skip: 0
-                    },
-                    {
-                        $project: {
-                            "user.userName": 1
-                        }
-                    },
-                ]);
-                post[0].countLike = ListLikePost.length
-                post[0].likeName = ListLikePost
-
-
-                //lấy ra những người chia sẻ và số lần chia sẻ
-                let ListSharePost = await LikePost.aggregate([{
-                        $match: {
-                            idNew: Number(newID),
-                            type: { $eq: 8 },
-                            idCommentLike: 0
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: "Users",
-                            localField: "idUserLike",
-                            foreignField: "idTimViec365",
-                            as: "user"
-                        }
-                    },
-                    {
-                        $unwind: "$user"
-                    },
-                    {
-                        $skip: 0
-                    },
-                    {
-                        $project: {
-                            "user.userName": 1
-                        }
-                    },
-                ]);
-                post[0].countShare = ListSharePost.length
-                post[0].shareName = ListSharePost
-
-                //box đia điểm
-                let findAddress = await Keyword.find({
-                    cbID: 0,
-                    cateID: 0,
-                    name: '',
-                    qhID: { $ne: 0 },
-                    cityID: { $in: Number(post[0].new_city) },
-                }, {
-                    _id: 1,
-                    cateID: 1,
-                    cityID: 1,
-                    qhID: 1,
-                    type: 1
-                }).limit(20)
-
-                //box chức danh
-                let title = post[0].new_title.toLowerCase()
-
-                let keyName = ["thực tập", "chuyên viên", "nhân viên", "trưởng phòng", "trưởng nhóm",
-                    "trợ lý", "phó trưởng phòng", "phó giám đốc", "giám đốc", "quản lý", "quản đốc"
-                ]
-
-                let findChucDanh = await Keyword.find({
-                    name: { $in: keyName.map(name => new RegExp(name, "i")) },
-                    cateLq: { $in: post[0].new_cat_id },
-                    cityID: { $in: post[0].new_city },
-                    $or: [
-                        { qhID: { $in: post[0].new_qh_id } },
-                        { qhID: { $nin: post[0].new_qh_id } }
-                    ]
-                }, {
-                    _id: 1,
-                    cateID: 1,
-                    cityID: 1,
-                    qhID: 1,
-                    type: 1
-                }).sort({ qhID: { $in: post[0].new_qh_id } ? -1 : 1 }).limit(20)
-
-                //box từ khóa liên quan
-
-                let keyNameLq1 = ["tuyển", "gấp", "hot", "tại", "thực tập", "nhân viên", "chuyên viên", "giám đốc",
-                    "trưởng phòng", "trưởng nhóm", "trợ lý", "phó trưởng phòng", "phó giám đốc", "quản lý", "quản đốc"
-                ]
-
-                const keyNameLq2 = `(${keyNameLq1.join('|')})`;
-                let findTuKhoaLienQuan = await Keyword.find({
-                    name: { $not: { $regex: keyNameLq2, $options: 'i' } },
-                    name: { $ne: "" },
-                    cityID: 0,
-                    cateLq: { $in: post[0].new_cat_id },
-                    cbID: 0,
-                    $or: [
-                        { qhID: { $in: post[0].new_qh_id } },
-                        { qhID: { $nin: post[0].new_qh_id } }
-                    ]
-                }, {
-                    _id: 1,
-                    cateID: 1,
-                    cityID: 1,
-                    qhID: 1,
-                    type: 1
-                }).sort({ qhID: { $in: post[0].new_qh_id } ? -1 : 1 }).limit(20);
-
-                let keyBlogLienQuan1 = await functions.replaceMQ(post[0].new_title)
-                let keyBlogLienQuan2 = await functions.replaceKeywordSearch(1, keyBlogLienQuan1)
-                let keyBlogLienQuan3 = await functions.removerTinlq(keyBlogLienQuan2)
-                let regexKeyBlog = new RegExp(keyBlogLienQuan3.replace(/\s+/g, ".*"), "i");
-
-                //box hướng dẫn
-
-                let huongDan = await Blog.find({
-                    title: { $regex: regexKeyBlog }
-                }, { _id: 1, title: 1, titleRewrite: 1 }).limit(20);
-                return functions.success(res, "làm mới bài tuyển dụng thành công", {
-                    data: post,
-                    statusApply,
-                    statusSavePost,
-                    Address: findAddress,
-                    ChucDanh: findChucDanh,
-                    TuKhoaLienQuan: findTuKhoaLienQuan,
-                    HuongDan: huongDan
-                })
-            } else return functions.setError(res, 'không có tin tuyển dụng này', 404)
-
+            post.countComment = ListcommentPost.length
+            post.commentName = ListcommentPost
+            return functions.success(res, "làm mới bài tuyển dụng thành công", { data: post, statusApply, statusSavePost })
         }
         return functions.setError(res, 'thiếu dữ liệu', 404)
 
@@ -1867,7 +1643,6 @@ exports.listJobBySearch = async(req, res, next) => {
             const element = listJobNew[i];
             let avatarUser = await functions.getUrlLogoCompany(element.user.createdAt, element.user.avatarUser);
             element.user.avatarUser = avatarUser;
-
             let ListcommentPost = await CommentPost.aggregate([{
                     $match: {
                         idPost: Number(element._id),
@@ -1895,66 +1670,6 @@ exports.listJobBySearch = async(req, res, next) => {
             ]);
             element.user.countComment = ListcommentPost.length
             element.user.commentName = ListcommentPost
-
-            let ListLikePost = await LikePost.aggregate([{
-                    $match: {
-                        idNew: Number(element._id),
-                        type: { $ne: 8 },
-                        idCommentLike: 0
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "Users",
-                        localField: "idUserLike",
-                        foreignField: "idTimViec365",
-                        as: "user"
-                    }
-                },
-                {
-                    $unwind: "$user"
-                },
-                {
-                    $skip: 0
-                },
-                {
-                    $project: {
-                        "user.userName": 1
-                    }
-                },
-            ]);
-            element.user.countLike = ListLikePost.length
-            element.user.likeName = ListLikePost
-
-            let ListSharePost = await LikePost.aggregate([{
-                    $match: {
-                        idNew: Number(element._id),
-                        type: { $eq: 8 },
-                        idCommentLike: 0
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "Users",
-                        localField: "idUserLike",
-                        foreignField: "idTimViec365",
-                        as: "user"
-                    }
-                },
-                {
-                    $unwind: "$user"
-                },
-                {
-                    $skip: 0
-                },
-                {
-                    $project: {
-                        "user.userName": 1
-                    }
-                },
-            ]);
-            element.user.countShare = ListSharePost.length
-            element.user.shareName = ListSharePost
             if (user) {
                 let checkNopHoSo = await functions.getDatafindOne(ApplyForJob, { _id: element._id, userID: user.idTimViec365 })
                 if (checkNopHoSo) {
@@ -1962,74 +1677,10 @@ exports.listJobBySearch = async(req, res, next) => {
                 } else element.user.isNopHoSo = false
             }
         }
+
+
         const total = await functions.findCount(NewTV365, condition);
         return functions.success(res, "Lấy danh sách tin đăng thành công", { total, items: listJobNew });
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
-
-// like tin
-exports.likeNew = async(req, res, next) => {
-    try {
-        let idNew = req.body.new_id;
-        let type = req.body.type;
-        let IPLike = req.body.IPLike
-        let idComment = req.body.idComment
-        if (idNew && req.user) {
-            let userId = req.user.data.idTimViec365
-            if (!idComment) {
-                let findLike = await functions.getDatafindOne(LikePost, { idNew: idNew, idUserLike: userId, idCommentLike: 0 })
-                if (findLike) {
-                    let deleteLike = await functions.getDataDeleteOne(LikePost, { idNew: idNew, idUserLike: userId })
-                    if (deleteLike) {
-                        return functions.success(res, "bỏ like tin thành công")
-                    }
-                } else {
-                    const maxID = await LikePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-                    if (maxID) {
-                        newID = Number(maxID._id) + 1;
-                    } else newID = 1
-                    let insertLike = new LikePost({
-                        _id: newID,
-                        idNew: idNew,
-                        type: type,
-                        idUserLike: userId,
-                        IPLike: IPLike,
-                        timeComment: new Date(Date.now())
-                    })
-                    insertLike.save()
-                    return functions.success(res, "like tin thành công")
-                }
-            } else {
-                let findLike = await functions.getDatafindOne(LikePost, { idNew: idNew, idUserLike: userId, idCommentLike: idComment })
-                if (findLike) {
-                    let deleteLikeComment = await functions.getDataDeleteOne(LikePost, { idNew: idNew, idUserLike: userId, idCommentLike: idComment })
-                    if (deleteLikeComment) {
-                        return functions.success(res, "bỏ like bình luận thành công")
-                    }
-                } else {
-                    const maxID = await LikePost.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-                    if (maxID) {
-                        newID = Number(maxID._id) + 1;
-                    } else newID = 1
-                    let insertLike = new LikePost({
-                        _id: newID,
-                        idNew: idNew,
-                        type: type,
-                        idCommentLike: idComment,
-                        idUserLike: userId,
-                        IPLike: IPLike,
-                        timeComment: new Date(Date.now())
-                    })
-                    insertLike.save()
-                    return functions.success(res, "like bình luận tin thành công")
-                }
-            }
-            return functions.success(res, "làm mới bài tuyển dụng thành công")
-        }
-        return functions.setError(res, 'thiếu dữ liệu', 404)
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)

@@ -130,6 +130,6 @@ router.post('/toolHistoryHandlingDX',toolVanThu.toolHistoryHDX);
 router.post('/toolLyDo',toolVanThu.toolLyDo);
 router.post('/toolPhongBan',toolVanThu.toolPhongBan);
 router.post('/toolSettingDX',toolVanThu.toolSettingDX);
-router.post('/toolVanBan',toolVanThu.tool_VanBan);
+
 
 module.exports = router;

@@ -5,14 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="743cec86-3bb5-47a7-b11e-02232bb8715b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Base365/models/Vanthu/setting_dx.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Base365/routes/vanthu/SettingRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Base365/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Base365/controllers/tools/vanthu.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/tools/vanthu.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/Setting.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/Setting.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Base365/routes/tools.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/tools.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/RoutertoolVT.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,7 +14,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="NgVLam" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/Base365" />
+    <option name="RESET_MODE" value="HARD" />
+    <option name="ROOT_SYNC" value="SYNC" />
   </component>
   <component name="ProjectId" id="2QH9ii2RmuO1zLgub5Xyatx1zvr" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -33,6 +34,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
+    "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "D:/File CT/FIle Cong Ty/API-BASE365",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -53,6 +55,7 @@
       <updated>1684999784286</updated>
       <workItem from="1684999790516" duration="102000" />
       <workItem from="1685494780805" duration="825000" />
+      <workItem from="1686364518777" duration="116000" />
     </task>
     <servers />
   </component>

@@ -4,7 +4,7 @@ const multer = require('multer');
 const functions = require("../../../services/functions");
 
 exports.showCateDX = async(req,res) => {
-  
+    console.log(1);
     try {
         const cateDx = await CateDeXuat.find();
         res.status(200).json(cateDx)

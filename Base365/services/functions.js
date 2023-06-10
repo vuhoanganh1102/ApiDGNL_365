@@ -356,42 +356,6 @@ const transport = nodemailer.createTransport({
     }
 });
 
-exports.uploadVanthuDeXuat = (id, file) => {
-    let path = `../Storage/base365/vanthu/dexuat/${id}/`;
-    let filePath = `../Storage/base365/vanthu/dexuat/${id}/` + file.originalFilename;
-    if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới     
-        fs.mkdirSync(path, { recursive: true });
-    }
-    fs.readFile(file.path, (err, data) => {
-        if (err) {
-            console.log(err)
-        }
-        fs.writeFile(filePath, data, (err) => {
-            if (err) {
-                console.log(err)
-            }
-        });
-    });
-}
-
-exports.uploadVanthuCongVan = (id,file) => {
-    let path = `../Storage/base365/vanthu/congvan/${id}/`;
-    let filePath = `../Storage/base365/vanthu/congvan/${id}/` + file.originalFilename;
-    if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới     
-        fs.mkdirSync(path, { recursive: true });
-    }
-    fs.readFile(file.path, (err, data) => {
-        if (err) {
-            console.log(err)
-        }
-        fs.writeFile(filePath, data, (err) => {
-            if (err) {
-                console.log(err)
-            }
-        });
-    });
-}
-
 // hàm gửi mail
 exports.sendEmailVerificationRequest = async(otp, email, nameCompany) => {
     let options = {
@@ -426,8 +390,7 @@ exports.verifyPassword = async(inputPassword, hashedPassword) => {
 // hàm check token
 exports.checkToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[2];
-    console.log(token)
+    const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
         return res.status(401).json({ message: "Missing token" });
     }

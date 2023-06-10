@@ -6,7 +6,7 @@ var formData = require('express-form-data');
 router.get('/',settingVanthu.getSettings);
 
 
-// Api lấy dữ liệu cài đặt của công ty
+// Api lấy dữ liệu
 router.post('/',formData.parse(),settingVanthu.findOneSetting);
 
 
@@ -15,10 +15,10 @@ router.post('/addSetting', formData.parse(),settingVanthu.createSettingDx);
 
 
 // Api sửa setting
-router.patch('/editSetting',formData.parse(),settingVanthu.editSettingDx);
+router.put('/:id',formData.parse(),settingVanthu.editSettingDx);
 
 
 //Api xóa setting
-router.delete('/',formData.parse(),settingVanthu.removeSetting);
+router.delete('/:id',settingVanthu.removeSetting);
 
 module.exports = router

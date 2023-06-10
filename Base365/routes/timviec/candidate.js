@@ -88,7 +88,7 @@ router.post('/updateExp', formData.parse(), functions.checkToken, candidate.upda
 router.post('/deleteExp', formData.parse(), functions.checkToken, candidate.deleteExp);
 
 //api danh sách ứng viên ngẫu nhiên, theo ngành nghề, vị trí
-router.post('/list', formData.parse(), functions.checkToken, candidate.list);
+router.post('/selectiveUv', formData.parse(), functions.checkToken, candidate.selectiveUv);
 
 //api danh sách ứng viên tương tự được AI gợi ý
 router.post('/candidateAI', formData.parse(), candidate.candidateAI);

@@ -12,7 +12,6 @@ const HistoryHDX = require('../../models/Vanthu/history_handling_dx');
 const LyDo = require('../../models/Vanthu/ly_do');
 const PhongBan = require('../../models/Vanthu/phong_ban')
 const settingDx = require('../../models/Vanthu/setting_dx')
-const VanBan = require('../../models/Vanthu/van_ban');
 
 // danh mục các loại đề xuất
 exports.toolCateDeXuat = async (req, res, next) => {
@@ -629,80 +628,3 @@ exports.toolSettingDX = async (req, res, next) => {
     }
 }
 
-exports.tool_VanBan = async (req, res, next) => {
-    try {
-        let result = true;
-        page = 1;
-        do {
-            let data = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_van_ban.php', { page: page });
-            let listData = data.data.items;
-            if (listData.length > 0) {
-
-                for (let i = 0; i < listData.length; i++) {
-
-
-
-                    // console.log(typeof (listData[i].thoi_gian_duyet));
-                    // let thoiGianDuyet = null;
-                    // if (listData[i].id == 49) {
-                    //     console.log((listData[i].thoi_gian_duyet));
-
-                    // };
-
-                    const vanBan = new VanBan({
-                        _id: listData[i].id,
-                        title_vb: listData[i].title_vb,
-                        des_vb: listData[i].des_vb,
-                        so_vb: listData[i].so_vb,
-                        nd_vb: listData[i].nd_vb,
-                        book_vb: listData[i].book_vb,
-                        time_ban_hanh: (listData[i].time_ban_hanh * 1000), 
-                        time_hieu_luc: (listData[i].time_hieu_luc * 1000),
-                        nhom_vb: listData[i].nhom_vb,
-                        user_send: listData[i].user_send,
-                        name_user_send: listData[i].name_user_send,
-                        com_user: listData[i].com_user,
-                        user_nhan: listData[i].user_nhan,
-                        user_cty: listData[i].user_cty,
-                        user_forward: listData[i].user_forward,
-                        type_thu_hoi: listData[i].type_thu_hoi,
-                        gui_ngoai_cty: listData[i].gui_ngoai_cty,
-                        mail_cty: listData[i].mail_cty,
-                        name_com: listData[i].name_com,
-                        file_vb: listData[i].file_vb,
-                        trang_thai_vb: listData[i].trang_thai_vb,
-                        duyet_vb: listData[i].duyet_vb,
-                        type_xet_duyet: listData[i].type_xet_duyet,
-                        thoi_gian_duyet: (listData[i].thoi_gian_duyet * 1000), 
-                        nguoi_xet_duyet: listData[i].nguoi_xet_duyet,
-                        nguoi_theo_doi: listData[i].nguoi_theo_doi,
-                        nguoi_ky: listData[i].nguoi_ky,
-                        so_van_ban: listData[i].so_van_ban,
-                        phieu_trinh: listData[i].phieu_trinh,
-                        chuc_vu_nguoi_ky: listData[i].chuc_vu_nguoi_ky,
-                        ghi_chu: listData[i].ghi_chu,
-                        type_khan_cap: listData[i].type_khan_cap,
-                        type_bao_mat: listData[i].type_bao_mat,
-                        type_tai: listData[i].type_tai,
-                        type_duyet_chuyen_tiep: listData[i].type_duyet_chuyen_tiep,
-                        type_nhan_chuyen_tiep: listData[i].type_nhan_chuyen_tiep,
-                        type_thay_the: listData[i].type_thay_the,
-                        created_date: new Date(listData[i].created_date * 1000),
-                        type_duyet: listData[i].type_duyet,
-                        update_time: listData[i].update_time,
-                    });
-                    await vanBan.save();
-
-                }
-                page++;
-                console.log(page);
-
-            } else { result = false; }
-
-        } while (result);
-        await fnc.success(res, "thanh cong ");
-    } catch (error) {
-        console.log(error)
-        return fnc.setError(res, error)
-    }
-}

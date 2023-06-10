@@ -3,6 +3,6 @@ const dexuatThuongPhat = require('../../../controllers/vanthu/DeXuat/DeXuatThuon
 const formData = require('express-form-data');
 const funtions = require('../../../services/functions');
 
-router.post('/addDXTP',formData.parse(),funtions.checkToken,dexuatThuongPhat.dxThuongPhat)
+router.post('/addDXTP',funtions.checkToken,formData.parse(),dexuatThuongPhat.dxThuongPhat)
 
 module.exports = router

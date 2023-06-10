@@ -56,9 +56,8 @@ var dexuatVC = require('./routes/vanthu/deXuat/DeXuatCoSoVatChatRoutes');
 var dexuatKN = require('./routes/vanthu/deXuat/DeXuatKhieuNaiRoutes');
 var dexuatTP = require('./routes/vanthu/deXuat/DeXuatThuongPhatRoutes');
 var dexuatHH = require('./routes/vanthu/deXuat/DeXuatHoaHongRoutes');
-var cateDX = require("./routes/vanthu/deXuat/cateDeXuatRoutes")
-var historyDX = require("./routes/vanthu/deXuat/historyDeXuatRoutes")
-var vanBan = require('./routes/vanthu/vanBan/VanBanRoutes')
+var cateDX = require("./routes/vanthu/cateDeXuatRoutes")
+var historyDX = require("./routes/vanthu/historyDeXuatRoutes")
 const {router} = require("express/lib/application");
 
 var app = express();
@@ -79,7 +78,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../Storage')));
 
 
-// app.use('/api/timviec/candidate', candidateRouter);
+app.use('/api/timviec/candidate', candidateRouter);
 app.use('/api/timviec/new', newTV365Router)
 app.use('/api/timviec/admin', adminRouter)
 app.use('/api/timviec/company', companyRouter)
@@ -126,8 +125,7 @@ app.use("/api/dexuat",dexuatKN);
 app.use("/api/dexuat",dexuatTP);
 app.use("/api/dexuat",dexuatHH);
 app.use("/api/catedexuat",cateDX);
-app.use("/api/historydx",historyDX);
-app.use("/api/vanban",vanBan)
+app.use("/api/historydx",historyDX)
 
 // app.use("/api/vt",)
 
