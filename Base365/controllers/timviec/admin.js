@@ -4,6 +4,9 @@ const AdminUser = require('../../models/AdminUser');
 const Modules = require('../../models/Timviec365/Admin/Modules');
 const functions = require('../../services/functions');
 const AdminUserRight = require('../../models/Timviec365/Admin/AdminUserRight')
+const CategoryJob = require('../../models/Timviec365/CategoryJob')
+const CategoryBlog = require('../../models/Timviec365/Blog/Category')
+
 
 // hàm lấy dữ liệu modules
 exports.getModules = async(req, res, next) => {
@@ -29,7 +32,7 @@ exports.postAdmin = async(req, res, next) => {
                 modules = request.modules,
                 allCategory = request.allCategory,
                 category = request.accessCategory,
-                langID = requestlangID;
+                langID = request.langID;
             if (loginName && name && phone && password && email) {
                 let checkEmail = await functions.checkEmail(email);
                 let checkPhone = await functions.checkPhoneNumber(phone);
@@ -66,7 +69,7 @@ exports.postAdmin = async(req, res, next) => {
                             langID: langID || 1,
                         })
                         await adminUser.save();
-                        return functions.success(res, 'thêm mới thành công')
+                        return functions.success(res, 'thêm mới thành công', { token })
                     }
                     return functions.setError(res, 'tên đăng nhập đã tồn tại', 404)
                 }
@@ -91,6 +94,7 @@ exports.updateAdmin = async(req, res, next) => {
                 allCategory = request.allCategory,
                 category = request.accessCategory;
             let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
+
             if (checkAdmin) {
                 if (name && phone && password && email) {
                     let checkEmail = await functions.checkEmail(email);
@@ -116,7 +120,6 @@ exports.updateAdmin = async(req, res, next) => {
                         }
                         await AdminUser.updateOne({ _id: idAdmin }, {
                             $set: {
-                                loginName: loginName,
                                 password: md5(password),
                                 name: name,
                                 email: email,
@@ -233,7 +236,7 @@ exports.updatePassword = async(req, res, next) => {
 //hàm đăng nhập admin
 exports.loginAdmin = async(req, res, next) => {
     try {
-        if (req.body.account && req.body.password) {
+        if (req.body.username && req.body.password) {
             const username = await functions.replaceMQ(req.body.username);
             const password = await functions.replaceMQ(req.body.password);
             var findUser = await functions.getDatafindOne(AdminUser, { loginName: username, active: 1, delete: 0 });
@@ -249,7 +252,95 @@ exports.loginAdmin = async(req, res, next) => {
             return functions.success(res, 'Đăng nhập thành công', { token, adminId: findUser._id });
         }
     } catch (e) {
-        return functions.setError(res, "Đã có lỗi xảy ra", )
+        return functions.setError(res, "Đã có lỗi xảy ra", 400)
     }
 
 }
+
+//thêm mới danh mục
+exports.addCategory = async(req, res, next) => {
+    try {
+        if (req.user && req.body.cateName) {
+            let cateName = req.body.cateName
+            let parentId = req.body.parentId
+            let findCate = await functions.getDatafindOne(CategoryJob, { name: cateName })
+            if (findCate) {
+                return functions.setError(res, "Danh mục đã tồn tại", 400)
+            } else {
+                const maxID = await CategoryJob.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                if (maxID) {
+                    newID = Number(maxID._id) + 1;
+                } else newID = 1
+                let newCate = new CategoryJob({
+                    _id: newID,
+                    name: cateName
+                })
+                newCate.save()
+                if (parentId) {
+                    let updateCateMulti = await functions.getDatafindOneAndUpdate(CategoryBlog, { _id: parentId }, { hasChild: 1 })
+                }
+                return functions.success(res, 'Thêm danh mục thành công');
+
+            }
+        } else return functions.setError(res, "Tham số truyền lên không đầy đủ", 400)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+};
+
+//hiển thị danh mục (còn thiếu luồng ẩn lấy danh mục con)
+exports.addCategory = async(req, res, next) => {
+    try {
+        if (req.user) {
+            let cate = await CategoryJob.find({ parentID: 0 }, { name: 1 })
+            if (cate) {
+                return functions.success(res, 'lấy dữ liệu thành công', { cate })
+            }
+        } else return functions.setError(res, "Bạn không phải là admin (chưa truyền lên token chứ j)", 400)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+};
+
+//thêm mới danh mục blog
+exports.addCategoryBlog = async(req, res, next) => {
+    try {
+        if (req.user && req.body.cateName) {
+            let cateName = req.body.cateName
+            let catLink = req.body.catLink
+            let adminId = req.user.data._id
+            let catTitle = req.body.catTitle
+            let catKeyword = req.body.catKeyword
+            let catDes = req.body.catDes
+            let findCate = await functions.getDatafindOne(CategoryBlog, { name: cateName })
+            if (findCate) {
+                return functions.setError(res, "Danh mục đã tồn tại", 400)
+            } else {
+                const maxID = await CategoryBlog.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+                if (maxID) {
+                    newID = Number(maxID._id) + 1;
+                } else newID = 1
+                let newCate = new CategoryBlog({
+                    _id: newID,
+                    name: cateName,
+                    adminID: adminId,
+                    title: catTitle,
+                    keyword: catKeyword,
+                    link: catLink,
+                    description: catDes,
+                })
+                newCate.save()
+                if (parentId) {
+                    let updateCateMulti = await functions.getDatafindOneAndUpdate(CategoryBlog, { _id: parentId }, { hasChild: 1 })
+                }
+                return functions.success(res, 'Thêm danh mục thành công');
+
+            }
+        } else return functions.setError(res, "Tham số truyền lên không đầy đủ", 400)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+};

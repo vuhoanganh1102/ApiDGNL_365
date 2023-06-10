@@ -28,4 +28,10 @@ router.post('/updateActive', functions.checkToken, formData.parse(), admin.updat
 // api cập nhập password    
 router.post('/updatePassword', functions.checkToken, formData.parse(), admin.updatePassword);
 
+//login admin
+router.post('/loginAdmin', formData.parse(), admin.loginAdmin);
+
+//thêm mới danh mục
+router.post('/addCategory', functions.checkToken, formData.parse(), admin.addCategory);
+
 module.exports = router;

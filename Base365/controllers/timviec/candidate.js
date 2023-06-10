@@ -720,7 +720,7 @@ exports.completeProfileQlc = async(req, res, next) => {
         let listJobFit = await newTV365.find({ cateID: 1, cityID: 1 }, { _id: 1 })
 
         //nhà tuyển dụng xem hồ sơ
-        let ntdCheckHoso = await functions.getDatafind(pointUsed, { useID: candiCateID, type: candiCateID })
+        let ntdCheckHoso = await functions.getDatafind(pointUsed, { useID: userId })
 
 
         let itesm_dem = {
