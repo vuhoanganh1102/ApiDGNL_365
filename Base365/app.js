@@ -4,6 +4,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose')
+var authJwt = require('./middleware/authJwt');
+
+
 
 
 
@@ -14,7 +17,13 @@ var newTV365Router = require('./routes/timviec/newTV365');
 
 // rao nhanh
 var newRN365Router = require('./routes/raonhanh365/new');
-var blogRaoNhanh365Router = require('./routes/raonhanh365/blog')
+var blogRaoNhanh365Router = require('./routes/raonhanh365/blog');
+var orderRaoNhanh = require('./routes/raonhanh365/order');
+var userRaoNhanh = require('./routes/raonhanh365/user');
+var companyRaoNhanh365Router = require('./routes/raonhanh365/company');
+var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
+var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
+var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
@@ -29,7 +38,11 @@ var teamRouter = require('./routes/qlc/team');
 var groupRouter = require('./routes/qlc/group');
 var shiftRouter = require('./routes/qlc/shift');
 var calendarRouter = require('./routes/qlc/calendar');
-// var childCompanyRouter = require('./routes/qlc/childCompany')
+var childCompanyRouter = require('./routes/qlc/childCompany')
+var managerUser = require('./routes/qlc/managerUser')
+var employeeRoutes = require('./routes/qlc/employee.routes');
+var individualRoutes = require('./routes/qlc/individual.routes');
+
 var manageUserRouter = require('./routes/qlc/manageUser')
 
 // crm_import
@@ -43,6 +56,7 @@ var donRouter = require('./routes/timviec/don');
 var thuRouter = require('./routes/timviec/thu');
 var syllRouter = require('./routes/timviec/syll');
 
+<<<<<<< HEAD
 //
 var toolVT = require('./routes/tools')
 var settingDX = require('./routes/vanthu/SettingRoutes')
@@ -59,6 +73,11 @@ var dexuatHH = require('./routes/vanthu/deXuat/DeXuatHoaHongRoutes');
 var cateDX = require("./routes/vanthu/cateDeXuatRoutes")
 var historyDX = require("./routes/vanthu/historyDeXuatRoutes")
 const {router} = require("express/lib/application");
+=======
+var toolVT = require('./routes/vanthu/RoutertoolVT')
+
+const { router } = require("express/lib/application");
+>>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
 
 var app = express();
 // app.listen(3001, () => {
@@ -89,21 +108,31 @@ app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
 app.use('/api/tool', toolAddDataRouter);
 
-app.use('/api/timviec/priceList', priceListRouter);
+// app.use('/api/timviec/priceList', priceListRouter);
 app.use('/api/timviec/trangVang', trangVangRouter);
 app.use('/api/timviec/ssl', soSanhLuongRouter);
 app.use('/api/timviec/mail365', mail365Router);
 
 // api rao nhanh
-app.use('/api/raonhanh/news', newRN365Router);
+app.use('/api/raonhanh/new', newRN365Router);
 app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
+app.use('/api/raonhanh/orderRaoNhanh', orderRaoNhanh)
+app.use('/api/raonhanh/userRaoNhanh', userRaoNhanh)
+app.use('/api/raonhanh/com', companyRaoNhanh365Router);
+app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
+app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
+app.use('/api/raonhanh/admin', adminRaonhanh365);
 
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
-app.use("/api/qlc/group", groupRouter);
+app.use("/api/qlc/group", [authJwt.checkToken, authJwt.isCompany], groupRouter);
+// app.use('/api/qlc/childCompany', childCompanyRouter)
+// app.use('/api/qlc/managerUser', managerUser)
+app.use('/api/qlc/employee', employeeRoutes);
+app.use('/api/qlc/individual', individualRoutes);
+
 // app.use('/api/qlc/childCompany', childCompanyRouter);
-app.use('/api/qlc/manageUser', manageUserRouter);
 
 
 //API quẩn lý ca làm việc
@@ -112,6 +141,7 @@ app.use("/api/calendar", calendarRouter);
 
 
 //API văn thu
+<<<<<<< HEAD
 app.use("/api/tool",toolVT);
 app.use("/api/settingdx",settingDX);
 app.use("/api/dexuat",dexuatTC);
@@ -128,6 +158,9 @@ app.use("/api/catedexuat",cateDX);
 app.use("/api/historydx",historyDX)
 
 // app.use("/api/vt",)
+=======
+app.use("/api/tool", toolVT)
+>>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
@@ -148,13 +181,22 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
+
+// timviec365 -> api-base365
 const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
+<<<<<<< HEAD
 app.listen(3005, () => {
     console.log("Connected to databse");
     console.log("Backend is running on http://localhost:3005")
 })
+=======
+// app.listen(3004, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3004")
+// })
+>>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
 module.exports = app;

@@ -16,9 +16,17 @@ const OrderSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    name:{
+        // tên người mua
+        type:String
+    },
+    phone:{
+        // số điện thoại liên hệ
+        type:Number
+    },
     paymentMethod: {
         //phương thức thanh toán
-        type: String,
+        type: Number,
         default: 0
     },
     deliveryAddress: {
@@ -71,6 +79,10 @@ const OrderSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    createdAt:{
+        type: Date,
+        default: new Date(Date.now())
+    },
     note: {
         //ghi chú cho người bán
         type: String,
@@ -102,7 +114,7 @@ const OrderSchema = new mongoose.Schema({
         default: new Date()
     },
     status: {
-        //0:chờ xác nhận, 1: đang xử lý, 2: đang giao, 3: đã giao
+       // 0: chờ xác nhận, 1: đang xử lý, 2:đang giao, 3: đã giao, 4: giao hàng thành công, 5: hủy đơn hàng 6 : đang ứng tuyển 
         type: Number,
         default: 0
     },

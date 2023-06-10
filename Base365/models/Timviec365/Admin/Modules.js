@@ -4,12 +4,30 @@ const moduleSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    name: String,
-    path: String,
-    listName: String,
-    listFile: String,
-    order: String,
-    help: String,
+    name: {
+        type: String,
+        default: null
+    },
+    path: {
+        type: String,
+        default: null
+    },
+    listName: {
+        type: String,
+        default: null
+    },
+    listFile: {
+        type: String,
+        default: null
+    },
+    order: {
+        type: String,
+        default: null
+    },
+    help: {
+        type: String,
+        default: null
+    },
     langID: {
         type: Number,
         default: 1

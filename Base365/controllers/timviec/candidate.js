@@ -12,13 +12,25 @@ const newTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
 const applyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
 const userSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
 const pointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed');
+<<<<<<< HEAD
 const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost')
     //mã hóa mật khẩu
+=======
+const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
+const categoryBlog = require('../../models/Timviec365/Blog/Category');
+
+//mã hóa mật khẩu
+>>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
 const md5 = require('md5');
 //token
 var jwt = require('jsonwebtoken');
 const axios = require('axios');
 const functions = require('../../services/functions');
+
+const functionsBlog = require('../../services/serviceBlog');
+
+const sendMail = require('../../services/sendMail');
+
 const { token } = require('morgan');
 const fs = require('fs');
 const path = require('path');
@@ -168,6 +180,7 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                         from: from,
                         idTimViec365: newIDTimviec,
                         authentic: 0,
+                        birthday: birthday,
                         createdAt: new Date(Date.now()),
                         inForPerson: {
                             user_id: 0,
@@ -200,6 +213,7 @@ exports.RegisterB2VideoUpload = async(req, res, next) => {
                         from: from,
                         idTimViec365: newIDTimviec,
                         authentic: 0,
+                        birthday: birthday,
                         createdAt: new Date(Date.now()),
                         inForPerson: {
                             user_id: 0,
@@ -389,7 +403,6 @@ exports.sendOTP = async(req, res, next) => {
                             return functions.success(res, 'Gửi OTP thành công');
                         });
                 });
-
         } else if (await functions.checkEmail(user) && await functions.getDatafindOne(Users, { email: user }, )) {
             await functions.getDataAxios("http://43.239.223.142:9000/api/users/RegisterMailOtp", { user })
                 .then((response) => {
@@ -518,6 +531,7 @@ exports.sendOTPChangePass = async(req, res, next) => {
 
 };
 
+<<<<<<< HEAD
 //đăng kí = cách làm cv trên site
 exports.RegisterB2CvSite = async(req, res, next) => {
     try {
@@ -632,6 +646,23 @@ exports.loginUv = async(req, res, next) => {
                 var findUser = await functions.getDatafindOne(Users, { email: account, type: 0 });
             }
 
+=======
+//ứng viên đăng nhập
+exports.loginUv = async(req, res, next) => {
+    try {
+        if (req.body.account && req.body.password) {
+            const type = 0;
+            const account = req.body.account;
+            const password = req.body.password;
+
+            let checkPhoneNumber = await functions.checkPhoneNumber(account);
+            if (checkPhoneNumber) {
+                var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: { $ne: 1 } });
+            } else {
+                var findUser = await functions.getDatafindOne(Users, { email: account, type: { $ne: 1 } });
+            }
+
+>>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
             if (!findUser) {
                 return functions.setError(res, "Không tồn tại tài khoản", 200)
             }
@@ -641,12 +672,20 @@ exports.loginUv = async(req, res, next) => {
             }
 
             const token = await functions.createToken(findUser, "2d");
+<<<<<<< HEAD
             return functions.success(res, 'Đăng nhập thành công', { token });
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi đăng nhập", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
+=======
+            return functions.success(res, 'Đăng nhập thành công', { token, authentic: findUser.authentic, user_id: findUser.idTimViec365 });
+        }
+    } catch (e) {
+        return functions.setError(res, "Đã có lỗi xảy ra", )
+>>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
     }
+
 }
 
 
@@ -654,47 +693,208 @@ exports.loginUv = async(req, res, next) => {
 exports.completeProfileQlc = async(req, res, next) => {
     try {
         let phoneTK = String(req.user.data.phoneTK)
+<<<<<<< HEAD
         let newAI = []
         let newCv = []
         let newBlog = []
         console.log(req.user.data)
         let candiCateID = Number(req.user.data.inForPerson.candiCateID.split(",")[0])
+=======
 
-        let takeData = await axios({
-            method: "post",
-            url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
-            data: {
-                site_job: "timviec365",
-                site_uv: "uvtimviec365",
-                new_id: candiCateID,
-                size: 20,
-                pagination: 1,
-            },
-            headers: { "Content-Type": "multipart/form-data" }
-        });
-        let listNewId = takeData.data.data.list_id.split(",")
-        for (let i = 0; i < listNewId.length; i++) {
-            listNewId[i] = Number(listNewId[i])
+        let postAI = []
+        let userId = req.user.data.idTimViec365
+        console.log(userId)
+        let candiCateID = Number(req.user.data.inForPerson.candiCateID[0])
+        let candiCityID = Number(req.user.data.inForPerson.candiCityID[0])
+            //việc làm AI
+        try {
+            let takeData = await axios({
+                method: "post",
+                url: "http://43.239.223.10:4001/recommendation_tin_ungvien",
+                data: {
+                    site_job: "timviec365",
+                    site_uv: "uvtimviec365",
+                    new_id: candiCateID,
+                    size: 20,
+                    pagination: 1,
+                },
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+>>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
+
+            if (takeData.data.data != null && takeData.data.data.list_id != '') {
+
+                let listNewId = takeData.data.data.list_id.split(",").map(Number)
+
+                postAI = await newTV365.aggregate([{
+                        $match: {
+                            _id: { $in: listNewId },
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "Users",
+                            localField: "userID",
+                            foreignField: "idTimViec365",
+                            as: "user"
+                        }
+                    },
+                    {
+                        $unwind: "$user"
+                    },
+                    {
+                        $skip: 0
+                    },
+                    {
+                        $project: {
+                            usc_company: '$user.userName',
+                            usc_logo: '$user.avatarUser',
+                            new_title: '$title',
+                            new_city: '$cityID',
+                            new_han_nop: '$hanNop',
+                            new_hot: '$newHot',
+                            money: '$money',
+                            nm_type: '$newMoney.type',
+                            nm_id: '$newMoney.id',
+                            nm_min_value: '$newMoney.minValue',
+                            nm_max_value: '$newMoney.maxValue',
+                            nm_unit: '$newMoney.unit',
+                        }
+                    },
+                ]);
+
+                for (let i = 0; i < postAI.length; i++) {
+                    const element = postAI[i]
+                    element.new_money = await functions.new_money_tv(element.nm_id, element.nm_type, element.nm_unit, element.nm_min_value, element.nm_max_value, element.money)
+                    delete element.money
+                    delete element.nm_type
+                    delete element.nm_id
+                    delete element.nm_min_value
+                    delete element.nm_max_value
+                    delete element.nm_unit
+                }
+            }
+        } catch (e) {
+            console.log(e)
+
         }
 
+        //Mẫu Cv của tôi
+        let myCv = await CVUV.aggregate([{
+                $match: {
+                    userId: userId
+                }
+            },
+            {
+                $lookup: {
+                    from: "CV",
+                    localField: "cvId",
+                    foreignField: "_id",
+                    as: "cv"
+                }
+            },
+            {
+                $unwind: "$cv"
+            },
+            {
+                $skip: 0
+            },
+            {
+                $project: {
+                    img: '$nameImage',
+                    title: '$cv.name',
+                    link_edit: '$cv.alias',
+                    cv_id: '$cv._id',
+                    cv_xoa: 'deleteCv',
+                    cv_daidien: `0`
+                }
+            },
+        ]);
+
+<<<<<<< HEAD
         let findNew = await functions.getDatafind(NewTV365, { _id: { $in: listNewId } })
         for (let i = 0; i < findNew.length; i++) {
             newAI.push(findNew[i])
+=======
+        for (let i = 0; i < myCv.length; i++) {
+            myCv[i].img = `upload/ungvien/uv_${userId}/${myCv[i].img}`
+            myCv[i].img = await functions.hostCv(myCv[i].img)
+            myCv[i].link_edit = await functions.hostCv(myCv[i].link_edit)
+            myCv[i].link_dowload = `download-cvpdf/cv.php?cvid=${ myCv[i].cv_id}&uid=${userId}&cvname=${myCv[i].title}`
+            myCv[i].link_dowload = await functions.hostCv(myCv[i].link_dowload)
+>>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
         }
-
-        let findCv = await functions.getDatafind(CV, {})
+        //Mẫu CV đề xuất
+        let findCv = await CV.find({}, { image: 1, alias: 1 }).sort({ _id: -1 }).limit(10)
 
         for (let i = 0; i < findCv.length; i++) {
-            newCv.push(findCv[i])
+            text = `upload/cv/thumb/${findCv[i].image}`
+            findCv[i].image = await functions.hostCv(text)
+            findCv[i].alias = await functions.hostCv(findCv[i].alias)
         }
 
-        let findBlog = await functions.getDatafind(blog, { categoryID: candiCateID })
-        for (let i = 0; i < findBlog.length; i++) {
-            newBlog.push(findBlog[i])
+        //số việc làm đã ứng tuyển
+        let listJobUv = await functions.getDatafind(applyForJob, { userID: userId })
+
+        //việc làm phù hợp
+        let listJobFit = await newTV365.find({ cateID: 1, cityID: 1 }, { _id: 1 })
+
+        //nhà tuyển dụng xem hồ sơ
+        let ntdCheckHoso = await functions.getDatafind(pointUsed, { useID: candiCateID, type: candiCateID })
+
+
+        let itesm_dem = {
+            "ut": listJobUv.length,
+            'vl': listJobFit.length,
+            'ntd': ntdCheckHoso.length
         }
 
+        let myBlog = await blog.aggregate([{
+                $match: {
+                    categoryID: candiCateID
+                }
+            },
+            {
+                $lookup: {
+                    from: "CategoryBlog",
+                    localField: "categoryID",
+                    foreignField: "_id",
+                    as: "cate"
+                }
+            },
+            {
+                $unwind: "$cate"
+            },
+            {
+                $skip: 0
+            },
+            {
+                $project: {
+                    name: '$cate.name',
+                    link: '$titleRewrite',
+                    img: '$picture',
+                    title: '$title'
+                }
+            },
+        ]);
 
-        functions.success(res, "Hiển thị qlc thành công", { newAI, newCv, newBlog })
+        let itesm_qc = {}
+        itesm_qc.name = myBlog[0].name
+        itesm_qc.items = []
+
+        for (let i = 0; i < myBlog.length; i++) {
+            myBlog[i].link = await functionsBlog.hostBlog(myBlog[i].link, myBlog[i]._id)
+            myBlog[i].img = await functions.getPictureBlogTv365(myBlog[i].img)
+            itesm_qc.items.push(myBlog[i])
+        }
+        const newData = {...itesm_qc }; // Tạo bản sao của đối tượng data
+        newData.items = newData.items.map(item => {
+            const newItem = {...item }; // Tạo bản sao của phần tử
+            delete newItem.name; // Xóa trường name trong phần tử
+            return newItem;
+        });
+
+        functions.success(res, "Hiển thị qlc thành công", { itesm_vl: postAI, itesm_cv: myCv, itesm_cvdx: findCv, itesm_dem, itesm_qc })
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
@@ -1612,7 +1812,7 @@ exports.deleteExp = async(req, res, next) => {
 }
 
 //hiển thị danh sách ứng viên theo tỉnh thành, vị trí
-exports.selectiveUv = async(req, res, next) => {
+exports.list = async(req, res, next) => {
     try {
 
         let page = Number(req.body.page)
@@ -1640,24 +1840,29 @@ exports.selectiveUv = async(req, res, next) => {
         } else if (!city && cate) {
             let listUv = []
             let findUv = await functions.pageFindV2(Users, { type: 0 }, {
-                userName: 1,
-                city: 1,
-                district: 1,
-                address: 1,
-                avatarUser: 1,
-                isOnline: 1,
-                inForPerson: 1
-            }, { updatedAt: -1 }, skip, limit)
-            for (let i = 0; i < findUv.length; i++) {
-                let listCateId = findUv[i].inForPerson.candiCateID.split(',')
-                if (listCateId.includes(cate)) {
-                    listUv.push(findUv[i])
-                }
-            }
-            const totalCount = listUv.length
-            const totalPages = Math.ceil(totalCount / pageSize)
+                    userName: 1,
+                    city: 1,
+                    district: 1,
+                    address: 1,
+                    avatarUser: 1,
+                    isOnline: 1,
+                    inForPerson: 1
+                }, { updatedAt: -1 }, skip, limit)
+                // for (let i = 0; i < findUv.length; i++) {
+                //     let listCateId = findUv[i].inForPerson.candiCateID.split(',')
+                //     if (listCateId.includes(cate)) {
+                //         listUv.push(findUv[i])
+                //     }
+                // }
+                // const totalCount = listUv.length
+                // const totalPages = Math.ceil(totalCount / pageSize)
+                // if (findUv) {
+                //     functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+                // }
+            let cateId = 1
+            let findUser = await Users.find({ "inForPerson.candiCateID": { "$regex": "\\b" + cateId + "\\b", "$not": { "$regex": "\\b" + cateId + "1\\b" } } })
             if (findUv) {
-                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { listUv: findUser });
             }
         } else if (city && cate) {
             let listUv = []
@@ -1717,19 +1922,29 @@ exports.candidateAI = async(req, res, next) => {
             pagination: 1,
             size: 20,
         })
-        for (let i = 0; i < uvAI.data.item.length; i++) {
-            let findUvAI = await functions.getDatafindOne(Users, { idTimViec365: uvAI.data.item[i].use_id })
-            if (findUvAI) {
-                list.push(findUvAI)
+        if (uvAI && uvAI.length > 0) {
+            for (let i = 0; i < uvAI.data.item.length; i++) {
+
+                let findUvAI = await Users.findOne({ idTimViec365: uvAI.data.item[i].use_id }, {
+                    _id: 1,
+                    userName: 1,
+                    avatarUser: 1,
+                    lastActivedAt: 1,
+                    "inForPerson.candiTitle": 1,
+                    "inForPerson.candiCityID": 1,
+                    "inForPerson.candiMoney": 1
+                })
+                if (findUvAI) {
+                    findUvAI.avatarUser = await functions.getUrlLogoCompany(findUvAI.createdAt, findUvAI.avatarUser)
+                    list.push(findUvAI)
+                }
+                if (list.length == 12) {
+                    break
+                }
             }
-            if (list.length == 12) {
-                break
-            }
-        }
-        console.log(uvAI.data.item)
-        if (uvAI) {
             functions.success(res, "Hiển thị ứng viên ngẫu nhiên theo ai thành công", { list });
-        }
+        } else return functions.setError(res, "Không có ứng viên phù hợp", 400);
+
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi hiển thị ứng viên ngẫu nhiên theo ai", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
@@ -1743,32 +1958,33 @@ exports.infoCandidate = async(req, res, next) => {
             let userId = req.body.iduser
             let CvUv = functions.getDatafindOne(CVUV, { userId: userId })
             let userInfo = await functions.findOneUser(userId)
+
             if (userInfo) {
+                let candidateAI = await functions.getDataAxios('http://localhost:3000/api/timviec/candidate/candidateAI', { use_id: userId })
                 if (req.user && req.user.data.type == 1) {
                     let companyId = req.user.data.idTimViec365
                     let checkApplyForJob = await functions.getDatafindOne(applyForJob, { userID: userId, comID: companyId })
                     let checkPoint = await functions.getDatafindOne(pointUsed, { uscID: companyId, useID: userId })
+
                     if (checkApplyForJob && checkPoint) {
-                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
+                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true, candidateAI: candidateAI });
                     } else {
                         userInfo.phoneTK = "bạn chưa sử dụng điểm để xem sdt đăng kí"
                         userInfo.phone = "bạn chưa sử dụng điểm để xem sdt"
                         userInfo.email = "bạn chưa sử dụng điểm để xem email"
                         userInfo.emailContact = "bạn chưa sử dụng điểm để xem email liên hệ"
-                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
+                        functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false, candidateAI: candidateAI });
 
                     }
                 } else if (req.user && req.user.data.idTimViec365 == userId) {
-                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true });
+                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: true, candidateAI: candidateAI });
                 } else {
                     userInfo.phoneTK = "đăng nhập để xem sdt đăng kí"
                     userInfo.phone = "đăng nhập để xem sdt"
                     userInfo.email = "đăng nhập để xem email"
                     userInfo.emailContact = "đăng nhập để xem email liên hệ"
-                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false });
+                    functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false, candidateAI: candidateAI });
                 }
-
-
             } else return functions.setError(res, "Không có thông tin user", 400);
 
 
@@ -1815,7 +2031,7 @@ exports.candidateApply = async(req, res, next) => {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
     } catch (e) {
-        console.log("Đã có lỗi xảy ra khi xóa kinh nghiệm làm việc", e);
+        console.log("Đã có lỗi xảy ra khi ứng tuyển", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
@@ -1912,6 +2128,139 @@ exports.commentPost = async(req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi thêm kinh nghiệm làm việc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//Xóa việc làm ừng tuyển
+exports.deleteJobCandidateApply = async(req, res, next) => {
+    try {
+        if (req.user && req.body.new_id) {
+
+            let userId = req.user.data.idTimViec365
+            let newId = req.body.new_id
+            let deleteJobUv = await functions.getDataDeleteOne(applyForJob, { _id: newId, userID: userId })
+
+            if (deleteJobUv) {
+                functions.success(res, "Xóa thông tin thành công");
+            } else return functions.setError(res, "Xóa không thành công", 400);
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//hiển thị danh sách ứng viên theo tỉnh thành, vị trí
+exports.list = async(req, res, next) => {
+    try {
+
+        let page = Number(req.body.page)
+        let pageSize = Number(req.body.pageSize)
+        let city = req.body.city
+        let cate = req.body.cate
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+
+        if (city && !cate) {
+            let findUv = await functions.pageFindV2(Users, { type: 0, city: city }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            const totalCount = await Users.countDocuments({ type: 0, city: city })
+            const totalPages = Math.ceil(totalCount / pageSize)
+            if (findUv) {
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: findUv });
+            }
+        } else if (!city && cate) {
+            let listUv = []
+            let findUv = await functions.pageFindV2(Users, { type: 0 }, {
+                    userName: 1,
+                    city: 1,
+                    district: 1,
+                    address: 1,
+                    avatarUser: 1,
+                    isOnline: 1,
+                    inForPerson: 1
+                }, { updatedAt: -1 }, skip, limit)
+                // for (let i = 0; i < findUv.length; i++) {
+                //     let listCateId = findUv[i].inForPerson.candiCateID.split(',')
+                //     if (listCateId.includes(cate)) {
+                //         listUv.push(findUv[i])
+                //     }
+                // }
+                // const totalCount = listUv.length
+                // const totalPages = Math.ceil(totalCount / pageSize)
+                // if (findUv) {
+                //     functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+                // }
+            let cateId = 1
+            let findUser = await Users.find({ "inForPerson.candiCateID": { "$regex": "\\b" + cateId + "\\b", "$not": { "$regex": "\\b" + cateId + "1\\b" } } })
+            if (findUv) {
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { listUv: findUser });
+            }
+        } else if (city && cate) {
+            let listUv = []
+            let findUv = await functions.pageFindV2(Users, { type: 0, city: city }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            console.log(findUv)
+            for (let i = 0; i < findUv.length; i++) {
+                let listCateId = findUv[i].inForPerson.candiCateID.split(',')
+                if (listCateId.includes(cate)) {
+                    listUv.push(findUv[i])
+                }
+            }
+            const totalCount = listUv.length
+            const totalPages = Math.ceil(totalCount / pageSize)
+            if (findUv) {
+                functions.success(res, "Hiển thị ứng viên theo vị trí, ngành nghề thành công", { totalCount, totalPages, listUv: listUv });
+            }
+        } else if (!city && !cate) {
+            let findRandomUv = await functions.pageFindV2(Users, { type: 0 }, {
+                userName: 1,
+                city: 1,
+                district: 1,
+                address: 1,
+                avatarUser: 1,
+                isOnline: 1,
+                inForPerson: 1
+            }, { updatedAt: -1 }, skip, limit)
+            const totalCount = await Users.countDocuments({ type: 0 })
+            const totalPages = Math.ceil(totalCount / pageSize)
+
+            if (findRandomUv) {
+                functions.success(res, "Hiển thị ứng viên ngẫu nhiên thành công", { totalCount, totalPages, listUv: findRandomUv });
+            }
+        }
+
+
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi hiển thị ứng viên theo vị trí, ngành nghề", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+exports.test = async(req, res, next) => {
+    try {
+        await sendMail.Send_NTD_xem_UV("nguyentronghungyt123@gmail.com", "Hung", "HungHaPay", "1", "2", "IT")
+            // await sendMail.SendmailHunghapay("TV365", "nguyentronghungyt123@gmail", "Timviec365", "CiAgICA8Ym9keSBzdHlsZT0id2lkdGg6IDEwMCU7YmFja2dyb3VuZC1jb2xvcjogI2RhZDdkNzt0ZXh0LWFsaWduOiBqdXN0aWZ5O3BhZGRpbmc6IDA7bWFyZ2luOiAwO2ZvbnQtZmFtaWx5OiBhcmlhbDtwYWRkaW5nLXRvcDogMjBweDtwYWRkaW5nLWJvdHRvbTogMjBweDsiPgogICAgICAgIDx0YWJsZSBzdHlsZT0id2lkdGg6IDcwMHB4O2JhY2tncm91bmQ6I2ZmZjsgbWFyZ2luOjAgYXV0bztib3JkZXItY29sbGFwc2U6IGNvbGxhcHNlO2NvbG9yOiAjMDAwIj4KICAgICAgICAgICAgPHRyIHN0eWxlPSJoZWlnaHQ6IDEyMHB4O2JhY2tncm91bmQtaW1hZ2U6IHVybChodHRwczovL3RpbXZpZWMzNjUudm4vaW1hZ2VzL2VtYWlsL2Jhbm5lcl9tYWlseGVtVVYucG5nKTtiYWNrZ3JvdW5kLXNpemU6MTAwJSAxMDAlO2JhY2tncm91bmQtcmVwZWF0OiBuby1yZXBlYXQ7ZmxvYXQ6IGxlZnQ7d2lkdGg6IDEwMCU7cGFkZGluZzogMHB4IDMwcHg7Ym94LXNpemluZzogYm9yZGVyLWJveDsiPgogICAgICAgICAgICA8L3RyPgogICAgICAgICAgICA8dHI+PHRkIHN0eWxlPSJwYWRkaW5nLWJvdHRvbTogMjBweDtiYWNrZ3JvdW5kOiAjZGFkN2Q3Ij48L3RkPjwvdHI+CiAgICAgICAgICAgIDx0ciAgc3R5bGU9ImZsb2F0OiBsZWZ0O3BhZGRpbmc6MTBweCAxNXB4IDBweCAxNXB4O21pbi1oZWlnaHQ6IDE3NXB4OyI+CiAgICAgICAgICAgICAgICA8dGQgY29sc3Bhbj0iMiI+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9ImZvbnQtc2l6ZTogMTZweDttYXJnaW46IDA7bGluZS1oZWlnaHQ6IDE5cHg7bWFyZ2luLWJvdHRvbTogNXB4O3BhZGRpbmctdG9wOiAxNXB4OyI+WGluIGNow6BvIEh1bmc8L3A+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9ImZvbnQtc2l6ZTogMTZweDttYXJnaW46IDA7bGluZS1oZWlnaHQ6IDE5cHg7bWFyZ2luLWJvdHRvbTogNXB4O3BhZGRpbmctdG9wOiA1cHg7Ij5Dw6FtIMahbiBi4bqhbiDEkcOjIHRpbiB0xrDhu59uZyBUaW12aWVjMzY1LnZuIGzDoCBj4bqndSBu4buRaSBnacO6cCBi4bqhbiB0w6xtIGtp4bq/bSBjw7RuZyB2aeG7h2MgbW9uZyBtdeG7kW4uPC9wPgogICAgICAgICAgICAgICAgICAgIDxwIHN0eWxlPSJmb250LXNpemU6IDE2cHg7bWFyZ2luOiAwO2xpbmUtaGVpZ2h0OiAxOXB4O21hcmdpbi1ib3R0b206IDVweDtwYWRkaW5nLXRvcDogNXB4OyI+PHNwYW4+PGEgc3R5bGU9IiAgICBmb250LXdlaWdodDogYm9sZDtjb2xvcjogIzMwN2RmMTt0ZXh0LWRlY29yYXRpb246IG5vbmU7IiBocmVmPSIxIj5I4buTIHPGoSBj4bunYSBi4bqhbjwvYT4gdHLDqm4gd2Vic2l0ZSBUaW12aWVjMzY1LnZuIMSRw6MgxJHGsOG7o2MgbmjDoCB0dXnhu4NuIGThu6VuZyA8c3Bhbj48YSBzdHlsZT0iZm9udC13ZWlnaHQ6IGJvbGQ7Y29sb3I6ICMzMDdkZjE7dGV4dC1kZWNvcmF0aW9uOiBub25lOyIgaHJlZj0iMiI+SHVuZ0hhUGF5PC9hPiB4ZW08L3NwYW4+LiBC4bqhbiBjw7MgdGjhu4MgdGhhbSBraOG6o28gY8OhYyBjw7RuZyB2aeG7h2MgdMawxqFuZyB04buxIHhlbSBjw7MgcGjDuSBo4bujcCB24bubaSBtw6xuaCBraMO0bmcgbmjDqSE8L3A+IAogICAgICAgICAgICAgICAgICAgIDxwIHN0eWxlPSJmb250LXNpemU6IDE2cHg7bWFyZ2luOiAwO2xpbmUtaGVpZ2h0OiAxOXB4O21hcmdpbi1ib3R0b206IDVweDtwYWRkaW5nLXRvcDogNXB4OyI+VHLDom4gdHLhu41uZyE8L3A+CiAgICAgICAgICAgICAgICA8L3RkPgogICAgICAgICAgICA8L3RyPiAKICAgICAgICAgICAgPHRyPjx0ZCBzdHlsZT0icGFkZGluZy1ib3R0b206IDIwcHg7YmFja2dyb3VuZDogI2RhZDdkNyI+PC90ZD48L3RyPgogICAgICAgICAgICA8dHIgc3R5bGU9ImZsb2F0OmxlZnQ7cGFkZGluZzoxMHB4IDE1cHggMHB4IDE1cHg7d2lkdGg6MTAwJTtib3gtc2l6aW5nOiBib3JkZXItYm94OyI+CiAgICAgICAgICAgICAgICA8dGQgc3R5bGU9ImRpc3BsYXk6YmxvY2s7Ij4KICAgICAgICAgICAgICAgICAgICA8cCBzdHlsZT0iZm9udC1zaXplOiAxNnB4O21hcmdpbjogMDtsaW5lLWhlaWdodDogMjVweDttYXJnaW4tYm90dG9tOiA1cHg7Ij4KICAgICAgICAgICAgICAgICAgICAgICAgVGltdmllYzM2NS52biBn4butaSBi4bqhbiBkYW5oIHPDoWNoIHZp4buHYyBsw6BtIHTGsMahbmcgdOG7sSAKICAgICAgICAgICAgICAgICAgICA8L3A+CiAgICAgICAgICAgICAgICA8L3RkPgogICAgICAgICAgICA8L3RyPgogICAgICAgICAgICBJVAogICAgICAgICAgICA8dHI+PHRkIHN0eWxlPSJwYWRkaW5nLWJvdHRvbTogMjBweDtiYWNrZ3JvdW5kOiAjZGFkN2Q3Ij48L3RkPjwvdHI+CiAgICAgICAgICAgIDx0ciAgc3R5bGU9ImZsb2F0OiBsZWZ0O3BhZGRpbmc6MHB4IDE1cHggMHB4IDE1cHg7bWluLWhlaWdodDogMTE1cHg7Ij4KICAgICAgICAgICAgICAgIDx0ZD4KICAgICAgICAgICAgICAgICAgICA8cCBzdHlsZT0ibWFyZ2luOiAwO2ZvbnQtc2l6ZTogMTRweDttYXJnaW46IDA7bGluZS1oZWlnaHQ6IDE5cHg7bWFyZ2luLWJvdHRvbTogNXB4O3BhZGRpbmctdG9wOiAxNXB4O2NvbG9yOiAjMzA3ZGYxIj5Dw7RuZyB0eSBD4buVIHBo4bqnbiBUaGFuaCB0b8OhbiBIxrBuZyBIw6A8L3A+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9Im1hcmdpbjogMDtmb250LXNpemU6IDE0cHg7bWFyZ2luOiAwO2xpbmUtaGVpZ2h0OiAxOXB4O2NvbG9yOiM0RDRENEQiPjxzcGFuIHN0eWxlPSJjb2xvcjogIzMwN2RmMSI+VlAxOiA8L3NwYW4+VOG6p25nIDQsIEI1MCwgTMO0IDYsIEvEkFQgxJDhu4tuaCBDw7RuZyAtIEhvw6BuZyBNYWkgLSBIw6AgTuG7mWk8L3A+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9Im1hcmdpbjogMDtmb250LXNpemU6IDE0cHg7bWFyZ2luOiAwO2xpbmUtaGVpZ2h0OiAxOXB4O21hcmdpbi1ib3R0b206IDVweDtjb2xvcjojNEQ0RDREIj48c3BhbiBzdHlsZT0iY29sb3I6ICMzMDdkZjEiPlZQMjogPC9zcGFuPiBUaMO0biBUaGFuaCBNaeG6v3UsIFjDoyBWaeG7h3QgSMawbmcsIEh1eeG7h24gVsSDbiBMw6JtLCBU4buJbmggSMawbmcgWcOqbjwvcD4KICAgICAgICAgICAgICAgICAgICA8cCBzdHlsZT0ibWFyZ2luOiAwO2ZvbnQtc2l6ZTogMTRweDttYXJnaW46IDA7bGluZS1oZWlnaHQ6IDE5cHg7bWFyZ2luLWJvdHRvbTogNXB4O2NvbG9yOiM0RDRENEQiPjxzcGFuIHN0eWxlPSJjb2xvcjogIzMwN2RmMSI+SG90bGluZTo8L3NwYW4+IDE5MDA2MzM2ODIgLSDhuqVuIHBow61tIDE8L3A+CiAgICAgICAgICAgICAgICAgICAgPHAgc3R5bGU9Im1hcmdpbjogMDtmb250LXNpemU6IDE0cHg7bWFyZ2luOiAwO2xpbmUtaGVpZ2h0OiAxOXB4O21hcmdpbi1ib3R0b206IDVweDtwYWRkaW5nLWJvdHRvbTogMTVweDtjb2xvcjojNEQ0RDREIj48c3BhbiBzdHlsZT0iY29sb3I6ICMzMDdkZjEiPkVtYWlsIGjhu5cgdHLhu6M6PC9zcGFuPiB0aW12aWVjMzY1LnZuQGdtYWlsLmNvbTwvcD4KICAgICAgICAgICAgICAgIDwvdGQ+CiAgICAgICAgICAgIDwvdHI+CiAgICAgICAgICAgIDx0cj48dGQgc3R5bGU9InBhZGRpbmctYm90dG9tOiAzOXB4O2JhY2tncm91bmQ6ICNkYWQ3ZDciPjwvdGQ+PC90cj4KICAgICAgICA8L3RhYmxlPgogICAgPC9ib2R5Pgo=", 16)
+        functions.success(res, "thành công");
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi Hoàn thiện hồ sơ qlc", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
