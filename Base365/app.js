@@ -21,6 +21,9 @@ var blogRaoNhanh365Router = require('./routes/raonhanh365/blog');
 var orderRaoNhanh = require('./routes/raonhanh365/order');
 var userRaoNhanh = require('./routes/raonhanh365/user');
 var companyRaoNhanh365Router = require('./routes/raonhanh365/company');
+var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
+var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
+var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
 
 
@@ -172,6 +175,9 @@ app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 app.use('/api/raonhanh/orderRaoNhanh', orderRaoNhanh)
 app.use('/api/raonhanh/userRaoNhanh', userRaoNhanh)
 app.use('/api/raonhanh/com', companyRaoNhanh365Router);
+app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
+app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
+app.use('/api/raonhanh/admin', adminRaonhanh365);
 
 
 // API quản lí chung
