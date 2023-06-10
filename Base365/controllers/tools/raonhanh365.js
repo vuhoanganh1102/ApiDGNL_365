@@ -4,6 +4,7 @@ const Category = require('../../models/Raonhanh365/Category');
 const axios = require('axios');
 const FormData = require('form-data');
 const CateDetail = require('../../models/Raonhanh365/CateDetail');
+const PriceList = require('../../models/Raonhanh365/PriceList');
 
 
 
@@ -764,3 +765,48 @@ exports.updateInfoSell = async(req, res, next) => {
         return fnc.setError(res, err)
     }
 }
+
+// danh mục sản phẩm
+exports.toolPriceList = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+
+            const response = await axios.post('https://raonhanh365.vn/api/select_ds_banggia.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const cate = new PriceList({
+                        _id: data[i].bg_id,
+                        time: data[i].bg_thoigian,
+                        unitPrice: data[i].bg_dongia,
+                        discount: data[i].bg_chietkhau,
+                        intoMoney: data[i].bg_thanhtien,
+                        vat: data[i].bg_vat,
+                        intoMoneyVat: data[i].bg_ttien_vat,
+                        type: data[i].bg_type,
+                        cardGift: data[i].bg_type,
+                        langId: data[i].quatangthecao,
+                        newNumber: data[i].sotin
+                    });
+                    await PriceList.create(cate);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
