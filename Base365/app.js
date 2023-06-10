@@ -56,34 +56,12 @@ var donRouter = require('./routes/timviec/don');
 var thuRouter = require('./routes/timviec/thu');
 var syllRouter = require('./routes/timviec/syll');
 
-<<<<<<< HEAD
-//
-var toolVT = require('./routes/tools')
-var settingDX = require('./routes/vanthu/SettingRoutes')
-var dexuatTC = require('./routes/vanthu/deXuat/DeXuatTangCaRoutes')
-var dexuatTS = require('./routes/vanthu/deXuat/DeXuatThaiSanRoutes');
-var dexuatPH = require('./routes/vanthu/deXuat/DeXuatPhongHopRoutes');
-var dexuatXC = require('./routes/vanthu/deXuat/DeXuatDangKiSuDungXeRoutes');
-var dexuatTT = require('./routes/vanthu/deXuat/DeXuatThanhToanRoutes');
-var dexuatCC = require('./routes/vanthu/deXuat/DeXuatCongRoutes');
-var dexuatVC = require('./routes/vanthu/deXuat/DeXuatCoSoVatChatRoutes');
-var dexuatKN = require('./routes/vanthu/deXuat/DeXuatKhieuNaiRoutes');
-var dexuatTP = require('./routes/vanthu/deXuat/DeXuatThuongPhatRoutes');
-var dexuatHH = require('./routes/vanthu/deXuat/DeXuatHoaHongRoutes');
-var cateDX = require("./routes/vanthu/cateDeXuatRoutes")
-var historyDX = require("./routes/vanthu/historyDeXuatRoutes")
-const {router} = require("express/lib/application");
-=======
 var toolVT = require('./routes/vanthu/RoutertoolVT')
 
 const { router } = require("express/lib/application");
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
 
 var app = express();
-// app.listen(3001, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3001")
-// });
+
 
 //
 // view engine setup
@@ -141,26 +119,7 @@ app.use("/api/calendar", calendarRouter);
 
 
 //API văn thu
-<<<<<<< HEAD
-app.use("/api/tool",toolVT);
-app.use("/api/settingdx",settingDX);
-app.use("/api/dexuat",dexuatTC);
-app.use("/api/dexuat",dexuatTS);
-app.use("/api/dexuat",dexuatPH);
-app.use("/api/dexuat",dexuatXC);
-app.use("/api/dexuat",dexuatVC);
-app.use("/api/dexuat",dexuatTT);
-app.use("/api/dexuat",dexuatCC);
-app.use("/api/dexuat",dexuatKN);
-app.use("/api/dexuat",dexuatTP);
-app.use("/api/dexuat",dexuatHH);
-app.use("/api/catedexuat",cateDX);
-app.use("/api/historydx",historyDX)
-
-// app.use("/api/vt",)
-=======
 app.use("/api/tool", toolVT)
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
@@ -188,15 +147,13 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-<<<<<<< HEAD
+app.listen(3001, () => {
+    console.log("Connected to databse");
+    console.log("Backend is running on http://localhost:3001")
+});
+
 app.listen(3005, () => {
     console.log("Connected to databse");
     console.log("Backend is running on http://localhost:3005")
 })
-=======
-// app.listen(3004, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3004")
-// })
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
 module.exports = app;
