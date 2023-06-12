@@ -1,8 +1,8 @@
 const DeXuat = require("../../../models/Vanthu/de_xuat");
 const { storageVT } = require('../../../services/functions');
 const multer = require('multer');
-const functions = require("../../../services/functions");
-
+const functions = require('../../../services/vanthu')
+const path = require('path');
 
 exports.dxPhongHop = async (req, res) => {
     try {
@@ -15,12 +15,11 @@ exports.dxPhongHop = async (req, res) => {
             kieu_duyet,
             com_id,
             id_user_duyet,
-            id_user_theo_doi,
-            file_kem,
+            id_user_theo_doi,       
             type_duyet,
             type_time,
             time_start_out,
-            time_create,
+
             time_tiep_nhan,
             time_duyet,
             active,
@@ -29,9 +28,15 @@ exports.dxPhongHop = async (req, res) => {
             end_hop,
             ly_do
         } = req.body;
+        let createDate = new Date()  
         if(!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
+            let file_kem = req.files.file_kem;
+            await functions.uploadFileVanThu(id_user, file_kem);
+            const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
+            const pathString = imagePath.toString();
+            console.log(pathString)
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -55,11 +60,11 @@ exports.dxPhongHop = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: file_kem,
+                file_kem: pathString,
                 type_duyet: type_duyet,
                 type_time: type_time,
                 time_start_out: time_start_out,
-                time_create: time_create,
+                time_create: createDate,
                 time_tiep_nhan: time_tiep_nhan,
                 time_duyet: time_duyet,
                 active: active,

@@ -12,15 +12,10 @@ const newTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
 const applyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
 const userSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
 const pointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed');
-<<<<<<< HEAD
-const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost')
-    //mã hóa mật khẩu
-=======
 const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
 const categoryBlog = require('../../models/Timviec365/Blog/Category');
 
 //mã hóa mật khẩu
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
 const md5 = require('md5');
 //token
 var jwt = require('jsonwebtoken');
@@ -531,122 +526,6 @@ exports.sendOTPChangePass = async(req, res, next) => {
 
 };
 
-<<<<<<< HEAD
-//đăng kí = cách làm cv trên site
-exports.RegisterB2CvSite = async(req, res, next) => {
-    try {
-        if (req && req.body && req.file) {
-            const imageUpload = req.file
-            const lang = req.body.lang
-            const html = JSON.stringify(req.body.html)
-            const cvId = req.body.cvId
-            const status = req.body.status
-            const heightCv = req.body.heightCv
-            const scan = req.body.scan
-            const state = req.body.state
-            const phoneTK = req.user.data.phoneTK
-            const password = req.user.data.password
-            const userName = req.user.data.userName
-            const email = req.user.data.email
-            const city = req.user.data.city
-            const district = req.user.data.district
-            const address = req.user.data.address
-            const from = req.user.data.uRegis
-            const candiCateID = req.user.data.candiCateID
-            const candiCityID = req.user.data.candiCityID
-            const candiTitle = req.user.data.candiTitle
-            const type = req.user.data.type
-
-            let findUser = await functions.getDatafindOne(Users, { phoneTK: phoneTK, type: type })
-            if (findUser && findUser.phoneTK && findUser.phoneTK == phoneTK) { // check tồn tại tài khoản chưa
-                return functions.setError(res, "Số điện thoại này đã được đăng kí", 200);
-            } else {
-                const maxID = await Users.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-                if (maxID) {
-                    newID = Number(maxID._id) + 1;
-                }
-                const maxIDTimviec = await Users.findOne({}, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
-                if (maxIDTimviec) {
-                    newIDTimviec = Number(maxIDTimviec.idTimViec365) + 1;
-                }
-                const maxIDCv = await CVUV.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-                if (maxIDCv) {
-                    newIDCv = Number(maxIDCv._id) + 1
-                } else {
-                    newIDCv = 0
-                }
-                let User = new Users({
-                    _id: newID,
-                    phoneTK: phoneTK,
-                    password: password,
-                    userName: userName,
-                    type: 0,
-                    email: email,
-                    city: city,
-                    district: district,
-                    address: address,
-                    from: from,
-                    idTimViec365: newIDTimviec,
-                    authentic: 0,
-                    createdAt: new Date(Date.now()),
-                    inForPerson: {
-                        user_id: 0,
-                        candiCateID: candiCateID,
-                        candiCityID: candiCityID,
-                        candiTitle: candiTitle,
-                        candiProfile: {
-                            id: 1,
-                            cvId: cvId,
-                            createTime: new Date(Date.now()),
-                        }
-                    }
-                })
-                User.save()
-                let CvUv = new CVUV({
-                    _id: newIDCv,
-                    userId: newIDTimviec,
-                    cvId: cvId,
-                    lang: lang,
-                    html: html,
-                    nameImage: imageUpload.filename,
-                    timeEdit: new Date(Date.now()),
-                    status: status,
-                    scan: scan,
-                    state: state,
-                    heightCv: heightCv,
-                })
-                CvUv.save()
-
-                let deleteUser = userUnset.findOneAndDelete({ usePhoneTk: phoneTK, type: type })
-                return functions.success(res, "Đăng kí thành công")
-            }
-        } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 200);
-    } catch (e) {
-        console.log("Đã có lỗi xảy ra khi đăng kí", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 200)
-    }
-
-
-}
-
-//ứng viên đăng nhập
-exports.loginUv = async(req, res, next) => {
-    try {
-
-
-        if (req.body.account && req.body.password) {
-            const type = 0;
-            const account = req.body.account;
-            const password = req.body.password;
-
-            let checkPhoneNumber = await functions.checkPhoneNumber(account);
-            if (checkPhoneNumber) {
-                var findUser = await functions.getDatafindOne(Users, { phoneTK: account, type: 0 });
-            } else {
-                var findUser = await functions.getDatafindOne(Users, { email: account, type: 0 });
-            }
-
-=======
 //ứng viên đăng nhập
 exports.loginUv = async(req, res, next) => {
     try {
@@ -662,7 +541,6 @@ exports.loginUv = async(req, res, next) => {
                 var findUser = await functions.getDatafindOne(Users, { email: account, type: { $ne: 1 } });
             }
 
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
             if (!findUser) {
                 return functions.setError(res, "Không tồn tại tài khoản", 200)
             }
@@ -672,18 +550,10 @@ exports.loginUv = async(req, res, next) => {
             }
 
             const token = await functions.createToken(findUser, "2d");
-<<<<<<< HEAD
-            return functions.success(res, 'Đăng nhập thành công', { token });
-        }
-    } catch (e) {
-        console.log("Đã có lỗi xảy ra khi đăng nhập", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
-=======
             return functions.success(res, 'Đăng nhập thành công', { token, authentic: findUser.authentic, user_id: findUser.idTimViec365 });
         }
     } catch (e) {
         return functions.setError(res, "Đã có lỗi xảy ra", )
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
     }
 
 }
@@ -693,13 +563,6 @@ exports.loginUv = async(req, res, next) => {
 exports.completeProfileQlc = async(req, res, next) => {
     try {
         let phoneTK = String(req.user.data.phoneTK)
-<<<<<<< HEAD
-        let newAI = []
-        let newCv = []
-        let newBlog = []
-        console.log(req.user.data)
-        let candiCateID = Number(req.user.data.inForPerson.candiCateID.split(",")[0])
-=======
 
         let postAI = []
         let userId = req.user.data.idTimViec365
@@ -720,7 +583,6 @@ exports.completeProfileQlc = async(req, res, next) => {
                 },
                 headers: { "Content-Type": "multipart/form-data" }
             });
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
 
             if (takeData.data.data != null && takeData.data.data.list_id != '') {
 
@@ -811,18 +673,12 @@ exports.completeProfileQlc = async(req, res, next) => {
             },
         ]);
 
-<<<<<<< HEAD
-        let findNew = await functions.getDatafind(NewTV365, { _id: { $in: listNewId } })
-        for (let i = 0; i < findNew.length; i++) {
-            newAI.push(findNew[i])
-=======
         for (let i = 0; i < myCv.length; i++) {
             myCv[i].img = `upload/ungvien/uv_${userId}/${myCv[i].img}`
             myCv[i].img = await functions.hostCv(myCv[i].img)
             myCv[i].link_edit = await functions.hostCv(myCv[i].link_edit)
             myCv[i].link_dowload = `download-cvpdf/cv.php?cvid=${ myCv[i].cv_id}&uid=${userId}&cvname=${myCv[i].title}`
             myCv[i].link_dowload = await functions.hostCv(myCv[i].link_dowload)
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
         }
         //Mẫu CV đề xuất
         let findCv = await CV.find({}, { image: 1, alias: 1 }).sort({ _id: -1 }).limit(10)

@@ -2,23 +2,17 @@ const router = require('express').Router();
 const settingVanthu = require("../../controllers/vanthu/Setting/Setting")
 var formData = require('express-form-data');
 
-//Api lấy dữ liệu settiing
-router.get('/',settingVanthu.getSettings);
+//Api lấy dữ liệu toàn bộ settiing
+router.post('/',formData.parse(),settingVanthu.getSettings);
 
 
-// Api lấy dữ liệu
-router.post('/',formData.parse(),settingVanthu.findOneSetting);
+// Api lấy dữ liệu seting theo com_id nếu không có sẽ tạo mới
+ 
 
-
-// Api thêm dữ liệu vào setting
-router.post('/addSetting', formData.parse(),settingVanthu.createSettingDx);
-
+router.post('/createF',formData.parse(),settingVanthu.findOrCreateSettingDx)
 
 // Api sửa setting
-router.put('/:id',formData.parse(),settingVanthu.editSettingDx);
+router.put('/editSetting',formData.parse(),settingVanthu.editSettingDx);
 
-
-//Api xóa setting
-router.delete('/:id',settingVanthu.removeSetting);
 
 module.exports = router

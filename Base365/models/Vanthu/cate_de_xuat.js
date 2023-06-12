@@ -65,6 +65,7 @@ const Vanthu_cate_de_xuatSchema = new Schema({
     },
     trang_thai_dx: {
         type: Number,
+        default : 1
 
     }
 })

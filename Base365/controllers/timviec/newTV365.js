@@ -669,11 +669,6 @@ exports.detail = async(req, res, next) => {
                     }
                 },
             ]);
-<<<<<<< HEAD
-            post.countComment = ListcommentPost.length
-            post.commentName = ListcommentPost
-            return functions.success(res, "làm mới bài tuyển dụng thành công", { data: post, statusApply, statusSavePost })
-=======
             let city = await functions.getDatafindOne(City, { _id: Number(post[0].new_city) })
             let district = await functions.getDatafindOne(District, { _id: Number(post[0].new_qh_id) })
             let category = await functions.getDatafindOne(Category, { _id: Number(post[0].new_cat_id) })
@@ -871,7 +866,6 @@ exports.detail = async(req, res, next) => {
                 })
             } else return functions.setError(res, 'không có tin tuyển dụng này', 404)
 
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87
         }
         return functions.setError(res, 'thiếu dữ liệu', 404)
 

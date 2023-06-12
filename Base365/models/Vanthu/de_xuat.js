@@ -424,9 +424,7 @@ const Vanthu_de_xuat = new Schema({
 
     },
     time_create: {
-        type: Number,
-        default: null
-
+        type: Date,
     },
     time_tiep_nhan: {
         type: Number,

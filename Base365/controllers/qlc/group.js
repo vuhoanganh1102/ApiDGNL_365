@@ -175,8 +175,3 @@ exports.getListGroupByFields = async(req, res, next) => {
         return functions.setError(res, "Err from server", 500);
     }
 }
-<<<<<<< HEAD
-
-// gửi ,xin nghi ,ứng lương,
-=======
->>>>>>> 8d9ec283ef44a6e451b2ea6f4946dee608b7cc87

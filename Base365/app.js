@@ -56,8 +56,8 @@ var donRouter = require('./routes/timviec/don');
 var thuRouter = require('./routes/timviec/thu');
 var syllRouter = require('./routes/timviec/syll');
 
-var toolVT = require('./routes/vanthu/RoutertoolVT')
-
+var toolVT = require('./routes/tools')
+var Vanthu = require('./routes/vanthu/vanthuRoutes');
 const { router } = require("express/lib/application");
 
 var app = express();
@@ -120,6 +120,7 @@ app.use("/api/calendar", calendarRouter);
 
 //API văn thu
 app.use("/api/tool", toolVT)
+app.use("/api",Vanthu)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
