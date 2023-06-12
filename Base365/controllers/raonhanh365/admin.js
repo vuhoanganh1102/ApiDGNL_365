@@ -360,6 +360,26 @@ exports.getListPriceList = async(req, res, next)=>{
     }
 }
 
+exports.update = async(req, res, next) => {
+    try{
+        if(!req.body.newsID)
+            return functions.setError(res, "Missing input value id news!", 404);
+        let newsID = req.body.newsID;
+        let fields = req.info;
+            fields.updateTime = Date(Date.now());
+        let existsNews = await News.findOne({_id: newsID});
+        if (existsNews) {
+            
+            await News.findOneAndUpdate({_id: newsID}, fields);
+            return functions.success(res, "News edited successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
 
 //-------------------------------------------------------controller quan ly tai khoan(da xac nhan opt va chua xac nhan)tk gian hang-------------------------
 
