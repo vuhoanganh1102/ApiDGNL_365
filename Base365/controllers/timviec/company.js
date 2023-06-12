@@ -184,8 +184,9 @@ exports.register = async(req, res, next) => {
                     if (companyUnset != null) {
                         await functions.getDataDeleteOne(CompanyUnset, { email: email, type: 1 })
                     }
-
+                    await sendMail.SendRegisterNTD(`${email}`, `${username}`, "link")
                     return functions.success(res, 'đăng ký thành công')
+
                 } else {
                     if (req.files.videoType) {
                         await functions.deleteImg(videoType[0])

@@ -142,17 +142,18 @@ exports.editTeam = async (req, res) => {
 };
 //Xóa dữ liệu của một tổ
 exports.deleteTeam = async (req, res) => {
-    const _id = req.params.id;
-
-    if (isNaN(_id)) {
+    const {_id, companyID} = req.body
+    if((companyID&&_id)== undefined){
+        functions.setError(res, "lack of input", 502);
+    }else if (isNaN(_id)) {
         functions.setError(res, "Id must be a number", 602)
     } else {
-        const team = await functions.getDatafindOne(Team, { _id: _id });
+        const team = await functions.getDatafindOne(Team, {companyID:companyID, _id: _id });
         if (!team) {
             functions.setError(res, "Team does not exist", 610);
         } else {
-            functions.getDataDeleteOne(Team, { _id: _id })
-                .then(() => functions.success(res, "Delete team successfully", team))
+            functions.getDataDeleteOne(Team, {companyID:companyID, _id: _id })
+                .then(() => functions.success(res, "Delete team successfully", {team}))
                 .catch(err => functions.setError(res, err.message, 612));
         }
     }

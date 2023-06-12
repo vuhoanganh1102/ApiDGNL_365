@@ -119,6 +119,8 @@ router.post('/toolCategory', toolRaoNhanh.toolCategory);
 // api update thông tin bán hàng  new rao nhanh
 router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 
+router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
+
 // api quét data các phần của chi tiết danh mục Raonhanh
 // router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
 

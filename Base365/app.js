@@ -21,6 +21,9 @@ var blogRaoNhanh365Router = require('./routes/raonhanh365/blog');
 var orderRaoNhanh = require('./routes/raonhanh365/order');
 var userRaoNhanh = require('./routes/raonhanh365/user');
 var companyRaoNhanh365Router = require('./routes/raonhanh365/company');
+var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
+var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
+var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
@@ -71,7 +74,7 @@ var syllRouter = require('./routes/timviec/syll');
 
 var toolVT = require('./routes/vanthu/RoutertoolVT')
 
-const {router} = require("express/lib/application");
+const { router } = require("express/lib/application");
 
 var app = express();
 // app.listen(3001, () => {
@@ -113,6 +116,9 @@ app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
 app.use('/api/raonhanh/orderRaoNhanh', orderRaoNhanh)
 app.use('/api/raonhanh/userRaoNhanh', userRaoNhanh)
 app.use('/api/raonhanh/com', companyRaoNhanh365Router);
+app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
+app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
+app.use('/api/raonhanh/admin', adminRaonhanh365);
 
 // API quản lí chung
 app.use('/api/qlc/Company',companyRouterQLC);
@@ -129,7 +135,6 @@ app.use('/api/qlc/TrackingWifi', TrackingWifi)
 app.use('/api/qlc/employee', employeeRoutes);
 app.use('/api/qlc/individual', individualRoutes);
 
-// app.use('/api/qlc/childCompany', childCompanyRouter);
 
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);
@@ -141,7 +146,7 @@ app.use("/api/qlc/homePage",homePage)
 
 
 //API văn thu
-app.use("/api/tool",toolVT)
+app.use("/api/tool", toolVT)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
@@ -162,7 +167,7 @@ app.use(function(err, req, res, next) {
     res.render('error');
 });
 
-//const DB_URL = 'mongodb://127.0.0.1/api-base365'; 
+
 // timviec365 -> api-base365
 const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)

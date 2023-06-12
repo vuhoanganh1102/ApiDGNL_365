@@ -17,9 +17,9 @@ router.post("/",formData.parse(),DeparmentController.createDeparment);
 router.post("/:id",formData.parse(),DeparmentController.editDeparment);
 
 //API xóa một phòng ban theo id
-router.delete("/:id", formData.parse(), DeparmentController.deleteDeparment);
+router.delete("/del", formData.parse(), DeparmentController.deleteDeparment);
 
 // API xóa toàn bộ phòng ban hiện có
-router.delete("/",formData.parse(), DeparmentController.deleteAllDeparmants);
+// router.delete("/",formData.parse(), DeparmentController.deleteAllDeparmants);
 
 module.exports = router

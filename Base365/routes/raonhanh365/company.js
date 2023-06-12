@@ -12,4 +12,8 @@ router.post('/createCom', formData.parse(), [functions.checkToken, functions.isA
 //api cap nhat thong tin doanh nghiep
 router.put('/updateCom', formData.parse(), [functions.checkToken], com.getAndCheckData, com.updateCompany);
 
+//thong tin chi tiet cua doanh nghiep
+router.get('/detailCom', formData.parse(), [functions.checkToken], com.getCompanyById);
+
+
 module.exports = router;

@@ -10,14 +10,15 @@ router.post('/postNew', formData.parse(), newRN.postNewMain, newRN.postNewElectr
 
 
 // tìm kiếm tin
-router.get('/searchNew', newRN.searchNew);
+router.get('/searchNew/:link', newRN.searchNew);
 //------------------------api lien quan den tin ban---------------------------
 router.post('/createSellNews', formData.parse(),[functions.checkToken], newRN.postNewMain, newRN.postNewsGeneral, newRN.createNews);
 router.put('/updateSellNews', formData.parse(),[functions.checkToken], newRN.postNewMain, newRN.postNewsGeneral, newRN.updateNews);
 router.delete('/deleteNews',[functions.checkToken, functions.isAdminRN365], newRN.deleteNews);
 router.post('/searchSellNews', formData.parse(), newRN.searchSellNews);
 router.post('/hideNews', formData.parse(), [functions.checkToken], newRN.hideNews);
-
+router.post('/pinNews', formData.parse(), [functions.checkToken], newRN.pinNews);
+router.post('/pushNews', formData.parse(), [functions.checkToken], newRN.pushNews);
 
 
 // trang chủ 
@@ -29,8 +30,6 @@ router.post('/createBuyNew',formData.parse(), functions.checkToken, newRN.create
 // update tin mua
 router.put('/updateBuyNew',formData.parse(), functions.checkToken, newRN.updateBuyNew)
 
-// lấy tất cả tin 
-router.get('/getAllNew/:title/:sort/:page',newRN.getAllNew)
 
 // chi tiết tin 
 router.get('/getDetailNew/:linkTitle',newRN.getDetailNew)
@@ -44,12 +43,24 @@ router.get('/createToken',newRN.createToken)
 router.get('/newfavorite/:linkTitle',functions.checkToken,newRN.newfavorite)
 
 // quản lí tin mua
-router.get('/managenewbuy/:linkTitle',functions.checkToken,newRN.managenewbuy)
+router.get('/managenew/:linkTitle',functions.checkToken,newRN.managenew)
+
+// quản lí tin bán
+router.get('/manageNewBuySell/:linkTitle',functions.checkToken,newRN.manageNewBuySell)
 
 // tin đang dự thầu
 router.get('/newisbidding/:linkTitle',functions.checkToken,newRN.newisbidding)
 
 // danh sách danh mục
 router.get('/listCate/:link',newRN.listCate)
+
+// quản lí tin tìm ứng viên
+router.get('/listCanNew/:linkTitle',functions.checkToken,newRN.listCanNew)
+
+// quản lí đang ứng tuyển
+// router.get('/listJobNewApply',functions.checkToken,newRN.listJobNewApply)
+
+// quản lý tin tìm việc làm
+router.get('/listJobNew/:linkTitle',functions.checkToken,newRN.listJobNew)
 
 module.exports = router;

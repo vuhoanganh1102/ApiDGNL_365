@@ -151,30 +151,34 @@ exports.editDeparment = async (req, res) => {
 };
 //API xóa một phòng ban theo id
 exports.deleteDeparment = async (req, res) => {
-    const _id = req.params.id;
-
-    if (isNaN(_id)) {
+    const _id = req.body.id;
+    const companyID = req.body.companyID;
+    console.log(_id,companyID)
+    
+    if((companyID&&_id)== undefined){
+        functions.setError(res, "lack of input", 502);
+    }else if (isNaN(_id)) {
         functions.setError(res, "Id must be a number", 502);
     } else {
-        const deparment = await functions.getDatafindOne(Deparment, { _id: _id });
+        const deparment = await functions.getDatafindOne(Deparment, {companyID:companyID, _id: _id });
         if (!deparment) {
             functions.setError(res, "Deparment not exist!", 510);
         } else {
-            functions.getDataDeleteOne(Deparment, { _id: _id })
-                .then(() => functions.success(res, "Delete deparment successfully!", deparment))
+            functions.getDataDeleteOne(Deparment, {companyID:companyID, _id: _id })
+                .then((deparment) => functions.success(res, "Delete deparment successfully!", {deparment}))
                 .catch(err => functions.setError(res, err.message, 512));
         }
     }
 };
-// API xóa toàn bộ phòng ban hiện có
-exports.deleteAllDeparmants = async (req, res) => {
+// // API xóa toàn bộ phòng ban hiện có
+// exports.deleteAllDeparmants = async (req, res) => {
 
-    if (!await functions.getMaxID(Deparment)) {
-        functions.setError(res, "No deparment existed", 513);
-    } else {
-        Deparment.deleteMany()
-            .then(() => functions.success(res, "Delete all deparments successfully"))
-            .catch(err => functions.setError(res, err.message, 514));
-    }
+//     if (!await functions.getMaxID(Deparment)) {
+//         functions.setError(res, "No deparment existed", 513);
+//     } else {
+//         Deparment.deleteMany()
+//             .then(() => functions.success(res, "Delete all deparments successfully"))
+//             .catch(err => functions.setError(res, err.message, 514));
+//     }
 
-};
+// };

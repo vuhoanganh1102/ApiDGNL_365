@@ -17,7 +17,7 @@ router.post("/team",formData.parse(), TeamController.countUserInTeam);
 router.post("/:id",formData.parse(), TeamController.editTeam);
 
 //Xóa dữ liệu của một tổ
-router.delete("/:id",formData.parse(), TeamController.deleteTeam);
+router.delete("/del",formData.parse(), TeamController.deleteTeam);
 
 //Xoá toàn bộ dữ liệu tổ
 router.delete("/", TeamController.deleteAllTeams)

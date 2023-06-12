@@ -138,7 +138,7 @@ const newSchema = new mongoose.Schema({
         default: 0
     },
     status: {
-        // tình trạng
+        // tình trạng  0 đã tìm ứng viên, 1 tìm ứng viên
         type: Number,
         default: 0
     },
@@ -367,6 +367,17 @@ const newSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    promotionType: {
+        // loại khuyến mãi
+        type: Number,
+        default: 0,
+    },
+    promotionValue: {
+        // giá trị khuyến mãi
+        type: String,
+        default: null
+    },
+
     productType: {
         // loại sản phẩm 
         type: Number,
@@ -407,13 +418,11 @@ const newSchema = new mongoose.Schema({
     },
     //thuong hieu(dung chung cho cac danh muc health, vehicle, electrionic device, entertament)
     brand: {
-        // 
         type: Number,
         default: null
     },
     // han su dung(dung chung health, food)
     expiry: {
-         // 
         type: Date,
         default: null
     },
@@ -440,7 +449,7 @@ const newSchema = new mongoose.Schema({
             type: Number,
             default: 0
         },
-        typeHarđrive: {
+        typeHardrive: {
             // loại ổ cứng
             type: Number,
             default: 0
@@ -484,11 +493,9 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         interior: {
-            type: {
                 // loại nội thất
                 type: Number,
                 default: 0
-            },
         },
         device: {
             // thiết bị
@@ -765,36 +772,8 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
     },
-    // dịch vụ giải trí
-    entertainmentService: {
-        brand: {
-            // hãng
-            type: Number,
-            default: 0
-        },
+  
 
-    },
-    // môn thể thao
-    sports: {
-        type: Object,
-        default: null,
-        sport: {
-            // môn thể thao 
-            type: Number,
-            default: 0
-        },
-        typeSport: {
-            // loại phụ kiện , loại thời trang
-            type: Number,
-            default: 0
-        },
-    },
-
-    material: {
-        // chất liệu trong danh mục nội thât 
-        type: Number,
-        default: 0
-    },
     // thú cưng
     pet: {
         kindOfPet: {
@@ -818,48 +797,8 @@ const newSchema = new mongoose.Schema({
             default: null
         },
     },
-    // đồ gia dụng
-    houseWare: {
-        typeDevice: {
-            // loại thiết bị
-            type: Number,
-            default: 0
-        },
-        typeProduct: {
-            // loại sản phẩm
-            type: Number,
-            default: 0
-        },
-        guarantee: {
-            // bảo hành
-            type: Number,
-            default: 0
-        },
-
-    },
-    // sức khỏe sắc đẹp
-    health: {
-        typeProduct: {
-            // loại sản phẩm , loại thực phẩm chức năng , loại phụ kiện, loại hình
-            type: Number,
-            default: 0,
-        },
-        kindCosmetics: {
-            // loại mỹ phẩm
-            type: Number,
-            default: 0
-        },
-        expiry: {
-            // hạn sử dụng
-            type: Date,
-            default: null
-        },
-        brand: {
-            // hãng 
-            type: Number,
-            default: 0
-        }
-    },
+   
+   
     // tìm việc
     Job: {
         jobType: {
@@ -959,20 +898,7 @@ const newSchema = new mongoose.Schema({
             default:null
         }
     },
-    // đồ ăn đồ uống
-    food: {
-        typeFood: {
-            // loại đồ ăn dồ uống
-            type: Number,
-            default: 0
-        },
-        expiry: {
-            // hạn sử dụng
-            type: Date,
-            default: 0
-        },
-
-    },
+    
     // thông tin bán hàng
     infoSell: {
         groupType: {
@@ -989,16 +915,7 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-        promotionType: {
-            // loại khuyến mãi
-            type: Number,
-            default: 0,
-        },
-        promotionValue: {
-            // giá trị khuyến mãi
-            type: String,
-            default: null
-        },
+        
         transport: {
             // vận chuyển
             type: Number,
