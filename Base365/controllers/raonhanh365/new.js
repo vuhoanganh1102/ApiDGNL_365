@@ -5,7 +5,10 @@ const CategoryRaoNhanh365 = require('../../models/Raonhanh365/Category');
 const User = require('../../models/Users');
 const LoveNews = require('../../models/Raonhanh365/UserOnSite/LoveNews');
 const Bidding = require('../../models/Raonhanh365/Bidding');
-const raoNhanh = require('../../services/rao nhanh/raoNhanh')
+const LikeRN = require('../../models/Raonhanh365/Like');
+const ApplyNewsRN = require('../../models/Raonhanh365/UserOnSite/ApplyNews');
+const raoNhanh = require('../../services/rao nhanh/raoNhanh');
+
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
 
@@ -304,13 +307,80 @@ exports.hideNews = async (req, res, next) => {
         let idNews = Number(req.body.news_id);
         if (!idNews)
             return functions.setError(res, "Missing input news_id!", 405);
-        let existsNews = await New.find({ _id: idNews });
-        if (existsNews) {
-            await New.findByIdAndUpdate(idNews, { active: 0, updateTime: new Date(Date.now()) });
+        let existsNews = await New.find({_id: idNews});
+        if (existsNews ) {
+            let active = 0;
+            if(existsNews.active==0){
+                active = 1;
+            }
+            await New.findByIdAndUpdate(idNews, {active: active, updateTime: new Date(Date.now())});
+
             return functions.success(res, "Hide news successfully");
         }
         return functions.setError(res, "News not found!", 505);
     } catch (err) {
+        console.log(err);
+        return functions.setError(res, err);
+    }
+}
+
+
+exports.pinNews = async(req, res, next) => {
+    try{
+        let idNews = Number(req.body.news_id);
+        if(!idNews)
+            return functions.setError(res, "Missing input news_id!", 405);
+        let {timeStartPinning, dayStartPinning, numberDayPinning, moneyPinning, pinHome, pinCate} = req.body;
+        let existsNews = await New.find({_id: idNews});
+        if (existsNews ) {
+            let now = new Date(Date.now());
+            if(!timeStartPinning) timeStartPinning = now;
+            if(!dayStartPinning) dayStartPinning = now;
+            let fields = {
+                timeStartPinning: timeStartPinning,
+                dayStartPinning: dayStartPinning,
+                numberDayPinning: numberDayPinning,
+                moneyPinning: moneyPinning,
+                pinHome: pinHome,
+                pinCate: pinCate,
+                updateTime: now
+            }
+            await New.findByIdAndUpdate(idNews, fields);
+            return functions.success(res, "Pin news successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    }catch(err){
+        console.log(err);
+        return functions.setError(res, err);
+    }
+}
+
+
+exports.pushNews = async(req, res, next) => {
+    try{
+        let idNews = Number(req.body.news_id);
+        if(!idNews)
+            return functions.setError(res, "Missing input news_id!", 405);
+        let {dayStartPinning, timeStartPinning, numberDayPinning, moneyPinning, timePinning, pinHome} = req.body;
+        let existsNews = await New.find({_id: idNews});
+        if (existsNews ) {
+            let now = new Date(Date.now());
+            if(!timeStartPinning) timeStartPinning = now;
+            if(!dayStartPinning) dayStartPinning = now;
+            let fields = {
+                timePinning: timePinning,
+                moneyPinning: moneyPinning,
+                numberDayPinning: numberDayPinning,
+                timeStartPinning: timeStartPinning,
+                dayStartPinning: dayStartPinning,
+                pinHome: pinHome,
+                updateTime: now
+            }
+            await New.findByIdAndUpdate(idNews, fields);
+            return functions.success(res, "Push news successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    }catch(err){
         console.log(err);
         return functions.setError(res, err);
     }
@@ -1228,19 +1298,28 @@ exports.newisbidding = async (req, res, next) => {
     }
 }
 
-// danh sách danh mục/ tỉnh thành
-exports.listCate = async (req, res, next) => {
+// danh sách danh mục con/cha
+exports.getListCate = async (req, res, next) => {
     try {
-        let link = req.params.link;
-        let data = [];
-        if (link === 'cate') {
-            data = await CategoryRaoNhanh365.find({ parentId: 0 }, { name: 1 })
-        } else if (link === 'city') {
-            data = await city.find();
-        } else {
-            return functions.setError(res, 'page not found')
+        let page, pageSize;
+        if(!req.body.page){
+            page=1;
         }
-        return functions.success(res, 'get data success', { data })
+        if(!req.body.pageSize){
+            pageSize = 50;
+        }
+        page = Number(req.body.page);
+        pageSize = Number(req.body.pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+
+        let parentId = req.body.parentId;
+        if(!parentId){
+            parentId = 0;
+        }
+        const listCate = await functions.pageFindWithFields(CategoryRaoNhanh365, {parentId: parentId}, {name: 1, parentId: 1}, { _id: 1 }, skip, limit); 
+        const totalCount = await functions.findCount(CategoryRaoNhanh365, {parentId: parentId});
+        return functions.success(res, 'get list category success', { totalCount: totalCount, data: listCate})
     } catch (error) {
         return functions.setError(res, error)
     }
@@ -1357,3 +1436,92 @@ exports.listJobNew = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
+
+exports.likeNews = async(req, res, next) => {
+    try{
+        let {forUrlNew, type, commnetId ,userName ,userAvatar ,userIdChat ,ip } = req.body;
+        let like = await LikeRN.findOne({userIdChat: userIdChat, forUrlNew: forUrlNew});
+        if(!type || !forUrlNew || !userName || !userIdChat) {
+            return functions.setError(res, "Missing input value", 404);
+        }
+        if(like){
+            await LikeRN.findOneAndUpdate({_id: like._id}, {
+            type: type
+            })
+            return functions.success(res, 'Like new/comment RN365 success!');
+        }else {
+            const maxIdLike = await LikeRN.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            let newIdLike;
+            if (maxIdLike) {
+                newIdLike = Number(maxIdLike._id) + 1;
+            } else newIdLike = 1;
+            
+            like = new LikeRN({
+                _id: newIdLike,
+                forUrlNew: forUrlNew,
+                type: type,
+                commnetId: commnetId,
+                userName: userName,
+                userAvatar: userAvatar,
+                userIdChat: userIdChat,
+                ip: ip,
+                time: Date(Date.now())
+            });
+            await like.save();
+        }
+        return functions.success(res, 'Like new/comment RN365 success!');
+    }catch(err){
+        console.log("Err from server", err);
+        return functions.setError(res, "Err from server", 500);
+    }
+}
+
+exports.createApplyNews = async(req, res, next) => {
+    try{
+        let {candidateId, newId} = req.body;
+        if(!candidateId || !newId) {
+            return functions.setError(res, "Missing input value", 404);
+        }
+        let isExistUv = await ApplyNewsRN.findOne({candidateId: candidateId, newId});
+        if(isExistUv){
+            return functions.success(res, 'Uv da ton tai!');
+        }else {
+            const maxIdApplyNew = await ApplyNewsRN.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            let newIdApplyNew;
+            if (maxIdApplyNew) {
+                newIdApplyNew = Number(maxIdApplyNew._id) + 1;
+            } else newIdApplyNew = 1;
+            
+            like = new ApplyNewsRN({
+                _id: newIdApplyNew,
+                uvId: candidateId,
+                newId: newId,
+                applytime: Date(Date.now())
+            });
+            await like.save();
+        }
+        return functions.success(res, 'Candidate apply news success!');
+    }catch(err){
+        console.log("Err from server", err);
+        return functions.setError(res, "Err from server", 500);
+    }
+}
+
+exports.deleteUv = async(req, res, next) => {
+    try{
+        let {candidateId, newId} = req.query;
+        if(!candidateId || !newId) {
+            return functions.setError(res, "Missing input value", 404);
+        }
+        let candidate = await functions.getDataDeleteOne(ApplyNewsRN ,{uvId: candidateId, newId: newId});
+        if (candidate.deletedCount===1) {
+            return functions.success(res, `Delete candidate success`);
+        }else{
+            return functions.success(res, "Candidate not found");
+        }
+    }catch(err){
+        console.log("Err from server", err);
+        return functions.setError(res, "Err from server", 500);
+    }
+}
+

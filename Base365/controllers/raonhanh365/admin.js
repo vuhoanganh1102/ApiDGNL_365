@@ -1,5 +1,15 @@
-const functions = require('../../services/functions')
-const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser')
+const functions = require('../../services/functions');
+const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser');
+const Category = require('../../models/Raonhanh365/Category');
+const News = require('../../models/Raonhanh365/UserOnSite/New');
+const PriceList = require('../../models/Raonhanh365/PriceList');
+const Users = require('../../models/Users');
+const History = require('../../models/Raonhanh365/History');
+const Blog = require('../../models/Raonhanh365/Admin/Blog');
+
+const serviceRN = require('../../services/rao nhanh/raoNhanh');
+const folderImg = "img_blog";
+const md5 = require('md5');
 
 //đăng nhập admin
 exports.loginAdminUser = async(req, res, next) => {
@@ -27,4 +37,629 @@ exports.loginAdminUser = async(req, res, next) => {
         return functions.setError(res, error)
     }
 
+}
+
+exports.getListAdminUser = async(req, res, next)=>{
+    try{
+        //lay cac tham so dieu kien tim kiem tin
+        if(!req.body.page){
+            return functions.setError(res, "Missing input page", 401);
+        }
+        if(!req.body.pageSize){
+            return functions.setError(res, "Missing input pageSize", 402);
+        }
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let idAdmin = req.body.idAdmin;
+        let condition = {};
+        if(idAdmin) condition._id = Number(idAdmin);
+        
+        let fields = {loginName: 1, name: 1, email: 1, phone: 1, editAll:1, langId:1, active: 1};
+        const listAdminUser = await functions.pageFindWithFields(AdminUser, condition, fields, { _id: 1 }, skip, limit); 
+        const totalCount = await functions.findCount(AdminUser, condition);
+        return functions.success(res, "get list blog success", {totalCount: totalCount, data: listAdminUser });
+    }catch(error){
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+
+exports.getAndCheckDataAdminUser = async(req, res, next) => {
+    try {
+        let {loginName, name, phone, email, editAll, langId, active, accessModule} = req.body;
+        
+        if(!loginName || !phone || !phone) {
+            return functions.setError(res, "Missing input value", 404)
+        }
+        // them cac truong muon them hoac sua
+        req.info = {
+            loginName: loginName,
+            name: name,
+            phone: phone,
+            email: email,
+            langId: langId,
+            editAll: editAll,
+            active: active,
+            accessModule: accessModule,
+        }
+        return next();
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.createAdminUser = async(req, res, next) => {
+    try{
+        let fields = req.info;
+
+        //tao _id tu dong tang
+        const maxIdAdminUser = await AdminUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIdAdminUser;
+        if (maxIdAdminUser) {
+            newIdAdminUser = Number(maxIdAdminUser._id) + 1;
+        } else newIdAdminUser = 1;
+        fields._id = newIdAdminUser;
+
+        let news = new AdminUser(fields);
+        await news.save();
+        return functions.success(res, 'Create news RN365 success!');
+    }catch(e){
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.updateAdminUser = async(req, res, next) => {
+    try{
+        if(!req.body.adminID)
+            return functions.setError(res, "Missing input value id admin!", 404);
+        let adminID = req.body.adminID;
+        let fields = req.info;
+        
+        let existsAdminUser = await AdminUser.findOne({_id: adminID});
+        if (existsAdminUser) {
+            
+            await AdminUser.findOneAndUpdate({_id: adminID}, fields);
+            return functions.success(res, "AdminUser edited successfully");
+        }
+        return functions.setError(res, "AdminUser not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.deleteAdminUser = async(req, res, next) => {
+    try {
+        let userID = Number(req.query.userID);
+        if (userID) {
+            let user = await functions.getDataDeleteOne(Users ,{_id: userID});
+            if (user.deletedCount===1) {
+                return functions.success(res, `Delete user with _id=${userID} success`);
+            }else{
+                return functions.success(res, "User not found");
+            }
+        } 
+        return functions.setError(res, "Missing input userID", 500);
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
+}
+
+//-----------------------------------------------------------controller quan ly danh muc----------------------------------------------------------------
+
+// lay ra danh sach
+exports.getListCategory = async(req, res, next)=>{
+    try{
+        let request = req.body;
+        let _id = request._id,
+            name = request.name
+        
+        let condition = {};
+        if(_id) condition._id = Number(_id);
+        if(name) condition.name = new RegExp(name);
+        let listCategory = await Category.find(condition);
+        return functions.success(res, 'Get list category success', { data: listCategory })
+    }catch(error){
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+exports.getAndCheckDataCategory = async(req, res, next) => {
+    try {
+        let {parentId,adminId ,name,order, description} = req.body;
+        if(!name || !order) {
+            return functions.setError(res, "Missing input value", 404)
+        }
+        // them cac truong muon them hoac sua
+        req.info = {
+            parentId: parentId,
+            adminId: adminId,
+            name: name,
+            order: order,
+            description: description
+        }
+        return next();
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.createCategory = async(req, res, next) => {
+    try{
+        let fields = req.info;
+        const maxIdCategory = await Category.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIdCategory;
+        if (maxIdCategory) {
+            newIdCategory = Number(maxIdCategory._id) + 1;
+        } else newIdCategory = 1;
+        fields._id = newIdCategory;
+        let category = new Category(fields);
+        await category.save();
+        return functions.success(res, 'Create category RN365 success!');
+    }catch(e){
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.updateCategory = async(req, res, next) => {
+    try{
+        if(!req.body.cateID)
+            return functions.setError(res, "Missing input value id cate!", 404);
+        let cateID = req.body.cateID;
+        let fields = req.info;
+        
+        let existsCategory = await Category.findOne({_id: cateID});
+        if (existsCategory) {
+            
+            await Category.findOneAndUpdate({_id: cateID}, fields);
+            return functions.success(res, "Category edited successfully");
+        }
+        return functions.setError(res, "Category not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+
+//---------------------------------------------------------controller quan ly tin(tin rao vat, tin mua)-----------------------------------------------
+//-------gom ca quan ly tin tuyen dung va tin tim viec lam -----> bang cach su dung truong cateID de phan biet 
+
+//api lay ra danh sach va tim kiem tin 
+// khi truyen cateID = 120, 121 se lay dc tin tuyen dung va tin tim viec lam
+exports.getListNews = async(req, res, next)=>{
+    try{
+        //lay cac tham so dieu kien tim kiem tin
+        let request = req.body;
+        let buySell = request.buySell,
+            _id = request._id,
+            title = request.title
+            cateID = request.cateID
+        
+        let condition = {};
+        if(buySell) condition.buySell = Number(buySell);// 1: tin mua, 2: tin ban
+        if(_id) condition._id = Number(_id);
+        if(title) condition.title = new RegExp(title);
+        if(cateID) condition.cateID = Number(cateID);// cate 
+        let fields = {image: 1, _id: 1, title: 1, cateID: 1, createTime: 1, active: 1, city: 1};
+
+        let listNews = await News.find(condition, fields);
+        return functions.success(res, 'Get list news success', { data: listNews })
+    }catch(error){
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+exports.getAndCheckDataNews = async(req, res, next) => {
+    try {
+        let {title, description} = req.body;
+        if(!title || !description) {
+            return functions.setError(res, "Missing input value", 404)
+        }
+        // them cac truong muon them hoac sua
+        req.info = {
+            title: title,
+            description: description
+        }
+        return next();
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.createNews = async(req, res, next) => {
+    try{
+        let fields = req.info;
+        const maxIdNews = await News.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIdNews;
+        if (maxIdNews) {
+            newIdNews = Number(maxIdNews._id) + 1;
+        } else newIdNews = 1;
+        fields._id = newIdNews;
+        fields.createTime = Date(Date.now());
+        let news = new News(fields);
+        await news.save();
+        return functions.success(res, 'Create news RN365 success!');
+    }catch(e){
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.updateNews = async(req, res, next) => {
+    try{
+        if(!req.body.newsID)
+            return functions.setError(res, "Missing input value id news!", 404);
+        let newsID = req.body.newsID;
+        let fields = req.info;
+            fields.updateTime = Date(Date.now());
+        let existsNews = await News.findOne({_id: newsID});
+        if (existsNews) {
+            
+            await News.findOneAndUpdate({_id: newsID}, fields);
+            return functions.success(res, "News edited successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.deleteNews = async(req, res, next) => {
+    try {
+        let newsID = Number(req.query.newsID);
+        if (newsID) {
+            let news = await functions.getDataDeleteOne(News ,{_id: newsID});
+            if (news.deletedCount===1) {
+                return functions.success(res, `Delete news with _id=${newsID} success`);
+            }else{
+                return functions.success(res, "News not found");
+            }
+        } 
+        return functions.setError(res, "Missing input newsID", 500);
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
+}
+
+//---------------------------------------------------------controller quan ly bang gia-----------------------------------------------
+
+//api lay ra danh sach va tim kiem tin 
+exports.getListPriceList = async(req, res, next)=>{
+    try{
+        //lay cac tham so dieu kien tim kiem tin
+        let request = req.body;
+        let _id = request._id,
+            time = request.time,
+            type = request.type
+        
+        let condition = {};
+        if(_id) condition._id = Number(_id);
+        if(type) condition.type = Number(type);
+        if(time) condition.time = new RegExp(time);
+        let fields = {_id: 1, time: 1, unitPrice: 1, discount: 1, intoMoney: 1, vat: 1, intoMoneyVat: 1};
+
+        let listPriceList = await PriceList.find(condition, fields);
+        return functions.success(res, 'Get list PriceList success', { data: listPriceList })
+    }catch(error){
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+exports.update = async(req, res, next) => {
+    try{
+        if(!req.body.newsID)
+            return functions.setError(res, "Missing input value id news!", 404);
+        let newsID = req.body.newsID;
+        let fields = req.info;
+            fields.updateTime = Date(Date.now());
+        let existsNews = await News.findOne({_id: newsID});
+        if (existsNews) {
+            
+            await News.findOneAndUpdate({_id: newsID}, fields);
+            return functions.success(res, "News edited successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+
+//-------------------------------------------------------controller quan ly tai khoan(da xac nhan opt va chua xac nhan)tk gian hang-------------------------
+
+exports.getListUser = async(req, res, next)=>{
+    try{
+        //lay cac tham so dieu kien tim kiem tin
+        let request = req.body;
+        let authentic = request.authentic,// phan biet tai khoan bt va tk gian hang(xac thuc va chua xac thuc)
+            _id = request._id,
+            userName = request.userName,
+            email = request.email,
+            phoneTK = request.phoneTK,
+            timeFrom = request.timeFrom,
+            timeTo = request.timeTo
+        let condition = {};
+        if(_id) condition._id = Number(_id);
+        if(authentic) condition.authentic = Number(authentic);
+        if(userName) condition.userName = new RegExp(userName);
+        if(email) condition.email = new RegExp(email);
+        if(phoneTK) condition.phoneTK = new RegExp(phoneTK);
+        
+        let fields = {avatarUser: 1, _id: 1, userName: 1, email: 1, phoneTK: 1, createdAt: 1, money: 1};
+
+        let listUsers = await Users.find(condition, fields);
+        return functions.success(res, 'Get list Users success', { data: listUsers })
+    }catch(error){
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+
+exports.getAndCheckDataUser = async(req, res, next) => {
+    try {
+        let {userName, email, phoneTK, phone, money} = req.body;
+        
+        if(!userName || !phoneTK) {
+            return functions.setError(res, "Missing input value", 404)
+        }
+        // them cac truong muon them hoac sua
+        req.info = {
+            userName: userName,
+            phoneTK: phoneTK,
+            email: email,
+            phone: phone,
+            money: money
+        }
+        return next();
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.createUser = async(req, res, next) => {
+    try{
+        let fields = req.info;
+        const maxIdUser = await Users.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIdUser;
+        if (maxIdUser) {
+            newIdUser = Number(maxIdUser._id) + 1;
+        } else newIdUser = 1;
+        fields._id = newIdUser;
+        fields.createdAt = Date(Date.now());
+        let news = new Users(fields);
+        await news.save();
+        return functions.success(res, 'Create news RN365 success!');
+    }catch(e){
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.updateUser = async(req, res, next) => {
+    try{
+        if(!req.body.userID)
+            return functions.setError(res, "Missing input value id user!", 404);
+        let userID = req.body.userID;
+        let fields = req.info;
+            fields.updateAt = Date(Date.now());
+        let existsUser = await Users.findOne({_id: userID});
+        if (existsUser) {
+            
+            await Users.findOneAndUpdate({_id: userID}, fields);
+            return functions.success(res, "User edited successfully");
+        }
+        return functions.setError(res, "User not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.deleteUser = async(req, res, next) => {
+    try {
+        let userID = Number(req.query.userID);
+        if (userID) {
+            let user = await functions.getDataDeleteOne(Users ,{_id: userID});
+            if (user.deletedCount===1) {
+                return functions.success(res, `Delete user with _id=${userID} success`);
+            }else{
+                return functions.success(res, "User not found");
+            }
+        } 
+        return functions.setError(res, "Missing input userID", 500);
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
+}
+
+
+//-------------------------------------------------------controller lich su nap the -------------------------
+
+exports.getListHistory = async(req, res, next)=>{
+    try{
+        //lay cac tham so dieu kien tim kiem tin
+        let request = req.body;
+        let _id = request._id,
+            userName = request.userName,
+            userId = request.userId,
+            seri = request.seri,
+            time = request.time
+        let condition = {};
+        if(_id) condition._id = Number(_id);
+        if(userName) condition.userName = new RegExp(userName);
+        if(userId) condition.userId = new Number(userId);
+        if(seri) condition.seri = new RegExp(seri);
+        let fields = {_id: 1, userId: 1, seri: 1, time: 1, price: 1};
+
+        let listHistory = await History.find(condition, fields);
+
+        // lay them truong userName tu model Users
+        for(let i=0; i<listHistory.length; i++){
+            let user = await Users.find({_id: listHistory[i].userId});
+            listHistory[i].userName = user.userName;
+        }
+
+        return functions.success(res, 'Get list history success', { data: listHistory })
+    }catch(error){
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+
+//-------------------------------------------------------controller quan ly blog -------------------------
+
+exports.getListBlog = async(req, res, next) => {
+    try {
+        if (req.body) {
+            if(!req.body.page){
+                return functions.setError(res, "Missing input page", 401);
+            }
+            if(!req.body.pageSize){
+                return functions.setError(res, "Missing input pageSize", 402);
+            }
+            let page = Number(req.body.page);
+            let pageSize = Number(req.body.pageSize);
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let title = req.body.title;
+            let blogId = req.body.blogId;
+            let listCondition = {};
+
+            // dua dieu kien vao ob listCondition
+            if(title) listCondition.title =  new RegExp(title);
+            if(blogId) listCondition._id =  Number(blogId);
+            let fieldsGet = 
+            {   
+                adminId: 1, langId: 1,title: 1,url: 1,image: 1,keyword: 1,sapo: 1,des: 1,detailDes: 1,
+                date: 1,adminEdit: 1,dateLastEdit: 1,order: 1,active: 1, new: 1, hot: 1, titleRelate: 1, contentRelate: 1
+            }
+            const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
+            const totalCount = await functions.findCount(Blog, listCondition);
+            return functions.success(res, "get list blog success", {totalCount: totalCount, data: listBlog });
+        } else {
+            return functions.setError(res, "Missing input data", 400);
+        }
+    } catch (e) {
+        console.log("Err from server", e);
+        return functions.setError(res, "Err from server", 500);
+    }
+}
+
+exports.getAndCheckDataBlog = async(req, res, next) => {
+    try {
+        let image = req.files.image;
+        let {adminId,title,url,des,keyword, sapo, active, hot, detailDes , titleRelate, contentRelate, newStatus, date, dateLastEdit} = req.body;
+        let fields = [adminId, title, url, image, des,keyword, sapo, detailDes, titleRelate, contentRelate];
+        for(let i=0; i<fields.length; i++){
+            if(!fields[i])
+                return functions.setError(res, `Missing input value ${i+1}`, 404);
+        }
+        // them cac truong muon them hoac sua
+        req.info = {
+            adminId: adminId,
+            title: title,
+            url: url,
+            image: image,
+            des: des,
+            keyword: keyword,
+            sapo: sapo,
+            active: active,
+            hot: hot,
+            new: newStatus,
+            detailDes: detailDes,
+            titleRelate: titleRelate,
+            contentRelate: contentRelate,
+            date: date,
+            dateLastEdit: dateLastEdit
+        }
+        return next();
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+
+//admin tạo 1 blog
+exports.createBlog = async(req, res, next) => {
+    try {
+        let fields = req.info;
+        const maxIdBlog = await Blog.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIdBlog;
+        if (maxIdBlog) {
+            newIdBlog = Number(maxIdBlog._id) + 1;
+        } else newIdBlog = 1;
+        fields._id = newIdBlog;
+
+        if(!fields.date) {
+            fields.date = Date(Date.now());
+        }
+        //luu anh
+        let image = fields.image;
+        if(!await functions.checkImage(image.path)){
+            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
+        }
+        serviceRN.uploadFileRN2(folderImg,newIdBlog,image);
+        fields.image = serviceRN.createLinkFileRaonhanh(folderImg, newIdBlog, image.name);
+        let blog = new Blog(fields);
+        await blog.save();
+        return functions.success(res, 'Create blog RN365 success!');
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.updateBlog = async(req, res, next) => {
+    try{
+        if(!req.body._id)
+            return functions.setError(res, "Missing input value id blog!", 404);
+        let _id = req.body._id;
+        let fields = req.info;
+        if(!fields.dateLastEdit){
+            fields.dateLastEdit = Date(Date.now());
+        }
+        let image = fields.image;
+        if(!await functions.checkImage(image.path)){
+            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
+        }
+        let existsBlog = await Blog.findOne({_id: _id});
+        if (existsBlog) {
+            // xu ly anh
+            let linkImg = existsBlog.image.split("/");
+            let len = linkImg.length;
+            // functions.deleteImgRaoNhanh(folderImg, linkImg[len-2], linkImg[len-1]);
+            serviceRN.uploadFileRN2(folderImg, _id, image);
+            fields.image = serviceRN.createLinkFileRaonhanh(folderImg, _id, image.name);
+
+            //cap nhat du lieu
+            await Blog.findByIdAndUpdate(_id, fields);
+            return functions.success(res, "Blog edited successfully");
+        }
+
+        return functions.setError(res, "Blog not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
 }
