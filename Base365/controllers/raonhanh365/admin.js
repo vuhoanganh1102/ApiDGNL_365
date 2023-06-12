@@ -6,6 +6,7 @@ const PriceList = require('../../models/Raonhanh365/PriceList');
 const Users = require('../../models/Users');
 const History = require('../../models/Raonhanh365/History');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
+const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
 
 const serviceRN = require('../../services/rao nhanh/raoNhanh');
 const folderImg = "img_blog";
@@ -94,9 +95,10 @@ exports.getAndCheckDataAdminUser = async(req, res, next) => {
 
 exports.createAdminUser = async(req, res, next) => {
     try{
+        
+        
+        // luu thong tin admin
         let fields = req.info;
-
-        //tao _id tu dong tang
         const maxIdAdminUser = await AdminUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
         let newIdAdminUser;
         if (maxIdAdminUser) {
@@ -104,8 +106,34 @@ exports.createAdminUser = async(req, res, next) => {
         } else newIdAdminUser = 1;
         fields._id = newIdAdminUser;
 
-        let news = new AdminUser(fields);
-        await news.save();
+        let adminUser = new AdminUser(fields);
+        await adminUser.save();
+
+        //cap nhat bang phan quyen
+        let {arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete} = req.body;
+        arrIdModule = arrIdModule.split(",");
+        arrRightAdd = arrRightAdd.split(",");
+        arrRightEdit = arrRightEdit.split(",");
+        arrRightDelete = arrRightDelete.split(",");
+        for(let i=0; i<arrIdModule.length; i++){
+            //tao id cho bang phan quyen
+            const maxIdAdminUserRight = await AdminUserRight.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            let newIdAdminUserRight;
+            if (maxIdAdminUserRight) {
+                newIdAdminUserRight = Number(maxIdAdminUserRight._id) + 1;
+            } else newIdAdminUserRight = 1;
+            
+            let fieldsRight = {
+                _id: newIdAdminUserRight,
+                adminId: newIdAdminUser,
+                moduleId: arrIdModule[i],
+                add: arrRightAdd[i],
+                edit: arrRightEdit[i],
+                deletelet: arrRightDelete[i]
+            }
+            let adminUserRight = new AdminUserRight(fieldsRight);
+            await adminUserRight.save();
+        }
         return functions.success(res, 'Create news RN365 success!');
     }catch(e){
         console.log("Err from server!", e);
