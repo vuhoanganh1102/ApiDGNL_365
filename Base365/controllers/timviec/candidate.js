@@ -696,7 +696,7 @@ exports.completeProfileQlc = async(req, res, next) => {
         let listJobFit = await newTV365.find({ cateID: 1, cityID: 1 }, { _id: 1 })
 
         //nhà tuyển dụng xem hồ sơ
-        let ntdCheckHoso = await functions.getDatafind(pointUsed, { useID: candiCateID, type: candiCateID })
+        let ntdCheckHoso = await functions.getDatafind(pointUsed, { useID: userId })
 
 
         let itesm_dem = {
@@ -1814,9 +1814,16 @@ exports.infoCandidate = async(req, res, next) => {
             let userId = req.body.iduser
             let CvUv = functions.getDatafindOne(CVUV, { userId: userId })
             let userInfo = await functions.findOneUser(userId)
-
+            let candidateAI
             if (userInfo) {
-                let candidateAI = await functions.getDataAxios('http://localhost:3000/api/timviec/candidate/candidateAI', { use_id: userId })
+                try {
+                    candidateAI = await functions.getDataAxios('http://localhost:3000/api/timviec/candidate/candidateAI', { use_id: userId })
+                    if (candidateAI.data && candidateAI.data.data) {
+                        candidateAI = candidateAI.data.data
+                    }
+                } catch (e) {
+                    candidateAI = {}
+                }
                 if (req.user && req.user.data.type == 1) {
                     let companyId = req.user.data.idTimViec365
                     let checkApplyForJob = await functions.getDatafindOne(applyForJob, { userID: userId, comID: companyId })
@@ -1841,6 +1848,7 @@ exports.infoCandidate = async(req, res, next) => {
                     userInfo.emailContact = "đăng nhập để xem email liên hệ"
                     functions.success(res, "Hiển thị chi tiết ứng viên thành công", { userInfo, CvUv, checkStatus: false, candidateAI: candidateAI });
                 }
+
             } else return functions.setError(res, "Không có thông tin user", 400);
 
 
