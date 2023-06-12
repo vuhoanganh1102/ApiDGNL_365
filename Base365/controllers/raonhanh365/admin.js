@@ -7,6 +7,7 @@ const Users = require('../../models/Users');
 const History = require('../../models/Raonhanh365/History');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
 const ReportNews = require('../../models/Raonhanh365/UserOnSite/NewReport');
+const NetworkOperator = require('../../models/Raonhanh365/NetworkOperator')
 
 
 const serviceRN = require('../../services/rao nhanh/raoNhanh');
@@ -360,6 +361,26 @@ exports.getListPriceList = async(req, res, next)=>{
     }catch(error){
         console.log(error)
         return functions.setError(res, error)
+    }
+}
+
+exports.update = async(req, res, next) => {
+    try{
+        if(!req.body.newsID)
+            return functions.setError(res, "Missing input value id news!", 404);
+        let newsID = req.body.newsID;
+        let fields = req.info;
+            fields.updateTime = Date(Date.now());
+        let existsNews = await News.findOne({_id: newsID});
+        if (existsNews) {
+            
+            await News.findOneAndUpdate({_id: newsID}, fields);
+            return functions.success(res, "News edited successfully");
+        }
+        return functions.setError(res, "News not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
     }
 }
 
@@ -981,30 +1002,22 @@ exports.createReport = async (req,res,next) => {
 // api danh sách tìm kiếm tin báo cáo
 exports.getListNewReports = async (req,res, next)=> {
     try {
-        if(req.body){
             let { id_user, userName, problem, startDate, endDate} = req.body;
             // nếu mục tìm kiếm có tồn tại tên người báo cáo
             if (userName && id_user == null){
+                console.log(1)
                 const userReportWithUserName = await Users.findOne({userName: userName });
                 // nếu có người dùng gán id tìm kiếm = id người dùng
                 if (userReportWithUserName) {
+                    console.log(2)
                     id_user = userReportWithUserName.id
-                }
-                // nếu req tìm kiếm có tồn tại id người báo cáo && không có tên người báo cáo
-            } else if (id_user && userName == null){
-                const userReportWithIdUser = await Users.findOne({ _id: id_user });
-                // nếu tồn tại userReportWithIdUser thì lấy ra userReportWithIdUser.userName
-                if (userReportWithIdUser) {
-                    userName = userReportWithIdUser.userName
+                } else {
+                    console.log(3)
+                    id_user = null
                 }
             }
             let query = {};
-            if (id_user) {
-                query.id_user = id_user;
-            }
-            if (userName) {
-                query.userName = userName;
-            }
+            query.id_user = id_user;
             if (problem) {
                 query.problem = problem;
             }
@@ -1014,34 +1027,86 @@ exports.getListNewReports = async (req,res, next)=> {
             if(endDate){
                 query.endDate = endDate;
             }
-            console.log(query)
+            console.log(query,22)
             let fields = {id_user: 1, problem: 1, reportDetail: 1};
-            const ReportList = await ReportNews.find({
-                $or: [
-                    { id_user: query.id_user },
-                    { userName: query.userName },
-                    { problem: query.problem },
-                    { startDate: query.startDate },
-                    { endDate: query.endDate },
-                ]
-            })
-            console.log(ReportList)
-            const ReportListWithUserName = []
-            ReportListWithUserName.push(ReportList,userName)
-            return functions.success(res, 'Get List Search News Reports', { data: ReportListWithUserName })
-        } else {
-        let reportNewss= await ReportNews.find();
-        const reportNews = await functions.pageFind(ReportNews);
-        console.log(reportNewss)
-        console.log(reportNews)
-        for (let i = 0; i < reportNews.length; i++ ){
-            let Userss = await Users.findOne({_id: reportNews[i].id_user});
-            reportNews[i].userName = Userss.userName
-        }
-        return functions.success(res, "get list report success", {data: reportNews });
-        }
+            // let reportNews= await ReportNews.find(query,fields);
+            const reportNews = await functions.pageFind(ReportNews,query,null,null,null,fields);
+            // console.log(reportNewss)
+            console.log(reportNews)
+            for (let i = 0; i < reportNews.length; i++ ){
+                let Userss = await Users.findOne({_id: reportNews[i].id_user});
+                reportNews[i].userName = Userss.userName
+            }
+            return functions.success(res, "get list report success", {data: reportNews });
     } catch (error) {
-        console.log("Err from server", e);
+        console.log("Err from server", error);
+        return functions.setError(res, error)
+    }
+}
+// api sửa tin báo cáo
+exports.fixNewReport = async (req,res,next) => {
+    try{
+        const { id } = req.params;
+        const Report = await ReportNews.findOneAndUpdate({_id: id},{fixed: 1}, {
+            new: true
+        })
+        return functions.success(res, "Fix report success", {data: Report });
+    } catch (error) {
+        console.log("Err from server", error);
+        return functions.setError(res, error)
+    }
+}
+//-------------------------------------------------------API chiet khau nap the-------------------------
+// tạo
+exports.createDiscount = async (req,res,next) => {
+    try {
+        const reportNewsData = req.body;
+        console.log(reportNewsData)
+        const newReportNews = new NetworkOperator(reportNewsData);
+        const savedReportNews = await newReportNews.save();
+        console.log(savedReportNews)
+        res.status(201).json(savedReportNews);
+    }  catch (error) {
+        return functions.setError(res, error)
+    }
+}
+// api tìm kiếm và danh sách chiết khấu
+exports.getListDiscountCard = async (req,res,next) => {
+    try{
+        let { id, nameBefore} = req.body;
+        let condition = {}
+        if(id) condition._id = id;
+        if(nameBefore) condition.nameBefore = nameBefore;
+        let fields = {_id: 1, nameBefore: 1, discount: 1};
+        let disscountList = await functions.pageFind(NetworkOperator,condition,null,null,null,fields);
+        return functions.success(res, "Get List Report Success", {data: disscountList });
+    } catch (error){
+        return functions.setError(res, error)
+    }
+}
+// api update Discount for Card
+exports.updateDiscount = async (req,res,next) => {
+    try{
+        let { id } = req.params;
+        let {nameBefore, nameAfter, discount } = req.body;
+        //  nếu có param Id thì trả ra thông tin để sưả
+        if(id && !nameBefore){
+            console.log(1)
+            const netWorkOperator = await NetworkOperator.findOne({_id: id})
+            return functions.success(res, "Get Data", {data: netWorkOperator });
+        } else if(id && nameBefore && nameAfter && discount) {
+            console.log(2)
+        // nếu có đủ body thì cập nhật thông tin
+            const update ={
+                nameBefore: nameBefore,
+                nameAfter: nameAfter,
+                discount: discount
+            }
+            const upDateDiscount = await NetworkOperator.findOneAndUpdate({_id: id},update,{
+                new: true
+            })
+            return functions.success(res, "Update Discount Success", {data: upDateDiscount });
+        } }catch (error){
         return functions.setError(res, error)
     }
 }

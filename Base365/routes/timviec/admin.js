@@ -28,4 +28,26 @@ router.post('/updateActive', functions.checkToken, formData.parse(), admin.updat
 // api cập nhập password    
 router.post('/updatePassword', functions.checkToken, formData.parse(), admin.updatePassword);
 
+//login admin
+router.post('/loginAdmin', formData.parse(), admin.loginAdmin);
+
+//thêm mới danh mục
+router.post('/addCategory', functions.checkToken, formData.parse(), admin.addCategory);
+
+//hiển thị danh mục
+router.post('/listCategory', functions.checkToken, formData.parse(), admin.listCategory);
+
+//thêm mới danh mục blog
+router.post('/addCategoryBlog', functions.checkToken, formData.parse(), admin.addCategoryBlog);
+
+//danh sách danh mục blog
+router.post('/listCategoryBlog', functions.checkToken, formData.parse(), admin.listCategoryBlog);
+
+//cập nhật blog
+router.post('/updateCategoryBlog', functions.checkToken, formData.parse(), admin.updateCategoryBlog);
+
+//cập nhật active blog
+router.post('/updateActiveCategoryBlog', functions.checkToken, formData.parse(), admin.updateActiveCategoryBlog);
+
+
 module.exports = router;

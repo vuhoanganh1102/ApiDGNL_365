@@ -27,6 +27,10 @@ const ReportNewschema = new mongoose.Schema({
     endDate: {
         type: Date,
         required: true
+    },
+    fixed: {
+        type: Number,
+        Default: 0
     }
 });
 module.exports = mongoose.model("ReportNews", ReportNewschema);
