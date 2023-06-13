@@ -73,9 +73,9 @@ router.post('/failRegisterUser',formData.parse(), [functions.checkToken, service
 // api tạo mới tin báo cáo
 router.post('/newReportt',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.createReport);
 // api danh sách và tìm kiếm báo cáo tin
-router.post('/newReport',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.getListNewReports);
+router.post('report/listReport',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.getListNewReports);
 // api sửa tin dựa vào param
-router.post('/fixNewReport/:id',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.fixNewReport);
+router.post('report/fixNewReport/:id',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.fixNewReport);
 
 
 //------------------------------------------------api chiết khấu nạp thẻ
