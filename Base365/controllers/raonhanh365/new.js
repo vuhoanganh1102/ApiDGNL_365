@@ -1557,12 +1557,15 @@ exports.getListCandidateApplied = async(req, res, next) => {
         for(let i=0; i<listNews.length; i++){
             let newsApply = await ApplyNewsRN.find({newId: listNews[i]._id});
             
-            //lay ra ten cua cac ung vien
-            // for(let j=0; j<newsApply.length; j++) {
-            //     let candidate = await User.findOne({_id: newsApply.uvId}, {userName: 1});
-            //     let ob = {candiName: candidate.name, newsApply: newsApply[i]}
-            //     newsApply[i] = ob;
-            // }
+            // lay ra ten cua cac ung vien
+            
+            for(let j=0; j<newsApply.length; j++) {
+                let candidate = await User.findOne({_id: newsApply[j].uvId}, {userName: 1});
+                if(candidate){
+                    let ob = {candiName: candidate.userName, newsApply: newsApply[j]}
+                    newsApply[j] = ob;
+                }
+            }
             listNews[i] = {newsApply: newsApply, newsSell: listNews[i]};
         }
         
