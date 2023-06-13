@@ -32,5 +32,6 @@ const SignatureImageSchema = new Schema({
         type:String,
         require:true
     }
-})
-module.exports = mongoose.Schema("SignatureImage",SignatureImageSchema)
+});
+
+module.exports = mongoose.Schema("HR_SignatureImage",SignatureImageSchema);

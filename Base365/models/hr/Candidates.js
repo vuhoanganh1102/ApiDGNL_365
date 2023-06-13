@@ -557,4 +557,4 @@ const CandidateSchema = new Schema({
 
 
 })
-module.exports = mongoose.Model("Candidate", CandidateSchema)
+module.exports = mongoose.Model("HR_Candidate", CandidateSchema)

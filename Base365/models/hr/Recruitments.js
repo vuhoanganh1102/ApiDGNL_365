@@ -316,4 +316,4 @@ const RecruitmentSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("Recruitment", RecruitmentSchema);
+module.exports = mongoose.model("HR_Recruitment", RecruitmentSchema);

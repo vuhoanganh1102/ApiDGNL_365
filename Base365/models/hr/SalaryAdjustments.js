@@ -102,4 +102,4 @@ const SalaryAdjustmentSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("SalaryAdjustments", SalaryAdjustmentSchema);
+module.exports = mongoose.model("HR_SalaryAdjustments", SalaryAdjustmentSchema);

@@ -43,4 +43,4 @@ const AppointmentSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("Appointments", AppointmentSchema);
+module.exports = mongoose.model("HR_Appointments", AppointmentSchema);

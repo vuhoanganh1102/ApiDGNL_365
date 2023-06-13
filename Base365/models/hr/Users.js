@@ -140,7 +140,6 @@ const UserSchema = new Schema({
                         
                     }
                 ]
-               
             }
         }]
     }
@@ -148,4 +147,4 @@ const UserSchema = new Schema({
 
 })
 
-module.export = mongoose.Schema("Users",UserSchema)
+module.export = mongoose.Schema("HR_Users",UserSchema)

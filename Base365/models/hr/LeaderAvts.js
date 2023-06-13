@@ -21,4 +21,6 @@ const LeaderAvtSchema = new Schema({
         type: String,
         require: true
     }
-})
+});
+
+module.exports = mongoose.model("HR_LeaderAvt", LeaderAvtSchema);

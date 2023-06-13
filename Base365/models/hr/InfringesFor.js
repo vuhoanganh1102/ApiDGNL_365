@@ -87,4 +87,4 @@ const InfringesForSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("InfringesFors", InfringesForSchema);
+module.exports = mongoose.model("HR_InfringesFors", InfringesForSchema);

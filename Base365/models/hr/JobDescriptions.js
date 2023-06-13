@@ -52,3 +52,5 @@ const JobDescriptionsSchema = new Schema({
         default:0
     }
 });
+
+module.exports = mongoose.model("HR_JobDescriptions", JobDescriptionsSchema);

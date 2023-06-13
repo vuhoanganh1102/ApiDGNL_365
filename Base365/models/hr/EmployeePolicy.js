@@ -106,4 +106,4 @@ const EmployeePolicySchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("EmployeePolicys", EmployeePolicySchema);
+module.exports = mongoose.model("HR_EmployeePolicys", EmployeePolicySchema);

@@ -107,4 +107,4 @@ const ProvisionsOfCompanySchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("ProvisionsOfCompanys", ProvisionsOfCompanySchema);
+module.exports = mongoose.model("HR_ProvisionsOfCompanys", ProvisionsOfCompanySchema);

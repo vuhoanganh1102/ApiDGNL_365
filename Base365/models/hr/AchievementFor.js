@@ -79,4 +79,4 @@ const AchievementForSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("AchievementFors", AchievementForSchema);
+module.exports = mongoose.model("HR_AchievementFors", AchievementForSchema);

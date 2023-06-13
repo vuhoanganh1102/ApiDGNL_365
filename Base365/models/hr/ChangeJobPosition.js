@@ -54,4 +54,4 @@ const ChangeJobPositionSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("Appointments", ChangeJobPositionSchema);
+module.exports = mongoose.model("HR_Appointments", ChangeJobPositionSchema);

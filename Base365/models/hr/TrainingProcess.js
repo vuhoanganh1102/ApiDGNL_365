@@ -74,4 +74,6 @@ const TrainingProcessSchema = new Schema({
             }
         }]
     }
-})
+});
+
+module.exports = mongoose.Schema("HR_TrainingProcess",TrainingProcessSchema);

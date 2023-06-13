@@ -107,4 +107,4 @@ const PersonnelChangeSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("PersonnelChanges", PersonnelChangeSchema);
+module.exports = mongoose.model("HR_PersonnelChanges", PersonnelChangeSchema);
