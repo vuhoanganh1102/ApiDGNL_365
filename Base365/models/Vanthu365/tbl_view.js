@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const View = new mongoose.Schema({
-    id_view: {
+    _id: {
         type: Number,
     },
     id_user: {

@@ -1,7 +1,7 @@
 
 const mongoose = require('mongoose');
 var vanBanThayThe = new mongoose.Schema({
-    id_tt: {
+    _id: {
         type: Number,
     },
     id_vb_tt: {

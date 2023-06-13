@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 const tbl_qlcv_edit = new mongoose.Schema({
-    ed_id: {
+    _id: {
         type: Number
     },
     ed_cv_id: {

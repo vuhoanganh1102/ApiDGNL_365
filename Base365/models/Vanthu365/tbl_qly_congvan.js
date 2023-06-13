@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const tbl_qly_congvan = new mongoose.Schema({
-    cv_id: {
+    _id: {
         type: Number,
     },
     cv_id_vb: {

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const tbl_qlcv_role = mongoose.Schema({
-    ro_id: { type: Number },
+    _id: { type: Number },
     ro_user_id: { type: Number },
     ro_usc_id: { type: Number },
     ro_list_vb: { type: String, max: 255 },

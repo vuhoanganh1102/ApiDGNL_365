@@ -105,18 +105,11 @@ app.use('/api/vanthu', NguoiDuyetVanBan);
 app.use('/api/vanthu', UserModel);
 app.use('/api/vanthu', VanBan);
 
-//dexuat
-// var DeXuat_XinNghi = require('./routes/vanthu/DeXuat/deXuatXinNghi');
-// var DeXuat_XinDoiCa = require('./routes/vanthu/DeXuat/de_xuat_doi_ca');
-// var DeXuat_XinTamUng = require('./routes/vanthu/DeXuat/de_xuat_xin_tam_ung')
-// //var DeXuat_XinCapPhatTaiSan = require('./routes/vanthu/DeXuat/de_xuat_cap_phat_tai_san')
-// var DeXuat_XinThoiViec = require('./routes/vanthu/DeXuat/de_xuat_xin_thoi_viec');
-// var DeXuat_XinTangLuong = require('./routes/vanthu/DeXuat/de_xuat_tang_luong');
-// var DeXuat_XinBoNhiem = require('./routes/vanthu/DeXuat/de_xuat_bo_nhiem');
-// var DeXuat_LuanChuyenCongTac = require('./routes/vanthu/DeXuat/de_xuat_luan_chuyen_cong_tac');
-// var DeXuat_ThamGiaDuAn = require('./routes/vanthu/DeXuat/de_xuat_tham_gia_du_an');
 
+
+//tạo đề xuất 
 var create_Dx_Router = require('./routes/vanthu/DeXuat/create_dx')
+app.use('/api/vanthu/DeXuat', create_Dx_Router);
 //xoa de xuat 
 var Delete_deXuat = require('./routes/vanthu/DeXuat/delete_Dx');
 app.use('/api/vanthu/DeXuat', Delete_deXuat);
@@ -126,19 +119,11 @@ var edit_Route = require('./routes/vanthu/DeXuat/edit_deXuat');
 app.use('/api/vanthu/edit_DeXuat', edit_Route);
 //user_dx
 var get_deXuat_user = require('./routes/vanthu/DeXuat/User_Dx');
-app.use('/api/vanthu/DeXuat', get_deXuat_user); app.use('api/vanthu/DeXuat', create_Dx_Router);
+app.use('/api/vanthu/DeXuat', get_deXuat_user);
 
 
 
-// app.use('/api/vanthu/DeXuat', DeXuat_XinNghi);
-// app.use('/api/vanthu/DeXuat', DeXuat_XinDoiCa),
-//     app.use('/api/vanthu/DeXuat', DeXuat_XinTamUng);
-// //app.use('/api/vanthu/DeXuat', DeXuat_XinCapPhatTaiSan);
-// app.use('/api/vanthu/DeXuat', DeXuat_XinThoiViec);
-// app.use('/api/vanthu/DeXuat', DeXuat_XinTangLuong);
-// app.use('/api/vanthu/DeXuat', DeXuat_XinBoNhiem);
-// app.use('/api/vanthu/DeXuat', DeXuat_LuanChuyenCongTac);
-// app.use('/api/vanthu/DeXuat', DeXuat_ThamGiaDuAn);
+
 
 
 

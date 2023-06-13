@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const userModel = new mongoose.Schema({
-    id: {
+    _id: {
         type: Number
     },
     id_user: {

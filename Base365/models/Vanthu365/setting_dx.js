@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const settingDx = new mongoose.Schema({
-    idSetting: {
+    _id: {
         type: Number
     },
     ComId: {

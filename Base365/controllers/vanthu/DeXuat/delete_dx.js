@@ -109,6 +109,7 @@ exports.khoi_phuc = async (req, res) => {
 
         for (let i = 0; i < list_id_dx.length; i++) {
             await De_Xuat.findByIdAndUpdate({ _id: list_id_dx[i] }, { active: 1 });
+            await delete_Dx.deleteOne({ _id: list_id_dx[i] });
         }
 
         return res.status(200).json({ message: 'success' });

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const textBook = new mongoose.Schema({
-    id_book: {
+    _id: {
         type: Number
     },
     name_book: {

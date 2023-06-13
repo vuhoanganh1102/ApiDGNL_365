@@ -30,19 +30,27 @@ exports.edit_del_type = async (req, res) => {
 }
 
 exports.edit_active = async (req, res) => {
-    let id = Number(req.body._id);// id đề xuất 
+
     let page = Number(req.body.page) ? Number(req.body.page) : 1;
     let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
     const skip = (page - 1) * pageSize;
 
+    let id = Number(req.body._id);// id đề xuất 
     let id_user = Number(req.body.id_user);//id nguoi duyet 
     console.log("id_user" + id_user);
     let type_duyet = Number(req.body.type_duyet);
+    let type_handling = Number(req.body.type_handling);//1 -tiếp nhận 2-duyệt 3-từ chối ...
+    let bd_nghi = req.body.bd_nghi;
+
+
     let danh_sach_nguoi_duyet = [];
-    let type_handling = Number(req.body.type_handling);//1 -tiếp nhận 2-duyệt 3-từ chối 
+    let type_dx;
+
+
     if (!isNaN(id) && !isNaN(type_duyet) && !isNaN(type_handling) && !isNaN(id_user)) {
 
         let de_xuat = await De_Xuat.findOne({ _id: id }).skip(skip).limit(pageSize);
+        type_dx = de_xuat.type_dx;
         danh_sach_nguoi_duyet = de_xuat.id_user_duyet.split(",");//danh sách những người duyệt 
         // console.log("de_xuat: " + de_xuat);
 
@@ -96,9 +104,6 @@ exports.edit_active = async (req, res) => {
             await his_handel_duyet.save()// lưu trạng thái xử lí vào bảng handle;
 
 
-
-
-
             //trường hợp 2 người duyệt trở lên 
 
             let his_handle_dx = await his_handle.find({ id_dx: id });//lấy lịch sử xử lí của đễ xuất đó
@@ -142,7 +147,9 @@ exports.edit_active = async (req, res) => {
             if (check_dong_y == danh_sach_nguoi_duyet.length) {//tất cả người duyệt đều đông ý 
                 console.log("dong y")
                 let update_dx = await De_Xuat.findOneAndUpdate({ _id: id }, { active: 1, time_duyet: new Date(), type_duyet: 5 });
-
+                if (type_dx == 5) {
+                    await De_Xuat.findOneAndUpdate({ _id: id }, { time_start_out: bd_nghi });
+                }
                 return res.status(200).json({ data: update_dx, message: "update dhuyetg " });
 
             }

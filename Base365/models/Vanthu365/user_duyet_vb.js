@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const nguoiDuyetVanBan = new mongoose.Schema({
-    id_duyet: {
+    _id: {
         type: Number
     },
     id_vb_duyet: {

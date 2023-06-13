@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const tblFeedback = new mongoose.Schema({
-    fbID: {
+    _id: {
         type: Number
     },
     userFb: {

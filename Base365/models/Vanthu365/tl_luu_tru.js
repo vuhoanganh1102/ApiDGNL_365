@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const tl_luu_tru = new mongoose.Schema({
-    id_tl: {
+    _id: {
         type: Number
     },
     ten_tl: {

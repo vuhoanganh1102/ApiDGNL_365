@@ -343,6 +343,28 @@ const Vanthu_de_xuat = new Schema({
                 default: null,// Lý do chung của mọi loại đề xuất
             },
 
+        },
+        lich_lam_viec: {
+            lich_lam_viec: {//1-t2->t6 2.t2->t7 3.t2->CN
+                type: Number,
+                default: 1
+            },
+            thang_ap_dung: {
+                type: Number,
+
+            },
+            ngay_bat_dau: {//ngay bat dau lam viec
+                type: Date
+            },
+            ca_la_viec: {//1-ca hanh chinh 2-ca sang 3-ca chieu
+                type: Number,
+            },
+            ngay_lam_viec: {//llich lamm viec hang ngay
+                type: String // JSON.stringify()
+            }
+
+
+
         }
 
         //Đề xuất khiếu nại

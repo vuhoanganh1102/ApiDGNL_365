@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const vanBan = new mongoose.Schema({
-    id: {
+    _id: {
         type: Number
     },
     title_vb: {

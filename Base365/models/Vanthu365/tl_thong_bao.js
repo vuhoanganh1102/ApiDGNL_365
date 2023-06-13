@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const tl_ThongBao = new mongoose.Schema({
-    id_thong_bao: {
+    _id: {
         type: Number,
         default: 0
     },

@@ -7,9 +7,9 @@ const thongBao = require('../../../models/Vanthu365/tl_thong_bao');
 
 //đề xuất xin nghỉ 
 exports.de_xuat_xin_nghi = async (req, res) => {
+    console.log("xin ngihr ");
     let {
         name_dx,
-        type_dx,//int 
         name_user,
         id_user,
         com_id,
@@ -22,8 +22,9 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         bd_nghi,
         kt_nghi,
         loai_np,
-        type_time,
+        //  type_time,
         ca_nghi,
+        link
     } = req.body;
 
 
@@ -38,8 +39,8 @@ exports.de_xuat_xin_nghi = async (req, res) => {
 
 
 
-    console.log(pathString)
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    // console.log(pathString)
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -55,7 +56,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         const new_de_xuat = new De_Xuat({
             _id: (maxID + 1),
             name_dx: name_dx,
-            type_dx: type_dx,
+            type_dx: 1,
             phong_ban: phong_ban,
             noi_dung: {
                 nghi_phep: {
@@ -75,7 +76,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             file_kem: pathString,
             kieu_duyet: 0,
             //   type_duyet: 0,
-            type_time: type_time,
+            //  type_time: type_time,
             //time_start_out: " ",
             time_create: new Date(),
             //  time_tiep_nhan: null,
@@ -86,7 +87,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
 
 
         await new_de_xuat.save();
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung, new_de_xuat.file_kem);
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.nghi_phep, new_de_xuat.file_kem);
 
         maxID = 0;
         const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -105,16 +106,18 @@ exports.de_xuat_xin_nghi = async (req, res) => {
 
 
         })
+        await t_bao.save();
+        return res.status(200).json("success ");
 
     }
 
-    return res.status(200).json("success ");
+
 }
 //đề xuất bổ nhiệm 
 exports.de_xuat_xin_bo_nhiem = async (req, res) => {
     let {
         name_dx,
-        type_dx,//int 
+        // type_dx,//int 
         name_user,
         id_user,
         com_id,
@@ -156,7 +159,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
         const new_de_xuat = new De_Xuat({
             _id: (maxID + 1),
             name_dx: name_dx,
-            type_dx: type_dx,
+            type_dx: 7,
             noi_dung: {
                 bo_nhiem: {
                     ly_do: ly_do,
@@ -189,10 +192,11 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
 
 
         await new_de_xuat.save();
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.bo_nhiem, new_de_xuat.file_kem);
 
-
+        return res.status(200).json("success ");
     }
-    return res.status(200).json("success ");
+
 
 }
 
@@ -201,7 +205,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
 exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
     let {
         name_dx,
-        type_dx,//int 
+        //  type_dx,//int 
         name_user,
         id_user,
         com_id,
@@ -239,7 +243,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         const new_de_xuat = new De_Xuat({
             _id: (maxID + 1),
             name_dx: name_dx,
-            type_dx: type_dx,
+            type_dx: 4,
             noi_dung: {
                 cap_phat_tai_san: {
                     ly_do: ly_do,
@@ -267,13 +271,11 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             active: 0,//1-bên 3 đã đồng ý , 2 - bên 3 không đồng ý 
             del_type: 1,//1-active , 2 --delete
         })
-
-
         await new_de_xuat.save();
-
-
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.cap_phat_tai_san, new_de_xuat.file_kem);
+        return res.status(200).json("success ");
     }
-    return res.status(200).json("success ");
+
 
 }
 
@@ -282,7 +284,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
     console.log("doi ca ");
     let {
         name_dx,
-        type_dx,//int 
+        //  type_dx,//int 
         name_user,
         id_user,
         com_id,
@@ -319,7 +321,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
         const new_de_xuat = new De_Xuat({
             _id: (maxID + 1),
             name_dx: name_dx,
-            type_dx: type_dx,
+            type_dx: 2,
             noi_dung: {
                 doi_ca: {
                     ngay_can_doi: ngay_can_doi,
@@ -327,9 +329,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
                     ngay_muon_doi: ngay_muon_doi,
                     ca_muon_doi: ca_muon_doi,
                     ly_do: ly_do
-
                 }
-
             },
             name_user: name_user,
             id_user: id_user,
@@ -352,10 +352,11 @@ exports.de_xuat_doi_ca = async (req, res) => {
 
 
         await new_de_xuat.save();
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.doi_ca, new_de_xuat.file_kem);
 
-
+        return res.status(200).json("success ");
     }
-    return res.status(200).json("success ");
+
 
 }
 
@@ -364,7 +365,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
 exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
     let {
         name_dx,
-        type_dx,//int 
+        // type_dx,//int 
         name_user,
         id_user,
         com_id,
@@ -403,7 +404,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
         const new_de_xuat = new De_Xuat({
             _id: (maxID + 1),
             name_dx: name_dx,
-            type_dx: type_dx,
+            type_dx: 8,
             noi_dung: {
                 luan_chuyen_cong_tac: {
                     cv_nguoi_lc: cv_nguoi_lc,
@@ -434,10 +435,11 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
 
 
         await new_de_xuat.save();
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.luan_chuyen_cong_tac, new_de_xuat.file_kem);
 
-
+        return res.status(200).json("success ");
     }
-    return res.status(200).json("success ");
+
 
 }
 
@@ -445,7 +447,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
 exports.de_xuat_tang_luong = async (req, res) => {
     let {
         name_dx,
-        type_dx,//int 
+        //  type_dx,//int 
         name_user,
         id_user,
         com_id,
@@ -485,7 +487,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
         const new_de_xuat = new De_Xuat({
             _id: (maxID + 1),
             name_dx: name_dx,
-            type_dx: type_dx,
+            type_dx: 6,
             noi_dung: {
                 tang_luong: {
                     mucluong_ht: mucluong_ht,
@@ -514,10 +516,12 @@ exports.de_xuat_tang_luong = async (req, res) => {
 
 
         await new_de_xuat.save();
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.tang_luong, new_de_xuat.file_kem);
 
+
+        return res.status(200).json("success ");
 
     }
-    return res.status(200).json("success ");
 
 }
 
@@ -526,7 +530,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
     console.log("controller");
     let {
         name_dx,
-        type_dx,//int 
+        //  type_dx,//int 
         name_user,
         id_user,
         com_id,
@@ -568,7 +572,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
         const new_de_xuat = new De_Xuat({
             _id: (maxID + 1),
             name_dx: name_dx,
-            type_dx: type_dx,
+            type_dx: 9,
             noi_dung: {
                 tham_gia_du_an: {
                     ly_do: ly_do,
@@ -598,10 +602,12 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
 
 
         await new_de_xuat.save();
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.tham_gia_du_an, new_de_xuat.file_kem);
 
+        return res.status(200).json("success ");
 
     }
-    return res.status(200).json("success ");
+
 
 }
 
@@ -609,7 +615,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
 exports.de_xuat_xin_tam_ung = async (req, res) => {
     let {
         name_dx,
-        type_dx,//int 
+        //  type_dx,//int 
         name_user,
         id_user,
         com_id,
@@ -646,7 +652,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         const new_de_xuat = new De_Xuat({
             _id: (maxID + 1),
             name_dx: name_dx,
-            type_dx: type_dx,
+            type_dx: 3,
             noi_dung: {
                 tam_ung: {
                     ly_do: ly_do,
@@ -675,10 +681,12 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
 
 
         await new_de_xuat.save();
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.tam_ung, new_de_xuat.file_kem);
 
+        return res.status(200).json("success ");
 
     }
-    return res.status(200).json("success ");
+
 
 }
 
@@ -686,7 +694,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
 exports.de_xuat_xin_thoi_Viec = async (req, res) => {
     let {
         name_dx,
-        type_dx,//int 
+        // type_dx,//int 
         name_user,
         id_user,
         com_id,
@@ -719,7 +727,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
         const new_de_xuat = new De_Xuat({
             _id: (maxID + 1),
             name_dx: name_dx,
-            type_dx: type_dx,
+            type_dx: 5,
             noi_dung: {
                 thoi_viec: {
                     ly_do: ly_do,
@@ -748,11 +756,100 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
 
         await new_de_xuat.save();
 
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.thoi_viec, new_de_xuat.file_kem);
 
+        return res.status(200).json("success ");
     }
-    return res.status(200).json("success ");
+
 
 }
 
 
+exports.lich_lam_viec = async (req, res) => {
+    let {
+        name_dx,
+        name_user,
+        id_user,
+        com_id,
+        kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+        id_user_duyet,
+        id_user_theo_doi,
+        ly_do,
+        lich_lam_viec,
+        thang_ap_dung,
+        ngay_bat_dau,
+        ca_lam_viec,
+        ngay_lam_viec } = req.body;
+    if (isNaN(id_user) || isNaN(id_user_duyet) || isNaN(id_user_theo_doi)) {
+        return res.status(404).json({ message: "bad request" });
+    } else {
 
+        let maxID = 0;
+        const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+        //   console.log(de_xuat);
+        if (de_xuat) {
+            maxID = de_xuat._id;
+        }
+
+        //console.log("mx : " + maxID);
+        const new_de_xuat = new De_Xuat({
+            _id: (maxID + 1),
+            name_dx: name_dx,
+            type_dx: 18,
+            noi_dung: {
+                lich_lam_viec: {
+                    ly_do: ly_do,
+                    lich_lam_viec: lich_lam_viec,
+                    thang_ap_dung: thang_ap_dung,
+                    ngay_bat_dau: ngay_bat_dau,
+                    ca_la_viec: ca_lam_viec,
+                    ngay_lam_viec: ngay_lam_viec,
+
+
+                },
+            },
+            name_user: name_user,
+            id_user: id_user,
+            com_id: com_id,
+            kieu_duyet: kieu_duyet,
+            id_user_duyet: id_user_duyet,
+            id_user_theo_doi: id_user_theo_doi,
+            kieu_duyet: kieu_duyet,
+            //type_duyet: 0,
+            // type_time: 0,
+            //time_start_out: " ",
+            time_create: new Date(),
+            //  time_tiep_nhan: null,
+            //  time_duyet: null,
+            // active: 1,//1-bên 3 đã đồng ý , 2 - bên 3 không đồng ý 
+            //  del_type: 1,//1-active , 2 --delete
+        });
+
+
+        await new_de_xuat.save();
+
+        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.lich_lam_viec, new_de_xuat.file_kem);
+
+        let tb = new thongBao({
+            id_thong_bao: maxID + 1,
+            id_user: id_user,
+            id_user_nhan: id_user_duyet,
+            id_van_ban: new_de_xuat._id,
+            type: 2,
+            view: 0,
+            created_date: Date.now(),
+
+
+        })
+        await tb.save();
+        return res.status(200).json({ data: new_de_xuat, message: "success " });
+
+
+
+
+
+    }
+
+
+
+}

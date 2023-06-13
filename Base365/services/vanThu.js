@@ -45,9 +45,9 @@ exports.chat = async (name_dx, user_dx, noi_dung, fileKem) => {
         name_dx: name_dx,
         user_dx: user_dx,
         noi_dung: noi_dung,
-        fileKem: fileKem
+        fileKem: fileKem,
     }).then(function (response) {
-        console.log(response);
+        console.log("name_dx: " + name_dx + "user_dx :  " + user_dx + " noi_dung: " + noi_dung + " fileKem: " + fileKem);
     })
         .catch(function (error) {
             console.log(error);
