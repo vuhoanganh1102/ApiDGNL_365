@@ -424,10 +424,10 @@ exports.toolhideCateDX = async (req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    let post = await fnc.getDatafindOne(HideCateDX, {id_hide: data[i].id_hide})
+                    let post = await fnc.getDatafindOne(HideCateDX, {_id: data[i].id_hide})
                     if (post == null) {
                         let newCDX = new HideCateDX({
-                            id_hide: data[i].id_hide,
+                            _id: data[i].id_hide,
                             id_com: data[i].id_com,
                             id_cate_dx: data[i].id_cate_dx,
                         });

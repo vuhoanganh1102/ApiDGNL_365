@@ -8,7 +8,6 @@ exports.dxDangKiSuDungXe = async (req, res) => {
     try {
         let {
             name_dx,
-            type_dx,
             noi_dung,
             name_user,
             id_user,
@@ -17,13 +16,6 @@ exports.dxDangKiSuDungXe = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
-            type_time,
-            time_start_out,
-
-            time_tiep_nhan,
-            time_duyet,
-            active,
-            del_type,
             bd_xe,
             end_xe,
             soluong_xe,
@@ -32,7 +24,7 @@ exports.dxDangKiSuDungXe = async (req, res) => {
             ly_do
         } = req.body;
         let createDate = new Date()  
-        if(!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
+        if(!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
             let file_kem = req.files.file_kem;
@@ -48,7 +40,7 @@ exports.dxDangKiSuDungXe = async (req, res) => {
             let createDXXe = new DeXuat({
                 _id : _id,
                 name_dx: name_dx,
-                type_dx: type_dx,
+                type_dx: 13,
                 noi_dung: {
                     xe_cong: {
                         bd_xe: new Date(bd_xe * 1000) ,
@@ -67,13 +59,7 @@ exports.dxDangKiSuDungXe = async (req, res) => {
                 id_user_theo_doi: id_user_theo_doi,
                 file_kem: pathString,
                 type_duyet: type_duyet,
-                type_time: type_time,
-                time_start_out: time_start_out,
                 time_create: createDate,
-                time_tiep_nhan: time_tiep_nhan,
-                time_duyet: time_duyet,
-                active: active,
-                del_type: del_type
             });
 
             let savedDXXe = await createDXXe.save();

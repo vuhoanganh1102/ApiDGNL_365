@@ -413,14 +413,17 @@ const Vanthu_de_xuat = new Schema({
     },
     type_duyet: {
         type: Number,
+        default :0
 
     },
     type_time: {
         type: Number,//'3: hủy; 5: duyệt; 6 : bb đi làm; 7: đã tiếp nhận',
+        default :0
 
     },
     time_start_out: {
         type: String,
+        default : ""
 
     },
     time_create: {
@@ -438,10 +441,11 @@ const Vanthu_de_xuat = new Schema({
     },
     active: { // trạng thái duyệt
         type: Number,//'1: đã api bên 3 đồng ý; 2: bên 3 không đồng ý',
+        default : 0
     },
     del_type: {// trạng thái xoa
         type: Number,//'1:active; 2 delete'
-        default : 0
+        default : 1
     }
 })
 module.exports = mongoose.model("Vanthu_de_xuat", Vanthu_de_xuat);

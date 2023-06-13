@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Vanthu_phong_ban = new Schema({
-    id_phong_ban : {
+    _id : {
         type : Number
     },
     ten_phong_ban :{

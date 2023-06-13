@@ -17,18 +17,11 @@ exports.dxThanhToan = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
-            type_time,
-            time_start_out,
-
-            time_tiep_nhan,
-            time_duyet,
-            active,
-            del_type,
             so_tien_tt,
             ly_do
         } = req.body;
         let createDate = new Date()  
-        if(!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
+        if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
             let file_kem = req.files.file_kem;
@@ -45,7 +38,7 @@ exports.dxThanhToan = async (req, res) => {
             let createDXTT = new DeXuat({
                 _id : _id,
                 name_dx: name_dx,
-                type_dx: type_dx,
+                type_dx: 15,
                 noi_dung: {
                     thanh_toan: {
                         so_tien_tt: so_tien_tt ,
@@ -60,13 +53,7 @@ exports.dxThanhToan = async (req, res) => {
                 id_user_theo_doi: id_user_theo_doi,
                 file_kem: pathString,
                 type_duyet: type_duyet,
-                type_time: type_time,
-                time_start_out: time_start_out,
                 time_create: createDate,
-                time_tiep_nhan: time_tiep_nhan,
-                time_duyet: time_duyet,
-                active: active,
-                del_type: del_type
             });
 
             let savedDXTT = await createDXTT.save();

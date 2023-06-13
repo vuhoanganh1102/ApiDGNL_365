@@ -7,7 +7,6 @@ exports.dxHoaHong = async (req, res) => {
     try {
         let {
             name_dx,
-            type_dx,
             noi_dung,
             name_user,
             id_user,
@@ -21,14 +20,13 @@ exports.dxHoaHong = async (req, res) => {
 
             time_tiep_nhan,
             time_duyet,
-            active,
             chu_ky ,
             doanh_thu_td,
             muc_doanh_thu,
             ly_do,
         } = req.body;
         let createDate = new Date()  
-        if(!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
+        if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
             let file_kem = req.files.file_kem;
@@ -45,10 +43,11 @@ exports.dxHoaHong = async (req, res) => {
             let createDXHH = new DeXuat({
                 _id : _id,
                 name_dx: name_dx,
-                type_dx: type_dx,
+                type_dx: 20,
                 noi_dung: {
                     hoa_hong: {
                         chu_ky: chu_ky ,
+                        time_hh : time_hh,
                         doanh_thu_td : doanh_thu_td,
                         muc_doanh_thu : muc_doanh_thu,
                         ly_do : ly_do,
@@ -62,13 +61,7 @@ exports.dxHoaHong = async (req, res) => {
                 id_user_theo_doi: id_user_theo_doi,
                 file_kem: pathString,
                 type_duyet: type_duyet,
-                type_time: type_time,
-                time_start_out: time_start_out,
                 time_create: createDate,
-                time_tiep_nhan: time_tiep_nhan,
-                time_duyet: time_duyet,
-                active: active,
-                del_type: del_type
             });
 
             let savedDXHH = await createDXHH.save();
