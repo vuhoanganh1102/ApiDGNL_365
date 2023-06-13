@@ -5,7 +5,8 @@ const axios = require('axios');
 const FormData = require('form-data');
 const CateDetail = require('../../models/Raonhanh365/CateDetail');
 const PriceList = require('../../models/Raonhanh365/PriceList');
-
+const CityRN = require('../../models/Raonhanh365/City');
+const LikeRN = require('../../models/Raonhanh365/Like');
 
 
 // danh mục sản phẩm
@@ -797,6 +798,89 @@ exports.toolPriceList = async(req, res, next) => {
                         newNumber: data[i].sotin
                     });
                     await PriceList.create(cate);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+
+exports.toolCity = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_city2.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const city = new CityRN({
+                        _id: data[i].cit_id,
+                        name: data[i].cit_name,
+                        order: data[i].cit_order,
+                        type: data[i].cit_type,
+                        count: data[i].cit_count,
+                        parentId: data[i].cit_parent
+                    });
+                    await CityRN.create(city);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+
+exports.toolLike = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_cm_like.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const like = new LikeRN({
+                        _id: data[i].lk_id,
+                        forUrlNew: data[i].lk_for_url,
+                        type: data[i].lk_type,
+                        commentId: data[i].lk_for_comment,
+                        userName: data[i].lk_user_name,
+                        userAvatar: data[i].lk_user_avatar,
+                        userIdChat: data[i].lk_user_idchat,
+                        ip: data[i].lk_ip,
+                        time: data[i].lk_time,
+                    });
+                    await LikeRN.create(like);
                 }
                 page++;
             } else {

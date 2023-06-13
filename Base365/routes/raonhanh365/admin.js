@@ -24,6 +24,10 @@ router.delete('/news/deleteNews', [functions.checkToken, serviceRN.isAdminRN365]
 
 //------------------------------------------------api quan ly bang gia(gia ghim gian hang)
 router.post('/priceList/getListPriceList', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListPriceList);
+// router.post('/priceList/updatePriceList', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.updatePriceList);
+
+//------------------------------------------------api lich su nap the---------------------------------------------------
+router.post('/history/getListHistory', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListHistory);
 
 //------------------------------------------------api quan ly tai khoan(tai khoan chua xac thuc va da xac thuc)
 router.post('/user/getListUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListUser);

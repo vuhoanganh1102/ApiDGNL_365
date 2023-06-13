@@ -120,6 +120,11 @@ router.post('/toolCategory', toolRaoNhanh.toolCategory);
 router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 
 router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
+router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
+router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
+
+
+
 
 // api quét data các phần của chi tiết danh mục Raonhanh
 // router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
