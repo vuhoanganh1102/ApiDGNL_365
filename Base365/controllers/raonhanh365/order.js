@@ -3,58 +3,104 @@ const New = require('../../models/Raonhanh365/UserOnSite/New');
 const User = require('../../models/Users');
 const Order = require('../../models/Raonhanh365/Order');
 const Bidding = require('../../models/Raonhanh365/Bidding');
-const raoNhanh = require('../../services/rao nhanh/raoNhanh')
+const raoNhanh = require('../../services/rao nhanh/raoNhanh');
+const Cart = require('../../models/Raonhanh365/Cart');
+const { CommaAndColonSeparatedRecord } = require('mongodb-connection-string-url');
 // đặt hàng
 exports.order = async (req, res, next) => {
     try {
-        let { id_new, paymentMethod, quantity, unitPrice, promotionType, promotionValue, paymentType
-            , totalProductCost, amountPaid } = req.body;
-        let sellerId = null;
-        let deliveryAddress = req.body.deliveryAddress || null;
-        let classify = req.body.classify || null;
-        let note = req.body.note || null;
-        let userID = req.user.data;
+      
+        let request = req.body;
+        let codeOrder = request.arr_madh.split(',');
+        let phone = request.sdt_lienhe;
+        let deliveryAddress = request.dchi_nhanhang;
+        let sellerId = request.arr_idnban.split(',');
+        let note = request.ghi_chu || null;
+        let paymentType = request.loai_ttoan;
+        let totalProductCost = request.arr_tongtiensp.split(',');
+        let promotionType = request.arr_lkmai.split(',');
+        let promotionValue = request.arr_gtri_km.split(',');
+        let shipFee = request.arr_phivc.split(',');
+        let shipType = request.arr_vchuyen.split(',');
+        let tien_ttoan_ctra = request.tien_ttoan_ctra;
+        let paymentMethod = request.phuong_thuc;
+        let cartID = request.arr_idgh.split(',');
+        let unitPrice = request.arr_dongia.split(',');
+        let buyerId = req.user.data.idRaoNhanh365 || 3585;
         let status = 0;
-        let codeOrder = functions.getRandomInt(100000, 999999);
-        let name = req.body.name || null;
-        let phone = req.body.phone || null;
-        let cateID = req.body.cateID;
-        let check = await New.findById(id_new);
-        if (check && check.length !== 0) {
-            sellerId = check.userID
-        }
-        if (!sellerId) return functions.setError(res, 'Tin bán không tồn tại', 404)
-        let _id = await functions.getMaxID(Order) + 1 || 1;
-        if (cateID == 120) {
-
-            await Order.create({ _id, newId: id_new, sellerId, buyerId: userID, status: 4 })
-
-        } else {
-            if (amountPaid && id_new && paymentMethod && quantity && unitPrice && promotionType && promotionValue && paymentType && totalProductCost) {
-                if (await functions.checkNumber(paymentMethod)
-                    && await functions.checkNumber(quantity)
-                    && await functions.checkNumber(unitPrice)
-                    && await functions.checkNumber(promotionType)
-                    && await functions.checkNumber(promotionValue)
-                    && await functions.checkNumber(paymentType)
-                    && await functions.checkNumber(totalProductCost)
-                    && await functions.checkNumber(amountPaid)) {
-                    if (quantity <= 0) {
-                        return functions.setError(res, 'Nhập số lượng lớn hơn 0', 400)
+        let amountPaid = 0;
+        if (codeOrder && codeOrder.length !== 0) {
+            for (let i = 0; i < codeOrder.length; i++) {
+                if ( phone && deliveryAddress && sellerId[i] &&
+                    note && paymentType && totalProductCost[i] &&
+                    promotionType[i] && promotionValue[i] && shipFee[i] && shipType[i]
+                    && tien_ttoan_ctra && paymentMethod && cartID[i] && unitPrice[i]) {
+                    if (await functions.checkNumber(tien_ttoan_ctra) === false
+                    || await functions.checkNumber(totalProductCost[i]) === false
+                    || await functions.checkNumber(promotionValue[i]) === false
+                    || await functions.checkNumber(shipFee[i]) === false) {
+                        return functions.setError(res, 'invalid number', 400)
                     }
-                    if (paymentMethod === 0)
-                        await User.findByIdAndUpdate(userID, { $inc: { money: -amountPaid } });
+        
+                    let check_money = await User.find({ idRaoNhanh365: 3585 })
+                    if(!check_money || check_money.length === 0 )
+                    {
+                        return functions.setError(res,'người dùng không tồn tại',400)
+                    }
+                    if (paymentMethod === 0 && tien_ttoan_ctra !== 0) {
+                        if (tien_ttoan_ctra > check_money[0].money) {
+                            return functions.setError(res,'Số tiền của bạn không đầy đủ mua hàng',400)
+                        }
+                    }
+                    let check_sellerId = await User.find({ idRaoNhanh365: 3585 })
+                    if(!check_sellerId || check_sellerId.length === 0 )
+                    {
+                        return functions.setError(res,'người dùng không tồn tại',400)
+                    }
+                    if(await functions.checkPhoneNumber(phone) === false)
+                    {
+                        return functions.setError(res,'invalid phone number',400)
+                    }
+                    let dataCart = await Cart.findById(cartID[i],{newsId:1,quantity:1})
+                    if(!dataCart)
+                    {
+                        return functions.setError(res,'hàng không tồn tại')
+                    }
+                    if(paymentType === 1){
+                        amountPaid = totalProductCost[i]
+                    }else{
+                        if(promotionType[i] !== 0)
+                        {
+                            if(promotionType[i] === 1)
+                            {
+                                amountPaid = (((unitPrice[i] - ((unitPrice[i]*promotionValue[i])/100))*dataCart.quantity)*10)/100;
+                            }else{
+                                amountPaid = (((unitPrice[i] - promotionValue[i])*dataCart.quantity)*10)/100;
+                            }
+                        }
+                        else{
+                            amountPaid = ((unitPrice[i] * dataCart.quantity)*10)/100;
 
-                    await Order.create({ _id, newId: id_new, sellerId, name, phone, paymentMethod, buyerId: userID, status, codeOrder, deliveryAddress, note, classify, quantity, unitPrice, promotionType, promotionValue, paymentType, totalProductCost })
+                        }
+                    }
+                    let _id = await functions.getMaxID(Order) + 1;
+                    await Order.create({_id,codeOrder:codeOrder[i],phone,deliveryAddress,sellerId:sellerId[i],note,paymentType,
+                        totalProductCost:totalProductCost[i],promotionType:promotionType[i],promotionValue:promotionValue[i],shipFee:shipFee[i],shipType:shipType[i],
+                        tien_ttoan_ctra,paymentMethod,unitPrice:unitPrice[i],buyerId,status}
+                        )
+                    if (paymentMethod == 0) {
+                        let tienConLai = check_money[0].money - tien_ttoan_ctra;
+                        await User.findOneAndUpdate({idRaoNhanh365:buyerId},{money:tienConLai})
+                        }
+                    await Cart.findByIdAndDelete(cartID[i])
                 } else {
-                    return functions.setError(res, 'invalid data', 404)
+                    return functions.setError(res, 'missing data', 404)
                 }
-            } else {
-                return functions.setError(res, 'missing data', 404)
             }
         }
         return functions.success(res, 'order success')
     } catch (error) {
+        console.log("🚀 ~ file: order.js:43 ~ exports.order= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -366,7 +412,7 @@ exports.statusOrder = async (req, res, next) => {
     try {
         let status = req.body.status;
         let orderId = req.body.orderId;
-        let userID  = req.user.data._id;
+        let userID = req.user.data._id;
         let check = await Order.findById(orderId);
         if (!check || check.length === 0) {
             return functions.setError(res, 'không tìm thấy đơn hàng', 400)
@@ -374,40 +420,40 @@ exports.statusOrder = async (req, res, next) => {
         if (await functions.checkNumber(status) === false) {
             return functions.setError(res, 'invalid data', 400)
         }
-        if(userID === check[0].sellerId){
+        if (userID === check[0].sellerId) {
             if (status === 1) {
                 let sellerConfirmTime = new Date(Date.now());
-                await Order.findByIdAndUpdate({orderId}, {sellerConfirmTime,status})
-            }else if (status === 2) {
+                await Order.findByIdAndUpdate({ orderId }, { sellerConfirmTime, status })
+            } else if (status === 2) {
                 let deliveryStartTime = new Date(Date.now());
-                await Order.findByIdAndUpdate({orderId}, {deliveryStartTime,status})
-            }else if (status === 3) {
+                await Order.findByIdAndUpdate({ orderId }, { deliveryStartTime, status })
+            } else if (status === 3) {
                 let totalDeliveryTime = new Date(Date.now());
-                await Order.findByIdAndUpdate({orderId}, {totalDeliveryTime,status})
-            }else
-            if (status === 4) {
-                let deliveryEndTime = new Date(Date.now());
-                await Order.findByIdAndUpdate({orderId}, {deliveryEndTime,status
-                })
-            }else if (status === 5) {
-                let deliveryFailedTime = new Date(Date.now());
-                let deliveryFailureReason = req.body.deliveryFailureReason || null;
-                await Order.findByIdAndUpdate({orderId}, {deliveryFailedTime,deliveryFailureReason})
-            }else{
-                return functions.setError(res, 'invalid data', 400)
-            }
-        }else if(userID === check[0].buyerId)
-            {
-                if (status === 6) {
-                    let buyerConfirm = 1;
-                    let buyerConfirmTime = new Date(Date.now());
-                    await Order.findByIdAndUpdate({orderId},{buyerConfirm, buyerConfirmTime})
-                }else{
+                await Order.findByIdAndUpdate({ orderId }, { totalDeliveryTime, status })
+            } else
+                if (status === 4) {
+                    let deliveryEndTime = new Date(Date.now());
+                    await Order.findByIdAndUpdate({ orderId }, {
+                        deliveryEndTime, status
+                    })
+                } else if (status === 5) {
+                    let deliveryFailedTime = new Date(Date.now());
+                    let deliveryFailureReason = req.body.deliveryFailureReason || null;
+                    await Order.findByIdAndUpdate({ orderId }, { deliveryFailedTime, deliveryFailureReason })
+                } else {
                     return functions.setError(res, 'invalid data', 400)
                 }
-            }else{
+        } else if (userID === check[0].buyerId) {
+            if (status === 6) {
+                let buyerConfirm = 1;
+                let buyerConfirmTime = new Date(Date.now());
+                await Order.findByIdAndUpdate({ orderId }, { buyerConfirm, buyerConfirmTime })
+            } else {
                 return functions.setError(res, 'invalid data', 400)
             }
+        } else {
+            return functions.setError(res, 'invalid data', 400)
+        }
         return functions.success(res, 'change status success')
     }
     catch (error) {
@@ -418,35 +464,31 @@ exports.statusOrder = async (req, res, next) => {
 exports.cancelOrder = async (req, res, next) => {
     try {
         let orderId = req.body.orderId;
-        let userID  = req.user.data._id;
+        let userID = req.user.data._id;
         let orderCancellationReason = req.body.orderCancellationReason || null;
         let check = await Order.findById(orderId);
         if (!check || check.length === 0) {
             return functions.setError(res, 'không tìm thấy đơn hàng', 400)
         }
-        if(check[0].status === 4)
-        {
+        if (check[0].status === 4) {
             return functions.setError(res, 'không thể huỷ đơn hàng trong thời điểm này', 400)
         }
-        if(userID === check[0].sellerId){
+        if (userID === check[0].sellerId) {
             let orderCancellationTime = new Date();
-            await Order.findByIdAndUpdate(orderId,{cancelerId:userID,orderCancellationTime,orderCancellationReason,status:5})
+            await Order.findByIdAndUpdate(orderId, { cancelerId: userID, orderCancellationTime, orderCancellationReason, status: 5 })
         }
-        else{
-            if(check[0].status === 2 )
-            {
+        else {
+            if (check[0].status === 2) {
                 return functions.setError(res, 'không thể huỷ đơn hàng trong thời điểm này', 400)
             }
-            if(check[0].status !== 3)
-            {
+            if (check[0].status !== 3) {
                 let orderCancellationTime = new Date();
-                await Order.findByIdAndUpdate(orderId,{cancelerId:userID,orderCancellationTime,orderCancellationReason,status:5})
+                await Order.findByIdAndUpdate(orderId, { cancelerId: userID, orderCancellationTime, orderCancellationReason, status: 5 })
             }
-            if(check[0].status === 3)
-            {
-                let buyerCancelsDelivered =  1;
+            if (check[0].status === 3) {
+                let buyerCancelsDelivered = 1;
                 let buyerCancelsDeliveredTime = new Date();
-                await Order.findByIdAndUpdate(orderId,{cancelerId:userID,buyerCancelsDelivered,buyerCancelsDeliveredTime,status:5,orderCancellationReason})
+                await Order.findByIdAndUpdate(orderId, { cancelerId: userID, buyerCancelsDelivered, buyerCancelsDeliveredTime, status: 5, orderCancellationReason })
             }
         }
         return functions.success(res, 'Huỷ đơn hàng thành công')
