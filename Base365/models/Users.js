@@ -122,9 +122,10 @@ const UserSchema = new mongoose.Schema({
     },
     idQLC: {
         // ID gốc lấy từ base chuyển đổi số
-        type: Number,
+        type: String,
         default: 0
     },
+    
     idTimViec365: {
         // ID gốc lấy từ base timviec365
         type: Number,
