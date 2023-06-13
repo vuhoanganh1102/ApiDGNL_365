@@ -5,7 +5,11 @@ const functions = require('../../services/functions')
 const orderRN = require('../../controllers/raonhanh365/order');
 
 // đặt hàng
+<<<<<<< HEAD
 router.post('/order',formData.parse(),functions.checkToken,orderRN.order)
+=======
+router.post('/order',functions.checkToken,orderRN.order)
+>>>>>>> 424b8297bfc10b98bbd5dd66734cb03cb961a441
 
 // đấu thầu
 router.post('/bidding',formData.parse(),functions.checkToken,orderRN.bidding)

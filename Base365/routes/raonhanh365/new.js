@@ -70,6 +70,7 @@ router.post('/candiApply', formData.parse(),functions.checkToken, newRN.createAp
 
 router.delete('/deleteCandiApply',functions.checkToken, newRN.deleteUv);
 
+<<<<<<< HEAD
 // danh sách giảm giá
 router.get('/manageDiscount', formData.parse(),functions.checkToken, newRN.manageDiscount);
 
@@ -84,4 +85,6 @@ router.put('/updateComment', formData.parse(),functions.checkToken, newRN.update
 
 
 
+=======
+>>>>>>> 424b8297bfc10b98bbd5dd66734cb03cb961a441
 module.exports = router;
