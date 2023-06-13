@@ -67,6 +67,21 @@ router.get('/listJobNew/:linkTitle',functions.checkToken,newRN.listJobNew)
 router.post('/likeNews', formData.parse(), functions.checkToken, newRN.likeNews);
 
 router.post('/candiApply', formData.parse(),functions.checkToken, newRN.createApplyNews);
+
 router.delete('/deleteCandiApply',functions.checkToken, newRN.deleteUv);
+
+// danh sách giảm giá
+router.get('/manageDiscount', formData.parse(),functions.checkToken, newRN.manageDiscount);
+
+// thêm giảm giá
+router.post('/addDiscount', formData.parse(),functions.checkToken, newRN.addDiscount);
+
+// bình luận
+router.post('/comment', formData.parse(),functions.checkToken, newRN.comment);
+
+// sửa bình luận
+router.put('/updateComment', formData.parse(),functions.checkToken, newRN.updateComment);
+
+
 
 module.exports = router;

@@ -7,6 +7,9 @@ const CateDetail = require('../../models/Raonhanh365/CateDetail');
 const PriceList = require('../../models/Raonhanh365/PriceList');
 const CityRN = require('../../models/Raonhanh365/City');
 const LikeRN = require('../../models/Raonhanh365/Like');
+const History = require('../../models/Raonhanh365/History');
+const ApplyNews = require('../../models/Raonhanh365/UserOnSite/ApplyNews');
+const Comments = require('../../models/Raonhanh365/Comments');
 
 
 // danh mục sản phẩm
@@ -894,3 +897,140 @@ exports.toolLike = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
+exports.toolHistory = async(req, res, next) => {
+    try {
+    console.log(".....")
+    let page = 1;
+    let result = true;
+    do {
+    const form = new FormData();
+    form.append('page', page);
+    const response = await axios.post('https://raonhanh365.vn/api/select_history.php', form, {
+    headers: {
+    'Content-Type': 'multipart/form-data',
+    },
+    });
+    
+    let data = response.data.data.items;
+    if (data.length > 0) {
+    for (let i = 0; i < data.length; i++) {
+    const history = new History({
+    _id: data[i].his_id,
+    userId: data[i].his_user_id,
+    seri: data[i].his_seri,
+    cardId: data[i].his_mathe,
+    tranId: data[i].his_tranid,
+    price: data[i].his_price,
+    priceSuccess: data[i].his_price_suc,
+    time: data[i].his_time,
+    networkOperatorName: data[i].his_nhamang,
+    bank: data[i].his_bank,
+    bankNumber: data[i].his_bank_number,
+    cardHolder: data[i].his_cardholder,
+    type: data[i].his_type,
+    status: data[i].his_status,
+    content: data[i].noi_dung,
+    countGetMoney: data[i].count_ntien,
+    distinguish: data[i].his_pb,
+    });
+    
+    await History.create(history);
+    }
+    page++;
+    } else {
+    result = false;
+    }
+    console.log(page);
+    } while (result);
+    
+    return fnc.success(res, "Thành công");
+    } catch (error) {
+    return fnc.setError(res, error.message);
+    }
+};
+exports.toolApplyNew = async(req, res, next) => {
+    try {
+    console.log(".....")
+    let page = 1;
+    let result = true;
+    do {
+    const form = new FormData();
+    form.append('page', page);
+    const response = await axios.post('https://raonhanh365.vn/api/select_apply_new.php', form, {
+    headers: {
+    'Content-Type': 'multipart/form-data',
+    },
+    });
+    
+    let data = response.data.data.items;
+    if (data.length > 0) {
+    for (let i = 0; i < data.length; i++) {
+    const applyNew = new ApplyNews({
+    _id: data[i].id,
+    uvId: data[i].uv_id,
+    newId: data[i].new_id ,
+    time: data[i].apply_time ,
+    status: data[i].status ,
+    note: data[i].note ,
+    isDelete: data[i].is_delete ,
+    });
+    await applyNew.save();
+    }
+    page++;
+    } else {
+    result = false;
+    }
+    console.log(page);
+    } while (result);
+    
+    return fnc.success(res, "Thành công");
+    } catch (error) {
+    return fnc.setError(res, error.message);
+    }
+};
+exports.toolComment = async(req, res, next) => {
+        try {   
+        let page = 1;
+        let result = true;
+        do {
+        const form = new FormData();
+        form.append('page', page);
+        const response = await axios.post('https://raonhanh365.vn/api/select_cm_comment.php', form, {
+        headers: {
+        'Content-Type': 'multipart/form-data',
+        },
+        });
+        
+        let data = response.data.data.items;
+        if (data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+        const cmt = new Comments({
+        _id: data[i].cm_id,
+        url: data[i].cm_url,
+        parent_id: data[i].cm_parent_id  ,
+        content : data[i].cm_comment ,
+        img: data[i].cm_img ,
+        sender_idchat : data[i].cm_sender_idchat ,
+        tag: data[i].cm_tag ,
+        ip: data[i].cm_ip ,
+        time : data[i].cm_time ,
+        active: data[i].cm_active ,
+        pb: data[i].cm_pb ,
+        id_dh: data[i].id_dh ,
+        unit: data[i].cm_unit ,
+        id_new: data[i].id_new ,
+        });
+        await cmt.save();
+        }
+        page++;
+        } else {
+        result = false;
+        }
+        console.log(page);
+        } while (result);
+        
+        return fnc.success(res, "Thành công");
+        } catch (error) {
+        return fnc.setError(res, error.message);
+        }
+        };

@@ -21,4 +21,8 @@ router.post('/announceResult',formData.parse(),functions.checkToken,userRN.annou
 // danh sách khách hàng online
 router.get('/listUserOnline/:link',userRN.listUserOnline)
 
+// lịch sử giao dịch
+router.get('/historyTransaction',functions.checkToken,userRN.historyTransaction)
+
+
 module.exports = router;
