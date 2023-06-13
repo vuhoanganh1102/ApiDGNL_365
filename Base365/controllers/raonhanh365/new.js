@@ -1525,3 +1525,50 @@ exports.deleteUv = async(req, res, next) => {
     }
 }
 
+exports.getListNewsApplied = async(req, res, next) => {
+    try{
+        let userId = req.query.userId;
+        let listNewsApply = await ApplyNewsRN.find({uvId: userId});
+        // console.log(listNewsApply);
+        for(let i=0; i<listNewsApply.length; i++){
+            
+            let newsSell = await New.findOne({_id: listNewsApply[i].newId}, {userID: 1, timeSell: 1, title: 1, linkTitle: 1});
+            let seller = await User.findOne({_id: newsSell.userID}, {userName: 1});
+            let tmpOb = {newsApply: listNewsApply[i], newsSell, seller: seller.userName};
+            listNewsApply[i] = tmpOb;
+        }
+        
+        const totalCount = await functions.findCount(ApplyNewsRN, {uvId: userId});
+        return functions.success(res, "get list news applied sucess", {totalCount: totalCount, data: listNewsApply});
+    }catch(err){
+        console.log("Err from server", err);
+        return functions.setError(res, "Err from server", 500);
+    }
+}
+
+exports.getListCandidateApplied = async(req, res, next) => {
+    try{
+        let userId = req.query.userId;
+        let cateID = 119;
+
+        //lay ra tat ca tin cong viec
+        let data;
+        let listNews = await New.find({userID: userId, cateID: cateID}, {_id: 1, userID: 1, timeSell: 1, title: 1, linkTitle: 1});
+        for(let i=0; i<listNews.length; i++){
+            let newsApply = await ApplyNewsRN.find({newId: listNews[i]._id});
+            
+            //lay ra ten cua cac ung vien
+            // for(let j=0; j<newsApply.length; j++) {
+            //     let candidate = await User.findOne({_id: newsApply.uvId}, {userName: 1});
+            //     let ob = {candiName: candidate.name, newsApply: newsApply[i]}
+            //     newsApply[i] = ob;
+            // }
+            listNews[i] = {newsApply: newsApply, newsSell: listNews[i]};
+        }
+        
+        return functions.success(res, "get list candidate applied sucess", {data: listNews});
+    }catch(err){
+        console.log("Err from server", err);
+        return functions.setError(res, "Err from server", 500);
+    }
+}

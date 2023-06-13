@@ -125,6 +125,7 @@ router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
 router.post('/raonhanh/toolOrder', toolRaoNhanh.toolOrder);
 router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory);
 router.post('/raonhanh/toolTagsIndex', toolRaoNhanh.toolTagsIndex);
+router.post('/raonhanh/toolAdminUserRight', toolRaoNhanh.toolAdminUserRight);
 
 
 // api quét data các phần của chi tiết danh mục Raonhanh

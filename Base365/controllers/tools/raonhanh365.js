@@ -9,6 +9,7 @@ const CityRN = require('../../models/Raonhanh365/City');
 const LikeRN = require('../../models/Raonhanh365/Like');
 const OrderRN = require('../../models/Raonhanh365/Order');
 const TagsIndex = require('../../models/Raonhanh365/RN365_TagIndex');
+const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
 
 
 // danh mục sản phẩm
@@ -1051,6 +1052,47 @@ exports.toolTagsIndex = async(req, res, next) => {
                         classify: data[i].phan_loai
                     });
                     await TagsIndex.create(tagsIndex);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolAdminUserRight = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_admin_user_right.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const adminUserRight = new AdminUserRight({
+                        _id: id++,
+                        adminId: data[i].adu_admin_id,
+                        moduleId: data[i].adu_admin_module_id,
+                        add: data[i].adu_add,
+                        edit: data[i].adu_edit,
+                        delete: data[i].adu_delete
+                    });
+                    await AdminUserRight.create(adminUserRight);
                 }
                 page++;
             } else {
