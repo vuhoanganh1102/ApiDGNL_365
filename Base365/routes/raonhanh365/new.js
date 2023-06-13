@@ -66,7 +66,16 @@ router.get('/listJobNew/:linkTitle',functions.checkToken,newRN.listJobNew)
 //api thich tin
 router.post('/likeNews', formData.parse(), functions.checkToken, newRN.likeNews);
 
+//api ung vien ung tuyen
 router.post('/candiApply', formData.parse(),functions.checkToken, newRN.createApplyNews);
+
+//api xoa tin da ung tuyen
 router.delete('/deleteCandiApply',functions.checkToken, newRN.deleteUv);
+
+//api lay ra danh sach tin ma ung vien dang ung tuyen
+router.get('/getListNewsApplied',functions.checkToken, newRN.getListNewsApplied);
+
+//api lay ra danh sach ung vien dang ung tuyen cua 1 tin
+router.get('/getListCandidateApplied',functions.checkToken, newRN.getListCandidateApplied);
 
 module.exports = router;

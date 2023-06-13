@@ -6,6 +6,7 @@ const PriceList = require('../../models/Raonhanh365/PriceList');
 const Users = require('../../models/Users');
 const History = require('../../models/Raonhanh365/History');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
+const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
 
 const serviceRN = require('../../services/rao nhanh/raoNhanh');
 const folderImg = "img_blog";
@@ -56,8 +57,29 @@ exports.getListAdminUser = async(req, res, next)=>{
         let condition = {};
         if(idAdmin) condition._id = Number(idAdmin);
         
+        
         let fields = {loginName: 1, name: 1, email: 1, phone: 1, editAll:1, langId:1, active: 1};
-        const listAdminUser = await functions.pageFindWithFields(AdminUser, condition, fields, { _id: 1 }, skip, limit); 
+        let listAdminUser = await functions.pageFindWithFields(AdminUser, condition, fields, { _id: 1 }, skip, limit); 
+        
+        // lap qua danh sach user
+        for(let i=0; i<listAdminUser.length; i++){
+            let adminUserRight = await AdminUserRight.find({adminId: listAdminUser[i]._id});
+            let arrIdModule = [],
+                arrRightAdd = [],
+                arrRightEdit = [],
+                arrRightDelete = []
+            // lap qua cac quyen cua admindo
+            for(let j=0; j<adminUserRight.length; j++){
+                arrIdModule.push(adminUserRight[j].moduleId);
+                arrRightAdd.push(adminUserRight[j].add);
+                arrRightEdit.push(adminUserRight[j].edit);
+                arrRightDelete.push(adminUserRight[j].delete);
+            }
+            let adminUser = listAdminUser[i];
+            let tmpOb = {adminUser, arrIdModule, arrRightAdd,arrRightEdit,arrRightDelete};
+            listAdminUser[i] = tmpOb;
+        }
+        
         const totalCount = await functions.findCount(AdminUser, condition);
         return functions.success(res, "get list blog success", {totalCount: totalCount, data: listAdminUser });
     }catch(error){
@@ -69,13 +91,54 @@ exports.getListAdminUser = async(req, res, next)=>{
 
 exports.getAndCheckDataAdminUser = async(req, res, next) => {
     try {
-        let {loginName, name, phone, email, editAll, langId, active, accessModule} = req.body;
+        let {loginName, name, phone, email, editAll, langId, active, accessModule, adminId} = req.body;
         
         if(!loginName || !phone || !phone) {
             return functions.setError(res, "Missing input value", 404)
         }
+
+        // xoa cac quyen hien tai cua admin neu chon muc sua
+        if(adminId){
+            let adminUserRight =  await AdminUserRight.deleteMany({adminId: adminId});
+        }else {
+            const maxIdAdminUser = await AdminUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            if (maxIdAdminUser) {
+                adminId = Number(maxIdAdminUser._id) + 1;
+            } else adminId = 1;
+            
+        }
+        //cap quyen cho admin ca them moi+sua
+        let {arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete} = req.body;
+        arrIdModule = arrIdModule.split(",");
+        arrRightAdd = arrRightAdd.split(",");
+        arrRightEdit = arrRightEdit.split(",");
+        arrRightDelete = arrRightDelete.split(",");
+        
+        //
+        for(let i=0; i<arrIdModule.length; i++){
+            //tao id cho bang phan quyen
+            const maxIdAdminUserRight = await AdminUserRight.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            let newIdAdminUserRight;
+            if (maxIdAdminUserRight) {
+                newIdAdminUserRight = Number(maxIdAdminUserRight._id) + 1;
+            } else newIdAdminUserRight = 1;
+            
+            let fieldsRight = {
+                _id: newIdAdminUserRight,
+                adminId: adminId,
+                moduleId: arrIdModule[i],
+                add: arrRightAdd[i],
+                edit: arrRightEdit[i],
+                deletelet: arrRightDelete[i]
+            }
+            
+            let adminUserRight = new AdminUserRight(fieldsRight);
+            await adminUserRight.save();
+        }
+        
         // them cac truong muon them hoac sua
         req.info = {
+            _id: adminId,
             loginName: loginName,
             name: name,
             phone: phone,
@@ -94,19 +157,12 @@ exports.getAndCheckDataAdminUser = async(req, res, next) => {
 
 exports.createAdminUser = async(req, res, next) => {
     try{
+        // luu thong tin admin
         let fields = req.info;
 
-        //tao _id tu dong tang
-        const maxIdAdminUser = await AdminUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-        let newIdAdminUser;
-        if (maxIdAdminUser) {
-            newIdAdminUser = Number(maxIdAdminUser._id) + 1;
-        } else newIdAdminUser = 1;
-        fields._id = newIdAdminUser;
-
-        let news = new AdminUser(fields);
-        await news.save();
-        return functions.success(res, 'Create news RN365 success!');
+        let adminUser = new AdminUser(fields);
+        await adminUser.save();
+        return functions.success(res, 'Create AdminUser and AdminUserRight RN365 success!');
     }catch(e){
         console.log("Err from server!", e);
         return functions.setError(res, "Err from server!", 500);
@@ -115,15 +171,16 @@ exports.createAdminUser = async(req, res, next) => {
 
 exports.updateAdminUser = async(req, res, next) => {
     try{
-        if(!req.body.adminID)
-            return functions.setError(res, "Missing input value id admin!", 404);
-        let adminID = req.body.adminID;
-        let fields = req.info;
         
-        let existsAdminUser = await AdminUser.findOne({_id: adminID});
+        if(!req.body.adminId)
+            return functions.setError(res, "Missing input value id admin!", 404);
+        let adminId = req.body.adminId;
+        let fields = req.info;
+        delete fields._id;
+        let existsAdminUser = await AdminUser.findOne({_id: adminId});
         if (existsAdminUser) {
             
-            await AdminUser.findOneAndUpdate({_id: adminID}, fields);
+            await AdminUser.findOneAndUpdate({_id: adminId}, fields);
             return functions.success(res, "AdminUser edited successfully");
         }
         return functions.setError(res, "AdminUser not found!", 505);
