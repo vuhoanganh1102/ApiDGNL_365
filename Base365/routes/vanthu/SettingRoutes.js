@@ -12,7 +12,7 @@ router.post('/',formData.parse(),settingVanthu.getSettings);
 router.post('/createF',formData.parse(),settingVanthu.findOrCreateSettingDx)
 
 // Api sửa setting
-router.put('/editSetting',formData.parse(),settingVanthu.editSettingDx);
+router.post('/editSetting',formData.parse(),settingVanthu.editSettingDx);
 
 
 module.exports = router

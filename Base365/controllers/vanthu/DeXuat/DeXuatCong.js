@@ -2,6 +2,8 @@ const DeXuat = require("../../../models/Vanthu/de_xuat");
 const { storageVT } = require('../../../services/functions');
 const functions = require('../../../services/vanthu')
 const path = require('path');
+const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
+
 
 // const ThongBao = require('../../../models/Vanthu/')
 exports.dxCong = async (req, res) => {
@@ -16,7 +18,8 @@ exports.dxCong = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             ca_xnc,
-            time_xnc
+            time_xnc,
+            ly_do
         } = req.body;
         let createDate = new Date()       
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
@@ -25,9 +28,7 @@ exports.dxCong = async (req, res) => {
             let file_kem = req.files.file_kem;
             console.log(file_kem);
             await functions.uploadFileVanThu(id_user, file_kem);
-            const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/dexuat/${id_user}`, file_kem.name);
-            const pathString = imagePath.toString();
-            console.log(pathString)
+            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -51,15 +52,23 @@ exports.dxCong = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: pathString,
+                file_kem: linkDL,
                 time_create: createDate,
             });
-
             let savedDXC = await createDXC.save();
-            res.status(200).json(savedDXC);
+           let createTB =   new ThongBao({
+                _id : _id,
+                id_user : id_user,
+                id_user_nhan : id_user_duyet,
+                id_van_ban : savedDXC._id,
+                type : 2,
+                view : 0,
+                created_date : createDate
+            })
+            let saveCreateTb = await createTB.save()
+          
+            res.status(200).json({savedDXC,saveCreateTb});
         };
-
-
 
     } catch (error) {
         console.error('Failed to add', error);
@@ -67,12 +76,3 @@ exports.dxCong = async (req, res) => {
     }
 }
 
-// exports.updateCong = async (req,res)=>{
-//     try{
-//         let id = req.body._id
-//         let check = await DeXuat.findOne({_id : id})
-//     }catch (error) {
-//         console.error('Failed to add', error);
-//         res.status(500).json({error: 'Failed to add'});
-//     }
-// }

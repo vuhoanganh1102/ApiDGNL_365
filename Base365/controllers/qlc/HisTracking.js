@@ -2,7 +2,7 @@ const Tracking = require('../../models/qlc/HisTracking');
 const functions = require('../../services/functions')
 
 //thêm chấm công 
-exports.CreateTracking = async (req,res)=>{
+exports.CreateTracking = async (req, res) => {
     const idQLC = req.body.idQLC;
     const companyId = req.body.CompanyId;
     const role = req.body.role;
@@ -23,44 +23,44 @@ exports.CreateTracking = async (req,res)=>{
 
     if (!companyId) {
         functions.setError(res, "Company id required");
-    }else if (typeof companyId !== "number") {
+    } else if (typeof companyId !== "number") {
         functions.setError(res, "Company id must be a number");
-    }else if (!idQLC) {
+    } else if (!idQLC) {
         functions.setError(res, "idQLC required");
-    }else if (typeof idQLC !== "number") {
+    } else if (typeof idQLC !== "number") {
         functions.setError(res, "idQLC id must be a number");
-    }else if (!imageTrack) {
+    } else if (!imageTrack) {
         functions.setError(res, "imageTrack required");
-    }else if (!curDeviceName) {
+    } else if (!curDeviceName) {
         functions.setError(res, "curDeviceName required");
-    }else if (!latitude) {
+    } else if (!latitude) {
         functions.setError(res, "latitude required");
-    }else if (!longtitude) {
+    } else if (!longtitude) {
         functions.setError(res, "longtitude required");
-    }else if (!Location) {
+    } else if (!Location) {
         functions.setError(res, "Location required");
-    }else if (!NameWifi) {
+    } else if (!NameWifi) {
         functions.setError(res, "Wifi name required");
-    }else if (!IpWifi) {
+    } else if (!IpWifi) {
         functions.setError(res, "Wifi ip required");
-    }else if (!MacWifi) {
+    } else if (!MacWifi) {
         functions.setError(res, "Mac Wifi required");
-    }else if (!shiftID) {
+    } else if (!shiftID) {
         functions.setError(res, "Shift name required");
-    }else {
+    } else {
         let maxId = await functions.getMaxID(Tracking);
         if (!maxId) {
             maxId = 0;
         }
-        const _id =Number(maxId) + 1;
+        const _id = Number(maxId) + 1;
         const tracking = new Tracking({
-            _id : _id,
+            _id: _id,
             idQLC: idQLC,
             companyId: companyId,
             role: role,
             imageTrack: imageTrack,
             curDeviceName: curDeviceName,
-            latitude: latitude ,
+            latitude: latitude,
             longtitude: longtitude,
             Location: Location,
             NameWifi: NameWifi,
@@ -76,11 +76,11 @@ exports.CreateTracking = async (req,res)=>{
 
         });
         await tracking.save()
-            .then(()=>{
-                functions.success(res,"Tracking successful",tracking)
+            .then(() => {
+                functions.success(res, "Tracking successful", tracking)
             })
-            .catch(err =>{
-                functions.setError(res,err.message)
+            .catch(err => {
+                functions.setError(res, err.message)
             })
     }
 };

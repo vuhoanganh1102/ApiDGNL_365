@@ -31,9 +31,7 @@ exports.dxHoaHong = async (req, res) => {
         }else {
             let file_kem = req.files.file_kem;
             await functions.uploadFileVanThu(id_user, file_kem);
-            const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-            const pathString = imagePath.toString();
-            console.log(pathString)
+            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -59,13 +57,24 @@ exports.dxHoaHong = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: pathString,
+                file_kem: linkDL,
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
 
             let savedDXHH = await createDXHH.save();
-            res.status(200).json(savedDXHH);
+            let createTB =   new ThongBao({
+                _id : _id,
+                id_user : id_user,
+                id_user_nhan : id_user_duyet,
+                id_van_ban : savedDXHH._id,
+                type : 2,
+                view : 0,
+                created_date : createDate
+            })
+            let saveCreateTb = await createTB.save()
+          
+            res.status(200).json({savedDXHH,saveCreateTb});
         };
 
 

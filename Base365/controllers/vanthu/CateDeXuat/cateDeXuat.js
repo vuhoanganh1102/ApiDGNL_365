@@ -112,12 +112,13 @@ exports.showHomeNv = async(req,res) => {
 exports.showNghi = async(req,res)=> {
         try{
         let {com_id,page} = req.body
+        console.log(com_id);
         if(Number.isNaN(com_id)){
             throw new Error("Invalid com_id");
         }else {
             const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
             const startIndex = (page - 1) * perPage; 
-            const shownghi = await DeXuat.find({ com_id ,type_dx : 1}).sort({ _id: -1 }).skip(startIndex).limit(perPage);
+            const shownghi = await DeXuat.find({ com_id , type_dx : 1}).sort({ _id: -1 }).skip(startIndex).limit(perPage);
             res.status(200).json(shownghi);
         }
         }catch(error) {

@@ -1,26 +1,15 @@
-// check ảnh và video
+
 const fs = require('fs');
+const multer = require('multer');
+const axios = require('axios');
 
-// upload file
-const multer = require('multer')
-
-// gửi mail
-const nodemailer = require("nodemailer");
-// tạo biến môi trường
-const dotenv = require("dotenv");
-// mã hóa mật khẩu
-const crypto = require('crypto');
-// gọi api
-const axios = require('axios')
-
-// check video
-const path = require('path');
 
 exports.uploadFileVanThu = (id, file) => {
     let path = `../Storage/base365/vanthu/dexuat/${id}/`;
     let filePath = `../Storage/base365/vanthu/dexuat/${id}/` + file.originalFilename;
 
     if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
+        console.log("chua ton tai")
         fs.mkdirSync(path, { recursive: true });
     }
 
@@ -38,7 +27,41 @@ exports.uploadFileVanThu = (id, file) => {
     });
 }
 
+
+// const storageVanthu = (destination) => {
+//     return storage = multer.diskStorage({
+//         destination: (req, file, cb) => {
+//             // console.log(file_kem)
+//             cb(null, destination);
+//         },
+//         filename: (req, file, cb) => {
+//             cb(null, Date.now() + path.extname(file));
+//         }
+//     })
+
+// };
+// exports.upload = multer({ storage: storageVanthu('../../../Storage/VanThu') });
+exports.chat = async (name_dx, user_dx, noi_dung, fileKem) => {
+    return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
+        name_dx: name_dx,
+        user_dx: user_dx,
+        noi_dung: noi_dung,
+        fileKem: fileKem,
+    }).then(function (response) {
+        console.log("name_dx: " + name_dx + "user_dx :  " + user_dx + " noi_dung: " + noi_dung + " fileKem: " + fileKem);
+    })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
 exports.getMaxID = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
     return maxUser._id;
 };
+
+
+exports.createLinkFileVanthu = ( id, name) => {
+    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/dexuat' + '/' + id + '/' + name;
+    return link;
+}
