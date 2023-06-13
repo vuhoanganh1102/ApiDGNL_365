@@ -66,11 +66,12 @@ router.get('/listJobNew/:linkTitle',functions.checkToken,newRN.listJobNew)
 //api thich tin
 router.post('/likeNews', formData.parse(), functions.checkToken, newRN.likeNews);
 
+//api ung vien ung tuyen
 router.post('/candiApply', formData.parse(),functions.checkToken, newRN.createApplyNews);
+
 
 router.delete('/deleteCandiApply',functions.checkToken, newRN.deleteUv);
 
-<<<<<<< HEAD
 // danh sách giảm giá
 router.get('/manageDiscount', formData.parse(),functions.checkToken, newRN.manageDiscount);
 
@@ -83,8 +84,13 @@ router.post('/comment', formData.parse(),functions.checkToken, newRN.comment);
 // sửa bình luận
 router.put('/updateComment', formData.parse(),functions.checkToken, newRN.updateComment);
 
+//api xoa tin da ung tuyen
+router.delete('/deleteCandiApply',functions.checkToken, newRN.deleteUv);
 
+//api lay ra danh sach tin ma ung vien dang ung tuyen
+router.get('/getListNewsApplied',functions.checkToken, newRN.getListNewsApplied);
 
-=======
->>>>>>> 424b8297bfc10b98bbd5dd66734cb03cb961a441
+//api lay ra danh sach ung vien dang ung tuyen cua 1 tin
+router.get('/getListCandidateApplied',functions.checkToken, newRN.getListCandidateApplied);
+
 module.exports = router;

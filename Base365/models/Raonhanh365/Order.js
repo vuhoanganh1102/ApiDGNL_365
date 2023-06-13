@@ -16,11 +16,11 @@ const OrderSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    name:{
+    name: {
         // tên người mua
         type:String
     },
-    phone:{
+    phone: {
         // số điện thoại liên hệ
         type:Number
     },

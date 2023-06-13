@@ -10,6 +10,9 @@ const LikeRN = require('../../models/Raonhanh365/Like');
 const History = require('../../models/Raonhanh365/History');
 const ApplyNews = require('../../models/Raonhanh365/UserOnSite/ApplyNews');
 const Comments = require('../../models/Raonhanh365/Comments');
+const OrderRN = require('../../models/Raonhanh365/Order');
+const TagsIndex = require('../../models/Raonhanh365/RN365_TagIndex');
+const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
 
 
 // danh mục sản phẩm
@@ -1119,8 +1122,7 @@ exports.toolPriceList = async(req, res, next) => {
     }
 };
 
-
-exports.toolCity = async(req, res, next) => {
+exports.toolTagsIndex = async(req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -1128,23 +1130,29 @@ exports.toolCity = async(req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://raonhanh365.vn/api/select_city2.php', form, {
+            const response = await axios.post('https://raonhanh365.vn/api/select_ds_index.php', form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+            
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    const city = new CityRN({
-                        _id: data[i].cit_id,
-                        name: data[i].cit_name,
-                        order: data[i].cit_order,
-                        type: data[i].cit_type,
-                        count: data[i].cit_count,
-                        parentId: data[i].cit_parent
+                    const tagsIndex = new TagsIndex({
+                        _id: data[i].id,
+                        link: data[i].duong_dan,
+                        cateId: data[i].id_cate,
+                        tags: data[i].tags,
+                        city: data[i].city,
+                        district: data[i].dis_id,
+                        tagsVL: data[i].tags_vl,
+                        job: data[i].job,
+                        time: data[i].thoi_gian,
+                        active: data[i].di_active,
+                        classify: data[i].phan_loai
                     });
-                    await CityRN.create(city);
+                    await TagsIndex.create(tagsIndex);
                 }
                 page++;
             } else {
@@ -1159,35 +1167,33 @@ exports.toolCity = async(req, res, next) => {
     }
 };
 
-
-exports.toolLike = async(req, res, next) => {
+exports.toolAdminUserRight = async(req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
+        let id=1;
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://raonhanh365.vn/api/select_cm_like.php', form, {
+            const response = await axios.post('https://raonhanh365.vn/api/select_admin_user_right.php', form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+            
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    const like = new LikeRN({
-                        _id: data[i].lk_id,
-                        forUrlNew: data[i].lk_for_url,
-                        type: data[i].lk_type,
-                        commentId: data[i].lk_for_comment,
-                        userName: data[i].lk_user_name,
-                        userAvatar: data[i].lk_user_avatar,
-                        userIdChat: data[i].lk_user_idchat,
-                        ip: data[i].lk_ip,
-                        time: data[i].lk_time,
+                    const adminUserRight = new AdminUserRight({
+                        _id: id++,
+                        adminId: data[i].adu_admin_id,
+                        moduleId: data[i].adu_admin_module_id,
+                        add: data[i].adu_add,
+                        edit: data[i].adu_edit,
+                        delete: data[i].adu_delete
                     });
-                    await LikeRN.create(like);
+                    await AdminUserRight.create(adminUserRight);
                 }
                 page++;
             } else {
@@ -1201,44 +1207,3 @@ exports.toolLike = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
-
-exports.dataUser = async (req,res,next) =>{
-    try {
-        let page = 1;
-        let result = true;
-        do {
-            const form = new FormData();
-            form.append('page', page);
-            const response = await axios.post(' https://raonhanh365.vn/api/select_user.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            let data = response.data.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-                    const like = new LikeRN({
-                        _id: data[i].lk_id,
-                        forUrlNew: data[i].lk_for_url,
-                        type: data[i].lk_type,
-                        commentId: data[i].lk_for_comment,
-                        userName: data[i].lk_user_name,
-                        userAvatar: data[i].lk_user_avatar,
-                        userIdChat: data[i].lk_user_idchat,
-                        ip: data[i].lk_ip,
-                        time: data[i].lk_time,
-                    });
-                    await LikeRN.create(like);
-                }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page);
-        } while (result);
-
-        return fnc.success(res, "Thành công");
-    } catch (error) {
-        return fnc.setError(res, error.message);
-    }
-}
