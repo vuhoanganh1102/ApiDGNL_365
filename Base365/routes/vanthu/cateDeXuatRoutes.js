@@ -24,7 +24,6 @@ router.post('/showHomeNv',formData.parse(),cateDeXuat.showHomeNv)
 router.post('/showNghi',formData.parse(),cateDeXuat.showNghi)
 
 
-
 //Api tìm kiếm trang trang tài khoản nghỉ + không lịch làm việc
 router.post('/searchNghi',formData.parse(),cateDeXuat.adminSearchN)
 
