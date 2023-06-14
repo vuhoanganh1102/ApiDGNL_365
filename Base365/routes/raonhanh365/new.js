@@ -69,4 +69,9 @@ router.post('/likeNews', formData.parse(), functions.checkToken, newRN.likeNews)
 router.post('/candiApply', formData.parse(),functions.checkToken, newRN.createApplyNews);
 router.delete('/deleteCandiApply',functions.checkToken, newRN.deleteUv);
 
+// api danh sách tin áp dụng dịch vụ
+router.get('/listJobWithPin',functions.checkToken,newRN.listJobWithPin);
+
+
+
 module.exports = router;

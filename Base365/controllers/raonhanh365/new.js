@@ -1525,3 +1525,13 @@ exports.deleteUv = async(req, res, next) => {
     }
 }
 
+exports.listJobWithPin = async (req,res,next) => {
+    try{
+        let userID = req.user.data._id;
+        let newWithPinOfUser = await New.find({ userID: userID, $or: [{ pinHome: 1 }, { pinCate: 1 }, {timePushNew: { $ne: null }}] })
+        return functions.success(res, 'Get List New With Pin Of User Success!', newWithPinOfUser);
+    } catch(err){
+        console.log("Err from server", err);
+        return functions.setError(res, "Err from server", 500);
+    }
+}

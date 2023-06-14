@@ -8,6 +8,8 @@ const Order = require('../../models/Raonhanh365/Order');
 const Bidding = require('../../models/Raonhanh365/Bidding');
 const md5 = require('md5');
 const raoNhanh = require('../../services/rao nhanh/raoNhanh')
+
+const folderUserImg = "img_user"
 // gửi otp
 exports.changePasswordSendOTP = async (req, res, next) => {
     try {
@@ -181,4 +183,73 @@ exports.listUserOnline = async (req,res,next)=>{
         return functions.setError(res, error)
     }
 }
+
+exports.createVerifyPayment = async(req, res, next) => {
+    try {
+        let cccdFrontImg = req.files.cccdFrontImg;
+        let cccdBackImg = req.files.cccdBackImg;
+        let {userId, cccd, phoneContact, bank, stk, ownerName} = req.body;
+        if(!userId || !cccd || !phoneContact || !bank || !stk || !ownerName){
+            return functions.setError(res, "Missing input value!", 404);
+        }
+        let user = await User.findOne({_id: userId}, {userName: 1});
+        if(!user)
+            return functions.setError(res, "User not fount!", 404);
+        
+        
+        if(!await functions.checkImage(cccdFrontImg.path)){
+            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
+        }
+        if(!await functions.checkImage(cccdBackImg.path)){
+            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
+        }
+        raoNhanh.uploadFileRN2(folderUserImg,userId,cccdFrontImg);
+        cccdFrontImg = functions.createLinkFileRaonhanh(folderUserImg, userId, cccdFrontImg.name);
+
+        raoNhanh.uploadFileRN2(folderUserImg,userId,cccdBackImg);
+        cccdBackImg = functions.createLinkFileRaonhanh(folderUserImg, userId, cccdBackImg.name);
+        await User.findOneAndUpdate({_id: userId}, {
+            phone: phoneContact,
+            inforRN365: {
+                cccd: cccd,
+                cccdFrontImg: cccdFrontImg,
+                cccdBackImg: cccdBackImg,
+                bankName: bank,
+                stk: stk,
+                ownerName: ownerName,
+                time: Date(Date.now()),
+                active: 1
+            }
+        })
+        return functions.success(res, 'Create verify payment success!');
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+// tổng quan thông tin tài khoản cá nhân
+exports.profileInformation = async (req,res,next) => {
+    try{
+        let userID = {}
+        userID._id = req.user.data._id;
+        let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1}
+        let dataUser = {}
+        let userInFor = await functions.pageFind(User, userID,null,null,null, fields)
+        let numberOfNew = await New.find({userID: userID._id}).count();
+        let numberOfNewSold = await New.find({userID: userID._id, sold: 1}).count();
+        let likeNew = await LoveNews.find({userID: userID._id}).count()
+        dataUser.InforUser = userInFor[0];
+        dataUser.numberOfNew = numberOfNew
+        dataUser.numberOfNewSold = numberOfNewSold
+        dataUser.likeCount = likeNew
+        console.log(likeNew)
+
+        return functions.success(res, 'get Data User Success', dataUser);
+    } catch(err){
+        console.log("Err from server", err);
+        return functions.setError(res, "Err from server", 500);
+    }
+}
+
 
