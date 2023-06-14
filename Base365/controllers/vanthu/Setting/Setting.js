@@ -26,22 +26,6 @@ exports.findOrCreateSettingDx = async (req, res) => {
         throw new Error("Com Id required");
       } else if (!functions.checkNumber(com_id)) {
         throw new Error("Com Id must be a number");
-      } else if (!type_setting) {
-        throw new Error("Type setting required");
-      } else if (!type_browse) {
-        throw new Error("Type browse required");
-      } else if (!time_limit) {
-        throw new Error("Time limit required");
-      } else if (!shift_id) {
-        throw new Error("Shift ID required");
-      } else if (!time_limit_l) {
-        throw new Error("Time limit L required");
-      } else if (!list_user) {
-        throw new Error("List user required");
-      } else if (!time_tp) {
-        throw new Error("Time TP required");
-      } else if (!time_hh) {
-        throw new Error("Time HH required");
       } else {
         let settingDx = await SettingDX.findOne({ com_id });
   

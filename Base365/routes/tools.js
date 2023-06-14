@@ -3,8 +3,13 @@ var router = express.Router();
 var toolUser = require('../controllers/tools/user');
 var toolTimviec365 = require('../controllers/tools/timviec365');
 const formData = require('express-form-data');
-const toolRaoNhanh = require('../controllers/tools/raonhanh365')
-const toolVanThu = require("../controllers/tools/vanthu");
+const toolRaoNhanh = require('../controllers/tools/raonhanh365');
+const toolHr =  require('../controllers/tools/hr');
+const toolVanThu = require('../controllers/tools/vanthu')
+
+
+
+
 // API quét data người dùng từ base chat
 router.get('/addUserChat365', formData.parse(), toolUser.addUserChat365);
 router.get('/addUserCompanyTimviec365', toolUser.addUserCompanyTimviec365);
@@ -122,6 +127,10 @@ router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
 router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
 router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
+router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory)
+router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew)
+router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
+
 
 
 
@@ -142,5 +151,10 @@ router.post('/toolLyDo',toolVanThu.toolLyDo);
 router.post('/toolPhongBan',toolVanThu.toolPhongBan);
 router.post('/toolSettingDX',toolVanThu.toolSettingDX);
 
+
+// api quét data recruitment
+router.post('/toolrecruitment',toolHr.recruitment)
+router.post('/toolrecruitment_news',toolHr.recruitment_news)
+router.post('/toolschedule_interview',toolHr.schedule_interview)
 
 module.exports = router;

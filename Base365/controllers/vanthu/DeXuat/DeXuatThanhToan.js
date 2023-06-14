@@ -3,6 +3,10 @@ const { storageVT } = require('../../../services/functions');
 const multer = require('multer');
 const functions = require('../../../services/vanthu')
 const path = require('path');
+const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
+
+
+
 
 exports.dxThanhToan = async (req, res) => {
     try {
@@ -55,8 +59,13 @@ exports.dxThanhToan = async (req, res) => {
             });
 
             let savedDXTT = await createDXTT.save();
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
             let createTB =   new ThongBao({
-                _id : _id,
+                _id : idTB,
                 id_user : id_user,
                 id_user_nhan : id_user_duyet,
                 id_van_ban : savedDXTT._id,
@@ -68,8 +77,6 @@ exports.dxThanhToan = async (req, res) => {
           
             res.status(200).json({savedDXTT,saveCreateTb});
         };
-
-
 
     } catch (error) {
         console.error('Failed to add', error);

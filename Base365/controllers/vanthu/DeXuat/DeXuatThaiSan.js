@@ -3,6 +3,11 @@ const { storageVT } = require('../../../services/functions');
 const multer = require('multer');
 const functions = require('../../../services/vanthu')
 const path = require('path');
+const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
+
+
+
+
 
 exports.dxThaiSan = async (req, res) => {
     try {
@@ -39,9 +44,9 @@ exports.dxThaiSan = async (req, res) => {
                 name_dx: name_dx,
                 type_dx: 11,
                 noi_dung: {
-                    thai_san: {
-                        ngaybatdau_nghi_ts: new Date(ngaybatdau_nghi_ts * 1000) ,
-                        ngayketthuc_nghi_ts : new Date(ngayketthuc_nghi_ts * 1000) ,
+                    nghi_thai_san: {
+                        ngaybatdau_nghi_ts: ngaybatdau_nghi_ts ,
+                        ngayketthuc_nghi_ts : ngayketthuc_nghi_ts ,
                         ly_do : ly_do
                     },
                 },
@@ -57,8 +62,13 @@ exports.dxThaiSan = async (req, res) => {
             });
 
             let savedDXTS = await createDXTS.save();
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
             let createTB =   new ThongBao({
-                _id : _id,
+                _id : idTB,
                 id_user : id_user,
                 id_user_nhan : id_user_duyet,
                 id_van_ban : savedDXTS._id,
@@ -67,6 +77,7 @@ exports.dxThaiSan = async (req, res) => {
                 created_date : createDate
             })
             let saveCreateTb = await createTB.save()
+            
           
             res.status(200).json({savedDXTS,saveCreateTb});
         };

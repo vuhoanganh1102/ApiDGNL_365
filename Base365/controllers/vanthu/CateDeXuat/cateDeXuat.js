@@ -16,7 +16,7 @@ exports.showCateCom = async (req, res) => {
       const startIndex = (page - 1) * perPage; 
       const endIndex = page * perPage; 
   
-      const showCateCom = await CateDeXuat.find({ com_id: 0 ,active : 1}).skip(startIndex).limit(perPage);
+      const showCateCom = await CateDeXuat.find({ com_id: 0 }).skip(startIndex).limit(perPage);
       res.status(200).json(showCateCom);
     } catch (error) {
       console.error('Failed to get cate', error);
@@ -37,6 +37,7 @@ exports.showCateCom = async (req, res) => {
         res.status(404).json({ message: 'Không tìm thấy bản ghi dexuat' });
       } else {
         let userduyet = await UserDX.findOne({idQLC: dexuat.id_user_duyet});
+        console.log(userduyet);
         if (!userduyet) {
           // Xử lý khi không tìm thấy bản ghi userduyet
           res.status(404).json({ message: 'Không tìm thấy bản ghi userduyet' });
@@ -130,6 +131,7 @@ exports.showNghi = async(req,res)=> {
 //Api tìm kiếm tài khoản nghỉ + ko llv
 
 exports.adminSearchN = async (req, res) => {
+  let com_id = req.body.com_id? req.body.com_id :0;
   let id_phong_ban = req.body.id_phong_ban ? req.body.id_phong_ban : 0;
   let id_user = req.body.id_user ? req.body.id_user : 0;
   let loai_de_xuat = req.body.loai_de_xuat ? req.body.loai_de_xuat : 0;
@@ -166,7 +168,7 @@ exports.adminSearchN = async (req, res) => {
   console.log("  condition.active" + condition.active);
   let filterArray = [];
 
- let de_Xuat = await DeXuat.find(condition).skip(skip).limit(pageSize);
+ let de_Xuat = await DeXuat.find({com_id,type_dx : 1}).skip(skip).limit(pageSize);
   console.log("de_Xuat" + de_Xuat)
   if (de_Xuat) {
 
@@ -174,8 +176,8 @@ exports.adminSearchN = async (req, res) => {
           let de_xuat = {
               _id: de_Xuat[i]._id,
               id_user: de_Xuat[i].id_user,
+              com_id : de_Xuat[i].com_id,
               name_dx: de_Xuat[i].name_dx,
-              type_dx: 1,
               type_duyet: de_Xuat[i].type_duyet,//3- huy 5-duyệt 6 -bắt buộc đi làm 7- đã tiếp nhận
               active: de_Xuat[i].active,//đòng ý hoặc từ chối 
               time_create: de_Xuat[i].time_create,

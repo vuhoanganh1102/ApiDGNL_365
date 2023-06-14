@@ -3,6 +3,9 @@ const { storageVT } = require('../../../services/functions');
 const multer = require('multer');
 const functions = require('../../../services/vanthu')
 const path = require('path');
+const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
+
+
 
 
 exports.dxThuongPhat = async (req, res) => {
@@ -18,14 +21,10 @@ exports.dxThuongPhat = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
-            type_time,
-            time_start_out,
-            time_tiep_nhan,
-            time_duyet,
-            so_tien_thuong ,
-            so_tien_phat,
-            nguoi_phat,
-            ngay_ap_dung,
+            type_tp ,
+            so_tien_tp,
+            nguoi_tp,
+            time_tp,
             ly_do,
         } = req.body;
         let createDate = new Date()  
@@ -47,10 +46,10 @@ exports.dxThuongPhat = async (req, res) => {
                 type_dx: 19,
                 noi_dung: {
                     thuong_phat: {
-                        so_tien_thuong: so_tien_thuong ,
                         so_tien_tp : so_tien_tp,
-                        nguoi_phat : nguoi_phat,
-                        ngay_ap_dung : ngay_ap_dung,
+                        nguoi_tp : nguoi_tp,
+                        time_tp :time_tp,
+                        type_tp : type_tp,
                         ly_do : ly_do,
                     },
                 },
@@ -66,8 +65,13 @@ exports.dxThuongPhat = async (req, res) => {
             });
 
             let savedDXTP = await createDXTP.save();
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
             let createTB =   new ThongBao({
-                _id : _id,
+                _id : idTB,
                 id_user : id_user,
                 id_user_nhan : id_user_duyet,
                 id_van_ban : savedDXTP._id,

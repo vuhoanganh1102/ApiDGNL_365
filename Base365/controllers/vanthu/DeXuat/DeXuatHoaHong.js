@@ -3,6 +3,11 @@ const { storageVT } = require('../../../services/functions');
 const multer = require('multer');
 const functions = require('../../../services/vanthu')
 const path = require('path');
+const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
+
+
+
+
 exports.dxHoaHong = async (req, res) => {
     try {
         let {
@@ -15,15 +20,11 @@ exports.dxHoaHong = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
-            type_time,
-            time_start_out,
-
-            time_tiep_nhan,
-            time_duyet,
             chu_ky ,
             doanh_thu_td,
             muc_doanh_thu,
             ly_do,
+            time_hh
         } = req.body;
         let createDate = new Date()  
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
@@ -63,8 +64,13 @@ exports.dxHoaHong = async (req, res) => {
             });
 
             let savedDXHH = await createDXHH.save();
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
             let createTB =   new ThongBao({
-                _id : _id,
+                _id : idTB,
                 id_user : id_user,
                 id_user_nhan : id_user_duyet,
                 id_van_ban : savedDXHH._id,
@@ -76,9 +82,6 @@ exports.dxHoaHong = async (req, res) => {
           
             res.status(200).json({savedDXHH,saveCreateTb});
         };
-
-
-
     } catch (error) {
         console.error('Failed to add', error);
         res.status(500).json({error: 'Failed to add'});

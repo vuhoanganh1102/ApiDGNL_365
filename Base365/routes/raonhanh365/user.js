@@ -19,6 +19,13 @@ router.post('/changePassword',formData.parse(),functions.checkToken,userRN.chang
 router.post('/announceResult',formData.parse(),functions.checkToken,userRN.announceResult)
 
 // danh sách khách hàng online
-router.get('/listUserOnline/:link',userRN.listUserOnline)
+router.get('/listUserOnline/:link',userRN.listUserOnline);
+
+//xac thuc thanh toan dam bao
+router.post('/createVerifyPayment', formData.parse(), functions.checkToken, userRN.createVerifyPayment);
+
+// lịch sử giao dịch
+router.get('/historyTransaction',functions.checkToken,userRN.historyTransaction)
+
 
 module.exports = router;

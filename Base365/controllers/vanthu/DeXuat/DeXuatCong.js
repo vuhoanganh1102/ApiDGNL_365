@@ -40,8 +40,8 @@ exports.dxCong = async (req, res) => {
                 name_dx: name_dx,
                 type_dx: 17,
                 noi_dung: {
-                    cong_cong: {
-                        time_xnc: new Date(time_xnc * 1000)  ,
+                    xac_nhan_cong: {
+                        time_xnc: time_xnc  ,
                         ca_xnc : ca_xnc,
                         ly_do : ly_do,
                     },
@@ -56,8 +56,13 @@ exports.dxCong = async (req, res) => {
                 time_create: createDate,
             });
             let savedDXC = await createDXC.save();
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
            let createTB =   new ThongBao({
-                _id : _id,
+                _id : idTB,
                 id_user : id_user,
                 id_user_nhan : id_user_duyet,
                 id_van_ban : savedDXC._id,

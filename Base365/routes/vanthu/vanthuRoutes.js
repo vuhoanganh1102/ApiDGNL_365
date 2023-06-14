@@ -10,7 +10,7 @@ const dexuatHoahong = require('./deXuat/DeXuatHoaHongRoutes')
 const dexuatKhieuNai = require('./deXuat/DeXuatKhieuNaiRoutes');
 const dexuatThanhtoan =require('./deXuat/DeXuatThanhToanRoutes');
 const dexuatthuongPhat = require('./deXuat/DeXuatThuongPhatRoutes')
-const dexuatPhonghopRoutes = require('./deXuat/DeXuatHoaHongRoutes')
+const dexuatPhonghopRoutes = require('./deXuat/DeXuatPhongHopRoutes')
 const settingDXroutes = require('./SettingRoutes')
 const cateDXroutes = require('./cateDeXuatRoutes');
 

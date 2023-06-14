@@ -3,6 +3,9 @@ const { storageVT } = require('../../../services/functions');
 const multer = require('multer');
 const functions = require('../../../services/vanthu')
 const path = require('path');
+const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
+
+
 
 
 // Hiện  tất cả đề xuất
@@ -70,8 +73,8 @@ exports.dxTangCa = async (req, res) => {
                         noi_dung: {
                             tang_ca: {
                                 ly_do: ly_do  ,
-                                time_tc: new Date(time_tc * 1000) ,
-                                time_end_tc : new Date(time_end_tc * 1000)
+                                time_tc: time_tc  ,
+                                time_end_tc : time_end_tc
                             },
                         },
                         name_user: name_user,
@@ -86,8 +89,13 @@ exports.dxTangCa = async (req, res) => {
                     });
 
                 let savedDXTC = await createDXTC.save();
+                let maxIDTB = await functions.getMaxID(ThongBao)
+                let idTB = 0;
+                if (maxIDTB) {
+                    idTB = Number(maxIDTB) + 1;
+                }
                 let createTB =   new ThongBao({
-                    _id : _id,
+                    _id : idTB,
                     id_user : id_user,
                     id_user_nhan : id_user_duyet,
                     id_van_ban : savedDXTC._id,

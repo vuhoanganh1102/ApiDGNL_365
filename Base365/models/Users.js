@@ -671,6 +671,48 @@ const UserSchema = new mongoose.Schema({
             type: Number,
             default: 0,
         }
+    },
+    inforRN365: {
+        cccd: {
+            //so cmnd/can cuoc cong dan
+            type: String,
+            default: null
+        },
+        cccdFrontImg: {
+            //anh truoc cccd
+            type: String,
+            default: null
+        },
+        cccdBackImg: {
+            //anh sau cccd
+            type: String,
+            default: null
+        },
+        bankName: {
+            //ten ngan hang
+            type: String,
+            default: null
+        },
+        stk: {
+            //so tai khoan
+            type: String,
+            default: null
+        },
+        ownerName: {
+            //ten chu tai khoan
+            type: String,
+            default: null
+        },
+        time: {
+            //thoi gian xac thuc
+            type: Date,
+            default: Date(Date.now())
+        },
+        active: {
+            //admin da xac thuc hay chua(0: chua xac thuc)
+            type: Number,
+            default: 0
+        },
     }
 }, {
     collection: 'Users',

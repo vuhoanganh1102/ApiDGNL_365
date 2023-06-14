@@ -32,9 +32,9 @@ const AdminUserRightchema = new mongoose.Schema({
         default: 0
     }
 }, {
-    collection: 'AdminUserRaoNhanh365',
+    collection: 'RN365_AdminUserRight',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("AdminUserRight", AdminUserRightchema);
+module.exports = mongoose.model("RN365_AdminUserRight", AdminUserRightchema);

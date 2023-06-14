@@ -3,6 +3,8 @@ const { storageVT } = require('../../../services/functions');
 const multer = require('multer');
 const functions = require('../../../services/vanthu')
 const path = require('path');
+const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
+
 
 exports.dxDangKiSuDungXe = async (req, res) => {
     try {
@@ -40,9 +42,9 @@ exports.dxDangKiSuDungXe = async (req, res) => {
                 name_dx: name_dx,
                 type_dx: 13,
                 noi_dung: {
-                    xe_cong: {
-                        bd_xe: new Date(bd_xe * 1000) ,
-                        end_xe : new Date(end_xe * 1000) ,
+                    su_dung_xe_cong: {
+                        bd_xe:  bd_xe ,
+                        end_xe : end_xe  ,
                         soluong_xe : soluong_xe,
                         local_di : local_di,
                         local_den : local_den,
@@ -61,8 +63,13 @@ exports.dxDangKiSuDungXe = async (req, res) => {
             });
 
             let savedDXXe = await createDXXe.save();
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
             let createTB =   new ThongBao({
-                _id : _id,
+                _id : idTB,
                 id_user : id_user,
                 id_user_nhan : id_user_duyet,
                 id_van_ban : savedDXXe._id,

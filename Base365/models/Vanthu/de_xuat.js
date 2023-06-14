@@ -365,10 +365,72 @@ const Vanthu_de_xuat = new Schema({
 
 
 
-        }
+        },
+        hoa_hong : {
+            chu_ky : {
+                type : String,
+                default : null
+            },
+            time_hh : {
+                type : Date,
+                default : null
+            },
+            doanh_thu_td : {
+                type : String,
+                default : null
+            },
+            muc_doanh_thu : {
+                type : String,
+                default : null
+            },
+            ly_do : {
+                type : String,
+                default : null
+            }
+        },
 
         //Đề xuất khiếu nại
+        khieu_nai : {
+            ly_do : {
+                type : String
+            }
+        },
 
+        //Đề xuất thanh toán
+        thanh_toan : {
+            so_tien_tt : {
+                type : Number,
+                default : null
+            },
+            ly_do : {
+                type : String,
+                default : null
+            }
+        },
+
+
+        thuong_phat : {
+            so_tien_tp : {
+                type : Number,
+                default : null
+            },
+            time_tp : {
+                type : Date,
+                default : null
+            },
+            nguoi_tp : {
+                type : String,
+                default : null
+            },
+            type_tp : {
+                type : Number,
+                default : null
+            },
+            ly_do : {
+                type : String,
+                default : null
+            }
+        }
 
         // nd: {
         //     ngaybatdau_nghi: {

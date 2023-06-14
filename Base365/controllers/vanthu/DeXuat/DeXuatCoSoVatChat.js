@@ -2,7 +2,7 @@ const DeXuat = require("../../../models/Vanthu/de_xuat");
 const multer = require('multer');
 const functions = require('../../../services/vanthu')
 const path = require('path');
-
+const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
 exports.dxCoSoVatChat = async (req, res) => {
     try {
         let {
@@ -36,7 +36,7 @@ exports.dxCoSoVatChat = async (req, res) => {
                 name_dx: name_dx,
                 type_dx: 14,
                 noi_dung: {
-                    co_so_vat_chat: {
+                    sua_chua_co_so_vat_chat: {
                         input_csv: input_csv ,
                         ly_do :  ly_do,
                     },
@@ -54,8 +54,13 @@ exports.dxCoSoVatChat = async (req, res) => {
             });
 
             let savedDXCSVC = await createDXCSVC.save();
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
             let createTB =   new ThongBao({
-                _id : _id,
+                _id : idTB,
                 id_user : id_user,
                 id_user_nhan : id_user_duyet,
                 id_van_ban : savedDXCSVC._id,
