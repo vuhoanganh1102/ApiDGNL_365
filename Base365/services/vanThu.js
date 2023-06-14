@@ -25,6 +25,11 @@ exports.uploadFileVanThu = (id, file) => {
         });
     });
 }
+exports.createLinkFileVanthu = (id, name) => {
+    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/dexuat' + '/' + id + '/' + name;
+    return link;
+}
+
 
 
 // const storageVanthu = (destination) => {
@@ -40,12 +45,17 @@ exports.uploadFileVanThu = (id, file) => {
 
 // };
 // exports.upload = multer({ storage: storageVanthu('../../../Storage/VanThu') });
-exports.chat = async (name_dx, user_dx, noi_dung, fileKem) => {
+exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, status, link, file_kem) => {
     return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
-        name_dx: name_dx,
-        user_dx: user_dx,
-        noi_dung: noi_dung,
-        fileKem: fileKem,
+        SenderID: id_user,
+        ListReceive: id_user_duyet,
+        CompanyId: com_id,
+        Message: name_dx,
+        ListFollower: id_user_theo_doi,
+        Status: status,
+        Link: status,
+        file_kem: file_kem,
+        // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link
     }).then(function (response) {
         console.log("name_dx: " + name_dx + "user_dx :  " + user_dx + " noi_dung: " + noi_dung + " fileKem: " + fileKem);
     })

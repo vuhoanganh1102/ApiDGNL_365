@@ -74,7 +74,8 @@ var thongBao = require('./routes/vanthu/thong_bao');
 var NguoiDuyetVanBan = require('./routes/vanthu/user_duyet_vb');
 var UserModel = require('./routes/vanthu/user_model');
 var VanBan = require('./routes/vanthu/van_ban');
-var toolVT = require('./routes/vanthu/RoutertoolVT')
+var toolVT = require('./routes/vanthu/RoutertoolVT');
+
 
 const { router } = require("express/lib/application");
 
@@ -122,7 +123,9 @@ var get_deXuat_user = require('./routes/vanthu/DeXuat/User_Dx');
 app.use('/api/vanthu/DeXuat', get_deXuat_user);
 
 
-
+//thống kê nghỉ phép
+var TK_nghi_phep = require('./routes/vanthu/DeXuat/thong_ke_nghi_phep');
+app.use('/api/vanthu/DeXuat', TK_nghi_phep);
 
 
 

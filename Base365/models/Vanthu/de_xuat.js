@@ -44,7 +44,6 @@ const Vanthu_de_xuat = new Schema({
             },
         },
 
-
         doi_ca: {
 
             ngay_can_doi: {//chọn ngày ca cần đổi
