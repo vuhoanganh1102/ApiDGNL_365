@@ -1599,6 +1599,17 @@ exports.getListNewsApplied = async(req, res, next) => {
     }
 }
 
+
+exports.listJobWithPin = async (req,res,next) => {
+    try{
+        let userID = req.user.data._id;
+        let newWithPinOfUser = await New.find({ userID: userID, $or: [{ pinHome: 1 }, { pinCate: 1 }, {timePushNew: { $ne: null }}] })
+        return functions.success(res, 'Get List New With Pin Of User Success!', newWithPinOfUser);
+    } catch(err){
+            console.log("Err from server", err);
+            return functions.setError(res, "Err from server", 500);
+    }}
+
 // thêm mới khuyến mãi
 exports.addDiscount = async (req, res, next) => {
     try {
@@ -1613,14 +1624,14 @@ exports.addDiscount = async (req, res, next) => {
                 let new_id = request.new_id[i];
                 if (user_id && loai_khuyenmai && ngay_bat_dau && ngay_ket_thuc && giatri_khuyenmai) {
                     if (loai_khuyenmai === 1 || loai_khuyenmai === 2) {
-                       
+
                     }else{
                         return functions.setError(res, 'Nhập ngày không hợp lệ', 400)
                     }
                     if (functions.checkNumber(giatri_khuyenmai) === false || giatri_khuyenmai <= 0) {
                         return functions.setError(res, "invalid number", 400);
                     }
-                    
+
                     if (await functions.checkDate(ngay_bat_dau) === true && await functions.checkDate(ngay_ket_thuc)  === true) {
 
                         if (await functions.checkTime(ngay_bat_dau) && await functions.checkTime(ngay_ket_thuc)) {
@@ -1674,7 +1685,7 @@ exports.comment    = async(req,res,next)=>{
         let tag = req.body.tag || null;
         let time = new Date();
         let _id = await functions.getMaxID(Comments) + 1;
-    
+
         if(url && parent_id && ip){
             if(File.Image){
                 let data = await raoNhanh.uploadFileRaoNhanh('comment',`${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`,File.Image,['.jpg','.png'])
@@ -1682,21 +1693,21 @@ exports.comment    = async(req,res,next)=>{
                      return functions.setError('Ảnh không phù hợp')
                  }
              let img = raoNhanh.createLinkFileRaonhanh('comment',`${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`,File.Image.name)
-              
-             await Comments.create({_id,url,parent_id,content,img,ip,sender_idchat:userID,tag,time})      
+
+             await Comments.create({_id,url,parent_id,content,img,ip,sender_idchat:userID,tag,time})
              }else{
-                await Comments.create({_id,url,parent_id,content,ip,sender_idchat:userID,tag,time})  
+                await Comments.create({_id,url,parent_id,content,ip,sender_idchat:userID,tag,time})
              }
         }else{
             return functions.setError(res,'missing data',400)
         }
-        
+
         return functions.success(res,'comment success')
     } catch (error) {
         console.log("🚀 ~ file: new.js:1647 ~ exports.comment=async ~ error:", error)
         return functions.setError(res,error)
     }
-} 
+}
 
 // sửa bình luận
 exports.updateComment = async(req,res,next)=>{
@@ -1714,21 +1725,21 @@ exports.updateComment = async(req,res,next)=>{
                  if(!data){
                      return functions.setError('Ảnh không phù hợp')
                  }
-             let img = raoNhanh.createLinkFileRaonhanh('comment',`${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`,File.Image.name)            
-                await Comments.find({id_comment,sender_idchat:userID},{content,img,tag})      
+             let img = raoNhanh.createLinkFileRaonhanh('comment',`${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`,File.Image.name)
+                await Comments.find({id_comment,sender_idchat:userID},{content,img,tag})
              }else{
-                await Comments.find({id_comment,sender_idchat:userID},{content,tag})  
+                await Comments.find({id_comment,sender_idchat:userID},{content,tag})
              }
         }else{
             return functions.setError(res,'missing data',400)
         }
-        
+
         return functions.success(res,'comment success')
     } catch (error) {
         console.log("🚀 ~ file: new.js:1647 ~ exports.comment=async ~ error:", error)
         return functions.setError(res,error)
     }
-} 
+}
 
 exports.getListCandidateApplied = async(req, res, next) => {
     try{
@@ -1740,9 +1751,9 @@ exports.getListCandidateApplied = async(req, res, next) => {
         let listNews = await New.find({userID: userId, cateID: cateID}, {_id: 1, userID: 1, timeSell: 1, title: 1, linkTitle: 1});
         for(let i=0; i<listNews.length; i++){
             let newsApply = await ApplyNewsRN.find({newId: listNews[i]._id});
-            
+
             // lay ra ten cua cac ung vien
-            
+
             for(let j=0; j<newsApply.length; j++) {
                 let candidate = await User.findOne({_id: newsApply[j].uvId}, {userName: 1});
                 if(candidate){
@@ -1752,7 +1763,7 @@ exports.getListCandidateApplied = async(req, res, next) => {
             }
             listNews[i] = {newsApply: newsApply, newsSell: listNews[i]};
         }
-        
+
         return functions.success(res, "get list candidate applied sucess", {data: listNews});
     }catch(err){
         console.log("Err from server", err);

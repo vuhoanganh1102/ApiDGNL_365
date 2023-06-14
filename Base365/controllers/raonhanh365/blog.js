@@ -2,6 +2,7 @@ const functions = require('../../services/functions')
 const Blog = require('../../models/Raonhanh365/Admin/Blog')
 const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser');
 const Category = require('../../models/Raonhanh365/Category');
+const Users = require('../../models/Users')
 const md5 = require('md5');
 const folderImg = 'img_blog';
 const raoNhanh = require('../../services/rao nhanh/raoNhanh')
@@ -210,6 +211,17 @@ exports.createToken = async(req, res, next) => {
         let token = await functions.createToken(admin, "28d")
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, 'Create token admin success', );
+    }catch(error){
+        console.log("Đã có lỗi xảy ra tao token", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+exports.createTokenUser = async(req, res, next) => {
+    try{
+        let admin = await Users.findOne({_id: 1});
+        let token = await functions.createToken(admin, "28d")
+        res.setHeader('authorization', `Bearer ${token}`);
+        return functions.success(res, `Bearer ${token}`);
     }catch(error){
         console.log("Đã có lỗi xảy ra tao token", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);

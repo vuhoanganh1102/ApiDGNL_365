@@ -72,6 +72,10 @@ router.post('/candiApply', formData.parse(),functions.checkToken, newRN.createAp
 
 router.delete('/deleteCandiApply',functions.checkToken, newRN.deleteUv);
 
+
+// api danh sách tin áp dụng dịch vụ
+router.get('/listJobWithPin',functions.checkToken,newRN.listJobWithPin);
+
 // danh sách giảm giá
 router.get('/manageDiscount', formData.parse(),functions.checkToken, newRN.manageDiscount);
 
@@ -92,5 +96,6 @@ router.get('/getListNewsApplied',functions.checkToken, newRN.getListNewsApplied)
 
 //api lay ra danh sach ung vien dang ung tuyen cua 1 tin
 router.get('/getListCandidateApplied',functions.checkToken, newRN.getListCandidateApplied);
+
 
 module.exports = router;

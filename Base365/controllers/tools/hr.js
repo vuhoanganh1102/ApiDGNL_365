@@ -27,6 +27,13 @@ const ScheduleInterview = require('../../models/hr/ScheduleInterview');
 const Recruitment = require('../../models/hr/Recruitment');
 const RecruitmentNews = require('../../models/hr/RecruitmentNews');
 
+const HR_Cancel = require('../../models/hr/CancelJob.js');
+const HR_FailJob = require('../../models/hr/FailJob.js');
+const HR_ContactJob = require('../../models/hr/ContactJob.js');
+const HR_Notifys = require('../../models/hr/Notify.js');
+const HR_Permisions = require('../../models/hr/Permision.js');
+const HR_Policys = require('../../models/hr/Policys.js');
+const HR_StageRecruitments = require('../../models/hr/StageRecruitment.js');
 
 exports.recruitment = async (req, res, next) => {
     try {
@@ -173,8 +180,6 @@ exports.schedule_interview = async (req, res, next) => {
                         await query.save();
                     }
                 }
-
-
             }
         }
         return functions.success(res, "Thành công");
@@ -223,8 +228,6 @@ exports.stage_recruitment = async (req, res, next) => {
                         await query.save();
                     }
                 }
-
-
             }
         }
         return functions.success(res, "Thành công");
@@ -271,6 +274,60 @@ exports.AchievementFors = async (req, res, next) => {
             });
             await AchievementFors.save();
         }
+    }
+    catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+// cancel job
+exports.cancelJob = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_cancel_job?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let canId = data[i].can_id;
+            let isDelete = data[i].is_delete;
+            let deletedAt = data[i].deleted_at;
+            let resiredSalary = data[i].resired_salary;
+            let salary = data[i].salary;
+            let note = data[i].note;
+            let status = data[i].status;
+            let isSwitch = data[i].is_switch;
+            let createdAt = data[i].created_at;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_Cancel({ _id, canId, isDelete, deletedAt, resiredSalary, salary, note, status, isSwitch, createdAt });
+            await HR_Cancel.create(data_recruitment);
+            // }
+        }
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+// failJob
+
+exports.failJob = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_failed_job?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let canId = data[i].can_id;
+            let type = data[i].type;
+            let isDelete = data[i].is_delete;
+            let deletedAt = data[i].deleted_at;
+            let note = data[i].note;
+            let email = data[i].email;
+            let contentsend = data[i].contentsend;
+            let isSwitch = data[i].is_switch;
+            let createdAt = data[i].created_at;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_FailJob({ _id, canId, isDelete, deletedAt, note, email, contentsend, isSwitch, createdAt });
+            await HR_FailJob.create(data_recruitment);
+            // }
+        }
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -290,6 +347,34 @@ exports.AddInfoLeads = async (req, res, next) => {
                 _id, epId, nameDes, description, createdAt, updatedAt
             });
             await AddInfoLeads.save();
+        }
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+// ContactJob
+
+exports.contactJob = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_contact_job?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let canId = data[i].can_id;
+            let isDelete = data[i].is_delete;
+            let deletedAt = data[i].deleted_at;
+            let resiredSalary = data[i].resired_salary;
+            let salary = data[i].salary;
+            let offerTime = data[i].offer_time;
+            let epOffer = data[i].ep_offer;
+            let note = data[i].note;
+            let isSwitch = data[i].is_switch;
+            let createdAt = data[i].created_at;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_ContactJob({ _id, canId, isDelete, deletedAt, resiredSalary, note, salary, offerTime, epOffer, isSwitch, createdAt });
+            await HR_ContactJob.create(data_recruitment);
+            // }
         }
         return functions.success(res, "Thành công");
     } catch (error) {
@@ -465,6 +550,29 @@ exports.Devices = async (req, res, next) => {
             let Devices = new HR_Devices({ _id, userId, infoBrower, tokenBrowser, lastLogin, deviceType, loginType, createdAt });
             await Devices.save();
         }
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+// Notify
+exports.notify = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_contact_job?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let canId = data[i].can_id;
+            let type = data[i].type;
+            let comNotify = data[i].com_notify;
+            let comId = data[i].com_id;
+            let userId = data[i].user_id;
+            let createdAt = data[i].created_at;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_Notifys({ _id, canId, type, comNotify, comId, userId, createdAt });
+            await HR_Notifys.create(data_recruitment);
+            // }
+        }
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -521,6 +629,53 @@ exports.InfringesFors = async (req, res, next) => {
             });
             await InfringesFors.save();
         }
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+// permission
+exports.permission = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_permision?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let namePer = data[i].name_per;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_Permisions({ _id, namePer });
+            await HR_Permisions.create(data_recruitment);
+            // }
+        }
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+// policys
+exports.policy = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_permision?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let provisionId = data[i].provision_id;
+            let timeStart = data[i].time_start;
+            let supervisorName = data[i].supervisor_name;
+            let applyFor = data[i].apply_for;
+            let content = data[i].content;
+            let createdBy = data[i].created_by;
+            let isDelete = data[i].is_delete;
+            let createdAt = data[i].created_at;
+            let name = data[i].name;
+            let file = data[i].file;
+            let deletedAt = data[i].deleted_at;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_Policys({ _id, provisionId, timeStart, supervisorName, applyFor, content, createdBy, isDelete, createdAt, name, file, deletedAt });
+            await HR_Policys.create(data_recruitment);
+            // }
+        }
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -531,18 +686,40 @@ exports.avatar = async (req, res, next) => {
         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_leader_avt');
         for (let i = 0; i < data.length; i++) {
             let check = await HR_InfoLeaders.find({ epId: data[i].ep_id })
-            if(check && check.length !== 0)
-            {
+            if (check && check.length !== 0) {
                 console.log('2')
-                await HR_InfoLeaders.findOneAndUpdate({ epId: data[i].ep_id },{avatar:data[i].avatar})
+                await HR_InfoLeaders.findOneAndUpdate({ epId: data[i].ep_id }, { avatar: data[i].avatar })
             }
+        }
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+//stageRecruitment
+exports.stageRecruitment = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_stage_recruitment?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let recruitmentId = data[i].recruitment_id;
+            let name = data[i].name;
+            let positionAssumed = data[i].position_assumed;
+            let target = data[i].target;
+            let complete_time = data[i].complete_time;
+            let description = data[i].description;
+            let isDelete = data[i].is_delete;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_StageRecruitments({ _id, recruitmentId, name, positionAssumed, target, complete_time, description, isDelete });
+            await HR_StageRecruitments.create(data_recruitment);
+            // }
         }
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
     }
 };
-exports.toolInfringe = async(req, res, next) => {
+exports.toolInfringe = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -590,7 +767,7 @@ exports.toolInfringe = async(req, res, next) => {
     }
 };
 
-exports.toolJobDes = async(req, res, next) => {
+exports.toolJobDes = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -614,7 +791,7 @@ exports.toolJobDes = async(req, res, next) => {
                         jobRequire: data[i].job_require,
                         roadMap: data[i].road_map,
                         comId: data[i].com_id,
-                        createdAt:  data[i].created_at,
+                        createdAt: data[i].created_at,
                         updatedAt: data[i].updated_at,
                         deletedAt: data[i].deleted_at,
                         isDelete: data[i].is_delete
@@ -632,9 +809,8 @@ exports.toolJobDes = async(req, res, next) => {
         return functions.setError(res, error.message);
     }
 };
-  
 
-exports.toolAnotherSkill = async(req, res, next) => {
+exports.toolAnotherSkill = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -672,7 +848,7 @@ exports.toolAnotherSkill = async(req, res, next) => {
     }
 };
 
-exports.toolPermisionDetail = async(req, res, next) => {
+exports.toolPermisionDetail = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -710,7 +886,7 @@ exports.toolPermisionDetail = async(req, res, next) => {
     }
 };
 
-exports.toolRemind = async(req, res, next) => {
+exports.toolRemind = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -728,14 +904,14 @@ exports.toolRemind = async(req, res, next) => {
                 for (let i = 0; i < data.length; i++) {
                     const remind = new Remind({
                         _id: data[i].id,
-                        type:  data[i].type,
-                        remindType:  data[i].remind_type,
-                        canId:  data[i].can_id,
-                        canName:  data[i].can_name,
-                        comId:  data[i].com_id,
-                        userId:  data[i].user_id,
-                        time:  data[i].time,
-                        createdAt:  data[i].created_at
+                        type: data[i].type,
+                        remindType: data[i].remind_type,
+                        canId: data[i].can_id,
+                        canName: data[i].can_name,
+                        comId: data[i].com_id,
+                        userId: data[i].user_id,
+                        time: data[i].time,
+                        createdAt: data[i].created_at
                     });
                     await Remind.create(remind);
                 }
@@ -752,7 +928,7 @@ exports.toolRemind = async(req, res, next) => {
     }
 };
 
-exports.toolProcessInterview = async(req, res, next) => {
+exports.toolProcessInterview = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -790,7 +966,7 @@ exports.toolProcessInterview = async(req, res, next) => {
     }
 };
 
-exports.toolProcessTraining = async(req, res, next) => {
+exports.toolProcessTraining = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -808,13 +984,13 @@ exports.toolProcessTraining = async(req, res, next) => {
                 for (let i = 0; i < data.length; i++) {
                     const processTraining = new ProcessTraining({
                         _id: data[i].id,
-                        name:  data[i].name,
-                        description:  data[i].description,
-                        comId:  data[i].com_id,
-                        isDelete:  data[i].is_delete,
-                        createdAt:  data[i].created_at,
-                        updatedAt:  data[i].updated_at,
-                        deletedAt:  data[i].deleted_at
+                        name: data[i].name,
+                        description: data[i].description,
+                        comId: data[i].com_id,
+                        isDelete: data[i].is_delete,
+                        createdAt: data[i].created_at,
+                        updatedAt: data[i].updated_at,
+                        deletedAt: data[i].deleted_at
                     });
                     await ProcessTraining.create(processTraining);
                 }
@@ -831,7 +1007,7 @@ exports.toolProcessTraining = async(req, res, next) => {
     }
 };
 
-exports.toolSignatureImage = async(req, res, next) => {
+exports.toolSignatureImage = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -870,7 +1046,7 @@ exports.toolSignatureImage = async(req, res, next) => {
     }
 };
 
-exports.toolInviteInterview = async(req, res, next) => {
+exports.toolInviteInterview = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -912,7 +1088,7 @@ exports.toolInviteInterview = async(req, res, next) => {
     }
 };
 
-exports.toolScheduleInterview = async(req, res, next) => {
+exports.toolScheduleInterview = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -954,7 +1130,7 @@ exports.toolScheduleInterview = async(req, res, next) => {
     }
 };
 
-exports.toolRecruitment = async(req, res, next) => {
+exports.toolRecruitment = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -997,7 +1173,7 @@ exports.toolRecruitment = async(req, res, next) => {
     }
 };
 
-exports.toolRecruitmentNews = async(req, res, next) => {
+exports.toolRecruitmentNews = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -1060,3 +1236,4 @@ exports.toolRecruitmentNews = async(req, res, next) => {
         return functions.setError(res, error.message);
     }
 };
+

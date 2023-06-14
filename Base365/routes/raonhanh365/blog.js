@@ -19,4 +19,7 @@ router.delete('/deleteBlog', [functions.checkToken, functions.isAdminRN365], blo
 //api get anh trong chi tiet bai viet
 router.post('/detailBlog', formData.parse(), blog.getDetailBlog);
 
+// api tạo token User
+router.post('/userToken', formData.parse(), blog.createTokenUser);
+
 module.exports = router;
