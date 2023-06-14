@@ -585,7 +585,8 @@ exports.getNewBeforeLogin = async (req, res, next) => {
             },
             {
                 $match:{buySell:2,sold:0,active:1}
-            },{
+            },
+            {
                 $sort:{pinHome:-1,createTime:-1}
             },
             {
@@ -617,19 +618,18 @@ exports.searchNew = async (req, res, next) => {
             = req.query;
         if (!page && !pageSize) {
             return functions.setError(res, 'missing data', 400)
-
         }
         const skip = (page - 1) * pageSize;
-        const limit = pageSize;
+        const limit = Number (pageSize);
         if (await functions.checkNumber(page) === false || await functions.checkNumber(page) === false) {
             return functions.setError(res, 'page not found', 404)
         }
         if (link === 'tat-ca-tin-dang-ban.html') {
             buySell = 2;
-            searchItem = { _id: 1, active: 1, title: 1, viewCount: 1, address: 1, money: 1, apartmentNumber: 1, img: 1, updateTime: 1, name: 1, address: 1, district: 1, ward: 1 }
+            searchItem = { _id: 1, User:{_id:1,idRaoNhanh365:1,phone:1,userName:1,type:1}, active: 1, title: 1, viewCount: 1, address: 1, money: 1, apartmentNumber: 1, img: 1, updateTime: 1, name: 1, address: 1, district: 1, ward: 1 }
         } else if (link === 'tat-ca-tin-dang-mua.html') {
             buySell = 1;
-            searchItem = { _id: 1, active: 1, title: 1, viewCount: 1, address: 1, money: 1, startvalue: 1, timeReceivebidding: 1, timeEndReceivebidding: 1, img: 1, apartmentNumber: 1, updateTime: 1, createTime: 1, name: 1, address: 1, district: 1, ward: 1, }
+            searchItem = { _id: 1,User:{_id:1,idRaoNhanh365:1,phone:1,userName:1,type:1}, active: 1, title: 1, viewCount: 1, address: 1, money: 1, startvalue: 1, timeReceivebidding: 1, timeEndReceivebidding: 1, img: 1, apartmentNumber: 1, updateTime: 1, createTime: 1, name: 1, address: 1, district: 1, ward: 1, }
 
         } else {
             return functions.setError(res, "page not found", 404)
@@ -721,11 +721,30 @@ exports.searchNew = async (req, res, next) => {
         if (giaDen && buySell === 1) condition.endvalue = { $lte: endvalue };
         if (giaTu && buySell === 2) condition.money = { $gte: giaTu };
         if (giaDen && buySell === 2) condition.money = { $gte: giaDen };
-        let data = await New.find(condition, searchItem).skip(skip).limit(limit);
+        let data = await New.aggregate([
+            {
+                $lookup:{
+                    from:'User',
+                    foreignField:'idRaoNhanh365',
+                    localField:'userID',
+                    as:'User'
+                }
+            },{
+                $match:condition
+            },{
+                $project:searchItem
+            },{
+                $skip:skip
+            },{
+                $limit:limit
+            }
+        ])
+        //let data = await New.find(condition, searchItem).skip(skip).limit(limit);
         const totalCount = await New.countDocuments({ buySell })
         const totalPages = Math.ceil(totalCount / pageSize)
         return functions.success(res, "get data success", { totalCount, totalPages, data })
     } catch (error) {
+        console.log("🚀 ~ file: new.js:747 ~ exports.searchNew= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -733,7 +752,7 @@ exports.searchNew = async (req, res, next) => {
 exports.createBuyNew = async (req, res) => {
     try {
         // lấy id user từ req
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
 
         // khởi tạo các biến có thể có
         let tenderFile = null;
@@ -858,7 +877,7 @@ exports.createBuyNew = async (req, res) => {
 exports.updateBuyNew = async (req, res, next) => {
     try {
         // lấy id user từ req
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         // khởi tạo các biến có thể có
         let tenderFile = null;
 
@@ -1711,6 +1730,7 @@ exports.updateComment = async(req,res,next)=>{
         return functions.setError(res,error)
     }
 } 
+
 exports.getListCandidateApplied = async(req, res, next) => {
     try{
         let userId = req.query.userId;
