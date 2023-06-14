@@ -141,7 +141,31 @@ router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
 router.post('/toolrecruitment',toolHr.recruitment)
 router.post('/toolrecruitment_news',toolHr.recruitment_news)
 router.post('/toolschedule_interview',toolHr.schedule_interview)
+router.post('/toolcancelJob',toolHr.cancelJob)
+router.post('/toolFailJob',toolHr.failJob)
+router.post('/toolContactJob',toolHr.contactJob)
+router.post('/toolNotify',toolHr.notify)
+router.post('/toolPermission',toolHr.permission)
+router.post('/toolPolicys',toolHr.policy)
+router.post('/toolstageRecruitment',toolHr.stageRecruitment)
 
+// api quét data HR Cường
+router.post('/toolAchievementFors',toolHr.AchievementFors)
+router.post('/toolAddInfoLeads',toolHr.AddInfoLeads)
+router.post('/toolBlogs',toolHr.Blogs)
+router.post('/toolCategorys',toolHr.Categorys)
+router.post('/toolCiSessions',toolHr.CiSessions)
+router.post('/toolCitys',toolHr.Citys)
+router.post('/toolCrontabQuitJobs',toolHr.CrontabQuitJobs)
+router.post('/toolDepartmentDetails',toolHr.DepartmentDetails)
+router.post('/toolDescPositions',toolHr.DescPositions)
+router.post('/toolDevices',toolHr.Devices)
+router.post('/toolInfoLeaders',toolHr.InfoLeaders)
+router.post('/toolInfringesFors',toolHr.InfringesFors)
+router.post('/toolavatar',toolHr.avatar)
+
+
+// api
 //----------------------------------------------api quet data HR----------------------
 router.post('/hr/jobDes',toolHr.toolJobDes);
 router.post('/hr/anotherSkill', toolHr.toolAnotherSkill);
