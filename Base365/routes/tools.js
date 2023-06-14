@@ -142,4 +142,17 @@ router.post('/toolrecruitment',toolHr.recruitment)
 router.post('/toolrecruitment_news',toolHr.recruitment_news)
 router.post('/toolschedule_interview',toolHr.schedule_interview)
 
+//----------------------------------------------api quet data HR----------------------
+router.post('/hr/jobDes',toolHr.toolJobDes);
+router.post('/hr/anotherSkill', toolHr.toolAnotherSkill);
+router.post('/hr/perDetail', toolHr.toolPermisionDetail);
+router.post('/hr/remind', toolHr.toolRemind);
+router.post('/hr/processInter', toolHr.toolProcessInterview);
+router.post('/hr/processTraining', toolHr.toolProcessTraining);
+router.post('/hr/signature', toolHr.toolSignatureImage);
+router.post('/hr/scheduleInter', toolHr.toolScheduleInterview);
+router.post('/hr/inviteInter', toolHr.toolInviteInterview);
+router.post('/hr/recruitment', toolHr.toolRecruitment);
+router.post('/hr/recruitmentNews', toolHr.toolRecruitmentNews);
+
 module.exports = router;
