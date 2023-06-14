@@ -120,7 +120,6 @@ router.post('/toolCategory', toolRaoNhanh.toolCategory);
 
 // api update thông tin bán hàng  new rao nhanh
 router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
-
 router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
 router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
 router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
@@ -148,6 +147,7 @@ router.post('/toolNotify',toolHr.notify)
 router.post('/toolPermission',toolHr.permission)
 router.post('/toolPolicys',toolHr.policy)
 router.post('/toolstageRecruitment',toolHr.stageRecruitment)
+router.post('/')
 
 // api quét data HR Cường
 router.post('/toolAchievementFors',toolHr.AchievementFors)
