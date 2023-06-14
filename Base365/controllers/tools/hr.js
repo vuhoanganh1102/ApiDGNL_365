@@ -12,6 +12,21 @@ const HR_DescPositions = require('../../models/hr/DescPositions');
 const HR_Devices = require('../../models/hr/Devices');
 const HR_InfoLeaders = require('../../models/hr/InfoLeaders');
 const HR_InfringesFors = require('../../models/hr/InfringesFors');
+const FormData = require('form-data');
+const axios = require('axios');
+const { formRadioButton } = require('pdfkit');
+const JobDes = require('../../models/hr/JobDescriptions');
+const AnotherSkill = require('../../models/hr/AnotherSkill');
+const PermisionDetail = require('../../models/hr/PermisionDetail');
+const Remind = require('../../models/hr/Remind');
+const ProcessInterview = require('../../models/hr/ProcessInterview');
+const ProcessTraining = require('../../models/hr/ProcessTraining');
+const SignatureImage = require('../../models/hr/SignatureImage');
+const InviteInterview = require('../../models/hr/InviteInterview');
+const ScheduleInterview = require('../../models/hr/ScheduleInterview');
+const Recruitment = require('../../models/hr/Recruitment');
+const RecruitmentNews = require('../../models/hr/RecruitmentNews');
+
 
 exports.recruitment = async (req, res, next) => {
     try {
@@ -527,4 +542,521 @@ exports.avatar = async (req, res, next) => {
         return functions.setError(res, error.message);
     }
 };
+exports.toolInfringe = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_infringes_for', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const infringe = new Infringe({
+                        _id: data[i].id,
+                        infringeName: data[i].infringe_name,
+                        regulatoryBasis: data[i].regulatory_basis,
+                        numberViolation: data[i].number_violation,
+                        listUser: data[i].list_user,
+                        listUserName: data[i].list_user_name,
+                        createdBy: data[i].created_by,
+                        infringeAt: data[i].infringe_at,
+                        infringeType: data[i].infringe_type,
+                        type: data[i].type,
+                        companyId: data[i].com_id,
+                        depId: data[i].dep_id,
+                        depName: data[i].dep_name,
+                        createdAt: new Date(data[i].created_at),
+                        updatedAt: new Date(data[i].updated_at)
+                    });
+                    await Infringe.create(infringe);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
 
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolJobDes = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_job_description', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const jobDes = new JobDes({
+                        _id: data[i].id,
+                        name: data[i].name,
+                        depName: data[i].department_name,
+                        des: data[i].description,
+                        jobRequire: data[i].job_require,
+                        roadMap: data[i].road_map,
+                        comId: data[i].com_id,
+                        createdAt:  data[i].created_at,
+                        updatedAt: data[i].updated_at,
+                        deletedAt: data[i].deleted_at,
+                        isDelete: data[i].is_delete
+                    });
+                    await JobDes.create(jobDes);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+  
+
+exports.toolAnotherSkill = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_another_skill', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const anotherSkill = new AnotherSkill({
+                        _id: data[i].id,
+                        canId: data[i].can_id,
+                        skillName: data[i].skill_name,
+                        skillVote: data[i].skill_vote,
+                        createAt: data[i].created_at
+                    });
+                    await AnotherSkill.create(anotherSkill);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolPermisionDetail = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_per_detail', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const permisionDetail = new PermisionDetail({
+                        _id: data[i].id,
+                        perId: data[i].id_per,
+                        actName: data[i].action_name,
+                        actCode: data[i].action_code,
+                        checkAct: data[i].check_action
+                    });
+                    await PermisionDetail.create(permisionDetail);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolRemind = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_remind', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const remind = new Remind({
+                        _id: data[i].id,
+                        type:  data[i].type,
+                        remindType:  data[i].remind_type,
+                        canId:  data[i].can_id,
+                        canName:  data[i].can_name,
+                        comId:  data[i].com_id,
+                        userId:  data[i].user_id,
+                        time:  data[i].time,
+                        createdAt:  data[i].created_at
+                    });
+                    await Remind.create(remind);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolProcessInterview = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_process_interview', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const processInterview = new ProcessInterview({
+                        _id: data[i].id,
+                        name: data[i].name,
+                        processBefore: data[i].process_before,
+                        comId: data[i].com_id,
+                        createdAt: data[i].created_at
+                    });
+                    await ProcessInterview.create(processInterview);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolProcessTraining = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_training_process', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const processTraining = new ProcessTraining({
+                        _id: data[i].id,
+                        name:  data[i].name,
+                        description:  data[i].description,
+                        comId:  data[i].com_id,
+                        isDelete:  data[i].is_delete,
+                        createdAt:  data[i].created_at,
+                        updatedAt:  data[i].updated_at,
+                        deletedAt:  data[i].deleted_at
+                    });
+                    await ProcessTraining.create(processTraining);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolSignatureImage = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_signature_image', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const signatureImage = new SignatureImage({
+                        _id: data[i].id,
+                        empId: data[i].ep_id,
+                        imgName: data[i].image_name,
+                        createdAt: data[i].created_at,
+                        isDelete: data[i].is_delete,
+                        deletedAt: data[i].deleted_at
+                    });
+                    await SignatureImage.create(signatureImage);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolInviteInterview = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_invite_interview', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const signatureImage = new InviteInterview({
+                        _id: data[i].id,
+                        posApply: data[i].position_apply,
+                        canId: data[i].candidate_id,
+                        canEmail: data[i].candidate_email,
+                        canName: data[i].candidate_name,
+                        hrName: data[i].hr_name,
+                        content: data[i].content,
+                        note: data[i].note,
+                        noteTest: data[i].note_test,
+                    });
+                    await InviteInterview.create(signatureImage);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolScheduleInterview = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_schedule_interview', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const scheduleInterview = new ScheduleInterview({
+                        _id: data[i].id,
+                        posApply: data[i].position_apply,
+                        canId: data[i].candidate_id,
+                        canEmail: data[i].candidate_email,
+                        canName: data[i].candidate_name,
+                        hrName: data[i].hr_name,
+                        content: data[i].content,
+                        note: data[i].note,
+                        noteTest: data[i].note_test,
+                    });
+                    await ScheduleInterview.create(scheduleInterview);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolRecruitment = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_recruitment', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const recruitment = new Recruitment({
+                        _id: data[i].id,
+                        name: data[i].name,
+                        createdBy: data[i].created_by,
+                        createdAt: data[i].created_at,
+                        deletedAt: data[i].deleted_at,
+                        isDelete: data[i].is_delete,
+                        applyFor: data[i].apply_for,
+                        slug: data[i].slug,
+                        comId: data[i].com_id,
+                        isCom: data[i].is_com
+                    });
+                    await Recruitment.create(recruitment);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolRecruitmentNews = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_recruitment_news', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const recruitmentNews = new RecruitmentNews({
+                        _id: data[i].id,
+                        title: data[i].title,
+                        posApply: data[i].position_apply,
+                        cityId: data[i].cit_id,
+                        address: data[i].address,
+                        cateId: data[i].cate_id,
+                        salaryId: data[i].salary_id,
+                        number: data[i].number,
+                        timeStart: data[i].recruitment_time,
+                        timeEnd: data[i].recruitment_time_to,
+                        jobDetail: data[i].job_detail,
+                        wokingForm: data[i].woking_form,
+                        probationaryTime: data[i].probationary_time,
+                        moneyTip: data[i].money_tip,
+                        jobDes: data[i].job_description,
+                        interest: data[i].interest,
+                        recruitmentId: data[i].recruitmen_id,
+                        jobExp: data[i].job_exp,
+                        degree: data[i].degree,
+                        gender: data[i].gender,
+                        jobRequire: data[i].job_require,
+                        memberFollow: data[i].member_follow,
+                        hrName: data[i].hr_name,
+                        createdAt: data[i].created_at,
+                        updatedAt: data[i].updated_at,
+                        deletedAt: data[i].deleted_at,
+                        isDelete: data[i].is_delete,
+                        comId: data[i].com_id,
+                        isCom: data[i].is_com,
+                        createdBy: data[i].created_by,
+                        isSample: data[i].is_sample
+                    });
+                    await RecruitmentNews.create(recruitmentNews);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};

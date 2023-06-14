@@ -1022,12 +1022,12 @@ exports.updateBuyNew = async (req, res, next) => {
 // chi tiết tin trước đăng nhập    
 exports.getDetailNew = async (req, res, next) => {
     try {
-        let linkTitle = req.params.linkTitle;
+        let linkTitle = req.params.linkTitle.replace('.html','');
         if (!linkTitle) {
             return functions.setError(res, 'missing data', 400)
         }
         let id = linkTitle.split('-').reverse()[0];
-        let buy = id.charAt(0);
+        let buy = id.charAt(0); 
         let id_new = id.slice(1);
         let danh_muc1 = null;
         let danh_muc2 = null;
@@ -1064,7 +1064,7 @@ exports.getDetailNew = async (req, res, next) => {
             }
         }
 
-        if (buy === 'm') {
+        if (buy === 'ct') {
             buysell = 1;
             searchitem = {
                 title: 1, money: 1, name: 1, timeEndReceivebidding: 1, timeReceivebidding: 1,
@@ -1073,11 +1073,11 @@ exports.getDetailNew = async (req, res, next) => {
                 fileContent: 1, instructionContent: 1, instructionFile: 1,
                 startvalue: 1, endvalue: 1, until_tu: 1, until_den: 1, bidFee: 1, until_bidFee: 1, phone: 1, img: 1,
                 address: 1, updateTime: 1, status: 1, description: 1, city: 1, district: 1, ward: 1, apartmentNumber: 1,
-                detailCategory: 1, viewCount: 1, user: { userName: 1, type: 1, createdAt: 1 }
+                detailCategory: 1, viewCount: 1, user: {_id:1, userName: 1, type: 1, createdAt: 1 }
             };
-        } else if (buy === 'b') {
+        } else if (buy === 'c') {
             buysell = 2;
-            searchitem = { title: 1, viewCount: 1, money: 1, name: 1, phone: 1, address: 1, updateTime: 1, img: 1, status: 1, description: 1, detailCategory: 1, user: { userName: 1, type: 1, createdAt: 1 } };
+            searchitem = { title: 1, viewCount: 1, money: 1, name: 1, phone: 1, address: 1, updateTime: 1, img: 1, status: 1, description: 1, detailCategory: 1, user: {_id:1, userName: 1, type: 1, createdAt: 1 } };
 
         } else {
             return functions.setError(res, 'not found data', 404)
@@ -1091,7 +1091,7 @@ exports.getDetailNew = async (req, res, next) => {
                 {
                     from: "Users",
                     localField: "userID",
-                    foreignField: "_id",
+                    foreignField: "idRaoNhanh365",
                     as: "user"
                 }
             }, {
@@ -1101,7 +1101,6 @@ exports.getDetailNew = async (req, res, next) => {
             }
         ]);
         tintuongtu = await New.find({ cateID: check.cateID }, searchitem).limit(6);
-
         await New.findByIdAndUpdate(id_new, { $inc: { viewCount: +1 } })
         if (tintuongtu) {
             data.push({ tintuongtu: tintuongtu })
