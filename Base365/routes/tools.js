@@ -3,7 +3,9 @@ var router = express.Router();
 var toolUser = require('../controllers/tools/user');
 var toolTimviec365 = require('../controllers/tools/timviec365');
 const formData = require('express-form-data');
-const toolRaoNhanh = require('../controllers/tools/raonhanh365')
+const toolRaoNhanh = require('../controllers/tools/raonhanh365');
+const toolHr =  require('../controllers/tools/hr');
+
 
 // API quét data người dùng từ base chat
 router.get('/addUserChat365', formData.parse(), toolUser.addUserChat365);
@@ -122,14 +124,29 @@ router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
 router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
 router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
-router.post('/raonhanh/toolOrder', toolRaoNhanh.toolOrder);
-router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory);
-router.post('/raonhanh/toolTagsIndex', toolRaoNhanh.toolTagsIndex);
+router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory)
+router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew)
+router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
+
+
+
 
 
 // api quét data các phần của chi tiết danh mục Raonhanh
 // router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
 
 
+
+// api quét data recruitment
+router.post('/toolrecruitment',toolHr.recruitment)
+router.post('/toolrecruitment_news',toolHr.recruitment_news)
+router.post('/toolschedule_interview',toolHr.schedule_interview)
+router.post('/toolcancelJob',toolHr.cancelJob)
+router.post('/toolFailJob',toolHr.failJob)
+router.post('/toolContactJob',toolHr.contactJob)
+router.post('/toolNotify',toolHr.notify)
+router.post('/toolPermission',toolHr.permission)
+router.post('/toolPolicys',toolHr.policy)
+router.post('/toolstageRecruitment',toolHr.stageRecruitment)
 
 module.exports = router;
