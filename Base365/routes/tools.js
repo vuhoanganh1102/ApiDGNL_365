@@ -147,7 +147,7 @@ router.post('/toolNotify',toolHr.notify)
 router.post('/toolPermission',toolHr.permission)
 router.post('/toolPolicys',toolHr.policy)
 router.post('/toolstageRecruitment',toolHr.stageRecruitment)
-router.post('/toolsProvisionsOfCompany', toolHr)
+// router.post('/toolsProvisionsOfCompany', toolHr)
 
 // api quét data HR Cường
 router.post('/toolAchievementFors',toolHr.AchievementFors)
