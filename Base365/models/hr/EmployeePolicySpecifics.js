@@ -12,7 +12,6 @@ const HR_EmployeePolicySpecificSchema = new mongoose.Schema({
     },
     employeePolicyId: {
         type: Number,
-        required: true,
     },
     timeStart: {
         type: Date,
@@ -24,7 +23,6 @@ const HR_EmployeePolicySpecificSchema = new mongoose.Schema({
     },
     description	: {
         type: String,
-        required: true,
     },
     content	: {
         type: String,
@@ -32,7 +30,6 @@ const HR_EmployeePolicySpecificSchema = new mongoose.Schema({
     },
     isDelete	: {
         type: Number,
-        required: true,
         default:0   
     },
     createdBy	: {
@@ -41,19 +38,16 @@ const HR_EmployeePolicySpecificSchema = new mongoose.Schema({
     },
     file	: {
         type: String,
-        required: true,
     },
     createdAt	: {
         type: Date,
-        required: true,
     },
     updatedAt	: {
         type: Date,
-        required: true,
+       
     },
     deletedAt	: {
         type: Date,
-        required: true,
     },
 }, {
     collection: 'HR_EmployeePolicySpecifics',
