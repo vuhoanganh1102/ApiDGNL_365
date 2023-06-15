@@ -1,4 +1,5 @@
 const functions = require('../../services/functions');
+const hrService = require('../../services/hr/hrService');
 const Recruitment = require('../../models/hr/Recruitment');
 const RecruitmentNews = require('../../models/hr/RecruitmentNews');
 const StageRecruitment = require('../../models/hr/StageRecruitment');
@@ -38,17 +39,11 @@ exports.createRecruitment = async(req, res, next) => {
         if(!nameProcess || !applyFor || !nameStage || !posAssum || !target) {
             return functions.setError(res, "Missing input value!", 404);
         }
-
-        let encodedDes = Buffer.from(des, 'base64');
-        console.log(encodedDes); // V2VsY29tZSB0byBmcmVlQ29kZUNhbXAh
-        const maxIdRecruit = await Recruitment.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-        let newIdRecruit;
-        if (maxIdRecruit) {
-            newIdRecruit = Number(maxIdRecruit._id) + 1;
-        } else newIdRecruit = 1;
-
+        let slug = hrService.titleToSlug(nameProcess);
+        console.log(slug);
         //tao quy trinh
         let recruitment = new Recruitment({
+            // id: 11,
             name: nameProcess,
             createdBy: "Cong ty",
             createdAt: Date.now(),
@@ -56,21 +51,82 @@ exports.createRecruitment = async(req, res, next) => {
             comId: comId,
             isCom: 1
         });
-        await Recruitment.create(recruitment);
+        // recruitment = await recruitment.save();
+        // console.log(recruitment);
 
         //tao cac giai doan cua quy trinh do
         let stageRecruit = new StageRecruitment({
-            recruitmentId: newIdRecruit,
+            id: 1,
+            recruitmentId: 1,
             name: nameStage,
             positionAssumed: posAssum,
             target: target,
             completeTime: time,
             description: encodedDes
         });
-        await StageRecruitment.create(stageRecruit);
+        // await StageRecruitment.create(stageRecruit);
         return functions.success(res, 'Create recruitment success!');
     } catch (e) {
         console.log("Err from server!", e);
         return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.updateRecruitment = async(req, res, next) => {
+    try{
+        let {recruitId, nameProcess, applyFor} = req.body;
+        if(!recruitId || !nameProcess || !applyFor) {
+            return functions.setError(res, "Missing input vlaue!", 404);
+        }
+        const recruit = await Recruitment.findOneAndUpdate({id: recruitId}, {
+            name: nameProcess,
+            applyFor: applyFor
+        })
+        if(!recruit) {
+            return functions.setError(res, "Recruitment not found!", 505);
+        }
+        return functions.success(res, "update recruitment success!");
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.updateStatusDeleteRecruitment = async(req, res, next) => {
+    try {
+        let recruitId = Number(req.query.recruitId);
+        let recruit = await Recruitment.findOne({id: recruitId}, {isDelete: 1});
+        if(!recruit) {
+            return functions.setError(res, "Recruitment not found!", 505);
+        }
+        let isDelete = 0;
+        if(recruit.isDelete == 0) isDelete=1;
+
+        //
+        await Recruitment.findOneAndUpdate({id: recruitId}, {
+            deletedAt: Date.now(),
+            isDelete: isDelete
+        })
+        return functions.success(res, "Delete temporary recruitment success!");
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
+}
+
+exports.deleteRecruitment = async(req, res, next) => {
+    try {
+        let recruitId = Number(req.query.recruitId);
+        if(!recruitId){
+            return functions.success(res, "Missing input value id", 404);
+        }
+        let recruitment = await functions.getDataDeleteOne(Recruitment ,{id: recruitId});
+        if (recruitment.deletedCount===1) {
+            return functions.success(res, `Delete recruitment with _id=${recruitId} success`);
+        }
+        return functions.success(res, "Recruitment not found");
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
     }
 }

@@ -22,7 +22,7 @@ const RecruitmentStageSchema = new Schema({
     //  mo ta cong viec
     description: { type: String, default: null },
     //  trạng thái xóa
-    isDelete: { type: Number, required: true }
+    isDelete: { type: Number, default:0 }
 }, {
     collection: 'HR_StageRecruitments',
     versionKey: false,
