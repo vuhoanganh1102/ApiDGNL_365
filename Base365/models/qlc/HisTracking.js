@@ -75,10 +75,10 @@ const HisOfTracking = new mongoose.Schema({
         type : Number
     },
     Err:{//trạng thái thất bại
-        type : Boolean,
+        type : String,
     },
     Success:{//trạng thái Thành công
-        type : Boolean,
+        type : String,
     },
     
 

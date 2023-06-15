@@ -26,7 +26,7 @@ const Users = require("../../models/Users")
                 numberUser = await functions.findCount(Users,{ "inForPerson.companyID":companyID , "inForPerson.depID": depID, type: 2})
                 console.log(numberUser)
                 
-                data = await Deparment.find(condition).select('deparmentName managerId deputyId ')
+                data = await Deparment.find(condition).select('companyID deparmentName managerId deparmentCreated deparmentOrder ')
                 if (!data) {
                     return functions.setError(res, 'Không có dữ liệu', 404);
                 };
@@ -80,7 +80,7 @@ exports.countUserInDepartment = async (req, res) => {
 //API tạo mới một phòng ban
 exports.createDeparment = async (req, res) => {
 
-    const { companyID, deparmentName ,managerId,deputyId } = req.body;
+    const { companyID, deparmentName ,managerId,deputyId ,deparmentOrder,deparmentCreated} = req.body;
     console.log(companyID)
     if ((companyID&&deparmentName)==undefined) {
         //Kiểm tra Id công ty khác null
@@ -103,6 +103,8 @@ exports.createDeparment = async (req, res) => {
             deparmentName: deparmentName,
             managerId: managerId || null,
             deputyId: deputyId || null,
+            deparmentCreated : new Date(),
+            deparmentOrder : deparmentOrder || 0 
         });
 
         await deparment.save()

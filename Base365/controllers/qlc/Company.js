@@ -4,7 +4,7 @@ const md5 = require('md5');
 
 //Đăng kí tài khoản công ty 
 exports.register = async (req, res) => {
-    const { userName, email, phoneTK, password, } = req.body;
+    const { userName, email, phoneTK, password,createdAt,com_vip } = req.body;
 
     if ((userName && password && email && phoneTK) !== undefined) {
 
@@ -25,6 +25,8 @@ exports.register = async (req, res) => {
                 otp: req.body.otp|| null,
                 fromWeb: "quanlichung.timviec365",
                 role: 1,
+                createdAt : new Date(),
+                "inForCompany.com_vip" :com_vip, 
                 idQLC: (Number(MaxId) + 1),
                 avatarCompany: null
             })
@@ -62,7 +64,7 @@ exports.login = async (req, res, next) => {
                     const token = await functions.createToken(findUser, "1d")
                     const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
                     let data = {
-                        access_token: token,
+                        access_token: "bear" + " " + token,
                         refresh_token: refreshToken,
                         com_info: {
                             com_id: findUser._id,
@@ -73,6 +75,7 @@ exports.login = async (req, res, next) => {
                             com_address: findUser.address,
                             com_authentic: findUser.authentic,
                             com_avatar: findUser.avatarCompany,
+                            idQLC: findUser.idQLC
 
                         }
                     }
@@ -156,9 +159,19 @@ exports.verify = async (req, res, next) => {
 // hàm đổi mật khẩu 
 exports.updatePassword = async (req, res, next) => {
     try {
-        let idQLC = req.user.body.idQLC;
+        let idQLC = req.user.body.idQLC
         let password = req.body.password;
-        if (password) {
+        let re_password = req.body.re_password;
+        if(!password || !re_password){
+            return functions.setError(res, 'Missing data', 400)
+        }
+        if(password.length < 6){
+            return functions.setError(res, 'Password quá ngắn', 400)
+        }
+        if(password !== re_password)
+        {
+            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+        }
             let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 1 })
             if (!checkPass) {
                 await Users.updateOne({ idQLC: idQLC }, {
@@ -169,78 +182,75 @@ exports.updatePassword = async (req, res, next) => {
                 return functions.success(res, 'cập nhập thành công')
             }
             return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
-        }
-        return functions.setError(res, 'vui lòng nhập mật khẩu', 404)
-    } catch (error) {
+        } catch (error) {
         console.log(error)
         return functions.setError(res, error)
     }
 }
-
-// hàm cập nhập thông tin công ty
-exports.updateInfoCompany = async (req, res, next) => {
-    try {
-        let email = req.user.data.email
-        let request = req.body,
-            phone = request.phone,
-            companyName = request.userName,
-            address = request.address,
-            avatarCompany = request.avatarCompany
-            depID = request.depID
-            groupID = request.groupID
-        if (phone || companyName || email || avatarCompany || address) {
-            let checkPhone = await functions.checkPhoneNumber(phone)
-            if (checkPhone) {
-                await Users.updateOne({ email: email, type: 1 }, {
-                    $set: {
-                        'userName': companyName,
-                        'phone': phone,
-                        'email': email,
-                        'address': address,
-                        'avatarCompany': avatarCompany || null,
-                        'department': depID || null,
-                        'group': groupID || null,
-                    }
-                });
-                return functions.success(res, 'update thành công', 404)
-            }
-            return functions.setError(res, 'sai định dạng số điện thoại', 404)
-        }
-        return functions.setError(res, 'không có dữ liệu cần cập nhật', 404)
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
+// // hàm cập nhập thông tin công ty
+// exports.updateInfoCompany = async (req, res, next) => {
+//     try {
+//         let email = req.user.data.email
+//         let request = req.body,
+//             phone = request.phone,
+//             companyName = request.userName,
+//             address = request.address,
+//             avatarCompany = request.avatarCompany
+//             depID = request.depID
+//             groupID = request.groupID
+//         if (phone || companyName || email || avatarCompany || address) {
+//             let checkPhone = await functions.checkPhoneNumber(phone)
+//             if (checkPhone) {
+//                 await Users.updateOne({ email: email, type: 1 }, {
+//                     $set: {
+//                         'userName': companyName,
+//                         'phone': phone,
+//                         'email': email,
+//                         'address': address,
+//                         'avatarCompany': avatarCompany || null,
+//                         'department': depID || null,
+//                         'group': groupID || null,
+//                     }
+//                 });
+//                 return functions.success(res, 'update thành công', 404)
+//             }
+//             return functions.setError(res, 'sai định dạng số điện thoại', 404)
+//         }
+//         return functions.setError(res, 'không có dữ liệu cần cập nhật', 404)
+//     } catch (error) {
+//         console.log(error)
+//         return functions.setError(res, error)
+//     }
+// }
 
 // hàm cập nhập avatar
-exports.updateImg = async (req, res, next) => {
-    try {
-        let email = req.user.data.email,
-            avatarCompany = req.file;
-        if (avatarCompany) {
-            let checkImg = await functions.checkImage(avatarCompany.path)
-            if (checkImg) {
-                await Users.updateOne({ email: email, type: 1 }, {
-                    $set: {
-                        avatarCompany: avatarCompany.filename,
-                    }
-                });
-                return functions.success(res, 'thay đổi ảnh thành công')
-            } else {
-                await functions.deleteImg(avatarCompany)
-                return functions.setError(res, 'sai định dạng ảnh hoặc ảnh lớn hơn 2MB', 404)
-            }
-        } else {
-            await functions.deleteImg(avatarCompany)
-            return functions.setError(res, 'chưa có ảnh', 404)
-        }
-    } catch (error) {
-        console.log(error)
-        await functions.deleteImg(req.file)
-        return functions.setError(res, error)
-    }
-}
+// exports.updateImg = async (req, res, next) => {
+//     try {
+//         let email = req.user.data.email,
+//             avatarCompany = req.file;
+//         if (avatarCompany) {
+//             let checkImg = await functions.checkImage(avatarCompany.path)
+//             if (checkImg) {
+//                 await Users.updateOne({ email: email, type: 1 }, {
+//                     $set: {
+//                         avatarCompany: avatarCompany.filename,
+//                     }
+//                 });
+//                 return functions.success(res, 'thay đổi ảnh thành công')
+//             } else {
+//                 await functions.deleteImg(avatarCompany)
+//                 return functions.setError(res, 'sai định dạng ảnh hoặc ảnh lớn hơn 2MB', 404)
+//             }
+//         } else {
+//             await functions.deleteImg(avatarCompany)
+//             return functions.setError(res, 'chưa có ảnh', 404)
+//         }
+//     } catch (error) {
+//         console.log(error)
+//         await functions.deleteImg(req.file)
+//         return functions.setError(res, error)
+//     }
+// }
 
 // hàm bước 1 của quên mật khẩu
 exports.forgotPasswordCheckMail = async (req, res, next) => {
@@ -325,3 +335,40 @@ exports.updatePassword = async (req, res, next) => {
     }
 }
 
+exports.updateInfoCompany = async (req, res, next) => {
+    try {
+        let idQLC = req.user.data.idQLC;
+        let { userName } = req.body;
+        let email = req.body.email || null;
+        let phone = req.body.phone || null;
+        let address = req.body.address || null;
+        let File = req.files || null;
+        let avatarCompany = null;
+        let updatedAt = new Date();
+        if(email){
+            if (await functions.checkEmail(email) === false) {
+                return functions.setError(res, 'invalid email',400)
+            } else {
+                let check_email = await Users.findById(idQLC);
+                if (check_email.email !== email) {
+                    let check_email_lan2 = await Users.find({ email });
+                    if (check_email_lan2.length !== 0) {
+                        return functions.setError(res, "email is exits",400)
+                    }
+                }
+            }
+        }
+        if (File.avatarCompany) {
+            let upload = functions.uploadFileQLC('avt_com', idQLC, File.avatarCompany, ['.jpeg', '.jpg', '.png']);
+            if (!upload) {
+                return functions.setError(res, 'Định dạng ảnh không hợp lệ',400)
+            }
+            avatarCompany = functions.createLinkFileQLC('avt', idQLC, File.avatarCompany.name)
+            await Users.findByIdAndUpdate(idQLC, { email, address,phone, userName, avatarCompany, updatedAt });
+        }
+        await Users.findByIdAndUpdate(idQLC, { email, address, userName, updatedAt });
+        return functions.success(res, 'update data user success')
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}

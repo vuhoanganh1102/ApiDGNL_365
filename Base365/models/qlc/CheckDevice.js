@@ -6,7 +6,7 @@ const CheckDevice = new mongoose.Schema({
         required : true 
     },
     //Id người dùng
-    userId: {
+    idQLC: {
         type : Number
     },
     //Id của công ty
@@ -18,17 +18,20 @@ const CheckDevice = new mongoose.Schema({
         type : Number
     },
     // // ID thiết bị hiện tại 
-    // curDeviceId :{
-    //     type : Number
-    // },
+    curDevice :{
+        type : String
+    },
     //tên thiết bị hiện tại
     curDeviceName:{
         type : String
     },
-    // //ID thiết bị mới 
-    // newDeviceId :{
-    //     type : Number
-    // },
+    //ID thiết bị mới 
+    newDevice :{
+        type : String
+    },
+    typeDevice :{
+        type : Number
+    },
     //tên thiết bị mới 
     newDeviceName:{
         type : String

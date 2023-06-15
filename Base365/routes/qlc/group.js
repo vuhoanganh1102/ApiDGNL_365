@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const GroupController = require('../../controllers/qlc/group')
 const formData =require('express-form-data')
+const functions= require ("../../services/functions")
+
 //API lấy tất cả dữ liệu nhóm
 // router.get("/", GroupController.getListGroup);
 

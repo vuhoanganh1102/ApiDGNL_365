@@ -132,7 +132,7 @@ exports.login = async (req,res)=>{
                 const token = await functions.createToken(findUser, "1d");
                 const refreshToken = await functions.createToken({userId : findUser._id}, "1y")
                 let data = {
-                    access_token : token,
+                    access_token : "bear" + " " + token,
                     refresh_token : refreshToken,
                     user_info: {
                         user_id : findUser._id,
@@ -170,12 +170,22 @@ exports.login = async (req,res)=>{
     }
 }
     // hàm đổi mật khẩu 
-    exports.updatePassword = async(req, res, next) => {
+    exports.updatePassword = async (req, res, next) => {
         try {
-            let idQLC = req.user.body.idQLC;
+            let idQLC = req.user.body.idQLC
             let password = req.body.password;
-            if (password) {
-                let checkPass = await functions.getDatafindOne(Users, { idQLC,password : md5(password),type : 2})
+            let re_password = req.body.re_password;
+            if(!password || !re_password){
+                return functions.setError(res, 'Missing data', 400)
+            }
+            if(password.length < 6){
+                return functions.setError(res, 'Password quá ngắn', 400)
+            }
+            if(password !== re_password)
+            {
+                return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+            }
+                let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 2 })
                 if (!checkPass) {
                     await Users.updateOne({ idQLC: idQLC }, {
                         $set: {
@@ -185,14 +195,11 @@ exports.login = async (req,res)=>{
                     return functions.success(res, 'cập nhập thành công')
                 }
                 return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
-            }
-            return functions.setError(res, 'vui lòng nhập mật khẩu', 404)
-        } catch (error) {
+            } catch (error) {
             console.log(error)
             return functions.setError(res, error)
         }
     }
-
 // hàm cập nhập thông tin nhan vien
 exports.updateInfoEmployee = async(req, res, next) => {
     try {

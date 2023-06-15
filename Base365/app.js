@@ -46,6 +46,10 @@ var managerUser = require('./routes/qlc/managerUser')
 var DelAppData = require('./routes/qlc/DelAppData')
 var TrackingQR = require('./routes/qlc/TrackingQR')
 var TrackingWifi = require('./routes/qlc/TrackingWifi')
+var CheckVip = require('./routes/qlc/CheckVip')
+var Feedback = require('./routes/qlc/Feedback')
+var ReportError = require('./routes/qlc/ReportError')
+var tools = require('./routes/tools')
 
 
 
@@ -134,6 +138,10 @@ app.use('/api/qlc/TrackingQR', TrackingQR)
 app.use('/api/qlc/TrackingWifi', TrackingWifi)
 app.use('/api/qlc/employee', employeeRoutes);
 app.use('/api/qlc/individual', individualRoutes);
+app.use('/api/qlc/SetIp', SetIpRouter);
+app.use('/api/qlc/CheckVip', CheckVip);
+app.use('/api/qlc/Feedback', Feedback);
+app.use('/api/qlc/ReportError', ReportError);
 
 
 //API quẩn lý ca làm việc
@@ -143,6 +151,7 @@ app.use("/api/qlc/HisOfTracking",HisOfTrackingRouter)
 app.use("/api/qlc/CalendarWorkEmployee",CalendarWorkEmployee)
 app.use("/api/qlc/homePage",homePage)
 
+app.use("/api/tools", tools)
 
 
 //API văn thu

@@ -18,18 +18,22 @@ const CalendarWorkEmployee = new Schema({
     calendarID: {//ID lịch làm việc
         type: Number
     },
+    calendarName: {//ID lịch làm việc
+        type: String,
+    },
+
     timeApply: {//thời điểm áp dụng
         type: Date
     },
     Detail: { //chi tiết
         type: String
     },
-    // Status: { //chua biet
-    //     type: String
-    // },
-    // isPersonal: { //chua biet
-    //     type: String
-    // },
+    Status: { //chua biet
+        type: String
+    },
+    isPersonal: { //chua biet
+        type: String
+    },
 })
 
 module.exports = mongoose.model('CalendarWorkEmployee', CalendarWorkEmployee);

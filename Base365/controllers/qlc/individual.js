@@ -142,9 +142,19 @@ exports.login = async (req, res) => {
 // hàm đổi mật khẩu 
 exports.updatePassword = async (req, res, next) => {
     try {
-        let idQLC = req.user.body.idQLC;
+        let idQLC = req.user.body.idQLC
         let password = req.body.password;
-        if (password) {
+        let re_password = req.body.re_password;
+        if(!password || !re_password){
+            return functions.setError(res, 'Missing data', 400)
+        }
+        if(password.length < 6){
+            return functions.setError(res, 'Password quá ngắn', 400)
+        }
+        if(password !== re_password)
+        {
+            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+        }
             let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 0 })
             if (!checkPass) {
                 await Users.updateOne({ idQLC: idQLC }, {
@@ -155,9 +165,7 @@ exports.updatePassword = async (req, res, next) => {
                 return functions.success(res, 'cập nhập thành công')
             }
             return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
-        }
-        return functions.setError(res, 'vui lòng nhập mật khẩu', 404)
-    } catch (error) {
+        } catch (error) {
         console.log(error)
         return functions.setError(res, error)
     }
