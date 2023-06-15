@@ -2,9 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const StageProcessTrainingSchema = new Schema({
     // id tiến trình training
-    _id: {
+    id: {
         type: Number,
-        require: true
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     // tên tiến trình
     name: {

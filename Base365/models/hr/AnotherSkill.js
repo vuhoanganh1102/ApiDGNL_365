@@ -3,9 +3,11 @@ const Schema = mongoose.Schema;
 
 const AnotherSkillSchema = new Schema({
     // id tu dong tang
-    _id: {
+    id: {
         type: Number,
-        require: true
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     // id ung vien
     canId: {

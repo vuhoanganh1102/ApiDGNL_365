@@ -3,7 +3,12 @@ const Schema = mongoose.Schema;
 
 const CancelJob = new Schema({
     // ID Job Fail
-    _id: { type: Number, required: true },
+    id: {
+        type: Number,
+        required: true,
+        unique: true,
+        autoIncrement: true
+    },
     // ID ứng vien
     canId: { type: String, required: true },
     // kiểu

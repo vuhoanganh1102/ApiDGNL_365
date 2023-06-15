@@ -163,6 +163,9 @@ router.post('/toolDevices',toolHr.Devices)
 router.post('/toolInfoLeaders',toolHr.InfoLeaders)
 router.post('/toolInfringesFors',toolHr.InfringesFors)
 router.post('/toolavatar',toolHr.avatar)
+router.post('/toolCandidates',toolHr.Candidates)
+router.post('/toolEmployeePolicys',toolHr.EmployeePolicys)
+router.post('/toolEmployeePolicySpecifics',toolHr.EmployeePolicySpecifics)
 
 
 // api

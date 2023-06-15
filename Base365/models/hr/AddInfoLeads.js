@@ -3,9 +3,11 @@ const Schema = mongoose.Schema;
 
 const AddInfoLeadSchema = new Schema({
     //Id 
-    _id: {
+    id: {
         type: Number,
-        require: true
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     // Id nhân viên
     epId: {

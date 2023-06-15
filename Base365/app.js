@@ -25,6 +25,10 @@ var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
 var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
+// Hr
+var provinceRoute = require('./routes/hr/provinceRoute');
+var welfare = require('./routes/hr/welfare');
+
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -42,7 +46,6 @@ var childCompanyRouter = require('./routes/qlc/childCompany')
 var managerUser = require('./routes/qlc/managerUser')
 var employeeRoutes = require('./routes/qlc/employee.routes');
 var individualRoutes = require('./routes/qlc/individual.routes');
-
 var manageUserRouter = require('./routes/qlc/manageUser')
 
 // crm_import
@@ -104,6 +107,14 @@ app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
 app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 app.use('/api/raonhanh/admin', adminRaonhanh365);
 
+// api hr
+app.use('/api/hr/provinceRoute', provinceRoute);
+app.use('/api/hr/welfare', welfare);
+
+
+
+
+
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
@@ -126,7 +137,7 @@ app.use("/api/tool", toolVT)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
-
+// 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));
