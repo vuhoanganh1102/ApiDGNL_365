@@ -66,5 +66,9 @@ const CommentSchema = mongoose.Schema({
         require:true,
         default:0   
     },  
+}, {
+    collection: 'RN365_Comments',
+    versionKey: false,
+    timestamp: true
 })
 module.exports = mongoose.model("RN365_Comments", CommentSchema);
