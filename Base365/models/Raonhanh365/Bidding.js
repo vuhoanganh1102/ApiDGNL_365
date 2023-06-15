@@ -95,9 +95,9 @@ const BiddingSchema = new mongoose.Schema({
         default: null
     }
 }, {
-    collection: 'Bidding',
+    collection: 'RN365_Bidding',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("Bidding", BiddingSchema);
+module.exports = mongoose.model("RN365_Bidding", BiddingSchema);
