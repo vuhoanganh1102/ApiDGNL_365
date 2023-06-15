@@ -142,8 +142,8 @@ exports.AddInfoLeads = async (req, res, next) => {
         for (let i = 0; i < data.length; i++) {
             let id = Number(data[i].id);
             let epId = data[i].ep_id;
-            let nameDes = data[i].name_des;
-            let description = data[i].description;
+            let nameDes = data[i].name_des; 
+            let description = Buffer.from(data[i].description, 'base64');
             let createdAt = data[i].created_at;
             let updatedAt = data[i].updated_at;
             let AddInfoLeads = new HR_AddInfoLeads({
@@ -190,7 +190,7 @@ exports.Blogs = async (req, res, next) => {
         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_blog');
         for (let i = 0; i < data.length; i++) {
             let id = Number(data[i].id);
-            let content = data[i].content;
+            let content = Buffer.from(data[i].content, 'base64');
             let comment = data[i].comment;
             let Blogs = new HR_Blogs({ id, content, comment });
             await Blogs.save();
@@ -235,14 +235,14 @@ exports.Categorys = async (req, res, next) => {
         return functions.setError(res, error.message);
     }
 };
-exports.CiSessions = async (req, res, next) => {
+exports.CiSessions = async (req, res, next) => {    
     try {
         let data1 = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_ci_sessions');
         for (let i = 0; i < data1.length; i++) {
             let id = data1[i].id;
             let ipAddress = data1[i].ip_address;
             let timestamp = data1[i].timestamp;
-            let data = data1[i].data;
+            let data = Buffer.from(data1[i].data, 'base64');
 
             let CiSessions = new HR_CiSessions({
                 id, ipAddress,
@@ -368,10 +368,11 @@ exports.EmployeePolicys = async (req, res, next) => {
             let name = data[i].name;
             let timeStart = data[i].time_start;
             let supervisorName = data[i].supervisorName;
-            let description = data[i].description;
+            let description = Buffer.from(data[i].description, 'base64');
             let isDelete = data[i].is_delete;
             let comId = data[i].comId;
             let file = data[i].file;
+            if (await functions.checkDate(timeStart)  === false) continue
             let createdAt = data[i].created_at;
             let deletedAt = data[i].deleted_at; 
             let EmployeePolicys = new HR_EmployeePolicys({ id,name,timeStart,supervisorName,description,isDelete,comId,file,createdAt,deletedAt});
@@ -402,6 +403,7 @@ exports.EmployeePolicySpecifics = async (req, res, next) => {
             let createdAt = data[i].created_at;
             let updated_at = data[i].updated_at;  
             let deletedAt = data[i].deleted_at; 
+            if (await functions.checkDate(timeStart)  === false) continue
 
             let EmployeePolicySpecifics = new HR_EmployeePolicySpecifics({ id,name,timeStart,employePolicyId,supervisorName,description,content,applyFor,isDelete,createdBy,file,createdAt,updated_at,deletedAt });
             await EmployeePolicySpecifics.save();
@@ -486,7 +488,7 @@ exports.InfoLeaders = async (req, res, next) => {
         for (let i = 0; i < data.length; i++) {
             let id = Number(data[i].id);
             let epId = data[i].ep_id;
-            let description = data[i].description;
+            let description = Buffer.from(data[i].description, 'base64');
             let desPosition = data[i].des_position;
             let createdAt = data[i].created_at;
             let updatedAt = data[i].updated_at;

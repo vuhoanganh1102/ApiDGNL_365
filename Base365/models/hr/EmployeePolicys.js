@@ -16,7 +16,7 @@ const HR_EmployeePolicySchema = new mongoose.Schema({
     },
     supervisorName	: {
         type: String,
-        required: true,
+
     },
     description	: {
         type: String,
@@ -28,19 +28,16 @@ const HR_EmployeePolicySchema = new mongoose.Schema({
     },
     comId	: {
         type: Number,
-        required: true,
+        
     },
     file	: {
         type: String,
-        required: true,
     },
     createdAt	: {
         type: Date,
-        required: true,
     },
     deletedAt	: {
         type: Date,
-        required: true,
     },
 }, {
     collection: 'HR_EmployeePolicys',
