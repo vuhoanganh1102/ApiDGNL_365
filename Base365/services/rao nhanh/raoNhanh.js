@@ -98,15 +98,17 @@ exports.uploadFileRaoNhanh = async (folder, id, file,allowedExtensions) => {
 
     let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
     let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+
     let fileCheck =  path.extname(filePath);
     if(allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false)
     {
         return false
     }
-    const { size } = await promisify(fs.stat)(filePath);
-    if (size > MAX_IMG_SIZE) {
-        return false;
-    }
+    // const { size } = await promisify(fs.stat)(filePath);
+    // if (size > MAX_IMG_SIZE) {
+    //     return false;
+    // }
+    
     if (!fs.existsSync(path1)) {   
         fs.mkdirSync(path1, { recursive: true });
     }
@@ -114,7 +116,6 @@ exports.uploadFileRaoNhanh = async (folder, id, file,allowedExtensions) => {
         if (err) {
             console.log(err)
         }
-        console.log("check", data);
         fs.writeFile(filePath, data, (err) => {
             if (err) {
             console.log(err)
@@ -168,6 +169,7 @@ exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
 // ham check admin rao nhanh 365
 exports.isAdminRN365 = async(req, res, next)=>{
     let user = req.user.data;
+    console.log(user)
     let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, isAdmin: 1, active: 1 });
     if(admin) return next();
     return res.status(403).json({ message: "is not admin RN365" });

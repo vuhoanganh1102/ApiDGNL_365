@@ -25,6 +25,10 @@ var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
 var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
+// Hr
+var provinceRoute = require('./routes/hr/provinceRoute');
+var welfare = require('./routes/hr/welfare');
+
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -124,6 +128,14 @@ app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
 app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 app.use('/api/raonhanh/admin', adminRaonhanh365);
 
+// api hr
+app.use('/api/hr/provinceRoute', provinceRoute);
+app.use('/api/hr/welfare', welfare);
+
+
+
+
+
 // API quản lí chung
 app.use('/api/qlc/Company',companyRouterQLC);
 app.use('/api/qlc/Employee',EmployeeRouterQLC);
@@ -159,7 +171,7 @@ app.use("/api/tool", toolVT)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
-
+// 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));
@@ -182,9 +194,4 @@ const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
-
-// app.listen(3004, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3004")
-// })
 module.exports = app;

@@ -168,7 +168,7 @@ router.get('/toolDetailSurvery', crm.toolDetailSurvery);
 router.get('/toolDetailReturnProduct', crm.toolDetailReturnProduct);
 router.get('/toolDetailListOrder', crm.toolDetailListOrder);
 router.get('/toolDetailFormContract', crm.toolDetailFormContract);
-router.get('/toolDetailEmailSms', crm.toolDetailEmailSms);
+router.get('/toolDetailEmailSms', crm.toolDetailFormContract);
 
 
 module.exports = router;
