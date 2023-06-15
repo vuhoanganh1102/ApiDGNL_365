@@ -2,8 +2,13 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const RecruitmentStageSchema = new Schema({
-    // id
-    _id: { type: Number, required: true },
+    // id stage recruitment
+    id: {
+        type: Number,
+        required: true,
+        unique: true,
+        autoIncrement: true
+    },
     // id tin tuyê dụng
     recruitmentId: { type: Number, required: true },
     // tên giai doan

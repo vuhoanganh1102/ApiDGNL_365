@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const HR_DescPositionSchema = new mongoose.Schema({
-    _id: {
+    id: {
         type: Number,
         required: true,
+        unique: true,
+        autoIncrement: true
     },
     positionId: {
         type: Number,

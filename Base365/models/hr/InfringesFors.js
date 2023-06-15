@@ -3,9 +3,11 @@ const Schema = mongoose.Schema;
 
 const InfringesForSchema = new Schema({
     //Id vi phạm
-    _id: {
+    id: {
         type: Number,
-        require: true
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     // Tên vi phạm
     infringeName: {
