@@ -138,9 +138,6 @@ router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
 
 
 // api quét data recruitment
-router.post('/toolrecruitment',toolHr.recruitment)
-router.post('/toolrecruitment_news',toolHr.recruitment_news)
-router.post('/toolschedule_interview',toolHr.schedule_interview)
 router.post('/toolcancelJob',toolHr.cancelJob)
 router.post('/toolFailJob',toolHr.failJob)
 router.post('/toolContactJob',toolHr.contactJob)
