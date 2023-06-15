@@ -3,7 +3,9 @@ const Recruitment = require('../../models/hr/Recruitment');
 const RecruitmentNews = require('../../models/hr/RecruitmentNews');
 const StageRecruitment = require('../../models/hr/StageRecruitment');
 
-exports.getListStageRecruitment= async(req, res, next) => {
+
+// lay ra danh sach tat ca cac quy trinh tuyen dung cua cty
+exports.getListRecruitment= async(req, res, next) => {
     try {
         let {page, pageSize, name} = req.body;
         if(!page || !pageSize){
@@ -30,36 +32,43 @@ exports.getListStageRecruitment= async(req, res, next) => {
     }
 }
 
-exports.getAndCheckDataStageRecruit = async(req, res, next) => {
+exports.createRecruitment = async(req, res, next) => {
     try {
-        let image = req.files.image;
-        let imageWeb = req.files.imageWeb;
-        let {adminId,title,url,des,status,keyword, sapo, active, hot, detailDes , titleRelate, contentRelate, newStatus, date, dateLastEdit} = req.body;
-        let fields = [adminId, title, url, image, des,keyword, sapo, detailDes, titleRelate, contentRelate];
-        for(let i=0; i<fields.length; i++){
-            if(!fields[i])
-                return functions.setError(res, `Missing input value ${i+1}`, 404);
+        let {comId, nameProcess, applyFor ,nameStage, posAssum, target, time, des} = req.body;
+        if(!nameProcess || !applyFor || !nameStage || !posAssum || !target) {
+            return functions.setError(res, "Missing input value!", 404);
         }
-        // them cac truong muon them hoac sua
-        req.info = {
-            adminId: adminId,
-            title: title,
-            url: url,
-            image: image,
-            des: des,
-            status: status,
-            keyword: keyword,
-            sapo: sapo,
-            active: active,
-            hot: hot,
-            new: newStatus,
-            detailDes: detailDes,
-            titleRelate: titleRelate,
-            contentRelate: contentRelate,
-            date: date,
-            dateLastEdit: dateLastEdit
-        }
-        return next();
+
+        let encodedDes = Buffer.from(des, 'base64');
+        console.log(encodedDes); // V2VsY29tZSB0byBmcmVlQ29kZUNhbXAh
+        const maxIdRecruit = await Recruitment.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIdRecruit;
+        if (maxIdRecruit) {
+            newIdRecruit = Number(maxIdRecruit._id) + 1;
+        } else newIdRecruit = 1;
+
+        //tao quy trinh
+        let recruitment = new Recruitment({
+            name: nameProcess,
+            createdBy: "Cong ty",
+            createdAt: Date.now(),
+            applyFor: applyFor,
+            comId: comId,
+            isCom: 1
+        });
+        await Recruitment.create(recruitment);
+
+        //tao cac giai doan cua quy trinh do
+        let stageRecruit = new StageRecruitment({
+            recruitmentId: newIdRecruit,
+            name: nameStage,
+            positionAssumed: posAssum,
+            target: target,
+            completeTime: time,
+            description: encodedDes
+        });
+        await StageRecruitment.create(stageRecruit);
+        return functions.success(res, 'Create recruitment success!');
     } catch (e) {
         console.log("Err from server!", e);
         return functions.setError(res, "Err from server!", 500);

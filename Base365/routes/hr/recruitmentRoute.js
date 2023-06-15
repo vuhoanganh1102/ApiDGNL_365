@@ -5,6 +5,7 @@ var formData = require('express-form-data');
 const functions = require('../../services/functions');
 
 //api lay ra danh sach recruitmentController theo cac truong
-router.post('/getStageRecruit', formData.parse(), recruitmentController.getListStageRecruitment);
+router.post('/getRecruit', formData.parse(), recruitmentController.getListRecruitment);
+router.post('/recruit', formData.parse(), recruitmentController.createRecruitment);
 
 module.exports = router;
