@@ -384,7 +384,9 @@ exports.EmployeePolicys = async (req, res, next) => {
 }
 exports.EmployeePolicySpecifics = async (req, res, next) => {
     try {
+
         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_employe_policy_specific');
+
         for (let i = 0; i < data.length; i++) {
             let id = Number(data[i].id);
             let name = data[i].name;
@@ -400,6 +402,7 @@ exports.EmployeePolicySpecifics = async (req, res, next) => {
             let createdAt = data[i].created_at;
             let updated_at = data[i].updated_at;  
             let deletedAt = data[i].deleted_at; 
+
             let EmployeePolicySpecifics = new HR_EmployeePolicySpecifics({ id,name,timeStart,employePolicyId,supervisorName,description,content,applyFor,isDelete,createdBy,file,createdAt,updated_at,deletedAt });
             await EmployeePolicySpecifics.save();
         }
