@@ -24,7 +24,7 @@ var companyRaoNhanh365Router = require('./routes/raonhanh365/company');
 var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
 var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
-
+var CRMroute = require('./routes/crm/CRMroutes')
 
 
 
@@ -174,10 +174,13 @@ app.use('/api/qlc/individual', individualRoutes);
 
 // app.use('/api/qlc/childCompany', childCompanyRouter);
 
-
+//Api CRM
+app.use('/api',CRMroute)
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
+
+
 
 
 //API văn thu
