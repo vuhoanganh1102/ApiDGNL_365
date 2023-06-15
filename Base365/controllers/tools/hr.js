@@ -307,7 +307,6 @@ exports.cancelJob = async (req, res, next) => {
 }
 
 // failJob
-
 exports.failJob = async (req, res, next) => {
     try {
         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_failed_job?page=1');
@@ -681,6 +680,35 @@ exports.policy = async (req, res, next) => {
         return functions.setError(res, error.message);
     }
 };
+
+exports.provisionOfCompany = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let provisionId = data[i].provision_id;
+            let timeStart = data[i].time_start;
+            let supervisorName = data[i].supervisor_name;
+            let applyFor = data[i].apply_for;
+            let content = data[i].content;
+            let createdBy = data[i].created_by;
+            let isDelete = data[i].is_delete;
+            let createdAt = data[i].created_at;
+            let name = data[i].name;
+            let file = data[i].file;
+            let deletedAt = data[i].deleted_at;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_Policys({ _id, provisionId, timeStart, supervisorName, applyFor, content, createdBy, isDelete, createdAt, name, file, deletedAt });
+            await HR_Policys.create(data_recruitment);
+            // }
+        }
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
 exports.avatar = async (req, res, next) => {
     try {
         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_leader_avt');
