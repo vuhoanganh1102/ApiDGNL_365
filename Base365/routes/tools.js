@@ -137,9 +137,6 @@ router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
 
 
 // api quét data recruitment
-// router.post('/toolrecruitment',toolHr.recruitment)
-// router.post('/toolrecruitment_news',toolHr.recruitment_news)
-// router.post('/toolschedule_interview',toolHr.schedule_interview)
 router.post('/toolcancelJob',toolHr.cancelJob)
 router.post('/toolFailJob',toolHr.failJob)
 router.post('/toolContactJob',toolHr.contactJob)
@@ -147,7 +144,8 @@ router.post('/toolNotify',toolHr.notify)
 router.post('/toolPermission',toolHr.permission)
 router.post('/toolPolicys',toolHr.policy)
 router.post('/toolstageRecruitment',toolHr.stageRecruitment)
-// router.post('/toolsProvisionsOfCompany', toolHr)
+// router.post('/toolsS')
+// router.post('/toolsProvisionsOfCompany', toolHr.)
 
 // api quét data HR Cường
 router.post('/toolAchievementFors',toolHr.AchievementFors)

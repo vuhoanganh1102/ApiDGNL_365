@@ -10,7 +10,7 @@ const ProvisionsOfCompany = new Schema({
         type: String,
         required: true
     },
-    is_delete: {
+    isDelete: {
         type: Number,
         default: 0
     },
@@ -18,24 +18,24 @@ const ProvisionsOfCompany = new Schema({
         type: String,
         required: true
     },
-    time_start: {
+    timeStart: {
         type: Date,
         default: Date.now(),
     },
-    supervisor_name: {
+    supervisorName: {
         type: String,
     },
-    com_id: {
+    comId: {
         type: Number,
     },
     file: {
         type: String
     },
-    created_at: {
+    createdAt: {
         type: Date,
         default: Date.now(),
     },
-    deleted_at: {
+    deletedAt: {
         type: Date,
     }
 });

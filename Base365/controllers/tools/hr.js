@@ -76,6 +76,7 @@ exports.AchievementFors = async (req, res, next) => {
             });
             await AchievementFors.save();
         }
+        return functions.success(res, 'pull data success'); 
     }
     catch (error) {
         return functions.setError(res, error.message);
@@ -149,6 +150,7 @@ exports.AddInfoLeads = async (req, res, next) => {
             });
             await AddInfoLeads.save();
         }
+        return functions.success(res, 'pull data success'); 
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -351,7 +353,7 @@ exports.Devices = async (req, res, next) => {
             let Devices = new HR_Devices({ id, userId, infoBrower, tokenBrowser, lastLogin, deviceType, loginType, createdAt });
             await Devices.save();
         }
-        return functions.success(res, "Thành công");
+        return functions.success(res, 'pull data success');
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -381,7 +383,9 @@ exports.EmployeePolicys = async (req, res, next) => {
 }
 exports.EmployeePolicySpecifics = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_devices');
+
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_employe_policy_specific');
+
         for (let i = 0; i < data.length; i++) {
             let id = Number(data[i].id);
             let name = data[i].name;
@@ -397,7 +401,8 @@ exports.EmployeePolicySpecifics = async (req, res, next) => {
             let createdAt = data[i].created_at;
             let updated_at = data[i].updated_at;  
             let deletedAt = data[i].deleted_at; 
-            let DeviEEmployeePolicySpecificsmployeePolicySpecificsces = new HR_EmployeePolicySpecifics({ id, userId, infoBrower, tokenBrowser, lastLogin, deviceType, loginType, createdAt });
+
+            let EmployeePolicySpecifics = new HR_EmployeePolicySpecifics({ id,name,timeStart,employePolicyId,supervisorName,description,content,applyFor,isDelete,createdBy,file,createdAt,updated_at,deletedAt });
             await EmployeePolicySpecifics.save();
         }
         return functions.success(res, 'pull data success');
@@ -524,6 +529,7 @@ exports.InfringesFors = async (req, res, next) => {
             });
             await InfringesFors.save();
         }
+        return functions.success(res, 'pull data success'); 
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -615,6 +621,7 @@ exports.avatar = async (req, res, next) => {
                 await HR_InfoLeaders.findOneAndUpdate({ epId: data[i].ep_id }, { avatar: data[i].avatar })
             }
         }
+        return functions.success(res, 'pull data success'); 
     } catch (error) {
         return functions.setError(res, error)
     }
@@ -1155,6 +1162,33 @@ exports.toolRecruitmentNews = async (req, res, next) => {
             console.log(page);
         } while (result);
 
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+// provisionCompany
+exports.stageRecruitment = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let description = data[i].description;
+            let isDelete = data[i].is_delete;
+            let name = data[i].name;
+            let timeStart = data[i].time_start;
+            let supervisorName = data[i].supervisor_name;
+            let comId = data[i].com_id;
+            let file = data[i].file;
+            let createdAt = data[i].created_at;
+            let deletedAt = data[i].deleted_at;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_StageRecruitments({ id, recruitmentId, name, positionAssumed, target, complete_time, description, isDelete });
+            await HR_StageRecruitments.create(data_recruitment);
+            // }
+        }
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
