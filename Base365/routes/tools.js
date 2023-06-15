@@ -6,7 +6,7 @@ const formData = require('express-form-data');
 const toolRaoNhanh = require('../controllers/tools/raonhanh365');
 const toolHr =  require('../controllers/tools/hr');
 const toolVanThu = require('../controllers/tools/vanthu')
-
+const toolCRM = require('../controllers/tools/CRM')
 
 
 
@@ -156,5 +156,10 @@ router.post('/toolSettingDX',toolVanThu.toolSettingDX);
 router.post('/toolrecruitment',toolHr.recruitment)
 router.post('/toolrecruitment_news',toolHr.recruitment_news)
 router.post('/toolschedule_interview',toolHr.schedule_interview)
+
+//Api quét data CRM
+
+router.post('/toolContact',toolCRM.toolContact)
+router.post('/toolCC',toolCRM.toolContactCustomer)
 
 module.exports = router;

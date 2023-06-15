@@ -1006,9 +1006,9 @@
       <change afterPath="$PROJECT_DIR$/Base365/node_modules/wrappy/README.md" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Base365/node_modules/wrappy/package.json" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/Base365/node_modules/wrappy/wrappy.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/.env" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/qlc/HisTracking.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/qlc/HisTracking.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/controllers/qlc/group.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/qlc/group.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/controllers/qlc/manageUser.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/qlc/manageUser.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/controllers/raonhanh365/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/raonhanh365/admin.js" afterDir="false" />
@@ -1022,24 +1022,57 @@
       <change beforePath="$PROJECT_DIR$/Base365/controllers/timviec/trangVang.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/timviec/trangVang.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/controllers/tools/raonhanh365.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/tools/raonhanh365.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/controllers/tools/timviec365.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/tools/timviec365.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/tools/vanthu.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/tools/vanthu.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/CateDeXuat/cateDeXuat.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/CateDeXuat/cateDeXuat.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatCoSoVatChat.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatCoSoVatChat.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatCong.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatCong.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatDangKiSuDungXe.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatDangKiSuDungXe.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatHoaHong.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatHoaHong.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatKhieuNai.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatKhieuNai.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatPhongHop.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatPhongHop.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatTangCa.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatTangCa.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatThaiSan.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatThaiSan.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatThanhToan.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatThanhToan.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatThuongPhat.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/DeXuat/DeXuatThuongPhat.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/vanthu/Setting/Setting.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/vanthu/Setting/Setting.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/Raonhanh365/Admin/AdminUser.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Raonhanh365/Admin/AdminUser.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/Raonhanh365/Admin/Blog.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Raonhanh365/Admin/Blog.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/Raonhanh365/Bidding.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Raonhanh365/Bidding.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/Raonhanh365/CateDetail.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Raonhanh365/CateDetail.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/Raonhanh365/History.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Raonhanh365/History.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/Raonhanh365/Order.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Raonhanh365/Order.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/Raonhanh365/PriceList.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Raonhanh365/PriceList.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/Raonhanh365/UserOnSite/New.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Raonhanh365/UserOnSite/New.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/Timviec365/Admin/Modules.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Timviec365/Admin/Modules.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/Users.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Users.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/Vanthu/cate_de_xuat.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Vanthu/cate_de_xuat.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/Vanthu/de_xuat.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Vanthu/de_xuat.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/Vanthu/hide_cate_dx.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Vanthu/hide_cate_dx.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/Vanthu/ly_do.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Vanthu/ly_do.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/Vanthu/message.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Vanthu/message.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/Vanthu/nhac_nho.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Vanthu/nhac_nho.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/Vanthu/phong_ban.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Vanthu/phong_ban.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/Vanthu/setting_dx.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/Vanthu/setting_dx.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/qlc/Group.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/qlc/Group.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/qlc/group.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/qlc/group.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/raonhanh365/blog.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/raonhanh365/blog.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/raonhanh365/company.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/raonhanh365/company.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/raonhanh365/new.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/raonhanh365/new.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/timviec/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/timviec/admin.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/timviec/candidate.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/timviec/candidate.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/timviec/trangVang.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/timviec/trangVang.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/tools.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/tools.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/SettingRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/SettingRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/cateDeXuatRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/cateDeXuatRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatCoSoVatChatRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatCoSoVatChatRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatDangKiSuDungXeRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatDangKiSuDungXeRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatHoaHongRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatHoaHongRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatKhieuNaiRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatKhieuNaiRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatPhongHopRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatPhongHopRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatTangCaRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatTangCaRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatThaiSanRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatThaiSanRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatThanhToanRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/vanthu/deXuat/DeXuatThanhToanRoutes.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/services/functions.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/services/functions.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1094,6 +1127,7 @@
       <workItem from="1686365992504" duration="4000" />
       <workItem from="1686643650639" duration="2000" />
       <workItem from="1686650263504" duration="4000" />
+      <workItem from="1686748496675" duration="295000" />
     </task>
     <servers />
   </component>

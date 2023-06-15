@@ -214,8 +214,8 @@ mongoose.connect(DB_URL)
 //     console.log("Connected to databse");
 //     console.log("Backend is running on http://localhost:3004")
 // })
-app.listen(3005, () => {
-    console.log("Connected to databse");
-    console.log("Backend is running on http://localhost:3005")
-})
+// app.listen(3005, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3005")
+// })
 module.exports = app;
