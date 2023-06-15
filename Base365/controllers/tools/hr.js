@@ -549,6 +549,7 @@ exports.Devices = async (req, res, next) => {
             let Devices = new HR_Devices({ _id, userId, infoBrower, tokenBrowser, lastLogin, deviceType, loginType, createdAt });
             await Devices.save();
         }
+        return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
     }

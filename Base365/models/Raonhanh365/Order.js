@@ -188,9 +188,9 @@ const OrderSchema = new mongoose.Schema({
     }
 
 }, {
-    collection: 'Order',
+    collection: 'RN365_Order',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("Order", OrderSchema);
+module.exports = mongoose.model("RN365_Order", OrderSchema);

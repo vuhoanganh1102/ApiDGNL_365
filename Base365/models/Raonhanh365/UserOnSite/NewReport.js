@@ -33,4 +33,4 @@ const ReportNewschema = new mongoose.Schema({
         Default: 0
     }
 });
-module.exports = mongoose.model("ReportNews", ReportNewschema);
+module.exports = mongoose.model("RN365_ReportNews", ReportNewschema);

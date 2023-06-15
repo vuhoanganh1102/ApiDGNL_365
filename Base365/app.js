@@ -25,6 +25,10 @@ var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
 var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
+//---------HR------------------------
+var recruitment = require('./routes/hr/recruitmentRoute');
+
+//tim viec 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -104,6 +108,8 @@ app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
 app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 app.use('/api/raonhanh/admin', adminRaonhanh365);
 
+//----------------------------------------------------route HR--------------------------------------------------------------------------------------------------
+app.use('/api/hr/recruitment', recruitment)
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
