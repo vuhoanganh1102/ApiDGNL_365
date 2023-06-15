@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const contact_customer = new Schema({
-   _id : {
+const crm_contact_customer = new Schema({
+  contact_id : {
     type : Number,
     require : true
    },
@@ -25,7 +25,7 @@ const contact_customer = new Schema({
     type : String
    },
    contact_type : {
-    type : Number
+    type : String
    },
    titles : {
     type : Number
@@ -47,7 +47,7 @@ const contact_customer = new Schema({
     type : String
    },
    social : {
-    type : Number
+    type : String
    },
    social_detail : {
     type : String
@@ -132,5 +132,10 @@ const contact_customer = new Schema({
     type : Date
    }
 
+},
+   {
+    collection: 'CRM_contact_customer',
+    versionKey: false,
+    timestamp: true
 })
-module.exports = mongoose.model("contact_customer", contact_customer);
+module.exports = mongoose.model("crm_contact_customer", crm_contact_customer);

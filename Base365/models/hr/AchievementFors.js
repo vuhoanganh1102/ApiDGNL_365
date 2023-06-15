@@ -13,19 +13,16 @@ const AchievementForSchema = new Schema({
         require: true
     },
     // Danh sách được khen thưởng
-    list: {
-        type: [{
-            // Id nhân viên
-            idUser: {
-                type: Number
-            },
-            // Tên nhân viên
-            name: {
-                type: String
-            }
-        }],
-        default: null
-    },
+    listUser: [{
+        // Id nhân viên
+        userId: {
+            type: Number
+        },
+        // Tên nhân viên
+        name: {
+            type: String
+        }
+    }],
     //Nội dung khen thưởng
     content: {
         type: String,
@@ -40,16 +37,11 @@ const AchievementForSchema = new Schema({
     },
     // Loại thành tích
     achievementType: {
-        type: {
-            id: {
-                type: Number
-
-            },
-            nameType: {
-                type: String
-            }
-        },
+        type: Number,
         default: null
+    },
+    type:{
+        type:Number
     },
     // Tên gọi thành tích
     appellation: {
@@ -60,23 +52,33 @@ const AchievementForSchema = new Schema({
         type: String
     },
     // Id công ty có quyết định khen thưởng
-    companyID: {
-        type: Number
+    comId: {
+        type: Number,
+        require:true
     },
     // Id phòng của nhân viên được khen thưởng
     depId: {
-        type: Number
-    },
+        type: Number,
+        require:true
+    }, 
+    depName: {
+        type: String,
+        require:true
+    }, 
     // Ngày tạo quyết định
     createdAt: {
         type: Date,
-        default: Date.now()
+        default: null
     },
     // Ngày xoá quyết định
-    deleteAt: {
+    updatedAt: {
         type: Date,
-        default: Date.now()
+        default:null
     }
+}, {
+    collection: 'HR_AchievementFors',
+    versionKey: false,
+    timestamp: true
 });
 
-module.exports = mongoose.model("AchievementFors", AchievementForSchema);
+module.exports = mongoose.model("HR_AchievementFors", AchievementForSchema);

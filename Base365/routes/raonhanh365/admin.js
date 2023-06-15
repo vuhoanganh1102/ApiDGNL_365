@@ -52,4 +52,49 @@ router.put('/order/verifyOrder', formData.parse(), [functions.checkToken, servic
 router.post('/tagsIndex', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminTagsIndex.getListTagsIndex);
 
 
+
+//------------------------------------------------api giá ghim tin đăng
+//api danh sách và tìm kiếm giá ghim tin đăng
+router.post('/priceList/getListPricePin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.getListNewWithPin );
+
+//api thêm mới giá ghim tin đăng
+router.post('/priceList/createPricePin',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.createNewWithPin);
+
+//api sửa giá tin đăng
+router.put('/priceList/putPricePin/:id',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.putNewWithPin);
+
+
+
+//------------------------------------------------api giá đẩy tin đăng
+//api danh sách và tìm kiếm Giá đẩy tin đăng
+router.post('/priceList/getListPricePush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.getListPushNew );
+
+//api thêm mới giá đẩy tin đăng
+router.post('/priceList/getListPricePush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.createNewWithPush );
+
+//api sửa giá đẩy tin đăng dựa vào id
+router.put('/priceList/getListPricePush/:id',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.putNewWithPin);
+
+
+//------------------------------------------------api danh sách lỗi đăng ki
+//api danh sách lỗi đăng ký
+router.post('/failRegisterUser',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.failRegister);
+
+//------------------------------------------------api báo cáo tin
+// api tạo mới tin báo cáo
+router.post('/newReportt',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.createReport);
+// api danh sách và tìm kiếm báo cáo tin
+router.post('report/listReport',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.getListNewReports);
+// api sửa tin dựa vào param
+router.post('report/fixNewReport/:id',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.fixNewReport);
+
+
+//------------------------------------------------api chiết khấu nạp thẻ
+// api tạo mới chiết khấu nạp thẻ
+router.post('/discountCreate',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.createDiscount);
+// api lấy ra danh sách và tìm kiếm chiết khấu nap thẻ
+router.post('/discountCard',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.getListDiscountCard);
+// api update chiết khấu nạp thẻ
+router.post('/updateDiscountCard/:id',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.updateDiscount)
 module.exports = router;
+

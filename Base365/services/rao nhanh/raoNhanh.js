@@ -169,6 +169,7 @@ exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
 // ham check admin rao nhanh 365
 exports.isAdminRN365 = async(req, res, next)=>{
     let user = req.user.data;
+    console.log(user)
     let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, isAdmin: 1, active: 1 });
     if(admin) return next();
     return res.status(403).json({ message: "is not admin RN365" });

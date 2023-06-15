@@ -156,10 +156,57 @@ router.post('/toolSettingDX',toolVanThu.toolSettingDX);
 router.post('/toolrecruitment',toolHr.recruitment)
 router.post('/toolrecruitment_news',toolHr.recruitment_news)
 router.post('/toolschedule_interview',toolHr.schedule_interview)
+router.post('/toolcancelJob',toolHr.cancelJob)
+router.post('/toolFailJob',toolHr.failJob)
+router.post('/toolContactJob',toolHr.contactJob)
+router.post('/toolNotify',toolHr.notify)
+router.post('/toolPermission',toolHr.permission)
+router.post('/toolPolicys',toolHr.policy)
+router.post('/toolstageRecruitment',toolHr.stageRecruitment)
+
+// api quét data HR Cường
+router.post('/toolAchievementFors',toolHr.AchievementFors)
+router.post('/toolAddInfoLeads',toolHr.AddInfoLeads)
+router.post('/toolBlogs',toolHr.Blogs)
+router.post('/toolCategorys',toolHr.Categorys)
+router.post('/toolCiSessions',toolHr.CiSessions)
+router.post('/toolCitys',toolHr.Citys)
+router.post('/toolCrontabQuitJobs',toolHr.CrontabQuitJobs)
+router.post('/toolDepartmentDetails',toolHr.DepartmentDetails)
+router.post('/toolDescPositions',toolHr.DescPositions)
+router.post('/toolDevices',toolHr.Devices)
+router.post('/toolInfoLeaders',toolHr.InfoLeaders)
+router.post('/toolInfringesFors',toolHr.InfringesFors)
+router.post('/toolavatar',toolHr.avatar)
+
+
+// api
+//----------------------------------------------api quet data HR----------------------
+router.post('/hr/jobDes',toolHr.toolJobDes);
+router.post('/hr/anotherSkill', toolHr.toolAnotherSkill);
+router.post('/hr/perDetail', toolHr.toolPermisionDetail);
+router.post('/hr/remind', toolHr.toolRemind);
+router.post('/hr/processInter', toolHr.toolProcessInterview);
+router.post('/hr/processTraining', toolHr.toolProcessTraining);
+router.post('/hr/signature', toolHr.toolSignatureImage);
+router.post('/hr/scheduleInter', toolHr.toolScheduleInterview);
+router.post('/hr/inviteInter', toolHr.toolInviteInterview);
+router.post('/hr/recruitment', toolHr.toolRecruitment);
+router.post('/hr/recruitmentNews', toolHr.toolRecruitmentNews);
 
 //Api quét data CRM
 
-router.post('/toolContact',toolCRM.toolContact)
-router.post('/toolCC',toolCRM.toolContactCustomer)
+router.post('/toolContract',toolCRM.toolContact)//danh sách hợp đồng 
+router.post('/toolCC',toolCRM.toolContactCustomer)// danh sach hơp đòng khách hàng
+router.post('/toolCs',toolCRM.toolCustomer)// danh sách hợp đồng khách hàng
+router.post('/toolCr',toolCRM.toolCustomerCare)// danh sách chăm sóc khách hàng
+router.post('/toolCuchan',toolCRM.toolCustomerChance) // danh sách khách hàng cơ hội
+router.post('/toolChanfile',toolCRM.toolCustomerChanceFile)
+router.post('/toolChanfoot',toolCRM.toolChanFoots)
+router.post('/toolCusfile',toolCRM.toolCusFile)
+router.post('/toolCG',toolCRM.toolCustomerGroup)
+router.post('/toolCmulti',toolCRM.toolCustomeMulti)
+router.post('/toolCnote',toolCRM.toolCustomerNote)
+router.post('/toolCstatus',toolCRM.toolCustomerStatus)
 
 module.exports = router;

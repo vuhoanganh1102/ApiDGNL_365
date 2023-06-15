@@ -244,4 +244,28 @@ exports.createVerifyPayment = async(req, res, next) => {
     }
 }
 
+// tổng quan thông tin tài khoản cá nhân
+exports.profileInformation = async (req,res,next) => {
+    try{
+        let userID = {}
+        userID._id = req.user.data._id;
+        let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1}
+        let dataUser = {}
+        let userInFor = await functions.pageFind(User, userID,null,null,null, fields)
+        let numberOfNew = await New.find({userID: userID._id}).count();
+        let numberOfNewSold = await New.find({userID: userID._id, sold: 1}).count();
+        let likeNew = await LoveNews.find({userID: userID._id}).count()
+        dataUser.InforUser = userInFor[0];
+        dataUser.numberOfNew = numberOfNew
+        dataUser.numberOfNewSold = numberOfNewSold
+        dataUser.likeCount = likeNew
+        console.log(likeNew)
+
+        return functions.success(res, 'get Data User Success', dataUser);
+    } catch(err){
+        console.log("Err from server", err);
+        return functions.setError(res, "Err from server", 500);
+    }
+}
+
 

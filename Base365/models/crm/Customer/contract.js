@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const crm_contact = new Schema({
+const crm_contract = new Schema({
 
 
    id : {
@@ -50,5 +50,10 @@ const crm_contact = new Schema({
     type : Date
    }
 
+},
+{
+ collection: 'CRM_contract',
+ versionKey: false,
+ timestamp: true
 })
-module.exports = mongoose.model("crm_contact", crm_contact);
+module.exports = mongoose.model("crm_contract", crm_contract);

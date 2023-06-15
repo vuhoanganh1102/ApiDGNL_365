@@ -12,43 +12,54 @@ const JobDescriptionsSchema = new Schema({
         default:null
     },
     // tên bộ phận
-    department_name:{
+    depName:{
         type:String,
         default:null
     },
     // mô tả
-    description:{
+    des:{
         type:String,
         default:null
     },
     // yêu cầu job
-    job_require:{
+    jobRequire:{
         type:String,
         default:null
     },
     // bản đồ
-    road_map:{
+    roadMap:{
         type:String,
         require:true
     },
     // id công ty
-    com_id:{
+    comId:{
         type:Number,
         require:true
     },
     // thời gian tạo
-    created_at:{
-        type:String,
+    createdAt:{
+        type:Date,
+        default:null
+    },
+    //thoi gian sua
+    updatedAt:{
+        type:Date,
         default:null
     },
     // thời gian xoá
-    deleted_at:{
-        type:String,
+    deletedAt:{
+        type:Date,
         default:null
     },
     // trạng thái xoá
-    is_delete:{
+    isDelete:{
         type:Number,
         default:0
     }
+},{
+    collection: 'HR_JobDescriptions',
+    versionKey: false,
+    timestamp: true
 });
+
+module.exports = mongoose.model("HR_JobDescriptions", JobDescriptionsSchema);
