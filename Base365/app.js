@@ -25,6 +25,10 @@ var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
 var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
+//---------HR------------------------
+var recruitment = require('./routes/hr/recruitmentRoute');
+
+//tim viec 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -104,6 +108,8 @@ app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
 app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 app.use('/api/raonhanh/admin', adminRaonhanh365);
 
+//----------------------------------------------------route HR--------------------------------------------------------------------------------------------------
+app.use('/api/hr/recruitment', recruitment)
 // API quản lí chung
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
@@ -145,15 +151,13 @@ app.use(function(err, req, res, next) {
 
 
 // timviec365 -> api-base365
-const DB_URL = 'mongodb+srv://dung136ptit:dcmtml102@cluster0.fmwheli.mongodb.net/'; // timviec365 -> api-base365
+const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-
-app.listen(3005, () => {
-    console.log("Connected to databse");
-    console.log("Backend is running on http://localhost:3004")
-})
-
+// app.listen(3004, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3004")
+// })
 module.exports = app;
