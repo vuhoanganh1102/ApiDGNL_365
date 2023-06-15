@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const HR_CiSessionSchema = new mongoose.Schema({
-    _id: {
-        type: String,
+    id: {
+        type: Number,
         required: true,
+        unique: true,
+        autoIncrement: true
     },
     ipAddress: {
         type: String,

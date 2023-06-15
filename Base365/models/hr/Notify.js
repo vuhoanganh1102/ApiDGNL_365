@@ -3,7 +3,12 @@ const Schema = mongoose.Schema;
 
 const NotificationSchema = new Schema({
     // id
-    _id: { type: Number, required: true },
+    id: {
+        type: Number,
+        required: true,
+        unique: true,
+        autoIncrement: true
+    },
     // id ứng viên
     canId: { type: Number, required: true },
     // loại

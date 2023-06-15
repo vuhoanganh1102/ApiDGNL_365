@@ -4,7 +4,9 @@ const Schema = mongoose.Schema;
 const PositionStructSchema = new Schema({
     id: {
         type: Number,
-        required: true
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     com_id: {
         type: Number,

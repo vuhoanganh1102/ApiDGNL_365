@@ -3,7 +3,12 @@ const Schema = mongoose.Schema;
 
 const ModelNameSchema = new Schema({
     // Id của chính sách
-    _id: { type: Number, required: true },
+    id: {
+        type: Number,
+        required: true,
+        unique: true,
+        autoIncrement: true
+    },
     //
     provisionId: { type: Number },
     // ngày bắt đầu
