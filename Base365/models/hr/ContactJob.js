@@ -3,7 +3,12 @@ const Schema = mongoose.Schema;
 
 const JobOfferSchema = new Schema({
     // id contact job
-    _id: { type: String, required: true },
+    id: {
+        type: Number,
+        required: true,
+        unique: true,
+        autoIncrement: true
+    },
     //  ID ứng viên
     canId: { type: Number, required: true },
     // trạng thái xóa

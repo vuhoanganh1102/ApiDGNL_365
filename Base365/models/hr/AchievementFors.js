@@ -3,9 +3,11 @@ const Schema = mongoose.Schema;
 
 const AchievementForSchema = new Schema({
     //Id khen thưởng
-    _id: {
+    id: {
         type: Number,
-        require: true
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     // Số quyết định khen thưởng
     achievementId: {
@@ -40,8 +42,8 @@ const AchievementForSchema = new Schema({
         type: Number,
         default: null
     },
-    type:{
-        type:Number
+    type: {
+        type: Number
     },
     // Tên gọi thành tích
     appellation: {
@@ -54,17 +56,17 @@ const AchievementForSchema = new Schema({
     // Id công ty có quyết định khen thưởng
     comId: {
         type: Number,
-        require:true
+        require: true
     },
     // Id phòng của nhân viên được khen thưởng
     depId: {
         type: Number,
-        require:true
-    }, 
+        require: true
+    },
     depName: {
         type: String,
-        require:true
-    }, 
+        require: true
+    },
     // Ngày tạo quyết định
     createdAt: {
         type: Date,
@@ -73,7 +75,7 @@ const AchievementForSchema = new Schema({
     // Ngày xoá quyết định
     updatedAt: {
         type: Date,
-        default:null
+        default: null
     }
 }, {
     collection: 'HR_AchievementFors',

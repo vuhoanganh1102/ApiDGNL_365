@@ -1028,7 +1028,7 @@ exports.getDetailNew = async (req, res, next) => {
         }
         let id = linkTitle.split('-').reverse()[0];
         let buy = id.charAt(0); 
-        let id_new = id.slice(1);
+        let id_new = Number (id.slice(1));
         let danh_muc1 = null;
         let danh_muc2 = null;
         let danh_muc3 = null;
@@ -1097,15 +1097,23 @@ exports.getDetailNew = async (req, res, next) => {
             }, {
                 $project: searchitem
             }, {
-                $match: { _id: 631733 }
+                $match: { _id: id_new }
             }
         ]);
+        data.push({danhmuc:{danh_muc1,danh_muc2,danh_muc3}})
         tintuongtu = await New.find({ cateID: check.cateID }, searchitem).limit(6);
         await New.findByIdAndUpdate(id_new, { $inc: { viewCount: +1 } })
         if (tintuongtu) {
             data.push({ tintuongtu: tintuongtu })
         }
-        functions.success(res, 'get data success', { danh_muc1, danh_muc2, danh_muc3, data })
+
+
+
+
+
+
+
+        functions.success(res, 'get data success', { data })
     } catch (error) {
         functions.setError(res, error)
     }
@@ -1114,16 +1122,15 @@ exports.getDetailNew = async (req, res, next) => {
 // yêu thích tin 
 exports.loveNew = async (req, res, next) => {
     try {
-        let id = req.body.id;
-        let user = req.user.data;
-        user._id = 19;
-        let checkLove = await LoveNews.find({ id_new: id, id_user: user._id });
-        if (checkLove.length !== 0) {
-            await LoveNews.findOneAndDelete({ id_new: id, id_user: user._id })
+        let id = req.body.new_id;
+        let user = req.user.data.idRaoNhanh365;
+        let checkLove = await LoveNews.find({ id_new: id, id_user: user });
+        if (checkLove && checkLove.length !== 0) {
+            await LoveNews.findOneAndDelete({ id_new: id, id_user: user })
         } else {
             createdAt = new Date(Date.now());
-            let _id = await functions.getMaxID(LoveNews) + 1;
-            await LoveNews.create({ _id, id_new: id, id_user: user._id, createdAt })
+            let _id = await functions.getMaxID(LoveNews) + 1  ;
+            await LoveNews.create({ _id, id_new: id, id_user: user, createdAt })
         }
         return functions.success(res, "love new success")
     } catch (error) {
@@ -1182,7 +1189,7 @@ exports.createToken = async (req, res, next) => {
 // danh sách yêu thích tin
 exports.newfavorite = async (req, res, next) => {
     try {
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let linkTitle = req.params.linkTitle;
         let searchItem = null;
         let buySell = null;
@@ -1200,13 +1207,16 @@ exports.newfavorite = async (req, res, next) => {
             return functions.setError(res, 'invalid data', 400)
         }
         let data = [];
+        let soLuong = 0;
         let check = await LoveNews.find({ id_user: userID })
         if (check && check.length) {
             for (let i = 0; i < check.length; i++) {
-                let datanew = await New.find({ _id: check[i].id_new }, searchItem)
+                let datanew = await New.find({ _id: check[i].id_new,buySell }, searchItem);
+                soLuong = await New.find({ _id: check[i].id_new,buySell }, searchItem).count()
                 data.push(datanew[0])
             }
         }
+        data.push({soLuong:soLuong})
         return functions.success(res, 'get data success', { data })
     } catch (error) {
 
@@ -1218,7 +1228,7 @@ exports.newfavorite = async (req, res, next) => {
 exports.managenew = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let data = [];
         let tin_conhan = await New.find({ userID, timeEndReceivebidding: { $gte: new Date(Date.now()) }, buySell: 1 }).count();
         let tin_dangan = await New.find({ userID, active: 0, buySell: 1 }).count();
@@ -1236,7 +1246,8 @@ exports.managenew = async (req, res, next) => {
         } else {
             return functions.setError(res, 'page not found ', 404)
         }
-        return functions.success(res, 'get data success', { tong_soluong, tin_conhan, tin_hethan, tin_dangan, data })
+        data.push({soluong:{tong_soluong, tin_conhan, tin_hethan, tin_dangan,}})
+        return functions.success(res, 'get data success', { data })
     }
     catch (error) {
         return functions.setError(res, error)

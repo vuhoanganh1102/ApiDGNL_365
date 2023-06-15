@@ -3,9 +3,11 @@ const Schema = mongoose.Schema;
 
 const RecruitmentNewsSchema = new Schema({
     //Id của quy trình tuyển dụng
-    _id: {
+    id: {
         type: Number,
-        require: true
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     // tên tiêu đề tuyển dụng
     title: {

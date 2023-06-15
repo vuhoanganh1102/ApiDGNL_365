@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const HR_CitySchema = new mongoose.Schema({
-    _id: {
+    id: {
         type: Number,
         required: true,
+        unique: true,
+        autoIncrement: true
     },
     name: {
         //ten
