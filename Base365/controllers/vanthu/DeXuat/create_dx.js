@@ -21,7 +21,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         bd_nghi,
         kt_nghi,
         loai_np,
-        //  type_time,
+
         ca_nghi,
         link
 
@@ -81,12 +81,12 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
         maxID = 0;
         const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-        //   console.log(de_xuat);
+        console.log(tb);
         if (tb) {
-            maxID = tb._id;
+            maxID = Number(tb._id);
         }
         const t_bao = new thongBao({
-            _id: maxID + 1,
+            _id: Number(maxID + 1),
             id_user: id_user,
             id_user_nhan: id_user_duyet,
             id_van_ban: new_de_xuat._id,
@@ -132,7 +132,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
         link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
     }
 
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -203,7 +203,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         //  file_kem,
         ly_do,
         phong_ban,
-        type_time,
+        //  type_time,
         danh_sach_tai_san,
         so_luong_tai_san,
         link
@@ -217,7 +217,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
     }
 
 
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -252,7 +252,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             file_kem: link_download,
             kieu_duyet: kieu_duyet,
             //  type_duyet: 0,
-            type_time: type_time,
+            //  type_time: type_time,
             // time_start_out: " ",
             time_create: new Date(),
             time_tiep_nhan: null,
@@ -295,7 +295,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
         await functions.uploadFileVanThu(id_user, file_kem);
         link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
     }
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -368,6 +368,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
         pb_nguoi_lc,
         noi_cong_tac,
         noi_chuyen_den,
+        link
     } = req.body;
 
     let file_kem = req.files.fileKem;
@@ -376,7 +377,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
         await functions.uploadFileVanThu(id_user, file_kem);
         link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
     }
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -459,7 +460,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
         await functions.uploadFileVanThu(id_user, file_kem);
         link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
     }
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -541,7 +542,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
         await functions.uploadFileVanThu(id_user, file_kem);
         link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
     }
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -611,6 +612,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         ly_do,
         tien_tam_ung,
         ngay_tam_ung,
+        link
 
 
     } = req.body;
@@ -621,7 +623,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         await functions.uploadFileVanThu(id_user, file_kem);
         link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
     }
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -697,8 +699,8 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
         await functions.uploadFileVanThu(id_user, file_kem);
         link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
     }
-    console.log(pathString)
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -760,6 +762,8 @@ exports.lich_lam_viec = async (req, res) => {
         id_user_duyet,
         id_user_theo_doi,
         ly_do,
+
+
         lich_lam_viec,
         thang_ap_dung,
         ngay_bat_dau,
@@ -814,9 +818,9 @@ exports.lich_lam_viec = async (req, res) => {
 
         await new_de_xuat.save();
 
-        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link, file_kem);
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
         maxID = 0;
-        const c = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+        const tbao = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
         //   console.log(de_xuat);
         if (tbao) {
             maxID = tbao._id;

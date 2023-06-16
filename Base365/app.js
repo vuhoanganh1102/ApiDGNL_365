@@ -133,7 +133,6 @@ app.use('/api/vanthu/DeXuat', TK_nghi_phep);
 
 
 
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

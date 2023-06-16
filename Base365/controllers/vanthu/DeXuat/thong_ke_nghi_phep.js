@@ -67,9 +67,9 @@ exports.thong_ke_nghi_phep = async (req, res) => {
             danh_sach_nv_nghi = danh_sach_nghi_nhieu_nhat;
         }
 
-
+        return res.status(200).json({ data: danh_sach_nv_nghi, message: "thanh cong " });
     } else {
         return res.status(200).json({ data: [], message: " khong co de xuat nao  " });
     }
-    return res.status(200).json({ data: danh_sach_nv_nghi, message: "thanh cong " });
+
 }

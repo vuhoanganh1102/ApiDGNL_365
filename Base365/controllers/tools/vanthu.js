@@ -759,7 +759,7 @@ exports.toolSettingDx = async (req, res, next) => {
             if (listSetting.length > 0) {
                 for (let i = 0; i < listSetting.length; i++) {
                     const SettingDx = new setingDx({
-                        idSetting: listSetting[i].id_setting,
+                        _id: listSetting[i].id_setting,
                         ComId: listSetting[i].com_id,
                         typeSetting: listSetting[i].type_setting,
                         typeBrowse: listSetting[i].type_browse,
@@ -797,7 +797,7 @@ exports.tooltblFeedback = async (req, res, next) => {
             if (listSetting.length > 0) {
                 for (let i = 0; i < listSetting.length; i++) {
                     const tblFeedback = new tbl_feedback({
-                        fbID: listSetting[i].fb_id,
+                        _id: listSetting[i].fb_id,
                         userFb: listSetting[i].user_fb,
                         vb_fb: listSetting[i].vb_fb,
                         nameUser: listSetting[i].name_user,
@@ -830,7 +830,7 @@ exports.tool_qlcv_edit = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const qlcvEdit = new qlcv_edit({
-                        ed_id: listData[i].ed_id,
+                        _id: listData[i].ed_id,
                         ed_cv_id: listData[i].ed_cv_id,
                         ed_time: listData[i].ed_time,
                         ed_type_user: listData[i].ed_type_user,
@@ -864,7 +864,7 @@ exports.tool_qlcv_role = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const qlcvRole = new qlcv_role({
-                        ro_id: listData[i].ro_id,
+                        _id: listData[i].ro_id,
                         ro_user_id: listData[i].ro_use_id,
                         ro_usc_id: listData[i].ro_usc_id,
                         ro_list_vb: listData[i].ro_list_vb,
@@ -901,7 +901,7 @@ exports.tool_qlcv_congVan = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const qlCongVan = new congVan({
-                        cv_id: listData[i].cv_id,
+                        _id: listData[i].cv_id,
                         cv_id_vb: listData[i].cv_id_vb,
                         cv_id_book: listData[i].cv_id_book,
                         cv_name: listData[i].cv_name,
@@ -969,7 +969,7 @@ exports.tool_VanBanThayThe = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const vbThayThe = new VBThayTHe({
-                        id_tt: listData[i].id_tt,
+                        _id: listData[i].id_tt,
                         id_vb_tt: listData[i].id_vb_tt,
                         so_vb_tt: listData[i].so_vb_tt,
                         ten_vb_tt: listData[i].ten_vb_tt,
@@ -1001,7 +1001,7 @@ exports.tool_View = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const view = new View({
-                        id_view: listData[i].id_view,
+                        _id: listData[i].id_view,
                         id_user: listData[i].id_user,
                         id_vb: listData[i].id_vb,
                         time: listData[i].time,
@@ -1032,7 +1032,7 @@ exports.tool_textBook = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const textBook = new TextBook({
-                        id_book: listData[i].id_book,
+                        _id: listData[i].id_book,
                         name_book: listData[i].name_book,
                         nguoi_tao: listData[i].nguoi_tao,
                         com_id: listData[i].com_id,
@@ -1065,7 +1065,7 @@ exports.tool_tlLuuTru = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const tlLuuTru = new TLLuuTru({
-                        id_tl: listData[i].id_tl,
+                        _id: listData[i].id_tl,
                         ten_tl: listData[i].ten_tl,
                         nd_tl: listData[i].nd_tl,
                         file_tl: listData[i].file_tl,
@@ -1101,7 +1101,7 @@ exports.tool_ThongBao = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const thongBao = new ThongBao({
-                        id_thong_bao: listData[i].id_thong_bao,
+                        _id: listData[i].id_thong_bao,
                         id_user: listData[i].id_user,
                         id_user_nhan: listData[i].id_user_nhan,
                         id_van_ban: listData[i].id_van_ban,
@@ -1135,7 +1135,7 @@ exports.tool_NguoiDuyetVB = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const nguoiDuyetVanBan = new NguoiDuyetVanBan({
-                        id_duyet: listData[i].id_duyet,
+                        _id: listData[i].id_duyet,
                         id_vb_duyet: listData[i].id_vb_duyet,
                         id_user_duyet: listData[i].id_user_duyet,
                         time_duyet: listData[i].time_duyet,
@@ -1165,7 +1165,7 @@ exports.tool_userModel = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     const userModel = new UserModel({
-                        id: listData[i].id,
+                        _id: listData[i].id,
                         id_user: listData[i].id_user,
                         type_cong_ty: listData[i].type_cong_ty,
                         type_ngoai: listData[i].type_ngoai,
@@ -1209,7 +1209,7 @@ exports.tool_VanBan = async (req, res, next) => {
                     };
 
                     const vanBan = new VanBan({
-                        id: listData[i].id,
+                        _id: listData[i].id,
                         title_vb: listData[i].title_vb,
                         des_vb: listData[i].des_vb,
                         so_vb: listData[i].so_vb,

@@ -4,7 +4,8 @@ var toolUser = require('../controllers/tools/user');
 var toolTimviec365 = require('../controllers/tools/timviec365');
 const formData = require('express-form-data');
 const toolRaoNhanh = require('../controllers/tools/raonhanh365');
-const toolHr =  require('../controllers/tools/hr');
+const toolHr = require('../controllers/tools/hr');
+const controller_data_CRM = require('../controllers/tools/CRM');
 
 
 // API quét data người dùng từ base chat
@@ -138,8 +139,29 @@ router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
 
 
 // api quét data recruitment
-router.post('/toolrecruitment',toolHr.recruitment)
-router.post('/toolrecruitment_news',toolHr.recruitment_news)
-router.post('/toolschedule_interview',toolHr.schedule_interview)
+router.post('/toolrecruitment', toolHr.recruitment)
+router.post('/toolrecruitment_news', toolHr.recruitment_news)
+router.post('/toolschedule_interview', toolHr.schedule_interview)
 
+
+//api quest data bang tbl_phieu
+router.post('/toolPhieu', controller_data_CRM.tool_phieu);
+//api quet data share_campaign
+router.post('/toolShare_campaign', controller_data_CRM.tbl_share_campaign);
+//api quet data share_chance
+router.post('/toolShareChance', controller_data_CRM.tbl_share_chance);
+//api data changeCustomer
+router.post('/toolShareCustomer', controller_data_CRM.tbl_share_customer);
+//api data ward
+router.post('/toolWard', controller_data_CRM.ward);
+
+//api data history_edit_customer
+router.post('/toolHistoryEditCustomer', controller_data_CRM.history_edit_customer);
+//api data history_stages
+router.post('/toolHistoryStage', controller_data_CRM.history_stages);
+
+//api data list_new_3312
+router.post('/toolListNew3312', controller_data_CRM.list_new_3321);
+//api data list_order
+router.post('/toolListOrder', controller_data_CRM.list_order);
 module.exports = router;

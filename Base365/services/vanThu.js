@@ -57,7 +57,7 @@ exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi,
         file_kem: file_kem,
         // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link
     }).then(function (response) {
-        console.log("name_dx: " + name_dx + "user_dx :  " + user_dx + " noi_dung: " + noi_dung + " fileKem: " + fileKem);
+        //  console.log("name_dx: " + name_dx + "user_dx :  " + user_dx + " noi_dung: " + noi_dung + " fileKem: " + fileKem);
     })
         .catch(function (error) {
             console.log(error);
