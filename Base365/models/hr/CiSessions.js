@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
 const HR_CiSessionSchema = new mongoose.Schema({
-    _id: {
+    id: {
         type: String,
-        required: true,
     },
     ipAddress: {
         type: String,
@@ -14,7 +13,7 @@ const HR_CiSessionSchema = new mongoose.Schema({
         default: 0,
     },
     data: {
-        type: Buffer,
+        type: String ,
         required: true,
     },
 }, {

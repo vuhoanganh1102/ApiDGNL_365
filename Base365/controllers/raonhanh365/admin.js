@@ -361,7 +361,6 @@ exports.updateNews = async(req, res, next) => {
         fields.updateTime = Date(Date.now());
         let existsNews = await News.findOne({_id: newsID});
         if (existsNews) {
-
             await News.findOneAndUpdate({_id: newsID}, fields);
             return functions.success(res, "News edited successfully");
         }

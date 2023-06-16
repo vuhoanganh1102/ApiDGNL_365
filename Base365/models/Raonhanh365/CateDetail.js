@@ -267,9 +267,9 @@ const CateDetailRaonhanh365Schema = mongoose.Schema({
         default: null,
     },
 }, {
-    collection: 'CateDetailRaonhanh365',
+    collection: 'RN365_CateDetail',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model('CateDetailRaonhanh365', CateDetailRaonhanh365Schema);
+module.exports = mongoose.model('RN365_CateDetail', CateDetailRaonhanh365Schema);

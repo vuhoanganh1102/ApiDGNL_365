@@ -1,46 +1,48 @@
 const mongoose = require('mongoose');
-const HR_DeviceSchema = new mongoose.Schema({
+const HR_EmployeePolicySchema = new mongoose.Schema({
     id: {
         type: Number,
         required: true,
         unique: true,
         autoIncrement: true
     },
-    userId: {
-        type: Number,
-        required: true,
-    },
-    infoBrower: {
+    name: {
         type: String,
         required: true,
     },
-    token_browser	: {
-        type: String,
-    },
-    lastLogin	: {
-        type: String,
-        required: true,
-    },
-    deviceType	: {
-        //0: pc, 1: mobile, tablet
-        type: Number,
-        required: true,
-        default: 0 
-    },
-    // 1. Đăng nhập công ty, 0. Đăng nhập nhân viên
-    loginType	: {
-        type: Number,
-        required: true,
-        default: 0 
-    },
-    createdAt	: {
+    timeStart: {
         type: Date,
         required: true,
     },
+    supervisorName	: {
+        type: String,
+
+    },
+    description	: {
+        type: String,
+        required: true,
+    },
+    isDelete	: {
+        type: Number,
+        required: true,
+    },
+    comId	: {
+        type: Number,
+        
+    },
+    file	: {
+        type: String,
+    },
+    createdAt	: {
+        type: Date,
+    },
+    deletedAt	: {
+        type: Date,
+    },
 }, {
-    collection: 'HR_Devices',
+    collection: 'HR_EmployeePolicys',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("HR_Devices", HR_DeviceSchema);
+module.exports = mongoose.model("HR_EmployeePolicys", HR_EmployeePolicySchema);

@@ -123,7 +123,6 @@ router.post('/toolCategory', toolRaoNhanh.toolCategory);
 
 // api update thông tin bán hàng  new rao nhanh
 router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
-
 router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
 router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
 router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
@@ -153,9 +152,6 @@ router.post('/toolSettingDX',toolVanThu.toolSettingDX);
 
 
 // api quét data recruitment
-router.post('/toolrecruitment',toolHr.recruitment)
-router.post('/toolrecruitment_news',toolHr.recruitment_news)
-router.post('/toolschedule_interview',toolHr.schedule_interview)
 router.post('/toolcancelJob',toolHr.cancelJob)
 router.post('/toolFailJob',toolHr.failJob)
 router.post('/toolContactJob',toolHr.contactJob)
@@ -163,6 +159,8 @@ router.post('/toolNotify',toolHr.notify)
 router.post('/toolPermission',toolHr.permission)
 router.post('/toolPolicys',toolHr.policy)
 router.post('/toolstageRecruitment',toolHr.stageRecruitment)
+// router.post('/toolsS')
+// router.post('/toolsProvisionsOfCompany', toolHr.)
 
 // api quét data HR Cường
 router.post('/toolAchievementFors',toolHr.AchievementFors)
@@ -178,6 +176,9 @@ router.post('/toolDevices',toolHr.Devices)
 router.post('/toolInfoLeaders',toolHr.InfoLeaders)
 router.post('/toolInfringesFors',toolHr.InfringesFors)
 router.post('/toolavatar',toolHr.avatar)
+router.post('/toolCandidates',toolHr.Candidates)
+router.post('/toolEmployeePolicys',toolHr.EmployeePolicys)
+router.post('/toolEmployeePolicySpecifics',toolHr.EmployeePolicySpecifics)
 
 
 // api

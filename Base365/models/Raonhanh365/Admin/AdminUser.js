@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema
-const AdminUserRaoNhanh365Schema = new mongoose.Schema({
+const AdminUserSchema = new mongoose.Schema({
     _id: {
         //id admin
         type: Number,
@@ -105,9 +105,9 @@ const AdminUserRaoNhanh365Schema = new mongoose.Schema({
 
 
 }, {
-    collection: 'AdminUserRaoNhanh365',
+    collection: 'RN365_AdminUser',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("AdminUserRaoNhanh365", AdminUserRaoNhanh365Schema);
+module.exports = mongoose.model("RN365_AdminUser", AdminUserSchema);

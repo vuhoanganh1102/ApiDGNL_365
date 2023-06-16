@@ -2,9 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const JobDescriptionsSchema = new Schema({
     // id mô tả công việc
-    _id:{
-        type:Number,
-        require:true
+    id: {
+        type: Number,
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     // tên công việc
     name:{

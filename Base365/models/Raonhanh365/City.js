@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema
-const CityRNSchema = new mongoose.Schema({
+const CitySchema = new mongoose.Schema({
     _id: {
         type: Number,
         required: true,
@@ -32,9 +32,9 @@ const CityRNSchema = new mongoose.Schema({
     },
 
 }, {
-    collection: 'CityRN',
+    collection: 'RN365_City',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("CityRN", CityRNSchema);
+module.exports = mongoose.model("RN365_City", CitySchema);
