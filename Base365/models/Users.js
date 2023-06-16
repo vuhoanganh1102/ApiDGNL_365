@@ -164,8 +164,33 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            teamID: {
+                // ID của Tổ nếu là nhân viên (giá trị = 0 là cá nhân)
+                type: Number,
+                default: 0
+            },
+            parentID: {
+                // ID của cty mẹ 
+                type: Number,
+                default: 0
+            },
             positionID: {
                 // Cấp bậc của nhân viên trong công ty
+                type: Number,
+                default: 0
+            },
+            calendarID: {
+                // ID lịch làm việc của nhân viên trong công ty
+                type: Number,
+                default: 0
+            },
+            shiftID: {
+                // ID ca làm việc của nhân viên trong công ty
+                type: Number,
+                default: 0
+            },
+            childID: {
+                // ID cty con cua công ty
                 type: Number,
                 default: 0
             },
@@ -580,11 +605,48 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
+            com_path: {
+                // Chưa rõ, cập nhật sau
+                type: String,
+            },
+            base36_path: {
+                // Chưa rõ, cập nhật sau
+                type: String,
+            },
+            com_qr_logo: {
+                // Chưa rõ, cập nhật sau
+                type: String,
+                default: 0
+            },
+            ep_crm: {
+                // Chưa rõ, cập nhật sau
+                type: Number,
+                default: 0
+            },
+            com_id_tv365: {
+                // Chưa rõ, cập nhật sau
+                type: Number,
+                default: 0
+            },
+            com_quantity_time: {
+                // Chưa rõ, cập nhật sau
+                type: Number,
+                default: 0
+            },
+            com_email_lh: {
+                // Chưa rõ, cập nhật sau
+                type: String,
+            },
             com_ep_vip: {
                 // Số lượng nhận viên đạt vip
                 type: Number,
                 default: 0
-            }
+            },
+            enable_scan_qr: {
+                // Chưa rõ, cập nhật sau
+                type: Number,
+                default: 0
+            },
         },
         default: null
     },

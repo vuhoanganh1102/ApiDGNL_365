@@ -133,7 +133,19 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
         return false;
     }
 };
-exports.getDatafindOne = async (model, condition) => {
+// hàm so sánh phần tử trùng lặp
+ exports.arrfil = function removeDuplicates(array, comparator) {
+    return array.filter(function(item, index) {
+    for (var i = 0; i < index; i++) {
+    if (comparator(item, array[i])) {
+    return false;
+    }
+    }
+    return true;
+    });
+    }
+    
+exports.getDatafindOne = async(model, condition) => {
     return model.findOne(condition).lean();
 };
 
@@ -661,6 +673,47 @@ exports.uploadFileBase64RaoNhanh = async (folder, id, base64String, file) => {
     });
 }
 
+
+//QLC
+exports.uploadFileQLC = async (folder, id, file,allowedExtensions) => {
+
+    let path1 = `../Storage/base365/QLC/pictures/${folder}/${id}/`;
+    let filePath = `../Storage/base365/QLC/pictures/${folder}/${id}/` + file.name;
+    let fileCheck =  path.extname(filePath);
+    if(allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false)
+    {
+        return false
+    }
+   
+    if (!fs.existsSync(path1)) {   
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+    
+        fs.writeFile(filePath, data, (err) => {
+            if (err) {
+            console.log(err)
+            }
+        });
+    });
+    return true
+}
+
+// hàm tạo link file QLC
+exports.createLinkFileQLC = (folder, id, name) => {
+    let link = process.env.PORT_QLC + '/base365/QLC/pictures/' + folder + '/' + id + '/' + name;
+    return link;
+}
+
+exports.deleteFileQLC = (id, file) => {
+    let filePath = `../Storage/base365/QLC/pictures/${id}/` + file;
+    fs.unlink(filePath, (err) => {
+    if (err) console.log(err);
+    });
+    }
 // hàm tìm id max Quản Lí Chung
 exports.getMaxIDQLC = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;

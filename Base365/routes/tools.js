@@ -3,7 +3,10 @@ var router = express.Router();
 var toolUser = require('../controllers/tools/user');
 var toolTimviec365 = require('../controllers/tools/timviec365');
 const formData = require('express-form-data');
-const toolRaoNhanh = require('../controllers/tools/raonhanh365');
+const toolRaoNhanh = require('../controllers/tools/raonhanh365')
+const qlc = require('../controllers/tools/quanlichung')
+const crm = require('../controllers/tools/CRM')
+
 const toolHr =  require('../controllers/tools/hr');
 const toolVanThu = require('../controllers/tools/vanthu')
 const toolCRM = require('../controllers/tools/CRM')
@@ -15,6 +18,21 @@ router.get('/addUserChat365', formData.parse(), toolUser.addUserChat365);
 router.get('/addUserCompanyTimviec365', toolUser.addUserCompanyTimviec365);
 router.get('/addUserCandidateTimviec365', toolUser.addUserCandidateTimviec365);
 router.get('/deleteUser', toolUser.deleteUser);
+
+//API Quản lí chung 
+router.post('/toolSettingIP', qlc.toolsettingIP);
+router.post('/toolDeparment', qlc.toolDeparment);
+router.post('/toolGroup', qlc.toolGroup);
+router.post('/toolCompany', qlc.toolCompany);
+router.post('/toolHisTracking', qlc.toolHisTracking);
+router.post('/toolCheckDevice', qlc.toolCheckDevice);
+router.post('/toolShifts', qlc.toolShifts);
+router.post('/toolFeedback', qlc.toolFeedback);
+router.post('/toolReportError', qlc.toolReportError);
+router.post('/toolCalendarWorkEmployee', qlc.toolCalendarWorkEmployee);
+
+
+
 
 // api quét data keywork
 router.get('/addKeyword', toolTimviec365.toolKeyword);
@@ -126,16 +144,14 @@ router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
 router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
 router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
-router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory)
-router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew)
-router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
-
 
 
 
 
 // api quét data các phần của chi tiết danh mục Raonhanh
 // router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
+
+
 
 // api quet tool van thu
 router.post('/toolCateDexuat',toolVanThu.toolCateDeXuat);
@@ -152,6 +168,9 @@ router.post('/toolSettingDX',toolVanThu.toolSettingDX);
 
 
 // api quét data recruitment
+// router.post('/toolrecruitment',toolHr.recruitment)
+// router.post('/toolrecruitment_news',toolHr.recruitment_news)
+// router.post('/toolschedule_interview',toolHr.schedule_interview)
 router.post('/toolcancelJob',toolHr.cancelJob)
 router.post('/toolFailJob',toolHr.failJob)
 router.post('/toolContactJob',toolHr.contactJob)
@@ -176,9 +195,6 @@ router.post('/toolDevices',toolHr.Devices)
 router.post('/toolInfoLeaders',toolHr.InfoLeaders)
 router.post('/toolInfringesFors',toolHr.InfringesFors)
 router.post('/toolavatar',toolHr.avatar)
-router.post('/toolCandidates',toolHr.Candidates)
-router.post('/toolEmployeePolicys',toolHr.EmployeePolicys)
-router.post('/toolEmployeePolicySpecifics',toolHr.EmployeePolicySpecifics)
 
 
 // api
@@ -210,4 +226,27 @@ router.post('/toolCmulti',toolCRM.toolCustomeMulti)
 router.post('/toolCnote',toolCRM.toolCustomerNote)
 router.post('/toolCstatus',toolCRM.toolCustomerStatus)
 
+//CRM
+router.get('/toolCampaign', crm.toolCampaign);
+router.get('/toolDetailCampaign', crm.toolDetailCampaign);
+router.get('/toolTablePriceList', crm.toolTablePriceList);
+router.get('/toolDetailPriceList', crm.toolDetailPriceList);
+router.get('/toollistSurvey', crm.toollistSurvey);
+router.get('/toolAppointmentSchedule', crm.toolAppointmentSchedule);
+router.get('/toolHistoryCustomerCare', crm.toolHistoryCustomerCare);
+router.get('/toolFundbook', crm.toolFundbook);
+router.get('/toolForm', crm.toolForm);
+router.get('/toolFormContract', crm.toolFormContract);
+router.get('/toolFormEmail', crm.toolFormEmail);
+router.get('/toolFormRegister', crm.toolFormRegister);
+router.get('/toolEmailPersonal', crm.toolEmailPersonal);
+router.get('/toolEmailSms', crm.toolEmailSms);
+router.get('/toolEmailSystem', crm.toolEmailSystem);
+router.get('/toolGroupSupplier', crm.toolGroupSupplier);
+router.get('/toolGroupPins', crm.toolGroupPins);
+router.get('/toolDetailSurvery', crm.toolDetailSurvery);
+router.get('/toolDetailReturnProduct', crm.toolDetailReturnProduct);
+router.get('/toolDetailListOrder', crm.toolDetailListOrder);
+router.get('/toolDetailFormContract', crm.toolDetailFormContract);
+router.get('/toolDetailEmailSms', crm.toolDetailFormContract);
 module.exports = router;
