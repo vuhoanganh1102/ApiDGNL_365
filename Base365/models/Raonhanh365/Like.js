@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema
-const LikeRNSchema = new mongoose.Schema({
+const LikeSchema = new mongoose.Schema({
     _id: {
         type: Number,
         required: true,
@@ -47,9 +47,9 @@ const LikeRNSchema = new mongoose.Schema({
     },
 
 }, {
-    collection: 'LikeRN',
+    collection: 'RN365_Like',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("LikeRN", LikeRNSchema);
+module.exports = mongoose.model("RN365_Like", LikeSchema);

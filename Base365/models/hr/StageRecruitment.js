@@ -11,16 +11,16 @@ const RecruitmentStageSchema = new Schema({
     },
     // id tin tuyê dụng
     recruitmentId: { type: Number, required: true },
-    // tên stageRecruitment
+    // tên giai doan
     name: { type: String, required: true },
-    // vị trí tuyển dụng
+    // bo phan dam nhiem
     positionAssumed: { type: String, required: true },
-    // target
+    // muc tieu
     target: { type: String, required: true },
-    //  thời gian hoàn thành
-    complete_time: { type: String, required: true },
-    //  chi tiết
-    description: { type: String, required: true },
+    //  thời gian 
+    completeTime: { type: String, default: null },
+    //  mo ta cong viec
+    description: { type: String, default: null },
     //  trạng thái xóa
     isDelete: { type: Number, required: true }
 }, {
