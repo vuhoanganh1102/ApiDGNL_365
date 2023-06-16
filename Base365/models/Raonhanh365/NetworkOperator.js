@@ -28,9 +28,9 @@ const NetworkOperatorSchema = new mongoose.Schema({
     }
 
 }, {
-    collection: 'NetworkOperator',
+    collection: 'RN365_NetworkOperator',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("NetworkOperator", NetworkOperatorSchema);
+module.exports = mongoose.model("RN365_NetworkOperator", NetworkOperatorSchema);

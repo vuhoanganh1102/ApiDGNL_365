@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema
-const BlogRaoNhanh365Schema = new mongoose.Schema({
+const BlogSchema = new mongoose.Schema({
     _id: {
         //id blog
         type: Number,
@@ -172,9 +172,9 @@ const BlogRaoNhanh365Schema = new mongoose.Schema({
     }
 
 }, {
-    collection: 'BlogRaoNhanh365',
+    collection: 'RN365_Blog',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("BlogRaoNhanh365", BlogRaoNhanh365Schema);
+module.exports = mongoose.model("RN365_Blog", BlogSchema);

@@ -944,8 +944,8 @@ const newSchema = new mongoose.Schema({
     },
 
 }, {
-    collection: 'NewRN',
+    collection: 'RN365_News',
     versionKey: false,
     timestamp: true
 })
-module.exports = mongoose.model("NewRN", newSchema);
+module.exports = mongoose.model("RN365_News", newSchema);

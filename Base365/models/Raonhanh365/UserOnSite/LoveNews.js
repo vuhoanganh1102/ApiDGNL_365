@@ -17,4 +17,4 @@ const LoveNewschema = new mongoose.Schema({
         require:true
     }
 });
-module.exports = mongoose.model("LoveNews", LoveNewschema);
+module.exports = mongoose.model("RN365_LoveNews", LoveNewschema);

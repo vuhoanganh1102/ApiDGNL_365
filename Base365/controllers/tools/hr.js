@@ -110,7 +110,6 @@ exports.cancelJob = async (req, res, next) => {
 }
 
 // failJob
-
 exports.failJob = async (req, res, next) => {
     try {
         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_failed_job?page=1');
@@ -354,7 +353,7 @@ exports.Devices = async (req, res, next) => {
             let Devices = new HR_Devices({ id, userId, infoBrower, tokenBrowser, lastLogin, deviceType, loginType, createdAt });
             await Devices.save();
         }
-        return functions.success(res, 'pull data success'); 
+        return functions.success(res, 'pull data success');
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -577,6 +576,34 @@ exports.policy = async (req, res, next) => {
             // const check_id = await HR_Cancel.findById(_id);
             // if (!check_id || check_id.length === 0) {
             let data_recruitment = new HR_Policys({ id, provisionId, timeStart, supervisorName, applyFor, content, createdBy, isDelete, createdAt, name, file, deletedAt });
+            await HR_Policys.create(data_recruitment);
+            // }
+        }
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.provisionOfCompany = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let provisionId = data[i].provision_id;
+            let timeStart = data[i].time_start;
+            let supervisorName = data[i].supervisor_name;
+            let applyFor = data[i].apply_for;
+            let content = data[i].content;
+            let createdBy = data[i].created_by;
+            let isDelete = data[i].is_delete;
+            let createdAt = data[i].created_at;
+            let name = data[i].name;
+            let file = data[i].file;
+            let deletedAt = data[i].deleted_at;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_Policys({ _id, provisionId, timeStart, supervisorName, applyFor, content, createdBy, isDelete, createdAt, name, file, deletedAt });
             await HR_Policys.create(data_recruitment);
             // }
         }
@@ -1137,6 +1164,33 @@ exports.toolRecruitmentNews = async (req, res, next) => {
             console.log(page);
         } while (result);
 
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+// provisionCompany
+exports.stageRecruitment = async (req, res, next) => {
+    try {
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=1');
+        for (let i = 0; i < data.length; i++) {
+            let _id = Number(data[i].id);
+            let description = data[i].description;
+            let isDelete = data[i].is_delete;
+            let name = data[i].name;
+            let timeStart = data[i].time_start;
+            let supervisorName = data[i].supervisor_name;
+            let comId = data[i].com_id;
+            let file = data[i].file;
+            let createdAt = data[i].created_at;
+            let deletedAt = data[i].deleted_at;
+            // const check_id = await HR_Cancel.findById(_id);
+            // if (!check_id || check_id.length === 0) {
+            let data_recruitment = new HR_StageRecruitments({ id, recruitmentId, name, positionAssumed, target, complete_time, description, isDelete });
+            await HR_StageRecruitments.create(data_recruitment);
+            // }
+        }
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);

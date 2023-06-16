@@ -25,10 +25,12 @@ var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
 var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
+
 // Hr
 var provinceRoute = require('./routes/hr/provinceRoute');
 var welfare = require('./routes/hr/welfare');
 var CRMroute = require('./routes/crm/CRMroutes')
+
 
 
 
@@ -186,6 +188,7 @@ app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
 app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 app.use('/api/raonhanh/admin', adminRaonhanh365);
 
+
 // api hr
 app.use('/api/hr/provinceRoute', provinceRoute);
 app.use('/api/hr/welfare', welfare);
@@ -257,12 +260,4 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-// app.listen(3004, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3004")
-// })
-// app.listen(3005, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3005")
-// })
 module.exports = app;
