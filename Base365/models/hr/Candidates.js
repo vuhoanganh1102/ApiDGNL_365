@@ -14,7 +14,7 @@ const HR_CandidateSchema = new Schema({
         type: String,
         default:null
     },
- 
+
     email: {
         type: String,
         default:null
@@ -63,12 +63,12 @@ const HR_CandidateSchema = new Schema({
     },
     salaryAgree: {
         type: Number,
-        default:null
+        default:0
 
     }, 
     status: {
         type: String,
-        default:null
+        default:0
 
     }, 
     cv: {
@@ -77,7 +77,7 @@ const HR_CandidateSchema = new Schema({
     },
     createdAt: {
         type: Date,
-        default:null
+        default:Date.now()
 
     },
     updatedAt: {
@@ -87,7 +87,7 @@ const HR_CandidateSchema = new Schema({
     },
     isDelete: {
         type: Number,
-        default:null
+        default:0
 
     },
     comId: {

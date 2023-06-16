@@ -85,7 +85,7 @@ exports.AchievementFors = async (req, res, next) => {
 // cancel job
 exports.cancelJob = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_cancel_job?page=1');
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_cancel_job');
         for (let i = 0; i < data.length; i++) {
             let id = Number(data[i].id);
             let canId = data[i].can_id;
