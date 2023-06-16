@@ -28,6 +28,7 @@ var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 // Hr
 var provinceRoute = require('./routes/hr/provinceRoute');
 var welfare = require('./routes/hr/welfare');
+var CRMroute = require('./routes/crm/CRMroutes')
 
 
 
@@ -55,7 +56,7 @@ var TrackingWifi = require('./routes/qlc/TrackingWifi')
 var CheckVip = require('./routes/qlc/CheckVip')
 var Feedback = require('./routes/qlc/Feedback')
 var ReportError = require('./routes/qlc/ReportError')
-var tools = require('./routes/tools')
+// var tools = require('./routes/tools')
 
 
 
@@ -75,7 +76,7 @@ var homePage = require("./routes/qlc/homePage")
 var groupCustomerRouter = require('./routes/crm/groupCustomer')
 
 
-//
+
 var toolAddDataRouter = require('./routes/tools');
 
 var donRouter = require('./routes/timviec/don');
@@ -211,15 +212,18 @@ app.use('/api/qlc/SetIp', SetIpRouter);
 app.use('/api/qlc/CheckVip', CheckVip);
 app.use('/api/qlc/Feedback', Feedback);
 app.use('/api/qlc/ReportError', ReportError);
-app.use("/api/tools", tools)
-
-
+// app.use("/api/tools", tools)
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
 app.use("/api/qlc/HisOfTracking",HisOfTrackingRouter)
 app.use("/api/qlc/CalendarWorkEmployee",CalendarWorkEmployee)
 app.use("/api/qlc/homePage",homePage)
+
+
+
+//Api CRM
+app.use('/api',CRMroute)
 
 
 

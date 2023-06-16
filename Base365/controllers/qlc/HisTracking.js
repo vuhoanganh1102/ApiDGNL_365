@@ -2,7 +2,6 @@ const Tracking = require('../../models/qlc/HisTracking');
 const functions = require('../../services/functions')
 const calEmp = require('../../models/qlc/CalendarWorkEmployee')
 //thêm chấm công 
-<<<<<<< HEAD
 exports.CreateTracking = async (req,res)=>{
     
 
@@ -16,54 +15,6 @@ exports.CreateTracking = async (req,res)=>{
     }else if (isNaN(idQLC)) {
         functions.setError(res, "idQLC id must be a number");
     }else {
-=======
-exports.CreateTracking = async (req, res) => {
-    const idQLC = req.body.idQLC;
-    const companyId = req.body.CompanyId;
-    const role = req.body.role;
-    const imageTrack = req.body.imageTrack;
-    const curDeviceName = req.body.curDeviceName;
-    const latitude = req.body.latitude;
-    const longtitude = req.body.longtitude;
-    const Location = req.body.Location;
-    const NameWifi = req.body.NameWifi;
-    const IpWifi = req.body.IpWifi;
-    const MacWifi = req.body.MacWifi;
-    const shiftID = req.body.shiftID;
-    const BluetoothAdrr = req.body.BluetoothAdrr;
-    const Err = req.body.Err;
-    const Success = req.body.Success;
-    const Note = req.body.Note;
-
-
-    if (!companyId) {
-        functions.setError(res, "Company id required");
-    } else if (typeof companyId !== "number") {
-        functions.setError(res, "Company id must be a number");
-    } else if (!idQLC) {
-        functions.setError(res, "idQLC required");
-    } else if (typeof idQLC !== "number") {
-        functions.setError(res, "idQLC id must be a number");
-    } else if (!imageTrack) {
-        functions.setError(res, "imageTrack required");
-    } else if (!curDeviceName) {
-        functions.setError(res, "curDeviceName required");
-    } else if (!latitude) {
-        functions.setError(res, "latitude required");
-    } else if (!longtitude) {
-        functions.setError(res, "longtitude required");
-    } else if (!Location) {
-        functions.setError(res, "Location required");
-    } else if (!NameWifi) {
-        functions.setError(res, "Wifi name required");
-    } else if (!IpWifi) {
-        functions.setError(res, "Wifi ip required");
-    } else if (!MacWifi) {
-        functions.setError(res, "Mac Wifi required");
-    } else if (!shiftID) {
-        functions.setError(res, "Shift name required");
-    } else {
->>>>>>> 110cc1e170e1c18e0110fc76d96f85c1208ce0fe
         let maxId = await functions.getMaxID(Tracking);
         if (!maxId) {
             maxId = 0;
