@@ -7,6 +7,12 @@ const toolRaoNhanh = require('../controllers/tools/raonhanh365')
 const qlc = require('../controllers/tools/quanlichung')
 const crm = require('../controllers/tools/CRM')
 
+const toolHr =  require('../controllers/tools/hr');
+const toolVanThu = require('../controllers/tools/vanthu')
+const toolCRM = require('../controllers/tools/CRM')
+
+
+
 // API quét data người dùng từ base chat
 router.get('/addUserChat365', formData.parse(), toolUser.addUserChat365);
 router.get('/addUserCompanyTimviec365', toolUser.addUserCompanyTimviec365);
@@ -146,6 +152,79 @@ router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
 // api quét data các phần của chi tiết danh mục Raonhanh
 // router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
 
+
+
+// api quet tool van thu
+router.post('/toolCateDexuat',toolVanThu.toolCateDeXuat);
+router.post('/toolDeXuat',toolVanThu.toolDeXuat);
+router.post('/toolDeXuatXuLy',toolVanThu.toolDeXuatXuLy);
+router.post('/toolDeleteDeXuat',toolVanThu.toolDeleteDX);
+router.post('/toolGhiChu',toolVanThu.toolGhiChu);
+router.post('/toolGroupVanBan',toolVanThu.toolGroupVanBan);
+router.post('/toolHideCateDX',toolVanThu.toolhideCateDX);
+router.post('/toolHistoryHandlingDX',toolVanThu.toolHistoryHDX);
+router.post('/toolLyDo',toolVanThu.toolLyDo);
+router.post('/toolPhongBan',toolVanThu.toolPhongBan);
+router.post('/toolSettingDX',toolVanThu.toolSettingDX);
+
+
+// api quét data recruitment
+router.post('/toolrecruitment',toolHr.recruitment)
+router.post('/toolrecruitment_news',toolHr.recruitment_news)
+router.post('/toolschedule_interview',toolHr.schedule_interview)
+router.post('/toolcancelJob',toolHr.cancelJob)
+router.post('/toolFailJob',toolHr.failJob)
+router.post('/toolContactJob',toolHr.contactJob)
+router.post('/toolNotify',toolHr.notify)
+router.post('/toolPermission',toolHr.permission)
+router.post('/toolPolicys',toolHr.policy)
+router.post('/toolstageRecruitment',toolHr.stageRecruitment)
+
+// api quét data HR Cường
+router.post('/toolAchievementFors',toolHr.AchievementFors)
+router.post('/toolAddInfoLeads',toolHr.AddInfoLeads)
+router.post('/toolBlogs',toolHr.Blogs)
+router.post('/toolCategorys',toolHr.Categorys)
+router.post('/toolCiSessions',toolHr.CiSessions)
+router.post('/toolCitys',toolHr.Citys)
+router.post('/toolCrontabQuitJobs',toolHr.CrontabQuitJobs)
+router.post('/toolDepartmentDetails',toolHr.DepartmentDetails)
+router.post('/toolDescPositions',toolHr.DescPositions)
+router.post('/toolDevices',toolHr.Devices)
+router.post('/toolInfoLeaders',toolHr.InfoLeaders)
+router.post('/toolInfringesFors',toolHr.InfringesFors)
+router.post('/toolavatar',toolHr.avatar)
+
+
+// api
+//----------------------------------------------api quet data HR----------------------
+router.post('/hr/jobDes',toolHr.toolJobDes);
+router.post('/hr/anotherSkill', toolHr.toolAnotherSkill);
+router.post('/hr/perDetail', toolHr.toolPermisionDetail);
+router.post('/hr/remind', toolHr.toolRemind);
+router.post('/hr/processInter', toolHr.toolProcessInterview);
+router.post('/hr/processTraining', toolHr.toolProcessTraining);
+router.post('/hr/signature', toolHr.toolSignatureImage);
+router.post('/hr/scheduleInter', toolHr.toolScheduleInterview);
+router.post('/hr/inviteInter', toolHr.toolInviteInterview);
+router.post('/hr/recruitment', toolHr.toolRecruitment);
+router.post('/hr/recruitmentNews', toolHr.toolRecruitmentNews);
+
+//Api quét data CRM
+
+router.post('/toolContract',toolCRM.toolContact)//danh sách hợp đồng 
+router.post('/toolCC',toolCRM.toolContactCustomer)// danh sach hơp đòng khách hàng
+router.post('/toolCs',toolCRM.toolCustomer)// danh sách hợp đồng khách hàng
+router.post('/toolCr',toolCRM.toolCustomerCare)// danh sách chăm sóc khách hàng
+router.post('/toolCuchan',toolCRM.toolCustomerChance) // danh sách khách hàng cơ hội
+router.post('/toolChanfile',toolCRM.toolCustomerChanceFile)
+router.post('/toolChanfoot',toolCRM.toolChanFoots)
+router.post('/toolCusfile',toolCRM.toolCusFile)
+router.post('/toolCG',toolCRM.toolCustomerGroup)
+router.post('/toolCmulti',toolCRM.toolCustomeMulti)
+router.post('/toolCnote',toolCRM.toolCustomerNote)
+router.post('/toolCstatus',toolCRM.toolCustomerStatus)
+
 //CRM
 router.get('/toolCampaign', crm.toolCampaign);
 router.get('/toolDetailCampaign', crm.toolDetailCampaign);
@@ -169,6 +248,4 @@ router.get('/toolDetailReturnProduct', crm.toolDetailReturnProduct);
 router.get('/toolDetailListOrder', crm.toolDetailListOrder);
 router.get('/toolDetailFormContract', crm.toolDetailFormContract);
 router.get('/toolDetailEmailSms', crm.toolDetailFormContract);
-
-
 module.exports = router;

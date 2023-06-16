@@ -157,6 +157,18 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
 };
 
+// hàm validate email
+exports.checkEmail = async(email) => {
+    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return gmailRegex.test(email);
+};
+
+// hàm validate link
+exports.checkLink = async(link) => {
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+    return urlRegex.test(yourUrlVariable);
+};
+
 // hàm khi thành công
 exports.success = async (res, messsage = "", data = []) => {
     return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
@@ -243,7 +255,7 @@ const storageFile = (destination) => {
         destination: function (req, file, cb) {
             let userDestination = " "
             if (req.user) {
-                const userId = req.user.data._id; // Lấy id người dùng từ request
+                req.user.data._id; // Lấy id người dùng từ request
                 const d = new Date(),
                     day = d.getDate() < 10 ? "0" + d.getDate() : d.getDate(),
                     month = d.getMonth() < 10 ? "0" + Number(d.getMonth() + 1) : d.getMonth(),
@@ -326,6 +338,7 @@ const storage = multer.diskStorage({
     },
 });
 
+
 // hàm check file
 exports.uploadFile = multer({ storage: storageFile })
 
@@ -397,10 +410,10 @@ exports.checkToken = (req, res, next) => {
 };
 
 // ham check admin rao nhanh 365
-exports.isAdminRN365 = async(req, res, next)=>{
+exports.isAdminRN365 = async (req, res, next) => {
     let user = req.user.data;
     let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, isAdmin: 1, active: 1 });
-    if(admin) return next();
+    if (admin) return next();
     return res.status(403).json({ message: "is not admin RN365" });
 }
 const checkTokenV3 = (req, res, next) => {
@@ -477,16 +490,16 @@ exports.getDataSex = async () => {
 };
 
 
-exports.pageFind = async(model, condition, sort, skip, limit, select) => {
+exports.pageFind = async (model, condition, sort, skip, limit, select) => {
     return model.find(condition, select).sort(sort).skip(skip).limit(limit).lean();
 };
 
-exports.pageFindWithFields = async(model, condition, fields, sort, skip, limit) => {
+exports.pageFindWithFields = async (model, condition, fields, sort, skip, limit) => {
     return model.find(condition, fields).sort(sort).skip(skip).limit(limit);
 };
 
 // lấy danh sách mẫu CV sắp xếp mới nhất
-exports.getDataCVSortById = async(condition) => {
+exports.getDataCVSortById = async (condition) => {
     const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ _id: -1 });
     if (data.length > 0) {
         return data;
@@ -495,7 +508,7 @@ exports.getDataCVSortById = async(condition) => {
 };
 
 // lấy danh sách mẫu CV sắp xếp lượt tải nn
-exports.getDataCVSortByDownload = async(condition) => {
+exports.getDataCVSortByDownload = async (condition) => {
     const data = await CV.find(condition).select('_id image name alias price status view love download lang_id design_id cate_id colors').sort({ download: -1 });
     if (data.length > 0) {
         return data;
@@ -565,7 +578,7 @@ exports.findUser = async (userId, select, sort, skip, limit) => {
     }, { select }).sort(sort).skip(skip).limit(limit)
 }
 
-exports.findAll = async(model, fields)=> {
+exports.findAll = async (model, fields) => {
     return model.find({}, fields);
 }
 
@@ -585,7 +598,7 @@ exports.findOneUser = async (userId, select) => {
 }
 
 //hàm tìm kiếm và cập nhật user với id timviec và type =0 hoặc type =2
-exports.findOneAndUpdateUser = async(userId, projection) => {
+exports.findOneAndUpdateUser = async (userId, projection) => {
     return Users.findOneAndUpdate({
         $or: [{
             idTimViec365: userId,
@@ -638,8 +651,7 @@ exports.checkDate = (date) => {
 }
 
 
-
-exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
+exports.uploadFileBase64RaoNhanh = async (folder, id, base64String, file) => {
     let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
     // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
     if (!fs.existsSync(path1)) {
@@ -654,9 +666,9 @@ exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
     let data = Buffer.from(matches[2], 'base64');
 
     const imageName = `${Date.now()}.${type.split("/")[1]}`;
-    fs.writeFile(path1+imageName, data, (err) => {
+    fs.writeFile(path1 + imageName, data, (err) => {
         if (err) {
-        console.log(err)
+            console.log(err)
         }
     });
 }
@@ -702,143 +714,93 @@ exports.deleteFileQLC = (id, file) => {
     if (err) console.log(err);
     });
     }
+// hàm tìm id max Quản Lí Chung
+exports.getMaxIDQLC = async (model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
+    return maxUser.idQLC;
+};
 // hàm tìm idcompany max 
-exports.getMaxIDcompany = async(model) => {
+exports.getMaxIDcompany = async (model) => {
     const maxIDcompany = await model.findOne({}, {}, { sort: { companyId: -1 } }).lean() || 0;
     return maxIDcompany.companyId;
 };
 
-    //hàm tìm kiếm và cập nhật user với phoneTK và type =0 hoặc type =2
-    exports.findOneAndUpdateUserByPhoneTK = async (phoneTK, projection) => {
-        return Users.findOneAndUpdate({
-            $or: [{
-                phoneTK: phoneTK,
-                type: 0
-            },
-            {
-                idTimViec365: phoneTK,
-                type: 2
-            },
-            ]
-        }, projection)
-    };
+//hàm tìm kiếm và cập nhật user với phoneTK và type =0 hoặc type =2
+exports.findOneAndUpdateUserByPhoneTK = async (phoneTK, projection) => {
+    return Users.findOneAndUpdate({
+        $or: [{
+            phoneTK: phoneTK,
+            type: 0
+        },
+        {
+            idTimViec365: phoneTK,
+            type: 2
+        },
+        ]
+    }, projection)
+};
 
-    //upload image cv,don, thu, syll
+//upload image cv,don, thu, syll
 
-    exports.uploadAndCheckPathIMG = async (userId, imageFile, category) => {
-        try {
-            // upload
-            const timestamp = Date.now();
-            const imagePath = await fsPromises.readFile(imageFile.path);
-            const uploadDir = `../Storage/TimViec365/${userId}/${category}`;
-            const uploadFileName = `${timestamp}_${imageFile.originalFilename}`;
-            const uploadPath = path.join(uploadDir, uploadFileName);
-            await fsPromises.mkdir(uploadDir, { recursive: true });
-            await fsPromises.writeFile(uploadPath, imagePath);
-            // tìm và chuyển img sang pdf
-            await fsPromises.access(uploadPath);
-            const pdfPath = path.join(uploadDir, `${uploadFileName.slice(0, -4)}.pdf`);
-            const doc = new PDFDocument();
-            const stream = fs.createWriteStream(pdfPath);
+exports.uploadAndCheckPathIMG = async (userId, imageFile, category) => {
+    try {
+        // upload
+        const timestamp = Date.now();
+        const imagePath = await fsPromises.readFile(imageFile.path);
+        const uploadDir = `../Storage/TimViec365/${userId}/${category}`;
+        const uploadFileName = `${timestamp}_${imageFile.originalFilename}`;
+        const uploadPath = path.join(uploadDir, uploadFileName);
+        await fsPromises.mkdir(uploadDir, { recursive: true });
+        await fsPromises.writeFile(uploadPath, imagePath);
+        // tìm và chuyển img sang pdf
+        await fsPromises.access(uploadPath);
+        const pdfPath = path.join(uploadDir, `${uploadFileName.slice(0, -4)}.pdf`);
+        const doc = new PDFDocument();
+        const stream = fs.createWriteStream(pdfPath);
 
-            doc.pipe(stream);
-            doc.image(uploadPath, 0, 0, { fit: [612, 792] });
-            doc.end();
+        doc.pipe(stream);
+        doc.image(uploadPath, 0, 0, { fit: [612, 792] });
+        doc.end();
 
-            await new Promise((resolve, reject) => {
-                stream.on('finish', resolve);
-                stream.on('error', reject);
-            });
+        await new Promise((resolve, reject) => {
+            stream.on('finish', resolve);
+            stream.on('error', reject);
+        });
 
-            console.log('Chuyển đổi ảnh thành PDF thành công.');
-            return {
-                status: 'EXIT',
-                nameImage: uploadFileName,
-                imgPath: uploadPath,
-                pdfPath: pdfPath,
-            };
+        console.log('Chuyển đổi ảnh thành PDF thành công.');
+        return {
+            status: 'EXIT',
+            nameImage: uploadFileName,
+            imgPath: uploadPath,
+            pdfPath: pdfPath,
+        };
 
 
-        } catch (error) {
-            if (error.code === 'ENOENT') {
-                return 'ENOENT'
-            } else {
-                return error.message
-            }
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return 'ENOENT'
+        } else {
+            return error.message
         }
     }
+}
 
-    // hàm  xóa  ảnh và video khi upload thất bại
-    exports.deleteImgVideo = async (avatar = undefined, video = undefined) => {
-        if (avatar) {
-            avatar.forEach(async (element) => {
-                await this.deleteImg(element)
-            })
-        }
-        if (video) {
-            video.forEach(async (element) => {
-                await this.deleteImg(element)
-            })
-        }
-    }
-
-    //thay thế các kí tự đặc biệt trong tiêu đề
-    exports.replaceKeywordSearch = async (lower, keyword) => {
-        if (lower === 1) {
-            keyword = keyword.toLowerCase();
-        }
-        const arrRep = ["'", '"', "-", "\\+", "=", "\\*", "\\?", "\\/", "!", "~", "#", "@", "%", "$", "\\^", "&", "\\(", "\\)", ";", ":", "\\\\", "\\.", ",", "\\[", "\\]", "{", "}", "‘", "’", '“', '”', '<', '>'];
-        keyword = arrRep.reduce((str, rep) => {
-            return str.replace(new RegExp(rep, "g"), " ");
-        }, keyword);
-        keyword = keyword.replace(/ {2,}/g, " ");
-        return keyword;
-    };
-
-    exports.replaceMQ = async (text) => {
-        text = text.replace(/\\'/g, "'");
-        text = text.replace(/'/g, "");
-        text = text.replace(/\\/g, "");
-        text = text.replace(/"/g, "");
-        return text;
-    }
-
-    //bỏ những từ khóa trong tiêu đề
-    exports.removerTinlq = async (string) => {
-        var arr_remove = ["lương", "nhân", "trình", "viên", "chuyên", "cao", "tuyển", "dụng", "hấp", "dẫn", "chi", "tiết", "công", "ty", "tnhh", "sx", "tm", "dv", "phòng", "tại", "biết", "về"];
-        var result = arr_remove.reduce(function (str, remove) {
-            return str.replace(new RegExp(remove, "gi"), "");
-        }, string);
-
-        result = result.trim().replace(/\s+/g, " "); // Loại bỏ khoảng trắng dư thừa
-
-        return result;
-    }
-
-
-
-// hàm random 
-exports.getRandomInt = (min, max)=> {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
 // hàm  xóa  ảnh và video khi upload thất bại
-exports.deleteImgVideo = async(avatar = undefined, video = undefined) => {
+exports.deleteImgVideo = async (avatar = undefined, video = undefined) => {
     if (avatar) {
-        avatar.forEach(async(element) => {
+        avatar.forEach(async (element) => {
             await this.deleteImg(element)
         })
     }
     if (video) {
-        video.forEach(async(element) => {
+        video.forEach(async (element) => {
             await this.deleteImg(element)
         })
     }
 }
 
 //thay thế các kí tự đặc biệt trong tiêu đề
-exports.replaceKeywordSearch = async(lower, keyword) => {
+exports.replaceKeywordSearch = async (lower, keyword) => {
     if (lower === 1) {
         keyword = keyword.toLowerCase();
     }
@@ -850,7 +812,41 @@ exports.replaceKeywordSearch = async(lower, keyword) => {
     return keyword;
 };
 
-exports.replaceMQ = async(text) => {
+
+// hàm random 
+exports.getRandomInt = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+// hàm  xóa  ảnh và video khi upload thất bại
+exports.deleteImgVideo = async (avatar = undefined, video = undefined) => {
+    if (avatar) {
+        avatar.forEach(async (element) => {
+            await this.deleteImg(element)
+        })
+    }
+    if (video) {
+        video.forEach(async (element) => {
+            await this.deleteImg(element)
+        })
+    }
+}
+
+//thay thế các kí tự đặc biệt trong tiêu đề
+exports.replaceKeywordSearch = async (lower, keyword) => {
+    if (lower === 1) {
+        keyword = keyword.toLowerCase();
+    }
+    const arrRep = ["'", '"', "-", "\\+", "=", "\\*", "\\?", "\\/", "!", "~", "#", "@", "%", "$", "\\^", "&", "\\(", "\\)", ";", ":", "\\\\", "\\.", ",", "\\[", "\\]", "{", "}", "‘", "’", '“', '”', '<', '>'];
+    keyword = arrRep.reduce((str, rep) => {
+        return str.replace(new RegExp(rep, "g"), " ");
+    }, keyword);
+    keyword = keyword.replace(/ {2,}/g, " ");
+    return keyword;
+};
+
+exports.replaceMQ = async (text) => {
     text = text.replace(/\\'/g, "'");
     text = text.replace(/'/g, "");
     text = text.replace(/\\/g, "");
@@ -859,9 +855,9 @@ exports.replaceMQ = async(text) => {
 }
 
 //bỏ những từ khóa trong tiêu đề
-exports.removerTinlq = async(string) => {
+exports.removerTinlq = async (string) => {
     var arr_remove = ["lương", "nhân", "trình", "viên", "chuyên", "cao", "tuyển", "dụng", "hấp", "dẫn", "chi", "tiết", "công", "ty", "tnhh", "sx", "tm", "dv", "phòng", "tại", "biết", "về"];
-    var result = arr_remove.reduce(function(str, remove) {
+    var result = arr_remove.reduce(function (str, remove) {
         return str.replace(new RegExp(remove, "gi"), "");
     }, string);
 
@@ -870,7 +866,7 @@ exports.removerTinlq = async(string) => {
     return result;
 }
 
-exports.new_money_tv = async(nm_id, nm_type, nm_unit, nm_min_value, nm_max_value, new_money) => {
+exports.new_money_tv = async (nm_id, nm_type, nm_unit, nm_min_value, nm_max_value, new_money) => {
     let array_muc_luong = [
         "Chọn mức lương",
         "Thỏa thuận",
@@ -917,12 +913,12 @@ exports.new_money_tv = async(nm_id, nm_type, nm_unit, nm_min_value, nm_max_value
 
 
 
-exports.hostCv = async(text) => {
+exports.hostCv = async (text) => {
     const hostCv = "https://timviec365.vn/cv365"
     const link = `${hostCv}/${text}`;
     return link;
 };
-exports.getMaxUserID = async(type = "user") => {
+exports.getMaxUserID = async (type = "user") => {
     let condition = {};
     if (type == "user") {
         condition = { type: { $ne: 1 } };
@@ -989,13 +985,13 @@ exports.clean_sp = (string) => {
         '   ': ' ',
         '  ': ' '
     };
-    string = string.trim().replace(/ {2,}/g, function(match) {
+    string = string.trim().replace(/ {2,}/g, function (match) {
         return array[match];
     });
     return string;
 }
 
-exports.processBase64 = async(userId, nameImage, base64String) => {
+exports.processBase64 = async (userId, nameImage, base64String) => {
     const dir = `../storage/base365/timviec365/cv365/upload/ungvien/uv_${userId}`;
 
     if (!fs.existsSync(dir)) {

@@ -29,6 +29,8 @@ var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 var provinceRoute = require('./routes/hr/provinceRoute');
 var welfare = require('./routes/hr/welfare');
 
+
+
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -80,20 +82,75 @@ var donRouter = require('./routes/timviec/don');
 var thuRouter = require('./routes/timviec/thu');
 var syllRouter = require('./routes/timviec/syll');
 
+
+//văn thư
+var settingDxVanThu = require('./routes/vanthu/setingdx');
+var FeedbackRouter = require('./routes/vanthu/tbl_feedback');
+var qlcv_editRouter = require('./routes/vanthu/qlcv_edit');
+var qlcv_roleRouter = require('./routes/vanthu/qlcv_Role');
+var ql_CongVan = require('./routes/vanthu/quanLiCongVan');
+var vb_thay_the = require('./routes/vanthu/VanBanThayThe');
+var view = require('./routes/vanthu/view');
+var textBook = require('./routes/vanthu/TextBook');
+var tlLuuTru = require('./routes/vanthu/tl_LuuTru');
+var thongBao = require('./routes/vanthu/thong_bao');
+var NguoiDuyetVanBan = require('./routes/vanthu/user_duyet_vb');
+var UserModel = require('./routes/vanthu/user_model');
+var VanBan = require('./routes/vanthu/van_ban');
+var Vanthu = require('./routes/vanthu/vanthuRoutes')
 var toolVT = require('./routes/vanthu/RoutertoolVT')
 
 const { router } = require("express/lib/application");
 
 var app = express();
-// app.listen(3001, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3001")
-// });
+
 
 //
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+
+
+//văn thư
+app.use('/api/vanthu', settingDxVanThu);
+app.use('/api/vanthu', FeedbackRouter);
+app.use('/api/vanthu', qlcv_editRouter);
+app.use('/api/vanthu', qlcv_roleRouter);
+app.use('/api/vanthu', ql_CongVan);
+app.use('/api/vanthu', vb_thay_the);
+app.use('/api/vanthu', view);
+app.use('/api/vanthu', textBook);
+app.use('/api/vanthu', tlLuuTru);
+app.use('/api/vanthu', thongBao);
+app.use('/api/vanthu', NguoiDuyetVanBan);
+app.use('/api/vanthu', UserModel);
+app.use('/api/vanthu', VanBan);
+
+
+
+//tạo đề xuất 
+var create_Dx_Router = require('./routes/vanthu/DeXuat/create_dx')
+app.use('/api/vanthu/DeXuat', create_Dx_Router);
+//xoa de xuat 
+var Delete_deXuat = require('./routes/vanthu/DeXuat/delete_Dx');
+app.use('/api/vanthu/DeXuat', Delete_deXuat);
+
+//edit de xuat
+var edit_Route = require('./routes/vanthu/DeXuat/edit_deXuat');
+app.use('/api/vanthu/edit_DeXuat', edit_Route);
+//user_dx
+var get_deXuat_user = require('./routes/vanthu/DeXuat/User_Dx');
+app.use('/api/vanthu/DeXuat', get_deXuat_user);
+
+
+
+
+
+
+
+
+
+
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -154,6 +211,7 @@ app.use('/api/qlc/SetIp', SetIpRouter);
 app.use('/api/qlc/CheckVip', CheckVip);
 app.use('/api/qlc/Feedback', Feedback);
 app.use('/api/qlc/ReportError', ReportError);
+app.use("/api/tools", tools)
 
 
 //API quẩn lý ca làm việc
@@ -163,22 +221,22 @@ app.use("/api/qlc/HisOfTracking",HisOfTrackingRouter)
 app.use("/api/qlc/CalendarWorkEmployee",CalendarWorkEmployee)
 app.use("/api/qlc/homePage",homePage)
 
-app.use("/api/tools", tools)
 
 
 //API văn thu
 app.use("/api/tool", toolVT)
+app.use("/api",Vanthu)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
 // 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -194,4 +252,13 @@ const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
+
+// app.listen(3004, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3004")
+// })
+// app.listen(3005, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3005")
+// })
 module.exports = app;

@@ -19,7 +19,7 @@ router.post('/RegisterB2CvUpload', functions.checkToken, uploadFileUv.fields([
 ]), candidate.RegisterB2CvUpload);
 
 //api đăng kí bước 2 bằng cách tạo cv trên site
-router.post('/RegisterB2CvSite', functions.checkToken, uploadFileUv.single('imageUpload'), candidate.RegisterB2CvSite);
+// router.post('/RegisterB2CvSite', functions.checkToken, uploadFileUv.single('imageUpload'), candidate.RegisterB2CvSite);
 
 //api đăng nhập ứng viên
 router.post('/loginUv', formData.parse(), candidate.loginUv);
@@ -88,7 +88,7 @@ router.post('/updateExp', formData.parse(), functions.checkToken, candidate.upda
 router.post('/deleteExp', formData.parse(), functions.checkToken, candidate.deleteExp);
 
 //api danh sách ứng viên ngẫu nhiên, theo ngành nghề, vị trí
-router.post('/list', formData.parse(), functions.checkToken, candidate.list);
+// router.post('/selectiveUv', formData.parse(), functions.checkToken, candidate.selectiveUv);
 
 //api danh sách ứng viên tương tự được AI gợi ý
 router.post('/candidateAI', formData.parse(), candidate.candidateAI);
