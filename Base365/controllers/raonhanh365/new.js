@@ -585,7 +585,8 @@ exports.getNewBeforeLogin = async (req, res, next) => {
             },
             {
                 $match:{buySell:2,sold:0,active:1}
-            },{
+            },
+            {
                 $sort:{pinHome:-1,createTime:-1}
             },
             {
@@ -617,19 +618,18 @@ exports.searchNew = async (req, res, next) => {
             = req.query;
         if (!page && !pageSize) {
             return functions.setError(res, 'missing data', 400)
-
         }
         const skip = (page - 1) * pageSize;
-        const limit = pageSize;
+        const limit = Number (pageSize);
         if (await functions.checkNumber(page) === false || await functions.checkNumber(page) === false) {
             return functions.setError(res, 'page not found', 404)
         }
         if (link === 'tat-ca-tin-dang-ban.html') {
             buySell = 2;
-            searchItem = { _id: 1, active: 1, title: 1, viewCount: 1, address: 1, money: 1, apartmentNumber: 1, img: 1, updateTime: 1, name: 1, address: 1, district: 1, ward: 1 }
+            searchItem = { _id: 1, User:{_id:1,idRaoNhanh365:1,phone:1,userName:1,type:1}, active: 1, title: 1, viewCount: 1, address: 1, money: 1, apartmentNumber: 1, img: 1, updateTime: 1, name: 1, address: 1, district: 1, ward: 1 }
         } else if (link === 'tat-ca-tin-dang-mua.html') {
             buySell = 1;
-            searchItem = { _id: 1, active: 1, title: 1, viewCount: 1, address: 1, money: 1, startvalue: 1, timeReceivebidding: 1, timeEndReceivebidding: 1, img: 1, apartmentNumber: 1, updateTime: 1, createTime: 1, name: 1, address: 1, district: 1, ward: 1, }
+            searchItem = { _id: 1,User:{_id:1,idRaoNhanh365:1,phone:1,userName:1,type:1}, active: 1, title: 1, viewCount: 1, address: 1, money: 1, startvalue: 1, timeReceivebidding: 1, timeEndReceivebidding: 1, img: 1, apartmentNumber: 1, updateTime: 1, createTime: 1, name: 1, address: 1, district: 1, ward: 1, }
 
         } else {
             return functions.setError(res, "page not found", 404)
@@ -721,11 +721,30 @@ exports.searchNew = async (req, res, next) => {
         if (giaDen && buySell === 1) condition.endvalue = { $lte: endvalue };
         if (giaTu && buySell === 2) condition.money = { $gte: giaTu };
         if (giaDen && buySell === 2) condition.money = { $gte: giaDen };
-        let data = await New.find(condition, searchItem).skip(skip).limit(limit);
+        let data = await New.aggregate([
+            {
+                $lookup:{
+                    from:'User',
+                    foreignField:'idRaoNhanh365',
+                    localField:'userID',
+                    as:'User'
+                }
+            },{
+                $match:condition
+            },{
+                $project:searchItem
+            },{
+                $skip:skip
+            },{
+                $limit:limit
+            }
+        ])
+        //let data = await New.find(condition, searchItem).skip(skip).limit(limit);
         const totalCount = await New.countDocuments({ buySell })
         const totalPages = Math.ceil(totalCount / pageSize)
         return functions.success(res, "get data success", { totalCount, totalPages, data })
     } catch (error) {
+        console.log("🚀 ~ file: new.js:747 ~ exports.searchNew= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -733,7 +752,7 @@ exports.searchNew = async (req, res, next) => {
 exports.createBuyNew = async (req, res) => {
     try {
         // lấy id user từ req
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
 
         // khởi tạo các biến có thể có
         let tenderFile = null;
@@ -858,7 +877,7 @@ exports.createBuyNew = async (req, res) => {
 exports.updateBuyNew = async (req, res, next) => {
     try {
         // lấy id user từ req
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         // khởi tạo các biến có thể có
         let tenderFile = null;
 
@@ -1003,13 +1022,13 @@ exports.updateBuyNew = async (req, res, next) => {
 // chi tiết tin trước đăng nhập    
 exports.getDetailNew = async (req, res, next) => {
     try {
-        let linkTitle = req.params.linkTitle;
+        let linkTitle = req.params.linkTitle.replace('.html','');
         if (!linkTitle) {
             return functions.setError(res, 'missing data', 400)
         }
         let id = linkTitle.split('-').reverse()[0];
-        let buy = id.charAt(0);
-        let id_new = id.slice(1);
+        let buy = id.charAt(0); 
+        let id_new = Number (id.slice(1));
         let danh_muc1 = null;
         let danh_muc2 = null;
         let danh_muc3 = null;
@@ -1045,7 +1064,7 @@ exports.getDetailNew = async (req, res, next) => {
             }
         }
 
-        if (buy === 'm') {
+        if (buy === 'ct') {
             buysell = 1;
             searchitem = {
                 title: 1, money: 1, name: 1, timeEndReceivebidding: 1, timeReceivebidding: 1,
@@ -1054,11 +1073,11 @@ exports.getDetailNew = async (req, res, next) => {
                 fileContent: 1, instructionContent: 1, instructionFile: 1,
                 startvalue: 1, endvalue: 1, until_tu: 1, until_den: 1, bidFee: 1, until_bidFee: 1, phone: 1, img: 1,
                 address: 1, updateTime: 1, status: 1, description: 1, city: 1, district: 1, ward: 1, apartmentNumber: 1,
-                detailCategory: 1, viewCount: 1, user: { userName: 1, type: 1, createdAt: 1 }
+                detailCategory: 1, viewCount: 1, user: {_id:1, userName: 1, type: 1, createdAt: 1 }
             };
-        } else if (buy === 'b') {
+        } else if (buy === 'c') {
             buysell = 2;
-            searchitem = { title: 1, viewCount: 1, money: 1, name: 1, phone: 1, address: 1, updateTime: 1, img: 1, status: 1, description: 1, detailCategory: 1, user: { userName: 1, type: 1, createdAt: 1 } };
+            searchitem = { title: 1, viewCount: 1, money: 1, name: 1, phone: 1, address: 1, updateTime: 1, img: 1, status: 1, description: 1, detailCategory: 1, user: {_id:1, userName: 1, type: 1, createdAt: 1 } };
 
         } else {
             return functions.setError(res, 'not found data', 404)
@@ -1072,22 +1091,29 @@ exports.getDetailNew = async (req, res, next) => {
                 {
                     from: "Users",
                     localField: "userID",
-                    foreignField: "_id",
+                    foreignField: "idRaoNhanh365",
                     as: "user"
                 }
             }, {
                 $project: searchitem
             }, {
-                $match: { _id: 631733 }
+                $match: { _id: id_new }
             }
         ]);
+        data.push({danhmuc:{danh_muc1,danh_muc2,danh_muc3}})
         tintuongtu = await New.find({ cateID: check.cateID }, searchitem).limit(6);
-
         await New.findByIdAndUpdate(id_new, { $inc: { viewCount: +1 } })
         if (tintuongtu) {
             data.push({ tintuongtu: tintuongtu })
         }
-        functions.success(res, 'get data success', { danh_muc1, danh_muc2, danh_muc3, data })
+
+
+
+
+
+
+
+        functions.success(res, 'get data success', { data })
     } catch (error) {
         functions.setError(res, error)
     }
@@ -1096,16 +1122,15 @@ exports.getDetailNew = async (req, res, next) => {
 // yêu thích tin 
 exports.loveNew = async (req, res, next) => {
     try {
-        let id = req.body.id;
-        let user = req.user.data;
-        user._id = 19;
-        let checkLove = await LoveNews.find({ id_new: id, id_user: user._id });
-        if (checkLove.length !== 0) {
-            await LoveNews.findOneAndDelete({ id_new: id, id_user: user._id })
+        let id = req.body.new_id;
+        let user = req.user.data.idRaoNhanh365;
+        let checkLove = await LoveNews.find({ id_new: id, id_user: user });
+        if (checkLove && checkLove.length !== 0) {
+            await LoveNews.findOneAndDelete({ id_new: id, id_user: user })
         } else {
             createdAt = new Date(Date.now());
-            let _id = await functions.getMaxID(LoveNews) + 1;
-            await LoveNews.create({ _id, id_new: id, id_user: user._id, createdAt })
+            let _id = await functions.getMaxID(LoveNews) + 1  ;
+            await LoveNews.create({ _id, id_new: id, id_user: user, createdAt })
         }
         return functions.success(res, "love new success")
     } catch (error) {
@@ -1164,7 +1189,7 @@ exports.createToken = async (req, res, next) => {
 // danh sách yêu thích tin
 exports.newfavorite = async (req, res, next) => {
     try {
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let linkTitle = req.params.linkTitle;
         let searchItem = null;
         let buySell = null;
@@ -1182,13 +1207,16 @@ exports.newfavorite = async (req, res, next) => {
             return functions.setError(res, 'invalid data', 400)
         }
         let data = [];
+        let soLuong = 0;
         let check = await LoveNews.find({ id_user: userID })
         if (check && check.length) {
             for (let i = 0; i < check.length; i++) {
-                let datanew = await New.find({ _id: check[i].id_new }, searchItem)
+                let datanew = await New.find({ _id: check[i].id_new,buySell }, searchItem);
+                soLuong = await New.find({ _id: check[i].id_new,buySell }, searchItem).count()
                 data.push(datanew[0])
             }
         }
+        data.push({soLuong:soLuong})
         return functions.success(res, 'get data success', { data })
     } catch (error) {
 
@@ -1200,7 +1228,7 @@ exports.newfavorite = async (req, res, next) => {
 exports.managenew = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let data = [];
         let tin_conhan = await New.find({ userID, timeEndReceivebidding: { $gte: new Date(Date.now()) }, buySell: 1 }).count();
         let tin_dangan = await New.find({ userID, active: 0, buySell: 1 }).count();
@@ -1218,7 +1246,8 @@ exports.managenew = async (req, res, next) => {
         } else {
             return functions.setError(res, 'page not found ', 404)
         }
-        return functions.success(res, 'get data success', { tong_soluong, tin_conhan, tin_hethan, tin_dangan, data })
+        data.push({soluong:{tong_soluong, tin_conhan, tin_hethan, tin_dangan,}})
+        return functions.success(res, 'get data success', { data })
     }
     catch (error) {
         return functions.setError(res, error)
@@ -1581,6 +1610,17 @@ exports.getListNewsApplied = async(req, res, next) => {
     }
 }
 
+
+exports.listJobWithPin = async (req,res,next) => {
+    try{
+        let userID = req.user.data._id;
+        let newWithPinOfUser = await New.find({ userID: userID, $or: [{ pinHome: 1 }, { pinCate: 1 }, {timePushNew: { $ne: null }}] })
+        return functions.success(res, 'Get List New With Pin Of User Success!', newWithPinOfUser);
+    } catch(err){
+            console.log("Err from server", err);
+            return functions.setError(res, "Err from server", 500);
+    }}
+
 // thêm mới khuyến mãi
 exports.addDiscount = async (req, res, next) => {
     try {
@@ -1595,14 +1635,14 @@ exports.addDiscount = async (req, res, next) => {
                 let new_id = request.new_id[i];
                 if (user_id && loai_khuyenmai && ngay_bat_dau && ngay_ket_thuc && giatri_khuyenmai) {
                     if (loai_khuyenmai === 1 || loai_khuyenmai === 2) {
-                       
+
                     }else{
                         return functions.setError(res, 'Nhập ngày không hợp lệ', 400)
                     }
                     if (functions.checkNumber(giatri_khuyenmai) === false || giatri_khuyenmai <= 0) {
                         return functions.setError(res, "invalid number", 400);
                     }
-                    
+
                     if (await functions.checkDate(ngay_bat_dau) === true && await functions.checkDate(ngay_ket_thuc)  === true) {
 
                         if (await functions.checkTime(ngay_bat_dau) && await functions.checkTime(ngay_ket_thuc)) {
@@ -1656,7 +1696,7 @@ exports.comment    = async(req,res,next)=>{
         let tag = req.body.tag || null;
         let time = new Date();
         let _id = await functions.getMaxID(Comments) + 1;
-    
+
         if(url && parent_id && ip){
             if(File.Image){
                 let data = await raoNhanh.uploadFileRaoNhanh('comment',`${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`,File.Image,['.jpg','.png'])
@@ -1664,21 +1704,21 @@ exports.comment    = async(req,res,next)=>{
                      return functions.setError('Ảnh không phù hợp')
                  }
              let img = raoNhanh.createLinkFileRaonhanh('comment',`${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`,File.Image.name)
-              
-             await Comments.create({_id,url,parent_id,content,img,ip,sender_idchat:userID,tag,time})      
+
+             await Comments.create({_id,url,parent_id,content,img,ip,sender_idchat:userID,tag,time})
              }else{
-                await Comments.create({_id,url,parent_id,content,ip,sender_idchat:userID,tag,time})  
+                await Comments.create({_id,url,parent_id,content,ip,sender_idchat:userID,tag,time})
              }
         }else{
             return functions.setError(res,'missing data',400)
         }
-        
+
         return functions.success(res,'comment success')
     } catch (error) {
         console.log("🚀 ~ file: new.js:1647 ~ exports.comment=async ~ error:", error)
         return functions.setError(res,error)
     }
-} 
+}
 
 // sửa bình luận
 exports.updateComment = async(req,res,next)=>{
@@ -1696,21 +1736,22 @@ exports.updateComment = async(req,res,next)=>{
                  if(!data){
                      return functions.setError('Ảnh không phù hợp')
                  }
-             let img = raoNhanh.createLinkFileRaonhanh('comment',`${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`,File.Image.name)            
-                await Comments.find({id_comment,sender_idchat:userID},{content,img,tag})      
+             let img = raoNhanh.createLinkFileRaonhanh('comment',`${new Date().getFullYear()}/${new Date().getMonth()+1}/${new Date().getDate()}`,File.Image.name)
+                await Comments.find({id_comment,sender_idchat:userID},{content,img,tag})
              }else{
-                await Comments.find({id_comment,sender_idchat:userID},{content,tag})  
+                await Comments.find({id_comment,sender_idchat:userID},{content,tag})
              }
         }else{
             return functions.setError(res,'missing data',400)
         }
-        
+
         return functions.success(res,'comment success')
     } catch (error) {
         console.log("🚀 ~ file: new.js:1647 ~ exports.comment=async ~ error:", error)
         return functions.setError(res,error)
     }
-} 
+}
+
 exports.getListCandidateApplied = async(req, res, next) => {
     try{
         let userId = req.query.userId;
@@ -1721,9 +1762,9 @@ exports.getListCandidateApplied = async(req, res, next) => {
         let listNews = await New.find({userID: userId, cateID: cateID}, {_id: 1, userID: 1, timeSell: 1, title: 1, linkTitle: 1});
         for(let i=0; i<listNews.length; i++){
             let newsApply = await ApplyNewsRN.find({newId: listNews[i]._id});
-            
+
             // lay ra ten cua cac ung vien
-            
+
             for(let j=0; j<newsApply.length; j++) {
                 let candidate = await User.findOne({_id: newsApply[j].uvId}, {userName: 1});
                 if(candidate){
@@ -1733,7 +1774,7 @@ exports.getListCandidateApplied = async(req, res, next) => {
             }
             listNews[i] = {newsApply: newsApply, newsSell: listNews[i]};
         }
-        
+
         return functions.success(res, "get list candidate applied sucess", {data: listNews});
     }catch(err){
         console.log("Err from server", err);

@@ -3,77 +3,80 @@ const Schema = mongoose.Schema;
 
 const InfringesForSchema = new Schema({
     //Id vi phạm
-    _id: {
+    id: {
         type: Number,
-        require: true
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     // Tên vi phạm
     infringeName: {
         type: String,
-        require: true
+        require: true,
+        default:null
     },
     //  Căn cứ quy định 
     regulatoryBasis: {
-        type: String
+        type: String,
+        require: true
+
     },
     // Số quy định xử lý vi phạm
-    number_violation: {
-        type: String
+    numberViolation: {
+        type: String,
+        require: true
+
     },
     // Danh sách nhân viên
-    list: {
-        type: [{
+    listUser: [{
             // Id nhân viên
-            idUser: {
+            userId: {
                 type: Number
             },
             // Tên nhân viên
             name: {
                 type: String
-            }
-        }],
-        default: null
-    },
-    // Người tạo
-    content: {
-        type: String,
-    },
+            },
+    }],
     // Người tạo khen thưởng
     createdBy: {
         type: String,
+        default:null
+        
     },
     // Ngày tạo vi phạm
     infringeAt: {
         type: Date,
+        default:null
     },
     // Loại phạt vi phạm
     infringeType: {
-        type: {
-            id: {
-                type: Number
-
-            },
-            nameType: {
-                type: String
-            }
-        },
+        type: String,
         default: null
     },
     // 
     type: {
-        type: Number
+        type: Number,
+        default: null
+
     },
     // Id công ty có quyết định xử lý vi phạm
-    companyID: {
-        type: String
+    comId: {
+        type: Number,
+        require: true
+
     },
     // Id phòng của nhân viên vi phạm
     depId: {
-        type: Number
+        type: Number,
+        require: true
+
     },
     // Tên phòng của nhân viên vi phạm
     depName: {
-        type: String
+        type: String,
+        require: true
+
     },
     // Ngày tạo quyết định
     createdAt: {
@@ -83,8 +86,12 @@ const InfringesForSchema = new Schema({
     // Ngày xoá quyết định
     deleteAt: {
         type: Date,
-        default: Date.now()
+        default: null
     }
+}, {
+    collection: 'HR_InfringesFors',
+    versionKey: false,
+    timestamp: true
 });
 
-module.exports = mongoose.model("InfringesFors", InfringesForSchema);
+module.exports = mongoose.model("HR_InfringesFors", InfringesForSchema);

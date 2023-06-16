@@ -27,7 +27,6 @@ var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
 
 
-
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -45,7 +44,6 @@ var childCompanyRouter = require('./routes/qlc/childCompany')
 var managerUser = require('./routes/qlc/managerUser')
 var employeeRoutes = require('./routes/qlc/employee.routes');
 var individualRoutes = require('./routes/qlc/individual.routes');
-
 var manageUserRouter = require('./routes/qlc/manageUser')
 
 // crm_import
@@ -189,7 +187,7 @@ app.use("/api/tool", toolVT)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
-
+// 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));
@@ -213,12 +211,4 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-// app.listen(3004, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3004")
-// })
-app.listen(3005, () => {
-    console.log("Connected to databse");
-    console.log("Backend is running on http://localhost:3005")
-})
 module.exports = app;
