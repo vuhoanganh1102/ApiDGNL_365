@@ -245,15 +245,6 @@ exports.de_xuat_theo_doi = async (req, res) => {
     let page = Number(req.body.page) ? Number(req.body.page) : 1;
     let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
     const skip = (page - 1) * pageSize;
-    const setting_Dx = await settingdx.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-    console.log("serttting dx: " + setting_Dx);
-
-
-
-
-
-    console.log(id_user_theo_doi);
-
 
     if (!isNaN(id_user_theo_doi)) {
 
@@ -262,7 +253,7 @@ exports.de_xuat_theo_doi = async (req, res) => {
         info_de_xuat_da_duyet = [];
         info_de_xuat_da_tu_choi = [];
         de_Xuat = [];
-
+        let setting_Dx;
         de_Xuat = await De_Xuat.find({ id_user_theo_doi: id_user_theo_doi }).skip(skip).limit(pageSize);
 
         if (de_Xuat) {
@@ -279,8 +270,6 @@ exports.de_xuat_theo_doi = async (req, res) => {
                     com_id: de_Xuat[i].com_id,
                     type_time: de_Xuat[i].type_time,
                     kieu_duyet: de_Xuat[i].kieu_duyet
-
-
 
                 }
 
@@ -305,23 +294,23 @@ exports.de_xuat_theo_doi = async (req, res) => {
                 let type_setting = info_de_xuat_All[i].type_time;// đề xuất có kế hoạch hoặc không //0
                 let typeBrowse = info_de_xuat_All[i].kieu_duyet;// có 2 người duyệt trở lên //1
                 let type_dx = info_de_xuat_All[i].type_dx;
-
+                setting_Dx = await settingdx.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
                 if (type_dx == 19) {// dề xuất thưởng phạt
-                    let Setting_dx = await settingdx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
-                    han_duyet = Setting_dx.timeTP;
+                    //  Setting_dx = await settingdx.find({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
+                    han_duyet = setting_Dx.timeTP;
 
                 }
                 else if (type_dx == 20) {// thưởng doanh thu 
-                    let Setting_dx = await settingdx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
-                    han_duyet = Setting_dx.timeHH;
-                    console.log(Setting_dx);
+                    //   Setting_dx = await settingdx.find({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
+                    han_duyet = setting_Dx.timeHH;
+                    console.log(setting_Dx);
 
                 } else {
-                    let Setting_dx = await settingdx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
-                    han_duyet = Setting_dx.timeLimit;
-                    console.log(Setting_dx);
+                    //   Setting_dx = await settingdx.find({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
+                    han_duyet = setting_Dx.timeLimit;
+                    console.log(setting_Dx.timeLimit);
                 }
-                let time_han_duyet = (setting_Dx.timeLimit * 60 * 60) / 1000;
+                let time_han_duyet = (han_duyet * 60 * 60) / 1000;
                 console.log(han_duyet);
 
 
@@ -332,6 +321,7 @@ exports.de_xuat_theo_doi = async (req, res) => {
 
             }
             return res.status(200).json({ data: info_de_xuat_All, message: 'thanh cong ' });
+            // return res.status(200).json({ data: setting_Dx, message: 'thanh cong ' });
         } else {
             return res.status(200).json({ message: " khong co de xuat nao cho user " });
         }

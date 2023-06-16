@@ -103,18 +103,24 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
 
 }
 exports.khoi_phuc = async (req, res) => {
+    console.log('khoi phux');
     let id = req.body.id;
-    if (!isNaN(id)) {
+    // console.log(typeof id);
+    // return;
+    if (id) {
+
         let list_id_dx = id.split(',');
 
         for (let i = 0; i < list_id_dx.length; i++) {
             await De_Xuat.findByIdAndUpdate({ _id: list_id_dx[i] }, { active: 1 });
-            await delete_Dx.deleteOne({ _id: list_id_dx[i] });
+            await delete_Dx.deleteMany({ id_dx_del: list_id_dx[i] });
         }
 
         return res.status(200).json({ message: 'success' });
     } else {
-        return res.status(200).json({ message: 'bad request' });
+        return res.status(404).json({ message: 'bad request' });
+
+
     }
 
 }
@@ -124,23 +130,20 @@ exports.xoa_vinh_vien = async (req, res) => {
 
     let _id = req.body.id;
     let id_user = req.body.id_user;
+    let de_xuat_da_xoa = [];
     if (!isNaN(_id)) {
         let list_id_dx = _id.split(",");
-        console.log(list_id_dx.length);
 
         for (let i = 0; i < list_id_dx.length; i++) {
             await delete_Dx.deleteOne({ id_dx_del: list_id_dx[i] });
         }
 
-
         let his_delete = await delete_Dx.find({ user_del: id_user });
 
-
-        let de_xuat_da_xoa = [];
-        console.log(de_xuat_da_xoa);
         for (let i = 0; i < his_delete.length; i++) {
             let de_xuat = await De_Xuat.findOne({ _id: his_delete[i].id_dx_del });
-            console.log(his_delete[i].id_dx_del);
+
+
             if (de_xuat.del_type == 2) {
                 let info_dx = {
                     id: de_xuat._id,
@@ -151,8 +154,10 @@ exports.xoa_vinh_vien = async (req, res) => {
                 }
                 de_xuat_da_xoa.push(info_dx);
             }
+            console.log(de_xuat_da_xoa);
 
         }
+
 
         return res.status(200).json({ data: de_xuat_da_xoa, message: 'success' });
     } else {

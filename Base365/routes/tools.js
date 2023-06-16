@@ -9,7 +9,7 @@ const crm = require('../controllers/tools/CRM')
 
 const toolHr =  require('../controllers/tools/hr');
 const toolVanThu = require('../controllers/tools/vanthu')
-const toolCRM = require('../controllers/tools/CRM')
+// const toolCRM = require('../controllers/tools/CRM')
 
 
 
@@ -213,18 +213,18 @@ router.post('/hr/recruitmentNews', toolHr.toolRecruitmentNews);
 
 //Api quét data CRM
 
-router.post('/toolContract',toolCRM.toolContact)//danh sách hợp đồng 
-router.post('/toolCC',toolCRM.toolContactCustomer)// danh sach hơp đòng khách hàng
-router.post('/toolCs',toolCRM.toolCustomer)// danh sách hợp đồng khách hàng
-router.post('/toolCr',toolCRM.toolCustomerCare)// danh sách chăm sóc khách hàng
-router.post('/toolCuchan',toolCRM.toolCustomerChance) // danh sách khách hàng cơ hội
-router.post('/toolChanfile',toolCRM.toolCustomerChanceFile)
-router.post('/toolChanfoot',toolCRM.toolChanFoots)
-router.post('/toolCusfile',toolCRM.toolCusFile)
-router.post('/toolCG',toolCRM.toolCustomerGroup)
-router.post('/toolCmulti',toolCRM.toolCustomeMulti)
-router.post('/toolCnote',toolCRM.toolCustomerNote)
-router.post('/toolCstatus',toolCRM.toolCustomerStatus)
+router.post('/toolContract',crm.toolContact)//danh sách hợp đồng 
+router.post('/toolCC',crm.toolContactCustomer)// danh sach hơp đòng khách hàng
+router.post('/toolCs',crm.toolCustomer)// danh sách hợp đồng khách hàng
+router.post('/toolCr',crm.toolCustomerCare)// danh sách chăm sóc khách hàng
+router.post('/toolCuchan',crm.toolCustomerChance) // danh sách khách hàng cơ hội
+router.post('/toolChanfile',crm.toolCustomerChanceFile)
+router.post('/toolChanfoot',crm.toolChanFoots)
+router.post('/toolCusfile',crm.toolCusFile)
+router.post('/toolCG',crm.toolCustomerGroup)
+router.post('/toolCmulti',crm.toolCustomeMulti)
+router.post('/toolCnote',crm.toolCustomerNote)
+router.post('/toolCstatus',crm.toolCustomerStatus)
 
 //CRM
 router.get('/toolCampaign', crm.toolCampaign);
@@ -249,4 +249,30 @@ router.get('/toolDetailReturnProduct', crm.toolDetailReturnProduct);
 router.get('/toolDetailListOrder', crm.toolDetailListOrder);
 router.get('/toolDetailFormContract', crm.toolDetailFormContract);
 router.get('/toolDetailEmailSms', crm.toolDetailFormContract);
+// api quét data recruitment
+// router.post('/toolrecruitment', toolHr.recruitment)
+// router.post('/toolrecruitment_news', toolHr.recruitment_news)
+// router.post('/toolschedule_interview', toolHr.schedule_interview)
+
+
+//api quest data bang tbl_phieu
+router.post('/toolPhieu', crm.tool_phieu);
+//api quet data share_campaign
+router.post('/toolShare_campaign', crm.tbl_share_campaign);
+//api quet data share_chance
+router.post('/toolShareChance', crm.tbl_share_chance);
+//api data changeCustomer
+router.post('/toolShareCustomer', crm.tbl_share_customer);
+//api data ward
+router.post('/toolWard', crm.ward);
+
+//api data history_edit_customer
+router.post('/toolHistoryEditCustomer', crm.history_edit_customer);
+//api data history_stages
+router.post('/toolHistoryStage', crm.history_stages);
+
+//api data list_new_3312
+router.post('/toolListNew3312', crm.list_new_3321);
+//api data list_order
+router.post('/toolListOrder', crm.list_order);
 module.exports = router;

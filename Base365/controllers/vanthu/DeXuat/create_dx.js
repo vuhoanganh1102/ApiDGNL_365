@@ -4,7 +4,6 @@ const multer = require('multer');
 const path = require('path');
 const thongBao = require('../../../models/Vanthu365/tl_thong_bao');
 
-
 //đề xuất xin nghỉ 
 exports.de_xuat_xin_nghi = async (req, res) => {
     console.log("xin ngihr ");
@@ -22,30 +21,23 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         bd_nghi,
         kt_nghi,
         loai_np,
-        //  type_time,
+
         ca_nghi,
         link
+
     } = req.body;
 
 
     let file_kem = req.files.fileKem;
+    let link_download = '';
 
-    let pathString = "";
     if (file_kem) {
-        await functions.uploadFileVanThu(id_user, file_kem);
-        let imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-        pathString = imagePath.toString();
+        functions.uploadFileVanThu(id_user, file_kem);
+        link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
     }
-
-
-
-    // console.log(pathString)
     if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
-
     } else {
-        if (bd_nghi) {
-        }
         let maxID = 0;
         const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
         //   console.log(de_xuat);
@@ -73,7 +65,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: pathString,
+            file_kem: link_download,
             kieu_duyet: 0,
             //   type_duyet: 0,
             //  type_time: type_time,
@@ -84,19 +76,17 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             // active: 1,//1-bên 3 đã đồng ý , 2 - bên 3 không đồng ý 
             // del_type: 1,//1-active , 2 --delete
         });
-
-
         await new_de_xuat.save();
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.nghi_phep, new_de_xuat.file_kem);
-
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
+        // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
         maxID = 0;
         const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-        //   console.log(de_xuat);
+        console.log(tb);
         if (tb) {
-            maxID = tb.id_thong_bao;
+            maxID = Number(tb._id);
         }
         const t_bao = new thongBao({
-            id_thong_bao: maxID + 1,
+            _id: Number(maxID + 1),
             id_user: id_user,
             id_user_nhan: id_user_duyet,
             id_van_ban: new_de_xuat._id,
@@ -108,10 +98,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         })
         await t_bao.save();
         return res.status(200).json("success ");
-
     }
-
-
 }
 //đề xuất bổ nhiệm 
 exports.de_xuat_xin_bo_nhiem = async (req, res) => {
@@ -131,20 +118,21 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
         chucvu_hientai,
         chucvu_dx_bn,
         phong_ban_moi,
-        phong_ban
+        phong_ban,
+        link
 
 
     } = req.body;
 
 
     let file_kem = req.files.fileKem;
-    // console.log(file_kem);
-    await functions.uploadFileVanThu(id_user, file_kem);
-    let imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-    let pathString = imagePath.toString();
-    console.log(pathString);
-    console.log(name_ph_bn);
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    let link_download = '';
+    if (file_kem) {
+        await functions.uploadFileVanThu(id_user, file_kem);
+        link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+    }
+
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -178,7 +166,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: pathString,
+            file_kem: link_download,
             kieu_duyet: 0,
             // type_duyet: 0,
             // type_time: 0,
@@ -192,7 +180,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
 
 
         await new_de_xuat.save();
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.bo_nhiem, new_de_xuat.file_kem);
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "dề xuất bổ nhệm ", link, file_kem);
 
         return res.status(200).json("success ");
     }
@@ -215,20 +203,21 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         //  file_kem,
         ly_do,
         phong_ban,
-        type_time,
+        //  type_time,
         danh_sach_tai_san,
         so_luong_tai_san,
+        link
 
     } = req.body;
     let file_kem = req.files.fileKem;
-    // console.log(file_kem);
-    await functions.uploadFileVanThu(id_user, file_kem);
-    let imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-    let pathString = imagePath.toString();
-    console.log(pathString)
+    let link_download = '';
+    if (file_kem) {
+        await functions.uploadFileVanThu(id_user, file_kem);
+        link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+    }
 
 
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -260,10 +249,10 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             phong_ban: phong_ban,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: pathString,
+            file_kem: link_download,
             kieu_duyet: kieu_duyet,
             //  type_duyet: 0,
-            type_time: type_time,
+            //  type_time: type_time,
             // time_start_out: " ",
             time_create: new Date(),
             time_tiep_nhan: null,
@@ -272,7 +261,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             del_type: 1,//1-active , 2 --delete
         })
         await new_de_xuat.save();
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.cap_phat_tai_san, new_de_xuat.file_kem);
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin cấp phát tài sản", link, file_kem);
         return res.status(200).json("success ");
     }
 
@@ -298,15 +287,15 @@ exports.de_xuat_doi_ca = async (req, res) => {
         ca_can_doi,
         ngay_muon_doi,
         ca_muon_doi,
-
+        link
     } = req.body;
     let file_kem = req.files.fileKem;
-    // console.log(file_kem);
-    await functions.uploadFileVanThu(id_user, file_kem);
-    let imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-    let pathString = imagePath.toString();
-    console.log(pathString)
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    let link_download = '';
+    if (file_kem) {
+        await functions.uploadFileVanThu(id_user, file_kem);
+        link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+    }
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -338,7 +327,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: pathString,
+            file_kem: link_download,
             kieu_duyet: kieu_duyet,
             //  type_duyet: 0,
             //  type_time: 0,
@@ -352,7 +341,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
 
 
         await new_de_xuat.save();
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.doi_ca, new_de_xuat.file_kem);
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin đổi ca ", link, file_kem);
 
         return res.status(200).json("success ");
     }
@@ -379,17 +368,16 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
         pb_nguoi_lc,
         noi_cong_tac,
         noi_chuyen_den,
+        link
     } = req.body;
 
     let file_kem = req.files.fileKem;
-    await functions.uploadFileVanThu(id_user, file_kem);
-    const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-    const pathString = imagePath.toString();
-    console.log(pathString)
-
-
-    //console.log(name_ph_bn);
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    let link_download = '';
+    if (file_kem) {
+        await functions.uploadFileVanThu(id_user, file_kem);
+        link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+    }
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -421,7 +409,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: pathString,
+            file_kem: link_download,
             kieu_duyet: kieu_duyet,
             // type_duyet: 0,
             //  type_time: 0,
@@ -435,7 +423,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
 
 
         await new_de_xuat.save();
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.luan_chuyen_cong_tac, new_de_xuat.file_kem);
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin luân chuyển công tác ", link, file_kem);
 
         return res.status(200).json("success ");
     }
@@ -460,19 +448,19 @@ exports.de_xuat_tang_luong = async (req, res) => {
         mucluong_ht,
         mucluong_tang,
         date_tang_luong,
+        link
 
 
     } = req.body;
 
 
     let file_kem = req.files.fileKem;
-    // console.log(file_kem);
-    await functions.uploadFileVanThu(id_user, file_kem);
-    const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-    const pathString = imagePath.toString();
-    console.log(pathString)
-
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    let link_download = '';
+    if (file_kem) {
+        await functions.uploadFileVanThu(id_user, file_kem);
+        link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+    }
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -502,7 +490,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: pathString,
+            file_kem: link_download,
             kieu_duyet: kieu_duyet,
             //  type_duyet: 0,
             type_time: 0,
@@ -516,8 +504,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
 
 
         await new_de_xuat.save();
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.tang_luong, new_de_xuat.file_kem);
-
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin tăng lương ", link, file_kem);
 
         return res.status(200).json("success ");
 
@@ -543,21 +530,19 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
         cv_nguoi_da,
         pb_nguoi_da,
         dx_da,
-
+        link
 
 
 
     } = req.body;
 
     let file_kem = req.files.fileKem;
-    // console.log(file_kem);
-    await functions.uploadFileVanThu(id_user, file_kem);
-    const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-    const pathString = imagePath.toString();
-    console.log(pathString)
-
-
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    let link_download = '';
+    if (file_kem) {
+        await functions.uploadFileVanThu(id_user, file_kem);
+        link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+    }
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -588,7 +573,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: pathString,
+            file_kem: link_download,
             kieu_duyet: 0,
             type_duyet: 0,
             //  type_time: 0,
@@ -602,7 +587,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
 
 
         await new_de_xuat.save();
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.tham_gia_du_an, new_de_xuat.file_kem);
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin tham gia dự án ", link, file_kem);
 
         return res.status(200).json("success ");
 
@@ -627,17 +612,18 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         ly_do,
         tien_tam_ung,
         ngay_tam_ung,
+        link
 
 
     } = req.body;
 
     let file_kem = req.files.fileKem;
-    // console.log(file_kem);
-    await functions.uploadFileVanThu(id_user, file_kem);
-    const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-    const pathString = imagePath.toString();
-    console.log(pathString)
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    let link_download = '';
+    if (file_kem) {
+        await functions.uploadFileVanThu(id_user, file_kem);
+        link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+    }
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -667,7 +653,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: pathString,
+            file_kem: link_download,
             kieu_duyet: 0,
             type_duyet: 0,
             type_time: 0,
@@ -681,7 +667,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
 
 
         await new_de_xuat.save();
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.tam_ung, new_de_xuat.file_kem);
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin tạm ứng lương  ", link, file_kem);
 
         return res.status(200).json("success ");
 
@@ -704,15 +690,17 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
         //  file_kem,
         ly_do,
 
-        ngaybatdau_tv
+        ngaybatdau_tv,
+        link
     } = req.body;
     let file_kem = req.files.fileKem;
-    // console.log(file_kem);
-    await functions.uploadFileVanThu(id_user, file_kem);
-    const imagePath = path.resolve(__dirname, `../Storage/base365/vanthu/tailieu/${id_user}`, file_kem.name);
-    const pathString = imagePath.toString();
-    console.log(pathString)
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    let link_download = '';
+    if (file_kem) {
+        await functions.uploadFileVanThu(id_user, file_kem);
+        link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+    }
+
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {
@@ -741,7 +729,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
             kieu_duyet: kieu_duyet,
             id_user_duyet: id_user_duyet,
             id_user_theo_doi: id_user_theo_doi,
-            file_kem: pathString,
+            file_kem: link_download,
             kieu_duyet: kieu_duyet,
             //type_duyet: 0,
             // type_time: 0,
@@ -756,8 +744,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
 
         await new_de_xuat.save();
 
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.thoi_viec, new_de_xuat.file_kem);
-
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin thôi việc", link, file_kem);
         return res.status(200).json("success ");
     }
 
@@ -775,11 +762,14 @@ exports.lich_lam_viec = async (req, res) => {
         id_user_duyet,
         id_user_theo_doi,
         ly_do,
+
+
         lich_lam_viec,
         thang_ap_dung,
         ngay_bat_dau,
         ca_lam_viec,
-        ngay_lam_viec } = req.body;
+        ngay_lam_viec,
+        link } = req.body;
     if (isNaN(id_user) || isNaN(id_user_duyet) || isNaN(id_user_theo_doi)) {
         return res.status(404).json({ message: "bad request" });
     } else {
@@ -828,10 +818,15 @@ exports.lich_lam_viec = async (req, res) => {
 
         await new_de_xuat.save();
 
-        functions.chat(name_dx, name_user, new_de_xuat.noi_dung.lich_lam_viec, new_de_xuat.file_kem);
-
+        functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
+        maxID = 0;
+        const tbao = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+        //   console.log(de_xuat);
+        if (tbao) {
+            maxID = tbao._id;
+        }
         let tb = new thongBao({
-            id_thong_bao: maxID + 1,
+            _id: maxID + 1,
             id_user: id_user,
             id_user_nhan: id_user_duyet,
             id_van_ban: new_de_xuat._id,
@@ -843,13 +838,6 @@ exports.lich_lam_viec = async (req, res) => {
         })
         await tb.save();
         return res.status(200).json({ data: new_de_xuat, message: "success " });
-
-
-
-
-
     }
-
-
 
 }

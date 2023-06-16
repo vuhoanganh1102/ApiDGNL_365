@@ -146,8 +146,9 @@ var get_deXuat_user = require('./routes/vanthu/DeXuat/User_Dx');
 app.use('/api/vanthu/DeXuat', get_deXuat_user);
 
 
-
-
+//thống kê nghỉ phép
+var TK_nghi_phep = require('./routes/vanthu/DeXuat/thong_ke_nghi_phep');
+app.use('/api/vanthu/DeXuat', TK_nghi_phep);
 
 
 
