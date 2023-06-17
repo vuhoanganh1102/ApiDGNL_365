@@ -87,9 +87,9 @@ const HistorySchema = new mongoose.Schema({
     }
 
 }, {
-    collection: 'History',
+    collection: 'RN365_History',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("History", HistorySchema);
+module.exports = mongoose.model("RN365_History", HistorySchema);
