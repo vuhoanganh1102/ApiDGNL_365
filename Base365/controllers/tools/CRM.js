@@ -33,8 +33,10 @@ const CustomerGroup = require('../../models/crm/Customer/customer_group')
 const CustomerMulti = require('../../models/crm/Customer/customer_multi')
 const CustomerNote = require('../../models/crm/Customer/customer_note')
 const CustomerStatus = require('../../models/crm/Customer/customer_status')
-
-
+const ManageAdmin = require('../../models/crm/manage_admin')
+const ManageExtension = require('../../models/crm/manager_extension')
+const ModuleParent = require('../../models/crm/module_parent')
+const NotifyCRM = require('../../models/crm/notify')
 
 const axios = require('axios');
 const FormData = require('form-data');
@@ -143,8 +145,7 @@ exports.toolContact = async (req, res, next) => {
                     return fnc.success(res, 'Thành Công');
                 } catch (err) {
                     return fnc.setError(res, err);
-                }
-            };
+                }  };
 
 
 
@@ -1747,6 +1748,160 @@ exports.toolCustomerStatus = async (req, res, next) => {
 
                     });
                     await newCS.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+
+
+
+//lâm
+exports.toolmanageAdmin = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listManageAdmin?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let post = await fnc.getDatafindOne(ManageAdmin, {id: data[i].id})
+                    if(post == null){
+                        let newCS = new ManageAdmin({
+                            id: data[i].id,
+                            usc_kd : data[i].usc_kd,
+                            id_qlc: data[i].id_qlc,
+                            name : data[i].name,
+                            
+                    });
+                    await newCS.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+
+//lâm
+exports.toolmanageExtension= async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listManagerExtension?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let createAt = null;
+                    let updateAt = null;
+                    if (data[i].created_at != 0) {
+                        createAt = new Date(data[i].created_at * 1000)
+                    }
+                    if (data[i].updated_at != 0) {
+                        updateAt = new Date(data[i].updated_at * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(ManageExtension, {id: data[i].id})
+                    if(post == null){
+                        let newME = new ManageExtension({
+                            id: data[i].id,
+                            company_id : data[i].company_id,
+                            ext_id: data[i].ext_id,
+                            ext_number : data[i].ext_number,
+                            ext_password : data[i].ext_password,
+                            emp_id : data[i].emp_id,
+                            created_at : createAt,
+                            updated_at  : updateAt
+
+                    });
+                    await newME.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+
+
+//lâm
+exports.toolmoduleParent = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listModuleParent?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let post = await fnc.getDatafindOne(ModuleParent, {id: data[i].id})
+                    if(post == null){
+                        let newMP = new ModuleParent({
+                            id: data[i].id,
+                            module_name : data[i].module_name,
+                            mod_order: data[i].mod_order,
+                            
+                    });
+                    await newMP.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+
+//lâm
+exports.toolNotify = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listNotify?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let createAt = null;
+                    if (data[i].created_at != 0) {
+                        createAt = new Date(data[i].created_at * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(NotifyCRM, {notify_id: data[i].notify_id})
+                    if(post == null){
+                        let newN = new NotifyCRM({
+                            notify_id: data[i].notify_id,
+                            notify_type : data[i].notify_type,
+                            notify_cus_name: data[i].notify_cus_name,
+                            notify_group_name : data[i].notify_group_name,
+                            notify_cus_id : data[i].notify_cus_id,
+                            emp_id : data[i].emp_id,
+                            seen : data[i].seen,
+                            created_at : createAt,
+                        
+                    });
+                    await newN.save();
                     }
                 }
                 page+=1;

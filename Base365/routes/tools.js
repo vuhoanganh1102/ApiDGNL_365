@@ -211,7 +211,7 @@ router.post('/hr/inviteInter', toolHr.toolInviteInterview);
 router.post('/hr/recruitment', toolHr.toolRecruitment);
 router.post('/hr/recruitmentNews', toolHr.toolRecruitmentNews);
 
-//Api quét data CRM
+//Api quét data CRM lâm
 
 router.post('/toolContract',toolCRM.toolContact)//danh sách hợp đồng 
 router.post('/toolCC',toolCRM.toolContactCustomer)// danh sach hơp đòng khách hàng
@@ -225,6 +225,16 @@ router.post('/toolCG',toolCRM.toolCustomerGroup)
 router.post('/toolCmulti',toolCRM.toolCustomeMulti)
 router.post('/toolCnote',toolCRM.toolCustomerNote)
 router.post('/toolCstatus',toolCRM.toolCustomerStatus)
+router.post('/toolmanageA',toolCRM.toolmanageAdmin)
+router.post ('/toolmanageE',toolCRM.toolmanageExtension)
+router.post('/toolmoduleP',toolCRM.toolmoduleParent)
+router.post('/toolnotifyCRM',toolCRM.toolNotify)
+
+
+
+
+
+
 
 //CRM
 router.get('/toolCampaign', crm.toolCampaign);

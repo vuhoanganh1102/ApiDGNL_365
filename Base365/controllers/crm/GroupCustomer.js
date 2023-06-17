@@ -1,4 +1,4 @@
-const GroupCustomer = require("../../models/crm/GroupCustomer")
+
 const functions = require('../../services/functions')
 
 exports.getListGroup = async(req, res) => {
