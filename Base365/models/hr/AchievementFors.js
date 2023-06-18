@@ -5,7 +5,6 @@ const AchievementForSchema = new Schema({
     //Id khen thưởng
     id: {
         type: Number,
-        required: true,
         unique: true,
         autoIncrement: true
     },
@@ -61,7 +60,7 @@ const AchievementForSchema = new Schema({
     // Id phòng của nhân viên được khen thưởng
     depId: {
         type: Number,
-        require: true
+        default:0
     },
     depName: {
         type: String,
