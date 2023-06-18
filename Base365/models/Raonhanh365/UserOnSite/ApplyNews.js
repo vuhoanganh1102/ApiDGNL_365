@@ -37,9 +37,9 @@ const ApplyNewsSchema = new mongoose.Schema({
     }
 
 }, {
-    collection: 'ApplyNews',
+    collection: 'RN365_ApplyNews',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("ApplyNews", ApplyNewsSchema);
+module.exports = mongoose.model("RN365_ApplyNews", ApplyNewsSchema);

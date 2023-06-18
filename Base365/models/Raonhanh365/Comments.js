@@ -67,4 +67,4 @@ const CommentSchema = mongoose.Schema({
         default:0   
     },  
 })
-module.exports = mongoose.model("Comments", CommentSchema);
+module.exports = mongoose.model("RN365_Comments", CommentSchema);

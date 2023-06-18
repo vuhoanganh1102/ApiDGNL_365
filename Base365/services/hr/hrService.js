@@ -23,6 +23,7 @@ const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 
 const functions = require('../functions')
+const https = require('https');
 
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
@@ -142,5 +143,162 @@ exports.checkPermissions = async (req, res, next,per,bar)=>{
             {
                 return functions.setError(res,'Unauthorized',401)
             }
+        }}
+//thông tin công ty
+exports.detailInfoCompany = async(com_id, access_token) => {
+    let result = {};
+    const headers = {
+        'Authorization': access_token
+    };
+    const url = `https://chamcong.24hpay.vn/api_web_hr/getInfoByCompany.php?id_com=${com_id}`;
+
+    try {
+        const response = await axios.get(url, {
+            headers: headers,
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }) // Disabling SSL verification
+        });
+
+        if (!response.data.data.items.comManager) {
+            response.data.data.items.comManager = "Chưa cập nhật"
+
         }
+        if (!response.data.data.items.comDeputy) {
+            response.data.data.items.comDeputy = "Chưa cập nhật"
+        }
+        result = {
+            result: true,
+            list_nest: response.data.data.items
+        };
+
+    } catch (error) {
+        result = {
+            result: false
+        };
+    }
+    return result;
+}
+
+//thông tin phòng ban của công ty
+exports.detailInfoDepartment = async(com_id, dep_id, access_token) => {
+    let result = {};
+    const headers = {
+        'Authorization': access_token
+    };
+    const url = `https://chamcong.24hpay.vn/api_web_hr/getInfoByDepartment.php?id_com=${com_id}&dep_id=${dep_id}`;
+
+    try {
+        const response = await axios.get(url, {
+            headers: headers,
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }) // Disabling SSL verification
+        });
+        result = {
+            result: true,
+            list_nest: response.data.data.items
+        };
+        if (!response.data.data.items.comManager) {
+            response.data.data.items.comManager = "Chưa cập nhật"
+
+        }
+        if (!response.data.data.items.comDeputy) {
+            response.data.data.items.comDeputy = "Chưa cập nhật"
+        }
+    } catch (error) {
+        result = {
+            result: false
+        };
+    }
+    return result;
+}
+
+//lấy ra id tổ
+exports.showNestByIdDep = async(com_id, dep_id) => {
+    let result = {};
+
+    if (com_id == 0 || dep_id == 0) {
+        result = {
+            result: false
+        };
+    } else {
+        const headers = {
+            'Authorization': ''
+        };
+        const url = `https://chamcong.24hpay.vn/api_web_hr/list_nest_dk.php?id_nest=${dep_id}&cp=${com_id}`;
+
+        try {
+            const response = await axios.get(url, {
+                headers: headers,
+                httpsAgent: new https.Agent({ rejectUnauthorized: false }) // Disabling SSL verification
+            });
+
+            result = {
+                result: true,
+                list_nest: response.data.data.items
+            };
+        } catch (error) {
+            result = {
+                result: false
+            };
+        }
+    }
+
+    return result
+}
+
+//lấy ra thông tin tổ
+exports.detailInfoNest = async(com_id, nest_id, dep_id = 0, access_token) => {
+    let result = {};
+
+    const headers = {
+        'Authorization': access_token
+    };
+    let url = `https://chamcong.24hpay.vn/api_web_hr/getInfoByNest.php?id_com=${com_id}&group_id=${nest_id}`;
+
+    if (dep_id != 0) {
+        url += `&dep_id=${dep_id}`;
+    }
+
+    try {
+        const response = await axios.get(url, {
+            headers: headers,
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }) // Disabling SSL verification
+        });
+
+        result = {
+            result: true,
+            list_nest: response.data.data.items
+        };
+    } catch (error) {
+        result = {
+            result: false
+        };
+    }
+
+    return result;
+}
+
+//lấy ra thông tin công ty con
+exports.detailInfoChildCompany = async(com_id, access_token) => {
+    let result = {};
+    const headers = {
+        'Authorization': `Bearer ${access_token}`
+    };
+    const url = `https://chamcong.24hpay.vn/service/list_child_of_company.php?id_com=${com_id}`;
+
+    try {
+        const response = await axios.get(url, {
+            headers: headers,
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }) // Disabling SSL verification
+        });
+
+        result = {
+            result: true,
+            list_nest: response.data.data.items
+        };
+
+    } catch (error) {
+        result = {
+            result: false
+        };
+    }
+    return result;
 }
