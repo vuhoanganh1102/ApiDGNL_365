@@ -26,8 +26,8 @@ var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
 // Hr
-var provinceRoute = require('./routes/hr/provinceRoute');
-var welfare = require('./routes/hr/welfare');
+var administrationRoute = require('./routes/hr/administrationRoute');
+var welfare = require('./routes/hr/welfareRoute');
 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
@@ -108,7 +108,7 @@ app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 app.use('/api/raonhanh/admin', adminRaonhanh365);
 
 // api hr
-app.use('/api/hr/provinceRoute', provinceRoute);
+app.use('/api/hr/administration', administrationRoute);
 app.use('/api/hr/welfare', welfare);
 
 
