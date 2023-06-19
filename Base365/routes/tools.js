@@ -226,7 +226,7 @@ router.post('/toolCmulti',crm.toolCustomeMulti)
 router.post('/toolCnote',crm.toolCustomerNote)
 router.post('/toolCstatus',crm.toolCustomerStatus)
 
-//CRM
+//CRM - Trung
 router.get('/toolCampaign', crm.toolCampaign);
 router.get('/toolDetailCampaign', crm.toolDetailCampaign);
 router.get('/toolTablePriceList', crm.toolTablePriceList);
@@ -248,7 +248,10 @@ router.get('/toolDetailSurvery', crm.toolDetailSurvery);
 router.get('/toolDetailReturnProduct', crm.toolDetailReturnProduct);
 router.get('/toolDetailListOrder', crm.toolDetailListOrder);
 router.get('/toolDetailFormContract', crm.toolDetailFormContract);
-router.get('/toolDetailEmailSms', crm.toolDetailFormContract);
+router.get('/toolDetailEmailSms', crm.toolDetailEmailSms);
+router.get('/toolDetailForm', crm.toolDetailForm);
+router.get('/toolProducts', crm.toolProducts);
+router.get('/toolProductGroups', crm.toolProductGroups);
 // api quét data recruitment
 // router.post('/toolrecruitment', toolHr.recruitment)
 // router.post('/toolrecruitment_news', toolHr.recruitment_news)
@@ -275,4 +278,13 @@ router.post('/toolHistoryStage', crm.history_stages);
 router.post('/toolListNew3312', crm.list_new_3321);
 //api data list_order
 router.post('/toolListOrder', crm.list_order);
+
+
+
+
+
+
+
+
+
 module.exports = router;

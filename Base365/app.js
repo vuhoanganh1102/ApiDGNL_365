@@ -75,7 +75,7 @@ var homePage = require("./routes/qlc/homePage")
 
 
 // crm_import
-var groupCustomerRouter = require('./routes/crm/groupCustomer')
+// var groupCustomerRouter = require('./routes/crm/groupCustomer')
 
 
 
@@ -172,7 +172,6 @@ app.use('/api/timviec/cv', cvRouter);
 app.use('/api/timviec/don', donRouter);
 app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
-app.use('/api/tool', toolAddDataRouter);
 
 // app.use('/api/timviec/priceList', priceListRouter);
 app.use('/api/timviec/trangVang', trangVangRouter);
@@ -228,6 +227,7 @@ app.use("/api/qlc/homePage",homePage)
 
 //Api CRM
 app.use('/api',CRMroute)
+app.use('/api/tool', toolAddDataRouter);
 
 
 
@@ -235,7 +235,7 @@ app.use('/api',CRMroute)
 app.use("/api/tool", toolVT)
 app.use("/api",Vanthu)
 
-app.use("/api/crm/customer/group", groupCustomerRouter);
+// app.use("/api/crm/customer/group", groupCustomerRouter);
 
 // 
 // catch 404 and forward to error handler
