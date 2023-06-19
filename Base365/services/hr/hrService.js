@@ -116,22 +116,6 @@ exports.checkPermissions = async (req, res, next,per,bar)=>{
       {
         per = 4
       }
-      if(bar === 'QLTD')
-      {
-        bar = 1;
-      }else if(bar === 'QLTTNS')
-      {
-        bar = 2;
-      }else if(bar === 'TTVP')
-      {
-        bar = 3;
-      }else if(bar === 'BCNS')
-      {
-        bar = 5;
-      }else if(bar === 'DLXGD')
-      {
-        bar = 6;
-      }
       if(req.user.data.type === 0)
         {
             return functions.setError(res,'Unauthorized',401)

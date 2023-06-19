@@ -1,12 +1,12 @@
 const functions = require("../../services/functions");
 const Category = require("../../models/Raonhanh365/Category");
-const New = require("../../models/Raonhanh365/UserOnSite/New");
+const New = require("../../models/Raonhanh365/New");
 const CategoryRaoNhanh365 = require("../../models/Raonhanh365/Category");
 const User = require("../../models/Users");
-const LoveNews = require("../../models/Raonhanh365/UserOnSite/LoveNews");
+const LoveNews = require("../../models/Raonhanh365/LoveNews");
 const Bidding = require("../../models/Raonhanh365/Bidding");
 const LikeRN = require("../../models/Raonhanh365/Like");
-const ApplyNewsRN = require("../../models/Raonhanh365/UserOnSite/ApplyNews");
+const ApplyNewsRN = require("../../models/Raonhanh365/ApplyNews");
 const raoNhanh = require("../../services/rao nhanh/raoNhanh");
 const Comments = require("../../models/Raonhanh365/Comments");
 const dotenv = require("dotenv");
