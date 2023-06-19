@@ -2,70 +2,70 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const crm_customer = new Schema({
-    cus_id : {
+    cus_id : {//id khách hàng
         type : Number
     },
-    email : {
+    email : {// email khách hàng
         type : String
     },
-    phone_number : {
+    phone_number : {//sdt khách hàng
         type : String
     },
-    name : {
+    name : {// tên khách hàng
         type : String
     },
-    stand_name : {
+    stand_name : { // tên viết tắt
         type : String,
         default : null
     },
-    logo : {
+    logo : {// link ảnh 
         type : String,
         default : null
     },
-    birthday : {
+    birthday : {// ngày sinh
         type : Date,
         default : null
     },
-    tax_code : {
+    tax_code : { // mã số thuế
         type : String,
         default : null
     },
-    cit_id : {
+    cit_id : { // id thành phố
         type : Number
     },
-    district_id : {
+    district_id : { // ?
         type : Number
     },
-    ward : {
+    ward : { // phường
         type : Number
     },
-    address : {
+    address : {// địa chỉ
         type : String
     },
-    ship_invoice_address : {
+    ship_invoice_address : { // địa chỉ giao hàng
         type : String,
         default : null
     },
-    gender : {
+    gender : { // giới tính
         type : String,
         default : null
     },
-    cmnd_ccnd_number : {
+    cmnd_ccnd_number : {// số cmt
         type : Number,
         default : null
     },
-    cmnd_ccnd_address : {
+    cmnd_ccnd_address : {// địa chỉ cmt
         type : String,
         default : ""
     },
-    cmnd_ccnd_time : {
+    cmnd_ccnd_time : { // thời gian chứng minh thư
         type : Date,
         default : "0"
     },
     resoure : {
         type : Number
     },
-    description : {
+    description : {// mô tả khách hàng
         type : String,
         default : ""
     },
@@ -89,110 +89,110 @@ const crm_customer = new Schema({
         type : Number,
         default :"0"
     },
-    company_id : {
+    company_id : {// id cong ty
         type : Number
     },
-    emp_id : {
+    emp_id : { // id nhân viên
         type : Number
     },
     user_handing_over_work :{
         type : Number
     },
-    user_create_type : {
+    user_create_type : {// id người tạo
         type : String
     },
-    user_edit_id : {
+    user_edit_id : {// id người sửa
         type : Number
     },
-    user_edit_type :{
+    user_edit_type :{// loại sửa
         type : String
     },
-    group_id : {
+    group_id : {// id nhóm
         type : Number
     },
-    status : {
+    status : {// trạng thái
         type : Number
     },
-    business_areas : {
+    business_areas : {// lĩnh vực kinh doanh
         type : Number,
         default :0
     },
-    category : {
+    category : {// loại khách hàng
         type : Number
     },
-    business_type : {
+    business_type : {//loại hình kinh doanh
         type : Number,
         default :0
     },
-    classify : {
+    classify : { // phân loại
         type : Number,
         default :0
     },
-    bill_city : {
+    bill_city : { // thông tin viết hóa đơn/ tỉnh thành phố
         type : Number,
         default :0
     },
-    bil_district : {
+    bil_district : { // thông tin viết hóa đơn/ huyện
         type : Number,
         default : 0
     },
-    bill_ward : {
+    bill_ward : { //thông tin viết hóa đơn / phường ,xã
         type : Number,
         default :0
     },
-    bill_address : {
+    bill_address : { // thông tin viết hóa đơn / địa chỉ liên hệ
         type : String,
         default : null
     },
-    bill_area_code : {
+    bill_area_code : {// thông tin viết hóa đơn mã vùng
         type : String,
         default : null
     },
-    bill_invoice_address : {
+    bill_invoice_address : {// địa chỉ đơn hàng
         type : String,
         default : null
     },
-    bill_invoice_address_email : {
+    bill_invoice_address_email : { //Địa chỉ email nhận hóa đơn
         type : String,
         default : null
     },
-    ship_city : {
+    ship_city : { // thông tin giao hàng // tỉnh thành phố
         type : String,
         default : "0"
     },
-    ship_area : {
+    ship_area : { // Quận/Huyện:
         type : String,
         default : null
     },
-    bank_id : {
+    bank_id : { //id ngân hàng
         type : Number,
         default : 0
     },
-    bank_account : {
+    bank_account : { // tài khoản ngân hàng
         type : String,
         default : ""
     },
-    revenue : {
+    revenue : { //Doanh thu/Ngân sách:
         type : Number,
         default : 0
     },
-    size : {
+    size : {// quy mô nhân sự
         type : Number,
         default : 0
     },
-    rank : {
+    rank : {// Xếp hạng khách hàng
         type : Number,
         default : 0
     },
-    website : {
+    website : {//website ngân hàng
         type : String,
         default : null
     },
-    number_of_day_owed : {
+    number_of_day_owed : {// Số ngày được nợ:
         type : Number,
         default : 0
     },
-    deb_limit : {
+    deb_limit : { // hạn mức nợ
         type : Number,
         default :0
     },
@@ -200,7 +200,7 @@ const crm_customer = new Schema({
         type : Number,
         default :0
     },
-    type : {
+    type : {// loại
         type : Number,
     },
     is_input : {
@@ -210,10 +210,10 @@ const crm_customer = new Schema({
     is_delete : {
         type : Number
     },
-    created_at : {
+    created_at : {// thời gian tạo 
         type : Date
     },
-    updated_at : {
+    updated_at : {// thời gian sửa
         type : Date
     },
     id_cus_from : {

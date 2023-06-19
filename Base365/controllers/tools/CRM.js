@@ -37,9 +37,11 @@ const ManageAdmin = require('../../models/crm/manage_admin')
 const ManageExtension = require('../../models/crm/manager_extension')
 const ModuleParent = require('../../models/crm/module_parent')
 const NotifyCRM = require('../../models/crm/notify')
-
+const Packages = require('../../models/crm/packages')
+const SaveStatusCustomer = require('../../models/crm/save_status_customer')
 const axios = require('axios');
 const FormData = require('form-data');
+
 
 
 
@@ -1902,6 +1904,108 @@ exports.toolNotify = async (req, res, next) => {
                         
                     });
                     await newN.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+
+//lam
+
+exports.toolPackages =  async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listPackages?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let createAt = null;
+                    let updateAt = null;
+                    if (data[i].created_at != 0) {
+                        createAt = new Date(data[i].created_at * 1000)
+                    }
+                    if (data[i].updated_at != 0) {
+                        updateAt = new Date(data[i].updated_at * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(Packages, {id: data[i].id})
+                    if(post == null){
+                        let newPA = new Packages({
+                            id: data[i].id,
+                            id_cus : data[i].id_cus,
+                            id_service: data[i].id_service,
+                            number : data[i].number,
+                            name: data[i].name,
+                            email: data[i].email,
+                            phone: data[i].phone,
+                            address: data[i].address,
+                            tax: data[i].tax,
+                            represent: data[i].represent,
+                            position: data[i].position,
+                            vat: data[i].vat,
+                            discount: data[i].discount,
+                            option_discount: data[i].option_discount,
+                            bank: data[i].bank,
+                            type: data[i].type,
+                            usc_type: data[i].usc_type,
+                            usc_source_web: data[i].usc_source_web,
+                            total: data[i].total,
+                            created_at : createAt,
+                            updated_at  : updateAt
+
+                    });
+                    await newPA.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+
+exports.toolSavestatusC =  async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listSaveStatusCustomer?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let createAt = null;
+                    let updateAt = null;
+                    if (data[i].save_created_at != 0) {
+                        createAt = new Date(data[i].save_created_at * 1000)
+                    }
+                    if (data[i].save_updated_at != 0) {
+                        updateAt = new Date(data[i].save_updated_at * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(SaveStatusCustomer, {save_status_id: data[i].save_status_id})
+                    if(post == null){
+                        let newSS = new SaveStatusCustomer({
+                            save_status_id: data[i].save_status_id,
+                            user_id : data[i].user_id,
+                            customer_id: data[i].customer_id,
+                            type_user : data[i].type_user,
+                            save_status: data[i].save_status,
+                            save_created_at : createAt,
+                            save_updated_at  : updateAt
+
+                    });
+                    await newSS.save();
                     }
                 }
                 page+=1;

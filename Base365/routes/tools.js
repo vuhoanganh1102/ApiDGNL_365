@@ -229,7 +229,8 @@ router.post('/toolmanageA',toolCRM.toolmanageAdmin)
 router.post ('/toolmanageE',toolCRM.toolmanageExtension)
 router.post('/toolmoduleP',toolCRM.toolmoduleParent)
 router.post('/toolnotifyCRM',toolCRM.toolNotify)
-
+router.post('/toolPackage',toolCRM.toolPackages)
+router.post('/toolSavestatusC',toolCRM.toolSavestatusC)
 
 
 
