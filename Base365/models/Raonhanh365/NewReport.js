@@ -32,6 +32,7 @@ const ReportNewschema = new mongoose.Schema({
         type: Number,
         Default: 0
     }
+
 },{
     collection: 'RN365_ReportNews',
     versionKey: false,
