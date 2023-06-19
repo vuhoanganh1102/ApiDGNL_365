@@ -55,8 +55,6 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-
-
     video: {
         // video của bài viết
         type: String,
@@ -260,6 +258,8 @@ const newSchema = new mongoose.Schema({
     },
 
     until_bidding: {
+        type:Number
+    },
 
     until: {
 
@@ -372,7 +372,9 @@ const newSchema = new mongoose.Schema({
     },
     addressProcedure: {
         // địa chỉ nộp hồ sơ đấu thầu offline
-
+        type: String,
+        default: null
+    },
     productType: {
         // loại sản phẩm 
         type: Number,
@@ -772,8 +774,6 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
     },
-
-
     // thú cưng
     pet: {
         kindOfPet: {
