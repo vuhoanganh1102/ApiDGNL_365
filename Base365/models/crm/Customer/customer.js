@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 
 const crm_customer = new Schema({
     cus_id : {//id khách hàng
-        type : Number
+        type : Number,
+        require : true
     },
     email : {// email khách hàng
         type : String
@@ -31,16 +32,20 @@ const crm_customer = new Schema({
         default : null
     },
     cit_id : { // id thành phố
-        type : Number
+        type : Number,
+        default : null
     },
     district_id : { // ?
-        type : Number
+        type : Number,
+        default : null
     },
     ward : { // phường
-        type : Number
+        type : Number,
+        default : null
     },
     address : {// địa chỉ
-        type : String
+        type : String,
+        default : null
     },
     ship_invoice_address : { // địa chỉ giao hàng
         type : String,
@@ -99,26 +104,32 @@ const crm_customer = new Schema({
         type : Number
     },
     user_create_type : {// id người tạo
-        type : String
+        type : String,
+        default : null
     },
     user_edit_id : {// id người sửa
-        type : Number
+        type : Number,
+        default : null
     },
     user_edit_type :{// loại sửa
-        type : String
+        type : String,
+        default : null
     },
     group_id : {// id nhóm
-        type : Number
+        type : Number,
+        default : null
     },
     status : {// trạng thái
-        type : Number
+        type : Number,
+        default : null
     },
     business_areas : {// lĩnh vực kinh doanh
         type : Number,
         default :0
     },
     category : {// loại khách hàng
-        type : Number
+        type : Number,
+        default : null
     },
     business_type : {//loại hình kinh doanh
         type : Number,
@@ -200,7 +211,7 @@ const crm_customer = new Schema({
         type : Number,
         default :0
     },
-    type : {// loại
+    type : {// loại ? 1 kh 
         type : Number,
     },
     is_input : {
@@ -214,13 +225,16 @@ const crm_customer = new Schema({
         type : Date
     },
     updated_at : {// thời gian sửa
-        type : Date
+        type : Date,
+        default : "0"
     },
     id_cus_from : {
         type : String,
+        default : null
     },
     cus_from : {
-        type : String
+        type : String,
+        default : null
     },
     link : {
         type : String,
