@@ -49,12 +49,13 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    
+
     image: {
         // ảnh bài viết
         type: String,
         default: null
     },
+
 
     video: {
         // video của bài viết
@@ -106,7 +107,6 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    
     address: [{
         // địa chỉ người mua/bán
         type: String,
@@ -208,6 +208,7 @@ const newSchema = new mongoose.Schema({
         default: 0
     },
     timeEndReceivebidding :{
+
         // thời gian kết thúc nhận hồ sơ mời thầu
         type: Date,
         default: null
@@ -217,6 +218,9 @@ const newSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+
+
+
     timeNotiBiddingEnd:{
         // thời gian bắt đầu thông báo kết quả trúng thầu
         type: Date,
@@ -232,16 +236,13 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
-    fileContentProcedureApply: {
-        // Thủ tục nộp hồ sơ mời thầu
+
+    contentOnline: {
+        // nội dung nộp hồ sơ online
         type: String,
         default: null
     },
-    contentOnline:{
-         // nội dung nộp hồ sơ online
-         type: String,
-         default: null
-    },
+
     fileContent: {
         // file nộp hồ sơ
         type: String,
@@ -257,7 +258,11 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+
+    until_bidding: {
+
     until: {
+
         // l 1 VND , 2 USD ,3 EURO
         type: String,
         default: 1
@@ -307,6 +312,7 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+
     cityProcedure:{
         // địa chỉ nộp hồ sơ đấu thầu offline
         type: String,
@@ -322,6 +328,7 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+
     totalSold: {
         // tổng số lượng
         type: Number,
@@ -347,16 +354,24 @@ const newSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
-    promotionType: {
-        // loại khuyến mãi
-        type: Number,
-        default: 0,
-    },
-    promotionValue: {
-        // giá trị khuyến mãi
+
+    cityProcedure: {
+        // địa chỉ nộp hồ sơ đấu thầu offline
         type: String,
         default: null
     },
+    districtProcedure: {
+        // địa chỉ nộp hồ sơ đấu thầu offline
+        type: String,
+        default: null
+    },
+    wardProcedure: {
+        // địa chỉ nộp hồ sơ đấu thầu offline
+        type: String,
+        default: null
+    },
+    addressProcedure: {
+        // địa chỉ nộp hồ sơ đấu thầu offline
 
     productType: {
         // loại sản phẩm 
@@ -473,9 +488,11 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         interior: {
-                // loại nội thất
-                type: Number,
-                default: 0
+
+            // loại nội thất
+            type: Number,
+            default: 0
+
         },
         device: {
             // thiết bị
@@ -685,7 +702,10 @@ const newSchema = new mongoose.Schema({
         },
         codeApartment: {
             // mã căn hộ
-            type: Number,
+
+            type: String,
+
+
             default: null,
         },
         cornerUnit: {
@@ -752,7 +772,7 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
     },
-  
+
 
     // thú cưng
     pet: {
@@ -777,8 +797,6 @@ const newSchema = new mongoose.Schema({
             default: null
         },
     },
-   
-   
     // tìm việc
     Job: {
         jobType: {
@@ -874,10 +892,12 @@ const newSchema = new mongoose.Schema({
         },
         cv: {
             type: String,
-            default:null
+
+            default: null
         }
     },
-    
+
+
     // thông tin bán hàng
     infoSell: {
         groupType: {
@@ -894,7 +914,18 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-        
+
+        promotionType: {
+            // loại khuyến mãi
+            type: Number,
+            default: 0,
+        },
+        promotionValue: {
+            // giá trị khuyến mãi
+            type: String,
+            default: null
+        },
+
         transport: {
             // vận chuyển
             type: Number,

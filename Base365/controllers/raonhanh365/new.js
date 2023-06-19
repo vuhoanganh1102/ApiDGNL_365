@@ -20,7 +20,7 @@ exports.postNewMain = async (req, res, next) => {
         let listImg = [];
         let nameVideo = "";
         let request = req.body,
-            userID = request.user_id,
+            userID = request.user_id,k
             cateID = request.cate_id,
             title = request.title,
             money = request.money,
@@ -868,7 +868,7 @@ exports.searchNew = async (req, res, next) => {
                 address: 1,
                 money: 1,
                 startvalue: 1,
-                timeReceivebidding: 1,
+                timeSell: 1,
                 timeEndReceivebidding: 1,
                 img: 1,
                 apartmentNumber: 1,
@@ -1037,11 +1037,12 @@ exports.createBuyNew = async (req, res) => {
     try {
         // lấy id user từ req
         let userID = req.user.data.idRaoNhanh365;
+        let type   = req.user.data.type;
 
         // khởi tạo các biến có thể có
         let tenderFile = null;
 
-        let fileContentProcedureApply = null;
+        let procedureFile = null;
 
         let contentOnline = null;
 
@@ -1052,7 +1053,7 @@ exports.createBuyNew = async (req, res) => {
         let districtProcedure = req.body.districtProcedure || null;
 
         let wardProcedure = req.body.wardProcedure || null;
-
+        let active = 1;
         // khai báo và gán giá trị các biến bắt buộc
         let {
             cateID,
@@ -1064,19 +1065,17 @@ exports.createBuyNew = async (req, res) => {
             apartmentNumber,
             description,
             timeEndReceivebidding,
-            timeReceivebidding,
             status,
             timeNotiBiddingStart,
             timeNotiBiddingEnd,
             instructionContent,
             bidFee,
-            startvalue,
-            endvalue,
-            until_tu,
-            until_den,
-            until_bidFee,
+            endvalue,money,
+            until,
+            until_bidding,
             phone,
             email,
+            timeSell
         } = req.body;
         //  tạo mảng img
         let img = [];
@@ -1092,31 +1091,27 @@ exports.createBuyNew = async (req, res) => {
 
         let File = req.files;
 
-        let type = 0;
         // kiểm tra các điều kiện bắt buộc
         if (
-            cateID &&
             title &&
             name &&
-            city &&
+            city && money &&
             district &&
             ward &&
             apartmentNumber &&
             description &&
-            timeReceivebidding &&
             timeEndReceivebidding &&
             status &&
             timeNotiBiddingStart &&
             timeNotiBiddingEnd &&
             instructionContent &&
             bidFee &&
-            startvalue &&
             endvalue &&
             phone &&
             email &&
-            until_tu &&
-            until_den &&
-            until_bidFee
+            until &&
+            until_bidding
+            && timeSell
         ) {
             // tạolink title từ title người dùng nhập
             let linkTitle = raoNhanh.createLinkTilte(title);
@@ -1133,7 +1128,7 @@ exports.createBuyNew = async (req, res) => {
             // kiểm tra tiền nhập vào có phải số không
             else if (
                 isNaN(bidFee) === true ||
-                isNaN(startvalue) === true ||
+                isNaN(money) === true ||
                 isNaN(endvalue) === true
             ) {
                 return functions.setError(res, "The input price is not a number", 400);
@@ -1148,20 +1143,20 @@ exports.createBuyNew = async (req, res) => {
             }
 
             if (
-                functions.checkDate(timeReceivebidding) === true &&
+                functions.checkDate(timeSell) === true &&
                 functions.checkDate(timeEndReceivebidding) === true &&
                 functions.checkDate(timeNotiBiddingStart) === true &&
                 functions.checkDate(timeNotiBiddingEnd) === true
             ) {
                 //  kiểm tra thời gian có nhỏ hơn thời gian hiện tại không
                 if (
-                    (await functions.checkTime(timeReceivebidding)) &&
+                    (await functions.checkTime(timeSell)) &&
                     (await functions.checkTime(timeEndReceivebidding)) &&
                     (await functions.checkTime(timeNotiBiddingStart)) &&
                     (await functions.checkTime(timeNotiBiddingEnd))
                 ) {
                     //  kiểm tra thời gian nộp hồ sơ và thời gian thông báo có hợp lệ không
-                    let date1 = new Date(timeReceivebidding);
+                    let date1 = new Date(timeSell);
                     let date2 = new Date(timeEndReceivebidding);
                     let date3 = new Date(timeNotiBiddingStart);
                     let date4 = new Date(timeNotiBiddingEnd);
@@ -1242,16 +1237,16 @@ exports.createBuyNew = async (req, res) => {
                     File.instructionFile.name
                 );
             }
-            if (File.fileContentProcedureApply) {
-                if (File.fileContentProcedureApply.length)
+            if (File.procedureFile) {
+                if (File.procedureFile.length)
                     return functions.setError(res, "Gửi quá nhiều file");
                 raoNhanh.uploadFileRaoNhanh(
                     "avt_tindangmua",
                     userID,
-                    File.fileContentProcedureApply,
+                    File.procedureFile,
                     [".jpg", ".png", ".docx", ".pdf"]
                 );
-                fileContentProcedureApply = functions.createLinkFileRaonhanh(
+                procedureFile = functions.createLinkFileRaonhanh(
                     "avt_tindangmua",
                     userID,
                     File.fileContentProcedureApply.name
@@ -1264,12 +1259,12 @@ exports.createBuyNew = async (req, res) => {
                 title,
                 type,
                 linkTitle,
-                userID: 3585,
+                userID,
                 buySell,
                 createTime,
                 img,
                 tenderFile,
-                fileContentProcedureApply,
+                procedureFile,
                 contentOnline,
                 instructionFile,
                 cityProcedure,
@@ -1281,20 +1276,18 @@ exports.createBuyNew = async (req, res) => {
                 ward,
                 apartmentNumber,
                 description,
-                timeReceivebidding,
                 timeEndReceivebidding,
-                status,
+                status,money,
                 timeNotiBiddingStart,
                 timeNotiBiddingEnd,
                 instructionContent,
                 bidFee,
-                startvalue,
                 endvalue,
                 phone,
                 email,
-                until_tu,
-                until_den,
-                until_bidFee,
+                until,
+                until_bidding,
+                type,active
             });
             await postNew.save();
             // await New.deleteMany({userID:5})
@@ -1303,6 +1296,7 @@ exports.createBuyNew = async (req, res) => {
         }
         return functions.success(res, "post new success");
     } catch (error) {
+        console.log("🚀 ~ file: new.js:1300 ~ exports.createBuyNew= ~ error:", error)
         return functions.setError(res, error);
     }
 };
@@ -1315,7 +1309,7 @@ exports.updateBuyNew = async (req, res, next) => {
         // khởi tạo các biến có thể có
         let tenderFile = null;
 
-        let fileContentProcedureApply = null;
+        let procedureFile = null;
 
         let contentOnline = null;
 
@@ -1333,12 +1327,13 @@ exports.updateBuyNew = async (req, res, next) => {
             title,
             name,
             city,
+            money,
             district,
             ward,
             apartmentNumber,
             description,
             timeEndReceivebidding,
-            timeReceivebidding,
+            timeSell,
             status,
             timeNotiBiddingStart,
             timeNotiBiddingEnd,
@@ -1346,9 +1341,8 @@ exports.updateBuyNew = async (req, res, next) => {
             bidFee,
             startvalue,
             endvalue,
-            until_tu,
-            until_den,
-            until_bidFee,
+            until,
+            until_bidding,
             phone,
             email,
         } = req.body;
@@ -1362,27 +1356,26 @@ exports.updateBuyNew = async (req, res, next) => {
 
         // kiểm tra các điều kiện bắt buộc
         if (
+           
             title &&
             name &&
-            city &&
+            city && money &&
             district &&
             ward &&
             apartmentNumber &&
             description &&
-            timeReceivebidding &&
             timeEndReceivebidding &&
             status &&
             timeNotiBiddingStart &&
             timeNotiBiddingEnd &&
             instructionContent &&
             bidFee &&
-            startvalue &&
             endvalue &&
             phone &&
             email &&
-            until_tu &&
-            until_den &&
-            until_bidFee
+            until &&
+            until_bidding
+            && timeSell 
         ) {
             // tạolink title từ title người dùng nhập
             let linkTitle = raoNhanh.createLinkTilte(title);
@@ -1399,7 +1392,7 @@ exports.updateBuyNew = async (req, res, next) => {
             // kiểm tra tiền nhập vào có phải số không
             else if (
                 isNaN(bidFee) === true ||
-                isNaN(startvalue) === true ||
+                isNaN(money) === true ||
                 isNaN(endvalue) === true
             ) {
                 return functions.setError(res, "The input price is not a number", 400);
@@ -1414,20 +1407,20 @@ exports.updateBuyNew = async (req, res, next) => {
             }
 
             if (
-                functions.checkDate(timeReceivebidding) === true &&
+                functions.checkDate(timeSell) === true &&
                 functions.checkDate(timeEndReceivebidding) === true &&
                 functions.checkDate(timeNotiBiddingStart) === true &&
                 functions.checkDate(timeNotiBiddingEnd) === true
             ) {
                 //  kiểm tra thời gian có nhỏ hơn thời gian hiện tại không
                 if (
-                    (await functions.checkTime(timeReceivebidding)) &&
+                    (await functions.checkTime(timeSell)) &&
                     (await functions.checkTime(timeEndReceivebidding)) &&
                     (await functions.checkTime(timeNotiBiddingStart)) &&
                     (await functions.checkTime(timeNotiBiddingEnd))
                 ) {
                     //  kiểm tra thời gian nộp hồ sơ và thời gian thông báo có hợp lệ không
-                    let date1 = new Date(timeReceivebidding);
+                    let date1 = new Date(timeSell);
                     let date2 = new Date(timeEndReceivebidding);
                     let date3 = new Date(timeNotiBiddingStart);
                     let date4 = new Date(timeNotiBiddingEnd);
@@ -1458,20 +1451,19 @@ exports.updateBuyNew = async (req, res, next) => {
                 ward,
                 apartmentNumber,
                 description,
-                timeReceivebidding,
+                timeSell,
                 timeEndReceivebidding,
                 status,
                 timeNotiBiddingStart,
                 timeNotiBiddingEnd,
                 instructionContent,
                 bidFee,
-                startvalue,
+                money,
                 endvalue,
                 phone,
                 email,
-                until_tu,
-                until_den,
-                until_bidFee,
+                until,
+                until_bidding,
             };
 
             // xoá file
@@ -1564,16 +1556,16 @@ exports.updateBuyNew = async (req, res, next) => {
                 }
                 updateItem.instructionFile = instructionFile;
             }
-            if (File.fileContentProcedureApply) {
-                if (File.fileContentProcedureApply.length)
+            if (File.procedureFile) {
+                if (File.procedureFile.length)
                     return functions.setError(res, "Gửi quá nhiều file");
                 raoNhanh.uploadFileRaoNhanh(
                     "avt_tindangmua",
                     userID,
-                    File.fileContentProcedureApply,
+                    File.procedureFile,
                     [".jpg", ".png", ".docx", ".pdf"]
                 );
-                fileContentProcedureApply = functions.createLinkFileRaonhanh(
+                procedureFile = functions.createLinkFileRaonhanh(
                     "avt_tindangmua",
                     userID,
                     File.fileContentProcedureApply.name
@@ -1582,7 +1574,7 @@ exports.updateBuyNew = async (req, res, next) => {
                     let text = files_old.instructionFile.split("/").reverse()[0];
                     raoNhanh.deleteFileRaoNhanh(userID, text);
                 }
-                updateItem.fileContentProcedureApply = fileContentProcedureApply;
+                updateItem.procedureFile = procedureFile;
             }
             await New.findByIdAndUpdate(id, updateItem);
         } else {
@@ -1652,7 +1644,7 @@ exports.getDetailNew = async (req, res, next) => {
                 money: 1,
                 name: 1, islove: 1,
                 timeEndReceivebidding: 1,
-                timeReceivebidding: 1,
+                timeSell: 1,
                 timeNotiBiddingStart: 1,
                 timeNotiBiddingEnd: 1,
                 tenderFile: 1,
