@@ -24,11 +24,6 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    startvalue:{
-        // giá sàn dự kiến
-        type: Number,
-        default: 0
-    },
     endvalue: {
         // Giá sàn kết thúc
         type: Number,
@@ -212,11 +207,6 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    timeReceivebidding :{
-        // thời gian nhận hồ sơ mời thầu
-        type: Date,
-        default: null
-    },
     timeEndReceivebidding :{
         // thời gian kết thúc nhận hồ sơ mời thầu
         type: Date,
@@ -267,18 +257,8 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    until_tu: {
-        // loại tiền từ mức. 1 VND , 2 USD ,3 EURO
-        type: String,
-        default: 1
-    },
-    until_den: {
-        // loại tiền đến mức. 1 VND , 2 USD ,3 EURO
-        type: String,
-        default: 1
-    },
-    until_bidFee: {
-        // loại tiền phí dự thầu. 1 VND , 2 USD ,3 EURO
+    until: {
+        // l 1 VND , 2 USD ,3 EURO
         type: String,
         default: 1
     },
@@ -873,7 +853,6 @@ const newSchema = new mongoose.Schema({
             default: null
         },
         ward: {
-            // phường xã
             type: String,
             default: null
         },

@@ -1,5 +1,5 @@
 const fnc = require('../../services/functions');
-const New = require('../../models/Raonhanh365/UserOnSite/New');
+const New = require('../../models/Raonhanh365/New');
 const Category = require('../../models/Raonhanh365/Category');
 const axios = require('axios');
 const FormData = require('form-data');
@@ -8,12 +8,13 @@ const PriceList = require('../../models/Raonhanh365/PriceList');
 const CityRN = require('../../models/Raonhanh365/City');
 const LikeRN = require('../../models/Raonhanh365/Like');
 const History = require('../../models/Raonhanh365/History');
-const ApplyNews = require('../../models/Raonhanh365/UserOnSite/ApplyNews');
+const ApplyNews = require('../../models/Raonhanh365/ApplyNews');
 const Comments = require('../../models/Raonhanh365/Comments');
 const OrderRN = require('../../models/Raonhanh365/Order');
 const TagsIndex = require('../../models/Raonhanh365/RN365_TagIndex');
 const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
-
+const dotenv = require("dotenv");
+dotenv.config();
 
 // danh mục sản phẩm
 exports.toolCategory = async(req, res, next) => {
@@ -81,45 +82,45 @@ exports.toolNewRN = async(req, res, next) => {
                     let refreshTime = null;
                     let timeHome = null;
                     let timeCate = null;
-                    let bidExpirationTime = null;
+                    let timeEndReceivebidding = null;
                     let timePromotionStart = null;
                     let timePromotionEnd = null;
                     if (data[i].tgian_ban != 0) {
                         timeSell = new Date(data[i].tgian_ban * 1000)
                     }
                     if (data[i].thoigian_bdghim != 0) {
-                        timeStartPinning = new Date(data[i].tgian_ban * 1000)
+                        timeStartPinning = new Date(data[i].thoigian_bdghim * 1000)
                     }
                     if (data[i].ngay_bdghim != 0) {
-                        dayStartPinning = new Date(data[i].tgian_ban * 1000)
+                        dayStartPinning = new Date(data[i].ngay_bdghim * 1000)
                     }
                     if (data[i].ngay_ktghim != 0) {
-                        dayEndPinning = new Date(data[i].tgian_ban * 1000)
+                        dayEndPinning = new Date(data[i].ngay_ktghim * 1000)
                     }
                     if (data[i].tgian_tghim != 0) {
                         timePinning = new Date(data[i].tgian_ban * 1000)
                     }
                     if (data[i].refresh_time != 0) {
-                        refreshTime = new Date(data[i].tgian_ban * 1000)
+                        refreshTime = new Date(data[i].refresh_time * 1000)
                     }
                     if (data[i].new_time_home != 0) {
-                        timeHome = new Date(data[i].tgian_ban * 1000)
+                        timeHome = new Date(data[i].new_time_home * 1000)
                     }
                     if (data[i].new_time_cate != 0) {
-                        timeCate = new Date(data[i].tgian_ban * 1000)
+                        timeCate = new Date(data[i].new_time_cate * 1000)
                     }
                     if (data[i].tgian_hethan_thau != 0) {
-                        bidExpirationTime = new Date(data[i].tgian_ban * 1000)
+                        timeEndReceivebidding = new Date(data[i].tgian_hethan_thau * 1000)
                     }
                     if (data[i].thoigian_kmbd != 0) {
-                        timePromotionStart = new Date(data[i].tgian_ban * 1000)
+                        timePromotionStart = new Date(data[i].thoigian_kmbd * 1000)
                     }
                     if (data[i].thoigian_kmkt != 0) {
-                        timePromotionEnd = new Date(data[i].tgian_ban * 1000)
+                        timePromotionEnd = new Date(data[i].thoigian_kmkt * 1000)
                     }
                     const images = data[i].new_image.split(";").map((image, index) => {
                         const parts = image.split("/");
-                        const filename = parts[parts.length - 1];
+                        const filename = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/'+ parts[parts.length - 2] +'/'+ data[i].new_id + '/'+parts[parts.length - 1];
                         const _id = index + 1;
                         return {
                             _id,
@@ -173,7 +174,7 @@ exports.toolNewRN = async(req, res, next) => {
                             refreshTime: refreshTime,
                             timeHome: timeHome,
                             timeCate: timeCate,
-                            bidExpirationTime: bidExpirationTime,
+                            timeEndReceivebidding: timeEndReceivebidding,
                             quantitySold: data[i].sluong_daban,
                             totalSold: data[i].tong_sluong,
                             quantityMin: data[i].soluong_min,

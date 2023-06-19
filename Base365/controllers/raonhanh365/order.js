@@ -1,5 +1,5 @@
 const functions = require('../../services/functions');
-const New = require('../../models/Raonhanh365/UserOnSite/New');
+const New = require('../../models/Raonhanh365/New');
 const User = require('../../models/Users');
 const Order = require('../../models/Raonhanh365/Order');
 const Bidding = require('../../models/Raonhanh365/Bidding');
