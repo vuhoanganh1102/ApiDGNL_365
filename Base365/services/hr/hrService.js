@@ -31,6 +31,8 @@ const allowedTypes = ['.mp4', '.mov', '.avi', '.wmv', '.flv'];
 const MAX_IMG_SIZE = 2 * 1024 * 1024;
 // giới hạn dung lượng kho ảnh
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
+// giới hạn dung luong file < 2MB
+const MAX_FILE_SIZE = 20* 1024 * 1024;
 
 dotenv.config();
 
@@ -53,7 +55,7 @@ exports.HR_CheckTokenCompany = (req, res, next) => {
                 return res.status(403).json({ message: "không tìm thấy id company" });
             }
         } else {
-        return res.status(403).json({ message: "bạn không có quyền truy cập tính năng này" });
+            return res.status(403).json({ message: "bạn không có quyền truy cập tính năng này" });
         }
     });
 }
@@ -108,3 +110,82 @@ exports.titleToSlug = title => {
     slug = slug.replace(/\@\-|\-\@|\@/gi, '');
     return slug;
 };
+
+
+// hàm check ảnh
+exports.checkFile = async (filePath) => {
+    if (typeof (filePath) !== 'string') {
+        return false;
+    }
+
+    const { size } = await promisify(fs.stat)(filePath);
+    if (size > MAX_FILE_SIZE) {
+        return false;
+    }
+
+    const isFile = await checkFile(filePath);
+    if (!isFile) {
+        return false;
+    }
+
+    return true;
+};
+
+// hàm check định dạng ảnh
+let checkFile = async (filePath) => {
+    const extname = path.extname(filePath).toLowerCase();
+    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.pdf', '.doc', '.docx'].includes(extname);
+};
+
+exports.createLinkFile = async(folder, id, name) => {
+    let link = process.env.DOMAIN_RAO_NHANH + '/base365/hr/pictures/' + folder + '/' + id + '/' + name;
+    return link;
+}
+
+exports.uploadFile = async(folder, id, file) => {
+    let path1 = `../Storage/base365/hr/pictures/${folder}/${id}/`;
+    let filePath = `../Storage/base365/hr/pictures/${folder}/${id}/` + file.name;
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath, data, (err) => {
+            if (err) {
+            console.log(err)
+            }
+        });
+    });
+    return true
+}
+exports.uploadFileBase64 = async(folder, id, base64String, file)=>{
+    let path1 = `../Storage/base365/hr/pictures/${folder}/${id}/`;
+    // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    var matches = base64String.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (matches.length !== 3) {
+        return false;
+    }
+
+    let type = matches[1];
+    let data = Buffer.from(matches[2], 'base64');
+
+    const imageName = `${Date.now()}.${type.split("/")[1]}`;
+    fs.writeFile(path1+imageName, data, (err) => {
+        if (err) {
+        console.log(err)
+        }
+    });
+}
+
+exports.getMaxId = async(model)=>{
+    let maxId = await model.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+    if (maxId) {
+        maxId = Number(maxId.id) + 1;
+    } else maxId = 1;
+    return maxId;
+}

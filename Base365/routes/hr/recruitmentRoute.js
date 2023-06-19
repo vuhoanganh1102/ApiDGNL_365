@@ -8,16 +8,26 @@ const hrService = require('../../services/hr/hrService');
 //api lay ra danh sach recruitmentController theo cac truong
 router.post('/getRecruit', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.getListRecruitment);
 
-//
+//them moi quy trinh
 router.post('/', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.createRecruitment);
 
-//
+//sua quy trinh
 router.put('/', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.updateRecruitment);
 
 //xoa quy trinh tuyen dung vao muc da xoa gan day
 router.put('/softDelete', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.softDeleteRecruitment);
 //xoa vinh vien
 router.delete('/', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.deleteRecruitment);
+
+
+//---giai doan trong quy trinh
+router.get('/stage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.getStageRecruitment);
+//them giai doan trong quy trinh
+router.post('/stage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.createStageRecruitment);
+//sua giai doan trong quy trinh
+router.put('/stage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.updateStageRecruitment);
+//xoa gia doan
+router.put('/softDeleteStage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.softDeleteStageRecruitment);
 
 //-------------------------------api tin tuyen dung
 

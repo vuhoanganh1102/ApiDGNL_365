@@ -107,15 +107,15 @@ exports.updateRecruitment = async(req, res, next) => {
 
 exports.softDeleteRecruitment = async(req, res, next) => {
     try {
-        let recruitmentId = req.query.recruitmentId;
-        let recruitment = await Recruitment.findOneAndUpdate({id: recruitmentId}, {
+        let stageRecruitmentId = req.query.stageRecruitmentId;
+        let stagerecruitment = await StageRecruitment.findOneAndUpdate({id: stageRecruitmentId}, {
             deletedAt: Date.now(),
             isDelete: 1
         })
-        if(!recruitment) {
+        if(!stagerecruitment) {
             return functions.setError(res, "News not found!", 505);
         }
-        return functions.success(res, "Soft delete recruitment success!");
+        return functions.success(res, "Soft delete stage recruitment success!");
     } catch (e) {
         console.log("Error from server", e);
         return functions.setError(res, "Error from server", 500);
@@ -138,6 +138,113 @@ exports.deleteRecruitment = async(req, res, next) => {
         return functions.setError(res, "Error from server", 500);
     }
 }
+
+//----------------------------giai doan trong quy trinh tuyen dung
+
+//lay ra thong tin cac gia doan cua quy trinh or thong tin 1 quy trinh
+exports.getStageRecruitment = async(req, res, next) => {
+    try{
+        let stageRecruitId = req.query.stageRecruitId;
+        let recruitmentId = req.query.recruitmentId;
+        var data = {};
+        if(stageRecruitId){
+            data = await StageRecruitment.findOne({id: stageRecruitId});
+            if(!data) {
+                return functions.setError(res, "Stage recruitment not found!", 503);
+            }
+        }else if(recruitmentId){
+            let recruitment = await Recruitment.findOne({id: recruitmentId});
+            if(!recruitment){
+                return functions.setError(res, "Recruitment not found!", 504);
+            }
+            
+            data.recruitment = recruitment.name;
+            let listStage = await StageRecruitment.find({recruitmentId: recruitmentId});
+            data.listStage = listStage;
+        }
+        else {
+            return functions.setError(res, "Missing input value!", 404);
+        }
+        return functions.success(res, "get stage recruitment success!", {data: data});
+    }catch(e){
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
+}
+//them moi giai doan
+exports.createStageRecruitment = async(req, res, next) => {
+    try {
+        let {recruitmentId ,nameStage, posAssum, target, time, des} = req.body;
+        if(!recruitmentId || !nameStage || !posAssum || !target) {
+            return functions.setError(res, "Missing input value!", 404);
+        }
+        //lay id max
+        const maxIdStageRecruit = await StageRecruitment.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+        let newIdStageRecruit;
+        if (maxIdStageRecruit) {
+            newIdStageRecruit = Number(maxIdStageRecruit.id) + 1;
+        } else newIdStageRecruit = 1;
+        
+        //tao cac giai doan cua quy trinh do
+        let stageRecruit = new StageRecruitment({
+            id: newIdStageRecruit,
+            recruitmentId: recruitmentId,
+            name: nameStage,
+            positionAssumed: posAssum,
+            target: target,
+            completeTime: time,
+            description: Buffer.from(des, 'base64')
+        });
+        await StageRecruitment.create(stageRecruit);
+        return functions.success(res, 'Create stage recruitment success!');
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.updateStageRecruitment = async(req, res, next) => {
+    try {
+        let {stageRecruitmentId ,nameStage, posAssum, target, time, des} = req.body;
+        if(!stageRecruitmentId || !nameStage || !posAssum || !target) {
+            return functions.setError(res, "Missing input value!", 404);
+        }
+        //
+        const stageRecruit = await StageRecruitment.findOneAndUpdate({id: stageRecruitmentId}, {
+            name: nameStage,
+            positionAssumed: posAssum,
+            posAssum: posAssum,
+            target: target,
+            completeTime: time,
+            description: des
+        })
+        if(!stageRecruit) {
+            return functions.setError(res, "Stage recruitment not found!", 505);
+        }
+        return functions.success(res, "update state recruitment success!");
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.softDeleteStageRecruitment = async(req, res, next) => {
+    try {
+        let stageRecruitmentId = req.body.stageRecruitmentId;
+        let recruitment = await StageRecruitment.findOneAndUpdate({id: stageRecruitmentId}, {
+            deletedAt: Date.now(),
+            isDelete: 1
+        })
+        if(!recruitment) {
+            return functions.setError(res, "News not found!", 505);
+        }
+        return functions.success(res, "Soft delete recruitment success!");
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
+}
+
 
 //------------------------------controller recruitment new----------------------
 exports.getListRecruitmentNews= async(req, res, next) => {

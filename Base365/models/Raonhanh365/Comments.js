@@ -25,6 +25,14 @@ const CommentSchema = mongoose.Schema({
         type:Number,
         require:true    
     },
+    sender_name:{
+        type:String,
+        default:null   
+    },
+    sender_avatar:{
+        type:String,
+        default:null   
+    },
 
     tag :{
         type:String,
