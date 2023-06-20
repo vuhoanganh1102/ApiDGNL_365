@@ -85,7 +85,7 @@ exports.AchievementFors = async (req, res, next) => {
 // cancel job
 exports.cancelJob = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_cancel_job?page=1');
+        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_cancel_job');
         for (let i = 0; i < data.length; i++) {
             let id = Number(data[i].id);
             let canId = data[i].can_id;
@@ -353,7 +353,7 @@ exports.Devices = async (req, res, next) => {
             let Devices = new HR_Devices({ id, userId, infoBrower, tokenBrowser, lastLogin, deviceType, loginType, createdAt });
             await Devices.save();
         }
-        return functions.success(res, 'pull data success');
+        return functions.success(res, 'pull data success'); 
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -641,7 +641,7 @@ exports.stageRecruitment = async (req, res, next) => {
             let positionAssumed = data[i].position_assumed;
             let target = data[i].target;
             let complete_time = data[i].complete_time;
-            let description = data[i].description;
+            let description = Buffer.from(data[i].description,'base64');
             let isDelete = data[i].is_delete;
             // const check_id = await HR_Cancel.findById(_id);
             // if (!check_id || check_id.length === 0) {
@@ -710,7 +710,7 @@ exports.toolJobDes = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_job_description', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_job_description?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -753,7 +753,7 @@ exports.toolAnotherSkill = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_another_skill', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_another_skill?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -791,7 +791,7 @@ exports.toolPermisionDetail = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_per_detail', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_per_detail?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -829,7 +829,7 @@ exports.toolRemind = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_remind', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_remind?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -871,7 +871,7 @@ exports.toolProcessInterview = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_process_interview', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_process_interview?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -909,7 +909,7 @@ exports.toolProcessTraining = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_training_process', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_training_process?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -950,7 +950,7 @@ exports.toolSignatureImage = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_signature_image', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_signature_image?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -989,7 +989,7 @@ exports.toolInviteInterview = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_invite_interview', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_invite_interview?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -1004,7 +1004,7 @@ exports.toolInviteInterview = async (req, res, next) => {
                         canEmail: data[i].candidate_email,
                         canName: data[i].candidate_name,
                         hrName: data[i].hr_name,
-                        content: data[i].content,
+                        content: Buffer.from(data[i].content, 'base64'),
                         note: data[i].note,
                         noteTest: data[i].note_test,
                     });
@@ -1031,7 +1031,7 @@ exports.toolScheduleInterview = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_schedule_interview', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_schedule_interview?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -1040,15 +1040,19 @@ exports.toolScheduleInterview = async (req, res, next) => {
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const scheduleInterview = new ScheduleInterview({
-                        id: data[i].id,
-                        posApply: data[i].position_apply,
-                        canId: data[i].candidate_id,
-                        canEmail: data[i].candidate_email,
-                        canName: data[i].candidate_name,
-                        hrName: data[i].hr_name,
-                        content: data[i].content,
+                        id: Number(data[i].id),
+                        canId: data[i].can_id,
+                        empInterview: data[i].ep_interview,
+                        processInterviewId: data[i].process_interview_id,
+                        canEmail: data[i].uv_email,
+                        resiredSalary: data[i].resired_salary,
+                        salary: data[i].salary,
+                        interviewTime: Date(data[i].interview_time),
+                        content: Buffer.from(data[i].contentsend, 'base64'),
+                        isSwitch: data[i].is_switch,
                         note: data[i].note,
-                        noteTest: data[i].note_test,
+                        empCrmId: data[i].id_ep_crm,
+                        createdAt: data[i].created_at,
                     });
                     await ScheduleInterview.create(scheduleInterview);
                 }
@@ -1073,7 +1077,7 @@ exports.toolRecruitment = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_recruitment', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_recruitment?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -1116,7 +1120,7 @@ exports.toolRecruitmentNews = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_recruitment_news', form, {
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_recruitment_news?page=${page}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -1133,8 +1137,8 @@ exports.toolRecruitmentNews = async (req, res, next) => {
                         cateId: data[i].cate_id,
                         salaryId: data[i].salary_id,
                         number: data[i].number,
-                        timeStart: data[i].recruitment_time,
-                        timeEnd: data[i].recruitment_time_to,
+                        timeStart: Date(data[i].recruitment_time),
+                        timeEnd: Date(data[i].recruitment_time_to),
                         jobDetail: data[i].job_detail,
                         wokingForm: data[i].woking_form,
                         probationaryTime: data[i].probationary_time,
