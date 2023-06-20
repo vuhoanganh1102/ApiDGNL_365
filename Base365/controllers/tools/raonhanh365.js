@@ -1382,3 +1382,47 @@ exports.toolOrder = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
+
+exports.toolEvaluate = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_modules.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const module = new Module({
+                        _id: data[i].mod_id,
+                        name: data[i].mod_name,
+                        path: data[i].mod_path,
+                        listName: data[i].mod_listname,
+                        listFile: data[i].mod_listfile,
+                        order: data[i].mod_order,
+                        help: data[i].mod_help,
+                        langId: data[i].lang_id,
+                        checkLoca: data[i].mod_checkloca,
+                    });
+                    await Module.create(module);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
