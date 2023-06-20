@@ -3,7 +3,7 @@ const CustomerContact = require('../../../models/crm/Customer/contact_customer')
 const Customer = require('../../../models/crm/Customer/customer')
 const functions = require("../../../services/functions");
 const customerService = require('../../../services/CRM/CRMservice')
-
+const User = require('../../../models/Users')
 // hàm thêm mới khách hang
 exports.addCustomer = async (req, res) => {
   try {
@@ -17,6 +17,8 @@ exports.addCustomer = async (req, res) => {
       description,
       tax_code,
       group_id,
+      emp_id,
+      company_id,
       status,
       business_areas,
       category,
@@ -49,7 +51,7 @@ exports.addCustomer = async (req, res) => {
       link
     } = req.body;
      console.log(type);
-    const validationResult = customerService.validateCustomerInput(name,email,address,phone_number,type);
+    const validationResult = customerService.validateCustomerInput(name,email,address,phone_number,type,company_id);
 
     let createDate = new Date();
 
@@ -307,7 +309,41 @@ exports.addCustomer = async (req, res) => {
   }
 };
  
+//hiển thị danh sách khách hàng
+exports.showKH = async(req,res) =>{
+  try{
+    let {id,page} = req.body
+  const checkUser = await User.findOne({idQLC : id})
+  if(checkUser.inForPerson.employee.position_id == 1 
+    || checkUser.inForPerson.employee.position_id ==2 
+    || checkUser.inForPerson.employee.position_id == 9 
+    || checkUser.inForPerson.employee.position_id ==3)
+    { 
 
+      let id_dataNhanvien = checkUser.idQLC
+      let id_com = checkUser.inForPerson.employee.com_id
+      let showNV = await Customer.find({emp_id : id_dataNhanvien,company_id : id_com})
+      res.status(200).json( showNV );
+    }
+    else if(checkUser.inForPerson.employee.position_id == 7 ||
+       checkUser.inForPerson.employee.position_id == 8 ||
+      checkUser.inForPerson.employee.position_id == 14 ||
+      checkUser.inForPerson.employee.position_id == 16 ||
+      checkUser.inForPerson.employee.position_id == 22 ||
+      checkUser.inForPerson.employee.position_id == 21 ||
+      checkUser.inForPerson.employee.position_id == 18 ||
+      checkUser.inForPerson.employee.position_id == 19 ||
+      checkUser.inForPerson.employee.position_id == 17 ){
+      
+    }
+  console.log(checkUser.inForPerson.employee.position_id);
+ 
+  }catch (error) {
+    console.error('Failed to show', error);
+    res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+  }
+}
                                  
                                     
+
 

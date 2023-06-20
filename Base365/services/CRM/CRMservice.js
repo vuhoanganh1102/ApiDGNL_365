@@ -1,7 +1,7 @@
-
-
+// const { checkPhoneNumber } = require("../functions");
+// const sharp = require('sharp');
 const path = require('path');
-const { log } = require("console");
+// const { log } = require("console");
 const fs = require('fs');
 exports.getMaxIDCRM = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { cus_id: -1 } }).lean() || 0;
@@ -34,8 +34,6 @@ exports.checkTimeCRM = async (time) => {
       return true
   }
 }
-
-
 
 
 
@@ -100,6 +98,9 @@ exports.validateCustomerInput = (name, phone_number,address,email,type) => {
     }
     else if(!type) {
       throw {code : 4000 , message : "type không được bỏ trống"} 
+    }
+    else if(!company_id){
+      throw {code : 4000 , message : "company_id không được bỏ trống"} 
     }
     return true;
   };

@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const crm_contract = new Schema({
 
-
+//hợp đồng bán - chi tiết KH
    id : {
     type : Number,
     require : true

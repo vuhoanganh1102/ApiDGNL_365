@@ -9,7 +9,7 @@ const DeparmentSchema = new Schema({
     },
 
     //ID công ty của phòng ban
-    companyID: {
+    com_id: {
         type: Number,
     },
 
@@ -35,6 +35,10 @@ const DeparmentSchema = new Schema({
     //Săp xếp theo thứ tự
     deparmentOrder: {
         type: Number
+    },
+    // tổng số nhân viên 
+    total_emp : {
+        type :Number,
     }
 })
 

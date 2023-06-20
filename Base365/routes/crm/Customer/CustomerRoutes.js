@@ -4,7 +4,7 @@ var formData = require('express-form-data');
 const CustomerRoutes = require('../../../controllers/crm/Customer/Customer');
 
 //Api hiển thị và tìm kiếm
-router.post('/showAll',formData.parse(),)
+router.post('/showAll',formData.parse(),CustomerRoutes.showKH)
 
 //Api thêm mới khách hàng
 router.post('/addCustomer',formData.parse(),CustomerRoutes.addCustomer);

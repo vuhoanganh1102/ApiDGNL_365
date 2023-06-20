@@ -6,27 +6,39 @@ const Users = require("../../models/Users")
    
     exports.getListTeam = async(req, res) => {
         try{
-            let companyID = req.body.companyID
-            let _id = req.body.id
-            let teamID = req.body.teamID || null
-            console.log(_id,companyID)
+            let com_id = req.body.com_id
+            let _id = req.body._id 
+            let dep_id = req.body.dep_id
+            console.log(_id,com_id)
             let data = []
-            let numberUser = {}
-            let condition = {};
-            if((companyID)==undefined){
+            let condition = {}
+            let total_emp = {}
+            if((com_id)==undefined){
                 functions.setError(res,"lack of input")
-            }else if(isNaN(companyID)){
+            }else if(isNaN(com_id)){
                 functions.setError(res,"id must be a Number")
             }else{
-                if(companyID) condition.companyID = companyID
+                if(com_id) condition.com_id = com_id
                 if(_id) condition._id = _id
-                console.log(_id,companyID)
-                numberUser = await functions.findCount(Users,{ "inForPerson.companyID":companyID , "inForPerson.teamID": teamID, type: 2})
-                console.log(numberUser)
+                if(dep_id) condition.dep_id = dep_id
+                console.log(_id,com_id,dep_id)
+                data = await Team.find(condition).select('com_id teamName dep_id deputyteam_id managerteam_id total_emp ')
+                // console.log(data)
+                const teamID = data.map(item => item._id)
+                console.log(teamID)
+                for( let i = 0 ; i < teamID.length ; i++){
+                    const team = teamID[i];
+                    
+                    console.log(team)
+                    total_emp = await Users.countDocuments({ "inForPerson.employee.com_id":com_id  , "inForPerson.employee.team_id": team , type: 2,"inForPerson.employee.ep_status": "Active" })
+                    
+                    console.log(total_emp)
+
+                    await Team.findOneAndUpdate({com_id: com_id, _id : team},{ $set : {total_emp : total_emp}})
+                }
                 
-                data = await Team.find(condition).select('teamName depID deputyTeamId managerTeamId ')
                 if (data) {
-                    return await functions.success(res, 'Lấy thành công', { data,numberUser });
+                    return await functions.success(res, 'Lấy thành công', { data });
                 };
                 return functions.setError(res, 'Không có dữ liệu', 404);
             }
@@ -37,12 +49,13 @@ const Users = require("../../models/Users")
         functions.setError(res,err.message)
         }
     };
+
 //API đếm số lượng nhân viên trong tổ
 exports.countUserInTeam = async (req, res) => {
     try{
-     const {depID, companyID, teamID} = req.body;
-     console.log(depID, companyID, teamID)
-      const numberUser = await functions.findCount(Users,{ "inForPerson.companyID":companyID , "inForPerson.depID": depID,"inForPerson.teamID": teamID, type: 2})
+     const {dep_id, com_id, team_id} = req.body;
+     console.log(dep_id, com_id, team_id)
+      const numberUser = await functions.findCount(Users,{ "inForPerson.employee.com_id":com_id , "inForPerson.employee.dep_id": dep_id,"inForPerson.employee.team_id": team_id, type: 2})
          // .then(() => functions.success(res, "",{numberUser}))
          // .catch((err) => functions.setError(res, err.message, 501));
          console.log(numberUser)
@@ -59,18 +72,18 @@ exports.countUserInTeam = async (req, res) => {
  //Tạo mới dữ liệu của một tổ
 exports.createTeam = async (req, res) => {
 
-    const { depID, teamName, companyID ,deputyTeamId,managerTeamId } = req.body;
+    const { dep_id, teamName, com_id ,deputyteam_id,managerteam_id,total_emp } = req.body;
 
-    if (!depID) {
+    if (!dep_id) {
         //Kiểm tra Id phòng ban có khác null
         functions.setError(res, "Deparment Id required", 604);
-    } else if (isNaN(depID) ) {
+    } else if (isNaN(dep_id) ) {
         //Kiểm tra Id phòng ban có thuộc kiểu number không
         functions.setError(res, "Deparment Id must be a number", 605);
-    } else if (!companyID) {
+    } else if (!com_id) {
         //Kiểm tra sắp xếp thứ tự có khác null
         functions.setError(res, "Team order required", 607);
-    } else if (isNaN(companyID)  ) {
+    } else if (isNaN(com_id)  ) {
         //Kiểm tra sắp xếp thứ tự có phải kiểu number hay không
         functions.setError(res, "Team order must be a number", 608);
     } else {
@@ -79,11 +92,12 @@ exports.createTeam = async (req, res) => {
         let maxID = await functions.getMaxID(Team);
         const team = new Team({
             _id:  Number(maxID) + 1 || 1,
-            companyID: companyID,
-            depID: depID,
+            com_id: com_id,
+            dep_id: dep_id,
             teamName: teamName,
-            deputyTeamId: deputyTeamId || null,
-            managerTeamId: managerTeamId ||null
+            deputyteam_id: deputyteam_id || null,
+            managerteam_id: managerteam_id ||null,
+            total_emp: 0
         });
 
         await team.save()
@@ -95,6 +109,7 @@ exports.createTeam = async (req, res) => {
             })
     }
 };
+
 //Chỉnh sửa dự liệu của một tổ
 exports.editTeam = async (req, res) => {
     const _id = req.body._id;
@@ -102,21 +117,21 @@ exports.editTeam = async (req, res) => {
     if (isNaN(_id)) {
         functions.setError(res, "Id must be a number", 602)
     } else {
-        const { depID, teamName, companyID ,deputyTeamId,managerTeamId} = req.body
+        const { dep_id, teamName, com_id ,deputyteam_id,managerteam_id} = req.body
 
-        if (!depID) {
+        if (!dep_id) {
             //Kiểm tra Id phòng ban có khác null
             functions.setError(res, "Deparment Id required", 604);
-        } else if (isNaN(depID)  ) {
+        } else if (isNaN(dep_id)  ) {
             //Kiểm tra Id phòng ban có thuộc kiểu number không
             functions.setError(res, "Deparment Id must be a number", 605);
         } else if (!teamName) {
             //Kiểm tra tên của tổ có khác null
             functions.setError(res, "Team name required", 606);
-        } else if (!companyID) {
+        } else if (!com_id) {
             //Kiểm tra sắp xếp thứ tự có khác null
             functions.setError(res, "Team order required", 607);
-        } else if (isNaN(companyID)  ) {
+        } else if (isNaN(com_id)  ) {
             //Kiểm tra sắp xếp thứ tự có phải kiểu number hay không
             functions.setError(res, "Team order must be a number", 608)
         } else {
@@ -124,12 +139,12 @@ exports.editTeam = async (req, res) => {
             if (!team) {
                 functions.setError(res, "Team not exist", 610);
             } else {
-                await functions.getDatafindOneAndUpdate(Team, {companyID: companyID, _id: _id }, {
-                    depID: depID,
+                await functions.getDatafindOneAndUpdate(Team, {com_id: com_id, _id: _id }, {
+                    dep_id: dep_id,
                     teamName: teamName,
-                    companyID: companyID,
-                    deputyTeamId: deputyTeamId || null,
-                    managerTeamId: managerTeamId ||null
+                    com_id: com_id,
+                    deputyteam_id: deputyteam_id || null,
+                    managerteam_id: managerteam_id ||null
                 })
                     .then((team) => functions.success(res, "Team edited successfully", {team}))
                     .catch((err) => functions.setError(res, err.message, 611));
@@ -140,19 +155,21 @@ exports.editTeam = async (req, res) => {
 
 
 };
-//Xóa dữ liệu của một tổ
+//Xóa dữ liệu của một tổ cua 1 cty
 exports.deleteTeam = async (req, res) => {
-    const {_id, companyID} = req.body
-    if((companyID&&_id)== undefined){
+    const {_id, com_id} = req.body
+    if((com_id&&_id)== undefined){
         functions.setError(res, "lack of input", 502);
     }else if (isNaN(_id)) {
         functions.setError(res, "Id must be a number", 602)
     } else {
-        const team = await functions.getDatafindOne(Team, {companyID:companyID, _id: _id });
+        await Users.updateOne({"inForPerson.employee.com_id":com_id , "inForPerson.employee.team_id": _id}, { $set :{ "inForPerson.employee.team_id" : 0 }})
+
+        const team = await functions.getDatafindOne(Team, {com_id:com_id, _id: _id });
         if (!team) {
             functions.setError(res, "Team does not exist", 610);
         } else {
-            functions.getDataDeleteOne(Team, {companyID:companyID, _id: _id })
+            functions.getDataDeleteOne(Team, {com_id:com_id, _id: _id })
                 .then(() => functions.success(res, "Delete team successfully", {team}))
                 .catch(err => functions.setError(res, err.message, 612));
         }

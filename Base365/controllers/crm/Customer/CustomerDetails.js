@@ -388,3 +388,4 @@ exports.editCustomer = async(req,res) => {
         res.status(500).json({ error: 'Failed to find  Customer' });
       }
 }
+

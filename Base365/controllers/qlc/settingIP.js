@@ -8,17 +8,17 @@ const setIp = require("../../models/qlc/settingIP")
 exports.getListByID = async (req,res)=>{
     // try{
         const _id = req.body.id || null;
-        const companyID = req.body.companyID;
+        const com_id = req.body.com_id;
         let condition = {}
-        if(!companyID){
+        if(!com_id){
             functions.setError(res,"id required")
-        }else if(isNaN(companyID)){
+        }else if(isNaN(com_id)){
             functions.setError(res,"id not a number")
             
         }else{
             if(_id) condition._id = _id
-            if(companyID) condition.companyID = companyID
-            console.log(_id,companyID)
+            if(com_id) condition.com_id = com_id
+            console.log(_id,com_id)
             const data = await setIp.find(condition).select('_id fromSite accessIP createAt updateAt');
             console.log(data)
             if(!data){
@@ -34,11 +34,11 @@ exports.getListByID = async (req,res)=>{
 }
 //tạo 1 thiết lập Ip
 exports.createIP = async (req,res)=>{
-    const {companyID,accessIP, fromSite , createAt,updateAt } = req.body;
+    const {com_id,accessIP, fromSite , createAt,updateAt } = req.body;
     // let nameApp = "";
-    if (( accessIP && fromSite&&companyID) == undefined) {
+    if (( accessIP && fromSite&&com_id) == undefined) {
         functions.setError(res,"info required")
-    }else if(isNaN(companyID) ){
+    }else if(isNaN(com_id) ){
         functions.setError(res,"fromSite must be a number")
     }else {
         const maxId = await functions.getMaxID(setIp);
@@ -46,7 +46,7 @@ exports.createIP = async (req,res)=>{
         const _id = Number(maxId) + 1 || 1;
         const settingIP = new setIp({
             _id: _id,
-            companyID:companyID,
+            com_id:com_id,
             fromSite : fromSite,
             accessIP : accessIP,
             createAt : new Date().toJSON().slice(0,10),
@@ -61,17 +61,17 @@ exports.createIP = async (req,res)=>{
 exports.editsettingIP = async (req, res) => {
     const _id = req.body.id;
     console.log(_id)
-    const {companyID,accessIP, fromSite, updateAt } = req.body;
-    if (( accessIP && fromSite && companyID) == undefined) {
+    const {com_id,accessIP, fromSite, updateAt } = req.body;
+    if (( accessIP && fromSite && com_id) == undefined) {
         functions.setError(res,"info required")
-    }else if(isNaN(companyID) ){
-        functions.setError(res,"companyID must be a number")
+    }else if(isNaN(com_id) ){
+        functions.setError(res,"com_id must be a number")
     }else {
-        const settingIP = await functions.getDatafindOne(setIp, { companyID:companyID , _id: _id });
+        const settingIP = await functions.getDatafindOne(setIp, { com_id:com_id , _id: _id });
         if (!settingIP) {
             functions.setError(res, "setIp does not exist!");
         } else {
-            await functions.getDatafindOneAndUpdate(setIp,{companyID:companyID, _id: _id }, {
+            await functions.getDatafindOneAndUpdate(setIp,{com_id:com_id, _id: _id }, {
                 fromSite: fromSite,
                 // nameApp: nameApp,
                 accessIP: accessIP,
@@ -102,21 +102,21 @@ exports.editsettingIP = async (req, res) => {
 // }
 
 exports.deleteSetIpByID = async (req, res) => {
-    const  companyID = req.body.companyID;
+    const  com_id = req.body.com_id;
     const  _id = req.body.id;
-    // console.log(_id,companyID)
+    // console.log(_id,com_id)
     
-    if (!companyID) {
+    if (!com_id) {
         functions.setError(res, "Company id required");
-    } else if (isNaN(companyID)) {
+    } else if (isNaN(com_id)) {
         functions.setError(res, "Company id must be a number");
     } else {
-        const settingIp = await functions.getDatafind(setIp, {companyID: companyID , _id :_id});
+        const settingIp = await functions.getDatafind(setIp, {com_id: com_id , _id :_id});
         // console.log(settingIp)
         if (!settingIp) {
             functions.setError(res, "No setIp found in this company");
         }else{
-             await functions.getDataDeleteOne(setIp,{companyID:companyID ,_id :_id })
+             await functions.getDataDeleteOne(setIp,{com_id:com_id ,_id :_id })
                 .then(() => functions.success(res, "setIp deleted successfully", {settingIp}))
                 .catch((err) => functions.setError(res, err.message));
         }

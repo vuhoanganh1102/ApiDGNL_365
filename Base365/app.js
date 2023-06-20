@@ -29,9 +29,15 @@ var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 // Hr
 // var provinceRoute = require('./routes/hr/provinceRoute');
 // var welfare = require('./routes/hr/welfare');
+
+//CRM
 var CRMroute = require('./routes/crm/CRMroutes')
 
 
+//---------HR------------------------
+var recruitment = require('./routes/hr/recruitmentRoute');
+var trainingRoute = require('./routes/hr/trainingRoute');
+var settingRoute = require('./routes/hr/settingRoute');
 var administrationRoute = require('./routes/hr/administrationRoute');
 var welfare = require('./routes/hr/welfareRoute');
 var organizationalStructure = require('./routes/hr/organizationalStructure');
@@ -78,7 +84,6 @@ var individualRoutes = require('./routes/qlc/individual.routes');
 
 
 
-// var manageUserRouter = require('./routes/qlc/managerUser')
 var HisOfTrackingRouter = require("./routes/qlc/HisTracking")
 var CalendarWorkEmployee = require("./routes/qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./routes/qlc/settingIP")
@@ -86,7 +91,7 @@ var homePage = require("./routes/qlc/homePage")
 
 
 // crm_import
-var groupCustomerRouter = require('./routes/crm/groupCustomer')
+// var groupCustomerRouter = require('./routes/crm/groupCustomer')
 
 
 
@@ -157,8 +162,9 @@ var get_deXuat_user = require('./routes/vanthu/DeXuat/User_Dx');
 app.use('/api/vanthu/DeXuat', get_deXuat_user);
 
 
-
-
+//thống kê nghỉ phép
+var TK_nghi_phep = require('./routes/vanthu/DeXuat/thong_ke_nghi_phep');
+app.use('/api/vanthu/DeXuat', TK_nghi_phep);
 
 
 
@@ -182,7 +188,6 @@ app.use('/api/timviec/cv', cvRouter);
 app.use('/api/timviec/don', donRouter);
 app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
-app.use('/api/tool', toolAddDataRouter);
 
 // app.use('/api/timviec/priceList', priceListRouter);
 app.use('/api/timviec/trangVang', trangVangRouter);
@@ -213,12 +218,12 @@ app.use('/api/hr/setting', settingRoute);
 
 
 // API quản lí chung
-app.use('/api/qlc/Company',companyRouterQLC);
-app.use('/api/qlc/Employee',EmployeeRouterQLC);
-app.use('/api/qlc/individual',individualRouterQLC);
+app.use('/api/qlc/Company', companyRouterQLC);
+app.use('/api/qlc/Employee', EmployeeRouterQLC);
+app.use('/api/qlc/individual', individualRouterQLC);
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
-app.use("/api/qlc/group",[authJwt.checkToken, authJwt.isCompany], groupRouter);
+app.use("/api/qlc/group", groupRouter);
 app.use('/api/qlc/ChildCompany', childCompanyRouter)
 app.use('/api/qlc/managerUser', managerUser)
 app.use('/api/qlc/DelAppData', DelAppData)
@@ -234,22 +239,23 @@ app.use('/api/qlc/ReportError', ReportError);
 //API quẩn lý ca làm việc
 app.use("/api/qlc/shift", shiftRouter);
 app.use("/api/calendar", calendarRouter);
-app.use("/api/qlc/HisOfTracking",HisOfTrackingRouter)
-app.use("/api/qlc/CalendarWorkEmployee",CalendarWorkEmployee)
-app.use("/api/qlc/homePage",homePage)
+app.use("/api/qlc/HisOfTracking", HisOfTrackingRouter)
+app.use("/api/qlc/CalendarWorkEmployee", CalendarWorkEmployee)
+app.use("/api/qlc/homePage", homePage)
 
 
 
 //Api CRM
 app.use('/api',CRMroute)
+app.use('/api/tool', toolAddDataRouter);
 
 
 
 //API văn thu
 app.use("/api/tool", toolVT)
-app.use("/api",Vanthu)
+app.use("/api", Vanthu)
 
-app.use("/api/crm/customer/group", groupCustomerRouter);
+// app.use("/api/crm/customer/group", groupCustomerRouter);
 
 
 // catch 404 and forward to error handler

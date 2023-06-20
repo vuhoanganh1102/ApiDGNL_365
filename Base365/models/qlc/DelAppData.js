@@ -9,7 +9,7 @@ const DelAppDataSchema = new Schema({
     idQLC: {
         type: Number
     },
-    companyID: {//ID cty
+    com_id: {//ID cty
         type: Number
     },
     appID: {//ứng dụng cần xóa 
