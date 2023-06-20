@@ -22,7 +22,9 @@ const ModelNameSchema = new Schema({
     // Tạo bởi ai
     createdBy: { type: String },
     //  xóa hay chưa
-    isDelete: { type: Number, Default: 0 },
+    isDelete: { type: Number,
+        
+        default: 0 },
     // tạo ngày nào
     createdAt: { type: Date, default: Date.now() },
     //  tên quy định

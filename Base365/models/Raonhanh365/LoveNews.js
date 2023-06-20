@@ -16,5 +16,11 @@ const LoveNewschema = new mongoose.Schema({
         type:Date,
         require:true
     }
+
+}
+, {
+    collection: 'RN365_LoveNews',
+    versionKey: false,
+    timestamp: true
 });
 module.exports = mongoose.model("RN365_LoveNews", LoveNewschema);

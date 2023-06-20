@@ -1,6 +1,6 @@
 const functions = require('../../services/functions');
 const Cart = require('../../models/Raonhanh365/Cart');
-const News = require('../../models/Raonhanh365/UserOnSite/New');
+const News = require('../../models/Raonhanh365/New');
 
 exports.getListCartByUserId = async(req, res, next) => {
     try {

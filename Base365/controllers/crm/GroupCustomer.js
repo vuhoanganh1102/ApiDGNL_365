@@ -62,7 +62,7 @@ exports.createGroup = async (req, res) => {
 }
 exports.update = async (req, res) => {
     console.log("updateG Group_KH");
-    const { id,
+    let { id,
         groupName,
         groupDescription,
         groupParents,
@@ -70,11 +70,48 @@ exports.update = async (req, res) => {
         departmentId,
         employeeShare_id,
     } = req.body;
-
-    // console.log(' URLSearchParams.id' + URLSearchParams.id);
-    console.log(' id: ' + id);
+    console.log(' departmentId: ' + departmentId);
+    let new_GR_KH;
     // await functions.getDatafindOneAndUpdate(Customer_group, { gr_id: URLSearchParams.id }, {
-    await functions.getDatafindOneAndUpdate(Customer_group, { gr_id: id, company_id: companyId, }, {
+    if (departmentId == "all") {
+        employeeShare_id = 'all';
+        new_GR_KH = await Customer_group.findOneAndUpdate({ gr_id: id, company_id: companyId, }, {
+            gr_name: groupName,
+            gr_description: groupDescription,
+            group_parent: groupParents,
+            company_id: companyId,
+            dep_id: "all",
+            emp_id: employeeShare_id,
+            updated_at: new Date().getTime()
+        });
+        console.log(' new_GR_KH: ' + new_GR_KH.emp_id);
+    } else if (departmentId != '') {
+        if (employeeShare_id == 'all') {
+            new_GR_KH = await Customer_group.findOneAndUpdate({ gr_id: id, company_id: companyId, }, {
+                gr_name: groupName,
+                gr_description: groupDescription,
+                group_parent: groupParents,
+                company_id: companyId,
+                dep_id: departmentId,
+                emp_id: "all",
+                updated_at: new Date().getTime()
+            });
+        } else if (employeeShare_id != '') {
+            new_GR_KH = await Customer_group.findOneAndUpdate({ gr_id: id, company_id: companyId, }, {
+                gr_name: groupName,
+                gr_description: groupDescription,
+                group_parent: groupParents,
+                company_id: companyId,
+                dep_id: departmentId,
+                emp_id: employeeShare_id,
+                updated_at: new Date().getTime()
+            });
+        }
+
+
+    }
+
+    new_GR_KH = await Customer_group.findOneAndUpdate({ gr_id: id, company_id: companyId, }, {
         gr_name: groupName,
         gr_description: groupDescription,
         group_parent: groupParents,
@@ -82,9 +119,9 @@ exports.update = async (req, res) => {
         dep_id: departmentId,
         emp_id: employeeShare_id,
         updated_at: new Date().getTime()
-    })
-        .then(() => functions.success(res, "Group Customer update successfully"))
-        .catch((err) => functions.setError(res, err.message));
+    });
+    return res.status(200).json({ data: new_GR_KH, message: "update thanh cong" });
+
 }
 exports.delete = async (req, res) => {
     const listDeleteId = req.body.listDeleteId;

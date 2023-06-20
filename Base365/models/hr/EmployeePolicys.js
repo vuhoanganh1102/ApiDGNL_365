@@ -24,7 +24,7 @@ const HR_EmployeePolicySchema = new mongoose.Schema({
     },
     isDelete	: {
         type: Number,
-        required: true,
+        default:0
     },
     comId	: {
         type: Number,

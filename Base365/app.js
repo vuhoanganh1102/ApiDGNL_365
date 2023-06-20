@@ -26,15 +26,27 @@ var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
 
-// Hr
-var provinceRoute = require('./routes/hr/provinceRoute');
-var welfare = require('./routes/hr/welfare');
+//---------HR------------------------
+var recruitment = require('./routes/hr/recruitmentRoute');
+var trainingRoute = require('./routes/hr/trainingRoute');
+var settingRoute = require('./routes/hr/settingRoute');
+var administrationRoute = require('./routes/hr/administrationRoute');
+var welfare = require('./routes/hr/welfareRoute');
+var organizationalStructure = require('./routes/hr/organizationalStructure');
 
 //CRM
 var CRMroute = require('./routes/crm/CRMroutes')
 
 
 
+
+//---------HR------------------------
+var recruitment = require('./routes/hr/recruitmentRoute');
+var trainingRoute = require('./routes/hr/trainingRoute');
+var settingRoute = require('./routes/hr/settingRoute');
+
+//tim viec 
+//tim viec 
 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
@@ -75,6 +87,7 @@ var CalendarWorkEmployee = require("./routes/qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./routes/qlc/settingIP")
 var homePage = require("./routes/qlc/homePage")
 
+//var manageUserRouter = require('./routes/qlc/manageUser')
 
 // crm_import
 var groupCustomerRouter = require('./routes/crm/groupCustomer')
@@ -193,9 +206,13 @@ app.use('/api/raonhanh/admin', adminRaonhanh365);
 
 
 // api hr
-app.use('/api/hr/provinceRoute', provinceRoute);
+app.use('/api/hr/administration', administrationRoute);
 app.use('/api/hr/welfare', welfare);
-
+app.use('/api/hr/organizationalStructure', organizationalStructure)
+//----------------------------------------------------route HR--------------------------------------------------------------------------------------------------
+app.use('/api/hr/recruitment', recruitment)
+app.use('/api/hr/training', trainingRoute);
+app.use('/api/hr/setting', settingRoute);
 
 
 
@@ -239,7 +256,7 @@ app.use("/api", Vanthu)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
-// 
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));
