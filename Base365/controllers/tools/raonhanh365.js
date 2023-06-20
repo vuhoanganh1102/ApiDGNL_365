@@ -896,6 +896,7 @@ exports.toolLike = async (req, res, next) => {
                 },
             });
             let data = response.data.data.items;
+            
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const like = new LikeRN({
@@ -909,6 +910,8 @@ exports.toolLike = async (req, res, next) => {
                         ip: data[i].lk_ip,
                         time: data[i].lk_time,
                     });
+                
+
                     await LikeRN.create(like);
                 }
                 page++;

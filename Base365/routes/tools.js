@@ -133,7 +133,7 @@ router.post('/updateNewDescription',toolRaoNhanh.updateNewDescription)
 //admin
 // router.post('/raonhanh/toolAdminUser', toolRaoNhanh.toolAdminUser);
 router.post('/raonhanh/toolAdminUserRight', toolRaoNhanh.toolAdminUserRight);
-router.post('/raonhanh/toolAdminTranslate', toolRaoNhanh.toolAdminTranslate);
+// router.post('/raonhanh/toolAdminTranslate', toolRaoNhanh.toolAdminTranslate);
 router.post('/raonhanh/toolAdminMenuOrder', toolRaoNhanh.toolAdminMenuOrder);
 router.post('/raonhanh/toolModule', toolRaoNhanh.toolModule);
 
