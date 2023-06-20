@@ -42,6 +42,7 @@ exports.uploadFileVanThu = (id, file) => {
 // };
 // exports.upload = multer({ storage: storageVanthu('../../../Storage/VanThu') });
 exports.chat = async (name_dx, user_dx, noi_dung, fileKem) => {
+    // 123123
     return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
         name_dx: name_dx,
         user_dx: user_dx,
