@@ -12,23 +12,23 @@ const JobOfferSchema = new Schema({
     //  ID ứng viên
     canId: { type: Number, required: true },
     // trạng thái xóa
-    isDelete: { type: Number, required: true },
+    isDelete: { type: Number, default: 0 },
     // xóa vào ngày?
     deletedAt: { type: Date },
-    // lương hưu
+    // lương mong muon
     resiredSalary: { type: String, required: true },
-    // lương
+    // lương thuc
     salary: { type: String, required: true },
     // ngày nhận offer
     offerTime: { type: Date, required: true },
     //
     epOffer: { type: Number, required: true },
     // ghi chú
-    note: { type: String },
+    note: { type: String , default: null},
     // chuyển trạng thái
-    isSwitch: { type: String, required: true },
+    isSwitch: { type: String, default: 0 },
     // ngày tạo
-    createdAt: { type: Date, required: true }
+    createdAt: { type: Date, default: Date.now() }
 }, {
     collection: 'HR_ContactJobs',
     versionKey: false,

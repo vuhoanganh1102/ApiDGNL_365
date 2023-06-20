@@ -341,7 +341,7 @@ exports.deleteEmployeePolicy = async (req, res, next) => {
 // Thêm mới nhóm chính sách
 exports.addEmpoyePolicySpecific = async (req, res, next) => {
     try {
-        await HR.checkPermissions(req, res, next,'read','QLTTNS');
+        await HR.checkPermissions(req, res, next,'read',2);
         
         let name = req.body.name;
         let employePolicyId = req.body.employe_policy_id;

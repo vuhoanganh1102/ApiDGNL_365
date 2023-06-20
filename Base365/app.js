@@ -32,10 +32,15 @@ var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 var CRMroute = require('./routes/crm/CRMroutes')
 
 
+//---------HR------------------------
+var recruitment = require('./routes/hr/recruitmentRoute');
+var trainingRoute = require('./routes/hr/trainingRoute');
+var settingRoute = require('./routes/hr/settingRoute');
 var administrationRoute = require('./routes/hr/administrationRoute');
 var welfare = require('./routes/hr/welfareRoute');
 var organizationalStructure = require('./routes/hr/organizationalStructure');
 
+//tim viec 
 
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
@@ -70,7 +75,6 @@ var individualRoutes = require('./routes/qlc/individual.routes');
 
 
 
-// var manageUserRouter = require('./routes/qlc/managerUser')
 var HisOfTrackingRouter = require("./routes/qlc/HisTracking")
 var CalendarWorkEmployee = require("./routes/qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./routes/qlc/settingIP")
@@ -192,10 +196,13 @@ app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 app.use('/api/raonhanh/admin', adminRaonhanh365);
 
 
-// api hr
+//----------------------------------------------------route HR--------------------------------------------------------------------------------------------------
+app.use('/api/hr/recruitment', recruitment)
+app.use('/api/hr/training', trainingRoute);
+app.use('/api/hr/setting', settingRoute);
 app.use('/api/hr/administration', administrationRoute);
 app.use('/api/hr/welfare', welfare);
-app.use('/api/hr/organizationalStructure', organizationalStructure)
+app.use('/api/hr/organizationalStructure', organizationalStructure);
 
 
 
@@ -240,7 +247,7 @@ app.use("/api",Vanthu)
 
 // app.use("/api/crm/customer/group", groupCustomerRouter);
 
-// 
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));

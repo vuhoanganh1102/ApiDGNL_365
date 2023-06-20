@@ -1,12 +1,12 @@
 const functions = require('../../services/functions');
 const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser');
 const Category = require('../../models/Raonhanh365/Category');
-const News = require('../../models/Raonhanh365/UserOnSite/New');
+const News = require('../../models/Raonhanh365/New');
 const PriceList = require('../../models/Raonhanh365/PriceList');
 const Users = require('../../models/Users');
 const History = require('../../models/Raonhanh365/History');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
-const ReportNews = require('../../models/Raonhanh365/UserOnSite/NewReport');
+const ReportNews = require('../../models/Raonhanh365/NewReport');
 const NetworkOperator = require('../../models/Raonhanh365/NetworkOperator')
 const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
 
