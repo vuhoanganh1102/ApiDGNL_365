@@ -121,8 +121,8 @@ router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
 router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
 router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
-
 router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory);
+router.post('/toolBidding',toolRaoNhanh.toolBidding)
 router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew);
 router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment);
 router.post('/raonhanh/toolOrder', toolRaoNhanh.toolOrder);
@@ -139,9 +139,9 @@ router.post('/raonhanh/toolPushNewsTime', toolRaoNhanh.toolPushNewsTime);
 
 
 //admin
-router.post('/raonhanh/toolAdminUser', toolRaoNhanh.toolAdminUser);
+// router.post('/raonhanh/toolAdminUser', toolRaoNhanh.toolAdminUser);
 router.post('/raonhanh/toolAdminUserRight', toolRaoNhanh.toolAdminUserRight);
-router.post('/raonhanh/toolAdminTranslate', toolRaoNhanh.toolAdminTranslate);
+// router.post('/raonhanh/toolAdminTranslate', toolRaoNhanh.toolAdminTranslate);
 router.post('/raonhanh/toolAdminMenuOrder', toolRaoNhanh.toolAdminMenuOrder);
 router.post('/raonhanh/toolModule', toolRaoNhanh.toolModule);
 router.post('/raonhanh/toolBlog', toolRaoNhanh.toolBlog);
