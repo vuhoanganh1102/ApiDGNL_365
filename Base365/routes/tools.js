@@ -9,7 +9,7 @@ const crm = require('../controllers/tools/CRM')
 
 const toolHr =  require('../controllers/tools/hr');
 const toolVanThu = require('../controllers/tools/vanthu')
-// const toolCRM = require('../controllers/tools/CRM')
+// const crm = require('../controllers/tools/CRM')
 
 
 
@@ -150,6 +150,12 @@ router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment);
 router.post('/raonhanh/toolOrder', toolRaoNhanh.toolOrder);
 router.post('/raonhanh/toolTagsIndex', toolRaoNhanh.toolTagsIndex);
 router.post('/updateNewDescription',toolRaoNhanh.updateNewDescription)
+router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory)
+router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew)
+router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
+router.post('/updateNewDescription',toolRaoNhanh.updateNewDescription)
+
+
 
 //admin
 router.post('/raonhanh/toolAdminUser', toolRaoNhanh.toolAdminUser);
@@ -221,7 +227,7 @@ router.post('/hr/inviteInter', toolHr.toolInviteInterview);
 router.post('/hr/recruitment', toolHr.toolRecruitment);
 router.post('/hr/recruitmentNews', toolHr.toolRecruitmentNews);
 
-//Api quét data CRM
+//Api quét data CRM lâm
 
 router.post('/toolContract',crm.toolContact)//danh sách hợp đồng 
 router.post('/toolCC',crm.toolContactCustomer)// danh sach hơp đòng khách hàng
@@ -235,6 +241,29 @@ router.post('/toolCG',crm.toolCustomerGroup)
 router.post('/toolCmulti',crm.toolCustomeMulti)
 router.post('/toolCnote',crm.toolCustomerNote)
 router.post('/toolCstatus',crm.toolCustomerStatus)
+router.post('/toolContract',crm.toolContact)//danh sách hợp đồng 
+router.post('/toolCC',crm.toolContactCustomer)// danh sach hơp đòng khách hàng
+router.post('/toolCs',crm.toolCustomer)// danh sách hợp đồng khách hàng
+router.post('/toolCr',crm.toolCustomerCare)// danh sách chăm sóc khách hàng
+router.post('/toolCuchan',crm.toolCustomerChance) // danh sách khách hàng cơ hội
+router.post('/toolChanfile',crm.toolCustomerChanceFile)
+router.post('/toolChanfoot',crm.toolChanFoots)
+router.post('/toolCusfile',crm.toolCusFile)
+router.post('/toolCG',crm.toolCustomerGroup)
+router.post('/toolCmulti',crm.toolCustomeMulti)
+router.post('/toolCnote',crm.toolCustomerNote)
+router.post('/toolCstatus',crm.toolCustomerStatus)
+router.post('/toolmanageA',crm.toolmanageAdmin)
+router.post ('/toolmanageE',crm.toolmanageExtension)
+router.post('/toolmoduleP',crm.toolmoduleParent)
+router.post('/toolnotifyCRM',crm.toolNotify)
+router.post('/toolPackage',crm.toolPackages)
+router.post('/toolSavestatusC',crm.toolSavestatusC)
+
+
+
+
+
 
 //CRM - Trung
 router.get('/toolCampaign', crm.toolCampaign);

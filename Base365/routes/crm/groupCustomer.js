@@ -3,6 +3,7 @@
 // const GroupCustomerController = require('../../controllers/crm/GroupCustomer')
 
 // // get danh sách group
+// get danh sách group
 // router.get("/all", GroupCustomerController.getListGroup)
 
 // // get group theo i

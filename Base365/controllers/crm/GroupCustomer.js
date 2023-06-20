@@ -1,6 +1,8 @@
 // const GroupCustomer = require("../../models/crm/GroupCustomer")
 // const functions = require('../../services/functions')
 
+const functions = require('../../services/functions')
+
 // exports.getListGroup = async(req, res) => {
 //     await functions.getDatafind(GroupCustomer, {})
 //         .then((groups) => functions.success(res, "Get data successfully", groups))
