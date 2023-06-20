@@ -248,7 +248,12 @@ exports.createVerifyPayment = async(req, res, next) => {
 // tổng quan thông tin tài khoản cá nhân
 exports.profileInformation = async (req,res,next) => {
     try{
-        let userID = req.user.data._id;
+        let userID;
+        if(req.body.userId){
+            userID = req.body.userId;
+        }else {
+            userID = req.user.data._id;
+        }
         let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1};
         let dataUser = {}
 
