@@ -4,11 +4,12 @@ const UserSchema = new mongoose.Schema({
     _id: {
         type: Number,
         required: true,
+        // autoIncrement: true
     },
     email: {
         // Email đăng nhập (nếu đối tượng đăng ký bằng email)
         type: String,
-        // required: true,
+        default: null,
     },
     phoneTK: {
         // Sđt đăng nhập (nếu đối tượng đăng ký bằng sđt)
@@ -18,7 +19,6 @@ const UserSchema = new mongoose.Schema({
     userName: {
         // Tên của đối tượng
         type: String,
-        // required: true,
     },
     alias: {
         // Phục vụ sinh ra url seo (slug)
@@ -27,6 +27,11 @@ const UserSchema = new mongoose.Schema({
     },
     phone: {
         // Sđt liên hệ
+        type: String,
+        default: null
+    },
+    emailContact: {
+        // Email của người liên hệ khi đăng ký
         type: String,
         default: null
     },
@@ -81,7 +86,7 @@ const UserSchema = new mongoose.Schema({
         default: null
     },
     fromDevice: {
-        // Nguồn đăng ký từ thiết bị nào
+        // Nguồn đăng ký từ thiết bị nào (tương đương trường "dk" của timviec365)
         type: Number,
         default: 0
     },
@@ -122,10 +127,9 @@ const UserSchema = new mongoose.Schema({
     },
     idQLC: {
         // ID gốc lấy từ base chuyển đổi số
-        type: String,
+        type: Number,
         default: 0
     },
-    
     idTimViec365: {
         // ID gốc lấy từ base timviec365
         type: Number,
@@ -141,509 +145,670 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    money:{
-        // Số dư tài khoản
-        type:Number,
-        default: 0
-    },
+    sharePermissionId: [{
+        type: Number
+    }],
     inForPerson: {
         type: {
+            scan: {
+                type: Number,
+                default: 0
+            },
+            account: {
+                type: {
+                    birthday: {
+                        // Ngày sinh
+                        type: String,
+                        default: null
+                    },
+                    gender: {
+                        // Giới tính
+                        type: Number,
+                        default: 0
+                    },
+                    married: {
+                        // Tình trạng hôn nhân
+                        type: Number,
+                        default: 0
+                    },
+                    experience: {
+                        // Kinh nghiệm làm việc trong thông tin liên hệ
+                        type: Number,
+                        default: 0
+                    },
+                    education: {
+                        // Học vấn
+                        type: Number,
+                        default: 0
+                    },
+                },
+                default: null
+            },
             // Thông tin dành cho luồng chuyển đổi số
-            companyID: {
-                // ID của công ty chủ quyền nếu là nhân viên (giá trị = 0 là cá nhân)
-                type: Number,
-                default: 0
-            },
-            depID: {
-                // ID của phòng ban nếu là nhân viên (giá trị = 0 là cá nhân)
-                type: Number,
-                default: 0
-            },
-            groupID: {
-                // ID của nhóm nếu là nhân viên (giá trị = 0 là cá nhân)
-                type: Number,
-                default: 0
-            },
-            teamID: {
-                // ID của Tổ nếu là nhân viên (giá trị = 0 là cá nhân)
-                type: Number,
-                default: 0
-            },
-            parentID: {
-                // ID của cty mẹ 
-                type: Number,
-                default: 0
-            },
-            positionID: {
-                // Cấp bậc của nhân viên trong công ty
-                type: Number,
-                default: 0
-            },
-            calendarID: {
-                // ID lịch làm việc của nhân viên trong công ty
-                type: Number,
-                default: 0
-            },
-            shiftID: {
-                // ID ca làm việc của nhân viên trong công ty
-                type: Number,
-                default: 0
-            },
-            childID: {
-                // ID cty con cua công ty
-                type: Number,
-                default: 0
-            },
-            startWorkingTime: {
-                // Thời gian bắt đầu làm việc
-                type: String,
-                default: null
-            },
-            timeQuitJob: {
-                // Thời gian nghỉ việc
-                type: String,
-                default: null
-            },
-            description: {
-                // Mô tả chi tiết
-                type: String,
-                default: null
-            },
-            status: {
-                // Trạng thái
-                type: String,
-                default: null
-            },
-            ep_signature: {
-                // Chữ ký
-                type: Number,
-                default: 0
-            },
-            allow_update_face: {
-                // Cho phép cập nhật khuôn mặt chấm công
-                type: Number,
-                default: 0
-            },
-            version_in_use: {
-                // Version dùng trên app
-                type: Number,
-                default: 0
-            },
-            ep_featured_recognition: {
-                // Chưa rõ
-                type: String,
-                default: null
-            },
-            birthday: {
-                // Ngày sinh
-                type: String,
-                default: null
-            },
-            gender: {
-                // Giới tính
-                type: Number,
-                default: 0
-            },
-            married: {
-                // Tình trạng hôn nhân
-                type: Number,
-                default: 0
-            },
-            exp: {
-                // Kinh nghiệm làm việc trong thôn tin liên hệ
-                type: Number,
-                default: 0
-            },
-            // Thông tin dùng trên timviec365
-            candiTitle: {
-                // Công việc mong muốn
-                type: String,
-                default: 0
-            },
-            candiHocVan: {
-                // Học vấn
-                type: Number,
-                default: 0
-            },
-            candiTarget: {
-                // Mục tiêu làm việc
-                type: String,
-                default: null
-            },
-            candiSkill: {
-                // Kỹ năng làm việc
-                type: String,
-                default: null
-            },
-            candiCityID: {
-                // Tỉnh thành làm việc mong muốn
-                type: String,
-                default: null
-            },
-            candiCateID: {
-                // Ngành nghề làm việc mong muốn
-                type: String,
-                default: null
-            },
-            candiCapBac: {
-                // Cấp bậc làm việc mong muốn
-                type: Number,
-                default: 0
-            },
-            candiMoney: {
-                // Mức lương mong muốn
-                type: Number,
-                default: 0
-            },
-            candiMoneyUnit: {
-                // Mức lương mong muốn (vnd/usd)
-                type: Number,
-                default: 0
-            },
-            candiMoneyType: {
-                // Mức lương mong muốn (thỏa thuận hoặc từ min đến max)
-                type: Number,
-                default: 0
-            },
-            candiMoneyMin: {
-                // Mức lương mong muốn
-                type: Number,
-                default: 0
-            },
-            candiMoneyMax: {
-                // Mức lương mong muốn
-                type: Number,
-                default: 0
-            },
-            candiLoaiHinh: {
-                // Loại hình làm việc (fulltime, parttime,...)
-                type: Number,
-                default: 0
-            },
-            referencePersonName: {
-                // Tên người tham chiếu
-                type: String,
-                default: null
-            },
-            referencePersonEmail: {
-                // Email người tham chiếu
-                type: String,
-                default: null
-            },
-            referencePersonPhone: {
-                // SĐT người tham chiếu
-                type: String,
-                default: null
-            },
-            referencePersonPosition: {
-                // Chức vụ của người tham chiếu
-                type: String,
-                default: null
-            },
-            referencePersonAddress: {
-                // Địa chỉ của người tham chiếu
-                type: String,
-                default: null
-            },
-            referencePersonCompany: {
-                // Công ty làm việc của người tham chiếu
-                type: String,
-                default: null
-            },
-            //bằng cấp chứng chỉ
-            candiDegree: [{
+            employee: {
                 type: {
-                    id: {
+                    com_id: {
+                        // ID của công ty chủ quyền nếu là nhân viên (giá trị = 0 là cá nhân)
                         type: Number,
+                        default: 0
                     },
-                    degree: {
-                        type: String,
-                    },
-                    school: {
-                        type: String,
-                    },
-                    start: {
-                        type: String,
-                    },
-                    end: {
-                        type: String,
-                    },
-                    major: {
-                        type: String,
-                    },
-                    rate: {
+                    dep_id: {
+                        // ID của phòng ban nếu là nhân viên (giá trị = 0 là cá nhân)
                         type: Number,
+                        default: 0
                     },
-                    implement: {
+                    team_id: {
+                        // ID của tổ nếu là nhân viên (giá trị = 0 là cá nhân)
+                        type: Number,
+                        default: 0
+                    },
+                    group_id: {
+                        // ID của nhóm nếu là nhân viên (giá trị = 0 là cá nhân)
+                        type: Number,
+                        default: 0
+                    },
+                    start_working_time: {
+                        // Thời gian bắt đầu làm việc
+                        type: Date,
+                        default: null
+                    },
+                    position_id: {
+                        // Cấp bậc của nhân viên trong công ty
+                        type: Number,
+                        default: 0
+                    },
+                    time_quit_job: {
+                        // Thời gian nghỉ việc
+                        type: Date,
+                        default: null
+                    },
+                    ep_description: {
+                        // Mô tả chi tiết
                         type: String,
+                        default: null
+                    },
+                    ep_featured_recognition: {
+                        // Chưa rõ nữa
+                        type: String,
+                        default: null
+                    },
+                    ep_status: {
+                        // Trạng thái của nhân viên (Active: Duyệt, Pending: chờ duyệt, Deny: Từ chối)
+                        type: String,
+                        default: "Pending"
+                    },
+                    ep_signature: {
+                        // Chữ ký
+                        type: Number,
+                        default: 0
+                    },
+                    allow_update_face: {
+                        // Cho phép cập nhật khuôn mặt chấm công
+                        type: Number,
+                        default: 0
+                    },
+                    version_in_use: {
+                        // Version dùng trên app
+                        type: Number,
+                        default: 0
                     },
                 },
                 default: null
-            }],
-            candiNgoaiNgu: [{
+
+            },
+            candidate: {
                 type: {
-                    id: {
-                        type: Number
-                    },
-                    chungChi: {
-                        type: String,
-                    },
-                    point: {
-                        type: String,
-                    },
-                    ngoaiNgu: {
+                    use_type: {
                         type: Number,
-                    }
-                },
-                default: null
-            }],
-            candiExp: [{
-                type: {
-                    id: {
-                        type: Number
+                        default: 0
                     },
-                    jobTitle: {
-                        type: String,
-                    },
-                    company: {
-                        type: String,
-                    },
-                    start: {
-                        type: String,
-                    },
-                    end: {
-                        type: String,
-                    },
-                    desExp: {
-                        type: String
-                    }
-                },
-                default: null
-            }],
-            candiProfile: [{
-                type: {
-                    id: {
-                        //id của hồ sơ
+                    user_reset_time: {
                         type: Number,
-                        required: true
+                        default: 0
                     },
-                    cvName: {
-                        //tên hồ sơ 
+                    use_view: {
+                        type: Number,
+                        default: 0
+                    },
+                    use_noti: {
+                        type: Number,
+                        default: 0
+                    },
+                    use_show: {
+                        type: Number,
+                        default: 0
+                    },
+                    use_show_cv: {
+                        type: Number,
+                        default: 0
+                    },
+                    use_td: {
+                        type: Number,
+                        default: 0
+                    },
+                    use_check: {
+                        type: Number,
+                        default: 0
+                    },
+                    use_test: {
+                        type: Number,
+                        default: 0
+                    },
+                    point_time_active: {
+                        type: Number,
+                        default: 0
+                    },
+                    cv_title: {
+                        // Công việc mong muốn
                         type: String,
+                        default: 0
                     },
-                    link: {
-                        //link xem hồ sơ
-                        type: String
+                    cv_muctieu: {
+                        // Mục tiêu làm việc
+                        type: String,
+                        default: null
                     },
-                    cvId: {
-                        //idcv mẫu
-                        type: Number
+                    cv_city_id: [{
+                        // Tỉnh thành làm việc mong muốn
+                        type: Number,
+                        default: []
+                    }],
+                    cv_cate_id: [{
+                        // Ngành nghề làm việc mong muốn
+                        type: Number,
+                        default: []
+                    }],
+                    cv_capbac_id: {
+                        // Cấp bậc làm việc mong muốn
+                        type: Number,
+                        default: 0
                     },
-                    createTime: {
-                        //thời gian tải hs
-                        type: Date
+                    cv_money_id: {
+                        // Mức lương mong muốn
+                        type: Number,
+                        default: 0
                     },
-                    active: {
-                        type: String
+                    cv_loaihinh_id: {
+                        // Loại hình làm việc (fulltime, parttime,...)
+                        type: Number,
+                        default: 0
                     },
-                    linkHide: {
-                        type: String
+                    cv_time: {
+                        type: Number,
+                        default: 1
                     },
-                    scan: {
-                        type: Number
+                    cv_time_dl: {
+                        type: Number,
+                        default: 0
                     },
-                    linkError: {
-                        //link sau khi ẩn chi tiết hồ sơ
-                        type: String
+                    cv_kynang: {
+                        // Kỹ năng làm việc
+                        type: String,
+                        default: null
                     },
-                    state: {
-                        type: Number
+                    um_type: {
+                        // Mức lương mong muốn (thỏa thuận hoặc từ min đến max)
+                        type: Number,
+                        default: 0
                     },
-                    video: {
+                    um_min_value: {
+                        // Mức lương mong muốn
+                        type: Number,
+                        default: null
+                    },
+                    um_max_value: {
+                        // Mức lương mong muốn
+                        type: Number,
+                        default: null
+                    },
+                    um_unit: {
+                        // Mức lương mong muốn (vnd/usd)
+                        type: Number,
+                        default: 0
+                    },
+                    cv_tc_name: {
+                        // Tên người tham chiếu
+                        type: String,
+                        default: null
+                    },
+                    cv_tc_cv: {
+                        // Chức vụ của người tham chiếu
+                        type: String,
+                        default: null
+                    },
+                    cv_tc_dc: {
+                        // Địa chỉ của người tham chiếu
+                        type: String,
+                        default: null
+                    },
+                    cv_tc_phone: {
+                        // SĐT người tham chiếu
+                        type: String,
+                        default: null
+                    },
+                    cv_tc_email: {
+                        // Email người tham chiếu
+                        type: String,
+                        default: null
+                    },
+                    cv_tc_company: {
+                        // Công ty làm việc của người tham chiếu
+                        type: String,
+                        default: null
+                    },
+                    cv_video: {
                         // Video khi ứng viên đăng ký tài khoản
                         type: String,
                         default: null
                     },
-                    videoType: {
+                    cv_video_type: {
                         // 1: Video tự tải, 2: Video từ youtube, tiktok
                         type: Number,
                         default: 0
                     },
-                    videoActive: {
+                    cv_video_active: {
                         // Video được duyệt hay chưa (0: chưa duyệt, 1: được duyệt)
                         type: Number,
                         default: 0
                     },
+                    profileUpload: [{
+                        hs_id: {
+                            type: Number,
+                            autoIncrement: true
+                        },
+                        hs_name: {
+                            type: String,
+                        },
+                        hs_link: {
+                            type: String,
+                        },
+                        hs_cvid: {
+                            type: Number,
+                            default: 0
+                        },
+                        hs_create_time: {
+                            type: Number,
+                            default: 0
+                        },
+                        hs_active: {
+                            type: Number,
+                            default: 0
+                        },
+                        hs_link_hide: {
+                            type: String,
+                        },
+                        is_scan: {
+                            type: Number,
+                            default: 0
+                        },
+                        hs_link_error: {
+                            type: String,
+                        },
+                        state: {
+                            type: Number,
+                            default: 0
+                        },
+                        mdtd_state: {
+                            type: Number,
+                            default: 0
+                        }
+                    }],
+                    profileDegree: [{
+                        type: {
+                            id: {
+                                type: Number,
+                                autoIncrement: true
+                            },
+                            school: {
+                                type: String,
+                            },
+                            degree: {
+                                type: String,
+                            },
+                            start: {
+                                // Thời gian bắt đầu học
+                                type: String,
+                            },
+                            end: {
+                                // Thời gian kết thúc học
+                                type: String,
+                            },
+                            major: {
+                                type: String,
+                            },
+                            rate: {
+                                type: Number,
+                            },
+                            more_information: {
+                                type: String,
+                            },
+                        },
+                        default: null
+                    }],
+                    profileNgoaiNgu: [{
+                        type: {
+                            id: {
+                                type: Number,
+                                autoIncrement: true
+                            },
+                            language: {
+                                // Ngôn ngữ học
+                                type: Number,
+                            },
+                            certificate: {
+                                // Chứng chỉ đạt được
+                                type: String,
+                            },
+                            point: {
+                                // Số điểm đạt được
+                                type: String,
+                            }
+                        },
+                        default: null
+                    }],
+                    profileExperience: [{
+                        type: {
+                            id: {
+                                type: Number,
+                                autoIncrement: true
+                            },
+                            jobTitle: {
+                                type: String,
+                            },
+                            company: {
+                                type: String,
+                            },
+                            start: {
+                                type: String,
+                            },
+                            end: {
+                                type: String,
+                            },
+                            description: {
+                                type: String
+                            }
+                        },
+                        default: null
+                    }],
                 },
                 default: null
-            }]
+            }
         },
         default: null
     },
     inForCompany: {
         type: {
-            // Thông tin công ty luồng timviec365
-            comMd5: {
-                type: String,
-                default: null
-            },
-            comViewCount: {
-                // Tổng lượt xem
+            scan: {
                 type: Number,
                 default: 0
             },
-            idKD: {
+            usc_kd: {
                 // ID Kinh doanh phụ trách hỗ trợ
                 type: Number,
                 default: 0
             },
-            canonical: {
-                // Mã sinh ra url phục vụ seo (canonical)
-                type: String,
-                default: null
-            },
-            linkVideo: {
-                // Đường dẫn video khi tải lên
-                type: String,
-                default: 0
-            },
-            videoType: {
-                // 1: Video tự up, 2: Video từ youtube hoặc tiktok
-                type: String,
-                default: 0
-            },
-            videoActive: {
-                // Duyệt video
+            usc_kd_first: {
                 type: Number,
                 default: 0
-            },
-            //kho ảnh
-            comImages: [{
-                _id: Number,
-                name: String,
-                size: Number,
-            }],
-            // kho video
-            comVideos: [{
-                _id: Number,
-                name: String,
-                size: Number,
-            }],
-            website: {
-                // Website công ty
-                type: String,
-                default: null
-            },
-            mst: {
-                // Mã số thuế
-                type: String,
-                default: null
-            },
-            ipAddressRegister: {
-                // IP của công ty khi đăng ký
-                type: String,
-                default: null
-            },
-            userContactName: {
-                // Tên người liên hệ
-                type: String,
-                default: null
-            },
-            userContactAddress: {
-                // Địa chỉ người liên hệ
-                type: String,
-                default: null
-            },
-            userContactPhone: {
-                // SĐT người liên hệ
-                type: String,
-                default: null
-            },
-            userContactEmail: {
-                // Email người liên hệ
-                type: String,
-                default: null
-            },
-            tagLinhVuc: {
-                // Lĩnh vực của công ty
-                type: String,
-                default: null
             },
             description: {
                 // Mô tả công ty
                 type: String,
                 default: null
             },
-            // Thông tin công ty luồng chuyển đổi số
-            type_timekeeping: {
-                // 1: là khuôn mặt, 2: là QR, 3: là chấm công công ty, 4: là chấm công web, 5: là PC365, 6: là giới hạn IP nhân viên, 7 là giới hạn IP công ty; 8: chấm công trên app chat365; 9: chấm công qr app chat
-                type: String,
-                default: null
-            },
-            id_way_timekeeping: {
-                // Chưa rõ, cập nhật sau
-                type: String,
-                default: null
-            },
-            com_role_id: {
-                // Chưa rõ, cập nhật sau
-                type: Number,
-                default: 0
-            },
             com_size: {
                 // Quy mô công ty
                 type: Number,
                 default: 0
             },
-            enable_scan_qr: {
-                // Cho phép quét mã QR
-                type: Number,
-                default: 0
+            timviec365: {
+                // Thông tin công ty luồng timviec365
+                usc_name: {
+                    // Tên người liên hệ
+                    type: String,
+                    default: null
+                },
+                usc_name_add: {
+                    // Địa chỉ người liên hệ
+                    type: String,
+                    default: null
+                },
+                usc_name_phone: {
+                    // SĐT người liên hệ
+                    type: String,
+                    default: null
+                },
+                usc_name_email: {
+                    // Email người liên hệ
+                    type: String,
+                    default: null
+                },
+                usc_canonical: {
+                    // Mã sinh ra url phục vụ seo (canonical)
+                    type: String,
+                    default: null
+                },
+                usc_md5: {
+                    type: String,
+                    default: null
+                },
+                usc_redirect: {
+                    type: String
+                },
+                usc_type: {
+                    type: Number,
+                    default: 0
+                },
+                usc_size: {
+                    type: Number,
+                    default: 0
+                },
+                usc_website: {
+                    // Website công ty
+                    type: String,
+                    default: null
+                },
+                usc_view_count: {
+                    // Tổng lượt xem
+                    type: Number,
+                    default: 0
+                },
+                usc_active: {
+                    // Tổng lượt xem
+                    type: Number,
+                    default: 0
+                },
+                usc_show: {
+                    type: Number,
+                    default: 1
+                },
+                usc_mail: {
+                    type: Number,
+                    default: 0
+                },
+                usc_stop_mail: {
+                    type: Number,
+                    default: 0
+                },
+                usc_utl: {
+                    type: Number,
+                    default: 0
+                },
+                usc_ssl: {
+                    type: Number,
+                    default: 0
+                },
+                usc_mst: {
+                    // Mã số thuế
+                    type: String,
+                    default: null
+                },
+                usc_security: {
+                    // Mã số thuế
+                    type: String,
+                    default: null
+                },
+                usc_ip: {
+                    // IP của công ty khi đăng ký
+                    type: String,
+                    default: null
+                },
+                usc_loc: {
+                    type: Number,
+                    default: 0
+                },
+                usc_mail_app: {
+                    type: Number,
+                    default: 0
+                },
+                usc_block_account: {
+                    type: Number,
+                    default: 0
+                },
+                usc_stop_noti: {
+                    type: Number,
+                    default: 0
+                },
+                otp_time_exist: {
+                    type: Number,
+                    default: 0
+                },
+                use_test: {
+                    type: Number,
+                    default: 0
+                },
+                usc_badge: {
+                    // Đánh dấu huy hiệu tia sét
+                    type: Number,
+                    default: 0
+                },
+                usc_map: {
+                    type: String,
+                    default: null
+                },
+                usc_dgc: {
+                    type: String,
+                    default: null
+                },
+                usc_dgtv: {
+                    type: String,
+                    default: null
+                },
+                usc_dg_time: {
+                    type: Number,
+                    default: null
+                },
+                usc_skype: {
+                    type: String,
+                    default: null
+                },
+                usc_video_com: {
+                    type: String,
+                    default: null
+                },
+                usc_lv: {
+                    // Lĩnh vực của công ty
+                    type: String,
+                    default: null
+                },
+
             },
-            com_vip: {
-                // Có phải là công ty vip hay không (1:VIP)
-                type: Number,
-                default: 0
-            },
-            com_path: {
-                // Chưa rõ, cập nhật sau
+            // Thông tin công ty luồng chuyển đổi số
+            cds: {
+                com_parent_id: {
+                    type: Number,
+                    default: null
+                },
+                type_timekeeping: {
+                    // 1: là khuôn mặt, 2: là QR, 3: là chấm công công ty, 4: là chấm công web, 5: là PC365, 6: là giới hạn IP nhân viên, 7 là giới hạn IP công ty; 8: chấm công trên app chat365; 9: chấm công qr app chat
+                    type: String,
+                    default: "1,2,3,4,5,8,9"
+                },
+                id_way_timekeeping: {
+                    // Chưa rõ, cập nhật sau
+                    type: String,
+                    default: 1
+                },
+                com_role_id: {
+                    // Chưa rõ, cập nhật sau
+                    type: Number,
+                    default: 0
+                },
+                com_qr_logo: {
+                    type: String,
+                    default: null
+                },
+                enable_scan_qr: {
+                    // Cho phép quét mã QR
+                    type: Number,
+                    default: 0
+                },
+                com_vip: {
+                    // Có phải là công ty vip hay không (1:VIP)
+                    type: Number,
+                    default: 0
+                },
+                com_ep_vip: {
+                    // Số lượng nhận viên đạt vip
+                    type: Number,
+                    default: 5
+                },
+                com_vip_time: {
+                    // Thời gian vip
+                    type: Number,
+                    default: 0
+                },
+                ep_crm: {
+                    type: Number,
+                    default: 0
+                },
+                ep_stt: {
+                    type: Number,
+                    default: 1
+                }
+            }
+        },
+        default: null
+    },
+    inforRN365: {
+        type: {
+            cccd: {
+                //so cmnd/can cuoc cong dan
                 type: String,
+                default: null
             },
-            base36_path: {
-                // Chưa rõ, cập nhật sau
+            cccdFrontImg: {
+                //anh truoc cccd
                 type: String,
+                default: null
             },
-            com_qr_logo: {
-                // Chưa rõ, cập nhật sau
+            cccdBackImg: {
+                //anh sau cccd
                 type: String,
-                default: 0
+                default: null
             },
-            ep_crm: {
-                // Chưa rõ, cập nhật sau
-                type: Number,
-                default: 0
-            },
-            com_id_tv365: {
-                // Chưa rõ, cập nhật sau
-                type: Number,
-                default: 0
-            },
-            com_quantity_time: {
-                // Chưa rõ, cập nhật sau
-                type: Number,
-                default: 0
-            },
-            com_email_lh: {
-                // Chưa rõ, cập nhật sau
+            bankName: {
+                //ten ngan hang
                 type: String,
+                default: null
             },
-            com_ep_vip: {
-                // Số lượng nhận viên đạt vip
-                type: Number,
-                default: 0
+            stk: {
+                //so tai khoan
+                type: String,
+                default: null
             },
-            enable_scan_qr: {
-                // Chưa rõ, cập nhật sau
+            ownerName: {
+                //ten chu tai khoan
+                type: String,
+                default: null
+            },
+            time: {
+                //thoi gian xac thuc
+                type: Date,
+                default: null
+            },
+            active: {
+                //admin da xac thuc hay chua(0: chua xac thuc)
                 type: Number,
                 default: 0
             },
@@ -732,49 +897,19 @@ const UserSchema = new mongoose.Schema({
         doubleVerify: {
             type: Number,
             default: 0,
-        }
-    },
-    inforRN365: {
-        cccd: {
-            //so cmnd/can cuoc cong dan
-            type: String,
-            default: null
-        },
-        cccdFrontImg: {
-            //anh truoc cccd
-            type: String,
-            default: null
-        },
-        cccdBackImg: {
-            //anh sau cccd
-            type: String,
-            default: null
-        },
-        bankName: {
-            //ten ngan hang
-            type: String,
-            default: null
-        },
-        stk: {
-            //so tai khoan
-            type: String,
-            default: null
-        },
-        ownerName: {
-            //ten chu tai khoan
-            type: String,
-            default: null
-        },
-        time: {
-            //thoi gian xac thuc
-            type: Date,
-            default: Date(Date.now())
         },
         active: {
-            //admin da xac thuc hay chua(0: chua xac thuc)
             type: Number,
             default: 0
         },
+        status: {
+            type: String,
+            default: ''
+        },
+        acceptMessStranger: {
+            type: Number,
+            default: 0
+        }
     }
 }, {
     collection: 'Users',

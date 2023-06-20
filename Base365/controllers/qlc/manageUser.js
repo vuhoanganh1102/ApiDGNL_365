@@ -6,23 +6,23 @@ const md5 = require('md5');
 exports.getlistAdmin = async(req, res) => {
     try{
         const pageNumber = req.body.pageNumber || 1;
-        let companyID = req.body.companyID
+        let com_id = req.body.com_id
         let idQLC = req.body.idQLC;
-        let depID = req.body.depID
+        let dep_id = req.body.dep_id
         let role = req.body.role
 
         let condition = {};
         //Function tìm user là TK nhân viên và TK Cty
-        if((companyID)==undefined){
+        if((com_id)==undefined){
             functions.setError(res,"lack of input")
-        }else if(isNaN(companyID)){
+        }else if(isNaN(com_id)){
             functions.setError(res,"id must be a Number")
         }else{
             if(idQLC) condition.idQLC = idQLC
-            if(depID) condition.depID = "inForPerson.depID"
+            if(dep_id) condition.dep_id = "inForPerson.employee.dep_id"
             if(role) condition.role = role
-            console.log(idQLC,depID,role)
-            const data = await manageUser.find(condition).select('userName phoneTK email inForPerson.depID inForPerson.positionID ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : 1});
+            console.log(idQLC,dep_id,role)
+            const data = await manageUser.find(condition).select('userName phoneTK email inForPerson.employee.dep_id inForPerson.employee.positionID ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : 1});
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data, pageNumber });
             };
@@ -38,17 +38,21 @@ exports.getlistAdmin = async(req, res) => {
 //tao nv
 exports.createUser = async(req, res) => {
 
-    const {companyID, userName, email, phoneTK,idQLC, password,role,address,birthday,depID,groupID,teamID,positionID, gender, createdAt} = req.body;
+    const {com_id, userName, email, phoneTK,idQLC, password,role,address,birthday,dep_id,group_id,team_id,positionID, gender,ep_status, createdAt} = req.body;
 
-    if ((companyID&&userName&& email&&idQLC&& password&&role&&address&&positionID&& gender)==undefined) {
+    if ((com_id&&userName&& email&& password&&role&&address&&positionID&& gender)==undefined) {
         //Kiểm tra tên nhân viên khác null
-        functions.setError(res, "user name required", 506);
-    } else if (isNaN(companyID)) {
+        functions.setError(res, "input required", 506);
+    } else if (isNaN(com_id)) {
         //Kiểm tra sdt có phải là số không
         functions.setError(res, "number phone must be a number", 508);
 
     } else {
-        //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 0 có giá trị max thì bằng max + 1 
+        const manager = await functions.getDatafindOne(manageUser, { email: email, type: 2 });
+            if (manager) {
+                functions.setError(res, "email đã tồn tại!", 510);
+            }else {
+                        //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 0 có giá trị max thì bằng max + 1 
         let maxID = await functions.getMaxID(manageUser);
         if (!maxID) {
             maxID = 0
@@ -57,19 +61,20 @@ exports.createUser = async(req, res) => {
         const ManagerUser = new manageUser({
             _id : _id,
             idQLC: Number(maxID) + 1 || idQLC,
-            "inForPerson.companyID": companyID,
+            "inForPerson.employee.com_id": com_id,
             userName: userName,
             email: email,
             phoneTK: phoneTK,
             password: md5(password),
-            gender: gender,
-            birthday: birthday,
+            "inForPerson.account.gender": gender,
+            "inForPerson.account.birthday": birthday,
             address: address,
-            "inForPerson.positionID": positionID,
+            "inForPerson.employee.positionID": positionID,
             type: 2,
-            "inForPerson.depID": depID,
-            "inForPerson.groupID": groupID,
-            "inForPerson.teamID":teamID,
+            "inForPerson.employee.dep_id": dep_id,
+            "inForPerson.employee.group_id": group_id,
+            "inForPerson.employee.team_id":team_id,
+            "inForPerson.employee.ep_status": ep_status,
             role : role,
             createdAt: Date.now()
         });
@@ -81,6 +86,8 @@ exports.createUser = async(req, res) => {
             .catch((err) => {
                 functions.setError(res, err.message, 509);
             })
+            }
+
     }
 };
 
@@ -88,12 +95,12 @@ exports.createUser = async(req, res) => {
 // chỉnh sửa
 exports.editUser = async(req, res) => {
 
-    const {companyID, userName, email, phoneTK,idQLC, password,role,address,birthday,depID,groupID,teamID,positionID, gender, createdAt} = req.body;
+    const {com_id, userName, email, phoneTK,idQLC, password,role,address,birthday,dep_id,group_id,team_id,positionID, gender, createdAt} = req.body;
 
-    if ((companyID&&userName&& email&&idQLC&& password&&role&&address&&positionID&& gender)==undefined) {
+    if ((com_id&&userName&& email&&idQLC&& password&&role&&address&&positionID&& gender)==undefined) {
         //Kiểm tra tên nhân viên khác null
         functions.setError(res, "info required", 506);
-    } else if (isNaN(companyID)) {
+    } else if (isNaN(com_id)) {
         //Kiểm tra sdt có phải là số không
         functions.setError(res, "number phone must be a number", 508);
 
@@ -106,19 +113,20 @@ exports.editUser = async(req, res) => {
                 functions.setError(res, "manager does not exist!", 510);
             } else {
                 await functions.getDatafindOneAndUpdate(manageUser, { idQLC: idQLC, type: 2 }, {
-                    "inForPerson.companyID": companyID,
+                    "inForPerson.employee.com_id": com_id,
                     userName: userName,
                     email: email,
                     phoneTK: phoneTK,
                     password: md5(password),
-                    gender: gender,
-                    birthday: birthday,
+                    "inForPerson.account.gender": gender,
+                    "inForPerson.account.birthday": birthday,
                     address: address,
-                    "inForPerson.positionID": positionID,
+                    "inForPerson.employee.positionID": positionID,
                     type: 2,
-                    "inForPerson.depID": depID,
-                    "inForPerson.groupID": groupID,
-                    "inForPerson.teamID":teamID,
+                    "inForPerson.employee.dep_id": dep_id,
+                    "inForPerson.employee.group_id": group_id,
+                    "inForPerson.employee.team_id":team_id,
+                    "inForPerson.employee.ep_status": ep_status,
                     role : role,
 
                     })
@@ -131,14 +139,14 @@ exports.editUser = async(req, res) => {
 //xoa nhan vien
 exports.deleteUser = async(req, res) => {
     //tạo biến đọc idQLC
-    const companyID = req.body.companyID;
+    const com_id = req.body.com_id;
     const idQLC = req.body.idQLC;
 
     //nếu idQLC không phải số
-    if(isNaN(idQLC)) {
+    if(isNaN(idQLC,com_id)) {
         functions.setError(res, "Id must be a number", 502);
     } else { // thì tìm trong 1 idQLC trong user model 
-        const manager = await functions.getDatafindOne(manageUser, {"inForPerson.companyID":companyID, idQLC: idQLC, type: 2 });
+        const manager = await functions.getDatafindOne(manageUser, {"inForPerson.employee.com_id":com_id, idQLC: idQLC, type: 2 });
         if (!manager) { //nếu biến manager không tìm thấy  trả ra fnc lỗi 
             functions.setError(res, "user not exist!", 510);
         } else { //tồn tại thì xóa 

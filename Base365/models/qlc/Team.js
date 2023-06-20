@@ -7,12 +7,12 @@ const TeamSchema = new Schema({
         type: Number,
         required: true
     },
-
     //ID phòng ban của tổ
-    depID: {
+    dep_id: {
         type: Number,
     },
-    companyID: {
+
+    com_id: {
         type : Number,
     },
     //Tên của tổ
@@ -38,6 +38,10 @@ const TeamSchema = new Schema({
     //Sắp xếp theo thứ tự
     teamOrder: {
         type: Number
+    },
+    // tổng số nhân viên 
+    total_emp : {
+        type :Number,
     }
 })
 

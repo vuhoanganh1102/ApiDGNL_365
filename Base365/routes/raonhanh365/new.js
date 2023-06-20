@@ -22,7 +22,7 @@ router.post('/pushNews', formData.parse(), [functions.checkToken], newRN.pushNew
 
 
 // trang chủ 
-router.get('/getNewBeforeLogin', newRN.getNewBeforeLogin);
+router.get('/getNew', newRN.getNew);
 
 // tạo mới tin mua
 router.post('/createBuyNew',formData.parse(), functions.checkToken, newRN.createBuyNew)
@@ -35,7 +35,7 @@ router.put('/updateBuyNew',formData.parse(), functions.checkToken, newRN.updateB
 router.get('/getDetailNew/:linkTitle',newRN.getDetailNew)
 
 // yêu thích tin
-router.post('/loveNew',functions.checkToken,newRN.loveNew)
+router.post('/loveNew',functions.checkToken,formData.parse(),newRN.loveNew)
 
 router.get('/createToken',newRN.createToken)
 
@@ -96,6 +96,7 @@ router.get('/getListNewsApplied',functions.checkToken, newRN.getListNewsApplied)
 
 //api lay ra danh sach ung vien dang ung tuyen cua 1 tin
 router.get('/getListCandidateApplied',functions.checkToken, newRN.getListCandidateApplied);
+
 
 
 module.exports = router;

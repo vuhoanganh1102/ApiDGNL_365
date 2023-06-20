@@ -9,12 +9,17 @@ const GroupSchema = new Schema({
     },
 
     //ID tổ của nhóm
-    teamId: {
+    team_id: {
+        type: Number,
+    },
+
+    //ID cty
+    com_id: {
         type: Number,
     },
 
     //ID phong của nhóm
-    depId: {
+    dep_id: {
         type: Number,
     },
 
@@ -48,6 +53,10 @@ const GroupSchema = new Schema({
     //Sắp xếp theo thứ tự
     parentGroup: {
         type: Number
+    },
+    // tổng số nhân viên 
+    total_emp : {
+        type :Number,
     }
 })
 

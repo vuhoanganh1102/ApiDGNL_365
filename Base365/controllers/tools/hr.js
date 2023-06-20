@@ -404,6 +404,8 @@ exports.EmployeePolicySpecifics = async (req, res, next) => {
             let deletedAt = data[i].deleted_at; 
             if (await functions.checkDate(timeStart)  === false) continue
 
+
+
             let EmployeePolicySpecifics = new HR_EmployeePolicySpecifics({ id,name,timeStart,employePolicyId,supervisorName,description,content,applyFor,isDelete,createdBy,file,createdAt,updated_at,deletedAt });
             await EmployeePolicySpecifics.save();
         }
@@ -483,7 +485,7 @@ exports.notify = async (req, res, next) => {
 exports.InfoLeaders = async (req, res, next) => {
     try {
         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_info_leader');
-        // let avatar = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_leader_avt');
+        
         for (let i = 0; i < data.length; i++) {
             let id = Number(data[i].id);
             let epId = data[i].ep_id;
