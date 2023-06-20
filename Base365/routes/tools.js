@@ -144,6 +144,7 @@ router.post('/raonhanh/toolAdminUserRight', toolRaoNhanh.toolAdminUserRight);
 // router.post('/raonhanh/toolAdminTranslate', toolRaoNhanh.toolAdminTranslate);
 router.post('/raonhanh/toolAdminMenuOrder', toolRaoNhanh.toolAdminMenuOrder);
 router.post('/raonhanh/toolModule', toolRaoNhanh.toolModule);
+router.post('/raonhanh/toolBlog', toolRaoNhanh.toolBlog);
 
 // api quét data các phần của chi tiết danh mục Raonhanh
 router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
