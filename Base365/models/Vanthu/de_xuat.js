@@ -364,10 +364,72 @@ const Vanthu_de_xuat = new Schema({
 
 
 
-        }
+        },
+        hoa_hong : {
+            chu_ky : {
+                type : String,
+                default : null
+            },
+            time_hh : {
+                type : Date,
+                default : null
+            },
+            doanh_thu_td : {
+                type : String,
+                default : null
+            },
+            muc_doanh_thu : {
+                type : String,
+                default : null
+            },
+            ly_do : {
+                type : String,
+                default : null
+            }
+        },
 
         //Đề xuất khiếu nại
+        khieu_nai : {
+            ly_do : {
+                type : String
+            }
+        },
 
+        //Đề xuất thanh toán
+        thanh_toan : {
+            so_tien_tt : {
+                type : Number,
+                default : null
+            },
+            ly_do : {
+                type : String,
+                default : null
+            }
+        },
+
+
+        thuong_phat : {
+            so_tien_tp : {
+                type : Number,
+                default : null
+            },
+            time_tp : {
+                type : Date,
+                default : null
+            },
+            nguoi_tp : {
+                type : String,
+                default : null
+            },
+            type_tp : {
+                type : Number,
+                default : null
+            },
+            ly_do : {
+                type : String,
+                default : null
+            }
+        }
 
         // nd: {
         //     ngaybatdau_nghi: {
@@ -425,8 +487,6 @@ const Vanthu_de_xuat = new Schema({
     },
     time_create: {
         type: Date,
-        default: 0
-
     },
     time_tiep_nhan: {
         type: Number,
@@ -437,16 +497,14 @@ const Vanthu_de_xuat = new Schema({
         type: Number,
         default: 0
 
-
     },
-    active: {//người duyệt đồng ý hay chưa
-        type: Number,
-        default: 0
+    active: { // trạng thái duyệt
+        type: Number,//'1: đã api bên 3 đồng ý; 2: bên 3 không đồng ý',
+        default : 0
     },
-    del_type: {//trạng thái còn hay xóa     
-        type: Number,
-        default: 1
-    },
-
+    del_type: {// trạng thái xoa
+        type: Number,//'1:active; 2 delete'
+        default : 1
+    }
 })
 module.exports = mongoose.model("Vanthu_de_xuat", Vanthu_de_xuat);

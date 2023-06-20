@@ -1,5 +1,5 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
-const setting_dx = require('../../../models/Vanthu365/setting_dx');
+const setting_dx = require('../../../models/Vanthu/setting_dx');
 const his_handle = require('../../../models/Vanthu/history_handling_dx');
 
 

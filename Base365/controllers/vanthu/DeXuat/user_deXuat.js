@@ -1,7 +1,7 @@
 
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const cate_de_xuat = require('../../../models/Vanthu/cate_de_xuat');
-const settingdx = require('../../../models/Vanthu365/setting_dx');
+const setting_dx = require('../../../models/Vanthu/setting_dx');
 //onst setting_dx = require('../../../models/Vanthu365/setting_dx');
 let info_de_xuat_All = [];
 let info_de_xuat_cho_duyet = [];

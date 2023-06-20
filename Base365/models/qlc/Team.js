@@ -9,10 +9,12 @@ const TeamSchema = new Schema({
     },
 
     //ID phòng ban của tổ
-    deparmentId: {
+    depID: {
         type: Number,
     },
-
+    companyID: {
+        type : Number,
+    },
     //Tên của tổ
     teamName: {
         type: String,
@@ -25,7 +27,11 @@ const TeamSchema = new Schema({
     },
 
     //ID quản lý tổ
-    managerId: {
+    managerTeamId: {
+        type: Number
+    },
+    //ID phó tổ
+    deputyTeamId: {
         type: Number
     },
 

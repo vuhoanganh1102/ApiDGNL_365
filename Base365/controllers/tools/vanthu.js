@@ -12,7 +12,7 @@ const HistoryHDX = require('../../models/Vanthu/history_handling_dx');
 const LyDo = require('../../models/Vanthu/ly_do');
 const PhongBan = require('../../models/Vanthu/phong_ban')
 //const SettingDX = require('../../models/Vanthu365/setting_dx')
-const setingDx = require('../../models/Vanthu365/setting_dx');
+const setingDx = require('../../models/Vanthu/setting_dx');
 //const fnc = require('../../services/functions.js');
 const tbl_feedback = require('../../models/Vanthu365/tbl_feedback');
 const qlcv_edit = require('../../models/Vanthu365/tbl_qlcv_edit');
@@ -33,20 +33,17 @@ exports.toolCateDeXuat = async (req, res, next) => {
         let page = 1;
         let result = true;
         do {
-            const form = new FormData();
-            form.append('page', page);
-
-            const response = await axios.post('https://vanthu.timviec365.vn/api/select_tbl_cate_de_xuat.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            let data = response.data.data.items;
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_cate_de_xuat.php', {
+                page: page,
+                pb: 0
+            })
+            let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    const cate = new CateDeXuat({
-                        id_cate_dx: data[i].id_cate_dx,
+                    let post = await fnc.getDatafindOne(CateDeXuat, {_id: data[i].id_cate_dx})
+                    if(post == null){
+                         let newCDX = new CateDeXuat({
+                        _id: data[i].id_cate_dx,
                         cate_dx: data[i].cate_dx,
                         name_cate_dx: data[i].name_cate_dx,
                         com_id: data[i].com_id,
@@ -61,19 +58,18 @@ exports.toolCateDeXuat = async (req, res, next) => {
                         update_time: data[i].update_time,
                         time_limit: data[i].time_limit,
                         time_limit_l: data[i].time_limit_l,
-                        trang_thai_dx: data[i].trang_thai_dx
+                        trang_thai_dx: data[i].trang_thai_dx  
                     });
-                    await CateDeXuat.create(cate);
+                    await newCDX.save();
+                    }
                 }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page);
+                page+=1;
+                console.log(page)
+            } else result = false;   
         } while (result);
         return fnc.success(res, 'Thành Công');
-    } catch (error) {
-        return fnc.setError(res, error.message);
+    } catch (err) {
+        return fnc.setError(res, err);
     }
 };
 
@@ -415,12 +411,15 @@ exports.toolDeXuatXuLy = async (req, res, next) => {
         let result = true;
 
         do {
-            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_de_xuat_xu_ly.php', { page: page, pb: 0 })
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_de_xuat_xu_ly.php', {
+                page: page,
+                pb: 0
+            })
             let data = listItems.data.items;
 
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    let post = await fnc.getDatafindOne(DeXuatXuLy, { id_dx: data[i].new_id })
+                    let post = await fnc.getDatafindOne(DeXuatXuLy, {id_dx: data[i].new_id})
                     if (post == null) {
                         let newDXXL = new DeXuatXuLy({
                             id_dx: data[i].id_dx,
@@ -449,7 +448,10 @@ exports.toolDeleteDX = async (req, res, next) => {
         let page = 1;
         let result = true;
         do {
-            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_delete_dx.php', { page: page, pb: 0 });
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_delete_dx.php', {
+                page: page,
+                pb: 0
+            });
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -457,10 +459,10 @@ exports.toolDeleteDX = async (req, res, next) => {
                     if (data[i].time_del != 0) {
                         timeDelete = new Date(data[i].time_del * 1000)
                     }
-                    let post = await fnc.getDatafindOne(DeleteDeXuat, { id_del: data[i].id_del })
+                    let post = await fnc.getDatafindOne(DeleteDeXuat, {_id: data[i].id_del})
                     if (post == null) {
                         let newDDX = new DeleteDeXuat({
-                            id_del: data[i].id_del,
+                            _id: data[i].id_del,
                             user_del: data[i].user_del,
                             user_del_com: data[i].user_del_com,
                             id_dx_del: data[i].id_dx_del,
@@ -484,11 +486,14 @@ exports.toolGhiChu = async (req, res, next) => {
         let page = 1;
         let result = true;
         do {
-            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_ghi_chu.php', { page: page, pb: 0 });
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_ghi_chu.php', {
+                page: page,
+                pb: 0
+            });
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    let post = await fnc.getDatafindOne(GhiChu, { id_note: data[i].id_note })
+                    let post = await fnc.getDatafindOne(GhiChu, {id_note: data[i].id_note})
                     if (post == null) {
                         let newGC = new GhiChu({
                             id_note: data[i].id_note,
@@ -515,11 +520,14 @@ exports.toolGroupVanBan = async (req, res, next) => {
         let page = 1;
         let result = true;
         do {
-            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_group_van_ban.php', { page: page, pb: 0 });
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_group_van_ban.php', {
+                page: page,
+                pb: 0
+            });
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    let post = await fnc.getDatafindOne(GroupVanBan, { id_group_vb: data[i].id_group_vb })
+                    let post = await fnc.getDatafindOne(GroupVanBan, {id_group_vb: data[i].id_group_vb})
                     if (post == null) {
                         let newGVB = new GroupVanBan({
                             id_group_vb: data[i].id_group_vb,
@@ -543,20 +551,22 @@ exports.toolGroupVanBan = async (req, res, next) => {
     }
 }
 
-
 exports.toolhideCateDX = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
         do {
-            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_hide_cate_dx.php', { page: page, pb: 0 });
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_hide_cate_dx.php', {
+                page: page,
+                pb: 0
+            });
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    let post = await fnc.getDatafindOne(HideCateDX, { id_hide: data[i].id_hide })
+                    let post = await fnc.getDatafindOne(HideCateDX, {_id: data[i].id_hide})
                     if (post == null) {
                         let newCDX = new HideCateDX({
-                            id_hide: data[i].id_hide,
+                            _id: data[i].id_hide,
                             id_com: data[i].id_com,
                             id_cate_dx: data[i].id_cate_dx,
                         });
@@ -579,7 +589,10 @@ exports.toolHistoryHDX = async (req, res, next) => {
         let page = 1;
         let result = true;
         do {
-            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_history_handling_dx.php', { page: page, pb: 0 });
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_history_handling_dx.php', {
+                page: page,
+                pb: 0
+            });
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -587,13 +600,13 @@ exports.toolHistoryHDX = async (req, res, next) => {
                     if (data[i].time != 0) {
                         Time = new Date(data[i].time * 1000)
                     }
-                    let post = await fnc.getDatafindOne(HistoryHDX, { id_his: data[i].id_his })
+                    let post = await fnc.getDatafindOne(HistoryHDX, {_id: data[i].id_his})
                     if (post == null) {
                         let newHHDX = new HistoryHDX({
-                            id_his: data[i].id_his,
+                            _id: data[i].id_his,
                             id_dx: data[i].id_dx,
                             id_user: data[i].id_user,
-                            type_handling: data[i].id_user,
+                            type_handling: data[i].type_handling,
                             time: new Date(data[i].time * 1000)
 
                         });
@@ -616,7 +629,10 @@ exports.toolLyDo = async (req, res, next) => {
         let page = 1;
         let result = true;
         do {
-            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_ly_do.php', { page: page, pb: 0 });
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_ly_do.php', {
+                page: page,
+                pb: 0
+            });
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -624,7 +640,7 @@ exports.toolLyDo = async (req, res, next) => {
                     if (data[i].time_created != 0) {
                         timeCreated = new Date(data[i].time_created * 1000)
                     }
-                    let post = await fnc.getDatafindOne(LyDo, { id_ld: data[i].id_ld })
+                    let post = await fnc.getDatafindOne(LyDo, {id_ld: data[i].id_ld})
                     if (post == null) {
                         let newLD = new LyDo({
                             id_ld: data[i].id_ld,
@@ -653,7 +669,10 @@ exports.toolPhongBan = async (req, res, next) => {
         let page = 1;
         let result = true;
         do {
-            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_phong_ban.php', { page: page, pb: 0 });
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_phong_ban.php', {
+                page: page,
+                pb: 0
+            });
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -661,7 +680,7 @@ exports.toolPhongBan = async (req, res, next) => {
                     if (data[i].create_date_phongban != 0) {
                         createDate = new Date(data[i].create_date_phongban * 1000)
                     }
-                    let post = await fnc.getDatafindOne(PhongBan, { id_phongban: data[i].id_phongban })
+                    let post = await fnc.getDatafindOne(PhongBan, {id_phongban: data[i].id_phongban})
                     if (post == null) {
                         let newPB = new PhongBan({
                             id_phongban: data[i].id_phongban,
@@ -686,93 +705,56 @@ exports.toolPhongBan = async (req, res, next) => {
 
 }
 
-// exports.toolSettingDX = async (req, res, next) => {
-//     try {
-//         do {
-//             let page = 1;
-//             let result = true;
-//             let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_setting_dx.php', { page: page });
-//             let data = listItems.data.items;
-//             if (data.length > 0) {
-//                 for (let i = 0; i < data.length; i++) {
-//                     let timeLimit = null;
-//                     let timeLimitl = null;
-//                     let timeTp = null;
-//                     let timeHh = null;
-//                     let timeCreated = null;
-//                     let updateTime = null;
-//                     if (data[i].time_limit != 0) {
-//                         timeLimit = new Date(data[i].time_limit * 1000)
-//                     }
-//                     if (data[i].time_tp != 0) {
-//                         timeTp = new Date(data[i].time_tp * 1000)
-//                     }
-//                     if (data[i].time_hh != 0) {
-//                         timeHh = new Date(data[i].time_hh * 1000)
-//                     }
-//                     if (data[i].time_created != 0) {
-//                         timeCreated = new Date(data[i].time_created * 1000)
-//                     }
-//                     if (data[i].update_time != 0) {
-//                         updateTime = new Date(data[i].update_time * 1000)
-//                     }
-//                     let post = await fnc.getDatafindOne(SettingDX, { id_setting: data[i].id_setting })
-//                     if (post == null) {
-//                         let newSDX = new SettingDX({
-//                             id_setting: data[i].id_setting,
-//                             com_id: data[i].com_id,
-//                             type_setting: data[i].type_setting,
-//                             type_browse: data[i].type_browse,
-//                             time_limit: new Date(data[i].time_limit * 1000),
-//                             shift_id: data[i].shift_id,
-//                             time_limit_l: data[i].time_limit_l,
-//                             list_user: data[i].list_user,
-//                             time_tp: new Date(data[i].time_tp * 1000),
-//                             time_hh: new Date(data[i].time_hh * 1000),
-//                             time_created: new Date(data[i].time_created * 1000),
-//                             update_time: new Date(data[i].update_time * 1000)
-//                         });
-//                         await newSDX.save();
-//                     }
-//                 }
-//                 page += 1;
-//                 console.log(page)
-//             }
-//             else result = false;
-//         } while (result)
-//         await fnc.success(res, 'thanh cong')
-//     } catch (err) {
-//         console.log(err)
-//         return fnc.setError(res, err)
-//     }
-// }
-
-
-
-exports.toolSettingDx = async (req, res, next) => {
+exports.toolSettingDX = async (req, res, next) => {
     try {
+        let page = 1;
         let result = true;
-        page = 1;
         do {
-            let data = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_setting_dx.php', { page: page, pb: 1 });
-            let listSetting = data.data.items;
-            if (listSetting.length > 0) {
-                for (let i = 0; i < listSetting.length; i++) {
-                    const SettingDx = new setingDx({
-                        _id: listSetting[i].id_setting,
-                        ComId: listSetting[i].com_id,
-                        typeSetting: listSetting[i].type_setting,
-                        typeBrowse: listSetting[i].type_browse,
-                        timeLimit: listSetting[i].time_limit,
-                        shiftId: listSetting[i].shift_id,
-                        timeLimitL: listSetting[i].time_limit_l,
-                        listUser: listSetting[i].list_user,
-                        timeTP: listSetting[i].time_tp,
-                        timeHH: listSetting[i].time_hh,
-                        timeCreate: listSetting[i].time_created,
-                        updateTime: listSetting[i].update_time,
-                    })
-                    await SettingDx.save();
+            let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_setting_dx.php', {
+                page: page,
+                pb: 0
+            });
+            let data = listItems.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let timeLimit = null;
+                    let timeTp = null;
+                    let timeHh = null;
+                    let timeCreated = null;
+                    let updateTime = null;
+                    if (data[i].time_limit != 0) {
+                        timeLimit = new Date(data[i].time_limit * 1000)
+                    }
+                    if (data[i].time_tp != 0) {
+                        timeTp = new Date(data[i].time_tp * 1000)
+                    }
+                    if (data[i].time_hh != 0) {
+                        timeHh = new Date(data[i].time_hh * 1000)
+                    }
+                    if (data[i].time_created != 0) {
+                        timeCreated = new Date(data[i].time_created * 1000)
+                    }
+                    if (data[i].update_time != 0) {
+                        updateTime = new Date(data[i].update_time * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(settingDx, {_id: data[i].id_setting})
+                    if (post == null) {
+                        let newSDX = new settingDx({
+                            _id: data[i].id_setting,
+                            com_id: data[i].com_id,
+                            type_setting: data[i].type_setting,
+                            type_browse: data[i].type_browse,
+                            time_limit: new Date(data[i].time_limit * 1000),
+                            shift_id: data[i].shift_id,
+                            time_limit_l: data[i].time_limit_l,
+                            list_user: data[i].list_user,
+                            time_tp: new Date(data[i].time_tp * 1000),
+                            time_hh: new Date(data[i].time_hh * 1000),
+                            time_created: new Date(data[i].time_created * 1000),
+                            update_time: new Date(data[i].update_time * 1000)
+                        });
+                        await newSDX.save();
+                    }
                 }
                 page++;
                 console.log(page);

@@ -100,7 +100,7 @@ exports.createGroup = async (req, res) => {
             functions.setError(res, err.message, 709);
         });
 };
-
+//API thay đổi thông tin của một nhóm
 exports.editGroup = async (req, res) => {
     const idGroup = req.body._id;
     const groupName = req.body.groupName;
@@ -121,7 +121,7 @@ exports.editGroup = async (req, res) => {
         .then((manager) => functions.success(res, "edit group success", manager))
         .catch((err) => functions.setError(res, err.message, 500));
 };
-
+//API Xóa một nhóm theo id
 exports.deleteGroup = async (req, res) => {
     const _id = req.query._id;
 

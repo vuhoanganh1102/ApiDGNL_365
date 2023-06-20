@@ -46,7 +46,7 @@ const GroupSchema = new Schema({
     },
 
     //Sắp xếp theo thứ tự
-    groupOrder: {
+    parentGroup: {
         type: Number
     }
 })

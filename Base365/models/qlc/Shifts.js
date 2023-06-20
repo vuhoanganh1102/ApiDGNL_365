@@ -7,7 +7,7 @@ const ShiftSchema = new Schema({
         type: Number,
     },
     //Id của công ty
-    companyId: {
+    companyID: {
         type: Number
     },
     //Thời điểm tạo ca làm việc
@@ -21,19 +21,19 @@ const ShiftSchema = new Schema({
     },
     //Giờ vào ca
     timeCheckIn: {
-        type: Date
+        type: String
     },
     //Giờ hết ca
     timeCheckOut: {
-        type: Date
+        type: String
     },
     //Giớ check in sớm nhất
     timeCheckInEarliest: {
-        type: Date
+        type: String
     },
     //Giớ check out muộn nhất
     timeCheckOutLastest: {
-        type: Date
+        type: String
     },
     //Id hình thức tính công
     idTypeCalculateWork: {
@@ -50,7 +50,17 @@ const ShiftSchema = new Schema({
     //Số tiền theo ca
     money: {
         type: Number
-    }
+    },
+    over_night: {
+        type: Number
+    },
+    is_overtime: {
+        type: Number
+    },
+    status: {
+        type: Number
+    },
+    
 })
 
 module.exports = mongoose.model("Shifts", ShiftSchema); 
