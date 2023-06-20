@@ -9,5 +9,8 @@ router.use('/crm',CustomerRouter)
 router.use('/crm',CustomerDetailsRoutes)
 // router.use('/crm',GroupCustomerRouter)
 
+const GroupCustomerRoutes = require("./groupCustomer");
+
+router.use('/', GroupCustomerRoutes);
 
 module.exports = router
