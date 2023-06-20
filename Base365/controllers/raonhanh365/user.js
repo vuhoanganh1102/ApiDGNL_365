@@ -9,6 +9,7 @@ const Bidding = require('../../models/Raonhanh365/Bidding');
 const md5 = require('md5');
 const raoNhanh = require('../../services/rao nhanh/raoNhanh');
 const History = require('../../models/Raonhanh365/History');
+const Evaluate = require('../../models/Raonhanh365/Evaluate');
 
 
 const folderUserImg = "img_user"
@@ -248,16 +249,54 @@ exports.createVerifyPayment = async(req, res, next) => {
 exports.profileInformation = async (req,res,next) => {
     try{
         let userID = req.user.data._id;
-        let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1}
+        let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1};
         let dataUser = {}
-        let userInFor = await User.findOne({_id: userID}, fields)
-        let numberOfNew = await New.find({userID: userID}).count();
-        let numberOfNewSold = await New.find({userID: userID, sold: 1}).count();
+
+        //thong tin tk
+        let userInFor = await User.findOne({_id: userID}, fields);
+
+        //tin da dang
+        let numberOfNew = await New.find({userID: userID, active: 1}).count();
+        
+        //tin da dang trong 30
+        var currentDate = new Date();  // Lấy ngày hiện tại
+        var thirtyDaysAgo = new Date(currentDate.getTime() - (30 * 24 * 60 * 60 * 1000));  // Trừ 30 ngày từ ngày hiện tại
+        let numberOfNewNgay = await New.find({userID: userID, active: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
+
+        //tin da ban
+        let numberOfNewSold = await New.find({userID: userID, active: 1, sold: 1}).count();
+        
+        //tin da ban trong 30
+        let numberOfNewNgaySold = await New.find({userID: userID, active: 1, sold: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
+
+        //so luong danh gia va so sao
+        let listEvaluate = await Evaluate.find({userId: userID, newId: 0, active: 1}, {_id: 1, stars: 1});
+        let numberEvaluate = await Evaluate.countDocuments({userId: userID, newId: 0, active: 1});
+        let numberStar = 0;
+        for(let i=0; i<listEvaluate.length; i++) {
+            numberStar += listEvaluate[i].stars;
+        }
+        // numberEvaluate = listEvaluate.count();
+
+        fields = {_id: 1, image: 1, title: 1, createTime: 1, updateTime: 1, address: 1, money: 1, sold: 1, unit: 1,
+        cateID: 1, linkTitle: 1, free: 1, img: 1}
+        //tin dang ban
+        let listSellNews = await New.find({userID: userID, active: 1, buySell: 2}, fields);
+
+        //tin dang mua
+        let listBuyNews = await New.find({userID: userID, active: 1, buySell: 1}, fields);
+
+        // let numberOfNewSold = await New.find({userID: userID, sold: 1}).count();
         let likeNew = await LoveNews.find({userID: userID}).count()
         dataUser.InforUser = userInFor;
-        dataUser.numberOfNew = numberOfNew
-        dataUser.numberOfNewSold = numberOfNewSold
+        dataUser.numberOfNew = numberOfNew;
+        dataUser.numberOfNewNgay = numberOfNewNgay;
+        dataUser.numberOfNewSold = numberOfNewSold;
+        dataUser.numberOfNewNgaySold = numberOfNewNgaySold;
+        dataUser.evaluate = {numberEvaluate, numberStar};
         dataUser.likeCount = likeNew
+        dataUser.listSellNews = listSellNews;
+        dataUser.listBuyNews = listBuyNews;
 
         return functions.success(res, 'get Data User Success', dataUser);
     } catch(err){
