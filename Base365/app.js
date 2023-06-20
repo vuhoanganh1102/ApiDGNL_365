@@ -25,13 +25,17 @@ var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
 var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
+
 //---------HR------------------------
-var welfare = require('./routes/hr/welfare');
 var recruitment = require('./routes/hr/recruitmentRoute');
 var trainingRoute = require('./routes/hr/trainingRoute');
 var settingRoute = require('./routes/hr/settingRoute');
+var administrationRoute = require('./routes/hr/administrationRoute');
+var welfare = require('./routes/hr/welfareRoute');
+var organizationalStructure = require('./routes/hr/organizationalStructure');
 
 //tim viec 
+
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -111,11 +115,14 @@ app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
 app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 app.use('/api/raonhanh/admin', adminRaonhanh365);
 
+
 //----------------------------------------------------route HR--------------------------------------------------------------------------------------------------
 app.use('/api/hr/recruitment', recruitment)
-app.use('/api/hr/welfare', welfare);
 app.use('/api/hr/training', trainingRoute);
 app.use('/api/hr/setting', settingRoute);
+app.use('/api/hr/administration', administrationRoute);
+app.use('/api/hr/welfare', welfare);
+app.use('/api/hr/organizationalStructure', organizationalStructure);
 
 
 
@@ -166,8 +173,4 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-// app.listen(3004, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3004")
-// })
 module.exports = app;

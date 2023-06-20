@@ -121,11 +121,13 @@ router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
 router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
 router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
+
 router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory);
 router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew);
 router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment);
 router.post('/raonhanh/toolOrder', toolRaoNhanh.toolOrder);
 router.post('/raonhanh/toolTagsIndex', toolRaoNhanh.toolTagsIndex);
+router.post('/updateNewDescription',toolRaoNhanh.updateNewDescription)
 
 //admin
 router.post('/raonhanh/toolAdminUser', toolRaoNhanh.toolAdminUser);
@@ -147,6 +149,8 @@ router.post('/toolNotify',toolHr.notify)
 router.post('/toolPermission',toolHr.permission)
 router.post('/toolPolicys',toolHr.policy)
 router.post('/toolstageRecruitment',toolHr.stageRecruitment)
+// router.post('/toolsS')
+// router.post('/toolsProvisionsOfCompany', toolHr.)
 
 // api quét data HR Cường
 router.post('/toolAchievementFors',toolHr.AchievementFors)
