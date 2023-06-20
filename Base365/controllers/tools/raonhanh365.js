@@ -17,7 +17,14 @@ const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser');
 const AdminTranslate = require('../../models/Raonhanh365/Admin/AdminTranslate');
 const AdminMenuOrder = require('../../models/Raonhanh365/Admin/AdminMenuOrder');
 const Module = require('../../models/Raonhanh365/Admin/Module');
-
+const Evaluate = require('../../models/Raonhanh365/Evaluate');
+const Cart = require('../../models/Raonhanh365/Cart');
+const Tags = require('../../models/Raonhanh365/Tags');
+const Contact = require('../../models/Raonhanh365/Contact');
+const RegisterFail = require('../../models/Raonhanh365/RegisterFail');
+const Search = require('../../models/Raonhanh365/Search');
+const TblTags = require('../../models/Raonhanh365/TblTag');
+const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 
 // danh mục sản phẩm
 exports.toolCategory = async(req, res, next) => {
@@ -1623,18 +1630,311 @@ exports.toolEvaluate = async(req, res, next) => {
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    const module = new Module({
-                        _id: data[i].mod_id,
-                        name: data[i].mod_name,
-                        path: data[i].mod_path,
-                        listName: data[i].mod_listname,
-                        listFile: data[i].mod_listfile,
-                        order: data[i].mod_order,
-                        help: data[i].mod_help,
-                        langId: data[i].lang_id,
-                        checkLoca: data[i].mod_checkloca,
+                    const evaluate = new Evaluate({
+                        _id: data[i].eva_id,
+                        newId: data[i].new_id,
+                        userId: data[i].user_id,
+                        blUser: data[i].bl_user,
+                        parentId: data[i].eva_parent_id,
+                        stars: data[i].eva_stars,
+                        comment: data[i].eva_comment,
+                        time: data[i].eva_comment_time,
+                        active: data[i].eva_active, 
+                        showUsc: data[i].eva_show_usc, 
+                        csbl: data[i].da_csbl,
+                        csuaBl: data[i].eva_csua_bl, 
+                        tgianHetcs: data[i].tgian_hetcs 
                     });
-                    await Module.create(module);
+                    await Evaluate.create(evaluate);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolCart = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_gio_hang.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const cart = new Cart({
+                        _id: data[i].id,
+                        userId: data[i].user_id,
+                        newsId: data[i].new_id,
+                        type: data[i].phan_loai,
+                        quantity: data[i].so_luong,
+                        unit: data[i].don_gia,
+                        tick: data[i].da_chon,
+                        total: data[i].tongtien_sp,
+                        date: data[i].ngay_dathang,
+                        status: data[i].trang_thai
+                    });
+                    await Cart.create(cart);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolTags = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_ds_key_tags.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const tags = new Tags({
+                        _id: data[i].tags_id,
+                        name: data[i].ten_tags,
+                        parentId: data[i].id_parent,
+                        typeTags: data[i].type_tags,
+                        cateId: data[i].id_danhmuc,
+                        type: data[i].type
+                    });
+                    await Tags.create(tags);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolContact = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_lienhe.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const contact = new Contact({
+                        _id: data[i].lienhe_id,
+                        name: data[i].lienhe_name,
+                        address: data[i].lienhe_diachi,
+                        phone: data[i].lienhe_phone,
+                        email: data[i].lienhe_email,
+                        content: data[i].lienhe_noidung,
+                        date: Date(data[i].lienhe_date),
+                        type: data[i].lienhe_type,
+                    });
+                    await Contact.create(contact);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolRegisterFail = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_loi_dangky.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const registerFail = new RegisterFail({
+                        _id: data[i].id,
+                        phone: data[i].so_dthoai,
+                        email: data[i].email,
+                        emailHt: data[i].email_ht,
+                        name: data[i].ho_ten,
+                        mk: data[i].mat_khau,
+                        time: data[i].tgian_dky,
+                        err: data[i].loi_dky,
+                        type: data[i].type
+                    });
+                    await RegisterFail.create(registerFail);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolSearch = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_search.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const search = new Search({
+                        _id: data[i].id,
+                        keySearch: data[i].key_search,
+                        userId: data[i].user_id,
+                        createdAt: data[i].created_at,
+                        count: data[i].count_search,
+                        buySell: data[i].buy_sell
+                    });
+                    await Search.create(search);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolTblTags = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_tags.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const tblTags = new TblTags({
+                        _id: data[i].tag_id,
+                        keyword: data[i].tag_keyword,
+                        link: data[i].tag_link,
+                    });
+                    await TblTags.create(tblTags);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolPushNewsTime = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_thoigian_daytin.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const pushNewsTime = new PushNewsTime({
+                        _id: data[i].id,
+                        time: data[i].thoi_gian
+                    });
+                    await PushNewsTime.create(pushNewsTime);
                 }
                 page++;
             } else {
