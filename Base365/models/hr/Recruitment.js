@@ -27,7 +27,7 @@ const RecruitmentSchema = new Schema({
     // thời gian xoá
     deletedAt: {
         type: Date,
-        require: Date.now()
+        require: null
     },
     // đã xoá chưa
     isDelete: {

@@ -41,7 +41,7 @@ const JobDescriptionsSchema = new Schema({
     // thời gian tạo
     createdAt:{
         type:Date,
-        default:null
+        default: Date.now()
     },
     //thoi gian sua
     updatedAt:{
