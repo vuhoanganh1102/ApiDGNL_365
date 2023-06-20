@@ -25,6 +25,14 @@ const CommentSchema = mongoose.Schema({
         type:Number,
         require:true    
     },
+    sender_name:{
+        type:String,
+        default:null   
+    },
+    sender_avatar:{
+        type:String,
+        default:null   
+    },
 
     tag :{
         type:String,
@@ -66,5 +74,9 @@ const CommentSchema = mongoose.Schema({
         require:true,
         default:0   
     },  
+}, {
+    collection: 'RN365_Comments',
+    versionKey: false,
+    timestamp: true
 })
 module.exports = mongoose.model("RN365_Comments", CommentSchema);

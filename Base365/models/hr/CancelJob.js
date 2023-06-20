@@ -12,23 +12,23 @@ const CancelJob = new Schema({
     // ID ứng vien
     canId: { type: String, required: true },
     // kiểu
-    type: { type: String },
+    type: { type: Number , default: 0},
     // Xóa hay chưa
     isDelete: { type: Number, default: 0 },
     // xóa vào thời gian nào
-    deletedAt: { type: Date },
+    deletedAt: { type: Date , default: null},
     //    lương hưu
-    resiredSalary: { type: String  },
+    resiredSalary: { type: String, default: 0 },
     //     Luoơng
-    salary: { type: String },
+    salary: { type: String , default: 0},
     //  Note
-    note: { type: String, required: false },
+    note: { type: String, default: null },
     //     Trạng thái
     status: { type: Number},
     //
     isSwitch: { type: Number, default: 0 },
     // ngày tạo
-    createdAt: { type: Date, required: true }
+    createdAt: { type: Date, default: Date.now() }
 },  {
     collection: 'HR_CancelJobs',
     versionKey: false,

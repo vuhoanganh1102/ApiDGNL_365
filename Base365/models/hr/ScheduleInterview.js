@@ -30,12 +30,12 @@ const ScheduleInterviewSchema = new Schema({
     },
     // luong huu
     resiredSalary: {
-        type: Number,
+        type: String,
         default: 0
     },
     // luong co ban
     salary: {
-        type: Number,
+        type: String,
         default: 0
     },
     // thời gian phong van
@@ -44,7 +44,7 @@ const ScheduleInterviewSchema = new Schema({
         default: Date.now()
     },
     // noi dung 
-    contentsend: {
+    content: {
         type: String,
         default: null,
     },

@@ -37,6 +37,14 @@ var welfare = require('./routes/hr/welfareRoute');
 var organizationalStructure = require('./routes/hr/organizationalStructure');
 
 
+//---------HR------------------------
+var recruitment = require('./routes/hr/recruitmentRoute');
+var trainingRoute = require('./routes/hr/trainingRoute');
+var settingRoute = require('./routes/hr/settingRoute');
+
+//tim viec 
+//tim viec 
+
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');
@@ -196,6 +204,10 @@ app.use('/api/raonhanh/admin', adminRaonhanh365);
 app.use('/api/hr/administration', administrationRoute);
 app.use('/api/hr/welfare', welfare);
 app.use('/api/hr/organizationalStructure', organizationalStructure)
+//----------------------------------------------------route HR--------------------------------------------------------------------------------------------------
+app.use('/api/hr/recruitment', recruitment)
+app.use('/api/hr/training', trainingRoute);
+app.use('/api/hr/setting', settingRoute);
 
 
 
@@ -239,7 +251,7 @@ app.use("/api",Vanthu)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
-// 
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));

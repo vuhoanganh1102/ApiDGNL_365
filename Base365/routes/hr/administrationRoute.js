@@ -44,4 +44,21 @@ router.delete('/deleteEmployeePolicy',HR.HR_CheckTokenCompany,formData.parse(),a
 // Thêm mới chính sách
 router.post('/addEmpoyePolicySpecific',functions.checkToken,formData.parse(),administration.addEmpoyePolicySpecific)
 
+// Danh sách nhóm chính sách
+router.get('/listEmpoyePolicy',administration.listEmpoyePolicy)
+
+// chi tiết nhóm chính sách
+router.get('/getDetailPolicy',administration.getDetailPolicy)
+
+// danh sách quy định theo nhóm quy định
+router.get('/listEmployeePolicySpecific',administration.listEmployeePolicySpecific)
+
+
+// chi tiết chính sách
+router.get('/detailEmployeePolicySpecific',administration.detailEmployeePolicySpecific)
+
+// xoá nhóm chính sách
+router.delete('/deleteEmployeePolicySpecific',formData.parse(),administration.deleteEmployeePolicySpecific)
+
+
 module.exports = router;
