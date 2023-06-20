@@ -6,4 +6,7 @@ const CustomerDetailsRoutes = require('../../../controllers/crm/Customer/Custome
 //Api hiển thị chi tiết khách hàng
 router.post("/showCT",formData.parse(),CustomerDetailsRoutes.findOneCus)
 
+//Api sửa khách hàng
+router.post('/editCustomer',formData.parse(),CustomerDetailsRoutes.editCustomer);
+
 module.exports = router;

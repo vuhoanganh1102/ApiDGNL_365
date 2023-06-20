@@ -1,6 +1,8 @@
 const { checkPhoneNumber } = require("../functions");
 const sharp = require('sharp');
-
+const path = require('path');
+const { log } = require("console");
+const fs = require('fs');
 exports.getMaxIDCRM = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { cus_id: -1 } }).lean() || 0;
     return maxUser.cus_id;
@@ -35,39 +37,33 @@ exports.checkTimeCRM = async (time) => {
 
 
 
+
+
 exports.validateImage = async (logo) => {
+  
+  const fileExtension = path.extname(logo.name).toLowerCase();
+  const validExtensions = ['.jpeg', '.jpg', '.png', '.gif', '.bmp'];
 
-    // Đọc dữ liệu ảnh từ buffer hoặc đường dẫn file
-    const image = sharp(logo);
+  if (!validExtensions.includes(fileExtension)) {
+    return { isValid: false, message: 'Định dạng ảnh không hợp lệ. Chỉ hỗ trợ định dạng JPEG, JPG, PNG, GIF và BMP.' };
+  }
 
-    // Lấy thông tin về định dạng và kích thước ảnh
-    const { format, width, height } = await image.metadata();
+  // Thực hiện kiểm tra kích thước ảnh và các yêu cầu khác nếu cần
 
-    // Kiểm tra định dạng ảnh
-    if (format !== 'jpeg' && format !== 'png') {
-      return { isValid: false, message: 'Định dạng ảnh không hợp lệ. Chỉ hỗ trợ định dạng JPEG và PNG.' };
-    }
-
-    // Kiểm tra kích thước ảnh
-    if (width < 300 || height < 300) {
-      return { isValid: false, message: 'Kích thước ảnh quá nhỏ. Yêu cầu kích thước tối thiểu là 300x300 pixels.' };
-    }
-
-    return { isValid: true };
- 
+  return  true ;
 };
 
-
-exports.uploadFileCRM = (id, file) => {
-  let path = `../Storage/base365/CRM/Customer/${id}/`;
-  let filePath = `../Storage/base365/CRM/Customer/${id}/` + file.originalFilename;
+exports.uploadFileCRM = (cus_id,logo) => {
+  console.log(cus_id);
+  let path = `../Storage/base365/CRM/Customer/${cus_id}/`;
+  let filePath = `../Storage/base365/CRM/Customer/${cus_id}/` + logo.originalFilename;
 
   if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
       console.log("chua ton tai")
       fs.mkdirSync(path, { recursive: true });
   }
 
-  fs.readFile(file.path, (err, data) => {
+  fs.readFile(logo.path, (err, data) => {
       if (err) {
           console.log(err)
       }
@@ -81,23 +77,31 @@ exports.uploadFileCRM = (id, file) => {
   });
 }
 
+exports.success = async (res, messsage = "", data = []) => {
+  return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
+};
 
+exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
+  return model.findOneAndUpdate(condition, projection);
+};
 
-exports.validateCustomerInput = (customerData) => {
-    const { name, phone_number,address,email } = customerData;
-  
+exports.validateCustomerInput = (name, phone_number,address,email,type) => {
     if (!name) {
       throw { code: 400, message: 'Tên khách hàng là bắt buộc.' };
     }
-    else if(this.checkPhoneNumberCRM(phone_number)){
+    else if(!phone_number){
       throw { code : 400,message : 'số Điện thoại là bắt buộc phải nhập đủ'}
     }
-    else if(this.checkEmailCRM(email)) {
+    else if(!email) {
       throw { code : 400,message : 'email là bắt buộc phải nhập đủ'}
     }
     else if(!address) {
       throw {code : 4000 , message : "địa chỉ là bắt buộc"} 
     }
+    else if(!type) {
+      throw {code : 4000 , message : "type không được bỏ trống"} 
+    }
+    return true;
   };
   
 

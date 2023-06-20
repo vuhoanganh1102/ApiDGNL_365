@@ -7,5 +7,7 @@ const CustomerRoutes = require('../../../controllers/crm/Customer/Customer');
 router.post('/showAll',formData.parse(),)
 
 //Api thêm mới khách hàng
-router.post('/addCustomer', formData.parse(),CustomerRoutes.addCustomerKH);
+router.post('/addCustomer',formData.parse(),CustomerRoutes.addCustomer);
+
+
 module.exports = router;
