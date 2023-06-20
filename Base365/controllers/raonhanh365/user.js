@@ -1,9 +1,9 @@
 const functions = require('../../services/functions');
 const Category = require('../../models/Raonhanh365/Category');
-const New = require('../../models/Raonhanh365/UserOnSite/New');
+const New = require('../../models/Raonhanh365/New');
 const CategoryRaoNhanh365 = require('../../models/Raonhanh365/Category');
 const User = require('../../models/Users');
-const LoveNews = require('../../models/Raonhanh365/UserOnSite/LoveNews');
+const LoveNews = require('../../models/Raonhanh365/LoveNews');
 const Order = require('../../models/Raonhanh365/Order');
 const Bidding = require('../../models/Raonhanh365/Bidding');
 const md5 = require('md5');
@@ -79,39 +79,27 @@ exports.changePassword = async (req, res, next) => {
 exports.updateInfoUserRaoNhanh = async (req, res, next) => {
     try {
         let _id = req.user.data._id;
-        let { userName } = req.body;
-        let email = req.body.email || null;
-        let address = req.body.address || null;
-        let File = req.files || null;
-        let avatarUser = null;
-        let updatedAt = new Date();
-        if (email) {
-            if (await functions.checkEmail(email) === false) {
-                return functions.setError(res, 'invalid email', 400)
-            } else {
-                let check_email = await User.findById(_id);
-                if (check_email.email !== email) {
-                    let check_email_lan2 = await User.find({ email });
-                    if (check_email_lan2.length !== 0) {
-                        return functions.setError(res, "email is exits", 400)
-                    }
+
+        let { userName, email, address } = req.body;
+        let updatedAt = new Date(Date.now());
+
+        if ((await functions.checkEmail(email)) === false) {
+            return functions.setError(res, "invalid email");
+        } else {
+            let check_email = await User.findById(_id);
+            if (check_email.email !== email) {
+                let check_email_lan2 = await User.find({ email });
+                if (check_email_lan2.length !== 0) {
+                    return functions.setError(res, "email is exits");
                 }
             }
         }
-        if (File.avatarUser) {
-            let upload = raoNhanh.uploadFileRaoNhanh('avt_dangtin', _id, File.avatarUser, ['.jpeg', '.jpg', '.png']);
-            if (!upload) {
-                return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
-            }
-            avatarUser = functions.createLinkFileRaonhanh('avt_dangtin', _id, File.avatarUser.name)
-            await User.findByIdAndUpdate(_id, { email, address, userName, avatarUser, updatedAt });
-        }
         await User.findByIdAndUpdate(_id, { email, address, userName, updatedAt });
-        return functions.success(res, 'update data user success')
+        return functions.success(res, "update data user success");
     } catch (error) {
-        return functions.setError(res, error)
+        return functions.setError(res, error);
     }
-}
+};
 
 // thông báo kết quả đấu thầu
 exports.announceResult = async (req, res, next) => {
@@ -247,19 +235,17 @@ exports.createVerifyPayment = async(req, res, next) => {
 // tổng quan thông tin tài khoản cá nhân
 exports.profileInformation = async (req,res,next) => {
     try{
-        let userID = {}
-        userID._id = req.user.data._id;
+        let userID = req.user.data._id;
         let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1}
         let dataUser = {}
-        let userInFor = await functions.pageFind(User, userID,null,null,null, fields)
-        let numberOfNew = await New.find({userID: userID._id}).count();
-        let numberOfNewSold = await New.find({userID: userID._id, sold: 1}).count();
-        let likeNew = await LoveNews.find({userID: userID._id}).count()
-        dataUser.InforUser = userInFor[0];
+        let userInFor = await User.findOne({_id: userID}, fields)
+        let numberOfNew = await New.find({userID: userID}).count();
+        let numberOfNewSold = await New.find({userID: userID, sold: 1}).count();
+        let likeNew = await LoveNews.find({userID: userID}).count()
+        dataUser.InforUser = userInFor;
         dataUser.numberOfNew = numberOfNew
         dataUser.numberOfNewSold = numberOfNewSold
         dataUser.likeCount = likeNew
-        console.log(likeNew)
 
         return functions.success(res, 'get Data User Success', dataUser);
     } catch(err){
@@ -269,3 +255,34 @@ exports.profileInformation = async (req,res,next) => {
 }
 
 
+// api đổi avatar
+exports.updateAvatar = async (req, res, next) => {
+    try {
+        let _id = req.user.data._id;
+
+        let File = req.files || null;
+        let avatarUser = null;
+        if (File) {
+            let upload = raoNhanh.uploadFileRaoNhanh(
+                "img_user",
+                _id,
+                File.avatarUser,
+                [".jpeg", ".jpg", ".png"]
+            );
+            if (!upload) {
+                return functions.setError(res, "Định dạng ảnh không hợp lệ");
+            }
+            avatarUser = functions.createLinkFileRaonhanh(
+                "img_user",
+                _id,
+                File.avatarUser.name
+            );
+            await User.findByIdAndUpdate(_id, {
+                avatarUser
+            });
+        }
+        return functions.success(res, "update data user success");
+    } catch (error) {
+        return functions.setError(res, error);
+    }
+};

@@ -16,11 +16,41 @@ const CartSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    type: {
+        //phan loai
+        type: String,
+        default: null
+    },
 
     quantity: {
         //số lượng gio hang
         type: Number,
         default: 0,
+    },
+    unit: {
+        //don gia
+        type: Number,
+        default: 0
+    },
+    tick: {
+        //don gia
+        type: Number,
+        default: 0
+    },
+    total: {
+        //don gia
+        type: Number,
+        default: 0
+    },
+    date: {
+        //don gia
+        type: Date,
+        default: Date.now()
+    },
+    status: {
+        //don gia
+        type: Number,
+        default: 0
     },
 
 }, {
