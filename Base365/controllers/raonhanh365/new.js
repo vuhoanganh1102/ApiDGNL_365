@@ -20,8 +20,8 @@ exports.postNewMain = async (req, res, next) => {
         let listImg = [];
         let nameVideo = "";
         let request = req.body,
-            userID = request.user_id,k
-            cateID = request.cate_id,
+            userID = request.user_id, k
+        cateID = request.cate_id,
             title = request.title,
             money = request.money,
             until = request.until,
@@ -676,12 +676,15 @@ exports.getNew = async (req, res, next) => {
             userID: 1,
             img: 1,
             updateTime: 1,
-            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1 },
+            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
             district: 1,
             ward: 1,
             city: 1,
             address: 1,
-            islove: 1
+            islove: 1,
+            until: 1,
+            endvalue: 1,
+            type: 1
         };
         let data = await New.aggregate([
             {
@@ -696,7 +699,7 @@ exports.getNew = async (req, res, next) => {
                 $match: { buySell: 2, sold: 0, active: 1 },
             },
             {
-                $sort: { pinHome: -1, createTime: -1 },
+                $sort: { pinHome: -1, createTime: -1, order: -1 },
             },
             {
                 $project: searchItem,
@@ -1037,7 +1040,7 @@ exports.createBuyNew = async (req, res) => {
     try {
         // lấy id user từ req
         let userID = req.user.data.idRaoNhanh365;
-        let type   = req.user.data.type;
+        let type = req.user.data.type;
 
         // khởi tạo các biến có thể có
         let tenderFile = null;
@@ -1070,7 +1073,7 @@ exports.createBuyNew = async (req, res) => {
             timeNotiBiddingEnd,
             instructionContent,
             bidFee,
-            endvalue,money,
+            endvalue, money,
             until,
             until_bidding,
             phone,
@@ -1277,7 +1280,7 @@ exports.createBuyNew = async (req, res) => {
                 apartmentNumber,
                 description,
                 timeEndReceivebidding,
-                status,money,
+                status, money,
                 timeNotiBiddingStart,
                 timeNotiBiddingEnd,
                 instructionContent,
@@ -1287,7 +1290,7 @@ exports.createBuyNew = async (req, res) => {
                 email,
                 until,
                 until_bidding,
-                type,active
+                type, active
             });
             await postNew.save();
             // await New.deleteMany({userID:5})
@@ -1356,7 +1359,7 @@ exports.updateBuyNew = async (req, res, next) => {
 
         // kiểm tra các điều kiện bắt buộc
         if (
-           
+
             title &&
             name &&
             city && money &&
@@ -1375,7 +1378,7 @@ exports.updateBuyNew = async (req, res, next) => {
             email &&
             until &&
             until_bidding
-            && timeSell 
+            && timeSell
         ) {
             // tạolink title từ title người dùng nhập
             let linkTitle = raoNhanh.createLinkTilte(title);
@@ -1609,6 +1612,7 @@ exports.getDetailNew = async (req, res, next) => {
         let buysell = null;
         let searchitem = null;
         let tintuongtu = [];
+        let ListComment = [];
         if ((await functions.checkNumber(id_new)) === false) {
             return functions.setError(res, "invalid number", 404);
         }
@@ -1714,6 +1718,16 @@ exports.getDetailNew = async (req, res, next) => {
         ]);
         data.push({ danhmuc: { danh_muc1, danh_muc2, danh_muc3 } });
         tintuongtu = await New.find({ cateID: check.cateID }, searchitem).limit(6);
+        
+
+
+
+
+
+
+
+
+
         await New.findByIdAndUpdate(id_new, { $inc: { viewCount: +1 } });
         if (tintuongtu) {
             data.push({ tintuongtu: tintuongtu });
@@ -1764,56 +1778,6 @@ exports.loveNew = async (req, res, next) => {
     }
 };
 
-// chỉnh sửa thông tin tài khoản
-exports.updateInfoUserRaoNhanh = async (req, res, next) => {
-    try {
-        let _id = req.user.data._id;
-
-        let { userName, email, address } = req.body;
-        let File = req.files || null;
-        let avatarUser = null;
-        let updatedAt = new Date(Date.now());
-
-        if ((await functions.checkEmail(email)) === false) {
-            return functions.setError(res, "invalid email");
-        } else {
-            let check_email = await User.findById(_id);
-            if (check_email.email !== email) {
-                let check_email_lan2 = await User.find({ email });
-                if (check_email_lan2.length !== 0) {
-                    return functions.setError(res, "email is exits");
-                }
-            }
-        }
-        if (File) {
-            let upload = raoNhanh.uploadFileRaoNhanh(
-                "avt_dangtin",
-                _id,
-                File.avatarUser,
-                [".jpeg", ".jpg", ".png"]
-            );
-            if (!upload) {
-                return functions.setError(res, "Định dạng ảnh không hợp lệ");
-            }
-            avatarUser = functions.createLinkFileRaonhanh(
-                "avt_dangtin",
-                _id,
-                File.avatarUser.name
-            );
-            await User.findByIdAndUpdate(_id, {
-                email,
-                address,
-                userName,
-                avatarUser,
-                updatedAt,
-            });
-        }
-        await User.findByIdAndUpdate(_id, { email, address, userName, updatedAt });
-        return functions.success(res, "update data user success");
-    } catch (error) {
-        return functions.setError(res, error);
-    }
-};
 // tao token
 exports.createToken = async (req, res, next) => {
     try {
@@ -2638,12 +2602,12 @@ exports.updateComment = async (req, res, next) => {
                     }/${new Date().getDate()}`,
                     File.Image.name
                 );
-                await Comments.find(
+                await Comments.findOneAndUpdate(
                     { id_comment, sender_idchat: userID },
                     { content, img, tag }
                 );
             } else {
-                await Comments.find(
+                await Comments.findOneAndUpdate(
                     { id_comment, sender_idchat: userID },
                     { content, tag }
                 );

@@ -13,6 +13,7 @@ const Comments = require('../../models/Raonhanh365/Comments');
 const OrderRN = require('../../models/Raonhanh365/Order');
 const TagsIndex = require('../../models/Raonhanh365/RN365_TagIndex');
 const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
+const Bidding = require('../../models/Raonhanh365/Bidding')
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -183,6 +184,7 @@ exports.toolNewRN = async (req, res, next) => {
                             timePromotionStart: timePromotionStart,
                             timePromotionEnd: timePromotionEnd,
                             img: images,
+                            order:data[i].new_order,
                             video: data[i].new_video,
                         });
                         await newRN.save();
@@ -333,7 +335,7 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'districtProcedure': data[i].com_district,
                                 'wardProcedure': data[i].com_ward,
                                 'addressProcedure': data[i].com_address_num,
-                                'timeSell':data[i].tgian_bd,
+                                'timeSell': data[i].tgian_bd,
                             }
                         });
                     }
@@ -350,7 +352,6 @@ exports.updateNewDescription = async (req, res, next) => {
         return fnc.setError(res, err)
     }
 }
-
 
 
 exports.toolCateDetail = async (req, res, next) => {
@@ -1222,4 +1223,109 @@ exports.toolAdminUserRight = async (req, res, next) => {
     } catch (error) {
         return fnc.setError(res, error.message);
     }
+};
+
+
+exports.toolBidding = async (req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_ds_dau_thau.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let _id   = data[i].id;               
+                    let newId = data[i].new_id;
+                    let userID = data[i].user_id;
+                    let userName = data[i].user_name;
+                    let userIntro = data[i].user_intro;
+                    let userFile = data[i].user_file;
+                    let userProfile = data[i].user_profile;
+                    let userProfileFile = data[i].user_profile_file;
+                    let productName = data[i].product_name;
+                    let productDesc = data[i].product_desc;
+                    let productLink = data[i].product_link;
+                    let price = data[i].price;
+                    let priceUnit = data[i].price_unit;
+                    let promotion = data[i].promotion;
+                    let promotionFile = data[i].romotion_file;
+                    let status = data[i].status;
+                    let createTime = data[i].create_time;
+                    let note = data[i].note;
+              
+                await Bidding.create({_id,newId,userID,userName,userIntro,userFile,userProfile,userProfileFile,productName,productDesc,productLink,price,priceUnit,promotion,promotionFile,status,createTime,note});
+            }
+            page++;
+        } else {
+            result = false;
+        }
+        console.log(page);
+    } while (result);
+
+    return fnc.success(res, "Thành công");
+} catch (error) {
+    return fnc.setError(res, error.message);
+}
+};
+
+exports.order = async (req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_ds_dau_thau.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let _id   = data[i].id;               
+                    let newId = data[i].new_id;
+                    let userID = data[i].user_id;
+                    let userName = data[i].user_name;
+                    let userIntro = data[i].user_intro;
+                    let userFile = data[i].user_file;
+                    let userProfile = data[i].user_profile;
+                    let userProfileFile = data[i].user_profile_file;
+                    let productName = data[i].product_name;
+                    let productDesc = data[i].product_desc;
+                    let productLink = data[i].product_link;
+                    let price = data[i].price;
+                    let priceUnit = data[i].price_unit;
+                    let promotion = data[i].promotion;
+                    let promotionFile = data[i].romotion_file;
+                    let status = data[i].status;
+                    let createTime = data[i].create_time;
+                    let note = data[i].note;
+              
+                await Bidding.create({_id,newId,userID,userName,userIntro,userFile,userProfile,userProfileFile,productName,productDesc,productLink,price,priceUnit,promotion,promotionFile,status,createTime,note});
+            }
+            page++;
+        } else {
+            result = false;
+        }
+        console.log(page);
+    } while (result);
+
+    return fnc.success(res, "Thành công");
+} catch (error) {
+    return fnc.setError(res, error.message);
+}
 };

@@ -366,10 +366,10 @@ exports.EmployeePolicys = async (req, res, next) => {
             let id = Number(data[i].id);
             let name = data[i].name;
             let timeStart = data[i].time_start;
-            let supervisorName = data[i].supervisorName;
+            let supervisorName = data[i].supervisor_name;
             let description = Buffer.from(data[i].description, 'base64');
             let isDelete = data[i].is_delete;
-            let comId = data[i].comId;
+            let comId = data[i].com_id;
             let file = data[i].file;
             if (await functions.checkDate(timeStart)  === false) continue
             let createdAt = data[i].created_at;
@@ -391,7 +391,7 @@ exports.EmployeePolicySpecifics = async (req, res, next) => {
             let id = Number(data[i].id);
             let name = data[i].name;
             let timeStart = data[i].time_start;
-            let employePolicyId = data[i].employe_policy_id;
+            let employeePolicyId = data[i].employe_policy_id;
             let supervisorName = data[i].supervisor_name;
             let description = data[i].description;
             let content = data[i].content;
@@ -403,10 +403,7 @@ exports.EmployeePolicySpecifics = async (req, res, next) => {
             let updated_at = data[i].updated_at;  
             let deletedAt = data[i].deleted_at; 
             if (await functions.checkDate(timeStart)  === false) continue
-
-
-
-            let EmployeePolicySpecifics = new HR_EmployeePolicySpecifics({ id,name,timeStart,employePolicyId,supervisorName,description,content,applyFor,isDelete,createdBy,file,createdAt,updated_at,deletedAt });
+            let EmployeePolicySpecifics = new HR_EmployeePolicySpecifics({ id,name,applyFor,timeStart,employeePolicyId,supervisorName,description,content,applyFor,isDelete,createdBy,file,createdAt,updated_at,deletedAt });
             await EmployeePolicySpecifics.save();
         }
         return functions.success(res, 'pull data success');

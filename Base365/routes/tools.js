@@ -127,7 +127,7 @@ router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory)
 router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew)
 router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
 router.post('/updateNewDescription',toolRaoNhanh.updateNewDescription)
-
+router.post('/toolBidding',toolRaoNhanh.toolBidding)
 
 
 
