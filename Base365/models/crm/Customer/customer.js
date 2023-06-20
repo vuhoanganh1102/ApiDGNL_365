@@ -35,7 +35,7 @@ const crm_customer = new Schema({
         type : Number,
         default : null
     },
-    district_id : { // ?
+    district_id : { // id quận huyện
         type : Number,
         default : null
     },
@@ -67,7 +67,7 @@ const crm_customer = new Schema({
         type : Date,
         default : "0"
     },
-    resoure : {
+    resoure : {//
         type : Number
     },
     description : {// mô tả khách hàng
@@ -100,10 +100,10 @@ const crm_customer = new Schema({
     emp_id : { // id nhân viên
         type : Number
     },
-    user_handing_over_work :{
+    user_handing_over_work :{// id người được bàn giao
         type : Number
     },
-    user_create_type : {// id người tạo
+    user_create_type : {//?
         type : String,
         default : null
     },
@@ -127,7 +127,7 @@ const crm_customer = new Schema({
         type : Number,
         default :0
     },
-    category : {// loại khách hàng
+    category : {// ? của cái gì ?
         type : Number,
         default : null
     },
@@ -211,7 +211,7 @@ const crm_customer = new Schema({
         type : Number,
         default :0
     },
-    type : {// loại ? 1 kh 
+    type : {// loại ? 1 công ty 2 khách hàng
         type : Number,
     },
     is_input : {
