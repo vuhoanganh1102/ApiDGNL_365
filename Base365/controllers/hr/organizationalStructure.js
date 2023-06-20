@@ -3,34 +3,68 @@ const hrFunctions = require('../../services/hr/hrService');
 const HR_DepartmentDetails = require('../../models/hr/DepartmentDetails');
 const axios = require('axios');
 const https = require('https');
+const Users = require('../../models/Users');
+const Deparment = require("../../models/qlc/Deparment")
 
-//cơ cấu tổ chức công ty và phòng ban
+//cơ cấu tổ chức công ty, công ty con và phòng ban
 exports.detailInfoCompany = async(req, res, next) => {
     try {
         let token = req.body.token
             // let com_id = req.user.data.idQLC
         let com_id = req.body.com_id
+        let shiftID = req.body.shiftID
+        let CreateAt = req.body.CreateAt || true
+        let inputNew = req.body.inputNew
+        let inputOld = req.body.inputOld
         let result = {}
             //thông tin công ty cha
 
-        let infoCompany = await hrFunctions.detailInfoCompany(com_id, token)
-        if (infoCompany.result == true) {
-            result.infoCompany = infoCompany
+        if ((com_id && shiftID) == undefined) {
+            functions.setError(res, "lack of input")
+        } else if (isNaN(com_id && shiftID)) {
+            functions.setError(res, "id must be a Number")
         }
+
+        let infoCompany = await Users.findOne({ idQLC: com_id, type: 1 }, { userName: 1 })
+        let infoGiamDoc = await Users.findOne({ type: 2, "inForPerson.employee.com_id": com_id, "inForPerson.employee.position_id": 8 }, { userName: 1 })
+        let infoPhoGiamDoc = await Users.findOne({ type: 2, "inForPerson.employee.com_id": com_id, "inForPerson.employee.position_id": 7 }, { userName: 1 })
+        let countEmp = await Users.countDocuments({ type: 2, "inForPerson.employee.com_id": com_id })
+
+        if (infoCompany) {
+            result.infoCompany.companyName = infoCompany.userName
+        } else return functions.setError(res, "không tìm thấy công ty này", 400);
+        if (infoGiamDoc) {
+            result.infoCompany.giamDoc = infoGiamDoc.userName
+        } else result.infoCompany.giamDoc = "Chưa cập nhật"
+        if (infoPhoGiamDoc) {
+            result.infoCompany.phoGiamDoc = infoPhoGiamDoc.userName
+        } else result.infoCompany.phoGiamDoc = "Chưa cập nhật"
+        result.infoCompany.soNhanVien = countEmp
+
+
         //thông tin phòng ban cha
-        let infoDepParent = await HR_DepartmentDetails.find({ comId: com_id, type: 1 })
+        let infoDepParent = await Deparment.find({ companyId: com_id })
         if (infoDepParent) {
             result.infoDep = []
             for (let i = 0; i < infoDepParent.length; i++) {
-                let depInfo = await hrFunctions.detailInfoDepartment(com_id, infoDepParent[i].depId, token)
-                depInfo.depId = infoDepParent[i].depId
+                let infoTruongphong = await Users.findOne({ type: 2, "inForPerson.employee.com_id": com_id, "inForPerson.employee.dep_id": infoDepParent[i]._id, "inForPerson.employee.position_id": 6 }, { userName: 1 })
+
+                if (infoTruongphong) {
+                    result.infoDep[i].TruongPhong = infoTruongphong.userName
+                } else result.infoDep[i].TruongPhong = "chưa cập nhât"
+
+                let infoPhophong = await Users.findOne({ type: 2, "inForPerson.employee.com_id": com_id, "inForPerson.employee.dep_id": infoDepParent[i]._id, "inForPerson.employee.position_id": 5 }, { userName: 1 })
+
+                if (infoPhophong) {
+                    result.infoDep[i].PhoPhong = infoPhophong.userName
+                } else result.infoDep[i].PhoPhong = "chưa cập nhât"
+
+                let depInfo = await HR_DepartmentDetails.findOne({ comId: com_id, depId: infoDepParent[i]._id })
                 if (infoDepParent[i].description == null) {
-                    depInfo.description = "chưa cập nhật"
-                } else depInfo.description = infoDepParent[i].description
-                result.infoDep.push(depInfo)
+                    result.infoDep[i].description = "chưa cập nhật"
+                } else result.infoDep[i].description = infoDepParent[i].description
             }
         }
-
         //thông tin công ty con
         let infoChildCompany = await hrFunctions.detailInfoChildCompany(com_id, token)
         if (infoChildCompany.result == true) {
