@@ -26,7 +26,10 @@ var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
 
-// Hr
+//---------HR------------------------
+var recruitment = require('./routes/hr/recruitmentRoute');
+var trainingRoute = require('./routes/hr/trainingRoute');
+var settingRoute = require('./routes/hr/settingRoute');
 var administrationRoute = require('./routes/hr/administrationRoute');
 var welfare = require('./routes/hr/welfareRoute');
 var organizationalStructure = require('./routes/hr/organizationalStructure');
@@ -38,6 +41,8 @@ var trainingRoute = require('./routes/hr/trainingRoute');
 var settingRoute = require('./routes/hr/settingRoute');
 
 //tim viec 
+//tim viec 
+
 var priceListRouter = require('./routes/timviec/priceList');
 var trangVangRouter = require('./routes/timviec/trangVang');
 var soSanhLuongRouter = require('./routes/timviec/ssl');

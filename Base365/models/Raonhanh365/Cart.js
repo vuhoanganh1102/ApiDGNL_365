@@ -18,8 +18,8 @@ const CartSchema = new mongoose.Schema({
     },
     type: {
         //phan loai
-        type: Number,
-        default: 0
+        type: String,
+        default: null
     },
 
     quantity: {
