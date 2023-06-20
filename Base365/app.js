@@ -34,6 +34,13 @@ var administrationRoute = require('./routes/hr/administrationRoute');
 var welfare = require('./routes/hr/welfareRoute');
 var organizationalStructure = require('./routes/hr/organizationalStructure');
 
+
+//---------HR------------------------
+var recruitment = require('./routes/hr/recruitmentRoute');
+var trainingRoute = require('./routes/hr/trainingRoute');
+var settingRoute = require('./routes/hr/settingRoute');
+
+//tim viec 
 //tim viec 
 
 var priceListRouter = require('./routes/timviec/priceList');
@@ -116,13 +123,14 @@ app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
 app.use('/api/raonhanh/admin', adminRaonhanh365);
 
 
+// api hr
+app.use('/api/hr/administration', administrationRoute);
+app.use('/api/hr/welfare', welfare);
+app.use('/api/hr/organizationalStructure', organizationalStructure)
 //----------------------------------------------------route HR--------------------------------------------------------------------------------------------------
 app.use('/api/hr/recruitment', recruitment)
 app.use('/api/hr/training', trainingRoute);
 app.use('/api/hr/setting', settingRoute);
-app.use('/api/hr/administration', administrationRoute);
-app.use('/api/hr/welfare', welfare);
-app.use('/api/hr/organizationalStructure', organizationalStructure);
 
 
 

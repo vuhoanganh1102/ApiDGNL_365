@@ -13,6 +13,9 @@ const Comments = require('../../models/Raonhanh365/Comments');
 const OrderRN = require('../../models/Raonhanh365/Order');
 const TagsIndex = require('../../models/Raonhanh365/RN365_TagIndex');
 const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
+const Bidding = require('../../models/Raonhanh365/Bidding')
+const dotenv = require("dotenv");
+dotenv.config();
 const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser');
 const AdminTranslate = require('../../models/Raonhanh365/Admin/AdminTranslate');
 const AdminMenuOrder = require('../../models/Raonhanh365/Admin/AdminMenuOrder');
@@ -192,6 +195,7 @@ exports.toolNewRN = async(req, res, next) => {
                             timePromotionStart: timePromotionStart,
                             timePromotionEnd: timePromotionEnd,
                             img: images,
+                            order:data[i].new_order,
                             video: data[i].new_video,
                         });
                         await newRN.save();
@@ -217,122 +221,135 @@ exports.updateNewDescription = async() => {
             let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 1 })
             let data = listItems.data.items;
             if (data.length > 0) {
-                let post = await fnc.getDatafindOne(New, { _id: data[i].new_id });
-                if (post != null) {
-                    await New.updateOne({ _id: data[i].new_id }, {
-                        $set: {
-                            'poster': data[i].canhan_moigioi,
-                            'description': data[i].new_description,
-                            'producType': data[i].new_description,
-                            'hashtag': data[i].new_hsashtag,
-                            'electroniceDevice.microprocessor': data[i].bovi_xuly,
-                            'electroniceDevice.ram': data[i].ram,
-                            'electroniceDevice.hardDrive': data[i].o_cung,
-                            'electroniceDevice.typeHarđrive': data[i].loai_o_cung,
-                            'electroniceDevice.screen': data[i].man_hinh,
-                            'electroniceDevice.size': data[i].kich_co,
-                            'electroniceDevice.brand': data[i].hang,
-                            'electroniceDevice.machineSeries': data[i].hang_vattu,
-                            'vehicle.brandMaterials': data[i].dong_may,
-                            'vehicle.vehicles': data[i].dong_xe,
-                            'vehicle.spareParts': data[i].loai_phu_tung,
-                            'vehicle.interior': data[i].loai_noithat,
-                            'vehicle.device': data[i].thiet_bi,
-                            'vehicle.color': data[i].mau_sac,
-                            'vehicle.capacity': data[i].dung_luong,
-                            'vehicle.connectInternet': data[i].knoi_internet,
-                            'vehicle.generalType': data[i].loai_chung,
-                            'vehicle.resolution': data[i].do_phan_giai,
-                            'vehicle.wattage': data[i].cong_suat,
-                            'vehicle.engine': data[i].dong_co,
-                            'vehicle.frameMaterial': data[i].chat_lieu_khung,
-                            'vehicle.accessary': data[i].link_kien_phu_kien,
-                            'vehicle.volume': data[i].dung_tich,
-                            'vehicle.manufacturingYear': data[i].nam_san_xuat,
-                            'vehicle.fuel': data[i].nhien_lieu,
-                            'vehicle.numberOfSeats': data[i].so_cho,
-                            'vehicle.gearBox': data[i].hop_so,
-                            'vehicle.style': data[i].kieu_dang,
-                            'vehicle.payload': data[i].trong_tai,
-                            'vehicle.carNumber': data[i].td_bien_soxe,
-                            'vehicle.version': data[i].phien_ban,
-                            'vehicle.km': data[i].so_km_da_di,
-                            'vehicle.origin': data[i].xuat_xu,
-                            'realEstate.statusSell': data[i].can_ban_mua,
-                            'realEstate.nameApartment': data[i].ten_toa_nha,
-                            'realEstate.numberOfStoreys': data[i].tong_so_tang,
-                            'realEstate.storey': data[i].tang_so,
-                            'realEstate.mainDirection': data[i].huong_chinh,
-                            'realEstate.balconyDirection': data[i].huong_ban_cong,
-                            'realEstate.legalDocuments': data[i].giay_to_phap_ly,
-                            'realEstate.statusInterior': data[i].tinh_trang_noi_that,
-                            'realEstate.acreage': data[i].dien_tich,
-                            'realEstate.length': data[i].chieu_dai,
-                            'realEstate.width': data[i].chieu_rong,
-                            'realEstate.kvCity': data[i].kv_thanhpho,
-                            'realEstate.kvDistrict': data[i].kv_quanhuyen,
-                            'realEstate.kvWard': data[i].kv_phuongxa,
-                            'realEstate.numberToletRoom': data[i].so_pve_sinh,
-                            'realEstate.numberBedRoom': data[i].so_pngu,
-                            'realEstate.typeOfApartment': data[i].loai_hinh_canho,
-                            'realEstate.landType': data[i].loai_hinh_dat,
-                            'realEstate.special': data[i].dac_diem,
-                            'realEstate.statusBDS': data[i].tinh_trang_bds,
-                            'realEstate.codeApartment': data[i].td_macanho,
-                            'realEstate.cornerUnit': data[i].cangoc,
-                            'realEstate.nameArea': data[i].ten_phan_khu,
-                            'realEstate.useArea': data[i].dientichsd,
-                            'realEstate.block': data[i].td_block_thap,
-                            'realEstate.officeType': data[i].loaihinh_vp,
-                            'realEstate.htmchrt': data[i].td_htmch_rt,
-                            'ship.product': data[i].loai_hinh_sp,
-                            'ship.timeStart': data[i].tgian_bd,
-                            'ship.timeEnd': data[i].tgian_kt,
-                            'ship.allDay': data[i].ca_ngay,
-                            'ship.vehicloType': data[i].loai_xe,
-                            'entertainmentService.brand': data[i],
-                            'sports.sport': data[i].mon_the_thao,
-                            'sports.typeSport': data[i],
-                            'material': data[i],
-                            'pet.kindOfPet': data[i].giong_thu_cung,
-                            'pet.age': data[i].do_tuoi,
-                            'pet.gender': data[i].gioi_tinh,
-                            'pet.weigth': data[i].khoiluong,
-                            'houseWare.typeDevice': data[i],
-                            'houseWare.typeProduct': data[i].loai_linhphu_kien,
-                            'houseWare.guarantee': data[i],
-                            'health.typeProduct': data[i],
-                            'health.kindCosmetics': data[i],
-                            'health.expiry': data[i].han_su_dung,
-                            'health.brand': data[i],
-                            'Job.jobType': data[i].new_job_type,
-                            'Job.jobKind': data[i].new_job_kind,
-                            'Job.maxAge': data[i].new_min_age,
-                            'Job.minAge': data[i].new_max_age,
-                            'Job.exp': data[i].new_exp,
-                            'Job.level': data[i].new_level,
-                            'Job.skill': data[i].new_skill,
-                            'Job.quantity': data[i].new_quantity,
-                            'Job.city': data[i].com_city,
-                            'Job.district': data[i].com_district,
-                            'Job.ward': data[i].com_ward,
-                            'Job.addressNumber': data[i].com_address_num,
-                            'Job.payBy': data[i].new_pay_by,
-                            'Job.benefit': data[i].quyen_loi,
-                            'food.typeFood': data[i].nhom_sanpham,
-                            'food.expiry': data[i].han_su_dung,
-                            'newBuy.tenderFile': data[i].new_file_dthau,
-                            'newBuy.fileContenApply': data[i].new_file_nophs,
-                            'newBuy.fileContent': data[i].new_file_nophs,
-                            'newBuy.instructionContent': data[i].noidung_chidan,
-                            'newBuy.instructionFile': data[i].new_file_chidan,
-                            'newBuy.until': data[i].donvi_thau,
-                            'newBuy.bidFee': data[i].phi_duthau,
-                            'newBuy.desFile': data[i].file_mota,
-                            'newBuy.procedureFile': data[i].file_thutuc,
-                            'newBuy.file': data[i].file_hoso,
-                        }
-                    });
+                for (let i = 0; i < data.length; i++) {
+                    let post = await fnc.getDatafindOne(New, { _id: data[i].new_id });
+                    if (await fnc.checkNumber(data[i].hang_vattu) === false) {
+                        continue
+                    }
+                    if (await fnc.checkNumber(data[i].bidFee) === false) {
+                        continue
+                    }
+                    if (post != null) {
+                        await New.updateOne({ _id: data[i].new_id }, {
+                            $set: {
+                                'poster': data[i].canhan_moigioi,
+                                'description': data[i].new_description,
+                                'producType': data[i].new_description,
+                                'hashtag': data[i].new_hsashtag,
+                                'electroniceDevice.microprocessor': data[i].bovi_xuly,
+                                'electroniceDevice.ram': data[i].ram,
+                                'electroniceDevice.hardDrive': data[i].o_cung,
+                                'electroniceDevice.typeHarđrive': data[i].loai_o_cung,
+                                'electroniceDevice.screen': data[i].man_hinh,
+                                'electroniceDevice.size': data[i].kich_co,
+                                'electroniceDevice.brand': data[i].hang,
+                                'electroniceDevice.machineSeries': data[i].hang_vattu,
+                                'vehicle.brandMaterials': data[i].dong_may,
+                                'vehicle.vehicles': data[i].dong_xe,
+                                'vehicle.spareParts': data[i].loai_phu_tung,
+                                'vehicle.interior': data[i].loai_noithat,
+                                'vehicle.device': data[i].thiet_bi,
+                                'vehicle.color': data[i].mau_sac,
+                                'vehicle.capacity': data[i].dung_luong,
+                                'vehicle.connectInternet': data[i].knoi_internet,
+                                'vehicle.generalType': data[i].loai_chung,
+                                'vehicle.resolution': data[i].do_phan_giai,
+                                'vehicle.wattage': data[i].cong_suat,
+                                'vehicle.engine': data[i].dong_co,
+                                'vehicle.frameMaterial': data[i].chat_lieu_khung,
+                                'vehicle.accessary': data[i].link_kien_phu_kien,
+                                'vehicle.volume': data[i].dung_tich,
+                                'vehicle.manufacturingYear': data[i].nam_san_xuat,
+                                'vehicle.fuel': data[i].nhien_lieu,
+                                'vehicle.numberOfSeats': data[i].so_cho,
+                                'vehicle.gearBox': data[i].hop_so,
+                                'vehicle.style': data[i].kieu_dang,
+                                'vehicle.payload': data[i].trong_tai,
+                                'vehicle.carNumber': data[i].td_bien_soxe,
+                                'vehicle.version': data[i].phien_ban,
+                                'vehicle.km': data[i].so_km_da_di,
+                                'vehicle.origin': data[i].xuat_xu,
+                                'realEstate.statusSell': data[i].can_ban_mua,
+                                'realEstate.nameApartment': data[i].ten_toa_nha,
+                                'realEstate.numberOfStoreys': data[i].tong_so_tang,
+                                'realEstate.storey': data[i].tang_so,
+                                'realEstate.mainDirection': data[i].huong_chinh,
+                                'realEstate.balconyDirection': data[i].huong_ban_cong,
+                                'realEstate.legalDocuments': data[i].giay_to_phap_ly,
+                                'realEstate.statusInterior': data[i].tinh_trang_noi_that,
+                                'realEstate.acreage': data[i].dien_tich,
+                                'realEstate.length': data[i].chieu_dai,
+                                'realEstate.width': data[i].chieu_rong,
+                                'realEstate.kvCity': data[i].kv_thanhpho,
+                                'realEstate.kvDistrict': data[i].kv_quanhuyen,
+                                'realEstate.kvWard': data[i].kv_phuongxa,
+                                'realEstate.numberToletRoom': data[i].so_pve_sinh,
+                                'realEstate.numberBedRoom': data[i].so_pngu,
+                                'realEstate.typeOfApartment': data[i].loai_hinh_canho,
+                                'realEstate.landType': data[i].loai_hinh_dat,
+                                'realEstate.special': data[i].dac_diem,
+                                'realEstate.statusBDS': data[i].tinh_trang_bds,
+                                'realEstate.codeApartment': data[i].td_macanho,
+                                'realEstate.cornerUnit': data[i].cangoc,
+                                'realEstate.nameArea': data[i].ten_phan_khu,
+                                'realEstate.useArea': data[i].dientichsd,
+                                'realEstate.block': data[i].td_block_thap,
+                                'realEstate.officeType': data[i].loaihinh_vp,
+                                'realEstate.htmchrt': data[i].td_htmch_rt,
+                                'ship.product': data[i].loai_hinh_sp,
+                                'ship.timeStart': data[i].tgian_bd,
+                                'ship.timeEnd': data[i].tgian_kt,
+                                'ship.allDay': data[i].ca_ngay,
+                                'ship.vehicloType': data[i].loai_xe,
+                                'entertainmentService.brand': data[i],
+                                'sports.sport': data[i].mon_the_thao,
+                                'sports.typeSport': data[i],
+                                'material': data[i],
+                                'pet.kindOfPet': data[i].giong_thu_cung,
+                                'pet.age': data[i].do_tuoi,
+                                'pet.gender': data[i].gioi_tinh,
+                                'pet.weigth': data[i].khoiluong,
+                                'houseWare.typeDevice': data[i],
+                                'houseWare.typeProduct': data[i].loai_linhphu_kien,
+                                'houseWare.guarantee': data[i],
+                                'health.typeProduct': data[i],
+                                'health.kindCosmetics': data[i],
+                                'health.expiry': data[i].han_su_dung,
+                                'health.brand': data[i],
+                                'Job.jobType': data[i].new_job_type,
+                                'Job.jobKind': data[i].new_job_kind,
+                                'Job.maxAge': data[i].new_min_age,
+                                'Job.minAge': data[i].new_max_age,
+                                'Job.exp': data[i].new_exp,
+                                'Job.level': data[i].new_level,
+                                'Job.skill': data[i].new_skill,
+                                'Job.quantity': data[i].new_quantity,
+                                'Job.city': data[i].com_city,
+                                'Job.district': data[i].com_district,
+                                'Job.ward': data[i].com_ward,
+                                'Job.addressNumber': data[i].com_address_num,
+                                'Job.payBy': data[i].new_pay_by,
+                                'Job.benefit': data[i].quyen_loi,
+                                'food.typeFood': data[i].nhom_sanpham,
+                                'food.expiry': data[i].han_su_dung,
+                                'tenderFile': data[i].new_file_dthau,
+                                'fileContenApply': data[i].new_file_nophs,
+                                'contentOnline': data[i].noidung_nhs,
+                                'instructionContent': data[i].noidung_chidan,
+                                'instructionFile': data[i].new_file_chidan,
+                                'until_bidding': data[i].donvi_thau,
+                                'bidFee': data[i].phi_duthau,
+                                'desFile': data[i].file_mota,
+                                'procedureFile': data[i].file_thutuc,
+                                'file': data[i].file_hoso,
+                                'cityProcedure': data[i].com_city,
+                                'districtProcedure': data[i].com_district,
+                                'wardProcedure': data[i].com_ward,
+                                'addressProcedure': data[i].com_address_num,
+                                'timeSell': data[i].tgian_bd,
+                            }
+                        });
+                    }
                 }
                 page += 1;
                 console.log(page)
@@ -883,6 +900,7 @@ exports.toolLike = async (req, res, next) => {
                 },
             });
             let data = response.data.data.items;
+            
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const like = new LikeRN({
@@ -896,6 +914,8 @@ exports.toolLike = async (req, res, next) => {
                         ip: data[i].lk_ip,
                         time: data[i].lk_time,
                     });
+                
+
                     await LikeRN.create(like);
                 }
                 page++;
@@ -1360,101 +1380,58 @@ exports.toolAdminUserRight = async (req, res, next) => {
     }
 };
 
-exports.toolAdminUser = async(req, res, next) => {
+
+exports.toolBidding = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.post('https://raonhanh365.vn/api/select_admin_user.php', form, {
+            const response = await axios.post('https://raonhanh365.vn/api/select_ds_dau_thau.php', form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    const adminUser = new AdminUser({
-                        _id: data[i].adm_id,
-                        loginName: data[i].adm_loginname,
-                        password: data[i].adm_password,
-                        name: data[i].adm_name,
-                        email: data[i].adm_email,
-                        address: data[i].adm_address,
-                        phone: data[i].adm_phone,
-                        mobile: data[i].adm_mobile,
-                        accessModule: data[i].adm_access_module,
-                        accessCategory: data[i].adm_access_category,
-                        date: data[i].adm_date,
-                        isAdmin: data[i].adm_isadmin,
-                        active: data[i].adm_active,
-                        langId: data[i].lang_id,
-                        delete: data[i].adm_delete,
-                        allCategory: data[i].adm_all_category,
-                        editAll: data[i].adm_edit_all,
-                        adminId: data[i].admin_id,
-                        department: data[i].adm_bophan,
-                        empId: data[i].emp_id,
-                        employer: data[i].adm_ntd,
-                    });
-                    await AdminUser.create(adminUser);
-                }
-                page++;
-            } else {
-                result = false;
+                    let _id   = data[i].id;               
+                    let newId = data[i].new_id;
+                    let userID = data[i].user_id;
+                    let userName = data[i].user_name;
+                    let userIntro = data[i].user_intro;
+                    let userFile = data[i].user_file;
+                    let userProfile = data[i].user_profile;
+                    let userProfileFile = data[i].user_profile_file;
+                    let productName = data[i].product_name;
+                    let productDesc = data[i].product_desc;
+                    let productLink = data[i].product_link;
+                    let price = data[i].price;
+                    let priceUnit = data[i].price_unit;
+                    let promotion = data[i].promotion;
+                    let promotionFile = data[i].romotion_file;
+                    let status = data[i].status;
+                    let createTime = data[i].create_time;
+                    let note = data[i].note;
+              
+                await Bidding.create({_id,newId,userID,userName,userIntro,userFile,userProfile,userProfileFile,productName,productDesc,productLink,price,priceUnit,promotion,promotionFile,status,createTime,note});
             }
-            console.log(page);
-        } while (result);
+            page++;
+        } else {
+            result = false;
+        }
+        console.log(page);
+    } while (result);
 
-        return fnc.success(res, "Thành công");
-    } catch (error) {
-        return fnc.setError(res, error.message);
-    }
+    return fnc.success(res, "Thành công");
+} catch (error) {
+    return fnc.setError(res, error.message);
+}
 };
 
-exports.toolAdminTranslate = async(req, res, next) => {
-    try {
-        console.log(".....")
-        let page = 1;
-        let result = true;
-        let id=1;
-        do {
-            const form = new FormData();
-            form.append('page', page);
-            const response = await axios.post('https://raonhanh365.vn/api/select_admin_translate.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            
-            let data = response.data.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-                    const adminTranslate = new AdminTranslate({
-                        _id: id++,
-                        keyword: data[i].tra_keyword,
-                        text: data[i].tra_text,
-                        langId: data[i].lang_id,
-                        source: data[i].tra_source,
-                    });
-                    await AdminTranslate.create(adminTranslate);
-                }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page);
-        } while (result);
-
-        return fnc.success(res, "Thành công");
-    } catch (error) {
-        return fnc.setError(res, error.message);
-    }
-};
 
 exports.toolAdminMenuOrder = async(req, res, next) => {
     try {

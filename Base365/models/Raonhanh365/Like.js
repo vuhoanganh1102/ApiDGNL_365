@@ -15,7 +15,7 @@ const LikeSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    commnetId: {
+    commentId: {
         //id cua commnet
         type: Number,
         default: 0,

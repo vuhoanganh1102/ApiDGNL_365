@@ -28,6 +28,10 @@ const HR_EmployeePolicySpecificSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    applyFor	: {
+        type: String,
+        required: true,
+    },
     isDelete	: {
         type: Number,
         default:0   

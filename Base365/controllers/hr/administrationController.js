@@ -4,7 +4,8 @@ const functions = require('../../services/functions');
 const HR = require('../../services/hr/hrService');
 const Policys = require('../../models/hr/Policys');
 const EmployeePolicys = require('../../models/hr/EmployeePolicys');
-const PerUser  = require('../../models/hr/PerUsers');
+const PerUser = require('../../models/hr/PerUsers');
+const EmployeePolicySpecifics = require('../../models/hr/EmployeePolicySpecifics');
 // thêm nhóm quy định
 exports.addProvision = async (req, res, next) => {
     try {
@@ -261,7 +262,7 @@ exports.addEmployeePolicy = async (req, res, next) => {
         let createdAt = new Date();
         if (name && description && timeStart && supervisorName) {
             if (await !functions.checkDate(timeStart) || await !functions.checkTime(timeStart)) {
-                return functions.setError(res,'invalid date')
+                return functions.setError(res, 'invalid date')
             }
             if (File.employeePolicy) {
                 let checkUpload = await HR.HR_UploadFile('employeePolicy', comId, File.employeePolicy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
@@ -272,7 +273,7 @@ exports.addEmployeePolicy = async (req, res, next) => {
             } else {
                 link = null;
             }
-            await EmployeePolicys.create({id:1002,name,description,timeStart,supervisorName,comId,createdAt,file:link})
+            await EmployeePolicys.create({ id: 1002, name, description, timeStart, supervisorName, comId, createdAt, file: link })
         } else {
             return functions.setError(res, 'missing data', 400)
         }
@@ -292,10 +293,10 @@ exports.updateEmployeePolicy = async (req, res, next) => {
         let id = req.body.id;
         let comId = req.comId;
         let createdAt = new Date();
-        let File  = req.files;
+        let File = req.files;
         if (name && description && timeStart && supervisorName && id) {
             if (await !functions.checkDate(timeStart) || await !functions.checkTime(timeStart)) {
-                return functions.setError(res,'invalid date')
+                return functions.setError(res, 'invalid date')
             }
             if (File.employeePolicy) {
                 let checkUpload = await HR.HR_UploadFile('employeePolicy', comId, File.employeePolicy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
@@ -307,11 +308,11 @@ exports.updateEmployeePolicy = async (req, res, next) => {
                     await HR.deleteFileHR('employeePolicy', comId, checkFile.file.split('/').reverse()[0])
                 }
                 link = HR.createLinkFileHR('employeePolicy', comId, File.employeePolicy.name)
-                await EmployeePolicys.findOneAndUpdate({id},{name,description,timeStart,supervisorName,comId,createdAt,file:link})
+                await EmployeePolicys.findOneAndUpdate({ id }, { name, description, timeStart, supervisorName, comId, createdAt, file: link })
             } else {
-                await EmployeePolicys.findOneAndUpdate({id},{name,description,timeStart,supervisorName,comId,createdAt})
+                await EmployeePolicys.findOneAndUpdate({ id }, { name, description, timeStart, supervisorName, comId, createdAt })
             }
-            
+
         } else {
             return functions.setError(res, 'missing data', 400)
         }
@@ -338,25 +339,26 @@ exports.deleteEmployeePolicy = async (req, res, next) => {
     }
 }
 
-// Thêm mới nhóm chính sách
+// Thêm mới chính sách
 exports.addEmpoyePolicySpecific = async (req, res, next) => {
     try {
-        await HR.checkPermissions(req, res, next,'read',2);
-        
+        // await HR.checkPermissions(req, res, next,'read',2);
+
         let name = req.body.name;
-        let employePolicyId = req.body.employe_policy_id;
+        let employeePolicyId = req.body.employe_policy_id;
         let timeStart = req.body.time_start;
         let supervisorName = req.body.supervisor_name;
         let applyFor = req.body.apply_for;
         let content = req.body.content;
-        let createdBy = ' công ty'
-        let comId = req.comId;
+        let createdBy = 'công ty';
+        let comId = 2023;
         let File = req.files;
         let link = '';
         let createdAt = new Date();
-        if (name && description && timeStart && supervisorName) {
+
+        if (name && employeePolicyId && timeStart && supervisorName && applyFor && content) {
             if (await !functions.checkDate(timeStart) || await !functions.checkTime(timeStart)) {
-                return functions.setError(res,'invalid date')
+                return functions.setError(res, 'invalid date')
             }
             if (File.employeePolicy) {
                 let checkUpload = await HR.HR_UploadFile('employeePolicy', comId, File.employeePolicy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
@@ -367,13 +369,110 @@ exports.addEmpoyePolicySpecific = async (req, res, next) => {
             } else {
                 link = null;
             }
-            await EmployeePolicys.create({id:1002,name,description,timeStart,supervisorName,comId,createdAt,file:link})
+            await EmployeePolicySpecifics.create({ id: 1002, name, employeePolicyId, timeStart, supervisorName, comId, applyFor, content, createdAt, createdBy, file: link })
         } else {
             return functions.setError(res, 'missing data', 400)
         }
         return functions.success(res, 'add success')
     } catch (error) {
-        console.log("🚀 ~ file: administrationController.js:376 ~ exports.addEmpoyePolicySpecific= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+// danh sách nhóm chính sách
+exports.listEmpoyePolicy = async (req, res, next) => {
+    try {
+        let page = req.query.page;
+        let pageSize = req.query.pageSize;
+        let keyWords = req.query.keyWords || null;
+        let comId = 2023;
+        if (!page || !pageSize) {
+            return functions.setError(res, 'missing data', 400)
+        }
+        if (await functions.checkNumber(page) === false || await functions.checkNumber(pageSize) === false) {
+            return functions.setError(res, 'invalid Number', 400)
+        }
+        let skip = (page - 1) * pageSize;
+        let data = [];
+        let totalEmpoyePolicy = 0;
+        if (!keyWords) {
+            data = await EmployeePolicys.find({ comId, isDelete: 0 }).skip(skip).limit(pageSize);
+            totalEmpoyePolicy = await EmployeePolicys.find({ comId, isDelete: 0 }).count();
+        } else {
+            data = await EmployeePolicys.find({ name: { $regex: `.*${keyWords}.*` }, comId, isDelete: 0 }).skip(skip).limit(pageSize);
+            totalEmpoyePolicy = await EmployeePolicys.find({ name: { $regex: `.*${keyWords}.*` }, comId, isDelete: 0 }).count();
+        }
+        let tongSoTrang = Math.ceil(totalEmpoyePolicy / pageSize)
+        data.push({ tongSoTrang: tongSoTrang, tongSoBanGhi: totalEmpoyePolicy })
+        return functions.success(res, 'get data success', { data })
+    } catch (error) {
+        console.log("🚀 ~ file: walfareController.js:168 ~ exports.listAchievement= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// chi tiết nhóm chính sách
+exports.getDetailPolicy = async (req, res, next) => {
+    try {
+        let comId = 2023;
+        let id = req.query.id;
+        console.log("🚀 ~ file: administrationController.js:419 ~ exports.getDetailPolicy= ~ id:", id)
+        let data = await EmployeePolicys.find({ id, comId })
+        return functions.success(res, 'get data success', { data })
+    } catch (error) {
+        console.log("🚀 ~ file: administrationController.js:130 ~ exports.detailProvision= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// danh sách chính sách theo nhóm chính sách
+exports.listEmployeePolicySpecific = async (req, res, next) => {
+    try {
+        let id = req.query.id;
+        let data = await EmployeePolicySpecifics.find({employeePolicyId:id})
+        return functions.success(res, 'get data  success', { data })
+    } catch (error) {
+        console.log("🚀 ~ file: administrationController.js:448 ~ exports.listEmployeePolicySpecific= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}   
+
+// chi tiết chính sách
+exports.detailEmployeePolicySpecific = async (req, res, next) => {
+    try {
+        let id = Number (req.query.id);
+        let data = await EmployeePolicySpecifics.aggregate([
+            {
+                $lookup:{
+                    from:'HR_EmployeePolicys',
+                    localField:'employeePolicyId',
+                    foreignField:'id',
+                    as:"EmployeePolicys"
+                }
+            },{
+                $match:{id}
+            },{
+                $project:{id:1,name:1,employeePolicyId:1,timeStart:1,supervisorName:1,description:1,content:1,applyFor:1,
+                    createdBy:1, isDelete:1,file:1,createdAt:1,deletedAt:1,EmployeePolicys:{name:1}}
+            }
+        ])
+        return functions.success(res, 'get data  success', { data })
+    } catch (error) {
+        console.log("🚀 ~ file: administrationController.js:448 ~ exports.listEmployeePolicySpecific= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// Xoá chính sách
+exports.deleteEmployeePolicySpecific = async (req, res, next) => {
+    try {
+        let id = req.body.id;
+        let check = await EmployeePolicySpecifics.findOne({ id });
+        if (!check) {
+            return functions.setError(res, 'not found provision', 404)
+        }
+        await EmployeePolicySpecifics.findOneAndUpdate({ id }, { isDelete: 1, deletedAt: new Date() })
+        return functions.success(res, 'delete provision success')
+    } catch (error) {
         return functions.setError(res, error)
     }
 }

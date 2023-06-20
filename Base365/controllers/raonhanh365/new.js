@@ -20,8 +20,8 @@ exports.postNewMain = async (req, res, next) => {
         let listImg = [];
         let nameVideo = "";
         let request = req.body,
-            userID = request.user_id,k
-            cateID = request.cate_id,
+            userID = request.user_id, k
+        cateID = request.cate_id,
             title = request.title,
             money = request.money,
             until = request.until,
@@ -676,12 +676,15 @@ exports.getNew = async (req, res, next) => {
             userID: 1,
             img: 1,
             updateTime: 1,
-            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1 },
+            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
             district: 1,
             ward: 1,
             city: 1,
             address: 1,
-            islove: 1
+            islove: 1,
+            until: 1,
+            endvalue: 1,
+            type: 1
         };
         let data = await New.aggregate([
             {
@@ -696,7 +699,7 @@ exports.getNew = async (req, res, next) => {
                 $match: { buySell: 2, sold: 0, active: 1 },
             },
             {
-                $sort: { pinHome: -1, createTime: -1 },
+                $sort: { pinHome: -1, createTime: -1, order: -1 },
             },
             {
                 $project: searchItem,
@@ -738,7 +741,7 @@ exports.searchNew = async (req, res, next) => {
     try {
         const authHeader = req.headers["authorization"];
         const token = authHeader && authHeader.split(" ")[1];
-        let link = req.params.link;
+        let link = req.body.link;
         let buySell = 1;
         let searchItem = {};
         let {
@@ -1037,7 +1040,7 @@ exports.createBuyNew = async (req, res) => {
     try {
         // lấy id user từ req
         let userID = req.user.data.idRaoNhanh365;
-        let type   = req.user.data.type;
+        let type = req.user.data.type;
 
         // khởi tạo các biến có thể có
         let tenderFile = null;
@@ -1070,7 +1073,7 @@ exports.createBuyNew = async (req, res) => {
             timeNotiBiddingEnd,
             instructionContent,
             bidFee,
-            endvalue,money,
+            endvalue, money,
             until,
             until_bidding,
             phone,
@@ -1277,7 +1280,7 @@ exports.createBuyNew = async (req, res) => {
                 apartmentNumber,
                 description,
                 timeEndReceivebidding,
-                status,money,
+                status, money,
                 timeNotiBiddingStart,
                 timeNotiBiddingEnd,
                 instructionContent,
@@ -1287,7 +1290,7 @@ exports.createBuyNew = async (req, res) => {
                 email,
                 until,
                 until_bidding,
-                type,active
+                type, active
             });
             await postNew.save();
             // await New.deleteMany({userID:5})
@@ -1356,7 +1359,7 @@ exports.updateBuyNew = async (req, res, next) => {
 
         // kiểm tra các điều kiện bắt buộc
         if (
-           
+
             title &&
             name &&
             city && money &&
@@ -1375,7 +1378,7 @@ exports.updateBuyNew = async (req, res, next) => {
             email &&
             until &&
             until_bidding
-            && timeSell 
+            && timeSell
         ) {
             // tạolink title từ title người dùng nhập
             let linkTitle = raoNhanh.createLinkTilte(title);
@@ -1593,9 +1596,12 @@ exports.updateBuyNew = async (req, res, next) => {
 // chi tiết tin 
 exports.getDetailNew = async (req, res, next) => {
     try {
+        let cm_page  = req.body.cm_page
+        let cm_limit = 10;
+        let cm_start = (cm_page - 1) * cm_limit;
         const authHeader = req.headers["authorization"];
         const token = authHeader && authHeader.split(" ")[1];
-        let linkTitle = req.params.linkTitle.replace(".html", "");
+        let linkTitle = req.body.linkTitle.replace(".html", "");
         if (!linkTitle) {
             return functions.setError(res, "missing data", 400);
         }
@@ -1609,6 +1615,9 @@ exports.getDetailNew = async (req, res, next) => {
         let buysell = null;
         let searchitem = null;
         let tintuongtu = [];
+        let ListComment = [];
+        let ListLike    = [];
+        let userIdRaoNhanh = 0;
         if ((await functions.checkNumber(id_new)) === false) {
             return functions.setError(res, "invalid number", 404);
         }
@@ -1648,7 +1657,7 @@ exports.getDetailNew = async (req, res, next) => {
                 timeNotiBiddingStart: 1,
                 timeNotiBiddingEnd: 1,
                 tenderFile: 1,
-                fileContentProcedureApply: 1,
+                fileProcedure: 1,
                 fileContent: 1,
                 contentOnline: 1, userID: 1,
                 fileContent: 1,
@@ -1656,10 +1665,9 @@ exports.getDetailNew = async (req, res, next) => {
                 instructionFile: 1,
                 startvalue: 1,
                 endvalue: 1,
-                until_tu: 1,
-                until_den: 1,
+                until: 1,
+                until_bidding: 1,
                 bidFee: 1,
-                until_bidFee: 1,
                 phone: 1,
                 img: 1,
                 address: 1,
@@ -1672,23 +1680,32 @@ exports.getDetailNew = async (req, res, next) => {
                 apartmentNumber: 1,
                 detailCategory: 1,
                 viewCount: 1,
-                user: { _id: 1, userName: 1, type: 1, createdAt: 1, chat365_secret: 1 },
+                user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
             };
         } else if (buy === "c") {
             buysell = 2;
             searchitem = {
-                title: 1, islove: 1,
-                viewCount: 1,
-                money: 1,
-                name: 1, userID: 1,
-                phone: 1,
-                address: 1,
-                updateTime: 1,
-                img: 1,
-                status: 1,
-                description: 1,
-                detailCategory: 1,
-                user: { _id: 1, userName: 1, type: 1, createdAt: 1, chat365_secret: 1 },
+                _id: 1,
+            title: 1,
+            linkTitle: 1,
+            free: 1,
+            address: 1,
+            money: 1,
+            createTime: 1,
+            cateID: 1,
+            pinHome: 1,
+            userID: 1,
+            img: 1,
+            updateTime: 1,
+            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
+            district: 1,
+            ward: 1,
+            city: 1,
+            address: 1,
+            islove: 1,
+            until: 1,
+            endvalue: 1,
+            type: 1
             };
         } else {
             return functions.setError(res, "not found data", 404);
@@ -1712,11 +1729,36 @@ exports.getDetailNew = async (req, res, next) => {
                 $match: { _id: id_new },
             },
         ]);
-        data.push({ danhmuc: { danh_muc1, danh_muc2, danh_muc3 } });
+        data[0].danhmuc  = { danh_muc1, danh_muc2, danh_muc3 };
         tintuongtu = await New.find({ cateID: check.cateID }, searchitem).limit(6);
+        let url = 'https://raonhanh365.vn/'+linkTitle+'.html';
+        ListComment = await Comments.find({url,parent_id:0},{},{time:-1},{cm_start},{cm_limit}).lean();
+        ListLike    = await LikeRN.find({forUrlNew:url,commentId:0,type:{$lt:8}},{},{type:1})
+        let ListReplyComment = [];
+        let ListLikeComment = [];
+        let ListLikeCommentChild = [];
+        if(ListComment.length !== 0)
+        {
+            for(let i = 0 ; i < ListComment.length; i++)
+            {
+                ListLikeComment = await LikeRN.find({forUrlNew:url,type:{$lt:8},commentId:ListComment[i]._id},{},{type:1})
+                //
+                ListReplyComment = await Comments.find({url,parent_id:ListComment[i]._id},{},{time:-1}).lean()
+                ListComment[i].ListLikeComment = ListLikeComment
+                ListComment[i].ListReplyComment = ListReplyComment  
+                // lấy lượt like của từng trả lời
+                for(let j = 0; j < ListReplyComment.length ; j ++)
+                {
+                    ListLikeCommentChild  = await LikeRN.find({forUrlNew:url,type:{$lt:8},commentId:ListReplyComment[j]._id},{},{type:1})
+                    ListReplyComment[j].ListLikeCommentChild = ListLikeCommentChild
+                }
+            }
+        }
+        data[0].ListComment = ListComment;
+        data[0].ListLike = ListLike;
         await New.findByIdAndUpdate(id_new, { $inc: { viewCount: +1 } });
         if (tintuongtu) {
-            data.push({ tintuongtu: tintuongtu });
+            data[0].tintuongtu = tintuongtu;
         }
         if (token) {
             jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
@@ -1738,6 +1780,7 @@ exports.getDetailNew = async (req, res, next) => {
         }
         functions.success(res, "get data success", { data });
     } catch (error) {
+        console.log("🚀 ~ file: new.js:1757 ~ exports.getDetailNew= ~ error:", error)
         functions.setError(res, error);
     }
 };
@@ -1764,56 +1807,6 @@ exports.loveNew = async (req, res, next) => {
     }
 };
 
-// chỉnh sửa thông tin tài khoản
-exports.updateInfoUserRaoNhanh = async (req, res, next) => {
-    try {
-        let _id = req.user.data._id;
-
-        let { userName, email, address } = req.body;
-        let File = req.files || null;
-        let avatarUser = null;
-        let updatedAt = new Date(Date.now());
-
-        if ((await functions.checkEmail(email)) === false) {
-            return functions.setError(res, "invalid email");
-        } else {
-            let check_email = await User.findById(_id);
-            if (check_email.email !== email) {
-                let check_email_lan2 = await User.find({ email });
-                if (check_email_lan2.length !== 0) {
-                    return functions.setError(res, "email is exits");
-                }
-            }
-        }
-        if (File) {
-            let upload = raoNhanh.uploadFileRaoNhanh(
-                "avt_dangtin",
-                _id,
-                File.avatarUser,
-                [".jpeg", ".jpg", ".png"]
-            );
-            if (!upload) {
-                return functions.setError(res, "Định dạng ảnh không hợp lệ");
-            }
-            avatarUser = functions.createLinkFileRaonhanh(
-                "avt_dangtin",
-                _id,
-                File.avatarUser.name
-            );
-            await User.findByIdAndUpdate(_id, {
-                email,
-                address,
-                userName,
-                avatarUser,
-                updatedAt,
-            });
-        }
-        await User.findByIdAndUpdate(_id, { email, address, userName, updatedAt });
-        return functions.success(res, "update data user success");
-    } catch (error) {
-        return functions.setError(res, error);
-    }
-};
 // tao token
 exports.createToken = async (req, res, next) => {
     try {
@@ -2638,12 +2631,12 @@ exports.updateComment = async (req, res, next) => {
                     }/${new Date().getDate()}`,
                     File.Image.name
                 );
-                await Comments.find(
+                await Comments.findOneAndUpdate(
                     { id_comment, sender_idchat: userID },
                     { content, img, tag }
                 );
             } else {
-                await Comments.find(
+                await Comments.findOneAndUpdate(
                     { id_comment, sender_idchat: userID },
                     { content, tag }
                 );
