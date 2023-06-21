@@ -7,11 +7,11 @@ const functions = require('../../services/functions')
 //thông tin công ty, phòng ban
 router.post('/detailInfoCompany', formData.parse(), organizationalStructure.detailInfoCompany)
 
-//thông tin tổ theo phòng ban
-router.post('/detailInfoNest', formData.parse(), organizationalStructure.detailInfoNest)
-
 //hiển thị mô tả chi tiết phòng ban, tổ nhóm
 router.post('/description', formData.parse(), organizationalStructure.description)
+
+//cập nhật mô tả chi tiết phòng ban, tổ nhóm
+router.post('/updateDescription', formData.parse(), organizationalStructure.updateDescription)
 
 
 

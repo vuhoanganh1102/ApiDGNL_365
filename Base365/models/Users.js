@@ -212,6 +212,11 @@ const UserSchema = new mongoose.Schema({
                         type: Number,
                         default: 0
                     },
+                    team_id: {
+                        // ID của tôt nếu là nhân viên (giá trị = 0 là cá nhân)
+                        type: Number,
+                        default: 0
+                    },
                     time_quit_job: {
                         // Thời gian nghỉ việc
                         type: Date,

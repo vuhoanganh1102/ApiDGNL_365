@@ -1,18 +1,19 @@
 const mongoose = require('mongoose')
 const HisOfTracking = new mongoose.Schema({
+    //id nhaan vieen
     _id: {
-        type : Number,
-        required : true
+        type: Number,
+        required: true
     },
     idQLC: {
-        type : Number
+        type: Number
     },
     imageTrack: {
         type: String,
         default: null
     },
-    curDeviceName:{
-        type : String
+    curDeviceName: {
+        type: String
     },
     latitude: {
         // Tọa độ lat
@@ -24,39 +25,63 @@ const HisOfTracking = new mongoose.Schema({
         type: String,
         default: null
     },
-    Location:{
-        type : String
+    Location: {
+        //vị trí
+        type: String
     },
-    NameWifi:{
-        type : String
+    CreateAt: {
+        //thời điểm chấm công 
+        type: Date,
+        default: Date.now()
     },
-    IpWifi:{
-        type : String
+    NameWifi: {
+        //tên wifi
+        type: String
     },
-    MacWifi:{
-        type : String
+    IpWifi: {
+        //ip wifi
+        type: String
     },
-    shiftID:{
-        type : String
+    MacWifi: {
+        //mac wifi
+        type: String
     },
-    companyId:{
-        type : String
+    shiftID: {
+        //id ca làm việc
+        type: Number
     },
-    Note:{
-        type : String
+    companyID: {
+        //id công ty
+        type: Number
     },
-    BluetoothAdrr:{
-        type : String
+    depID: {
+        //id công ty
+        type: Number
     },
-    role:{
-        type : Number
+    Note: {
+        //note
+        type: String
     },
-    Err:{
-        type : Boolean
+    BluetoothAdrr: {
+        //địa chỉ bluetooth
+        type: String
     },
-    Success:{
-        type : Boolean
+    role: {
+        //vai trò
+        type: Number
     },
-    
+    status: {
+        //trạng thái của công: 1 là công chấm mặt, 2 là công chấm QR, 3 là bù công',
+        type: Number
+    },
+    Err: { //trạng thái thất bại
+        type: String,
+    },
+    Success: { //trạng thái Thành công
+        type: String,
+    },
 
-}) 
+
+})
+
+module.exports = mongoose.model("HistoryOfTracking", HisOfTracking)
