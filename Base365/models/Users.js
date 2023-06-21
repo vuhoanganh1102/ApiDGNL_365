@@ -702,6 +702,14 @@ const UserSchema = new mongoose.Schema({
             type: String,
             default: null
         },
+        xacThucLienket: {
+            type: String,
+            default: null
+        },
+        store_name:{
+            type: String,
+            default: null
+        },
         time: {
             //thoi gian xac thuc
             type: Date,

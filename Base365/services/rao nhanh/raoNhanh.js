@@ -73,16 +73,12 @@ exports.checkNameCateRaoNhanh = async(data)=>{
             return 'realEstate'
         case 'Ship':
             return 'ship'
-        case 'Đồ gia dụng':
-            return 'houseWare'
-        case 'Sức khỏe - Sắc đẹp':
-            return 'health'
-        case 'Dịch vụ - Giải trí':
-            return 'entertainmentService'   
+        case 'Thú cưng':
+            return 'pet'   
         case 'Việc làm':
             return 'job'
         case 'Thực phẩm, Đồ uống':
-            return 'food'
+            return 'food'   
         
     } 
 }

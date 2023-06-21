@@ -77,7 +77,7 @@ var syllRouter = require('./routes/timviec/syll');
 var toolVT = require('./routes/vanthu/RoutertoolVT')
 
 const { router } = require("express/lib/application");
-
+var raonhanh = require('./routes/raonhanh365/tools');
 var app = express();
 // app.listen(3001, () => {
 //     console.log("Connected to databse");
@@ -154,7 +154,8 @@ app.use("/api/calendar", calendarRouter);
 
 //API văn thu
 app.use("/api/tool", toolVT)
-
+//API văn thu
+app.use("/api/tool", raonhanh)
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
 

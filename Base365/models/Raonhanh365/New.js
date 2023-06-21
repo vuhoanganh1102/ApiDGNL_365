@@ -205,88 +205,18 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    timeEndReceivebidding :{
-
-        // thời gian kết thúc nhận hồ sơ mời thầu
-        type: Date,
-        default: null
-    },
-    timeNotiBiddingStart:{
-        // thời gian bắt đầu thông báo kết quả trúng thầu
-        type: Date,
-        default: null
-    },
-
-
-
-    timeNotiBiddingEnd:{
-        // thời gian bắt đầu thông báo kết quả trúng thầu
-        type: Date,
-        default: null
-    },
+    
+   
     authen: {
         // xac thuc
         type: Number,
         default: 0
     },
-    tenderFile: {
-        // file thông tin đấu thầu
-        type: String,
-        default: null,
-    },
+   
+   
 
-    contentOnline: {
-        // nội dung nộp hồ sơ online
-        type: String,
-        default: null
-    },
-
-    fileContent: {
-        // file nộp hồ sơ
-        type: String,
-        default: null
-    },
-    instructionContent: {
-        // nội dung chỉ dẫn
-        type: String,
-        default: null
-    },
-    instructionFile: {
-        // file chỉ dẫn
-        type: String,
-        default: null
-    },
-
-    until_bidding: {
-        type:Number
-    },
-
-    until: {
-
-        // l 1 VND , 2 USD ,3 EURO
-        type: String,
-        default: 1
-    },
-    bidFee: {
-        // phí dự thầu
-        type: Number,
-        default: null
-    },
-    desFile: {
-        // file mô tả
-        type: String,
-        default: null,
-    },
-    procedureFile: {
-        // file thủ tục
-        type: String,
-        default: null
-    },
-    file: {
-        // file hồ sơ
-        type: String,
-        default: null
-    },
+   
+    
     pinCount: {
         // số lượng tin ghim
         type: Number,
@@ -312,23 +242,10 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-
-    cityProcedure:{
-        // địa chỉ nộp hồ sơ đấu thầu offline
-        type: String,
-        default: null
+    until:{
+        type: Number,
+        default: 0
     },
-    districtProcedure:{
-        // địa chỉ nộp hồ sơ đấu thầu offline
-        type: String,
-        default: null
-    },
-    wardProcedure:{
-        // địa chỉ nộp hồ sơ đấu thầu offline
-        type: String,
-        default: null
-    },
-
     totalSold: {
         // tổng số lượng
         type: Number,
@@ -344,6 +261,22 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    com_city:{
+        type:Number,
+        default: 0
+    },
+    com_district:{
+        type:Number,
+        default: 0
+    },
+    com_ward:{
+        type:Number,
+        default: 0
+    },
+    com_address_num:{
+        type:Number,
+        default: 0
+    },
     timePromotionStart: {
         // thời gian khuyến mãi bắt đầu
         type: Date,
@@ -352,27 +285,6 @@ const newSchema = new mongoose.Schema({
     timePromotionEnd: {
         // thời gian khuyến mãi kết thúc
         type: Date,
-        default: null
-    },
-
-    cityProcedure: {
-        // địa chỉ nộp hồ sơ đấu thầu offline
-        type: String,
-        default: null
-    },
-    districtProcedure: {
-        // địa chỉ nộp hồ sơ đấu thầu offline
-        type: String,
-        default: null
-    },
-    wardProcedure: {
-        // địa chỉ nộp hồ sơ đấu thầu offline
-        type: String,
-        default: null
-    },
-    addressProcedure: {
-        // địa chỉ nộp hồ sơ đấu thầu offline
-        type: String,
         default: null
     },
     productType: {
@@ -408,7 +320,7 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    hashtag: {
+    ashtag: {
         // 
         type: String,
         default: null
@@ -429,8 +341,8 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    order:{
-        type:Number
+    order: {
+        type: Number
     },
     // đô điện tử
     electroniceDevice: {
@@ -474,277 +386,205 @@ const newSchema = new mongoose.Schema({
             type: Number,
             default: 0
         },
-    },
-    // xe cộ
-    vehicle: {
-        brandMaterials: {
-            // hãng vật tư
+        warranty: {
+            // bảo hành
             type: Number,
             default: 0
-        },
-        vehicles: {
-            // dòng xe
-            type: Number,
-            default: 0
-        },
-        spareParts: {
-            // loại phụ tùng 
-            type: Number,
-            default: 0
-        },
-        interior: {
-
-            // loại nội thất
-            type: Number,
-            default: 0
-
         },
         device: {
-            // thiết bị
-            type: Number,
-            default: 0
-        },
-        color: {
-            // màu xắc
             type: Number,
             default: 0
         },
         capacity: {
-            // dung lượng
             type: Number,
             default: 0
         },
-        connectInternet: {
-            // kết nối internet
-            type: String,
-            default: null
-        },
-        generalType: {
-            // loại chung
+        sdung_sim: {
             type: Number,
             default: 0
         },
-        resolution: {
-            // độ phân giải
-            type: Number,
-            default: 0
-        },
-        wattage: {
-            // công suất
-            type: Number,
-            default: 0
-        },
-        engine: {
-            // động cơ
-            type: Number,
-            default: 0
-        },
-        accessary: {
-            type: Number,
-            default: 0
-        },
-        frameMaterial: {
-            // chất liêu khung
-            type: Number,
-            default: 0
-        },
-        volume: {
-            // dung tích
-            type: Number,
-            default: 0
-        },
-        manufacturingYear: {
-            // năm sản xuất
-            type: String,
-            default: null
-        },
-        fuel: {
-            // nhiên liệu
-            type: Number,
-            default: 0
-        },
-        numberOfSeats: {
-            // số chỗ ngồi 
-            type: Number,
-            default: 0
-        },
-        gearBox: {
-            // hộp số
-            type: Number,
-            default: 0
-        },
-        style: {
-            // kiểu dáng
-            type: Number,
-            default: 0
-        },
-        payload: {
-            // trọng tải
-            type: Number,
-            default: 0
-        },
-        carNumber: {
-            // biern số xe
-            type: String,
-            default: null,
-        },
-        km: {
-            // số km đã đi 
-            type: String,
-            default: null
-        },
-        origin: {
-            // xuất xứ
-            type: String,
-            default: null
-        },
-        version: {
+        phien_ban: {
             type: Number,
             default: 0
         }
     },
+    // xe cộ
+    vehicle: {
+        hang: {
+            type: Number,
+            default: 0
+        },
+        loai_xe: {
+            type: Number,
+            default: 0
+        },
+        xuat_xu: {
+            type: Number,
+            default: 0
+        },
+        mau_sac: {
+            type: Number,
+            default: 0
+        },
+        kich_co: {
+            type: Number,
+            default: 0
+        },
+        chat_lieu_khung: {
+            type: Number,
+            default: 0
+        },
+        baohanh: {
+            type: Number,
+            default: 0
+        },
+        hang: {
+            type: Number,
+            default: 0
+        },
+        dong_xe: {
+            type: Number,
+            default: 0
+        },
+        nam_san_xuat: {
+            type: Number,
+            default: 0
+        },
+        dung_tich: {
+            type: Number,
+            default: 0
+        },
+        td_bien_soxe: {
+            type: Number,
+            default: 0
+        },
+        phien_ban: {
+            type: Number,
+            default: 0
+        },
+        hop_so: {
+            type: Number,
+            default: 0
+        },
+        nhien_lieu: {
+            type: Number,
+            default: 0
+        },
+        kieu_dang: {
+            type: Number,
+            default: 0
+        },
+        so_cho: {
+            type: Number,
+            default: 0
+        },
+        trong_tai: {
+            type: Number,
+            default: 0
+        },
+        loai_linhphu_kien: {
+            type: Number,
+            default: 0
+        },
+        so_km_da_di:{
+            type: Number,
+            default: 0
+        }
+
+    },
     // bất động sản
     realEstate: {
-        statusSell: {
-            // cần bán / cho thuê
+        ten_toa_nha: {
+            type: String
+        },
+        td_macanho: {
+            type: Number
+        },
+        ten_phan_khu: {
+            type: String
+        },
+        td_htmch_rt: {
+            // Hiển thị mã căn hộ rao tin
             type: Number,
             default: 0
         },
-        nameApartment: {
-            // tên tòa nhà
+        so_pngu: {
+            type: Number,
+            default: 0
+        },
+        so_pve_sinh: {
+            type: Number,
+            default: 0
+        },
+        tong_so_tang: {
+            type: Number,
+            default: 0
+        },
+        huong_chinh: {
+            type: Number,
+            default: 0
+        },
+        giay_to_phap_ly: {
+            type: Number,
+            default: 0
+        },
+        tinh_trang_noi_that: {
+            type: Number,
+            default: 0
+        },
+        dac_diem: {
+            type: Number,
+            default: 0
+        },
+        dien_tich: {
+            type: Number,
+            default: 0
+        },
+        dientichsd: {
+            type: Number,
+            default: 0
+        },
+        chieu_dai: {
+            type: Number,
+            default: 0
+        },
+        chieu_rong: {
+            type: Number,
+            default: 0
+        },
+        tinh_trang_bds: {
+            type: Number,
+            default: 0
+        },
+        td_block_thap: {
             type: String,
             default: null
         },
-        numberOfStoreys: {
-            // tổng số tầng
-            type: String,
-            default: null
-        },
-        storey: {
-            // số tầng
+        tang_so: {
             type: Number,
             default: 0
         },
-        mainDirection: {
-            // hướng chính của tòa
+        loai_hinh_canho: {
             type: Number,
             default: 0
         },
-        balconyDirection: {
-            // hướng ban công
+        loaihinh_vp: {
             type: Number,
             default: 0
         },
-        legalDocuments: {
-            // giấy tờ pháp lý
-            type: String,
-            default: null
-        },
-        statusInterior: {
-            // tình trạng nội thất
+        loai_hinh_dat: {
             type: Number,
             default: 0
         },
-        acreage: {
-            // diện tích 
-            type: String,
-            default: null
-        },
-        length: {
-            // chiều dài
-            type: String,
-            default: null
-        },
-        width: {
-            // chiều rộng 
-            type: String,
-            default: null
-        },
-        buyingArea: {
-            // khu vực mua
-            type: String,
-            default: null
-        },
-        kvCity: {
-            // khu vực thành phố
+        kv_thanhpho: {
             type: Number,
             default: 0
         },
-        kvDistrict: {
-            // khu vực quận huyện
+        kv_quanhuyen: {
             type: Number,
             default: 0
         },
-        kvWard: {
-            // khu vực phường xã
-            type: Number,
-            default: 0
-        },
-        numberToletRoom: {
-            // số phòng wc 
-            type: Number,
-            default: 0
-        },
-        numberBedRoom: {
-            // số phòng ngủ
-            type: Number,
-            default: 0
-        },
-        typeOfApartment: {
-            // loại hình căn hộ
-            type: Number,
-            default: 0
-        },
-        special: {
-            // đặc diểm
-            type: String,
-            default: null
-        },
-        statusBDS: {
-            // tình trạng bát động sản 
-            type: Number,
-            default: 0
-        },
-        codeApartment: {
-            // mã căn hộ
-
-            type: String,
-
-
-            default: null,
-        },
-        cornerUnit: {
-            // căn góc
-            type: Number,
-            default: 0
-        },
-        nameArea: {
-            // tên phân khu
-            type: String,
-            default: null
-        },
-        useArea: {
-            // diện tích sử dụng
-            type: String,
-            default: null
-        },
-        landType: {
-            // loại hình đất
-            type: Number,
-            default: 0
-        },
-        officeType: {
-            // loại hình văn phòng
-            type: Number,
-            default: 0
-        },
-        block: {
-            // block tháp
-            type: String,
-            default: null
-        },
-        htmchrt: {
-            // hiển thị mã căn hộ rao tin
+        kv_phuongxa: {
             type: Number,
             default: 0
         }
@@ -776,6 +616,58 @@ const newSchema = new mongoose.Schema({
             type: Number,
             default: 0
         },
+    },
+    // sức khoẻ - sắc đẹp
+    beautifull: {
+        loai_hinh_sp: {
+            type: Number,
+            default: 0
+        },
+        loai_sanpham: {
+            type: Number,
+            default: 0
+        },
+        han_su_dung: {
+            type: Number,
+            default: 0
+        },
+        hang_vattu: {
+            type: Number,
+            default: 0
+        }
+    },
+    // đồ gia dụng
+    wareHouse: {
+        loai_thiet_bi: {
+            type: Number,
+            default: 0
+        },
+        hang: {
+            type: Number,
+            default: 0
+        },
+        cong_suat: {
+            type: Number,
+            default: 0
+        },
+        dung_tich: {
+            type: Number,
+            default: 0
+        },
+        khoiluong: {
+            type: Number,
+            default: 0
+        },
+        loai_chung: {
+            type: Number,
+            default: 0
+        },
+        loai_sanpham: {
+            type: Number,
+            default: 0
+        },
+        
+        
     },
     // thú cưng
     pet: {
@@ -899,8 +791,6 @@ const newSchema = new mongoose.Schema({
             default: null
         }
     },
-
-
     // thông tin bán hàng
     infoSell: {
         groupType: {
@@ -925,7 +815,7 @@ const newSchema = new mongoose.Schema({
         },
         promotionValue: {
             // giá trị khuyến mãi
-            type: String,
+            type: Number,
             default: null
         },
 
@@ -955,6 +845,60 @@ const newSchema = new mongoose.Schema({
             default: 0
         }
     },
+    bidding:{
+        tgian_hethan_thau:{
+            type:Date
+        },
+        han_bat_dau:{
+            type:Date
+        },
+        han_su_dung:{
+            type:Date
+        }
+        ,
+        tgian_bd:{
+            type:Date
+        }
+        ,
+        tgian_kt:{
+            type:Date
+        },
+        new_job_kind:{
+            type:Number
+        },
+        new_file_dthau:{
+            type:String
+        },
+        noidung_nhs:{
+            type:String
+        },
+        new_file_nophs:{
+            type:String
+        },
+        noidung_chidan:{
+            type:String
+        },
+        new_file_chidan:{
+            type:String
+        },
+        donvi_thau:{
+            type:String
+        },
+        phi_duthau:{
+            type:String
+        },
+        file_mota:{
+            type:String
+        },
+        file_thutuc:{
+            type:String
+        },
+        file_hoso:{
+            type:String
+        }
+
+
+    }
 
 }, {
     collection: 'RN365_News',
