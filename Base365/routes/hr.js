@@ -1,13 +1,12 @@
-// routes/hr.js
-const express = require('express');
-const router = express.Router();
+var express = require('express');
+var router = express.Router();
 
-const recruitment = require('./hr/recruitmentRoute');
-const trainingRoute = require('./hr/trainingRoute');
-const settingRoute = require('./hr/settingRoute');
-const administrationRoute = require('./hr/administrationRoute');
-const welfare = require('./hr/welfareRoute');
-const organizationalStructure = require('./hr/organizationalStructure');
+var recruitment = require('./hr/recruitmentRoute');
+var trainingRoute = require('./hr/trainingRoute');
+var settingRoute = require('./hr/settingRoute');
+var administrationRoute = require('./hr/administrationRoute');
+var welfare = require('./hr/welfareRoute');
+var organizationalStructure = require('./hr/organizationalStructure');
 
 router.use('/recruitment', recruitment);
 router.use('/training', trainingRoute);

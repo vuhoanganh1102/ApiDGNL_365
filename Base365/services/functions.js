@@ -133,6 +133,18 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
         return false;
     }
 };
+// hàm so sánh phần tử trùng lặp
+exports.arrfil = function removeDuplicates(array, comparator) {
+    return array.filter(function(item, index) {
+        for (var i = 0; i < index; i++) {
+            if (comparator(item, array[i])) {
+                return false;
+            }
+        }
+        return true;
+    });
+}
+
 exports.getDatafindOne = async(model, condition) => {
     return model.findOne(condition).lean();
 };
@@ -143,6 +155,18 @@ exports.getDatafind = async(model, condition) => {
 
 exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
+};
+
+// hàm validate email
+exports.checkEmail = async(email) => {
+    const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return gmailRegex.test(email);
+};
+
+// hàm validate link
+exports.checkLink = async(link) => {
+    const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+    return urlRegex.test(yourUrlVariable);
 };
 
 // hàm khi thành công
@@ -231,7 +255,7 @@ const storageFile = (destination) => {
         destination: function(req, file, cb) {
             let userDestination = " "
             if (req.user) {
-                const userId = req.user.data._id; // Lấy id người dùng từ request
+                req.user.data._id; // Lấy id người dùng từ request
                 const d = new Date(),
                     day = d.getDate() < 10 ? "0" + d.getDate() : d.getDate(),
                     month = d.getMonth() < 10 ? "0" + Number(d.getMonth() + 1) : d.getMonth(),
@@ -313,6 +337,7 @@ const storage = multer.diskStorage({
 `)
     },
 });
+
 
 // hàm check file
 exports.uploadFile = multer({ storage: storageFile })
@@ -626,7 +651,6 @@ exports.checkDate = (date) => {
 }
 
 
-
 exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file) => {
     let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
     // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
@@ -649,7 +673,47 @@ exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file) => {
     });
 }
 
-// hàm tìm id max Quản Lí Chung
+
+//QLC
+exports.uploadFileQLC = async(folder, id, file, allowedExtensions) => {
+
+    let path1 = `../Storage/base365/QLC/pictures/${folder}/${id}/`;
+    let filePath = `../Storage/base365/QLC/pictures/${folder}/${id}/` + file.name;
+    let fileCheck = path.extname(filePath);
+    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
+        return false
+    }
+
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+
+        fs.writeFile(filePath, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return true
+}
+
+// hàm tạo link file QLC
+exports.createLinkFileQLC = (folder, id, name) => {
+    let link = process.env.PORT_QLC + '/base365/QLC/pictures/' + folder + '/' + id + '/' + name;
+    return link;
+}
+
+exports.deleteFileQLC = (id, file) => {
+        let filePath = `../Storage/base365/QLC/pictures/${id}/` + file;
+        fs.unlink(filePath, (err) => {
+            if (err) console.log(err);
+        });
+    }
+    // hàm tìm id max Quản Lí Chung
 exports.getMaxIDQLC = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;
     return maxUser.idQLC;
@@ -746,27 +810,6 @@ exports.replaceKeywordSearch = async(lower, keyword) => {
     keyword = keyword.replace(/ {2,}/g, " ");
     return keyword;
 };
-
-exports.replaceMQ = async(text) => {
-    text = text.replace(/\\'/g, "'");
-    text = text.replace(/'/g, "");
-    text = text.replace(/\\/g, "");
-    text = text.replace(/"/g, "");
-    return text;
-}
-
-//bỏ những từ khóa trong tiêu đề
-exports.removerTinlq = async(string) => {
-    var arr_remove = ["lương", "nhân", "trình", "viên", "chuyên", "cao", "tuyển", "dụng", "hấp", "dẫn", "chi", "tiết", "công", "ty", "tnhh", "sx", "tm", "dv", "phòng", "tại", "biết", "về"];
-    var result = arr_remove.reduce(function(str, remove) {
-        return str.replace(new RegExp(remove, "gi"), "");
-    }, string);
-
-    result = result.trim().replace(/\s+/g, " "); // Loại bỏ khoảng trắng dư thừa
-
-    return result;
-}
-
 
 
 // hàm random 

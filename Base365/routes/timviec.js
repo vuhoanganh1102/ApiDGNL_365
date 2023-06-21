@@ -1,33 +1,32 @@
-// routes/timviec.js
-const express = require('express');
-const router = express.Router();
+var express = require('express');
+var router = express.Router();
 
-const candidateRouter = require('./timviec/candidate');
-const companyRouter = require('./timviec/company');
-const cvRouter = require('./timviec/cv');
-const newTV365Router = require('./timviec/newTV365');
-const priceListRouter = require('./timviec/priceList');
-const trangVangRouter = require('./timviec/trangVang');
-const soSanhLuongRouter = require('./timviec/ssl');
-const mail365Router = require('./timviec/mail365');
-const adminRouter = require('./timviec/admin');
-const blogRouter = require('./timviec/blog');
-const donRouter = require('./timviec/don');
-const thuRouter = require('./timviec/thu');
-const syllRouter = require('./timviec/syll');
+var candidateRouter = require('./timviec/candidate');
+var companyRouter = require('./timviec/company');
+var cvRouter = require('./timviec/cv');
+var newTV365Router = require('./timviec/newTV365');
+var priceListRouter = require('./timviec/priceList');
+var trangVangRouter = require('./timviec/trangVang');
+var soSanhLuongRouter = require('./timviec/ssl');
+var mail365Router = require('./timviec/mail365');
+var adminRouter = require('./timviec/admin');
+var blogRouter = require('./timviec/blog');
+var donRouter = require('./timviec/don');
+var thuRouter = require('./timviec/thu');
+var syllRouter = require('./timviec/syll');
 
 router.use('/candidate', candidateRouter);
-router.use('/new', newTV365Router);
-router.use('/admin', adminRouter);
 router.use('/company', companyRouter);
-router.use('/blog', blogRouter);
 router.use('/cv', cvRouter);
-router.use('/don', donRouter);
-router.use('/thu', thuRouter);
-router.use('/syll', syllRouter);
+router.use('/new', newTV365Router);
 router.use('/priceList', priceListRouter);
 router.use('/trangVang', trangVangRouter);
 router.use('/ssl', soSanhLuongRouter);
 router.use('/mail365', mail365Router);
+router.use('/admin', adminRouter);
+router.use('/blog', blogRouter);
+router.use('/don', donRouter);
+router.use('/thu', thuRouter);
+router.use('/syll', syllRouter);
 
 module.exports = router;

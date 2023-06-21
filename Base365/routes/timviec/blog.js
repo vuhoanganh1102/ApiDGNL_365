@@ -19,6 +19,4 @@ router.post('/getListCategoryBlog', formData.parse(), blog.getListCategoryBlog);
 // api danh sách blog theo danh mục
 router.post('/getCategoryBlog', formData.parse(), blog.getCategoryBlog);
 
-//cẩm nang
-router.post('/getHandBook', formData.parse(), blog.getHandBook);
 module.exports = router;

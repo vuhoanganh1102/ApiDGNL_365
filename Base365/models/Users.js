@@ -909,6 +909,32 @@ const UserSchema = new mongoose.Schema({
         acceptMessStranger: {
             type: Number,
             default: 0
+        },
+        active: {
+            type: Number,
+            default: 0
+        },
+        status: {
+            type: String,
+
+            default: null
+        },
+        xacThucLienket: {
+            type: String,
+            default: null
+        },
+        store_name: {
+            type: String,
+            default: null
+        },
+        time: {
+            //thoi gian xac thuc
+            type: Date,
+            default: Date(Date.now())
+        },
+        acceptMessStranger: {
+            type: Number,
+            default: 0
         }
     }
 }, {
