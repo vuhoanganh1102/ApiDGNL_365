@@ -140,9 +140,13 @@ exports.editCustomer = async(req,res) => {
         revenue,size,rank,website,number_of_day_owed,gender,deb_limit,share_all,is_input,is_delete,
         id_cus_from,created_at,cus_from,link
       } = req.body;
-      if (Number.isNaN(cus_id)) {
-        throw { code: 704, message: " cus_id required" };
-    }else{
+      if (typeof cus_id === 'undefined') {
+        res.status(400).json({ success: false, error: 'cus_id không được bỏ trống' });
+      }
+      if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
+        res.status(400).json({ success: false, error: 'cus_id phải là 1 số' });
+      }
+    else{
         let updateDate = new Date();
         if(type == 1){          
         let logo = req.files.logo ;
@@ -201,8 +205,7 @@ exports.editCustomer = async(req,res) => {
               cus_from: cus_from,
               link: link
            })
-           customerService.success(res, "Customer edited successfully");  
-                    
+           customerService.success(res, "Customer edited successfully");                      
           } else {
             res.status(400).json({ validationResult });
           }
@@ -256,10 +259,8 @@ exports.editCustomer = async(req,res) => {
                 cus_from: cus_from,
                 link: link
              })
-             customerService.success(res, "Customer edited successfully");  
-                      
+             customerService.success(res, "Customer edited successfully");             
         }
-      
         }
         if(type == 2){
             let logo = req.files.logo ;
@@ -377,10 +378,8 @@ exports.editCustomer = async(req,res) => {
                     cus_from: cus_from,
                     link: link
                  })
-                 customerService.success(res, "Customer edited successfully");  
-                          
+                 customerService.success(res, "Customer edited successfully");               
             }
-          
         }
     }
   }  catch (error) {
@@ -388,4 +387,3 @@ exports.editCustomer = async(req,res) => {
         res.status(500).json({ error: 'Failed to find  Customer' });
       }
 }
-

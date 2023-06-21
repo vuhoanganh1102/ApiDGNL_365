@@ -49,10 +49,9 @@ exports.addCustomer = async (req, res) => {
       link
     } = req.body;
      
-     const com_id = req.user.data
-     console.log(com_id);
-     return
-    const validationResult = customerService.validateCustomerInput(name,email,address,phone_number,type,company_id);
+     const comId = req.user.data.inForPerson.employee.com_id;
+     const empId = req.user.data.idQLC
+    const validationResult = customerService.validateCustomerInput(name,email,address,phone_number,type,comId);
 
     let createDate = new Date();
 
@@ -104,6 +103,8 @@ exports.addCustomer = async (req, res) => {
               bill_invoice_address: bill_invoice_address,
               bill_invoice_address_email: bill_invoice_address_email,
               ship_city: ship_city,
+              company_id : comId,
+              emp_id : empId,
               ship_area: ship_area,
               bank_id: bank_id,
               bank_account: bank_account,
@@ -159,6 +160,8 @@ exports.addCustomer = async (req, res) => {
             bill_area_code: bill_area_code,
             bill_invoice_address: bill_invoice_address,
             bill_invoice_address_email: bill_invoice_address_email,
+            company_id : comId,
+            emp_id : empId,
             ship_city: ship_city,
             ship_area: ship_area,
             bank_id: bank_id,
@@ -221,6 +224,8 @@ exports.addCustomer = async (req, res) => {
               bill_area_code: bill_area_code,
               bill_invoice_address: bill_invoice_address,
               bill_invoice_address_email: bill_invoice_address_email,
+              company_id : comId,
+              emp_id : empId,
               ship_city: ship_city,
               ship_area: ship_area,
               bank_id: bank_id,
@@ -275,6 +280,8 @@ exports.addCustomer = async (req, res) => {
             bill_area_code: bill_area_code,
             bill_invoice_address: bill_invoice_address,
             bill_invoice_address_email: bill_invoice_address_email,
+            company_id : comId,
+            emp_id : empId,
             ship_city: ship_city,
             ship_area: ship_area,
             bank_id: bank_id,
@@ -313,7 +320,6 @@ exports.addCustomer = async (req, res) => {
 //hiển thị danh sách khách hàng
 exports.showKH = async(req,res) =>{
   try{
-    
     let {page} = req.body
     const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
     const userId = req.user.data.idQLC
@@ -326,8 +332,7 @@ exports.showKH = async(req,res) =>{
     || checkUser.inForPerson.employee.position_id == 9 
     || checkUser.inForPerson.employee.position_id == 3
     )
-    { 
-     
+    {     
       let id_dataNhanvien = checkUser.idQLC
       let id_com = checkUser.inForPerson.employee.com_id
       let showNV = await Customer.find({emp_id : id_dataNhanvien,company_id : id_com,is_delete : 0}).skip(startIndex).limit(perPage);
@@ -362,19 +367,16 @@ exports.showKH = async(req,res) =>{
       let nv = await User.find({ 'inForPerson.employee.dep_id': id_pb, 'inForPerson.employee.com_id': id_com }).select(
         'idQLC'
       );
-      
       const totalItems = await Customer.countDocuments({
         emp_id: { $in: nv.map((user) => user.idQLC) },
         is_delete: 0,
       });
-
       const paginatedData = await Customer.find({
         emp_id: { $in: nv.map((user) => user.idQLC) },
         is_delete: 0,
       })
         .skip(startIndex)
         .limit(perPage);
-
       res.status(200).json({
         totalItems,
         currentPage: page,
@@ -390,24 +392,33 @@ exports.showKH = async(req,res) =>{
   }
 }
                                  
-//Xoa khach hang
-exports.DeleteKH = async (req,res) => {
-  try{let {cus_id} = req.body;
-  if (isNaN(!cus_id)) {
-    throw { code: 704, message: " cus_id required" };
-}else{
-  await customerService.getDatafindOneAndUpdate(Customer,{cus_id : cus_id},{
-    cus_id: cus_id,
-    is_delete: 1,
- })
- res.status(200).json({ message: 'xoa thanh cong' })
-}
-}catch (error) {
-  console.error('Failed to show', error);
-  res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
-}
-  
-
-}                             
-
+//Xoa khach hang                            
+exports.DeleteKH = async (req, res) => {
+  try {
+    let {cus_id} = req.body;
+    if (typeof cus_id === 'undefined') {
+      res.status(400).json({ success: false, error: 'cus_id không được bỏ trống' });
+    }
+    if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
+      res.status(400).json({ success: false, error: 'cus_id phải là 1 số' });
+  }else{
+      const existingCustomer = await Customer.findOne({ cus_id: cus_id });
+      if (!existingCustomer) {
+        res.status(400).json({ success: false, error: ' khách hàng không tồn tại' });
+      }
+      else if (existingCustomer.is_delete === 1) {
+         res.status(400).json({ success: false, error: 'Khách hàng đã bị xóa trước đó' });
+      }else{
+         await customerService.getDatafindOneAndUpdate(Customer, { cus_id: cus_id }, {
+        cus_id: cus_id,
+        is_delete: 1,
+      });
+       res.status(200).json({ success: true, message: 'Xóa thành công' });
+      }
+    }
+  } catch (error) {
+    console.error('Failed to delete', error);
+   res.status(500).json({ success: false, error: errorMessage });
+  }
+};
 

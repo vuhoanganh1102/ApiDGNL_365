@@ -4,7 +4,7 @@ const CustomerRouter = require('./Customer/CustomerRoutes')
 const CustomerDetailsRoutes = require('./Customer/CustomerDetailsRoutes')
 
 
-
+// Lâm - Customer
 router.use('/crm',CustomerRouter)
 router.use('/crm',CustomerDetailsRoutes)
 // router.use('/crm',GroupCustomerRouter)
