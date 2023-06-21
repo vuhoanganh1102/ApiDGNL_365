@@ -34,4 +34,4 @@ const CallInfomationSchema = mongoose.Schema({
     versionKey: false,
     timestamp: true
 })
-module.exports = mongoose.model("CallInfomation", CallInfomationSchemas)
+module.exports = mongoose.model("CallInfomation", CallInfomationSchema)

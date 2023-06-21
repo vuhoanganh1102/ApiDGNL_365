@@ -11,7 +11,7 @@ const CommentPostSchema = new mongoose.Schema({
         type: Number
     },
     commentPersonId: {
-        type: Number
+        type: String
     },
     comment: {
         type: String,
@@ -34,10 +34,6 @@ const CommentPostSchema = new mongoose.Schema({
     timeComment: {
         type: Date,
     },
-    author: {
-        type: Number,
-        default: 0
-    }
 }, {
     collection: 'CommentPost',
     versionKey: false,

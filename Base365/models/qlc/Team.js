@@ -7,12 +7,14 @@ const TeamSchema = new Schema({
         type: Number,
         required: true
     },
-
     //ID phòng ban của tổ
-    deparmentId: {
+    dep_id: {
         type: Number,
     },
 
+    com_id: {
+        type : Number,
+    },
     //Tên của tổ
     teamName: {
         type: String,
@@ -25,13 +27,21 @@ const TeamSchema = new Schema({
     },
 
     //ID quản lý tổ
-    managerId: {
+    managerTeamId: {
+        type: Number
+    },
+    //ID phó tổ
+    deputyTeamId: {
         type: Number
     },
 
     //Sắp xếp theo thứ tự
     teamOrder: {
         type: Number
+    },
+    // tổng số nhân viên 
+    total_emp : {
+        type :Number,
     }
 })
 
