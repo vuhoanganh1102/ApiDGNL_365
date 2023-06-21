@@ -312,18 +312,25 @@ exports.addCustomer = async (req, res) => {
 //hiển thị danh sách khách hàng
 exports.showKH = async(req,res) =>{
   try{
-    let {id,page} = req.body
-  const checkUser = await User.findOne({idQLC : id})
+    console.log(req.user.data)
+    return
+    let {page} = req.body
+    const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
+    const userId = req.user.user_id
+    const startIndex = (page - 1) * perPage; 
+    const endIndex = page * perPage; 
+  const checkUser = await User.findOne({idQLC : userId})
   if(checkUser.inForPerson.employee.position_id == 1 
-    || checkUser.inForPerson.employee.position_id ==2 
+    || checkUser.inForPerson.employee.position_id == 2 
     || checkUser.inForPerson.employee.position_id == 9 
-    || checkUser.inForPerson.employee.position_id ==3)
+    || checkUser.inForPerson.employee.position_id == 3
+    )
     { 
-
+     
       let id_dataNhanvien = checkUser.idQLC
       let id_com = checkUser.inForPerson.employee.com_id
-      let showNV = await Customer.find({emp_id : id_dataNhanvien,company_id : id_com})
-      res.status(200).json( showNV );
+      let showNV = await Customer.find({emp_id : id_dataNhanvien,company_id : id_com,is_delete : 0}).skip(startIndex).limit(perPage);
+      res.status(200).json(showNV);
     }
     else if(checkUser.inForPerson.employee.position_id == 7 ||
        checkUser.inForPerson.employee.position_id == 8 ||
@@ -334,16 +341,53 @@ exports.showKH = async(req,res) =>{
       checkUser.inForPerson.employee.position_id == 18 ||
       checkUser.inForPerson.employee.position_id == 19 ||
       checkUser.inForPerson.employee.position_id == 17 ){
-      
+      let id_com = checkUser.inForPerson.employee.com_id
+      let showGD = await Customer.find({company_id : id_com,is_delete : 0}).skip(startIndex).limit(perPage)
+      res.status(200).json(showGD)
     }
-  console.log(checkUser.inForPerson.employee.position_id);
- 
+    else if (
+    checkUser.inForPerson.employee.position_id ==20 ||
+    checkUser.inForPerson.employee.position_id == 4 ||
+    checkUser.inForPerson.employee.position_id ==12 ||
+    checkUser.inForPerson.employee.position_id ==13 ||
+    checkUser.inForPerson.employee.position_id ==11 ||
+    checkUser.inForPerson.employee.position_id ==10 ||
+    checkUser.inForPerson.employee.position_id ==5 ||
+    checkUser.inForPerson.employee.position_id ==6 ) {
+      let id_com = checkUser.inForPerson.employee.com_id
+      let id_pb = checkUser.inForPerson.employee.dep_id
+      
+      let nv = await User.find({ 'inForPerson.employee.dep_id': id_pb, 'inForPerson.employee.com_id': id_com }).select(
+        'idQLC'
+      );
+      
+      const totalItems = await Customer.countDocuments({
+        emp_id: { $in: nv.map((user) => user.idQLC) },
+        is_delete: 0,
+      });
+
+      const paginatedData = await Customer.find({
+        emp_id: { $in: nv.map((user) => user.idQLC) },
+        is_delete: 0,
+      })
+        .skip(startIndex)
+        .limit(perPage);
+
+      res.status(200).json({
+        totalItems,
+        currentPage: page,
+        data: paginatedData,
+      });
+  }
+  else {
+    res.status(400).json({ error: 'khong co ket qua' })
+  }   
   }catch (error) {
     console.error('Failed to show', error);
     res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
   }
 }
                                  
-                                    
+//tìm kiếm theo số điện                                 
 
 

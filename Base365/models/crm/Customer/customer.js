@@ -220,7 +220,8 @@ const crm_customer = new Schema({
         default :0
     },
     is_delete : {
-        type : Number
+        type : Number,
+        default : 0
     },
     created_at : {// thời gian tạo 
         type : Date

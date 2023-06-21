@@ -47,11 +47,15 @@ exports.login = async (req, res, next) => {
     try {
         let email = req.body.email
         password = req.body.password
+        let datacheck = await Users.findOne({email,type:1},{_id:1,userName:1,idRaoNhanh365:1});
+        console.log(datacheck)
+
         type = 1
         if (email && password) {
             let checkMail = await functions.checkEmail(email)
             if (checkMail) {
-                let findUser = await functions.getDatafindOne(Users, { email, type: 1 })
+                let findUser = await functions.getDatafindOne(Users, { email, type: 1})
+               
                 if (!findUser) {
                     return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
@@ -61,7 +65,7 @@ exports.login = async (req, res, next) => {
                 }
                 // if (findUser.type == type) {
                 if (findUser != null) {
-                    const token = await functions.createToken(findUser, "1d")
+                    const token = await functions.createToken(datacheck, "1d")
                     const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
                     let data = {
                         access_token: "bear" + " " + token,
