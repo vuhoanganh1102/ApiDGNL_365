@@ -684,7 +684,8 @@ exports.getNew = async (req, res, next) => {
             islove: 1,
             until: 1,
             endvalue: 1,
-            type: 1
+            type: 1,
+            free:1
         };
         let data = await New.aggregate([
             {

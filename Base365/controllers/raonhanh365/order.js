@@ -187,7 +187,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             data = await New.aggregate([
                 {
                     $lookup: {
-                        from: "Order",
+                        from: "RN365_Order",
                         localField: "_id",
                         foreignField: "newId",
                         as: "Order"
@@ -204,7 +204,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             data = await New.aggregate([
                 {
                     $lookup: {
-                        from: "Order",
+                        from: "RN365_Order",
                         localField: "_id",
                         foreignField: "newId",
                         as: "Order"
@@ -220,7 +220,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             data = await New.aggregate([
                 {
                     $lookup: {
-                        from: "Order",
+                        from: "RN365_Order",
                         localField: "_id",
                         foreignField: "newId",
                         as: "Order"
@@ -236,7 +236,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             data = await New.aggregate([
                 {
                     $lookup: {
-                        from: "Order",
+                        from: "RN365_Order",
                         localField: "_id",
                         foreignField: "newId",
                         as: "Order"
@@ -252,7 +252,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             data = await New.aggregate([
                 {
                     $lookup: {
-                        from: "Order",
+                        from: "RN365_Order",
                         localField: "_id",
                         foreignField: "newId",
                         as: "Order"
@@ -260,7 +260,8 @@ exports.manageOrderBuy = async (req, res, next) => {
                 },
                 {
                     $match: { "Order.buyerId": buyerId, status: 4 }
-                }, {
+                }, 
+                {
                     $project: { title: 1, img: 1, Order: { status: 1, codeOrder: 1, quantity: 1, classify: 1, buyTime: 1, totalProductCost: 1, amountPaid: 1 } }
                 }
             ])
@@ -268,7 +269,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             data = await New.aggregate([
                 {
                     $lookup: {
-                        from: "Order",
+                        from: "RN365_Order",
                         localField: "_id",
                         foreignField: "newId",
                         as: "Order"

@@ -157,14 +157,8 @@ exports.listUserOnline = async (req, res, next) => {
 // lịch sử giao dịch
 exports.historyTransaction = async (req, res, next) => {
     try {
-        let userID = req.user.data.idRaoNhanh365;
-        let idRaoNhanh = await User.findById(userID, { idRaoNhanh365: 1 });
-        let data = [];
-        if (idRaoNhanh) {
-            data = await History.find({ userId: idRaoNhanh.idRaoNhanh365 }, { _id: 1, content: 1, price: 1, time: 1 })
-        }else{
-            return functions.setError(res,'get data faild',404)
-        }
+        let userId = req.user.data.idRaoNhanh365;
+        let data = await History.find({ userId })
         return functions.success(res, 'get data success', { data })
     } catch (error) {
         return functions.setError(res, error)

@@ -30,6 +30,25 @@ const TblTags = require('../../models/Raonhanh365/TblTag');
 const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
 
+const BaoHanh = require('../../models/Raonhanh365/BaoHanh');
+const BoViXuLy = require('../../models/Raonhanh365/BoViXuLy');
+const Dong = require('../../models/Raonhanh365/Dong');
+const DungLuong = require('../../models/Raonhanh365/DungLuong');
+const GiongThuCung = require('../../models/Raonhanh365/GiongThuCung');
+const Hang = require('../../models/Raonhanh365/Hang');
+const LoaiChung = require('../../models/Raonhanh365/LoaiChung');
+const ManHinh = require('../../models/Raonhanh365/Manhinh');
+const MauSac = require('../../models/Raonhanh365/MauSac');
+const MonTheThao = require('../../models/Raonhanh365/MonTheThao');
+const NamSanXuat = require('../../models/Raonhanh365/NamSanXuat');
+const NhomSp = require('../../models/Raonhanh365/NhomSp');
+const NhomSpChatLieu = require('../../models/Raonhanh365/NhomSpChatLieu');
+const NhomSpHinhDang = require('../../models/Raonhanh365/NhomSpHinhDang');
+const TangPhong = require('../../models/Raonhanh365/TangPhong');
+const ThongTinThuCung = require('../../models/Raonhanh365/ThongTinThuCung');
+const XuatXu = require('../../models/Raonhanh365/XuatXu');
+
+
 // danh mục sản phẩm
 exports.toolCategory = async(req, res, next) => {
     try {
@@ -2117,3 +2136,42 @@ exports.toolAdminTranslate = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
+
+exports.toolBaoHanh = async (req,res,next) =>{
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_admin_translate.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const AdminTranslate1 = new AdminTranslate({
+                        _id: i++,
+                        tra_keyword: data[i].tra_keyword,
+                        tra_text: data[i].tra_text,
+                        langId: data[i].lang_id,
+                        tra_source: data[i].tra_source,
+                    });
+                    await AdminTranslate1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
