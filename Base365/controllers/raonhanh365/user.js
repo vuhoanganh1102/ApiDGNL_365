@@ -129,14 +129,12 @@ exports.announceResult = async (req, res, next) => {
 // danh sách khách hàng online
 exports.listUserOnline = async (req, res, next) => {
     try {
-        let link = req.params.link;
         let data = [];
-        if (link === 'trang-chu.html') {
             data = await User.aggregate([
                 {
                     $lookup: {
-                        from: "NewRN",
-                        localField: "_id",
+                        from: "RN365_News",
+                        localField: "idRaoNhanh365",
                         foreignField: "userID",
                         as: "new"
                     }
@@ -144,28 +142,11 @@ exports.listUserOnline = async (req, res, next) => {
                 {
                     $match: { isOnline: 1 }
                 }, {
-                    $project: { userName: 1, avatarUser: 1, "new.title": 1 }
+                    $project: { userName: 1, avatarUser: 1, "new.title": 1, _id:1, type: 1,city:1,district:1,address:1}
                 }, {
                     $limit: 20
                 }
             ])
-        } else if (link === 'danh-sach-khach-hang-online.html') {
-            data = await User.aggregate([
-                {
-                    $lookup: {
-                        from: "NewRN",
-                        localField: "_id",
-                        foreignField: "userID",
-                        as: "new"
-                    }
-                },
-                {
-                    $match: { isOnline: 1 }
-                }, {
-                    $project: { userName: 1, avatarUser: 1, "new.title": 1 }
-                }
-            ])
-        }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
         return functions.setError(res, error)
