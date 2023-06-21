@@ -39,7 +39,6 @@
         "raw-body": "^2.5.2",
         "readdirp": "^3.6.0",
         "setprototypeof": "^1.2.0",
-        "sharp": "^0.32.1",
         "signal-exit": "^4.0.1",
         "slug": "^8.2.2",
         "socks": "^2.7.1",

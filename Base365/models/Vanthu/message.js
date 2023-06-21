@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Vanthu_message = new Schema({
-    id_mes : {
+    _id : {
         type : Number
     },
     id_user_sent : {
