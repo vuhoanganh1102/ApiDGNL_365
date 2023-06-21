@@ -13,7 +13,7 @@ const FormContract = new mongoose.Schema({
         type: String,
         required: true
     },
-    path_file: {
+    pathFile: {
         //đường dẫn file
         type: String,
         // required: true
@@ -35,16 +35,17 @@ const FormContract = new mongoose.Schema({
     is_delete: {
         //xóa hay chưa 
         type: Number,
+        default : 0,
     },
     created_at: {
         //thời điểm tạo 
         type: Date,
-        required: true
+        default : new Date(),
     },
     updated_at: {
         //thời điểm cập nhật 
         type: Date,
-        required: true
+        // required: true
     },
    
 });
