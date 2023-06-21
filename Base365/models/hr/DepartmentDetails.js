@@ -18,14 +18,6 @@ const HR_DepartmentDetailSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
-    gr_id: {
-        type: Number,
-        default: 0
-    },
-    type: {
-        type: Number,
-        default: 0
-    }
 }, {
     collection: 'HR_DepartmentDetails',
     versionKey: false,
