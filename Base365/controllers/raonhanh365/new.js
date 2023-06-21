@@ -3,6 +3,7 @@ const Category = require("../../models/Raonhanh365/Category");
 const New = require("../../models/Raonhanh365/New");
 const CategoryRaoNhanh365 = require("../../models/Raonhanh365/Category");
 const User = require("../../models/Users");
+const RN365_AdminUser = require('../../models/Raonhanh365/Admin/AdminUser')
 const LoveNews = require("../../models/Raonhanh365/LoveNews");
 const Bidding = require("../../models/Raonhanh365/Bidding");
 const LikeRN = require("../../models/Raonhanh365/Like");
@@ -11,7 +12,6 @@ const raoNhanh = require("../../services/rao nhanh/raoNhanh");
 const Comments = require("../../models/Raonhanh365/Comments");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
-const folderImg = "NewSell";
 dotenv.config();
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
@@ -20,8 +20,28 @@ exports.postNewMain = async (req, res, next) => {
         let video = req.files.video;
         let listImg = [];
         let nameVideo = "";
-        let {userID, cateID, title, money, until, description, free, poster, name, email, address, phone, 
-            status, detailCategory, buySell, productType, productGroup, city, district, ward, brand } = req.body;
+        let request = req.body,
+            userID = request.user_id, k
+        cateID = request.cate_id,
+            title = request.title,
+            money = request.money,
+            until = request.until,
+            description = request.description,
+            free = request.free,
+            poster = request.poster,
+            name = request.name,
+            email = request.email,
+            address = request.address,
+            phone = request.phone,
+            status = request.status,
+            detailCategory = request.detailCategory,
+            buySell = request.buySell,
+            productType = request.productType,
+            productGroup = request.productGroup,
+            city = request.city,
+            district = request.district,
+            ward = request.ward,
+            brand = request.brand;
         let fields = [
             userID,
             cateID,
@@ -38,103 +58,119 @@ exports.postNewMain = async (req, res, next) => {
             status,
             detailCategory,
         ];
-        
         for (let i = 0; i < fields.length; i++) {
             if (!fields[i])
                 return functions.setError(res, "Missing input value", 404);
-        }
-        const maxIDNews = await New.findOne({}, { _id: 1 })
-            .sort({ _id: -1 })
-            .limit(1)
-            .lean();
-        let newIDNews;
-        if (maxIDNews) {
-            newIDNews = Number(maxIDNews._id) + 1;
-        } else newIDNews = 1;
-        if (img) {
-            if (img && img.length >= 1 && img.length <= 10) {
-                let isValid = true;
-                for (let i = 0; i < img.length; i++) {
-                    let checkImg = await functions.checkImage(img[i].path);
-                    if (checkImg) {
-                        console.log(img[i]);
-                        await raoNhanh.uploadFileRN2(folderImg,cateID,img[i]);
-                        let imageName = functions.createLinkFileRaonhanh(folderImg, cateID, img[i].name);
-                        listImg.push({
-                            nameImg: imageName,
-                            size: img[i].size,
-                        });
-                    } else {
-                        isValid = false;
+            let fields = [
+                userID,
+                cateID,
+                title,
+                money,
+                until,
+                description,
+                free,
+                poster,
+                name,
+                email,
+                address,
+                phone,
+                status,
+                detailCategory,
+                img,
+            ];
+            for (let i = 0; i < fields.length; i++) {
+                if (!fields[i])
+                    return functions.setError(res, "Missing input value", 404);
+            }
+            const maxIDNews = await New.findOne({}, { _id: 1 })
+                .sort({ _id: -1 })
+                .limit(1)
+                .lean();
+            let newIDNews;
+            if (maxIDNews) {
+                newIDNews = Number(maxIDNews._id) + 1;
+            } else newIDNews = 1;
+            if (img) {
+                if (img && img.length >= 1 && img.length <= 10) {
+                    let isValid = true;
+                    for (let i = 0; i < img.length; i++) {
+                        let checkImg = await functions.checkImage(img[i].path);
+                        if (checkImg) {
+                            // day mot object gom 2 truong(nameImg, size) vao listImg
+                            listImg.push({
+                                nameImg: img[i].originalFilename,
+                                size: img[i].size,
+                            });
+                        } else {
+                            isValid = false;
+                        }
                     }
-                }
-                if (isValid == false) {
+                    if (isValid == false) {
+                        await functions.deleteImgVideo(img, video);
+                        return functions.setError(
+                            res,
+                            "đã có ảnh sai định dạng hoặc lớn hơn 2MB",
+                            405
+                        );
+                    }
+                } else if (img && img.length > 10) {
                     await functions.deleteImgVideo(img, video);
-                    return functions.setError(
-                        res,
-                        "đã có ảnh sai định dạng hoặc lớn hơn 2MB",
-                        405
-                    );
+                    return functions.setError(res, "chỉ được đưa lên tối đa 10 ảnh", 406);
                 }
-            } else if (img && img.length > 10) {
-                await functions.deleteImgVideo(img, video);
-                return functions.setError(res, "chỉ được đưa lên tối đa 10 ảnh", 406);
+            } else {
+                return functions.setError(res, "Missing input image", 406);
             }
-        } else {
-            // return functions.setError(res, "Missing input image", 406);
-        }
 
-        if (video) {
-            if (video.length == 1) {
-                let checkVideo = await functions.checkVideo(video[0]);
-                if (checkVideo) {
-                    nameVideo = video[0].filename;
-
-                } else {
-                    video.forEach(async (element) => {
-                        await functions.deleteImg(element);
-                    });
-                    return functions.setError(
-                        res,
-                        "video không đúng định dạng hoặc lớn hơn 100MB ",
-                        407
-                    );
+            if (video) {
+                if (video.length == 1) {
+                    let checkVideo = await functions.checkVideo(video[0]);
+                    if (checkVideo) {
+                        nameVideo = video[0].filename;
+                    } else {
+                        video.forEach(async (element) => {
+                            await functions.deleteImg(element);
+                        });
+                        return functions.setError(
+                            res,
+                            "video không đúng định dạng hoặc lớn hơn 100MB ",
+                            407
+                        );
+                    }
+                } else if (video.length > 1) {
+                    await functions.deleteImgVideo(img, video);
+                    return functions.setError(res, "chỉ được đưa lên 1 video", 408);
                 }
-            } else if (video.length > 1) {
-                await functions.deleteImgVideo(img, video);
-                return functions.setError(res, "chỉ được đưa lên 1 video", 408);
             }
+            req.info = {
+                _id: newIDNews,
+                userID: userID,
+                cateID: cateID,
+                title: title,
+                money: money,
+                until: until,
+                description: description,
+                free: free,
+                poster: poster,
+                name: name,
+                status: status,
+                email: email,
+                address: address,
+                phone: phone,
+                detailCategory: detailCategory,
+                district: district,
+                img: listImg,
+                video: nameVideo,
+                productGroup: productGroup,
+                productType: productType,
+                city: city,
+                district: district,
+                ward: ward,
+                brand: brand,
+                buySell: 2, // tin ban
+                active: 1, // hien thi tin
+            };
+            return next();
         }
-        req.info = {
-            _id: newIDNews,
-            userID: userID,
-            cateID: cateID,
-            title: title,
-            money: money,
-            until: until,
-            description: description,
-            free: free,
-            poster: poster,
-            name: name,
-            status: status,
-            email: email,
-            address: address,
-            phone: phone,
-            detailCategory: detailCategory,
-            district: district,
-            img: listImg,
-            video: nameVideo,
-            productGroup: productGroup,
-            productType: productType,
-            city: city,
-            district: district,
-            ward: ward,
-            brand: brand,
-            buySell: 2, // tin ban
-            active: 1, // hien thi tin
-        };
-        return next();
-    
     } catch (err) {
         console.log(err);
         return functions.setError(res, err);
@@ -1008,17 +1044,19 @@ exports.createBuyNew = async (req, res) => {
         // khởi tạo các biến có thể có
         let tenderFile = null;
 
-        let procedureFile = null;
+        let file_hoso = null;
 
-        let contentOnline = null;
+        let file_thutuc = null;
 
-        let instructionFile = null;
+        let file_mota = null;
 
-        let cityProcedure = req.body.cityProcedure || null;
+        let new_file_chidan = req.body.new_file_chidan || null;
 
-        let districtProcedure = req.body.districtProcedure || null;
+        let noidung_chidan = req.body.noidung_chidan || null;
 
-        let wardProcedure = req.body.wardProcedure || null;
+        let new_file_nophs = req.body.new_file_nophs || null;
+
+        let new_file_dthau = req.body.new_file_dthau || null;
         let active = 1;
         // khai báo và gán giá trị các biến bắt buộc
         let {
@@ -1030,15 +1068,21 @@ exports.createBuyNew = async (req, res) => {
             ward,
             apartmentNumber,
             description,
-            timeEndReceivebidding,
             status,
             timeNotiBiddingStart,
             timeNotiBiddingEnd,
-            instructionContent,
-            bidFee,
             endvalue, money,
             until,
-            until_bidding,
+            com_city,
+            com_district,
+            com_ward,
+            com_address_num,
+            han_bat_dau,
+            han_su_dung,
+            tgian_bd,
+            tgian_kt,
+            donvi_thau,
+            phi_duthau,
             phone,
             email,
             timeSell
@@ -1066,18 +1110,16 @@ exports.createBuyNew = async (req, res) => {
             ward &&
             apartmentNumber &&
             description &&
-            timeEndReceivebidding &&
+            han_su_dung &&
             status &&
             timeNotiBiddingStart &&
             timeNotiBiddingEnd &&
-            instructionContent &&
-            bidFee &&
+            noidung_chidan &&
+            phi_duthau &&
             endvalue &&
             phone &&
             email &&
-            until &&
-            until_bidding
-            && timeSell
+            tgian_kt && tgian_bd
         ) {
             // tạolink title từ title người dùng nhập
             let linkTitle = raoNhanh.createLinkTilte(title);
@@ -1572,7 +1614,6 @@ exports.getDetailNew = async (req, res, next) => {
         
         let buy = id.match(/[a-zA-Z]+/g)[0];
         let id_new = Number (id.replace(buy,''));
-        console.log("🚀 ~ file: new.js:1612 ~ exports.getDetailNew= ~ id_new:", id_new)
         let danh_muc1 = null;
         let danh_muc2 = null;
         let danh_muc3 = null;
@@ -1588,7 +1629,6 @@ exports.getDetailNew = async (req, res, next) => {
             return functions.setError(res, "invalid number", 404);
         }
         let check = await New.findById(id_new, { cateID: 1, userID: 1 });
-        console.log("🚀 ~ file: new.js:1627 ~ exports.getDetailNew= ~ check:", check)
         if (!check) {
             return functions.setError(res, "not found", 404);
         }
@@ -1693,7 +1733,7 @@ exports.getDetailNew = async (req, res, next) => {
             searchitem[`${cate_Special}`] = 1;
             searchitem.wattage  =   1;
         }
-           
+            
         let data = await New.aggregate([
             {
                 $lookup: {
@@ -1778,6 +1818,7 @@ exports.getDetailNew = async (req, res, next) => {
                 }
             }
         }
+        
         functions.success(res, "get data success", { data });
     } catch (error) {
         console.log("🚀 ~ file: new.js:1757 ~ exports.getDetailNew= ~ error:", error)
@@ -1810,8 +1851,8 @@ exports.loveNew = async (req, res, next) => {
 // tao token
 exports.createToken = async (req, res, next) => {
     try {
-        let id = 8;
-        let data = await User.findById(id);
+        let id = 4;
+        let data = await RN365_AdminUser.findById(id);
         let token = await functions.createToken(data, "100d");
         let data1 = "Bazer " + token;
         return functions.success(res, { data1 });
@@ -1833,15 +1874,18 @@ exports.newfavorite = async (req, res, next) => {
                 title: 1,
                 money: 1,
                 name: 1,
-                startvalue: 1,
-                until_tu: 1,
+                img: 1,
                 address: 1,
                 updateTime: 1,
                 city: 1,
                 district: 1,
                 ward: 1,
-                img: 1,
                 apartmentNumber: 1,
+                free:1,
+                endvalue:1,
+                createTime:1,
+                cateID:1,
+                until:1
             };
         } else if (linkTitle === "tin-ban-da-yeu-thich.html") {
             buySell = 2;
@@ -1856,6 +1900,11 @@ exports.newfavorite = async (req, res, next) => {
                 district: 1,
                 ward: 1,
                 apartmentNumber: 1,
+                free:1,
+                endvalue:1,
+                createTime:1,
+                cateID:1,
+                until:1
             };
         }
         if (!buySell) {
@@ -1946,7 +1995,7 @@ exports.managenew = async (req, res, next) => {
 exports.newisbidding = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let sl_tatCaTin = await Bidding.find({ userID }).count();
         let sl_tinConHan = 0;
         let searchItem = {
@@ -2101,7 +2150,7 @@ exports.getListCate = async (req, res, next) => {
 exports.manageNewBuySell = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let data = [];
         let tong_soluong = await New.find({ userID, buySell: 2 }).count();
         let tinDangDang = await New.find({ userID, sold: 1, buySell: 2 }).count();
@@ -2117,6 +2166,15 @@ exports.manageNewBuySell = async (req, res, next) => {
             apartmentNumber: 1,
             address: 1,
             money: 1,
+            han_su_dung:1,
+            linkTitle:1,
+            createTime:1,
+            sold:1,
+            endvalue:1,
+            until:1,
+            img:1,
+            quantitySold:1,
+            totalSold:1
         };
         if (linkTitle === "quan-ly-tin-ban.html") {
             data = await New.find({ userID, buySell: 2 }, searchItem);
@@ -2149,7 +2207,8 @@ exports.manageNewBuySell = async (req, res, next) => {
 exports.listCanNew = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
-        let userID = req.user.data._id;
+        
+        let userID = req.user.data.idRaoNhanh365;
         let data = [];
         let tong_soluong = await New.find({ userID, cateID: 120 }).count();
         let tinDangTimUngVien = await New.find({
@@ -2187,10 +2246,6 @@ exports.listCanNew = async (req, res, next) => {
             data,
         });
     } catch (error) {
-        console.log(
-            "🚀 ~ file: new.js:1315 ~ exports.manageNewBuySell= ~ error:",
-            error
-        );
         return functions.setError(res, error);
     }
 };
@@ -2227,7 +2282,7 @@ exports.listCanNew = async (req, res, next) => {
 exports.listJobNew = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let data = [];
         let tong_soluong = await New.find({ userID, cateID: 121 }).count();
         let tinDangTimViec = await New.find({
@@ -2392,7 +2447,7 @@ exports.manageDiscount = async (req, res, next) => {
             timePromotionStart: 1,
             timePromotionEnd: 1,
         };
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let search = {userID};
         let { searchKey, cateID, promotionType } = req.query;
         if (searchKey) {
@@ -2445,7 +2500,7 @@ exports.getListNewsApplied = async (req, res, next) => {
 
 exports.listJobWithPin = async (req, res, next) => {
     try {
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let newWithPinOfUser = await New.find({
             userID: userID,
             $or: [{ pinHome: 1 }, { pinCate: 1 }, { timePushNew: { $ne: null } }],

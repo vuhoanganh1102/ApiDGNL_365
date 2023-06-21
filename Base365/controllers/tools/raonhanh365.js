@@ -188,16 +188,16 @@ exports.toolNewRN = async (req, res, next) => {
                             countRefresh: data[i].new_count_refresh,
                             authen: data[i].new_authen,
                             pinCount: data[i].new_pin_count,
-                            refreshTime: refreshTime,
-                            timeHome: timeHome,
-                            timeCate: timeCate,
-                            timeEndReceivebidding: timeEndReceivebidding,
+                            refreshTime: data[i].refreshTime,
+                            timeHome: data[i].timeHome,
+                            timeCate: data[i].timeCate,
+                            baohanh:data[i].new_baohanh,
                             quantitySold: data[i].sluong_daban,
                             totalSold: data[i].tong_sluong,
                             quantityMin: data[i].soluong_min,
                             quantityMax: data[i].soluong_max,
-                            timePromotionStart: timePromotionStart,
-                            timePromotionEnd: timePromotionEnd,
+                            timePromotionStart: data[i].timePromotionStart,
+                            timePromotionEnd: data[i].timePromotionEnd,
                             img: images,
                             video: data[i].new_video,
                         });
@@ -236,6 +236,7 @@ exports.updateNewDescription = async (req, res, next) => {
                     if (post != null) {
                         await New.updateOne({ _id: data[i].new_id }, {
                             $set: {
+                                'han_su_dung':data[i].han_su_dung,
                                 'poster': data[i].canhan_moigioi,
                                 'description': data[i].new_description,
                                 'productType': data[i].loai_sanpham,
@@ -2021,3 +2022,98 @@ exports.toolBlog = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
+
+exports.toolAdminUser = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_admin_user.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const AdminUser1 = new AdminUser({
+                        _id: data[i].adm_id,
+                        loginName: data[i].adm_loginname,
+                        password: data[i].adm_password,
+                        name: data[i].adm_name,
+                        email: data[i].adm_email,
+                        address: data[i].adm_address,
+                        phone: data[i].adm_phone,
+                        mobile: data[i].adm_mobile,
+                        accessModule: data[i].adm_access_module,
+                        accessCategory: data[i].adm_access_category,
+                        date: data[i].adm_date,
+                        isAdmin: data[i].adm_isadmin,
+                        active: data[i].adm_active,
+                        langId: data[i].lang_id,
+                        delete: data[i].adm_delete,
+                        allCategory: data[i].adm_all_category,
+                        editAll: data[i].adm_edit_all,
+                        adminId: data[i].admin_id,
+                        department: data[i].adm_bophan,
+                        empId: data[i].emp_id,
+                        employer: data[i].adm_ntd,
+                    });
+                    await AdminUser1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
+exports.toolAdminTranslate = async (req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_admin_translate.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const AdminTranslate1 = new AdminTranslate({
+                        _id: i++,
+                        tra_keyword: data[i].tra_keyword,
+                        tra_text: data[i].tra_text,
+                        langId: data[i].lang_id,
+                        tra_source: data[i].tra_source,
+                    });
+                    await AdminTranslate1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};

@@ -78,7 +78,9 @@ exports.checkNameCateRaoNhanh = async(data)=>{
         case 'Việc làm':
             return 'job'
         case 'Thực phẩm, Đồ uống':
-            return 'food'   
+            return 'food' 
+        case 'Đồ gia dụng': 
+            return 'wareHouse'
         
     } 
 }
