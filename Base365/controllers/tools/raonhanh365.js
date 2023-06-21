@@ -28,6 +28,7 @@ const RegisterFail = require('../../models/Raonhanh365/RegisterFail');
 const Search = require('../../models/Raonhanh365/Search');
 const TblTags = require('../../models/Raonhanh365/TblTag');
 const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
+const Blog = require('../../models/Raonhanh365/Admin/Blog');
 
 // danh mục sản phẩm
 exports.toolCategory = async(req, res, next) => {
@@ -1949,3 +1950,74 @@ exports.toolPushNewsTime = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
+
+
+exports.toolBlog = async(req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        let id=1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_news.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const blog = new Blog({
+                        _id: data[i].new_id,
+                        adminId: data[i].admin_id,
+                        langId: data[i].lang_id,
+                        title: data[i].new_title,
+                        url: data[i].new_url,
+                        titleRewrite: data[i].new_title_rewrite,
+                        image: data[i].new_picture,
+                        imageWeb: data[i].new_picture_web,
+                        teaser: data[i].new_teaser,
+                        keyword: data[i].new_keyword,
+                        sapo: data[i].new_sapo,
+                        des: data[i].new_description,
+                        sameId: data[i].new_same_id,
+                        search: data[i].new_search,
+                        source: data[i].new_source,
+                        cache: data[i].new_cache,
+                        link: data[i].new_link,
+                        linkMd5: data[i].new_link_md5,
+                        categoryId: data[i].new_category_id,
+                        vgId: data[i].new_vg_id,
+                        status: data[i].new_stt,
+                        date: data[i].new_date,
+                        adminEdit: data[i].new_admin_edit,
+                        dateLastEdit: data[i].new_date_last_edit,
+                        order: data[i].new_order,
+                        totalVoteYes: data[i].news_total_vote_yes,
+                        totalVoteNo: data[i].news_total_vote_no,
+                        hit: data[i].new_hits,
+                        active: data[i].new_active,
+                        hot: data[i].new_hot,
+                        new: data[i].new_new,
+                        toc: data[i].new_toc,
+                        auto: data[i].new_auto,
+                        titleRelate: data[i].title_relate,
+                        contentRelate: data[i].content_relate
+                    });
+                    await Blog.create(blog);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}

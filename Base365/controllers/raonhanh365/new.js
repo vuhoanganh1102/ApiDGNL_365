@@ -11,6 +11,7 @@ const raoNhanh = require("../../services/rao nhanh/raoNhanh");
 const Comments = require("../../models/Raonhanh365/Comments");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
+const folderImg = "NewSell";
 dotenv.config();
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
@@ -19,28 +20,8 @@ exports.postNewMain = async (req, res, next) => {
         let video = req.files.video;
         let listImg = [];
         let nameVideo = "";
-        let request = req.body,
-            userID = request.user_id, k
-        cateID = request.cate_id,
-            title = request.title,
-            money = request.money,
-            until = request.until,
-            description = request.description,
-            free = request.free,
-            poster = request.poster,
-            name = request.name,
-            email = request.email,
-            address = request.address,
-            phone = request.phone,
-            status = request.status,
-            detailCategory = request.detailCategory,
-            buySell = request.buySell,
-            productType = request.productType,
-            productGroup = request.productGroup,
-            city = request.city,
-            district = request.district,
-            ward = request.ward,
-            brand = request.brand;
+        let {userID, cateID, title, money, until, description, free, poster, name, email, address, phone, 
+            status, detailCategory, buySell, productType, productGroup, city, district, ward, brand } = req.body;
         let fields = [
             userID,
             cateID,
@@ -57,119 +38,103 @@ exports.postNewMain = async (req, res, next) => {
             status,
             detailCategory,
         ];
+        
         for (let i = 0; i < fields.length; i++) {
             if (!fields[i])
                 return functions.setError(res, "Missing input value", 404);
-            let fields = [
-                userID,
-                cateID,
-                title,
-                money,
-                until,
-                description,
-                free,
-                poster,
-                name,
-                email,
-                address,
-                phone,
-                status,
-                detailCategory,
-                img,
-            ];
-            for (let i = 0; i < fields.length; i++) {
-                if (!fields[i])
-                    return functions.setError(res, "Missing input value", 404);
-            }
-            const maxIDNews = await New.findOne({}, { _id: 1 })
-                .sort({ _id: -1 })
-                .limit(1)
-                .lean();
-            let newIDNews;
-            if (maxIDNews) {
-                newIDNews = Number(maxIDNews._id) + 1;
-            } else newIDNews = 1;
-            if (img) {
-                if (img && img.length >= 1 && img.length <= 10) {
-                    let isValid = true;
-                    for (let i = 0; i < img.length; i++) {
-                        let checkImg = await functions.checkImage(img[i].path);
-                        if (checkImg) {
-                            // day mot object gom 2 truong(nameImg, size) vao listImg
-                            listImg.push({
-                                nameImg: img[i].originalFilename,
-                                size: img[i].size,
-                            });
-                        } else {
-                            isValid = false;
-                        }
-                    }
-                    if (isValid == false) {
-                        await functions.deleteImgVideo(img, video);
-                        return functions.setError(
-                            res,
-                            "đã có ảnh sai định dạng hoặc lớn hơn 2MB",
-                            405
-                        );
-                    }
-                } else if (img && img.length > 10) {
-                    await functions.deleteImgVideo(img, video);
-                    return functions.setError(res, "chỉ được đưa lên tối đa 10 ảnh", 406);
-                }
-            } else {
-                return functions.setError(res, "Missing input image", 406);
-            }
-
-            if (video) {
-                if (video.length == 1) {
-                    let checkVideo = await functions.checkVideo(video[0]);
-                    if (checkVideo) {
-                        nameVideo = video[0].filename;
-                    } else {
-                        video.forEach(async (element) => {
-                            await functions.deleteImg(element);
-                        });
-                        return functions.setError(
-                            res,
-                            "video không đúng định dạng hoặc lớn hơn 100MB ",
-                            407
-                        );
-                    }
-                } else if (video.length > 1) {
-                    await functions.deleteImgVideo(img, video);
-                    return functions.setError(res, "chỉ được đưa lên 1 video", 408);
-                }
-            }
-            req.info = {
-                _id: newIDNews,
-                userID: userID,
-                cateID: cateID,
-                title: title,
-                money: money,
-                until: until,
-                description: description,
-                free: free,
-                poster: poster,
-                name: name,
-                status: status,
-                email: email,
-                address: address,
-                phone: phone,
-                detailCategory: detailCategory,
-                district: district,
-                img: listImg,
-                video: nameVideo,
-                productGroup: productGroup,
-                productType: productType,
-                city: city,
-                district: district,
-                ward: ward,
-                brand: brand,
-                buySell: 2, // tin ban
-                active: 1, // hien thi tin
-            };
-            return next();
         }
+        const maxIDNews = await New.findOne({}, { _id: 1 })
+            .sort({ _id: -1 })
+            .limit(1)
+            .lean();
+        let newIDNews;
+        if (maxIDNews) {
+            newIDNews = Number(maxIDNews._id) + 1;
+        } else newIDNews = 1;
+        if (img) {
+            if (img && img.length >= 1 && img.length <= 10) {
+                let isValid = true;
+                for (let i = 0; i < img.length; i++) {
+                    let checkImg = await functions.checkImage(img[i].path);
+                    if (checkImg) {
+                        console.log(img[i]);
+                        await raoNhanh.uploadFileRN2(folderImg,cateID,img[i]);
+                        let imageName = functions.createLinkFileRaonhanh(folderImg, cateID, img[i].name);
+                        listImg.push({
+                            nameImg: imageName,
+                            size: img[i].size,
+                        });
+                    } else {
+                        isValid = false;
+                    }
+                }
+                if (isValid == false) {
+                    await functions.deleteImgVideo(img, video);
+                    return functions.setError(
+                        res,
+                        "đã có ảnh sai định dạng hoặc lớn hơn 2MB",
+                        405
+                    );
+                }
+            } else if (img && img.length > 10) {
+                await functions.deleteImgVideo(img, video);
+                return functions.setError(res, "chỉ được đưa lên tối đa 10 ảnh", 406);
+            }
+        } else {
+            // return functions.setError(res, "Missing input image", 406);
+        }
+
+        if (video) {
+            if (video.length == 1) {
+                let checkVideo = await functions.checkVideo(video[0]);
+                if (checkVideo) {
+                    nameVideo = video[0].filename;
+
+                } else {
+                    video.forEach(async (element) => {
+                        await functions.deleteImg(element);
+                    });
+                    return functions.setError(
+                        res,
+                        "video không đúng định dạng hoặc lớn hơn 100MB ",
+                        407
+                    );
+                }
+            } else if (video.length > 1) {
+                await functions.deleteImgVideo(img, video);
+                return functions.setError(res, "chỉ được đưa lên 1 video", 408);
+            }
+        }
+        req.info = {
+            _id: newIDNews,
+            userID: userID,
+            cateID: cateID,
+            title: title,
+            money: money,
+            until: until,
+            description: description,
+            free: free,
+            poster: poster,
+            name: name,
+            status: status,
+            email: email,
+            address: address,
+            phone: phone,
+            detailCategory: detailCategory,
+            district: district,
+            img: listImg,
+            video: nameVideo,
+            productGroup: productGroup,
+            productType: productType,
+            city: city,
+            district: district,
+            ward: ward,
+            brand: brand,
+            buySell: 2, // tin ban
+            active: 1, // hien thi tin
+        };
+        return next();
+    
     } catch (err) {
         console.log(err);
         return functions.setError(res, err);
