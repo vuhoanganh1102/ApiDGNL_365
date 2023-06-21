@@ -897,6 +897,13 @@ const UserSchema = new mongoose.Schema({
         doubleVerify: {
             type: Number,
             default: 0,
+        }
+    },
+    inforRN365: {
+        cccd: {
+            //so cmnd/can cuoc cong dan
+            type: String,
+            default: null
         },
         active: {
             type: Number,
@@ -919,6 +926,14 @@ const UserSchema = new mongoose.Schema({
             //thoi gian xac thuc
             type: Date,
             default: Date(Date.now())
+        },
+        active: {
+            type: Number,
+            default: 0
+        },
+        status: {
+            type: String,
+            default: ''
         },
         acceptMessStranger: {
             type: Number,
