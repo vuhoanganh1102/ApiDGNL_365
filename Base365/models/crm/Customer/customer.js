@@ -95,7 +95,7 @@ const crm_customer = new Schema({
         default :"0"
     },
     company_id : {// id cong ty 
-        type : Number, 
+        type : Number
     },
     emp_id : { // id nhân viên tạo ?
         type : Number,

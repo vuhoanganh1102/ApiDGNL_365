@@ -120,7 +120,7 @@ var Vanthu = require('./routes/vanthu/vanthuRoutes')
 var toolVT = require('./routes/vanthu/RoutertoolVT')
 
 const { router } = require("express/lib/application");
-
+var raonhanh = require('./routes/raonhanh365/tools');
 var app = express();
 
 
@@ -253,9 +253,11 @@ app.use('/api/tool', toolAddDataRouter);
 
 //API văn thu
 app.use("/api/tool", toolVT)
-app.use("/api", Vanthu)
 
+app.use("/api", Vanthu)
 // app.use("/api/crm/customer/group", groupCustomerRouter);
+app.use("/api/tool", raonhanh)
+
 
 
 // catch 404 and forward to error handler

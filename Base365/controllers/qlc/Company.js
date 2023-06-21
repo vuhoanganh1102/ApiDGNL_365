@@ -4,7 +4,7 @@ const md5 = require('md5');
 
 //Đăng kí tài khoản công ty 
 exports.register = async (req, res) => {
-    const { userName, email, phoneTK, password,createdAt,com_vip } = req.body;
+    const { userName, email, phoneTK, password,createdAt,com_vip ,position_id,com_id} = req.body;
 
     if ((userName && password && email && phoneTK) !== undefined) {
 
@@ -28,6 +28,8 @@ exports.register = async (req, res) => {
                 createdAt : new Date(),
                 "inForCompany.cds.com_vip" :com_vip, 
                 idQLC: (Number(MaxId) + 1),
+                "inForPerson.employee.position_id":position_id,
+                "inForPerson.employee.com_id":com_id,
                 avatarCompany: null
             })
             await user.save().then(() =>  functions.success(res,"tạo tài khoản thành công",{user})).catch((e) => {
@@ -54,8 +56,15 @@ exports.login = async (req, res, next) => {
         if (email && password) {
             let checkMail = await functions.checkEmail(email)
             if (checkMail) {
+<<<<<<< HEAD
                 let findUser = await functions.getDatafindOne(Users, { email, type: 1})
                
+=======
+                
+                let findUser = await Users.findOne({ email, type: 1 })
+                let crmtoken = await Users.findOne({ email, type: 1 }).select("idQLC row inForPerson.employee.position_id inForPerson.employee.com_id type")
+                console.log(crmtoken)
+>>>>>>> 31c038f6c71c4ee39b4be03261ada31378f4c2f7
                 if (!findUser) {
                     return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
@@ -65,21 +74,27 @@ exports.login = async (req, res, next) => {
                 }
                 // if (findUser.type == type) {
                 if (findUser != null) {
+<<<<<<< HEAD
                     const token = await functions.createToken(datacheck, "1d")
+=======
+                    const token = await functions.createToken(findUser, "1d")
+                    const tokenCRM = await functions.createToken(crmtoken, "1d")
+>>>>>>> 31c038f6c71c4ee39b4be03261ada31378f4c2f7
                     const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
                     let data = {
                         access_token: "bear" + " " + token,
+                        access_token_CRM: "bear" + " " + tokenCRM,
                         refresh_token: refreshToken,
                         com_info: {
-                            com_id: findUser._id,
+                            // com_id: findUser._id,
                             com_email: findUser.email,
-                            com_phone_tk: findUser.phoneTK,
-                            com_pass: findUser.password,
-                            com_name: findUser.userName,
-                            com_address: findUser.address,
-                            com_authentic: findUser.authentic,
-                            com_avatar: findUser.avatarCompany,
-                            idQLC: findUser.idQLC
+                            // com_phone_tk: findUser.phoneTK,
+                            // com_pass: findUser.password,
+                            // com_name: findUser.userName,
+                            // com_address: findUser.address,
+                            // com_authentic: findUser.authentic,
+                            // com_avatar: findUser.avatarCompany,
+                            // idQLC: findUser.idQLC
 
                         }
                     }

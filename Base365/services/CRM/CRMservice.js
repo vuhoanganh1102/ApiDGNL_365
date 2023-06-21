@@ -110,3 +110,53 @@ exports.validateCustomerInput = (name, phone_number,address,email,type) => {
     let link = process.env.DOMAIN_CRM + '/base365/CRM/Customer' + '/' + id + '/' + name;
     return link;
 }
+
+
+exports.upFileCRM = async (folder, id, file,allowedExtensions) => {
+
+  let path1 = `../../Storage/base365/CRM/Customer/${folder}/${id}/`;
+  let filePath = `../../Storage/base365/CRM/Customer/${folder}/${id}/` + file.name;
+  let fileCheck =  path.extname(filePath);
+  if(allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false)
+  {
+      return false
+  }
+ 
+  if (!fs.existsSync(path1)) {   
+      fs.mkdirSync(path1, { recursive: true });
+  }
+  fs.readFile(file.path, (err, data) => {
+      if (err) {
+          console.log(err)
+      }
+  
+      fs.writeFile(filePath, data, (err) => {
+          if (err) {
+          console.log(err)
+          }
+      });
+  });
+  return true
+}
+
+exports.deleteFileCRM = (id, file) => {
+  let filePath = `../../Storage/base365/CRM/Customer/${id}/` + file;
+  fs.unlink(filePath, (err) => {
+  if (err) console.log(err);
+  });
+  }
+
+  // hàm khi thành công
+exports.success = async (res, messsage = "", data = []) => {
+  return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
+};
+
+// hàm thực thi khi thất bại
+exports.setError = async (res, message, code = 500) => {
+  return res.status(code).json({ code, message })
+};
+// hàm tìm id max
+exports.getMaxID = async (model) => {
+  const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+  return maxUser._id;
+};

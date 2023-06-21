@@ -17,8 +17,6 @@ exports.addCustomer = async (req, res) => {
       description,
       tax_code,
       group_id,
-      emp_id,
-      company_id,
       status,
       business_areas,
       category,
@@ -50,7 +48,10 @@ exports.addCustomer = async (req, res) => {
       cus_from,
       link
     } = req.body;
-     console.log(type);
+     
+     const com_id = req.user.data
+     console.log(com_id);
+     return
     const validationResult = customerService.validateCustomerInput(name,email,address,phone_number,type,company_id);
 
     let createDate = new Date();
@@ -312,11 +313,10 @@ exports.addCustomer = async (req, res) => {
 //hiển thị danh sách khách hàng
 exports.showKH = async(req,res) =>{
   try{
-    console.log(req.user.data)
-    return
+    
     let {page} = req.body
     const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
-    const userId = req.user.user_id
+    const userId = req.user.data.idQLC
     const startIndex = (page - 1) * perPage; 
     const endIndex = page * perPage; 
   const checkUser = await User.findOne({idQLC : userId})

@@ -4,6 +4,11 @@ var blog = require('../../controllers/raonhanh365/blog');
 var formData = require('express-form-data');
 const functions = require('../../services/functions');
 
+//truoc dang nhap va sau dang nhap
+router.post('/listBlog', formData.parse(), blog.getListBlogByFields);
+
+//admin-------------------------------
+
 //api lay ra danh sach blog theo cac truong
 router.post('/getBlog', formData.parse(), functions.checkToken, blog.getListBlogByFields);
 

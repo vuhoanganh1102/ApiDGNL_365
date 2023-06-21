@@ -20,14 +20,17 @@ router.post('/changePassword',formData.parse(),functions.checkToken,userRN.chang
 router.post('/announceResult',formData.parse(),functions.checkToken,userRN.announceResult)
 
 // danh sách khách hàng online
-router.get('/listUserOnline/:link',userRN.listUserOnline);
+router.get('/listUserOnline',userRN.listUserOnline);
 
 //xac thuc thanh toan dam bao
 router.post('/createVerifyPayment', formData.parse(), functions.checkToken, userRN.createVerifyPayment);
 
 
 // thông tin tài khoản cá nhân
-router.get('/profileInformation',functions.checkToken,userRN.profileInformation)
+router.get('/profileInformation',functions.checkToken,userRN.profileInformation);
+
+//lay ra thong tin tai khoan user
+router.post('/inforUser', formData.parse(), userRN.profileInformation);
 
 
 // lịch sử giao dịch
