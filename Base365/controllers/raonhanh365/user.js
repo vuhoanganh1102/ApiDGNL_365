@@ -16,7 +16,7 @@ const folderUserImg = "img_user"
 // gửi otp
 exports.changePasswordSendOTP = async (req, res, next) => {
     try {
-        let id = req.user.data._id
+        let id = req.user.data._id;
         let otp = await functions.randomNumber;
         let data = {
             UserID: 637990,
@@ -157,7 +157,7 @@ exports.listUserOnline = async (req, res, next) => {
 // lịch sử giao dịch
 exports.historyTransaction = async (req, res, next) => {
     try {
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let idRaoNhanh = await User.findById(userID, { idRaoNhanh365: 1 });
         let data = [];
         if (idRaoNhanh) {
@@ -218,11 +218,7 @@ exports.createVerifyPayment = async(req, res, next) => {
 exports.profileInformation = async (req,res,next) => {
     try{
         let userID;
-        if(req.body.userId){
-            userID = req.body.userId;
-        }else {
-            userID = req.user.data._id;
-        }
+            userID = req.user.data.idRaoNhanh365;
         let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1};
         let dataUser = {}
 
@@ -283,7 +279,7 @@ exports.profileInformation = async (req,res,next) => {
 // api đổi avatar
 exports.updateAvatar = async (req, res, next) => {
     try {
-        let _id = req.user.data._id;
+        let _id = req.user.data.idRaoNhanh365;
 
         let File = req.files || null;
         let avatarUser = null;

@@ -212,11 +212,9 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-   
-   
-
-   
-    
+    han_su_dung:{
+        type:Date
+    },
     pinCount: {
         // số lượng tin ghim
         type: Number,
@@ -301,6 +299,11 @@ const newSchema = new mongoose.Schema({
         // 0 là cá nhân 1 là môi giới 
         type: Number,
         default: 0
+    },
+    baohanh:{
+        
+         type: Number,
+         default: 0
     },
     img: [{
         // danh sách ảnh
@@ -846,9 +849,6 @@ const newSchema = new mongoose.Schema({
         }
     },
     bidding:{
-        tgian_hethan_thau:{
-            type:Date
-        },
         han_bat_dau:{
             type:Date
         },
