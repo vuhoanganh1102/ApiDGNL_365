@@ -9,13 +9,14 @@ const Bidding = require('../../models/Raonhanh365/Bidding');
 const md5 = require('md5');
 const raoNhanh = require('../../services/rao nhanh/raoNhanh');
 const History = require('../../models/Raonhanh365/History');
+const Evaluate = require('../../models/Raonhanh365/Evaluate');
 
 
 const folderUserImg = "img_user"
 // gửi otp
 exports.changePasswordSendOTP = async (req, res, next) => {
     try {
-        let id = req.user.data._id
+        let id = req.user.data._id;
         let otp = await functions.randomNumber;
         let data = {
             UserID: 637990,
@@ -79,39 +80,27 @@ exports.changePassword = async (req, res, next) => {
 exports.updateInfoUserRaoNhanh = async (req, res, next) => {
     try {
         let _id = req.user.data._id;
-        let { userName } = req.body;
-        let email = req.body.email || null;
-        let address = req.body.address || null;
-        let File = req.files || null;
-        let avatarUser = null;
-        let updatedAt = new Date();
-        if (email) {
-            if (await functions.checkEmail(email) === false) {
-                return functions.setError(res, 'invalid email', 400)
-            } else {
-                let check_email = await User.findById(_id);
-                if (check_email.email !== email) {
-                    let check_email_lan2 = await User.find({ email });
-                    if (check_email_lan2.length !== 0) {
-                        return functions.setError(res, "email is exits", 400)
-                    }
+
+        let { userName, email, address } = req.body;
+        let updatedAt = new Date(Date.now());
+
+        if ((await functions.checkEmail(email)) === false) {
+            return functions.setError(res, "invalid email");
+        } else {
+            let check_email = await User.findById(_id);
+            if (check_email.email !== email) {
+                let check_email_lan2 = await User.find({ email });
+                if (check_email_lan2.length !== 0) {
+                    return functions.setError(res, "email is exits");
                 }
             }
         }
-        if (File.avatarUser) {
-            let upload = raoNhanh.uploadFileRaoNhanh('avt_dangtin', _id, File.avatarUser, ['.jpeg', '.jpg', '.png']);
-            if (!upload) {
-                return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
-            }
-            avatarUser = functions.createLinkFileRaonhanh('avt_dangtin', _id, File.avatarUser.name)
-            await User.findByIdAndUpdate(_id, { email, address, userName, avatarUser, updatedAt });
-        }
         await User.findByIdAndUpdate(_id, { email, address, userName, updatedAt });
-        return functions.success(res, 'update data user success')
+        return functions.success(res, "update data user success");
     } catch (error) {
-        return functions.setError(res, error)
+        return functions.setError(res, error);
     }
-}
+};
 
 // thông báo kết quả đấu thầu
 exports.announceResult = async (req, res, next) => {
@@ -141,14 +130,12 @@ exports.announceResult = async (req, res, next) => {
 // danh sách khách hàng online
 exports.listUserOnline = async (req, res, next) => {
     try {
-        let link = req.params.link;
         let data = [];
-        if (link === 'trang-chu.html') {
             data = await User.aggregate([
                 {
                     $lookup: {
-                        from: "NewRN",
-                        localField: "_id",
+                        from: "RN365_News",
+                        localField: "idRaoNhanh365",
                         foreignField: "userID",
                         as: "new"
                     }
@@ -156,28 +143,11 @@ exports.listUserOnline = async (req, res, next) => {
                 {
                     $match: { isOnline: 1 }
                 }, {
-                    $project: { userName: 1, avatarUser: 1, "new.title": 1 }
+                    $project: { userName: 1, avatarUser: 1, "new.title": 1, _id:1, type: 1,city:1,district:1,address:1}
                 }, {
                     $limit: 20
                 }
             ])
-        } else if (link === 'danh-sach-khach-hang-online.html') {
-            data = await User.aggregate([
-                {
-                    $lookup: {
-                        from: "NewRN",
-                        localField: "_id",
-                        foreignField: "userID",
-                        as: "new"
-                    }
-                },
-                {
-                    $match: { isOnline: 1 }
-                }, {
-                    $project: { userName: 1, avatarUser: 1, "new.title": 1 }
-                }
-            ])
-        }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
         return functions.setError(res, error)
@@ -187,7 +157,7 @@ exports.listUserOnline = async (req, res, next) => {
 // lịch sử giao dịch
 exports.historyTransaction = async (req, res, next) => {
     try {
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let idRaoNhanh = await User.findById(userID, { idRaoNhanh365: 1 });
         let data = [];
         if (idRaoNhanh) {
@@ -247,17 +217,56 @@ exports.createVerifyPayment = async(req, res, next) => {
 // tổng quan thông tin tài khoản cá nhân
 exports.profileInformation = async (req,res,next) => {
     try{
-        let userID = req.user.data._id;
-        let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1}
+        let userID;
+            userID = req.user.data.idRaoNhanh365;
+        let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1};
         let dataUser = {}
-        let userInFor = await User.findOne({_id: userID}, fields)
-        let numberOfNew = await New.find({userID: userID}).count();
-        let numberOfNewSold = await New.find({userID: userID, sold: 1}).count();
+
+        //thong tin tk
+        let userInFor = await User.findOne({_id: userID}, fields);
+
+        //tin da dang
+        let numberOfNew = await New.find({userID: userID, active: 1}).count();
+        
+        //tin da dang trong 30
+        var currentDate = new Date();  // Lấy ngày hiện tại
+        var thirtyDaysAgo = new Date(currentDate.getTime() - (30 * 24 * 60 * 60 * 1000));  // Trừ 30 ngày từ ngày hiện tại
+        let numberOfNewNgay = await New.find({userID: userID, active: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
+
+        //tin da ban
+        let numberOfNewSold = await New.find({userID: userID, active: 1, sold: 1}).count();
+        
+        //tin da ban trong 30
+        let numberOfNewNgaySold = await New.find({userID: userID, active: 1, sold: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
+
+        //so luong danh gia va so sao
+        let listEvaluate = await Evaluate.find({userId: userID, newId: 0, active: 1}, {_id: 1, stars: 1});
+        let numberEvaluate = await Evaluate.countDocuments({userId: userID, newId: 0, active: 1});
+        let numberStar = 0;
+        for(let i=0; i<listEvaluate.length; i++) {
+            numberStar += listEvaluate[i].stars;
+        }
+        // numberEvaluate = listEvaluate.count();
+
+        fields = {_id: 1, image: 1, title: 1, createTime: 1, updateTime: 1, address: 1, money: 1, sold: 1, unit: 1,
+        cateID: 1, linkTitle: 1, free: 1, img: 1}
+        //tin dang ban
+        let listSellNews = await New.find({userID: userID, active: 1, buySell: 2}, fields);
+
+        //tin dang mua
+        let listBuyNews = await New.find({userID: userID, active: 1, buySell: 1}, fields);
+
+        // let numberOfNewSold = await New.find({userID: userID, sold: 1}).count();
         let likeNew = await LoveNews.find({userID: userID}).count()
         dataUser.InforUser = userInFor;
-        dataUser.numberOfNew = numberOfNew
-        dataUser.numberOfNewSold = numberOfNewSold
+        dataUser.numberOfNew = numberOfNew;
+        dataUser.numberOfNewNgay = numberOfNewNgay;
+        dataUser.numberOfNewSold = numberOfNewSold;
+        dataUser.numberOfNewNgaySold = numberOfNewNgaySold;
+        dataUser.evaluate = {numberEvaluate, numberStar};
         dataUser.likeCount = likeNew
+        dataUser.listSellNews = listSellNews;
+        dataUser.listBuyNews = listBuyNews;
 
         return functions.success(res, 'get Data User Success', dataUser);
     } catch(err){
@@ -267,3 +276,34 @@ exports.profileInformation = async (req,res,next) => {
 }
 
 
+// api đổi avatar
+exports.updateAvatar = async (req, res, next) => {
+    try {
+        let _id = req.user.data.idRaoNhanh365;
+
+        let File = req.files || null;
+        let avatarUser = null;
+        if (File) {
+            let upload = raoNhanh.uploadFileRaoNhanh(
+                "img_user",
+                _id,
+                File.avatarUser,
+                [".jpeg", ".jpg", ".png"]
+            );
+            if (!upload) {
+                return functions.setError(res, "Định dạng ảnh không hợp lệ");
+            }
+            avatarUser = functions.createLinkFileRaonhanh(
+                "img_user",
+                _id,
+                File.avatarUser.name
+            );
+            await User.findByIdAndUpdate(_id, {
+                avatarUser
+            });
+        }
+        return functions.success(res, "update data user success");
+    } catch (error) {
+        return functions.setError(res, error);
+    }
+};
