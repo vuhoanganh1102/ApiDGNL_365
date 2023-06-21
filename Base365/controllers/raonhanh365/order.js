@@ -108,7 +108,7 @@ exports.order = async (req, res, next) => {
 exports.bidding = async (req, res, next) => {
     try {
         let { newId, productName, productDesc, price, priceUnit } = req.body;
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let product_link = req.body.product_link || null;
         let user_intro = req.body.user_intro || null;
         let uploadfile = req.files;
@@ -175,7 +175,7 @@ exports.announceResult = async (req, res, next) => {
 exports.manageOrderBuy = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
-        let buyerId = req.user.data._id;
+        let buyerId = req.user.data.idRaoNhanh365;
         let data = [];
         let sl_choXacNhan = await Order.find({ buyerId, status: 0 }).count();
         let sl_dangXuLy = await Order.find({ buyerId, status: 1 }).count();
@@ -293,7 +293,7 @@ exports.manageOrderBuy = async (req, res, next) => {
 exports.manageOrderSell = async (req, res, next) => {
     try {
         let linkTitle = req.params.linkTitle;
-        let sellerId = req.user.data._id;
+        let sellerId = req.user.data.idRaoNhanh365;
         let data = [];
         let sl_choXacNhan = await Order.find({ sellerId, status: 0 }).count();
         let sl_dangXuLy = await Order.find({ sellerId, status: 1 }).count();
@@ -412,7 +412,7 @@ exports.statusOrder = async (req, res, next) => {
     try {
         let status = req.body.status;
         let orderId = req.body.orderId;
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let check = await Order.findById(orderId);
         if (!check || check.length === 0) {
             return functions.setError(res, 'không tìm thấy đơn hàng', 400)
@@ -464,7 +464,7 @@ exports.statusOrder = async (req, res, next) => {
 exports.cancelOrder = async (req, res, next) => {
     try {
         let orderId = req.body.orderId;
-        let userID = req.user.data._id;
+        let userID = req.user.data.idRaoNhanh365;
         let orderCancellationReason = req.body.orderCancellationReason || null;
         let check = await Order.findById(orderId);
         if (!check || check.length === 0) {

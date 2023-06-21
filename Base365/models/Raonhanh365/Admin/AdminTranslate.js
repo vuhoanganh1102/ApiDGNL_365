@@ -6,12 +6,12 @@ const AdminTranslateSchema = new mongoose.Schema({
         type: Number,
         require: true
     },
-    keyword: {
+    tra_keyword: {
         //kyword
         type: String,
         default: null
     },
-    text: {
+    tra_text: {
         //mật khẩu của admin,
         type: String,
         default: null
@@ -21,7 +21,7 @@ const AdminTranslateSchema = new mongoose.Schema({
         type: Number,
         default: null
     },
-    source: {
+    tra_source: {
         //tên admin
         type: String,
         default: null

@@ -32,7 +32,7 @@ router.put('/updateBuyNew',formData.parse(), functions.checkToken, newRN.updateB
 
 
 // chi tiết tin 
-router.get('/getDetailNew/:linkTitle',newRN.getDetailNew)
+router.post('/getDetailNew',formData.parse(),newRN.getDetailNew)
 
 // yêu thích tin
 router.post('/loveNew',functions.checkToken,formData.parse(),newRN.loveNew)

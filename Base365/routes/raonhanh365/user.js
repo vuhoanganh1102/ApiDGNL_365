@@ -8,7 +8,8 @@ router.post('/changePasswordSendOTP',formData.parse(),functions.checkToken,userR
 
 // cập nhật thông tin user
 router.put('/updateInfoUserRaoNhanh',formData.parse(),functions.checkToken,userRN.updateInfoUserRaoNhanh)
-
+// cập nhật thông tin user
+router.put('/updateAvatar',formData.parse(),functions.checkToken,userRN.updateAvatar)
 // check otp
 router.post('/changePasswordCheckOTP',formData.parse(),functions.checkToken,userRN.changePasswordCheckOTP)
 
@@ -19,14 +20,17 @@ router.post('/changePassword',formData.parse(),functions.checkToken,userRN.chang
 router.post('/announceResult',formData.parse(),functions.checkToken,userRN.announceResult)
 
 // danh sách khách hàng online
-router.get('/listUserOnline/:link',userRN.listUserOnline);
+router.get('/listUserOnline',userRN.listUserOnline);
 
 //xac thuc thanh toan dam bao
 router.post('/createVerifyPayment', formData.parse(), functions.checkToken, userRN.createVerifyPayment);
 
 
 // thông tin tài khoản cá nhân
-router.get('/profileInformation',functions.checkToken,userRN.profileInformation)
+router.get('/profileInformation',functions.checkToken,userRN.profileInformation);
+
+//lay ra thong tin tai khoan user
+router.post('/inforUser', formData.parse(), userRN.profileInformation);
 
 
 // lịch sử giao dịch
