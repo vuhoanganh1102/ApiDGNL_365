@@ -905,29 +905,13 @@ const UserSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-        cccdFrontImg: {
-            //anh truoc cccd
-            type: String,
-            default: null
+        active: {
+            type: Number,
+            default: 0
         },
-        cccdBackImg: {
-            //anh sau cccd
+        status: {
             type: String,
-            default: null
-        },
-        bankName: {
-            //ten ngan hang
-            type: String,
-            default: null
-        },
-        stk: {
-            //so tai khoan
-            type: String,
-            default: null
-        },
-        ownerName: {
-            //ten chu tai khoan
-            type: String,
+
             default: null
         },
         xacThucLienket: {

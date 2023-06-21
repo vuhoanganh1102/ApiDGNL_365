@@ -253,12 +253,11 @@ app.use('/api/tool', toolAddDataRouter);
 
 //API văn thu
 app.use("/api/tool", toolVT)
-app.use("/api", Vanthu)
 
+app.use("/api", Vanthu)
 // app.use("/api/crm/customer/group", groupCustomerRouter);
-//API văn thu
 app.use("/api/tool", raonhanh)
-// app.use("/api/crm/customer/group", groupCustomerRouter);
+
 
 
 // catch 404 and forward to error handler

@@ -4,9 +4,9 @@ const md5 = require('md5');
 //đăng kí tài khoản nhân viên 
 exports.register = async (req,res)=>{
     
-        const { userName, email , phoneTK, password, companyID, address } = req.body;
+        const { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education,otp} = req.body;
     
-            if ((userName && password && companyID &&
+            if ((userName && password && com_id &&
                 address && email && phoneTK) !== undefined) {
     
                     //  check email co trong trong database hay khong
@@ -15,29 +15,30 @@ exports.register = async (req,res)=>{
                     if (user == null) {
                             const user = new Users({
                                 _id: Number(MaxId) + 1||1 ,
-                                email,
-                                phoneTK,
-                                userName: req.body.userName,
-                                phone: req.body.phone,
-                                avatarUser: req.body.avatarUser,
-                                "inForPerson.companyID": req.body.companyID,
-                                "inForPerson.depID": req.body.depID,
+                                email :email,
+                                phoneTK :phoneTK,
+                                userName: userName,
+                                phone: phone,
+                                avatarUser: avatarUser,
+                                "inForPerson.employee.position_id":position_id,
+                                "inForPerson.employee.com_id":com_id,
+                                "inForPerson.employee.dep_id":dep_id,
                                 type: 2,
                                 password: md5(password),
-                                address: req.body.address,
-                                otp: req.body.otp,
+                                address: address,
+                                otp: otp,
                                 authentic: null||0,
                                 fromWeb: "quanlichung.timviec365",
                                 role: 0,
                                 avatarUser: null,
                                 idQLC: (Number(MaxId) + 1),
-                                groupID: req.body.groupID,
-                                birthday: req.body.birthday,
-                                gender: req.body.gender,
-                                married: req.body.married,
-                                exp: req.body.exp,
-                                startWorkingTime: req.body.startWorkingTime,
-                                candiHocVan: req.body.candiHocVan,
+                                "inForPerson.employee.group_id": group_id,
+                                "inForPerson.account.birthday": birthday,
+                                "inForPerson.account.gender": gender,
+                                "inForPerson.account.married": married,
+                                "inForPerson.account.experience": experience,
+                                startWorkingTime: startWorkingTime,
+                                "inForPerson.account.education": education,
                             })
                         await user.save().then(() => functions.success(res,"tạo tài khoản thành công",{user})).catch((e) => {
                             console.log(e);
@@ -121,6 +122,7 @@ exports.login = async (req,res)=>{
             let checkMail = await functions.checkEmail(email)
             if(checkMail){
                 let findUser = await functions.getDatafindOne(Users, { email, type: 2 })
+                let crmtoken = await Users.findOne({ email, type: 2 }).select("idQLC row inForPerson.employee.position_id inForPerson.employee.com_id type")
                 if (!findUser) {
                     return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
@@ -130,28 +132,31 @@ exports.login = async (req,res)=>{
                 }
                 if (findUser != null) {
                 const token = await functions.createToken(findUser, "1d");
+                const tokenCRM = await functions.createToken(crmtoken, "1d")
+
                 const refreshToken = await functions.createToken({userId : findUser._id}, "1y")
                 let data = {
                     access_token : "bear" + " " + token,
+                    access_token_CRM: "bear" + " " + tokenCRM,
                     refresh_token : refreshToken,
                     user_info: {
-                        user_id : findUser._id,
+                        // user_id : findUser._id,
                         user_email :findUser.email,
-                        user_phoneTK : findUser.phoneTK,
-                        user_password :findUser.password,
-                        user_name : findUser.userName,
-                        user_address : findUser.address,
-                        user_authentic : findUser.authentic,
-                        user_avatar : findUser.avatarUser,
-                        user_companyID: findUser.companyID,
-                        user_depID: findUser.depID,
-                        user_groupID : findUser.groupID,
-                        user_birthday : findUser.birthday,
-                        user_gender : findUser.gender,
-                        user_married : findUser.married,
-                        user_exp : findUser.exp,
-                        user_startWorkingTime: findUser.startWorkingTime,
-                        user_candiHocVan : findUser.candiHocVan,
+                        // user_phoneTK : findUser.phoneTK,
+                        // user_password :findUser.password,
+                        // user_name : findUser.userName,
+                        // user_address : findUser.address,
+                        // user_authentic : findUser.authentic,
+                        // user_avatar : findUser.avatarUser,
+                        // user_com_id: findUser.com_id,
+                        // user_dep_id: findUser.dep_id,
+                        // user_group_id : findUser.group_id,
+                        // user_birthday : findUser.birthday,
+                        // user_gender : findUser.gender,
+                        // user_married : findUser.married,
+                        // user_exp : findUser.exp,
+                        // user_startWorkingTime: findUser.startWorkingTime,
+                        // user_education : findUser.education,
                         
                     }
 
@@ -206,22 +211,22 @@ exports.updateInfoEmployee = async(req, res, next) => {
         let email = req.user.data.email
         let request = req.body,
             phone = request.phone,
-            companyID = request.companyID,
+            com_id = request.com_id,
             userName = request.userName,
             address = request.address,
             avatarUser = request.avatarUser,
-            depID = request.depID,
+            dep_id = request.dep_id,
             birthday = request.birthday
             gender = request.gender
             married = request.married
             exp = request.exp
             startWorkingTime = request.startWorkingTime
-            candiHocVan = request.candiHocVan
+            education = request.education
             positionID = request.positionID
-            groupID = request.groupID
+            group_id = request.group_id
 
 
-        if (phone || userName || email ||positionID || candiHocVan || avatarUser || address||avatarUser||depID||birthday||gender||married||exp) {
+        if (phone || userName || email ||positionID || education || avatarUser || address||avatarUser||dep_id||birthday||gender||married||exp) {
             let checkPhone = await functions.checkPhoneNumber(phone)
             if (checkPhone) {
                 await Users.updateOne({ email: email, type: 2 }, {
@@ -230,16 +235,16 @@ exports.updateInfoEmployee = async(req, res, next) => {
                         'phone': phone,
                         'email': email,
                         'address': address,
-                        'companyID':companyID || null,
+                        'com_id':com_id || null,
                         'avatarUser': avatarUser || null,
-                        'department': depID || null,
-                        'group' : groupID || null,
+                        'department': dep_id || null,
+                        'group' : group_id || null,
                         'birthday': birthday,
                         'gender': gender,
                         'married': married,
                         'exp': exp,
                         'startWorkingTime': startWorkingTime,
-                        'candiHocVan': candiHocVan,
+                        'education': education,
                         'positionID': positionID,
                     }
                 });
