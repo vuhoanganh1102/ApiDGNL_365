@@ -9,5 +9,6 @@ router.post('/showAll',functions.checkToken,formData.parse(),CustomerRoutes.show
 //Api thêm mới khách hàng
 router.post('/addCustomer',functions.checkToken,formData.parse(),CustomerRoutes.addCustomer);
 
-
+//Api xoa khach hang
+router.post('/deleteKH',functions.checkToken,formData.parse(),CustomerRoutes.DeleteKH)
 module.exports = router;

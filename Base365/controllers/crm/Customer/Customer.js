@@ -320,7 +320,8 @@ exports.showKH = async(req,res) =>{
     const startIndex = (page - 1) * perPage; 
     const endIndex = page * perPage; 
   const checkUser = await User.findOne({idQLC : userId})
-  if(checkUser.inForPerson.employee.position_id == 1 
+  if(
+       checkUser.inForPerson.employee.position_id == 1 
     || checkUser.inForPerson.employee.position_id == 2 
     || checkUser.inForPerson.employee.position_id == 9 
     || checkUser.inForPerson.employee.position_id == 3
@@ -332,8 +333,9 @@ exports.showKH = async(req,res) =>{
       let showNV = await Customer.find({emp_id : id_dataNhanvien,company_id : id_com,is_delete : 0}).skip(startIndex).limit(perPage);
       res.status(200).json(showNV);
     }
-    else if(checkUser.inForPerson.employee.position_id == 7 ||
-       checkUser.inForPerson.employee.position_id == 8 ||
+    else if(
+      checkUser.inForPerson.employee.position_id == 7 ||
+      checkUser.inForPerson.employee.position_id == 8 ||
       checkUser.inForPerson.employee.position_id == 14 ||
       checkUser.inForPerson.employee.position_id == 16 ||
       checkUser.inForPerson.employee.position_id == 22 ||
@@ -388,6 +390,24 @@ exports.showKH = async(req,res) =>{
   }
 }
                                  
-//tìm kiếm theo số điện                                 
+//Xoa khach hang
+exports.DeleteKH = async (req,res) => {
+  try{let {cus_id} = req.body;
+  if (isNaN(!cus_id)) {
+    throw { code: 704, message: " cus_id required" };
+}else{
+  await customerService.getDatafindOneAndUpdate(Customer,{cus_id : cus_id},{
+    cus_id: cus_id,
+    is_delete: 1,
+ })
+ res.status(200).json({ message: 'xoa thanh cong' })
+}
+}catch (error) {
+  console.error('Failed to show', error);
+  res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+}
+  
+
+}                             
 
 

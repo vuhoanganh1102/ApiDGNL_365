@@ -56,15 +56,10 @@ exports.login = async (req, res, next) => {
         if (email && password) {
             let checkMail = await functions.checkEmail(email)
             if (checkMail) {
-<<<<<<< HEAD
-                let findUser = await functions.getDatafindOne(Users, { email, type: 1})
-               
-=======
                 
                 let findUser = await Users.findOne({ email, type: 1 })
                 let crmtoken = await Users.findOne({ email, type: 1 }).select("idQLC row inForPerson.employee.position_id inForPerson.employee.com_id type")
                 console.log(crmtoken)
->>>>>>> 31c038f6c71c4ee39b4be03261ada31378f4c2f7
                 if (!findUser) {
                     return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
@@ -74,12 +69,8 @@ exports.login = async (req, res, next) => {
                 }
                 // if (findUser.type == type) {
                 if (findUser != null) {
-<<<<<<< HEAD
-                    const token = await functions.createToken(datacheck, "1d")
-=======
                     const token = await functions.createToken(findUser, "1d")
                     const tokenCRM = await functions.createToken(crmtoken, "1d")
->>>>>>> 31c038f6c71c4ee39b4be03261ada31378f4c2f7
                     const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
                     let data = {
                         access_token: "bear" + " " + token,
