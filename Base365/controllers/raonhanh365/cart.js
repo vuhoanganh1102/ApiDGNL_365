@@ -77,8 +77,8 @@ exports.addCart = async(req, res, next) => {
 
 exports.removeCart = async(req, res, next) => {
     try {
-      // xoa 1 tin trong gio hang
-      let idCart = Number(req.query.idCart);
+      
+      let idCart = Number(req.body.idCart);
       if (idCart) {
           let cart = await functions.getDataDeleteOne(Cart ,{_id: idCart});
           if (cart.deletedCount===1) {

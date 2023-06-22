@@ -143,13 +143,19 @@ exports.listUserOnline = async (req, res, next) => {
                 {
                     $match: { isOnline: 1 }
                 }, {
-                    $project: { userName: 1, avatarUser: 1, "new.title": 1, _id:1, type: 1,city:1,district:1,address:1}
+                    $project: { userName: 1, avatarUser: 1,idRaoNhanh365:1, _id:1, type: 1,city:1,district:1,address:1}
                 }, {
                     $limit: 20
                 }
-            ])
+            ]);
+        for(let i = 0 ; i < data.length; i++)
+        {
+            let tin = await  New.findOne({userID:data[i].idRaoNhanh365},{ title: 1,_id:1,linkTitle: 1,type: 1})       
+            data[i].tin = tin 
+        }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
+        console.log("🚀 ~ file: user.js:161 ~ exports.listUserOnline= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -211,8 +217,10 @@ exports.createVerifyPayment = async(req, res, next) => {
 // tổng quan thông tin tài khoản cá nhân
 exports.profileInformation = async (req,res,next) => {
     try{
-        let userID;
-            userID = req.user.data.idRaoNhanh365;
+        const authHeader = req.headers["authorization"];
+        const token = authHeader && authHeader.split(" ")[1];
+       // if
+        let userID = req.user.data.idRaoNhanh365;
         let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1};
         let dataUser = {}
 
