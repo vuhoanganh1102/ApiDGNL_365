@@ -1,14 +1,33 @@
 const functions = require('../../services/functions');
 const hrService = require('../../services/hr/hrService');
-const JobDescription = require('../../models/hr/JobDescriptions');
-const ProcessTraining = require('../../models/hr/ProcessTraining');
-const StageProcessTraining = require('../../models/hr/StageProcessTraining');
-const folderFile = 'job';
+const Users = require('../../models/Users');
 
 // lay ra danh sach cac vi tri cong viec trong cty
 exports.getListEmployee= async(req, res, next) => {
     try {
-        let {page, pageSize, name} = req.body;
+        //check quyen
+        let infoLogin = req.infoLogin;
+        let comId = infoLogin.comId;
+        let checkRole = await hrService.checkRole(infoLogin, 5, 2);
+        if(!checkRole) {
+            return functions.setError(res, "no right", 444);   
+        }
+        let companyName = infoLogin.name;
+        if(infoLogin.type!=1){
+          companyName = await Users.findOne({_id: comId}, {userName: 1});
+        }
+        let fields = {
+          email: 1, phone: 1, userName: 1, address: 1, 
+          'inForPerson.account':  {
+            birthday: 1, gender: 1,married: 1,experience: 1,education: 1
+          },
+          'inForPerson.employee': {
+            start_working_time: 1, dep_id: 1,position_id: 1
+          }
+        }
+
+        //lay cac tham so truyen vao
+        let {page, pageSize, depId, empId} = req.body;
         if(!page || !pageSize){
             return functions.setError(res, "Missing input page or pageSize", 401);
         }
@@ -17,270 +36,112 @@ exports.getListEmployee= async(req, res, next) => {
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         
-        let listCondition = {comId: req.comId};
-
+        let listCondition = {"inForPerson.employee.com_id": comId, type: 2};
         // dua dieu kien vao ob listCondition
-        if(name) listCondition.name =  new RegExp(name);
-        const listJob = await functions.pageFind(JobDescription, listCondition, { _id: 1 }, skip, limit); 
-        const totalCount = await functions.findCount(JobDescription, listCondition);
-        return functions.success(res, "Get list job description success", {totalCount: totalCount, data: listJob });
+        if(empId) listCondition._id = empId;
+        if(depId) listCondition["inForPerson.employee.dep_id"] = depId;
+        var listEmployee = await functions.pageFindWithFields(Users, listCondition, fields, { _id: 1 }, skip, limit); 
+        const totalCount = await functions.findCount(Users, listCondition);
+        return functions.success(res, "Get list employee success", {totalCount: totalCount, companyName, listEmployee});
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
     }
 }
 
-exports.createJobDescription = async(req, res, next) => {
+//them moi de test thoi
+exports.createEmployee = async(req, res, next) => {
     try {
-        let {name, depName, des, jobRequire} = req.body;
-        if(!name || !depName || !des || !jobRequire) {
+        let {email, phone, userName, address, birthday, gender,married,experience,education,start_working_time, dep_id,position_id} = req.body;
+
+        if(!userName || !email || !phone) {
             return functions.setError(res, "Missing input value!", 404);
         }
-        //lay id max
-        const comId = req.comId;
-        const maxIdJob = await JobDescription.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
-        let newIdJob;
-        if (maxIdJob) {
-            newIdJob = Number(maxIdJob.id) + 1;
-        } else newIdJob = 1;
-
-        let roadMap = req.files.roadMap;
-        if(!await hrService.checkFile(roadMap.path)){
-            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 20MB', 405);
-        }
-        await hrService.uploadFile(folderFile,comId,roadMap);
-        let linkFile = await hrService.createLinkFile(folderFile, comId, roadMap.name);
-        //tao quy trinh
-        let job = new JobDescription({
-            id: newIdJob,
-            name: name,
-            depName: depName,
-            des: des,
-            jobRequire: jobRequire,
-            roadMap: linkFile,
-            comId: req.comId
-        });
-        job = await job.save();
-        console.log(job);
-        
-        return functions.success(res, 'Create job description success!');
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
-    }
-}
-
-exports.softDeleteJobDescription = async(req, res, next) => {
-    try {
-        let jobId = req.body.jobId;
-        if(!jobId){
-            return functions.setError(res, "Missing input jobId", 404);
-        }
-        let job = await JobDescription.findOneAndUpdate({id: jobId}, {
-            deletedAt: Date.now(),
-            isDelete: 1
-        })
-        if(!job) {
-            return functions.setError(res, "JobDescription not found!", 505);
-        }
-        return functions.success(res, "Soft delete JobDescription success!");
-    } catch (e) {
-        console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
-    }
-}
-
-//----------------------quy trinh dao tao
-
-// lay ra danh sach quy trinh dao tao
-exports.getListProcessTraining= async(req, res, next) => {
-    try {
         //check quyen
         let infoLogin = req.infoLogin;
         let comId = infoLogin.comId;
-        let checkRole = await hrService.checkRole(infoLogin, 4, 1);
+        let checkRole = await hrService.checkRole(infoLogin, 5, 2);
         if(!checkRole) {
             return functions.setError(res, "no right", 444);   
         }
-        //
-        let {page, pageSize, name, processTrainId} = req.body;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pageSize", 401);
-        }
-        
-        page = Number(req.body.page);
-        pageSize = Number(req.body.pageSize);
-        const skip = (page - 1) * pageSize;
-        const limit = pageSize;
-        
-        let listCondition = {comId: comId};
-
-        // dua dieu kien vao ob listCondition
-        if(name) listCondition.name =  new RegExp(name);
-        if(processTrainId) listCondition.id =  processTrainId;
-        const listProcess = await functions.pageFind(ProcessTraining, listCondition, { _id: 1 }, skip, limit); 
-        const totalCount = await functions.findCount(ProcessTraining, listCondition);
-        return functions.success(res, "Get list process training success", {totalCount: totalCount, data: listProcess });
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
-    }
-}
-
-exports.getDetailProcessTraining= async(req, res, next) => {
-    try {
-        //check quyen
-        let infoLogin = req.infoLogin;
-        let comId = infoLogin.comId;
-        let checkRole = await hrService.checkRole(infoLogin, 4, 1);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-        //
-        let processTrainId = req.body.processTrainId;
-        if(!processTrainId){
-            return functions.setError(res, "Missing input processTrainId", 504);  
-        }
-        var processTrain = await ProcessTraining.findOne({id: processTrainId});
-        if(!processTrain) {
-            return functions.setError(res, "process training not found", 504);   
-        }
-
-        let listStage = await StageProcessTraining.find({trainingProcessId: processTrainId});
-        return functions.success(res, "Get list process training success", {processTrain, listStage});
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
-    }
-}
-
-exports.createProcessTraining = async(req, res, next) => {
-    try {
-        //check quyen
-        let infoLogin = req.infoLogin;
-        let comId = infoLogin.comId;
-        let checkRole = await hrService.checkRole(infoLogin, 4, 2);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-        //
-        let {name, description} = req.body;
-        if(!name || !description) {
-            return functions.setError(res, "Missing input value!", 404);
-        }
-        //lay id max
-        let newIdProcessTrain = await ProcessTraining.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
-        if (newIdProcessTrain) {
-            newIdProcessTrain = Number(newIdProcessTrain.id) + 1;
-        } else newIdProcessTrain = 1;
+        const maxIdUser = await Users.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+        let newIdUser;
+        if (maxIdUser) {
+            newIdUser = Number(maxIdUser._id) + 1;
+        } else newIdUser = 1;
 
         //tao quy trinh
-        let processTrain = new ProcessTraining({
-            id: newIdProcessTrain,
-            name: name,
-            description: description,
-            comId: comId
+        let user = new Users({
+            _id: newIdUser,
+            userName: userName,
+            email: email,
+            phone: phone,
+            address: address,
+            type: 2,
+            inForPerson: {
+              account: {
+                birthday: birthday,
+                gender: gender,
+                married: married,
+                experience: experience,
+                education: education
+              },
+              employee: {
+                com_id: comId,
+                dep_id: dep_id,
+                start_working_time: start_working_time,
+                position_id: position_id
+              }
+            }
         });
-        processTrain = await processTrain.save();
-        
-        return functions.success(res, 'Create process train success!');
+        user = await user.save();
+        return functions.success(res, 'Create employee success!');
     } catch (e) {
         console.log("Err from server!", e);
         return functions.setError(res, "Err from server!", 500);
     }
 }
 
-exports.softDeleteProcessTraining = async(req, res, next) => {
+//chinh sua thong tin nhan vien
+exports.updateEmployee = async(req, res, next) => {
     try {
-        let processTrainId = req.body.processTrainId;
-        if(!processTrainId){
-            return functions.setError(res, "Missing input processTrainId", 404);
-        }
-        let job = await ProcessTraining.findOneAndUpdate({id: processTrainId}, {
-            deletedAt: Date.now(),
-            isDelete: 1
-        })
-        if(!job) {
-            return functions.setError(res, "ProcessTraining not found!", 505);
-        }
-        return functions.success(res, "Soft delete ProcessTraining success!");
-    } catch (e) {
-        console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
-    }
-}
-
-// giai doan trong quy trinh dao tao
-
-
-//them moi giai doan
-exports.createStageProcessTraining = async(req, res, next) => {
-    try {
-        let {name ,objectTraining, content, trainingProcessId} = req.body;
-        if(!name || !objectTraining || !content || !trainingProcessId) {
+        let {email, phone, userName, address, birthday, gender,married,experience,education,start_working_time, dep_id,position_id, empId} = req.body;
+        if(!userName || !phone) {
             return functions.setError(res, "Missing input value!", 404);
         }
-        //lay id max
-        const maxIdStageTraining = await StageProcessTraining.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
-        let newIdStageTraining;
-        if (maxIdStageTraining) {
-            newIdStageTraining = Number(maxIdStageTraining.id) + 1;
-        } else newIdStageTraining = 1;
-        
-        //tao cac giai doan cua quy trinh do
-        let stageProcessTraining = new StageProcessTraining({
-            id: newIdStageTraining,
-            name: name,
-            objectTraining: objectTraining,
-            content: content,
-            trainingProcessId: trainingProcessId
+        //check quyen
+        let infoLogin = req.infoLogin;
+        let comId = infoLogin.comId;
+        let checkRole = await hrService.checkRole(infoLogin, 5, 2);
+        if(!checkRole) {
+            return functions.setError(res, "no right", 444);   
+        }
+
+        //tao quy trinh
+        let user = await Users.findOneAndUpdate({_id: empId},{
+            userName: userName,
+            phone: phone,
+            address: address,
+            inForPerson: {
+              account: {
+                birthday: birthday,
+                gender: gender,
+                married: married,
+                experience: experience,
+                education: education
+              },
+              employee: {
+                start_working_time: start_working_time,
+                position_id: position_id
+              }
+            }
         });
-        await StageProcessTraining.create(stageProcessTraining);
-        return functions.success(res, 'Create stage training success!');
+        if(!user){
+          return functions.setError(res, "Employee not found!", 504);
+        }
+        return functions.success(res, 'Update employee success!');
     } catch (e) {
         console.log("Err from server!", e);
         return functions.setError(res, "Err from server!", 500);
-    }
-}
-
-// chinh sua 
-exports.updateStageProcessTraining = async(req, res, next) => {
-    try {
-        let {name ,objectTraining, content, stageProcessTrainingId} = req.body;
-        if(!name || !objectTraining || !content || !stageProcessTrainingId) {
-            return functions.setError(res, "Missing input value!", 404);
-        }
-        //
-        const stageRecruit = await StageProcessTraining.findOneAndUpdate({id: stageProcessTrainingId}, {
-            name: name,
-            objectTraining: objectTraining,
-            content: content,
-            updatedAt: Date.now()
-        })
-        if(!stageRecruit) {
-            return functions.setError(res, "Stage training not found!", 505);
-        }
-        return functions.success(res, "update state training success!");
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
-    }
-}
-
-// xoa
-exports.softDeleteStageProcessTraining = async(req, res, next) => {
-    try {
-        let stageProcessTrainingId = req.body.stageProcessTrainingId;
-        let recruitment = await StageProcessTraining.findOneAndUpdate({id: stageProcessTrainingId}, {
-            deletedAt: Date.now(),
-            isDelete: 1
-        })
-        if(!recruitment) {
-            return functions.setError(res, "Stage training not found!", 505);
-        }
-        return functions.success(res, "Soft delete stage training success!");
-    } catch (e) {
-        console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
     }
 }

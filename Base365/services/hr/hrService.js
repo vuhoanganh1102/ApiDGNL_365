@@ -1,6 +1,7 @@
 // check ảnh và video
 const fs = require('fs');
 const PerUser  = require('../../models/hr/PerUsers');
+const Users  = require('../../models/Users');
 
 // upload file
 const multer = require('multer')

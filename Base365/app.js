@@ -37,6 +37,7 @@ var recruitment = require('./routes/hr/recruitmentRoute');
 var trainingRoute = require('./routes/hr/trainingRoute');
 var settingRoute = require('./routes/hr/settingRoute');
 var managerEmployeeRoute = require('./routes/hr/managerEmployeeRoute');
+var personalChangeRoute = require('./routes/hr/personalChangeRoute');
 
 //tim viec 
 //tim viec 
@@ -130,11 +131,11 @@ app.use('/api/raonhanh/admin', adminRaonhanh365);
 app.use('/api/hr/administration', administrationRoute);
 app.use('/api/hr/welfare', welfare);
 app.use('/api/hr/organizationalStructure', organizationalStructure)
-//----------------------------------------------------route HR--------------------------------------------------------------------------------------------------
 app.use('/api/hr/recruitment', recruitment)
 app.use('/api/hr/training', trainingRoute);
 app.use('/api/hr/setting', settingRoute);
 app.use('/api/hr/managerEmployee', managerEmployeeRoute);
+app.use('/api/hr/personalChange', personalChangeRoute);
 
 
 
