@@ -10,7 +10,7 @@ const setipShema = new mongoose.Schema({
     // idQLC: {// id user
     //     type : Number,
     },
-    companyID :{// id công ty
+    com_id :{// id công ty
         type: Number,
     },
     accessIP :{//địa chỉ ip

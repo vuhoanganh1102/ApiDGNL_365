@@ -9,7 +9,7 @@ const crm = require('../controllers/tools/CRM')
 
 const toolHr = require('../controllers/tools/hr');
 const toolVanThu = require('../controllers/tools/vanthu')
-// const toolCRM = require('../controllers/tools/CRM')
+// const crm = require('../controllers/tools/CRM')
 
 
 
@@ -142,21 +142,20 @@ router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
 router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
 router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
 router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
+
+
 router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory);
 router.post('/toolBidding', toolRaoNhanh.toolBidding)
 router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew);
 router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment);
 router.post('/raonhanh/toolOrder', toolRaoNhanh.toolOrder);
 router.post('/raonhanh/toolTagsIndex', toolRaoNhanh.toolTagsIndex);
-router.post('/updateNewDescription', toolRaoNhanh.updateNewDescription);
-router.post('/raonhanh/toolEvaluate', toolRaoNhanh.toolEvaluate);
-router.post('/raonhanh/toolCart', toolRaoNhanh.toolCart);
-router.post('/raonhanh/toolTags', toolRaoNhanh.toolTags);
-router.post('/raonhanh/toolContact', toolRaoNhanh.toolContact);
-router.post('/raonhanh/toolRegisterFail', toolRaoNhanh.toolRegisterFail);
-router.post('/raonhanh/toolSearch', toolRaoNhanh.toolSearch);
-router.post('/raonhanh/toolTblTags', toolRaoNhanh.toolTblTags);
-router.post('/raonhanh/toolPushNewsTime', toolRaoNhanh.toolPushNewsTime);
+router.post('/updateNewDescription', toolRaoNhanh.updateNewDescription)
+router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory)
+router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew)
+router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
+router.post('/updateNewDescription', toolRaoNhanh.updateNewDescription)
+
 
 
 //admin
@@ -229,7 +228,7 @@ router.post('/hr/inviteInter', toolHr.toolInviteInterview);
 router.post('/hr/recruitment', toolHr.toolRecruitment);
 router.post('/hr/recruitmentNews', toolHr.toolRecruitmentNews);
 
-//Api quét data CRM
+//Api quét data CRM lâm
 
 router.post('/toolContract', crm.toolContact)//danh sách hợp đồng 
 router.post('/toolCC', crm.toolContactCustomer)// danh sach hơp đòng khách hàng
@@ -243,8 +242,43 @@ router.post('/toolCG', crm.toolCustomerGroup)
 router.post('/toolCmulti', crm.toolCustomeMulti)
 router.post('/toolCnote', crm.toolCustomerNote)
 router.post('/toolCstatus', crm.toolCustomerStatus)
+router.post('/toolContract', crm.toolContact)//danh sách hợp đồng 
+router.post('/toolCC', crm.toolContactCustomer)// danh sach hơp đòng khách hàng
+router.post('/toolCs', crm.toolCustomer)// danh sách hợp đồng khách hàng
+router.post('/toolCr', crm.toolCustomerCare)// danh sách chăm sóc khách hàng
+router.post('/toolCuchan', crm.toolCustomerChance) // danh sách khách hàng cơ hội
+router.post('/toolChanfile', crm.toolCustomerChanceFile)
+router.post('/toolChanfoot', crm.toolChanFoots)
+router.post('/toolCusfile', crm.toolCusFile)
+router.post('/toolCG', crm.toolCustomerGroup)
+router.post('/toolCmulti', crm.toolCustomeMulti)
+router.post('/toolCnote', crm.toolCustomerNote)
+router.post('/toolCstatus', crm.toolCustomerStatus)
+router.post('/toolmanageA', crm.toolmanageAdmin)
+router.post('/toolmanageE', crm.toolmanageExtension)
+router.post('/toolmoduleP', crm.toolmoduleParent)
+router.post('/toolnotifyCRM', crm.toolNotify)
+router.post('/toolPackage', crm.toolPackages)
+router.post('/toolSavestatusC', crm.toolSavestatusC)
+router.post('/toolContract', crm.toolContact)//danh sách hợp đồng 
+router.post('/toolCC', crm.toolContactCustomer)// danh sach hơp đòng khách hàng
+router.post('/toolCs', crm.toolCustomer)// danh sách hợp đồng khách hàng
+router.post('/toolCr', crm.toolCustomerCare)// danh sách chăm sóc khách hàng
+router.post('/toolCuchan', crm.toolCustomerChance) // danh sách khách hàng cơ hội
+router.post('/toolChanfile', crm.toolCustomerChanceFile)
+router.post('/toolChanfoot', crm.toolChanFoots)
+router.post('/toolCusfile', crm.toolCusFile)
+router.post('/toolCG', crm.toolCustomerGroup)
+router.post('/toolCmulti', crm.toolCustomeMulti)
+router.post('/toolCnote', crm.toolCustomerNote)
+router.post('/toolCstatus', crm.toolCustomerStatus)
 
-//CRM
+
+
+
+
+
+//CRM - Trung
 router.get('/toolCampaign', crm.toolCampaign);
 router.get('/toolDetailCampaign', crm.toolDetailCampaign);
 router.get('/toolTablePriceList', crm.toolTablePriceList);
@@ -266,7 +300,10 @@ router.get('/toolDetailSurvery', crm.toolDetailSurvery);
 router.get('/toolDetailReturnProduct', crm.toolDetailReturnProduct);
 router.get('/toolDetailListOrder', crm.toolDetailListOrder);
 router.get('/toolDetailFormContract', crm.toolDetailFormContract);
-router.get('/toolDetailEmailSms', crm.toolDetailFormContract);
+router.get('/toolDetailEmailSms', crm.toolDetailEmailSms);
+router.get('/toolDetailForm', crm.toolDetailForm);
+router.get('/toolProducts', crm.toolProducts);
+router.get('/toolProductGroups', crm.toolProductGroups);
 // api quét data recruitment
 // router.post('/toolrecruitment', toolHr.recruitment)
 // router.post('/toolrecruitment_news', toolHr.recruitment_news)
@@ -291,6 +328,15 @@ router.post('/toolHistoryStage', crm.history_stages);
 router.post('/toolListNew3312', crm.list_new_3321);
 //api data list_order
 router.post('/toolListOrder', crm.list_order);
+
+
+
+
+
+
+
+
+
 //api data survey_register
 router.post('/toolSurvey_register', crm.survey_register);
 //api data Accept_role

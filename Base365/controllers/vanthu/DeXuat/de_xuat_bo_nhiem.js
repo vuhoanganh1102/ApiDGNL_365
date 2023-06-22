@@ -34,7 +34,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
 
 
     console.log(name_ph_bn);
-    if (!name_dx || !type_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+    if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
         return res.status(404).json("bad request ");
 
     } else {

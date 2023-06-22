@@ -16,11 +16,14 @@ const HistoryCustomerCare = require('../../models/crm/CustomerCare/HistoryCustom
 const AppointmentSchedule = require('../../models/crm/CustomerCare/AppointmentSchedule')
 const Fundbook = require('../../models/crm/FinanceManager/Fundbook')
 const GroupPins = require('../../models/crm/GroupPins')
+const Products = require('../../models/crm/Products')
 const DetailSurvery = require('../../models/crm/DetailSurvery')
+const DetailForm = require('../../models/crm/DetailForm')
 const DetailReturnProduct = require('../../models/crm/DetailReturnProduct')
 const DetailListOrder = require('../../models/crm/DetailListOrder')
 const DetailFormContract = require('../../models/crm/DetailFormContract')
 const DetailEmailSms = require('../../models/crm/DetailEmailSms')
+const ProductGroups = require('../../models/crm/ProductGroups')
 const Contact = require('../../models/crm/Customer/contract');
 const ContactCustomer = require('../../models/crm/Customer/contact_customer')
 const Customer = require('../../models/crm/Customer/customer')
@@ -57,12 +60,19 @@ const Receiver_email = require('../../models/crm/Receiver_email');
 const Promotion_product = require('../../models/crm/promotion_product');
 
 
+const ManageAdmin = require('../../models/crm/manage_admin')
+const ManageExtension = require('../../models/crm/manager_extension')
+const ModuleParent = require('../../models/crm/module_parent')
+const NotifyCRM = require('../../models/crm/notify')
+const Packages = require('../../models/crm/packages')
+const SaveStatusCustomer = require('../../models/crm/save_status_customer')
 const axios = require('axios');
 const FormData = require('form-data');
 
 
 
-exports.toolCampaign = async (req, res, next) => {
+
+exports.toolCampaign = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2171,6 +2181,408 @@ exports.list_order = async (req, res) => {
         return fnc.setError(res, error)
     }
 }
+
+//trung
+exports.toolDetailForm = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios('https://crm.timviec365.vn/ApiDataTable/listDetailForm?page' + page)
+            let data = listItems.data;
+            // console.log(data)
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let check = await DetailForm.findById(data[i].id)
+                    console.log(check)
+                    if (check) continue
+                    const element = data[i];
+                    const listSurvey = new DetailForm({
+
+                        _id : element.id,
+                        id_form : element.id_form,
+                        question : element.question,
+                        answer : element.answer,
+                        answer_right : element.answer_right,
+                        type : element.type,
+                        created_at : element.created_at,
+                        updated_at : element.updated_at,
+                        
+                    })
+            await listSurvey.save()
+        }
+        page++;
+    } else {
+        result = false;
+    }
+    console.log(page)
+} while (result);
+return fnc.success(res, 'Thành công')
+} catch (error) {
+console.log(error);
+return fnc.setError(res, error.message);
+}
+}
+//lâm
+exports.toolmanageAdmin = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listManageAdmin?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let post = await fnc.getDatafindOne(ManageAdmin, {id: data[i].id})
+                    if(post == null){
+                        let newCS = new ManageAdmin({
+                            id: data[i].id,
+                            usc_kd : data[i].usc_kd,
+                            id_qlc: data[i].id_qlc,
+                            name : data[i].name,
+                            
+                    });
+                    await newCS.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+//trung
+exports.toolProducts = async(req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+let listItems = await fnc.getDataAxios('https://crm.timviec365.vn/ApiDataTable/listDetailForm?page' + page)
+            let data = listItems.data;
+            // console.log(data)
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let check = await Products.findById(data[i].id)
+                    console.log(check)
+                    if (check) continue
+                    const element = data[i];
+                    const listSurvey = new Products({
+
+                        id : element.id,
+                        group_id : element.group_id,
+                        prod_name : element.prod_name,
+                        dvt : element.dvt,
+                        product_image : element.product_image,
+                        size : element.size,
+                        min_inventory : element.min_inventory,
+                        price_import : element.price_import,
+                        retail_prices : element.retail_prices,
+                        wholesale_prices : element.wholesale_prices,
+                        bao_hanh : element.bao_hanh,
+                        expiration_date : element.expiration_date,
+                        product_origin : element.product_origin,
+                        inventory : element.inventory,
+                        status : element.status,
+                        emp_id : element.emp_id,
+                        company_id : element.company_id,
+                        prod_from_id : element.prod_from_id,
+                        is_delete : element.is_delete,
+                        created_at : element.created_at,
+                        updated_at : element.updated_at,
+                        
+                        
+                        
+                        
+                    })
+            await listSurvey.save()
+        }
+        page++;
+    } else {
+        result = false;
+    }
+    console.log(page)
+} while (result);
+return fnc.success(res, 'Thành công')
+} catch (error) {
+console.log(error);
+return fnc.setError(res, error.message);
+}
+};
+
+//lâm
+exports.toolmanageExtension= async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listManagerExtension?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let createAt = null;
+                    let updateAt = null;
+                    if (data[i].created_at != 0) {
+                        createAt = new Date(data[i].created_at * 1000)
+                    }
+                    if (data[i].updated_at != 0) {
+                        updateAt = new Date(data[i].updated_at * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(ManageExtension, {id: data[i].id})
+                    if(post == null){
+                        let newME = new ManageExtension({
+                            id: data[i].id,
+                            company_id : data[i].company_id,
+                            ext_id: data[i].ext_id,
+                            ext_number : data[i].ext_number,
+                            ext_password : data[i].ext_password,
+                            emp_id : data[i].emp_id,
+                            created_at : createAt,
+                            updated_at  : updateAt
+        
+                    });
+                    await newME.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+        } catch (err) {
+        return fnc.setError(res, err);
+        }
+        };
+        
+            
+        
+//lâm
+exports.toolmoduleParent = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listModuleParent?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let post = await fnc.getDatafindOne(ModuleParent, {id: data[i].id})
+                    if(post == null){
+                        let newMP = new ModuleParent({
+                            id: data[i].id,
+                            module_name : data[i].module_name,
+                            mod_order: data[i].mod_order,
+                            
+                    });
+                    await newMP.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+//trung
+exports.toolProductGroups = async(req, res, next) => {
+            
+
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios('https://crm.timviec365.vn/ApiDataTable/listProductGroups?page' + page)
+            let data = listItems.data;
+            // console.log(data)
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let check = await ProductGroups.findById(data[i].gr_id)
+                    console.log(check)
+                    if (check) continue
+                    const element = data[i];
+                    const listSurvey = new ProductGroups({
+
+                        _id : element.gr_id,
+                        gr_name : element.gr_name,
+                        count_product : element.count_product,
+                        description : element.description,
+                        company_id : element.company_id,
+                        emp_id : element.emp_id,
+                        is_delete : element.is_delete,
+                        from_id : element.from_id,
+                        created_at : element.created_at,
+                        updated_at : element.updated_at,
+                        
+                        
+                        
+                        
+                    })
+            await listSurvey.save()
+        }
+        page++;
+    } else {
+        result = false;
+    }
+    console.log(page)
+} while (result);
+return fnc.success(res, 'Thành công')
+} catch (error) {
+console.log(error);
+return fnc.setError(res, error.message);
+}
+}
+
+
+//lâm
+exports.toolNotify = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listNotify?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let createAt = null;
+                    if (data[i].created_at != 0) {
+                        createAt = new Date(data[i].created_at * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(NotifyCRM, {notify_id: data[i].notify_id})
+                    if(post == null){
+                        let newN = new NotifyCRM({
+                            notify_id: data[i].notify_id,
+                            notify_type : data[i].notify_type,
+                            notify_cus_name: data[i].notify_cus_name,
+                            notify_group_name : data[i].notify_group_name,
+                            notify_cus_id : data[i].notify_cus_id,
+                            emp_id : data[i].emp_id,
+                            seen : data[i].seen,
+                            created_at : createAt,
+                        
+                    });
+                    await newN.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+
+//lam
+
+exports.toolPackages =  async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listPackages?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let createAt = null;
+                    let updateAt = null;
+                    if (data[i].created_at != 0) {
+                        createAt = new Date(data[i].created_at * 1000)
+                    }
+                    if (data[i].updated_at != 0) {
+                        updateAt = new Date(data[i].updated_at * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(Packages, {id: data[i].id})
+                    if(post == null){
+                        let newPA = new Packages({
+                            id: data[i].id,
+                            id_cus : data[i].id_cus,
+                            id_service: data[i].id_service,
+                            number : data[i].number,
+                            name: data[i].name,
+                            email: data[i].email,
+                            phone: data[i].phone,
+                            address: data[i].address,
+                            tax: data[i].tax,
+                            represent: data[i].represent,
+                            position: data[i].position,
+                            vat: data[i].vat,
+                            discount: data[i].discount,
+                            option_discount: data[i].option_discount,
+                            bank: data[i].bank,
+                            type: data[i].type,
+                            usc_type: data[i].usc_type,
+                            usc_source_web: data[i].usc_source_web,
+                            total: data[i].total,
+                            created_at : createAt,
+                            updated_at  : updateAt
+
+                    });
+                    await newPA.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);
+    }
+};
+
+exports.toolSavestatusC =  async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios(`https://crm.timviec365.vn/ApiDataTable/listSaveStatusCustomer?page=${page}`, )
+            let data = listItems.data;
+            console.log(data.length) 
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let createAt = null;
+                    let updateAt = null;
+                    if (data[i].save_created_at != 0) {
+                        createAt = new Date(data[i].save_created_at * 1000)
+                    }
+                    if (data[i].save_updated_at != 0) {
+                        updateAt = new Date(data[i].save_updated_at * 1000)
+                    }
+                    let post = await fnc.getDatafindOne(SaveStatusCustomer, {save_status_id: data[i].save_status_id})
+                    if(post == null){
+                        let newSS = new SaveStatusCustomer({
+                            save_status_id: data[i].save_status_id,
+                            user_id : data[i].user_id,
+                            customer_id: data[i].customer_id,
+                            type_user : data[i].type_user,
+                            save_status: data[i].save_status,
+                            save_created_at : createAt,
+                            save_updated_at  : updateAt
+
+                    });
+                    await newSS.save();
+                    }
+                }
+                page+=1;
+                console.log(page)
+            } else result = false;   
+        } while (result);
+        return fnc.success(res, 'Thành Công');
+    } catch (err) {
+        return fnc.setError(res, err);}
+    }
+
 //Tinh
 exports.survey_register = async (req, res) => {
     try {

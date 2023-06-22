@@ -1,6 +1,6 @@
 const DeXuat = require("../../../models/Vanthu/de_xuat");
 const { storageVT } = require('../../../services/functions');
-const functions = require('../../../services/vanthu')
+const functions = require('../../../services/vanThu')
 const path = require('path');
 const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
 

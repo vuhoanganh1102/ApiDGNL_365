@@ -134,18 +134,18 @@ exports.isCurrentTimeGreaterThanInputTime = (timeInput) => {
     }
 };
 // hàm so sánh phần tử trùng lặp
- exports.arrfil = function removeDuplicates(array, comparator) {
-    return array.filter(function(item, index) {
-    for (var i = 0; i < index; i++) {
-    if (comparator(item, array[i])) {
-    return false;
-    }
-    }
-    return true;
+exports.arrfil = function removeDuplicates(array, comparator) {
+    return array.filter(function (item, index) {
+        for (var i = 0; i < index; i++) {
+            if (comparator(item, array[i])) {
+                return false;
+            }
+        }
+        return true;
     });
-    }
-    
-exports.getDatafindOne = async(model, condition) => {
+}
+
+exports.getDatafindOne = async (model, condition) => {
     return model.findOne(condition).lean();
 };
 
@@ -158,13 +158,13 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
 };
 
 // hàm validate email
-exports.checkEmail = async(email) => {
+exports.checkEmail = async (email) => {
     const gmailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     return gmailRegex.test(email);
 };
 
 // hàm validate link
-exports.checkLink = async(link) => {
+exports.checkLink = async (link) => {
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
     return urlRegex.test(yourUrlVariable);
 };
@@ -675,27 +675,26 @@ exports.uploadFileBase64RaoNhanh = async (folder, id, base64String, file) => {
 
 
 //QLC
-exports.uploadFileQLC = async (folder, id, file,allowedExtensions) => {
+exports.uploadFileQLC = async (folder, id, file, allowedExtensions) => {
 
     let path1 = `../Storage/base365/QLC/pictures/${folder}/${id}/`;
     let filePath = `../Storage/base365/QLC/pictures/${folder}/${id}/` + file.name;
-    let fileCheck =  path.extname(filePath);
-    if(allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false)
-    {
+    let fileCheck = path.extname(filePath);
+    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
         return false
     }
-   
-    if (!fs.existsSync(path1)) {   
+
+    if (!fs.existsSync(path1)) {
         fs.mkdirSync(path1, { recursive: true });
     }
     fs.readFile(file.path, (err, data) => {
         if (err) {
             console.log(err)
         }
-    
+
         fs.writeFile(filePath, data, (err) => {
             if (err) {
-            console.log(err)
+                console.log(err)
             }
         });
     });
@@ -711,9 +710,9 @@ exports.createLinkFileQLC = (folder, id, name) => {
 exports.deleteFileQLC = (id, file) => {
     let filePath = `../Storage/base365/QLC/pictures/${id}/` + file;
     fs.unlink(filePath, (err) => {
-    if (err) console.log(err);
+        if (err) console.log(err);
     });
-    }
+}
 // hàm tìm id max Quản Lí Chung
 exports.getMaxIDQLC = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { idQLC: -1 } }).lean() || 0;

@@ -1,6 +1,21 @@
 const router = require('express').Router();
+// const GroupCustomerRouter = require('./groupCustomer')
+const CustomerRouter = require('./Customer/CustomerRoutes')
+const CustomerDetailsRoutes = require('./Customer/CustomerDetailsRoutes')
+
+
+
+router.use('/crm', CustomerRouter)
+router.use('/crm', CustomerDetailsRoutes)
+// router.use('/crm',GroupCustomerRouter)
+
+
+//Tĩnh
 const GroupCustomerRoutes = require("./groupCustomer");
+const Cus_status = require("./Customer_status");
+const Nhap_lieu = require("./Nhap_lieu");
 
-router.use('/', GroupCustomerRoutes);
-
-module.exports = router
+router.use('/crm/CustomerGroup', GroupCustomerRoutes);
+router.use("/crm/CustomerStatus", Cus_status);
+router.use('/crm/NhapLieu', Nhap_lieu);
+module.exports = router; 

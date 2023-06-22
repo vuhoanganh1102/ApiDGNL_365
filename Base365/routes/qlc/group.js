@@ -16,12 +16,12 @@ router.post("/",formData.parse(), GroupController.createGroup);
 // router.post("/count", formData.parse(), GroupController.countUserInGroup);
 
 //API thay đổi thông tin của một nhóm
-router.put("/", GroupController.editGroup);
+router.post("/edit",formData.parse(), GroupController.editGroup);
 
 //API Xóa một nhóm theo id
-router.delete("/", GroupController.deleteGroup);
+router.delete("/",formData.parse(), GroupController.deleteGroup);
 
 //API tim kiem theo cac dieu kien
-router.post('/search', GroupController.getListGroupByFields);
+router.post('/search',formData.parse(), GroupController.getListGroupByFields);
 
 module.exports = router

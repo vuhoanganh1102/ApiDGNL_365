@@ -14,7 +14,7 @@ const ChildCompany = new mongoose.Schema({
         type: String
     },
     //Id cty cha
-    companyID: {
+    com_id: {
         type : Number
     },
     companyPhone:{

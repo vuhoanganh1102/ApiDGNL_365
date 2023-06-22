@@ -3,20 +3,23 @@ const router = express.Router();
 const formData = require("express-form-data")
 const GroupCustomerController = require('../../controllers/crm/GroupCustomer')
 
+// // get danh sách group
 // get danh sách group
-router.post("/list_group_khach_hang", formData.parse(), GroupCustomerController.getListGroup)
+router.post("/listCustomerGroup", formData.parse(), GroupCustomerController.getListGroup)
 
 // get group theo i
 //router.get("/:id", GroupCustomerController.getGroupById)
 
 //tạo group mới
-console.log("routers");
-router.post("/create_GroupKH", formData.parse(), GroupCustomerController.createGroup)
+// console.log("routers");
+router.post("/createCustomerGroup", formData.parse(), GroupCustomerController.createGroup)
 
 //chỉnh sửa các thuộc tính 1 group
-router.post("/update_GroupKH", formData.parse(), GroupCustomerController.update)
+router.post("/updateCustomerGroup", formData.parse(), GroupCustomerController.update)
 
 // xoá group chỉ định
-router.post("/delete_khach_hang", GroupCustomerController.delete)
+router.post("/deleteCustomerGroup", formData.parse(), GroupCustomerController.delete);
+// chi tiet khom khach hang
+router.post('/detailCustomerGroup', formData.parse(), GroupCustomerController.detail_groupKH);
 
 module.exports = router;

@@ -26,7 +26,7 @@ exports.register = async (req, res) => {
                 fromWeb: "quanlichung.timviec365",
                 role: 1,
                 createdAt : new Date(),
-                "inForCompany.com_vip" :com_vip, 
+                "inForCompany.cds.com_vip" :com_vip, 
                 idQLC: (Number(MaxId) + 1),
                 avatarCompany: null
             })
@@ -363,7 +363,7 @@ exports.updateInfoCompany = async (req, res, next) => {
             if (!upload) {
                 return functions.setError(res, 'Định dạng ảnh không hợp lệ',400)
             }
-            avatarCompany = functions.createLinkFileQLC('avt', idQLC, File.avatarCompany.name)
+            avatarCompany = functions.createLinkFileQLC('avt_com', idQLC, File.avatarCompany.name)
             await Users.findByIdAndUpdate(idQLC, { email, address,phone, userName, avatarCompany, updatedAt });
         }
         await Users.findByIdAndUpdate(idQLC, { email, address, userName, updatedAt });

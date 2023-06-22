@@ -3,5 +3,11 @@ const router = express.Router();
 var formData = require('express-form-data');
 const CustomerRoutes = require('../../../controllers/crm/Customer/Customer');
 
-router.post('/addCustomer', formData.parse(),CustomerRoutes.addCustomer);
+//Api hiển thị và tìm kiếm
+router.post('/showAll',formData.parse(),)
+
+//Api thêm mới khách hàng
+router.post('/addCustomer',formData.parse(),CustomerRoutes.addCustomer);
+
+
 module.exports = router;

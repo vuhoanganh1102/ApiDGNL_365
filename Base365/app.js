@@ -26,6 +26,14 @@ var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
 var adminRaonhanh365 = require('./routes/raonhanh365/admin');
 
 
+// Hr
+// var provinceRoute = require('./routes/hr/provinceRoute');
+// var welfare = require('./routes/hr/welfare');
+
+//CRM
+var CRMroute = require('./routes/crm/CRMroutes')
+
+
 //---------HR------------------------
 var recruitment = require('./routes/hr/recruitmentRoute');
 var trainingRoute = require('./routes/hr/trainingRoute');
@@ -34,18 +42,6 @@ var administrationRoute = require('./routes/hr/administrationRoute');
 var welfare = require('./routes/hr/welfareRoute');
 var organizationalStructure = require('./routes/hr/organizationalStructure');
 
-//CRM
-var CRMroute = require('./routes/crm/CRMroutes')
-
-
-
-
-//---------HR------------------------
-var recruitment = require('./routes/hr/recruitmentRoute');
-var trainingRoute = require('./routes/hr/trainingRoute');
-var settingRoute = require('./routes/hr/settingRoute');
-
-//tim viec 
 //tim viec 
 
 var priceListRouter = require('./routes/timviec/priceList');
@@ -81,16 +77,14 @@ var individualRoutes = require('./routes/qlc/individual.routes');
 
 
 
-// var manageUserRouter = require('./routes/qlc/managerUser')
 var HisOfTrackingRouter = require("./routes/qlc/HisTracking")
 var CalendarWorkEmployee = require("./routes/qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./routes/qlc/settingIP")
 var homePage = require("./routes/qlc/homePage")
 
-//var manageUserRouter = require('./routes/qlc/manageUser')
 
 // crm_import
-var groupCustomerRouter = require('./routes/crm/groupCustomer')
+// var groupCustomerRouter = require('./routes/crm/groupCustomer')
 
 
 
@@ -187,7 +181,6 @@ app.use('/api/timviec/cv', cvRouter);
 app.use('/api/timviec/don', donRouter);
 app.use('/api/timviec/thu', thuRouter);
 app.use('/api/timviec/syll', syllRouter);
-app.use('/api/tool', toolAddDataRouter);
 
 // app.use('/api/timviec/priceList', priceListRouter);
 app.use('/api/timviec/trangVang', trangVangRouter);
@@ -223,7 +216,7 @@ app.use('/api/qlc/Employee', EmployeeRouterQLC);
 app.use('/api/qlc/individual', individualRouterQLC);
 app.use('/api/qlc/deparment', deparmentRouter);
 app.use('/api/qlc/team', teamRouter);
-app.use("/api/qlc/group", [authJwt.checkToken, authJwt.isCompany], groupRouter);
+app.use("/api/qlc/group", groupRouter);
 app.use('/api/qlc/ChildCompany', childCompanyRouter)
 app.use('/api/qlc/managerUser', managerUser)
 app.use('/api/qlc/DelAppData', DelAppData)
@@ -247,6 +240,7 @@ app.use("/api/qlc/homePage", homePage)
 
 //Api CRM
 app.use('/api', CRMroute)
+app.use('/api/tool', toolAddDataRouter);
 
 
 
@@ -254,7 +248,7 @@ app.use('/api', CRMroute)
 app.use("/api/tool", toolVT)
 app.use("/api", Vanthu)
 
-app.use("/api/crm/customer/group", groupCustomerRouter);
+// app.use("/api/crm/customer/group", groupCustomerRouter);
 
 
 // catch 404 and forward to error handler
@@ -280,4 +274,12 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
+// app.listen(3004, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3004")
+// })
+// app.listen(3005, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3005")
+// })
 module.exports = app;
