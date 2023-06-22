@@ -1896,13 +1896,19 @@ exports.managenew = async (req, res, next) => {
         let tin_hethan = tong_soluong - tin_conhan;
         let searchItem = {
             title: 1,
-            timeEndReceivebidding: 1,
+            bidding:1,
+            active:1,
+            createTime:1,
+            sold:1,
+            endvalue:1,
+            until_bidding:1,
+            img:1,
             city: 1,
             district: 1,
             ward: 1,
             apartmentNumber: 1,
             endvalue: 1,
-            until_den: 1,
+            until: 1,
         };
         if (linkTitle === "quan-ly-tin-mua.html") {
             data = await New.find({ userID, buySell: 1 }, searchItem);
@@ -2115,13 +2121,16 @@ exports.manageNewBuySell = async (req, res, next) => {
             money: 1,
             han_su_dung: 1,
             linkTitle: 1,
+            timeSell:1,
+            active:1,
             createTime: 1,
             sold: 1,
             endvalue: 1,
             until: 1,
             img: 1,
             quantitySold: 1,
-            totalSold: 1
+            totalSold: 1,
+            free:1
         };
         if (linkTitle === "quan-ly-tin-ban.html") {
             data = await New.find({ userID, buySell: 2 }, searchItem);
