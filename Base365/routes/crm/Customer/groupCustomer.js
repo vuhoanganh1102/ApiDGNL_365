@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router();
 const formData = require("express-form-data")
-const GroupCustomerController = require('../../controllers/crm/GroupCustomer')
+const GroupCustomerController = require('../../../controllers/crm/GroupCustomer')
 
 // // get danh sách group
 // get danh sách group

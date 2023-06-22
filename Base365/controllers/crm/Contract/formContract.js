@@ -134,8 +134,30 @@ exports.editContract = async (req,res) =>{
         index_field : index_field,
         default_field : default_field,
     })
+    .then((form) => functions.success(res, "Deparment edited successfully", {form}))
+    .catch((err) => functions.setError(res, err.message, 511))
 }
 }
 
 
+exports.deleteContract = async (req,res) =>{
+    const {_id , com_id} = req.body;
+    const data = await Contract.findOne({_id:_id,com_id:com_id})
+    if(!data){
+        functions.setError(res," hop dong k ton tai ")
+    }else{
+       const result = await Contract.findOneAndUpdate({_id:_id,com_id:com_id},{$set : {is_delete : 1}})
+        functions.success(res," xoa thanh cong ", {result})
+       }
+    }
 
+exports.deleteDetailContract = async (req,res) =>{
+    const {_id } = req.body;
+    const data = await detailContract.findOne({id_form_contract: _id })
+    if(!data){
+        functions.setError(res," chi tiet hop dong k ton tai")
+    }else {
+        const result = await detailContract.deleteOne({id_form_contract: _id })
+        functions.success(res," xoa thanh cong ", {result})
+    }
+}
