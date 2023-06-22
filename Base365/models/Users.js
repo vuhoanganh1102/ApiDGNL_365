@@ -197,8 +197,13 @@ const UserSchema = new mongoose.Schema({
                         type: Number,
                         default: 0
                     },
-                    team_id: {
-                        // ID của tổ nếu là nhân viên (giá trị = 0 là cá nhân)
+                    start_working_time: {
+                        // Thời gian bắt đầu làm việc
+                        type: Date,
+                        default: null
+                    },
+                    position_id: {
+                        // Cấp bậc của nhân viên trong công ty
                         type: Number,
                         default: 0
                     },
@@ -207,13 +212,8 @@ const UserSchema = new mongoose.Schema({
                         type: Number,
                         default: 0
                     },
-                    start_working_time: {
-                        // Thời gian bắt đầu làm việc
-                        type: Date,
-                        default: null
-                    },
-                    position_id: {
-                        // Cấp bậc của nhân viên trong công ty
+                    team_id: {
+                        // ID của tôt nếu là nhân viên (giá trị = 0 là cá nhân)
                         type: Number,
                         default: 0
                     },
@@ -911,6 +911,18 @@ const UserSchema = new mongoose.Schema({
         },
         status: {
             type: String,
+            default: ''
+        },
+        acceptMessStranger: {
+            type: Number,
+            default: 0
+        },
+        active: {
+            type: Number,
+            default: 0
+        },
+        status: {
+            type: String,
 
             default: null
         },
@@ -918,7 +930,7 @@ const UserSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-        store_name:{
+        store_name: {
             type: String,
             default: null
         },

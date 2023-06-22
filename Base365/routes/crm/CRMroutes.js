@@ -4,10 +4,9 @@ const CustomerRouter = require('./Customer/CustomerRoutes')
 const CustomerDetailsRoutes = require('./Customer/CustomerDetailsRoutes')
 
 
-
-router.use('/crm',CustomerRouter)
-router.use('/crm',CustomerDetailsRoutes)
-// router.use('/crm',GroupCustomerRouter)
+router.use('/crm', CustomerRouter)
+router.use('/crm', CustomerDetailsRoutes)
+    // router.use('/crm',GroupCustomerRouter)
 
 const GroupCustomerRoutes = require("./Customer/groupCustomer");
 
@@ -16,6 +15,7 @@ router.use('/', GroupCustomerRoutes);
 
 
 
+// Trung - Contract
 // Trung 
 //hợp đồng 
 const formContract = require("./Contract/formContract");

@@ -498,13 +498,16 @@ const newSchema = new mongoose.Schema({
     // bất động sản
     realEstate: {
         ten_toa_nha: {
-            type: String
+            type: String,
+            default:null
         },
         td_macanho: {
-            type: Number
+            type: Number,
+            default:null
         },
         ten_phan_khu: {
-            type: String
+            type: String,
+            default:null
         },
         td_htmch_rt: {
             // Hiển thị mã căn hộ rao tin
@@ -896,8 +899,6 @@ const newSchema = new mongoose.Schema({
         file_hoso:{
             type:String
         }
-
-
     }
 
 }, {

@@ -30,6 +30,8 @@ const TblTags = require('../../models/Raonhanh365/TblTag');
 const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
 
+
+
 // danh mục sản phẩm
 exports.toolCategory = async(req, res, next) => {
     try {
@@ -84,7 +86,7 @@ exports.toolNewRN = async (req, res, next) => {
         // let listNews = await fnc.getDataAxios('https://raonhanh365.vn/api/select_tbl_new.php', {});
         // console.log("check list new", listNews.data.items);
         do {
-            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 0 })
+            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/select_tbl_new.php', { page: page, pb: 0 })
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -222,7 +224,7 @@ exports.updateNewDescription = async (req, res, next) => {
         let page = 1;
        
         do {
-            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 1 })
+            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/select_tbl_newdes.php', { page: page, pb: 1 })
             let data = listItems.data.items;
             if (data.length > 0) {
                
@@ -370,9 +372,6 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'bidding.file_mota':data[i].file_mota,
                                 'bidding.file_thutuc':data[i].file_thutuc,
                                 'bidding.file_hoso':data[i].file_hoso,
-
-
-
                             }
                         });
                     }
@@ -2117,3 +2116,42 @@ exports.toolAdminTranslate = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
+
+exports.toolBaoHanh = async (req,res,next) =>{
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_admin_translate.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const AdminTranslate1 = new AdminTranslate({
+                        _id: i++,
+                        tra_keyword: data[i].tra_keyword,
+                        tra_text: data[i].tra_text,
+                        langId: data[i].lang_id,
+                        tra_source: data[i].tra_source,
+                    });
+                    await AdminTranslate1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
