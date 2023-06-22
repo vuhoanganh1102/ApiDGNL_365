@@ -30,23 +30,6 @@ const TblTags = require('../../models/Raonhanh365/TblTag');
 const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
 
-const BaoHanh = require('../../models/Raonhanh365/BaoHanh');
-const BoViXuLy = require('../../models/Raonhanh365/BoViXuLy');
-const Dong = require('../../models/Raonhanh365/Dong');
-const DungLuong = require('../../models/Raonhanh365/DungLuong');
-const GiongThuCung = require('../../models/Raonhanh365/GiongThuCung');
-const Hang = require('../../models/Raonhanh365/Hang');
-const LoaiChung = require('../../models/Raonhanh365/LoaiChung');
-const ManHinh = require('../../models/Raonhanh365/Manhinh');
-const MauSac = require('../../models/Raonhanh365/MauSac');
-const MonTheThao = require('../../models/Raonhanh365/MonTheThao');
-const NamSanXuat = require('../../models/Raonhanh365/NamSanXuat');
-const NhomSp = require('../../models/Raonhanh365/NhomSp');
-const NhomSpChatLieu = require('../../models/Raonhanh365/NhomSpChatLieu');
-const NhomSpHinhDang = require('../../models/Raonhanh365/NhomSpHinhDang');
-const TangPhong = require('../../models/Raonhanh365/TangPhong');
-const ThongTinThuCung = require('../../models/Raonhanh365/ThongTinThuCung');
-const XuatXu = require('../../models/Raonhanh365/XuatXu');
 
 
 // danh mục sản phẩm
@@ -103,7 +86,7 @@ exports.toolNewRN = async (req, res, next) => {
         // let listNews = await fnc.getDataAxios('https://raonhanh365.vn/api/select_tbl_new.php', {});
         // console.log("check list new", listNews.data.items);
         do {
-            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 0 })
+            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/select_tbl_new.php', { page: page, pb: 0 })
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -241,7 +224,7 @@ exports.updateNewDescription = async (req, res, next) => {
         let page = 1;
        
         do {
-            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 1 })
+            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/select_tbl_newdes.php', { page: page, pb: 1 })
             let data = listItems.data.items;
             if (data.length > 0) {
                
@@ -389,9 +372,6 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'bidding.file_mota':data[i].file_mota,
                                 'bidding.file_thutuc':data[i].file_thutuc,
                                 'bidding.file_hoso':data[i].file_hoso,
-
-
-
                             }
                         });
                     }
