@@ -144,8 +144,8 @@ exports.deleteRecruitment = async(req, res, next) => {
 //lay ra thong tin cac gia doan cua quy trinh or thong tin 1 quy trinh
 exports.getStageRecruitment = async(req, res, next) => {
     try{
-        let stageRecruitId = req.query.stageRecruitId;
-        let recruitmentId = req.query.recruitmentId;
+        let stageRecruitId = req.body.stageRecruitId;
+        let recruitmentId = req.body.recruitmentId;
         var data = {};
         if(stageRecruitId){
             data = await StageRecruitment.findOne({id: stageRecruitId});

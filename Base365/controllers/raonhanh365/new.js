@@ -1775,7 +1775,7 @@ exports.loveNew = async (req, res, next) => {
 // tao token
 exports.createToken = async (req, res, next) => {
     try {
-        let id = 8;
+        let id = 1191;
         let data = await User.findById(id);
         let token = await functions.createToken(data, "100d");
         let data1 = "Bazer " + token;

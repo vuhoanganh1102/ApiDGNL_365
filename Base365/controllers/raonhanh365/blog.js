@@ -34,8 +34,7 @@ exports.getListBlogByFields = async(req, res, next) => {
             if(des) listCondition.des =  new RegExp(des);
             let fieldsGet = 
             {   
-                adminId: 1, langId: 1,title: 1,url: 1,image: 1,keyword: 1,sapo: 1,des: 1,detailDes: 1,
-                categoryId: 1,status: 1,date: 1,adminEdit: 1,dateLastEdit: 1,order: 1,active: 1, new: 1, hot: 1, titleRelate: 1, contentRelate: 1
+                _id: 1,title: 1,url: 1, teaser: 1,dateLastEdit: 1, image: 1
             }
             const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
             const totalCount = await functions.findCount(Blog, listCondition);
@@ -207,7 +206,7 @@ exports.deleteBlog = async(req, res, next) => {
 }
 exports.createToken = async(req, res, next) => {
     try{
-        let admin = await AdminUser.findOne({_id: 1});
+        let admin = await AdminUser.findOne({_id: 4});
         let token = await functions.createToken(admin, "28d")
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, 'Create token admin success', );
@@ -218,8 +217,8 @@ exports.createToken = async(req, res, next) => {
 }
 exports.createTokenUser = async(req, res, next) => {
     try{
-        let admin = await Users.findOne({_id: 1});
-        let token = await functions.createToken(admin, "28d")
+        let admin = await Users.findOne({_id: 1191});
+        let token = await functions.createToken(admin, "28d");
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, `Bearer ${token}`);
     }catch(error){
