@@ -67,7 +67,7 @@ const crm_customer = new Schema({
         type : Date,
         default : "0"
     },
-    resoure : {//
+    resoure : {// nguồn khách hàng
         type : Number
     },
     description : {// mô tả khách hàng
@@ -104,11 +104,11 @@ const crm_customer = new Schema({
     user_handing_over_work :{// id người được bàn giao
         type : Number
     },
-    user_create_type : {//?
+    user_create_type : {//id người phụ trách
         type : String,
         default : null
     },
-    user_edit_id : {// id người sửa
+    user_edit_id : {//id người phụ trách
         type : Number,
         default : null
     },
@@ -120,7 +120,7 @@ const crm_customer = new Schema({
         type : Number,
         default : null
     },
-    status : {// trạng thái
+    status : {// trạng thái,khách hang
         type : Number,
         default : null
     },

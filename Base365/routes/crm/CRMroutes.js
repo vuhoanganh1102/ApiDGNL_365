@@ -10,11 +10,7 @@ router.use('/crm',CustomerDetailsRoutes)
 // router.use('/crm',GroupCustomerRouter)
 
 const GroupCustomerRoutes = require("./groupCustomer");
-
 router.use('/', GroupCustomerRoutes);
-
-
-
 
 // Trung - Contract
 const formContract = require("./Contract/formContract");

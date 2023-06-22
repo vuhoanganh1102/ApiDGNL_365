@@ -3,9 +3,16 @@
 const path = require('path');
 // const { log } = require("console");
 const fs = require('fs');
+
+
 exports.getMaxIDCRM = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { cus_id: -1 } }).lean() || 0;
     return maxUser.cus_id;
+};
+
+exports.getMaxIDConnectApi = async (model) => {
+  const maxUser = await model.findOne({}, {}, { sort: { id: -1 } }).lean() || 0;
+  return maxUser.id;
 };
 
 
@@ -34,8 +41,6 @@ exports.checkTimeCRM = async (time) => {
       return true
   }
 }
-
-
 
 exports.validateImage = async (logo) => {
   
@@ -83,30 +88,65 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
   return model.findOneAndUpdate(condition, projection);
 };
 
-exports.vavalidateCustomerInputEdit = (name, phone_number,address,email,type) => {
-  if (!name) {
-    throw { code: 400, message: 'Tên khách hàng là bắt buộc.' };
+
+exports.vavalidateCustomerSearchQuery = ( page, cus_id,status,resoure,user_edit_id,time_s,time_e,group_id) => {
+  if (typeof page !== 'number' && isNaN(Number(page))) {
+    return { success: false, error: 'page phải là 1 số' };
   }
-  else if(!phone_number){
-    throw { code : 400,message : 'số Điện thoại là bắt buộc phải nhập đủ'}
-  }
-  else if(!email) {
-    throw { code : 400,message : 'email là bắt buộc phải nhập đủ'}
-  }
-  else if(!address) {
-    throw {code : 4000 , message : "địa chỉ là bắt buộc"} 
-  }
-  else if(!type) {
-    throw {code : 4000 , message : "type không được bỏ trống"} 
-  }
-  else if(type !== 1 || type !== 2) {
-    throw {code : 4000 , message : "type phai bang 1 hoac 2"} 
-  }
-  else if(!comId){
-    throw {code : 4000 , message : "company_id không được bỏ trống"} 
-  }
+  else if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
+    return { success: false, error: 'cus_id phải là 1 số' };
+}
+  else if (typeof status !== 'number' && isNaN(Number(status))) {
+    return { success: false, error: 'status phải là 1 số' };
+}
+  else if (typeof resoure !== 'number' && isNaN(Number(resoure))) {
+    return { success: false, error: 'resoure phải là 1 số' };
+}
+  else if (typeof user_edit_id !== 'number' && isNaN(Number(user_edit_id))) {
+    return { success: false, error: 'user_edit_id người phụ trách phải là 1 số' };
+}
+  else if (typeof group_id !== 'number' && isNaN(Number(group_id))) {
+    return { success: false, error: 'group_id id nhóm phải là 1 số' };
+}
+  else if (time_s && !isValidDate(time_s)) {
+    return { success: false, error: 'thời gian bắt đầu không hợp lệ.' };
+}
+else if (time_e && !isValidDate(time_e)) {
+  return { success: false, error: 'thời gian kết thúc không hợp lệ.' };
+}
+if (time_s && time_e && isInvalidDateRange(time_s, time_e)) {
+  return { success: false, error: 'thời gian bắt đầu không được lớn hơn thời gian kết thúc' };
+}
   return true;
 };
+
+
+function isValidDate(dateString) {
+  const pattern = /^\d{4}-\d{2}-\d{2}$/;
+  if (!pattern.test(dateString)) {
+    return false;
+  }
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return false;
+  }
+  return true;
+}
+
+function isInvalidDateRange(time_s, time_e) {
+  const start = new Date(time_s);
+  const end = new Date(time_e);
+
+  return start.getTime() > end.getTime();
+}
+
+
+
+
+
+
+
 
 exports.validateCustomerInput = (name, phone_number,address,email,type) => {
     if (!name) {

@@ -11,4 +11,8 @@ router.post('/addCustomer',functions.checkToken,formData.parse(),CustomerRoutes.
 
 //Api xoa khach hang
 router.post('/deleteKH',functions.checkToken,formData.parse(),CustomerRoutes.DeleteKH)
+
+//Api thêm mới kết nối Api
+router.post("/addApiKH",functions.checkToken,formData.parse(),CustomerRoutes.ConnectCs) 
+
 module.exports = router;

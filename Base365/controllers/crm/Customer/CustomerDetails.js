@@ -10,9 +10,12 @@ const customerService = require('../../../services/CRM/CRMservice')
 exports.findOneCus = async (req,res) =>{
     try {
         let {cus_id} = req.body
-        if(Number.isNaN(cus_id)) {
-            throw { code: 704, message: "cus_id required" }; 
-        }else {
+    if (typeof cus_id === 'undefined') {
+      res.status(400).json({ success: false, error: 'cus_id không được bỏ trống' });
+    }
+    if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
+      res.status(400).json({ success: false, error: 'cus_id phải là 1 số' });
+  }else{ 
         const findCus = await Customer.findOne({cus_id})
         if(findCus.type == 2) {
                     let data1 = {
@@ -118,7 +121,7 @@ exports.findOneCus = async (req,res) =>{
             }
             res.status(200).json(data2);
         }else {
-            functions.setError(res, "cant find Customer")
+          res.status(400).json({ error: 'khong co ket qua' })
         }
         } 
       }
