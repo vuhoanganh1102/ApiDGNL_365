@@ -1961,6 +1961,7 @@ exports.managenew = async (req, res, next) => {
             endvalue: 1,
             until: 1,
             linkTitle:1
+
         };
         if (linkTitle === "quan-ly-tin-mua.html") {
             data = await New.find({ userID, buySell: 1 }, searchItem);
@@ -2185,6 +2186,7 @@ exports.manageNewBuySell = async (req, res, next) => {
             totalSold: 1,
             free:1,
             new_day_tin:1
+
         };
         if (linkTitle === "quan-ly-tin-ban.html") {
             data = await New.find({ userID, buySell: 2 }, searchItem);
