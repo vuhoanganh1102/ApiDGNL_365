@@ -119,6 +119,8 @@ exports.bidding = async (req, res, next) => {
         let promotionFile = null;
         let _id = await functions.getMaxID(Bidding) + 1;
         let status = 0;
+        let userIntro =  req.body.userIntro || null;
+        let userName = req.user.data.userName;
         if (await functions.checkNumber(price) === false) {
             return functions.setError(res, 'invalid price', 400)
         }
@@ -139,7 +141,7 @@ exports.bidding = async (req, res, next) => {
             raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
             promotionFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.promotionFile.name)
         }
-        await Bidding.create({ _id, newId, userID, productName, productDesc, status, price, priceUnit, product_link, user_intro, userFile, userProfile, userProfileFile, promotion, promotionFile })
+        await Bidding.create({ _id, newId,userName,userIntro, userID, productName, productDesc, status, price, priceUnit, product_link, user_intro, userFile, userProfile, userProfileFile, promotion, promotionFile })
         return functions.success(res, 'bidding success')
     } catch (error) {
         return functions.setError(res, error)
@@ -472,22 +474,24 @@ exports.cancelOrder = async (req, res, next) => {
         if (!check || check.length === 0) {
             return functions.setError(res, 'không tìm thấy đơn hàng', 400)
         }
-        if (check[0].status === 4) {
-            return functions.setError(res, 'không thể huỷ đơn hàng trong thời điểm này', 400)
-        }
-        if (userID === check[0].sellerId) {
+        if (userID === check.sellerId) {
             let orderCancellationTime = new Date();
             await Order.findByIdAndUpdate(orderId, { cancelerId: userID, orderCancellationTime, orderCancellationReason, status: 5 })
+        return functions.success(res, 'Huỷ đơn hàng thành công')
+
+        }
+        if (check.status === 4) {
+            return functions.setError(res, 'không thể huỷ đơn hàng trong thời điểm này', 400)
         }
         else {
-            if (check[0].status === 2) {
+            if (check.status === 2) {
                 return functions.setError(res, 'không thể huỷ đơn hàng trong thời điểm này', 400)
             }
-            if (check[0].status !== 3) {
+            if (check.status !== 3) {
                 let orderCancellationTime = new Date();
                 await Order.findByIdAndUpdate(orderId, { cancelerId: userID, orderCancellationTime, orderCancellationReason, status: 5 })
             }
-            if (check[0].status === 3) {
+            if (check.status === 3) {
                 let buyerCancelsDelivered = 1;
                 let buyerCancelsDeliveredTime = new Date();
                 await Order.findByIdAndUpdate(orderId, { cancelerId: userID, buyerCancelsDelivered, buyerCancelsDeliveredTime, status: 5, orderCancellationReason })

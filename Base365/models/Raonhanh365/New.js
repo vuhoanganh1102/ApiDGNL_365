@@ -170,6 +170,11 @@ const newSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+  
+    new_day_tin:{
+        type:String,
+        default: null
+    },
     timeStartPinning: {
         // thời gian bắt đầu ghim
         type: Date,
@@ -205,8 +210,6 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    
-   
     authen: {
         // xac thuc
         type: Number,
@@ -312,10 +315,6 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-        size: {
-            type: Number,
-            default: 0
-        }
     }],
     // chi tiết sản phẩm mua/bán
     description: {
@@ -381,7 +380,7 @@ const newSchema = new mongoose.Schema({
         },
         brand: {
             // hãng
-            type: Number,
+            type: String,
             default: 0
         },
         machineSeries: {
@@ -414,7 +413,7 @@ const newSchema = new mongoose.Schema({
     // xe cộ
     vehicle: {
         hang: {
-            type: Number,
+            type: String,
             default: 0
         },
         loai_xe: {
@@ -438,10 +437,6 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         baohanh: {
-            type: Number,
-            default: 0
-        },
-        hang: {
             type: Number,
             default: 0
         },
@@ -502,7 +497,7 @@ const newSchema = new mongoose.Schema({
             default:null
         },
         td_macanho: {
-            type: Number,
+            type: String,
             default:null
         },
         ten_phan_khu: {
@@ -539,7 +534,7 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         dac_diem: {
-            type: Number,
+            type: String,
             default: 0
         },
         dien_tich: {
@@ -547,15 +542,15 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         dientichsd: {
-            type: Number,
+            type: String,
             default: 0
         },
         chieu_dai: {
-            type: Number,
+            type: String,
             default: 0
         },
         chieu_rong: {
-            type: Number,
+            type: String,
             default: 0
         },
         tinh_trang_bds: {
@@ -638,7 +633,7 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         hang_vattu: {
-            type: Number,
+            type: String,
             default: 0
         }
     },
@@ -649,7 +644,7 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         hang: {
-            type: Number,
+            type: String,
             default: 0
         },
         cong_suat: {
@@ -849,16 +844,7 @@ const newSchema = new mongoose.Schema({
             // đơn vị tiền vận chuyển
             type: Number,
             default: 0
-        }
-    },
-    bidding:{
-        han_bat_dau:{
-            type:Date
         },
-        han_su_dung:{
-            type:Date
-        }
-        ,
         tgian_bd:{
             type:Date
         }
@@ -866,38 +852,65 @@ const newSchema = new mongoose.Schema({
         tgian_kt:{
             type:Date
         },
+        dia_chi:{
+            type:String
+        }
+    },
+    bidding:{
+        han_bat_dau:{
+            type:Date,
+            default: null
+        },
+        han_su_dung:{
+            type:Date,
+            default: null
+        }
+        ,
+       
         new_job_kind:{
-            type:Number
+            type:Number,
+            default: null
         },
         new_file_dthau:{
-            type:String
+            type:String,
+            default: null
         },
         noidung_nhs:{
-            type:String
+            type:String,
+            default: null
         },
         new_file_nophs:{
-            type:String
+            type:String,
+            default: null
         },
         noidung_chidan:{
-            type:String
+            type:String,
+            default: null
         },
         new_file_chidan:{
-            type:String
+            type:String,
+            default: null
         },
         donvi_thau:{
             type:String
+            ,
+            default: null
         },
         phi_duthau:{
-            type:String
+            type:String,
+            default: null
         },
         file_mota:{
-            type:String
+            type:String,
+            default: null
         },
         file_thutuc:{
-            type:String
+            type:String,
+            default: null
         },
         file_hoso:{
-            type:String
+            type:String,
+            default: null
         }
     }
 

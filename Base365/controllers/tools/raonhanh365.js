@@ -202,6 +202,8 @@ exports.toolNewRN = async (req, res, next) => {
                             timePromotionEnd: data[i].timePromotionEnd,
                             img: images,
                             video: data[i].new_video,
+                            new_day_tin:data[i].new_day_tin,
+                            dia_chi:data[i].dia_chi
                         });
                         await newRN.save();
                     }
@@ -234,7 +236,8 @@ exports.updateNewDescription = async (req, res, next) => {
                     if (await fnc.checkNumber(data[i].donvi_thau) === false) {
                         continue
                     }
-                    console.log(data)
+        
+               
                     if (post != null) {
                         await New.updateOne({ _id: data[i].new_id }, {
                             $set: {
@@ -290,6 +293,7 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'realEstate.dientichsd': data[i].dientichsd,
                                 'realEstate.chieu_dai': data[i].chieu_dai,
                                 'realEstate.chieu_rong': data[i].chieu_rong,
+                        
                                 'realEstate.tinh_trang_bds': data[i].tinh_trang_bds,
                                 'realEstate.td_block_thap': data[i].td_block_thap,
                                 'realEstate.tang_so': data[i].tang_so,
@@ -337,21 +341,7 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'Job.benefit': data[i].quyen_loi,
                                 'food.typeFood': data[i].nhom_sanpham,
                                 'food.expiry': data[i].han_su_dung,
-                                'tenderFile': data[i].new_file_dthau,
-                                'fileContenApply': data[i].new_file_nophs,
-                                'contentOnline': data[i].noidung_nhs,
-                                'instructionContent': data[i].noidung_chidan,
-                                'instructionFile': data[i].new_file_chidan,
-                                'until_bidding': data[i].donvi_thau,
-                                'bidFee': data[i].phi_duthau,
-                                'desFile': data[i].file_mota,
-                                'procedureFile': data[i].file_thutuc,
-                                'file': data[i].file_hoso,
-                                'cityProcedure': data[i].com_city,
-                                'districtProcedure': data[i].com_district,
-                                'wardProcedure': data[i].com_ward,
                                 'addressProcedure': data[i].com_address_num,
-                                'timeSell':data[i].tgian_bd,
                                 'productGroup':data[i].nhom_sanpham,
                                 'com_city':data[i].com_city,
                                 'com_district':data[i].com_district,
@@ -359,8 +349,8 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'com_address_num':data[i].com_address_num,
                                 'bidding.han_bat_dau':data[i].han_bat_dau,
                                 'bidding.han_su_dung':data[i].han_su_dung,
-                                'bidding.tgian_bd':data[i].tgian_bd,
-                                'bidding.tgian_kt':data[i].tgian_kt,
+                                tgian_bd:data[i].tgian_bd,
+                                tgian_kt:data[i].tgian_kt,
                                 'bidding.new_job_kind':data[i].new_job_kind,
                                 'bidding.new_file_dthau':data[i].new_file_dthau,
                                 'bidding.noidung_nhs':data[i].noidung_nhs,
