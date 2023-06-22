@@ -1,7 +1,7 @@
 const functions = require('../../services/functions')
 const Blog = require('../../models/Timviec365/Blog/Posts')
-const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 const AdminUser = require('../../models/AdminUser')
+const CategoryBlog = require('../../models/Timviec365/Blog/Category')
 
 // hàm lấy danh sách blog
 exports.listBlog = async(req, res, next) => {
@@ -134,38 +134,6 @@ exports.getCategoryBlog = async(req, res, next) => {
             return functions.success(res, "Lấy danh sách blog thành công", { categories });
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)
-
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
-
-//cẩm nang blog
-exports.getHandBook = async(req, res, next) => {
-    try {
-
-        let categories = await CategoryBlog.find({}, { _id: 1, name: 1, link: 1, nameRewrite: 1, parentID: 1 })
-        if (categories) {
-            return functions.success(res, "Lấy danh sách cẩm nang thành công", { categories });
-        } else
-            return functions.setError(res, "đã có lỗi xảy ra", 400)
-
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
-
-//tất cả tin
-exports.countBlog = async(req, res, next) => {
-    try {
-
-        let categories = await CategoryBlog.find({}, { _id: 1, name: 1, link: 1, nameRewrite: 1, parentID: 1 })
-        if (categories) {
-            return functions.success(res, "Lấy danh sách cẩm nang thành công", { categories });
-        } else
-            return functions.setError(res, "đã có lỗi xảy ra", 400)
 
     } catch (error) {
         console.log(error)

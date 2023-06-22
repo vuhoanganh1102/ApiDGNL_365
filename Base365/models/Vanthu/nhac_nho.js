@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Vanthu_nhac_nho = new Schema({
-    id_nhac_nho : {
+    _id : {
         type : Number
     },
     id_dx : {

@@ -16,7 +16,7 @@ const folderUserImg = "img_user"
 // gửi otp
 exports.changePasswordSendOTP = async (req, res, next) => {
     try {
-        let id = req.user.data._id
+        let id = req.user.data._id;
         let otp = await functions.randomNumber;
         let data = {
             UserID: 637990,
@@ -130,14 +130,12 @@ exports.announceResult = async (req, res, next) => {
 // danh sách khách hàng online
 exports.listUserOnline = async (req, res, next) => {
     try {
-        let link = req.params.link;
         let data = [];
-        if (link === 'trang-chu.html') {
             data = await User.aggregate([
                 {
                     $lookup: {
-                        from: "NewRN",
-                        localField: "_id",
+                        from: "RN365_News",
+                        localField: "idRaoNhanh365",
                         foreignField: "userID",
                         as: "new"
                     }
@@ -145,28 +143,11 @@ exports.listUserOnline = async (req, res, next) => {
                 {
                     $match: { isOnline: 1 }
                 }, {
-                    $project: { userName: 1, avatarUser: 1, "new.title": 1 }
+                    $project: { userName: 1, avatarUser: 1, "new.title": 1, _id:1, type: 1,city:1,district:1,address:1}
                 }, {
                     $limit: 20
                 }
             ])
-        } else if (link === 'danh-sach-khach-hang-online.html') {
-            data = await User.aggregate([
-                {
-                    $lookup: {
-                        from: "NewRN",
-                        localField: "_id",
-                        foreignField: "userID",
-                        as: "new"
-                    }
-                },
-                {
-                    $match: { isOnline: 1 }
-                }, {
-                    $project: { userName: 1, avatarUser: 1, "new.title": 1 }
-                }
-            ])
-        }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
         return functions.setError(res, error)
@@ -176,14 +157,8 @@ exports.listUserOnline = async (req, res, next) => {
 // lịch sử giao dịch
 exports.historyTransaction = async (req, res, next) => {
     try {
-        let userID = req.user.data._id;
-        let idRaoNhanh = await User.findById(userID, { idRaoNhanh365: 1 });
-        let data = [];
-        if (idRaoNhanh) {
-            data = await History.find({ userId: idRaoNhanh.idRaoNhanh365 }, { _id: 1, content: 1, price: 1, time: 1 })
-        }else{
-            return functions.setError(res,'get data faild',404)
-        }
+        let userId = req.user.data.idRaoNhanh365;
+        let data = await History.find({ userId })
         return functions.success(res, 'get data success', { data })
     } catch (error) {
         return functions.setError(res, error)
@@ -237,11 +212,7 @@ exports.createVerifyPayment = async(req, res, next) => {
 exports.profileInformation = async (req,res,next) => {
     try{
         let userID;
-        if(req.body.userId){
-            userID = req.body.userId;
-        }else {
-            userID = req.user.data._id;
-        }
+            userID = req.user.data.idRaoNhanh365;
         let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1};
         let dataUser = {}
 
@@ -302,7 +273,7 @@ exports.profileInformation = async (req,res,next) => {
 // api đổi avatar
 exports.updateAvatar = async (req, res, next) => {
     try {
-        let _id = req.user.data._id;
+        let _id = req.user.data.idRaoNhanh365;
 
         let File = req.files || null;
         let avatarUser = null;

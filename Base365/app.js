@@ -9,7 +9,6 @@ var authJwt = require('./middleware/authJwt');
 
 
 
-
 var candidateRouter = require('./routes/timviec/candidate');
 var companyRouter = require('./routes/timviec/company');
 var cvRouter = require('./routes/timviec/cv');
@@ -60,7 +59,7 @@ var managerUser = require('./routes/qlc/managerUser')
 var employeeRoutes = require('./routes/qlc/employee.routes');
 var individualRoutes = require('./routes/qlc/individual.routes');
 
-var manageUserRouter = require('./routes/qlc/manageUser')
+// var manageUserRouter = require('./routes/qlc/manageUser')
 
 // crm_import
 var groupCustomerRouter = require('./routes/crm/groupCustomer')
@@ -75,35 +74,40 @@ var syllRouter = require('./routes/timviec/syll');
 
 var toolVT = require('./routes/vanthu/RoutertoolVT')
 
+
 const { router } = require("express/lib/application");
 
-var app = express();
-// app.listen(3001, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3001")
-// });
+var vanthu = require('./routes/vanthu')
+var timviec = require('./routes/timviec')
+var qlc = require('./routes/qlc')
+var hr = require('./routes/hr')
+var raonhanh = require('./routes/raonhanh')
+var CRMroute = require('./routes/crm/CRMroutes')
 
-//
+//tool
+var toolVT = require('./routes/vanthu/RoutertoolVT')
+var toolAddDataRouter = require('./routes/tools');
+var raonhanhtool = require('./routes/raonhanh365/tools');
+
+
+var app = express();
+
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../Storage')));
+app.use('/api', CRMroute)
+app.use("/api", vanthu)
+app.use("/api/timviec", timviec)
+app.use("/api/hr", hr)
+app.use("/api/qlc", qlc)
+app.use("/api/raonhanh", raonhanh)
 
-
-app.use('/api/timviec/candidate', candidateRouter);
-app.use('/api/timviec/new', newTV365Router)
-app.use('/api/timviec/admin', adminRouter)
-app.use('/api/timviec/company', companyRouter)
-app.use('/api/timviec/blog', blogRouter)
-app.use('/api/timviec/cv', cvRouter);
-app.use('/api/timviec/don', donRouter);
-app.use('/api/timviec/thu', thuRouter);
-app.use('/api/timviec/syll', syllRouter);
 app.use('/api/tool', toolAddDataRouter);
 
 // app.use('/api/timviec/priceList', priceListRouter);
@@ -157,6 +161,7 @@ app.use("/api/tool", toolVT)
 
 app.use("/api/crm/customer/group", groupCustomerRouter);
 
+app.use("/api/tool", raonhanhtool)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -181,4 +186,12 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
+// app.listen(3004, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3004")
+// })
+// app.listen(3005, () => {
+//     console.log("Connected to databse");
+//     console.log("Backend is running on http://localhost:3005")
+// })
 module.exports = app;

@@ -9,11 +9,10 @@ const DeparmentSchema = new Schema({
     },
 
     //ID công ty của phòng ban
-    companyId: {
+    com_id: {
         type: Number,
     },
 
-    //Tên của phòng ban
     deparmentName: {
         type: String,
     },
@@ -24,14 +23,22 @@ const DeparmentSchema = new Schema({
         default: Date.now()
     },
 
-    //ID quản lí phòng ban
+    //ID Trưởng phòng 
     managerId: {
+        type: Number
+    },
+    //ID phó phòng 
+    deputyId: {
         type: Number
     },
 
     //Săp xếp theo thứ tự
     deparmentOrder: {
         type: Number
+    },
+    // tổng số nhân viên 
+    total_emp : {
+        type :Number,
     }
 })
 
