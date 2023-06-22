@@ -138,15 +138,16 @@ exports.getDetailProcessTraining= async(req, res, next) => {
         }
         //
         let processTrainId = req.body.processTrainId;
+        if(!processTrainId){
+            return functions.setError(res, "Missing input processTrainId", 504);  
+        }
         var processTrain = await ProcessTraining.findOne({id: processTrainId});
         if(!processTrain) {
             return functions.setError(res, "process training not found", 504);   
         }
 
-        let listStgae = await StageProcessTraining.find({trainingProcessId: processTrainId});
-        processTrain.listStgae = listStgae;
-        
-        return functions.success(res, "Get list process training success", {processTrain});
+        let listStage = await StageProcessTraining.find({trainingProcessId: processTrainId});
+        return functions.success(res, "Get list process training success", {processTrain, listStage});
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
