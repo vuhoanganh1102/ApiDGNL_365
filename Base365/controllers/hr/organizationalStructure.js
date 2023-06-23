@@ -9,6 +9,32 @@ const Group = require('../../models/qlc/Group');
 const Team = require('../../models/qlc/Team');
 const HR_NestDetails = require('../../models/hr/NestDetail');
 const Tracking = require('../../models/qlc/HisTracking');
+const HR_DescPositions = require('../../models/hr/DescPositions');
+const HR_SignatureImages = require('../../models/hr/SignatureImage');
+
+const positionNames = {
+    19: 'Chủ tịch hội đồng quản trị',
+    18: 'Phó chủ tịch hội đồng quản trị',
+    17: 'Thành viên hội đồng quản trị',
+    21: 'Tổng giám đốc tập đoàn',
+    22: 'Phó tổng giám đốc tập đoàn',
+    16: 'Tổng giám đốc',
+    14: 'Phó tổng giám đốc',
+    8: 'Giám đốc',
+    7: 'Phó giám đốc',
+    6: 'Trưởng phòng',
+    5: 'Phó trưởng phòng',
+    13: 'Tổ trưởng',
+    12: 'Phó tổ trưởng',
+    4: 'Trưởng nhóm',
+    20: 'Nhóm Phó',
+    11: 'Trưởng ban dự án',
+    10: 'Phó ban dự án',
+    3: 'Nhân viên chính thức',
+    2: 'Nhân viên thử việc',
+    9: 'Nhân viên Part time',
+    1: 'Sinh viên thực tập'
+};
 
 //cơ cấu tổ chức công ty, công ty con và phòng ban
 exports.detailInfoCompany = async(req, res, next) => {
@@ -465,4 +491,251 @@ exports.updateDescription = async(req, res, next) => {
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 
+}
+
+//danh sách chức vụ
+exports.listPosition = async(req, res, next) => {
+    try {
+        if (req.body.comId) {
+            let comId = req.body.comId;
+            //tìm kiếm những chức vụ của công ty đó trong bảng hr
+            const positionOrder = {
+                19: 1,
+                18: 2,
+                17: 3,
+                21: 4,
+                22: 5,
+                16: 6,
+                14: 7,
+                8: 8,
+                7: 9,
+                6: 10,
+                5: 11,
+                13: 12,
+                12: 13,
+                4: 14,
+                20: 15,
+                11: 16,
+                10: 17,
+                3: 18,
+                2: 19,
+                9: 20,
+                1: 21
+            };
+
+            const companyPositions = await HR_DescPositions.find({ comId: comId });
+
+            const sortedPositions = companyPositions.sort((a, b) => {
+                const orderA = positionOrder[a.positionId] || Infinity;
+                const orderB = positionOrder[b.positionId] || Infinity;
+                return orderA - orderB;
+            });
+
+            const result = sortedPositions.map((position) => {
+                return {
+                    positionId: position.positionId,
+                    positionName: positionNames[position.positionId] || 'Chức vụ không xác định',
+                    des: position.description || 'Chưa cập nhật',
+                    users: {
+                        userName: [],
+                        id: [],
+                    },
+                };
+            });
+            for (let i = 0; i < result.length; i++) {
+                let findUser = await Users.find({
+                    "inForPerson.employee.com_id": comId,
+                    "inForPerson.employee.position_id": result[i].positionId
+                }, { idQLC: 1, userName: 1 })
+                console.log(result[i].positionId)
+                result[i].users.userName = findUser.map((user) => user.userName);
+                result[i].users.id = findUser.map((user) => user.idQLC);
+            }
+            if (result) {
+                return functions.success(res, 'Lấy chi tiết công ty thành công', { result });
+            } else return functions.setError(res, "Cty không có nhân viên hoặc chưa có dữ liệu về chức vụ", 400);
+        } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
+
+
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+
+}
+
+//chi tiết nhiệm vụ mỗi chức vụ
+exports.missionDetail = async(req, res, next) => {
+    try {
+        if (req.body.comId) {
+            let comId = req.body.comId;
+            let positionId = req.body.positionId
+            let mission = await HR_DescPositions.findOne({ comId: comId, positionId: positionId }, { description: 1 })
+            if (mission) {
+                if (mission.description != null) {
+                    return functions.success(res, 'Lấy chi tiết công ty thành công', { mission });
+                } else {
+                    mission.description = "chưa cập nhật"
+                    return functions.success(res, 'Lấy chi tiết công ty thành công', { mission });
+                }
+            } else return functions.setError(res, "chưa cập nhật nhiệm vụ", 400);
+        } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
+
+
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+
+}
+
+//cập nhật chi tiết nhiệm vụ mỗi
+exports.updateMission = async(req, res, next) => {
+    try {
+        if (req.body.comId) {
+            let comId = req.body.comId;
+            let positionId = req.body.positionId
+            let description = req.body.description
+            let mission = await HR_DescPositions.findOneAndUpdate({ comId: comId, positionId: positionId }, { description: description }, { new: true })
+            if (mission) {
+                return functions.success(res, 'cập nhật chi tiết nhiệm vụ thành công', { mission });
+
+            } else return functions.setError(res, "chưa cập nhật nhiệm vụ", 400);
+        } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
+
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+
+}
+
+//tải lên chữ ký
+exports.uploadSignature = async(req, res, next) => {
+    try {
+        if (req.user && req.file) {
+            let empId = req.body.empId
+            console.log(req.file)
+            const maxID = await HR_SignatureImages.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+            if (maxID) {
+                newIDMax = Number(maxID.id) + 1;
+            } else newIDMax = 1
+
+            let checkSig = await HR_SignatureImages.findOne({ empId: empId })
+            if (!checkSig) {
+                let upload = new HR_SignatureImages({
+                    id: newIDMax,
+                    empId: empId,
+                    imgName: req.file.originalname,
+                    createdAt: new Date(Date.now())
+                })
+                upload.save()
+                if (upload) {
+                    return functions.success(res, 'Tải chữ ký thành công');
+                }
+            } else return functions.setError(res, "Đã tồn tại chữ ký của người này", 400);
+
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//xóa chữ kí đã tải lên
+exports.deleteSignature = async(req, res, next) => {
+    try {
+        if (req.user) {
+            let empId = req.body.empId
+            let deleteSig = await HR_SignatureImages.findOneAndUpdate({ empId: empId }, { isDelete: 1, deletedAt: new Date(Date.now()) })
+
+            if (deleteSig) {
+                return functions.success(res, 'Xóa chữ ký thành công');
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//danh sách lãnh đạo
+exports.listInfoLeader = async(req, res, next) => {
+    try {
+        if (req.user) {
+            let keyword = req.body.keyword
+            let comId = req.user.data.idQLC
+            let listPositionId = [4, 20, 13, 12, 11, 10, 6, 5, 8, 7, 16, 14, 21, 22, 19, 18, 17]
+            let infoLeader = await Users.find({
+                userName: new RegExp(keyword, "i"),
+                "inForPerson.employee.com_id": comId,
+                "inForPerson.employee.position_id": { $in: listPositionId }
+            }, {
+                idQLC: 1,
+                avatarUser: 1,
+                userName: 1,
+                "inForPerson.employee.position_id": 1,
+                "inForPerson.employee.dep_id": 1,
+                "inForPerson.employee.team_id": 1,
+                "inForPerson.employee.group_id": 1,
+            })
+
+            let infoLeaderAfter = []
+            for (let i = 0; i < infoLeader.length; i++) {
+                let info = {}
+                info._id = infoLeader[i].idQLC
+                info.userName = infoLeader[i].userName
+                info.avatarUser = `${process.env.hostFile}${infoLeader[i].avatarUser}`
+                info.namePosition = positionNames[infoLeader[i].inForPerson.employee.position_id];
+
+                if (infoLeader[i].inForPerson.employee.dep_id) {
+                    let infoDep = await Deparment.findOne({ _id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
+                    info.dep_name = infoDep.deparmentName
+
+                    if (infoLeader[i].inForPerson.employee.team_id) {
+                        let infoTeam = await Team.findOne({
+                            _id: infoLeader[i].inForPerson.employee.team_id,
+                            com_id: comId,
+                            dep_id: infoLeader[i].inForPerson.employee.dep_id,
+                        })
+                        info.team_name = infoTeam.teamName
+
+                        if (infoLeader[i].inForPerson.employee.group_id) {
+                            let infoGroup = await Group.findOne({
+                                _id: infoLeader[i].inForPerson.employee.group_id,
+                                com_id: comId,
+                                dep_id: infoLeader[i].inForPerson.employee.dep_id,
+                                team_id: infoLeader[i].inForPerson.employee.team_id
+                            })
+                            info.group_name = infoGroup.teamName
+                        } else info.group_name = "chưa cập nhật"
+
+
+                    } else {
+                        info.team_name = "chưa cập nhật"
+                        info.group_name = "chưa cập nhật"
+                    }
+
+                } else {
+                    info.dep_name = "chưa cập nhật"
+                    info.team_name = "chưa cập nhật"
+                    info.group_name = "chưa cập nhật"
+                }
+                infoLeaderAfter.push(info)
+            }
+
+            if (infoLeader) {
+                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { infoLeaderAfter });
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
 }
