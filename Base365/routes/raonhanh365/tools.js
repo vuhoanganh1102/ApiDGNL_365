@@ -30,5 +30,6 @@ router.post('/raonhanh/toolTblTags', toolRaoNhanh.toolTblTags);
 router.post('/raonhanh/toolPushNewsTime', toolRaoNhanh.toolPushNewsTime);
 router.post('/raonhanh/toolAdminUser', toolRaoNhanh.toolAdminUser);
 router.post('/raonhanh/toolAdminTranslate', toolRaoNhanh.toolAdminTranslate);
-router.post('/raonhanh/')
+router.post('/raonhanh/toolBlog',toolRaoNhanh.toolBlog)
+router.post('/raonhanh/toolLoveNew',toolRaoNhanh.toolLoveNew)
 module.exports = router;

@@ -10,7 +10,7 @@ router.post('/listBlog', formData.parse(), blog.getListBlogByFields);
 //admin-------------------------------
 
 //api lay ra danh sach blog theo cac truong
-router.post('/getBlog', formData.parse(), functions.checkToken, blog.getListBlogByFields);
+router.post('/getBlog', formData.parse(), blog.getListBlogByFields);
 
 //api admin tao blog
 router.post('/createBlog', formData.parse(), [functions.checkToken, functions.isAdminRN365], blog.getAndCheckData, blog.createBlog);

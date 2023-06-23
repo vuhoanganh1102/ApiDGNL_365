@@ -8,13 +8,6 @@ const folderImg = 'img_blog';
 const raoNhanh = require('../../services/rao nhanh/raoNhanh')
 exports.getListBlogByFields = async(req, res, next) => {
     try {
-        if (req.body) {
-            if(!req.body.page){
-                return functions.setError(res, "Missing input page", 401);
-            }
-            if(!req.body.pageSize){
-                return functions.setError(res, "Missing input pageSize", 402);
-            }
             let page = Number(req.body.page);
             let pageSize = Number(req.body.pageSize);
             const skip = (page - 1) * pageSize;
@@ -39,9 +32,8 @@ exports.getListBlogByFields = async(req, res, next) => {
             const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
             const totalCount = await functions.findCount(Blog, listCondition);
             return functions.success(res, "get list blog success", {totalCount: totalCount, data: listBlog });
-        } else {
-            return functions.setError(res, "Missing input data", 400);
-        }
+      
+        
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);

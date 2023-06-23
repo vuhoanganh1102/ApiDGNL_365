@@ -4,182 +4,91 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose')
-var authJwt = require('./middleware/authJwt');
 
+var appTimviec = express();
+var appRaonhanh = express();
+var appVanthu = express();
+var appCRM = express();
+var appQLC = express();
+var appHR = express();
 
+function configureApp(app) {
+    app.set('views', path.join(__dirname, 'views'));
+    app.set('view engine', 'jade');
+    app.use(logger('dev'));
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: false }));
+    app.use(cookieParser());
+    app.use(express.static(path.join(__dirname, '../Storage')));
 
+    app.use(function(err, req, res, next) {
+        // set locals, only providing error in development
+        res.locals.message = err.message;
+        res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-var candidateRouter = require('./routes/timviec/candidate');
-var companyRouter = require('./routes/timviec/company');
-var cvRouter = require('./routes/timviec/cv');
-var newTV365Router = require('./routes/timviec/newTV365');
+        // render the error page
+        res.status(err.status || 500);
+        res.render('error');
+    });
+}
 
-// rao nhanh
-var newRN365Router = require('./routes/raonhanh365/new');
-var blogRaoNhanh365Router = require('./routes/raonhanh365/blog');
-var orderRaoNhanh = require('./routes/raonhanh365/order');
-var userRaoNhanh = require('./routes/raonhanh365/user');
-var companyRaoNhanh365Router = require('./routes/raonhanh365/company');
-var cartRaoNhanh365Router = require('./routes/raonhanh365/cart');
-var priceListRaoNhanh365Router = require('./routes/raonhanh365/priceList');
-var adminRaonhanh365 = require('./routes/raonhanh365/admin');
+function errorApp(app) {
+    // catch 404 and forward to error handler
+    app.use(function(req, res, next) {
+        next(createError(404));
+    });
 
+    // error handler
+    app.use(function(err, req, res, next) {
+        // set locals, only providing error in development
+        res.locals.message = err.message;
+        res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-//---------HR------------------------
-var recruitment = require('./routes/hr/recruitmentRoute');
-var trainingRoute = require('./routes/hr/trainingRoute');
-var settingRoute = require('./routes/hr/settingRoute');
-var administrationRoute = require('./routes/hr/administrationRoute');
-var welfare = require('./routes/hr/welfareRoute');
-var organizationalStructure = require('./routes/hr/organizationalStructure');
+        // render the error page
+        res.status(err.status || 500);
+        res.render('error');
+    });
+}
 
-var recruitment = require('./routes/hr/recruitmentRoute');
-var trainingRoute = require('./routes/hr/trainingRoute');
-var settingRoute = require('./routes/hr/settingRoute');
-var managerEmployeeRoute = require('./routes/hr/managerEmployeeRoute');
-var personalChangeRoute = require('./routes/hr/personalChangeRoute');
-
-//tim viec 
-//tim viec 
-
-var priceListRouter = require('./routes/timviec/priceList');
-var trangVangRouter = require('./routes/timviec/trangVang');
-var soSanhLuongRouter = require('./routes/timviec/ssl');
-var mail365Router = require('./routes/timviec/mail365');
-var adminRouter = require('./routes/timviec/admin');
-var blogRouter = require('./routes/timviec/blog')
-
-// Quản lý chung
-var deparmentRouter = require('./routes/qlc/deparment')
-var teamRouter = require('./routes/qlc/team');
-var groupRouter = require('./routes/qlc/group');
-var shiftRouter = require('./routes/qlc/shift');
-var calendarRouter = require('./routes/qlc/calendar');
-var childCompanyRouter = require('./routes/qlc/childCompany')
-var managerUser = require('./routes/qlc/managerUser')
-var employeeRoutes = require('./routes/qlc/employee.routes');
-var individualRoutes = require('./routes/qlc/individual.routes');
-
-// var manageUserRouter = require('./routes/qlc/manageUser')
-
-// crm_import
-var groupCustomerRouter = require('./routes/crm/groupCustomer')
-
-
-//
+// Cấu hình appTimviec
+configureApp(appTimviec);
+var timviecRouter = require('./routes/timviec');
 var toolAddDataRouter = require('./routes/tools');
+appTimviec.use("/api/timviec", timviecRouter);
+appTimviec.use('/api/tool', toolAddDataRouter);
+errorApp(appTimviec)
 
-var donRouter = require('./routes/timviec/don');
-var thuRouter = require('./routes/timviec/thu');
-var syllRouter = require('./routes/timviec/syll');
-
-var toolVT = require('./routes/vanthu/RoutertoolVT')
-
-
-const { router } = require("express/lib/application");
-
-var vanthu = require('./routes/vanthu')
-var timviec = require('./routes/timviec')
-var qlc = require('./routes/qlc')
-var hr = require('./routes/hr')
-var raonhanh = require('./routes/raonhanh')
-var CRMroute = require('./routes/crm/CRMroutes')
-
-//tool
-var toolVT = require('./routes/vanthu/RoutertoolVT')
-var toolAddDataRouter = require('./routes/tools');
+// Cấu hình appRaonhanh
+configureApp(appRaonhanh);
+var raonhanhRouter = require('./routes/raonhanh');
 var raonhanhtool = require('./routes/raonhanh365/tools');
+appRaonhanh.use("/api/raonhanh", raonhanhRouter);
+appRaonhanh.use("/api/tool", raonhanhtool)
+errorApp(appRaonhanh)
 
+// Cấu hình appVanthu
+configureApp(appVanthu);
+var vanthuRouter = require('./routes/vanthu')
+appVanthu.use("/api", vanthuRouter);
+errorApp(appVanthu)
 
-var app = express();
+// Cấu hình appCRM
+configureApp(appCRM);
+var CRMroute = require('./routes/crm/CRMroutes');
+appCRM.use("/api", CRMroute);
+errorApp(appCRM)
 
+// Cấu hình appQLC
+configureApp(appQLC);
+var qlcRouter = require('./routes/qlc');
+appQLC.use("/api", qlcRouter);
+errorApp(appQLC)
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../Storage')));
-app.use('/api', CRMroute)
-app.use("/api", vanthu)
-app.use("/api/timviec", timviec)
-app.use("/api/hr", hr)
-app.use("/api/qlc", qlc)
-app.use("/api/raonhanh", raonhanh)
-
-app.use('/api/tool', toolAddDataRouter);
-
-// app.use('/api/timviec/priceList', priceListRouter);
-app.use('/api/timviec/trangVang', trangVangRouter);
-app.use('/api/timviec/ssl', soSanhLuongRouter);
-app.use('/api/timviec/mail365', mail365Router);
-
-// api rao nhanh
-app.use('/api/raonhanh/new', newRN365Router);
-app.use('/api/raonhanh/blog', blogRaoNhanh365Router)
-app.use('/api/raonhanh/orderRaoNhanh', orderRaoNhanh)
-app.use('/api/raonhanh/userRaoNhanh', userRaoNhanh)
-app.use('/api/raonhanh/com', companyRaoNhanh365Router);
-app.use('/api/raonhanh/cart', cartRaoNhanh365Router);
-app.use('/api/raonhanh/priceList', priceListRaoNhanh365Router);
-app.use('/api/raonhanh/admin', adminRaonhanh365);
-
-
-// api hr
-app.use('/api/hr/administration', administrationRoute);
-app.use('/api/hr/welfare', welfare);
-app.use('/api/hr/organizationalStructure', organizationalStructure)
-app.use('/api/hr/recruitment', recruitment)
-app.use('/api/hr/training', trainingRoute);
-app.use('/api/hr/setting', settingRoute);
-app.use('/api/hr/managerEmployee', managerEmployeeRoute);
-app.use('/api/hr/personalChange', personalChangeRoute);
-
-
-
-
-// API quản lí chung
-app.use('/api/qlc/deparment', deparmentRouter);
-app.use('/api/qlc/team', teamRouter);
-app.use("/api/qlc/group", [authJwt.checkToken, authJwt.isCompany], groupRouter);
-// app.use('/api/qlc/childCompany', childCompanyRouter)
-// app.use('/api/qlc/managerUser', managerUser)
-app.use('/api/qlc/employee', employeeRoutes);
-app.use('/api/qlc/individual', individualRoutes);
-
-// app.use('/api/qlc/childCompany', childCompanyRouter);
-
-
-//API quẩn lý ca làm việc
-app.use("/api/qlc/shift", shiftRouter);
-app.use("/api/calendar", calendarRouter);
-
-
-//API văn thu
-app.use("/api/tool", toolVT)
-
-app.use("/api/crm/customer/group", groupCustomerRouter);
-
-app.use("/api/tool", raonhanhtool)
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-    next(createError(404));
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-    // set locals, only providing error in development
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-    // render the error page
-    res.status(err.status || 500);
-    res.render('error');
-});
-
+// Cấu hình appHR
+configureApp(appHR);
+var hrRouter = require('./routes/hr');
+appHR.use("/api/hr", hrRouter);
+errorApp(appHR)
 
 // timviec365 -> api-base365
 const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
@@ -187,12 +96,57 @@ mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-// app.listen(3004, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3004")
-// })
-// app.listen(3005, () => {
-//     console.log("Connected to databse");
-//     console.log("Backend is running on http://localhost:3005")
-// })
-module.exports = app;
+// Chạy server trên các cổng riêng biệt
+//chạy server Timviec
+var serverTimviec = appTimviec.listen(3000, () => {
+    console.log(`Timviec app is running on port 3000`);
+});
+
+serverTimviec.on('error', (error) => {
+    console.error('Error occurred while listening on Timviec port:', error);
+});
+
+//Raonhanh
+var serverRaonhanh = appRaonhanh.listen(3004, () => {
+    console.log(`Raonhanh app is running on port 3004`);
+});
+
+serverRaonhanh.on('error', (error) => {
+    console.error('Error occurred while listening on Raonhanh port:', error);
+});
+
+//Van thu
+var serverVanthu = appVanthu.listen(3005, () => {
+    console.log(`Vanthu app is running on port 3005`);
+});
+
+serverVanthu.on('error', (error) => {
+    console.error('Error occurred while listening on Vanthu port:', error);
+});
+
+//CRM
+var serverCRM = appCRM.listen(3006, () => {
+    console.log(`CRM app is running on port 3006`);
+});
+
+serverCRM.on('error', (error) => {
+    console.error('Error occurred while listening on CRM port:', error);
+});
+
+//qlc
+var serverQlc = appQLC.listen(3003, () => {
+    console.log(`QLC app is running on port 3003`);
+});
+
+serverQlc.on('error', (error) => {
+    console.error('Error occurred while listening on Qlc port:', error);
+});
+
+//hr
+var serverHR = appHR.listen(3007, () => {
+    console.log(`Hr app is running on port 3007`);
+});
+
+serverHR.on('error', (error) => {
+    console.error('Error occurred while listening on HR port:', error);
+});

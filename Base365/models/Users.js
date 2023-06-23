@@ -797,6 +797,15 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
+            xacThucLienket: {
+                type: Number,
+                default: null
+            },
+            store_name: {
+                type: String,
+                default: null
+            },
+
             ownerName: {
                 //ten chu tai khoan
                 type: String,
@@ -919,14 +928,7 @@ const UserSchema = new mongoose.Schema({
 
             default: null
         },
-        xacThucLienket: {
-            type: String,
-            default: null
-        },
-        store_name: {
-            type: String,
-            default: null
-        },
+        
         time: {
             //thoi gian xac thuc
             type: Date,
