@@ -292,6 +292,21 @@ exports.checkRole = async(infoLogin, barId, perId)=> {
     return false;
 }
 
+exports.checkRight = (barId, perId) => {
+    return async(req, res, next) => {
+        // Sử dụng tham số ở đây
+        console.log('Tham số:', barId, perId);
+        let infoLogin = req.infoLogin;
+        let checkRole = await hrService.checkRole(infoLogin, 4, 1);
+        if(!checkRole) {
+            return functions.setError(res, "no right", 444);   
+        }
+
+        // Tiếp tục xử lý middleware
+        next();
+    };
+};
+
 exports.checkIsInteger = (data)=>{
     console.log(data);
     for(let i=0; i<data.length; i++){
