@@ -101,6 +101,7 @@ exports.update = async (req, res) => {
         companyId,
         departmentId,
         employeeShare_id,
+        emp_id
     } = req.body;
     console.log(' departmentId: ' + departmentId);
     let new_GR_KH;
@@ -113,7 +114,7 @@ exports.update = async (req, res) => {
             group_parent: groupParents,
             company_id: companyId,
             dep_id: "all",
-            emp_id: employeeShare_id,
+            emp_id: emp_id,
             updated_at: new Date().getTime()
         });
         console.log(' new_GR_KH: ' + new_GR_KH.emp_id);
