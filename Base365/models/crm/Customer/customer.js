@@ -101,11 +101,14 @@ const crm_customer = new Schema({
         type : Number,
         default : 0
     },
-    user_handing_over_work :{// id người được bàn giao
+    user_handing_over_work :{// id người bàn giao
         type : Number
     },
-    user_create_type : {//id người phụ trách
-        type : String,
+    user_create_id : {//id nguoi tO
+        type : Number
+    },
+    user_create_type : {//id người tạo
+        type : Number,
         default : null
     },
     user_edit_id : {//id người phụ trách
@@ -124,7 +127,7 @@ const crm_customer = new Schema({
         type : Number,
         default : null
     },
-    business_areas : {// lĩnh vực kinh doanh
+    business_areas : {// trợ lý kinh doanh
         type : Number,
         default :0
     },

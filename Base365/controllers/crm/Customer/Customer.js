@@ -424,6 +424,7 @@ exports.showKH = async (req, res) => {
     if (validCondition) {
       const totalItems = await Customer.countDocuments(query);
       const paginatedData = await Customer.find(query)
+      .sort({ cus_id : -1 })
         .skip(startIndex)
         .limit(perPage);
       res.status(200).json({
@@ -473,9 +474,8 @@ exports.DeleteKH = async (req, res) => {
   }
 };
 
-
-//Api kết nối Api
-exports.ConnectCs = async(req,res) => {
+//Api thêm mới Api
+exports.addConnectCs = async(req,res) => {
   try{
     let {appID,webhook} = req.body
     let comId = req.user.data.inForPerson.employee.com_id
@@ -494,8 +494,11 @@ exports.ConnectCs = async(req,res) => {
       if (maxID) {
         id = Number(maxID) + 1;
       }
-
-    if(req.user.data.type == 2){
+    let checkCn = await ConnectApi.findOne({company_id : comId})
+    if(checkCn){
+      res.status(400).json({ success: false, error: "Api kết nối đã có không thể tạo mới"});
+    }else{
+      if(req.user.data.type == 2){
      let createApi = await new ConnectApi({
          id : id,
          company_id : comId,
@@ -510,7 +513,7 @@ exports.ConnectCs = async(req,res) => {
      let saveApi = await createApi.save();
           res.status(200).json(saveApi);
     }
-    else {
+    else if(req.user.data.type == 1) {
       let createApi = await new ConnectApi({
         id : id,
         company_id : comId,
@@ -525,9 +528,71 @@ exports.ConnectCs = async(req,res) => {
     let saveApi = await createApi.save();
          res.status(200).json(saveApi);
     }
+    }
+    
   }catch (error) {
     console.error('Failed to add', error);
     res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
   }
   
 }
+
+exports.editConnectCs = async(req,res) =>{
+  try{
+    let {appID,webhook} = req.body
+    let comId = req.user.data.inForPerson.employee.com_id
+    let tokenCn = req.headers["authorization"]
+    let userID = req.user.idQLC ;
+    let updateDate = new Date();
+    if (typeof appID === 'undefined') {
+      res.status(400).json({ success: false, error: 'appID không được bỏ trống' });
+    }
+    if (typeof webhook === 'undefined') {
+      res.status(400).json({ success: false, error: 'webhook phải là 1 số' });
+    }
+    if(req.user.data.type == 2){
+       await customerService.getDatafindOneAndUpdate(ConnectApi,{company_id : comId},{
+          id : id,
+          company_id : comId,
+          appID : appID,
+          webhook : webhook,
+          token : tokenCn,
+          user_edit_id : comId,
+          user_edit_type : 1,
+          stt_conn : 1,
+          updated_at :updateDate
+      })
+      customerService.success(res, "Api edited successfully");
+     }
+     else if(req.user.data.type == 1) {
+      await customerService.getDatafindOneAndUpdate(ConnectApi,{company_id : comId},{
+         id : id,
+         company_id : comId,
+         appID : appID,
+         webhook : webhook,
+         token : tokenCn,
+         user_edit_id : userID,
+         user_edit_type : 1,
+         stt_conn : 1,
+         updated_at :updateDate
+     })
+     customerService.success(res, "Api edited successfully");
+     }
+  }catch (error) {
+    console.error('Failed to edit', error);
+    res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+  }
+}
+
+
+exports.ShowConnectCs = async(req,res) => {
+  try{
+    let comId = req.user.data.inForPerson.employee.com_id
+    const check = await ConnectApi.findOne({company_id : comId})
+    res.status(200).json(check)
+  }catch (error) {
+    console.error('Failed to get', error);
+    res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+  }
+}
+

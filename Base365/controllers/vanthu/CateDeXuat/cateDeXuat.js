@@ -66,18 +66,25 @@ exports.showCateCom = async (req, res) => {
 
   // Api hiển thị trang home tài khoản công ty
 
-exports.showHomeCt = async (req, res) => {
+exports.showHome = async (req, res) => {
     try {
-      const { com_id, page } = req.body;
-      if (Number.isNaN(com_id)) {
-        throw new Error("Invalid com_id");
-      }else{
-        const perPage = 6; // Số lượng giá trị hiển thị trên mỗi trang
+      const { page } = req.body;
+      const perPage = 6; // Số lượng giá trị hiển thị trên mỗi trang
       const startIndex = (page - 1) * perPage; 
-      const showHomeCt = await DeXuat.find({ com_id }).sort({ _id: -1 }).skip(startIndex).limit(perPage);
-  
-      res.status(200).json(showHomeCt);
-      }    
+      const endIndex = page * perPage;
+      let com_id = req.user.data.inForPerson.employee.com_id
+      let id_user = req.user.data.idQLC
+      if(req.user.data.type == 2){
+        const totaldx = await DeXuat.countDocuments({ com_id,del_type : 1 });
+        const dxduyet = await DeXuat.countDocuments({com_id,del_type : 1,type_duyet : 0})
+        let showCT  = await DeXuat.find({com_id}).sort({ _id: -1 }).skip(startIndex).limit(perPage);
+        res.status(200).json({ totaldx,dxduyet, data: showCT });
+      }if(req.user.data.type == 1) {
+        const totaldx = await DeXuat.countDocuments({ id_user ,del_type : 1});
+        const dxduyet = await DeXuat.countDocuments({id_user_duyet,del_type : 1,type_duyet : 0})
+        let showNV  = await DeXuat.find({id_user,del_type : 1}).sort({ _id: -1 }).skip(startIndex).limit(perPage);
+        res.status(200).json({ totaldx,dxduyet, data: showNV })
+      } 
     } catch (error) {
       console.error('Failed to get DX', error);
       res.status(500).json({ error: 'Failed to get DX' });
@@ -85,43 +92,16 @@ exports.showHomeCt = async (req, res) => {
   };
 
 
-
-  //Api hiển thị trang Home tài khoản nhân viên
-
-exports.showHomeNv = async(req,res) => {
-    try{
-        const {id_user, page } = req.body;
-        console.log(id_user);
-        if (Number.isNaN(id_user)) {
-          throw new Error("Invalid id_user");
-        }else{
-          const perPage = 6; // Số lượng giá trị hiển thị trên mỗi trang
-        const startIndex = (page - 1) * perPage; 
-        const showHomeNv = await DeXuat.find({id_user}).sort({ _id: -1 }).skip(startIndex).limit(perPage);
-    
-        res.status(200).json(showHomeNv);
-        }    
-    }catch (error) {
-        console.error('Failed to get DX', error);
-        res.status(500).json({ error: 'Failed to get DX' });
-      }
-    };
-  
-
-    //Api hiển thị trang tài khoản nghỉ + khoog lịch làm việc
+//Api hiển thị trang tài khoản nghỉ + khoog lịch làm việc
 
 exports.showNghi = async(req,res)=> {
         try{
-        let {com_id,page} = req.body
-        console.log(com_id);
-        if(Number.isNaN(com_id)){
-            throw new Error("Invalid com_id");
-        }else {
-            const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
-            const startIndex = (page - 1) * perPage; 
-            const shownghi = await DeXuat.find({ com_id , type_dx : 1}).sort({ _id: -1 }).skip(startIndex).limit(perPage);
+        let {page,time_s,time_e,phong_ban,emp_id,type_duyet} = req.body
+        let com_id = req.user.data.inForPerson.employee.com_id
+        const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
+        const startIndex = (page - 1) * perPage; 
+        const shownghi = await DeXuat.find({ type_dx: { $in: [1, 18] }}).sort({ _id: -1 }).skip(startIndex).limit(perPage);
             res.status(200).json(shownghi);
-        }
         }catch(error) {
         console.error('Failed to get DX', error);
         res.status(500).json({ error: 'Failed to get DX' });
