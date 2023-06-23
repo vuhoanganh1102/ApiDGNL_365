@@ -53,8 +53,9 @@ exports.getListCartByUserId = async (req, res, next) => {
 //admin them tin vao cart
 exports.addCart = async (req, res, next) => {
   try {
-    let { userId, newsId, quantity } = req.body;
-    if (!userId || !newsId || !quantity) {
+    let userId = req.user.data.idRaoNhanh365;
+    let { newsId, quantity,type } = req.body;
+    if ( !newsId || !quantity ) {
       return functions.setError(res, "Missing input value!", 404);
     }
 
@@ -62,8 +63,8 @@ exports.addCart = async (req, res, next) => {
     let cart = await Cart.findOne({ userId: userId, newsId: newsId });
     if (cart) {
       quantityUpdate = Number(cart.quantity) + Number(quantity);
-      await Cart.findOneAndUpdate({ userId: userId, newsId: newsId }, {
-        quantity: quantityUpdate
+      await Cart.findOneAndUpdate({ userId, newsId }, {
+        quantity: quantityUpdate,type,total
       });
       return functions.success(res, 'Add cart RN365 success!');
     }
@@ -78,7 +79,8 @@ exports.addCart = async (req, res, next) => {
       _id: newIdCart,
       userId: userId,
       newsId: newsId,
-      quantity: quantity
+      quantity: quantity,
+      type
     });
     await cart.save();
     return functions.success(res, 'Add cart RN365 success!');

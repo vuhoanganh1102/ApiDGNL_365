@@ -175,8 +175,8 @@ exports.manageOrderBuy = async (req, res, next) => {
         let linkTitle = req.params.linkTitle;
         let buyerId = req.user.data.idRaoNhanh365;
         let data = [];
-        let page = req.body.page;
-        let pageSize = req.body.pageSize;
+        let page = req.body.page || 1;
+        let pageSize = req.body.pageSize || 50;
         let skip = (page - 1) * pageSize;
         let sl_choXacNhan = await Order.find({ buyerId, status: 0 }).count();
         let sl_dangXuLy = await Order.find({ buyerId, status: 1 }).count();
@@ -367,6 +367,7 @@ exports.manageOrderBuy = async (req, res, next) => {
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
+        console.log("🚀 ~ file: order.js:370 ~ exports.manageOrderBuy= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -386,6 +387,7 @@ exports.manageOrderSell = async (req, res, next) => {
         let searchItem = {
             sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
+            
         };
         if (linkTitle === 'quan-ly-don-hang-ban.html') {
 
