@@ -9,7 +9,6 @@ const hrService = require('../../services/hr/hrService');
 
 //----------bo nhiem/quy hoach
 router.post('/getListAppoint', formData.parse(), hrService.checkRoleUser, personalChangeController.getListAppoint);
-router.post('/createAppoint', formData.parse(), hrService.checkRoleUser, personalChangeController.getAndCheckData, personalChangeController.createAppoint);
 router.post('/updateAppoint', formData.parse(), hrService.checkRoleUser, personalChangeController.getAndCheckData, personalChangeController.updateAppoint);
 router.post('/deleteAppoint', formData.parse(), hrService.checkRoleUser, personalChangeController.deleteAppoint);
 
@@ -17,6 +16,19 @@ router.post('/deleteAppoint', formData.parse(), hrService.checkRoleUser, persona
 router.post('/getListTranferJob', formData.parse(), hrService.checkRoleUser, personalChangeController.getListTranferJob);
 router.post('/updateTranferJob', formData.parse(), hrService.checkRoleUser, personalChangeController.getAndCheckData, personalChangeController.updateTranferJob);
 router.post('/deleteTranferJob', formData.parse(), hrService.checkRoleUser, personalChangeController.deleteTranferJob);
+
+//----------giam bien che
+router.post('/getListQuitJob', formData.parse(), hrService.checkRoleUser, personalChangeController.getListQuitJob);
+router.post('/updateQuitJob', formData.parse(), hrService.checkRoleUser, personalChangeController.getAndCheckData, personalChangeController.updateQuitJob);
+router.post('/deleteQuitJob', formData.parse(), hrService.checkRoleUser, personalChangeController.deleteQuitJob);
+
+//----------nghi sai quy dinh
+router.post('/getListQuitJobNew', formData.parse(), hrService.checkRoleUser, personalChangeController.getListQuitJobNew);
+router.post('/updateQuitJobNew', formData.parse(), hrService.checkRoleUser, personalChangeController.getAndCheckData, personalChangeController.updateQuitJobNew);
+router.post('/deleteQuitJobNew', formData.parse(), hrService.checkRoleUser, personalChangeController.deleteQuitJobNew);
+
+//khac
+router.post('/getListEmployee', formData.parse(), hrService.checkRoleUser, personalChangeController.getListEmployee);
 
 
 module.exports = router;
