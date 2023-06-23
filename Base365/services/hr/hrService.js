@@ -1,6 +1,7 @@
 // check ảnh và video
 const fs = require('fs');
-const PerUser = require('../../models/hr/PerUsers');
+const PerUser  = require('../../models/hr/PerUsers');
+const Users  = require('../../models/Users');
 
 // upload file
 const multer = require('multer')
@@ -37,6 +38,7 @@ exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 dotenv.config();
+const PermissionUser = require('../../models/hr/PermisionUser');
 
 exports.HR_CheckTokenCompany = (req, res, next) => {
     const authHeader = req.headers["authorization"];
@@ -253,6 +255,96 @@ exports.checkFile = async(filePath) => {
     return true;
 };
 
+exports.checkRoleUser = (req, res, next)=> {
+    try{
+        const authHeader = req.headers["authorization"];
+        const token = authHeader && authHeader.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({ message: "Missing token" });
+        }
+        jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
+            if (err) {
+                return res.status(403).json({ message: "Invalid token" });
+            }
+            // console.log(user.data);
+            var infoLogin = {type: user.data.type, id: user.data._id, name: user.data.userName};
+            if(user.data.type!=1){
+                infoLogin.comId = user.data.inForPerson.companyID;
+            }else {
+                infoLogin.comId = user.data._id;
+            }
+            req.infoLogin = infoLogin;
+            next();
+            
+        });
+    }catch(err){
+        console.log(err);
+        return res.status(503).json({ message: "Error from server!" });
+    }
+    
+}
+
+exports.checkRole = async(infoLogin, barId, perId)=> {
+    if(infoLogin.type==1) return true;
+    let permission = await PermissionUser.findOne({userId: infoLogin.id, barId: barId, perId: perId});
+    console.log(permission);
+    if(permission) return true;
+    return false;
+}
+
+exports.checkRight = (barId, perId) => {
+    return async(req, res, next) => {
+        // Sử dụng tham số ở đây
+        console.log('Tham số:', barId, perId);
+        let infoLogin = req.infoLogin;
+        let checkRole = await hrService.checkRole(infoLogin, 4, 1);
+        if(!checkRole) {
+            return functions.setError(res, "no right", 444);   
+        }
+
+        // Tiếp tục xử lý middleware
+        next();
+    };
+};
+
+exports.checkIsInteger = (data)=>{
+    console.log(data);
+    for(let i=0; i<data.length; i++){
+        if (isNaN(data[i])) {
+        return false;
+        }
+        var x = parseFloat(data[i]);
+        return (x | 0) === x;
+    }
+    return true;
+}
+
+exports.sendChat = async (id_user, status, ep_id, new_com_id, new_update_position, new_update_dep_id, created_at, type) => {
+    
+    const data = {
+    SenderId: id_user,
+    Status: status,
+    EmployeeId: ep_id,
+    ListReceive: '[' + ep_id + ']',
+    NewCompanyId: new_com_id,
+    Position: new_update_position,
+    Department: new_update_dep_id,
+    CreateAt: created_at,
+    // Type: 'Appoint',
+    Type: type,
+    CompanyId: new_com_id,
+    };
+
+    axios.post('https://mess.timviec365.vn/Notification/NotificationPersonnelChange', data)
+    .then(response => {
+        // Xử lý phản hồi thành công
+        console.log(response.data);
+    })
+    .catch(error => {
+        // Xử lý lỗi
+        console.error(error);
+    });
+}
 const storageFile = (destination) => {
     return multer.diskStorage({
         destination: function(req, file, cb) {

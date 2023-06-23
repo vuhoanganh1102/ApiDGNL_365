@@ -25,6 +25,6 @@ router.delete('/deleteBlog', [functions.checkToken, functions.isAdminRN365], blo
 router.post('/detailBlog', formData.parse(), blog.getDetailBlog);
 
 // api tạo token User
-router.post('/userToken', formData.parse(), blog.createTokenUser);
+router.post('/userToken', formData.parse(), blog.createToken);
 
 module.exports = router;

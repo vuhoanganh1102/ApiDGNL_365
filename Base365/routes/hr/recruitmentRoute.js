@@ -21,7 +21,7 @@ router.delete('/', formData.parse(), hrService.HR_CheckTokenCompany, recruitment
 
 
 //---giai doan trong quy trinh
-router.get('/stage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.getStageRecruitment);
+router.post('/getStage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.getStageRecruitment);
 //them giai doan trong quy trinh
 router.post('/stage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.createStageRecruitment);
 //sua giai doan trong quy trinh

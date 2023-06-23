@@ -16,4 +16,15 @@ router.post('/job', formData.parse(), hrService.HR_CheckTokenCompany, trainingCo
 //xoa vi tri cong viec => muc du lieu xoa gan day
 router.put('/jobSoftDelete', formData.parse(), hrService.HR_CheckTokenCompany, trainingController.softDeleteJobDescription);
 
+//---------------------------api quy trinh dao tao
+router.post('/listProcessTrain', formData.parse(), hrService.checkRoleUser, trainingController.getListProcessTraining);
+router.post('/detailProcess', formData.parse(), hrService.checkRoleUser, trainingController.getDetailProcessTraining);
+router.post('/process', formData.parse(), hrService.checkRoleUser, trainingController.createProcessTraining);
+router.post('/softDeleteProcess', formData.parse(), hrService.checkRoleUser, trainingController.softDeleteProcessTraining);
+
+//---------------------------api giai doan trong quy trinh
+router.post('/stage', formData.parse(), hrService.checkRoleUser, trainingController.createStageProcessTraining);
+router.post('/updateStage', formData.parse(), hrService.checkRoleUser, trainingController.updateStageProcessTraining);
+router.post('/softDeleteStage', formData.parse(), hrService.checkRoleUser, trainingController.softDeleteStageProcessTraining);
+
 module.exports = router;
