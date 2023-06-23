@@ -15,6 +15,7 @@ const Evaluate = require("../../models/Raonhanh365/Evaluate");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const Users = require("../../models/Users");
+const ApplyNews = require("../../models/Raonhanh365/ApplyNews");
 dotenv.config();
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
@@ -1288,57 +1289,58 @@ exports.updateBuyNew = async (req, res, next) => {
     try {
         // lấy id user từ req
         let userID = req.user.data.idRaoNhanh365;
+        let type = req.user.data.type;
+        let newId  = req.body.newId;
         // khởi tạo các biến có thể có
-        let tenderFile = null;
+        let new_file_dthau = null;
 
-        let procedureFile = null;
+        let new_file_nophs = null;
 
-        let contentOnline = null;
+        let new_file_chidan = null;
 
-        let instructionFile = null;
-
-        let cityProcedure = req.body.cityProcedure || null;
-
-        let districtProcedure = req.body.districtProcedure || null;
-
-        let wardProcedure = req.body.wardProcedure || null;
-
+        let noidung_chidan = req.body.noidung_chidan || null;
         // khai báo và gán giá trị các biến bắt buộc
         let {
-            id,
+            cateID,
             title,
             name,
             city,
-            money,
             district,
             ward,
             apartmentNumber,
             description,
-            timeEndReceivebidding,
-            timeSell,
             status,
-            timeNotiBiddingStart,
-            timeNotiBiddingEnd,
-            instructionContent,
-            bidFee,
-            startvalue,
-            endvalue,
+            endvalue, money,
             until,
-            until_bidding,
+            noidung_nhs,
+            com_city,
+            com_district,
+            com_ward,
+            com_address_num,
+            han_bat_dau,
+            han_su_dung,
+            tgian_bd,
+            tgian_kt,
+            donvi_thau,
+            phi_duthau,
             phone,
             email,
+            new_job_kind
         } = req.body;
         //  tạo mảng img
         let img = [];
 
+        
+
         // lấy thời gian hiện tại
         let updateTime = new Date(Date.now());
+
+        // khai báo đây là tin mua với giá trị là 1
 
         let File = req.files;
 
         // kiểm tra các điều kiện bắt buộc
         if (
-
             title &&
             name &&
             city && money &&
@@ -1346,34 +1348,29 @@ exports.updateBuyNew = async (req, res, next) => {
             ward &&
             apartmentNumber &&
             description &&
-            timeEndReceivebidding &&
+            han_su_dung &&
             status &&
-            timeNotiBiddingStart &&
-            timeNotiBiddingEnd &&
-            instructionContent &&
-            bidFee &&
+            phi_duthau &&
             endvalue &&
             phone &&
             email &&
-            until &&
-            until_bidding
-            && timeSell
+            tgian_kt && tgian_bd && noidung_nhs
         ) {
             // tạolink title từ title người dùng nhập
             let linkTitle = raoNhanh.createLinkTilte(title);
 
-            // kiểm tra title đã được người dùng tạo chưa
+            //kiểm tra title đã được người dùng tạo chưa
             let checktitle = await New.find({ userID, linkTitle });
             if (checktitle && checktitle.length > 1) {
                 return functions.setError(
                     res,
                     "The title already has a previous new word or does not have a keyword that is not allowed",
-                    404
+                    400
                 );
             }
             // kiểm tra tiền nhập vào có phải số không
             else if (
-                isNaN(bidFee) === true ||
+                isNaN(phi_duthau) === true ||
                 isNaN(money) === true ||
                 isNaN(endvalue) === true
             ) {
@@ -1389,23 +1386,23 @@ exports.updateBuyNew = async (req, res, next) => {
             }
 
             if (
-                functions.checkDate(timeSell) === true &&
-                functions.checkDate(timeEndReceivebidding) === true &&
-                functions.checkDate(timeNotiBiddingStart) === true &&
-                functions.checkDate(timeNotiBiddingEnd) === true
+                functions.checkDate(han_bat_dau) === true &&
+                functions.checkDate(han_su_dung) === true &&
+                functions.checkDate(tgian_bd) === true &&
+                functions.checkDate(tgian_kt) === true
             ) {
                 //  kiểm tra thời gian có nhỏ hơn thời gian hiện tại không
                 if (
-                    (await functions.checkTime(timeSell)) &&
-                    (await functions.checkTime(timeEndReceivebidding)) &&
-                    (await functions.checkTime(timeNotiBiddingStart)) &&
-                    (await functions.checkTime(timeNotiBiddingEnd))
+                    (await functions.checkTime(han_bat_dau)) &&
+                    (await functions.checkTime(han_su_dung)) &&
+                    (await functions.checkTime(tgian_bd)) &&
+                    (await functions.checkTime(tgian_kt))
                 ) {
                     //  kiểm tra thời gian nộp hồ sơ và thời gian thông báo có hợp lệ không
-                    let date1 = new Date(timeSell);
-                    let date2 = new Date(timeEndReceivebidding);
-                    let date3 = new Date(timeNotiBiddingStart);
-                    let date4 = new Date(timeNotiBiddingEnd);
+                    let date1 = new Date(han_bat_dau);
+                    let date2 = new Date(han_su_dung);
+                    let date3 = new Date(tgian_bd);
+                    let date4 = new Date(tgian_kt);
                     if (date1 > date2 || date3 > date4 || date3 < date2) {
                         return functions.setError(res, "Nhập ngày không hợp lệ", 400);
                     }
@@ -1419,54 +1416,24 @@ exports.updateBuyNew = async (req, res, next) => {
             } else {
                 return functions.setError(res, "Invalid date format", 400);
             }
-            let updateItem = {
-                title,
-                contentOnline,
-                linkTitle,
-                updateTime,
-                cityProcedure,
-                districtProcedure,
-                wardProcedure,
-                name,
-                city,
-                district,
-                ward,
-                apartmentNumber,
-                description,
-                timeSell,
-                timeEndReceivebidding,
-                status,
-                timeNotiBiddingStart,
-                timeNotiBiddingEnd,
-                instructionContent,
-                bidFee,
-                money,
-                endvalue,
-                phone,
-                email,
-                until,
-                until_bidding,
-            };
-
-            // xoá file
             let files_old = await New.findById(id, {
                 img: 1,
-                tenderFile: 1,
-                instructionFile: 1,
-                fileContentProcedureApply: 1,
+                new_file_dthau: 1,
+                new_file_nophs: 1,
+                new_file_chidan: 1,
             });
-
             if (File.Image) {
                 if (File.Image.length) {
                     if (File.Image.length > 10)
-                        return functions.setError(res, "Gửi quá nhiều ảnh");
+                        return functions.setError(res, "Gửi quá nhiều ảnh", 400);
                     for (let i = 0; i < File.Image.length; i++) {
-                        raoNhanh.uploadFileRaoNhanh(
+                    let check = await raoNhanh.uploadFileRaoNhanh(
                             "avt_tindangmua",
                             userID,
                             File.Image[i],
                             [".jpg", ".png"]
                         );
+                    if(check === false) return functions.setError(res,'sai định dạng ảnh',400)
                         img.push({
                             nameImg: functions.createLinkFileRaonhanh(
                                 "avt_tindangmua",
@@ -1475,11 +1442,19 @@ exports.updateBuyNew = async (req, res, next) => {
                             ),
                         });
                     }
+                    if (files_old.img) {
+                        for (let i = 0; i < files_old.img.length; i++) {
+                            let text = files_old.img[i].nameImg.split("/").reverse()[0];
+                            raoNhanh.deleteFileRaoNhanh(userID, text);
+                        }
+                    }
+                    await New.findByIdAndUpdate(newId,{img})
                 } else {
-                    raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.Image, [
+                    let check = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.Image, [
                         ".jpg",
                         ".png",
                     ]);
+                    if(check === false) return functions.setError(res,'sai định dạng ảnh',400)
                     img.push({
                         nameImg: functions.createLinkFileRaonhanh(
                             "avt_tindangmua",
@@ -1494,80 +1469,90 @@ exports.updateBuyNew = async (req, res, next) => {
                         raoNhanh.deleteFileRaoNhanh(userID, text);
                     }
                 }
-                updateItem.img = img;
+                await New.findByIdAndUpdate(newId,{img})
             }
-            if (File.tenderFile) {
-                if (File.tenderFile.length)
+            if (File.new_file_dthau) {
+                if (File.new_file_dthau.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.tenderFile, [
+               let check =  await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_dthau, [
                     ".jpg",
                     ".png",
                     ".docx",
                     ".pdf",
                 ]);
-                tenderFile = functions.createLinkFileRaonhanh(
+                if(check === false) return functions.setError(res,'sai định dạng ảnh',400)
+                new_file_dthau = functions.createLinkFileRaonhanh(
                     "avt_tindangmua",
                     userID,
-                    File.tenderFile.name
+                    File.new_file_dthau.name
                 );
-                if (files_old.tenderFile) {
-                    let text = files_old.tenderFile.split("/").reverse()[0];
+                if (files_old.new_file_dthau) {
+                    let text = files_old.new_file_dthau.split("/").reverse()[0];
                     raoNhanh.deleteFileRaoNhanh(userID, text);
                 }
-                updateItem.tenderFile = tenderFile;
+                await New.findByIdAndUpdate(newId,{bidding:{new_file_dthau}})
             }
-            if (File.instructionFile) {
-                if (File.instructionFile.length)
+            if (File.new_file_nophs) {
+                if (File.new_file_nophs.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                raoNhanh.uploadFileRaoNhanh(
+                let check = await raoNhanh.uploadFileRaoNhanh(
                     "avt_tindangmua",
                     userID,
-                    File.instructionFile,
+                    File.new_file_nophs,
                     [".jpg", ".png", ".docx", ".pdf"]
                 );
-                instructionFile = functions.createLinkFileRaonhanh(
+                if(check === false) return functions.setError(res,'sai định dạng ảnh',400)
+                new_file_nophs = functions.createLinkFileRaonhanh(
                     "avt_tindangmua",
                     userID,
-                    File.instructionFile.name
+                    File.new_file_nophs.name
                 );
-                if (files_old.fileContentProcedureApply) {
-                    let text = files_old.fileContentProcedureApply
-                        .split("/")
-                        .reverse()[0];
+                if (files_old.new_file_nophs) {
+                    let text = files_old.new_file_nophs.split("/").reverse()[0];
                     raoNhanh.deleteFileRaoNhanh(userID, text);
                 }
-                updateItem.instructionFile = instructionFile;
+                await New.findByIdAndUpdate(newId,{bidding:{new_file_nophs}})
             }
-            if (File.procedureFile) {
-                if (File.procedureFile.length)
+            if (File.new_file_chidan) {
+                if (File.new_file_chidan.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                raoNhanh.uploadFileRaoNhanh(
+                let check = await  raoNhanh.uploadFileRaoNhanh(
                     "avt_tindangmua",
                     userID,
-                    File.procedureFile,
+                    File.new_file_chidan,
                     [".jpg", ".png", ".docx", ".pdf"]
                 );
-                procedureFile = functions.createLinkFileRaonhanh(
+                if(check === false) return functions.setError(res,'sai định dạng ảnh',400)
+                new_file_chidan = functions.createLinkFileRaonhanh(
                     "avt_tindangmua",
                     userID,
-                    File.fileContentProcedureApply.name
+                    File.new_file_chidan.name
                 );
-                if (files_old.instructionFile) {
-                    let text = files_old.instructionFile.split("/").reverse()[0];
+                if (files_old.new_file_chidan) {
+                    let text = files_old.new_file_chidan.split("/").reverse()[0];
                     raoNhanh.deleteFileRaoNhanh(userID, text);
                 }
-                updateItem.procedureFile = procedureFile;
+                await New.findByIdAndUpdate(newId,{bidding:{new_file_chidan}})
             }
-            await New.findByIdAndUpdate(id, updateItem);
+            //lưu dữ liệu vào DB
+            await New.findByIdAndUpdate(newId,{ title, linkTitle, name, city, money, district, ward, apartmentNumber, description,
+                status, endvalue, phone,
+                email,
+                active, updateTime, cateID, until, com_city,
+                com_ward, com_address_num
+                , com_district, type, tgian_bd, tgian_kt
+                , bidding: {
+                    han_bat_dau, han_su_dung, new_job_kind,
+                    noidung_nhs,  noidung_chidan
+                    , donvi_thau, phi_duthau
+                }})
+                 
         } else {
             return functions.setError(res, "missing data", 404);
         }
-        return functions.success(res, "update new success");
+        return functions.success(res, "post new success");
     } catch (error) {
-        console.log(
-            "🚀 ~ file: new.js:825 ~ exports.updateBuyNew= ~ error:",
-            error
-        );
+        console.log("🚀 ~ file: new.js:1300 ~ exports.createBuyNew= ~ error:", error)
         return functions.setError(res, error);
     }
 };
@@ -2014,6 +1999,20 @@ exports.newisbidding = async (req, res, next) => {
             endvalue: 1,
             money: 1,
             bidding: 1,
+            linkTitle: 1,
+            cateID: 1,
+            sold: 1,
+            until: 1,
+            img: 1,
+            createTime: 1,
+            free: 1,
+            pinCate: 1,
+            pinHome: 1,
+            active: 1,
+            han_su_dung: 1,
+            status: 1,
+            Bidding: { _id: 1 }
+
         };
         let tinConHan = await New.aggregate([
             {
@@ -2358,13 +2357,18 @@ exports.listJobNew = async (req, res, next) => {
 
 exports.likeNews = async (req, res, next) => {
     try {
-        let { forUrlNew, type, commnetId, userName, userAvatar, userIdChat, ip } =
-            req.body;
+        let { forUrlNew, type } = req.body;
+        let ip = req.ip;
+        let commnetId = req.body.commnetId || 0;
+        let userName = req.user.data.userName;
+        let userId = req.user.data.idRaoNhanh365;
+        let userAvatar = req.user.data.userAvatar;
+
         let like = await LikeRN.findOne({
-            userIdChat: userIdChat,
+            userIdChat: userId,
             forUrlNew: forUrlNew,
         });
-        if (!type || !forUrlNew || !userName || !userIdChat) {
+        if (!type || !forUrlNew) {
             return functions.setError(res, "Missing input value", 404);
         }
         if (like) {
@@ -2392,7 +2396,7 @@ exports.likeNews = async (req, res, next) => {
                 commnetId: commnetId,
                 userName: userName,
                 userAvatar: userAvatar,
-                userIdChat: userIdChat,
+                userIdChat: userId,
                 ip: ip,
                 time: Date(Date.now()),
             });
@@ -2444,8 +2448,9 @@ exports.createApplyNews = async (req, res, next) => {
 
 exports.deleteUv = async (req, res, next) => {
     try {
-        let { candidateId, newId } = req.query;
-        if (!candidateId || !newId) {
+        let {newId } = req.body;  
+        let candidateId  =  req.user.data.idRaoNhanh365;
+        if ( !newId) {
             return functions.setError(res, "Missing input value", 404);
         }
         let candidate = await functions.getDataDeleteOne(ApplyNewsRN, {
@@ -2458,7 +2463,7 @@ exports.deleteUv = async (req, res, next) => {
             return functions.success(res, "Candidate not found");
         }
     } catch (err) {
-        console.log("Err from server", err);
+       
         return functions.setError(res, "Err from server", 500);
     }
 };
@@ -2494,7 +2499,7 @@ exports.manageDiscount = async (req, res, next) => {
     }
 };
 exports.getListNewsApplied = async (req, res, next) => {
-    try {   
+    try {
         let userId = req.user.data.idRaoNhanh365;
         let data = await ApplyNewsRN.aggregate([
             {
@@ -2512,13 +2517,15 @@ exports.getListNewsApplied = async (req, res, next) => {
                     foreignField: 'idRaoNhanh365',
                     as: 'user'
                 }
-            },  
+            },
             {
-                $match:{uvId:userId}
-            },{
-                $project:{'new.id':1,'new.title':1,'new.han_su_dung':1,'new.name':1,'new.linkTitle':1,'user.idRaoNhanh365':1,
-                'user._id':1,'user.userName':1,'user.inforRN365.xacThucLienket':1,'user.inforRN365.store_name':1,_id:1,status:1,time:1}
-            }       
+                $match: { uvId: userId }
+            }, {
+                $project: {
+                    'new.id': 1, 'new.title': 1, 'new.han_su_dung': 1, 'new.name': 1, 'new.linkTitle': 1, 'user.idRaoNhanh365': 1,
+                    'user._id': 1, 'user.userName': 1, 'user.inforRN365.xacThucLienket': 1, 'user.inforRN365.store_name': 1, _id: 1, status: 1, time: 1
+                }
+            }
         ])
 
         const totalCount = await functions.findCount(ApplyNewsRN, { uvId: userId });
@@ -2531,18 +2538,16 @@ exports.getListNewsApplied = async (req, res, next) => {
         return functions.setError(res, "Err from server", 500);
     }
 };
-
+//Danh sách tin mà áp dụng dịch vụ
 exports.listJobWithPin = async (req, res, next) => {
     try {
         let userID = req.user.data.idRaoNhanh365;
-        let newWithPinOfUser = await New.find({
+        let data = await New.find({
             userID: userID,
             $or: [{ pinHome: 1 }, { pinCate: 1 }, { timePushNew: { $ne: null } }],
-        });
+        }, { _id: 1, title: 1, money: 1, endvalue: 1, until: 1, createTime: 1, free: 1, img: 1, dia_chi: 1, address: 1, pinHome: 1, pinCate: 1, new_day_tin: 1, sold: 1, cateID: 1, updateTime: 1 });
         return functions.success(
-            res,
-            "Get List New With Pin Of User Success!",
-            newWithPinOfUser
+            res,"Get List New With Pin Of User Success!", {data}
         );
     } catch (err) {
         console.log("Err from server", err);
@@ -2749,35 +2754,41 @@ exports.updateComment = async (req, res, next) => {
 
 exports.getListCandidateApplied = async (req, res, next) => {
     try {
-        let userId = req.query.userId;
-        let cateID = 119;
-
-        //lay ra tat ca tin cong viec
-        let data;
-        let listNews = await New.find(
-            { userID: userId, cateID: cateID },
-            { _id: 1, userID: 1, timeSell: 1, title: 1, linkTitle: 1 }
-        );
-        for (let i = 0; i < listNews.length; i++) {
-            let newsApply = await ApplyNewsRN.find({ newId: listNews[i]._id });
-
-            // lay ra ten cua cac ung vien
-
-            for (let j = 0; j < newsApply.length; j++) {
-                let candidate = await User.findOne(
-                    { _id: newsApply[j].uvId },
-                    { userName: 1 }
-                );
-                if (candidate) {
-                    let ob = { candiName: candidate.userName, newsApply: newsApply[j] };
-                    newsApply[j] = ob;
-                }
-            }
-            listNews[i] = { newsApply: newsApply, newsSell: listNews[i] };
+        let userID = req.user.data.idRaoNhanh365;
+        let searchItem = {
+            new: {
+                _id: 1, userID: 1, timeSell: 1, title: 1, linkTitle: 1, han_su_dung: 1,
+                name: 1
+            }, user: { _id: 1, userName: 1, 'inforRN365.store_name': 1, type: 1, chat365_secret: 1, phone: 1 }
+            , _id: 1, time: 1
         }
+        let data = await ApplyNews.aggregate([
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'uvId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'user'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'newId',
+                    foreignField: '_id',
+                    as: 'new'
+                }
+            },
+            {
+                $match: { 'new.userID': userID }
+            },
+            {
+                $project: searchItem
+            }
+        ])
 
         return functions.success(res, "get list candidate applied sucess", {
-            data: listNews,
+            data
         });
     } catch (err) {
         console.log("Err from server", err);
