@@ -89,7 +89,7 @@ router.post('/comment', formData.parse(),functions.checkToken, newRN.comment);
 router.put('/updateComment', formData.parse(),functions.checkToken, newRN.updateComment);
 
 //api xoa tin da ung tuyen
-router.delete('/deleteCandiApply',functions.checkToken, newRN.deleteUv);
+router.post('/deleteCandiApply',formData.parse(),functions.checkToken, newRN.deleteUv);
 
 //api lay ra danh sach tin ma ung vien dang ung tuyen
 router.get('/getListNewsApplied',functions.checkToken, newRN.getListNewsApplied);
