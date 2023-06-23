@@ -2449,6 +2449,8 @@ exports.createApplyNews = async (req, res, next) => {
 exports.deleteUv = async (req, res, next) => {
     try {
         let {newId } = req.body;  
+        console.log("🚀 ~ file: new.js:2452 ~ exports.deleteUv ~ req.body:", req.body)
+        console.log("🚀 ~ file: new.js:2452 ~ exports.deleteUv ~ newId:", newId)
         let candidateId  =  req.user.data.idRaoNhanh365;
         if ( !newId) {
             return functions.setError(res, "Missing input value", 404);
@@ -2760,7 +2762,7 @@ exports.getListCandidateApplied = async (req, res, next) => {
                 _id: 1, userID: 1, timeSell: 1, title: 1, linkTitle: 1, han_su_dung: 1,
                 name: 1
             }, user: { _id: 1, userName: 1, 'inforRN365.store_name': 1, type: 1, chat365_secret: 1, phone: 1 }
-            , _id: 1, time: 1
+            , _id: 1, time: 1,status:1,note:1
         }
         let data = await ApplyNews.aggregate([
             {

@@ -105,8 +105,7 @@ exports.bidding = async (req, res, next) => {
     try {
         let { newId, productName, productDesc, price, priceUnit } = req.body;
         let userID = req.user.data.idRaoNhanh365;
-        let product_link = req.body.product_link || null;
-        let user_intro = req.body.user_intro || null;
+        let productLink = req.body.productLink || null;
         let uploadfile = req.files;
         let userFile = null;
         let userProfile = req.body.userProfile || null;
@@ -137,7 +136,7 @@ exports.bidding = async (req, res, next) => {
             raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
             promotionFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.promotionFile.name)
         }
-        await Bidding.create({ _id, newId, userName, userIntro, userID, productName, productDesc, status, price, priceUnit, product_link, user_intro, userFile, userProfile, userProfileFile, promotion, promotionFile })
+        await Bidding.create({ _id, newId, userName, userIntro, userID, productName, productDesc, status, price, priceUnit, productLink, userFile, userProfile, userProfileFile, promotion, promotionFile })
         return functions.success(res, 'bidding success')
     } catch (error) {
         return functions.setError(res, error)
