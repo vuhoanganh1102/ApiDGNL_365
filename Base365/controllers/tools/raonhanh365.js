@@ -1446,7 +1446,7 @@ exports.toolBidding = async (req, res, next) => {
                     let price = data[i].price;
                     let priceUnit = data[i].price_unit;
                     let promotion = data[i].promotion;
-                    let promotionFile = data[i].romotion_file;
+                    let promotionFile = data[i].promotion_file;
                     let status = data[i].status;
                     let createTime = data[i].create_time;
                     let note = data[i].note;
