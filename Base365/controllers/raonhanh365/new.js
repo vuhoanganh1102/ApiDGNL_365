@@ -25,7 +25,7 @@ exports.postNewMain = async (req, res, next) => {
         let nameVideo = "";
         let userID = req.user.data.idRaoNhanh365;
         let request = req.body;
-            cateID = request.cate_id,
+        cateID = request.cate_id,
             title = request.title,
             money = request.money,
             until = request.until,
@@ -832,7 +832,7 @@ exports.searchNew = async (req, res, next) => {
             giaTu,
             giaDen,
         } = req.body;
-        console.log(page,pageSize)
+        console.log(page, pageSize)
         if (!page && !pageSize) {
             return functions.setError(res, "missing data", 400);
         }
@@ -842,7 +842,7 @@ exports.searchNew = async (req, res, next) => {
             (await functions.checkNumber(page)) === false ||
             (await functions.checkNumber(pageSize)) === false
         ) {
-           
+
             return functions.setError(res, "page not found", 404);
         }
         if (link === "tat-ca-tin-dang-ban.html") {
@@ -1264,7 +1264,7 @@ exports.createBuyNew = async (req, res) => {
                 email,
                 active, createTime, buySell, cateID, until, com_city,
                 com_ward, com_address_num
-                , com_district, type, img,tgian_bd, tgian_kt
+                , com_district, type, img, tgian_bd, tgian_kt
                 , bidding: {
                     han_bat_dau, han_su_dung, new_job_kind,
                     new_file_dthau, noidung_nhs, new_file_nophs, noidung_chidan
@@ -1598,7 +1598,7 @@ exports.getDetailNew = async (req, res, next) => {
         let ListComment = [];
         let ListLike = [];
         let userIdRaoNhanh = 0;
-        let thongTinChiTiet ={};
+        let thongTinChiTiet = {};
         if ((await functions.checkNumber(id_new)) === false) {
             return functions.setError(res, "invalid number", 404);
         }
@@ -1630,29 +1630,29 @@ exports.getDetailNew = async (req, res, next) => {
         if (buy === "ct") {
             buysell = 1;
             searchitem = {
-                _id:1,
-                title:1,
-                money:1,
-                endvalue:1,
-                city:1,
-                userID:1,
-                img:1,
-                updateTime:1,
-                type:1,
-                active:1,
-                until:1,
-                address:1,
-                ward:1,
-                district:1,
-                viewCount:1,
-                apartmentNumber:1,
-                com_city:1,
-                com_district:1,
-                com_ward:1,
-                com_address_num:1,
-                bidding:1,
-                tgian_kt:1,
-                tgian_bd:1,
+                _id: 1,
+                title: 1,
+                money: 1,
+                endvalue: 1,
+                city: 1,
+                userID: 1,
+                img: 1,
+                updateTime: 1,
+                type: 1,
+                active: 1,
+                until: 1,
+                address: 1,
+                ward: 1,
+                district: 1,
+                viewCount: 1,
+                apartmentNumber: 1,
+                com_city: 1,
+                com_district: 1,
+                com_ward: 1,
+                com_address_num: 1,
+                bidding: 1,
+                tgian_kt: 1,
+                tgian_bd: 1,
                 user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
             };
         } else if (buy === "c") {
@@ -1667,12 +1667,12 @@ exports.getDetailNew = async (req, res, next) => {
                 createTime: 1,
                 cateID: 1,
                 pinHome: 1,
-                pinCate:1,
-                new_day_tin:1,
-                buySell:1,
+                pinCate: 1,
+                new_day_tin: 1,
+                buySell: 1,
                 email: 1,
-                tgian_kt:1,
-                tgian_bd:1,
+                tgian_kt: 1,
+                tgian_bd: 1,
                 phone: 1,
                 userID: 1,
                 img: 1,
@@ -1686,19 +1686,19 @@ exports.getDetailNew = async (req, res, next) => {
                 until: 1,
                 endvalue: 1,
                 type: 1,
-                detailCategory:1,
+                detailCategory: 1,
                 infoSell: 1,
                 timePromotionStart: 1,
                 timePromotionEnd: 1,
                 quantitySold: 1,
                 infoSell: 1,
-                viewCount:1,
-                poster:1,
-                sold:1,
-                com_city:1,
-                com_district:1,
-                com_ward:1,
-                com_address_num:1,
+                viewCount: 1,
+                poster: 1,
+                sold: 1,
+                com_city: 1,
+                com_district: 1,
+                com_ward: 1,
+                com_address_num: 1,
 
             };
         } else {
@@ -1723,21 +1723,21 @@ exports.getDetailNew = async (req, res, next) => {
                 $match: { _id: id_new },
             },
         ]);
-        let cousao = await Evaluate.find({newId:0,blUser:202859}).count();
+        let cousao = await Evaluate.find({ newId: 0, blUser: 202859 }).count();
         let sumsao = await Evaluate.aggregate([
             {
                 $match: {
-                    newId:0,blUser:202859
-                  }
+                    newId: 0, blUser: 202859
+                }
             },
-            {   
+            {
                 $group:
                 {
-                _id:null,
-                  count: { $sum: "$stars" }
+                    _id: null,
+                    count: { $sum: "$stars" }
                 }
             }
-    ]);
+        ]);
         let thongTinSao = {};
         thongTinSao.cousao = cousao;
         thongTinSao.sumsao = sumsao[0].count;
@@ -1762,16 +1762,16 @@ exports.getDetailNew = async (req, res, next) => {
             district: 1,
             ward: 1,
             city: 1,
-            dia_chi:1,
+            dia_chi: 1,
             islove: 1,
             until: 1,
             endvalue: 1,
-            active:1,
+            active: 1,
             type: 1,
             sold: 1,
             createTime: 1,
             free: 1,
-           
+
         }).limit(6);
         let url = 'https://raonhanh365.vn/' + linkTitle + '.html';
         ListComment = await Comments.find({ url, parent_id: 0 }, {}, { time: -1 }, { cm_start }, { cm_limit }).lean();
@@ -1947,21 +1947,20 @@ exports.managenew = async (req, res, next) => {
         let tin_hethan = tong_soluong - tin_conhan;
         let searchItem = {
             title: 1,
-            bidding:1,
-            active:1,
-            createTime:1,
-            sold:1,
-            endvalue:1,
-            until_bidding:1,
-            img:1,
+            bidding: 1,
+            active: 1,
+            createTime: 1,
+            sold: 1,
+            endvalue: 1,
+            until_bidding: 1,
+            img: 1,
             city: 1,
             district: 1,
             ward: 1,
             apartmentNumber: 1,
             endvalue: 1,
             until: 1,
-            linkTitle:1
-
+            linkTitle: 1
         };
         if (linkTitle === "quan-ly-tin-mua.html") {
             data = await New.find({ userID, buySell: 1 }, searchItem);
@@ -2006,15 +2005,15 @@ exports.newisbidding = async (req, res, next) => {
         let sl_tinConHan = 0;
         let searchItem = {
             title: 1,
-            tgian_bd:1,
-            tgian_kt:1,
+            tgian_bd: 1,
+            tgian_kt: 1,
             city: 1,
             district: 1,
             ward: 1,
             apartmentNumber: 1,
             endvalue: 1,
-            money:1,
-            bidding:1,
+            money: 1,
+            bidding: 1,
         };
         let tinConHan = await New.aggregate([
             {
@@ -2106,10 +2105,6 @@ exports.newisbidding = async (req, res, next) => {
             data,
         });
     } catch (error) {
-        console.log(
-            "🚀 ~ file: new.js:1173 ~ exports.newisbidding= ~ error:",
-            error
-        );
         return functions.setError(res, error);
     }
 };
@@ -2175,8 +2170,8 @@ exports.manageNewBuySell = async (req, res, next) => {
             money: 1,
             han_su_dung: 1,
             linkTitle: 1,
-            timeSell:1,
-            active:1,
+            timeSell: 1,
+            active: 1,
             createTime: 1,
             sold: 1,
             endvalue: 1,
@@ -2184,9 +2179,8 @@ exports.manageNewBuySell = async (req, res, next) => {
             img: 1,
             quantitySold: 1,
             totalSold: 1,
-            free:1,
-            new_day_tin:1
-
+            free: 1,
+            new_day_tin: 1
         };
         if (linkTitle === "quan-ly-tin-ban.html") {
             data = await New.find({ userID, buySell: 2 }, searchItem);
@@ -2235,19 +2229,19 @@ exports.listCanNew = async (req, res, next) => {
         }).count();
         let searchItem = {
             title: 1,
-            linkTitle:1,
-            cateID:1,
-            sold:1,
-            money:1,
-            endvalue:1,
-            until:1,
-            img:1,
-            createTime:1,
-            free:1,
-            pinCate:1,
-            pinHome:1,
-            active:1,
-            han_su_dung:1,
+            linkTitle: 1,
+            cateID: 1,
+            sold: 1,
+            money: 1,
+            endvalue: 1,
+            until: 1,
+            img: 1,
+            createTime: 1,
+            free: 1,
+            pinCate: 1,
+            pinHome: 1,
+            active: 1,
+            han_su_dung: 1,
             city: 1,
             district: 1,
             ward: 1,
@@ -2322,19 +2316,19 @@ exports.listJobNew = async (req, res, next) => {
         }).count();
         let searchItem = {
             title: 1,
-            linkTitle:1,
-            cateID:1,
-            sold:1,
-            money:1,
-            endvalue:1,
-            until:1,
-            img:1,
-            createTime:1,
-            free:1,
-            pinCate:1,
-            pinHome:1,
-            active:1,
-            han_su_dung:1,
+            linkTitle: 1,
+            cateID: 1,
+            sold: 1,
+            money: 1,
+            endvalue: 1,
+            until: 1,
+            img: 1,
+            createTime: 1,
+            free: 1,
+            pinCate: 1,
+            pinHome: 1,
+            active: 1,
+            han_su_dung: 1,
             city: 1,
             district: 1,
             ward: 1,
@@ -2358,10 +2352,6 @@ exports.listJobNew = async (req, res, next) => {
             data,
         });
     } catch (error) {
-        console.log(
-            "🚀 ~ file: new.js:1315 ~ exports.manageNewBuySell= ~ error:",
-            error
-        );
         return functions.setError(res, error);
     }
 };
@@ -2504,31 +2494,37 @@ exports.manageDiscount = async (req, res, next) => {
     }
 };
 exports.getListNewsApplied = async (req, res, next) => {
-    try {
-        let userId = req.query.userId;
-        let listNewsApply = await ApplyNewsRN.find({ uvId: userId });
-        // console.log(listNewsApply);
-        for (let i = 0; i < listNewsApply.length; i++) {
-            let newsSell = await New.findOne(
-                { _id: listNewsApply[i].newId },
-                { userID: 1, timeSell: 1, title: 1, linkTitle: 1 }
-            );
-            let seller = await User.findOne(
-                { _id: newsSell.userID },
-                { userName: 1 }
-            );
-            let tmpOb = {
-                newsApply: listNewsApply[i],
-                newsSell,
-                seller: seller.userName,
-            };
-            listNewsApply[i] = tmpOb;
-        }
+    try {   
+        let userId = req.user.data.idRaoNhanh365;
+        let data = await ApplyNewsRN.aggregate([
+            {
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'newId',
+                    foreignField: '_id',
+                    as: 'new'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'uvId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'user'
+                }
+            },  
+            {
+                $match:{uvId:userId}
+            },{
+                $project:{'new.id':1,'new.title':1,'new.han_su_dung':1,'new.name':1,'new.linkTitle':1,'user.idRaoNhanh365':1,
+                'user._id':1,'user.userName':1,'user.inforRN365.xacThucLienket':1,'user.inforRN365.store_name':1,_id:1,status:1,time:1}
+            }       
+        ])
 
         const totalCount = await functions.findCount(ApplyNewsRN, { uvId: userId });
         return functions.success(res, "get list news applied sucess", {
             totalCount: totalCount,
-            data: listNewsApply,
+            data
         });
     } catch (err) {
         console.log("Err from server", err);
@@ -2637,7 +2633,7 @@ exports.comment = async (req, res, next) => {
         let userID = req.user.data.idRaoNhanh365;
         let File = req.files;
         let parent_id = 0;
-        if(cm_id) parent_id = cm_id;
+        if (cm_id) parent_id = cm_id;
         let content = comment;
         let ip = req.ip;
         let tag = req.body.tag || null;
@@ -2703,14 +2699,13 @@ exports.comment = async (req, res, next) => {
 // sửa bình luận
 exports.updateComment = async (req, res, next) => {
     try {
-        let { cm_id, url, comment, id_comment } = req.body;
+        let { comment, id_comment } = req.body;
         let userID = req.user.data.idRaoNhanh365;
         let File = req.files;
-        let parent_id = cm_id;
         let content = comment;
         let ip = req.ip;
         let tag = req.body.tag || null;
-        if (url && parent_id && ip) {
+        if (id_comment && ip) {
             if (File.Image) {
                 let data = await raoNhanh.uploadFileRaoNhanh(
                     "comment",

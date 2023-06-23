@@ -42,4 +42,4 @@ const ApplyNewsSchema = new mongoose.Schema({
     timestamp: true
 })
 
-module.exports = mongoose.model("RN365_ApplyNews", ApplyNewsSchema);
+    module.exports = mongoose.model("RN365_ApplyNews", ApplyNewsSchema);

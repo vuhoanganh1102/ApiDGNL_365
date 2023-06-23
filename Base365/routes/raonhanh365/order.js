@@ -17,7 +17,7 @@ router.get('/manageOrderBuy/:linkTitle',functions.checkToken,orderRN.manageOrder
 router.get('/manageOrderSell/:linkTitle',functions.checkToken,orderRN.manageOrderSell)
 
 // trạng thái đơn hàng
-router.post('/statusOrder',functions.checkToken,orderRN.statusOrder)
+router.post('/statusOrder',formData.parse(),functions.checkToken,orderRN.statusOrder)
 
 // Huỷ đơn hàng
 router.post('/cancelOrder',formData.parse(),functions.checkToken,orderRN.cancelOrder)
