@@ -11,6 +11,6 @@ router.post('/getCart', formData.parse(), functions.checkToken, cart.getListCart
 router.post('/addCart', formData.parse(), functions.checkToken, cart.addCart);
 
 //api xoa 1 cart by id hoac xoa tat ca
-router.delete('/removeCart', functions.checkToken, cart.removeCart);
+router.delete('/removeCart', formData.parse(),functions.checkToken, cart.removeCart);
 
 module.exports = router;

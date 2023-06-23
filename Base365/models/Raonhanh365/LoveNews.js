@@ -12,6 +12,10 @@ const LoveNewschema = new mongoose.Schema({
         type:Number,
         require:true
     },
+    usc_type:{
+        type:Number,
+        require:true
+    },
     createdAt:{
         type:Date,
         require:true
