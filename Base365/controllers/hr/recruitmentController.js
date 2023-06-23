@@ -265,8 +265,8 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         // dua dieu kien vao ob listCondition
         if(title) listCondition.title =  new RegExp(title);
         if(comId) listCondition.comId =  Number(comId);
-        if(fromDate) listCondition.timeStart = {$gte: fromDate};
-        if(toDate) listCondition.timeEnd = {$lte: toDate};
+        if(fromDate) listCondition.timeStart = {$gte: new Date(fromDate)};
+        if(toDate) listCondition.timeEnd = {$lte: new Date(toDate)};
 
         var listRecruitmentNews = await functions.pageFind(RecruitmentNews, listCondition, { _id: 1 }, skip, limit);
         for(let i=0; i<listRecruitmentNews.length; i++){

@@ -2,11 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const TranferJobSchema = new Schema({
     // id tu dong tang
-    id: {
+    _id: {
         type: Number,
         required: true,
-        unique: true,
-        autoIncrement: true
     },
     
     ep_id: {

@@ -9,6 +9,11 @@ const AppointSchema = new Schema({
         autoIncrement: true
     },
     
+    com_id: {
+        type: Number,
+        required: true
+    },
+
     ep_id: {
         type: Number,
         required: true

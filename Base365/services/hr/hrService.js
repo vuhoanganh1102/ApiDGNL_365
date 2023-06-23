@@ -457,3 +457,41 @@ exports.checkRole = async(infoLogin, barId, perId)=> {
     return false;
 }
 
+exports.checkIsInteger = (data)=>{
+    console.log(data);
+    for(let i=0; i<data.length; i++){
+        if (isNaN(data[i])) {
+        return false;
+        }
+        var x = parseFloat(data[i]);
+        return (x | 0) === x;
+    }
+    return true;
+}
+
+exports.sendChat = async (id_user, status, ep_id, new_com_id, new_update_position, new_update_dep_id, created_at, type) => {
+    
+    const data = {
+    SenderId: id_user,
+    Status: status,
+    EmployeeId: ep_id,
+    ListReceive: '[' + ep_id + ']',
+    NewCompanyId: new_com_id,
+    Position: new_update_position,
+    Department: new_update_dep_id,
+    CreateAt: created_at,
+    // Type: 'Appoint',
+    Type: type,
+    CompanyId: new_com_id,
+    };
+
+    axios.post('https://mess.timviec365.vn/Notification/NotificationPersonnelChange', data)
+    .then(response => {
+        // Xử lý phản hồi thành công
+        console.log(response.data);
+    })
+    .catch(error => {
+        // Xử lý lỗi
+        console.error(error);
+    });
+}
