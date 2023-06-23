@@ -350,32 +350,32 @@ const newSchema = new mongoose.Schema({
     electroniceDevice: {
         microprocessor: {
             // bộ vi xử lý
-            type: Number,
+            type: String,
             default: 0
         },
         ram: {
             // ram 
-            type: Number,
+            type: String,
             default: 0
         },
         hardDrive: {
             // ở cứng
-            type: Number,
+            type: String,
             default: 0
         },
         typeHardrive: {
             // loại ổ cứng
-            type: Number,
+            type: String,
             default: 0
         },
         screen: {
             // màn hình
-            type: Number,
+            type: String,
             default: 0
         },
         size: {
             // kích cỡ
-            type: Number,
+            type: String,
             default: 0
         },
         brand: {
@@ -385,28 +385,28 @@ const newSchema = new mongoose.Schema({
         },
         machineSeries: {
             // dòng máy
-            type: Number,
+            type: String,
             default: 0
         },
         warranty: {
             // bảo hành
-            type: Number,
+            type: String,
             default: 0
         },
         device: {
-            type: Number,
+            type: String,
             default: 0
         },
         capacity: {
-            type: Number,
+            type: String,
             default: 0
         },
         sdung_sim: {
-            type: Number,
+            type: String,
             default: 0
         },
         phien_ban: {
-            type: Number,
+            type: String,
             default: 0
         }
     },
@@ -417,35 +417,35 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         loai_xe: {
-            type: Number,
+            type: String,
             default: 0
         },
         xuat_xu: {
-            type: Number,
+            type: String,
             default: 0
         },
         mau_sac: {
-            type: Number,
+            type: String,
             default: 0
         },
         kich_co: {
-            type: Number,
+            type: String,
             default: 0
         },
         chat_lieu_khung: {
-            type: Number,
+            type: String,
             default: 0
         },
         baohanh: {
-            type: Number,
+            type: String,
             default: 0
         },
         dong_xe: {
-            type: Number,
+            type: String,
             default: 0
         },
         nam_san_xuat: {
-            type: Number,
+            type: String,
             default: 0
         },
         dung_tich: {
@@ -453,39 +453,39 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         td_bien_soxe: {
-            type: Number,
+            type: String,
             default: 0
         },
         phien_ban: {
-            type: Number,
+            type: String,
             default: 0
         },
         hop_so: {
-            type: Number,
+            type: String,
             default: 0
         },
         nhien_lieu: {
-            type: Number,
+            type: String,
             default: 0
         },
         kieu_dang: {
-            type: Number,
+            type: String,
             default: 0
         },
         so_cho: {
-            type: Number,
+            type: String,
             default: 0
         },
         trong_tai: {
-            type: Number,
+            type: String,
             default: 0
         },
         loai_linhphu_kien: {
-            type: Number,
+            type: String,
             default: 0
         },
         so_km_da_di:{
-            type: Number,
+            type: String,
             default: 0
         }
 
@@ -506,31 +506,31 @@ const newSchema = new mongoose.Schema({
         },
         td_htmch_rt: {
             // Hiển thị mã căn hộ rao tin
-            type: Number,
+            type: String,
             default: 0
         },
         so_pngu: {
-            type: Number,
+            type: String,
             default: 0
         },
         so_pve_sinh: {
-            type: Number,
+            type: String,
             default: 0
         },
         tong_so_tang: {
-            type: Number,
+            type: String,
             default: 0
         },
         huong_chinh: {
-            type: Number,
+            type: String,
             default: 0
         },
         giay_to_phap_ly: {
-            type: Number,
+            type: String,
             default: 0
         },
         tinh_trang_noi_that: {
-            type: Number,
+            type: String,
             default: 0
         },
         dac_diem: {
@@ -538,7 +538,7 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         dien_tich: {
-            type: Number,
+            type: String,
             default: 0
         },
         dientichsd: {
@@ -554,7 +554,7 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         tinh_trang_bds: {
-            type: Number,
+            type: String,
             default: 0
         },
         td_block_thap: {
@@ -562,31 +562,31 @@ const newSchema = new mongoose.Schema({
             default: null
         },
         tang_so: {
-            type: Number,
+            type: String,
             default: 0
         },
         loai_hinh_canho: {
-            type: Number,
+            type: String,
             default: 0
         },
         loaihinh_vp: {
-            type: Number,
+            type: String,
             default: 0
         },
         loai_hinh_dat: {
-            type: Number,
+            type: String,
             default: 0
         },
         kv_thanhpho: {
-            type: Number,
+            type: String,
             default: 0
         },
         kv_quanhuyen: {
-            type: Number,
+            type: String,
             default: 0
         },
         kv_phuongxa: {
-            type: Number,
+            type: String,
             default: 0
         }
     },
