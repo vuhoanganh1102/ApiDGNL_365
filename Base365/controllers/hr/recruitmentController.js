@@ -22,9 +22,9 @@ exports.getListRecruitment= async(req, res, next) => {
         pageSize = Number(req.body.pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        
-        let listCondition = {comId: req.comId};
-
+        let infoLogin = req.infoLogin;
+        let listCondition = {comId: infoLogin.comId};
+        console.log(listCondition);
         // dua dieu kien vao ob listCondition
         if(name) listCondition.name =  new RegExp(name);
         const listRecruit = await functions.pageFind(Recruitment, listCondition, { _id: 1 }, skip, limit); 
