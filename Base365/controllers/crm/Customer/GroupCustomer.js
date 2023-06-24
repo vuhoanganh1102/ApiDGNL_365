@@ -1,6 +1,6 @@
 // const GroupCustomer = require("../../models/crm/GroupCustomer")
-const functions = require('../../services/functions')
-const Customer_group = require("../../models/crm/Customer/customer_group");
+const functions = require('../../../services/functions')
+const Customer_group = require("../../../models/crm/Customer/customer_group");
 exports.getListGroup = async (req, res) => {
     let name_gr = req.body.name_gr;
     let id_parent = req.body.id_parent;

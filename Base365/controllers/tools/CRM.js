@@ -67,7 +67,6 @@ const NotifyCRM = require('../../models/crm/notify')
 const Packages = require('../../models/crm/packages')
 const SaveStatusCustomer = require('../../models/crm/save_status_customer')
 const axios = require('axios');
-const FormData = require('form-data');
 
 
 

@@ -23,6 +23,8 @@ const formContract = require("./Contract/formContract");
 const Contract = require("./Contract/ContractForCus");
 //cài đặt hợp đồng 
 const settingContract = require("./Setting/AccountAPI");
+//lien he KH
+const CustomerContact = require("./Customer/CustomerContact");
 
 
 
@@ -31,8 +33,10 @@ const settingContract = require("./Setting/AccountAPI");
 router.use('/contract', formContract);
 //hợp đồng bán
 router.use('/contractforcus', Contract);
-//cài đặt hợp đồng 
+//cài đặt tong dai
 router.use('/settingContract', settingContract);
+//lien he KH
+router.use('/CustomerContact', CustomerContact);
 
 
 module.exports = router
