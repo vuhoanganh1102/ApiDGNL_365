@@ -18,9 +18,11 @@ router.use('/vanthu/dexuat', adddeXuat);
 
 //Api setting 
 router.use('/vanthu/setting', settingDXroutes)
-//Api cate de xuat và hiển thị
+//Api  de xuat và hiển thị
 router.use('/vanthu/catedx', cateDXroutes)
 
+
+//Api xóa để xuất và sửa 
 router.use('/vanthu/deletedx',DeleteDX)
 router.use('/vanthu/editdx',EditDX)
 

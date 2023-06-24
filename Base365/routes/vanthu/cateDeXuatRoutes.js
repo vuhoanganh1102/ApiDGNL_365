@@ -4,21 +4,13 @@ var formData = require('express-form-data');
 const functions = require('../../services/functions')
 
 
-//Api hiển thị danh sách các loại đề xuất 
-router.post('/showCate',functions.checkToken,formData.parse(),cateDeXuat.showCateCom)
-
-
 
 //Api hiển thị trang home tài khoản công ty
 router.post('/showHome',functions.checkToken,formData.parse(),cateDeXuat.showHome)
 
 
-//Api hiển thị trang tài khoản nghỉ + không lịch làm việc
+//Api hiển thị trang tài khoản nghỉ + không lịch làm việc + tìm kiếm
 router.post('/showNghi',functions.checkToken,formData.parse(),cateDeXuat.showNghi)
-
-
-//Api tìm kiếm trang trang tài khoản nghỉ + không lịch làm việc
-router.post('/searchNghi',functions.checkToken,formData.parse(),cateDeXuat.adminSearchN)
 
 
 //Api hiển thị chi tiết đề xuất
@@ -29,7 +21,7 @@ router.post('/showCTDX',functions.checkToken,formData.parse(),cateDeXuat.Chitiet
 router.post('/chageCate',functions.checkToken,formData.parse(),cateDeXuat.changeCate)
 
 
-//Api tim theo tên gần đúng trang danh sách các loại đề xuất
+//Api tim theo tên gần đúng trang danh sách các loại đề xuất hiển thị danh sách các loại đề xuất 
 router.post('/searchcate',functions.checkToken,formData.parse(),cateDeXuat.findNameCate)
 
 

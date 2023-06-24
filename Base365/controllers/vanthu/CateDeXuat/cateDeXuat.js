@@ -92,103 +92,94 @@ exports.showHome = async (req, res) => {
   };
 
 
-//Api hiển thị trang tài khoản nghỉ + khoog lịch làm việc
+//Api hiển thị trang tài khoản nghỉ + khoog lịch làm việc + tìmkiếm
 
-exports.showNghi = async(req,res)=> {
-        try{
-        let {page,time_s,time_e,phong_ban,emp_id,type_duyet} = req.body
-        let com_id = req.user.data.inForPerson.employee.com_id
-        const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
-        const startIndex = (page - 1) * perPage; 
-        const shownghi = await DeXuat.find({ type_dx: { $in: [1, 18] }}).sort({ _id: -1 }).skip(startIndex).limit(perPage);
-            res.status(200).json(shownghi);
-        }catch(error) {
-        console.error('Failed to get DX', error);
-        res.status(500).json({ error: 'Failed to get DX' });
-      }
+// exports.showNghi = async(req,res)=> {
+//         try{
+//         let {page,time_s,time_e,dep_id,emp_id,type_duyet} = req.body
+//         let com_id = req.user.data.inForPerson.employee.com_id
+//         const perPage = 10; 
+//         const startIndex = (page - 1) * perPage;
+//         const endIndex = page * perPage;
+//         const checkUser = await UserDX.findOne({'inForPerson.employee.com_id' : com_id })
+//         let query = {
+//           del_type : 1,
+//         };
+//         if(dep_id){
+//           query.dep_id = dep_id;
+//         }
+//         if(emp_id){
+//           query.emp_id = emp_id
+//         }
+//         if (type_duyet){
+//           query.type_duyet = type_duyet
+//         }
+//         if (time_s && time_e) {
+//           if (time_s > time_e) {
+//             res.status(400).json({ error: "Thời gian bắt đầu không thể lớn hơn thời gian kết thúc."});
+//             return;
+//           }
+//           query.created_at = { $gte: time_s, $lte: time_e };
+//         }
+//         let validCondition = false;
+ 
+//         const shownghi = await DeXuat.find({ type_dx: { $in: [1, 18] }}).sort({ _id: -1 }).skip(startIndex).limit(perPage);
+//             res.status(200).json(shownghi);
+//         }catch(error) {
+//         console.error('Failed to get DX', error);
+//         res.status(500).json({ error: 'Failed to get DX' });
+//       }
+//     }
+
+exports.showNghi = async (req, res) => {
+  try {
+    const { page,time_s, time_e, dep_id, emp_id, type_duyet } = req.body;
+    const com_id = req.user.data.inForPerson.employee.com_id;
+    const perPage = 10;
+    const skip = (page - 1) * perPage;
+
+    const query = {
+      del_type: 1,
+      type_dx: { $in: [1, 18] },
+      ...(time_s && time_e && { time_create: { $gte: time_s, $lte: time_e } })
+    };
+
+    if (time_s > time_e) {
+      return res
+        .status(400)
+        .json({ error: "Thời gian bắt đầu không thể lớn hơn thời gian kết thúc." });
+    }
+    if (type_duyet) {
+      query.type_duyet = type_duyet;
     }
 
-//Api tìm kiếm tài khoản nghỉ + ko llv
+    // Tìm các đề xuất liên quan dựa trên trường dep_id và emp_id từ bảng User
+    const userQuery = {
+      'inForPerson.employee.com_id': com_id,
+      ...(dep_id && { 'inForPerson.employee.dep_id': dep_id }),
+      ...(emp_id && { 'inForPerson.employee.emp_id': emp_id })
+    };
 
-exports.adminSearchN = async (req, res) => {
-  let com_id = req.body.com_id? req.body.com_id :0;
-  let id_phong_ban = req.body.id_phong_ban ? req.body.id_phong_ban : 0;
-  let id_user = req.body.id_user ? req.body.id_user : 0;
-  let loai_de_xuat = req.body.loai_de_xuat ? req.body.loai_de_xuat : 0;
-  let trang_thai_de_xuat = req.body.active ? req.body.active : 0;
-  let time_send_from = req.body.time_send_form ? req.body.time_send_form : new Date('1970-01-01').getTime();
-  let time_send_to = req.body.time_send_to ? req.body.time_send_to : new Date().getTime();
+    const users = await UserDX.find(userQuery);
 
-  let page = Number(req.body.page) ? Number(req.body.page) : 1;
-  let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
-  const skip = (page - 1) * pageSize;
+    // Lấy danh sách các com_id từ các người dùng tìm được
+    const comIds = users.map(user => user.inForPerson.employee.com_id);
 
-  console.log("id_phong_ban: " + id_phong_ban);
-  console.log("id_user: " + id_user);
-  console.log("loai_de_xuat: " + loai_de_xuat);
-  console.log("trang_thai_de_xuat: " + trang_thai_de_xuat);
+    // Thêm trường com_id và type_dx vào query để tìm kiếm đề xuất
+    query.com_id = { $in: comIds };
 
-  let condition = {};
-  if (id_phong_ban) {
-      condition.phong_ban = Number(id_phong_ban);
-      console.log("  condition.phong_ban" + condition.phong_ban)
+    const shownghi = await DeXuat.find(query)
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(perPage)
+      .lean();
+
+    res.status(200).json(shownghi);
+  } catch (error) {
+    console.error('Failed to get DX', error);
+    res.status(500).json({ error: 'Failed to get DX' });
   }
-  if (id_user) {
-      condition.id_user = Number(id_user);
-  }
-  if (loai_de_xuat) {
-      condition.type_dx = loai_de_xuat;
-  }
-  if (trang_thai_de_xuat) {
-      condition.active = Number(trang_thai_de_xuat);
-      console.log("  condition.active" + condition.active);
-  }
-  console.log("  condition" + condition);
-  console.log("  condition.phong_ban" + condition.phong_ban)
-  console.log("  condition.active" + condition.active);
-  let filterArray = [];
-
- let de_Xuat = await DeXuat.find({com_id,type_dx : 1}).skip(skip).limit(pageSize);
-  console.log("de_Xuat" + de_Xuat)
-  if (de_Xuat) {
-
-      for (let i = 0; i < de_Xuat.length; i++) {
-          let de_xuat = {
-              _id: de_Xuat[i]._id,
-              id_user: de_Xuat[i].id_user,
-              com_id : de_Xuat[i].com_id,
-              name_dx: de_Xuat[i].name_dx,
-              type_duyet: de_Xuat[i].type_duyet,//3- huy 5-duyệt 6 -bắt buộc đi làm 7- đã tiếp nhận
-              active: de_Xuat[i].active,//đòng ý hoặc từ chối 
-              time_create: de_Xuat[i].time_create,
-              phong_ban: de_Xuat[i].phong_ban,
-          }
-          if (de_xuat.time_create >= time_send_from && de_xuat.time_create <= time_send_to) {
-
-              filterArray.push(de_xuat);
-
-          }
-      }
-      return res.status(200).json({ data: filterArray, massage: 'thanh cong ' });
-  } else {
-      return res.satus(200).json("khong co de xuat nao ");
-  }
-}
-
-
-
-    //Api Hiển thị trang thống kế nghỉ phép
-
-    exports.showTKN = async(req,res) => {
-        try {
-        let {com_id} = req.body;
-        const checkNp = await DeXuat.find({})
-        }catch(error) {
-        console.error('Failed to get DX', error);
-        res.status(500).json({ error: 'Failed to get DX' });
-      }
-    }
-
+};
 
 
 
@@ -198,7 +189,8 @@ exports.adminSearchN = async (req, res) => {
 exports.changeCate  = async (req, res) => {
     
           try {
-            const { com_id, id, value } = req.body;
+            const { id, value } = req.body;
+            let com_id = req.user.data.inForPerson.employee.com_id
               // Kiểm tra xem loại đề xuất đã được ẩn hay chưa
               const hideCate = await HideCateDX.findOne({ id_com: com_id });
               const hideCateArr = hideCate.id_cate_dx.toString(',');
@@ -239,7 +231,7 @@ exports.changeCate  = async (req, res) => {
 
 
 
-// tìm theo tên loại đề xuất
+// tìm theo tên loại đề xuất + hiển thị các loại đề xuất
 
 exports.findNameCate = async (req, res) => {
   try {
@@ -273,14 +265,12 @@ exports.findNameCate = async (req, res) => {
 
 exports.findthanhVien = async(req,res) => {
   try{
-     let {companyID} = req.body
-     if(Number.NaN(companyID)) {
-      return functions.error('cant find')
-     }else{
-      const checkTV = await UserDX.find({companyID}) 
+    let {page} = req.body
+    let com_id = req.user.data.inForPerson.employee.com_id
+    const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
+    const startIndex = (page - 1) * perPage; 
+      const checkTV = await UserDX.find({'inForPerson.employee.com_id' : com_id}).select('idQlC userName inForPerson ').sort({ 'inForPerson.employee.dep_id': -1 }).skip(startIndex).limit(perPage); 
       res.status(200).json(checkTV);
-     }
-    
   }catch (error) {
     console.error('Failed to find', error);
     res.status(500).json({ error: 'Failed to find' });
