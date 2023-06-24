@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const history_edit_customer = new mongoose.Schema({
     id: {
         type: Number
