@@ -99,5 +99,6 @@ router.post('/updateDiscountCard/:id',formData.parse(),[functions.checkToken, se
 router.post('/createToken',formData.parse(), blog.createToken);
 router.post('/createTokenUser',formData.parse(), blog.createTokenUser);
 
+router.post('/getInfoForEdit',formData.parse(),admin.getInfoForEdit)
 module.exports = router;
 

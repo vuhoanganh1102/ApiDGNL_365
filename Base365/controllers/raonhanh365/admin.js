@@ -16,6 +16,8 @@ const md5 = require('md5');
 const Cart = require("../../models/Raonhanh365/Cart");
 const RegisterFail = require('../../models/Raonhanh365/RegisterFail');
 const NewReport = require('../../models/Raonhanh365/NewReport');
+const New = require('../../models/Raonhanh365/New');
+const Order = require('../../models/Raonhanh365/Order');
 
 //đăng nhập admin
 exports.loginAdminUser = async (req, res, next) => {
@@ -214,26 +216,26 @@ exports.deleteAdminUser = async (req, res, next) => {
 //-----------------------------------------------------------controller quan ly danh muc----------------------------------------------------------------
 
 // lay ra danh sach
-exports.getListCategory = async(req, res, next)=>{
-    try{
-        let {page, pageSize, _id, name, parentId} = req.body;
-        if(!page){
+exports.getListCategory = async (req, res, next) => {
+    try {
+        let { page, pageSize, _id, name, parentId } = req.body;
+        if (!page) {
             return functions.setError(res, "Missing input page", 401);
         }
-        if(!pageSize){
+        if (!pageSize) {
             return functions.setError(res, "Missing input pageSize", 402);
         }
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let condition = {};
-        if(_id) condition._id = Number(_id);
-        if(name) condition.name = new RegExp(name);
-        if(parentId) condition.parentId = parentId;
+        if (_id) condition._id = Number(_id);
+        if (name) condition.name = new RegExp(name);
+        if (parentId) condition.parentId = parentId;
 
         const listCategory = await functions.pageFind(Category, condition, { _id: 1 }, skip, limit);
         const totalCount = await functions.findCount(Category, condition);
-        return functions.success(res, "get list category success", {totalCount: totalCount, data: listCategory });
-    }catch(error){
+        return functions.success(res, "get list category success", { totalCount: totalCount, data: listCategory });
+    } catch (error) {
         console.log(error)
         return functions.setError(res, error)
     }
@@ -304,13 +306,13 @@ exports.updateCategory = async (req, res, next) => {
 
 //api lay ra danh sach va tim kiem tin
 // khi truyen cateID = 120, 121 se lay dc tin tuyen dung va tin tim viec lam
-exports.getListNews = async(req, res, next)=>{
-    try{
-        let {page, pageSize, _id, buySell, title, cateID, fromDate, toDate} = req.body;
-        if(!page){
+exports.getListNews = async (req, res, next) => {
+    try {
+        let { page, pageSize, _id, buySell, title, cateID, fromDate, toDate } = req.body;
+        if (!page) {
             return functions.setError(res, "Missing input page", 401);
         }
-        if(!pageSize){
+        if (!pageSize) {
             return functions.setError(res, "Missing input pageSize", 402);
         }
         page = Number(page);
@@ -320,38 +322,38 @@ exports.getListNews = async(req, res, next)=>{
         //lay cac tham so dieu kien tim kiem tin
 
         let condition = {};
-        if(buySell) condition.buySell = Number(buySell);// 1: tin mua, 2: tin ban
-        if(_id) condition._id = Number(_id);
-        if(title) condition.title = new RegExp(title);
-        if(cateID) condition.cateID = Number(cateID);// cate
+        if (buySell) condition.buySell = Number(buySell);// 1: tin mua, 2: tin ban
+        if (_id) condition._id = Number(_id);
+        if (title) condition.title = new RegExp(title);
+        if (cateID) condition.cateID = Number(cateID);// cate
 
         // tu ngay den ngay
-        if(fromDate){
-            condition.createTime = {$gte: new Date(fromDate)}
+        if (fromDate) {
+            condition.createTime = { $gte: new Date(fromDate) }
         }
-        if(toDate){
-            condition.createTime = {$lte: new Date(toDate)};
+        if (toDate) {
+            condition.createTime = { $lte: new Date(toDate) };
         }
-        let fields = {_id: 1, title: 1, linkTitle: 1, img: 1, cateID: 1, createTime: 1, active: 1, city: 1, userID: 1, email: 1, updateTime: 1};
+        let fields = { _id: 1, title: 1, linkTitle: 1, img: 1, cateID: 1, createTime: 1, active: 1, city: 1, userID: 1, email: 1, updateTime: 1 };
         let listNews = await News.aggregate([
-        {$match: condition},
-        {
-            $lookup: {
-            from: "Users",
-            localField: "userID",
-            foreignField: "_id",
-            as: "matchedDocuments"
-            }
-        },
-        {$project: fields},
-        {$sort: {_id: 1}},
-        {$skip: skip},
-        {$limit: limit}
+            { $match: condition },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "_id",
+                    as: "matchedDocuments"
+                }
+            },
+            { $project: fields },
+            { $sort: { _id: 1 } },
+            { $skip: skip },
+            { $limit: limit }
         ])
         // let listNews = await News.find(condition, fields);
         const totalCount = await News.countDocuments(condition);
-        return functions.success(res, 'Get list news success', {totalCount,  listNews });
-    }catch(error){
+        return functions.success(res, 'Get list news success', { totalCount, listNews });
+    } catch (error) {
         console.log(error)
         return functions.setError(res, error)
     }
@@ -359,8 +361,8 @@ exports.getListNews = async(req, res, next)=>{
 
 exports.getAndCheckDataNews = async (req, res, next) => {
     try {
-        let {title, description, money} = req.body;
-        if(!title || !description) {
+        let { title, description, money } = req.body;
+        if (!title || !description) {
             return functions.setError(res, "Missing input value", 404)
         }
         // them cac truong muon them hoac sua
@@ -494,10 +496,10 @@ exports.getListUser = async (req, res, next) => {
             page = request.page,
             pageSize = request.pageSize;
         //
-        if(!page){
+        if (!page) {
             return functions.setError(res, "Missing input page", 401);
         }
-        if(!pageSize){
+        if (!pageSize) {
             return functions.setError(res, "Missing input pageSize", 402);
         }
         page = Number(page);
@@ -507,25 +509,25 @@ exports.getListUser = async (req, res, next) => {
 
         //
         let condition = {};
-        if(_id) condition._id = Number(_id);
-        if(authentic) condition.authentic = Number(authentic);
-        if(userName) condition.userName = new RegExp(userName);
-        if(email) condition.email = new RegExp(email);
-        if(phoneTK) condition.phoneTK = new RegExp(phoneTK);
-            // tu ngay den ngay
-        if(fromDate){
-            condition.updatedAt = {$gte: new Date(fromDate)}
+        if (_id) condition._id = Number(_id);
+        if (authentic) condition.authentic = Number(authentic);
+        if (userName) condition.userName = new RegExp(userName);
+        if (email) condition.email = new RegExp(email);
+        if (phoneTK) condition.phoneTK = new RegExp(phoneTK);
+        // tu ngay den ngay
+        if (fromDate) {
+            condition.updatedAt = { $gte: new Date(fromDate) }
         }
-        if(toDate){
-            condition.updatedAt = {$lte: new Date(toDate)};
+        if (toDate) {
+            condition.updatedAt = { $lte: new Date(toDate) };
         }
 
         let fields = { avatarUser: 1, _id: 1, userName: 1, email: 1, phoneTK: 1, createdAt: 1, money: 1 };
 
         let listUsers = await functions.pageFindWithFields(Users, condition, fields, skip, limit);
         const totalCount = await Users.countDocuments(condition);
-        return functions.success(res, 'Get list news success', {totalCount,  listUsers })
-    }catch(error){
+        return functions.success(res, 'Get list news success', { totalCount, listUsers })
+    } catch (error) {
         console.log(error)
         return functions.setError(res, error)
     }
@@ -534,7 +536,7 @@ exports.getListUser = async (req, res, next) => {
 
 exports.getAndCheckDataUser = async (req, res, next) => {
     try {
-        let {userName, email, phoneTK, phone, money, cong, tru} = req.body;
+        let { userName, email, phoneTK, phone, money, cong, tru } = req.body;
 
         if (!userName || !phoneTK) {
             return functions.setError(res, "Missing input value", 404)
@@ -545,7 +547,7 @@ exports.getAndCheckDataUser = async (req, res, next) => {
             phoneTK: phoneTK,
             email: email,
             phone: phone,
-            money: Number(money)+Number(cong)-Number(tru)
+            money: Number(money) + Number(cong) - Number(tru)
         }
         return next();
     } catch (e) {
@@ -617,11 +619,11 @@ exports.deleteUser = async (req, res, next) => {
 exports.getListHistory = async (req, res, next) => {
     try {
         //lay cac tham so dieu kien tim kiem tin
-        let {page, pageSize, _id, userName, userId, seri, fromDate, toDate} = req.body;
-        if(!page){
+        let { page, pageSize, _id, userName, userId, seri, fromDate, toDate } = req.body;
+        if (!page) {
             return functions.setError(res, "Missing input page", 401);
         }
-        if(!pageSize){
+        if (!pageSize) {
             return functions.setError(res, "Missing input pageSize", 402);
         }
         page = Number(page);
@@ -633,36 +635,36 @@ exports.getListHistory = async (req, res, next) => {
         let condition = {};
 
         // tu ngay den ngay
-        if(fromDate){
-            condition.createTime = {$gte: new Date(fromDate)}
+        if (fromDate) {
+            condition.createTime = { $gte: new Date(fromDate) }
         }
-        if(toDate){
-            condition.createTime = {$lte: new Date(toDate)};
+        if (toDate) {
+            condition.createTime = { $lte: new Date(toDate) };
         }
 
-        if(_id) condition._id = Number(_id);
-        if(userName) condition.userName = new RegExp(userName);
-        if(userId) condition.userId = new Number(userId);
-        if(seri) condition.seri = new RegExp(seri);
-        let fields = {_id: 1, userId: 1, seri: 1, time: 1, price: 1};
+        if (_id) condition._id = Number(_id);
+        if (userName) condition.userName = new RegExp(userName);
+        if (userId) condition.userId = new Number(userId);
+        if (seri) condition.seri = new RegExp(seri);
+        let fields = { _id: 1, userId: 1, seri: 1, time: 1, price: 1 };
         let listHistory = await History.aggregate([
-        {$match: condition},
-        {
-            $lookup: {
-            from: "Users",
-            localField: "userId",
-            foreignField: "_id",
-            as: "matchedDocuments"
-            }
-        },
-        // {$project: fields},
-        {$sort: {_id: 1}},
-        {$skip: skip},
-        {$limit: limit}
+            { $match: condition },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "matchedDocuments"
+                }
+            },
+            // {$project: fields},
+            { $sort: { _id: 1 } },
+            { $skip: skip },
+            { $limit: limit }
         ])
         const totalCount = await News.countDocuments(condition);
-        return functions.success(res, 'Get list history success', { totalCount, listHistory})
-    }catch(error){
+        return functions.success(res, 'Get list history success', { totalCount, listHistory })
+    } catch (error) {
         console.log(error)
         return functions.setError(res, error)
     }
@@ -1081,13 +1083,14 @@ exports.createDiscount = async (req, res, next) => {
 // api tìm kiếm và danh sách chiết khấu
 exports.getListDiscountCard = async (req, res, next) => {
     try {
-        let { id, nameBefore } = req.body;
-        let condition = {}
-        if (id) condition._id = id;
-        if (nameBefore) condition.nameBefore = nameBefore;
-        let fields = { _id: 1, nameBefore: 1, discount: 1 };
-        let disscountList = await functions.pageFind(NetworkOperator, condition, null, null, null, fields);
-        return functions.success(res, "Get List Report Success", { data: disscountList });
+        let page = req.body.page || 1;
+        let pageSize = req.body.pageSize || 50;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+        let conditions = { priceListActive: 1 };
+        let count = await NetworkOperator.find(conditions, {}).skip(skip).limit(limit).count();
+        let data = await NetworkOperator.find(conditions).sort({ _id: 1 }).skip(skip).limit(limit);
+        return functions.success(res, "Get List Report Success", { count, data });
     } catch (error) {
         return functions.setError(res, error)
     }
@@ -1139,4 +1142,31 @@ exports.failRegisterUser = async (req, res, next) => {
     } catch (error) {
         return functions.setError(res, error)
     }
+}
+
+exports.getInfoForEdit = async (req, res, next) => {
+    try {
+        let model = req.body.model;
+        let _id = req.body._id;
+        let data = {};
+        switch (model) {
+            case 'Users':
+                data = await Users.findById({ _id })
+                break;
+                
+            case 'New':
+                data = await functions.getDatafind(New, { _id })
+                break;
+            case 'Order':
+                data = await Order.findById({_id});
+        }
+        return functions.success(res, 'get data success', { data })
+    } catch (error) {
+        console.log("🚀 ~ file: admin.js:1156 ~ exports.getInfoForEdit= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+exports.active = async (req,res,next) =>{
+    
 }
