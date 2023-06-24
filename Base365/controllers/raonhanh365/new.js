@@ -16,6 +16,7 @@ const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const Users = require("../../models/Users");
 const ApplyNews = require("../../models/Raonhanh365/ApplyNews");
+const AdminUser = require("../../models/Raonhanh365/Admin/AdminUser");
 dotenv.config();
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
@@ -2090,8 +2091,8 @@ exports.loveNew = async (req, res, next) => {
 // tao token
 exports.createToken = async (req, res, next) => {
     try {
-        let id = 1191;
-        let data = await User.findById(id);
+        let id = 4;
+        let data = await AdminUser.findById(id);
         let token = await functions.createToken(data, "100d");
         let data1 = "Bazer " + token;
         return functions.success(res, { data1 });

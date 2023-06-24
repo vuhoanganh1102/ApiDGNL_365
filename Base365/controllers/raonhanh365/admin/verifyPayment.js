@@ -1,6 +1,7 @@
 const functions = require('../../../services/functions');
 const User = require('../../../models/Users');
 const Order = require('../../../models/Raonhanh365/Order');
+const New = require('../../../models/Raonhanh365/New');
 
 exports.getListUserVerifyPayment = async (req, res, next) => {
     try {
@@ -54,15 +55,79 @@ exports.adminVerifyPayment = async (req, res, next) => {
 
 exports.getListOrderPayment = async (req, res, next) => {
     try {
-            let page = req.body.page;
-            let pageSize = req.body.pageSize;
-            let skip = (page -  1)* pageSize;
-            let limit = pageSize;
+            let page = req.body.page || 1;
+            let pageSize = req.body.pageSize || 50;
+            let skip = (page -  1)* pageSize ;
+            let limit = pageSize ;
             let _id   = req.body.id;
             let thoiGianTu = req.body.thoiGianTu;
             let thoiGianDen = req.body.thoiGianDen;
-            
-            return functions.success(res, "get list user verify paymet success", { totalCount: totalCount, data: listUserVerified });
+            let conditions = {};
+            if(_id) conditions._id = _id;
+            if(thoiGianDen) conditions.thoiGianDen = {$lte:{thoiGianDen}};
+            if(thoiGianTu) conditions.thoiGianTu = {$gte:{thoiGianTu}}
+            let count = await Order.aggregate([
+                {
+                    $lookup:{
+                        from:'Users',
+                        localField:'buyerId',
+                        foreignField:'idRaoNhanh365',
+                        as:'user'
+                    }
+                },{
+                    $lookup:{
+                        from:'RN365_News',
+                        localField:'newId',
+                        foreignField:'_id',
+                        as:'new'
+                    }
+                }
+                ,
+                {
+                    $match:conditions
+                },
+                {
+                    $count:"all"
+                }
+            ]);
+            await Order.createIndexes({buyerId:1,newId:1})
+           
+            let data = await Order.aggregate([
+                {
+                    $lookup:{
+                        from:'Users',
+                        localField:'buyerId',
+                        foreignField:'idRaoNhanh365',
+                        as:'user'
+                    }
+                },{
+                    $lookup:{
+                        from:'RN365_News',
+                        localField:'newId',
+                        foreignField:'_id',
+                        as:'new'
+                    }
+                },
+                {
+                    $match:conditions
+                },
+                
+                {
+                    $skip:skip
+                },
+                {
+                    $limit:limit
+                },
+                {
+                    $project:{_id:1,buyerId:1,sellerId:1,newId:1,
+                        paymentType:1,buyTime:1,orderActive:1,amountPaid:1,
+                        user:{userName:1},'new.until':1}
+                },{
+                    $sort:{_id:1}
+                }
+            ]);
+
+            return functions.success(res, "get list user verify paymet success", {  count, data });
         
     } catch (e) {
         console.log("Err from server", e);
