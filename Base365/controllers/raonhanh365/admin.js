@@ -157,7 +157,9 @@ exports.getAndCheckDataAdminUser = async(req, res, next) => {
 exports.createAdminUser = async(req, res, next) => {
     try{
         // luu thong tin admin
+        let password = req.body.password;
         let fields = req.info;
+        fields.password = md5(password);
 
         let adminUser = new AdminUser(fields);
         await adminUser.save();
@@ -172,8 +174,9 @@ exports.updateAdminUser = async(req, res, next) => {
     try{
         if(!req.body.adminId)
             return functions.setError(res, "Missing input value id admin!", 404);
-        let adminId = req.body.adminId;
         let fields = req.info;
+        let adminId = req.body.adminId;
+        fields.password = md5(password);
         delete fields._id;
         let existsAdminUser = await AdminUser.findOne({_id: adminId});
         if (existsAdminUser) {
@@ -211,15 +214,23 @@ exports.deleteAdminUser = async(req, res, next) => {
 // lay ra danh sach
 exports.getListCategory = async(req, res, next)=>{
     try{
-        let request = req.body;
-        let _id = request._id,
-            name = request.name
-
+        let {page, pageSize, _id, name, parentId} = req.body;
+        if(!page){
+            return functions.setError(res, "Missing input page", 401);
+        }
+        if(!pageSize){
+            return functions.setError(res, "Missing input pageSize", 402);
+        }
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
         let condition = {};
         if(_id) condition._id = Number(_id);
         if(name) condition.name = new RegExp(name);
-        let listCategory = await Category.find(condition);
-        return functions.success(res, 'Get list category success', { data: listCategory })
+        if(parentId) condition.parentId = parentId;
+
+        const listCategory = await functions.pageFind(Category, condition, { _id: 1 }, skip, limit);
+        const totalCount = await functions.findCount(Category, condition);
+        return functions.success(res, "get list category success", {totalCount: totalCount, data: listCategory });
     }catch(error){
         console.log(error)
         return functions.setError(res, error)
@@ -293,22 +304,51 @@ exports.updateCategory = async(req, res, next) => {
 // khi truyen cateID = 120, 121 se lay dc tin tuyen dung va tin tim viec lam
 exports.getListNews = async(req, res, next)=>{
     try{
+        let {page, pageSize, _id, buySell, title, cateID, fromDate, toDate} = req.body;
+        if(!page){
+            return functions.setError(res, "Missing input page", 401);
+        }
+        if(!pageSize){
+            return functions.setError(res, "Missing input pageSize", 402);
+        }
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
         //lay cac tham so dieu kien tim kiem tin
-        let request = req.body;
-        let buySell = request.buySell,
-            _id = request._id,
-            title = request.title
-        cateID = request.cateID
 
         let condition = {};
         if(buySell) condition.buySell = Number(buySell);// 1: tin mua, 2: tin ban
         if(_id) condition._id = Number(_id);
         if(title) condition.title = new RegExp(title);
         if(cateID) condition.cateID = Number(cateID);// cate
-        let fields = {image: 1, _id: 1, title: 1, cateID: 1, createTime: 1, active: 1, city: 1};
 
-        let listNews = await News.find(condition, fields);
-        return functions.success(res, 'Get list news success', { data: listNews })
+        // tu ngay den ngay
+        if(fromDate){
+            condition.createTime = {$gte: new Date(fromDate)}
+        }
+        if(toDate){
+            condition.createTime = {$lte: new Date(toDate)};
+        }
+        let fields = {_id: 1, title: 1, linkTitle: 1, img: 1, cateID: 1, createTime: 1, active: 1, city: 1, userID: 1, email: 1, updateTime: 1};
+        let listNews = await News.aggregate([
+        {$match: condition},
+        {
+            $lookup: {
+            from: "Users",
+            localField: "userID",
+            foreignField: "_id",
+            as: "matchedDocuments"
+            }
+        },
+        {$project: fields},
+        {$sort: {_id: 1}},
+        {$skip: skip},
+        {$limit: limit}
+        ])
+        // let listNews = await News.find(condition, fields);
+        const totalCount = await News.countDocuments(condition);
+        return functions.success(res, 'Get list news success', {totalCount,  listNews });
     }catch(error){
         console.log(error)
         return functions.setError(res, error)
@@ -317,14 +357,15 @@ exports.getListNews = async(req, res, next)=>{
 
 exports.getAndCheckDataNews = async(req, res, next) => {
     try {
-        let {title, description} = req.body;
+        let {title, description, money} = req.body;
         if(!title || !description) {
             return functions.setError(res, "Missing input value", 404)
         }
         // them cac truong muon them hoac sua
         req.info = {
             title: title,
-            description: description
+            description: description,
+            money: money
         }
         return next();
     } catch (e) {
@@ -446,19 +487,42 @@ exports.getListUser = async(req, res, next)=>{
             userName = request.userName,
             email = request.email,
             phoneTK = request.phoneTK,
-            timeFrom = request.timeFrom,
-            timeTo = request.timeTo
+            fromDate = request.fromDate,
+            toDate = request.toDate,
+            page = request.page,
+            pageSize = request.pageSize;
+        //
+        if(!page){
+            return functions.setError(res, "Missing input page", 401);
+        }
+        if(!pageSize){
+            return functions.setError(res, "Missing input pageSize", 402);
+        }
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+
+        //
         let condition = {};
         if(_id) condition._id = Number(_id);
         if(authentic) condition.authentic = Number(authentic);
         if(userName) condition.userName = new RegExp(userName);
         if(email) condition.email = new RegExp(email);
         if(phoneTK) condition.phoneTK = new RegExp(phoneTK);
+            // tu ngay den ngay
+        if(fromDate){
+            condition.updatedAt = {$gte: new Date(fromDate)}
+        }
+        if(toDate){
+            condition.updatedAt = {$lte: new Date(toDate)};
+        }
 
         let fields = {avatarUser: 1, _id: 1, userName: 1, email: 1, phoneTK: 1, createdAt: 1, money: 1};
 
-        let listUsers = await Users.find(condition, fields);
-        return functions.success(res, 'Get list Users success', { data: listUsers })
+        let listUsers = await functions.pageFindWithFields(Users, condition, fields, skip, limit);
+        const totalCount = await Users.countDocuments(condition);
+        return functions.success(res, 'Get list news success', {totalCount,  listUsers })
     }catch(error){
         console.log(error)
         return functions.setError(res, error)
@@ -468,7 +532,7 @@ exports.getListUser = async(req, res, next)=>{
 
 exports.getAndCheckDataUser = async(req, res, next) => {
     try {
-        let {userName, email, phoneTK, phone, money} = req.body;
+        let {userName, email, phoneTK, phone, money, cong, tru} = req.body;
 
         if(!userName || !phoneTK) {
             return functions.setError(res, "Missing input value", 404)
@@ -479,7 +543,7 @@ exports.getAndCheckDataUser = async(req, res, next) => {
             phoneTK: phoneTK,
             email: email,
             phone: phone,
-            money: money
+            money: Number(money)+Number(cong)-Number(tru)
         }
         return next();
     } catch (e) {
@@ -551,28 +615,51 @@ exports.deleteUser = async(req, res, next) => {
 exports.getListHistory = async(req, res, next)=>{
     try{
         //lay cac tham so dieu kien tim kiem tin
-        let request = req.body;
-        let _id = request._id,
-            userName = request.userName,
-            userId = request.userId,
-            seri = request.seri,
-            time = request.time
+        let {page, pageSize, _id, userName, userId, seri, fromDate, toDate} = req.body;
+        if(!page){
+            return functions.setError(res, "Missing input page", 401);
+        }
+        if(!pageSize){
+            return functions.setError(res, "Missing input pageSize", 402);
+        }
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        //lay cac tham so dieu kien tim kiem tin
+
         let condition = {};
+
+        // tu ngay den ngay
+        if(fromDate){
+            condition.createTime = {$gte: new Date(fromDate)}
+        }
+        if(toDate){
+            condition.createTime = {$lte: new Date(toDate)};
+        }
+
         if(_id) condition._id = Number(_id);
         if(userName) condition.userName = new RegExp(userName);
         if(userId) condition.userId = new Number(userId);
         if(seri) condition.seri = new RegExp(seri);
         let fields = {_id: 1, userId: 1, seri: 1, time: 1, price: 1};
-
-        let listHistory = await History.find(condition, fields);
-
-        // lay them truong userName tu model Users
-        for(let i=0; i<listHistory.length; i++){
-            let user = await Users.find({_id: listHistory[i].userId});
-            listHistory[i].userName = user.userName;
-        }
-
-        return functions.success(res, 'Get list history success', { data: listHistory })
+        let listHistory = await History.aggregate([
+        {$match: condition},
+        {
+            $lookup: {
+            from: "Users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "matchedDocuments"
+            }
+        },
+        // {$project: fields},
+        {$sort: {_id: 1}},
+        {$skip: skip},
+        {$limit: limit}
+        ])
+        const totalCount = await News.countDocuments(condition);
+        return functions.success(res, 'Get list history success', { totalCount, listHistory})
     }catch(error){
         console.log(error)
         return functions.setError(res, error)

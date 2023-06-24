@@ -29,7 +29,7 @@ const Search = require('../../models/Raonhanh365/Search');
 const TblTags = require('../../models/Raonhanh365/TblTag');
 const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
-
+const loveNew = require('../../models/Raonhanh365/LoveNews');
 
 
 // danh mục sản phẩm
@@ -202,6 +202,8 @@ exports.toolNewRN = async (req, res, next) => {
                             timePromotionEnd: data[i].timePromotionEnd,
                             img: images,
                             video: data[i].new_video,
+                            new_day_tin:data[i].new_day_tin,
+                            dia_chi:data[i].dia_chi
                         });
                         await newRN.save();
                     }
@@ -230,13 +232,35 @@ exports.updateNewDescription = async (req, res, next) => {
                
                 for (let i = 0; i < data.length; i++) {
                    
-                    let post = await fnc.getDatafindOne(New, { _id: data[i].new_id });                    
+                    let idnew = Number (data[i].new_id)
+                    let post = await New.findOne({_id:idnew}, {userID:1});                    
                     if (await fnc.checkNumber(data[i].donvi_thau) === false) {
                         continue
                     }
-                    console.log(data)
+                    if (await fnc.checkNumber(data[i].dien_tich) === false) {
+                        continue
+                    }
+                    
+                    let new_file_dthau = null;
+                    let new_file_nophs = null;
+                    let new_file_chidan = null;
+                    if(data[i].new_file_dthau && data[i].new_file_dthau != 0) 
+                    {
+                        new_file_dthau = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID +'/'+ data[i].new_file_dthau.split('/')[1];
+                    }
+                    if(data[i].new_file_nophs && data[i].new_file_nophs != 0) 
+                    {
+                        new_file_nophs = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID +'/'+ data[i].new_file_nophs.split('/')[1];
+                       
+                    }
+                    if(data[i].new_file_chidan && data[i].new_file_chidan != 0) 
+                    {
+                        new_file_chidan = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID +'/'+ data[i].new_file_chidan.split('/')[1];
+                       
+                    }
+             
                     if (post != null) {
-                        await New.updateOne({ _id: data[i].new_id }, {
+                        await New.updateOne({ _id: idnew }, {
                             $set: {
                                 'han_su_dung':data[i].han_su_dung,
                                 'poster': data[i].canhan_moigioi,
@@ -337,21 +361,7 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'Job.benefit': data[i].quyen_loi,
                                 'food.typeFood': data[i].nhom_sanpham,
                                 'food.expiry': data[i].han_su_dung,
-                                'tenderFile': data[i].new_file_dthau,
-                                'fileContenApply': data[i].new_file_nophs,
-                                'contentOnline': data[i].noidung_nhs,
-                                'instructionContent': data[i].noidung_chidan,
-                                'instructionFile': data[i].new_file_chidan,
-                                'until_bidding': data[i].donvi_thau,
-                                'bidFee': data[i].phi_duthau,
-                                'desFile': data[i].file_mota,
-                                'procedureFile': data[i].file_thutuc,
-                                'file': data[i].file_hoso,
-                                'cityProcedure': data[i].com_city,
-                                'districtProcedure': data[i].com_district,
-                                'wardProcedure': data[i].com_ward,
                                 'addressProcedure': data[i].com_address_num,
-                                'timeSell':data[i].tgian_bd,
                                 'productGroup':data[i].nhom_sanpham,
                                 'com_city':data[i].com_city,
                                 'com_district':data[i].com_district,
@@ -359,14 +369,14 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'com_address_num':data[i].com_address_num,
                                 'bidding.han_bat_dau':data[i].han_bat_dau,
                                 'bidding.han_su_dung':data[i].han_su_dung,
-                                'bidding.tgian_bd':data[i].tgian_bd,
-                                'bidding.tgian_kt':data[i].tgian_kt,
+                                tgian_bd:data[i].tgian_bd,
+                                tgian_kt:data[i].tgian_kt,
                                 'bidding.new_job_kind':data[i].new_job_kind,
-                                'bidding.new_file_dthau':data[i].new_file_dthau,
+                                'bidding.new_file_dthau':new_file_dthau,
                                 'bidding.noidung_nhs':data[i].noidung_nhs,
-                                'bidding.new_file_nophs':data[i].new_file_nophs,
+                                'bidding.new_file_nophs':new_file_nophs,
                                 'bidding.noidung_chidan':data[i].noidung_chidan,
-                                'bidding.new_file_chidan':data[i].new_file_chidan,
+                                'bidding.new_file_chidan':new_file_chidan,
                                 'bidding.donvi_thau':data[i].donvi_thau,
                                 'bidding.phi_duthau':data[i].phi_duthau,
                                 'bidding.file_mota':data[i].file_mota,
@@ -378,7 +388,6 @@ exports.updateNewDescription = async (req, res, next) => {
                 }
 
                 page += 1;
-               // console.log(page)
             } else result = false;
         } while (result)
         await fnc.success(res, 'thành công');
@@ -1437,7 +1446,7 @@ exports.toolBidding = async (req, res, next) => {
                     let price = data[i].price;
                     let priceUnit = data[i].price_unit;
                     let promotion = data[i].promotion;
-                    let promotionFile = data[i].romotion_file;
+                    let promotionFile = data[i].promotion_file;
                     let status = data[i].status;
                     let createTime = data[i].create_time;
                     let note = data[i].note;
@@ -2142,6 +2151,45 @@ exports.toolBaoHanh = async (req,res,next) =>{
                         tra_source: data[i].tra_source,
                     });
                     await AdminTranslate1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
+
+exports.toolLoveNew = async (req,res,next) =>{
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_tin_yeu_thich.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const loveNew1 = new loveNew({
+                        _id: data[i].id,
+                        id_new: data[i].new_id,
+                        id_user: data[i].user_id,
+                        usc_type: data[i].usc_type,
+                        createdAt: data[i].tgian_thich,
+                    });
+                    await loveNew1.save();
                 }
                 page++;
             } else {

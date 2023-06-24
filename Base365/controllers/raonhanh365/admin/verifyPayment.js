@@ -16,13 +16,14 @@ exports.getListUserVerifyPayment = async(req, res, next) => {
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let {userName, cccd, startDate, endDate} = req.body; 
-            let listCondition = {
-                $or: [{"inforRN365.active": 1}, {"inforRN365.active": 2}]
-            }
+            let listCondition = {};
+            // let listCondition = {
+            //     $or: [{"inforRN365.active": 1}, {"inforRN365.active": 2}]
+            // }
             if(userName) listCondition.userName = new RegExp(userName);
             if(cccd) listCondition["inforRN365.cccd"] = new RegExp(cccd);
-            if(startDate) listCondition["inforRN365.time"]  = {$gte: startDate};
-            if(endDate) listCondition["inforRN365.time"]  = {$lte: endDate};
+            if(startDate) listCondition["inforRN365.time"]  = {$gte: new Date(startDate)};
+            if(endDate) listCondition["inforRN365.time"]  = {$lte: new Date(endDate)};
             let fieldsGet = 
             {   
                 _id: 1, userName: 1, phone: 1,
@@ -96,16 +97,19 @@ exports.getListOrderPayment = async(req, res, next) => {
             let listCondition = {};
             if(buyerName) listCondition.name = new RegExp(buyerName);
             if(buyerId) listCondition.buyerId = buyerId
-            if(startDate) listCondition.buyTime  = {$gte: startDate};
-            if(endDate) listCondition.buyTime  = {$lte: endDate};
+            if(startDate) listCondition.buyTime  = {$gte: new Date(startDate)};
+            if(endDate) listCondition.buyTime  = {$lte: new Date(endDate)};
             let fieldsGet = 
             {   
                 _id: 1, name: 1, buyerId: 1, sellerId: 1, paymentType: 1, amountPaid: 1, buyTime: 1, orderActive: 1
             }
-            let listUserVerified = await functions.pageFindWithFields(Order, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
+            var listUserVerified = await functions.pageFindWithFields(Order, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
             for(let i=0; i<listUserVerified.length; i++){
+                
                 let seller = await User.findOne({_id: listUserVerified[i].sellerId}, {userName: 1});
-                listUserVerified[i].sellerName = seller.userName;
+                if(seller){
+                    listUserVerified[i].sellerName = seller.userName;
+                }
             }
             const totalCount = await functions.findCount(Order, listCondition);
             return functions.success(res, "get list user verify paymet success", {totalCount: totalCount, data: listUserVerified });

@@ -6,6 +6,7 @@ const functions = require('../../services/functions');
 const serviceRN = require('../../services/rao nhanh/raoNhanh');
 var adminPayment = require('../../controllers/raonhanh365/admin/verifyPayment');
 var adminTagsIndex = require('../../controllers/raonhanh365/admin/tagAndIndex');
+var blog = require('../../controllers/raonhanh365/blog');
 
 //------------------------------------------------api quan ly tai khoan admin
 router.post('/account/createAcc', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.loginAdminUser);
@@ -95,6 +96,10 @@ router.post('/discountCreate',formData.parse(),[functions.checkToken, serviceRN.
 // api lấy ra danh sách và tìm kiếm chiết khấu nap thẻ
 router.post('/discountCard',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.getListDiscountCard);
 // api update chiết khấu nạp thẻ
-router.post('/updateDiscountCard/:id',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.updateDiscount)
+router.post('/updateDiscountCard/:id',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.updateDiscount);
+
+router.post('/createToken',formData.parse(), blog.createToken);
+router.post('/createTokenUser',formData.parse(), blog.createTokenUser);
+
 module.exports = router;
 
