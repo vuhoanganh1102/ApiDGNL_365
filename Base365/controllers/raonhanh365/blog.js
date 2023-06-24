@@ -215,9 +215,9 @@ exports.deleteBlog = async (req, res, next) => {
         return functions.setError(res, "Error from server", 500);
     }
 }
-exports.createToken = async (req, res, next) => {
-    try {
-        let admin = await AdminUser.findOne({ _id: 1 });
+exports.createToken = async(req, res, next) => {
+    try{
+        let admin = await AdminUser.findOne({_id: 4});
         let token = await functions.createToken(admin, "28d")
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, 'Create token admin success',);
@@ -226,10 +226,10 @@ exports.createToken = async (req, res, next) => {
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
-exports.createTokenUser = async (req, res, next) => {
-    try {
-        let admin = await Users.findOne({ _id: 1 });
-        let token = await functions.createToken(admin, "28d")
+exports.createTokenUser = async(req, res, next) => {
+    try{
+        let admin = await Users.findOne({_id: 1191});
+        let token = await functions.createToken(admin, "28d");
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, `Bearer ${token}`);
     } catch (error) {

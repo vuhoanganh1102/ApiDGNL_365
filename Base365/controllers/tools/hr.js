@@ -918,7 +918,7 @@ exports.toolProcessTraining = async (req, res, next) => {
                         id: data[i].id,
                         name: data[i].name,
                         description: data[i].description,
-                        comId: data[i].comid,
+                        comId: data[i].com_id,
                         isDelete: data[i].is_delete,
                         createdAt: data[i].created_at,
                         updatedAt: data[i].updated_at,

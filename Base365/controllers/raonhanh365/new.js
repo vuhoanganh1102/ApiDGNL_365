@@ -271,7 +271,21 @@ exports.postNewsGeneral = async (req, res, next) => {
                 degree: req.body.degree,
                 cv: nameFileCV,
             };
-
+            let fieldsinfoSell = {
+                groupType:req.body.groupType,
+                classify:req.body.classify,
+                numberWarehouses:req.body.numberWarehouses,
+                promotionType:req.body.promotionType,
+                promotionValue:req.body.promotionValue,
+                transport:req.body.transport,
+                transportFee:req.body.transportFee,
+                productValue:req.body.productValue,
+                untilMoney:req.body.untilMoney,
+                untilTranpost:req.body.untilTranpost,
+                tgian_bd:req.body.tgian_bd,
+                tgian_kt:req.body.tgian_kt,
+                dia_chi:req.body.dia_chi,
+            }
             //
             fields.electroniceDevice = fieldsElectroniceDevice;
             fields.vehicle = fieldsVehicle;
@@ -281,6 +295,7 @@ exports.postNewsGeneral = async (req, res, next) => {
             fields.Job = fieldsJob;
             fields.beautifull = fieldsbeautifull;
             fields.wareHouse = fieldwareHouse;
+            fields.infoSell = fieldsinfoSell
             req.fields = fields;
             return next();
         }
@@ -2025,8 +2040,8 @@ exports.loveNew = async (req, res, next) => {
 // tao token
 exports.createToken = async (req, res, next) => {
     try {
-        let id = 8;
-        let data = await Users.findById(id);
+        let id = 1191;
+        let data = await User.findById(id);
         let token = await functions.createToken(data, "100d");
         let data1 = "Bazer " + token;
         return functions.success(res, { data1 });

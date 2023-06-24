@@ -40,8 +40,16 @@ const StageProcessTrainingSchema = new Schema({
     // thời gian update
     updatedAt: {
         type: Date,
-        default: Date.now()
+        default: null
+    },
+    deleteddAt: {
+        type: Date,
+        default: null
     }
+}, {
+    collection: 'HR_StageProcessTraining',
+    versionKey: false,
+    timestamp: true
 });
 
-module.exports = mongoose.Schema("HR_StageProcessTraining",StageProcessTrainingSchema);
+module.exports = mongoose.model("HR_StageProcessTraining",StageProcessTrainingSchema);
