@@ -4,7 +4,7 @@ const Customer = require('../../../models/crm/Customer/customer')
 const functions = require("../../../services/functions");
 const customerService = require('../../../services/CRM/CRMservice')
 const HistoryEditCustomer = require('../../../models/crm/history/history_edit_customer')
-
+const ShareCustomer = require('../../../models/crm/tbl_share_customer')
 
 // hàm hiển thị chi tiết khách hàng
 exports.findOneCus = async (req,res) =>{
@@ -521,3 +521,27 @@ exports.banGiao = async(req,res) => {
     res.status(500).json({ error: 'Failed to find  Customer' });
   }
 }
+
+//hàm chia sẻ khách hàng
+exports.ShareCustomer = async (req, res) => {
+  try {
+    let {com_id,emp_id} = req.body
+    // const com_id = req.user.data.inForPerson.employee.com_id;
+    // const emp_id = req.user.idQLC;
+    const query = {
+      company_id: com_id,
+      $or: [
+        { emp_id: emp_id },
+        { emp_share: emp_id }
+      ]
+    };
+
+    const result = await ShareCustomer.find(query)
+      .populate('customer_id')
+      .sort({ updated_at: -1 });
+    res.json(result);
+  } catch (error) {
+    console.error('Failed to share customer', error);
+    res.status(500).json({ error: 'Failed to share customer' });
+  }
+};
