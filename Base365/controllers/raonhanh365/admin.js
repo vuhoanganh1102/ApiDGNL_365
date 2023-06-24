@@ -157,7 +157,9 @@ exports.getAndCheckDataAdminUser = async(req, res, next) => {
 exports.createAdminUser = async(req, res, next) => {
     try{
         // luu thong tin admin
+        let password = req.body.password;
         let fields = req.info;
+        fields.password = md5(password);
 
         let adminUser = new AdminUser(fields);
         await adminUser.save();
@@ -172,8 +174,9 @@ exports.updateAdminUser = async(req, res, next) => {
     try{
         if(!req.body.adminId)
             return functions.setError(res, "Missing input value id admin!", 404);
-        let adminId = req.body.adminId;
         let fields = req.info;
+        let adminId = req.body.adminId;
+        fields.password = md5(password);
         delete fields._id;
         let existsAdminUser = await AdminUser.findOne({_id: adminId});
         if (existsAdminUser) {
@@ -529,7 +532,7 @@ exports.getListUser = async(req, res, next)=>{
 
 exports.getAndCheckDataUser = async(req, res, next) => {
     try {
-        let {userName, email, phoneTK, phone, money} = req.body;
+        let {userName, email, phoneTK, phone, money, cong, tru} = req.body;
 
         if(!userName || !phoneTK) {
             return functions.setError(res, "Missing input value", 404)
@@ -540,7 +543,7 @@ exports.getAndCheckDataUser = async(req, res, next) => {
             phoneTK: phoneTK,
             email: email,
             phone: phone,
-            money: money
+            money: Number(money)+Number(cong)-Number(tru)
         }
         return next();
     } catch (e) {
@@ -612,28 +615,51 @@ exports.deleteUser = async(req, res, next) => {
 exports.getListHistory = async(req, res, next)=>{
     try{
         //lay cac tham so dieu kien tim kiem tin
-        let request = req.body;
-        let _id = request._id,
-            userName = request.userName,
-            userId = request.userId,
-            seri = request.seri,
-            time = request.time
+        let {page, pageSize, _id, userName, userId, seri, fromDate, toDate} = req.body;
+        if(!page){
+            return functions.setError(res, "Missing input page", 401);
+        }
+        if(!pageSize){
+            return functions.setError(res, "Missing input pageSize", 402);
+        }
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        //lay cac tham so dieu kien tim kiem tin
+
         let condition = {};
+
+        // tu ngay den ngay
+        if(fromDate){
+            condition.createTime = {$gte: new Date(fromDate)}
+        }
+        if(toDate){
+            condition.createTime = {$lte: new Date(toDate)};
+        }
+
         if(_id) condition._id = Number(_id);
         if(userName) condition.userName = new RegExp(userName);
         if(userId) condition.userId = new Number(userId);
         if(seri) condition.seri = new RegExp(seri);
         let fields = {_id: 1, userId: 1, seri: 1, time: 1, price: 1};
-
-        let listHistory = await History.find(condition, fields);
-
-        // lay them truong userName tu model Users
-        for(let i=0; i<listHistory.length; i++){
-            let user = await Users.find({_id: listHistory[i].userId});
-            listHistory[i].userName = user.userName;
-        }
-
-        return functions.success(res, 'Get list history success', { data: listHistory })
+        let listHistory = await History.aggregate([
+        {$match: condition},
+        {
+            $lookup: {
+            from: "Users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "matchedDocuments"
+            }
+        },
+        // {$project: fields},
+        {$sort: {_id: 1}},
+        {$skip: skip},
+        {$limit: limit}
+        ])
+        const totalCount = await News.countDocuments(condition);
+        return functions.success(res, 'Get list history success', { totalCount, listHistory})
     }catch(error){
         console.log(error)
         return functions.setError(res, error)
