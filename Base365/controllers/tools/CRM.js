@@ -17,7 +17,7 @@ const AppointmentSchedule = require('../../models/crm/CustomerCare/AppointmentSc
 const Fundbook = require('../../models/crm/FinanceManager/Fundbook')
 const GroupPins = require('../../models/crm/GroupPins')
 const Products = require('../../models/crm/Products')
-const DetailSurvery = require('../../models/crm/DetailSurvery')
+const DetailSurvery = require('../../models/crm/CustomerCare/DetailSurvery')
 const DetailForm = require('../../models/crm/DetailForm')
 const DetailReturnProduct = require('../../models/crm/DetailReturnProduct')
 const DetailListOrder = require('../../models/crm/DetailListOrder')
@@ -58,16 +58,13 @@ const Return_product = require('../../models/crm/Return_product');
 const Supplier = require('../../models/crm/Supplier');
 const Receiver_email = require('../../models/crm/Receiver_email');
 const Promotion_product = require('../../models/crm/promotion_product');
-
-
 const ManageAdmin = require('../../models/crm/manage_admin')
 const ManageExtension = require('../../models/crm/manager_extension')
 const ModuleParent = require('../../models/crm/module_parent')
 const NotifyCRM = require('../../models/crm/notify')
 const Packages = require('../../models/crm/packages')
 const SaveStatusCustomer = require('../../models/crm/save_status_customer')
-const axios = require('axios');
-const FormData = require('form-data');
+// const axios = require('axios');
 
 
 
