@@ -116,7 +116,7 @@ exports.postNewMain = async (req, res, next) => {
                 detailCategory: detailCategory,
                 district: district,
                 img: img,
-                video: nameVideo,
+                video: video,
                 productGroup: productGroup,
                 productType: productType,
                 city: city,
@@ -336,7 +336,7 @@ exports.createNews = async (req, res, next) => {
             }
         }
         let image = [];
-        if(cate_Special && fields.img)
+        if(cate_Special && fields.img && fields.img.length > 1)
         {
 
             let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
@@ -349,7 +349,27 @@ exports.createNews = async (req, res, next) => {
                 })
             }
            fields.img = image;
+        }else{
+            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
+            await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.img,['.png','.jpg'])
+            let img  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.img.name)
+            image.push({
+                nameImg:img
+            })
+           
+           fields.img = image;
         }
+        if(cate_Special && fields.video)
+        {
+
+            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
+           let check = await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.video,['.mp4','.avi','.wmv','.mov'])
+            if(check === false) return functions.setError(res,'khong duoc day video dang nay',400)
+            let video  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.video.name)
+           
+           fields.video = video;
+        }
+       
         fields.createTime = new Date(Date.now());
         const news = new New(fields);
         await news.save();
