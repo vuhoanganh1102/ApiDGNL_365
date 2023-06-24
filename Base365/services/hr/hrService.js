@@ -293,4 +293,4 @@ const storageFile = (destination) => {
     });
 };
 //hàm upload file ứng viên
-exports.uploadSignature = multer({ storage: storageFile('../storage/hr/pictures/signature') })
+exports.uploadSignature = multer({ storage: storageFile('../storage/hr/upload/signature') })
