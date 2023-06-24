@@ -46,31 +46,31 @@ router.put('/softDeleteNews', formData.parse(), hrService.HR_CheckTokenCompany, 
 //-------------------------------api ung vien
 
 //lay ra danh sach va tim kiem
-router.post('/listCandi', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.getListCandidate);
+router.post('/listCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListCandidate);
 
 //lay ra tong so ung vien theo ngay, tuan, thang
-router.get('/totalCandi', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.getTotalCandidateFollowDayMonth);
+router.get('/totalCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getTotalCandidateFollowDayMonth);
 
 //them moi
-router.post('/candi', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataCandidate,recruitmentController.createCandidate);
+router.post('/candi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.checkDataCandidate,recruitmentController.createCandidate);
 
 //sua
-router.put('/candi', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataCandidate, recruitmentController.updateCandidate);
+router.put('/candi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataCandidate, recruitmentController.updateCandidate);
 
 //xoa tam thoi
-router.put('/softDeleteCandi', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.softDeleteCandidate);
+router.put('/softDeleteCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteCandidate);
 
 //-----------------------------api giai doan tuyen dung
-router.get('/process',hrService.HR_CheckTokenCompany, recruitmentController.getListProcessInterview);
+router.post('/getListProcess',hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListProcessInterview);
 
 //them moi
-router.post('/process', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataProcess,recruitmentController.createProcessInterview);
+router.post('/createProcess', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.checkDataProcess,recruitmentController.createProcessInterview);
 
 //sua
-router.put('/process', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataProcess, recruitmentController.updateProcessInterview);
+router.post('/updateProcess', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataProcess, recruitmentController.updateProcessInterview);
 
 //xoa 
-router.delete('/process', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.deleteProcessInterview);
+router.post('/deleteProcess', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.deleteProcessInterview);
 
 //-----------------------------chuyen trang thai cua ung vien
 

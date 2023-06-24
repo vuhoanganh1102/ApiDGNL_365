@@ -639,10 +639,11 @@ exports.updateProcessInterview = async(req, res, next) => {
 
 exports.deleteProcessInterview = async(req, res, next) => {
     try {
-        let processInterId = Number(req.query.processInterId);
+        let processInterId = req.body.processInterId;
         if(!processInterId){
             return functions.success(res, "Missing input value id", 404);
         }
+        processInterId = Number(processInterId);
         let processInter = await functions.getDataDeleteOne(ProcessInterview ,{id: processInterId});
         if (processInter.deletedCount===1) {
             return functions.success(res, `Delete process interview with _id=${processInterId} success`);

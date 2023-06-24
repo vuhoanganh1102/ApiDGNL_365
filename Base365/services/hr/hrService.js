@@ -269,7 +269,12 @@ exports.checkRoleUser = (req, res, next)=> {
             // console.log(user.data);
             var infoLogin = {type: user.data.type, id: user.data._id, name: user.data.userName};
             if(user.data.type!=1){
-                infoLogin.comId = user.data.inForPerson.companyID;
+                if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
+                    infoLogin.comId = user.data.inForPerson.employee.com_id;
+                }else {
+                    return res.status(404).json({ message: "Missing info inForPerson!" });
+                }
+                
             }else {
                 infoLogin.comId = user.data._id;
             }
@@ -293,17 +298,13 @@ exports.checkRole = async(infoLogin, barId, perId)=> {
 }
 
 exports.checkRight = (barId, perId) => {
-    return async(req, res, next) => {
-        // Sử dụng tham số ở đây
-        console.log('Tham số:', barId, perId);
+    return async (req, res, next) => {
         let infoLogin = req.infoLogin;
-        let checkRole = await hrService.checkRole(infoLogin, 4, 1);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-
-        // Tiếp tục xử lý middleware
-        next();
+        console.log(infoLogin)
+        if(infoLogin.type==1) return next();
+        let permission = await PermissionUser.findOne({userId: infoLogin.id, barId: barId, perId: perId});
+        if(permission) return next();
+        return functions.setError(res, "no right", 444); 
     };
 };
 
