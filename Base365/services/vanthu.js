@@ -4,6 +4,15 @@ const multer = require('multer');
 const axios = require('axios');
 
 
+
+
+// hàm tìm id max
+exports.getMaxID = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+    return maxUser._id;
+};
+
+
 exports.uploadFileVanThu = (id, file) => {
     let path = `../Storage/base365/vanthu/tailieu/${id}/`;
     let filePath = `../Storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;

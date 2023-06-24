@@ -49,6 +49,9 @@ exports.login = async (req, res, next) => {
     try {
         let email = req.body.email
         password = req.body.password
+        let datacheck = await Users.findOne({email,type:1},{_id:1,userName:1,idRaoNhanh365:1});
+        console.log(datacheck)
+
         type = 1
         if (email && password) {
             let checkMail = await functions.checkEmail(email)

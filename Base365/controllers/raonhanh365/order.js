@@ -27,6 +27,7 @@ exports.order = async (req, res, next) => {
         let cartID = request.arr_idgh.split(',');
         let unitPrice = request.arr_dongia.split(',');
         let buyerId = req.user.data.idRaoNhanh365 || 3585;
+        let idRaoNhanh365 = req.user.data.idRaoNhanh365;
         let status = 0;
         let amountPaid = 0;
         if (codeOrder && codeOrder.length !== 0) {
@@ -42,7 +43,7 @@ exports.order = async (req, res, next) => {
                         return functions.setError(res, 'invalid number', 400)
                     }
 
-                    let check_money = await User.find({ idRaoNhanh365: 3585 })
+                    let check_money = await User.find({ idRaoNhanh365 })
                     if (!check_money || check_money.length === 0) {
                         return functions.setError(res, 'người dùng không tồn tại', 400)
                     }
@@ -51,7 +52,7 @@ exports.order = async (req, res, next) => {
                             return functions.setError(res, 'Số tiền của bạn không đầy đủ mua hàng', 400)
                         }
                     }
-                    let check_sellerId = await User.find({ idRaoNhanh365: 3585 })
+                    let check_sellerId = await User.find({ idRaoNhanh365 })
                     if (!check_sellerId || check_sellerId.length === 0) {
                         return functions.setError(res, 'người dùng không tồn tại', 400)
                     }
@@ -105,8 +106,7 @@ exports.bidding = async (req, res, next) => {
     try {
         let { newId, productName, productDesc, price, priceUnit } = req.body;
         let userID = req.user.data.idRaoNhanh365;
-        let product_link = req.body.product_link || null;
-        let user_intro = req.body.user_intro || null;
+        let productLink = req.body.productLink || null;
         let uploadfile = req.files;
         let userFile = null;
         let userProfile = req.body.userProfile || null;
@@ -128,16 +128,18 @@ exports.bidding = async (req, res, next) => {
             if (uploadfile.userFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
             raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userFile, ['.jpg', '.png', '.docx', '.pdf'])
             userFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.userFile.name)
-        } else if (uploadfile.userProfileFile) {
+        } 
+         if (uploadfile.userProfileFile) {
             if (uploadfile.userProfileFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
             raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userProfileFile, ['.jpg', '.png', '.docx', '.pdf'])
             userProfileFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.userProfileFile.name)
-        } else if (uploadfile.promotionFile) {
+        } 
+        if (uploadfile.promotionFile) {
             if (uploadfile.promotionFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
             raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
             promotionFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.promotionFile.name)
         }
-        await Bidding.create({ _id, newId, userName, userIntro, userID, productName, productDesc, status, price, priceUnit, product_link, user_intro, userFile, userProfile, userProfileFile, promotion, promotionFile })
+        await Bidding.create({ _id, newId, userName, userIntro, userID, productName, productDesc, status, price, priceUnit, productLink, userFile, userProfile, userProfileFile, promotion, promotionFile })
         return functions.success(res, 'bidding success')
     } catch (error) {
         return functions.setError(res, error)
@@ -175,8 +177,8 @@ exports.manageOrderBuy = async (req, res, next) => {
         let linkTitle = req.params.linkTitle;
         let buyerId = req.user.data.idRaoNhanh365;
         let data = [];
-        let page = req.body.page;
-        let pageSize = req.body.pageSize;
+        let page = req.body.page || 1;
+        let pageSize = req.body.pageSize || 50;
         let skip = (page - 1) * pageSize;
         let sl_choXacNhan = await Order.find({ buyerId, status: 0 }).count();
         let sl_dangXuLy = await Order.find({ buyerId, status: 1 }).count();
@@ -367,6 +369,7 @@ exports.manageOrderBuy = async (req, res, next) => {
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
+        console.log("🚀 ~ file: order.js:370 ~ exports.manageOrderBuy= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -386,6 +389,7 @@ exports.manageOrderSell = async (req, res, next) => {
         let searchItem = {
             sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
+            
         };
         if (linkTitle === 'quan-ly-don-hang-ban.html') {
 

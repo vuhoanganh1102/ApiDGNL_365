@@ -81,10 +81,44 @@ exports.checkNameCateRaoNhanh = async(data)=>{
             return 'food' 
         case 'Đồ gia dụng': 
             return 'wareHouse'
-        
+        case 'Sức khỏe - Sắc đẹp': 
+            return 'beautifull'
+        case 'Thể thao': 
+            return 'Thể thao'
+        case 'Du lịch': 
+            return 'Du lịch'
+        case 'Đồ dùng văn phòng, công nông nghiệp': 
+            return 'Đồ dùng văn phòng, công nông nghiệp' 
+}}
+exports.checkFolderCateRaoNhanh = async(data)=>{
+    switch (data)
+    {
+        case 'electroniceDevice':
+            return 'do_dien_tu'
+        case 'vehicle':
+            return 'dangtin_xeco'
+        case 'realEstate':
+            return 'dangtin_bds'
+        case 'ship':
+            return 'dangtin_ship'
+        case 'pet':
+            return 'dangtin_thucung'   
+        case 'job':
+            return 'timviec'
+        case 'food':
+            return 'thuc_pham' 
+        case 'wareHouse': 
+            return 'noi_ngoai_that'
+        case 'beautifull': 
+            return 'dangtin_suckhoesacdep'
+        case 'Thể thao': 
+            return 'dtin_thethao'
+        case 'Du lịch': 
+            return 'du_lich'
+        case 'Đồ dùng văn phòng, công nông nghiệp': 
+            return 'dangtin_dodung'
     } 
 }
-
 // hàm tạo link file rao nhanh 365
 exports.createLinkFileRaonhanh = (folder, id, name) => {
     let link = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/' + folder + '/' + id + '/' + name;
@@ -167,7 +201,7 @@ exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
 // ham check admin rao nhanh 365
 exports.isAdminRN365 = async(req, res, next)=>{
     let user = req.user.data;
-    console.log(user)
+    // console.log(user)
     let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, isAdmin: 1, active: 1 });
     if(admin) return next();
     return res.status(403).json({ message: "is not admin RN365" });

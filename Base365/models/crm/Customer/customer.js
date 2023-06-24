@@ -35,7 +35,7 @@ const crm_customer = new Schema({
         type : Number,
         default : null
     },
-    district_id : { // ?
+    district_id : { // id quận huyện
         type : Number,
         default : null
     },
@@ -67,7 +67,7 @@ const crm_customer = new Schema({
         type : Date,
         default : "0"
     },
-    resoure : {
+    resoure : {// nguồn khách hàng
         type : Number
     },
     description : {// mô tả khách hàng
@@ -94,20 +94,24 @@ const crm_customer = new Schema({
         type : Number,
         default :"0"
     },
-    company_id : {// id cong ty
+    company_id : {// id cong ty 
         type : Number
     },
-    emp_id : { // id nhân viên
+    emp_id : { // id nhân viên tạo ?
+        type : Number,
+        default : 0
+    },
+    user_handing_over_work :{// id người bàn giao
         type : Number
     },
-    user_handing_over_work :{
+    user_create_id : {//id nguoi tO
         type : Number
     },
-    user_create_type : {// id người tạo
-        type : String,
+    user_create_type : {//id người tạo
+        type : Number,
         default : null
     },
-    user_edit_id : {// id người sửa
+    user_edit_id : {//id người phụ trách
         type : Number,
         default : null
     },
@@ -119,15 +123,15 @@ const crm_customer = new Schema({
         type : Number,
         default : null
     },
-    status : {// trạng thái
+    status : {// trạng thái,khách hang
         type : Number,
         default : null
     },
-    business_areas : {// lĩnh vực kinh doanh
+    business_areas : {// trợ lý kinh doanh
         type : Number,
         default :0
     },
-    category : {// loại khách hàng
+    category : {// ? của cái gì ?
         type : Number,
         default : null
     },
@@ -211,7 +215,7 @@ const crm_customer = new Schema({
         type : Number,
         default :0
     },
-    type : {// loại ? 1 kh 
+    type : {// loại ? 1 công ty 2 khách hàng
         type : Number,
     },
     is_input : {
@@ -219,7 +223,8 @@ const crm_customer = new Schema({
         default :0
     },
     is_delete : {
-        type : Number
+        type : Number,
+        default : 0
     },
     created_at : {// thời gian tạo 
         type : Date

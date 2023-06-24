@@ -16,4 +16,7 @@ router.post('/permision', formData.parse(), hrService.HR_CheckTokenCompany, sett
 //lay ra cac quyen cua user buy userId
 router.post('/listPermision', formData.parse(), hrService.HR_CheckTokenCompany, settingController.getListPermisionUser);
 
+//tao token han vien
+router.post('/createTokenEmp', formData.parse(), settingController.createTokenUser);
+
 module.exports = router;

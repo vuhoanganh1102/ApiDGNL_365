@@ -217,33 +217,34 @@ exports.createVerifyPayment = async(req, res, next) => {
 // tổng quan thông tin tài khoản cá nhân
 exports.profileInformation = async (req,res,next) => {
     try{
-        const authHeader = req.headers["authorization"];
-        const token = authHeader && authHeader.split(" ")[1];
-       // if
-        let userID = req.user.data.idRaoNhanh365;
-        let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1};
+        let userIdRaoNhanh = req.body.userId;
+        
+        let fields = {userName: 1,phone: 1, type: 1, email: 1, address: 1,
+            createdAt: 1, money: 1,idRaoNhanh365:1,phoneTK:1,avatarUser:1,type:1,
+            _id:1,emailContact:1,chat365_secret:1
+        };
         let dataUser = {}
 
         //thong tin tk
-        let userInFor = await User.findOne({_id: userID}, fields);
+        let userInFor = await User.findOne({_id: userIdRaoNhanh}, fields);
 
         //tin da dang
-        let numberOfNew = await New.find({userID: userID, active: 1}).count();
+        let numberOfNew = await New.find({userID: userIdRaoNhanh, active: 1}).count();
         
         //tin da dang trong 30
         var currentDate = new Date();  // Lấy ngày hiện tại
         var thirtyDaysAgo = new Date(currentDate.getTime() - (30 * 24 * 60 * 60 * 1000));  // Trừ 30 ngày từ ngày hiện tại
-        let numberOfNewNgay = await New.find({userID: userID, active: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
+        let numberOfNewNgay = await New.find({userID: userIdRaoNhanh, active: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
 
         //tin da ban
-        let numberOfNewSold = await New.find({userID: userID, active: 1, sold: 1}).count();
+        let numberOfNewSold = await New.find({userID: userIdRaoNhanh, active: 1, sold: 1}).count();
         
         //tin da ban trong 30
-        let numberOfNewNgaySold = await New.find({userID: userID, active: 1, sold: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
+        let numberOfNewNgaySold = await New.find({userID: userIdRaoNhanh, active: 1, sold: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
 
         //so luong danh gia va so sao
-        let listEvaluate = await Evaluate.find({userId: userID, newId: 0, active: 1}, {_id: 1, stars: 1});
-        let numberEvaluate = await Evaluate.countDocuments({userId: userID, newId: 0, active: 1});
+        let listEvaluate = await Evaluate.find({userId: userIdRaoNhanh, newId: 0, active: 1}, {_id: 1, stars: 1,userId:1,blUser:1,parentId:1,comment:1,time:1,active:1,csbl:1,tgianHetcs:1,csuaBl:1});
+        let numberEvaluate = await Evaluate.countDocuments({userId: userIdRaoNhanh, newId: 0, active: 1});
         let numberStar = 0;
         for(let i=0; i<listEvaluate.length; i++) {
             numberStar += listEvaluate[i].stars;
@@ -251,15 +252,15 @@ exports.profileInformation = async (req,res,next) => {
         // numberEvaluate = listEvaluate.count();
 
         fields = {_id: 1, image: 1, title: 1, createTime: 1, updateTime: 1, address: 1, money: 1, sold: 1, unit: 1,
-        cateID: 1, linkTitle: 1, free: 1, img: 1}
+        cateID: 1, linkTitle: 1, free: 1, img: 1,userID:1,type:1,dia_chi:1,endvalue:1,img:1,until:1,address:1}
         //tin dang ban
-        let listSellNews = await New.find({userID: userID, active: 1, buySell: 2}, fields);
+        let listSellNews = await New.find({userID: userIdRaoNhanh, active: 1, buySell: 2}, fields);
 
         //tin dang mua
-        let listBuyNews = await New.find({userID: userID, active: 1, buySell: 1}, fields);
+        let listBuyNews = await New.find({userID: userIdRaoNhanh, active: 1, buySell: 1}, fields);
 
         // let numberOfNewSold = await New.find({userID: userID, sold: 1}).count();
-        let likeNew = await LoveNews.find({userID: userID}).count()
+        let likeNew = await LoveNews.find({userID: userIdRaoNhanh}).count()
         dataUser.InforUser = userInFor;
         dataUser.numberOfNew = numberOfNew;
         dataUser.numberOfNewNgay = numberOfNewNgay;
@@ -270,7 +271,7 @@ exports.profileInformation = async (req,res,next) => {
         dataUser.listSellNews = listSellNews;
         dataUser.listBuyNews = listBuyNews;
 
-        return functions.success(res, 'get Data User Success', dataUser);
+        return functions.success(res, 'get Data User Success', {dataUser});
     } catch(err){
         console.log("Err from server", err);
         return functions.setError(res, "Err from server", 500);

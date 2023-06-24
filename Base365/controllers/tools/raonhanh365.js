@@ -1446,7 +1446,7 @@ exports.toolBidding = async (req, res, next) => {
                     let price = data[i].price;
                     let priceUnit = data[i].price_unit;
                     let promotion = data[i].promotion;
-                    let promotionFile = data[i].romotion_file;
+                    let promotionFile = data[i].promotion_file;
                     let status = data[i].status;
                     let createTime = data[i].create_time;
                     let note = data[i].note;
@@ -1825,7 +1825,7 @@ exports.toolRegisterFail = async(req, res, next) => {
                         emailHt: data[i].email_ht,
                         name: data[i].ho_ten,
                         mk: data[i].mat_khau,
-                        time: data[i].tgian_dky,
+                        time: new Date(data[i].tgian_dky * 1000),
                         err: data[i].loi_dky,
                         type: data[i].type
                     });

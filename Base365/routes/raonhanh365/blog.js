@@ -10,7 +10,7 @@ router.post('/listBlog', formData.parse(), blog.getListBlogByFields);
 //admin-------------------------------
 
 //api lay ra danh sach blog theo cac truong
-router.post('/getBlog', formData.parse(), functions.checkToken, blog.getListBlogByFields);
+router.post('/getBlog', formData.parse(), blog.getListBlogByFields);
 
 //api admin tao blog
 router.post('/createBlog', formData.parse(), [functions.checkToken, functions.isAdminRN365], blog.getAndCheckData, blog.createBlog);
@@ -25,6 +25,6 @@ router.delete('/deleteBlog', [functions.checkToken, functions.isAdminRN365], blo
 router.post('/detailBlog', formData.parse(), blog.getDetailBlog);
 
 // api tạo token User
-router.post('/userToken', formData.parse(), blog.createTokenUser);
+router.post('/userToken', formData.parse(), blog.createToken);
 
 module.exports = router;

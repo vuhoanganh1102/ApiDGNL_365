@@ -2,6 +2,7 @@ const functions = require('../../services/functions');
 const hrService = require('../../services/hr/hrService');
 const Permision = require('../../models/hr/Permision');
 const PermisionUser = require('../../models/hr/PermisionUser');
+const Users = require('../../models/Users');
 
 // lay ra danh sach tat ca cac quy trinh tuyen dung cua cty
 exports.getListPermisionUser= async(req, res, next) => {
@@ -83,5 +84,18 @@ exports.createPermisionUser = async(req, res, next) => {
     } catch (e) {
         console.log("Err from server!", e);
         return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.createTokenUser = async(req, res, next) => {
+    try{
+        let userId = req.body.userId;
+        let admin = await Users.findOne({_id: userId});
+        let token = await functions.createToken(admin, "28d");
+        res.setHeader('authorization', `Bearer ${token}`);
+        return functions.success(res, `Bearer ${token}`);
+    }catch(error){
+        console.log("Đã có lỗi xảy ra tao token", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }

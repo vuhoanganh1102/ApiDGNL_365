@@ -136,96 +136,12 @@ router.post('/toolUserSavePost', toolTimviec365.toolUserSavePost);
 //--------------------TOOLS RAONHANH365
 
 // api quét data new rao nhanh
-router.post('/toolNewRN', toolRaoNhanh.toolNewRN);
-router.post('/toolCategory', toolRaoNhanh.toolCategory);
-router.post('/updateInfoSell', toolRaoNhanh.updateInfoSell);
-router.post('/toolPriceList', toolRaoNhanh.toolPriceList);
-router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
-router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
-
-
-router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory);
-router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew);
-router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment);
-router.post('/raonhanh/toolOrder', toolRaoNhanh.toolOrder);
-router.post('/raonhanh/toolTagsIndex', toolRaoNhanh.toolTagsIndex);
-router.post('/updateNewDescription',toolRaoNhanh.updateNewDescription)
-router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory)
-router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew)
-router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment)
-router.post('/updateNewDescription',toolRaoNhanh.updateNewDescription)
 
 
 
-//admin
-router.post('/raonhanh/toolAdminUser', toolRaoNhanh.toolAdminUser);
-router.post('/raonhanh/toolAdminUserRight', toolRaoNhanh.toolAdminUserRight);
-router.post('/raonhanh/toolAdminTranslate', toolRaoNhanh.toolAdminTranslate);
-router.post('/raonhanh/toolAdminMenuOrder', toolRaoNhanh.toolAdminMenuOrder);
-router.post('/raonhanh/toolModule', toolRaoNhanh.toolModule);
-
-// api quét data các phần của chi tiết danh mục Raonhanh
-router.post('/toolCateDetail', toolRaoNhanh.toolCateDetail);
 
 
 
-// api quet tool van thu
-router.post('/toolCateDexuat', toolVanThu.toolCateDeXuat);
-router.post('/toolDeXuat', toolVanThu.toolDeXuat);
-router.post('/toolDeXuatXuLy', toolVanThu.toolDeXuatXuLy);
-router.post('/toolDeleteDeXuat', toolVanThu.toolDeleteDX);
-router.post('/toolGhiChu', toolVanThu.toolGhiChu);
-router.post('/toolGroupVanBan', toolVanThu.toolGroupVanBan);
-router.post('/toolHideCateDX', toolVanThu.toolhideCateDX);
-router.post('/toolHistoryHandlingDX', toolVanThu.toolHistoryHDX);
-router.post('/toolLyDo', toolVanThu.toolLyDo);
-router.post('/toolPhongBan', toolVanThu.toolPhongBan);
-router.post('/toolSettingDX', toolVanThu.toolSettingDX);
-
-
-// api quét data recruitment
-// router.post('/toolrecruitment',toolHr.recruitment)
-// router.post('/toolrecruitment_news',toolHr.recruitment_news)
-// router.post('/toolschedule_interview',toolHr.schedule_interview)
-router.post('/toolcancelJob', toolHr.cancelJob)
-router.post('/toolFailJob', toolHr.failJob)
-router.post('/toolContactJob', toolHr.contactJob)
-router.post('/toolNotify', toolHr.notify)
-router.post('/toolPermission', toolHr.permission)
-router.post('/toolPolicys', toolHr.policy)
-router.post('/toolstageRecruitment', toolHr.stageRecruitment)
-// router.post('/toolsS')
-// router.post('/toolsProvisionsOfCompany', toolHr.)
-
-// api quét data HR Cường
-router.post('/toolAchievementFors', toolHr.AchievementFors)
-router.post('/toolAddInfoLeads', toolHr.AddInfoLeads)
-router.post('/toolBlogs', toolHr.Blogs)
-router.post('/toolCategorys', toolHr.Categorys)
-router.post('/toolCiSessions', toolHr.CiSessions)
-router.post('/toolCitys', toolHr.Citys)
-router.post('/toolCrontabQuitJobs', toolHr.CrontabQuitJobs)
-router.post('/toolDepartmentDetails', toolHr.DepartmentDetails)
-router.post('/toolDescPositions', toolHr.DescPositions)
-router.post('/toolDevices', toolHr.Devices)
-router.post('/toolInfoLeaders', toolHr.InfoLeaders)
-router.post('/toolInfringesFors', toolHr.InfringesFors)
-router.post('/toolavatar', toolHr.avatar)
-
-
-// api
-//----------------------------------------------api quet data HR----------------------
-router.post('/hr/jobDes', toolHr.toolJobDes);
-router.post('/hr/anotherSkill', toolHr.toolAnotherSkill);
-router.post('/hr/perDetail', toolHr.toolPermisionDetail);
-router.post('/hr/remind', toolHr.toolRemind);
-router.post('/hr/processInter', toolHr.toolProcessInterview);
-router.post('/hr/processTraining', toolHr.toolProcessTraining);
-router.post('/hr/signature', toolHr.toolSignatureImage);
-router.post('/hr/scheduleInter', toolHr.toolScheduleInterview);
-router.post('/hr/inviteInter', toolHr.toolInviteInterview);
-router.post('/hr/recruitment', toolHr.toolRecruitment);
-router.post('/hr/recruitmentNews', toolHr.toolRecruitmentNews);
 
 //Api quét data CRM lâm
 
@@ -259,9 +175,9 @@ router.post('/toolmoduleP',crm.toolmoduleParent)
 router.post('/toolnotifyCRM',crm.toolNotify)
 router.post('/toolPackage',crm.toolPackages)
 router.post('/toolSavestatusC',crm.toolSavestatusC)
-router.post('/toolContract', crm.toolContact)//danh sách hợp đồng 
-router.post('/toolCC', crm.toolContactCustomer)// danh sach hơp đòng khách hàng
-router.post('/toolCs', crm.toolCustomer)// danh sách hợp đồng khách hàng
+router.post('/toolContract', crm.toolContact)// 
+router.post('/toolCC', crm.toolContactCustomer)//
+router.post('/toolCs', crm.toolCustomer)// 
 router.post('/toolCr', crm.toolCustomerCare)// danh sách chăm sóc khách hàng
 router.post('/toolCuchan', crm.toolCustomerChance) // danh sách khách hàng cơ hội
 router.post('/toolChanfile', crm.toolCustomerChanceFile)
