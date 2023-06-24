@@ -217,8 +217,12 @@ exports.createVerifyPayment = async(req, res, next) => {
 // tổng quan thông tin tài khoản cá nhân
 exports.profileInformation = async (req,res,next) => {
     try{
-        let userIdRaoNhanh = req.body.userId
-        let fields = {userName: 1,phoneTK: 1, type: 1, email: 1, address: 1,createdAt: 1, money: 1};
+        let userIdRaoNhanh = req.body.userId;
+        
+        let fields = {userName: 1,phone: 1, type: 1, email: 1, address: 1,
+            createdAt: 1, money: 1,idRaoNhanh365:1,phoneTK:1,avatarUser:1,type:1,
+            _id:1,emailContact:1,chat365_secret:1
+        };
         let dataUser = {}
 
         //thong tin tk
@@ -239,7 +243,7 @@ exports.profileInformation = async (req,res,next) => {
         let numberOfNewNgaySold = await New.find({userID: userIdRaoNhanh, active: 1, sold: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
 
         //so luong danh gia va so sao
-        let listEvaluate = await Evaluate.find({userId: userIdRaoNhanh, newId: 0, active: 1}, {_id: 1, stars: 1});
+        let listEvaluate = await Evaluate.find({userId: userIdRaoNhanh, newId: 0, active: 1}, {_id: 1, stars: 1,userId:1,blUser:1,parentId:1,comment:1,time:1,active:1,csbl:1,tgianHetcs:1,csuaBl:1});
         let numberEvaluate = await Evaluate.countDocuments({userId: userIdRaoNhanh, newId: 0, active: 1});
         let numberStar = 0;
         for(let i=0; i<listEvaluate.length; i++) {
@@ -248,7 +252,7 @@ exports.profileInformation = async (req,res,next) => {
         // numberEvaluate = listEvaluate.count();
 
         fields = {_id: 1, image: 1, title: 1, createTime: 1, updateTime: 1, address: 1, money: 1, sold: 1, unit: 1,
-        cateID: 1, linkTitle: 1, free: 1, img: 1}
+        cateID: 1, linkTitle: 1, free: 1, img: 1,userID:1,type:1,dia_chi:1,endvalue:1,img:1,until:1,address:1}
         //tin dang ban
         let listSellNews = await New.find({userID: userIdRaoNhanh, active: 1, buySell: 2}, fields);
 
@@ -267,7 +271,7 @@ exports.profileInformation = async (req,res,next) => {
         dataUser.listSellNews = listSellNews;
         dataUser.listBuyNews = listBuyNews;
 
-        return functions.success(res, 'get Data User Success', dataUser);
+        return functions.success(res, 'get Data User Success', {dataUser});
     } catch(err){
         console.log("Err from server", err);
         return functions.setError(res, "Err from server", 500);

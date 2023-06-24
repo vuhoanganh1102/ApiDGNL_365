@@ -27,6 +27,7 @@ exports.order = async (req, res, next) => {
         let cartID = request.arr_idgh.split(',');
         let unitPrice = request.arr_dongia.split(',');
         let buyerId = req.user.data.idRaoNhanh365 || 3585;
+        let idRaoNhanh365 = req.user.data.idRaoNhanh365;
         let status = 0;
         let amountPaid = 0;
         if (codeOrder && codeOrder.length !== 0) {
@@ -42,7 +43,7 @@ exports.order = async (req, res, next) => {
                         return functions.setError(res, 'invalid number', 400)
                     }
 
-                    let check_money = await User.find({ idRaoNhanh365: 3585 })
+                    let check_money = await User.find({ idRaoNhanh365 })
                     if (!check_money || check_money.length === 0) {
                         return functions.setError(res, 'người dùng không tồn tại', 400)
                     }
@@ -51,7 +52,7 @@ exports.order = async (req, res, next) => {
                             return functions.setError(res, 'Số tiền của bạn không đầy đủ mua hàng', 400)
                         }
                     }
-                    let check_sellerId = await User.find({ idRaoNhanh365: 3585 })
+                    let check_sellerId = await User.find({ idRaoNhanh365 })
                     if (!check_sellerId || check_sellerId.length === 0) {
                         return functions.setError(res, 'người dùng không tồn tại', 400)
                     }
@@ -127,11 +128,13 @@ exports.bidding = async (req, res, next) => {
             if (uploadfile.userFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
             raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userFile, ['.jpg', '.png', '.docx', '.pdf'])
             userFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.userFile.name)
-        } else if (uploadfile.userProfileFile) {
+        } 
+         if (uploadfile.userProfileFile) {
             if (uploadfile.userProfileFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
             raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userProfileFile, ['.jpg', '.png', '.docx', '.pdf'])
             userProfileFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.userProfileFile.name)
-        } else if (uploadfile.promotionFile) {
+        } 
+        if (uploadfile.promotionFile) {
             if (uploadfile.promotionFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
             raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
             promotionFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.promotionFile.name)

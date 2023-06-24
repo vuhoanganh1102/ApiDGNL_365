@@ -61,16 +61,14 @@ router.post('/priceList/getListPricePin', formData.parse(), [functions.checkToke
 router.post('/priceList/createPricePin',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.createNewWithPin);
 
 //api sửa giá tin đăng
-router.put('/priceList/putPricePin/:id',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.putNewWithPin);
+router.post('/priceList/putPricePin',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.putNewWithPin);
 
 
 
 //------------------------------------------------api giá đẩy tin đăng
 //api danh sách và tìm kiếm Giá đẩy tin đăng
-router.post('/priceList/getListPricePush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.getListPushNew );
+router.post('/getListPricePush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.getListPricePush );
 
-//api thêm mới giá đẩy tin đăng
-router.post('/priceList/getListPricePush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365],admin.createNewWithPush );
 
 //api sửa giá đẩy tin đăng dựa vào id
 router.put('/priceList/getListPricePush/:id',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.putNewWithPin);
@@ -78,13 +76,13 @@ router.put('/priceList/getListPricePush/:id',formData.parse(), [functions.checkT
 
 //------------------------------------------------api danh sách lỗi đăng ki
 //api danh sách lỗi đăng ký
-router.post('/failRegisterUser',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.failRegister);
+router.post('/failRegisterUser',formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.failRegisterUser);
 
 //------------------------------------------------api báo cáo tin
 // api tạo mới tin báo cáo
 router.post('/newReportt',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.createReport);
 // api danh sách và tìm kiếm báo cáo tin
-router.post('report/listReport',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.getListNewReports);
+router.post('/listReportNew',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.listReportNew);
 // api sửa tin dựa vào param
 router.post('report/fixNewReport/:id',formData.parse(),[functions.checkToken, serviceRN.isAdminRN365], admin.fixNewReport);
 

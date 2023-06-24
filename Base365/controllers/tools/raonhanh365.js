@@ -1825,7 +1825,7 @@ exports.toolRegisterFail = async(req, res, next) => {
                         emailHt: data[i].email_ht,
                         name: data[i].ho_ten,
                         mk: data[i].mat_khau,
-                        time: data[i].tgian_dky,
+                        time: new Date(data[i].tgian_dky * 1000),
                         err: data[i].loi_dky,
                         type: data[i].type
                     });
