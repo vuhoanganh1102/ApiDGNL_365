@@ -58,15 +58,13 @@ const Return_product = require('../../models/crm/Return_product');
 const Supplier = require('../../models/crm/Supplier');
 const Receiver_email = require('../../models/crm/Receiver_email');
 const Promotion_product = require('../../models/crm/promotion_product');
-
-
 const ManageAdmin = require('../../models/crm/manage_admin')
 const ManageExtension = require('../../models/crm/manager_extension')
 const ModuleParent = require('../../models/crm/module_parent')
 const NotifyCRM = require('../../models/crm/notify')
 const Packages = require('../../models/crm/packages')
 const SaveStatusCustomer = require('../../models/crm/save_status_customer')
-const axios = require('axios');
+// const axios = require('axios');
 
 
 
@@ -1178,16 +1176,16 @@ exports.toolCustomer = async (req, res, next) => {
                             resoure: data[i].resoure,
                             description: data[i].description,
                             district_contact: data[i].district_contact,
-                            introducer: data[i].ward_contact,
-                            contact_name: data[i].address_contact,
-                            contact_email: data[i].area_code_contact,
-                            contact_phone: data[i].country_ship,
-                            contact_gender: data[i].city_ship,
-                            company_id: data[i].district_ship,
-                            emp_id: data[i].ward_ship,
-                            user_handing_over_work: data[i].address_ship,
-                            user_create_id: data[i].area_code_ship,
-                            user_create_type: data[i].description,
+                            introducer: data[i].introducer,
+                            contact_name: data[i].contact_name,
+                            contact_email: data[i].contact_email,
+                            contact_phone: data[i].contact_phone,
+                            contact_gender: data[i].contact_gender,
+                            company_id: data[i].company_id,
+                            emp_id: data[i].emp_id,
+                            user_handing_over_work: data[i].user_handing_over_work,
+                            user_create_id: data[i].user_create_id,
+                            user_create_type: data[i].user_create_type,
                             user_edit_id: data[i].user_edit_id,
                             user_edit_type: data[i].user_edit_type,
                             group_id: data[i].group_id,
@@ -1223,7 +1221,6 @@ exports.toolCustomer = async (req, res, next) => {
                             id_cus_from: data[i].id_cus_from,
                             cus_from: data[i].cus_from,
                             link: data[i].blink
-
                         });
                         await newCS.save();
                     }

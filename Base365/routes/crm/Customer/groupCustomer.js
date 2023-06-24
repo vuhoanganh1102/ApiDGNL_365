@@ -12,12 +12,12 @@ router.post("/list_group_khach_hang", formData.parse(), GroupCustomerController.
 
 //tạo group mới
 // console.log("routers");
-router.post("/create_GroupKH", formData.parse(), GroupCustomerController.createGroup)
+router.post("/create_GroupKH",formData.parse(), GroupCustomerController.createGroup)
 
 //chỉnh sửa các thuộc tính 1 group
-router.post("/update_GroupKH", formData.parse(), GroupCustomerController.update)
+router.post("/update_GroupKH",formData.parse(), GroupCustomerController.update)
 
 // xoá group chỉ định
-router.post("/delete_khach_hang", GroupCustomerController.delete)
+router.post("/delete_khach_hang",formData.parse(), GroupCustomerController.delete)
 
 module.exports = router;

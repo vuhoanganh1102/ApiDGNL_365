@@ -175,9 +175,9 @@ router.post('/toolmoduleP',crm.toolmoduleParent)
 router.post('/toolnotifyCRM',crm.toolNotify)
 router.post('/toolPackage',crm.toolPackages)
 router.post('/toolSavestatusC',crm.toolSavestatusC)
-router.post('/toolContract', crm.toolContact)//danh sách hợp đồng 
-router.post('/toolCC', crm.toolContactCustomer)// danh sach hơp đòng khách hàng
-router.post('/toolCs', crm.toolCustomer)// danh sách hợp đồng khách hàng
+router.post('/toolContract', crm.toolContact)// 
+router.post('/toolCC', crm.toolContactCustomer)//
+router.post('/toolCs', crm.toolCustomer)// 
 router.post('/toolCr', crm.toolCustomerCare)// danh sách chăm sóc khách hàng
 router.post('/toolCuchan', crm.toolCustomerChance) // danh sách khách hàng cơ hội
 router.post('/toolChanfile', crm.toolCustomerChanceFile)

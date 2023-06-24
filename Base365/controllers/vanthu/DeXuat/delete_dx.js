@@ -3,7 +3,7 @@ const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const delete_Dx = require('../../../models/Vanthu/delete_dx');
 const his_handle = require('../../../models/Vanthu/history_handling_dx');
 exports.delete_dx = async (req, res) => {
-    let id_user = req.body.id_user;
+    let id_user = req.user.data.idQLC;
     console.log(id_user);
     let id = req.body.id;
     console.log("id la :  " + id);
@@ -129,7 +129,7 @@ exports.xoa_vinh_vien = async (req, res) => {
 
 
     let _id = req.body.id;
-    let id_user = req.body.id_user;
+    let id_user = req.user.data.idQLC;
     let de_xuat_da_xoa = [];
     if (!isNaN(_id)) {
         let list_id_dx = _id.split(",");
