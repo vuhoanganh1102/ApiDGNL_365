@@ -11,6 +11,7 @@ const HR_NestDetails = require('../../models/hr/NestDetail');
 const Tracking = require('../../models/qlc/HisTracking');
 const HR_DescPositions = require('../../models/hr/DescPositions');
 const HR_SignatureImages = require('../../models/hr/SignatureImage');
+const HR_InfoLeaders = require('../../models/hr/InfoLeaders')
 
 const positionNames = {
     19: 'Chủ tịch hội đồng quản trị',
@@ -39,10 +40,10 @@ const positionNames = {
 //cơ cấu tổ chức công ty, công ty con và phòng ban
 exports.detailInfoCompany = async(req, res, next) => {
     try {
-        if (req.body.com_id) {
+        if (req.user) {
             // let com_id = req.user.data.idQLC
             // hiện đang ko dùng token để test, vì model user chưa có dữ liệu hoàn chỉnh
-            let com_id = req.body.com_id
+            let com_id = req.user.data.idQLC
             let shiftID = req.body.shiftID
             let CreateAt = req.body.CreateAt || true
             let inputNew = req.body.inputNew
@@ -426,24 +427,25 @@ exports.detailInfoCompany = async(req, res, next) => {
 //hiển thị mô tả chi tiết của phòng ban, tổ trong công ty
 exports.description = async(req, res, next) => {
     try {
-        if (req.body.comId) {
-            // let comId = req.user.data.idQLC
-            let comId = Number(req.body.comId)
+        if (req.user) {
+            let comId = req.user.data.idQLC
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
             let info
 
             if (groupId) {
-                info = await HR_NestDetails.findOne({ comId: comId, grId: groupId, type: 1 }, { description: 1 })
+                info = await HR_NestDetails.findOne({ comId: comId, grId: groupId, type: 1 }, { description: 1, id: 1 })
             }
             if (teamId && !groupId) {
-                console.log(1)
-                info = await HR_NestDetails.findOne({ comId: comId, grId: teamId, type: 0 }, { description: 1 })
+                info = await HR_NestDetails.findOne({ comId: comId, grId: teamId, type: 0 }, { description: 1, id: 1 })
             }
             if (depId && !teamId && !groupId) {
 
-                info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId }, { description: 1 })
+                info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId }, { description: 1, id: 1 })
+            }
+            if (info.description == null) {
+                info.description = "chưa cập nhật"
             }
             if (info) {
                 return functions.success(res, 'Lấy chi tiết công ty thành công', { info });
@@ -460,9 +462,8 @@ exports.description = async(req, res, next) => {
 
 exports.updateDescription = async(req, res, next) => {
     try {
-        if (req.body.comId) {
-            // let comId = req.user.data.idQLC
-            let comId = Number(req.body.comId)
+        if (req.user) {
+            let comId = req.user.data.idQLC
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
@@ -473,7 +474,6 @@ exports.updateDescription = async(req, res, next) => {
                 info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: groupId, type: 1 }, { description: des }, { new: true })
             }
             if (teamId && !groupId) {
-                console.log(1)
                 info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: teamId, type: 0 }, { description: des }, { new: true })
             }
             if (depId && !teamId && !groupId) {
@@ -496,9 +496,9 @@ exports.updateDescription = async(req, res, next) => {
 //danh sách chức vụ
 exports.listPosition = async(req, res, next) => {
     try {
-        if (req.body.comId) {
-            let comId = req.body.comId;
-            //tìm kiếm những chức vụ của công ty đó trong bảng hr
+        if (req.user) {
+            let comId = req.user.data.idQLC
+                //tìm kiếm những chức vụ của công ty đó trong bảng hr
             const positionOrder = {
                 19: 1,
                 18: 2,
@@ -547,7 +547,6 @@ exports.listPosition = async(req, res, next) => {
                     "inForPerson.employee.com_id": comId,
                     "inForPerson.employee.position_id": result[i].positionId
                 }, { idQLC: 1, userName: 1 })
-                console.log(result[i].positionId)
                 result[i].users.userName = findUser.map((user) => user.userName);
                 result[i].users.id = findUser.map((user) => user.idQLC);
             }
@@ -568,7 +567,8 @@ exports.listPosition = async(req, res, next) => {
 exports.missionDetail = async(req, res, next) => {
     try {
         if (req.body.comId) {
-            let comId = req.body.comId;
+            let comId = req.user.data.idQLC
+
             let positionId = req.body.positionId
             let mission = await HR_DescPositions.findOne({ comId: comId, positionId: positionId }, { description: 1 })
             if (mission) {
@@ -593,7 +593,8 @@ exports.missionDetail = async(req, res, next) => {
 exports.updateMission = async(req, res, next) => {
     try {
         if (req.body.comId) {
-            let comId = req.body.comId;
+            let comId = req.user.data.idQLC
+
             let positionId = req.body.positionId
             let description = req.body.description
             let mission = await HR_DescPositions.findOneAndUpdate({ comId: comId, positionId: positionId }, { description: description }, { new: true })
@@ -663,12 +664,16 @@ exports.deleteSignature = async(req, res, next) => {
     }
 }
 
-//danh sách lãnh đạo
+//danh sách, tìm kiếm lãnh đạo
 exports.listInfoLeader = async(req, res, next) => {
     try {
         if (req.user) {
             let keyword = req.body.keyword
             let comId = req.user.data.idQLC
+            let page = Number(req.body.page)
+            let pageSize = Number(req.body.pageSize)
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
             let listPositionId = [4, 20, 13, 12, 11, 10, 6, 5, 8, 7, 16, 14, 21, 22, 19, 18, 17]
             let infoLeader = await Users.find({
                 userName: new RegExp(keyword, "i"),
@@ -682,7 +687,7 @@ exports.listInfoLeader = async(req, res, next) => {
                 "inForPerson.employee.dep_id": 1,
                 "inForPerson.employee.team_id": 1,
                 "inForPerson.employee.group_id": 1,
-            })
+            }).skip(skip).limit(limit)
 
             let infoLeaderAfter = []
             for (let i = 0; i < infoLeader.length; i++) {
@@ -731,6 +736,294 @@ exports.listInfoLeader = async(req, res, next) => {
             if (infoLeader) {
                 return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { infoLeaderAfter });
             }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//chi tiết lãnh đạo
+exports.leaderDetail = async(req, res, next) => {
+    try {
+        if (req.user && req.body.empId) {
+            let empId = req.body.empId
+            let description = req.body.description
+            let result = {}
+            let infoUser = await Users.findOne({ idQLC: empId, type: 2 })
+
+            if (infoUser) {
+                let infoUserHr = await HR_InfoLeaders.findOne({ epId: empId })
+                if (infoUserHr) {
+                    result.ep_name = infoUser.userName
+                    result.namePosition = positionNames[infoUser.inForPerson.employee.position_id]
+                    result.avatarUser = `${process.env.hostFile}${infoUser.avatarUser}`
+                    result.description = infoUserHr.description
+
+                    if (result) {
+                        return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { result });
+                    }
+                } else {
+                    const maxID = await HR_InfoLeaders.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                    if (maxID) {
+                        newIDMax = Number(maxID.id) + 1;
+                    } else newIDMax = 1
+                    let insertUser = new HR_InfoLeaders({
+                        id: newIDMax,
+                        epId: empId,
+                        avatar: infoUser.avatarUser,
+                        description: description,
+                        desPosition: infoUser.inForPerson.employee.position_id,
+                        created_at: new Date(Date.now())
+                    })
+                    insertUser.save()
+                    if (insertUser) {
+                        return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công');
+                    }
+                }
+
+            } else functions.setError(res, "không tìm thấy thông tin user", 400);
+
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//cập nhật chi tiết lãnh đạo
+exports.updateLeaderDetail = async(req, res, next) => {
+    try {
+        if (req.user && req.body.empId) {
+            let empId = req.body.empId
+            let description = req.body.description
+
+            let updateUserHr = await HR_InfoLeaders.findOneAndUpdate({ epId: empId }, { description: description, updated_at: new Date(Date.now()) }, { new: true })
+
+            if (updateUserHr) {
+                return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công', { updateUserHr });
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//Thêm mới nhân viên sử dụng con dấu
+exports.updateEmpUseSignature = async(req, res, next) => {
+    try {
+        if (req.user && req.body.empId) {
+            let comId = req.user.data.idQLC
+            let empId = req.body.empId
+            let depId = req.body.depId
+            let positionId = req.body.positionId
+
+            let query = {
+                idQLC: empId,
+                type: 2,
+                "inForPerson.employee.com_id": comId
+            }
+            if (depId) {
+                query = {
+                    idQLC: empId,
+                    type: 2,
+                    "inForPerson.employee.com_id": comId,
+                    "inForPerson.employee.dep_id": depId
+                }
+
+            }
+            if (positionId) {
+                query = {
+                    idQLC: empId,
+                    type: 2,
+                    "inForPerson.employee.com_id": comId,
+                    "inForPerson.employee.dep_id": depId,
+                    "inForPerson.employee.position_id": position_id
+                }
+            }
+
+            if (depId && positionId) {
+                query = {
+                    idQLC: empId,
+                    type: 2,
+                    "inForPerson.employee.com_id": comId,
+                    "inForPerson.employee.dep_id": depId,
+                    "inForPerson.employee.position_id": position_id,
+                    "inForPerson.employee.dep_id": depId
+                }
+            }
+            let updateUserHr = await Users.findOneAndUpdate(query, {
+                "inForPerson.employee.ep_signature": 1,
+                updatedAt: new Date(Date.now())
+            }, { new: true })
+
+            if (updateUserHr) {
+                return functions.success(res, 'cập nhật người sử dụng con dấu thành công');
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//Danh sách nhân viên sử dụng con dấu (có tìm kiếm)
+exports.listEmpUseSignature = async(req, res, next) => {
+    try {
+        if (req.user) {
+            let keyword = req.body.keyword
+
+            let comId = req.user.data.idQLC
+            let infoUser
+            if (isNaN(keyword) == true) {
+                infoUser = await Users.findOne({
+                    userName: new RegExp(keyword, "i"),
+                    "inForPerson.employee.com_id": comId,
+                    "inForPerson.employee.ep_signature": 1
+                }, {
+                    idQLC: 1,
+                    avatarUser: 1,
+                    userName: 1,
+                    "inForPerson.employee.position_id": 1,
+                    "inForPerson.employee.dep_id": 1,
+                })
+            } else if (isNaN(keyword) == false) {
+
+                infoUser = await Users.findOne({
+                    idQLC: keyword,
+                    "inForPerson.employee.com_id": comId,
+                    "inForPerson.employee.ep_signature": 1
+                }, {
+                    idQLC: 1,
+                    avatarUser: 1,
+                    userName: 1,
+                    "inForPerson.employee.position_id": 1,
+                    "inForPerson.employee.dep_id": 1,
+                })
+            }
+
+            if (infoUser) {
+                let info = {}
+                info._id = infoUser.idQLC
+                info.userName = infoUser.userName
+                info.namePosition = positionNames[infoUser.inForPerson.employee.position_id];
+
+                if (infoUser.inForPerson.employee.dep_id) {
+                    let infoDep = await Deparment.findOne({ _id: infoUser.inForPerson.employee.dep_id, com_id: comId })
+                    info.dep_name = infoDep.deparmentName
+
+                } else {
+                    info.dep_name = "chưa cập nhật"
+                }
+                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { info });
+            } else return functions.setError(res, "không tim thấy user này", 400);
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//Xóa nhân viên sử dụng con dấu
+exports.deleteEmpUseSignature = async(req, res, next) => {
+    try {
+        if (req.user && req.body.empId) {
+            let comId = req.user.data.idQLC
+            let empId = req.body.empId
+
+            let updateUserHr = await Users.findOneAndUpdate({
+                idQLC: empId,
+                type: 2,
+                "inForPerson.employee.com_id": comId
+            }, {
+                "inForPerson.employee.ep_signature": 0,
+                updatedAt: new Date(Date.now())
+            }, { new: true })
+
+            if (updateUserHr) {
+                return functions.success(res, 'xóa người sử dụng con dấu thành công');
+            }
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
+        console.log("Đã có lỗi xảy ra", e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+    }
+}
+
+//danh sách, tìm kiếm chữ ký lãnh đạo
+exports.listSignatureLeader = async(req, res, next) => {
+    try {
+        if (req.user) {
+            let keyword = req.body.keyword
+            let comId = req.user.data.idQLC
+            let page = Number(req.body.page)
+            let pageSize = Number(req.body.pageSize)
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let listPositionId = [4, 20, 13, 12, 11, 10, 6, 5, 8, 7, 16, 14, 21, 22, 19, 18, 17]
+            let infoLeader
+            if (isNaN(keyword) == true) {
+                infoLeader = await Users.find({
+                    userName: new RegExp(keyword, "i"),
+                    "inForPerson.employee.com_id": comId,
+                    "inForPerson.employee.position_id": { $in: listPositionId }
+                }, {
+                    idQLC: 1,
+                    userName: 1,
+                    "inForPerson.employee.position_id": 1,
+                    "inForPerson.employee.dep_id": 1,
+                }).skip(skip).limit(limit)
+            } else if (isNaN(keyword) == false) {
+                infoLeader = await Users.find({
+                    idQLC: keyword,
+                    "inForPerson.employee.com_id": comId,
+                    "inForPerson.employee.position_id": { $in: listPositionId }
+                }, {
+                    idQLC: 1,
+                    userName: 1,
+                    "inForPerson.employee.position_id": 1,
+                    "inForPerson.employee.dep_id": 1,
+                }).skip(skip).limit(limit)
+            }
+
+            if (infoLeader) {
+                let infoLeaderAfter = []
+                for (let i = 0; i < infoLeader.length; i++) {
+                    let info = {}
+                    info._id = infoLeader[i].idQLC
+                    info.userName = infoLeader[i].userName
+                    info.namePosition = positionNames[infoLeader[i].inForPerson.employee.position_id];
+
+                    if (infoLeader[i].inForPerson.employee.dep_id) {
+                        let infoDep = await Deparment.findOne({ _id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
+                        info.dep_name = infoDep.deparmentName
+                    } else {
+                        info.dep_name = "chưa cập nhật"
+                    }
+
+                    let infoSig = await HR_SignatureImages.findOne({ empId: infoLeader[i].idQLC }, { imgName: 1 })
+                    if (infoSig) {
+                        info.linkSignature = `${process.env.hostFile}storage/hr/upload/signature/${infoSig.imgName}`
+                    } else info.linkSignature = "chưa cập nhật"
+
+                    infoLeaderAfter.push(info)
+                }
+                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { infoLeaderAfter });
+            }
+            return functions.setError(res, "không tìm thấy lãnh đạo nào", 400);
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }

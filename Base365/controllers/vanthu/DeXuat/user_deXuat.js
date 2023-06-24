@@ -13,8 +13,7 @@ let het_han_duyet = [];
 // đề xuất tôi gửi đi 
 exports.deXuat_user_send = async (req, res) => {
 
-    let id_user = req.body.id_user;
-    // console.log(typeof (id_user));
+    let id_user = req.user.data.idQLC    // console.log(typeof (id_user));
     let nguoi_nhan_de_xuat = req.body.id_user_duyet ? req.body.id_user_duyet : 0;
     let danh_sach_nguoi_nhan = [];
 
