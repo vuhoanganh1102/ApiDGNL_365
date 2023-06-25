@@ -18,6 +18,9 @@ const RegisterFail = require('../../models/Raonhanh365/RegisterFail');
 const NewReport = require('../../models/Raonhanh365/NewReport');
 const New = require('../../models/Raonhanh365/New');
 const Order = require('../../models/Raonhanh365/Order');
+const RN365_TagIndex = require('../../models/Raonhanh365/RN365_TagIndex');
+const Evaluate = require('../../models/Raonhanh365/Evaluate');
+const Comments = require('../../models/Raonhanh365/Comments');
 
 //đăng nhập admin
 exports.loginAdminUser = async (req, res, next) => {
@@ -50,42 +53,16 @@ exports.loginAdminUser = async (req, res, next) => {
 exports.getListAdminUser = async (req, res, next) => {
     try {
         //lay cac tham so dieu kien tim kiem tin
-        if (!req.body.page) {
-            return functions.setError(res, "Missing input page", 401);
-        }
-        if (!req.body.pageSize) {
-            return functions.setError(res, "Missing input pageSize", 402);
-        }
-        let page = Number(req.body.page);
-        let pageSize = Number(req.body.pageSize);
+
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 50;
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let idAdmin = req.body.idAdmin;
-        let condition = {};
-        if (idAdmin) condition._id = Number(idAdmin);
-        let fields = { loginName: 1, name: 1, email: 1, phone: 1, editAll: 1, langId: 1, active: 1 };
-        let listAdminUser = await functions.pageFindWithFields(AdminUser, condition, fields, { _id: 1 }, skip, limit);
+        let condition = { delete: 0, loginName: { $ne: 'admin' } };
+        let data = await AdminUser.find(condition, {}, { loginName: 1, active: -1 }, skip, limit);
 
-        // lap qua danh sach user
-        for (let i = 0; i < listAdminUser.length; i++) {
-            let adminUserRight = await AdminUserRight.find({ adminId: listAdminUser[i]._id });
-            let arrIdModule = [],
-                arrRightAdd = [],
-                arrRightEdit = [],
-                arrRightDelete = []
-            // lap qua cac quyen cua admindo
-            for (let j = 0; j < adminUserRight.length; j++) {
-                arrIdModule.push(adminUserRight[j].moduleId);
-                arrRightAdd.push(adminUserRight[j].add);
-                arrRightEdit.push(adminUserRight[j].edit);
-                arrRightDelete.push(adminUserRight[j].delete);
-            }
-            let adminUser = listAdminUser[i];
-            let tmpOb = { adminUser, arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete };
-            listAdminUser[i] = tmpOb;
-        }
-        const totalCount = await functions.findCount(AdminUser, condition);
-        return functions.success(res, "get list blog success", { totalCount: totalCount, data: listAdminUser });
+        const totalCount = await AdminUser.find(condition, {}, { loginName: 1, active: -1 }, skip, limit).count();
+        return functions.success(res, "get list blog success", { totalCount: totalCount, data });
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -179,6 +156,7 @@ exports.updateAdminUser = async (req, res, next) => {
         if (!req.body.adminId)
             return functions.setError(res, "Missing input value id admin!", 404);
         let fields = req.info;
+        let password = req.body.password;
         let adminId = req.body.adminId;
         fields.password = md5(password);
         delete fields._id;
@@ -253,7 +231,8 @@ exports.getAndCheckDataCategory = async (req, res, next) => {
             adminId: adminId,
             name: name,
             order: order,
-            description: description
+            description: description,
+            active: 1
         }
         return next();
     } catch (e) {
@@ -341,7 +320,7 @@ exports.getListNews = async (req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "userID",
-                    foreignField: "_id",
+                    foreignField: "idRaoNhanh365",
                     as: "matchedDocuments"
                 }
             },
@@ -434,6 +413,15 @@ exports.deleteNews = async (req, res, next) => {
     }
 }
 
+exports.ghimTin    = async (req,res,next)=>{
+    try {
+        let id = req.body.id;
+        
+        return functions.success(res,'ghim success')
+    } catch (error) {
+        return functions.setError(res,error)
+    }
+}
 //---------------------------------------------------------controller quan ly bang gia-----------------------------------------------
 
 //api lay ra danh sach va tim kiem tin
@@ -442,12 +430,10 @@ exports.getListPriceList = async (req, res, next) => {
         //lay cac tham so dieu kien tim kiem tin
         let request = req.body;
         let _id = request._id,
-            time = request.time,
-            type = request.type
-
+            time = request.time
         let condition = {};
         if (_id) condition._id = Number(_id);
-        if (type) condition.type = Number(type);
+        condition.type = { $ne: 2 };
         if (time) condition.time = new RegExp(time);
         let fields = { _id: 1, time: 1, unitPrice: 1, discount: 1, intoMoney: 1, vat: 1, intoMoneyVat: 1 };
 
@@ -646,18 +632,18 @@ exports.getListHistory = async (req, res, next) => {
         if (userName) condition.userName = new RegExp(userName);
         if (userId) condition.userId = new Number(userId);
         if (seri) condition.seri = new RegExp(seri);
-        let fields = { _id: 1, userId: 1, seri: 1, time: 1, price: 1 };
+        let fields = { _id: 1, userId: 1, seri: 1, time: 1, price: 1, 'user.userName': 1 };
         let listHistory = await History.aggregate([
             { $match: condition },
             {
                 $lookup: {
                     from: "Users",
                     localField: "userId",
-                    foreignField: "_id",
-                    as: "matchedDocuments"
+                    foreignField: "idRaoNhanh365",
+                    as: "user"
                 }
             },
-            // {$project: fields},
+            { $project: fields },
             { $sort: { _id: 1 } },
             { $skip: skip },
             { $limit: limit }
@@ -757,7 +743,7 @@ exports.createBlog = async (req, res, next) => {
         fields._id = newIdBlog;
 
         if (!fields.date) {
-            fields.date = Date(Date.now());
+            fields.date = new Date();
         }
         //luu anh
         let image = fields.image;
@@ -774,7 +760,23 @@ exports.createBlog = async (req, res, next) => {
         return functions.setError(res, "Err from server!", 500);
     }
 }
-
+exports.hotBlog = async (req, res, next) => {
+    try {
+        let id = req.body.id;
+        let check = await Blog.findById(id);
+        if (!check) {
+            return functions.setError(res, 'not found', 404)
+        }
+        if (check.hot === 0) {
+            await Blog.findByIdAndUpdate(id,{hot:1})
+        }else{
+            await Blog.findByIdAndUpdate(id,{hot:0})
+        }   
+        return functions.success(res, 'success')
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
 exports.updateBlog = async (req, res, next) => {
     try {
         if (!req.body._id)
@@ -782,7 +784,7 @@ exports.updateBlog = async (req, res, next) => {
         let _id = req.body._id;
         let fields = req.info;
         if (!fields.dateLastEdit) {
-            fields.dateLastEdit = Date(Date.now());
+            fields.dateLastEdit = new Date();
         }
         let image = fields.image;
         if (!await functions.checkImage(image.path)) {
@@ -841,7 +843,7 @@ exports.getListNewWithPin = async (req, res, next) => {
 //api tạo mới ghim tin đăng
 exports.createNewWithPin = async (req, res, next) => {
     try {
-        const {
+        let {
             time,
             unitPrice,
             discount,
@@ -850,24 +852,24 @@ exports.createNewWithPin = async (req, res, next) => {
             intoMoneyVat,
             type,
             cardGift,
-            newNumber
+
         } = req.body;
         if (![1, 5, 3, 4].includes(Number(type))) {
             // kiểm tra có phải loại ghim tin
             return res.status(400).json({ message: 'Type not vaild' });
         }
-        // kiểm tra các trường cần phải cos
-        if (typeof discount === "number" && typeof vat === "number"
-            && typeof type === "number" && typeof newNumber === "number" && _id !== null && cardGift !== null) {
+        // kiểm tra các trường cần phải có
+
+        if (await functions.checkNumber(discount) === true && await functions.checkNumber(vat) === true && cardGift) {
             // check tồn tại sản phẩm id lớn nất
-            const maxIdCategory = await PriceListRN.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            const maxIdCategory = await PriceList.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
             // tăng id lên 1 đơn vị
             let _id;
             if (maxIdCategory) {
                 _id = Number(maxIdCategory._id) + 1;
             } else _id = 1;
             // tạo mới tin ghim tin đăng
-            const newPriceList = new PriceListRN({
+            const newPriceList = new PriceList({
                 _id,
                 time,
                 unitPrice,
@@ -876,53 +878,37 @@ exports.createNewWithPin = async (req, res, next) => {
                 vat,
                 intoMoneyVat,
                 type,
-                cardGift,
-                newNumber
+                cardGift
             });
-            const savedPriceList = await newPriceList.save();
-            return functions.success(res, 'Create Success', { data: savedPriceList })
+            await newPriceList.save();
+            return functions.success(res, 'Create Success')
         } else {
             return functions.setError(res, 'The input No Vaild', 400);
         }
     } catch (error) {
         console.log(error);
-        return functions.setError(res, err)
+        return functions.setError(res, error)
     }
 }
 
 // api sửa ghim tin đăng
-exports.putNewWithPin = async (req, res, next) => {
-    let { id } = req.body;
-    const {
-        time,
-        unitPrice,
-        discount,
-        intoMoney,
-        vat,
-        intoMoneyVat,
-        cardGift,
-        newNumber
-    } = req.body;
+exports.putPricePin = async (req, res, next) => {
     try {
-        const priceList = await PriceList.findById(id);
-        if (!priceList) {
-            return res.status(404).json({ message: '_id is notExist' });
-        }
-        if (typeof discount === "number" && typeof vat === "number"
-            && typeof type === "number" && typeof newNumber === "number" && _id !== null && cardGift !== null) {
-            priceList.time = time;
-            priceList.unitPrice = unitPrice;
-            priceList.discount = discount;
-            priceList.intoMoney = intoMoney;
-            priceList.vat = vat;
-            priceList.intoMoneyVat = intoMoneyVat;
-            priceList.cardGift = cardGift;
-            priceList.newNumber = newNumber;
-            const updatedPriceList = await priceList.save();
-            return functions.success(res, 'Put Success', { data: updatedPriceList })
+        let id = req.body.id;
+        if (!id) return functions.setError(res, 'missing data', 400)
+        let time = req.body.time;
+        let unitPrice = req.body.unitPrice;
+        let discount = req.body.discount;
+        let intoMoney = req.body.intoMoney;
+        let vat = req.body.vat;
+        let intoMoneyVat = req.body.intoMoneyVat;
+        let cardGift = req.body.cardGift;
+        if (time && unitPrice && discount && intoMoney && vat && intoMoneyVat && cardGift) {
+            await PriceList.findByIdAndUpdate(id, { time, unitPrice, discount, intoMoney, vat, intoMoneyVat, cardGift })
         } else {
-            return functions.setError(res, 'The input No Vaild', 400);
+            return functions.setError(res, 'missing data')
         }
+        return functions.success(res, 'update success')
     } catch (error) {
         console.error(error);
         return functions.setError(res, error)
@@ -946,57 +932,27 @@ exports.getListPricePush = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
-
-//api tạo mới đẩy tin đăng
-exports.createNewWithPush = async (req, res, next) => {
+exports.updateListPricePush = async (req, res, next) => {
     try {
-        const {
-            time,
-            unitPrice,
-            discount,
-            intoMoney,
-            vat,
-            intoMoneyVat,
-            type = 2,
-            cardGift,
-            newNumber
-        } = req.body;
-        if (typeof discount === "number" && typeof vat === "number"
-            && typeof type === "number" && typeof newNumber === "number" && _id !== null && cardGift !== null) {
-            // check tồn tại sản phẩm id lớn nất
-            const maxIdCategory = await PriceListRN.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            let _id;
-            // nếu tồn tại tăng 1 đơn vị
-            if (maxIdCategory) {
-                _id = Number(maxIdCategory._id) + 1;
-            } else _id = 1;
-            // tạo mới tin ghim tin đăng
-            const newPriceList = new PriceListRN({
-                _id,
-                time,
-                unitPrice,
-                discount,
-                intoMoney,
-                vat,
-                intoMoneyVat,
-                type,
-                cardGift,
-                newNumber
-            });
-            const savedPriceList = await newPriceList.save();
-            return functions.success(res, 'Create Success', { data: savedPriceList })
+        let id = req.body.id;
+        if (!id) return functions.setError(res, 'missing data', 400)
+        let time = req.body.time;
+        let unitPrice = req.body.unitPrice;
+        let discount = req.body.discount;
+        let intoMoney = req.body.intoMoney;
+        let vat = req.body.vat;
+        let intoMoneyVat = req.body.intoMoneyVat;
+        if (time && unitPrice && discount && intoMoney && vat && intoMoneyVat) {
+            await PriceList.findByIdAndUpdate(id, { time, unitPrice, discount, intoMoney, vat, intoMoneyVat })
+        } else {
+            return functions.setError(res, 'missing data')
         }
-        else {
-            return functions.setError(res, 'The input No Vaild', 400);
-        }
-    } catch (error) {
-        console.error(error);
+        return functions.success(res, 'update success',)
+    }
+    catch (error) {
         return functions.setError(res, error)
     }
 }
-
-
-
 
 // tạo mới
 exports.createReport = async (req, res, next) => {
@@ -1085,9 +1041,13 @@ exports.getListDiscountCard = async (req, res, next) => {
     try {
         let page = req.body.page || 1;
         let pageSize = req.body.pageSize || 50;
+        let conditions = { priceListActive: 1 };
+        let _id = req.body.id || null;
+        let nameBefore = req.body.nha_mang || null;
+        if (_id) conditions._id = _id;
+        if (nameBefore) conditions.nameBefore = { $regex: `.*${nameBefore}.*` }
         let skip = (page - 1) * pageSize;
         let limit = pageSize;
-        let conditions = { priceListActive: 1 };
         let count = await NetworkOperator.find(conditions, {}).skip(skip).limit(limit).count();
         let data = await NetworkOperator.find(conditions).sort({ _id: 1 }).skip(skip).limit(limit);
         return functions.success(res, "Get List Report Success", { count, data });
@@ -1095,32 +1055,7 @@ exports.getListDiscountCard = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
-// api update Discount for Card
-exports.updateDiscount = async (req, res, next) => {
-    try {
-        let { id } = req.params;
-        let { nameBefore, nameAfter, discount } = req.body;
-        //  nếu có param Id thì trả ra thông tin để sưả
-        if (id && !nameBefore) {
-            console.log(1)
-            const netWorkOperator = await NetworkOperator.findOne({ _id: id })
-            return functions.success(res, "Get Data", { data: netWorkOperator });
-        } else if (id && nameBefore && nameAfter && discount) {
 
-            const update = {
-                nameBefore: nameBefore,
-                nameAfter: nameAfter,
-                discount: discount
-            }
-            const upDateDiscount = await NetworkOperator.findOneAndUpdate({ _id: id }, update, {
-                new: true
-            })
-            return functions.success(res, "Update Discount Success", { data: upDateDiscount });
-        }
-    } catch (error) {
-        return functions.setError(res, error)
-    }
-}
 
 exports.failRegisterUser = async (req, res, next) => {
     try {
@@ -1153,12 +1088,12 @@ exports.getInfoForEdit = async (req, res, next) => {
             case 'Users':
                 data = await Users.findById({ _id })
                 break;
-                
+
             case 'New':
                 data = await functions.getDatafind(New, { _id })
                 break;
             case 'Order':
-                data = await Order.findById({_id});
+                data = await Order.findById({ _id });
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
@@ -1167,6 +1102,64 @@ exports.getInfoForEdit = async (req, res, next) => {
     }
 }
 
-exports.active = async (req,res,next) =>{
-    
+exports.active = async (req, res, next) => {
+    try {
+        let model = req.body.model;
+        let active = req.body.active;
+        let id = req.body.id;
+        if (!id) return functions.setError(res, 'missing data', 404)
+        switch (model) {
+            case 'TagIndex':
+                await RN365_TagIndex.findByIdAndUpdate(id, { active })
+                break;
+            case 'New':
+                await New.findByIdAndUpdate(id, { active })
+                break;
+            case 'Order':
+                await Order.findByIdAndUpdate(id, { orderActive: active })
+                break;
+            case 'NetworkOperator':
+                await NetworkOperator.findByIdAndUpdate(id, { active })
+                break;
+            case 'Evaluate':
+                await Evaluate.findByIdAndUpdate(id, { active })
+                break;
+            case 'Comment':
+                await Comments.findByIdAndUpdate(id, { active })
+                break;
+            case 'Category':
+                await Category.findByIdAndUpdate(id, { active })
+                break;
+            case 'AdminUser':
+                await AdminUser.findByIdAndUpdate(id, { active })
+                break;
+            case 'Blog':
+                await Blog.findByIdAndUpdate(id, { active })
+                break;
+            case 'Users':
+                await Users.findOneAndUpdate({ idRaoNhanh365: id }, { 'inforRN365.active': active })
+                break;
+        }
+        return functions.success(res, 'update success')
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+exports.updatediscountCard = async (req, res, next) => {
+    try {
+        let nameBefore = req.body.nameBefore;
+        let discount = req.body.discount;
+        let nameAfter = req.body.nameAfter;
+        let updateItem = {};
+        let id = req.body.id;
+        if (!id) return functions.setError(res, 'missing data', 400)
+        if (nameBefore) updateItem.nameBefore = nameBefore;
+        if (discount) updateItem.discount = discount;
+        if (nameAfter) updateItem.nameAfter = nameAfter;
+        await NetworkOperator.findByIdAndUpdate(id, updateItem)
+        return functions.success(res, 'update success')
+    } catch (error) {
+        return functions.setError(res, error)
+    }
 }
