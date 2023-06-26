@@ -6,16 +6,16 @@ const functions = require('../../services/functions');
 const hrService = require('../../services/hr/hrService');
 
 //api lay ra danh sach recruitmentController theo cac truong
-router.post('/getRecruit', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListRecruitment);
+router.post('/getRecruitment', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListRecruitment);
 
 //them moi quy trinh
-router.post('/', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.createRecruitment);
+router.post('/createRecruitment', hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.createRecruitment);
 
 //sua quy trinh
-router.put('/', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.updateRecruitment);
+router.post('/updateRecruitment', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.updateRecruitment);
 
 //xoa quy trinh tuyen dung vao muc da xoa gan day
-router.put('/softDelete', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteRecruitment);
+router.post('/softDelete', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteRecruitment);
 
 
 //---giai doan trong quy trinh

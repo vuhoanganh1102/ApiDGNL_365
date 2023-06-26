@@ -23,10 +23,10 @@ exports.getListRecruitment= async(req, res, next) => {
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let infoLogin = req.infoLogin;
-        let listCondition = {comId: infoLogin.comId};
-        console.log(listCondition);
+        let listCondition = {comId: infoLogin.comId, isDelete: 0};
+        
         // dua dieu kien vao ob listCondition
-        if(name) listCondition.name =  new RegExp(name);
+        if(name) listCondition.name =  new RegExp(name, 'i');
         const listRecruit = await functions.pageFind(Recruitment, listCondition, { _id: 1 }, skip, limit); 
         const totalCount = await functions.findCount(Recruitment, listCondition);
         return functions.success(res, "Get list recruitment success", {totalCount: totalCount, data: listRecruit });
@@ -38,10 +38,12 @@ exports.getListRecruitment= async(req, res, next) => {
 
 exports.createRecruitment = async(req, res, next) => {
     try {
-        let {comId, nameProcess, applyFor ,nameStage, posAssum, target, time, des} = req.body;
-        if(!nameProcess || !applyFor || !nameStage || !posAssum || !target) {
+        
+        let {nameProcess, applyFor, listStage} = req.body;
+        if(!nameProcess || !applyFor || !listStage) {
             return functions.setError(res, "Missing input value!", 404);
         }
+        let infoLogin = req.infoLogin;
 
         //tao slug
         let slug = hrService.titleToSlug(nameProcess);
@@ -54,30 +56,47 @@ exports.createRecruitment = async(req, res, next) => {
         } else newIdRecruit = 1;
 
         //tao quy trinh
+        let isCom = 0;
+        let createBy = infoLogin.name;
+        if(infoLogin.type==1) {
+            isCom=1;
+            createBy = 'Công ty';
+        }
         let recruitment = new Recruitment({
             id: newIdRecruit,
             name: nameProcess,
-            createdBy: 'Công ty',
+            createdBy: createBy,
             createdAt: Date.now(),
             applyFor: applyFor,
             slug: slug,
-            comId: comId,
-            isCom: 1
+            comId: infoLogin.comId,
+            isCom: isCom
         });
         recruitment = await recruitment.save();
-        console.log(recruitment);
 
         //tao cac giai doan cua quy trinh do
-        let stageRecruit = new StageRecruitment({
-            id: 1,
-            recruitmentId: recruitment.id,
-            name: nameStage,
-            positionAssumed: posAssum,
-            target: target,
-            completeTime: time,
-            description: Buffer.from(des, 'base64')
-        });
-        // await StageRecruitment.create(stageRecruit);
+        for(let i=0; i<listStage.length; i++){
+            if(!listStage[i].nameStage || !listStage[i].posAssum || !listStage[i].target) {
+                return functions.setError(res, "Missing input value!", 405);
+            }
+            //lay id max
+            const maxIdStageRecruit = await StageRecruitment.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+            let newIdStageRecruit;
+            if (maxIdStageRecruit) {
+                newIdStageRecruit = Number(maxIdStageRecruit.id) + 1;
+            } else newIdStageRecruit = 1;
+            let stageRecruit = new StageRecruitment({
+                id: newIdStageRecruit,
+                recruitmentId: recruitment.id,
+                name: listStage[i].nameStage,
+                positionAssumed: listStage[i].posAssum,
+                target: listStage[i].target,
+                completeTime: listStage[i].time,
+                description: Buffer.from(listStage[i].des, 'base64')
+            });
+            await StageRecruitment.create(stageRecruit);
+        }
+        
         return functions.success(res, 'Create recruitment success!');
     } catch (e) {
         console.log("Err from server!", e);
@@ -107,12 +126,12 @@ exports.updateRecruitment = async(req, res, next) => {
 
 exports.softDeleteRecruitment = async(req, res, next) => {
     try {
-        let stageRecruitmentId = req.query.stageRecruitmentId;
-        let stagerecruitment = await StageRecruitment.findOneAndUpdate({id: stageRecruitmentId}, {
+        let recruitmentId = req.body.recruitmentId;
+        let recruitment = await Recruitment.findOneAndUpdate({id: recruitmentId}, {
             deletedAt: Date.now(),
             isDelete: 1
         })
-        if(!stagerecruitment) {
+        if(!recruitment) {
             return functions.setError(res, "News not found!", 505);
         }
         return functions.success(res, "Soft delete stage recruitment success!");
