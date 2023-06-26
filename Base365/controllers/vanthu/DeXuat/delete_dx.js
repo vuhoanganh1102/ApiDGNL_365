@@ -2,6 +2,7 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const delete_Dx = require('../../../models/Vanthu/delete_dx');
 const his_handle = require('../../../models/Vanthu/history_handling_dx');
+
 exports.delete_dx = async (req, res) => {
     let id_user = req.user.data.idQLC;
     console.log(id_user);
@@ -58,13 +59,10 @@ exports.delete_dx = async (req, res) => {
 }
 
 exports.de_xuat_da_xoa_All = async (req, res) => {
-
-
     let { phong_ban,
         id_nhan_vien,
         loai_de_xuat,
         trang_thai_de_xuat } = req.body;
-
     let filter = {};
     if (phong_ban) { filter.phong_ban = phong_ban };
 
@@ -74,15 +72,11 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
     let id_user_duyet = req.body.id_user_duyet;
     if (!isNaN(id_user_duyet)) {
         let de_xuat_da_xoa = [];
-
-
         let his_delete = await delete_Dx.find({ user_del: id_user_duyet });
-
         for (let i = 0; i < his_delete.length; i++) {
             filter._id = his_delete[i].id_dx_del;
             let de_xuat = await De_Xuat.findOne(filter);
             if (de_xuat.del_type == 2) {
-
                 let info_dx = {
                     id: de_xuat._id,
                     name_user: de_xuat.name_user,
@@ -92,13 +86,11 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
                 }
                 de_xuat_da_xoa.push(info_dx);
             }
-
         }
         return res.status(200).json({ data: de_xuat_da_xoa, message: "thanh cong " });
 
     } else {
         return res.status(404).json({ message: "bad request" });
-
     }
 
 }
@@ -108,42 +100,33 @@ exports.khoi_phuc = async (req, res) => {
     // console.log(typeof id);
     // return;
     if (id) {
-
         let list_id_dx = id.split(',');
 
         for (let i = 0; i < list_id_dx.length; i++) {
             await De_Xuat.findByIdAndUpdate({ _id: list_id_dx[i] }, { active: 1 });
             await delete_Dx.deleteMany({ id_dx_del: list_id_dx[i] });
         }
-
         return res.status(200).json({ message: 'success' });
     } else {
         return res.status(404).json({ message: 'bad request' });
-
-
     }
-
 }
 
+
+
+
 exports.xoa_vinh_vien = async (req, res) => {
-
-
     let _id = req.body.id;
     let id_user = req.user.data.idQLC;
     let de_xuat_da_xoa = [];
     if (!isNaN(_id)) {
         let list_id_dx = _id.split(",");
-
         for (let i = 0; i < list_id_dx.length; i++) {
             await delete_Dx.deleteOne({ id_dx_del: list_id_dx[i] });
         }
-
         let his_delete = await delete_Dx.find({ user_del: id_user });
-
         for (let i = 0; i < his_delete.length; i++) {
             let de_xuat = await De_Xuat.findOne({ _id: his_delete[i].id_dx_del });
-
-
             if (de_xuat.del_type == 2) {
                 let info_dx = {
                     id: de_xuat._id,
@@ -155,10 +138,7 @@ exports.xoa_vinh_vien = async (req, res) => {
                 de_xuat_da_xoa.push(info_dx);
             }
             console.log(de_xuat_da_xoa);
-
         }
-
-
         return res.status(200).json({ data: de_xuat_da_xoa, message: 'success' });
     } else {
         return res.status(200).json({ message: 'bad request' });

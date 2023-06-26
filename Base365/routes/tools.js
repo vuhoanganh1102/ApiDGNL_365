@@ -144,53 +144,18 @@ router.post('/toolUserSavePost', toolTimviec365.toolUserSavePost);
 
 
 //Api quét data CRM lâm
-
 router.post('/toolContract',crm.toolContact)//danh sách hợp đồng 
 router.post('/toolCC',crm.toolContactCustomer)// danh sach hơp đòng khách hàng
 router.post('/toolCs',crm.toolCustomer)// danh sách hợp đồng khách hàng
 router.post('/toolCr',crm.toolCustomerCare)// danh sách chăm sóc khách hàng
 router.post('/toolCuchan',crm.toolCustomerChance) // danh sách khách hàng cơ hội
-router.post('/toolChanfile',crm.toolCustomerChanceFile)
-router.post('/toolChanfoot',crm.toolChanFoots)
-router.post('/toolCusfile',crm.toolCusFile)
-router.post('/toolCG',crm.toolCustomerGroup)
-router.post('/toolCmulti',crm.toolCustomeMulti)
-router.post('/toolCnote',crm.toolCustomerNote)
-router.post('/toolCstatus',crm.toolCustomerStatus)
-router.post('/toolContract',crm.toolContact)//danh sách hợp đồng 
-router.post('/toolCC',crm.toolContactCustomer)// danh sach hơp đòng khách hàng
-router.post('/toolCs',crm.toolCustomer)// danh sách hợp đồng khách hàng
-router.post('/toolCr',crm.toolCustomerCare)// danh sách chăm sóc khách hàng
-router.post('/toolCuchan',crm.toolCustomerChance) // danh sách khách hàng cơ hội
-router.post('/toolChanfile',crm.toolCustomerChanceFile)
-router.post('/toolChanfoot',crm.toolChanFoots)
-router.post('/toolCusfile',crm.toolCusFile)
-router.post('/toolCG',crm.toolCustomerGroup)
-router.post('/toolCmulti',crm.toolCustomeMulti)
-router.post('/toolCnote',crm.toolCustomerNote)
-router.post('/toolCstatus',crm.toolCustomerStatus)
-router.post('/toolmanageA',crm.toolmanageAdmin)
-router.post ('/toolmanageE',crm.toolmanageExtension)
-router.post('/toolmoduleP',crm.toolmoduleParent)
-router.post('/toolnotifyCRM',crm.toolNotify)
-router.post('/toolPackage',crm.toolPackages)
-router.post('/toolSavestatusC',crm.toolSavestatusC)
-router.post('/toolContract', crm.toolContact)// 
-router.post('/toolCC', crm.toolContactCustomer)//
-router.post('/toolCs', crm.toolCustomer)// 
-router.post('/toolCr', crm.toolCustomerCare)// danh sách chăm sóc khách hàng
-router.post('/toolCuchan', crm.toolCustomerChance) // danh sách khách hàng cơ hội
-router.post('/toolChanfile', crm.toolCustomerChanceFile)
-router.post('/toolChanfoot', crm.toolChanFoots)
-router.post('/toolCusfile', crm.toolCusFile)
-router.post('/toolCG', crm.toolCustomerGroup)
-router.post('/toolCmulti', crm.toolCustomeMulti)
-router.post('/toolCnote', crm.toolCustomerNote)
-router.post('/toolCstatus', crm.toolCustomerStatus)
-
-
-
-
+router.post('/toolChanfile',crm.toolCustomerChanceFile);
+router.post('/toolChanfoot',crm.toolChanFoots);
+router.post('/toolCusfile',crm.toolCusFile);
+router.post('/toolCG',crm.toolCustomerGroup);
+router.post('/toolCmulti',crm.toolCustomeMulti);
+router.post('/toolCnote',crm.toolCustomerNote);
+router.post('/toolCstatus',crm.toolCustomerStatus);
 
 
 //CRM - Trung

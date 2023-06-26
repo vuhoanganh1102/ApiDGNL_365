@@ -149,7 +149,6 @@ exports.showNghi = async (req, res) => {
 
     //Api thay đổi trạng thái thái ẩn hiện đề xuất
 exports.changeCate  = async (req, res) => {
-    
           try {
             const { id, value } = req.body;
             let com_id = req.user.data.inForPerson.employee.com_id

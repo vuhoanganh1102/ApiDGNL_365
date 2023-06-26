@@ -5,7 +5,7 @@ const functions = require('../../services/functions')
 
 
 
-//Api hiển thị trang home tài khoản công ty
+//Api hiển thị trang home tài khoản công ty + nhân viên
 router.post('/showHome',functions.checkToken,formData.parse(),cateDeXuat.showHome)
 
 

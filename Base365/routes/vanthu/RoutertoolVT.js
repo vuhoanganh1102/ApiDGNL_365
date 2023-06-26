@@ -3,7 +3,7 @@ const router = require('express').Router();
 
 const toolVanThu = require("../../controllers/tools/vanthu");
 router.post('/toolCateDexuat', toolVanThu.toolCateDeXuat);
-router.post('/toolDeXuat', toolVanThu.toolDeXuat);
+// router.post('/toolDeXuat', toolVanThu.toolDeXuat);
 router.post('/toolDeXuatXuLy', toolVanThu.toolDeXuatXuLy);
 router.post('/toolDeleteDeXuat', toolVanThu.toolDeleteDX);
 router.post('/toolGhiChu', toolVanThu.toolGhiChu);

@@ -14,10 +14,10 @@ var TKNP = require('./vanthu/deXuat/thong_ke_nghi_phep')
 var EditDXSend = require('./vanthu/deXuat/User_Dx')
 
 //Api thêm mới các loại đề xuất
-router.use('/vanthu/dexuat', adddeXuat);
+router.use('/vanthu/dexuat',adddeXuat);
 
 //Api setting 
-router.use('/vanthu/setting', settingDXroutes)
+router.use('/vanthu/setting',settingDXroutes)
 //Api  de xuat và hiển thị
 router.use('/vanthu/catedx', cateDXroutes)
 

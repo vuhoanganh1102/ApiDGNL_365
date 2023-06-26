@@ -143,29 +143,9 @@ function isInvalidDateRange(time_s, time_e) {
 
 
 
-
-
-
-
-
 exports.validateCustomerInput = (name, phone_number,address,email,type) => {
     if (!name) {
       throw { code: 400, message: 'Tên khách hàng là bắt buộc.' };
-    }
-    else if(!phone_number){
-      throw { code : 400,message : 'số Điện thoại là bắt buộc phải nhập đủ'}
-    }
-    else if(!email) {
-      throw { code : 400,message : 'email là bắt buộc phải nhập đủ'}
-    }
-    else if(!address) {
-      throw {code : 4000 , message : "địa chỉ là bắt buộc"} 
-    }
-    else if(!type) {
-      throw {code : 4000 , message : "type không được bỏ trống"} 
-    }
-    else if(type !== 1 || type !== 2) {
-      throw {code : 4000 , message : "type phai bang 1 hoac 2"} 
     }
     else if(!comId){
       throw {code : 4000 , message : "company_id không được bỏ trống"} 

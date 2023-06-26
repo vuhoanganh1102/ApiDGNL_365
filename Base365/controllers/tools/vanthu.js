@@ -73,91 +73,91 @@ exports.toolCateDeXuat = async (req, res, next) => {
     }
 };
 
-exports.toolDeXuat = async (req, res, next) => {
-    exports.toolDeXuat = async (req, res, next) => {
-        try {
-            let page = 1;
-            let result = true;
-            do {
-                let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_de_xuat.php', { page: page })
-                let data = listItems.data.items;
-                if (data.length > 0) {
-                    for (let i = 0; i < data.length; i++) {
-                        let timeCreate = null;
-                        let receptionTime = null;
-                        let browsingTime = null;
+// exports.toolDeXuat = async (req, res, next) => {
+//     exports.toolDeXuat = async (req, res, next) => {
+//         try {
+//             let page = 1;
+//             let result = true;
+//             do {
+//                 let listItems = await fnc.getDataAxios('https://vanthu.timviec365.vn/api/select_tbl_de_xuat.php', { page: page })
+//                 let data = listItems.data.items;
+//                 if (data.length > 0) {
+//                     for (let i = 0; i < data.length; i++) {
+//                         let timeCreate = null;
+//                         let receptionTime = null;
+//                         let browsingTime = null;
 
-                        if (data[i].time_create != 0) {
-                            timeCreate = new Date(data[i].time_create * 1000)
-                        }
-                        if (data[i].time_tiep_nhan != 0) {
-                            receptionTime = new Date(data[i].time_tiep_nhan * 1000)
-                        }
-                        if (data[i].time_duyet != 0) {
-                            browsingTime = new Date(data[i].time_duyet * 1000)
-                        }
+//                         if (data[i].time_create != 0) {
+//                             timeCreate = new Date(data[i].time_create * 1000)
+//                         }
+//                         if (data[i].time_tiep_nhan != 0) {
+//                             receptionTime = new Date(data[i].time_tiep_nhan * 1000)
+//                         }
+//                         if (data[i].time_duyet != 0) {
+//                             browsingTime = new Date(data[i].time_duyet * 1000)
+//                         }
 
-                        let post = await fnc.getDatafindOne(DeXuat, { _id: data[i].id_de_xuat });
-                        //console.log(typeof (data[i].noi_dung));
+//                         let post = await fnc.getDatafindOne(DeXuat, { _id: data[i].id_de_xuat });
+//                         //console.log(typeof (data[i].noi_dung));
 
-                        // let Noi_dung = await JSON.parse(data[i].noi_dung);
+//                         // let Noi_dung = await JSON.parse(data[i].noi_dung);
 
-                        // console.log(i);
-                        // console.log(data[i].noi_dung);
-                        // if ((data[i].noi_dung) != '') {
-                        //     let ND = (data[i].noi_dung);
-                        //     console.log(ND);
-                        //     let newstr = ND.replace(/\s/g, '');
-                        //     let Noi_dung = JSON.parse(newstr);
-                        //     console.log("--------------------------------------------");
-                        //     console.log(Noi_dung);
+//                         // console.log(i);
+//                         // console.log(data[i].noi_dung);
+//                         // if ((data[i].noi_dung) != '') {
+//                         //     let ND = (data[i].noi_dung);
+//                         //     console.log(ND);
+//                         //     let newstr = ND.replace(/\s/g, '');
+//                         //     let Noi_dung = JSON.parse(newstr);
+//                         //     console.log("--------------------------------------------");
+//                         //     console.log(Noi_dung);
 
-                        // } else {
-                        //     console.log("khong co noi dung");
-                        // }
-
-
+//                         // } else {
+//                         //     console.log("khong co noi dung");
+//                         // }
 
 
-                        if (post == null) {
-                            //console.log(typeof (data[i].noi_dung))
 
-                            let newDX = new DeXuat({
-                                _id: data[i].id_de_xuat,
-                                name_dx: data[i].name_dx,
-                                type_dx: data[i].type_dx,
-                                noi_dung: data[i].noi_dung,
-                                name_user: data[i].name_user,
-                                id_user: data[i].id_user,
-                                com_id: data[i].com_id,
-                                kieu_duyet: data[i].kieu_duyet,
-                                id_user_duyet: data[i].id_user_duyet,
-                                id_user_theo_doi: data[i].id_user_theo_doi,
-                                file_kem: data[i].file_kem,
-                                type_duyet: data[i].type_duyet,
-                                type_time: data[i].type_time,
-                                time_start_out: data[i].time_start_out,
-                                time_create: new Date(data[i].time_create * 1000),
-                                time_tiep_nhan: new Date(data[i].time_tiep_nhan * 1000),
-                                time_duyet: new Date(data[i].time_duyet * 1000),
-                                active: data[i].active,
-                                del_type: data[i].del_type
-                            });
-                            await newDX.save();
-                        }
-                    }
-                    page += 1;
-                    console.log(page)
-                } else result = false;
-            } while (result)
-            await fnc.success(res, 'thanh cong')
-        } catch (err) {
-            console.log(err);
-            return fnc.setError(res, err)
 
-        }
-    }
-}
+//                         if (post == null) {
+//                             //console.log(typeof (data[i].noi_dung))
+
+//                             let newDX = new DeXuat({
+//                                 _id: data[i].id_de_xuat,
+//                                 name_dx: data[i].name_dx,
+//                                 type_dx: data[i].type_dx,
+//                                 noi_dung: data[i].noi_dung,
+//                                 name_user: data[i].name_user,
+//                                 id_user: data[i].id_user,
+//                                 com_id: data[i].com_id,
+//                                 kieu_duyet: data[i].kieu_duyet,
+//                                 id_user_duyet: data[i].id_user_duyet,
+//                                 id_user_theo_doi: data[i].id_user_theo_doi,
+//                                 file_kem: data[i].file_kem,
+//                                 type_duyet: data[i].type_duyet,
+//                                 type_time: data[i].type_time,
+//                                 time_start_out: data[i].time_start_out,
+//                                 time_create: new Date(data[i].time_create * 1000),
+//                                 time_tiep_nhan: new Date(data[i].time_tiep_nhan * 1000),
+//                                 time_duyet: new Date(data[i].time_duyet * 1000),
+//                                 active: data[i].active,
+//                                 del_type: data[i].del_type
+//                             });
+//                             await newDX.save();
+//                         }
+//                     }
+//                     page += 1;
+//                     console.log(page)
+//                 } else result = false;
+//             } while (result)
+//             await fnc.success(res, 'thanh cong')
+//         } catch (err) {
+//             console.log(err);
+//             return fnc.setError(res, err)
+
+//         }
+//     }
+// }
 // exports.toolDeXuat = async (req, res, next) => {
 //     try {
 //         let page = 1;
