@@ -5,6 +5,10 @@ const functions = require("../../../services/functions");
 const customerService = require('../../../services/CRM/CRMservice')
 const User = require('../../../models/Users')
 const ConnectApi = require('../../../models/crm/connnect_api_config')
+const HistoryEditCustomer = require('../../../models/crm/history/history_edit_customer')
+
+
+
 // hàm thêm mới khách hang
 exports.addCustomer = async (req, res) => {
   try {
@@ -33,7 +37,6 @@ exports.addCustomer = async (req, res) => {
       ship_city,
       ship_area,
       bank_id,
-      type,
       bank_account,
       revenue,
       size,
@@ -47,17 +50,26 @@ exports.addCustomer = async (req, res) => {
       is_delete,
       id_cus_from,
       cus_from,
-      link
+      link,
+      content
     } = req.body;
-     
+     let type = req.body
+     if (!type || ![1, 2].includes(type)) {
+      type = 2;
+    }
      const comId = req.user.data.inForPerson.employee.com_id;
      const empId = req.user.data.idQLC
-     let logo = req.files.logo ;
+     let logo = req.files.logo ; 
+     let createDate = new Date();
      let linkDL = '';
-    const validationResult = customerService.validateCustomerInput(name,email,address,phone_number,type,comId);
-
-    let createDate = new Date();
-
+     if (logo) {
+      const imageValidationResult = await customerService.validateImage(logo);
+      if (imageValidationResult === true) {
+        await customerService.uploadFileCRM(cus_id, logo);
+        linkDL = customerService.createLinkFileCRM(cus_id, logo.name);
+      } 
+     }
+    const validationResult = customerService.validateCustomerInput(name,comId);
     if (validationResult === true) {
       let maxID = await customerService.getMaxIDCRM(Customer);
       let cus_id = 0;
@@ -65,13 +77,7 @@ exports.addCustomer = async (req, res) => {
         cus_id = Number(maxID) + 1;
       }
       if(type == 2) {
-        if (logo) {
-          const imageValidationResult = await customerService.validateImage(logo);
-          if (imageValidationResult === true) {
-            await customerService.uploadFileCRM(cus_id, logo);
-            linkDL = customerService.createLinkFileCRM(cus_id, logo.name);
-          } 
-        }
+         // với yêu cầu là khach hàng cá nhân
         let createCustomer = new Customer({
           cus_id: cus_id,
           email: email,
@@ -124,19 +130,28 @@ exports.addCustomer = async (req, res) => {
           cus_from: cus_from,
           link: link
         });
-
         let saveCS = await createCustomer.save();
-        res.status(200).json(saveCS);
+        if(typeof content === 'undefined' && content.trim() !== ''){
+          res.status(200).json(saveCS);
+         }else {
+         let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
+         let id = 0;
+         if (maxID) {
+         id = Number(maxID) + 1;
+         }
+         let newHT = new HistoryEditCustomer({
+           id : id,
+           customer_id : cus_id,
+           content : content,
+           created_at : createHtime
+
+         })
+         let savehis = await newHT.save();
+         res.status(200).json({saveCS,savehis});
+         }
       }
       if(type == 1) {
-        // Nếu không có logo hoặc không có yêu cầu bắt buộc logo,có thể bỏ qua kiểm tra định dạng ảnh và tải lên
-        if (logo) {
-          const imageValidationResult = await customerService.validateImage(logo);
-          if (imageValidationResult === true) {
-            await customerService.uploadFileCRM(cus_id, logo);
-           linkDL = customerService.createLinkFileCRM(cus_id, logo.name)
-          } 
-        }
+        // với yêu cầu là khach hàng doanh nghiệp
           let createCustomer = new Customer({
             cus_id: cus_id,
             email: email,
@@ -188,23 +203,40 @@ exports.addCustomer = async (req, res) => {
             link: link
           });
           let saveCS = await createCustomer.save();
-          res.status(200).json(saveCS);
-        } else {
+          if(typeof content === 'undefined' && content.trim() !== ''){
+            res.status(200).json(saveCS);
+           }else {
+           let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
+           let id = 0;
+           if (maxID) {
+           id = Number(maxID) + 1;
+           }
+           let newHT = new HistoryEditCustomer({
+             id : id,
+             customer_id : cus_id,
+             content : content,
+             created_at : createHtime
+  
+           })
+           let savehis = await newHT.save();
+           res.status(200).json({saveCS,savehis});
+           } 
+        }
+        else {
        res.status(400).json({message : 'khong hop le'})
         }
-      
     }
   } catch (error) {
     console.error('Failed to add', error);
     res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
   }
 };
-
 //hiển thị danh sách khách hàng
-  
+ 
+
 exports.showKH = async (req, res) => {
   try {
-    let { page, cus_id, name, phone_number,status,resoure,user_edit_id,time_s,time_e,group_id} = req.body;
+    let { page, cus_id, name, phone_number,status,resoure,user_edit_id,time_s,time_e,group_id,group_pins_id} = req.body;
     // const validationResult = customerService.vavalidateCustomerSearchQuery( page, cus_id,status,resoure,user_edit_id,time_s,time_e,group_id);
 
     // if (!validationResult.success) {
@@ -241,7 +273,9 @@ exports.showKH = async (req, res) => {
     if(group_id){
       query.group_id = group_id
     }
-    
+    if(group_pins_id){
+      query.group_pins_id = group_pins_id
+    }
     // if (!validationResult.success) {
     //   return res.status(400).json({ error: validationResult.error });
     // }
@@ -325,7 +359,6 @@ exports.showKH = async (req, res) => {
   }
 };
 
-
 //Xoa khach hang                            
 exports.DeleteKH = async (req, res) => {
   try {
@@ -355,6 +388,7 @@ exports.DeleteKH = async (req, res) => {
    res.status(500).json({ success: false, error: errorMessage });
   }
 };
+
 
 // thêm mới Api kết nối
 exports.addConnectCs = async(req,res) => {
@@ -419,6 +453,7 @@ exports.addConnectCs = async(req,res) => {
   
 }
 
+
 // sửa Api kết nối
 exports.editConnectCs = async(req,res) =>{
   try{
@@ -466,6 +501,7 @@ exports.editConnectCs = async(req,res) =>{
     res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
   }
 }
+
 
 // hiển thị Api kết nối
 exports.ShowConnectCs = async(req,res) => {
