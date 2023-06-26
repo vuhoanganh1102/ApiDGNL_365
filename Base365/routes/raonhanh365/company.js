@@ -7,7 +7,7 @@ const com = require('../../controllers/raonhanh365/company');
 router.post('/comInfo', functions.checkToken, com.comInfo);
 
 //api tao tao khoan doanh nghiep
-router.post('/createCom', formData.parse(), [functions.checkToken, functions.isAdminRN365], com.getAndCheckData, com.createCompany);
+router.post('/createCom', formData.parse(), com.getAndCheckData, com.createCompany);
 
 //api cap nhat thong tin doanh nghiep
 router.put('/updateCom', formData.parse(), [functions.checkToken], com.getAndCheckData, com.updateCompany);
