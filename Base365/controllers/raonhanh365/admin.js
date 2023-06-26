@@ -184,7 +184,6 @@ exports.updateAdminUser = async (req, res, next) => {
         let fields = req.info;
         let password = req.body.password;
         let adminId = req.body.adminId;
-        let password = req.body.password;
         if(password){
             fields.password = md5(password);
         }
