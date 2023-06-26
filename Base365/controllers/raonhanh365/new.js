@@ -16,6 +16,7 @@ const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const Users = require("../../models/Users");
 const ApplyNews = require("../../models/Raonhanh365/ApplyNews");
+const AdminUser = require("../../models/Raonhanh365/Admin/AdminUser");
 dotenv.config();
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
@@ -25,6 +26,7 @@ exports.postNewMain = async (req, res, next) => {
         let listImg = [];
         let nameVideo = "";
         let userID = req.user.data.idRaoNhanh365;
+        console.log("🚀 ~ file: new.js:28 ~ exports.postNewMain= ~ userID:", userID)
         let request = req.body;
         cateID = request.cateID,
             title = request.title,
@@ -126,6 +128,7 @@ exports.postNewMain = async (req, res, next) => {
                 buySell: 2, // tin ban
                 active: 1, // hien thi tin
             };
+     
             return next();
         
     } catch (err) {
@@ -309,6 +312,10 @@ exports.postNewsGeneral = async (req, res, next) => {
 exports.createNews = async (req, res, next) => {
     try {
         let fields = req.fields;
+        let userID = req.user.data.idRaoNhanh365;
+        console.log("🚀 ~ file: new.js:315 ~ exports.createNews= ~ userID:", userID)
+        console.log("🚀 ~ file: new.js:314 ~ exports.createNews= ~ fields:", fields)
+        
         let cate_Special = null;
         let danh_muc1 = null;
         let danh_muc2 = null;
@@ -349,7 +356,7 @@ exports.createNews = async (req, res, next) => {
                 })
             }
            fields.img = image;
-        }else{
+        }else  if(cate_Special && fields.img){
             let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
             await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.img,['.png','.jpg'])
             let img  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.img.name)
@@ -371,6 +378,7 @@ exports.createNews = async (req, res, next) => {
         }
        
         fields.createTime = new Date(Date.now());
+       
         const news = new New(fields);
         await news.save();
         return functions.success(res, "create news success");
@@ -388,6 +396,9 @@ exports.updateNews = async (req, res, next) => {
         if (!idNews) return functions.setError(res, "Missing input news_id!", 405);
         let existsNews = await New.find({ _id: idNews });
         let fields = req.fields;
+        console.log("🚀 ~ file: new.js:398 ~ exports.updateNews= ~ fields:", fields)
+        let userID = req.user.data.idRaoNhanh365;
+        console.log("🚀 ~ file: new.js:399 ~ exports.updateNews= ~ userID:", userID)
         let linkTitle = await raoNhanh.createLinkTilte(fields.title)
         fields.linkTitle = linkTitle
         fields.updateTime = new Date(Date.now());
@@ -416,7 +427,7 @@ exports.updateNews = async (req, res, next) => {
             }
         }
         let image = [];
-        if(cate_Special && fields.img)
+        if(cate_Special && fields.img && fields.img.length > 1)
         {
 
             let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
@@ -429,6 +440,26 @@ exports.updateNews = async (req, res, next) => {
                 })
             }
            fields.img = image;
+        }else if(cate_Special && fields.img) {
+            console.log(fields.img)
+            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
+            await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.img,['.png','.jpg'])
+            let img  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.img.name)
+            image.push({
+                nameImg:img
+            })
+           
+           fields.img = image;
+        }
+        if(cate_Special && fields.video)
+        {
+
+            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
+           let check = await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.video,['.mp4','.avi','.wmv','.mov'])
+            if(check === false) return functions.setError(res,'khong duoc day video dang nay',400)
+            let video  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.video.name)
+           
+           fields.video = video;
         }
         if (existsNews) {
             // xoa truong _id
@@ -469,8 +500,9 @@ exports.hideNews = async (req, res, next) => {
 
 exports.pinNews = async (req, res, next) => {
     try {
-        let idNews = Number(req.body.news_id);
-        if (!idNews) return functions.setError(res, "Missing input news_id!", 405);
+        console.log(req.body.news_id);
+        let idNews = req.body.news_id;
+        if (!idNews) return functions.setError(res, "Missing input news_id", 405);
         let {
             timeStartPinning,
             dayStartPinning,
@@ -478,6 +510,7 @@ exports.pinNews = async (req, res, next) => {
             moneyPinning,
             pinHome,
             pinCate,
+            dayEndPinning
         } = req.body;
         let existsNews = await New.find({ _id: idNews });
         if (existsNews) {
@@ -487,6 +520,7 @@ exports.pinNews = async (req, res, next) => {
             let fields = {
                 timeStartPinning: timeStartPinning,
                 dayStartPinning: dayStartPinning,
+                dayEndPinning: dayEndPinning,
                 numberDayPinning: numberDayPinning,
                 moneyPinning: moneyPinning,
                 pinHome: pinHome,
@@ -513,7 +547,8 @@ exports.pushNews = async (req, res, next) => {
             numberDayPinning,
             moneyPinning,
             timePinning,
-            pinHome,
+            pushHome,
+            timePushNew
         } = req.body;
         let existsNews = await New.find({ _id: idNews });
         if (existsNews) {
@@ -521,12 +556,13 @@ exports.pushNews = async (req, res, next) => {
             if (!timeStartPinning) timeStartPinning = now;
             if (!dayStartPinning) dayStartPinning = now;
             let fields = {
+                timePushNew: timePushNew,
                 timePinning: timePinning,
                 moneyPinning: moneyPinning,
                 numberDayPinning: numberDayPinning,
                 timeStartPinning: timeStartPinning,
                 dayStartPinning: dayStartPinning,
-                pinHome: pinHome,
+                pushHome: 1,
                 updateTime: now,
             };
             await New.findByIdAndUpdate(idNews, fields);
@@ -2060,8 +2096,8 @@ exports.loveNew = async (req, res, next) => {
 // tao token
 exports.createToken = async (req, res, next) => {
     try {
-        let id = 1191;
-        let data = await User.findById(id);
+        let id = 4;
+        let data = await AdminUser.findById(id);
         let token = await functions.createToken(data, "100d");
         let data1 = "Bazer " + token;
         return functions.success(res, { data1 });

@@ -279,6 +279,7 @@ exports.checkRoleUser = (req, res, next)=> {
                 infoLogin.comId = user.data._id;
             }
             req.infoLogin = infoLogin;
+            console.log(infoLogin);
             next();
             
         });
@@ -292,7 +293,7 @@ exports.checkRoleUser = (req, res, next)=> {
 exports.checkRole = async(infoLogin, barId, perId)=> {
     if(infoLogin.type==1) return true;
     let permission = await PermissionUser.findOne({userId: infoLogin.id, barId: barId, perId: perId});
-    console.log(permission);
+    // console.log(permission);
     if(permission) return true;
     return false;
 }
@@ -386,4 +387,4 @@ const storageFile = (destination) => {
     });
 };
 //hàm upload file ứng viên
-exports.uploadSignature = multer({ storage: storageFile('../storage/hr/pictures/signature') })
+exports.uploadSignature = multer({ storage: storageFile('../storage/hr/upload/signature') })

@@ -1590,7 +1590,7 @@ exports.toolOrder = async(req, res, next) => {
                         bankName: data[i].ten_nganhang,
                         amountPaid: data[i].tien_ttoan,
                         totalProductCost: data[i].tong_tien_sp,
-                        buyTime: data[i].tgian_xacnhan,
+                        buyTime:  new Date (data[i].tgian_xacnhan * 1000) ,
                         status: data[i].trang_thai,
                         sellerConfirmTime: data[i].tgian_xnbh,
                         deliveryStartTime: data[i].tgian_giaohang,
