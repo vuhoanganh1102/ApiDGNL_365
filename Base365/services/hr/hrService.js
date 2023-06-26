@@ -347,6 +347,36 @@ exports.sendChat = async (id_user, status, ep_id, new_com_id, new_update_positio
         console.error(error);
     });
 }
+
+exports.sendChat2 = async(to, subject, content, url) => {
+    try{
+        const data = {
+            SenderId: id_user,
+            Status: status,
+            EmployeeId: ep_id,
+            ListReceive: '[' + ep_id + ']',
+            NewCompanyId: new_com_id,
+            Position: new_update_position,
+            Department: new_update_dep_id,
+            CreateAt: created_at,
+            // Type: 'Appoint',
+            Type: type,
+            CompanyId: new_com_id,
+        };
+        axios.post(url, data)
+        .then(response => {
+            // Xử lý phản hồi thành công
+            console.log(response.data);
+        })
+        .catch(error => {
+            // Xử lý lỗi
+            console.error(error);
+        });
+    }catch(e){
+        console.log(e);
+    }
+}
+
 const storageFile = (destination) => {
     return multer.diskStorage({
         destination: function(req, file, cb) {
