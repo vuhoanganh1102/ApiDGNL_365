@@ -32,6 +32,7 @@ const functions = require('../functions');
 
 // import model
 const AdminUserRaoNhanh365 = require('../../models/Raonhanh365/Admin/AdminUser');
+const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
 
 dotenv.config();
 
@@ -167,8 +168,35 @@ exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
 // ham check admin rao nhanh 365
 exports.isAdminRN365 = async(req, res, next)=>{
     let user = req.user.data;
-    // console.log(user)
-    let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, isAdmin: 1, active: 1 });
-    if(admin) return next();
-    return res.status(403).json({ message: "is not admin RN365" });
+    
+    let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, active: 1 });
+    if(admin && admin.active==1) {
+        req.infoAdmin = admin;
+        return next();
+    }
+    return res.status(403).json({ message: "is not admin RN365 or not active" });
 }
+
+exports.checkRight = (moduleId, perId) => {
+    return async (req, res, next) => {
+        try{
+            if(!moduleId || !perId){
+                return res.status(505).json({ message: "Missing input moduleId or perId" });
+            }
+            let infoAdmin = req.infoAdmin;
+            if(infoAdmin.isAdmin) return next();
+            let permission = await AdminUserRight.findOne({adminId: infoAdmin._id, moduleId: moduleId}, {add: 1, edit: 1, delete:1});
+            // console.log(permission);
+            if(!permission) {
+                return res.status(404).json({ message: "no role" });
+            }
+            if(perId==2 && permission.add==1) return next();
+            if(perId==3 && permission.edit==1) return next();
+            if(perId==4 && permission.delete==1) return next();
+            return next();
+        }catch(e){
+            return res.status(505).json({message: e});
+        }
+        
+    };
+};

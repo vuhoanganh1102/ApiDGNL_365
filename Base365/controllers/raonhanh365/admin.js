@@ -176,7 +176,11 @@ exports.updateAdminUser = async(req, res, next) => {
             return functions.setError(res, "Missing input value id admin!", 404);
         let fields = req.info;
         let adminId = req.body.adminId;
-        fields.password = md5(password);
+        let password = req.body.password;
+        if(password){
+            fields.password = md5(password);
+        }
+        
         delete fields._id;
         let existsAdminUser = await AdminUser.findOne({_id: adminId});
         if (existsAdminUser) {
@@ -185,6 +189,28 @@ exports.updateAdminUser = async(req, res, next) => {
             return functions.success(res, "AdminUser edited successfully");
         }
         return functions.setError(res, "AdminUser not found!", 505);
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.activeAdmin = async(req, res, next)=>{
+    try{
+        let adminId = req.body.adminId;
+        if(!adminId){
+            return functions.setError(res, "Missing input value id admin!", 404);
+        }
+        let admin = await AdminUser.findOne({_id: adminId});
+        if(!admin){
+            return functions.setError(res, "Admin not found!", 504);
+        }
+        let active = 0;
+        if(admin.active==0){
+            active = 1;
+        }
+        await AdminUser.findOneAndUpdate({_id: adminId}, {active: active});
+        return functions.success(res, "AdminUser active successfully");
     }catch(err){
         console.log("Err from server!", err);
         return functions.setError(res, "Err from server!", 500);
@@ -1243,10 +1269,39 @@ exports.updateDiscount = async (req,res,next) => {
                 new: true
             })
             return functions.success(res, "Update Discount Success", {data: upDateDiscount });
-        } }catch (error){
+        } 
+    }catch (error){
         return functions.setError(res, error)
     }
 }
+exports.pinNews = async (req,res,next) => {
+    try{
+        let { id } = req.params;
+        let {nameBefore, nameAfter, discount } = req.body;
+        //  nếu có param Id thì trả ra thông tin để sưả
+        if(id && !nameBefore){
+            console.log(1)
+            const netWorkOperator = await NetworkOperator.findOne({_id: id})
+            return functions.success(res, "Get Data", {data: netWorkOperator });
+        } else if(id && nameBefore && nameAfter && discount) {
+            console.log(2)
+        // nếu có đủ body thì cập nhật thông tin
+            const update ={
+                nameBefore: nameBefore,
+                nameAfter: nameAfter,
+                discount: discount
+            }
+            const upDateDiscount = await NetworkOperator.findOneAndUpdate({_id: id},update,{
+                new: true
+            })
+            return functions.success(res, "Update Discount Success", {data: upDateDiscount });
+        } 
+    }catch (error){
+        return functions.setError(res, error)
+    }
+}
+
+
 
 
 
