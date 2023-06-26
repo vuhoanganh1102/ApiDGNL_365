@@ -1,12 +1,14 @@
 //Model này dùng để kết nối với dịch vụ API tổng đài gọi điện thoại
 const mongoose = require('mongoose')
-
+//cài đặt hợp đồng 
 
 const AccountAPISchema = new mongoose.Schema({
     _id: {
-        //id công ty
         type: Number,
         required: true
+    },
+    com_id: { // id cty
+        type: Number
     },
     account: {
         //tên đăng nhập tài khoản dịch vụ
@@ -34,6 +36,14 @@ const AccountAPISchema = new mongoose.Schema({
         required: true,
         default: 1
     },
+    created_at: {
+        type: Number
+
+    },
+    updated_at: {
+        type: Number
+
+    }
 }, {
     collation: "AccountApi",
     versionKey: false,

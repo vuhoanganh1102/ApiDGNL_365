@@ -1590,7 +1590,7 @@ exports.toolOrder = async(req, res, next) => {
                         bankName: data[i].ten_nganhang,
                         amountPaid: data[i].tien_ttoan,
                         totalProductCost: data[i].tong_tien_sp,
-                        buyTime: data[i].tgian_xacnhan,
+                        buyTime:  new Date (data[i].tgian_xacnhan * 1000) ,
                         status: data[i].trang_thai,
                         sellerConfirmTime: data[i].tgian_xnbh,
                         deliveryStartTime: data[i].tgian_giaohang,
@@ -1825,7 +1825,7 @@ exports.toolRegisterFail = async(req, res, next) => {
                         emailHt: data[i].email_ht,
                         name: data[i].ho_ten,
                         mk: data[i].mat_khau,
-                        time: data[i].tgian_dky,
+                        time: new Date(data[i].tgian_dky * 1000),
                         err: data[i].loi_dky,
                         type: data[i].type
                     });
