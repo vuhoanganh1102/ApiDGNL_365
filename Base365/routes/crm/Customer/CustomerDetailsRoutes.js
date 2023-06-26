@@ -19,4 +19,10 @@ router.post('/bangiao',functions.checkToken,formData.parse(),CustomerDetailsRout
 
 //Api chia sẻ khách hàng 
 router.post('/shareCustomer',functions.checkToken,formData.parse(),CustomerDetailsRoutes.ShareCustomer)
+
+//Api hiển thị danh sách - chi tiết của những  khách hàng đã chọn 
+router.post('/ChosseCustomer',formData.parse(),CustomerDetailsRoutes.ChosseCustomer)
+
+//Api gộp trùng khách hàng
+router.post('/combineCustome',formData.parse(),CustomerDetailsRoutes.CombineCustome)
 module.exports = router;

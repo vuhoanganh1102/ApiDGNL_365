@@ -36,7 +36,7 @@ exports.edit_active = async (req, res) => {
     const skip = (page - 1) * pageSize;
 
     let id = Number(req.body._id);// id đề xuất 
-    let id_user = Number(req.user.data.idQLC);//id nguoi duyet 
+    let id_user = Number(req.body.id_user);//id nguoi duyet 
     console.log("id_user" + id_user);
     let type_duyet = Number(req.body.type_duyet);
     let type_handling = Number(req.body.type_handling);//1 -tiếp nhận 2-duyệt 3-từ chối ...
@@ -44,13 +44,14 @@ exports.edit_active = async (req, res) => {
 
 
     let danh_sach_nguoi_duyet = [];
-    let type_dx;
+    let type_Dx = 0;
 
 
     if (!isNaN(id) && !isNaN(type_duyet) && !isNaN(type_handling) && !isNaN(id_user)) {
 
-        let de_xuat = await De_Xuat.findOne({ _id: id }).skip(skip).limit(pageSize);
-        type_dx = de_xuat.type_dx;
+        let de_xuat = await De_Xuat.findOne({ _id: id });
+        console.log("de_xuat: " + de_xuat);
+        type_Dx = de_xuat.type_dx;
         danh_sach_nguoi_duyet = de_xuat.id_user_duyet.split(",");//danh sách những người duyệt 
         // console.log("de_xuat: " + de_xuat);
 

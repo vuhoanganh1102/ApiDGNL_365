@@ -391,3 +391,182 @@ exports.ShareCustomer = async (req, res) => {
     res.status(500).json({ error: 'Failed to share customer' });
   }
 };
+
+exports.ChosseCustomer = async(req,res) => {
+  try{
+    let {arrCus} = req.body
+    const customers = await Customer.find({ cus_id: { $in: arrCus } });
+    res.json(customers);
+  }catch (error) {
+    console.error('Failed to get customer', error);
+    res.status(500).json({ error: 'Failed to get customer' });
+  }
+}
+
+
+
+exports.CombineCustome = async(req,res)=> {
+  try {
+    let {
+      arrCus,
+      email,
+      name,
+      logo,
+      stand_name,
+      phone_number,
+      cit_id,
+      district_id,
+      ward,
+      address,
+      ship_invoice_address,
+      cmnd_ccnd_number,
+      cmnd_ccnd_address,
+      cmnd_ccnd_time,
+      user_handing_over_work,
+      resoure,
+      description,
+      tax_code,
+      group_id,
+      status,
+      business_areas,
+      category,
+      business_type,
+      classify,
+      bill_city,
+      bil_district,
+      bill_ward,
+      bill_address,
+      bill_area_code,
+      bill_invoice_address,
+      bill_invoice_address_email,
+      ship_city,
+      ship_area,
+      bank_id,
+      bank_account,
+      revenue,
+      size,
+      rank,
+      website,
+      number_of_day_owed,
+      gender,
+      deb_limit,
+      share_all,
+      is_input,
+      is_delete,
+      id_cus_from,
+      cus_from,
+      link,
+      content
+    } = req.body;
+
+    if (!Array.isArray(arrCus)) {
+      res.status(400).json({ error: 'arrCus must be an array' });
+      return;
+    }
+
+    const type = req.body.type || 2;
+    if (![1, 2].includes(type)) {
+      res.status(400).json({ error: 'Invalid type value' });
+      return;
+    }
+
+    const comId = req.user.data.inForPerson.employee.com_id;
+    const empId = req.user.data.idQLC;
+    const validationResult = customerService
+    .validateCustomerInput(name,logo,stand_name,tax_code,phone_number,birthday,cit_id,district_id,ward,address,ship_invoice_address,
+      gender,cmnd_ccnd_number,cmnd_ccnd_address,cmnd_ccnd_address,resoure,description,introducer,user_edit_id,group_id,status,
+      bill_city,bil_district,bill_ward,bill_address,bill_area_code,bill_invoice_address,bill_invoice_address_email,ship_city,ship_area,
+      bank_id,revenue,bank_account,size,rank,website,number_of_day_owed,deb_limit,comId);
+    if (validationResult !== true) {
+      res.status(400).json({ error: 'Invalid customer input' });
+      return;
+    }
+
+    const maxID = await customerService.getMaxIDCRM(Customer);
+    const cus_id = maxID ? Number(maxID) + 1 : 0;
+
+    let createCustomer = new Customer({
+      cus_id: cus_id,
+      email: email,
+      name: name,
+      stand_name: stand_name,
+      phone_number: phone_number,
+      cit_id: cit_id,
+      logo: logo,
+      district_id: district_id,
+      ward: ward,
+      address: address,
+      ship_invoice_address: ship_invoice_address,
+      cmnd_ccnd_number: cmnd_ccnd_number,
+      cmnd_ccnd_address: cmnd_ccnd_address,
+      cmnd_ccnd_time: cmnd_ccnd_time,
+      resoure: resoure,
+      description: description,
+      tax_code: tax_code,
+      group_id: group_id,
+      status: status,
+      business_areas: business_areas,
+      category: category,
+      business_type: business_type,
+      classify: classify,
+      bill_city: bill_city,
+      bil_district: bil_district,
+      bill_ward: bill_ward,
+      bill_address: bill_address,
+      bill_area_code: bill_area_code,
+      bill_invoice_address: bill_invoice_address,
+      bill_invoice_address_email: bill_invoice_address_email,
+      company_id: comId,
+      emp_id: empId,
+      ship_city: ship_city,
+      ship_area: ship_area,
+      bank_id: bank_id,
+      bank_account: bank_account,
+      revenue: revenue,
+      rank: rank,
+      website: website,
+      number_of_day_owed: number_of_day_owed,
+      gender: gender,
+      deb_limit: deb_limit,
+      share_all: share_all,
+      type: type,
+      is_input: is_input,
+      is_delete: is_delete,
+      created_at: createDate,
+      id_cus_from: id_cus_from,
+      cus_from: cus_from,
+      link: link
+    });
+
+    let saveCS = await createCustomer.save();
+
+    if (content !== undefined && content.trim() !== '') {
+      const maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
+      const id = maxID ? Number(maxID) + 1 : 0;
+
+      let newHT = new HistoryEditCustomer({
+        id: id,
+        customer_id: cus_id,
+        content: content,
+        created_at: createDate
+      });
+
+      let savehis = await newHT.save();
+      res.status(200).json({ saveCS, savehis });
+    } else {
+      res.status(200).json(saveCS);
+    }
+
+    // Xóa các id khách hàng từ danh sách
+    for (let i = 0; i < arrCus.length; i++) {
+      const customerId = arrCus[i];
+      await customerService.deleteCustomerById(customerId);
+    }
+
+  } catch (error) {
+    console.error('Failed to add or choose customer', error);
+    res.status(500).json({ error: 'Failed to add or choose customer' });
+  }
+}
+
+
