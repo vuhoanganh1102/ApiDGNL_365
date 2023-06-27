@@ -981,14 +981,16 @@ exports.dxCong = async (req, res) => {
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
         let name_user = req.user.data.userName
-        let createDate = new Date()       
+        let createDate = new Date();
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (linkDL) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }  
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
-            let file_kem = req.files.file_kem;
-            console.log(file_kem);
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -1058,13 +1060,16 @@ exports.dxCoSoVatChat = async (req, res) => {
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
         let name_user = req.user.data.userName
-        let createDate = new Date()  
+        let createDate = new Date()
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL = functions.createLinkFileVanthu(id_user,file_kem.name);
+        }    
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
-            let file_kem = req.files.file_kem;
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -1091,7 +1096,6 @@ exports.dxCoSoVatChat = async (req, res) => {
                 time_create: createDate,
                 
             });
-
             let savedDXCSVC = await createDXCSVC.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
@@ -1140,14 +1144,16 @@ exports.dxDangKiSuDungXe = async (req, res) => {
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
         let name_user = req.user.data.userName
-        let createDate = new Date()  
+        let createDate = new Date()
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }    
         if(!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
-            
-            let file_kem = req.files.file_kem;
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -1225,13 +1231,16 @@ exports.dxHoaHong = async (req, res) => {
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
         let name_user = req.user.data.userName
-        let createDate = new Date()  
+        let createDate = new Date()
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }   
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
-        }else {
-            let file_kem = req.files.file_kem;
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }else {           
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -1302,13 +1311,16 @@ exports.dxKhieuNai = async (req, res) => {
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
         let name_user = req.user.data.userName
-        let createDate = new Date()  
+        let createDate = new Date()
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }   
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
-            let file_kem = req.files.file_kem;
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -1381,13 +1393,16 @@ exports.dxPhongHop = async (req, res) => {
         let createDate = new Date() 
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
-        let name_user = req.user.data.userName 
+        let name_user = req.user.data.userName;
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }  
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
-        }else {
-            let file_kem = req.files.file_kem;
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }else {           
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -1462,13 +1477,17 @@ exports.dxTangCa = async (req, res) => {
         let createDate = new Date()
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
-        let name_user = req.user.data.userName  
+        let name_user = req.user.data.userName;
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }   
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
-            let file_kem = req.files.file_kem;
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+            
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -1543,13 +1562,16 @@ exports.dxThaiSan = async (req, res) => {
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
         let name_user = req.user.data.userName 
-        let createDate = new Date()  
+        let createDate = new Date() ;
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }  
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
-            let file_kem = req.files.file_kem;
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -1623,13 +1645,17 @@ exports.dxThanhToan = async (req, res) => {
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
         let name_user = req.user.data.userName 
-        let createDate = new Date()  
+        let createDate = new Date() 
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }  
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
         }else {
-            let file_kem = req.files.file_kem;
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+  
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {
@@ -1703,13 +1729,16 @@ exports.dxThuongPhat = async (req, res) => {
         let createDate = new Date()
         let id_user = req.user.data.idQLC
         let com_id = req.user.data.inForPerson.employee.com_id
-        let name_user = req.user.data.userName   
+        let name_user = req.user.data.userName ;
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {   
+         await functions.uploadFileVanThu(id_user, file_kem);
+         linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }   
         if(!name_dx  || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi){
             return res.status(404).json('bad request')
-        }else {
-            let file_kem = req.files.file_kem;
-            await functions.uploadFileVanThu(id_user, file_kem);
-            let linkDL =   functions.createLinkFileVanthu(id_user,file_kem.name);
+        }else {           
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
             if (maxID) {

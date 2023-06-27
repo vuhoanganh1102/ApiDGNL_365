@@ -19,9 +19,9 @@ exports.getSettings = async (req, res) => {
 
 exports.findOrCreateSettingDx = async (req, res) => {
     try {
-      let { com_id, type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh } = req.body;
+      let {  type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh } = req.body;
+      let com_id = req.user.data.inForPerson.employee.com_id
       let createDate = new Date();
-  
       if (!com_id) {
         throw new Error("Com Id required");
       } else if (!functions.checkNumber(com_id)) {
@@ -124,35 +124,36 @@ exports.findOrCreateSettingDx = async (req, res) => {
 exports.editSettingDx = async (req, res) => {
   try {
       let updateDate = new Date();
-      let { _id, com_id, type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh, time_created } = req.body;
+      let { _id, type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh, time_created } = req.body;
+      let com_id = req.user.data.inForPerson.employee.com_id
       if (Number.isNaN(_id)) {
           throw { code: 704, message: " Id required" };
       } else if(!com_id) {
         throw { code: 704, message: "Com Id required" };
-      } else if (!type_setting) {
+      } else if (!type_setting){
           throw { code: 704, message: "type setting required" };
-      } else if (!type_browse) {
+      } else if (!type_browse){
           throw { code: 704, message: "type_browse required" };
-      } else if (!time_limit) {
+      } else if (!time_limit){
           throw { code: 704, message: "time_limit required" };
-      } else if (!shift_id) {
+      } else if (!shift_id){
           throw { code: 704, message: "shift_id required" };
-      } else if (!time_limit_l) {
+      } else if (!time_limit_l){
           throw { code: 704, message: "time_limit_l required" };
-      } else if (!list_user) {
+      } else if (!list_user){
           throw { code: 704, message: "list_user required" };
-      } else if (!time_tp) {
+      } else if (!time_tp){
           throw { code: 704, message: "time_tp required" };
-      } else if (!time_hh) {
+      } else if (!time_hh){
           throw { code: 704, message: "time_hh required" };
-      } else if (!time_created) {
+      } else if (!time_created){
           throw { code: 704, message: "time_created required" };
       } else {
           const editSetting = await functions.getDatafindOne(SettingDX, { _id: _id });
           if (!editSetting) {
               throw { code: 710, message: "editSetting does not exist" };
           } else {
-              await functions.getDatafindOneAndUpdate(SettingDX, { _id: _id }, {
+              await functions.getDatafindOneAndUpdate(SettingDX, { com_id: com_id }, {
                   com_id: com_id,
                   type_setting: type_setting,
                   type_browse: type_browse,

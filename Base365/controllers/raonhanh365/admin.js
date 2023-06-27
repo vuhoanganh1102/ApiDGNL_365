@@ -53,17 +53,43 @@ exports.loginAdminUser = async (req, res, next) => {
 exports.getListAdminUser = async (req, res, next) => {
     try {
         //lay cac tham so dieu kien tim kiem tin
-
-        let page = Number(req.body.page) || 1;
-        let pageSize = Number(req.body.pageSize) || 50;
+        if(!req.body.page){
+            return functions.setError(res, "Missing input page", 401);
+        }
+        if(!req.body.pageSize){
+            return functions.setError(res, "Missing input pageSize", 402);
+        }
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let condition = { delete: 0, loginName: { $ne: 'admin' } };
-        let data = await AdminUser.find(condition, {}, { loginName: 1, active: -1 }, skip, limit);
-
-        const totalCount = await AdminUser.find(condition, {}, { loginName: 1, active: -1 }, skip, limit).count();
-        return functions.success(res, "get list blog success", { totalCount: totalCount, data });
-    } catch (error) {
+        let idAdmin = req.body.idAdmin;
+        let condition = {};
+        if(idAdmin) condition._id = Number(idAdmin);
+        let fields = {loginName: 1, name: 1, email: 1, phone: 1, editAll:1, langId:1, active: 1};
+        let listAdminUser = await functions.pageFindWithFields(AdminUser, condition, fields, { _id: 1 }, skip, limit); 
+        
+        // lap qua danh sach user
+        for(let i=0; i<listAdminUser.length; i++){
+            let adminUserRight = await AdminUserRight.find({adminId: listAdminUser[i]._id});
+            let arrIdModule = [],
+                arrRightAdd = [],
+                arrRightEdit = [],
+                arrRightDelete = []
+            // lap qua cac quyen cua admindo
+            for(let j=0; j<adminUserRight.length; j++){
+                arrIdModule.push(adminUserRight[j].moduleId);
+                arrRightAdd.push(adminUserRight[j].add);
+                arrRightEdit.push(adminUserRight[j].edit);
+                arrRightDelete.push(adminUserRight[j].delete);
+            }
+            let adminUser = listAdminUser[i];
+            let tmpOb = {adminUser, arrIdModule, arrRightAdd,arrRightEdit,arrRightDelete};
+            listAdminUser[i] = tmpOb;
+        }
+        const totalCount = await functions.findCount(AdminUser, condition);
+        return functions.success(res, "get list blog success", {totalCount: totalCount, data: listAdminUser });
+    }catch(error){
         console.log(error)
         return functions.setError(res, error)
     }
@@ -158,7 +184,10 @@ exports.updateAdminUser = async (req, res, next) => {
         let fields = req.info;
         let password = req.body.password;
         let adminId = req.body.adminId;
-        fields.password = md5(password);
+        if(password){
+            fields.password = md5(password);
+        }
+        
         delete fields._id;
         let existsAdminUser = await AdminUser.findOne({ _id: adminId });
         if (existsAdminUser) {
@@ -173,7 +202,29 @@ exports.updateAdminUser = async (req, res, next) => {
     }
 }
 
-exports.deleteAdminUser = async (req, res, next) => {
+exports.activeAdmin = async(req, res, next)=>{
+    try{
+        let adminId = req.body.adminId;
+        if(!adminId){
+            return functions.setError(res, "Missing input value id admin!", 404);
+        }
+        let admin = await AdminUser.findOne({_id: adminId});
+        if(!admin){
+            return functions.setError(res, "Admin not found!", 504);
+        }
+        let active = 0;
+        if(admin.active==0){
+            active = 1;
+        }
+        await AdminUser.findOneAndUpdate({_id: adminId}, {active: active});
+        return functions.success(res, "AdminUser active successfully");
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.deleteAdminUser = async(req, res, next) => {
     try {
         let userID = Number(req.query.userID);
         if (userID) {
@@ -1037,21 +1088,70 @@ exports.createDiscount = async (req, res, next) => {
     }
 }
 // api tìm kiếm và danh sách chiết khấu
-exports.getListDiscountCard = async (req, res, next) => {
-    try {
-        let page = req.body.page || 1;
-        let pageSize = req.body.pageSize || 50;
-        let conditions = { priceListActive: 1 };
-        let _id = req.body.id || null;
-        let nameBefore = req.body.nha_mang || null;
-        if (_id) conditions._id = _id;
-        if (nameBefore) conditions.nameBefore = { $regex: `.*${nameBefore}.*` }
-        let skip = (page - 1) * pageSize;
-        let limit = pageSize;
-        let count = await NetworkOperator.find(conditions, {}).skip(skip).limit(limit).count();
-        let data = await NetworkOperator.find(conditions).sort({ _id: 1 }).skip(skip).limit(limit);
-        return functions.success(res, "Get List Report Success", { count, data });
-    } catch (error) {
+
+exports.getListDiscountCard = async (req,res,next) => {
+    try{
+        let { id, nameBefore} = req.body;
+        let condition = {}
+        if(id) condition._id = id;
+        if(nameBefore) condition.nameBefore = nameBefore;
+        let fields = {_id: 1, nameBefore: 1, discount: 1};
+        let disscountList = await functions.pageFind(NetworkOperator,condition,null,null,null,fields);
+        return functions.success(res, "Get List Report Success", {data: disscountList });
+    } catch (error){
+        return functions.setError(res, error)
+    }
+}
+// api update Discount for Card
+exports.updateDiscount = async (req,res,next) => {
+    try{
+        let { id } = req.params;
+        let {nameBefore, nameAfter, discount } = req.body;
+        //  nếu có param Id thì trả ra thông tin để sưả
+        if(id && !nameBefore){
+            console.log(1)
+            const netWorkOperator = await NetworkOperator.findOne({_id: id})
+            return functions.success(res, "Get Data", {data: netWorkOperator });
+        } else if(id && nameBefore && nameAfter && discount) {
+            console.log(2)
+        // nếu có đủ body thì cập nhật thông tin
+            const update ={
+                nameBefore: nameBefore,
+                nameAfter: nameAfter,
+                discount: discount
+            }
+            const upDateDiscount = await NetworkOperator.findOneAndUpdate({_id: id},update,{
+                new: true
+            })
+            return functions.success(res, "Update Discount Success", {data: upDateDiscount });
+        } 
+    }catch (error){
+        return functions.setError(res, error)
+    }
+}
+exports.pinNews = async (req,res,next) => {
+    try{
+        let { id } = req.params;
+        let {nameBefore, nameAfter, discount } = req.body;
+        //  nếu có param Id thì trả ra thông tin để sưả
+        if(id && !nameBefore){
+            console.log(1)
+            const netWorkOperator = await NetworkOperator.findOne({_id: id})
+            return functions.success(res, "Get Data", {data: netWorkOperator });
+        } else if(id && nameBefore && nameAfter && discount) {
+            console.log(2)
+        // nếu có đủ body thì cập nhật thông tin
+            const update ={
+                nameBefore: nameBefore,
+                nameAfter: nameAfter,
+                discount: discount
+            }
+            const upDateDiscount = await NetworkOperator.findOneAndUpdate({_id: id},update,{
+                new: true
+            })
+            return functions.success(res, "Update Discount Success", {data: upDateDiscount });
+        } 
+    }catch (error){
         return functions.setError(res, error)
     }
 }
@@ -1078,6 +1178,7 @@ exports.failRegisterUser = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
+
 
 exports.getInfoForEdit = async (req, res, next) => {
     try {
@@ -1163,3 +1264,4 @@ exports.updatediscountCard = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
+

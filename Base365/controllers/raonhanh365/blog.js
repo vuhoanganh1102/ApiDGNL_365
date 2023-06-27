@@ -217,11 +217,12 @@ exports.deleteBlog = async (req, res, next) => {
 }
 exports.createToken = async(req, res, next) => {
     try{
-        let admin = await AdminUser.findOne({_id: 4});
+        let adminId = req.body.adminId;
+        let admin = await AdminUser.findOne({_id: adminId});
         let token = await functions.createToken(admin, "28d")
         res.setHeader('authorization', `Bearer ${token}`);
-        return functions.success(res, 'Create token admin success',);
-    } catch (error) {
+        return functions.success(res, `Bearer ${token}` );
+    }catch(error){
         console.log("Đã có lỗi xảy ra tao token", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }

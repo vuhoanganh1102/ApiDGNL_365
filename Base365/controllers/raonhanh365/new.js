@@ -500,8 +500,9 @@ exports.hideNews = async (req, res, next) => {
 
 exports.pinNews = async (req, res, next) => {
     try {
-        let idNews = Number(req.body.news_id);
-        if (!idNews) return functions.setError(res, "Missing input news_id!", 405);
+        console.log(req.body.news_id);
+        let idNews = req.body.news_id;
+        if (!idNews) return functions.setError(res, "Missing input news_id", 405);
         let {
             timeStartPinning,
             dayStartPinning,
@@ -509,6 +510,7 @@ exports.pinNews = async (req, res, next) => {
             moneyPinning,
             pinHome,
             pinCate,
+            dayEndPinning
         } = req.body;
         let existsNews = await New.find({ _id: idNews });
         if (existsNews) {
@@ -518,6 +520,7 @@ exports.pinNews = async (req, res, next) => {
             let fields = {
                 timeStartPinning: timeStartPinning,
                 dayStartPinning: dayStartPinning,
+                dayEndPinning: dayEndPinning,
                 numberDayPinning: numberDayPinning,
                 moneyPinning: moneyPinning,
                 pinHome: pinHome,
@@ -544,7 +547,8 @@ exports.pushNews = async (req, res, next) => {
             numberDayPinning,
             moneyPinning,
             timePinning,
-            pinHome,
+            pushHome,
+            timePushNew
         } = req.body;
         let existsNews = await New.find({ _id: idNews });
         if (existsNews) {
@@ -552,12 +556,13 @@ exports.pushNews = async (req, res, next) => {
             if (!timeStartPinning) timeStartPinning = now;
             if (!dayStartPinning) dayStartPinning = now;
             let fields = {
+                timePushNew: timePushNew,
                 timePinning: timePinning,
                 moneyPinning: moneyPinning,
                 numberDayPinning: numberDayPinning,
                 timeStartPinning: timeStartPinning,
                 dayStartPinning: dayStartPinning,
-                pinHome: pinHome,
+                pushHome: 1,
                 updateTime: now,
             };
             await New.findByIdAndUpdate(idNews, fields);
