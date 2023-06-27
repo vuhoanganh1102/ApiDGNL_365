@@ -62,7 +62,7 @@ router.put('/candi', formData.parse(), hrService.checkRoleUser, hrService.checkR
 router.put('/softDeleteCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteCandidate);
 
 //-----------------------------api giai doan tuyen dung
-router.post('/getListProcess',hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListProcessInterview);
+router.post('/getListProcess', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListProcessInterview);
 
 //them moi
 router.post('/createProcess', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.checkDataProcess,recruitmentController.createProcessInterview);
@@ -76,18 +76,18 @@ router.post('/deleteProcess', formData.parse(), hrService.checkRoleUser, hrServi
 //-----------------------------chuyen trang thai cua ung vien
 
 //ky hop dong
-router.post('/contactJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.createContactJob);
+router.post('/contactJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.createContactJob);
 
 //huy cong viec
-router.post('/cancelJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.createCancelJob);
+router.post('/cancelJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.createCancelJob);
 
 //truot ung vien
-router.post('/failJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.createFailJob);
+router.post('/failJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.createFailJob);
 
 //them lich phong van gui mail
-router.post('/scheduleInter', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.createScheduleInterview);
+router.post('/scheduleInter', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.addCandidateProcessInterview);
 
 //nhan vien
-router.post('/addCandidateGetJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.addCandidateGetJob);
+router.post('/addCandidateGetJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.addCandidateGetJob);
 
 module.exports = router;

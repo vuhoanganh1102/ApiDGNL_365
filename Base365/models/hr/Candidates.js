@@ -35,7 +35,7 @@ const HR_CandidateSchema = new Schema({
         type: Number,
         require:true
     },
- 
+
     recruitmentNewsId: {
         type: Number,
         default:null

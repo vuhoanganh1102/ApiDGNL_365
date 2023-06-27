@@ -12,6 +12,8 @@ const CancelJob = require('../../models/hr/CancelJob');
 const FailJob = require('../../models/hr/FailJob');
 const GetJob = require('../../models/hr/GetJob');
 const Remind = require('../../models/hr/Remind');
+const Notify = require('../../models/hr/Notify');
+const AnotherSkill = require('../../models/hr/AnotherSkill');
 
 // lay ra danh sach tat ca cac quy trinh tuyen dung cua cty
 exports.getListRecruitment= async(req, res, next) => {
@@ -453,7 +455,7 @@ exports.getListCandidate= async(req, res, next) => {
         const limit = pageSize;
         let listCondition = {isDelete: 0};
         // dua dieu kien vao ob listCondition
-        if(name) listCondition.name =  new RegExp(name);
+        if(name) listCondition.name =  new RegExp(name, 'i');
         if(comId) listCondition.comId =  Number(comId);
         if(recruitmentNewsId) listCondition.recruitmentNewsId =  Number(recruitmentNewsId);
         if(userHiring) listCondition.userHiring =  Number(userHiring);
@@ -496,11 +498,11 @@ exports.checkDataCandidate = async(req, res, next) => {
     try {
         let {
                 name, email, phone, cvFrom, userRecommend, recruitmentNewsId, timeSendCv,  interviewTime, interviewResult, interviewVote, salaryAgree, status, cv, 
-                createdAt, updatedAt, isDelete, comId, isOfferJob, gender, birthday, education, exp, isMarried, address, userHiring, starVote, school, hometown, isSwitch, epIdCrm
+                createdAt, updatedAt, isDelete, comId, isOfferJob, gender, birthday, education, exp, isMarried, address, userHiring, starVote, school, hometown, isSwitch, epIdCrm,firstStarVote,listSkill,
             } = req.body;
         let fields = [
                 name, email, phone, cvFrom, userRecommend, recruitmentNewsId,
-                timeSendCv, gender, birthday, education, exp, isMarried, address, userHiring, starVote, hometown
+                timeSendCv, gender, birthday, education, exp, isMarried, address, userHiring, firstStarVote, hometown
                 ];
         for(let i=0; i<fields.length; i++){
             if(!fields[i])
@@ -524,9 +526,9 @@ exports.checkDataCandidate = async(req, res, next) => {
             userRecommend: userRecommend,
             recruitmentNewsId: recruitmentNewsId,
             timeSendCv: timeSendCv,
-            starVote: starVote,
-            cv: cv
+            starVote: firstStarVote,
         }
+        
         return next();
     } catch (e) {
         console.log("Err from server!", e);
@@ -538,9 +540,9 @@ exports.createCandidate = async(req, res, next) => {
     try {
         //lay thong tin tu nguoi dung nhap
         let fields = req.info;
-
+        let infoLogin = req.infoLogin;
         //them cac truong an
-        fields.comId = req.comId;
+        fields.comId = infoLogin.comId;
 
         //lay id max
         const maxIdCandi = await Candidate.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
@@ -550,9 +552,74 @@ exports.createCandidate = async(req, res, next) => {
         } else newIdCandi = 1;
         fields.id = newIdCandi;
 
-        //tao 
+        //luu cv
+        let cv = req.files.cv;
+        let nameCv = await hrService.uploadFileCv(newIdCandi,cv);
+        fields.cv = nameCv;
+
+        //tao
         let candidate = new Candidate(fields);
         await candidate.save();
+        if(!candidate){
+            return functions.setError(res, "Create candidate fail!", 506);
+        }
+
+        //them ky nang moi
+        let listSkill = req.body.listSkill;
+        for(let i=0; i<listSkill.length; i++){
+            let dataSkill = {
+                canId: newIdCandi,
+                skillName: listSkill[i].skillName,
+                skillVote: listSkill[i].skillVote
+            }
+            const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+            let newIdSkill;
+            if (maxIdSkill) {
+                newIdSkill = Number(maxIdSkill.id) + 1;
+            } else newIdSkill = 1;
+            dataSkill.id = newIdSkill;
+            let skill = new AnotherSkill(dataSkill);
+            await skill.save();
+            if(!skill){
+                return functions.setError(res, "Create skill fail!", 506);
+            }
+        }
+        
+
+        //them thong baos
+        let dataNotify = null;
+        if(infoLogin.type==1){
+            if(candidate.userHiring) {
+                dataNotify = {
+                    canId: newIdCandi,
+                    type: 2,
+                    comNotify: 1,
+                    comId: infoLogin.comId,
+                    userId: candidate.userHiring,
+                }
+            }
+        }else {
+            dataNotify = {
+                canId: newIdCandi,
+                type: 1,
+                comNotify: 0,
+                comId: infoLogin.comId,
+                userId: infoLogin.id,
+            }
+        }
+        if(dataNotify!=null){
+            const maxIdNotify = await Notify.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+            let newIdNotify;
+            if (maxIdNotify) {
+                newIdNotify = Number(maxIdNotify.id) + 1;
+            } else newIdNotify = 1;
+            dataNotify.id = newIdNotify;
+            let notify = new Notify(dataNotify);
+            await notify.save();
+            if(!notify){
+                return functions.setError(res, "Create notify fail!", 506);
+            }
+        }
         return functions.success(res, 'Create candidate success!');
     } catch (e) {
         console.log("Err from server!", e);
@@ -568,10 +635,38 @@ exports.updateCandidate = async(req, res, next) => {
             return functions.setError(res, "Missing input id candidate!", 404);
         let fields = req.info;
         fields.updatedAt = Date.now();
+        let cv = req.files.cv;
+        let nameCv = await hrService.uploadFileCv(candidateId,cv);
+        fields.cv = nameCv;
+        //
         let candi = await Candidate.findOneAndUpdate({id: candidateId}, fields);
         if(!candi) {
             return functions.setError(res, "Candidate not found!", 505);
         }
+
+        //them ky nang moi
+        await AnotherSkill.deleteMany({canId: candidateId});
+
+        let listSkill = req.body.listSkill;
+        for(let i=0; i<listSkill.length; i++){
+            let dataSkill = {
+                canId: candidateId,
+                skillName: listSkill[i].skillName,
+                skillVote: listSkill[i].skillVote
+            }
+            const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+            let newIdSkill;
+            if (maxIdSkill) {
+                newIdSkill = Number(maxIdSkill.id) + 1;
+            } else newIdSkill = 1;
+            dataSkill.id = newIdSkill;
+            let skill = new AnotherSkill(dataSkill);
+            await skill.save();
+            if(!skill){
+                return functions.setError(res, `Create skill ${i+1} fail!`, 506);
+            }
+        }
+        
         return functions.success(res, "Update info candidate success!");
     }catch(err){
         console.log("Err from server!", err);
@@ -601,13 +696,171 @@ exports.softDeleteCandidate = async(req, res, next) =>{
 
 //------------them cac giai doan tuyen dung 
 
+let getCandidateProcess = async(model, condition)=> {
+    return listCandidate = await model.aggregate([
+        {
+            $lookup: {
+                from: "HR_Candidates",
+                localField: "canId",
+                foreignField: "id",
+                as: "candidate"
+            }
+        },
+        
+        {
+            $unwind: "$candidate"
+        },
+        {
+            $replaceRoot: {
+                newRoot: { $mergeObjects: ["$$ROOT", "$candidate"]}   
+            }
+        },
+        {$match: condition},
+        
+        // {
+        //     $project: {name: 1, phone: 1, recruitmentNewsId: 1, userHiring: 1, }
+        // },
+        {
+            $lookup: {
+                from: "HR_RecruitmentNews",
+                localField: "recruitmentNewsId",
+                foreignField: "id",
+                as: "recruitmentNews"
+            }
+        },
+        {
+            $unwind: "$recruitmentNews"
+        },
+        {
+            $lookup: {
+                from: "Users",
+                localField: "userHiring",
+                foreignField: "_id",
+                as: "userHiring"
+            }
+        },
+        {
+            $unwind: "$userHiring"
+        },
+        
+        {$project: {id: 1, name: 1, phone: 1, email: 1, gender: 1, hometown: 1, birthday: 1, education: 1, school: 1, exp: 1, isMarried: 1, address: 1, cvFrom: 1, timeSendCv: 1, "userHiring.userName": 1, "recruitmentNews.title": 1}},
+        // {$sort: {id: 1}},
+        // {$skip: skip},
+        // {$limit: limit}
+        ]);
+}
+
 //lay ra danh sach
+//truyen canId de lay thong tin chi tiet ve ung vien
 exports.getListProcessInterview= async(req, res, next) => {
     try {
-        //id company lay ra sau khi dang nhap
-        let comId = req.comId;
-        let listProcess = await ProcessInterview.find({comId: comId});
-        return functions.success(res, "Get list process interview success", {data: listProcess });
+        let comId = req.infoLogin.comId;
+        let {fromDate, toDate, name, recruitmentNewsId, userHiring, gender, status, canId} = req.body;
+        let condition = {"candidate.comId": comId};
+        if(fromDate) condition["candidate.timeSendCv"]= {$gte: new Date(fromDate)};
+        if(toDate) condition["candidate.timeSendCv"] = {$lte: new Date(toDate)};
+        if(name) condition["candidate.name"] = new RegExp(name, 'i');
+        if(recruitmentNewsId) condition["candidate.recruitmentNewsId"] = Number(recruitmentNewsId);
+        if(userHiring) condition["candidate.userHiring"] = Number(userHiring);
+        if(gender) condition["candidate.gender"] = Number(gender);
+        if(status) condition["candidate.status"] = Number(status);
+
+        //truyen canId de lay thong tin chi tiet ve ung vien
+        if(canId) condition["candidate.id"] = Number(canId);
+        // console.log(condition);
+
+        // let listProcess = await ProcessInterview.find({comId: comId});
+
+        //danh sach ung vien nhan viec
+        let listProcess = await ProcessInterview.aggregate([
+        {$match: {"comId": comId}},
+        {
+            $lookup: {
+                from: "HR_ScheduleInterviews",
+                localField: "id",
+                foreignField: "processInterviewId",
+                as: "ScheduleInterviews"
+            }
+        },
+        
+        {
+            $unwind: "$ScheduleInterviews"
+        },
+        {
+            $replaceRoot: {
+                newRoot: { $mergeObjects: ["$$ROOT", "$ScheduleInterviews"]}   
+            }
+        },
+        
+        {
+            $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1}
+        },
+        //
+        {
+            $lookup: {
+                from: "HR_Candidates",
+                localField: "ScheduleInterviews.canId",
+                foreignField: "id",
+                as: "candidate"
+            }
+        },
+        
+        {
+            $unwind: "$candidate"
+        },
+
+        {$match: condition},
+        
+        {
+            $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, "candidate.name": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
+        },
+        {
+            $lookup: {
+                from: "HR_RecruitmentNews",
+                localField: "candidate.recruitmentNewsId",
+                foreignField: "id",
+                as: "recruitmentNews"
+            }
+        },
+        {
+            $unwind: "$recruitmentNews"
+        },
+        {
+            $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, 
+            "candidate.name": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
+            "recruitmentNews.title": 1
+            }
+        },
+        {
+            $lookup: {
+                from: "Users",
+                localField: "candidate.userHiring",
+                foreignField: "_id",
+                as: "userHiring"
+            }
+        },
+        {
+            $unwind: "$userHiring"
+        },
+        {
+            $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, 
+            "candidate.name": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1, "candidate.id": 1,
+            "recruitmentNews.title": 1,
+            "userHiring.userName": 1
+            }
+        },
+        
+        // {$project: {name: 1, phone: 1, "userHiring.userName": 1, "recruitmentNews.title": 1}},
+        // {$sort: {id: 1}},
+        // {$skip: skip},
+        // {$limit: limit}
+        ]);
+        let listCandidateGetJob = await getCandidateProcess(GetJob, condition);
+        let listCandidateCancelJob = await getCandidateProcess(CancelJob, condition);
+        let listCandidateFailJob = await getCandidateProcess(FailJob, condition);
+        let listCandidateContactJob = await getCandidateProcess(ContactJob, condition);
+
+        return functions.success(res, "Get list process interview success", {listProcess, listCandidateGetJob, listCandidateCancelJob, listCandidateFailJob, listCandidateContactJob});
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
@@ -620,6 +873,14 @@ exports.checkDataProcess = async(req, res, next) => {
         let {name, processBefore} = req.body;
         if(!name || !processBefore){
             return functions.setError(res, `Missing input value`, 404);
+        }
+        
+        //lay ra giai doan dung dang truoc
+        if(processBefore!=1 && processBefore!=2 && processBefore!=3 && processBefore!=4){
+            let process = await ProcessInterview.findOne({id: processBefore});
+            if(process && process.processBefore!=0){
+                processBefore = process.processBefore;
+            }
         }
         // them cac truong muon them hoac sua
         req.info = {
@@ -639,7 +900,7 @@ exports.createProcessInterview = async(req, res, next) => {
         let fields = req.info;
 
         //them cac truong an
-        fields.comId = req.comId;
+        fields.comId = req.infoLogin.comId;
 
         //lay id max
         const maxIdProcessInter = await ProcessInterview.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
@@ -738,23 +999,45 @@ exports.checkDataJob = async(req, res, next) => {
 // ky hop dong
 exports.createContactJob = async(req, res, next) => {
     try {
-        //lay thong tin tu nguoi dung nhap
-        let fields = req.info;
-        
-        if(!fields.resiredSalary || !fields.salary || !fields.offerTime || !fields.epOffer) {
-            return functions.setError(res, `Missing input value`, 405);
+        let {canId, resiredSalary, salary, offerTime, epOffer, note} = req.body;
+        if(!canId || !resiredSalary || !salary || !offerTime || !epOffer) {
+            return functions.setError(res, `Missing input value`, 404);
         }
+        canId = Number(canId);
         //lay id max
         const maxIdContacJob = await ContactJob.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
         let newIdContacJob;
         if (maxIdContacJob) {
             newIdContacJob = Number(maxIdContacJob.id) + 1;
         } else newIdContacJob = 1;
-        fields.id = newIdContacJob;
-        
+
+        let infoContactJob = {id: newIdContacJob, canId, resiredSalary, salary, offerTime, epOffer, note};
         //tao 
-        let contactJob = new ContactJob(fields);
-        contactJob =  await contactJob.save();
+        let contactJob = await ContactJob.findOneAndUpdate({canId: canId}, infoContactJob, {upsert: true, new: true});
+        if(!contactJob){
+            return functions.setError(res, "Create contactJob fail!", 505);
+        }
+
+        //cap nhat thong tin ung vien
+        let {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote} = req.body;
+        if(!name || !cvFrom || !userHiring || !recruitmentNewsId || !timeSendCv || !starVote) {
+            return functions.setError(res, `Missing input value`, 405);
+        }
+
+        let infoCan = {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote, isSwitch: 1};
+        let can = await updateInfoCandidate(canId, infoCan);
+        if(!can){
+            functions.setError(res, `Update info candidate fail`, 506); 
+        }
+
+        //  Cập nhật giai đoạn
+        await ScheduleInterview.findOneAndUpdate({canId: canId}, {isSwitch: 1});
+
+        //xoa thang thai ung vien sau khi cap nhat
+        await GetJob.deleteOne({canId: canId});
+        await FailJob.deleteOne({canId: canId});
+        await CancelJob.deleteOne({canId: canId});
+
         return functions.success(res, 'Create contactJob success!');
     } catch (e) {
         console.log("Err from server!", e);
@@ -765,9 +1048,8 @@ exports.createContactJob = async(req, res, next) => {
 exports.createCancelJob = async(req, res, next) => {
     try {
         //lay thong tin tu nguoi dung nhap
-        let fields = req.info;
-        
-        if(!fields.type) {
+        let {canId, resiredSalary, salary, note, status} = req.body;
+        if(!canId || !status) {
             return functions.setError(res, `Missing input value`, 405);
         }
         //lay id max
@@ -776,11 +1058,35 @@ exports.createCancelJob = async(req, res, next) => {
         if (maxIdCancelJob) {
             newIdCancelJob = Number(maxIdCancelJob.id) + 1;
         } else newIdCancelJob = 1;
-        fields.id = newIdCancelJob;
+
+        let infoCancelJob = {id:newIdCancelJob,  canId, resiredSalary, salary, note, status};
         
         //tao 
-        let cancelJob = new CancelJob(fields);
-        cancelJob =  await cancelJob.save();
+        let cancelJob = await CancelJob.findOneAndUpdate({canId: canId}, infoCancelJob, {upsert: true, new: true});
+        if(!cancelJob){
+            return functions.setError(res, "Create cancelJob fail!", 505);
+        }
+
+        //cap nhat thong tin ung vien
+        let {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote} = req.body;
+        if(!name || !cvFrom || !userHiring || !recruitmentNewsId || !timeSendCv || !starVote) {
+            return functions.setError(res, `Missing input value`, 405);
+        }
+
+        let infoCan = {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote, isSwitch: 1};
+        let can = await updateInfoCandidate(canId, infoCan);
+        if(!can){
+            functions.setError(res, `Update info candidate fail`, 506); 
+        }
+
+        //  Cập nhật giai đoạn
+        await ScheduleInterview.findOneAndUpdate({canId: canId}, {isSwitch: 1});
+
+        //xoa thang thai ung vien sau khi cap nhat
+        await GetJob.deleteOne({canId: canId});
+        await FailJob.deleteOne({canId: canId});
+        await ContactJob.deleteOne({canId: canId});
+
         return functions.success(res, 'Create cancelJob success!');
     } catch (e) {
         console.log("Err from server!", e);
@@ -795,6 +1101,7 @@ exports.createFailJob = async(req, res, next) => {
         if(!canId || !type || !contentsend || !email) {
             return functions.setError(res, `Missing input value`, 405);
         }
+        canId = Number(canId);
 
         let infoFailJob = {canId, type, email, note};
         const maxIdFailJob = await FailJob.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
@@ -805,7 +1112,7 @@ exports.createFailJob = async(req, res, next) => {
         infoFailJob.id = newIdFailJob;
         infoFailJob.contentsend = Buffer.from(contentsend, 'base64');
         
-        let failJob = await FailJob.findOneAndUpdate({canId: canId}, infoFailJob, {upsert: true});
+        let failJob = await FailJob.findOneAndUpdate({canId: canId}, infoFailJob, {upsert: true, new: true});
         if(!failJob){
             return functions.setError(res, "Create failJob fail!", 505);
         }
@@ -839,26 +1146,77 @@ exports.createFailJob = async(req, res, next) => {
     }
 }
 
-exports.createScheduleInterview = async(req, res, next) => {
+exports.addCandidateProcessInterview = async(req, res, next) => {
     try {
         //lay thong tin tu nguoi dung nhap
-        let fields = req.info;
-        
-        if(!fields.interviewTime || !fields.empInterview || !fields.contentsend || !fields.email) {
+        let {canId, resiredSalary, salary, note, email, contentsend, empInterview, interviewTime, processInterviewId} = req.body;
+        if(!canId || !interviewTime || !empInterview || !contentsend || !email || !processInterviewId) {
             return functions.setError(res, `Missing input value`, 405);
+            
         }
+        canId = Number(canId);
         //lay id max
         const maxIdScheduleInterview = await ScheduleInterview.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
         let newIdScheduleInterview;
         if (maxIdScheduleInterview) {
             newIdScheduleInterview = Number(maxIdScheduleInterview.id) + 1;
         } else newIdScheduleInterview = 1;
-        fields.id = newIdScheduleInterview;
-        fields.content = Buffer.from(fields.contentsend, 'base64');
-        
+
+        let infoInterview = {
+            id:newIdScheduleInterview, 
+            canId, 
+            resiredSalary, 
+            salary, 
+            note, 
+            canEmail: email,
+            processInterviewId, 
+            empInterview, 
+            interviewTime,
+            content: Buffer.from(contentsend, 'base64')
+        };
         //tao 
-        let scheduleInterview = new ScheduleInterview(fields);
-        scheduleInterview =  await scheduleInterview.save();
+        let scheduleInterview = await ScheduleInterview.findOneAndUpdate({canId: canId}, infoInterview, {upsert: true, new: true});
+        if(!scheduleInterview){
+            functions.setError(res, `Create getJob fail!`, 507);
+        }
+        //gui email
+        let checkEmail = req.body.checkEmail;
+        if(checkEmail>0){
+            //gui email
+            await hrService.sendEmailtoCandidate(email, '[hr.timviec365.vn] Thư mời phỏng vấn', infoInterview.content);
+        }
+
+        //
+        let {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote} = req.body;
+        if(!name || !cvFrom || !userHiring || !recruitmentNewsId || !timeSendCv || !starVote) {
+            return functions.setError(res, `Missing input value`, 406);
+        }
+        //cap nhat thong tin ung vien
+        let infoCan = {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote, isSwitch: 1};
+        let can = await updateInfoCandidate(canId, infoCan);
+        if(!can){
+            functions.setError(res, `Update info candidate fail`, 506); 
+        }
+        
+        //xoa thang thai ung vien sau khi cap nhat
+        // await FailJob.deleteOne({canId: fields.canId});
+        // await CancelJob.deleteOne({canId: fields.canId});
+        // await ContactJob.deleteOne({canId: fields.canId});
+        
+        //nhac nho
+        const maxIdRemind = await Remind.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+        let newIdRemind;
+        if (maxIdRemind) {
+            newIdRemind = Number(maxIdRemind.id) + 1;
+        } else newIdRemind = 1;
+
+        let comId = req.infoLogin.comId;
+        let infoRemind = {id: newIdRemind, type: 0, canId: canId, canName: can.name, comId: comId, userId: empInterview, time: interviewTime};
+        let remind = new Remind(infoRemind);
+        remind = await Remind.create(remind);
+        if(!remind){
+            functions.setError(res, `Create remind fail`, 505);    
+        }
         return functions.success(res, 'Create scheduleInterview success!');
     } catch (e) {
         console.log("Err from server!", e);
@@ -869,32 +1227,32 @@ exports.createScheduleInterview = async(req, res, next) => {
 exports.addCandidateGetJob = async(req, res, next) => {
     try {
         //lay thong tin tu nguoi dung nhap
-        let fields = req.info;
         let comId = req.infoLogin.comId;
-        if(!fields.canId || !fields.salary || !fields.resiredSalary|| !fields.interviewTime || !fields.empInterview || !fields.contentsend || !fields.email) {
+        let {canId, resiredSalary, salary, note, email, contentsend, empInterview, interviewTime} = req.body;
+
+        if(!canId || !salary || !resiredSalary|| !interviewTime || !empInterview || !contentsend || !email) {
             return functions.setError(res, `Missing input value`, 405);
         }
-        delete fields.offerTime;
-        delete fields.epOffer;
-        delete fields.type;
+        
         //lay id max
         const maxIdScheduleInterview = await GetJob.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
         let newIdScheduleInterview;
         if (maxIdScheduleInterview) {
             newIdScheduleInterview = Number(maxIdScheduleInterview.id) + 1;
         } else newIdScheduleInterview = 1;
-        fields.id = newIdScheduleInterview;
-        fields.contentSend = Buffer.from(fields.contentsend, 'base64');
+        
+        let infoGetJob = {id: newIdScheduleInterview, canId, resiredSalary, salary, note, email, contentsend, empInterview, interviewTime};
+        infoGetJob.contentSend = Buffer.from(contentsend, 'base64');
         
         //tao 
-        let getJob = await GetJob.findOneAndUpdate({canId: fields.canId}, fields, {upsert: true});
+        let getJob = await GetJob.findOneAndUpdate({canId: canId}, infoGetJob, {upsert: true, new: true});
         if(getJob){
 
             //gui email
             let checkEmail = req.body.checkEmail;
             if(checkEmail>0){
                 //gui email
-                await hrService.sendEmailtoCandidate(fields.email, '[hr.timviec365.vn] Thư mời nhận việc', fields.contentSend);
+                await hrService.sendEmailtoCandidate(email, '[hr.timviec365.vn] Thư mời nhận việc', infoGetJob.contentSend);
             }
 
             //
@@ -902,18 +1260,19 @@ exports.addCandidateGetJob = async(req, res, next) => {
             if(!name || !cvFrom || !userHiring || !recruitmentNewsId || !timeSendCv || !starVote) {
                 return functions.setError(res, `Missing input value`, 405);
             }
-            
-            //xoa thang thai ung vien sau khi cap nhat
-            await FailJob.deleteOne({canId: fields.canId});
-            await CancelJob.deleteOne({canId: fields.canId});
-            await ContactJob.deleteOne({canId: fields.canId});
-
             //cap nhat thong tin ung vien
             let infoCan = {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote, isSwitch: 1};
-            let can = await updateInfoCandidate(fields.canId, infoCan);
+            let can = await updateInfoCandidate(canId, infoCan);
             if(!can){
                 functions.setError(res, `Update info candidate fail`, 506); 
             }
+            
+            //xoa thang thai ung vien sau khi cap nhat
+            let a = await FailJob.deleteMany({canId: canId});
+            let b = await CancelJob.deleteMany({canId: canId});
+            let c =await ContactJob.deleteMany({canId: canId});
+
+            console.log(a, b, c);
             //nhac nho
             const maxIdRemind = await Remind.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             let newIdRemind;
@@ -921,7 +1280,7 @@ exports.addCandidateGetJob = async(req, res, next) => {
                 newIdRemind = Number(maxIdRemind.id) + 1;
             } else newIdRemind = 1;
 
-            let infoRemind = {id: newIdRemind, type: 1, canId: fields.canId, canName: can.name, comId: comId, userId: fields.empInterview, time: fields.interviewTime};
+            let infoRemind = {id: newIdRemind, type: 1, canId: canId, canName: can.name, comId: comId, userId: empInterview, time: interviewTime};
             let remind = new Remind(infoRemind);
             remind = await Remind.create(remind);
             if(!remind){
@@ -930,6 +1289,7 @@ exports.addCandidateGetJob = async(req, res, next) => {
         }else {
             functions.setError(res, `Create getJob fail!`, 507);
         }
+        
         return functions.success(res, 'Create getJob success!');
     } catch (e) {
         console.log("Err from server!", e);
