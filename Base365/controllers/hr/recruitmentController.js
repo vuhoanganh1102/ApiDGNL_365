@@ -791,23 +791,47 @@ exports.createCancelJob = async(req, res, next) => {
 exports.createFailJob = async(req, res, next) => {
     try {
         //lay thong tin tu nguoi dung nhap
-        let fields = req.info;
-        
-        if(!fields.type || !fields.contentsend || !fields.email) {
+        let {canId, note, type, email, contentsend} = req.body;
+        if(!canId || !type || !contentsend || !email) {
             return functions.setError(res, `Missing input value`, 405);
         }
-        //lay id max
+
+        let infoFailJob = {canId, type, email, note};
         const maxIdFailJob = await FailJob.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
         let newIdFailJob;
         if (maxIdFailJob) {
             newIdFailJob = Number(maxIdFailJob.id) + 1;
         } else newIdFailJob = 1;
-        fields.id = newIdFailJob;
-        fields.contentsend = Buffer.from(fields.contentsend, 'base64');
+        infoFailJob.id = newIdFailJob;
+        infoFailJob.contentsend = Buffer.from(contentsend, 'base64');
         
-        //tao 
-        let failJob = new FailJob(fields);
-        failJob =  await failJob.save();
+        let failJob = await FailJob.findOneAndUpdate({canId: canId}, infoFailJob, {upsert: true});
+        if(!failJob){
+            return functions.setError(res, "Create failJob fail!", 505);
+        }
+        //gui email
+        await hrService.sendEmailtoCandidate(email, '[hr.timviec365.vn] Thư Trả lời kết quả phỏng vấn', infoFailJob.contentsend);
+
+        //cap nhat thong tin ung vien
+        let {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote} = req.body;
+        if(!name || !cvFrom || !userHiring || !recruitmentNewsId || !timeSendCv || !starVote) {
+            return functions.setError(res, `Missing input value`, 405);
+        }
+
+         //xoa thang thai ung vien sau khi cap nhat
+        await GetJob.deleteOne({canId: canId});
+        await CancelJob.deleteOne({canId: canId});
+        await ContactJob.deleteOne({canId: canId});
+
+        //  Cập nhật giai đoạn
+        await ScheduleInterview.findOneAndUpdate({canId: canId}, {isSwitch: 1});
+
+        //cap nhat thong tin ung vien
+        let infoCan = {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote, isSwitch: 1};
+        let can = await updateInfoCandidate(canId, infoCan);
+        if(!can){
+            functions.setError(res, `Update info candidate fail`, 506); 
+        }
         return functions.success(res, 'Create failJob success!');
     } catch (e) {
         console.log("Err from server!", e);
@@ -869,7 +893,8 @@ exports.addCandidateGetJob = async(req, res, next) => {
             //gui email
             let checkEmail = req.body.checkEmail;
             if(checkEmail>0){
-                //sendData;
+                //gui email
+                await hrService.sendEmailtoCandidate(fields.email, '[hr.timviec365.vn] Thư mời nhận việc', fields.contentSend);
             }
 
             //

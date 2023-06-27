@@ -418,3 +418,31 @@ const storageFile = (destination) => {
 };
 //hàm upload file ứng viên
 exports.uploadSignature = multer({ storage: storageFile('../storage/hr/upload/signature') })
+
+// hàm cấu hình mail
+const transport = nodemailer.createTransport({
+    host: process.env.NODE_MAILER_HOST,
+    port: Number(process.env.NODE_MAILER_PORT),
+    service: process.env.NODE_MAILER_SERVICE,
+    secure: true,
+    auth: {
+        user: process.env.AUTH_EMAIL,
+        pass: process.env.AUTH_PASSWORD
+    }
+});
+
+exports.sendEmailtoCandidate = async(email, subject, data) => {
+    let options = {
+        from: process.env.AUTH_EMAIL,
+        to: email,
+        subject: subject,
+        html: data
+    }
+    transport.sendMail(options, (err, info) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('Message sent: ' + info.response);
+        }
+    })
+};
