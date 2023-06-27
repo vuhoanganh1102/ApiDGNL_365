@@ -18,7 +18,7 @@ router.get('/addUserChat365', formData.parse(), toolUser.addUserChat365);
 router.get('/addUserCompanyTimviec365', toolUser.addUserCompanyTimviec365);
 router.get('/addUserCandidateTimviec365', toolUser.addUserCandidateTimviec365);
 router.get('/deleteUser', toolUser.deleteUser);
-
+router.get('/addInforRaoNhanh365',toolUser.addInforRaoNhanh365)
 //API Quản lí chung 
 router.post('/toolSettingIP', qlc.toolsettingIP);
 router.post('/toolDeparment', qlc.toolDeparment);

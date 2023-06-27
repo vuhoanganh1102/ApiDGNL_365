@@ -39,6 +39,9 @@ const QuitJobNewSchema = new Schema({
         type: String,
         default: null,
     },
+    type:{
+        type:Number
+    }
 },{
     collection: 'HR_QuitJobNews',
     versionKey: false,
