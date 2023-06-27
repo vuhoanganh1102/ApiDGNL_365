@@ -26,7 +26,7 @@ exports.postNewMain = async (req, res, next) => {
         let listImg = [];
         let nameVideo = "";
         let userID = req.user.data.idRaoNhanh365;
-        console.log("🚀 ~ file: new.js:28 ~ exports.postNewMain= ~ userID:", userID)
+        
         let request = req.body;
         cateID = request.cateID,
             title = request.title,

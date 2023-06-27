@@ -8,7 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/.env" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Base365/controllers/crm/GroupCustomer.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/crm/GroupCustomer.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/controllers/crm/GroupCustomer.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/controllers/qlc/CheckDevice.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/qlc/CheckDevice.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/controllers/qlc/HisTracking.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/qlc/HisTracking.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/controllers/qlc/ManageTracking.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/controllers/qlc/ManageTracking.js" afterDir="false" />
@@ -68,6 +68,7 @@
       <change beforePath="$PROJECT_DIR$/Base365/models/crm/CallInfomation.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/crm/CallInfomation.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/crm/GroupCustomer.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/crm/StatusCustomer.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/models/crm/setting/AccountAPI.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/crm/setting/AccountAPI.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/qlc/Calendar.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/qlc/Calendar.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/qlc/CalendarWorkEmployee.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/qlc/CalendarWorkEmployee.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/models/qlc/CheckDevice.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/qlc/CheckDevice.js" afterDir="false" />
@@ -78,7 +79,7 @@
       <change beforePath="$PROJECT_DIR$/Base365/models/qlc/Team.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/models/qlc/Team.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Base365/routes/crm/groupCustomer.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/crm/groupCustomer.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Base365/routes/crm/groupCustomer.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/qlc/CheckDevice.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/qlc/CheckDevice.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/qlc/HisTracking.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/qlc/HisTracking.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Base365/routes/qlc/ManageTracking.js" beforeDir="false" afterPath="$PROJECT_DIR$/Base365/routes/qlc/ManageTracking.js" afterDir="false" />
@@ -131,22 +132,22 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "D:/MD4",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/MD6&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -165,6 +166,8 @@
       <workItem from="1686748496675" duration="295000" />
       <workItem from="1687512124244" duration="328000" />
       <workItem from="1687513582680" duration="209000" />
+      <workItem from="1687751148598" duration="131000" />
+      <workItem from="1687751482656" duration="455000" />
     </task>
     <servers />
   </component>

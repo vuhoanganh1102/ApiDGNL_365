@@ -1,10 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var toolUser = require('../controllers/tools/user');
-var toolTimviec365 = require('../controllers/tools/timviec365');
-const formData = require('express-form-data');
-const toolRaoNhanh = require('../controllers/tools/raonhanh365');
-const toolHr =  require('../controllers/tools/hr');
+const toolHr =  require('../../controllers/tools/hr');
 
 
 // api quét data recruitment
@@ -39,16 +35,16 @@ router.post('/toolEmployeePolicySpecifics',toolHr.EmployeePolicySpecifics)
 
 // api
 //----------------------------------------------api quet data HR----------------------
-router.post('/hr/jobDes',toolHr.toolJobDes);
-router.post('/hr/anotherSkill', toolHr.toolAnotherSkill);
-router.post('/hr/perDetail', toolHr.toolPermisionDetail);
-router.post('/hr/remind', toolHr.toolRemind);
-router.post('/hr/processInter', toolHr.toolProcessInterview);
-router.post('/hr/processTraining', toolHr.toolProcessTraining);
-router.post('/hr/signature', toolHr.toolSignatureImage);
-router.post('/hr/scheduleInter', toolHr.toolScheduleInterview);
-router.post('/hr/inviteInter', toolHr.toolInviteInterview);
-router.post('/hr/recruitment', toolHr.toolRecruitment);
-router.post('/hr/recruitmentNews', toolHr.toolRecruitmentNews);
+router.post('/jobDes',toolHr.toolJobDes);
+router.post('/anotherSkill', toolHr.toolAnotherSkill);
+router.post('/perDetail', toolHr.toolPermisionDetail);
+router.post('/remind', toolHr.toolRemind);
+router.post('/processInter', toolHr.toolProcessInterview);
+router.post('/processTraining', toolHr.toolProcessTraining);
+router.post('/signature', toolHr.toolSignatureImage);
+router.post('/scheduleInter', toolHr.toolScheduleInterview);
+router.post('/inviteInter', toolHr.toolInviteInterview);
+router.post('/recruitment', toolHr.toolRecruitment);
+router.post('/recruitmentNews', toolHr.toolRecruitmentNews);
 
 module.exports = router;

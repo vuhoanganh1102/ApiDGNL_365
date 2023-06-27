@@ -51,8 +51,8 @@ exports.HR_CheckTokenCompany = (req, res, next) => {
             return res.status(403).json({ message: "Invalid token" });
         }
         if (user.data.role !== 0) {
-            if (user.data.inForCompany.companyID) {
-                req.comId = user.data.inForCompany.companyID;
+            if (user.data.inForPerson.employee.com_id) {
+                req.comId = user.data.inForPerson.employee.com_id;
                 next();
             } else {
                 return res.status(403).json({ message: "không tìm thấy id company" });
