@@ -7,7 +7,7 @@ exports.register = async (req,res)=>{
         const { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education,otp} = req.body;
     
             if ((userName && password && com_id &&
-                address && email && phoneTK) !== undefined) {
+                address && phoneTK) !== undefined) {
     
                     //  check email co trong trong database hay khong
                     let user = await functions.getDatafindOne(Users, { email: email , type : 2})
@@ -206,59 +206,45 @@ exports.login = async (req,res)=>{
         }
     }
 // hàm cập nhập thông tin nhan vien
-exports.updateInfoEmployee = async(req, res, next) => {
+
+exports.updateInfoEmployee = async (req, res, next) => {
     try {
-        let email = req.user.data.email
-        let request = req.body,
-            phone = request.phone,
-            com_id = request.com_id,
-            userName = request.userName,
-            address = request.address,
-            avatarUser = request.avatarUser,
-            dep_id = request.dep_id,
-            birthday = request.birthday
-            gender = request.gender
-            married = request.married
-            exp = request.exp
-            startWorkingTime = request.startWorkingTime
-            education = request.education
-            positionID = request.positionID
-            group_id = request.group_id
-
-
-        if (phone || userName || email ||positionID || education || avatarUser || address||avatarUser||dep_id||birthday||gender||married||exp) {
-            let checkPhone = await functions.checkPhoneNumber(phone)
-            if (checkPhone) {
-                await Users.updateOne({ email: email, type: 2 }, {
-                    $set: {
-                        'userName': userName,
-                        'phone': phone,
-                        'email': email,
-                        'address': address,
-                        'com_id':com_id || null,
-                        'avatarUser': avatarUser || null,
-                        'department': dep_id || null,
-                        'group' : group_id || null,
-                        'birthday': birthday,
-                        'gender': gender,
-                        'married': married,
-                        'exp': exp,
-                        'startWorkingTime': startWorkingTime,
-                        'education': education,
-                        'positionID': positionID,
+        let idQLC = req.user.data.idQLC;
+        const { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education,otp} = req.body;
+        
+        let File = req.files || null;
+        let avatarCompany = null;
+        let updatedAt = new Date();
+        if ((userName && password && com_id &&
+            address && email && phoneTK) !== undefined) {
+        if(email){
+            if (await functions.checkEmail(email) === false) {
+                return functions.setError(res, 'invalid email',400)
+            } else {
+                let check_email = await Users.findById(idQLC);
+                if (check_email.email !== email) {
+                    let check_email_lan2 = await Users.find({ email });
+                    if (check_email_lan2.length !== 0) {
+                        return functions.setError(res, "email is exits",400)
                     }
-                });
-                return functions.success(res, 'update thành công', 404)
+                }
             }
-            return functions.setError(res, 'sai định dạng số điện thoại', 404)
         }
-        return functions.setError(res, 'không có dữ liệu cần cập nhật', 404)
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
+        if (File.avatarCompany) {
+            let upload = functions.uploadFileQLC('avt_com', idQLC, File.avatarCompany, ['.jpeg', '.jpg', '.png']);
+            if (!upload) {
+                return functions.setError(res, 'Định dạng ảnh không hợp lệ',400)
+            }
+            avatarCompany = functions.createLinkFileQLC('avt_com', idQLC, File.avatarCompany.name)
+            await Users.findByIdAndUpdate(idQLC, { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education, avatarCompany, updatedAt });
+        }
+        await Users.findByIdAndUpdate(idQLC, { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education,updatedAt  });
+        return functions.success(res, 'update data user success')
     }
+}catch(error) {
+    return functions.setError(res, error.message)
 }
-
+}
 // hàm cập nhập avatar
 exports.updateImg = async(req, res, next) => {
     try {

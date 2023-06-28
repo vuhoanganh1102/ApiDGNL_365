@@ -14,8 +14,6 @@ router.post('/verify',  formData.parse(),  company.verify);
 router.post('/updateNewPassword',functions.checkToken, formData.parse(),   company.updatePassword);
 // hàm cập nhập thông tin công ty
 router.post('/updateInfoCompany', formData.parse(), functions.checkToken,  company.updateInfoCompany);
-// hàm cập nhập avatar
-// router.post('/updateImg',functions.checkToken, formData.parse(),   company.updateImg);
 // api api gửi mã OTP qua mail (quên mật khẩu) 
 router.post('/forgotPasswordCheckMail', formData.parse(),  company.forgotPasswordCheckMail);
 // api check mã OTP  (quên mật khẩu)
