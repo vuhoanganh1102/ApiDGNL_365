@@ -14,6 +14,7 @@ const GetJob = require('../../models/hr/GetJob');
 const Remind = require('../../models/hr/Remind');
 const Notify = require('../../models/hr/Notify');
 const AnotherSkill = require('../../models/hr/AnotherSkill');
+const Users = require('../../models/Users');
 
 // lay ra danh sach tat ca cac quy trinh tuyen dung cua cty
 exports.getListRecruitment= async(req, res, next) => {
@@ -277,6 +278,7 @@ exports.softDeleteStageRecruitment = async(req, res, next) => {
 
 
 //------------------------------controller recruitment new----------------------
+
 exports.getListRecruitmentNews= async(req, res, next) => {
     try {
         let {page, pageSize, title, fromDate, toDate} = req.body;
@@ -296,13 +298,65 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         if(title) listCondition.title =  new RegExp(title, 'i');
         if(fromDate) listCondition.timeStart = {$gte: new Date(fromDate)};
         if(toDate) listCondition.timeEnd = {$lte: new Date(toDate)};
-
-        var listRecruitmentNews = await functions.pageFind(RecruitmentNews, listCondition, { _id: 1 }, skip, limit);
+        let fields = {id: 1, title: 1, number: 1,timeStart: 1, timeEnd: 1, createdBy: 1, hrName: 1, address: 1, recruitmentId: 1};
+        var listRecruitmentNews = await functions.pageFindWithFields(RecruitmentNews, listCondition, fields,{ _id: 1 }, skip, limit);
         for(let i=0; i<listRecruitmentNews.length; i++){
+            let condtion = {recruitmentNewsId: listRecruitmentNews[i].id, isDelete: 0};
             let numberCandi = await Candidate.countDocuments({recruitmentNewsId: listRecruitmentNews[i].id});
-            listRecruitmentNews[i].numberCandidate = numberCandi;
+            let totalCandidate = await Candidate.find({recruitmentNewsId: listRecruitmentNews[i].id, isDelete: 0}).lean().count();
+            let totalCandidateGetJob = await Candidate.aggregate([
+                {$match: {comId: comId, isDelete: 0}},
+                {
+                    $lookup: {
+                        from: "HR_GetJobs",
+                        localField: "id",
+                        foreignField: "canId",
+                        as: "getJob"
+                    }
+                },
+                {
+                    $count: "totalDocuments"
+                }
+            ]);
+
+            let totalCandidateFailJob = await Candidate.aggregate([
+                {$match: {comId: comId, isDelete: 0}},
+                {
+                    $lookup: {
+                        from: "HR_FailJobs",
+                        localField: "id",
+                        foreignField: "canId",
+                        as: "failJob"
+                    }
+                },
+                {
+                    $count: "totalDocuments"
+                }
+            ]);
+
+            let totalCandidateInterview = await Candidate.aggregate([
+                {$match: {comId: comId, isDelete: 0}},
+                {
+                    $lookup: {
+                        from: "HR_ScheduleInterviews",
+                        localField: "id",
+                        foreignField: "canId",
+                        as: "interviewJob"
+                    }
+                },
+                {
+                    $count: "totalDocuments"
+                }
+            ]);
+            
+            listRecruitmentNews[i].totalCandidateGetJob = totalCandidateGetJob[0].totalDocuments;
+            listRecruitmentNews[i].totalCandidateFailJob = totalCandidateFailJob[0].totalDocuments;
+            listRecruitmentNews[i].totalCandidateInterview = totalCandidateInterview[0].totalDocuments;
+            let hr = await Users.findOne({idQLC: listRecruitmentNews[i].hrName});
+            if(hr) {
+                listRecruitmentNews[i].hrName = hr.userName;
+            }
         }
-        
         const totalCount = await functions.findCount(RecruitmentNews, listCondition);
         return functions.success(res, "Get list recruitment news success", {totalCount: totalCount, data: listRecruitmentNews });
     } catch (e) {
@@ -310,6 +364,130 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         return functions.setError(res, "Err from server", 500);
     }
 }
+
+exports.getTotalCandidateFollowDayMonth = async(req, res, next) => {
+    try {
+        // Get Today Start Date and End Date
+        // let startOfDay = new Date();
+        // startOfDay.setHours(0, 0, 0, 0);
+        // let endOfDay = new Date();
+        // endOfDay.setHours(23, 59, 59, 999);
+        // console.log(startOfDay, endOfDay);
+
+        let comId = req.infoLogin.comId;
+        // Số lượng tài liệu theo ngày hôm nay
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        let totalCandidateDay = await Candidate.countDocuments({comId: comId, isDelete: 0, timeSendCv: {$gte: today, $lt: tomorrow}});
+
+
+        // Số lượng tài liệu theo tuần này
+        const startOfWeek = new Date();
+        startOfWeek.setHours(0, 0, 0, 0);
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+        let totalCandidateWeek = await Candidate.countDocuments({comId: comId, isDelete: 0, timeSendCv: {$gte: startOfWeek, $lt: endOfWeek}});
+
+
+        // Số lượng tài liệu theo tháng này
+        const startOfMonth = new Date();
+        startOfMonth.setHours(0, 0, 0, 0);
+        startOfMonth.setDate(1);
+
+        const endOfMonth = new Date(startOfMonth);
+        endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+
+        let totalCandidateMonth = await Candidate.countDocuments({comId: comId, isDelete: 0, timeSendCv: {$gte: startOfMonth, $lt: endOfMonth}});
+        
+        return functions.success(res, "Get list candidate success",{totalCandidateDay, totalCandidateWeek, totalCandidateMonth} );
+    } catch (e) {
+        console.log("Err from server", e);
+        return functions.setError(res, "Err from server", 500);
+    }
+}
+
+exports.getDetailRecruitmentNews= async(req, res, next) => {
+    try {
+        let {recruitmentNewsId} = req.body;
+        if(!recruitmentNewsId){
+            return functions.setError(res, "Missing input recruitmentNewsId!", 405);
+        }
+
+        //id company lay ra sau khi dang nhap
+        let comId = req.infoLogin.comId;
+        
+        let condition = {isDelete: 0, comId: comId, id: recruitmentNewsId};
+        
+        var recruitmentNews = await RecruitmentNews.findOne(condition, {title: 1, number: 1,timeStart: 1, timeEnd: 1, createdBy: 1, hrName: 1}).lean();
+        let hr = await Users.findOne({idQLC: recruitmentNews.hrName});
+        if(hr){
+            recruitmentNews.hrName = hr.userName;
+        }
+
+        let listCandidate = await Candidate.find({recruitmentNewsId: recruitmentNewsId, isDelete: 0}, {name: 1, phone:1, email: 1});
+
+        let listCandidateGetJob = await Candidate.aggregate([
+            {$match: {comId: comId, isDelete: 0}},
+            {
+                $lookup: {
+                    from: "HR_GetJobs",
+                    localField: "id",
+                    foreignField: "canId",
+                    as: "getJob"
+                }
+            },
+            {$project: {name: 1, phone:1, email: 1}}
+        ]);
+
+        let listCandidateFailJob = await Candidate.aggregate([
+            {$match: {comId: comId, isDelete: 0}},
+            {
+                $lookup: {
+                    from: "HR_FailJobs",
+                    localField: "id",
+                    foreignField: "canId",
+                    as: "failJob"
+                }
+            },
+            {$project: {name: 1, phone:1, email: 1}}
+        ])
+
+        let listCandidateContactJob = await Candidate.aggregate([
+            {$match: {comId: comId, isDelete: 0}},
+            {
+                $lookup: {
+                    from: "HR_ContactJobs",
+                    localField: "id",
+                    foreignField: "canId",
+                    as: "contactJob"
+                }
+            },
+            {$project: {name: 1, phone:1, email: 1}}
+        ])
+
+        let listCandidateInterview = await Candidate.aggregate([
+            {$match: {comId: comId, isDelete: 0}},
+            {
+                $lookup: {
+                    from: "HR_ScheduleInterviews",
+                    localField: "id",
+                    foreignField: "canId",
+                    as: "InterviewJob"
+                }
+            },
+            {$project: {name: 1, phone:1, email: 1}}
+        ])
+        return functions.success(res, "Get list recruitment news success", {recruitmentNews, listCandidate, listCandidateGetJob,listCandidateFailJob,listCandidateContactJob, listCandidateInterview });
+    } catch (e) {
+        console.log("Err from server", e);
+        return functions.setError(res, "Err from server", 500);
+    }
+}
+
 
 
 
@@ -451,7 +629,7 @@ exports.getListCandidate= async(req, res, next) => {
         let {page, pageSize, fromDate, toDate, name, recruitmentNewsId, userHiring, gender, status} = req.body;
 
         //id company lay ra sau khi dang nhap
-        let comId = req.comId;
+        let comId = req.infoLogin.comId;
         if(!page || !pageSize){
             return functions.setError(res, "Missing input page or pagesize", 401);
         }
@@ -460,41 +638,19 @@ exports.getListCandidate= async(req, res, next) => {
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let listCondition = {isDelete: 0};
+        let listCondition = {isDelete: 0, comId: comId};
         // dua dieu kien vao ob listCondition
         if(name) listCondition.name =  new RegExp(name, 'i');
-        if(comId) listCondition.comId =  Number(comId);
         if(recruitmentNewsId) listCondition.recruitmentNewsId =  Number(recruitmentNewsId);
         if(userHiring) listCondition.userHiring =  Number(userHiring);
         if(gender) listCondition.gender =  Number(gender);
         if(status) listCondition.status =  Number(status);
-        if(fromDate) listCondition.timeSendCv = {$gte: fromDate};
-        if(toDate) listCondition.timeSendCv = {$lte: toDate};
+        if(fromDate) listCondition.timeSendCv = {$gte: new Date(fromDate)};
+        if(toDate) listCondition.timeSendCv = {$lte: new Date(toDate)};
 
         const listCandidate = await functions.pageFind(Candidate, listCondition, { _id: 1 }, skip, limit);
         const totalCount = await functions.findCount(Candidate, listCondition);
         return functions.success(res, "Get list candidate success", {totalCount: totalCount, data: listCandidate });
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
-    }
-}
-
-exports.getTotalCandidateFollowDayMonth = async(req, res, next) => {
-    try {
-        // Get Today Start Date and End Date
-        let startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-        let endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
-        console.log(startOfDay, endOfDay);
-        
-        // dua dieu kien vao ob listCondition
-        // {createdAt: {$gte: startOfDay, $lte: endOfDay}}
-        const totalCandidateDay = await Candidate.countDocuments({comId: req.comId});
-        // const totalCandidateWeek = await Candidate.find(listCondtion);
-        // const totalCandidateMonth = await Candidate.find(listCondtion);
-        return functions.success(res, "Get list candidate success", {data: {totalCandidateDay} });
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
@@ -532,7 +688,7 @@ exports.checkDataCandidate = async(req, res, next) => {
             userHiring: userHiring,         
             userRecommend: userRecommend,
             recruitmentNewsId: recruitmentNewsId,
-            timeSendCv: timeSendCv,
+            timeSendCv: new Date(timeSendCv),
             starVote: firstStarVote,
         }
         
@@ -696,7 +852,7 @@ exports.updateCandidate = async(req, res, next) => {
 
 exports.softDeleteCandidate = async(req, res, next) =>{
     try{
-        let candidateId = req.query.candidateId;
+        let candidateId = req.body.candidateId;
         if(!candidateId) {
             return functions.setError(res, "Missing input id", 404);
         }

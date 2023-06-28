@@ -32,6 +32,9 @@ router.post('/softDeleteStage', formData.parse(), hrService.checkRoleUser, hrSer
 //lay ra ds tin va tim kiem tin
 router.post('/listNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListRecruitmentNews);
 
+//chi tiet tin tuyen dung
+router.post('/detailNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getDetailRecruitmentNews);
+
 //them moi tin tuyen dung
 router.post('/createNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.checkDataRecruitmentNews, recruitmentController.createRecruitmentNews);
 
@@ -59,7 +62,7 @@ router.post('/createCandidate', formData.parse(), hrService.checkRoleUser, hrSer
 router.post('/updateCandidate', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataCandidate, recruitmentController.updateCandidate);
 
 //xoa tam thoi
-router.put('/softDeleteCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteCandidate);
+router.post('/softDeleteCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteCandidate);
 
 //-----------------------------api giai doan tuyen dung
 router.post('/getListProcess', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListProcessInterview);

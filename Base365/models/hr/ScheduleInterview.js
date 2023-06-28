@@ -53,6 +53,14 @@ const ScheduleInterviewSchema = new Schema({
         type: Number,
         default: 0,
     },
+    isDelete: {
+        type: Number,
+        default: 0,
+    },
+    deletedAt: {
+        type: Date,
+        default: null,
+    },
     // ghi chu
     note: {
         type: String,

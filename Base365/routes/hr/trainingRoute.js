@@ -14,7 +14,7 @@ router.post('/listJob', formData.parse(), hrService.checkRoleUser, hrService.che
 router.post('/job', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2),  trainingController.createJobDescription);
 
 //xoa vi tri cong viec => muc du lieu xoa gan day
-router.put('/jobSoftDelete', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 4),  trainingController.softDeleteJobDescription);
+router.post('/jobSoftDelete', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 4),  trainingController.softDeleteJobDescription);
 
 //---------------------------api quy trinh dao tao
 router.post('/listProcessTrain', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1),  trainingController.getListProcessTraining);

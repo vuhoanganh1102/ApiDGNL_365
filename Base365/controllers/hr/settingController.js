@@ -8,16 +8,20 @@ const Users = require('../../models/Users');
 exports.getListPermisionUser= async(req, res, next) => {
     try {
         let userId = req.body.userId;
+        let infoLogin = req.infoLogin;
+        if(infoLogin.type!=1){
+          return functions.setError(res, "Not company!");
+        }
         
         let infoRoleTD = await PermisionUser.find({userId: userId, barId: 1});
         let infoRoleTTNS = await PermisionUser.find({userId: userId, barId: 2});
         let infoRoleTTVP = await PermisionUser.find({userId: userId, barId: 3});
         let infoRoleHNNV = await PermisionUser.find({userId: userId, barId: 4});
-        let infoRoleHNNVeBCNS = await PermisionUser.find({userId: userId, barId: 5});
+        let infoRoleBCNS = await PermisionUser.find({userId: userId, barId: 5});
         let infoRoleDXGD = await PermisionUser.find({userId: userId, barId: 6});
         let infoRoleTGL = await PermisionUser.find({userId: userId, barId: 7});
         
-        return functions.success(res, `Get list role user with id=${userId}`, {infoRoleTD, infoRoleTTNS, infoRoleTTVP, infoRoleHNNV, infoRoleHNNVeBCNS, infoRoleDXGD, infoRoleTGL });
+        return functions.success(res, `Get list role user with id=${userId}`, {infoRoleTD, infoRoleTTNS, infoRoleTTVP, infoRoleHNNV, infoRoleBCNS, infoRoleDXGD, infoRoleTGL });
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
@@ -26,6 +30,10 @@ exports.getListPermisionUser= async(req, res, next) => {
 
 let createRole = async(userId, arrRole, role)=>{
     // lay ra cac quyen xem them sua xoa: 1, 2, 3, 4
+    let infoLogin = req.infoLogin;
+    if(infoLogin.type!=1){
+      return functions.setError(res, "Not company!");
+    }
     let arrPer = arrRole.split(",");
     for(let i=0; i<arrPer.length; i++){
         let perUserId = await hrService.getMaxId(PermisionUser);
