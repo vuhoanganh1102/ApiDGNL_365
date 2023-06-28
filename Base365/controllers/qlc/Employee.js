@@ -2,54 +2,60 @@ const Users = require('../../models/Users')
 const functions = require('../../services/functions')
 const md5 = require('md5');
 //đăng kí tài khoản nhân viên 
-exports.register = async (req,res)=>{
-    
-        const { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education,otp} = req.body;
-    
-            if ((userName && password && com_id &&
-                address && phoneTK) !== undefined) {
-    
-                    //  check email co trong trong database hay khong
-                    let user = await functions.getDatafindOne(Users, { email: email , type : 2})
-                    let MaxId = await functions.getMaxID(Users) || 0
-                    if (user == null) {
-                            const user = new Users({
-                                _id: Number(MaxId) + 1||1 ,
-                                email :email,
-                                phoneTK :phoneTK,
-                                userName: userName,
-                                phone: phone,
-                                avatarUser: avatarUser,
-                                "inForPerson.employee.position_id":position_id,
-                                "inForPerson.employee.com_id":com_id,
-                                "inForPerson.employee.dep_id":dep_id,
-                                type: 2,
-                                password: md5(password),
-                                address: address,
-                                otp: otp,
-                                authentic: null||0,
-                                fromWeb: "quanlichung.timviec365",
-                                role: 0,
-                                avatarUser: null,
-                                idQLC: (Number(MaxId) + 1),
-                                "inForPerson.employee.group_id": group_id,
-                                "inForPerson.account.birthday": birthday,
-                                "inForPerson.account.gender": gender,
-                                "inForPerson.account.married": married,
-                                "inForPerson.account.experience": experience,
-                                startWorkingTime: startWorkingTime,
-                                "inForPerson.account.education": education,
-                            })
-                        await user.save().then(() => functions.success(res,"tạo tài khoản thành công",{user})).catch((e) => {
-                            console.log(e);
-                        });
-                    } else {
-                        await functions.setError(res, 'email đã tồn tại', 404);
-                    }    
-                
-            }else {
-                await functions.setError(res,'Một trong các trường yêu cầu bị thiếu',404)
-         }
+exports.register = async (req, res) => {
+
+    const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+
+    if ((userName && password && com_id && address && phoneTK) !== undefined) {
+        let checkPhone = await functions.checkPhoneNumber(phoneTK);
+        if (checkPhone) {
+            //  check email co trong trong database hay khong
+            let user = await functions.getDatafindOne(Users, { phoneTK: phoneTK, type: 2 })
+            let MaxId = await functions.getMaxID(Users) || 0
+            if (user == null) {
+                const user = new Users({
+                    _id: Number(MaxId) + 1 || 1,
+                    email: email,
+                    phoneTK: phoneTK,
+                    userName: userName,
+                    phone: phone,
+                    avatarUser: avatarUser,
+                    "inForPerson.employee.position_id": position_id,
+                    "inForPerson.employee.com_id": com_id,
+                    "inForPerson.employee.dep_id": dep_id,
+                    type: 2,
+                    password: md5(password),
+                    address: address,
+                    otp: otp,
+                    authentic: null || 0,
+                    fromWeb: "quanlichung.timviec365",
+                    role: 0,
+                    avatarUser: null,
+                    idQLC: (Number(MaxId) + 1),
+                    "inForPerson.employee.group_id": group_id,
+                    "inForPerson.account.birthday": birthday,
+                    "inForPerson.account.gender": gender,
+                    "inForPerson.account.married": married,
+                    "inForPerson.account.experience": experience,
+                    startWorkingTime: startWorkingTime,
+                    "inForPerson.account.education": education,
+                })
+                await user.save().then(() => functions.success(res, "tạo tài khoản thành công", { user })).catch((e) => {
+                    console.log(e);
+
+
+                });
+            } else {
+                await functions.setError(res, 'SDT đã tồn tại', 404);
+
+            }
+        } else {
+            await functions.setError(res, ' định dạng sdt không đúng', 404);
+        }
+
+    } else {
+        await functions.setError(res, 'Một trong các trường yêu cầu bị thiếu', 404)
+    }
 }
 
 // hàm gửi otp qua gmail khi kích hoạt tài khoản
