@@ -6,42 +6,43 @@ const functions = require('../../services/functions');
 const hrService = require('../../services/hr/hrService');
 
 //api lay ra danh sach recruitmentController theo cac truong
-router.post('/getRecruit', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.getListRecruitment);
+router.post('/getRecruitment', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListRecruitment);
 
 //them moi quy trinh
-router.post('/', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.createRecruitment);
+router.post('/createRecruitment', hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.createRecruitment);
 
 //sua quy trinh
-router.put('/', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.updateRecruitment);
+router.post('/updateRecruitment', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.updateRecruitment);
 
 //xoa quy trinh tuyen dung vao muc da xoa gan day
-router.put('/softDelete', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.softDeleteRecruitment);
-//xoa vinh vien
-router.delete('/', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.deleteRecruitment);
+router.post('/softDelete', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteRecruitment);
 
 
 //---giai doan trong quy trinh
-router.post('/getStage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.getStageRecruitment);
+router.post('/getStage', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getStageRecruitment);
 //them giai doan trong quy trinh
-router.post('/stage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.createStageRecruitment);
+router.post('/createStage', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.createStageRecruitment);
 //sua giai doan trong quy trinh
-router.put('/stage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.updateStageRecruitment);
+router.post('/updateStage', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.updateStageRecruitment);
 //xoa gia doan
-router.put('/softDeleteStage', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.softDeleteStageRecruitment);
+router.post('/softDeleteStage', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteStageRecruitment);
 
 //-------------------------------api tin tuyen dung
 
 //lay ra ds tin va tim kiem tin
-router.post('/listNews', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.getListRecruitmentNews);
+router.post('/listNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListRecruitmentNews);
 
 //them moi tin tuyen dung
-router.post('/news', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataRecruitmentNews, recruitmentController.createRecruitmentNews);
+router.post('/createNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.checkDataRecruitmentNews, recruitmentController.createRecruitmentNews);
 
 //sua
-router.put('/news', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataRecruitmentNews, recruitmentController.updateRecruitmentNews);
+router.post('/updateNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataRecruitmentNews, recruitmentController.updateRecruitmentNews);
 
 //xoa tam thoi
-router.put('/softDeleteNews', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.softDeleteRecuitmentNews);
+router.post('/softDeleteNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteRecuitmentNews);
+
+//lay lam mau
+router.post('/createSampleNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.createSampleNews);
 
 //-------------------------------api ung vien
 
@@ -49,7 +50,7 @@ router.put('/softDeleteNews', formData.parse(), hrService.HR_CheckTokenCompany, 
 router.post('/listCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListCandidate);
 
 //lay ra tong so ung vien theo ngay, tuan, thang
-router.get('/totalCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getTotalCandidateFollowDayMonth);
+router.post('/totalCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getTotalCandidateFollowDayMonth);
 
 //them moi
 router.post('/candi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.checkDataCandidate,recruitmentController.createCandidate);
@@ -75,15 +76,18 @@ router.post('/deleteProcess', formData.parse(), hrService.checkRoleUser, hrServi
 //-----------------------------chuyen trang thai cua ung vien
 
 //ky hop dong
-router.post('/contactJob', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataJob,recruitmentController.createContactJob);
+router.post('/contactJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.createContactJob);
 
 //huy cong viec
-router.post('/cancelJob', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataJob,recruitmentController.createCancelJob);
+router.post('/cancelJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.createCancelJob);
 
 //truot ung vien
-router.post('/failJob', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataJob,recruitmentController.createFailJob);
+router.post('/failJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.createFailJob);
 
 //them lich phong van gui mail
-router.post('/scheduleInter', formData.parse(), hrService.HR_CheckTokenCompany, recruitmentController.checkDataJob,recruitmentController.createScheduleInterview);
+router.post('/scheduleInter', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.createScheduleInterview);
+
+//nhan vien
+router.post('/addCandidateGetJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataJob,recruitmentController.addCandidateGetJob);
 
 module.exports = router;

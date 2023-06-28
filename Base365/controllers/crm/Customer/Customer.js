@@ -5,6 +5,10 @@ const functions = require("../../../services/functions");
 const customerService = require('../../../services/CRM/CRMservice')
 const User = require('../../../models/Users')
 const ConnectApi = require('../../../models/crm/connnect_api_config')
+const HistoryEditCustomer = require('../../../models/crm/history/history_edit_customer')
+
+
+
 // hàm thêm mới khách hang
 exports.addCustomer = async (req, res) => {
   try {
@@ -33,7 +37,6 @@ exports.addCustomer = async (req, res) => {
       ship_city,
       ship_area,
       bank_id,
-      type,
       bank_account,
       revenue,
       size,
@@ -47,15 +50,26 @@ exports.addCustomer = async (req, res) => {
       is_delete,
       id_cus_from,
       cus_from,
-      link
+      link,
+      content
     } = req.body;
-     
+     let type = req.body
+     if (!type || ![1, 2].includes(type)) {
+      type = 2;
+    }
      const comId = req.user.data.inForPerson.employee.com_id;
      const empId = req.user.data.idQLC
-    const validationResult = customerService.validateCustomerInput(name,email,address,phone_number,type,comId);
-
-    let createDate = new Date();
-
+     let logo = req.files.logo ; 
+     let createDate = new Date();
+     let linkDL = '';
+     if (logo) {
+      const imageValidationResult = await customerService.validateImage(logo);
+      if (imageValidationResult === true) {
+        await customerService.uploadFileCRM(cus_id, logo);
+        linkDL = customerService.createLinkFileCRM(cus_id, logo.name);
+      } 
+     }
+    const validationResult = customerService.validateCustomerInput(name,comId);
     if (validationResult === true) {
       let maxID = await customerService.getMaxIDCRM(Customer);
       let cus_id = 0;
@@ -63,197 +77,81 @@ exports.addCustomer = async (req, res) => {
         cus_id = Number(maxID) + 1;
       }
       if(type == 2) {
-        let logo = req.files.logo || null;
-
-        // Nếu không có logo hoặc không có yêu cầu bắt buộc logo,có thể bỏ qua kiểm tra định dạng ảnh và tải lên
-        if (logo) {
-          const imageValidationResult = await customerService.validateImage(logo);
-          if (imageValidationResult === true) {
-            await customerService.uploadFileCRM(cus_id, logo);
-            let linkDL = customerService.createLinkFileCRM(cus_id, logo.name);
-            
-            let createCustomer = new Customer({
-              cus_id: cus_id,
-              email: email,
-              name: name,
-              stand_name: stand_name,
-              phone_number: phone_number,
-              logo: linkDL,
-              cit_id: cit_id,
-              district_id: district_id,
-              ward: ward,
-              address: address,
-              ship_invoice_address: ship_invoice_address,
-              cmnd_ccnd_number: cmnd_ccnd_number,
-              cmnd_ccnd_address: cmnd_ccnd_address,
-              cmnd_ccnd_time: cmnd_ccnd_time,
-              resoure: resoure,
-              description: description,
-              tax_code: tax_code,
-              group_id: group_id,
-              status: status,
-              business_areas: business_areas,
-              category: category,
-              business_type: business_type,
-              classify: classify,
-              bill_city: bill_city,
-              bil_district: bil_district,
-              bill_ward: bill_ward,
-              bill_address: bill_address,
-              bill_area_code: bill_area_code,
-              bill_invoice_address: bill_invoice_address,
-              bill_invoice_address_email: bill_invoice_address_email,
-              ship_city: ship_city,
-              company_id : comId,
-              emp_id : empId,
-              ship_area: ship_area,
-              bank_id: bank_id,
-              bank_account: bank_account,
-              revenue: revenue,
-              rank: rank,
-              website: website,
-              number_of_day_owed: number_of_day_owed,
-              gender: gender,
-              deb_limit: deb_limit,
-              share_all: share_all,
-              type: type,
-              is_input: is_input,
-              is_delete: is_delete,
-              created_at: createDate,
-              id_cus_from: id_cus_from,
-              cus_from: cus_from,
-              link: link
-            });
-  
-            let saveCS = await createCustomer.save();
-            res.status(200).json(saveCS);
-          } else {
-            res.status(400).json({ validationResult });
-          }
-        } else {
-          let createCustomer = new Customer({
-            cus_id: cus_id,
-            email: email,
-            name: name,
-            stand_name: stand_name,
-            phone_number: phone_number,
-            cit_id: cit_id,
-            district_id: district_id,
-            ward: ward,
-            address: address,
-            ship_invoice_address: ship_invoice_address,
-            cmnd_ccnd_number: cmnd_ccnd_number,
-            cmnd_ccnd_address: cmnd_ccnd_address,
-            cmnd_ccnd_time: cmnd_ccnd_time,
-            resoure: resoure,
-            description: description,
-            tax_code: tax_code,
-            group_id: group_id,
-            status: status,
-            business_areas: business_areas,
-            category: category,
-            business_type: business_type,
-            classify: classify,
-            bill_city: bill_city,
-            bil_district: bil_district,
-            bill_ward: bill_ward,
-            bill_address: bill_address,
-            bill_area_code: bill_area_code,
-            bill_invoice_address: bill_invoice_address,
-            bill_invoice_address_email: bill_invoice_address_email,
-            company_id : comId,
-            emp_id : empId,
-            ship_city: ship_city,
-            ship_area: ship_area,
-            bank_id: bank_id,
-            bank_account: bank_account,
-            revenue: revenue,
-            rank: rank,
-            website: website,
-            number_of_day_owed: number_of_day_owed,
-            gender: gender,
-            deb_limit: deb_limit,
-            share_all: share_all,
-            type: type,
-            is_input: is_input,
-            is_delete: is_delete,
-            created_at: createDate,
-            id_cus_from: id_cus_from,
-            cus_from: cus_from,
-            link: link
-          });
-  
-          let saveCS = await createCustomer.save();
+         // với yêu cầu là khach hàng cá nhân
+        let createCustomer = new Customer({
+          cus_id: cus_id,
+          email: email,
+          name: name,
+          stand_name: stand_name,
+          phone_number: phone_number,
+          cit_id: cit_id,
+          logo : linkDL,
+          district_id: district_id,
+          ward: ward,
+          address: address,
+          ship_invoice_address: ship_invoice_address,
+          cmnd_ccnd_number: cmnd_ccnd_number,
+          cmnd_ccnd_address: cmnd_ccnd_address,
+          cmnd_ccnd_time: cmnd_ccnd_time,
+          resoure: resoure,
+          description: description,
+          tax_code: tax_code,
+          group_id: group_id,
+          status: status,
+          business_areas: business_areas,
+          category: category,
+          business_type: business_type,
+          classify: classify,
+          bill_city: bill_city,
+          bil_district: bil_district,
+          bill_ward: bill_ward,
+          bill_address: bill_address,
+          bill_area_code: bill_area_code,
+          bill_invoice_address: bill_invoice_address,
+          bill_invoice_address_email: bill_invoice_address_email,
+          company_id : comId,
+          emp_id : empId,
+          ship_city: ship_city,
+          ship_area: ship_area,
+          bank_id: bank_id,
+          bank_account: bank_account,
+          revenue: revenue,
+          rank: rank,
+          website: website,
+          number_of_day_owed: number_of_day_owed,
+          gender: gender,
+          deb_limit: deb_limit,
+          share_all: share_all,
+          type: type,
+          is_input: is_input,
+          is_delete: is_delete,
+          created_at: createDate,
+          id_cus_from: id_cus_from,
+          cus_from: cus_from,
+          link: link
+        });
+        let saveCS = await createCustomer.save();
+        if(typeof content === 'undefined' && content.trim() !== ''){
           res.status(200).json(saveCS);
-        }
+         }else {
+         let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
+         let id = 0;
+         if (maxID) {
+         id = Number(maxID) + 1;
+         }
+         let newHT = new HistoryEditCustomer({
+           id : id,
+           customer_id : cus_id,
+           content : content,
+           created_at : createHtime
+
+         })
+         let savehis = await newHT.save();
+         res.status(200).json({saveCS,savehis});
+         }
       }
       if(type == 1) {
-        let logo = req.files.logo ;
-
-        // Nếu không có logo hoặc không có yêu cầu bắt buộc logo,có thể bỏ qua kiểm tra định dạng ảnh và tải lên
-        if (logo) {
-          const imageValidationResult = await customerService.validateImage(logo);
-          if (imageValidationResult === true) {
-            await customerService.uploadFileCRM(cus_id, logo);
-            let linkDL = customerService.createLinkFileCRM(cus_id, logo.name);
-            
-            let createCustomer = new Customer({
-              cus_id: cus_id,
-              email: email,
-              name: name,
-              stand_name: stand_name,
-              phone_number: phone_number,
-              logo: linkDL,
-              cit_id: cit_id,
-              district_id: district_id,
-              ward: ward,
-              address: address,
-              ship_invoice_address: ship_invoice_address,
-              resoure: resoure,
-              description: description,
-              tax_code: tax_code,
-              group_id: group_id,
-              status: status,
-              business_areas: business_areas,
-              category: category,
-              business_type: business_type,
-              classify: classify,
-              bill_city: bill_city,
-              bil_district: bil_district,
-              bill_ward: bill_ward,
-              bill_address: bill_address,
-              bill_area_code: bill_area_code,
-              bill_invoice_address: bill_invoice_address,
-              bill_invoice_address_email: bill_invoice_address_email,
-              company_id : comId,
-              emp_id : empId,
-              ship_city: ship_city,
-              ship_area: ship_area,
-              bank_id: bank_id,
-              bank_account: bank_account,
-              revenue: revenue,
-              size: size,
-              user_handing_over_work,
-              rank: rank,
-              website: website,
-              number_of_day_owed: number_of_day_owed,
-              deb_limit: deb_limit,
-              share_all: share_all,
-              type: type,
-              is_input: is_input,
-              is_delete: is_delete,
-              created_at: createDate,
-              id_cus_from: id_cus_from,
-              cus_from: cus_from,
-              link: link
-            });
-  
-            let saveCS = await createCustomer.save();
-            res.status(200).json(saveCS);
-          } else {
-            res.status(400).json({ validationResult });
-          }
-        } else {
+        // với yêu cầu là khach hàng doanh nghiệp
           let createCustomer = new Customer({
             cus_id: cus_id,
             email: email,
@@ -261,6 +159,7 @@ exports.addCustomer = async (req, res) => {
             stand_name: stand_name,
             phone_number: phone_number,
             cit_id: cit_id,
+            logo : linkDL,
             district_id: district_id,
             ward: ward,
             address: address,
@@ -303,26 +202,41 @@ exports.addCustomer = async (req, res) => {
             cus_from: cus_from,
             link: link
           });
-  
           let saveCS = await createCustomer.save();
-          res.status(200).json(saveCS);
+          if(typeof content === 'undefined' && content.trim() !== ''){
+            res.status(200).json(saveCS);
+           }else {
+           let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
+           let id = 0;
+           if (maxID) {
+           id = Number(maxID) + 1;
+           }
+           let newHT = new HistoryEditCustomer({
+             id : id,
+             customer_id : cus_id,
+             content : content,
+             created_at : createHtime
+  
+           })
+           let savehis = await newHT.save();
+           res.status(200).json({saveCS,savehis});
+           } 
         }
-      
-      }
-    } else {
-      res.status(400).json({ validationResult });
+        else {
+       res.status(400).json({message : 'khong hop le'})
+        }
     }
   } catch (error) {
     console.error('Failed to add', error);
     res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
   }
 };
- 
 //hiển thị danh sách khách hàng
-  
+ 
+
 exports.showKH = async (req, res) => {
   try {
-    let { page, cus_id, name, phone_number,status,resoure,user_edit_id,time_s,time_e,group_id} = req.body;
+    let { page, cus_id, name, phone_number,status,resoure,user_edit_id,time_s,time_e,group_id,group_pins_id} = req.body;
     // const validationResult = customerService.vavalidateCustomerSearchQuery( page, cus_id,status,resoure,user_edit_id,time_s,time_e,group_id);
 
     // if (!validationResult.success) {
@@ -359,7 +273,9 @@ exports.showKH = async (req, res) => {
     if(group_id){
       query.group_id = group_id
     }
-    
+    if(group_pins_id){
+      query.group_pins_id = group_pins_id
+    }
     // if (!validationResult.success) {
     //   return res.status(400).json({ error: validationResult.error });
     // }
@@ -443,7 +359,6 @@ exports.showKH = async (req, res) => {
   }
 };
 
-
 //Xoa khach hang                            
 exports.DeleteKH = async (req, res) => {
   try {
@@ -474,7 +389,8 @@ exports.DeleteKH = async (req, res) => {
   }
 };
 
-//Api thêm mới Api
+
+// thêm mới Api kết nối
 exports.addConnectCs = async(req,res) => {
   try{
     let {appID,webhook} = req.body
@@ -537,6 +453,8 @@ exports.addConnectCs = async(req,res) => {
   
 }
 
+
+// sửa Api kết nối
 exports.editConnectCs = async(req,res) =>{
   try{
     let {appID,webhook} = req.body
@@ -585,6 +503,7 @@ exports.editConnectCs = async(req,res) =>{
 }
 
 
+// hiển thị Api kết nối
 exports.ShowConnectCs = async(req,res) => {
   try{
     let comId = req.user.data.inForPerson.employee.com_id

@@ -2,7 +2,7 @@ const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const setting_dx = require('../../../models/Vanthu/setting_dx');
 const his_handle = require('../../../models/Vanthu/history_handling_dx');
 
-
+//hàm khôi phục 
 exports.edit_del_type = async (req, res) => {
     let id = req.body.id;
     console.log(id);
@@ -36,7 +36,7 @@ exports.edit_active = async (req, res) => {
     const skip = (page - 1) * pageSize;
 
     let id = Number(req.body._id);// id đề xuất 
-    let id_user = Number(req.body.id_user);//id nguoi duyet 
+    let id_user = Number(req.user.data.idQLC);//id nguoi duyet 
     console.log("id_user" + id_user);
     let type_duyet = Number(req.body.type_duyet);
     let type_handling = Number(req.body.type_handling);//1 -tiếp nhận 2-duyệt 3-từ chối ...
@@ -63,26 +63,21 @@ exports.edit_active = async (req, res) => {
 
         if (type_dx == 19) {// dề xuất thưởng phạt
             let Setting_dx = await setting_dx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
-            han_duyet = Setting_dx.timeTP;
-
+            han_duyet = Setting_dx.time_tp;
         }
         else if (type_dx == 20) {// thưởng doanh thu 
             let Setting_dx = await setting_dx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
-            han_duyet = Setting_dx.timeHH;
-
+            han_duyet = Setting_dx.time_hh;
         } else {
             let Setting_dx = await setting_dx.findOne({ ComId: com_id, typeSetting: type_setting, typeBrowse: typeBrowse });
-            han_duyet = Setting_dx.timeLimit;
+            han_duyet = Setting_dx.time_limit;
         }
-
         //kiểm tra hạn duyệt 
         let het_han_duyet = false;
         if (new Date().getTime() - parseInt(de_xuat.time_create.getTime() + (han_duyet * 3600 / 1000)) > 0) {
             console.log('heet han')
             het_han_duyet = true;
         }
-
-
         if (het_han_duyet) {
             return res.status(200).json({ message: "de xuat da het han duyet " });
         } else {
@@ -100,20 +95,12 @@ exports.edit_active = async (req, res) => {
                 type_handling: type_handling,//2- đồng ý // 3- hủy duyệt //1-xác nhận
                 time: new Date()
             });
-
             await his_handel_duyet.save()// lưu trạng thái xử lí vào bảng handle;
-
-
             //trường hợp 2 người duyệt trở lên 
-
             let his_handle_dx = await his_handle.find({ id_dx: id });//lấy lịch sử xử lí của đễ xuất đó
-
             // console.log("his:" + his_handle_dx);
-
             console.log("danh_sach_nguoi_duyet:" + danh_sach_nguoi_duyet.length);
             console.log("his_handle_dx:" + his_handle_dx[0]);
-
-
             let check_tiep_nhan = 0;
             let check_dong_y = 0;
             let check_tu_choi = 0;
@@ -121,24 +108,19 @@ exports.edit_active = async (req, res) => {
             for (let i = 0; i < danh_sach_nguoi_duyet.length; i++) {
                 for (let j = 0; j < his_handle_dx.length; j++) {
                     if (his_handle_dx[j].id_user == danh_sach_nguoi_duyet[i] && his_handle_dx[j].type_handling == 2) {
-
                         // console.log(2);
                         check_dong_y += 1;
-
                     };
                     if (his_handle_dx[j].id_user == danh_sach_nguoi_duyet[i] && his_handle_dx[j].type_handling == 3) {
                         // console.log(3);
                         check_tu_choi += 1;
-
                     };
                     if (his_handle_dx[j].id_user == danh_sach_nguoi_duyet[i] && his_handle_dx[j].type_handling == 1) {
 
                         //console.log(1);
                         check_tiep_nhan += 1;
-
                     };
                 }
-
             }
             console.log("check_tiep_nhan" + check_tiep_nhan);
             console.log("check_tu_choi" + check_tu_choi);

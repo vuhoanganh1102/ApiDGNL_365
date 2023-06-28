@@ -805,7 +805,10 @@ const UserSchema = new mongoose.Schema({
                 type: String,
                 default: null
             },
-
+            store_phone: {
+                type: String,
+                default: null
+            },
             ownerName: {
                 //ten chu tai khoan
                 type: String,
@@ -908,52 +911,7 @@ const UserSchema = new mongoose.Schema({
             default: 0,
         }
     },
-    inforRN365: {
-        cccd: {
-            //so cmnd/can cuoc cong dan
-            type: String,
-            default: null
-        },
-        active: {
-            type: Number,
-            default: 0
-        },
-        status: {
-            type: String,
-            default: ''
-        },
-        acceptMessStranger: {
-            type: Number,
-            default: 0
-        },
-        active: {
-            type: Number,
-            default: 0
-        },
-        status: {
-            type: String,
-
-            default: null
-        },
-        
-        time: {
-            //thoi gian xac thuc
-            type: Date,
-            default: Date(Date.now())
-        },
-        active: {
-            type: Number,
-            default: 0
-        },
-        status: {
-            type: String,
-            default: ''
-        },
-        acceptMessStranger: {
-            type: Number,
-            default: 0
-        }
-    }
+    
 }, {
     collection: 'Users',
     versionKey: false,

@@ -17,5 +17,6 @@ router.post('/showHisCus',functions.checkToken,formData.parse(),CustomerDetailsR
 //Api bafn giao khach hangf
 router.post('/bangiao',functions.checkToken,formData.parse(),CustomerDetailsRoutes.banGiao)
 
-
+//Api chia sẻ khách hàng 
+router.post('/shareCustomer',functions.checkToken,formData.parse(),CustomerDetailsRoutes.ShareCustomer)
 module.exports = router;

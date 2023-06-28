@@ -4,7 +4,7 @@ const Customer = require('../../../models/crm/Customer/customer')
 const functions = require("../../../services/functions");
 const customerService = require('../../../services/CRM/CRMservice')
 const HistoryEditCustomer = require('../../../models/crm/history/history_edit_customer')
-
+const ShareCustomer = require('../../../models/crm/tbl_share_customer')
 
 // hàm hiển thị chi tiết khách hàng
 exports.findOneCus = async (req,res) =>{
@@ -144,322 +144,168 @@ exports.editCustomer = async(req,res) => {
         id_cus_from,created_at,cus_from,link,
         content
       } = req.body;
+      let logo = req.files.logo ;
+      let updateDate = new Date();
+      let createHtime = new Date();
+      let linkDL = '';
+      if (logo) {
+        const imageValidationResult = await customerService.validateImage(logo);
+        if (imageValidationResult === true) {
+          await customerService.uploadFileCRM(cus_id, logo);
+          linkDL = customerService.createLinkFileCRM(cus_id, logo.name);
+        }
+      } 
       if (typeof cus_id === 'undefined') {
         res.status(400).json({ success: false, error: 'cus_id không được bỏ trống' });
       }
       if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
         res.status(400).json({ success: false, error: 'cus_id phải là 1 số' });
       }
-    
-    else{
-        let updateDate = new Date();
-        let createHtime = new Date();
-        if(type == 1){          
-        let logo = req.files.logo ;
-        // Nếu không có logo hoặc không có yêu cầu bắt buộc logo,có thể bỏ qua kiểm tra định dạng ảnh và tải lên
-        if (logo) {
-          const imageValidationResult = await customerService.validateImage(logo);
-          if (imageValidationResult === true) {
-            await customerService.uploadFileCRM(cus_id, logo);
-            var linkDL = customerService.createLinkFileCRM(cus_id, logo.name);
-           await customerService.getDatafindOneAndUpdate(Customer,{cus_id : cus_id},{
-              cus_id: cus_id,
-              email: email,
-              name: name,
-              stand_name: stand_name,
-              phone_number: phone_number,
-              logo: linkDL,
-              cit_id: cit_id,
-              district_id: district_id,
-              ward: ward,
-              address: address,
-              ship_invoice_address: ship_invoice_address,
-              resoure: resoure,
-              description: description,
-              tax_code: tax_code,
-              group_id: group_id,
-              status: status,
-              business_areas: business_areas,
-              category: category,
-              business_type: business_type,
-              classify: classify,
-              bill_city: bill_city,
-              bil_district: bil_district,
-              bill_ward: bill_ward,
-              bill_address: bill_address,
-              bill_area_code: bill_area_code,
-              bill_invoice_address: bill_invoice_address,
-              bill_invoice_address_email: bill_invoice_address_email,
-              ship_city: ship_city,
-              ship_area: ship_area,
-              bank_id: bank_id,
-              bank_account: bank_account,
-              revenue: revenue,
-              size: size,
-              user_handing_over_work,
-              rank: rank,
-              website: website,
-              number_of_day_owed: number_of_day_owed,
-              deb_limit: deb_limit,
-              share_all: share_all,
-              type: type,
-              is_input: is_input,
-              is_delete: is_delete,
-              created_at : created_at,
-              updated_at: updateDate,
-              id_cus_from: id_cus_from,
-              cus_from: cus_from,
-              link: link
-           })
-          //  customerService.success(res, "Customer edited successfully");
+      if(type == 1 ){
+          await customerService.getDatafindOneAndUpdate(Customer,{cus_id : cus_id},{
+          cus_id: cus_id,
+          email: email,
+          name: name,
+          stand_name: stand_name,
+          phone_number: phone_number,
+          logo: linkDL,
+          cit_id: cit_id,
+          district_id: district_id,
+          ward: ward,
+          address: address,
+          ship_invoice_address: ship_invoice_address,
+          resoure: resoure,
+          description: description,
+          tax_code: tax_code,
+          group_id: group_id,
+          status: status,
+          business_areas: business_areas,
+          category: category,
+          business_type: business_type,
+          classify: classify,
+          bill_city: bill_city,
+          bil_district: bil_district,
+          bill_ward: bill_ward,
+          bill_address: bill_address,
+          bill_area_code: bill_area_code,
+          bill_invoice_address: bill_invoice_address,
+          bill_invoice_address_email: bill_invoice_address_email,
+          ship_city: ship_city,
+          ship_area: ship_area,
+          bank_id: bank_id,
+          bank_account: bank_account,
+          revenue: revenue,
+          size: size,
+          user_handing_over_work,
+          rank: rank,
+          website: website,
+          number_of_day_owed: number_of_day_owed,
+          deb_limit: deb_limit,
+          share_all: share_all,
+          type: type,
+          is_input: is_input,
+          is_delete: is_delete,
+          created_at : created_at,
+          updated_at: updateDate,
+          id_cus_from: id_cus_from,
+          cus_from: cus_from,
+          link: link
+          })
+      //  customerService.success(res, "Customer edited successfully");
           if(typeof content === 'undefined'){
-               customerService.success(res, "Customer edited successfully");
+           customerService.success(res, "Customer edited successfully");
           }else {
-             let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
-           let id = 0;
-           if (maxID) {
-           id = Number(maxID) + 1;
-           }
-           let newHT = new HistoryEditCustomer({
-                id : id,
-                customer_id : cus_id,
-                content : content,
-                created_at : createHtime
-
-           })
-           let savehis = await newHT.save();
-            res.status(200).json({savehis,message: 'Customer edited successfully'}); 
-          }
-                               
-          } else {
-            res.status(400).json({ validationResult });
-          }
-        } else {
-            await customerService.getDatafindOneAndUpdate(Customer,{cus_id : cus_id},{
-                cus_id: cus_id,
-                email: email,
-                name: name,
-                stand_name: stand_name,
-                phone_number: phone_number,
-                logo: linkDL,
-                cit_id: cit_id,
-                district_id: district_id,
-                ward: ward,
-                address: address,
-                ship_invoice_address: ship_invoice_address,
-                resoure: resoure,
-                description: description,
-                tax_code: tax_code,
-                group_id: group_id,
-                status: status,
-                business_areas: business_areas,
-                category: category,
-                business_type: business_type,
-                classify: classify,
-                bill_city: bill_city,
-                bil_district: bil_district,
-                bill_ward: bill_ward,
-                bill_address: bill_address,
-                bill_area_code: bill_area_code,
-                bill_invoice_address: bill_invoice_address,
-                bill_invoice_address_email: bill_invoice_address_email,
-                ship_city: ship_city,
-                ship_area: ship_area,
-                bank_id: bank_id,
-                bank_account: bank_account,
-                revenue: revenue,
-                size: size,
-                user_handing_over_work,
-                rank: rank,
-                website: website,
-                number_of_day_owed: number_of_day_owed,
-                deb_limit: deb_limit,
-                share_all: share_all,
-                type: type,
-                is_input: is_input,
-                is_delete: is_delete,
-                created_at : created_at,
-                updated_at: updateDate,
-                id_cus_from: id_cus_from,
-                cus_from: cus_from,
-                link: link
-             })
-            //  customerService.success(res, "Customer edited successfully"); 
-            if(typeof content === 'undefined'){
-              customerService.success(res, "Customer edited successfully");
-         }else {
-            let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
+          let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
           let id = 0;
           if (maxID) {
           id = Number(maxID) + 1;
           }
           let newHT = new HistoryEditCustomer({
-               id : id,
-               customer_id : cus_id,
-               content : content,
-               created_at : createHtime
+            id : id,
+            customer_id : cus_id,
+            content : content,
+            created_at : createHtime
 
           })
           let savehis = await newHT.save();
-           res.status(200).json({savehis,message: 'Customer edited successfully'}); 
-         }            
+          res.status(200).json({savehis,message: 'Customer edited successfully'}); 
+          }
+      }
+      if(type == 2){
+        await customerService.getDatafindOneAndUpdate(Customer,{cus_id : cus_id},{
+          cus_id: cus_id,
+          email: email,
+          name: name,
+          stand_name: stand_name,
+          phone_number: phone_number,
+          logo: linkDL,
+          cit_id: cit_id,
+          district_id: district_id,
+          ward: ward,
+          address: address,
+          ship_invoice_address: ship_invoice_address,
+          cmnd_ccnd_number: cmnd_ccnd_number,
+          cmnd_ccnd_address: cmnd_ccnd_address,
+          cmnd_ccnd_time: cmnd_ccnd_time,
+          resoure: resoure,
+          description: description,
+          tax_code: tax_code,
+          group_id: group_id,
+          status: status,
+          business_areas: business_areas,
+          category: category,
+          business_type: business_type,
+          classify: classify,
+          bill_city: bill_city,
+          bil_district: bil_district,
+          bill_ward: bill_ward,
+          bill_address: bill_address,
+          bill_area_code: bill_area_code,
+          bill_invoice_address: bill_invoice_address,
+          bill_invoice_address_email: bill_invoice_address_email,
+          ship_city: ship_city,
+          ship_area: ship_area,
+          bank_id: bank_id,
+          bank_account: bank_account,
+          revenue: revenue,
+          rank: rank,
+          website: website,
+          number_of_day_owed: number_of_day_owed,
+          gender: gender,
+          deb_limit: deb_limit,
+          share_all: share_all,
+          type: type,
+          is_input: is_input,
+          is_delete: is_delete,
+          created_at : created_at,
+          updated_at: updateDate,
+          id_cus_from: id_cus_from,
+          cus_from: cus_from,
+          link: link
+         })
+        //  customerService.success(res, "Customer edited successfully");  
+        if(typeof content === 'undefined'){
+          customerService.success(res, "Customer edited successfully");
+        }else {
+        let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
+         let id = 0;
+        if (maxID) {
+        id = Number(maxID) + 1;
         }
-        }
-        if(type == 2){
-            let logo = req.files.logo ;
-            // Nếu không có logo hoặc không có yêu cầu bắt buộc logo,có thể bỏ qua kiểm tra định dạng ảnh và tải lên
-            if (logo) {
-              const imageValidationResult = await customerService.validateImage(logo);
-              if (imageValidationResult === true) {
-                await customerService.uploadFileCRM(cus_id, logo);
-                var linkDL = customerService.createLinkFileCRM(cus_id, logo.name);
-               await customerService.getDatafindOneAndUpdate(Customer,{cus_id : cus_id},{
-                cus_id: cus_id,
-                email: email,
-                name: name,
-                stand_name: stand_name,
-                phone_number: phone_number,
-                logo: linkDL,
-                cit_id: cit_id,
-                district_id: district_id,
-                ward: ward,
-                address: address,
-                ship_invoice_address: ship_invoice_address,
-                cmnd_ccnd_number: cmnd_ccnd_number,
-                cmnd_ccnd_address: cmnd_ccnd_address,
-                cmnd_ccnd_time: cmnd_ccnd_time,
-                resoure: resoure,
-                description: description,
-                tax_code: tax_code,
-                group_id: group_id,
-                status: status,
-                business_areas: business_areas,
-                category: category,
-                business_type: business_type,
-                classify: classify,
-                bill_city: bill_city,
-                bil_district: bil_district,
-                bill_ward: bill_ward,
-                bill_address: bill_address,
-                bill_area_code: bill_area_code,
-                bill_invoice_address: bill_invoice_address,
-                bill_invoice_address_email: bill_invoice_address_email,
-                ship_city: ship_city,
-                ship_area: ship_area,
-                bank_id: bank_id,
-                bank_account: bank_account,
-                revenue: revenue,
-                rank: rank,
-                website: website,
-                number_of_day_owed: number_of_day_owed,
-                gender: gender,
-                deb_limit: deb_limit,
-                share_all: share_all,
-                type: type,
-                is_input: is_input,
-                is_delete: is_delete,
-                created_at : created_at,
-                updated_at: updateDate,
-                id_cus_from: id_cus_from,
-                cus_from: cus_from,
-                link: link
-               })
-              //  customerService.success(res, "Customer edited successfully");  
-              if(typeof content === 'undefined'){
-                customerService.success(res, "Customer edited successfully");
-           }else {
-              let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
-            let id = 0;
-            if (maxID) {
-            id = Number(maxID) + 1;
-            }
-            let newHT = new HistoryEditCustomer({
-                 id : id,
-                 customer_id : cus_id,
-                 content : content,
-                 created_at : createHtime
- 
-            })
-            let savehis = await newHT.save();
-             res.status(200).json({savehis,message: 'Customer edited successfully'}); 
-           }        
-              } else {
-                res.status(400).json({ validationResult });
-              }
-            } else {
-                await customerService.getDatafindOneAndUpdate(Customer,{cus_id : cus_id},{
-                    cus_id: cus_id,
-                    email: email,
-                    name: name,
-                    stand_name: stand_name,
-                    phone_number: phone_number,
-                    logo: linkDL,
-                    cit_id: cit_id,
-                    district_id: district_id,
-                    ward: ward,
-                    address: address,
-                    ship_invoice_address: ship_invoice_address,
-                    cmnd_ccnd_number: cmnd_ccnd_number,
-                    cmnd_ccnd_address: cmnd_ccnd_address,
-                    cmnd_ccnd_time: cmnd_ccnd_time,
-                    resoure: resoure,
-                    description: description,
-                    tax_code: tax_code,
-                    group_id: group_id,
-                    status: status,
-                    business_areas: business_areas,
-                    category: category,
-                    business_type: business_type,
-                    classify: classify,
-                    bill_city: bill_city,
-                    bil_district: bil_district,
-                    bill_ward: bill_ward,
-                    bill_address: bill_address,
-                    bill_area_code: bill_area_code,
-                    bill_invoice_address: bill_invoice_address,
-                    bill_invoice_address_email: bill_invoice_address_email,
-                    ship_city: ship_city,
-                    ship_area: ship_area,
-                    bank_id: bank_id,
-                    bank_account: bank_account,
-                    revenue: revenue,
-                    rank: rank,
-                    website: website,
-                    number_of_day_owed: number_of_day_owed,
-                    gender: gender,
-                    deb_limit: deb_limit,
-                    share_all: share_all,
-                    type: type,
-                    is_input: is_input,
-                    is_delete: is_delete,
-                    created_at : created_at,
-                    updated_at: updateDate,
-                    id_cus_from: id_cus_from,
-                    cus_from: cus_from,
-                    link: link
-                 })
-                //  customerService.success(res, "Customer edited successfully"); 
-                if(typeof content === 'undefined'){
-                  customerService.success(res, "Customer edited successfully");
-             }else {
-                let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
-              let id = 0;
-              if (maxID) {
-              id = Number(maxID) + 1;
-              }
-              let newHT = new HistoryEditCustomer({
-                   id : id,
-                   customer_id : cus_id,
-                   content : content,
-                   created_at : createHtime
-   
-              })
-              let savehis = await newHT.save();
-               res.status(200).json({savehis,message: 'Customer edited successfully'}); 
-             }              
-            }
-        }
+        let newHT = new HistoryEditCustomer({
+           id : id,
+           customer_id : cus_id,
+           content : content,
+           created_at : createHtime
+
+        })
+        let savehis = await newHT.save();
+        res.status(200).json({savehis,message: 'Customer edited successfully'}); 
+     }
+    }else{
+        res.status(400).json({message: 'không có loại khách hang đó'}); 
     }
+  
   }  catch (error) {
         console.error('Failed to find Customer', error);
         res.status(500).json({ error: 'Failed to find  Customer' });
@@ -521,3 +367,27 @@ exports.banGiao = async(req,res) => {
     res.status(500).json({ error: 'Failed to find  Customer' });
   }
 }
+
+//hàm chia sẻ khách hàng
+exports.ShareCustomer = async (req, res) => {
+  try {
+    let {com_id,emp_id} = req.body
+    // const com_id = req.user.data.inForPerson.employee.com_id;
+    // const emp_id = req.user.idQLC;
+    const query = {
+      company_id: com_id,
+      $or: [
+        { emp_id: emp_id },
+        { emp_share: emp_id }
+      ]
+    };
+
+    const result = await ShareCustomer.find(query)
+      .populate('customer_id')
+      .sort({ updated_at: -1 });
+    res.json(result);
+  } catch (error) {
+    console.error('Failed to share customer', error);
+    res.status(500).json({ error: 'Failed to share customer' });
+  }
+};

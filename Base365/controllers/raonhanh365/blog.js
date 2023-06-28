@@ -6,49 +6,50 @@ const Users = require('../../models/Users')
 const md5 = require('md5');
 const folderImg = 'img_blog';
 const raoNhanh = require('../../services/rao nhanh/raoNhanh')
-exports.getListBlogByFields = async(req, res, next) => {
+exports.getListBlogByFields = async (req, res, next) => {
     try {
-            let page = Number(req.body.page);
-            let pageSize = Number(req.body.pageSize);
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let idBlog = req.body.idBlog;
-            let cateID = req.body.cateID;
-            let adminID = req.body.adminID;
-            let title = req.body.title;
-            let des = req.body.des;
-            let listCondition = {};
+        let page = Number(req.body.page);
+        let pageSize = Number(req.body.pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let idBlog = req.body.idBlog;
+        let cateID = req.body.cateID;
+        let adminID = req.body.adminID;
+        let title = req.body.title;
+        let des = req.body.des;
+        let listCondition = {};
 
-            // dua dieu kien vao ob listCondition
-            if(idBlog) listCondition._id = idBlog;
-            if(cateID) listCondition.categoryId =  Number(cateID);
-            if(adminID) listCondition.adminId =  Number(adminID);
-            if(title) listCondition.title =  new RegExp(title);
-            if(des) listCondition.des =  new RegExp(des);
-            let fieldsGet = 
-            {   
-                _id: 1,title: 1,url: 1, teaser: 1,dateLastEdit: 1, image: 1
-            }
-            const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit); 
-            const totalCount = await functions.findCount(Blog, listCondition);
-            return functions.success(res, "get list blog success", {totalCount: totalCount, data: listBlog });
-      
-        
+        // dua dieu kien vao ob listCondition
+        if (idBlog) listCondition._id = idBlog;
+        if (cateID) listCondition.categoryId = Number(cateID);
+        if (adminID) listCondition.adminId = Number(adminID);
+        if (title) listCondition.title = new RegExp(title);
+        if (des) listCondition.des = new RegExp(des);
+        let fieldsGet =
+        {
+            teaser: 1, adminId: 1, langId: 1, title: 1, url: 1, image: 1, keyword: 1, sapo: 1, des: 1, detailDes: 1,
+            categoryId: 1, status: 1, date: 1, adminEdit: 1, dateLastEdit: 1, order: 1, active: 1, new: 1, hot: 1, titleRelate: 1, contentRelate: 1
+        }
+        const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit);
+        const totalCount = await functions.findCount(Blog, listCondition);
+        return functions.success(res, "get list blog success", { totalCount: totalCount, data: listBlog });
+
+
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
     }
 }
 
-exports.getAndCheckData = async(req, res, next) => {
+exports.getAndCheckData = async (req, res, next) => {
     try {
         let image = req.files.image;
         let imageWeb = req.files.imageWeb;
-        let {adminId,title,url,des,status,keyword, sapo, active, hot, detailDes , titleRelate, contentRelate, newStatus, date, dateLastEdit} = req.body;
-        let fields = [adminId, title, url, image, des,keyword, sapo, detailDes, titleRelate, contentRelate];
-        for(let i=0; i<fields.length; i++){
-            if(!fields[i])
-                return functions.setError(res, `Missing input value ${i+1}`, 404);
+        let { adminId, title, url, des, status, keyword, sapo, active, hot, detailDes, titleRelate, contentRelate, newStatus, date, dateLastEdit } = req.body;
+        let fields = [adminId, title, url, image, des, keyword, sapo, detailDes, titleRelate, contentRelate];
+        for (let i = 0; i < fields.length; i++) {
+            if (!fields[i])
+                return functions.setError(res, `Missing input value ${i + 1}`, 404);
         }
         // them cac truong muon them hoac sua
         req.info = {
@@ -78,7 +79,7 @@ exports.getAndCheckData = async(req, res, next) => {
 
 
 //admin tạo 1 blog
-exports.createBlog = async(req, res, next) => {
+exports.createBlog = async (req, res, next) => {
     try {
         let fields = req.info;
         const maxIdBlog = await Blog.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
@@ -88,15 +89,15 @@ exports.createBlog = async(req, res, next) => {
         } else newIdBlog = 1;
         fields._id = newIdBlog;
 
-        if(!fields.date) {
+        if (!fields.date) {
             fields.date = Date(Date.now());
         }
         //luu anh
         let image = fields.image;
-        if(!await functions.checkImage(image.path)){
+        if (!await functions.checkImage(image.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        raoNhanh.uploadFileRaoNhanh(folderImg,newIdBlog,image);
+        raoNhanh.uploadFileRaoNhanh(folderImg, newIdBlog, image);
         fields.image = functions.createLinkFileRaonhanh(folderImg, newIdBlog, image.name);
         let blog = new Blog(fields);
         await blog.save();
@@ -107,25 +108,25 @@ exports.createBlog = async(req, res, next) => {
     }
 }
 
-exports.updateBlog = async(req, res, next) => {
-    try{
-        if(!req.body._id)
+exports.updateBlog = async (req, res, next) => {
+    try {
+        if (!req.body._id)
             return functions.setError(res, "Missing input value id blog!", 404);
         let _id = req.body._id;
         let fields = req.info;
-        if(!fields.dateLastEdit){
+        if (!fields.dateLastEdit) {
             fields.dateLastEdit = Date(Date.now());
         }
         let image = fields.image;
-        if(!await functions.checkImage(image.path)){
+        if (!await functions.checkImage(image.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        let existsBlog = await Blog.findOne({_id: _id});
+        let existsBlog = await Blog.findOne({ _id: _id });
         if (existsBlog) {
             // xu ly anh
             let linkImg = existsBlog.image.split("/");
             let len = linkImg.length;
-            functions.deleteImgRaoNhanh(folderImg, linkImg[len-2], linkImg[len-1]);
+            functions.deleteImgRaoNhanh(folderImg, linkImg[len - 2], linkImg[len - 1]);
             raoNhanh.uploadFileRaoNhanh(folderImg, _id, image);
             fields.image = functions.createLinkFileRaonhanh(folderImg, _id, image.name);
 
@@ -135,57 +136,75 @@ exports.updateBlog = async(req, res, next) => {
         }
 
         return functions.setError(res, "Blog not found!", 505);
-    }catch(err){
+    } catch (err) {
         console.log("Err from server!", err);
         return functions.setError(res, "Err from server!", 500);
     }
 }
 
 
-exports.getDetailBlog = async(req, res, next) => {
-    try{
+exports.getDetailBlog = async (req, res, next) => {
+    try {
         let idBlog = req.body.idBlog;
-        if(!idBlog)
+        if (!idBlog)
             return functions.setError(res, "Missing input value id blog!", 404);
-        let fields = {title: 1,url: 1,imgName: 1,imgWebName: 1,des: 1,status: 1,keyword: 1,sapo: 1,active:1,hot:1,new:1,detailDes: 1,titleRelate:1,contentRelate: 1}
-        listImgBase64 = req.body.listImgBase64;
-        let image = req.files.image;
-        functions.uploadFileBase64RaoNhanh(folderImg, idBlog, listImgBase64, image);
-        let existsBlog = await Blog.findOne({_id: idBlog}, fields);
-        if (existsBlog) {
-            return functions.success(res, "get detail blog successfully", {blog:existsBlog, listImage: listImgBase64});
+        let fields = {
+            title: 1, url: 1, imgName: 1, imgWebName: 1, des: 1, status: 1,
+            keyword: 1, sapo: 1, active: 1, hot: 1, new: 1, detailDes: 1, titleRelate: 1, categoryId: 1,
+            image:1,
+            titleRelate: 1, contentRelate: 1, teaser: 1, _id: 1, date: 1, admin: { name: 1, _id: 1 }
         }
+        let listImgBase64 = req.body.listImgBase64;
+        let image = req.files.image;
+        if (image) {
+            functions.uploadFileBase64RaoNhanh(folderImg, idBlog, listImgBase64, image);
+            let existsBlog = await Blog.findOne({ _id: idBlog }, fields);
+            tintuongtu = await Blog.find({ categoryId: existsBlog.categoryId, active: 1, _id: { $ne: existsBlog._id } }, {
+                _id:1,title:1,teaser:1,image:1,url:1
+            }).limit(6);
+            if (existsBlog) {
+                return functions.success(res, "get detail blog successfully", { blog: existsBlog, listImage: listImgBase64,tintuongtu });
+            }
+        }
+        let existsBlog = await Blog.findOne({ _id: idBlog }, fields);
+        tintuongtu = await Blog.find({ categoryId: existsBlog.categoryId, active: 1, _id: { $ne: existsBlog._id } }, {
+            _id:1,title:1,teaser:1,image:1,url:1
+        }).limit(6);
+        if (existsBlog) {
+            return functions.success(res, "get detail blog successfully", { blog: existsBlog,tintuongtu });
+        }
+       
         return functions.setError(res, "Blog not found!", 505);
-    }catch(err){
+    } catch (err) {
         console.log("Err from server!", err);
         return functions.setError(res, "Err from server!", 500);
     }
 }
 
 
-exports.deleteBlog = async(req, res, next) => {
+exports.deleteBlog = async (req, res, next) => {
     try {
         let idBlog = Number(req.query.idBlog);
         let adminId = Number(req.query.adminId);
         if (idBlog) {
-            let blog = await functions.getDataDeleteOne(Blog ,{_id: idBlog});
-            if (blog.deletedCount===1) {
+            let blog = await functions.getDataDeleteOne(Blog, { _id: idBlog });
+            if (blog.deletedCount === 1) {
                 return functions.success(res, `Delete blog with _id=${idBlog} success`);
-            }else{
+            } else {
                 return functions.success(res, "Blog not found");
             }
-        } 
-        if(adminId){
+        }
+        if (adminId) {
             if (!await functions.getMaxID(Blog)) {
                 functions.setError(res, "No blog existed", 513);
             } else {
-                Blog.deleteMany({adminId: adminId})
+                Blog.deleteMany({ adminId: adminId })
                     .then(() => functions.success(res, "Delete all blog by adminId successfully"))
                     .catch(err => functions.setError(res, err.message, 514));
             }
         }
-        if(!await functions.getMaxID(Blog)) {
-                functions.setError(res, "No blog existed", 513);
+        if (!await functions.getMaxID(Blog)) {
+            functions.setError(res, "No blog existed", 513);
         } else {
             Blog.deleteMany()
                 .then(() => functions.success(res, "Delete all blog successfully"))
@@ -198,10 +217,11 @@ exports.deleteBlog = async(req, res, next) => {
 }
 exports.createToken = async(req, res, next) => {
     try{
-        let admin = await AdminUser.findOne({_id: 4});
+        let adminId = req.body.adminId;
+        let admin = await AdminUser.findOne({_id: adminId});
         let token = await functions.createToken(admin, "28d")
         res.setHeader('authorization', `Bearer ${token}`);
-        return functions.success(res, 'Create token admin success', );
+        return functions.success(res, `Bearer ${token}` );
     }catch(error){
         console.log("Đã có lỗi xảy ra tao token", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
@@ -213,14 +233,14 @@ exports.createTokenUser = async(req, res, next) => {
         let token = await functions.createToken(admin, "28d");
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, `Bearer ${token}`);
-    }catch(error){
+    } catch (error) {
         console.log("Đã có lỗi xảy ra tao token", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
 
-exports.createAdmin = async(req, res, next) => {
-    try{
+exports.createAdmin = async (req, res, next) => {
+    try {
         let request = req.body;
         let loginName = request.loginName,
             password = request.password,
@@ -245,11 +265,11 @@ exports.createAdmin = async(req, res, next) => {
         if (maxIDAdmin) {
             newIDAdmin = Number(maxIDAdmin._id) + 1;
         } else newIDAdmin = 1;
-        let fields = {_id: newIDAdmin, loginName, password: md5(password), name: name, email: email, address: address, isAdmin: 1, active: 1}
+        let fields = { _id: newIDAdmin, loginName, password: md5(password), name: name, email: email, address: address, isAdmin: 1, active: 1 }
         const admin = new AdminUser(fields);
         await admin.save();
         return functions.success(res, 'Create token admin success');
-    }catch(error){
+    } catch (error) {
         console.log("Đã có lỗi xảy ra tao token", err);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }

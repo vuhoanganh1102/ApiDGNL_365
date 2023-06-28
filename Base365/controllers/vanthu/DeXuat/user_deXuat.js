@@ -18,7 +18,7 @@ exports.deXuat_user_send = async (req, res) => {
     let danh_sach_nguoi_nhan = [];
 
     console.log(typeof (nguoi_nhan_de_xuat));
-
+    
     if (nguoi_nhan_de_xuat != 0) {
         danh_sach_nguoi_nhan = nguoi_nhan_de_xuat.split(",");
     }
