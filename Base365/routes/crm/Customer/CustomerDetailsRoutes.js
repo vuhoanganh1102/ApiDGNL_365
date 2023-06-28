@@ -18,7 +18,7 @@ router.post('/showHisCus',functions.checkToken,formData.parse(),CustomerDetailsR
 router.post('/bangiao',functions.checkToken,formData.parse(),CustomerDetailsRoutes.banGiao)
 
 //Api chia sẻ khách hàng 
-router.post('/shareCustomer',functions.checkToken,formData.parse(),CustomerDetailsRoutes.ShareCustomer)
+router.post('/shareCustomer',formData.parse(),CustomerDetailsRoutes.ShareCustomer)
 
 //Api hiển thị danh sách - chi tiết của những  khách hàng đã chọn 
 router.post('/ChosseCustomer',formData.parse(),CustomerDetailsRoutes.ChosseCustomer)

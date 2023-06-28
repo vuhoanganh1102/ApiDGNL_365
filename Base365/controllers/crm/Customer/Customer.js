@@ -6,7 +6,7 @@ const customerService = require('../../../services/CRM/CRMservice')
 const User = require('../../../models/Users')
 const ConnectApi = require('../../../models/crm/connnect_api_config')
 const HistoryEditCustomer = require('../../../models/crm/history/history_edit_customer')
-
+const ShareCustomer = require('../../../models/crm/tbl_share_customer')
 
 
 // hàm thêm mới khách hang
@@ -231,20 +231,12 @@ exports.addCustomer = async (req, res) => {
     res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
   }
 };
-//hiển thị danh sách khách hàng
- 
+
 
 exports.showKH = async (req, res) => {
   try {
-    let { page, cus_id, name, phone_number,status,resoure,user_edit_id,time_s,time_e,group_id,group_pins_id} = req.body;
-    // const validationResult = customerService.vavalidateCustomerSearchQuery( page, cus_id,status,resoure,user_edit_id,time_s,time_e,group_id);
-
-    // if (!validationResult.success) {
-    //   return res.status(400).json({ error: validationResult.error });
-    // }
+    let { page, userId, cus_id, name, phone_number, status, resoure, user_edit_id, time_s, time_e, group_id, group_pins_id } = req.body;
     const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
-    const userId = req.user.data.idQLC;
-    console.log(req.user);
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
     const checkUser = await User.findOne({ idQLC: userId });
@@ -252,35 +244,45 @@ exports.showKH = async (req, res) => {
     let query = {
       is_delete: 0,
     };
-    if(cus_id){
+
+    if (cus_id) {
       query.cus_id = cus_id;
     }
-    if(name){
+    if (name) {
       query.name = { $regex: name, $options: "i" };
     }
-    if (phone_number){
+    if (phone_number) {
       query.phone_number = { $regex: phone_number, $options: "i" };
     }
-    if(status){
-      query.status = status
+    if (status) {
+      query.status = status;
     }
-    if(resoure){
-      query.resoure = resoure
+    if (resoure) {
+      query.resoure = resoure;
     }
-    if(user_edit_id){
-      query.user_edit_id = user_edit_id
+    if (user_edit_id) {
+      query.user_edit_id = user_edit_id;
     }
-    if(group_id){
-      query.group_id = group_id
+    if (group_id) {
+      query.group_id = group_id;
     }
-    if(group_pins_id){
-      query.group_pins_id = group_pins_id
+    if (group_pins_id) {
+      query.group_pins_id = group_pins_id;
     }
-    // if (!validationResult.success) {
-    //   return res.status(400).json({ error: validationResult.error });
-    // }
-    let validCondition = false;
 
+    // Thêm các điều kiện tìm kiếm theo thuộc tính được gửi qua req.body
+    Object.keys(req.body).forEach(key => {
+      if (req.body[key] && !['page', 'userId', 'cus_id', 'name', 'phone_number', 'status', 'resoure', 'user_edit_id', 'time_s', 'time_e', 'group_id', 'group_pins_id'].includes(key)) {
+        query[key] = req.body[key];
+      }
+    });
+    if (time_s && time_e) {
+      if (time_s > time_e) {
+        res.status(400).json({ error: "Thời gian bắt đầu không thể lớn hơn thời gian kết thúc." });
+        return;
+      }
+      query.created_at = { $gte: time_s, $lte: time_e };
+    }
     if (
       checkUser.inForPerson.employee.position_id == 1 ||
       checkUser.inForPerson.employee.position_id == 2 ||
@@ -288,10 +290,18 @@ exports.showKH = async (req, res) => {
       checkUser.inForPerson.employee.position_id == 3
     ) {
       let id_dataNhanvien = checkUser.idQLC;
-      let id_com = checkUser.inForPerson.employee.com_id;
-      query.emp_id = id_dataNhanvien;
-      query.company_id = id_com;
-      validCondition = true;
+      const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien });
+      const customerIds = shareCusNV.map(item => item.customer_id);
+      const checkCus = await Customer.find({
+        $or: [
+          { emp_id: id_dataNhanvien },
+          { cus_id: { $in: customerIds } }
+        ],
+        ...query // Kết hợp với các điều kiện tìm kiếm khác
+      }).sort({ cus_id : -1 })
+        .skip(startIndex)
+        .limit(perPage);
+      return res.status(200).json(checkCus);
     }
 
     if (
@@ -306,8 +316,11 @@ exports.showKH = async (req, res) => {
       checkUser.inForPerson.employee.position_id == 17
     ) {
       let id_com = checkUser.inForPerson.employee.com_id;
-      query.company_id = id_com;
-      validCondition = true;
+      const checkCus = await Customer.find({ company_id: id_com, ...query })
+      .sort({ cus_id : -1 })
+      .skip(startIndex)
+      .limit(perPage);
+      return res.status(200).json(checkCus);
     }
 
     if (
@@ -321,43 +334,140 @@ exports.showKH = async (req, res) => {
       checkUser.inForPerson.employee.position_id == 6
     ) {
       let id_com = checkUser.inForPerson.employee.com_id;
+      let id_dataNhanvien = checkUser.idQLC;
       let id_pb = checkUser.inForPerson.employee.dep_id;
-      let nv = await User.find({
+      const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien, dep_id: id_pb });
+      const customerIds = shareCusNV.map(item => item.customer_id);
+      let checkCB = await User.find({
         "inForPerson.employee.dep_id": id_pb,
         "inForPerson.employee.com_id": id_com,
       }).select("idQLC");
-      query.emp_id = { $in: nv.map((user) => user.idQLC) };
-      validCondition = true;
-    }
-    
-    if (time_s && time_e) {
-      if (time_s > time_e) {
-        res.status(400).json({ error: "Thời gian bắt đầu không thể lớn hơn thời gian kết thúc."});
-        return;
-      }
-      query.created_at = { $gte: time_s, $lte: time_e };
-    }
-    if (validCondition) {
-      const totalItems = await Customer.countDocuments(query);
-      const paginatedData = await Customer.find(query)
+      const shareCb = checkCB.map(item => item.idQLC);
+      const checkCus = await Customer.find({
+        $or: [{ emp_id: { $in: shareCb } }, { cus_id: { $in: customerIds } }],
+        ...query // Kết hợp với các điều kiện tìm kiếm khác
+      })
       .sort({ cus_id : -1 })
-        .skip(startIndex)
-        .limit(perPage);
-      res.status(200).json({
-        totalItems,
-        currentPage: page,
-        data: paginatedData,
-      });
-    } else {
-      res.status(400).json({ error: "khong co ket qua" });
+      .skip(startIndex)
+      .limit(perPage);;
+      return res.status(200).json(checkCus);
+    }else{
+      res.status(400).json({ error: "Không có kết quả" });
     }
   } catch (error) {
     console.error("Failed to show", error);
-    res
-      .status(500)
-      .json({ error: "Đã xảy ra lỗi trong quá trình xử lý." });
+    res.status(500).json({ error: "Đã xảy ra lỗi trong quá trình xử lý." });
   }
 };
+
+
+
+
+// exports.showKH = async (req, res) => {
+//   try {
+//     let { page,userId,cus_id, name, phone_number, status, resoure, user_edit_id, time_s, time_e, group_id, group_pins_id } = req.body;
+
+//     const perPage = 10;
+//     // const userId = req.user.data.idQLC;
+//     const startIndex = (page - 1) * perPage;
+//     const endIndex = page * perPage;
+//     const checkUser = await User.findOne({ idQLC: userId });
+
+//     let query = {
+//       is_delete: 0,
+//     };
+//     // Các điều kiện tìm kiếm từ request body
+//     if (cus_id) {
+//       query.cus_id = cus_id;
+//     }
+//     if (name) {
+//       query.name = { $regex: name, $options: "i" };
+//     }
+//     if (phone_number) {
+//       query.phone_number = { $regex: phone_number, $options: "i" };
+//     }
+//     // Các điều kiện tìm kiếm khác
+
+//     let validCondition = true;
+
+//     // Xử lý điều kiện dựa trên checkUser.inForPerson.employee.position_id
+//     if (
+//       checkUser.inForPerson.employee.position_id == 1 ||
+//       checkUser.inForPerson.employee.position_id == 2 ||
+//       checkUser.inForPerson.employee.position_id == 9 ||
+//       checkUser.inForPerson.employee.position_id == 3
+//     ) {
+//       // Xử lý điều kiện cho vị trí 1, 2, 9, 3
+//     } else if (
+//       checkUser.inForPerson.employee.position_id == 7 ||
+//       checkUser.inForPerson.employee.position_id == 8 ||
+//       checkUser.inForPerson.employee.position_id == 14 ||
+//       checkUser.inForPerson.employee.position_id == 16 ||
+//       checkUser.inForPerson.employee.position_id == 22 ||
+//       checkUser.inForPerson.employee.position_id == 21 ||
+//       checkUser.inForPerson.employee.position_id == 18 ||
+//       checkUser.inForPerson.employee.position_id == 19 ||
+//       checkUser.inForPerson.employee.position_id == 17
+//     ) {
+//       // Xử lý điều kiện cho vị trí 7, 8, 14, 16, 22, 21, 18, 19, 17
+//     } else if (
+//       checkUser.inForPerson.employee.position_id == 20 ||
+//       checkUser.inForPerson.employee.position_id == 4 ||
+//       checkUser.inForPerson.employee.position_id == 12 ||
+//       checkUser.inForPerson.employee.position_id == 13 ||
+//       checkUser.inForPerson.employee.position_id == 11 ||
+//       checkUser.inForPerson.employee.position_id == 10 ||
+//       checkUser.inForPerson.employee.position_id == 5 ||
+//       checkUser.inForPerson.employee.position_id == 6
+//     ) {
+//       // Xử lý điều kiện cho vị trí 20, 4, 12, 13, 11, 10, 5, 6
+//     } else {
+//       validCondition = false;
+//     }
+
+//     if (validCondition) {
+//       // Tìm kiếm các bản ghi từ bảng Customer
+//       const totalItems = await Customer.countDocuments(query);
+//       const paginatedData = await Customer.find(query)
+//         .sort({ cus_id: -1 })
+//         .skip(startIndex)
+//         .limit(perPage);
+
+//       // Tạo mảng data chứa kết quả cuối cùng
+//       let data = [];
+
+//       // Bổ sung dữ liệu từ ShareCustomer nếu có
+//       if (paginatedData.length > 0) {
+//         const customerIds = paginatedData.map(customer => customer.cus_id);
+//         const shareCustomers = await ShareCustomer.find({ customer_id: { $in: customerIds } });
+
+//         data = paginatedData.map(customer => {
+//           const shareCustomer = shareCustomers.find(shareCustomer => shareCustomer.customer_id === customer.cus_id);
+
+//           const mergedData = {
+//             ...customer._doc, // Các cột của bảng Customer
+//             ...(shareCustomer && shareCustomer._doc), // Các cột của bảng ShareCustomer (nếu tồn tại)
+//           };
+
+//           return mergedData;
+//         });
+//       }
+
+//       res.status(200).json({
+//         totalItems,
+//         currentPage: page,
+//         data,
+//       });
+//     } else {
+//       res.status(400).json({ error: "Không có kết quả phù hợp" });
+//     }
+//   } catch (error) {
+//     console.error("Failed to show", error);
+//     res.status(500).json({ error: "Đã xảy ra lỗi trong quá trình xử lý." });
+//   }
+// };
+
+
 
 //Xoa khach hang                            
 exports.DeleteKH = async (req, res) => {

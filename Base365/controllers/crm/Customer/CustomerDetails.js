@@ -371,26 +371,38 @@ exports.banGiao = async(req,res) => {
 //hàm chia sẻ khách hàng
 exports.ShareCustomer = async (req, res) => {
   try {
-    let {com_id,emp_id} = req.body
-    // const com_id = req.user.data.inForPerson.employee.com_id;
-    // const emp_id = req.user.idQLC;
-    const query = {
-      company_id: com_id,
-      $or: [
-        { emp_id: emp_id },
-        { emp_share: emp_id }
-      ]
-    };
+    let { arrCus, customer_id, roll, dep_id, receiver_id } = req.body;
+    let NVshare = req.user.idQLC;
+    let updateAt = new Date();
+    let createAt = new Date();
+    const maxID = await customerService.getMaxIDConnectApi(ShareCustomer);
+    const maxId = maxID ? Number(maxID) + 1 : 0;
+    const shareCustomers = [];
+    const minLength = Math.min(customer_id.length, dep_id.length, roll.length, receiver_id.length);
+    for (let i = 0; i < minLength; i++) {
+      const id = maxId + i;
+      const createShareCustomer = new ShareCustomer({
+        id: id,
+        customer_id: customer_id[i] || 0,
+        emp_share: NVshare,
+        dep_id: dep_id[i] || 0,
+        roll: roll[i] || "all",
+        receiver_id: receiver_id[i] || 0,
+        created_at: createAt,
+        updated_at: updateAt
+      });
+      shareCustomers.push(createShareCustomer);
+    }
 
-    const result = await ShareCustomer.find(query)
-      .populate('customer_id')
-      .sort({ updated_at: -1 });
-    res.json(result);
+    const saveSC = await ShareCustomer.insertMany(shareCustomers);
+    res.status(200).json(saveSC);
   } catch (error) {
-    console.error('Failed to share customer', error);
-    res.status(500).json({ error: 'Failed to share customer' });
+    console.error('Failed to retrieve shared customers', error);
+    res.status(500).json({ error: 'Failed to retrieve shared customers' });
   }
 };
+
+//Api hiển thị chọn khách hàng gộp
 
 exports.ChosseCustomer = async(req,res) => {
   try{
@@ -404,7 +416,7 @@ exports.ChosseCustomer = async(req,res) => {
 }
 
 
-
+//Api thực hiện gộp khách hàng và xóa những giá trị cũ
 exports.CombineCustome = async(req,res)=> {
   try {
     let {
@@ -423,6 +435,7 @@ exports.CombineCustome = async(req,res)=> {
       cmnd_ccnd_address,
       cmnd_ccnd_time,
       user_handing_over_work,
+      user_edit_id,
       resoure,
       description,
       tax_code,
@@ -456,27 +469,21 @@ exports.CombineCustome = async(req,res)=> {
       id_cus_from,
       cus_from,
       link,
-      content
+      comId,empId
     } = req.body;
 
     if (!Array.isArray(arrCus)) {
-      res.status(400).json({ error: 'arrCus must be an array' });
+      res.status(400).json({ error: 'arrCus phải là 1 mảng' });
       return;
     }
-
     const type = req.body.type || 2;
     if (![1, 2].includes(type)) {
       res.status(400).json({ error: 'Invalid type value' });
       return;
     }
-
-    const comId = req.user.data.inForPerson.employee.com_id;
-    const empId = req.user.data.idQLC;
+    let createDate = new Date();
     const validationResult = customerService
-    .validateCustomerInput(name,logo,stand_name,tax_code,phone_number,birthday,cit_id,district_id,ward,address,ship_invoice_address,
-      gender,cmnd_ccnd_number,cmnd_ccnd_address,cmnd_ccnd_address,resoure,description,introducer,user_edit_id,group_id,status,
-      bill_city,bil_district,bill_ward,bill_address,bill_area_code,bill_invoice_address,bill_invoice_address_email,ship_city,ship_area,
-      bank_id,revenue,bank_account,size,rank,website,number_of_day_owed,deb_limit,comId);
+    .validateCustomerInput(name,comId);
     if (validationResult !== true) {
       res.status(400).json({ error: 'Invalid customer input' });
       return;
@@ -516,11 +523,15 @@ exports.CombineCustome = async(req,res)=> {
       bill_area_code: bill_area_code,
       bill_invoice_address: bill_invoice_address,
       bill_invoice_address_email: bill_invoice_address_email,
+      user_handing_over_work : user_handing_over_work,
+      user_edit_id : user_edit_id,
+      user_create_id : empId,
       company_id: comId,
       emp_id: empId,
       ship_city: ship_city,
       ship_area: ship_area,
       bank_id: bank_id,
+      size : size,
       bank_account: bank_account,
       revenue: revenue,
       rank: rank,
@@ -537,32 +548,10 @@ exports.CombineCustome = async(req,res)=> {
       cus_from: cus_from,
       link: link
     });
-
     let saveCS = await createCustomer.save();
-
-    if (content !== undefined && content.trim() !== '') {
-      const maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
-      const id = maxID ? Number(maxID) + 1 : 0;
-
-      let newHT = new HistoryEditCustomer({
-        id: id,
-        customer_id: cus_id,
-        content: content,
-        created_at: createDate
-      });
-
-      let savehis = await newHT.save();
-      res.status(200).json({ saveCS, savehis });
-    } else {
-      res.status(200).json(saveCS);
-    }
-
     // Xóa các id khách hàng từ danh sách
-    for (let i = 0; i < arrCus.length; i++) {
-      const customerId = arrCus[i];
-      await customerService.deleteCustomerById(customerId);
-    }
-
+      await customerService.deleteCustomerByIds(arrCus);
+    res.status(200).json(saveCS);
   } catch (error) {
     console.error('Failed to add or choose customer', error);
     res.status(500).json({ error: 'Failed to add or choose customer' });
