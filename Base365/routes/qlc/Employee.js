@@ -6,8 +6,6 @@ var formData = require('express-form-data')
 router.post('/register', formData.parse(),  employee.register)
 //Đăng nhập tài khoản NV
 router.post('/login', formData.parse(),  employee.login)
-// api gửi mã OTP qua gmail để xác minh tài khoản
-router.post('/sendOTP', formData.parse(),  employee.sendOTP);
 // api xác nhận OTP để xác minh tìa khoản
 router.post('/verify', formData.parse(),  employee.verify);
 // hàm đổi mật khẩu 
@@ -15,11 +13,7 @@ router.post('/updatePassword',functions.checkToken, formData.parse(),   employee
 // hàm cập nhập thông tin NV
 router.post('/updateInfoEmployee',functions.checkToken,  formData.parse(),  employee.updateInfoEmployee);
 // api api gửi mã OTP qua mail (quên mật khẩu) 
-router.post('/forgotPasswordCheckMail', formData.parse(),  employee.forgotPasswordCheckMail);
-// api check mã OTP  (quên mật khẩu)P
-router.post('/forgotPasswordCheckOTP', formData.parse(),  employee.forgotPasswordCheckOTP);
-// api đổi mật khẩu (quên mật khẩu)
-router.post('/updatePassword',functions.checkToken, formData.parse(),  employee.updatePassword);
+router.post('/forgotPasswordCheckMail', formData.parse(),  employee.forgotPassword);
 
 
 
