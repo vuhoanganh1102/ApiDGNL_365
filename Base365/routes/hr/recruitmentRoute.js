@@ -53,10 +53,10 @@ router.post('/listCandi', formData.parse(), hrService.checkRoleUser, hrService.c
 router.post('/totalCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getTotalCandidateFollowDayMonth);
 
 //them moi
-router.post('/candi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.checkDataCandidate,recruitmentController.createCandidate);
+router.post('/createCandidate', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 2), recruitmentController.checkDataCandidate,recruitmentController.createCandidate);
 
 //sua
-router.put('/candi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataCandidate, recruitmentController.updateCandidate);
+router.post('/updateCandidate', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.checkDataCandidate, recruitmentController.updateCandidate);
 
 //xoa tam thoi
 router.put('/softDeleteCandi', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 4), recruitmentController.softDeleteCandidate);

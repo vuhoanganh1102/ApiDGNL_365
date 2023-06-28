@@ -182,6 +182,13 @@ exports.createLinkFileCv = async(folder, id, name) => {
     return link;
 }
 
+exports.deleteFileCv = (id) => {
+    let filePath = '../Storage/hr/upload/cv' +'/' + id;
+    fs.unlink(filePath, (err) => {
+        if (err) console.log(err);
+    });
+}
+
 
 exports.uploadFileBase64 = async(folder, id, base64String, file) => {
     let path1 = `../Storage/base365/hr/pictures/${folder}/${id}/`;

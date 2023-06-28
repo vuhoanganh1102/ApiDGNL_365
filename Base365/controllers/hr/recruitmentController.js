@@ -504,10 +504,10 @@ exports.checkDataCandidate = async(req, res, next) => {
                 name, email, phone, cvFrom, userRecommend, recruitmentNewsId,
                 timeSendCv, gender, birthday, education, exp, isMarried, address, userHiring, firstStarVote, hometown
                 ];
-        for(let i=0; i<fields.length; i++){
-            if(!fields[i])
-                return functions.setError(res, `Missing input value ${i+1}`, 404);
-        }
+        // for(let i=0; i<fields.length; i++){
+        //     if(!fields[i])
+        //         return functions.setError(res, `Missing input value ${i+1}`, 404);
+        // }
         // them cac truong muon them hoac sua
         req.info = {
             name: name,
@@ -552,12 +552,14 @@ exports.createCandidate = async(req, res, next) => {
         } else newIdCandi = 1;
         fields.id = newIdCandi;
 
-        //luu cv
+        // luu cv
         let cv = req.files.cv;
-        let nameCv = await hrService.uploadFileCv(newIdCandi,cv);
-        fields.cv = nameCv;
+        if(cv && await hrService.checkFile(cv.path)){
+            let nameCv = await hrService.uploadFileCv(newIdCandi,cv);
+            fields.cv = nameCv;
+        }
 
-        //tao
+        // tao
         let candidate = new Candidate(fields);
         await candidate.save();
         if(!candidate){
@@ -566,22 +568,25 @@ exports.createCandidate = async(req, res, next) => {
 
         //them ky nang moi
         let listSkill = req.body.listSkill;
-        for(let i=0; i<listSkill.length; i++){
-            let dataSkill = {
-                canId: newIdCandi,
-                skillName: listSkill[i].skillName,
-                skillVote: listSkill[i].skillVote
-            }
-            const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
-            let newIdSkill;
-            if (maxIdSkill) {
-                newIdSkill = Number(maxIdSkill.id) + 1;
-            } else newIdSkill = 1;
-            dataSkill.id = newIdSkill;
-            let skill = new AnotherSkill(dataSkill);
-            await skill.save();
-            if(!skill){
-                return functions.setError(res, "Create skill fail!", 506);
+        if(listSkill){
+            for(let i=0; i<listSkill.length; i++){
+                const obj = JSON.parse(listSkill[i]);
+                let dataSkill = {
+                    canId: newIdCandi,
+                    skillName: obj.skillName,
+                    skillVote: obj.skillVote
+                }
+                const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                let newIdSkill;
+                if (maxIdSkill) {
+                    newIdSkill = Number(maxIdSkill.id) + 1;
+                } else newIdSkill = 1;
+                dataSkill.id = newIdSkill;
+                let skill = new AnotherSkill(dataSkill);
+                await skill.save();
+                if(!skill){
+                    return functions.setError(res, "Create skill fail!", 506);
+                }
             }
         }
         
@@ -636,8 +641,11 @@ exports.updateCandidate = async(req, res, next) => {
         let fields = req.info;
         fields.updatedAt = Date.now();
         let cv = req.files.cv;
-        let nameCv = await hrService.uploadFileCv(candidateId,cv);
-        fields.cv = nameCv;
+        if(cv && await hrService.checkFile(cv.path)){
+            let nameCv = await hrService.uploadFileCv(candidateId,cv);
+            // await hrService.deleteFileCv(candidateId);
+            fields.cv = nameCv;
+        }
         //
         let candi = await Candidate.findOneAndUpdate({id: candidateId}, fields);
         if(!candi) {
@@ -648,11 +656,16 @@ exports.updateCandidate = async(req, res, next) => {
         await AnotherSkill.deleteMany({canId: candidateId});
 
         let listSkill = req.body.listSkill;
+        if(!listSkill) {
+            return functions.success(res, "Update info candidate success!");
+        }
         for(let i=0; i<listSkill.length; i++){
+            
+            const obj = JSON.parse(listSkill[i]);
             let dataSkill = {
                 canId: candidateId,
-                skillName: listSkill[i].skillName,
-                skillVote: listSkill[i].skillVote
+                skillName: obj.skillName,
+                skillVote: obj.skillVote
             }
             const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             let newIdSkill;
