@@ -1,11 +1,10 @@
 const functions = require('../../services/functions');
 const hrService = require('../../services/hr/hrService');
-const Permision = require('../../models/hr/Permision');
-const PermisionUser = require('../../models/hr/PermisionUser');
 const Users = require('../../models/Users');
 const Candidates = require('../../models/hr/Candidates');
 const AchievementFors = require('../../models/hr/AchievementFors');
 const InfringesFors = require('../../models/hr/InfringesFors');
+const GetJob = require('../../models/hr/GetJob');
 
 //---------api home
 exports.getListInfo= async(req, res, next) => {
@@ -15,8 +14,8 @@ exports.getListInfo= async(req, res, next) => {
         let totalAchievement = await AchievementFors.countDocuments({comId: comId});
         let totalInfringe = await InfringesFors.countDocuments({comId: comId});
         let totalCandi = await Candidates.countDocuments({comId: comId});
-        let totalCandiInter = await Candidates.countDocuments({status: 1});
-        let totalCandiWork = await Candidates.countDocuments({status: 2});
+        let totalCandiInter = await Candidates.countDocuments({status: 5});
+        let totalCandiGetJob = await Candidates.countDocuments({status: 1});
 
         return functions.success(res, `Get list infomaiton for page home success`, {totalEmployee, totalAchievement, totalInfringe, totalCandi, totalCandiInter, totalCandiWork});
     } catch (e) {
