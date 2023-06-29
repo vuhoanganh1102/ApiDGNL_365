@@ -7,251 +7,251 @@ const User = require('../../../models/Users');
 
 // trang tôi gửi đi 
 exports.deXuat_user_send = async (req, res) => {
-    try {
-      let {type,time_s,time_e,id_user_duyet} = req.body;
-      const id_user = req.user.idQLC
-      const com_id = req.user.data.inForPerson.employee.com_id;
-      const perPage = 10; // Giá trị mặc định nếu không được cung cấp
-      const startIndex = (page - 1) * perPage;
-      const sortOptions = { _id: -1 };
-      if (typeof id_user === 'undefined') {
-        return res.status(400).json({ error: 'id_user không được bỏ trống.' });
-      }
-      
-      if (!com_id) {
-        return res.status(400).json({ error: 'com_id không được bỏ trống.' });
-      }
-      
-      if (!type) {
-        return res.status(400).json({ error: 'type không được bỏ trống.' });
-      }
-      
-      let query = {
-        id_user: id_user,
-        com_id: com_id,
-        del_type: 1
-      };
-      if (id_user_duyet) {
-        query.id_user_duyet = id_user_duyet;
-      } 
-      if (time_s && time_e) {
-        query.time_create = { $gte: new Date(time_s), $lte: new Date(time_e) };
-      } else if (time_s) {
-        query.time_create = { $gte: new Date(time_s) };
-      } else if (time_e) {
-        query.time_create = { $lte: new Date(time_e) };
-      }
+  try {
+    let { type, time_s, time_e, id_user_duyet } = req.body;
+    const id_user = req.user.idQLC
+    const com_id = req.user.data.inForPerson.employee.com_id;
+    const perPage = 10; // Giá trị mặc định nếu không được cung cấp
+    const startIndex = (page - 1) * perPage;
+    const sortOptions = { _id: -1 };
+    if (typeof id_user === 'undefined') {
+      return res.status(400).json({ error: 'id_user không được bỏ trống.' });
+    }
 
-      if (type == 1) { // Hiển thị tất cả
-        const showAll = await De_Xuat.find(query);
-        return res.status(200).json(showAll)
+    if (!com_id) {
+      return res.status(400).json({ error: 'com_id không được bỏ trống.' });
+    }
+
+    if (!type) {
+      return res.status(400).json({ error: 'type không được bỏ trống.' });
+    }
+
+    let query = {
+      id_user: id_user,
+      com_id: com_id,
+      del_type: 1
+    };
+    if (id_user_duyet) {
+      query.id_user_duyet =  { $in: [id_user_duyet] };
+    }
+    if (time_s && time_e) {
+      query.time_create = { $gte: new Date(time_s), $lte: new Date(time_e) };
+    } else if (time_s) {
+      query.time_create = { $gte: new Date(time_s) };
+    } else if (time_e) {
+      query.time_create = { $lte: new Date(time_e) };
+    }
+
+    if (type == 1) { // Hiển thị tất cả
+      const showAll = await De_Xuat.find(query);
+      return res.status(200).json(showAll)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      }
-      
-      if (type == 2) { // Hiển thị đang chờ duyệt
-        query.active = 1;
-        query.type_duyet = { $in: [0, 7] };
-        const showCD = await De_Xuat.find(query);
-        return res.status(200).json(showCD)
+    }
+
+    if (type == 2) { // Hiển thị đang chờ duyệt
+      query.active = 1;
+      query.type_duyet = { $in: [0, 7] };
+      const showCD = await De_Xuat.find(query);
+      return res.status(200).json(showCD)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      }
-      
-      if (type == 4) { // Hiển thị đã phê duyệt
-        query.active = 0;
-        query.type_duyet = 5;
-        const showD = await De_Xuat.find(query);
-        return res.status(200).json(showD)
+    }
+
+    if (type == 4) { // Hiển thị đã phê duyệt
+      query.active = 0;
+      query.type_duyet = 5;
+      const showD = await De_Xuat.find(query);
+      return res.status(200).json(showD)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      }
-      
-      if (type == 5) { // Hiển thị đã từ chối
-        query.$or = [{ active: 2 }, { type_duyet: 3 }];
-        const showTC = await De_Xuat.find(query);
-        return res.status(200).json(showTC)
+    }
+
+    if (type == 5) { // Hiển thị đã từ chối
+      query.$or = [{ active: 2 }, { type_duyet: 3 }];
+      const showTC = await De_Xuat.find(query);
+      return res.status(200).json(showTC)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);;
-      }
-      
-     
-      
-    } catch (error) {
-      console.error('Failed to show', error);
-      res.status(500).json({ error: 'Failed to show' });
     }
-  };
-  
+
+
+
+  } catch (error) {
+    console.error('Failed to show', error);
+    res.status(500).json({ error: 'Failed to show' });
+  }
+};
+
 //trang gửi đến tôi 
-exports.de_xuat_send_to_me = async (req,res) => {
-    try{
-        let {  type,name_dx,type_dx,time_s,time_e } = req.body;
-        const id_user_duyet = req.user.idQLC
-        const com_id = req.user.data.inForPerson.employee.com_id;
-        const perPage = 10; // Giá trị mặc định nếu không được cung cấp
-        const startIndex = (page - 1) * perPage;
-        const sortOptions = { _id: -1 };
-        if (!id_user_duyet) {
-            return res.status(400).json({ error: 'id_user_duyet không được bỏ trống.' });
-          }
-          
-          if (!com_id) {
-            return res.status(400).json({ error: 'com_id không được bỏ trống.' });
-          }
-          
-          if (!type) {
-            return res.status(400).json({ error: 'type không được bỏ trống.' });
-          }
-          let query = {
-            id_user_duyet: id_user_duyet,
-            com_id: com_id,
-            del_type: 1
-          };
-          if(type_dx) {
-            query.type_dx = type_dx;
-          }
-          if(name_dx) {
-            query.name_dx = { $regex: name_dx, $options: "i" };
-          }
-          if (id_user) {
-            query.id_user = id_user;
-          }
-          if (time_s && time_e) {
-            query.time_create = { $gte: new Date(time_s), $lte: new Date(time_e) };
-          } else if (time_s) {
-            query.time_create = { $gte: new Date(time_s) };
-          } else if (time_e) {
-            query.time_create = { $lte: new Date(time_e) };
-          }
-          if (type == 1) { // Hiển thị tất cả
-            const showAll = await De_Xuat.find(query)
-            .sort(sortOptions)
-            .skip(startIndex)
-            .limit(perPage);;
-            return res.status(200).json(showAll);
-          }
-          if (type == 2) { // Hiển thị đang chờ duyệt
-            query.active = 1;
-            query.type_duyet = { $in: [0, 7] };
-            const showCD = await De_Xuat.find(query)
-            .sort(sortOptions)
-            .skip(startIndex)
-            .limit(perPage);;
-            return res.status(200).json(showCD);
-          }
-          if (type == 4) { // Hiển thị đã phê duyệt
-            query.active = 0;
-            query.type_duyet = 5;
-            const showD = await De_Xuat.find(query)
-            .sort(sortOptions)
-            .skip(startIndex)
-            .limit(perPage);;
-            return res.status(200).json(showD);
-          }
-          if (type == 5) { // Hiển thị đã từ chối
-            query.$or = [{ active: 2 }, { type_duyet: 3 }];
-            const showTC = await De_Xuat.find(query);
-            return res.status(200).json(showTC)
-            .sort(sortOptions)
-            .skip(startIndex)
-            .limit(perPage);;
-          }   
-    }catch (error) {
-      console.error('Failed to show ', error);
-      res.status(500).json({ error: 'Failed to show' });
+exports.de_xuat_send_to_me = async (req, res) => {
+  try {
+    let { type, name_dx, type_dx, time_s, time_e } = req.body;
+    const id_user_duyet = req.user.idQLC
+    const com_id = req.user.data.inForPerson.employee.com_id;
+    const perPage = 10; // Giá trị mặc định nếu không được cung cấp
+    const startIndex = (page - 1) * perPage;
+    const sortOptions = { _id: -1 };
+    if (!id_user_duyet) {
+      return res.status(400).json({ error: 'id_user_duyet không được bỏ trống.' });
     }
+
+    if (!com_id) {
+      return res.status(400).json({ error: 'com_id không được bỏ trống.' });
+    }
+
+    if (!type) {
+      return res.status(400).json({ error: 'type không được bỏ trống.' });
+    }
+    let query = {
+      id_user_duyet:  { $in: [id_user_duyet] },
+      com_id: com_id,
+      del_type: 1
+    };
+    if (type_dx) {
+      query.type_dx = type_dx;
+    }
+    if (name_dx) {
+      query.name_dx = { $regex: name_dx, $options: "i" };
+    }
+    if (id_user) {
+      query.id_user = id_user;
+    }
+    if (time_s && time_e) {
+      query.time_create = { $gte: new Date(time_s), $lte: new Date(time_e) };
+    } else if (time_s) {
+      query.time_create = { $gte: new Date(time_s) };
+    } else if (time_e) {
+      query.time_create = { $lte: new Date(time_e) };
+    }
+    if (type == 1) { // Hiển thị tất cả
+      const showAll = await De_Xuat.find(query)
+        .sort(sortOptions)
+        .skip(startIndex)
+        .limit(perPage);;
+      return res.status(200).json(showAll);
+    }
+    if (type == 2) { // Hiển thị đang chờ duyệt
+      query.active = 1;
+      query.type_duyet = { $in: [0, 7] };
+      const showCD = await De_Xuat.find(query)
+        .sort(sortOptions)
+        .skip(startIndex)
+        .limit(perPage);;
+      return res.status(200).json(showCD);
+    }
+    if (type == 4) { // Hiển thị đã phê duyệt
+      query.active = 0;
+      query.type_duyet = 5;
+      const showD = await De_Xuat.find(query)
+        .sort(sortOptions)
+        .skip(startIndex)
+        .limit(perPage);;
+      return res.status(200).json(showD);
+    }
+    if (type == 5) { // Hiển thị đã từ chối
+      query.$or = [{ active: 2 }, { type_duyet: 3 }];
+      const showTC = await De_Xuat.find(query);
+      return res.status(200).json(showTC)
+        .sort(sortOptions)
+        .skip(startIndex)
+        .limit(perPage);;
+    }
+  } catch (error) {
+    console.error('Failed to show ', error);
+    res.status(500).json({ error: 'Failed to show' });
+  }
 }
 
 //trang người theo dõi 
-exports.de_xuat_theo_doi = async (req,res) => {
-  try{
-    let { type} = req.body;
+exports.de_xuat_theo_doi = async (req, res) => {
+  try {
+    let { type } = req.body;
     const id_user_theo_doi = req.user.idQLC
     const com_id = req.user.data.inForPerson.employee.com_id;
     const perPage = 10; // Giá trị mặc định nếu không được cung cấp
     const startIndex = (page - 1) * perPage;
     const sortOptions = { _id: -1 };
-      if (!id_user_theo_doi) {
-        return res.status(400).json({ error: 'id_user_duyet không được bỏ trống.' });
-      }
-      if (!com_id) {
-        return res.status(400).json({ error: 'com_id không được bỏ trống.' });
-      }
-      if (!type) {
-        return res.status(400).json({ error: 'type không được bỏ trống.' });
-      }
-      if(type == 1) {
+    if (!id_user_theo_doi) {
+      return res.status(400).json({ error: 'id_user_duyet không được bỏ trống.' });
+    }
+    if (!com_id) {
+      return res.status(400).json({ error: 'com_id không được bỏ trống.' });
+    }
+    if (!type) {
+      return res.status(400).json({ error: 'type không được bỏ trống.' });
+    }
+    if (type == 1) {
       const showAll = await De_Xuat.find({
-        id_user_theo_doi : id_user_theo_doi,
-        com_id : com_id,
-        del_type : 1
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        com_id: com_id,
+        del_type: 1
       })
-      .sort(sortOptions)
-      .skip(startIndex)
-      .limit(perPage);
-      return res.status(200).json(showAll);
-      }
-      if(type == 2) {
-        const showCD = await De_Xuat.find({
-        id_user_theo_doi : id_user_theo_doi,
-        com_id : com_id,
-        del_type : 1,
-        type_duyet : { $in: [0, 7] },
-        })
         .sort(sortOptions)
-       .skip(startIndex)
-       .limit(perPage);
-        return res.status(200).json(showCD)
+        .skip(startIndex)
+        .limit(perPage);
+      return res.status(200).json(showAll);
+    }
+    if (type == 2) {
+      const showCD = await De_Xuat.find({
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        com_id: com_id,
+        del_type: 1,
+        type_duyet: { $in: [0, 7] },
+      })
+        .sort(sortOptions)
+        .skip(startIndex)
+        .limit(perPage);
+      return res.status(200).json(showCD)
+    }
+    if (type == 3) {
+      const checkSetting = await setting_dx.findOne({ com_id: com_id })
+      if (!checkSetting) {
+        return res.status(400).json({ error: 'Không tìm thấy cài đặt cho com_id.' });
       }
-      if(type == 3){
-        const checkSetting = await setting_dx.findOne({com_id : com_id})
-        if(!checkSetting) {
-            return res.status(400).json({ error: 'Không tìm thấy cài đặt cho com_id.' });  
-        }
-        const timeLimit = setting.time_limit * 60 * 60 * 1000; // Chuyển time_limit thành mili giây
-        const exceedingDeXuat = await De_Xuat.find({
-          id_user_theo_doi: id_user_theo_doi,
-          com_id: com_id,
-          del_type: 1,
-          $expr: { $gt: [{ $subtract: [new Date(), "$time_create"] }, timeLimit] }
-        })
+      const timeLimit = setting.time_limit * 60 * 60 * 1000; // Chuyển time_limit thành mili giây
+      const exceedingDeXuat = await De_Xuat.find({
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        com_id: com_id,
+        del_type: 1,
+        $expr: { $gt: [{ $subtract: [new Date(), "$time_create"] }, timeLimit] }
+      })
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);;
-        return res.status(200).json(exceedingDeXuat);
-      }
-      if(type == 4){
-        const showD = await De_Xuat.find({
-            com_id : com_id,
-            id_user_theo_doi : id_user_theo_doi,
-            del_type : 1,
-            type_duyet : 5,
-            active : 1
-        }).sort(sortOptions)
+      return res.status(200).json(exceedingDeXuat);
+    }
+    if (type == 4) {
+      const showD = await De_Xuat.find({
+        com_id: com_id,
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        del_type: 1,
+        type_duyet: 5,
+        active: 1
+      }).sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-        return res.status(200).json(showD);
-      }
-      if(type == 5 ){
-        const showTC = await De_Xuat.find({
-            com_id : com_id,
-            id_user_theo_doi : id_user_theo_doi,
-            $or: [{ active: 2 }, { type_duyet: 3 }],
-        })
+      return res.status(200).json(showD);
+    }
+    if (type == 5) {
+      const showTC = await De_Xuat.find({
+        com_id: com_id,
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        $or: [{ active: 2 }, { type_duyet: 3 }],
+      })
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-        return res.status(200).json(showTC);
-      }
-  }catch (error) {
-      console.error('Failed to show ', error);
-      res.status(500).json({ error: 'Failed to show' });
+      return res.status(200).json(showTC);
     }
+  } catch (error) {
+    console.error('Failed to show ', error);
+    res.status(500).json({ error: 'Failed to show' });
+  }
 }
 
 
@@ -265,7 +265,7 @@ exports.admin_danh_sach_de_xuat = async (req, res) => {
       perPage = 10; // Giá trị mặc định nếu không được cung cấp
     }
     const startIndex = (page - 1) * perPage;
-    
+
     // Các điều kiện kiểm tra bỏ trống và khác
     if (!id_user) {
       return res.status(400).json({ error: 'id_user không được bỏ trống.' });
@@ -278,8 +278,8 @@ exports.admin_danh_sach_de_xuat = async (req, res) => {
     let query = { com_id: com_id };
 
     if (phong_ban) {
-      let checkUser = await User.find({ 
-        'inForPerson.employee.dep_id': phong_ban 
+      let checkUser = await User.find({
+        'inForPerson.employee.dep_id': phong_ban
       }).select('idQLC');
       const userId = checkUser.map(item => item.idQLC);
       query.$or = [{ com_id: com_id }, { id_user: { $in: userId } }];
@@ -298,7 +298,7 @@ exports.admin_danh_sach_de_xuat = async (req, res) => {
     }
 
     const sortOptions = { _id: -1 };
-    
+
 
     if (time_s && time_e) {
       query.time_create = { $gte: new Date(time_s), $lte: new Date(time_e) };

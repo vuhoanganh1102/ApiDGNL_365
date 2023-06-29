@@ -14,7 +14,7 @@ router.post('/deXuat_send_user',functions.checkToken,formData.parse(), controlle
 //đề xuất đang theo dõi 
 router.post('/deXuat_follow',functions.checkToken, formData.parse(), controller.de_xuat_theo_doi);
 
-//admin
+//hiển thị danh sách đề xuất của công ty
 router.post('/admin_danh_sach_de_xuat',functions.checkToken,formData.parse(), controller.admin_danh_sach_de_xuat);
 
 module.exports = router;

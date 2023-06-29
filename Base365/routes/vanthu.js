@@ -28,9 +28,7 @@ router.use('/vanthu/editdx',EditDX)
 
 //Api gửi nhận
 router.use('/vanthu/DeXuat',EditDXSend)
-
 router.use('/vanthu/thongkenp',TKNP)
-
 
 //Api tool quét data văn thư
 router.use('/tooldata',toolVT)

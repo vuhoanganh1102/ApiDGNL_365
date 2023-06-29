@@ -5,67 +5,67 @@ const Group = require("../../../models/qlc/Group");
 
 // Hàm lấy dữ liệu Setting
 exports.getSettings = async (req, res) => {
-    try {
-      
-        const settings = await SettingDX.find();
-        res.status(200).json(settings)
-    } catch (error) {
-        console.error('Failed to get settings', error);
-        res.status(500).json({ error: 'Failed to get settings' });
-    }
+  try {
+
+    const settings = await SettingDX.find();
+    res.status(200).json(settings)
+  } catch (error) {
+    console.error('Failed to get settings', error);
+    res.status(500).json({ error: 'Failed to get settings' });
+  }
 };
 
 // hàm tạo mới và hiển thị cài đặt tài khoản côngty
 
 exports.findOrCreateSettingDx = async (req, res) => {
-    try {
-      let {  type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh } = req.body;
-      let com_id = req.user.data.inForPerson.employee.com_id
-      let createDate = new Date();
-      if (!com_id) {
-        throw new Error("Com Id required");
-      } else if (!functions.checkNumber(com_id)) {
-        throw new Error("Com Id must be a number");
-      } else {
-        let settingDx = await SettingDX.findOne({ com_id });
-  
-        if (!settingDx) {
-          let maxID = await functions.getMaxID(SettingDX);
-          if (!maxID) {
-            maxID = 0;
-          }
-          const _id = Number(maxID) + 1;
-  
-          settingDx = new SettingDX({
-            _id: _id,
-            com_id: com_id,
-            type_setting: type_setting,
-            type_browse: type_browse,
-            time_limit: time_limit,
-            shift_id: shift_id,
-            time_limit_l: time_limit_l,
-            list_user: list_user,
-            time_tp: time_tp,
-            time_hh: time_hh,
-            time_created: createDate
-          });
-  
-          await settingDx.save();
+  try {
+    let { type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh } = req.body;
+    let com_id = req.user.data.inForPerson.employee.com_id
+    let createDate = new Date();
+    if (!com_id) {
+      throw new Error("Com Id required");
+    } else if (!functions.checkNumber(com_id)) {
+      throw new Error("Com Id must be a number");
+    } else {
+      let settingDx = await SettingDX.findOne({ com_id });
+
+      if (!settingDx) {
+        let maxID = await functions.getMaxID(SettingDX);
+        if (!maxID) {
+          maxID = 0;
         }
-  
-        res.status(200).json(settingDx);
+        const _id = Number(maxID) + 1;
+
+        settingDx = new SettingDX({
+          _id: _id,
+          com_id: com_id,
+          type_setting: type_setting,
+          type_browse: type_browse,
+          time_limit: time_limit,
+          shift_id: shift_id,
+          time_limit_l: time_limit_l,
+          list_user: list_user,
+          time_tp: time_tp,
+          time_hh: time_hh,
+          time_created: createDate
+        });
+
+        await settingDx.save();
       }
-    } catch (err) {
-      functions.setError(res, err.message, 709);
+
+      res.status(200).json(settingDx);
     }
-  };
-  
-  
+  } catch (err) {
+    functions.setError(res, err.message, 709);
+  }
+};
+
+
 
 
 //hàm sửa setting
 // exports.editSettingDx = async (req,res) => {
-        
+
 //         let updateDate = new Date()
 //         if(isNaN(_id)){
 //             functions.setError(res, "Id must be a number", 702);
@@ -123,58 +123,54 @@ exports.findOrCreateSettingDx = async (req, res) => {
 
 exports.editSettingDx = async (req, res) => {
   try {
-      let updateDate = new Date();
-      let { _id, type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh, time_created } = req.body;
-      let com_id = req.user.data.inForPerson.employee.com_id
-      if (Number.isNaN(_id)) {
-          throw { code: 704, message: " Id required" };
-      } else if(!com_id) {
-        throw { code: 704, message: "Com Id required" };
-      } else if (!type_setting){
-          throw { code: 704, message: "type setting required" };
-      } else if (!type_browse){
-          throw { code: 704, message: "type_browse required" };
-      } else if (!time_limit){
-          throw { code: 704, message: "time_limit required" };
-      } else if (!shift_id){
-          throw { code: 704, message: "shift_id required" };
-      } else if (!time_limit_l){
-          throw { code: 704, message: "time_limit_l required" };
-      } else if (!list_user){
-          throw { code: 704, message: "list_user required" };
-      } else if (!time_tp){
-          throw { code: 704, message: "time_tp required" };
-      } else if (!time_hh){
-          throw { code: 704, message: "time_hh required" };
-      } else if (!time_created){
-          throw { code: 704, message: "time_created required" };
+    let updateDate = new Date();
+    let { _id, type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh, time_created } = req.body;
+    let com_id = req.user.data.inForPerson.employee.com_id
+    if (Number.isNaN(_id)) {
+      throw { code: 704, message: " Id required" };
+    } else if (!com_id) {
+      throw { code: 704, message: "Com Id required" };
+    } else if (!type_setting) {
+      throw { code: 704, message: "type setting required" };
+    } else if (!type_browse) {
+      throw { code: 704, message: "type_browse required" };
+    } else if (!time_limit) {
+      throw { code: 704, message: "time_limit required" };
+    } else if (!shift_id) {
+      throw { code: 704, message: "shift_id required" };
+    } else if (!time_limit_l) {
+      throw { code: 704, message: "time_limit_l required" };
+    } else if (!list_user) {
+      throw { code: 704, message: "list_user required" };
+    } else if (!time_tp) {
+      throw { code: 704, message: "time_tp required" };
+    } else if (!time_hh) {
+      throw { code: 704, message: "time_hh required" };
+    } else if (!time_created) {
+      throw { code: 704, message: "time_created required" };
+    } else {
+      const editSetting = await functions.getDatafindOne(SettingDX, { _id: _id });
+      if (!editSetting) {
+        throw { code: 710, message: "editSetting does not exist" };
       } else {
-          const editSetting = await functions.getDatafindOne(SettingDX, { _id: _id });
-          if (!editSetting) {
-              throw { code: 710, message: "editSetting does not exist" };
-          } else {
-              await functions.getDatafindOneAndUpdate(SettingDX, { com_id: com_id }, {
-                  com_id: com_id,
-                  type_setting: type_setting,
-                  type_browse: type_browse,
-                  time_limit: time_limit,
-                  shift_id: shift_id,
-                  time_limit_l: time_limit_l,
-                  list_user: list_user,
-                  time_tp: time_tp,
-                  time_hh: time_hh,
-                  time_created: time_created,
-                  update_time: updateDate
-              });
-              functions.success(res, "Group edited successfully");
-          }
+        await functions.getDatafindOneAndUpdate(SettingDX, { com_id: com_id }, {
+          com_id: com_id,
+          type_setting: type_setting,
+          type_browse: type_browse,
+          time_limit: time_limit,
+          shift_id: shift_id,
+          time_limit_l: time_limit_l,
+          list_user: list_user,
+          time_tp: time_tp,
+          time_hh: time_hh,
+          time_created: time_created,
+          update_time: updateDate
+        });
+        functions.success(res, "Group edited successfully");
       }
+    }
   } catch (error) {
-      functions.setError(res, error.message, error.code);
+    functions.setError(res, error.message, error.code);
   }
 };
-
-
-
-
 

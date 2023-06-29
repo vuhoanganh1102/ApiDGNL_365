@@ -30,7 +30,10 @@ exports.createLinkFileVanthu = (id, name) => {
     return link;
 }
 
-
+exports.getMaxID = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+    return maxUser._id;
+};
 
 // const storageVanthu = (destination) => {
 //     return storage = multer.diskStorage({
