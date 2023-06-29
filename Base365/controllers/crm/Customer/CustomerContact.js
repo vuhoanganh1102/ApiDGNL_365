@@ -149,7 +149,6 @@ exports.editContact = async(req,res)=>{
 
 }
 
-
 //xoa lien he KH
 exports.deleteContact = async (req,res) =>{
     const {contact_id , id_customer} = req.body;
@@ -181,4 +180,3 @@ exports.getContact = async (req, res) =>{
     }
 }
 
-//

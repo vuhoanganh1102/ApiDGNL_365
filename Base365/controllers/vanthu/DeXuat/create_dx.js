@@ -82,19 +82,29 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            let saveTB = await t_bao.save();
-            return res.status(200).json(saveDX, saveTB);
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date()
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json(saveDX, saveCreateTb);
         }
     } catch (error) {
         console.error('Failed to add', error);
@@ -176,26 +186,36 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
             })
 
 
-            await new_de_xuat.save();
+            let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "dề xuất bổ nhệm ", link, file_kem);
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             console.log(tb);
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            await t_bao.save();
-            return res.status(200).json("success ");
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date(),
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json({saveCreateTb,saveDX});
 
         }
     } catch (error) {
@@ -289,19 +309,29 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            let saveTB = await t_bao.save();
-            return res.status(200).json(saveDX, saveTB);
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date(),
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json(saveDX, saveCreateTb);
         }
 
 
@@ -393,19 +423,29 @@ exports.de_xuat_doi_ca = async (req, res) => {
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            let saveTB = await t_bao.save();
-            return res.status(200).json(saveDX, saveTB);
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date(),
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json(saveDX, saveCreateTb);
         }
     } catch (error) {
         console.error('Failed to add', error);
@@ -498,19 +538,29 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            let saveTB = await t_bao.save();
-            return res.status(200).json(saveDX, saveTB);
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date,
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json(saveDX, saveCreateTb);
         }
 
     } catch (error) {
@@ -602,19 +652,29 @@ exports.de_xuat_tang_luong = async (req, res) => {
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            let saveTB = await t_bao.save();
-            return res.status(200).json(saveDX, saveTB);
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date()
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json(saveDX, saveCreateTb);
         }
     } catch (error) {
         console.error('Failed to add', error);
@@ -706,19 +766,29 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            let saveTB = await t_bao.save();
-            return res.status(200).json(saveDX, saveTB);
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date()
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json(saveDX, saveCreateTb);
 
         }
     } catch (error) {
@@ -809,19 +879,29 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            let saveTB = await t_bao.save();
-            return res.status(200).json(saveDX, saveTB);
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date()
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json(saveDX, saveCreateTb);
 
         }
     } catch (error) {
@@ -909,19 +989,29 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            let saveTB = await t_bao.save();
-            return res.status(200).json(saveDX, saveTB);
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json(saveDX, saveCreateTb);
         }
 
     } catch (error) {
@@ -1006,19 +1096,29 @@ exports.lich_lam_viec = async (req, res) => {
             if (tb) {
                 maxID = Number(tb._id);
             }
-            const t_bao = new thongBao({
-                _id: Number(maxID + 1),
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: new_de_xuat._id,
-                type: 2,
-                view: 0,
-                created_date: Date.now(),
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
-            })
-            let saveTB = await t_bao.save();
-            return res.status(200).json(saveDX, saveTB);
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date()
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json(saveDX, saveCreateTb);
         }
     } catch (error) {
         console.error('Failed to add', error);
@@ -1034,7 +1134,9 @@ exports.dxCong = async (req, res) => {
             name_dx,
             noi_dung,
             kieu_duyet,
-
+            id_user,
+            com_id,
+            name_user,
             id_user_duyet,
             id_user_theo_doi,
             ca_xnc,
@@ -1042,9 +1144,9 @@ exports.dxCong = async (req, res) => {
             ly_do,
             link
         } = req.body;
-        let id_user = req.user.data.idQLC
-        let com_id = req.user.data.inForPerson.employee.com_id
-        let name_user = req.user.data.userName
+        // let id_user = req.user.data.idQLC
+        // let com_id = req.user.data.inForPerson.employee.com_id
+        // let name_user = req.user.data.userName
         let createDate = new Date();
         let file_kem = req.files.file_kem;
         let linkDL = '';
@@ -1083,23 +1185,34 @@ exports.dxCong = async (req, res) => {
             });
             let savedDXC = await createDXC.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
-            let maxIDTB = await functions.getMaxID(ThongBao)
+            let maxIDTB = await functions.getMaxID(ThongBao);
             let idTB = 0;
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXC._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = savedDXC.id_user_duyet.split(',');
 
-            res.status(200).json({ savedDXC, saveCreateTb });
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXC._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            res.status(200).json({saveCreateTb, savedDXC})
         };
 
     } catch (error) {
@@ -1167,17 +1280,28 @@ exports.dxCoSoVatChat = async (req, res) => {
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXCSVC._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXCSVC._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
             res.status(200).json({ savedDXCSVC, saveCreateTb });
         };
 
@@ -1257,17 +1381,28 @@ exports.dxDangKiSuDungXe = async (req, res) => {
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXXe._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXXe._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
             res.status(200).json({ savedDXXe, saveCreateTb });
         };
 
@@ -1345,17 +1480,28 @@ exports.dxHoaHong = async (req, res) => {
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXHH._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = savedDXHH.id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXHH._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
             res.status(200).json({ savedDXHH, saveCreateTb });
         };
     } catch (error) {
@@ -1422,16 +1568,28 @@ exports.dxKhieuNai = async (req, res) => {
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXKN._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = savedDXKN.id_user_duyet.split(',');
+
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXKN._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
 
             res.status(200).json({ savedDXKN, saveCreateTb });
         };
@@ -1508,16 +1666,28 @@ exports.dxPhongHop = async (req, res) => {
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXPH._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = savedDXPH.id_user_duyet.split(',');
+
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXPH._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
 
             res.status(200).json({ savedDXPH, saveCreateTb });
         };
@@ -1593,16 +1763,28 @@ exports.dxTangCa = async (req, res) => {
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXTC._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = savedDXTC.id_user_duyet.split(',');
+
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXTC._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
 
             res.status(200).json({ savedDXTC, saveCreateTb });
         };
@@ -1678,18 +1860,28 @@ exports.dxThaiSan = async (req, res) => {
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXTS._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = savedDXTS.id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXTS._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
             res.status(200).json({ savedDXTS, saveCreateTb });
         };
 
@@ -1762,17 +1954,28 @@ exports.dxThanhToan = async (req, res) => {
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXTT._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = savedDXTT.id_user_duyet.split(',');
 
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXTT._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
             res.status(200).json({ savedDXTT, saveCreateTb });
         };
 
@@ -1849,16 +2052,28 @@ exports.dxThuongPhat = async (req, res) => {
             if (maxIDTB) {
                 idTB = Number(maxIDTB) + 1;
             }
-            let createTB = new ThongBao({
-                _id: idTB,
-                id_user: id_user,
-                id_user_nhan: id_user_duyet,
-                id_van_ban: savedDXTP._id,
-                type: 2,
-                view: 0,
-                created_date: createDate
-            })
-            let saveCreateTb = await createTB.save()
+            const id_user_nhan_arr = savedDXTP.id_user_duyet.split(',');
+
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXTP._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
 
             res.status(200).json({ savedDXTP, saveCreateTb });
         };
