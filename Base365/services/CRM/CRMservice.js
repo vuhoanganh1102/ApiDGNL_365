@@ -3,7 +3,7 @@
 const path = require('path');
 // const { log } = require("console");
 const fs = require('fs');
-
+const Customer = require('../../models/crm/Customer/customer')
 
 exports.getMaxIDCRM = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { cus_id: -1 } }).lean() || 0;
@@ -143,7 +143,7 @@ function isInvalidDateRange(time_s, time_e) {
 
 
 
-exports.validateCustomerInput = (name, phone_number,address,email,type) => {
+exports.validateCustomerInput = (name,comId) => {
     if (!name) {
       throw { code: 400, message: 'Tên khách hàng là bắt buộc.' };
     }
@@ -207,4 +207,15 @@ exports.setError = async (res, message, code = 500) => {
 exports.getMaxID = async (model) => {
   const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
   return maxUser._id;
+};
+
+
+exports.deleteCustomerByIds = async (arrCus) => {
+  try {
+    await Customer.deleteMany({ cus_id: { $in: arrCus } });
+    console.log(`Deleted customers with IDs: ${arrCus.join(', ')}`);
+  } catch (error) {
+    console.error('Failed to delete customers', error);
+    throw error;
+  }
 };
