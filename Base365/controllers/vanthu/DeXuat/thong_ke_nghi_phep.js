@@ -1,7 +1,8 @@
 const De_Xuat = require("../../../models/Vanthu/de_xuat");
 
 exports.thong_ke_nghi_phep = async (req, res) => {
-    let { phong_ban,
+    let { 
+        phong_ban,
         id_nhan_vien,
         nghi_nhieu_nhat //3-nghỉ nhiều nhất 2- nghỉ đột xuất nhiều nhất 1- nghỉ có kế hoạch nhiều nhất 
     } = req.body;

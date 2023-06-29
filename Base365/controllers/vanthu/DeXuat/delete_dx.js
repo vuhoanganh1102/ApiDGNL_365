@@ -59,7 +59,8 @@ exports.delete_dx = async (req, res) => {
 }
 
 exports.de_xuat_da_xoa_All = async (req, res) => {
-    let { phong_ban,
+    let { 
+        phong_ban,
         id_nhan_vien,
         loai_de_xuat,
         trang_thai_de_xuat } = req.body;

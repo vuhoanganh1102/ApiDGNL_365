@@ -1790,8 +1790,6 @@ exports.dxThuongPhat = async (req, res) => {
             res.status(200).json({savedDXTP,saveCreateTb});
         };
 
-
-
     } catch (error) {
         console.error('Failed to add', error);
         res.status(500).json({error: 'Failed to add'});
