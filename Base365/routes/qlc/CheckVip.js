@@ -6,6 +6,6 @@ const functions= require ("../../services/functions")
 //check vip
 
 router.post("/",formData.parse(),functions.checkToken, controller.check1)
-router.post("/before",formData.parse(),functions.checkToken, controller.check2)
+router.post("/before",formData.parse(), controller.check2)
 
 module.exports = router
