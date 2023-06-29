@@ -40,10 +40,10 @@ const positionNames = {
 //cơ cấu tổ chức công ty, công ty con và phòng ban
 exports.detailInfoCompany = async(req, res, next) => {
     try {
-        if (req.user) {
+        if (req.infoLogin) {
             // let com_id = req.user.data.idQLC
             // hiện đang ko dùng token để test, vì model user chưa có dữ liệu hoàn chỉnh
-            let com_id = req.user.data.idQLC
+            let com_id = req.infoLogin.comId
             let shiftID = req.body.shiftID
             let CreateAt = req.body.CreateAt || true
             let inputNew = req.body.inputNew
@@ -427,8 +427,8 @@ exports.detailInfoCompany = async(req, res, next) => {
 //hiển thị mô tả chi tiết của phòng ban, tổ trong công ty
 exports.description = async(req, res, next) => {
     try {
-        if (req.user) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
@@ -444,7 +444,7 @@ exports.description = async(req, res, next) => {
 
                 info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId }, { description: 1, id: 1 })
             }
-            if (info.description == null) {
+            if (info && info.description == null) {
                 info.description = "chưa cập nhật"
             }
             if (info) {
@@ -462,8 +462,8 @@ exports.description = async(req, res, next) => {
 
 exports.updateDescription = async(req, res, next) => {
     try {
-        if (req.user) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
@@ -496,8 +496,8 @@ exports.updateDescription = async(req, res, next) => {
 //danh sách chức vụ
 exports.listPosition = async(req, res, next) => {
     try {
-        if (req.user) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
                 //tìm kiếm những chức vụ của công ty đó trong bảng hr
             const positionOrder = {
                 19: 1,
@@ -566,8 +566,8 @@ exports.listPosition = async(req, res, next) => {
 //chi tiết nhiệm vụ mỗi chức vụ
 exports.missionDetail = async(req, res, next) => {
     try {
-        if (req.body.comId) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
 
             let positionId = req.body.positionId
             let mission = await HR_DescPositions.findOne({ comId: comId, positionId: positionId }, { description: 1 })
@@ -592,11 +592,14 @@ exports.missionDetail = async(req, res, next) => {
 //cập nhật chi tiết nhiệm vụ mỗi
 exports.updateMission = async(req, res, next) => {
     try {
-        if (req.body.comId) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
 
             let positionId = req.body.positionId
             let description = req.body.description
+            if(!positionId || !description) {
+                return functions.setError(res, "Missing input value!", 404);
+            }
             let mission = await HR_DescPositions.findOneAndUpdate({ comId: comId, positionId: positionId }, { description: description }, { new: true })
             if (mission) {
                 return functions.success(res, 'cập nhật chi tiết nhiệm vụ thành công', { mission });
@@ -614,9 +617,9 @@ exports.updateMission = async(req, res, next) => {
 //tải lên chữ ký
 exports.uploadSignature = async(req, res, next) => {
     try {
-        if (req.user && req.file) {
+        if (req.infoLogin && req.file) {
             let empId = req.body.empId
-            console.log(req.file)
+            
             const maxID = await HR_SignatureImages.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             if (maxID) {
                 newIDMax = Number(maxID.id) + 1;

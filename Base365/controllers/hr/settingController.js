@@ -30,10 +30,6 @@ exports.getListPermisionUser= async(req, res, next) => {
 
 let createRole = async(userId, arrRole, role)=>{
     // lay ra cac quyen xem them sua xoa: 1, 2, 3, 4
-    let infoLogin = req.infoLogin;
-    if(infoLogin.type!=1){
-      return functions.setError(res, "Not company!");
-    }
     let arrPer = arrRole.split(",");
     for(let i=0; i<arrPer.length; i++){
         let perUserId = await hrService.getMaxId(PermisionUser);
@@ -50,6 +46,10 @@ let createRole = async(userId, arrRole, role)=>{
 
 exports.createPermisionUser = async(req, res, next) => {
     try {
+        let infoLogin = req.infoLogin;
+        if(infoLogin.type!=1){
+          return functions.setError(res, "Not company!");
+        }
         let {userId, role_td, role_ttns, role_ttvp, role_hnnv, role_bcns, role_dldx, role_tgl} = req.body;
         if(!userId) {
             return functions.setError(res, "Missing input value", 404)
