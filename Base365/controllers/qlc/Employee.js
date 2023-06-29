@@ -174,9 +174,9 @@ exports.login = async (req,res)=>{
                     access_token_CRM: "bear" + " " + tokenCRM,
                     refresh_token : refreshToken,
                     user_info: {
-                        // user_id : findUser._id,
+                        user_id : findUser._id,
                         user_email :findUser.email,
-                        // user_phoneTK : findUser.phoneTK,
+                        user_phoneTK : findUser.phoneTK,
                         // user_password :findUser.password,
                         // user_name : findUser.userName,
                         // user_address : findUser.address,
