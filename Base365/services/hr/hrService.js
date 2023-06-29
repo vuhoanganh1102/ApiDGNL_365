@@ -95,7 +95,7 @@ exports.HR_UploadFile = async(folder, id, file, allowedExtensions) => {
 }
 
 exports.createLinkFileHR = (folder, id, name) => {
-    let link = process.env.DOMAIN_RAO_NHANH + '/hr/' + folder + '/' + id + '/' + name;
+    let link = process.env.DOMAIN_RAO_NHANH + '/base365/hr/' + folder + '/' + id + '/' + name;
     return link;
 }
 exports.deleteFileHR = (folder, id, file) => {
@@ -267,7 +267,7 @@ exports.checkRoleUser = (req, res, next)=> {
                 return res.status(403).json({ message: "Invalid token" });
             }
             // console.log(user.data);
-            var infoLogin = {type: user.data.type, id: user.data._id, name: user.data.userName};
+            var infoLogin = {type: user.data.type, id: user.data.idQLC, name: user.data.userName};
             if(user.data.type!=1){
                 if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
                     infoLogin.comId = user.data.inForPerson.employee.com_id;
@@ -276,10 +276,9 @@ exports.checkRoleUser = (req, res, next)=> {
                 }
                 
             }else {
-                infoLogin.comId = user.data._id;
+                infoLogin.comId = user.data.idQLC;
             }
             req.infoLogin = infoLogin;
-            console.log(infoLogin);
             next();
             
         });
@@ -301,7 +300,7 @@ exports.checkRole = async(infoLogin, barId, perId)=> {
 exports.checkRight = (barId, perId) => {
     return async (req, res, next) => {
         let infoLogin = req.infoLogin;
-        console.log(infoLogin)
+       
         if(infoLogin.type==1) return next();
         let permission = await PermissionUser.findOne({userId: infoLogin.id, barId: barId, perId: perId});
         if(permission) return next();
@@ -310,7 +309,7 @@ exports.checkRight = (barId, perId) => {
 };
 
 exports.checkIsInteger = (data)=>{
-    console.log(data);
+
     for(let i=0; i<data.length; i++){
         if (isNaN(data[i])) {
         return false;
@@ -446,3 +445,4 @@ exports.sendEmailtoCandidate = async(email, subject, data) => {
         }
     })
 };
+
