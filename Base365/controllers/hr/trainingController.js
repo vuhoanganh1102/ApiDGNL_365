@@ -17,10 +17,10 @@ exports.getListJobDescription= async(req, res, next) => {
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         
-        let listCondition = {comId: req.comId};
+        let listCondition = {comId: req.infoLogin.comId, isDelete: 0};
 
         // dua dieu kien vao ob listCondition
-        if(name) listCondition.name =  new RegExp(name);
+        if(name) listCondition.name =  new RegExp(name, 'i');
         const listJob = await functions.pageFind(JobDescription, listCondition, { _id: 1 }, skip, limit); 
         const totalCount = await functions.findCount(JobDescription, listCondition);
         return functions.success(res, "Get list job description success", {totalCount: totalCount, data: listJob });
@@ -37,7 +37,7 @@ exports.createJobDescription = async(req, res, next) => {
             return functions.setError(res, "Missing input value!", 404);
         }
         //lay id max
-        const comId = req.comId;
+        const comId = req.infoLogin.comId;
         const maxIdJob = await JobDescription.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
         let newIdJob;
         if (maxIdJob) {
@@ -48,7 +48,7 @@ exports.createJobDescription = async(req, res, next) => {
         if(!await hrService.checkFile(roadMap.path)){
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 20MB', 405);
         }
-        await hrService.uploadFile(folderFile,comId,roadMap);
+        let nameFile = await hrService.uploadFileRoadMap(comId,roadMap);
         let linkFile = await hrService.createLinkFile(folderFile, comId, roadMap.name);
         //tao quy trinh
         let job = new JobDescription({
@@ -57,12 +57,10 @@ exports.createJobDescription = async(req, res, next) => {
             depName: depName,
             des: des,
             jobRequire: jobRequire,
-            roadMap: linkFile,
-            comId: req.comId
+            roadMap: nameFile,
+            comId: comId
         });
         job = await job.save();
-        console.log(job);
-        
         return functions.success(res, 'Create job description success!');
     } catch (e) {
         console.log("Err from server!", e);

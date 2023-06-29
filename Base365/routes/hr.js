@@ -26,5 +26,6 @@ router.use('/report',report)
 router.use('/tool',tool)
 router.use('/forceDelete', forceDeleteRoute);
 router.use('/home', homeRoute);
+router.use('/tool', tool);
 
 module.exports = router;

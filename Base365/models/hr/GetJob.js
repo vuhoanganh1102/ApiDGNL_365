@@ -9,7 +9,7 @@ const GetJob = new Schema({
         unique: true,
         autoIncrement: true
     },
-  
+    
     canId: {
         type: Number,
         require: true
@@ -51,12 +51,12 @@ const GetJob = new Schema({
         default: 0
     },
     deletedAt: {
-      type: Date,
-      default: null
+        type: Date,
+        default: null
     },
     createdAt: {
-      type: Date,
-      default: Date.now()
+        type: Date,
+        default: Date.now()
     }
 }, {
     collection: 'HR_GetJobs',

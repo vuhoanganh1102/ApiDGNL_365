@@ -11,9 +11,9 @@ const hrService = require('../../services/hr/hrService');
 router.post('/listDetailDelete', formData.parse(), hrService.checkRoleUser, forceDeleteController.listDetailDelete);
 
 //api xoa
-router.post('/delete', formData.parse(), hrService.checkRoleUser, forceDeleteController.delete);
+router.post('/delete', formData.parse(), hrService.checkRoleUser, hrService.checkRight(7, 3),  forceDeleteController.delete);
 
 //khoi phuc
-router.post('/restoreDelete', formData.parse(), hrService.checkRoleUser, forceDeleteController.restoreDelete);
+router.post('/restoreDelete', formData.parse(), hrService.checkRoleUser, hrService.checkRight(7, 3),  forceDeleteController.restoreDelete);
 
 module.exports = router;

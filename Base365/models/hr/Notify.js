@@ -20,7 +20,7 @@ const NotificationSchema = new Schema({
     // id user
     userId: { type: Number   },
     // ngày tạo
-    createdAt: { type: Date, required: true }
+    createdAt: { type: Date, default: Date.now() }
 }, {
     collection: 'HR_Notifys',
     versionKey: false,

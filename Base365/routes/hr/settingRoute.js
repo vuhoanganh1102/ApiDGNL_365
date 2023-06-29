@@ -11,10 +11,10 @@ const hrService = require('../../services/hr/hrService');
 //-----------cai dat chung
 
 //cap quyen cho nhan vien
-router.post('/permision', formData.parse(), hrService.HR_CheckTokenCompany, settingController.createPermisionUser);
+router.post('/permision', formData.parse(), hrService.checkRoleUser, settingController.createPermisionUser);
 
 //lay ra cac quyen cua user buy userId
-router.post('/listPermision', formData.parse(), hrService.HR_CheckTokenCompany, settingController.getListPermisionUser);
+router.post('/listPermision', formData.parse(), hrService.checkRoleUser, settingController.getListPermisionUser);
 
 //tao token han vien
 router.post('/createTokenEmp', formData.parse(), settingController.createTokenUser);

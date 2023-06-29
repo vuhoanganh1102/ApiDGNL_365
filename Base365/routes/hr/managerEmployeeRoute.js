@@ -8,8 +8,8 @@ const hrService = require('../../services/hr/hrService');
 //------------------------------api module quan ly nhan vien
 
 //api lay ra danh sach nhan vien va tim kiem
-router.post('/listEmployee', formData.parse(), hrService.checkRoleUser, managerEmployeeController.getListEmployee);
-router.post('/createEmployee', formData.parse(), hrService.checkRoleUser, managerEmployeeController.createEmployee);
-router.post('/updateEmployee', formData.parse(), hrService.checkRoleUser, managerEmployeeController.updateEmployee);
+router.post('/listEmployee', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 1), managerEmployeeController.getListEmployee);
+router.post('/createEmployee', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 2), managerEmployeeController.createEmployee);
+router.post('/updateEmployee', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 3), managerEmployeeController.updateEmployee);
 
 module.exports = router;

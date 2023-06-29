@@ -16,7 +16,7 @@ const HR_InfoLeaderSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: true,
+        default: null
     },
     desPosition: {
         type: String,
