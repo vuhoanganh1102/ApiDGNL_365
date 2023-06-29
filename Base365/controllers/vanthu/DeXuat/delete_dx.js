@@ -3,6 +3,8 @@ const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const delete_Dx = require('../../../models/Vanthu/delete_dx');
 const his_handle = require('../../../models/Vanthu/history_handling_dx');
 
+
+//123123
 exports.delete_dx = async (req, res) => {
     let id_user = req.user.data.idQLC;
     console.log(id_user);
