@@ -13,7 +13,7 @@ router.post('/updatePassword',functions.checkToken, formData.parse(),   employee
 // hàm cập nhập thông tin NV
 router.post('/updateInfoEmployee',functions.checkToken,  formData.parse(),  employee.updateInfoEmployee);
 // api api gửi mã OTP qua mail (quên mật khẩu) 
-router.post('/forgotPasswordCheckMail', formData.parse(),  employee.forgotPassword);
+router.post('/forgotPassword', formData.parse(),  employee.forgotPassword);
 
 
 

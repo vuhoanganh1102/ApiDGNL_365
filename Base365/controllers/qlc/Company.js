@@ -119,15 +119,15 @@ exports.verify = async (req,res)=>{
             let checkMail = await functions.checkEmail(email)
             let checkPhone = await functions.checkPhoneNumber(phoneTK)
             if(checkMail || checkPhone){
-                let findUser = await Users.findOne($or[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}])
+                let findUser = await Users.findOne({$or:[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}]})
                 if(findUser) {
                     let otp = functions.randomNumber
-                    data = await Users.updateOne($or[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}],{
+                    data = await Users.updateOne({$or:[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}]},{
                         $set:{
                             otp : otp
                         }
                     })
-                    return functions.success(res,"Gửi mã OTP thành công",{data})
+                    return functions.success(res,"Gửi mã OTP thành công",{data ,otp})
                 }else {
                     return functions.setError(res,"tài khoản không tồn tại")
                 }
@@ -136,9 +136,9 @@ exports.verify = async (req,res)=>{
             }
 
         }else if (otp&&(phoneTK||email)){
-            let verify = await findOne($or[ { email:email,otp, type: 1 },{phoneTK:phoneTK,otp ,type :1}]);
+            let verify = await Users.findOne( {$or:[ { email:email,otp, type: 1 },{phoneTK:phoneTK,otp ,type :1}]});
             if (verify != null){
-                await Users.updateOne($or[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}],{
+                await Users.updateOne({$or:[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}]},{
                     $set: {
                         authentic :1 
                     }
@@ -154,7 +154,7 @@ exports.verify = async (req,res)=>{
         }
     } catch(e) {
         console.log(e);
-        return functions.setError(res , error)
+        return functions.setError(res , e.message)
     }
 }
 // hàm xác nhận otp để kích hoạt tài khoản
@@ -293,15 +293,15 @@ exports.forgotPassword = async (req,res)=>{
             let checkMail = await functions.checkEmail(email)
             let checkPhone = await functions.checkPhoneNumber(phoneTK)
             if(checkMail || checkPhone){
-                let findUser = await Users.findOne($or[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}])
+                let findUser = await Users.findOne({$or:[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}]})
                 if(findUser) {
                     let otp = functions.randomNumber
-                    data = await Users.updateOne($or[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}],{
+                    data = await Users.updateOne({$or:[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}]},{
                         $set:{
                             otp : otp
                         }
                     })
-                    return functions.success(res,"Gửi mã OTP thành công",{data})
+                    return functions.success(res,"Gửi mã OTP thành công",{data, otp})
                 }else {
                     return functions.setError(res,"tài khoản không tồn tại")
                 }
@@ -310,48 +310,44 @@ exports.forgotPassword = async (req,res)=>{
             }
 
         }else if (otp&&(phoneTK||email)){
-            let verify = await findOne($or[ { email:email,otp, type: 1 },{phoneTK:phoneTK,otp ,type :1}]);
+            let verify = await Users.findOne({$or:[ { email:email,otp, type: 1 },{phoneTK:phoneTK,otp ,type :1}]});
             if (verify != null){
-                await Users.updateOne($or[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}],{
+                await Users.updateOne({$or:[ { email:email, type: 1 },{phoneTK:phoneTK ,type :1}]},{
                     $set: {
                         authentic :1 
                     }
                 });
                 await functions.success(res,"xác thực thành công");
                 
-                if(!password || !re_password){
-                    return functions.setError(res, 'Missing data', 400)
-                }
-                if(password.length < 6){
-                    return functions.setError(res, 'Password quá ngắn', 400)
-                }
-                if(password !== re_password)
-                {
-                    return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
-                }
-                    let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 1 })
-                    if (!checkPass) {
-                        await Users.updateOne({ idQLC: idQLC }, {
-                            $set: {
-                                password: md5(password),
-                            }
-                        });
-                        return functions.success(res, 'cập nhập thành công',{})
-                    }
-                    return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
-
+               
 
             }else{
                 return functions.setError(res,"xác thực thất bại",404);
             }
-        
+        }else if ( password && re_password){
+            if(!password && !re_password){
+                return functions.setError(res, 'Missing data', 400)
+            }
+            if(password.length < 6){
+                return functions.setError(res, 'Password quá ngắn', 400)
+            }
+            if(password !== re_password)
+            {
+                return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+            }
+                    await Users.updateOne({$or:[ { email:email,authentic:1, type: 1 },{phoneTK:phoneTK,authentic:1 ,type :1}]},{
+                        $set: {
+                            password: md5(password),
+                        }
+                    });
+                    await functions.success(res, 'cập nhập MK thành công')
         
          }else{
-            return functions.setError(res,"thiếu dữ liệu gmail",404)
+            return functions.setError(res,"thiếu dữ liệu",404)
         }
     } catch(e) {
-        console.log(e);
-        return functions.setError(res , error)
+        // console.log(e);
+        return functions.setError(res , e.message)
     }
 }
 
