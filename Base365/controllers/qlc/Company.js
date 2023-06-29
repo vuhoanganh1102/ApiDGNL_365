@@ -4,65 +4,69 @@ const md5 = require('md5');
 
 //Đăng kí tài khoản công ty 
 exports.register = async (req, res) => {
-    const { userName, email, phoneTK, password,createdAt,com_vip ,position_id,com_id} = req.body;
+    const { userName, email, phoneTK, password, com_vip, position_id, com_id, address, phone } = req.body;
 
-    if ((userName && password && email && phoneTK) !== undefined) {
+    if (userName && password && email && phoneTK && address) {
+        // let checkMail = await functions.checkEmail(email)
+        let checkPhone = await functions.checkPhoneNumber(phoneTK)
+        if (checkPhone) {
+            let user = await Users.findOne({ phoneTK: phoneTK, type: 1 })
+            let MaxId = await functions.getMaxID(Users) || 0
+            if (user == null) {
+                const user = new Users({
+                    _id: Number(MaxId) + 1 || 1,
+                    email: email,
+                    phoneTK: phoneTK,
+                    userName: userName,
+                    phone: phone,
+                    address: address,
+                    type: 1,
+                    authentic: 0 || null,
+                    password: md5(password),
+                    otp: null,
+                    fromWeb: "quanlichung.timviec365",
+                    role: 1,
+                    createdAt: new Date(),
+                    "inForCompany.cds.com_vip": com_vip,
+                    idQLC: (Number(MaxId) + 1),
+                    "inForPerson.employee.position_id": position_id,
+                    "inForPerson.employee.com_id": com_id,
+                    avatarCompany: null
+                })
+                await user.save()
+                const token = await functions.createToken({
+                    user
+                }, "1d")
+                const refreshToken = await functions.createToken({ userId: user._id }, "1y")
+                await functions.success(res, "tạo tài khoản thành công", { user, token, refreshToken })
+            } else {
+                await functions.setError(res, 'email đã tồn tại', 404);
+            }
 
-        //  check email co trong trong database hay khong
-        let user = await functions.getDatafindOne(Users, { email: email, type: 1 })
-        let MaxId = await functions.getMaxID(Users) || 0
-        if (user == null) {
-            const user = new Users({
-                _id: Number(MaxId) +1 || 0,
-                email: req.body.email,
-                phoneTK: req.body.phoneTK,
-                userName: req.body.userName,
-                phone: req.body.phone,
-                type: 1,
-                authentic: 0 || null,
-                password: md5(password),
-                address: req.body.address,
-                otp: req.body.otp|| null,
-                fromWeb: "quanlichung.timviec365",
-                role: 1,
-                createdAt : new Date(),
-                "inForCompany.cds.com_vip" :com_vip, 
-                idQLC: (Number(MaxId) + 1),
-                "inForPerson.employee.position_id":position_id,
-                "inForPerson.employee.com_id":com_id,
-                avatarCompany: null
-            })
-            const token = await functions.createToken({
-                email : user.email,
-                idQLC : user.idQLC
-            },"1d")
-            const refreshToken = await functions.createToken({userId : findUser._id}, "1y")
-            await user.save().then(() =>  functions.success(res,"tạo tài khoản thành công",{user , token , refreshToken})).catch((e) => {
-                console.log(e);
-            });
         } else {
-            await functions.setError(res, 'email đã tồn tại', 404);
-        }
+            await functions.setError(res, 'sai dinh dang sdt', 404)
 
-    } else {
+        }
+    }else{
         await functions.setError(res, 'Một trong số các trường yêu cầu bị thiếu', 404)
+
     }
 }
-
 //Đăng nhập tài khoản công ty
 exports.login = async (req, res, next) => {
     try {
+        let phoneTK = req.body.phoneTK
         let email = req.body.email
         password = req.body.password
-        let datacheck = await Users.findOne({email,type:1},{_id:1,userName:1,idRaoNhanh365:1});
-        console.log(datacheck)
 
         type = 1
-        if (email && password) {
+        if ((email||phoneTK) && password) {
             let checkMail = await functions.checkEmail(email)
-            if (checkMail) {
+            let checkPhone = await functions.checkPhoneNumber(phoneTK)
+            if(checkMail || checkPhone){
+                let findUser = await Users.findOne({$or:[ { email:email, type: 1 },{phoneTK : phoneTK ,type :1}]})
+
                 
-                let findUser = await Users.findOne({ email, type: 1 })
                 let crmtoken = await Users.findOne({ email, type: 1 }).select("idQLC row inForPerson.employee.position_id inForPerson.employee.com_id type")
                 console.log(crmtoken)
                 if (!findUser) {
@@ -190,8 +194,12 @@ exports.updatePassword = async (req, res, next) => {
         let idQLC = req.user.body.idQLC
         let password = req.body.password;
         let re_password = req.body.re_password;
+        let checkPassword = await functions.verifyPassword(password)
+        if (!checkPassword) {
+            return functions.setError(res, "sai dinh dang Mk", 404)
+        }
         if(!password || !re_password){
-            return functions.setError(res, 'Missing data', 400)
+            return functions.setError(res, 'điền thiếu thông tin', 400)
         }
         if(password.length < 6){
             return functions.setError(res, 'Password quá ngắn', 400)
@@ -325,6 +333,10 @@ exports.forgotPassword = async (req,res)=>{
                 return functions.setError(res,"xác thực thất bại",404);
             }
         }else if ( password && re_password){
+            let checkPassword = await functions.verifyPassword(password)
+            if (!checkPassword) {
+                return functions.setError(res, "sai dinh dang Mk", 404)
+            }
             if(!password && !re_password){
                 return functions.setError(res, 'Missing data', 400)
             }

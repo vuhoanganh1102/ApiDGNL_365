@@ -47,7 +47,7 @@ try{
                 },"1d")
                 const refreshToken = await functions.createToken({userId : user._id}, "1y")
 
-                await user.save().then(() => functions.success(res, "tạo tài khoản thành công", { user ,token,refreshToken  })).catch((e) => {
+                await user.save().then(() => functions.success(res, "tạo tài khoản thành công", { user ,token, refreshToken  })).catch((e) => {
                     console.log(e);
 
 
@@ -151,7 +151,7 @@ exports.login = async (req,res)=>{
         let phoneTK = req.body.phoneTK
         password = req.body.password
         type = 2
-        if (email && password) {
+        if ((email||phoneTK) && password) {
             let checkMail = await functions.checkEmail(email)
             let checkPhone = await functions.checkPhoneNumber(phoneTK)
             if(checkMail || checkPhone){
@@ -214,6 +214,10 @@ exports.login = async (req,res)=>{
             let idQLC = req.user.body.idQLC
             let password = req.body.password;
             let re_password = req.body.re_password;
+            let checkPassword = await functions.verifyPassword(password)
+            if (!checkPassword) {
+                return functions.setError(res, "sai dinh dang Mk", 404)
+            }
             if(!password || !re_password){
                 return functions.setError(res, 'Missing data', 400)
             }
@@ -325,6 +329,10 @@ exports.updateInfoEmployee = async (req, res, next) => {
                     return functions.setError(res,"xác thực thất bại",404);
                 }
             }else if ( password && re_password){
+                let checkPassword = await functions.verifyPassword(password)
+                if (!checkPassword) {
+                    return functions.setError(res, "sai dinh dang Mk", 404)
+                }
                 if(!password && !re_password){
                     return functions.setError(res, 'Missing data', 400)
                 }

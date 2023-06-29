@@ -28,13 +28,14 @@ exports.check2 = async (req,res) =>{
     let data = [];
     let timeVip = [];
     let userVip = [];
-    numberUser
-    data = await user.findOne({com_id : com_id }).select("inForCompany.cds.com_vip")
+    const timeStart = "2023-05-20 23:59:59"
+
+    data = await user.findOne({com_id : com_id }).select("inForCompany.cds.com_vip inForCompany.cds.com_vip_time inForCompany.cds.com_ep_vip createdAt" )
+    // if()
     console.log(data)
-    console.log(data[0].inForCompany["com_vip"])
-    if(data[0].inForCompany["com_vip"] === 1) {
+    console.log(data[0].inForCompany.cds["com_vip"])
+    if(data[0].inForCompany.cds["com_vip"] === 1) {
         functions.success(res,"Cong ty VIP")
-     timeVip = await user.findOne({com_id : com_id}).select('inForCompany.cds.com_vip_time')
      if(timeVip){}
 
 

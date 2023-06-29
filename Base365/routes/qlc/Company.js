@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const company = require('../../controllers/qlc/Company.js')
+const company = require('../../controllers/qlc/Company')
 const functions= require ("../../services/functions")
 var formData = require('express-form-data')
 //Đăng kí tài khoản công ty 
@@ -15,7 +15,7 @@ router.post('/updateNewPassword',functions.checkToken, formData.parse(),   compa
 // hàm cập nhập thông tin công ty
 router.post('/updateInfoCompany', formData.parse(), functions.checkToken,  company.updateInfoCompany);
 // api api gửi mã OTP qua mail (quên mật khẩu) 
-router.post('/forgotPasswordCheckMail', formData.parse(),  company.forgotPassword);
+router.post('/forgotPassword', formData.parse(),  company.forgotPassword);
 // // api check mã OTP  (quên mật khẩu)
 // router.post('/forgotPasswordCheckOTP', formData.parse(), company.forgotPasswordCheckOTP);
 // // api đổi mật khẩu (quên mật khẩu)
