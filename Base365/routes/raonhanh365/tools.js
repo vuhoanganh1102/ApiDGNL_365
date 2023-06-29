@@ -32,4 +32,6 @@ router.post('/raonhanh/toolAdminUser', toolRaoNhanh.toolAdminUser);
 router.post('/raonhanh/toolAdminTranslate', toolRaoNhanh.toolAdminTranslate);
 router.post('/raonhanh/toolBlog',toolRaoNhanh.toolBlog)
 router.post('/raonhanh/toolLoveNew',toolRaoNhanh.toolLoveNew)
+router.post('/raonhanh/toolCateVl',toolRaoNhanh.toolCateVl)
+router.post('/raonhanh/toolPhuongXa',toolRaoNhanh.toolPhuongXa)
 module.exports = router;

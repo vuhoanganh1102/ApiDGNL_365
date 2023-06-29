@@ -42,40 +42,52 @@ const HR_StageRecruitments = require('../../models/hr/StageRecruitment.js');
 // tool hr cường
 exports.AchievementFors = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_achievements_for');
-        let listUser = [];
-
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].id);
-            let achievementId = data[i].achievement_id;
-            if (data[i].list_user) {
-                for (let j = 0; j < data[i].list_user.split(',').length; j++) {
-                    listUser.push({ userId: data[i].list_user.split(',')[j], name: data[i].list_user_name.split(',')[j] });
+        let page = 1;
+        let result = true;
+        while(result)
+        {
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_achievements_for?page=${page}`);
+            let listUser = [];
+            if(data.length === 0)
+            {
+                result = false
+            }
+    
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].id);
+                let achievementId = data[i].achievement_id;
+                if (data[i].list_user) {
+                    for (let j = 0; j < data[i].list_user.split(',').length; j++) {
+                        listUser.push({ userId: data[i].list_user.split(',')[j], name: data[i].list_user_name.split(',')[j] });
+                    }
                 }
+                let content = data[i].content;
+                let createdBy = data[i].created_by;
+                let achievementAt = null;
+                if (await functions.checkDate(data[i].achievement_at) === true) {
+                    achievementAt = data[i].achievement_at;
+                }
+                let achievementType = data[i].achievement_type;
+                let appellation = data[i].appellation;
+                let achievementLevel = data[i].achievement_level;
+                let type = data[i].type;
+                let comId = data[i].com_id;
+                let depId = data[i].dep_id;
+                let depName = data[i].dep_name;
+                let createdAt = data[i].created_at;
+                let updatedAt = data[i].updated_at;
+                let AchievementFors = new HR_AchievementFors({
+                    id, achievementId, content,
+                    createdBy, achievementAt, achievementType,
+                    appellation, achievementLevel, type, comId,
+                    depId, depName, createdAt, updatedAt, listUser
+                });
+                await AchievementFors.save();
             }
-            let content = data[i].content;
-            let createdBy = data[i].created_by;
-            let achievementAt = null;
-            if (await functions.checkDate(data[i].achievement_at) === true) {
-                achievementAt = data[i].achievement_at;
-            }
-            let achievementType = data[i].achievement_type;
-            let appellation = data[i].appellation;
-            let achievementLevel = data[i].achievement_level;
-            let type = data[i].type;
-            let comId = data[i].com_id;
-            let depId = data[i].dep_id;
-            let depName = data[i].dep_name;
-            let createdAt = data[i].created_at;
-            let updatedAt = data[i].updated_at;
-            let AchievementFors = new HR_AchievementFors({
-                id, achievementId, content,
-                createdBy, achievementAt, achievementType,
-                appellation, achievementLevel, type, comId,
-                depId, depName, createdAt, updatedAt, listUser
-            });
-            await AchievementFors.save();
+            page++;
+            console.log(page)
         }
+        
         return functions.success(res, 'pull data success'); 
     }
     catch (error) {
@@ -85,24 +97,35 @@ exports.AchievementFors = async (req, res, next) => {
 // cancel job
 exports.cancelJob = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_cancel_job');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].id);
-            let canId = data[i].can_id;
-            let isDelete = data[i].is_delete;
-            let deletedAt = data[i].deleted_at;
-            let resiredSalary = data[i].resired_salary;
-            let salary = data[i].salary;
-            let note = data[i].note;
-            let status = data[i].status;
-            let isSwitch = data[i].is_switch;
-            let createdAt = data[i].created_at;
-            // const check_id = await HR_Cancel.findById(_id);
-            // if (!check_id || check_id.length === 0) {
-            let data_recruitment = new HR_Cancel({ id, canId, isDelete, deletedAt, resiredSalary, salary, note, status, isSwitch, createdAt });
-            await HR_Cancel.create(data_recruitment);
-            // }
+        let page = 1;
+        let result = true;
+        while(result){
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_cancel_job?page=${page}`);
+            if(data.length === 0)
+            {
+                result = false
+            }
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].id);
+                let canId = data[i].can_id;
+                let isDelete = data[i].is_delete;
+                let deletedAt = data[i].deleted_at;
+                let resiredSalary = data[i].resired_salary;
+                let salary = data[i].salary;
+                let note = data[i].note;
+                let status = data[i].status;
+                let isSwitch = data[i].is_switch;
+                let createdAt = data[i].created_at;
+                // const check_id = await HR_Cancel.findById(_id);
+                // if (!check_id || check_id.length === 0) {
+                let data_recruitment = new HR_Cancel({ id, canId, isDelete, deletedAt, resiredSalary, salary, note, status, isSwitch, createdAt });
+                await HR_Cancel.create(data_recruitment);
+                // }
+            }
+            page++;
+            console.log(page)
         }
+        
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -112,24 +135,37 @@ exports.cancelJob = async (req, res, next) => {
 // failJob
 exports.failJob = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_failed_job?page=1');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].id);
-            let canId = data[i].can_id;
-            let type = data[i].type;
-            let isDelete = data[i].is_delete;
-            let deletedAt = data[i].deleted_at;
-            let note = data[i].note;
-            let email = data[i].email;
-            let contentsend = data[i].contentsend;
-            let isSwitch = data[i].is_switch;
-            let createdAt = data[i].created_at;
-            // const check_id = await HR_Cancel.findById(_id);
-            // if (!check_id || check_id.length === 0) {
-            let data_recruitment = new HR_FailJob({ id, canId, isDelete, deletedAt, note, email, contentsend, isSwitch, createdAt });
-            await HR_FailJob.create(data_recruitment);
-            // }
+        let page = 1;
+        let result = true;
+        while(result){
+           
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_failed_job?page=${page}`);
+            if(data.length === 0)
+            {
+                result = false
+            }
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].id);
+                let canId = data[i].can_id;
+                let type = data[i].type;
+                let isDelete = data[i].is_delete;
+                let deletedAt = data[i].deleted_at;
+                let note = data[i].note;
+                let email = data[i].email;
+                let contentsend = data[i].contentsend;
+                let isSwitch = data[i].is_switch;
+                let createdAt = data[i].created_at;
+                // const check_id = await HR_Cancel.findById(_id);
+                // if (!check_id || check_id.length === 0) {
+                let data_recruitment = new HR_FailJob({ id, canId, isDelete, deletedAt, note, email, contentsend, isSwitch, createdAt });
+                await HR_FailJob.create(data_recruitment);
+                // }
+            
+            }
+            page++;
+            console.log(page)
         }
+        
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -137,19 +173,30 @@ exports.failJob = async (req, res, next) => {
 };
 exports.AddInfoLeads = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_add_info_lead');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].id);
-            let epId = data[i].ep_id;
-            let nameDes = data[i].name_des; 
-            let description = Buffer.from(data[i].description, 'base64');
-            let createdAt = data[i].created_at;
-            let updatedAt = data[i].updated_at;
-            let AddInfoLeads = new HR_AddInfoLeads({
-                id, epId, nameDes, description, createdAt, updatedAt
-            });
-            await AddInfoLeads.save();
+        let page = 1;
+        let result = true;
+        while(result){
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_add_info_lead?page=${page}`);
+            if(data.length === 0)
+            {
+                result = false
+            }
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].id);
+                let epId = data[i].ep_id;
+                let nameDes = data[i].name_des; 
+                let description = Buffer.from(data[i].description, 'base64');
+                let createdAt = data[i].created_at;
+                let updatedAt = data[i].updated_at;
+                let AddInfoLeads = new HR_AddInfoLeads({
+                    id, epId, nameDes, description, createdAt, updatedAt
+                });
+                await AddInfoLeads.save();
+            }
+            page++;
+            console.log(page)
         }
+        
         return functions.success(res, 'pull data success'); 
     } catch (error) {
         return functions.setError(res, error.message);
@@ -160,25 +207,36 @@ exports.AddInfoLeads = async (req, res, next) => {
 
 exports.contactJob = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_contact_job?page=1');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].id);
-            let canId = data[i].can_id;
-            let isDelete = data[i].is_delete;
-            let deletedAt = data[i].deleted_at;
-            let resiredSalary = data[i].resired_salary;
-            let salary = data[i].salary;
-            let offerTime = data[i].offer_time;
-            let epOffer = data[i].ep_offer;
-            let note = data[i].note;
-            let isSwitch = data[i].is_switch;
-            let createdAt = data[i].created_at;
-            // const check_id = await HR_Cancel.findById(_id);
-            // if (!check_id || check_id.length === 0) {
-            let data_recruitment = new HR_ContactJob({ id, canId, isDelete, deletedAt, resiredSalary, note, salary, offerTime, epOffer, isSwitch, createdAt });
-            await HR_ContactJob.create(data_recruitment);
-            // }
+        let page = 1;
+        let result = true;
+        while(result){
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_contact_job?page=${page}`);
+            if(data.length === 0)
+            {
+                result = false
+            }
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].id);
+                let canId = data[i].can_id;
+                let isDelete = data[i].is_delete;
+                let deletedAt = data[i].deleted_at;
+                let resiredSalary = data[i].resired_salary;
+                let salary = data[i].salary;
+                let offerTime = data[i].offer_time;
+                let epOffer = data[i].ep_offer;
+                let note = data[i].note;
+                let isSwitch = data[i].is_switch;
+                let createdAt = data[i].created_at;
+                // const check_id = await HR_Cancel.findById(_id);
+                // if (!check_id || check_id.length === 0) {
+                let data_recruitment = new HR_ContactJob({ id, canId, isDelete, deletedAt, resiredSalary, note, salary, offerTime, epOffer, isSwitch, createdAt });
+                await HR_ContactJob.create(data_recruitment);
+                // }
+            }
+            page++;
+            console.log(page)
         }
+        
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -186,14 +244,25 @@ exports.contactJob = async (req, res, next) => {
 };
 exports.Blogs = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_blog');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].id);
-            let content = Buffer.from(data[i].content, 'base64');
-            let comment = data[i].comment;
-            let Blogs = new HR_Blogs({ id, content, comment });
-            await Blogs.save();
+        let page = 1;
+        let result = true;
+        while(result){
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_blog?page=${page}`);
+            if(data.length === 0)
+            {
+                result = false
+            }
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].id);
+                let content = Buffer.from(data[i].content, 'base64');
+                let comment = data[i].comment;
+                let Blogs = new HR_Blogs({ id, content, comment });
+                await Blogs.save();
+            }
+            page++;
+            console.log(page)
         }
+       
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -201,34 +270,45 @@ exports.Blogs = async (req, res, next) => {
 };
 exports.Categorys = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_category');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].cat_id);
-            let name = data[i].cat_name;
-            let title = data[i].cat_title;
-            let tags = data[i].cat_tags;
-            let description = data[i].cat_description;
-            let keyword = data[i].cat_keyword;
-            let parentId = data[i].cat_parent_id;
-            let lq = data[i].cat_lq;
-            let count = data[i].cat_count;
-            let countVl = data[i].cat_count_vl;
-            let order = data[i].cat_order;
-            let active = data[i].cat_active;
-            let hot = data[i].cat_hot;
-            let ut = data[i].cat_ut;
-            let only = data[i].cat_only;
-            let except = data[i].cat_except;
-            let tlq = data[i].cat_tlq;
-            let tlqUv = data[i].cat_tlq_uv;
-
-            let Categorys = new HR_Categorys({
-                id, name, title, tags, description, keyword, parentId,
-                lq, count, countVl, order, active, hot, ut, only, except, tlq, tlqUv
-            });
-
-            await Categorys.save();
+        let page = 1;
+        let result = true;
+        while(result){
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_category?page=${page}`);
+            if(data.length === 0)
+            {
+                result = false
+            }
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].cat_id);
+                let name = data[i].cat_name;
+                let title = data[i].cat_title;
+                let tags = data[i].cat_tags;
+                let description = data[i].cat_description;
+                let keyword = data[i].cat_keyword;
+                let parentId = data[i].cat_parent_id;
+                let lq = data[i].cat_lq;
+                let count = data[i].cat_count;
+                let countVl = data[i].cat_count_vl;
+                let order = data[i].cat_order;
+                let active = data[i].cat_active;
+                let hot = data[i].cat_hot;
+                let ut = data[i].cat_ut;
+                let only = data[i].cat_only;
+                let except = data[i].cat_except;
+                let tlq = data[i].cat_tlq;
+                let tlqUv = data[i].cat_tlq_uv;
+    
+                let Categorys = new HR_Categorys({
+                    id, name, title, tags, description, keyword, parentId,
+                    lq, count, countVl, order, active, hot, ut, only, except, tlq, tlqUv
+                });
+    
+                await Categorys.save();
+            }
+            page++;
+            console.log(page)
         }
+       
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -236,7 +316,7 @@ exports.Categorys = async (req, res, next) => {
 };
 exports.CiSessions = async (req, res, next) => {    
     try {
-        let data1 = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_ci_sessions');
+        let data1 = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_ci_sessions`);
         for (let i = 0; i < data1.length; i++) {
             let id = data1[i].id;
             let ipAddress = data1[i].ip_address;
@@ -256,18 +336,29 @@ exports.CiSessions = async (req, res, next) => {
 };
 exports.Citys = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_city2');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].cit_id);
-
-            let name = data[i].cit_name;
-            let order = data[i].cit_order;
-            let type = data[i].cit_type;
-            let count = data[i].cit_count;
-            let parentId = data[i].cit_parent;
-            let Citys = new HR_Citys({ id, name, order, type, count, parentId });
-            await Citys.save();
+        let page = 1;
+        let result = true;
+        while(result){
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_city2?page=${page}`);
+            if(data.length === 0)
+            {
+                result = false
+            }
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].cit_id);
+    
+                let name = data[i].cit_name;
+                let order = data[i].cit_order;
+                let type = data[i].cit_type;
+                let count = data[i].cit_count;
+                let parentId = data[i].cit_parent;
+                let Citys = new HR_Citys({ id, name, order, type, count, parentId });
+                await Citys.save();
+            }
+            page++;
+            console.log(page)
         }
+        
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
