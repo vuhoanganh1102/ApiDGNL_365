@@ -101,7 +101,8 @@ exports.check2 = async (req, res) => {
 
         data = await user.findOne({ "inForPerson.employee.com_id": com_id }).select("inForCompany.cds.com_vip inForCompany.cds.com_vip_time inForCompany.cds.com_ep_vip createdAt").lean()
         console.log(data)
-        const createdAt = data.createdAt
+        if(data){
+            const createdAt = data.createdAt
         count = await user.countDocuments({ "inForPerson.employee.com_id": com_id }).lean()
         console.log(count)
         const comVip = data.inForCompany.cds.com_vip
@@ -172,8 +173,15 @@ exports.check2 = async (req, res) => {
 
         } else {
             console.log("Thời gian tạo lập và thời gian bắt đầu bằng nhau");
+            functions.success(res, "Thời gian tạo lập và thời gian bắt đầu bằng nhau")
+
         }
 
+        }else{
+            functions.success(res, " Công ty không tồn tại ")
+
+        }
+        
     } catch (e) {
         functions.setError(res, e.message)
     }

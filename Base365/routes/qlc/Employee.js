@@ -7,13 +7,16 @@ router.post('/register', formData.parse(),  employee.register)
 //Đăng nhập tài khoản NV
 router.post('/login', formData.parse(),  employee.login)
 // api xác nhận OTP để xác minh tìa khoản
-router.post('/verify', formData.parse(),  employee.verify);
+router.post('/verify', formData.parse(),functions.checkToken,  employee.verify);
 // hàm đổi mật khẩu 
 router.post('/updatePassword',functions.checkToken, formData.parse(),   employee.updatePassword);
 // hàm cập nhập thông tin NV
 router.post('/updateInfoEmployee',functions.checkToken,  formData.parse(),  employee.updateInfoEmployee);
 // api api gửi mã OTP qua mail (quên mật khẩu) 
 router.post('/forgotPassword', formData.parse(),  employee.forgotPassword);
+
+
+router.post('/info', formData.parse(),functions.checkToken,  employee.info);
 
 
 
