@@ -8,23 +8,23 @@ const hrService = require('../../services/hr/hrService');
 
 //------------------------------api module vi tri cong viec
 //api lay ra danh sach vi tri cong viec
-router.post('/listJob', formData.parse(), hrService.HR_CheckTokenCompany, trainingController.getListJobDescription);
+router.post('/listJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1),  trainingController.getListJobDescription);
 
 //them moi vi tri cong viec
-router.post('/job', formData.parse(), hrService.HR_CheckTokenCompany, trainingController.createJobDescription);
+router.post('/job', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2),  trainingController.createJobDescription);
 
 //xoa vi tri cong viec => muc du lieu xoa gan day
-router.put('/jobSoftDelete', formData.parse(), hrService.HR_CheckTokenCompany, trainingController.softDeleteJobDescription);
+router.post('/jobSoftDelete', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 4),  trainingController.softDeleteJobDescription);
 
 //---------------------------api quy trinh dao tao
-router.post('/listProcessTrain', formData.parse(), hrService.checkRoleUser, trainingController.getListProcessTraining);
-router.post('/detailProcess', formData.parse(), hrService.checkRoleUser, trainingController.getDetailProcessTraining);
-router.post('/process', formData.parse(), hrService.checkRoleUser, trainingController.createProcessTraining);
-router.post('/softDeleteProcess', formData.parse(), hrService.checkRoleUser, trainingController.softDeleteProcessTraining);
+router.post('/listProcessTrain', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1),  trainingController.getListProcessTraining);
+router.post('/detailProcess', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1),  trainingController.getDetailProcessTraining);
+router.post('/process', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2),  trainingController.createProcessTraining);
+router.post('/softDeleteProcess', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 4),  trainingController.softDeleteProcessTraining);
 
 //---------------------------api giai doan trong quy trinh
-router.post('/stage', formData.parse(), hrService.checkRoleUser, trainingController.createStageProcessTraining);
-router.post('/updateStage', formData.parse(), hrService.checkRoleUser, trainingController.updateStageProcessTraining);
-router.post('/softDeleteStage', formData.parse(), hrService.checkRoleUser, trainingController.softDeleteStageProcessTraining);
+router.post('/stage', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2),  trainingController.createStageProcessTraining);
+router.post('/updateStage', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 3),  trainingController.updateStageProcessTraining);
+router.post('/softDeleteStage', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 4),  trainingController.softDeleteStageProcessTraining);
 
 module.exports = router;

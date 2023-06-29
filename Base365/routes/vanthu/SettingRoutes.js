@@ -8,9 +8,8 @@ router.post('/',formData.parse(),settingVanthu.getSettings);
 
 
 // Api lấy dữ liệu seting theo com_id nếu không có sẽ tạo mới
- 
-
 router.post('/createF',functions.checkToken,formData.parse(),settingVanthu.findOrCreateSettingDx);
+
 
 // Api sửa setting
 router.post('/editSetting',functions.checkToken,formData.parse(),settingVanthu.editSettingDx);

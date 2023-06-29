@@ -1,6 +1,7 @@
 const functions = require('../../services/functions');
 const hrService = require('../../services/hr/hrService');
 const Users = require('../../models/Users');
+const md5 = require("md5");
 
 // lay ra danh sach cac vi tri cong viec trong cty
 exports.getListEmployee= async(req, res, next) => {
@@ -52,14 +53,17 @@ exports.getListEmployee= async(req, res, next) => {
 //them moi de test thoi
 exports.createEmployee = async(req, res, next) => {
     try {
-        let {email, phone, userName, address, birthday, gender,married,experience,education,start_working_time, dep_id,position_id} = req.body;
+        let {userName, email, password, phone, address, comId, birthday, gender,married,experience,education,start_working_time, dep_id,position_id, role} = req.body;
 
-        if(!userName || !email || !phone) {
+        if(!userName || !email || !phone || !password) {
             return functions.setError(res, "Missing input value!", 404);
         }
-        //check quyen
         let infoLogin = req.infoLogin;
-        let comId = infoLogin.comId;
+        if(!comId) {
+          comId = infoLogin.comId;
+        }
+        //check quyen
+        
         let checkRole = await hrService.checkRole(infoLogin, 5, 2);
         if(!checkRole) {
             return functions.setError(res, "no right", 444);   
@@ -75,9 +79,12 @@ exports.createEmployee = async(req, res, next) => {
             _id: newIdUser,
             userName: userName,
             email: email,
+            password: md5(password),
             phone: phone,
             address: address,
             type: 2,
+            role: role,
+            idQLC: newIdUser,
             inForPerson: {
               account: {
                 birthday: birthday,
@@ -118,7 +125,7 @@ exports.updateEmployee = async(req, res, next) => {
         }
 
         //tao quy trinh
-        let user = await Users.findOneAndUpdate({_id: empId},{
+        let user = await Users.findOneAndUpdate({idQLC: empId},{
             userName: userName,
             phone: phone,
             address: address,

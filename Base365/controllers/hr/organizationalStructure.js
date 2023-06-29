@@ -40,10 +40,10 @@ const positionNames = {
 //cơ cấu tổ chức công ty, công ty con và phòng ban
 exports.detailInfoCompany = async(req, res, next) => {
     try {
-        if (req.user) {
-            // let com_id = req.user.data.idQLC
+        if (req.infoLogin) {
+            // let com_id = req.infoLogin.comId
             // hiện đang ko dùng token để test, vì model user chưa có dữ liệu hoàn chỉnh
-            let com_id = req.user.data.idQLC
+            let com_id = req.infoLogin.comId
             let shiftID = req.body.shiftID
             let CreateAt = req.body.CreateAt || true
             let inputNew = req.body.inputNew
@@ -427,8 +427,8 @@ exports.detailInfoCompany = async(req, res, next) => {
 //hiển thị mô tả chi tiết của phòng ban, tổ trong công ty
 exports.description = async(req, res, next) => {
     try {
-        if (req.user) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
@@ -444,7 +444,7 @@ exports.description = async(req, res, next) => {
 
                 info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId }, { description: 1, id: 1 })
             }
-            if (info.description == null) {
+            if (info && info.description == null) {
                 info.description = "chưa cập nhật"
             }
             if (info) {
@@ -462,8 +462,8 @@ exports.description = async(req, res, next) => {
 
 exports.updateDescription = async(req, res, next) => {
     try {
-        if (req.user) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
@@ -496,8 +496,8 @@ exports.updateDescription = async(req, res, next) => {
 //danh sách chức vụ
 exports.listPosition = async(req, res, next) => {
     try {
-        if (req.user) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
                 //tìm kiếm những chức vụ của công ty đó trong bảng hr
             const positionOrder = {
                 19: 1,
@@ -566,8 +566,8 @@ exports.listPosition = async(req, res, next) => {
 //chi tiết nhiệm vụ mỗi chức vụ
 exports.missionDetail = async(req, res, next) => {
     try {
-        if (req.body.comId) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
 
             let positionId = req.body.positionId
             let mission = await HR_DescPositions.findOne({ comId: comId, positionId: positionId }, { description: 1 })
@@ -592,11 +592,14 @@ exports.missionDetail = async(req, res, next) => {
 //cập nhật chi tiết nhiệm vụ mỗi
 exports.updateMission = async(req, res, next) => {
     try {
-        if (req.body.comId) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin) {
+            let comId = req.infoLogin.comId;
 
             let positionId = req.body.positionId
             let description = req.body.description
+            if(!positionId || !description) {
+                return functions.setError(res, "Missing input value!", 404);
+            }
             let mission = await HR_DescPositions.findOneAndUpdate({ comId: comId, positionId: positionId }, { description: description }, { new: true })
             if (mission) {
                 return functions.success(res, 'cập nhật chi tiết nhiệm vụ thành công', { mission });
@@ -614,9 +617,9 @@ exports.updateMission = async(req, res, next) => {
 //tải lên chữ ký
 exports.uploadSignature = async(req, res, next) => {
     try {
-        if (req.user && req.file) {
+        if (req.infoLogin && req.file) {
             let empId = req.body.empId
-            console.log(req.file)
+            
             const maxID = await HR_SignatureImages.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             if (maxID) {
                 newIDMax = Number(maxID.id) + 1;
@@ -648,13 +651,14 @@ exports.uploadSignature = async(req, res, next) => {
 //xóa chữ kí đã tải lên
 exports.deleteSignature = async(req, res, next) => {
     try {
-        if (req.user) {
+        if (req.infoLogin) {
             let empId = req.body.empId
             let deleteSig = await HR_SignatureImages.findOneAndUpdate({ empId: empId }, { isDelete: 1, deletedAt: new Date(Date.now()) })
 
             if (deleteSig) {
                 return functions.success(res, 'Xóa chữ ký thành công');
             }
+            return functions.setError(res, "Employee not found!");
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
@@ -667,9 +671,9 @@ exports.deleteSignature = async(req, res, next) => {
 //danh sách, tìm kiếm lãnh đạo
 exports.listInfoLeader = async(req, res, next) => {
     try {
-        if (req.user) {
+        if (req.infoLogin) {
             let keyword = req.body.keyword
-            let comId = req.user.data.idQLC
+            let comId = req.infoLogin.comId
             let page = Number(req.body.page)
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
@@ -748,7 +752,7 @@ exports.listInfoLeader = async(req, res, next) => {
 //chi tiết lãnh đạo
 exports.leaderDetail = async(req, res, next) => {
     try {
-        if (req.user && req.body.empId) {
+        if (req.infoLogin && req.body.empId) {
             let empId = req.body.empId
             let description = req.body.description
             let result = {}
@@ -770,17 +774,21 @@ exports.leaderDetail = async(req, res, next) => {
                     if (maxID) {
                         newIDMax = Number(maxID.id) + 1;
                     } else newIDMax = 1
+                    let desPosition = 0;
+                    if(infoUser && infoUser.inForPerson && infoUser.inForPerson.employee && infoUser.inForPerson.employee.position_id) desPosition = infoUser.inForPerson.employee.position_id
                     let insertUser = new HR_InfoLeaders({
                         id: newIDMax,
                         epId: empId,
-                        avatar: infoUser.avatarUser,
+                        avatar: (infoUser.avatarUser?infoUser.avatarUse:null),
                         description: description,
-                        desPosition: infoUser.inForPerson.employee.position_id,
+                        desPosition: desPosition,
                         created_at: new Date(Date.now())
                     })
                     insertUser.save()
                     if (insertUser) {
                         return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công');
+                    }else {
+                        return functions.setError(res, 'update info leader fail!');
                     }
                 }
 
@@ -798,9 +806,12 @@ exports.leaderDetail = async(req, res, next) => {
 //cập nhật chi tiết lãnh đạo
 exports.updateLeaderDetail = async(req, res, next) => {
     try {
-        if (req.user && req.body.empId) {
+        if (req.infoLogin && req.body.empId) {
             let empId = req.body.empId
             let description = req.body.description
+            if(!description){
+                return functions.setError(res, "Missing input description!");
+            }
 
             let updateUserHr = await HR_InfoLeaders.findOneAndUpdate({ epId: empId }, { description: description, updated_at: new Date(Date.now()) }, { new: true })
 
@@ -819,8 +830,8 @@ exports.updateLeaderDetail = async(req, res, next) => {
 //Thêm mới nhân viên sử dụng con dấu
 exports.updateEmpUseSignature = async(req, res, next) => {
     try {
-        if (req.user && req.body.empId) {
-            let comId = req.user.data.idQLC
+        if (req.infoLogin && req.body.empId) {
+            let comId = req.infoLogin.comId;
             let empId = req.body.empId
             let depId = req.body.depId
             let positionId = req.body.positionId
@@ -866,6 +877,8 @@ exports.updateEmpUseSignature = async(req, res, next) => {
 
             if (updateUserHr) {
                 return functions.success(res, 'cập nhật người sử dụng con dấu thành công');
+            }else {
+                return functions.setError(res, "Employee not found!", 505);
             }
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
@@ -879,10 +892,10 @@ exports.updateEmpUseSignature = async(req, res, next) => {
 //Danh sách nhân viên sử dụng con dấu (có tìm kiếm)
 exports.listEmpUseSignature = async(req, res, next) => {
     try {
-        if (req.user) {
+        if (req.infoLogin) {
             let keyword = req.body.keyword
 
-            let comId = req.user.data.idQLC
+            let comId = req.infoLogin.comId;
             let infoUser
             if (isNaN(keyword) == true) {
                 infoUser = await Users.findOne({
@@ -918,8 +931,10 @@ exports.listEmpUseSignature = async(req, res, next) => {
                 info.namePosition = positionNames[infoUser.inForPerson.employee.position_id];
 
                 if (infoUser.inForPerson.employee.dep_id) {
-                    let infoDep = await Deparment.findOne({ _id: infoUser.inForPerson.employee.dep_id, com_id: comId })
-                    info.dep_name = infoDep.deparmentName
+                    let infoDep = await Deparment.findOne({ _id: infoUser.inForPerson.employee.dep_id, com_id: comId });
+                    if(infoDep && infoDep.deparmentName) {
+                        info.dep_name = infoDep.deparmentName
+                    }
 
                 } else {
                     info.dep_name = "chưa cập nhật"
@@ -938,9 +953,9 @@ exports.listEmpUseSignature = async(req, res, next) => {
 //Xóa nhân viên sử dụng con dấu
 exports.deleteEmpUseSignature = async(req, res, next) => {
     try {
-        if (req.user && req.body.empId) {
-            let comId = req.user.data.idQLC
-            let empId = req.body.empId
+        if (req.infoLogin && req.body.empId) {
+            let comId = req.infoLogin.comId;
+            let empId = req.body.empId;
 
             let updateUserHr = await Users.findOneAndUpdate({
                 idQLC: empId,
@@ -953,6 +968,8 @@ exports.deleteEmpUseSignature = async(req, res, next) => {
 
             if (updateUserHr) {
                 return functions.success(res, 'xóa người sử dụng con dấu thành công');
+            }else {
+                return functions.setError(res, "Emplyee not found!", 505);
             }
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
@@ -966,9 +983,9 @@ exports.deleteEmpUseSignature = async(req, res, next) => {
 //danh sách, tìm kiếm chữ ký lãnh đạo
 exports.listSignatureLeader = async(req, res, next) => {
     try {
-        if (req.user) {
+        if (req.infoLogin) {
             let keyword = req.body.keyword
-            let comId = req.user.data.idQLC
+            let comId = req.infoLogin.comId
             let page = Number(req.body.page)
             let pageSize = Number(req.body.pageSize)
             const skip = (page - 1) * pageSize;
