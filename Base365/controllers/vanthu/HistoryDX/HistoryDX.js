@@ -43,7 +43,7 @@ exports.showAllHis = async(req,res) => {
 exports.Isend = async (req, res) => {
   try {
     const { id_user } = req.body;
-
+    
     // Kiểm tra nếu id_user không được gửi
     if (!id_user) {
       return res.status(400).json({ error: 'id_user không được bỏ trống.' });

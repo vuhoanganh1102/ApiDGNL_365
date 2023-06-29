@@ -3,51 +3,52 @@ var router = express.Router();
 var formData = require('express-form-data');
 var organizationalStructure = require('../../controllers/hr/organizationalStructure');
 const { uploadSignature } = require('../../services/hr/hrService');
-const functions = require('../../services/functions')
+const functions = require('../../services/functions');
+const hrService = require('../../services/hr/hrService');
 
 //thông tin công ty, phòng ban
-router.post('/detailInfoCompany', formData.parse(), functions.checkToken, organizationalStructure.detailInfoCompany)
+router.post('/detailInfoCompany', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.detailInfoCompany)
 
 //hiển thị mô tả chi tiết phòng ban, tổ nhóm
-router.post('/description', formData.parse(), functions.checkToken, organizationalStructure.description)
+router.post('/description', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.description)
 
 //cập nhật mô tả chi tiết phòng ban, tổ nhóm
-router.post('/updateDescription', formData.parse(), functions.checkToken, organizationalStructure.updateDescription)
+router.post('/updateDescription', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2), organizationalStructure.updateDescription)
 
 //danh sách chức vụ
-router.post('/listPosition', formData.parse(), functions.checkToken, organizationalStructure.listPosition)
+router.post('/listPosition', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.listPosition)
 
 //hiển thị nhiệm vụ mỗi chức vụ
-router.post('/missionDetail', formData.parse(), functions.checkToken, organizationalStructure.missionDetail)
+router.post('/missionDetail', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.missionDetail)
 
 //cập nhật nhiệm vụ mỗi chức vụ
-router.post('/updateMission', formData.parse(), functions.checkToken, organizationalStructure.updateMission)
+router.post('/updateMission', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 3), organizationalStructure.updateMission)
 
 //tải lên chữ ký 
-router.post('/uploadSignature', functions.checkToken, uploadSignature.single('file'), organizationalStructure.uploadSignature)
+router.post('/uploadSignature', hrService.checkRoleUser, hrService.checkRight(4, 2), uploadSignature.single('file'), organizationalStructure.uploadSignature)
 
 //xóa chữ ký
-router.post('/deleteSignature', formData.parse(), functions.checkToken, organizationalStructure.deleteSignature)
+router.post('/deleteSignature', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 4), organizationalStructure.deleteSignature)
 
 //danh sách lãnh đạo
-router.post('/listInfoLeader', formData.parse(), functions.checkToken, organizationalStructure.listInfoLeader)
+router.post('/listInfoLeader', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.listInfoLeader)
 
 //chi tiết lãnh đạo
-router.post('/leaderDetail', formData.parse(), functions.checkToken, organizationalStructure.leaderDetail)
+router.post('/leaderDetail', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.leaderDetail)
 
 //cập nhật chi tiết lãnh đạo
-router.post('/updateLeaderDetail', formData.parse(), functions.checkToken, organizationalStructure.updateLeaderDetail)
+router.post('/updateLeaderDetail', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 3), organizationalStructure.updateLeaderDetail)
 
 //cập nhật nhân viên sử dụng con dấu
-router.post('/updateEmpUseSignature', formData.parse(), functions.checkToken, organizationalStructure.updateEmpUseSignature)
+router.post('/updateEmpUseSignature', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2), organizationalStructure.updateEmpUseSignature)
 
 //danh sách, tìm kiếm nhân viên sử dụng con dấu
-router.post('/listEmpUseSignature', formData.parse(), functions.checkToken, organizationalStructure.listEmpUseSignature)
+router.post('/listEmpUseSignature', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.listEmpUseSignature)
 
 //xóa nhân viên được sử dụng con dấu
-router.post('/deleteEmpUseSignature', formData.parse(), functions.checkToken, organizationalStructure.deleteEmpUseSignature)
+router.post('/deleteEmpUseSignature', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 4), organizationalStructure.deleteEmpUseSignature)
 
 //danh sách chữ ký lãnh đạo
-router.post('/listSignatureLeader', formData.parse(), functions.checkToken, organizationalStructure.deleteEmpUseSignature)
+router.post('/listSignatureLeader', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.listSignatureLeader)
 
 module.exports = router;

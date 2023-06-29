@@ -24,7 +24,7 @@ var CalendarWorkEmployee = require("./qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./qlc/settingIP")
 var homePage = require("./qlc/homePage")
 
-router.use('/company', companyRouterQLC);
+router.use('/Company', companyRouterQLC);
 router.use('/employee', EmployeeRouterQLC);
 router.use('/individual', individualRouterQLC);
 router.use('/department', deparmentRouter);

@@ -126,11 +126,10 @@ exports.checkPermissions = async(req, res, next, per, bar) => {
         }
     }
 }
-
 // hàm check định dạng ảnh
 let checkFile = async(filePath) => {
     const extname = path.extname(filePath).toLowerCase();
-    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.pdf', '.doc', '.docx'].includes(extname);
+    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.pdf', '.doc', '.docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'ods', 'odt', 'odp', 'rtf', 'sxc', 'sxi', 'txt'].includes(extname);
 };
 
 exports.createLinkFile = async(folder, id, name) => {
@@ -139,8 +138,8 @@ exports.createLinkFile = async(folder, id, name) => {
 }
 
 exports.uploadFile = async(folder, id, file) => {
-    let path1 = `../Storage/base365/hr/pictures/${folder}/${id}/`;
-    let filePath = `../Storage/base365/hr/pictures/${folder}/${id}/` + file.name;
+    let path1 = `../Storage/base365/hr/${folder}/${id}/`;
+    let filePath = `../Storage/base365/hr/${folder}/${id}/` + file.name;
     if (!fs.existsSync(path1)) {
         fs.mkdirSync(path1, { recursive: true });
     }
@@ -156,6 +155,62 @@ exports.uploadFile = async(folder, id, file) => {
     });
     return true
 }
+
+exports.uploadFileCv = async(id, file) => {
+    let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    let fileExtension = file.originalFilename.split('.').pop();
+    let name = `cv_${random}.${fileExtension}`
+    let filePath= `../Storage/base365/hr/upload/cv/${id}/`;
+    if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath+name, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return name;
+}
+
+exports.uploadFileRoadMap = async(id, file) => {
+    let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    let fileExtension = file.originalFilename.split('.').pop();
+    let name = `roadmap_${random}.${fileExtension}`
+    let filePath= `../Storage/base365/hr/upload/roadmap/${id}/`;
+    if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath+name, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return name;
+}
+
+exports.createLinkFileCv = async(folder, id, name) => {
+    let link = process.env.DOMAIN_HR + '/base365/hr/' + folder + '/' + id + '/' + name;
+    return link;
+}
+
+exports.deleteFileCv = (id) => {
+    let filePath = '../Storage/hr/upload/cv' +'/' + id;
+    fs.unlink(filePath, (err) => {
+        if (err) console.log(err);
+    });
+}
+
+
 exports.uploadFileBase64 = async(folder, id, base64String, file) => {
     let path1 = `../Storage/base365/hr/pictures/${folder}/${id}/`;
     // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
