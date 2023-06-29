@@ -322,7 +322,7 @@ exports.checkRoleUser = (req, res, next)=> {
                 return res.status(403).json({ message: "Invalid token" });
             }
             // console.log(user.data);
-            var infoLogin = {type: user.data.type, id: user.data._id, name: user.data.userName};
+            var infoLogin = {type: user.data.type, id: user.data.idQLC, name: user.data.userName};
             if(user.data.type!=1){
                 if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
                     infoLogin.comId = user.data.inForPerson.employee.com_id;
@@ -331,7 +331,7 @@ exports.checkRoleUser = (req, res, next)=> {
                 }
                 
             }else {
-                infoLogin.comId = user.data._id;
+                infoLogin.comId = user.data.idQLC;
             }
             req.infoLogin = infoLogin;
             console.log(infoLogin);
