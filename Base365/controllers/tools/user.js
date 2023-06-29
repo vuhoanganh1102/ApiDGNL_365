@@ -15,7 +15,7 @@ const fnc = require('../../services/functions');
 
 const slug = require('slug');
 
-exports.addUserChat365 = async(req, res, next) => {
+exports.addUserChat365 = async (req, res, next) => {
     try {
         let count = 0,
             result = true;
@@ -95,7 +95,7 @@ exports.addUserChat365 = async(req, res, next) => {
 
 }
 
-exports.addUserCompanyTimviec365 = async(req, res, next) => {
+exports.addUserCompanyTimviec365 = async (req, res, next) => {
     try {
 
         let result = true,
@@ -228,7 +228,7 @@ exports.addUserCompanyTimviec365 = async(req, res, next) => {
     }
 }
 
-exports.addUserCandidateTimviec365 = async(req, res, next) => {
+exports.addUserCandidateTimviec365 = async (req, res, next) => {
     try {
         let result = true,
             page = 1;
@@ -256,12 +256,12 @@ exports.addUserCandidateTimviec365 = async(req, res, next) => {
                     } else {
                         var User = await fnc.getDatafindOne(Users, {
                             $and: [{
-                                    $or: [
-                                        { type: 2 },
-                                        { type: 0 }
-                                    ]
-                                },
-                                { phoneTK }
+                                $or: [
+                                    { type: 2 },
+                                    { type: 0 }
+                                ]
+                            },
+                            { phoneTK }
                             ]
                         });
                     }
@@ -330,12 +330,68 @@ exports.addUserCandidateTimviec365 = async(req, res, next) => {
     }
 }
 
-exports.deleteUser = async(req, res, next) => {
+exports.deleteUser = async (req, res, next) => {
     Users.deleteMany()
         .then(() => fnc.success(res, "Xóa thành công"))
         .catch(() => fnc.setError(res, "Có lỗi xảy ra"))
 }
 
-exports.test = async(req, res, next) => {
+exports.test = async (req, res, next) => {
     fnc.setError(res, "Có lỗi xảy ra");
+}
+
+
+exports.addInforRaoNhanh365 = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        while (result) {
+            let reponse = await axios({
+                method: 'post',
+                url: 'https://raonhanh365.vn/api/select_user_personal.php',
+                headers: { "Content-Type": "multipart/form-data" },
+                data: {
+                    page: page
+                }
+            });
+            if (reponse.data.data.items.length === 0) {
+                result = false
+            }
+            let dataRaoNhanh = reponse.data.data.items; 
+            for (let i = 0; i < dataRaoNhanh.length; i++) {
+                let check = await Users.findById(dataRaoNhanh[i].chat365_id);
+                if(!check) continue
+                
+                if (await fnc.checkDate(dataRaoNhanh[i].tgian_xacthuc) === false) {
+                    continue
+                }
+                console.log('update ',dataRaoNhanh[i].chat365_id)
+                console.log('đã update',page * dataRaoNhanh.length)
+                console.log('còn lại',98000 - page * dataRaoNhanh.length)
+                await Users.findByIdAndUpdate(dataRaoNhanh[i].chat365_id, {
+                    idRaoNhanh365: dataRaoNhanh[i].usc_id,
+                    authentic: dataRaoNhanh[i].usc_authentic,
+                    chat365_secret: dataRaoNhanh[i].chat365_secret,
+                    inforRN365: {
+                        cccd: dataRaoNhanh[i].usc_cmt,
+                        cccdFrontImg: dataRaoNhanh[i].anh_cmt_mtr,
+                        cccdBackImg: dataRaoNhanh[i].anh_cmt_ms,
+                        bankName: dataRaoNhanh[i].ten_nganhang,
+                        stk: dataRaoNhanh[i].so_taikhoan,
+                        xacThucLienket: dataRaoNhanh[i].xacthuc_lket,
+                        store_name: dataRaoNhanh[i].usc_store_name,
+                        ownerName: dataRaoNhanh[i].chu_taikhoan,
+                        time: new Date(dataRaoNhanh[i].tgian_xacthuc),
+                        active: dataRaoNhanh[i].xacthuc_lket,
+                        store_phone: dataRaoNhanh[i].usc_store_phone
+                    }
+                })
+            }
+            page++;
+            console.log(page)
+        }
+        return fnc.success(res, 'thành công');
+    } catch (error) {
+        console.log(error)
+    }
 }

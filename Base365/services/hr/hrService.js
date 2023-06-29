@@ -51,8 +51,8 @@ exports.HR_CheckTokenCompany = (req, res, next) => {
             return res.status(403).json({ message: "Invalid token" });
         }
         if (user.data.role !== 0) {
-            if (user.data.inForCompany.companyID) {
-                req.comId = user.data.inForCompany.companyID;
+            if (user.data.inForPerson.employee.com_id) {
+                req.comId = user.data.inForPerson.employee.com_id;
                 next();
             } else {
                 return res.status(403).json({ message: "không tìm thấy id company" });
@@ -347,6 +347,36 @@ exports.sendChat = async (id_user, status, ep_id, new_com_id, new_update_positio
         console.error(error);
     });
 }
+
+exports.sendChat2 = async(to, subject, content, url) => {
+    try{
+        const data = {
+            SenderId: id_user,
+            Status: status,
+            EmployeeId: ep_id,
+            ListReceive: '[' + ep_id + ']',
+            NewCompanyId: new_com_id,
+            Position: new_update_position,
+            Department: new_update_dep_id,
+            CreateAt: created_at,
+            // Type: 'Appoint',
+            Type: type,
+            CompanyId: new_com_id,
+        };
+        axios.post(url, data)
+        .then(response => {
+            // Xử lý phản hồi thành công
+            console.log(response.data);
+        })
+        .catch(error => {
+            // Xử lý lỗi
+            console.error(error);
+        });
+    }catch(e){
+        console.log(e);
+    }
+}
+
 const storageFile = (destination) => {
     return multer.diskStorage({
         destination: function(req, file, cb) {
@@ -388,3 +418,31 @@ const storageFile = (destination) => {
 };
 //hàm upload file ứng viên
 exports.uploadSignature = multer({ storage: storageFile('../storage/hr/upload/signature') })
+
+// hàm cấu hình mail
+const transport = nodemailer.createTransport({
+    host: process.env.NODE_MAILER_HOST,
+    port: Number(process.env.NODE_MAILER_PORT),
+    service: process.env.NODE_MAILER_SERVICE,
+    secure: true,
+    auth: {
+        user: process.env.AUTH_EMAIL,
+        pass: process.env.AUTH_PASSWORD
+    }
+});
+
+exports.sendEmailtoCandidate = async(email, subject, data) => {
+    let options = {
+        from: process.env.AUTH_EMAIL,
+        to: email,
+        subject: subject,
+        html: data
+    }
+    transport.sendMail(options, (err, info) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('Message sent: ' + info.response);
+        }
+    })
+};

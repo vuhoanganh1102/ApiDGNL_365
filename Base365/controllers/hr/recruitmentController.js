@@ -10,6 +10,8 @@ const ScheduleInterview = require('../../models/hr/ScheduleInterview');
 const ContactJob = require('../../models/hr/ContactJob');
 const CancelJob = require('../../models/hr/CancelJob');
 const FailJob = require('../../models/hr/FailJob');
+const GetJob = require('../../models/hr/GetJob');
+const Remind = require('../../models/hr/Remind');
 
 // lay ra danh sach tat ca cac quy trinh tuyen dung cua cty
 exports.getListRecruitment= async(req, res, next) => {
@@ -178,7 +180,7 @@ exports.getStageRecruitment = async(req, res, next) => {
             }
             
             data.recruitment = recruitment.name;
-            let listStage = await StageRecruitment.find({recruitmentId: recruitmentId});
+            let listStage = await StageRecruitment.find({recruitmentId: recruitmentId, isDelete: 0});
             data.listStage = listStage;
         }
         else {
@@ -271,7 +273,7 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         let {page, pageSize, title, fromDate, toDate} = req.body;
 
         //id company lay ra sau khi dang nhap
-        let comId = req.comId;
+        let comId = req.infoLogin.comId;
         if(!page || !pageSize){
             return functions.setError(res, "Missing input page or pagesize", 401);
         }
@@ -280,10 +282,9 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let listCondition = {isDelete: 0};
+        let listCondition = {isDelete: 0, comId: comId};
         // dua dieu kien vao ob listCondition
-        if(title) listCondition.title =  new RegExp(title);
-        if(comId) listCondition.comId =  Number(comId);
+        if(title) listCondition.title =  new RegExp(title, 'i');
         if(fromDate) listCondition.timeStart = {$gte: new Date(fromDate)};
         if(toDate) listCondition.timeEnd = {$lte: new Date(toDate)};
 
@@ -353,12 +354,16 @@ exports.createRecruitmentNews = async(req, res, next) => {
     try {
         //lay thong tin tu nguoi dung nhap
         let fields = req.info;
-
+        let infoLogin = req.infoLogin;
         //them cac truong an
         fields.createdAt = Date.now();
-        fields.comId = req.comId;
-        fields.createdBy = 'Công ty';
-        fields.isCom = 1;
+        fields.comId = infoLogin.comId;
+        fields.createdBy = infoLogin.name;
+        fields.isCom = 0;
+        if(infoLogin.type==1){
+            fields.createdBy = 'Công ty';
+            fields.isCom = 1;
+        }
 
         //lay id max
         const maxIdNews = await RecruitmentNews.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
@@ -398,7 +403,7 @@ exports.updateRecruitmentNews = async(req, res, next) => {
 
 exports.softDeleteRecuitmentNews = async(req, res, next) =>{
     try{
-        let newsId = req.query.newsId;
+        let newsId = req.body.newsId;
         let recruitmentNews = await RecruitmentNews.findOneAndUpdate({id: newsId}, {
             deletedAt: Date.now(),
             isDelete: 1
@@ -407,6 +412,22 @@ exports.softDeleteRecuitmentNews = async(req, res, next) =>{
             return functions.setError(res, "News not found!", 505);
         }
         return functions.success(res, "Soft delete news success!");
+    }catch(err){
+        console.log("Err from server!", err);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.createSampleNews = async(req, res, next) =>{
+    try{
+        let newsId = req.body.newsId;
+        let recruitmentNews = await RecruitmentNews.findOneAndUpdate({id: newsId}, {
+            isSample: 1
+        })
+        if(!recruitmentNews) {
+            return functions.setError(res, "News not found!", 505);
+        }
+        return functions.success(res, "Create sample news success!");
     }catch(err){
         console.log("Err from server!", err);
         return functions.setError(res, "Err from server!", 500);
@@ -677,6 +698,16 @@ exports.deleteProcessInterview = async(req, res, next) => {
 //------------------------chuyen trang thai ho so ung vien
 
 //kiem tra du lieu
+
+let updateInfoCandidate = async(canId,data)=>{
+    try{
+        let can = await Candidate.findOneAndUpdate({id: canId}, data);
+        return can;
+    }catch(e){
+        console.log(e);
+    }
+}
+
 exports.checkDataJob = async(req, res, next) => {
     try {
         let {canId, resiredSalary, salary, offerTime, epOffer, note, type, email, contentsend, empInterview, interviewTime} = req.body;
@@ -760,23 +791,47 @@ exports.createCancelJob = async(req, res, next) => {
 exports.createFailJob = async(req, res, next) => {
     try {
         //lay thong tin tu nguoi dung nhap
-        let fields = req.info;
-        
-        if(!fields.type || !fields.contentsend || !fields.email) {
+        let {canId, note, type, email, contentsend} = req.body;
+        if(!canId || !type || !contentsend || !email) {
             return functions.setError(res, `Missing input value`, 405);
         }
-        //lay id max
+
+        let infoFailJob = {canId, type, email, note};
         const maxIdFailJob = await FailJob.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
         let newIdFailJob;
         if (maxIdFailJob) {
             newIdFailJob = Number(maxIdFailJob.id) + 1;
         } else newIdFailJob = 1;
-        fields.id = newIdFailJob;
-        fields.contentsend = Buffer.from(fields.contentsend, 'base64');
+        infoFailJob.id = newIdFailJob;
+        infoFailJob.contentsend = Buffer.from(contentsend, 'base64');
         
-        //tao 
-        let failJob = new FailJob(fields);
-        failJob =  await failJob.save();
+        let failJob = await FailJob.findOneAndUpdate({canId: canId}, infoFailJob, {upsert: true});
+        if(!failJob){
+            return functions.setError(res, "Create failJob fail!", 505);
+        }
+        //gui email
+        await hrService.sendEmailtoCandidate(email, '[hr.timviec365.vn] Thư Trả lời kết quả phỏng vấn', infoFailJob.contentsend);
+
+        //cap nhat thong tin ung vien
+        let {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote} = req.body;
+        if(!name || !cvFrom || !userHiring || !recruitmentNewsId || !timeSendCv || !starVote) {
+            return functions.setError(res, `Missing input value`, 405);
+        }
+
+         //xoa thang thai ung vien sau khi cap nhat
+        await GetJob.deleteOne({canId: canId});
+        await CancelJob.deleteOne({canId: canId});
+        await ContactJob.deleteOne({canId: canId});
+
+        //  Cập nhật giai đoạn
+        await ScheduleInterview.findOneAndUpdate({canId: canId}, {isSwitch: 1});
+
+        //cap nhat thong tin ung vien
+        let infoCan = {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote, isSwitch: 1};
+        let can = await updateInfoCandidate(canId, infoCan);
+        if(!can){
+            functions.setError(res, `Update info candidate fail`, 506); 
+        }
         return functions.success(res, 'Create failJob success!');
     } catch (e) {
         console.log("Err from server!", e);
@@ -805,6 +860,77 @@ exports.createScheduleInterview = async(req, res, next) => {
         let scheduleInterview = new ScheduleInterview(fields);
         scheduleInterview =  await scheduleInterview.save();
         return functions.success(res, 'Create scheduleInterview success!');
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.addCandidateGetJob = async(req, res, next) => {
+    try {
+        //lay thong tin tu nguoi dung nhap
+        let fields = req.info;
+        let comId = req.infoLogin.comId;
+        if(!fields.canId || !fields.salary || !fields.resiredSalary|| !fields.interviewTime || !fields.empInterview || !fields.contentsend || !fields.email) {
+            return functions.setError(res, `Missing input value`, 405);
+        }
+        delete fields.offerTime;
+        delete fields.epOffer;
+        delete fields.type;
+        //lay id max
+        const maxIdScheduleInterview = await GetJob.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+        let newIdScheduleInterview;
+        if (maxIdScheduleInterview) {
+            newIdScheduleInterview = Number(maxIdScheduleInterview.id) + 1;
+        } else newIdScheduleInterview = 1;
+        fields.id = newIdScheduleInterview;
+        fields.contentSend = Buffer.from(fields.contentsend, 'base64');
+        
+        //tao 
+        let getJob = await GetJob.findOneAndUpdate({canId: fields.canId}, fields, {upsert: true});
+        if(getJob){
+
+            //gui email
+            let checkEmail = req.body.checkEmail;
+            if(checkEmail>0){
+                //gui email
+                await hrService.sendEmailtoCandidate(fields.email, '[hr.timviec365.vn] Thư mời nhận việc', fields.contentSend);
+            }
+
+            //
+            let {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote} = req.body;
+            if(!name || !cvFrom || !userHiring || !recruitmentNewsId || !timeSendCv || !starVote) {
+                return functions.setError(res, `Missing input value`, 405);
+            }
+            
+            //xoa thang thai ung vien sau khi cap nhat
+            await FailJob.deleteOne({canId: fields.canId});
+            await CancelJob.deleteOne({canId: fields.canId});
+            await ContactJob.deleteOne({canId: fields.canId});
+
+            //cap nhat thong tin ung vien
+            let infoCan = {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote, isSwitch: 1};
+            let can = await updateInfoCandidate(fields.canId, infoCan);
+            if(!can){
+                functions.setError(res, `Update info candidate fail`, 506); 
+            }
+            //nhac nho
+            const maxIdRemind = await Remind.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+            let newIdRemind;
+            if (maxIdRemind) {
+                newIdRemind = Number(maxIdRemind.id) + 1;
+            } else newIdRemind = 1;
+
+            let infoRemind = {id: newIdRemind, type: 1, canId: fields.canId, canName: can.name, comId: comId, userId: fields.empInterview, time: fields.interviewTime};
+            let remind = new Remind(infoRemind);
+            remind = await Remind.create(remind);
+            if(!remind){
+                functions.setError(res, `Create remind fail`, 505);    
+            }
+        }else {
+            functions.setError(res, `Create getJob fail!`, 507);
+        }
+        return functions.success(res, 'Create getJob success!');
     } catch (e) {
         console.log("Err from server!", e);
         return functions.setError(res, "Err from server!", 500);
