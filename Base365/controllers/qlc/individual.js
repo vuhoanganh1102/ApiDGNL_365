@@ -33,10 +33,13 @@ exports.register = async (req, res) => {
                     })
 
                     await Inuser.save()
-                    const token = await functions.createToken({Inuser
-                    }, "1d")
-                    const refreshToken = await functions.createToken({ userId: Inuser.idQLC }, "1y")
-                    await functions.success(res, "tạo tài khoản thành công", { Inuser, token, refreshToken })
+                    const token = await functions.createToken(Inuser, "1d")
+                    const refreshToken = await functions.createToken({ userId: Inuser._id }, "1y")
+                    let data = {
+                        access_token: "bear" + " " + token,
+                        refresh_token: refreshToken,
+                    }
+                    await functions.success(res, "tạo tài khoản thành công", { Inuser,data })
 
 
 
@@ -60,17 +63,15 @@ exports.register = async (req, res) => {
 exports.verify = async (req,res)=>{
     try{
         let otp = req.body.ma_xt || null
-        let phoneTK = req.body.phoneTK;
-        let email = req.body.email;
+        let phoneTK = req.user.data.phoneTK;
+        console.log(phoneTK)
+        console.log(phoneTK)
         let data = []
-        if((phoneTK || email )&&(!otp)){
-            let checkMail = await functions.checkEmail(email)
-            let checkPhone = await functions.checkPhoneNumber(phoneTK)
-            if(checkMail || checkPhone){
-                let findUser = await Users.findOne({$or:[ { email:email, type: 0 },{phoneTK:phoneTK ,type :0}]})
+        if(!otp){
+                let findUser = await Users.findOne({phoneTK:phoneTK ,type :0})
                 if(findUser) {
                     let otp = functions.randomNumber
-                    data = await Users.updateOne({$or:[ { email:email, type: 0 },{phoneTK:phoneTK ,type :0}]},{
+                    data = await Users.updateOne({phoneTK:phoneTK ,type :0},{
                         $set:{
                             otp : otp
                         }
@@ -79,14 +80,12 @@ exports.verify = async (req,res)=>{
                 }else {
                     return functions.setError(res,"tài khoản không tồn tại")
                 }
-            }else{
-                return functions.setError(res," email không đúng định dạng ",404)
-            }
 
-        }else if (otp&&(phoneTK||email)){
-            let verify = await Users.findOne( {$or:[ { email:email,otp, type: 0 },{phoneTK:phoneTK,otp ,type :0}]});
+
+        }else if (otp){
+            let verify = await Users.findOne({phoneTK:phoneTK,otp ,type :0});
             if (verify != null){
-                await Users.updateOne({$or:[ { email:email, type: 0 },{phoneTK:phoneTK ,type :0}]},{
+                await Users.updateOne({phoneTK:phoneTK ,type :0},{
                     $set: {
                         authentic :1 
                     }
@@ -98,7 +97,7 @@ exports.verify = async (req,res)=>{
         
         
          }else{
-            return functions.setError(res,"thiếu dữ liệu gmail",404)
+            return functions.setError(res,"thiếu dữ liệu sdt",404)
         }
     } catch(e) {
         console.log(e);
@@ -205,16 +204,16 @@ exports.updatePassword = async (req, res, next) => {
 }
 
 // hàm cập nhập thông tin cá nhân
-exports.updateInfoindividual = async(req, res, next) => {
+exports.updateInfoindividual = async (req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC;
-        const { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education,otp} = req.body;
+        let data = [];
+        const { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,role,group_id,birthday,gender,married,experience,startWorkingTime,education,otp} = req.body;
         
         let File = req.files || null;
-        let avatarCompany = null;
+        let avatarUser = null;
         let updatedAt = new Date();
-        if ((userName && password && com_id &&
-            address && email && phoneTK) !== undefined) {
+        if (( password &&  phoneTK) !== undefined) {
         if(email){
             if (await functions.checkEmail(email) === false) {
                 return functions.setError(res, 'invalid email',400)
@@ -228,50 +227,22 @@ exports.updateInfoindividual = async(req, res, next) => {
                 }
             }
         }
-        if (File.avatarCompany) {
-            let upload = functions.uploadFileQLC('avt_com', idQLC, File.avatarCompany, ['.jpeg', '.jpg', '.png']);
+        if (File.avatarUser) {
+            let upload = functions.uploadFileQLC('avt_individual', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
             if (!upload) {
                 return functions.setError(res, 'Định dạng ảnh không hợp lệ',400)
             }
-            avatarCompany = functions.createLinkFileQLC('avt_com', idQLC, File.avatarCompany.name)
-            await Users.findByIdAndUpdate(idQLC, { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education, avatarCompany, updatedAt });
+            avatarUser = functions.createLinkFileQLC('avt_individual', idQLC, File.avatarUser.name)
+            await Users.findByIdAndUpdate(idQLC, { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education, updatedAt });
         }
-        await Users.findByIdAndUpdate(idQLC, { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education,updatedAt  });
-        return functions.success(res, 'update data user success')
+        data = await Users.findByIdAndUpdate(idQLC, { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education,updatedAt  });
+        return functions.success(res, 'update data user success',{data})
     }
 }catch(error) {
     return functions.setError(res, error.message)
 }
 }
 
-// // hàm cập nhập avatar
-// exports.updateImg = async(req, res, next) => {
-//     try {
-//         let email = req.user.data.email,
-//             avatarUser = req.file;
-//         if (avatarUser) {
-//             let checkImg = await functions.checkImage(avatarUser.path)
-//             if (checkImg) {
-//                 await Users.updateOne({ email: email, type: 2 }, {
-//                     $set: {
-//                         avatarUser: avatarUser.filename,
-//                     }
-//                 });
-//                 return functions.success(res, 'thay đổi ảnh thành công')
-//             } else {
-//                 await functions.deleteImg(avatarUser)
-//                 return functions.setError(res, 'sai định dạng ảnh hoặc ảnh lớn hơn 2MB', 404)
-//             }
-//         } else {
-//             await functions.deleteImg(avatarUser)
-//             return functions.setError(res, 'chưa có ảnh', 404)
-//         }
-//     } catch (error) {
-//         console.log(error)
-//         await functions.deleteImg(req.file)
-//         return functions.setError(res, error)
-//     }
-// }
 
 // hàm bước 1 của quên mật khẩu
 exports.forgotPassword = async (req,res)=>{
@@ -347,3 +318,22 @@ exports.forgotPassword = async (req,res)=>{
         return functions.setError(res , e.message)
     }
 }
+
+exports.info = async (req,res) =>{
+    try{
+        const idQLC = req.user.data.idQLC
+        if((idQLC)==undefined){
+            functions.setError(res,"lack of input")
+        }else if(isNaN(idQLC)){
+            functions.setError(res,"id must be a Nubmer")
+        }else{
+            const data = await Users.findOne({idQLC}).select(' userName email phoneTK password com_id address position_id dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
+            if (data) {
+                return await functions.success(res, 'Lấy thành công', { data });
+            };
+            return functions.setError(res, 'Không có dữ liệu', 404);
+        }
+    }catch (e) {
+        functions.setError(res, e.message)
+    }
+} 
