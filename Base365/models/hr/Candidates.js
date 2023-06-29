@@ -163,5 +163,4 @@ const HR_CandidateSchema = new Schema({
     versionKey: false,
     timestamp: true
 });
-
 module.exports = mongoose.model("HR_Candidates", HR_CandidateSchema);
