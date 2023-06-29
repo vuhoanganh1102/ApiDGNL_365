@@ -367,7 +367,7 @@ exports.addInforRaoNhanh365 = async (req, res, next) => {
                 }
                 console.log('update ',dataRaoNhanh[i].chat365_id)
                 console.log('đã update',page * dataRaoNhanh.length)
-                console.log('còn lại',97072 - page * dataRaoNhanh.length)
+                console.log('còn lại',98000 - page * dataRaoNhanh.length)
                 await Users.findByIdAndUpdate(dataRaoNhanh[i].chat365_id, {
                     idRaoNhanh365: dataRaoNhanh[i].usc_id,
                     authentic: dataRaoNhanh[i].usc_authentic,

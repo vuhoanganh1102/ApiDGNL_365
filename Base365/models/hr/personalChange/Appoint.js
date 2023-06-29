@@ -59,5 +59,5 @@ const AppointSchema = new Schema({
     versionKey: false,
     timestamp: true
 });
-
+AppointSchema.index({ep_id:1,com_id:1})
 module.exports = mongoose.model("HR_Appoints",AppointSchema);

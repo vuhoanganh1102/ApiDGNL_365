@@ -30,7 +30,8 @@ const TblTags = require('../../models/Raonhanh365/TblTag');
 const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
 const loveNew = require('../../models/Raonhanh365/LoveNews');
-
+const CateVl = require('../../models/Raonhanh365/CateVl.js');
+const PhuongXa = require('../../models/Raonhanh365/PhuongXa');
 
 // danh mục sản phẩm
 exports.toolCategory = async(req, res, next) => {
@@ -2204,4 +2205,79 @@ exports.toolLoveNew = async (req,res,next) =>{
     }
 }
 
+exports.toolCateVl = async (req,res,next) =>{
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.get('https://raonhanh365.vn/api/select_category_vl.php', {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
 
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const loveNew1 = new CateVl({
+                        _id: data[i].cat_id,
+                        name: data[i].cat_name,
+                        lq: data[i].cat_lq,
+                        ut: data[i].cat_ut,
+                        active: data[i].cat_active,
+                    });
+                    await loveNew1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
+exports.toolPhuongXa = async (req,res,next) =>{
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.get('https://raonhanh365.vn/api/select_tbl_phuong_xa.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const loveNew1 = new PhuongXa({
+                        _id: data[i].id,
+                        name: data[i].name,
+                        prefix: data[i].prefix,
+                        province_id: data[i].province_id,
+                        district_id: data[i].district_id,
+                    });
+                    await loveNew1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
