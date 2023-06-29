@@ -8,6 +8,6 @@ const hrService = require('../../services/hr/hrService');
 
 router.post('/report', formData.parse(), hrService.HR_CheckTokenCompany, report.report);
 
-
+router.post('/reportChart', formData.parse(), hrService.HR_CheckTokenCompany, report.reportChart);
 
 module.exports = router;
