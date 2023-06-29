@@ -44,6 +44,8 @@ exports.getTopCache = async (req, res, next) => {
         let petPurebred = await CateDetail.findById(cateId,{petPurebred:1})
 
         let petInfo = await CateDetail.findById(cateId,{petInfo:1})
+        console.log("🚀 ~ file: topCache.js:47 ~ exports.getTopCache= ~ cateId:", cateId)
+        console.log("🚀 ~ file: topCache.js:47 ~ exports.getTopCache= ~ petInfo:", petInfo)
 
         let origin = await CateDetail.findById(cateId,{origin:1})
 

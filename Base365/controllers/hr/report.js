@@ -87,7 +87,7 @@ exports.report = async (req, res, next) => {
         ])
 
         // Tỷ lệ nhân viên nghỉ việc
-       
+
         delete condition['inForPerson.employee.com_id']
         condition.com_id = comId
         condition.type = 2
@@ -97,27 +97,34 @@ exports.report = async (req, res, next) => {
         let countDataNghiViec = giamBienChe + nghiViec;
 
 
-     
+
         //  tang giam luong
         // await Salarys.create({
         //     id:5,idUser:8,comId:20,salaryBasic:200000,timeUp:'2023/06/30'
         // })
         delete condition.type
         delete condition.com_id
-      
+
         let dataLuong = await Salarys.find({ comId }).sort({ timeUp: -1 });
         let tangLuong = 0;
         let giamLuong = 0;
+        let arr = [];
         if (dataLuong.length !== 0) {
             for (let i = 0; i < dataLuong.length; i++) {
                 condition.idUser = dataLuong[i].idUser;
                 condition.timeUp = { $lt: dataLuong[i].timeUp }
-              
+
                 checkTangGiam = await Salarys.findOne(condition)
+                console.log("🚀 ~ file: report.js:118 ~ exports.report= ~ checkTangGiam:", checkTangGiam)
                 if (checkTangGiam && dataLuong[i].salaryBasic - checkTangGiam.salaryBasic > 0) {
                     tangLuong++;
                 } else if (checkTangGiam && dataLuong[i].salaryBasic - checkTangGiam.salaryBasic < 0) {
                     giamLuong++;
+                }
+                if (checkTangGiam) {
+                    let tangGiam = dataLuong[i].salaryBasic - checkTangGiam.salaryBasic
+                    checkTangGiam.tangGiam = tangGiam
+                    arr.push(checkTangGiam)
                 }
             }
         }
@@ -132,15 +139,15 @@ exports.report = async (req, res, next) => {
         // Luân chuyển công tác
         let countDataLuanChuyen = await Users.aggregate([
             {
-                $lookup: {
-                    from: 'HR_TranferJobs',
-                    localField: 'inForPerson.employee.com_id',
-                    foreignField: 'com_id',
-                    as: 'TranferJobs'
-                }
+                $match: condition
             },
             {
-                $match: condition
+                $lookup: {
+                    from: 'HR_TranferJobs',
+                    localField: 'idQLC',
+                    foreignField: 'ep_id',
+                    as: 'TranferJobs'
+                }
             },
             {
                 $count: 'SL'
@@ -149,15 +156,15 @@ exports.report = async (req, res, next) => {
         condition['inForPerson.account.gender'] = 1
         let countDataLuanChuyenNam = await Users.aggregate([
             {
-                $lookup: {
-                    from: 'HR_TranferJobs',
-                    localField: 'inForPerson.employee.com_id',
-                    foreignField: 'com_id',
-                    as: 'TranferJobs'
-                }
+                $match: condition
             },
             {
-                $match:condition
+                $lookup: {
+                    from: 'HR_TranferJobs',
+                    localField: 'idQLC',
+                    foreignField: 'ep_id',
+                    as: 'TranferJobs'
+                }
             },
             {
                 $count: 'SL'
@@ -166,15 +173,15 @@ exports.report = async (req, res, next) => {
         condition['inForPerson.account.gender'] = 2
         let countDataLuanChuyenNu = await Users.aggregate([
             {
-                $lookup: {
-                    from: 'HR_TranferJobs',
-                    localField: 'inForPerson.employee.com_id',
-                    foreignField: 'com_id',
-                    as: 'TranferJobs'
-                }
+                $match: condition
             },
             {
-                $match: condition
+                $lookup: {
+                    from: 'HR_TranferJobs',
+                    localField: 'idQLC',
+                    foreignField: 'ep_id',
+                    as: 'TranferJobs'
+                }
             },
             {
                 $count: 'SL'
@@ -364,15 +371,13 @@ exports.report = async (req, res, next) => {
 
             }
         }
-        let phongBan = await Deparment.find({com_id:comId},{_id:1,deparmentName:1})
+        let phongBan = await Deparment.find({ com_id: comId }, { _id: 1, deparmentName: 1 })
         condition['inForPerson.employee.com_id'] = comId;
         let searchItem = { idQLC: 1, userName: 1, 'inForPerson.account': 1, emailContact: 1, phone: 1, 'inForPerson.employee': 1, };
         let chartEmployee = await Users.find(condition, searchItem);
         delete condition['inForPerson.account.gender']
-        console.log("🚀 ~ file: report.js:372 ~ exports.report= ~ condition:", condition)
         let conditionNghiViec = {}
-        if(chartNghiViec)
-        {
+        if (chartNghiViec) {
             conditionNghiViec['quit.type'] = chartNghiViec
         }
         let chartNghiViecnon = await Users.aggregate([
@@ -388,33 +393,47 @@ exports.report = async (req, res, next) => {
                 }
             },
             {
-                $match:conditionNghiViec
+                $match: conditionNghiViec
             },
             {
-                $project: {'quit.ep_id':1,'quit.current_position':1,'quit.created_at':1}
+                $project: { 'quit.ep_id': 1, 'quit.current_position': 1, 'quit.created_at': 1, idQLC: 1, userName: 1, 'inForPerson.account': 1, emailContact: 1, phone: 1, 'inForPerson.employee': 1 }
             },
         ])
-        
+        console.log(condition)
+        //Biểu đồ thống kê bổ nhiệm, quy hoạch
+        let chartBoNhiem = await Users.aggregate([
+            {
+                $match: condition
+            },
+            {
+                $lookup: {
+                    from: 'HR_Appoints',
+                    localField: 'idQLC',
+                    foreignField: 'ep_id',
+                    as: 'Appoints'
+                }
+            },
+            {
+                $project: searchItem
+            }
+        ])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        let chartLuanChuyen = await Users.aggregate([
+            {
+                $lookup: {
+                    from: 'HR_TranferJobs',
+                    localField: 'inForPerson.employee.com_id',
+                    foreignField: 'com_id',
+                    as: 'TranferJobs'
+                }
+            },
+            {
+                $match: condition
+            },
+            {
+                $project: searchItem
+            }
+        ])
         let data = {};
         data.phongBan = phongBan;
         data.Employee = countEmployee;
@@ -490,10 +509,13 @@ exports.report = async (req, res, next) => {
         data.mangThongTin = mangThongTin;
         data.thongKeNhanVienTuyenDung = thongKeNhanVienTuyenDung;
         data.gioiThieuUngVien = gioiThieuUngVien;
-        
+
 
         data.chartEmployee = chartEmployee;
         data.chartNghiViec = chartNghiViecnon;
+        data.chartBoNhiem = chartBoNhiem;
+        data.chartLuanChuyen = chartLuanChuyen;
+        data.chartTangGiamLuong = arr;
         return functions.success(res, 'get data success', { data })
     } catch (error) {
         console.log("🚀 ~ file: report.js:147 ~ exports.report= ~ error:", error)
@@ -506,16 +528,23 @@ exports.reportChart = async (req, res, next) => {
         let depId = req.body.depId || null;
         let page = req.body.page || 1;
         let link = req.body.link;
-        let gender = req.body.gender;
-        let positionId = req.body.positionId;
-        let groupId = req.body.group_id;
-        let teamId = req.body.team_id;
+        let gender = Number (req.body.gender);
+        let positionId =Number (req.body.positionId);
+        let groupId = Number(req.body.group_id);
+        let teamId = Number(req.body.team_id);
         let birhday = req.body.birhday;
-        let married = req.body.married;
+        let married = Number (req.body.married);
+        let seniority = Number (req.body.seniority);
+        let old = Number (req.body.old);
+
+
         let limit = 10;
         let skip = (page - 1) * limit;
         let searchItem = { idQLC: 1, userName: 1, 'inForPerson.account': 1, emailContact: 1, phone: 1, 'inForPerson.employee': 1, };
         let condition = {};
+        let data = {};
+
+
         condition['inForPerson.employee.com_id'] = comId;
         if (gender) condition['inForPerson.account.gender'] = gender;
         if (depId) condition['inForPerson.employee.dep_id'] = depId;
@@ -524,23 +553,27 @@ exports.reportChart = async (req, res, next) => {
         if (teamId) condition['inForPerson.employee.team_id'] = teamId;
         if (birhday) condition['inForPerson.account.birthday'] = { $regex: `.*${birhday}*.` };
         if (married) condition['inForPerson.account.married'] = married;
-        let data = {};
         if (depId) condition['inForPerson.employee.dep_id'] = depId;
+        if (seniority) condition['inForPerson.account.experience'] = seniority;
+
+        //if(old === 1) condition['inForPerson.account.birthday'] = getYear() - inForPerson.account.birthday;
+        
+
         if (link === 'bieu-do-danh-sach-nhan-vien.html') {
             data = await Users.find(condition, searchItem, { skip }, { limit });
         } else if (link === 'bieu-do-danh-sach-nhan-vien-nghi-viec.html') {
 
-            data = await QuitJobNew.aggregate([
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'com_id',
-                        foreignField: 'inForPerson.employee.com_id',
-                        as: 'user'
-                    }
-                },
+            data = await Users.aggregate([
                 {
                     $match: condition
+                },
+                {
+                    $lookup: {
+                        from: 'HR_QuitJobs',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'HR_QuitJobs'
+                    }
                 },
                 {
                     $project: searchItem
@@ -553,17 +586,17 @@ exports.reportChart = async (req, res, next) => {
                 }
             ])
         } else if (link === 'bieu-do-danh-sach-nhan-vien-bo-nhiem.html') {
-            data = await Appoint.aggregate([
-                {
-                    $lookup: {
-                        from: 'Users',
-                        localField: 'com_id',
-                        foreignField: 'inForPerson.employee.com_id',
-                        as: 'user'
-                    }
-                },
+            data = await Users.aggregate([
                 {
                     $match: condition
+                },
+                {
+                    $lookup: {
+                        from: 'HR_Appoints',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'HR_Appoints'
+                    }
                 },
                 {
                     $project: searchItem
@@ -578,45 +611,90 @@ exports.reportChart = async (req, res, next) => {
         } else if (link === 'bieu-do-danh-sach-nhan-vien-chuyen-cong-tac.html') {
             data = await Users.aggregate([
                 {
-                    $lookup: {
-                        from: 'HR_TranferJobs',
-                        localField: 'inForPerson.employee.com_id',
-                        foreignField: 'com_id',
-                        as: 'TranferJobs'
-                    }
-                },
-                {
                     $match: condition
                 },
                 {
+                    $lookup: {
+                        from: 'HR_TranferJobs',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'HR_TranferJobs'
+                    }
+                },
+                {
                     $project: searchItem
-                }, {
+                },
+                {
                     $skip: skip
-                }, {
+                },
+                {
                     $limit: limit
                 }
             ])
         } else if (link === 'bieu-do-danh-sach-nhan-vien-tang-giam-luong.html') {
             data = await Users.aggregate([
                 {
+                    $match: condition
+                },
+                {
                     $lookup: {
                         from: 'HR_Salarys',
-                        localField: 'inForPerson.employee.com_id',
-                        foreignField: 'comId',
-                        as: 'salary'
+                        localField: 'idQLC',
+                        foreignField: 'idUser',
+                        as: 'HR_Salarys'
                     }
                 },
+                {
+                    $project: searchItem
+                },
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                }
+            ])
+        } 
+        else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
+            let tuoi = 0;
+            let list =[];
+            console.log("🚀 ~ file: report.js:665 ~ exports.reportChart= ~ condition:", condition)
+
+            let check = await Users.aggregate([
                 {
                     $match: condition
                 },
                 {
                     $project: searchItem
-                }, {
+                },
+                {
                     $skip: skip
-                }, {
+                },
+                {
                     $limit: limit
                 }
             ])
+            // await Users.findByIdAndUpdate(20,{'inForPerson.account.birthday':'2008/06/22'})
+            for (let i = 0; i < check.length; i++) {
+                let sinhnhat =  new Date(check[i].inForPerson.account.birthday).getFullYear()
+                let namhientai = new Date().getFullYear();
+                tuoi = namhientai - sinhnhat;
+                console.log("🚀 ~ file: report.js:683 ~ exports.reportChart= ~ tuoi:", tuoi)
+                if(old === 1 && tuoi < 30)
+                {
+                   list.push(check[i])
+                }else if(old === 2 && tuoi > 30 && tuoi < 44)
+                {
+                    list.push(check[i])
+                }else if(old === 3 && tuoi > 45 && tuoi < 59)
+                {
+                    list.push(check[i])
+                }else if(old === 4 && tuoi > 60)
+                {
+                    list.push(check[i])
+                }
+            }
+            data = list
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
