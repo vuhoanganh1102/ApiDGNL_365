@@ -10,6 +10,8 @@ router.post('/login', formData.parse(), individual.login)
 
 // api xác nhận OTP để xác minh tìa khoản
 router.post('/verify', formData.parse(),  individual.verify);
+router.post('/verifyCheckOTP', formData.parse(),functions.checkToken,  individual.verifyCheckOTP);
+
 // hàm đổi mật khẩu 
 router.post('/updatePassword',functions.checkToken, formData.parse(),  individual.updatePassword);
 // hàm cập nhập thông tin công ty

@@ -1,6 +1,5 @@
 const functions = require("../../services/functions")
 const user = require("../../models/Users")
-// const datetime = require("datetime")
 
 
 exports.check1 = async (req, res) => {

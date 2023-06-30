@@ -36,7 +36,7 @@ exports.register = async (req, res) => {
                     const token = await functions.createToken(Inuser, "1d")
                     const refreshToken = await functions.createToken({ userId: Inuser._id }, "1y")
                     let data = {
-                        access_token: "bear" + " " + token,
+                        access_token:  token,
                         refresh_token: refreshToken,
                     }
                     await functions.success(res, "tạo tài khoản thành công", { Inuser,data })
@@ -60,6 +60,50 @@ exports.register = async (req, res) => {
 
 }
 // hàm xác thực otp bước 1: gửi OTP qua phone khi kích hoạt tài khoản
+// exports.verify = async (req,res)=>{
+//     try{
+//         let otp = req.body.ma_xt || null
+//         let phoneTK = req.user.data.phoneTK;
+//         console.log(phoneTK)
+//         console.log(phoneTK)
+//         let data = []
+//         if(!otp){
+//                 let findUser = await Users.findOne({phoneTK:phoneTK ,type :0})
+//                 if(findUser) {
+//                     let otp = functions.randomNumber
+//                     data = await Users.updateOne({phoneTK:phoneTK ,type :0},{
+//                         $set:{
+//                             otp : otp
+//                         }
+//                     })
+//                     return functions.success(res,"Gửi mã OTP thành công",{data ,otp})
+//                 }else {
+//                     return functions.setError(res,"tài khoản không tồn tại")
+//                 }
+
+
+//         }else if (otp){
+//             let verify = await Users.findOne({phoneTK:phoneTK,otp ,type :0});
+//             if (verify != null){
+//                 await Users.updateOne({phoneTK:phoneTK ,type :0},{
+//                     $set: {
+//                         authentic :1 
+//                     }
+//                 });
+//                 return functions.success(res,"xác thực thành công");
+//             }else{
+//                 return functions.setError(res,"xác thực thất bại",404);
+//             }
+        
+        
+//          }else{
+//             return functions.setError(res,"thiếu dữ liệu sdt",404)
+//         }
+//     } catch(e) {
+//         console.log(e);
+//         return functions.setError(res , e.message)
+//     }
+// }
 exports.verify = async (req,res)=>{
     try{
         let otp = req.body.ma_xt || null
@@ -67,22 +111,21 @@ exports.verify = async (req,res)=>{
         console.log(phoneTK)
         console.log(phoneTK)
         let data = []
-        if(!otp){
+        if(otp){
                 let findUser = await Users.findOne({phoneTK:phoneTK ,type :0})
                 if(findUser) {
-                    let otp = functions.randomNumber
                     data = await Users.updateOne({phoneTK:phoneTK ,type :0},{
                         $set:{
                             otp : otp
                         }
                     })
-                    return functions.success(res,"Gửi mã OTP thành công",{data ,otp})
+                    return functions.success(res,"lưu OTP thành công",{data ,otp})
                 }else {
                     return functions.setError(res,"tài khoản không tồn tại")
                 }
 
 
-        }else if (otp){
+        }else if (!otp){
             let verify = await Users.findOne({phoneTK:phoneTK,otp ,type :0});
             if (verify != null){
                 await Users.updateOne({phoneTK:phoneTK ,type :0},{
@@ -104,6 +147,35 @@ exports.verify = async (req,res)=>{
         return functions.setError(res , e.message)
     }
 }
+exports.verifyCheckOTP = async (req,res)=>{
+    try{
+        let otp = req.body.ma_xt || null
+        let phoneTK = req.user.data.phoneTK;
+       
+        if(otp){
+                let findUser = await Users.findOne({phoneTK:phoneTK ,type :0}).select("otp")
+                if(findUser) {
+                    let data = findUser.otp
+                    console.log(data)
+                    if(data === otp){
+                        functions.success(res,"xác thực thành công")
+                    }else{
+                        functions.setError(res,"xác thực thất bại")
+
+                    }
+                }else {
+                    return functions.setError(res,"tài khoản không tồn tại")
+                }
+        }else{
+            return functions.setError(res,"vui lòng nhập mã xác thực")
+            
+        }
+    }catch(e){
+        return functions.setError(res,e.message)
+        
+    }
+}
+
 exports.login = async (req, res) => {
 
     try {
@@ -170,12 +242,12 @@ exports.login = async (req, res) => {
 // hàm đổi mật khẩu 
 exports.updatePassword = async (req, res, next) => {
     try {
-        let idQLC = req.user.body.idQLC
+        let idQLC = req.user.data.idQLC
         let password = req.body.password;
         let re_password = req.body.re_password;
         let checkPassword = await functions.verifyPassword(password)
-        if (!checkPassword) {
-            return functions.setError(res, "Mật khẩu sai", 404)
+        if (checkPassword) {
+            return functions.setError(res, "sai dinh dang Mk", 404)
         }
         if(!password || !re_password){
             return functions.setError(res, 'Missing data', 400)
@@ -202,46 +274,97 @@ exports.updatePassword = async (req, res, next) => {
         return functions.setError(res, error.message)
     }
 }
-
 // hàm cập nhập thông tin cá nhân
 exports.updateInfoindividual = async (req, res, next) => {
-    try {
-        let idQLC = req.user.data.idQLC;
-        let data = [];
-        const { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,role,group_id,birthday,gender,married,experience,startWorkingTime,education,otp} = req.body;
+        try {
+            let idQLC = req.user.data.idQLC;
+            let data = [];
+            let data1 = [];
+            const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+    
+            let File = req.files || null;
+            let avatarUser = null;
+            if ((idQLC) !== undefined) {
+                let findUser = Users.findOne({ idQLC: idQLC})
+                if(findUser){
+                    if (File.avatarUser) {
+                        let upload = functions.uploadFileQLC('avt_individual', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                        if (!upload) {
+                            return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
+                        }
+                        avatarUser = functions.createLinkFileQLC('avt_individual', idQLC, File.avatarUser.name)
+                      
+                        data = await Users.updateOne({ idQLC: idQLC }, {
+                            $set: {
+                                userName: userName,
+                                email: email,
+                                phoneTK: phoneTK,
+                                phone: phone,
+                                avatarUser: avatarUser,
+                                "inForPerson.employee.position_id": position_id,
+                                "inForPerson.employee.com_id": com_id,
+                                "inForPerson.employee.dep_id": dep_id,
+                                password: md5(password),
+                                address: address,
+                                otp: otp,
+                                authentic: null || 0,
+                                fromWeb: "quanlichung.timviec365",
+                                avatarUser: avatarUser,
+                                updatedAt: new Date(),
+                                "inForPerson.employee.group_id": group_id,
+                                "inForPerson.account.birthday": birthday,
+                                "inForPerson.account.gender": gender,
+                                "inForPerson.account.married": married,
+                                "inForPerson.account.experience": experience,
+                                "inForPerson.employee.startWorkingTime": startWorkingTime,
+                                "inForPerson.account.education": education,
+                            }
+                        })
+                        await functions.success(res, 'update avartar user success', { data })
+    
         
-        let File = req.files || null;
-        let avatarUser = null;
-        let updatedAt = new Date();
-        if (( password &&  phoneTK) !== undefined) {
-        if(email){
-            if (await functions.checkEmail(email) === false) {
-                return functions.setError(res, 'invalid email',400)
-            } else {
-                let check_email = await Users.findById(idQLC);
-                if (check_email.email !== email) {
-                    let check_email_lan2 = await Users.find({ email });
-                    if (check_email_lan2.length !== 0) {
-                        return functions.setError(res, "email is exits",400)
+                        
+                    }else{
+                         data1 = await Users.updateOne({ idQLC: idQLC }, {
+                            $set: {
+                                userName: userName,
+                                email: email,
+                                phoneTK: phoneTK,
+                                phone: phone,
+                                avatarUser: avatarUser,
+                                "inForPerson.employee.position_id": position_id,
+                                "inForPerson.employee.com_id": com_id,
+                                "inForPerson.employee.dep_id": dep_id,
+                                password: md5(password),
+                                address: address,
+                                otp: otp,
+                                authentic: null || 0,
+                                fromWeb: "quanlichung.timviec365",
+                                avatarUser: avatarUser,
+                                updatedAt: new Date(),
+                                "inForPerson.employee.group_id": group_id,
+                                "inForPerson.account.birthday": birthday,
+                                "inForPerson.account.gender": gender,
+                                "inForPerson.account.married": married,
+                                "inForPerson.account.experience": experience,
+                                "inForPerson.employee.startWorkingTime": startWorkingTime,
+                                "inForPerson.account.education": education,
+                            }
+                        })
+                        await functions.success(res, 'update 1 user success', { data1 })
                     }
+                }else{
+                functions.setError(res,"không tìm thấy user")
+    
                 }
+                
+            }else{
+                functions.setError(res,"không tìm thấy token")
             }
+        }catch (error) {
+            return functions.setError(res, error.message)
         }
-        if (File.avatarUser) {
-            let upload = functions.uploadFileQLC('avt_individual', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
-            if (!upload) {
-                return functions.setError(res, 'Định dạng ảnh không hợp lệ',400)
-            }
-            avatarUser = functions.createLinkFileQLC('avt_individual', idQLC, File.avatarUser.name)
-            await Users.findByIdAndUpdate(idQLC, { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education, updatedAt });
-        }
-        data = await Users.findByIdAndUpdate(idQLC, { userName, email , phoneTK, password, com_id, address ,position_id,dep_id,phone,avatarUser,role,group_id,birthday,gender,married,experience,startWorkingTime,education,updatedAt  });
-        return functions.success(res, 'update data user success',{data})
     }
-}catch(error) {
-    return functions.setError(res, error.message)
-}
-}
 
 
 // hàm bước 1 của quên mật khẩu
