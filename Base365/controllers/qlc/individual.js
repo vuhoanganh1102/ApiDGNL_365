@@ -450,7 +450,7 @@ exports.info = async (req,res) =>{
         }else if(isNaN(idQLC)){
             functions.setError(res,"id must be a Nubmer")
         }else{
-            const data = await Users.findOne({idQLC}).select(' userName email phoneTK password com_id address position_id dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
+            const data = await Users.findOne({idQLC}).select(' userName email phoneTK password inForPerson.employee.com_id address inForPerson.employee.position_id inForPerson.employee.dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
