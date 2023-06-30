@@ -5,6 +5,7 @@ const Appoint = require('../../models/hr/personalChange/Appoint');
 const TranferJob = require('../../models/hr/personalChange/TranferJob');
 const QuitJob = require('../../models/hr/personalChange/QuitJob');
 const QuitJobNew = require('../../models/hr/personalChange/QuitJobNew');
+const Salary = require('../../models/hr/Salarys');
 
 
 exports.getListEmployee = async(req, res, next) => {
@@ -242,10 +243,25 @@ exports.updateTranferJob = async(req, res, next) => {
         if(!update_position || !update_dep_id || !mission || !new_com_id) {
             return functions.setError(res, "Missing input value!", 405);
         }
+        
         let fields = req.fields;
 
         //lay ra id lon nhat
         let ep_id = req.fields.ep_id;
+        //update nhan vien
+        let employee = await Users.findOneAndUpdate({idQLC: fields.ep_id}, {
+            inForPerson: {
+                employee: {
+                    com_id: new_com_id,
+                    dep_id: update_dep_id,
+                    position_id: update_position
+                }
+            }
+        })
+        if(!employee){
+            return functions.setError(res, "Employee not found!", 503);
+        }
+
         let check = await TranferJob.findOne({ep_id: ep_id});
         if(!check) {
             let newIdTranferJob = await TranferJob.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
@@ -305,7 +321,7 @@ exports.getListQuitJob = async(req, res, next) => {
         let com_id = infoLogin.comId;
         let checkRole = await hrService.checkRole(infoLogin, 4, 1);
         if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
+            return functions.setError(res, "no right", 444);
         }
         //
         let {page, pageSize, ep_id, current_dep_id, fromDate, toDate} = req.body;
@@ -509,6 +525,18 @@ exports.updateQuitJobNew = async(req, res, next) => {
         //neu chua co thi them moi
         let quitJob = await QuitJobNew.findOneAndUpdate({ep_id: ep_id},fields, {new: true, upsert: true});
         if(quitJob){
+            await Users.findOneAndUpdate({idQLC: ep_id}, {role: 3, type: 0, 
+                inForPerson: {
+                    employee: {
+                        com_id: 0,
+                        dep_id: 0,
+                        group_id: 0,
+                        team_id: 0,
+                        position_id: 0,
+                        ep_status: "Deny",
+                        time_quit_job: fields.created_at
+                    }
+                }})
             return functions.success(res, "Update QuitJobNew success!");
         }
         return functions.setError(res, "QuitJobNew not found!", 405);
@@ -542,3 +570,22 @@ exports.deleteQuitJobNew = async(req, res, next) => {
         return functions.setError(res, "Error from server", 500);
     }
 }
+
+exports.getListSalary = async(req, res, next) => {
+    try {
+        //check quyen
+        let infoLogin = req.infoLogin;
+        let {ep_id, fromDate, toDate} = req.body;
+        let condition = {comId: infoLogin.comId};
+        if(ep_id) condition.idUser = ep_id;
+        if(fromDate) condition.timeUp = {$gte: new Date(fromDate)};
+        if(toDate) condition.timeUp = {$lte: new Date(toDate)};
+        let listSalary = await Salary.find(condition).lean();
+        let total =  await Salary.countDocuments(condition);
+        return functions.success(res, "Get list salary success!", {listSalary, total});
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
+}
+

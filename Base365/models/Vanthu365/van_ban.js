@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const vanBan = new mongoose.Schema({
     _id: {
-        type: Number
+        type: Number,
+        required: true
     },
     title_vb: {
         type: String,
@@ -96,6 +97,7 @@ const vanBan = new mongoose.Schema({
 
     nguoi_ky: {
         type: String,
+        default: null,
         max: 255
     },
     so_van_ban: {

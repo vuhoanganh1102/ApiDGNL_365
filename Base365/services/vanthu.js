@@ -66,3 +66,61 @@ exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi,
             console.log(error);
         });
 }
+
+exports.uploadFileNameRandom = async(folder, file_img) => {
+    let filename='';
+    const time_created = Date.now();
+    const date = new Date(time_created);
+    const year = date.getFullYear();
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    const day = ('0' + date.getDate()).slice(-2);
+
+    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}${month}${day}/`;
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    filename = `${time_created}-tin-${file_img.originalFilename}`.replace(/,/g, '');
+    const filePath = dir + filename;
+    filename = filename + ',';
+    // if (NameFile === '') {
+    //     NameFile += `'${file_img.name.replace(/,/g, '')}'`;
+    //     InfoFile += `'https://vanthu.timviec365.vn/uploads/file_van_ban/${year}/${month}/${day}/${filename}'`;
+    // } else {
+    //     NameFile += `,'${file_img.name.replace(/,/g, '')}'`;
+    //     InfoFile += `,'https://vanthu.timviec365.vn/uploads/file_van_ban/${year}/${month}/${day}/${filename}'`;
+    // }
+
+    fs.readFile(file_img.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return filename;
+}
+
+exports.getMaxId = async(model) => {
+    let maxId = await model.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+    if (maxId) {
+        maxId = Number(maxId._id) + 1;
+    } else maxId = 1;
+    return maxId;
+}
+
+exports.sendChat = async (link, data) => {
+    return await axios
+    .post(link, data)
+    .then(response => {
+        console.log(response.data);
+        // Xử lý phản hồi từ server
+    })
+    .catch(error => {
+        console.error(error);
+        // Xử lý lỗi
+    });
+}

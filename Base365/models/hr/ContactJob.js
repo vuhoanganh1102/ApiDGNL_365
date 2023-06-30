@@ -35,6 +35,4 @@ const JobOfferSchema = new Schema({
     timestamp: true
 });
 
-const JobOfferModel = mongoose.model('HR_ContactJobs', JobOfferSchema);
-
-module.exports = JobOfferModel;
+module.exports = mongoose.model('HR_ContactJobs', JobOfferSchema);

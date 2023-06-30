@@ -95,7 +95,7 @@ exports.HR_UploadFile = async(folder, id, file, allowedExtensions) => {
 }
 
 exports.createLinkFileHR = (folder, id, name) => {
-    let link = process.env.DOMAIN_RAO_NHANH + '/hr/' + folder + '/' + id + '/' + name;
+    let link = process.env.DOMAIN_RAO_NHANH + '/base365/hr/' + folder + '/' + id + '/' + name;
     return link;
 }
 exports.deleteFileHR = (folder, id, file) => {
@@ -126,11 +126,10 @@ exports.checkPermissions = async(req, res, next, per, bar) => {
         }
     }
 }
-
 // hàm check định dạng ảnh
 let checkFile = async(filePath) => {
     const extname = path.extname(filePath).toLowerCase();
-    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.pdf', '.doc', '.docx'].includes(extname);
+    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.pdf', '.doc', '.docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'ods', 'odt', 'odp', 'rtf', 'sxc', 'sxi', 'txt'].includes(extname);
 };
 
 exports.createLinkFile = async(folder, id, name) => {
@@ -139,8 +138,8 @@ exports.createLinkFile = async(folder, id, name) => {
 }
 
 exports.uploadFile = async(folder, id, file) => {
-    let path1 = `../Storage/base365/hr/pictures/${folder}/${id}/`;
-    let filePath = `../Storage/base365/hr/pictures/${folder}/${id}/` + file.name;
+    let path1 = `../Storage/base365/hr/${folder}/${id}/`;
+    let filePath = `../Storage/base365/hr/${folder}/${id}/` + file.name;
     if (!fs.existsSync(path1)) {
         fs.mkdirSync(path1, { recursive: true });
     }
@@ -156,6 +155,105 @@ exports.uploadFile = async(folder, id, file) => {
     });
     return true
 }
+
+exports.uploadFileCv = async(id, file) => {
+    let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    let fileExtension = file.originalFilename.split('.').pop();
+    let name = `cv_${random}.${fileExtension}`
+    let filePath= `../Storage/base365/hr/upload/cv/${id}/`;
+    if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath+name, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return name;
+}
+
+exports.uploadFileSignature = async(file) => {
+    let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    let fileExtension = file.originalFilename.split('.').pop();
+    let name = `signature_${random}.${fileExtension}`
+    let filePath= `../Storage/base365/hr/upload/signature/`;
+    if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath+name, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return name;
+}
+
+exports.uploadFileRoadMap = async(id, file) => {
+    let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    let fileExtension = file.originalFilename.split('.').pop();
+    let name = `roadmap_${random}.${fileExtension}`
+    let filePath= `../Storage/base365/hr/upload/roadmap/${id}/`;
+    if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath+name, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return name;
+}
+
+exports.uploadFileNameRandom = async(folder, file) => {
+    let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    let fileExtension = file.originalFilename.split('.').pop();
+    let name = `${folder}_${random}.${fileExtension}`
+    let filePath= `../Storage/base365/hr/upload/${folder}/`;
+    if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath+name, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return name;
+}
+
+
+exports.createLinkFileCv = async(folder, id, name) => {
+    let link = process.env.DOMAIN_HR + '/base365/hr/' + folder + '/' + id + '/' + name;
+    return link;
+}
+
+exports.deleteFileCv = (id) => {
+    let filePath = '../Storage/hr/upload/cv' +'/' + id;
+    fs.unlink(filePath, (err) => {
+        if (err) console.log(err);
+    });
+}
+
+
 exports.uploadFileBase64 = async(folder, id, base64String, file) => {
     let path1 = `../Storage/base365/hr/pictures/${folder}/${id}/`;
     // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
@@ -267,7 +365,7 @@ exports.checkRoleUser = (req, res, next)=> {
                 return res.status(403).json({ message: "Invalid token" });
             }
             // console.log(user.data);
-            var infoLogin = {type: user.data.type, id: user.data._id, name: user.data.userName};
+            var infoLogin = {type: user.data.type, id: user.data.idQLC, name: user.data.userName};
             if(user.data.type!=1){
                 if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
                     infoLogin.comId = user.data.inForPerson.employee.com_id;
@@ -276,10 +374,9 @@ exports.checkRoleUser = (req, res, next)=> {
                 }
                 
             }else {
-                infoLogin.comId = user.data._id;
+                infoLogin.comId = user.data.idQLC;
             }
             req.infoLogin = infoLogin;
-            console.log(infoLogin);
             next();
             
         });
@@ -301,7 +398,7 @@ exports.checkRole = async(infoLogin, barId, perId)=> {
 exports.checkRight = (barId, perId) => {
     return async (req, res, next) => {
         let infoLogin = req.infoLogin;
-        console.log(infoLogin)
+       
         if(infoLogin.type==1) return next();
         let permission = await PermissionUser.findOne({userId: infoLogin.id, barId: barId, perId: perId});
         if(permission) return next();
@@ -310,7 +407,7 @@ exports.checkRight = (barId, perId) => {
 };
 
 exports.checkIsInteger = (data)=>{
-    console.log(data);
+
     for(let i=0; i<data.length; i++){
         if (isNaN(data[i])) {
         return false;
@@ -446,3 +543,4 @@ exports.sendEmailtoCandidate = async(email, subject, data) => {
         }
     })
 };
+
