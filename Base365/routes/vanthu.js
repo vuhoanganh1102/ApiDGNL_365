@@ -11,6 +11,7 @@ var TKNP = require('./vanthu/deXuat/thong_ke_nghi_phep')
 var EditDXSend = require('./vanthu/deXuat/User_Dx')
 var homeRoute = require('./vanthu/QuanLyCongVan/homeRoute')
 var listVanBan = require('./vanthu/QuanLyCongVan/listVanBanRoute')
+var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
 
 //Api thêm mới các loại đề xuất
 router.use('/vanthu/dexuat',adddeXuat);
@@ -30,7 +31,6 @@ router.use('/vanthu/DeXuat',EditDXSend)
 
 router.use('/vanthu/thongkenp',TKNP)
 
-
 router.use('/vanthu/trangchu',homeRoute)
 
 router.use('/vanthu/listVanBan',listVanBan)
@@ -44,6 +44,10 @@ router.use('/vanthu/listVanBan',listVanBan)
 
 //Api tool quét data văn thư
 router.use('/tooldata',toolVT)
+
+//----------------------------------------------------------Gui Nhan Cong Van------------------------------------
+//--Van Ban Di
+router.use('/vanthu/guiNhanCongVan/', guiNhanCongVan);
 
 
 module.exports = router

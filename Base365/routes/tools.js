@@ -209,7 +209,8 @@ router.post('/toolListNew3312', crm.list_new_3321);
 //api data list_order
 router.post('/toolListOrder', crm.list_order);
 
-
+//Api data bảng call history
+router.post('/toolCallhistory',crm.call_history)
 
 
 

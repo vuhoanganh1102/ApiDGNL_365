@@ -5,6 +5,7 @@ const Appoint = require('../../models/hr/personalChange/Appoint');
 const TranferJob = require('../../models/hr/personalChange/TranferJob');
 const QuitJob = require('../../models/hr/personalChange/QuitJob');
 const QuitJobNew = require('../../models/hr/personalChange/QuitJobNew');
+const Salary = require('../../models/hr/Salarys');
 
 
 exports.getListEmployee = async(req, res, next) => {
@@ -569,3 +570,22 @@ exports.deleteQuitJobNew = async(req, res, next) => {
         return functions.setError(res, "Error from server", 500);
     }
 }
+
+exports.getListSalary = async(req, res, next) => {
+    try {
+        //check quyen
+        let infoLogin = req.infoLogin;
+        let {ep_id, fromDate, toDate} = req.body;
+        let condition = {comId: infoLogin.comId};
+        if(ep_id) condition.idUser = ep_id;
+        if(fromDate) condition.timeUp = {$gte: new Date(fromDate)};
+        if(toDate) condition.timeUp = {$lte: new Date(toDate)};
+        let listSalary = await Salary.find(condition).lean();
+        let total =  await Salary.countDocuments(condition);
+        return functions.success(res, "Get list salary success!", {listSalary, total});
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
+}
+

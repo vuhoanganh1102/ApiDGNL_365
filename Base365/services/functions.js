@@ -33,6 +33,9 @@ const MAX_IMG_SIZE = 2 * 1024 * 1024;
 // giới hạn dung lượng kho ảnh
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
+//gioi han file
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
 dotenv.config();
 
 // check title
@@ -1019,3 +1022,28 @@ exports.processBase64 = async(userId, nameImage, base64String) => {
 
     return checkImage;
 }
+
+// hàm check định dạng ảnh
+let checkFile = async(filePath) => {
+    const extname = path.extname(filePath).toLowerCase();
+    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.pdf', '.doc', '.docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'ods', 'odt', 'odp', 'rtf', 'sxc', 'sxi', 'txt'].includes(extname);
+};
+
+// hàm check ảnh
+exports.checkFile = async(filePath) => {
+    if (typeof(filePath) !== 'string') {
+        return false;
+    }
+
+    const { size } = await promisify(fs.stat)(filePath);
+    if (size > MAX_FILE_SIZE) {
+        return false;
+    }
+
+    const isFile = await checkFile(filePath);
+    if (!isFile) {
+        return false;
+    }
+
+    return true;
+};

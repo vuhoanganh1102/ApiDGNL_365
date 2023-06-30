@@ -25,7 +25,7 @@ router.post('/missionDetail', formData.parse(), hrService.checkRoleUser, hrServi
 router.post('/updateMission', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 3), organizationalStructure.updateMission)
 
 //tải lên chữ ký 
-router.post('/uploadSignature', hrService.checkRoleUser, hrService.checkRight(4, 2), uploadSignature.single('file'), organizationalStructure.uploadSignature)
+router.post('/uploadSignature', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2), organizationalStructure.uploadSignature)
 
 //xóa chữ ký
 router.post('/deleteSignature', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 4), organizationalStructure.deleteSignature)

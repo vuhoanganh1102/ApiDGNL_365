@@ -8,45 +8,44 @@ const SalarySchema = new Schema({
         unique: true,
         autoIncrement: true
     },
-    // loai
+    
     idUser: {
         type: Number,
 
     },
-    // loai nhac nho
+    
     comId: {
         type: Number,
 
     },
-    // id ung vien
+    
     salaryBasic: {
         type: Number,
 
     },
-    //ho ten cua ung vien
+    
     salaryBh: {
         type: String,
 
     },
-    // id cong ty
+    
     pcBh: {
         type: Number,
- 
+
     },
-    // id nguoi dung
+    
     timeUp: {
         type: Date,
 
     },
-    // thời gian nhac nho
+    
     location: {
         type: Number,
-      
+
     },
-    // thoi gian tao
+    
     lydo: {
         type: String,
-       
     },
     quyetdinh: {
         type: String,

@@ -93,4 +93,17 @@ router.post('/scheduleInter', formData.parse(), hrService.checkRoleUser, hrServi
 //nhan vien
 router.post('/addCandidateGetJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 3), recruitmentController.addCandidateGetJob);
 
+//chi tiet ung vien nhan vien
+router.post('/detailCandidateGetJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.detailCandidateGetJob);
+
+//chi tiet ung vien huy
+router.post('/detailCandidateCancelJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.detailCandidateCancelJob);
+
+//chi tiet ung vien truot
+router.post('/detailCandidateFailJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.detailCandidateFailJob);
+
+//chi tiet ung vien ky hop dong
+router.post('/detailCandidateContactJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.detailCandidateContactJob);
+
+
 module.exports = router;
