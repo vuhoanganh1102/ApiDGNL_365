@@ -155,11 +155,11 @@ exports.de_xuat_send_to_me = async (req, res) => {
     }
     if (type == 5) { // Hiển thị đã từ chối
       query.$or = [{ active: 2 }, { type_duyet: 3 }];
-      const showTC = await De_Xuat.find(query);
-      return res.status(200).json(showTC)
-        .sort(sortOptions)
+      const showTC = await De_Xuat.find(query).sort(sortOptions)
         .skip(startIndex)
-        .limit(perPage);;
+        .limit(perPage);;;
+      return res.status(200).json(showTC)
+        
     }
   } catch (error) {
     console.error('Failed to show ', error);
