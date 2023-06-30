@@ -231,7 +231,7 @@ exports.showBangiaoLine = async (req,res) => {
         functions.setError(res, err.message);
     }
 }
-
+//afffajdutl
 exports.Call =async(req,res) => {
     try{
 
