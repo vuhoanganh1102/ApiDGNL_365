@@ -208,17 +208,20 @@ exports.login = async (req,res)=>{
     }
 }
     // hàm đổi mật khẩu 
-    exports.updatePassword = async (req, res, next) => {
+    exports.updatePasswordbyToken = async (req, res, next) => {
         try {
-            let idQLC = req.user.data.idQLC
+            let idQLC = req.user.data.idQLC 
+            let phoneTK = req.body.phoneTK
+            let email = req.body.email
             let password = req.body.password;
             let re_password = req.body.re_password;
-            let checkPassword = await functions.verifyPassword(password)
+            if(idQLC &&password &&re_password){
+                let checkPassword = await functions.verifyPassword(password)
             if (checkPassword) {
                 return functions.setError(res, "sai dinh dang Mk", 404)
             }
             if(!password || !re_password){
-                return functions.setError(res, 'Missing data', 400)
+                return functions.setError(res, 'vui lòng nhập mật khẩu', 400)
             }
             if(password.length < 6){
                 return functions.setError(res, 'Password quá ngắn', 400)
@@ -237,6 +240,77 @@ exports.login = async (req,res)=>{
                     return functions.success(res, 'cập nhập thành công')
                 }
                 return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+
+            }else{
+                return functions.setError(res, ' thiếu token ', 404)
+            }
+            
+            } catch (error) {
+            console.log(error)
+            return functions.setError(res, error.message)
+        }
+    }
+    exports.updatePasswordbyInput = async (req, res, next) => {
+        try {
+            let phoneTK = req.body.phoneTK
+            let email = req.body.email
+            let password = req.body.password;
+            let re_password = req.body.re_password;
+         if (phoneTK&&password&&password){
+            let checkPassword = await functions.verifyPassword(password)
+            if (checkPassword) {
+                return functions.setError(res, "sai dinh dang Mk", 404)
+            }
+            if(!password || !re_password){
+                return functions.setError(res, 'Missing data', 400)
+            }
+            if(password.length < 6){
+                return functions.setError(res, 'Password quá ngắn', 400)
+            }
+            if(password !== re_password)
+            {
+                return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+            }
+                let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 2 })
+                if (!checkPass) {
+                    await Users.updateOne({ phoneTK: phoneTK }, {
+                        $set: {
+                            password: md5(password),
+                        }
+                    });
+                    return functions.success(res, 'cập nhập thành công')
+                }
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+        }else if(email&&password&&password){
+            let checkPassword = await functions.verifyPassword(password)
+            if (checkPassword) {
+                return functions.setError(res, "sai dinh dang Mk", 404)
+            }
+            if(!password || !re_password){
+                return functions.setError(res, 'Missing data', 400)
+            }
+            if(password.length < 6){
+                return functions.setError(res, 'Password quá ngắn', 400)
+            }
+            if(password !== re_password)
+            {
+                return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+            }
+                let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 2 })
+                if (!checkPass) {
+                    await Users.updateOne({ email: email }, {
+                        $set: {
+                            password: md5(password),
+                        }
+                    });
+                    return functions.success(res, 'cập nhập thành công')
+                }
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+
+            }else{
+                return functions.setError(res, ' điền thiếu trường ', 404)
+            }
+            
             } catch (error) {
             console.log(error)
             return functions.setError(res, error.message)
@@ -420,7 +494,31 @@ exports.info = async (req,res) =>{
         }else if(isNaN(idQLC)){
             functions.setError(res,"id must be a Nubmer")
         }else{
-            const data = await Users.findOne({idQLC}).select(' userName email phoneTK password com_id address position_id dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
+            // const data = await Users.findOne({idQLC}).select(' userName email phoneTK password inForPerson.employee.com_id address inForPerson.employee.position_id inForPerson.employee.dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
+
+            const data = await Users.aggregate([
+                {
+                  $match: { _id: idQLC } // Lọc nhân viên theo ID
+                },
+                {
+                  $lookup: {
+                    from: "deparments", // Tên bảng phòng ban
+                    localField: "inForPerson.employee.dep_id",
+                    foreignField: "_id",
+                    as: "DeparmentName"
+                  }
+                },
+             
+               
+              ]);
+            const data1 = data[0].inForPerson.employee.com_id
+            const data2 = data[0].DeparmentName[0].managerId
+            console.log(data1, data2)
+            const companyName = await Users.findOne({_id : data1 , type :1}).select('userName').lean()
+              console.log(companyName)
+            const managerName = await Users.findOne({_id : data2 , type :2}).select('userName').lean()
+            data[0].managerName = managerName
+            data[0].companyName = companyName
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
