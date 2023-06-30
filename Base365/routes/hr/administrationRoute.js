@@ -1,68 +1,70 @@
 var express = require('express');
 var router = express.Router();
 var formData = require('express-form-data');
-const HR =  require('../../services/hr/hrService');
+const hrService =  require('../../services/hr/hrService');
 const administration = require('../../controllers/hr/administrationController')
 const functions = require('../../services/functions')
 // thêm nhóm quy định
-router.post('/addProvision',HR.HR_CheckTokenCompany,formData.parse(),administration.addProvision)
+router.post('/addProvision',hrService.checkRoleUser, hrService.checkRight(2, 2),formData.parse(),administration.addProvision)
 
 // thêm quy đinh
-router.post('/addPolicy',formData.parse(), HR.checkRoleUser, HR.checkRight(2, 2), administration.addPolicy)
+router.post('/addPolicy',formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 2), administration.addPolicy)
 
 //chinh sua quy dinh
-router.post('/updatePolicy', formData.parse(), HR.checkRoleUser, HR.checkRight(2, 3), administration.updatePolicy)
+router.post('/updatePolicy', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 3), administration.updatePolicy)
 
 // danh sách nhóm quy định 
-router.get('/listProvision',HR.HR_CheckTokenCompany,administration.listProvision)
+router.get('/listProvision',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.listProvision)
 
 // chi tiết nhóm quy định 
-router.get('/detailProvision',HR.HR_CheckTokenCompany,administration.detailProvision)
+router.get('/detailProvision',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.detailProvision)
 
 // sửa nhóm quy định
-router.put('/updateProvision',HR.HR_CheckTokenCompany,formData.parse(),administration.updateProvision)
+router.put('/updateProvision',hrService.checkRoleUser, hrService.checkRight(2, 3),formData.parse(),administration.updateProvision)
 
 // xoá nhóm quy định
-router.delete('/deleteProvision',HR.HR_CheckTokenCompany,formData.parse(),administration.deleteProvision)
+router.delete('/deleteProvision',hrService.checkRoleUser, hrService.checkRight(2, 4),formData.parse(),administration.deleteProvision)
 
 // danh sách quy định theo nhóm quy định
-router.get('/listPolicy',HR.HR_CheckTokenCompany,administration.listPolicy)
+router.get('/listPolicy',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.listPolicy)
 
 // chi tiết quy định theo nhóm quy định
-router.get('/detailPolicy',HR.HR_CheckTokenCompany,administration.detailPolicy)
+router.get('/detailPolicy',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.detailPolicy)
 
 // xoá quy định theo nhóm quy định
-router.delete('/deletePolicy',HR.HR_CheckTokenCompany,formData.parse(),administration.deletePolicy)
+router.delete('/deletePolicy',hrService.checkRoleUser, hrService.checkRight(2, 4),formData.parse(),administration.deletePolicy)
 
 
 // Thêm mới nhóm chính sách
-router.post('/addEmployeePolicy',HR.HR_CheckTokenCompany,formData.parse(),administration.addEmployeePolicy)
+router.post('/addEmployeePolicy',hrService.checkRoleUser, hrService.checkRight(2, 2),formData.parse(),administration.addEmployeePolicy)
 
 // Sửa nhóm chính sách
-router.put('/updateEmployeePolicy',HR.HR_CheckTokenCompany,formData.parse(),administration.updateEmployeePolicy)
+router.put('/updateEmployeePolicy',hrService.checkRoleUser, hrService.checkRight(2, 3),formData.parse(),administration.updateEmployeePolicy)
 
 // xoá nhóm chính sachs nhân viên
-router.delete('/deleteEmployeePolicy',HR.HR_CheckTokenCompany,formData.parse(),administration.deleteEmployeePolicy)
+router.delete('/deleteEmployeePolicy',hrService.checkRoleUser, hrService.checkRight(2, 4),formData.parse(),administration.deleteEmployeePolicy)
 
 // Thêm mới chính sách
-router.post('/addEmpoyePolicySpecific',functions.checkToken,formData.parse(),administration.addEmpoyePolicySpecific)
+router.post('/addEmpoyePolicySpecific',hrService.checkRoleUser, hrService.checkRight(2, 2),formData.parse(),administration.addEmpoyePolicySpecific)
 
 // Danh sách nhóm chính sách
-router.get('/listEmpoyePolicy',administration.listEmpoyePolicy)
+router.get('/listEmpoyePolicy',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.listEmpoyePolicy)
 
 // chi tiết nhóm chính sách
-router.get('/getDetailPolicy',administration.getDetailPolicy)
+router.get('/getDetailPolicy',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.getDetailPolicy)
 
 // danh sách quy định theo nhóm quy định
-router.get('/listEmployeePolicySpecific',administration.listEmployeePolicySpecific)
+router.get('/listEmployeePolicySpecific',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.listEmployeePolicySpecific)
 
 
 // chi tiết chính sách
-router.get('/detailEmployeePolicySpecific',administration.detailEmployeePolicySpecific)
+router.get('/detailEmployeePolicySpecific',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.detailEmployeePolicySpecific)
 
 // xoá nhóm chính sách
-router.delete('/deleteEmployeePolicySpecific',formData.parse(),administration.deleteEmployeePolicySpecific)
+router.delete('/deleteEmployeePolicySpecific',hrService.checkRoleUser, hrService.checkRight(2, 4),formData.parse(),administration.deleteEmployeePolicySpecific)
 
+// sửa chính sách
+router.put('/updateEmployeePolicySpecific',hrService.checkRoleUser, hrService.checkRight(2, 4),formData.parse(),administration.updateEmployeePolicySpecific)
 
 
 module.exports = router;

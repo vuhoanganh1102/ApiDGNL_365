@@ -28,7 +28,7 @@ exports.postNewMain = async (req, res, next) => {
         let userID = req.user.data.idRaoNhanh365;
         
         let request = req.body;
-        cateID = request.cateID,
+            cateID = request.cateID,
             title = request.title,
             money = request.money,
             until = request.until,
@@ -48,6 +48,7 @@ exports.postNewMain = async (req, res, next) => {
             district = request.district,
             ward = request.ward,
             brand = request.brand;
+            infoSell = request.infoSell;
         let fields = [
             userID,
             cateID,
@@ -127,6 +128,7 @@ exports.postNewMain = async (req, res, next) => {
                 brand: brand,
                 buySell: 2, // tin ban
                 active: 1, // hien thi tin
+                infoSell:infoSell
             };
      
             return next();
