@@ -219,6 +219,28 @@ exports.uploadFileRoadMap = async(id, file) => {
     return name;
 }
 
+exports.uploadFileNameRandom = async(folder, file) => {
+    let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    let fileExtension = file.originalFilename.split('.').pop();
+    let name = `${folder}_${random}.${fileExtension}`
+    let filePath= `../Storage/base365/hr/upload/${folder}/`;
+    if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath+name, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return name;
+}
+
+
 exports.createLinkFileCv = async(folder, id, name) => {
     let link = process.env.DOMAIN_HR + '/base365/hr/' + folder + '/' + id + '/' + name;
     return link;

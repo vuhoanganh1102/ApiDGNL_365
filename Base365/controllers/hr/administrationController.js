@@ -90,6 +90,60 @@ exports.addPolicy = async (req, res, next) => {
     }
 }
 
+//chinh sua quy dinh
+exports.updatePolicy = async (req, res, next) => {
+    try {
+        let infoLogin = req.infoLogin;
+        let id = req.body.id;
+        let name = req.body.name;
+        let provisionId = Number(req.body.provision_id);
+        let timeStart = req.body.time_start;
+        let supervisorName = req.body.supervisor_name;
+        let applyFor = req.body.apply_for;
+        let content = req.body.content;
+        let createdBy = 'công ty';
+        if(infoLogin.type != 1){
+            createdBy = infoLogin.name;
+        }
+        let comId = infoLogin.comId;
+        let createdAt = new Date();
+        let File = req.files.file;
+        let fileName = null;
+
+        if (id && name && provisionId && timeStart && supervisorName && applyFor && content) {
+            if (await functions.checkDate(timeStart) === false || await functions.checkTime(timeStart) === false) {
+                return functions.setError(res, 'invalid date', 404)
+            }
+            if (await functions.checkNumber(provisionId) === false) {
+                return functions.setError(res, 'invalid number', 404)
+            }
+            if (File) {
+                if(!await HR.checkFile(File.path)) {
+                    return functions.setError(res, "Khong dung dinh dang anh hoac kich thuoc qua gioi han!", 405);
+                }
+                fileName = await HR.uploadFileNameRandom('file', File);
+                // let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
+                // if (checkUpload === false) {
+                //     return functions.setError(res, 'upload faild', 404)
+                // }
+                // link = HR.createLinkFileHR('policy', comId, File.policy.name)
+            }
+            
+            let policy = await Policys.findOneAndUpdate({id: id}, {name, provisionId, timeStart, supervisorName, createdBy, comId, applyFor, content, createdAt, file: fileName }, {upsert: true, new: true});
+            if(!policy){
+                return functions.setError(res, "Policy not found!", 505);
+            }
+            return functions.success(res, 'update policy success')
+        } else {
+            return functions.setError(res, 'missing data', 404)
+        }
+        
+    } catch (error) {
+        console.log("🚀 ~ file: administrationController.js:32 ~ exports.addProvision= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
 // danh sách nhóm quy định 
 exports.listProvision = async (req, res, next) => {
     try {

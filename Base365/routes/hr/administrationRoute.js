@@ -8,7 +8,10 @@ const functions = require('../../services/functions')
 router.post('/addProvision',HR.HR_CheckTokenCompany,formData.parse(),administration.addProvision)
 
 // thêm quy đinh
-router.post('/addPolicy',HR.HR_CheckTokenCompany,formData.parse(),administration.addPolicy)
+router.post('/addPolicy',formData.parse(), HR.checkRoleUser, HR.checkRight(2, 2), administration.addPolicy)
+
+//chinh sua quy dinh
+router.post('/updatePolicy', formData.parse(), HR.checkRoleUser, HR.checkRight(2, 3), administration.updatePolicy)
 
 // danh sách nhóm quy định 
 router.get('/listProvision',HR.HR_CheckTokenCompany,administration.listProvision)
@@ -59,6 +62,7 @@ router.get('/detailEmployeePolicySpecific',administration.detailEmployeePolicySp
 
 // xoá nhóm chính sách
 router.delete('/deleteEmployeePolicySpecific',formData.parse(),administration.deleteEmployeePolicySpecific)
+
 
 
 module.exports = router;
