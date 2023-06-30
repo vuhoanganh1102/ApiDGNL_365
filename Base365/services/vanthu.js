@@ -2,7 +2,7 @@
 const fs = require('fs');
 const multer = require('multer');
 const axios = require('axios');
-
+const path = require('path');
 
 exports.uploadFileVanThu = (id, file) => {
     let path = `../Storage/base365/vanthu/tailieu/${id}/`;
@@ -26,13 +26,13 @@ exports.uploadFileVanThu = (id, file) => {
     });
 }
 exports.createLinkFileVanthu = (id, name) => {
-    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/dexuat' + '/' + id + '/' + name;
+    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/tailieu' + '/' + id + '/' + name;
     return link;
 }
 
 exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-    return maxUser._id;
+    return maxUser._id + 1;
 };
 
 // const storageVanthu = (destination) => {
@@ -65,4 +65,35 @@ exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi,
         .catch(function (error) {
             console.log(error);
         });
+}
+
+
+exports.vanThuUpload = async(folder, id, file, allowedExtensions) => {
+
+    let path1 = `../Storage/base365/vanthu/${folder}/${id}/`;
+    let filePath = `../Storage/base365/vanthu/${folder}/${id}/` + file.name;
+
+    let fileCheck = path.extname(filePath);
+    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
+        return false
+    }
+    // const { size } = await promisify(fs.stat)(filePath);
+    // if (size > MAX_IMG_SIZE) {
+    //     return false;
+    // }
+
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return true
 }

@@ -226,6 +226,7 @@ exports.postNewsGeneral = async (req, res, next) => {
             };
             //cac truong cua danh muc thu cung
             let fieldsPet = {
+                kindOfPet:req.body.kindOfPet,
                 age: req.body.age,
                 gender: req.body.gender,
                 weigth: req.body.weigth,
@@ -315,9 +316,7 @@ exports.createNews = async (req, res, next) => {
     try {
         let fields = req.fields;
         let userID = req.user.data.idRaoNhanh365;
-        console.log("🚀 ~ file: new.js:315 ~ exports.createNews= ~ userID:", userID)
-        console.log("🚀 ~ file: new.js:314 ~ exports.createNews= ~ fields:", fields)
-        
+       
         let cate_Special = null;
         let danh_muc1 = null;
         let danh_muc2 = null;
@@ -325,6 +324,9 @@ exports.createNews = async (req, res, next) => {
         let linkTitle = await raoNhanh.createLinkTilte(fields.title)
         fields.linkTitle = linkTitle
         cate1 = await CategoryRaoNhanh365.findById(fields.cateID);
+        if(!cate1){
+            return functions.setError(res,'not found cate',400)
+        }
         danh_muc1 = cate1.name;
 
         if (cate1.parentId !== 0) {
