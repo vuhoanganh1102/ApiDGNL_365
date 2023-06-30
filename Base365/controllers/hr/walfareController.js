@@ -451,6 +451,22 @@ exports.listInfinges = async (req, res, next) => {
 }
 
 // lấy danh sách  
-
+exports.layDanhSachSua = async (req,res,next) => {
+    try {
+        let id =  req.body.id;
+        let model = req.body.model;
+        let data = {};
+        if (model === 'InfringesFors')
+        {
+            data = await InfringesFors.findById(id);
+        }else if(model ==='AchievementFors')
+        {
+            data = await AchievementFors.findById(id);
+        }
+        return functions.success(res,'get data success', { data })
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
 
 

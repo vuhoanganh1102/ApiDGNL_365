@@ -2,7 +2,7 @@
 const fs = require('fs');
 const multer = require('multer');
 const axios = require('axios');
-
+const path = require('path');
 
 exports.uploadFileVanThu = (id, file) => {
     let path = `../Storage/base365/vanthu/dexuat/${id}/`;
@@ -26,13 +26,13 @@ exports.uploadFileVanThu = (id, file) => {
     });
 }
 exports.createLinkFileVanthu = (id, name) => {
-    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/dexuat' + '/' + id + '/' + name;
+    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/tailieu' + '/' + id + '/' + name;
     return link;
 }
 
 exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-    return maxUser._id;
+    return maxUser._id + 1;
 };
 
 // const storageVanthu = (destination) => {

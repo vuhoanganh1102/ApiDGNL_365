@@ -326,7 +326,7 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    ashtag: {
+    hashtag: {
         // 
         type: String,
         default: null
@@ -803,7 +803,12 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
+        // phân loại 
         classify: {
+            type: String,
+            default: null
+        },
+        loai:{
             type: String,
             default: null
         },
@@ -812,7 +817,6 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: null
         },
-
         promotionType: {
             // loại khuyến mãi
             type: Number,
@@ -823,7 +827,6 @@ const newSchema = new mongoose.Schema({
             type: Number,
             default: null
         },
-
         transport: {
             // vận chuyển
             type: Number,
