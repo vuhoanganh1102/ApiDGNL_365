@@ -14,6 +14,7 @@ router.post('/verifyCheckOTP', formData.parse(),functions.checkToken,  company.v
 
 // hàm đổi mật khẩu 
 router.post('/updateNewPassword',functions.checkToken, formData.parse(),   company.updatePassword);
+router.post('/updatePasswordbyInput', formData.parse(),   company.updatePasswordbyInput);
 // hàm cập nhập thông tin công ty
 router.post('/updateInfoCompany', formData.parse(), functions.checkToken,  company.updateInfoCompany);
 // api api gửi mã OTP qua mail (quên mật khẩu) 
