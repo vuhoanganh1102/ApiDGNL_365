@@ -29,6 +29,6 @@ router.post('/deleteQuitJobNew', formData.parse(), hrService.checkRoleUser, hrSe
 
 //khac
 router.post('/getListEmployee', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 1),  personalChangeController.getListEmployee);
-
+router.post('/getListSalary', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 1),  personalChangeController.getListSalary);
 
 module.exports = router;

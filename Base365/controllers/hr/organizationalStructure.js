@@ -617,20 +617,27 @@ exports.updateMission = async(req, res, next) => {
 //tải lên chữ ký
 exports.uploadSignature = async(req, res, next) => {
     try {
-        if (req.infoLogin && req.file) {
+        if (req.infoLogin) {
             let empId = req.body.empId
             
             const maxID = await HR_SignatureImages.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             if (maxID) {
                 newIDMax = Number(maxID.id) + 1;
             } else newIDMax = 1
-
+            let file = req.files.signature;
+            if(!file){
+                return functions.setError(res, "Missing signature image!", 504);
+            }
+            if(!await functions.checkImage(file.path)){
+                return functions.setError(res, "Anh khong dung dinh dang hoac qua kich thuoc!", 505);
+            }
+            let nameFile = await hrFunctions.uploadFileSignature(file);
             let checkSig = await HR_SignatureImages.findOne({ empId: empId })
             if (!checkSig) {
                 let upload = new HR_SignatureImages({
                     id: newIDMax,
                     empId: empId,
-                    imgName: req.file.originalname,
+                    imgName: nameFile,
                     createdAt: new Date(Date.now())
                 })
                 upload.save()
