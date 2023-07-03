@@ -1,5 +1,5 @@
 const Users = require('../../models/Users');
-const functions = require('../../services/functions');
+const functions = require('../../services/qlc/functions');
 const md5 = require('md5');
 const Deparment = require("../../models/qlc/Deparment")
 
