@@ -887,7 +887,7 @@ exports.tool_qlcv_congVan = async (req, res, next) => {
                         cv_id_vb: listData[i].cv_id_vb,
                         cv_id_book: listData[i].cv_id_book,
                         cv_name: listData[i].cv_name,
-                        cv_kieu: listData[i].cv_kieu,
+                        cv_kieu: listData[i].cv_kieu.trim(),
                         cv_so: listData[i].cv_so,
                         cv_type_soan: listData[i].cv_type_soan,
                         cv_soan_ngoai: listData[i].cv_soan_ngoai,
