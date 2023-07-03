@@ -635,9 +635,10 @@ exports.getUrlLogoCompany = async(createTime, logo) => {
 }
 
 exports.getTokenUser = async(req, res, next) => {
-        if (req.headers.authorization) {
+        if (req.headers && req.headers.authorization) {
             const token = req.headers.authorization;
-            return jwt.decode(token).data;
+           // return jwt.decode(token).data;
+           return jwt.decode(token)
         } else {
             return null;
         }
