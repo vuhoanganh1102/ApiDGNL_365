@@ -2,11 +2,12 @@ const { isNull } = require('util');
 const Users = require('../../models/Users')
 const functions = require('../../services/functions')
 const md5 = require('md5');
+const Deparment = require("../../models/qlc/Deparment")
+
 //đăng kí tài khoản nhân viên 
 exports.register = async (req, res) => {
 try{
     const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
-
     if ((userName && password && com_id && address && phoneTK) !== undefined) {
         let checkPhone = await functions.checkPhoneNumber(phoneTK);
         if (checkPhone) {
@@ -19,7 +20,7 @@ try{
                     email: email,
                     phoneTK: phoneTK,
                     userName: userName,
-                    phone: phone,
+                    phone: phone || phoneTK,
                     avatarUser: avatarUser,
                     "inForPerson.employee.position_id": position_id,
                     "inForPerson.employee.com_id": com_id,
@@ -28,6 +29,7 @@ try{
                     password: md5(password),
                     address: address,
                     otp: otp,
+                    createdAt: new Date(),
                     authentic: null || 0,
                     fromWeb: "quanlichung.timviec365",
                     role: 0,
@@ -92,7 +94,7 @@ exports.verify = async (req,res)=>{
 
 
         }else if (!otp){
-            let verify = await Users.findOne({phoneTK:phoneTK,otp ,type :2});
+            let verify = await Users.findOne({phoneTK:phoneTK ,type :2});
             if (verify != null){
                 await Users.updateOne({phoneTK:phoneTK ,type :2},{
                     $set: {
@@ -156,6 +158,8 @@ exports.login = async (req,res)=>{
             if(checkMail || checkPhone){
                 let findUser = await Users.findOne({$or:[ { email:email, type: 2 },{phoneTK : phoneTK ,type :2}]})
                 let crmtoken = await Users.findOne({ email, type: 2 }).select("idQLC row inForPerson.employee.position_id inForPerson.employee.com_id type")
+                console.log(findUser.password)
+                console.log(findUser.idQLC)
                 if (!findUser) {
                     return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
@@ -232,7 +236,7 @@ exports.login = async (req,res)=>{
             }
                 let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 2 })
                 if (!checkPass) {
-                    await Users.updateOne({ idQLC: idQLC }, {
+                    await Users.updateOne({ idQLC: idQLC , type : 2}, {
                         $set: {
                             password: md5(password),
                         }
@@ -250,7 +254,7 @@ exports.login = async (req,res)=>{
             return functions.setError(res, error.message)
         }
     }
-    exports.updatePasswordbyInput = async (req, res, next) => {
+exports.updatePasswordbyInput = async (req, res, next) => {
         try {
             let phoneTK = req.body.phoneTK
             let email = req.body.email
@@ -273,7 +277,7 @@ exports.login = async (req,res)=>{
             }
                 let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 2 })
                 if (!checkPass) {
-                    await Users.updateOne({ phoneTK: phoneTK }, {
+                    await Users.updateOne({ phoneTK: phoneTK , type : 2}, {
                         $set: {
                             password: md5(password),
                         }
@@ -298,7 +302,7 @@ exports.login = async (req,res)=>{
             }
                 let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 2 })
                 if (!checkPass) {
-                    await Users.updateOne({ email: email }, {
+                    await Users.updateOne({ email: email,type : 2 }, {
                         $set: {
                             password: md5(password),
                         }
@@ -323,7 +327,7 @@ exports.updateInfoEmployee = async (req, res, next) => {
         let idQLC = req.user.data.idQLC;
         let data = [];
         let data1 = [];
-        const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+        const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
 
         let File = req.files || null;
         let avatarUser = null;
@@ -347,7 +351,6 @@ exports.updateInfoEmployee = async (req, res, next) => {
                             "inForPerson.employee.position_id": position_id,
                             "inForPerson.employee.com_id": com_id,
                             "inForPerson.employee.dep_id": dep_id,
-                            password: md5(password),
                             address: address,
                             otp: otp,
                             authentic: null || 0,
@@ -378,7 +381,6 @@ exports.updateInfoEmployee = async (req, res, next) => {
                             "inForPerson.employee.position_id": position_id,
                             "inForPerson.employee.com_id": com_id,
                             "inForPerson.employee.dep_id": dep_id,
-                            password: md5(password),
                             address: address,
                             otp: otp,
                             authentic: null || 0,
@@ -489,36 +491,41 @@ exports.updateInfoEmployee = async (req, res, next) => {
 exports.info = async (req,res) =>{
     try{
         const idQLC = req.user.data.idQLC
+        // const com_id = req.user.data.com_id
         if((idQLC)==undefined){
-            functions.setError(res,"lack of input")
+            functions.setError(res," không tìm thấy thông tin từ token ")
         }else if(isNaN(idQLC)){
-            functions.setError(res,"id must be a Nubmer")
+            functions.setError(res,"id phải là số")
         }else{
             // const data = await Users.findOne({idQLC}).select(' userName email phoneTK password inForPerson.employee.com_id address inForPerson.employee.position_id inForPerson.employee.dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
 
-            const data = await Users.aggregate([
-                {
-                  $match: { _id: idQLC } // Lọc nhân viên theo ID
-                },
-                {
-                  $lookup: {
-                    from: "deparments", // Tên bảng phòng ban
-                    localField: "inForPerson.employee.dep_id",
-                    foreignField: "_id",
-                    as: "DeparmentName"
-                  }
-                },
-             
-               
-              ]);
-            const data1 = data[0].inForPerson.employee.com_id
-            const data2 = data[0].DeparmentName[0].managerId
-            console.log(data1, data2)
-            const companyName = await Users.findOne({_id : data1 , type :1}).select('userName').lean()
-              console.log(companyName)
-            const managerName = await Users.findOne({_id : data2 , type :2}).select('userName').lean()
-            data[0].managerName = managerName
-            data[0].companyName = companyName
+            const data = await Users.findOne({idQLC: idQLC , type :2 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.employee.com_id inForPerson.employee.dep_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education').lean()
+            
+            const data1 = data.inForPerson.employee.com_id
+            const data0 = data.inForPerson.employee.dep_id
+            const departments = await Deparment.findOne({_id : data0, com_id :data1 })
+            const birthday = data.inForPerson.account.birthday
+            const gender = data.inForPerson.account.gender
+            const married = data.inForPerson.account.married
+            const experience = data.inForPerson.account.experience
+            const education = data.inForPerson.account.education
+
+            const data2 = departments.managerId
+            if((data2&&data) == undefined){
+            return functions.setError(res, 'Không có dữ liệu ', 404);
+            
+        }
+        const companyName = await Users.findOne({idQLC : data1 , type :1}).select('userName').lean()
+        const managerName = await Users.findOne({_id : data2 , type :2}).select('userName').lean()
+        data.department = departments
+        data.managerName = managerName
+        data.companyName = companyName
+        data.birthday = birthday
+        data.gender = gender
+        data.married = married
+        data.experience = experience
+        data.education = education
+        console.log(managerName)
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };

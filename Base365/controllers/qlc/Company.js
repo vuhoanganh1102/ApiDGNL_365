@@ -1,6 +1,8 @@
 const Users = require('../../models/Users');
 const functions = require('../../services/functions');
 const md5 = require('md5');
+const Deparment = require("../../models/qlc/Deparment")
+
 
 //Đăng kí tài khoản công ty 
 exports.register = async (req, res) => {
@@ -67,10 +69,10 @@ exports.login = async (req, res, next) => {
             let checkPhone = await functions.checkPhoneNumber(phoneTK)
             if(checkMail || checkPhone){
                 let findUser = await Users.findOne({$or:[ { email:email, type: 1 },{phoneTK : phoneTK ,type :1}]})
-
+                console.log(findUser.password)
                 
                 let crmtoken = await Users.findOne({ email, type: 1 }).select("idQLC row inForPerson.employee.position_id inForPerson.employee.com_id type")
-                console.log(crmtoken)
+                // console.log(crmtoken)
                 if (!findUser) {
                     return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
@@ -163,12 +165,11 @@ exports.verify = async (req,res)=>{
         let otp = req.body.ma_xt || null
         let phoneTK = req.user.data.phoneTK;
         console.log(phoneTK)
-        console.log(phoneTK)
         let data = []
         if(otp){
-                let findUser = await Users.findOne({phoneTK:phoneTK ,type :2})
+                let findUser = await Users.findOne({phoneTK:phoneTK ,type :1})
                 if(findUser) {
-                    data = await Users.updateOne({phoneTK:phoneTK ,type :2},{
+                    data = await Users.updateOne({phoneTK:phoneTK ,type :1},{
                         $set:{
                             otp : otp
                         }
@@ -177,12 +178,13 @@ exports.verify = async (req,res)=>{
                 }else {
                     return functions.setError(res,"tài khoản không tồn tại")
                 }
-
-
-        }else if (!otp){
-            let verify = await Users.findOne({phoneTK:phoneTK,otp ,type :2});
-            if (verify != null){
-                await Users.updateOne({phoneTK:phoneTK ,type :2},{
+                
+                
+            }else if (!otp){
+                let verify = await Users.findOne({phoneTK:phoneTK ,type :1});
+                console.log(verify)
+                if (verify != null){
+                await Users.updateOne({phoneTK:phoneTK ,type :1},{
                     $set: {
                         authentic :1 
                     }
@@ -207,7 +209,7 @@ exports.verifyCheckOTP = async (req,res)=>{
         let phoneTK = req.user.data.phoneTK;
        
         if(otp){
-                let findUser = await Users.findOne({phoneTK:phoneTK ,type :2}).select("otp")
+                let findUser = await Users.findOne({phoneTK:phoneTK ,type :1}).select("otp")
                 if(findUser) {
                     let data = findUser.otp
                     console.log(data)
@@ -253,7 +255,7 @@ exports.updatePassword = async (req, res, next) => {
         }
             let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 1 })
             if (!checkPass) {
-                await Users.updateOne({ idQLC: idQLC }, {
+                await Users.updateOne({ idQLC: idQLC, type :1 }, {
                     $set: {
                         password: md5(password),
                     }
@@ -266,7 +268,72 @@ exports.updatePassword = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
+exports.updatePasswordbyInput = async (req, res, next) => {
+    try {
+        let phoneTK = req.body.phoneTK
+        let email = req.body.email
+        let password = req.body.password;
+        let re_password = req.body.re_password;
+     if (phoneTK&&password&&re_password){
+        let checkPassword = await functions.verifyPassword(password)
+        if (checkPassword) {
+            return functions.setError(res, "sai dinh dang Mk", 404)
+        }
+        if(!password || !re_password){
+            return functions.setError(res, 'Missing data', 400)
+        }
+        if(password.length < 6){
+            return functions.setError(res, 'Password quá ngắn', 400)
+        }
+        if(password !== re_password)
+        {
+            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+        }
+            let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 1 })
+            if (!checkPass) {
+                await Users.updateOne({ phoneTK: phoneTK , type : 1}, {
+                    $set: {
+                        password: md5(password),
+                    }
+                });
+                return functions.success(res, 'cập nhập thành công')
+            }
+            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+    }else if(email&&password&&re_password){
+        let checkPassword = await functions.verifyPassword(password)
+        if (checkPassword) {
+            return functions.setError(res, "sai dinh dang Mk", 404)
+        }
+        if(!password || !re_password){
+            return functions.setError(res, 'Missing data', 400)
+        }
+        if(password.length < 6){
+            return functions.setError(res, 'Password quá ngắn', 400)
+        }
+        if(password !== re_password)
+        {
+            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+        }
+            let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 1 })
+            if (!checkPass) {
+                await Users.updateOne({ email: email,type : 1 }, {
+                    $set: {
+                        password: md5(password),
+                    }
+                });
+                return functions.success(res, 'cập nhập thành công')
+            }
+            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
 
+        }else{
+            return functions.setError(res, ' điền thiếu trường ', 404)
+        }
+        
+        } catch (error) {
+        console.log(error)
+        return functions.setError(res, error.message)
+    }
+}
 
 // hàm bước 1 của quên mật khẩu
 exports.forgotPassword = async (req,res)=>{
@@ -344,41 +411,7 @@ exports.forgotPassword = async (req,res)=>{
 }
 
 exports.updateInfoCompany = async (req, res, next) => {
-    // try {
-    //     let idQLC = req.user.data.idQLC;
-    //     let { userName } = req.body;
-    //     let email = req.body.email || null;
-    //     let phone = req.body.phone || null;
-    //     let address = req.body.address || null;
-    //     let File = req.files || null;
-    //     let avatarCompany = null;
-    //     let updatedAt = new Date();
-    //     if(email){
-    //         if (await functions.checkEmail(email) === false) {
-    //             return functions.setError(res, 'invalid email',400)
-    //         } else {
-    //             let check_email = await Users.findById(idQLC);
-    //             if (check_email.email !== email) {
-    //                 let check_email_lan2 = await Users.find({ email });
-    //                 if (check_email_lan2.length !== 0) {
-    //                     return functions.setError(res, "email is exits",400)
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     if (File.avatarCompany) {
-    //         let upload = functions.uploadFileQLC('avt_com', idQLC, File.avatarCompany, ['.jpeg', '.jpg', '.png']);
-    //         if (!upload) {
-    //             return functions.setError(res, 'Định dạng ảnh không hợp lệ',400)
-    //         }
-    //         avatarCompany = functions.createLinkFileQLC('avt_com', idQLC, File.avatarCompany.name)
-    //         await Users.findByIdAndUpdate(idQLC, { email, address,phone, userName, avatarCompany, updatedAt });
-    //     }
-    //     await Users.findByIdAndUpdate(idQLC, { email, address, userName, updatedAt });
-    //     return functions.success(res, 'update data user success')
-    // } catch (error) {
-    //     return functions.setError(res, error)
-    // }
+
     try {
         let idQLC = req.user.data.idQLC;
         let data = [];
@@ -402,25 +435,11 @@ exports.updateInfoCompany = async (req, res, next) => {
                             userName: userName,
                             email: email,
                             phoneTK: phoneTK,
-                            phone: phone,
                             avatarUser: avatarUser,
-                            "inForPerson.employee.position_id": position_id,
-                            "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": dep_id,
-                            password: md5(password),
                             address: address,
-                            otp: otp,
-                            authentic: null || 0,
                             fromWeb: "quanlichung.timviec365",
-                            avatarUser: avatarUser,
                             updatedAt: new Date(),
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": birthday,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
+
                         }
                     })
                     await functions.success(res, 'update avartar company success', { data })
@@ -433,25 +452,10 @@ exports.updateInfoCompany = async (req, res, next) => {
                             userName: userName,
                             email: email,
                             phoneTK: phoneTK,
-                            phone: phone,
                             avatarUser: avatarUser,
-                            "inForPerson.employee.position_id": position_id,
-                            "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": dep_id,
-                            password: md5(password),
                             address: address,
-                            otp: otp,
-                            authentic: null || 0,
                             fromWeb: "quanlichung.timviec365",
-                            avatarUser: avatarUser,
                             updatedAt: new Date(),
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": birthday,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
                         }
                     })
                     await functions.success(res, 'update company info success', { data1 })
@@ -478,7 +482,15 @@ exports.info = async (req,res) =>{
         }else if(isNaN(idQLC)){
             functions.setError(res,"id must be a Nubmer")
         }else{
-            const data = await Users.findOne({idQLC}).select(' userName email phoneTK password com_id address position_id dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
+            const data = await Users.findOne({idQLC}).select('userName email phoneTK address avatarUser authentic').lean();
+            console.log(data)
+
+            const departmentsNum = await Deparment.countDocuments({com_id : idQLC })
+            const userNum = await Users.countDocuments({"inForPerson.employee.com_id" : idQLC })
+
+            console.log(departmentsNum)
+            data.departmentsNum = departmentsNum
+            data.userNum = userNum
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };

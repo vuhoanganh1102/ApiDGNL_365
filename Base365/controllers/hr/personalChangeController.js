@@ -91,6 +91,7 @@ exports.getAndCheckData = async (req, res, next) =>{
     try{
         //check quyen
         let infoLogin = req.infoLogin;
+        console.log("🚀 ~ file: personalChangeController.js:94 ~ exports.getAndCheckData= ~ infoLogin:", infoLogin)
         let checkRole = await hrService.checkRole(infoLogin, 5, 2);
         if(!checkRole) {
             return functions.setError(res, "no right", 444);   
@@ -119,12 +120,12 @@ exports.updateAppoint = async(req, res, next) => {
         let fields = req.fields;
 
         //lay ra id lon nhat
-        let ep_id = req.fields.ep_id;
+        let ep_id = Number (req.body.ep_id);
         let check = await Appoint.findOne({ep_id: ep_id});
         if(!check) {
             let newIdAppoint = await Appoint.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             if (newIdAppoint) {
-                newIdAppoint = Number(newIdAppoint._id) + 1;
+                newIdAppoint = Number(newIdAppoint.id) + 1;
             } else newIdAppoint = 1;
             fields.id = newIdAppoint;
         }
@@ -138,8 +139,8 @@ exports.updateAppoint = async(req, res, next) => {
             return functions.success(res, "Update Appoint success!");
         }
         return functions.setError(res, "Appoint not found!", 405);
-    } catch (e) {
-        console.log("Error from server", e);
+    } catch (error) {
+        console.log("Error from server", error);
         return functions.setError(res, "Error from server", 500);
     }
 }

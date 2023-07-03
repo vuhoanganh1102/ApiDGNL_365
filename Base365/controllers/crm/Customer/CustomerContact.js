@@ -1,7 +1,9 @@
 const functions = require('../../../services/CRM/CRMservice')
 const contact = require('../../../models/crm/Customer/contact_customer')
-
-
+const CustomerCare = require('../../../models/crm/Customer/customer_care')
+const ManagerExtension = require('../../../models/crm/manager_extension')
+const Callhistory = require('../../../models/crm/call_history')
+const { create } = require('yallist')
 //them chi tiet lien he KH
 exports.addContact = async(req,res)=>{
     // const user_create_id = req.user.data.user_create_id
@@ -180,3 +182,61 @@ exports.getContact = async (req, res) =>{
     }
 }
 
+//hiển thị line
+exports.showCustomerCare = async(req, res) => {
+    try {
+        let { com_id, emp_id, page } = req.body;
+        const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
+        const startIndex = (page - 1) * perPage;
+        
+        const checkline = await ManagerExtension.find({ company_id: com_id });
+        console.log(checkline);
+        
+        const extNumbers = checkline.map(item => item.ext_number);
+        
+        const checkHistory = await Callhistory.find({ extension: { $in: extNumbers } })
+            .skip(startIndex)
+            .limit(perPage);
+        
+        res.status(200).json(checkline);
+    } catch (err) {
+        console.log(err);
+        functions.setError(res, err.message);
+    }
+}
+
+//Chỉnh sửa bàn giao line
+
+exports.showBangiaoLine = async (req,res) => {
+    try{
+       let {id,empId,com_id} = req.body
+       
+       const checkLine = await ManagerExtension.findOne({id : id })
+       if(checkLine) {
+        await customerService.getDatafindOneAndUpdate(ManagerExtension,{id : id},{
+            id : id,
+            company_id : com_id,
+            appID : appID,
+            ext_id : ext_id,
+            ext_number : ext_number,
+            ext_password : ext_password,
+            emp_id : empId,
+            created_at : created_at,
+            updated_at :new Date(),
+        })
+        customerService.success(res, "Api edited successfully");
+       }
+    }catch (err) {
+        console.log(err);
+        functions.setError(res, err.message);
+    }
+}
+//afffajdutl
+exports.Call =async(req,res) => {
+    try{
+
+    }catch (err) {
+        console.log(err);
+        functions.setError(res, err.message);
+    }
+}

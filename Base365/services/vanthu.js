@@ -6,10 +6,11 @@ const jwt = require('jsonwebtoken');
 
 const dotenv = require("dotenv");
 dotenv.config();
+const path = require('path');
 
 exports.uploadFileVanThu = (id, file) => {
-    let path = `../Storage/base365/vanthu/tailieu/${id}/`;
-    let filePath = `../Storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
+    let path = `../Storage/base365/vanthu/dexuat/${id}/`;
+    let filePath = `../Storage/base365/vanthu/dexuat/${id}/` + file.originalFilename;
 
     if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
         fs.mkdirSync(path, { recursive: true });
@@ -35,7 +36,7 @@ exports.createLinkFileVanthu = (id, name) => {
 
 exports.getMaxID = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-    return maxUser._id;
+    return maxUser._id + 1;
 };
 
 // const storageVanthu = (destination) => {
@@ -178,3 +179,33 @@ exports.replaceTitle = (title) => {
   // Hãy thay thế nó bằng cách xử lý phù hợp với yêu cầu của bạn
     return title.replace(/[^a-zA-Z0-9]/g, '-');
 };
+
+exports.VT_UploadFile = async(folder, id, file, allowedExtensions) => {
+
+    let path1 = `../Storage/hr/${folder}/${id}/`;
+    let filePath = `../Storage/hr/${folder}/${id}/` + file.name;
+
+    let fileCheck = path.extname(filePath);
+    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
+        return false
+    }
+    // const { size } = await promisify(fs.stat)(filePath);
+    // if (size > MAX_IMG_SIZE) {
+    //     return false;
+    // }
+
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+        fs.writeFile(filePath, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return true
+}

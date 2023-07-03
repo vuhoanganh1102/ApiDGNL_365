@@ -5,7 +5,11 @@ const md5 = require("md5")
 //đăng kí tài khoản cá nhân 
 exports.register = async (req, res) => {
     try {
-        const { userName, email, password, phoneTK, address, com_id, dep_id } = req.body
+        const { userName, email, password, phoneTK, address, com_id, dep_id ,birthday,phone,
+            gender,
+            married,
+            experience,
+            education,} = req.body
 
         if (userName && password && phoneTK && address) {
             // let checkMail = await functions.checkEmail(email)
@@ -21,6 +25,7 @@ exports.register = async (req, res) => {
                         email: email,
                         userName: userName,
                         phoneTK: phoneTK,
+                        phone: phone || phoneTK,
                         password: md5(password),
                         address: address,
                         type: 0,
@@ -30,8 +35,13 @@ exports.register = async (req, res) => {
                         idQLC: (Number(MaxId) + 1),
                         "inForPerson.employee.com_id": com_id,
                         "inForPerson.employee.dep_id": dep_id,
+                        "inForPerson.account.birthday" : birthday,
+                        "inForPerson.account.gender" : gender,
+                        "inForPerson.account.married" : married,
+                        "inForPerson.account.experience" : experience,
+                        "inForPerson.account.education" : education,
                     })
-
+                    
                     await Inuser.save()
                     const token = await functions.createToken(Inuser, "1d")
                     const refreshToken = await functions.createToken({ userId: Inuser._id }, "1y")
@@ -109,25 +119,24 @@ exports.verify = async (req,res)=>{
         let otp = req.body.ma_xt || null
         let phoneTK = req.user.data.phoneTK;
         console.log(phoneTK)
-        console.log(phoneTK)
         let data = []
         if(otp){
-                let findUser = await Users.findOne({phoneTK:phoneTK ,type :0})
-                if(findUser) {
-                    data = await Users.updateOne({phoneTK:phoneTK ,type :0},{
-                        $set:{
-                            otp : otp
-                        }
-                    })
-                    return functions.success(res,"lưu OTP thành công",{data ,otp})
-                }else {
-                    return functions.setError(res,"tài khoản không tồn tại")
-                }
-
-
-        }else if (!otp){
-            let verify = await Users.findOne({phoneTK:phoneTK,otp ,type :0});
-            if (verify != null){
+            let findUser = await Users.findOne({phoneTK:phoneTK ,type :0})
+            if(findUser) {
+                data = await Users.updateOne({phoneTK:phoneTK ,type :0},{
+                    $set:{
+                        otp : otp
+                    }
+                })
+                return functions.success(res,"lưu OTP thành công",{data ,otp})
+            }else {
+                return functions.setError(res,"tài khoản không tồn tại")
+            }
+            
+            
+        }else if(!otp){
+            let verify = await Users.findOne({phoneTK:phoneTK ,type :0});
+            if (verify){
                 await Users.updateOne({phoneTK:phoneTK ,type :0},{
                     $set: {
                         authentic :1 
@@ -261,7 +270,7 @@ exports.updatePassword = async (req, res, next) => {
         }
             let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 0 })
             if (!checkPass) {
-                await Users.updateOne({ idQLC: idQLC }, {
+                await Users.updateOne({ idQLC: idQLC , type : 0 }, {
                     $set: {
                         password: md5(password),
                     }
@@ -274,13 +283,79 @@ exports.updatePassword = async (req, res, next) => {
         return functions.setError(res, error.message)
     }
 }
+exports.updatePasswordbyInput = async (req, res, next) => {
+    try {
+        let phoneTK = req.body.phoneTK
+        let email = req.body.email
+        let password = req.body.password;
+        let re_password = req.body.re_password;
+     if (phoneTK&&password&&password){
+        let checkPassword = await functions.verifyPassword(password)
+        if (checkPassword) {
+            return functions.setError(res, "sai dinh dang Mk", 404)
+        }
+        if(!password || !re_password){
+            return functions.setError(res, 'Missing data', 400)
+        }
+        if(password.length < 6){
+            return functions.setError(res, 'Password quá ngắn', 400)
+        }
+        if(password !== re_password)
+        {
+            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+        }
+            let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 0 })
+            if (!checkPass) {
+                await Users.updateOne({ phoneTK: phoneTK , type : 0}, {
+                    $set: {
+                        password: md5(password),
+                    }
+                });
+                return functions.success(res, 'cập nhập thành công')
+            }
+            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+    }else if(email&&password&&password){
+        let checkPassword = await functions.verifyPassword(password)
+        if (checkPassword) {
+            return functions.setError(res, "sai dinh dang Mk", 404)
+        }
+        if(!password || !re_password){
+            return functions.setError(res, 'Missing data', 400)
+        }
+        if(password.length < 6){
+            return functions.setError(res, 'Password quá ngắn', 400)
+        }
+        if(password !== re_password)
+        {
+            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+        }
+            let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 0 })
+            if (!checkPass) {
+                await Users.updateOne({ email: email,type : 0 }, {
+                    $set: {
+                        password: md5(password),
+                    }
+                });
+                return functions.success(res, 'cập nhập thành công')
+            }
+            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+
+        }else{
+            return functions.setError(res, ' điền thiếu trường ', 404)
+        }
+        
+        } catch (error) {
+        console.log(error)
+        return functions.setError(res, error.message)
+    }
+}
 // hàm cập nhập thông tin cá nhân
 exports.updateInfoindividual = async (req, res, next) => {
         try {
             let idQLC = req.user.data.idQLC;
             let data = [];
             let data1 = [];
-            const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+            const { userName, email, phoneTK, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
     
             let File = req.files || null;
             let avatarUser = null;
@@ -301,10 +376,6 @@ exports.updateInfoindividual = async (req, res, next) => {
                                 phoneTK: phoneTK,
                                 phone: phone,
                                 avatarUser: avatarUser,
-                                "inForPerson.employee.position_id": position_id,
-                                "inForPerson.employee.com_id": com_id,
-                                "inForPerson.employee.dep_id": dep_id,
-                                password: md5(password),
                                 address: address,
                                 otp: otp,
                                 authentic: null || 0,
@@ -332,10 +403,6 @@ exports.updateInfoindividual = async (req, res, next) => {
                                 phoneTK: phoneTK,
                                 phone: phone,
                                 avatarUser: avatarUser,
-                                "inForPerson.employee.position_id": position_id,
-                                "inForPerson.employee.com_id": com_id,
-                                "inForPerson.employee.dep_id": dep_id,
-                                password: md5(password),
                                 address: address,
                                 otp: otp,
                                 authentic: null || 0,
@@ -445,12 +512,32 @@ exports.forgotPassword = async (req,res)=>{
 exports.info = async (req,res) =>{
     try{
         const idQLC = req.user.data.idQLC
+        // const com_id = req.user.data.com_id
         if((idQLC)==undefined){
-            functions.setError(res,"lack of input")
+            functions.setError(res," không tìm thấy thông tin từ token ")
         }else if(isNaN(idQLC)){
-            functions.setError(res,"id must be a Nubmer")
+            functions.setError(res,"id phải là số")
         }else{
-            const data = await Users.findOne({idQLC}).select(' userName email phoneTK password inForPerson.employee.com_id address inForPerson.employee.position_id inForPerson.employee.dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
+            // const data = await Users.findOne({idQLC}).select(' userName email phoneTK password inForPerson.employee.com_id address inForPerson.employee.position_id inForPerson.employee.dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
+
+            const data = await Users.findOne({idQLC: idQLC , type :0 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education').lean()
+            console.log(data)
+            
+            const birthday = data.inForPerson.account.birthday
+            const gender = data.inForPerson.account.gender
+            const married = data.inForPerson.account.married
+            const experience = data.inForPerson.account.experience
+            const education = data.inForPerson.account.education
+
+        //     if((data2&&data) == undefined){
+        //     return functions.setError(res, 'Không có dữ liệu ', 404);
+            
+        // }
+        data.birthday = birthday
+        data.gender = gender
+        data.married = married
+        data.experience = experience
+        data.education = education
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };

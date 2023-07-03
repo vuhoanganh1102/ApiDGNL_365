@@ -12,5 +12,10 @@ router.post("/add",formData.parse(), controller.addContract)
 
 // router.post("/delete",formData.parse(), controller.deleteContract)
 
+//kết nối tổng đài 
+router.post('/connectTd',formData.parse(),controller.connectTd)
+
+
+router.post('/editApi',formData.parse(),controller.settingSwitchboard)
 
 module.exports = router

@@ -1153,8 +1153,6 @@ exports.toolCustomer = async (req, res, next) => {
                     if (data[i].cmnd_ccnd_time != 0) {
                         CMNDtime = new Date(data[i].cmnd_ccnd_time * 1000)
                     }
-                    let post = await fnc.getDatafindOne(Customer, { cus_id: data[i].cus_id })
-                    if (post == null) {
                         let newCS = new Customer({
                             cus_id: data[i].cus_id,
                             email: data[i].email,
@@ -1223,7 +1221,6 @@ exports.toolCustomer = async (req, res, next) => {
                             link: data[i].blink
                         });
                         await newCS.save();
-                    }
                 }
                 page++;
             } else {
@@ -2668,7 +2665,7 @@ exports.account_api = async (req, res) => {
                 for (let i = 0; i < listItem.length; i++) {
                     let new_Acount_api = new Acount_api({
                         id: listItem[i].id,
-                        id_company: listItem[i].id_company,
+                        com_id: listItem[i].id_company,
                         account: listItem[i].account,
                         password: listItem[i].password,
                         switchboard: listItem[i].switchboard,
