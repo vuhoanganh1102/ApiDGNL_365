@@ -32,7 +32,7 @@ exports.addProvision = async (req, res, next) => {
                 link = null;
             }
             let id = await HR.getMaxId(ProvisionOfCompanys)
-            await ProvisionOfCompanys.create({ id, name, description, timeStart, supervisorName, comId, createdAt, file: link })
+            await ProvisionOfCompanys.create({ id, name, description, timeStart, supervisorName, comId, createdAt, isDelete: 0, file: link })
         } else {
             return functions.setError(res, 'missing data', 404)
         }
@@ -53,7 +53,7 @@ exports.addPolicy = async (req, res, next) => {
         let applyFor = req.body.apply_for;
         let content = req.body.content;
         let createdBy = req.infoLogin.name;
-        let comId = req.infoLogin.comId;
+        let comId = Number(req.infoLogin.comId);
         let createdAt = new Date();
         let File = req.files;
         let link = '';
@@ -74,7 +74,7 @@ exports.addPolicy = async (req, res, next) => {
             } else {
                 link = null;
             }
-            let checkProvisionId = await ProvisionOfCompanys.find({ id: provisionId })
+            let checkProvisionId = await ProvisionOfCompanys.find({ id: provisionId, isDelete: 0 })
             if (!checkProvisionId || checkProvisionId.length === 0) {
                 return functions.setError(res, 'not found data provision', 404)
             }
@@ -85,7 +85,7 @@ exports.addPolicy = async (req, res, next) => {
         }
         return functions.success(res, 'add provision success')
     } catch (error) {
-        console.log("🚀 ~ file: administrationController.js:32 ~ exports.addProvision= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -94,7 +94,7 @@ exports.addPolicy = async (req, res, next) => {
 exports.updatePolicy = async (req, res, next) => {
     try {
         let infoLogin = req.infoLogin;
-        let id = req.body.id;
+        let id = Number (req.body.id);
         let name = req.body.name;
         let provisionId = Number(req.body.provision_id);
         let timeStart = req.body.time_start;
@@ -102,12 +102,12 @@ exports.updatePolicy = async (req, res, next) => {
         let applyFor = req.body.apply_for;
         let content = req.body.content;
         let createdBy = 'công ty';
-        if(infoLogin.type != 1){
+        if (infoLogin.type != 1) {
             createdBy = infoLogin.name;
         }
         let comId = infoLogin.comId;
         let createdAt = new Date();
-        let File = req.files.file;
+        let File = req.files;
         let fileName = null;
 
         if (id && name && provisionId && timeStart && supervisorName && applyFor && content) {
@@ -118,28 +118,27 @@ exports.updatePolicy = async (req, res, next) => {
                 return functions.setError(res, 'invalid number', 404)
             }
             if (File) {
-                if(!await HR.checkFile(File.path)) {
-                    return functions.setError(res, "Khong dung dinh dang anh hoac kich thuoc qua gioi han!", 405);
+                let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
+                if (checkUpload === false) {
+                    return functions.setError(res, 'upload failed', 404)
                 }
-                fileName = await HR.uploadFileNameRandom('file', File);
-                // let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
-                // if (checkUpload === false) {
-                //     return functions.setError(res, 'upload faild', 404)
-                // }
-                // link = HR.createLinkFileHR('policy', comId, File.policy.name)
+                link = HR.createLinkFileHR('policy', comId, File.policy.name)
             }
-            
-            let policy = await Policys.findOneAndUpdate({id: id}, {name, provisionId, timeStart, supervisorName, createdBy, comId, applyFor, content, createdAt, file: fileName }, {upsert: true, new: true});
-            if(!policy){
+            let check = await ProvisionOfCompanys.findOne({ id: provisionId });
+            if (!check) {
+                return functions.setError(res, 'not found provision', 404)
+            }
+            let policy = await Policys.findOneAndUpdate({ id: id }, { name, provisionId, timeStart, supervisorName, createdBy, comId, applyFor, content, createdAt, file: link }, { upsert: true, new: true });
+            if (!policy) {
                 return functions.setError(res, "Policy not found!", 505);
             }
             return functions.success(res, 'update policy success')
         } else {
             return functions.setError(res, 'missing data', 404)
         }
-        
+
     } catch (error) {
-        console.log("🚀 ~ file: administrationController.js:32 ~ exports.addProvision= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -171,7 +170,7 @@ exports.listProvision = async (req, res, next) => {
         data.push({ tongSoTrang: tongSoTrang, tongSoBanGhi: totalProvisionOfCompanys })
         return functions.success(res, 'get data success', { data })
     } catch (error) {
-        console.log("🚀 ~ file: walfareController.js:168 ~ exports.listAchievement= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -184,7 +183,7 @@ exports.detailProvision = async (req, res, next) => {
         let data = await ProvisionOfCompanys.find({ id, comId })
         return functions.success(res, 'get data success', { data })
     } catch (error) {
-        console.log("🚀 ~ file: administrationController.js:130 ~ exports.detailProvision= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
 
     }
@@ -201,7 +200,7 @@ exports.updateProvision = async (req, res, next) => {
         let createdAt = new Date();
         let File = req.files;
         let link = '';
-        let id = req.body.id;
+        let id = Number (req.body.id);
         if (id && name && description && timeStart && supervisorName) {
             if (await functions.checkDate(timeStart) === false || await functions.checkTime(timeStart) === false) {
                 return functions.setError(res, 'invalid date', 404)
@@ -228,7 +227,7 @@ exports.updateProvision = async (req, res, next) => {
         }
         return functions.success(res, 'update provision success')
     } catch (error) {
-        console.log("🚀 ~ file: administrationController.js:32 ~ exports.addProvision= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -236,7 +235,7 @@ exports.updateProvision = async (req, res, next) => {
 // xoá nhóm quy định
 exports.deleteProvision = async (req, res, next) => {
     try {
-        let id = req.body.id;
+        let id = Number (req.body.id);
         let comId = req.infoLogin.comId;
         let check = await ProvisionOfCompanys.findOne({ id, comId });
         if (!check) {
@@ -252,7 +251,7 @@ exports.deleteProvision = async (req, res, next) => {
 // danh sách quy định theo nhóm quy định
 exports.listPolicy = async (req, res, next) => {
     try {
-        let id = req.query.id;
+        let id = Number (req.query.id);
         let data = await Policys.find({ provisionId: id, isDelete: 0 })
         return functions.success(res, 'get data provision success', { data })
     } catch (error) {
@@ -263,12 +262,15 @@ exports.listPolicy = async (req, res, next) => {
 // chi tiết quy định
 exports.detailPolicy = async (req, res, next) => {
     try {
-        let id = req.query.id || 1000;
+        let id = Number(req.query.id) || 1000;
         let searchItem = {
             id: 1, provisionId: 1, timeStart: 1, supervisorName: 1, applyFor: 1
             , content: 1, createdBy: 1, createdAt: 1, name: 1, file: 1, ProvisionOfCompanys: { name: 1 }
         }
         let data = await Policys.aggregate([
+            {
+                $match: { id }
+            }, 
             {
                 $lookup: {
                     from: "HR_ProvisionOfCompanys",
@@ -276,13 +278,9 @@ exports.detailPolicy = async (req, res, next) => {
                     foreignField: 'id',
                     as: "ProvisionOfCompanys"
                 }
-            },
-            {
+            },{
                 $project: searchItem
-            }, {
-                $match: { id }
             }
-
         ])
         return functions.success(res, 'get data provision success', { data })
     } catch (error) {
@@ -293,7 +291,7 @@ exports.detailPolicy = async (req, res, next) => {
 // Xoá quy định
 exports.deletePolicy = async (req, res, next) => {
     try {
-        let id = req.body.id;
+        let id = Number(req.body.id);
         let check = await Policys.findOne({ id });
         if (!check) {
             return functions.setError(res, 'not found provision', 404)
@@ -347,7 +345,7 @@ exports.updateEmployeePolicy = async (req, res, next) => {
         let description = req.body.description;
         let timeStart = req.body.time_start;
         let supervisorName = req.body.supervisor_name;
-        let id = req.body.id;
+        let id = Number(req.body.id);
         let comId = req.infoLogin.comId;
         let createdAt = new Date();
         let File = req.files;
@@ -355,6 +353,8 @@ exports.updateEmployeePolicy = async (req, res, next) => {
             if (await !functions.checkDate(timeStart) || await !functions.checkTime(timeStart)) {
                 return functions.setError(res, 'invalid date')
             }
+            let check = await  EmployeePolicys.findOne({id});
+            if(!check) return functions.setError(res, 'not found employee policy',404)
             if (File.employeePolicy) {
                 let checkUpload = await HR.HR_UploadFile('employeePolicy', comId, File.employeePolicy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
@@ -364,6 +364,7 @@ exports.updateEmployeePolicy = async (req, res, next) => {
                 if (checkFile.file) {
                     await HR.deleteFileHR('employeePolicy', comId, checkFile.file.split('/').reverse()[0])
                 }
+                
                 link = HR.createLinkFileHR('employeePolicy', comId, File.employeePolicy.name)
                 await EmployeePolicys.findOneAndUpdate({ id }, { name, description, timeStart, supervisorName, comId, createdAt, file: link })
             } else {
@@ -375,7 +376,7 @@ exports.updateEmployeePolicy = async (req, res, next) => {
         }
         return functions.success(res, 'add success')
     } catch (error) {
-        console.log("🚀 ~ file: administrationController.js:318 ~ exports.updateEmployeePolicy= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -383,7 +384,7 @@ exports.updateEmployeePolicy = async (req, res, next) => {
 // xoá nhóm chính sách
 exports.deleteEmployeePolicy = async (req, res, next) => {
     try {
-        let id = req.body.id;
+        let id = Number (req.body.id);
         let comId = req.infoLogin.comId;
         let check = await EmployeePolicys.findOne({ id, comId });
         if (!check) {
@@ -463,7 +464,7 @@ exports.listEmpoyePolicy = async (req, res, next) => {
         data.push({ tongSoTrang: tongSoTrang, tongSoBanGhi: totalEmpoyePolicy })
         return functions.success(res, 'get data success', { data })
     } catch (error) {
-        console.log("🚀 ~ file: walfareController.js:168 ~ exports.listAchievement= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -473,11 +474,10 @@ exports.getDetailPolicy = async (req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         let id = req.query.id;
-        console.log("🚀 ~ file: administrationController.js:419 ~ exports.getDetailPolicy= ~ id:", id)
         let data = await EmployeePolicys.find({ id, comId })
         return functions.success(res, 'get data success', { data })
     } catch (error) {
-        console.log("🚀 ~ file: administrationController.js:130 ~ exports.detailProvision= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -489,7 +489,7 @@ exports.listEmployeePolicySpecific = async (req, res, next) => {
         let data = await EmployeePolicySpecifics.find({ employeePolicyId: id })
         return functions.success(res, 'get data  success', { data })
     } catch (error) {
-        console.log("🚀 ~ file: administrationController.js:448 ~ exports.listEmployeePolicySpecific= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -517,7 +517,7 @@ exports.detailEmployeePolicySpecific = async (req, res, next) => {
         ])
         return functions.success(res, 'get data  success', { data })
     } catch (error) {
-        console.log("🚀 ~ file: administrationController.js:448 ~ exports.listEmployeePolicySpecific= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -525,7 +525,7 @@ exports.detailEmployeePolicySpecific = async (req, res, next) => {
 // Xoá chính sách
 exports.deleteEmployeePolicySpecific = async (req, res, next) => {
     try {
-        let id = req.body.id;
+        let id = Number (req.body.id);
         let check = await EmployeePolicySpecifics.findOne({ id });
         if (!check) {
             return functions.setError(res, 'not found provision', 404)
@@ -543,7 +543,7 @@ exports.updateEmployeePolicySpecific = async (req, res, next) => {
     try {
         // await HR.checkPermissions(req, res, next,'read',2);
         let name = req.body.name;
-        let employeePolicyId = req.body.employe_policy_id;
+        let employeePolicyId = Number(req.body.employe_policy_id);
         let timeStart = req.body.time_start;
         let supervisorName = req.body.supervisor_name;
         let applyFor = req.body.apply_for;
@@ -554,9 +554,10 @@ exports.updateEmployeePolicySpecific = async (req, res, next) => {
         let File = req.files;
         let link = '';
         let updateAt = new Date();
-        let check = await EmployeePolicySpecifics.findOne({ id })
-        if (!check) return functions.setError(res, 'not found', 404);
-        if (name && employeePolicyId && timeStart && supervisorName && applyFor && content) {
+
+        if (name && employeePolicyId && timeStart && supervisorName && applyFor && content && id) {
+            let check = await EmployeePolicySpecifics.findOne({ id })
+            if (!check) return functions.setError(res, 'not found', 404);
             if (await !functions.checkDate(timeStart) || await !functions.checkTime(timeStart)) {
                 return functions.setError(res, 'invalid date', 400)
             }
@@ -570,6 +571,7 @@ exports.updateEmployeePolicySpecific = async (req, res, next) => {
                     await HR.deleteFileHR('employeePolicy', comId, checkFile.file.split('/').reverse()[0])
                 }
                 link = HR.createLinkFileHR('employeePolicy', comId, File.employeePolicy.name);
+
                 await EmployeePolicySpecifics.findOneAndUpdate({ id }, {
                     name, employeePolicyId, timeStart, supervisorName, comId,
                     applyFor, content, updateAt, createdBy, file: link
@@ -585,6 +587,7 @@ exports.updateEmployeePolicySpecific = async (req, res, next) => {
         }
         return functions.success(res, 'add success')
     } catch (error) {
+        console.error(error)
         return functions.setError(res, error)
     }
 }

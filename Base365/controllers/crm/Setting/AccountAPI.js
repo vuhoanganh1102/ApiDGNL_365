@@ -1,5 +1,7 @@
 const functions = require('../../../services/CRM/CRMservice')
-const set = require('../../../models/crm/setting/AccountAPI')
+const set = require('../../../models/crm/account_api')
+const axios = require('axios');
+const http = require('http');
 const md5 = require('md5');
 // cài đặt hợp đồng 
 exports.addContract = async (req,res) =>{
@@ -34,9 +36,11 @@ exports.addContract = async (req,res) =>{
 //kết nối tổng đài kiểm tra theo com nếu có sẽ hiển thị ko có sẽ tạo mới
 exports.connectTd = async (req,res) => {
     try{
-        let {account,password,switchboard,domain,status} =req.body;
-        const com_id = req.user.data.inForPerson.employee.com_id;
-        const checkCom = await set.findOne({id_company : com_id})
+        let { account,password,switchboard,domain,status,com_id,id} = req.body;
+        console.log(req.body);
+        // const com_id = req.user.data.inForPerson.employee.com_id;
+       let checkCom = await set.find({com_id : com_id})
+       console.log(checkCom);
         if(checkCom){
            res.status(200).json({checkCom})
         }else{
@@ -58,9 +62,9 @@ exports.connectTd = async (req,res) => {
                res.status(200).json({saveST})
             }
         }
-    }catch(err){
-        console.log(err)
-        functions.setError(res,err.message)
+    }catch (error) {
+      console.error('Failed to connect', error);
+      res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
     }
 
 }
@@ -68,24 +72,30 @@ exports.connectTd = async (req,res) => {
 //hàm chỉnh sửa kết nối tổng đài
 
 
+
+
+
+
+
+
+
+
 exports.settingSwitchboard = async (req, res) => {
-  const { account, password, switchboard } = req.body;
-  const { id, domain } = req.body;
-
-  if (!account || !password || !switchboard) {
-    return res.status(400).json({ success: false, message: 'Chưa nhập đủ thông tin' });
-  }
-
-  const apiUrl = 'http://118.68.169.39:8899/api/account/credentials/verify';
-  const requestData = {
-    name: account,
-    password: password,
-  };
-
   try {
+    const { account, password, switchboard,id,domain } = req.body;
+
+    if (!account || !password || !switchboard) {
+      return res.status(400).json({ success: false, message: 'Chưa nhập đủ thông tin' });
+    }
+
+    const apiUrl = 'http://118.68.169.39:8899/api/account/credentials/verify';
+    const requestData = {
+      name: account,
+      password: password,
+    };
+
     const apiResponse = await sendApiRequest(apiUrl, requestData);
 
-    // Kiểm tra phản hồi từ API
     if (apiResponse.err_code) {
       return res.status(400).json({ success: false, message: 'Kết nối thất bại, Tài khoản kết nối không tồn tại' });
     }
@@ -95,6 +105,7 @@ exports.settingSwitchboard = async (req, res) => {
 
     // Thực hiện thêm mới hoặc cập nhật bản ghi
     if (!id) {
+      // Thêm mới
       const newApi = new set({
         id: generateUniqueId(),
         id_company: req.session.company_id,
@@ -114,6 +125,7 @@ exports.settingSwitchboard = async (req, res) => {
 
       return res.json({ success: true, message: 'Kết nối thành công' });
     } else {
+      // Cập nhật
       const updatedData = {
         account: account,
         password: password,
@@ -131,3 +143,6 @@ exports.settingSwitchboard = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Lỗi khi gọi API' });
   }
 };
+
+
+

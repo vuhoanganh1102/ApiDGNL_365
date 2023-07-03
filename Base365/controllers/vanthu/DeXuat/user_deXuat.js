@@ -90,7 +90,7 @@ exports.deXuat_user_send = async (req, res) => {
 //trang gửi đến tôi 
 exports.de_xuat_send_to_me = async (req, res) => {
   try {
-    let { type, name_dx, type_dx, time_s, time_e } = req.body;
+    let { type,id_user, name_dx, type_dx, time_s, time_e } = req.body;
     const id_user_duyet = req.user.idQLC
     const com_id = req.user.data.inForPerson.employee.com_id;
     const perPage = 10; // Giá trị mặc định nếu không được cung cấp
@@ -157,7 +157,7 @@ exports.de_xuat_send_to_me = async (req, res) => {
       query.$or = [{ active: 2 }, { type_duyet: 3 }];
       const showTC = await De_Xuat.find(query).sort(sortOptions)
         .skip(startIndex)
-        .limit(perPage);;;
+        .limit(perPage);
       return res.status(200).json(showTC)
         
     }

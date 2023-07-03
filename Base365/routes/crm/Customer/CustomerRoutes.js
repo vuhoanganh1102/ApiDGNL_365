@@ -6,6 +6,9 @@ const functions = require("../../../services/functions");
 //Api hiển thị và tìm kiếm
 router.post('/showAll',formData.parse(),CustomerRoutes.showKH)
 
+
+router.post('/searchSame',formData.parse(),CustomerRoutes.searchSame)
+
 //Api thêm mới khách hàng
 router.post('/addCustomer',functions.checkToken,formData.parse(),CustomerRoutes.addCustomer);
 

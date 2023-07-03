@@ -20,7 +20,7 @@ router.use('/vanthu/dexuat',adddeXuat);
 router.use('/vanthu/setting',settingDXroutes)
 
 //Api  de xuat và hiển thị đề xuất
-router.use('/vanthu/catedx', cateDXroutes)
+router.use('/vanthu/catedx',cateDXroutes)
 
 //Api xóa để xuất và sửa đề xuất
 router.use('/vanthu/deletedx',DeleteDX)
