@@ -78,7 +78,7 @@ exports.supportSellNew = async (req, res, next) => {
         let parentId = req.body.parentId;
         let data = {};
         if (!cateId) return functions.setError(res, 'missing data', 400)
-
+        let search = req.body.search;
         let cateChild = await Category.find({ parentId: cateId })
         let CateDetail1 = [];
         if (!parentId) {
@@ -88,12 +88,16 @@ exports.supportSellNew = async (req, res, next) => {
         }
         let productLine = await CateDetail.find({ _id: cateId })
         let checkCate = await CateDetail.findById(cateId);
-        console.log("🚀 ~ file: topCache.js:91 ~ exports.supportSellNew= ~ checkCate:", checkCate)
+       
         let brand = [];
+        let lineOfBrand = [];
         if (checkCate && checkCate.brand.length > 0) {
             for (let i = 0; i < checkCate.brand.length; i++) {
                 if (parentId == checkCate.brand[i].parent) {
                     brand.push(checkCate.brand[i])
+                }
+                if(checkCate.brand[i].line && checkCate.brand[i].line.length > 0) {
+                    lineOfBrand.push(checkCate.brand[i].line)
                 }
             }
         }
@@ -106,6 +110,7 @@ exports.supportSellNew = async (req, res, next) => {
             }
         }
        
+        
 
         let screen = [];
         if (checkCate && checkCate.screen.length > 0) {
@@ -209,7 +214,25 @@ exports.supportSellNew = async (req, res, next) => {
                 }
             }
         }
-
+        let capacity = [];
+        if (checkCate && checkCate.capacity.length > 0) {
+            for (let i = 0; i < checkCate.capacity.length; i++) {
+                if (parentId == checkCate.capacity[i].parent) {
+                    capacity.push(checkCate.capacity[i])
+                }
+            }
+        }
+        let city1 = [];
+        if(search && search === 'city')
+        {
+            city1 = await City.find({parentId:0})    
+        }else if(search && search === 'district'){
+            city1 = await City.find({parentId:parentId})
+        }else if(search && search === 'ward')
+        {
+            city1 = await PhuongXa.find({district_id:parentId})
+        }
+        
         if (cateChild.length > 0) data.cateChild = cateChild
         if(CateDetail.length > 0) data.CateDetail = CateDetail1
         if (productLine.length > 0) data.productLine = productLine
@@ -228,7 +251,8 @@ exports.supportSellNew = async (req, res, next) => {
         if (processor.length > 0) data.processor = processor;
         if (sport.length > 0) data.sport = sport;
         if (storyAndRoom.length > 0) data.storyAndRoom = storyAndRoom;
-
+        if(city1.length.length > 0) data.city1 = city1;
+        if(lineOfBrand.length > 0) data.lineOfBrand = lineOfBrand
         return functions.success(res, 'get data success', { data })
     } catch (err) {
         console.log("🚀 ~ file: topCache.js:97 ~ exports.supportSellNew= ~ err:", err)

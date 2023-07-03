@@ -14,6 +14,7 @@ router.post('/verifyCheckOTP', formData.parse(),functions.checkToken,  individua
 
 // hàm đổi mật khẩu 
 router.post('/updatePassword',functions.checkToken, formData.parse(),  individual.updatePassword);
+router.post('/updatePasswordbyInput', formData.parse(),  individual.updatePasswordbyInput);
 // hàm cập nhập thông tin công ty
 router.post('/updateInfoindividual',functions.checkToken, formData.parse(),  individual.updateInfoindividual);
 

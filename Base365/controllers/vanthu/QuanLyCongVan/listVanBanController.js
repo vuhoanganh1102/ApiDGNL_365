@@ -70,7 +70,7 @@ exports.createListIncomingText = async (req, res, next) => {
         let cv_time_create = new Date();
         if (file && file.file.length > 0) {
             for (let i = 0; i < file.file.length; i++) {
-                let checkUpload = await vanthu.vanThuUpload('tailieu', comId, file.file[i], ['.docx', '.pdf', '.pptx', '.jpg', '.png', '.jpeg'])
+                let checkUpload = await vanthu.VT_UploadFile('tailieu', comId, file.file[i], ['.docx', '.pdf', '.pptx', '.jpg', '.png', '.jpeg'])
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload failed', 400)
                 }
@@ -78,7 +78,7 @@ exports.createListIncomingText = async (req, res, next) => {
                 cv_file.push({ file: name })
             }
         } else if (file) {
-            let checkUpload = await vanthu.vanThuUpload('tailieu', comId, file.file, ['.docx', '.pdf', '.pptx', '.jpg', '.png', '.jpeg'])
+            let checkUpload = await vanthu.VT_UploadFile('tailieu', comId, file.file, ['.docx', '.pdf', '.pptx', '.jpg', '.png', '.jpeg'])
             if (checkUpload === false) {
                 return functions.setError(res, 'upload failed', 400)
             }
@@ -91,8 +91,8 @@ exports.createListIncomingText = async (req, res, next) => {
             return functions.setError(res, 'invalid number', 400)
         }
         let _id = await vanthu.getMaxID(tbl_qly_congvan)
-        if (cv_name && cv_kieu && cv_so && cv_type_soan && cv_soan_ngoai && cv_user_soan
-            && cv_id_book && cv_date && cv_name_soan && cv_user_save && cv_nhan_noibo) {
+        if (name_vbden && type_vbden && so_vbden && type_gui_vbden && text_gui_vbden && noi_gui_vbden
+            && book_vb && date_nhan && text_user_gui_vbden && use_luu_vbden && use_nhan_vbden) {
             await tbl_qly_congvan.create({
                 _id,
                 cv_name: name_vbden,
@@ -120,6 +120,7 @@ exports.createListIncomingText = async (req, res, next) => {
         }
         return functions.success(res, 'add successfully')
     } catch (err) {
+        console.error(err)
         return functions.setError(res, err)
     }
 };

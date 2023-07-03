@@ -331,22 +331,6 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    //thuong hieu(dung chung cho cac danh muc health, vehicle, electrionic device, entertament)
-    brand: {
-        type: Number,
-        default: null
-    },
-    // han su dung(dung chung health, food)
-    expiry: {
-        type: Date,
-        default: null
-    },
-
-    //cong suat(vehicle, houseWare)
-    wattage: {
-        type: Number,
-        default: 0
-    },
     order: {
         type: Number
     },
