@@ -28,4 +28,7 @@ router.put('/updatec',hrService.checkRoleUser, hrService.checkRight(3, 3),formDa
 // danh sách kỉ luật
 router.get('/listInfinges',hrService.checkRoleUser, hrService.checkRight(3, 1),walfare.listInfinges)
 
+router.get('/layDanhSachSua',hrService.checkRoleUser, hrService.checkRight(3, 1),walfare.layDanhSachSua)
+
+
 module.exports = router;
