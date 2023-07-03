@@ -4,6 +4,7 @@ const formData = require('express-form-data');
 const Controller = require('../../../controllers/vanthu/DeXuat/create_dx');
 const functions = require('../../../services/functions')
 
+//Api tạo đề xuất
 
 router.post('/De_Xuat_Xin_Nghi',functions.checkToken,formData.parse(), Controller.de_xuat_xin_nghi);
 router.post('/De_Xuat_Xin_Bo_Nhiem',functions.checkToken, formData.parse(), Controller.de_xuat_xin_bo_nhiem);
