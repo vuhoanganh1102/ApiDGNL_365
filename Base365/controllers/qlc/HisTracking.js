@@ -5,12 +5,12 @@ const calEmp = require('../../models/qlc/CalendarWorkEmployee')
 exports.CreateTracking = async (req,res)=>{
     
 
-    const {idQLC, companyID, role,imageTrack,curDeviceName,latitude,longtitude,Location,NameWifi,IpWifi,MacWifi,shiftID ,BluetoothAdrr,Note,CreateAt,status,Err,Success,depID } = req.body;
+    const {idQLC, com_id, role,imageTrack,curDeviceName,latitude,longtitude,Location,NameWifi,IpWifi,MacWifi,shiftID ,BluetoothAdrr,Note,CreateAt,status,Err,Success,depID } = req.body;
 
 
-    if ((idQLC &&  companyID &&  role && imageTrack && curDeviceName && latitude && longtitude && Location && NameWifi && IpWifi && MacWifi && shiftID  && BluetoothAdrr && Note && CreateAt && status && Err && Success)== undefined) {
+    if ((idQLC &&  com_id &&  role && imageTrack && curDeviceName && latitude && longtitude && Location && NameWifi && IpWifi && MacWifi && shiftID  && BluetoothAdrr && Note && CreateAt && status && Err && Success)== undefined) {
         functions.setError(res, "some field required");
-    }else if (isNaN(companyID)) {
+    }else if (isNaN(com_id)) {
         functions.setError(res, "Company id must be a number");
     }else if (isNaN(idQLC)) {
         functions.setError(res, "idQLC id must be a number");
@@ -23,7 +23,7 @@ exports.CreateTracking = async (req,res)=>{
         const tracking = new Tracking({
             _id: _id,
             idQLC: idQLC,
-            companyID: companyID,
+            com_id: com_id,
             depID: depID,
             role: role,
             imageTrack: imageTrack,
@@ -65,17 +65,17 @@ exports.getListUserTrackingSuccess = async (req,res)=>{
     try {
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
-        let companyID = request.companyID
+        let com_id = request.com_id
             shiftID = request.shiftID
             CreateAt = request.CreateAt || true
             inputNew = request.inputNew 
             inputOld = request.inputOld
-        if((companyID&&shiftID)==undefined){
+        if((com_id&&shiftID)==undefined){
             functions.setError(res,"lack of input")
-        }else if(isNaN(companyID&&shiftID)){
+        }else if(isNaN(com_id&&shiftID)){
             functions.setError(res,"id must be a Number")
         }else{
-            const data = await Tracking.find({companyID: companyID ,shiftID : shiftID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC imageTrack Location CreateAt shiftID status Success ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
+            const data = await Tracking.find({com_id: com_id ,shiftID : shiftID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC imageTrack Location CreateAt shiftID status Success ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
             if (data) {//lấy thành công danh sách NV đã chấm công 
                 //so sanh phan tu trung lap
                 function compare(personA, personB) {
@@ -106,12 +106,12 @@ exports.getlistUserNoneHistoryOfTracking = async (req, res) => {
             CreateAt = req.body.CreateAt || true
             inputNew = req.body.inputNew  || null
             inputOld = req.body.inputOld   || null
-            companyID = req.body.companyID;
+            com_id = req.body.com_id;
             shiftID = req.body.shiftID
     //ta tìm danh sách lịch sử nhân viên của công ty đã chấm công   
-    const data = await Tracking.find({ companyID: companyID,shiftID : shiftID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC shiftID ')
+    const data = await Tracking.find({ com_id: com_id,shiftID : shiftID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC shiftID ')
     //ta tìm danh sách nhân viên đã có lịch làm việc của công ty
-    const data2 = await calEmp.find({ companyID: companyID,shiftID : shiftID,  }).select('_id idQLC shiftID  ')
+    const data2 = await calEmp.find({ com_id: com_id,shiftID : shiftID,  }).select('_id idQLC shiftID  ')
     //ta so sánh 2 mảng 
     // Lọc ra các phần tử không giống nhau trong cả hai mảng
 
@@ -156,20 +156,20 @@ exports.getTrackingtime = async (req,res)=>{
     try {
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
-        let companyID = request.companyID,
+        let com_id = request.com_id,
             CreateAt = request.CreateAt || true
             inputNew = request.inputNew 
             inputOld = request.inputOld
 
 
 
-        if((companyID && CreateAt && inputNew && inputOld )==undefined){
+        if((com_id && CreateAt && inputNew && inputOld )==undefined){
             functions.setError(res,"lack of input")
-        }else if(isNaN(companyID)){
+        }else if(isNaN(com_id)){
             functions.setError(res,"id must be a Number")
         }else{
-            // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
-            const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+            // const data = await Tracking.find({com_id: com_id, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+            const data = await Tracking.find({com_id: com_id, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
@@ -190,86 +190,86 @@ exports.getTrackingALLCondition = async (req,res)=>{
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
         let idQLC = request.idQLC || null
-            companyID = request.companyID,
+            com_id = request.com_id,
             depID = request.depID || null
             CreateAt = request.CreateAt || true
             inputNew = request.inputNew || null
             inputOld = request.inputOld || null
-            if((companyID && CreateAt )==undefined){
+            if((com_id && CreateAt )==undefined){
                 functions.setError(res,"lack of input")
-            }else if(isNaN(companyID)){
+            }else if(isNaN(com_id)){
                 functions.setError(res,"id must be a Number")
             }else{
                 if(depID == undefined){// tìm kiếm theo tất cả lịch sử chấm công của cty   
-                const data = await Tracking.find({companyID: companyID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
+                const data = await Tracking.find({com_id: com_id}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
                     if (data) {
                         return await functions.success(res, 'Lấy thành công', { data });
                     };
                     return functions.setError(res, 'Không có dữ liệu', 404);
                 }else if(idQLC == undefined){//tìm kiếm lịch sử chấm công theo phòng ban 
-                    const data0 = await Tracking.find({companyID: companyID, depID:depID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
+                    const data0 = await Tracking.find({com_id: com_id, depID:depID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
                     if (data0) {
                         return await functions.success(res, 'Lấy thành công', { data0 });
                     };
                     return functions.setError(res, 'Không có dữ liệu', 404);
                 // // }else if(idQLC){//tìm kiếm theo tên nhân viên 
-                // //     const data3 = await Tracking.find({companyID: companyID, idQLC : idQLC }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                // //     const data3 = await Tracking.find({com_id: com_id, idQLC : idQLC }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                 // //     if (data3) {
                 // //         return await functions.success(res, 'Lấy thành công', { data3 });
                 // //     };
                 // //     return functions.setError(res, 'Không có dữ liệu', 404);
                 }else if((inputNew && inputOld )==undefined){//tìm kiếm theo tên nhân viên va phong ban
-                    // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
-                    const data1 = await Tracking.find({companyID: companyID,idQLC : idQLC ,depID:depID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                    // const data = await Tracking.find({com_id: com_id, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                    const data1 = await Tracking.find({com_id: com_id,idQLC : idQLC ,depID:depID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                     if (data1) {
                         return await functions.success(res, 'Lấy thành công', { data1 });
                     };
                     return functions.setError(res, 'Không có dữ liệu', 404);
                 // }else if(inputNew && inputOld ){//tìm kiếm theo tgian
-                //     const data4 = await Tracking.find({companyID: companyID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //     const data4 = await Tracking.find({com_id: com_id, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                 //     if (data4) {
                 //         return await functions.success(res, 'Lấy thành công', { data4 });
                 //     };
                 //     return functions.setError(res, 'Không có dữ liệu', 404);
                 }else{// tìm kiếm theo  tất cả điều kiện
-                    // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
-                    const data2 = await Tracking.find({companyID: companyID,idQLC : idQLC ,depID:depID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                    // const data = await Tracking.find({com_id: com_id, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                    const data2 = await Tracking.find({com_id: com_id,idQLC : idQLC ,depID:depID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                     if (data2) {
                         return await functions.success(res, 'Lấy thành công', { data2 });
                     };
                     return functions.setError(res, 'Không có dữ liệu', 404);
                 }}
                                 // if(depID) {
-                //     const data0 = await Tracking.find({companyID: companyID, depID:depID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //     const data0 = await Tracking.find({com_id: com_id, depID:depID}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                 //     // console.log(data0)
                 //       functions.success(res, 'Lấy thành công', { data0 });
 
                 //     if(idQLC){
-                //         const data01 = await Tracking.find({companyID: companyID, depID:depID, idQLC:idQLC}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //         const data01 = await Tracking.find({com_id: com_id, depID:depID, idQLC:idQLC}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                 //         // console.log(data01)
                 //          functions.success(res, 'Lấy thành công', { data01 });
 
                 //     }
                 // } 
                 // if(idQLC){
-                //     const data1 = await Tracking.find({companyID: companyID,idQLC : idQLC}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //     const data1 = await Tracking.find({com_id: com_id,idQLC : idQLC}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                 //     // console.log(data1)
                 //      functions.success(res, 'Lấy thành công', { data1 });
 
                 //     if(inputNew && inputOld){
-                //         const data11 = await Tracking.find({companyID: companyID,idQLC : idQLC, CreateAt: { $gte: inputOld , $lte: inputNew }}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //         const data11 = await Tracking.find({com_id: com_id,idQLC : idQLC, CreateAt: { $gte: inputOld , $lte: inputNew }}).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                 //         // console.log(data11)
                 //          functions.success(res, 'Lấy thành công', { data11 });
 
                 //     }
                 // }
                 // if(inputNew && inputOld){
-                //     const data2 = await Tracking.find({companyID: companyID,CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //     const data2 = await Tracking.find({com_id: com_id,CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                 //     // console.log(data2)
                 //      functions.success(res, 'Lấy thành công', { data2 });
 
                 //     if(depID){
-                //         const data21 = await Tracking.find({companyID: companyID,CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+                //         const data21 = await Tracking.find({com_id: com_id,CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
                 //         // console.log(data21)
                 //          functions.success(res, 'Lấy thành công', { data21 });
                 //     }
@@ -287,7 +287,7 @@ exports.getTrackingALLConNotTime = async (req,res)=>{
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
         let idQLC = request.idQLC || null
-            companyID = request.companyID,
+            com_id = request.com_id,
             depID = request.depID || null
             CreateAt = request.CreateAt || true
             inputNew = request.inputNew || null
@@ -295,9 +295,9 @@ exports.getTrackingALLConNotTime = async (req,res)=>{
             let data = [];
             let listCondition = {};
         
-            if((companyID)==undefined){
+            if((com_id)==undefined){
                 functions.setError(res,"lack of input")
-            }else if(isNaN(companyID)){
+            }else if(isNaN(com_id)){
                 functions.setError(res,"id must be a Number")
             }else{
             
@@ -305,7 +305,7 @@ exports.getTrackingALLConNotTime = async (req,res)=>{
             if(depID) listCondition.depID =  depID;
             if(inputNew) listCondition.inputNew = inputNew;
             if(inputOld) listCondition.inputOld = inputOld;
-            // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+            // const data = await Tracking.find({com_id: com_id, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
              data = await Tracking.find(listCondition).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ _id : -1});
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
