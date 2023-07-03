@@ -12,7 +12,8 @@ var DeleteDX = require('./vanthu/deXuat/delete_Dx')
 var EditDX = require('./vanthu/deXuat/edit_deXuat')
 var TKNP = require('./vanthu/deXuat/thong_ke_nghi_phep')
 var EditDXSend = require('./vanthu/deXuat/User_Dx')
-var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
+var vanBanDi = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
+var home = require('./vanthu/GuiNhanCongVan/homeRoute')
 
 //Api thêm mới các loại đề xuất
 router.use('/vanthu/dexuat',adddeXuat);
@@ -45,7 +46,7 @@ router.use('/tooldata',toolVT)
 
 //----------------------------------------------------------Gui Nhan Cong Van------------------------------------
 //--Van Ban Di
-router.use('/vanthu/guiNhanCongVan/', guiNhanCongVan);
-
+router.use('/vanthu/guiNhanCongVan/vanBanDi', vanBanDi);
+router.use('/vanthu/guiNhanCongVan/home', home);
 
 module.exports = router
