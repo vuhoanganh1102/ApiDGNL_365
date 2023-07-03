@@ -17,7 +17,7 @@ router.post('/De_Xuat_Xin_Tam_Ung',functions.checkToken, formData.parse(), Contr
 router.post('/De_Xuat_Xin_thoi_Viec',functions.checkToken, formData.parse(), Controller.de_xuat_xin_thoi_Viec);
 router.post('/De_Xuat_Lich_Lam_Viec',functions.checkToken, formData.parse(), Controller.lich_lam_viec);
 
-router.post('/addDXC',formData.parse(),Controller.dxCong);
+router.post('/addDXC',functions.checkToken,formData.parse(),Controller.dxCong);
 router.post('/addDXVC',functions.checkToken,formData.parse(),Controller.dxCoSoVatChat)
 router.post('/addDXXe',functions.checkToken,formData.parse(),Controller.dxDangKiSuDungXe)
 router.post('/addDXHH',functions.checkToken,formData.parse(),Controller.dxHoaHong)
