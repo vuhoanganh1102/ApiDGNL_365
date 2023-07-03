@@ -261,7 +261,7 @@ exports.updatePassword = async (req, res, next) => {
         }
             let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 0 })
             if (!checkPass) {
-                await Users.updateOne({ idQLC: idQLC }, {
+                await Users.updateOne({ idQLC: idQLC , type : 0 }, {
                     $set: {
                         password: md5(password),
                     }
@@ -269,6 +269,72 @@ exports.updatePassword = async (req, res, next) => {
                 return functions.success(res, 'cập nhập thành công')
             }
             return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+        } catch (error) {
+        console.log(error)
+        return functions.setError(res, error.message)
+    }
+}
+exports.updatePasswordbyInput = async (req, res, next) => {
+    try {
+        let phoneTK = req.body.phoneTK
+        let email = req.body.email
+        let password = req.body.password;
+        let re_password = req.body.re_password;
+     if (phoneTK&&password&&password){
+        let checkPassword = await functions.verifyPassword(password)
+        if (checkPassword) {
+            return functions.setError(res, "sai dinh dang Mk", 404)
+        }
+        if(!password || !re_password){
+            return functions.setError(res, 'Missing data', 400)
+        }
+        if(password.length < 6){
+            return functions.setError(res, 'Password quá ngắn', 400)
+        }
+        if(password !== re_password)
+        {
+            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+        }
+            let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 0 })
+            if (!checkPass) {
+                await Users.updateOne({ phoneTK: phoneTK , type : 0}, {
+                    $set: {
+                        password: md5(password),
+                    }
+                });
+                return functions.success(res, 'cập nhập thành công')
+            }
+            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+    }else if(email&&password&&password){
+        let checkPassword = await functions.verifyPassword(password)
+        if (checkPassword) {
+            return functions.setError(res, "sai dinh dang Mk", 404)
+        }
+        if(!password || !re_password){
+            return functions.setError(res, 'Missing data', 400)
+        }
+        if(password.length < 6){
+            return functions.setError(res, 'Password quá ngắn', 400)
+        }
+        if(password !== re_password)
+        {
+            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+        }
+            let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 0 })
+            if (!checkPass) {
+                await Users.updateOne({ email: email,type : 0 }, {
+                    $set: {
+                        password: md5(password),
+                    }
+                });
+                return functions.success(res, 'cập nhập thành công')
+            }
+            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+
+        }else{
+            return functions.setError(res, ' điền thiếu trường ', 404)
+        }
+        
         } catch (error) {
         console.log(error)
         return functions.setError(res, error.message)
