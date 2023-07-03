@@ -19,7 +19,7 @@ exports.changePasswordSendOTP = async (req, res, next) => {
         let id = req.user.data._id;
         let otp = await functions.randomNumber;
         let data = {
-            UserID: 637990,
+            UserID: id,
             SenderID: 1191,
             MessageType: 'text',
             Message: `[RaoNhanh365 - OTP đổi mật khẩu]

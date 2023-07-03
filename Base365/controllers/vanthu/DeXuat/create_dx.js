@@ -1562,7 +1562,7 @@ exports.dxKhieuNai = async (req, res) => {
             });
 
             let savedDXKN = await createDXKN.save();
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi,"đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {

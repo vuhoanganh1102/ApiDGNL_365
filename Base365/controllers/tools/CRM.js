@@ -1153,8 +1153,6 @@ exports.toolCustomer = async (req, res, next) => {
                     if (data[i].cmnd_ccnd_time != 0) {
                         CMNDtime = new Date(data[i].cmnd_ccnd_time * 1000)
                     }
-                    let post = await fnc.getDatafindOne(Customer, { cus_id: data[i].cus_id })
-                    if (post == null) {
                         let newCS = new Customer({
                             cus_id: data[i].cus_id,
                             email: data[i].email,
@@ -1223,7 +1221,6 @@ exports.toolCustomer = async (req, res, next) => {
                             link: data[i].blink
                         });
                         await newCS.save();
-                    }
                 }
                 page++;
             } else {
