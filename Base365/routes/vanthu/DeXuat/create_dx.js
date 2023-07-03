@@ -6,16 +6,16 @@ const functions = require('../../../services/functions')
 
 //Api tạo đề xuất
 
-router.post('/De_Xuat_Xin_Nghi',functions.checkToken,formData.parse(), Controller.de_xuat_xin_nghi);
-router.post('/De_Xuat_Xin_Bo_Nhiem',functions.checkToken, formData.parse(), Controller.de_xuat_xin_bo_nhiem);
-router.post('/De_Xuat_Cap_Phat_Tai_San',functions.checkToken, formData.parse(), Controller.de_xuat_xin_cap_phat_tai_san);
-router.post('/De_Xuat_Xin_Doi_Ca',functions.checkToken, formData.parse(), Controller.de_xuat_doi_ca);
-router.post('/De_Xuat_Luan_Chuyen_Cong_Tac',functions.checkToken, formData.parse(), Controller.de_xuat_luan_chuyen_cong_tac);
-router.post('/De_Xuat_Xin_Tang_Luong',functions.checkToken, formData.parse(), Controller.de_xuat_tang_luong);
-router.post('/De_Xuat_Tham_Gia_Du_An',functions.checkToken, formData.parse(), Controller.de_xuat_tham_gia_du_an);
-router.post('/De_Xuat_Xin_Tam_Ung',functions.checkToken, formData.parse(), Controller.de_xuat_xin_tam_ung);
-router.post('/De_Xuat_Xin_thoi_Viec',functions.checkToken, formData.parse(), Controller.de_xuat_xin_thoi_Viec);
-router.post('/De_Xuat_Lich_Lam_Viec',functions.checkToken, formData.parse(), Controller.lich_lam_viec);
+router.post('/De_Xuat_Xin_Nghi',functions.checkToken,formData.parse(),Controller.de_xuat_xin_nghi);
+router.post('/De_Xuat_Xin_Bo_Nhiem',functions.checkToken, formData.parse(),Controller.de_xuat_xin_bo_nhiem);
+router.post('/De_Xuat_Cap_Phat_Tai_San',functions.checkToken, formData.parse(),Controller.de_xuat_xin_cap_phat_tai_san);
+router.post('/De_Xuat_Xin_Doi_Ca',functions.checkToken, formData.parse(),Controller.de_xuat_doi_ca);
+router.post('/De_Xuat_Luan_Chuyen_Cong_Tac',functions.checkToken, formData.parse(),Controller.de_xuat_luan_chuyen_cong_tac);
+router.post('/De_Xuat_Xin_Tang_Luong',functions.checkToken, formData.parse(),Controller.de_xuat_tang_luong);
+router.post('/De_Xuat_Tham_Gia_Du_An',functions.checkToken, formData.parse(),Controller.de_xuat_tham_gia_du_an);
+router.post('/De_Xuat_Xin_Tam_Ung',functions.checkToken, formData.parse(),Controller.de_xuat_xin_tam_ung);
+router.post('/De_Xuat_Xin_thoi_Viec',functions.checkToken, formData.parse(),Controller.de_xuat_xin_thoi_Viec);
+router.post('/De_Xuat_Lich_Lam_Viec',functions.checkToken, formData.parse(),Controller.lich_lam_viec);
 
 router.post('/addDXC',functions.checkToken,formData.parse(),Controller.dxCong);
 router.post('/addDXVC',functions.checkToken,formData.parse(),Controller.dxCoSoVatChat)
