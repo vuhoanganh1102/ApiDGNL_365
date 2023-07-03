@@ -9,7 +9,7 @@ var DeleteDX = require('./vanthu/deXuat/delete_Dx')
 var EditDX = require('./vanthu/deXuat/edit_deXuat')
 var TKNP = require('./vanthu/deXuat/thong_ke_nghi_phep')
 var EditDXSend = require('./vanthu/deXuat/User_Dx')
-var homeRoute = require('./vanthu/QuanLyCongVan/homeRoute')
+var homeQLCV = require('./vanthu/QuanLyCongVan/homeRoute')
 var listVanBan = require('./vanthu/QuanLyCongVan/listVanBanRoute')
 var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
 
@@ -31,7 +31,7 @@ router.use('/vanthu/DeXuat',EditDXSend)
 
 router.use('/vanthu/thongkenp',TKNP)
 
-router.use('/vanthu/trangchu',homeRoute)
+router.use('/vanthu/trangchu',homeQLCV)
 
 router.use('/vanthu/listVanBan',listVanBan)
 

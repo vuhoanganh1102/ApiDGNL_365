@@ -222,6 +222,16 @@ exports.supportSellNew = async (req, res, next) => {
                 }
             }
         }
+
+
+        let warranty = [];
+        if (checkCate && checkCate.warranty.length > 0) {
+            for (let i = 0; i < checkCate.warranty.length; i++) {
+                if (parentId == checkCate.warranty[i].parent) {
+                    warranty.push(checkCate.warranty[i])
+                }
+            }
+        }
         let city1 = [];
         if(search && search === 'city')
         {

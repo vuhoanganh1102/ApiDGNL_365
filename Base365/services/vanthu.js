@@ -26,7 +26,7 @@ exports.uploadFileVanThu = (id, file) => {
     });
 }
 exports.createLinkFileVanthu = (id, name) => {
-    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/tailieu' + '/' + id + '/' + name;
+    let link = process.env.DOMAIN_VAN_THU + '/base365/uploads/tailieu' + '/' + id + '/' + name;
     return link;
 }
 
@@ -126,32 +126,41 @@ exports.sendChat = async (link, data) => {
 }
 
 
-exports.VT_UploadFile = async(folder, id, file, allowedExtensions) => {
+exports.uploadfile = async(folder, file_img) => {
+    let filename='';
+    const time_created = Date.now();
+    const date = new Date(time_created);
+    const year = date.getFullYear();
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    const day = ('0' + date.getDate()).slice(-2);
 
-    let path1 = `../Storage/hr/${folder}/${id}/`;
-    let filePath = `../Storage/hr/${folder}/${id}/` + file.name;
-
-    let fileCheck = path.extname(filePath);
-    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
-        return false
+    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
     }
-    // const { size } = await promisify(fs.stat)(filePath);
-    // if (size > MAX_IMG_SIZE) {
-    //     return false;
-    // }
 
-    if (!fs.existsSync(path1)) {
-        fs.mkdirSync(path1, { recursive: true });
-    }
-    fs.readFile(file.path, (err, data) => {
+    filename = `${file_img.originalFilename}`;
+    const filePath = dir + filename;
+    fs.readFile(file_img.path, (err, data) => {
         if (err) {
             console.log(err)
+            return false
         }
         fs.writeFile(filePath, data, (err) => {
             if (err) {
                 console.log(err)
+                return false
             }
         });
     });
-    return true
+    let link = process.env.DOMAIN_VAN_THU + `/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/${file_img.originalFilename}`;
+    return link;
+}
+exports.deleteFile = (file) => {
+    let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`,'');
+    let filePath = '../Storage/base365/vanthu/uploads/' + namefile;
+    fs.unlink(filePath, (err) => {
+        if (err) console.log(err);
+    });
+    
 }
