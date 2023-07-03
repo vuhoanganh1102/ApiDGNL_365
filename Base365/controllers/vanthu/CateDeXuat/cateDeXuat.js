@@ -67,7 +67,7 @@ exports.showHome = async (req, res) => {
       let showNV = await DeXuat.find({ id_user, del_type: 1 }).sort({ _id: -1 }).skip(startIndex).limit(perPage);
       res.status(200).json({ totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showNV });// hiển thị trang home nhân viên
     }else{
-      res.status(500).json({ error: 'Bạn ko có quyền' });
+      res.status(400).json({ error: 'Bạn ko có quyền' });
     }
   } catch (error) {
     console.error('Failed to get DX', error);
@@ -216,8 +216,8 @@ exports.findNameCate = async (req, res) => {
 
 exports.findthanhVien = async (req, res) => {
   try {
-    let { page } = req.body
-    let com_id = req.user.data.inForPerson.employee.com_id
+    let { page,com_id } = req.body
+    // let com_id = req.user.data.inForPerson.employee.com_id
     const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
     const startIndex = (page - 1) * perPage;
     const checkTV = await UserDX.find({ 'inForPerson.employee.com_id': com_id })
