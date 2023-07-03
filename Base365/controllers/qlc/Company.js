@@ -23,7 +23,7 @@ exports.register = async (req, res) => {
                     phone: phone,
                     address: address,
                     type: 1,
-                    authentic: 0 || null,
+                    authentic: 0 ,
                     password: md5(password),
                     otp: null,
                     fromWeb: "quanlichung.timviec365",
@@ -165,12 +165,11 @@ exports.verify = async (req,res)=>{
         let otp = req.body.ma_xt || null
         let phoneTK = req.user.data.phoneTK;
         console.log(phoneTK)
-        console.log(phoneTK)
         let data = []
         if(otp){
-                let findUser = await Users.findOne({phoneTK:phoneTK ,type :2})
+                let findUser = await Users.findOne({phoneTK:phoneTK ,type :1})
                 if(findUser) {
-                    data = await Users.updateOne({phoneTK:phoneTK ,type :2},{
+                    data = await Users.updateOne({phoneTK:phoneTK ,type :1},{
                         $set:{
                             otp : otp
                         }
@@ -179,12 +178,13 @@ exports.verify = async (req,res)=>{
                 }else {
                     return functions.setError(res,"tài khoản không tồn tại")
                 }
-
-
-        }else if (!otp){
-            let verify = await Users.findOne({phoneTK:phoneTK,otp ,type :2});
-            if (verify != null){
-                await Users.updateOne({phoneTK:phoneTK ,type :2},{
+                
+                
+            }else if (!otp){
+                let verify = await Users.findOne({phoneTK:phoneTK ,type :1});
+                console.log(verify)
+                if (verify != null){
+                await Users.updateOne({phoneTK:phoneTK ,type :1},{
                     $set: {
                         authentic :1 
                     }
@@ -209,7 +209,7 @@ exports.verifyCheckOTP = async (req,res)=>{
         let phoneTK = req.user.data.phoneTK;
        
         if(otp){
-                let findUser = await Users.findOne({phoneTK:phoneTK ,type :2}).select("otp")
+                let findUser = await Users.findOne({phoneTK:phoneTK ,type :1}).select("otp")
                 if(findUser) {
                     let data = findUser.otp
                     console.log(data)
@@ -237,6 +237,7 @@ exports.verifyCheckOTP = async (req,res)=>{
 exports.updatePassword = async (req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC
+        let old_password = req.body.old_password
         let password = req.body.password;
         let re_password = req.body.re_password;
         let checkPassword = await functions.verifyPassword(password)
@@ -253,16 +254,24 @@ exports.updatePassword = async (req, res, next) => {
         {
             return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
         }
-            let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 1 })
-            if (!checkPass) {
-                await Users.updateOne({ idQLC: idQLC, type :1 }, {
-                    $set: {
-                        password: md5(password),
-                    }
-                });
-                return functions.success(res, 'cập nhập thành công')
+        if(old_password){
+            let checkOldPassword = await Users.findOne({idQLC : idQLC ,password : md5(old_password), type :1})
+            if(!checkOldPassword){
+                functions.setError(res, 'Mật khẩu cũ không đúng, vui lòng kiểm tra lại', 400)
+            }else{
+                let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 1 })
+                if (!checkPass) {
+                    await Users.updateOne({ idQLC: idQLC, type :1 }, {
+                        $set: {
+                            password: md5(password),
+                        }
+                    });
+                    return functions.success(res, 'cập nhập thành công')
+                }
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
             }
-            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+        }
+
         } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -411,41 +420,7 @@ exports.forgotPassword = async (req,res)=>{
 }
 
 exports.updateInfoCompany = async (req, res, next) => {
-    // try {
-    //     let idQLC = req.user.data.idQLC;
-    //     let { userName } = req.body;
-    //     let email = req.body.email || null;
-    //     let phone = req.body.phone || null;
-    //     let address = req.body.address || null;
-    //     let File = req.files || null;
-    //     let avatarCompany = null;
-    //     let updatedAt = new Date();
-    //     if(email){
-    //         if (await functions.checkEmail(email) === false) {
-    //             return functions.setError(res, 'invalid email',400)
-    //         } else {
-    //             let check_email = await Users.findById(idQLC);
-    //             if (check_email.email !== email) {
-    //                 let check_email_lan2 = await Users.find({ email });
-    //                 if (check_email_lan2.length !== 0) {
-    //                     return functions.setError(res, "email is exits",400)
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     if (File.avatarCompany) {
-    //         let upload = functions.uploadFileQLC('avt_com', idQLC, File.avatarCompany, ['.jpeg', '.jpg', '.png']);
-    //         if (!upload) {
-    //             return functions.setError(res, 'Định dạng ảnh không hợp lệ',400)
-    //         }
-    //         avatarCompany = functions.createLinkFileQLC('avt_com', idQLC, File.avatarCompany.name)
-    //         await Users.findByIdAndUpdate(idQLC, { email, address,phone, userName, avatarCompany, updatedAt });
-    //     }
-    //     await Users.findByIdAndUpdate(idQLC, { email, address, userName, updatedAt });
-    //     return functions.success(res, 'update data user success')
-    // } catch (error) {
-    //     return functions.setError(res, error)
-    // }
+
     try {
         let idQLC = req.user.data.idQLC;
         let data = [];
@@ -469,25 +444,11 @@ exports.updateInfoCompany = async (req, res, next) => {
                             userName: userName,
                             email: email,
                             phoneTK: phoneTK,
-                            phone: phone,
                             avatarUser: avatarUser,
-                            "inForPerson.employee.position_id": position_id,
-                            "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": dep_id,
-                            password: md5(password),
                             address: address,
-                            otp: otp,
-                            authentic: null || 0,
                             fromWeb: "quanlichung.timviec365",
-                            avatarUser: avatarUser,
                             updatedAt: new Date(),
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": birthday,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
+
                         }
                     })
                     await functions.success(res, 'update avartar company success', { data })
@@ -500,25 +461,10 @@ exports.updateInfoCompany = async (req, res, next) => {
                             userName: userName,
                             email: email,
                             phoneTK: phoneTK,
-                            phone: phone,
                             avatarUser: avatarUser,
-                            "inForPerson.employee.position_id": position_id,
-                            "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": dep_id,
-                            password: md5(password),
                             address: address,
-                            otp: otp,
-                            authentic: null || 0,
                             fromWeb: "quanlichung.timviec365",
-                            avatarUser: avatarUser,
                             updatedAt: new Date(),
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": birthday,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
                         }
                     })
                     await functions.success(res, 'update company info success', { data1 })
@@ -545,12 +491,12 @@ exports.info = async (req,res) =>{
         }else if(isNaN(idQLC)){
             functions.setError(res,"id must be a Nubmer")
         }else{
-            const data = await Users.findOne({idQLC}).select(' userName email phoneTK com_id address phone avatarUser role').lean();
+            const data = await Users.findOne({idQLC}).select('userName email phoneTK address avatarUser authentic').lean();
             console.log(data)
 
             const departmentsNum = await Deparment.countDocuments({com_id : idQLC })
             const userNum = await Users.countDocuments({"inForPerson.employee.com_id" : idQLC })
-            
+
             console.log(departmentsNum)
             data.departmentsNum = departmentsNum
             data.userNum = userNum

@@ -2,6 +2,10 @@
 const fs = require('fs');
 const multer = require('multer');
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
+
+const dotenv = require("dotenv");
+dotenv.config();
 const path = require('path');
 
 exports.uploadFileVanThu = (id, file) => {
@@ -26,7 +30,7 @@ exports.uploadFileVanThu = (id, file) => {
     });
 }
 exports.createLinkFileVanthu = (id, name) => {
-    let link = process.env.DOMAIN_VAN_THU + '/base365/uploads/tailieu' + '/' + id + '/' + name;
+    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/dexuat' + '/' + id + '/' + name;
     return link;
 }
 
@@ -125,6 +129,56 @@ exports.sendChat = async (link, data) => {
     });
 }
 
+exports.checkToken = (req, res, next)=> {
+    try{
+        const authHeader = req.headers["authorization"];
+        const token = authHeader && authHeader.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({ message: "Missing token" });
+        }
+        jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
+            if (err) {
+                return res.status(403).json({ message: "Invalid token" });
+            }
+            // console.log(user.data);
+            var infoLogin = {type: user.data.type, id: user.data.idQLC, name: user.data.userName};
+            if(user.data.type!=1){
+                if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
+                    infoLogin.comId = user.data.inForPerson.employee.com_id;
+                }else {
+                    return res.status(404).json({ message: "Missing info inForPerson!" });
+                }
+            }else {
+                infoLogin.comId = user.data.idQLC;
+            }
+            // if(type==1) req.ac = user.data.idQLC;
+
+            req.comId = infoLogin.comId;
+            req.infoLogin = infoLogin;
+            next();
+            
+        });
+    }catch(err){
+        console.log(err);
+        return res.status(503).json({ message: "Error from server!" });
+    }
+    
+}
+
+exports.arrAPI = ()=>{
+    return {
+        'NotificationOfferReceive': "http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive",
+        'NotificationOfferSent': "http://43.239.223.142:9000/api/V2/Notification/NotificationOfferSent",
+        "NotificationReport": "http://43.239.223.142:9000/api/V2/Notification/NotificationReport",
+        "SendContractFile": "http://43.239.223.142:9000/api/V2/Notification/SendContractFile"
+    }
+} 
+
+exports.replaceTitle = (title) => {
+  // Hàm replaceTitle() là hàm tùy chỉnh của bạn để thay thế các ký tự không hợp lệ trong tiêu đề
+  // Hãy thay thế nó bằng cách xử lý phù hợp với yêu cầu của bạn
+    return title.replace(/[^a-zA-Z0-9]/g, '-');
+};
 
 exports.uploadfile = async(folder, file_img) => {
     let filename='';

@@ -11,7 +11,7 @@ const hrService = require('../../services/hr/hrService');
 router.post('/listJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1),  trainingController.getListJobDescription);
 
 //them moi vi tri cong viec
-router.post('/job', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2),  trainingController.createJobDescription);
+router.post('/createJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2),  trainingController.createJobDescription);
 
 //xoa vi tri cong viec => muc du lieu xoa gan day
 router.post('/jobSoftDelete', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 4),  trainingController.softDeleteJobDescription);

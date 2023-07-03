@@ -258,7 +258,8 @@ exports.updateTranferJob = async(req, res, next) => {
                     position_id: update_position
                 }
             }
-        })
+        }, {new: true})
+        console.log(employee);
         if(!employee){
             return functions.setError(res, "Employee not found!", 503);
         }

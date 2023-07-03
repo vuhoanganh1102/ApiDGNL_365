@@ -189,7 +189,7 @@ exports.showCustomerCare = async(req, res) => {
         const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
         const startIndex = (page - 1) * perPage;
         
-        const checkline = await ManagerExtension.find({ emp_id: emp_id });
+        const checkline = await ManagerExtension.find({ company_id: com_id });
         console.log(checkline);
         
         const extNumbers = checkline.map(item => item.ext_number);

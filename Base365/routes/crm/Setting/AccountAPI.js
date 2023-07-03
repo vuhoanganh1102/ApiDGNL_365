@@ -16,4 +16,6 @@ router.post("/add",formData.parse(), controller.addContract)
 router.post('/connectTd',formData.parse(),controller.connectTd)
 
 
+router.post('/editApi',formData.parse(),controller.settingSwitchboard)
+
 module.exports = router

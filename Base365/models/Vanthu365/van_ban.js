@@ -82,7 +82,7 @@ const vanBan = new mongoose.Schema({
         type: Number
     },
     thoi_gian_duyet: {
-        type: Date
+        type: String
     },
     nguoi_xet_duyet: {
         type: String,
@@ -134,7 +134,7 @@ const vanBan = new mongoose.Schema({
         type: Number
     },
     created_date: {
-        type: Number
+        type: Date
     },
     type_duyet: {
         type: Number,
