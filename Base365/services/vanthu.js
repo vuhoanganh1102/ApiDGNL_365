@@ -26,7 +26,7 @@ exports.uploadFileVanThu = (id, file) => {
     });
 }
 exports.createLinkFileVanthu = (id, name) => {
-    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/tailieu' + '/' + id + '/' + name;
+    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/dexuat' + '/' + id + '/' + name;
     return link;
 }
 
