@@ -2668,7 +2668,7 @@ exports.account_api = async (req, res) => {
                 for (let i = 0; i < listItem.length; i++) {
                     let new_Acount_api = new Acount_api({
                         id: listItem[i].id,
-                        id_company: listItem[i].id_company,
+                        com_id: listItem[i].id_company,
                         account: listItem[i].account,
                         password: listItem[i].password,
                         switchboard: listItem[i].switchboard,
