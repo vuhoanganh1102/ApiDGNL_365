@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 const account_api = mongoose.Schema({
-    _id: {
+    id: {
         type: Number
     },
-    id_company: {
+    com_id: {
         type: Number
     },
     account: {

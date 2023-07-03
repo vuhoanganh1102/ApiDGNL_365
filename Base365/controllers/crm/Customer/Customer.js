@@ -349,7 +349,7 @@ exports.showKH = async (req, res) => {
       })
       .sort({ cus_id : -1 })
       .skip(startIndex)
-      .limit(perPage);;
+      .limit(perPage);
       return res.status(200).json(checkCus);
     }else{
       res.status(400).json({ error: "Không có kết quả" });
@@ -624,4 +624,117 @@ exports.ShowConnectCs = async(req,res) => {
     res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
   }
 }
+
+
+
+exports.searchSame = async (req, res) => {
+  try {
+    const {
+      limit,
+      start,
+      choose,
+      emp_id,
+      com_id,
+      slt_name_customer,
+      name_customer,
+      slt_phone_customer,
+      phone_customer,
+      slt_tax_code_customer,
+      tax_code_customer,
+      slt_website_customer,
+      website_customer
+    } = req.body;
+
+    const select = 'cus_id email name phone_number tax_code website address resoure birthday status description group_id emp_id com_id is_delete type created_at updated_at cus_from user_handing_over_work';
+
+    const query = {
+      is_delete: 0,
+      com_id: com_id
+    };
+
+    if (emp_id !== '') {
+      query.emp_id = { $in: emp_id };
+    }
+
+    if (choose === 2) {
+      query.$or = [];
+    }
+
+    if (slt_name_customer && name_customer) {
+      const nameCondition = getConditionObject(slt_name_customer, 'name', name_customer);
+      if (query.$or) {
+        query.$or.push(nameCondition);
+      } else {
+        query.$or = [nameCondition];
+      }
+    }
+
+    if (slt_phone_customer && phone_customer) {
+      const phoneCondition = getConditionObject(slt_phone_customer, 'phone_number', phone_customer);
+      if (query.$or) {
+        query.$or.push(phoneCondition);
+      } else {
+        query.$or = [phoneCondition];
+      }
+    }
+
+    if (slt_tax_code_customer && tax_code_customer) {
+      const taxCodeCondition = getConditionObject(slt_tax_code_customer, 'tax_code', tax_code_customer);
+      if (query.$or) {
+        query.$or.push(taxCodeCondition);
+      } else {
+        query.$or = [taxCodeCondition];
+      }
+    }
+
+    if (slt_website_customer && website_customer) {
+      const websiteCondition = getConditionObject(slt_website_customer, 'website', website_customer);
+      if (query.$or) {
+        query.$or.push(websiteCondition);
+      } else {
+        query.$or = [websiteCondition];
+      }
+    }
+
+
+    if (choose === 2 && (!query.$or || query.$or.length === 0)) {
+      query.$or = [{}];
+    }
+
+    const total = await Customer.countDocuments(query);
+    const customers = await Customer.find(query).select(select).limit(limit).skip(start).sort({ cus_id: 1 });
+
+    const data = {
+      customer: customers,
+      total: total
+    };
+
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error('Failed to search customers', error);
+    res.status(500).json({ error: 'Failed to search customers' });
+  }
+};
+
+function getConditionObject(option, field, value) {
+  const conditionObj = {};
+
+  switch (option) {
+    case 1:
+      conditionObj[field] = value;
+      break;
+    case 2:
+      conditionObj[field] = { $ne: value };
+      break;
+    case 3:
+      conditionObj[field] = { $regex: value, $options: 'i' };
+      break;
+    case 4:
+      conditionObj[field] = { $not: { $regex: value, $options: 'i' } };
+      break;
+  }
+
+  return conditionObj;
+}
+
 
