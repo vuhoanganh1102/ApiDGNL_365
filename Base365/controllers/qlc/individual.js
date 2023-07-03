@@ -31,7 +31,7 @@ exports.register = async (req, res) => {
                         type: 0,
                         role: 0,
                         otp: null,
-                        authentic: null,
+                        authentic: 0,
                         idQLC: (Number(MaxId) + 1),
                         "inForPerson.employee.com_id": com_id,
                         "inForPerson.employee.dep_id": dep_id,
@@ -249,40 +249,50 @@ exports.login = async (req, res) => {
 }
 
 // hàm đổi mật khẩu 
-exports.updatePassword = async (req, res, next) => {
-    try {
-        let idQLC = req.user.data.idQLC
-        let password = req.body.password;
-        let re_password = req.body.re_password;
-        let checkPassword = await functions.verifyPassword(password)
-        if (checkPassword) {
-            return functions.setError(res, "sai dinh dang Mk", 404)
-        }
-        if(!password || !re_password){
-            return functions.setError(res, 'Missing data', 400)
-        }
-        if(password.length < 6){
-            return functions.setError(res, 'Password quá ngắn', 400)
-        }
-        if(password !== re_password)
-        {
-            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
-        }
-            let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 0 })
-            if (!checkPass) {
-                await Users.updateOne({ idQLC: idQLC , type : 0 }, {
-                    $set: {
-                        password: md5(password),
-                    }
-                });
-                return functions.success(res, 'cập nhập thành công')
+    exports.updatePassword = async (req, res, next) => {
+        try {
+            let idQLC = req.user.data.idQLC
+            let old_password = req.body.old_password
+            let password = req.body.password;
+            let re_password = req.body.re_password;
+            let checkPassword = await functions.verifyPassword(password)
+            if (checkPassword) {
+                return functions.setError(res, "sai dinh dang Mk", 404)
             }
-            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
-        } catch (error) {
-        console.log(error)
-        return functions.setError(res, error.message)
+            if(!password || !re_password){
+                return functions.setError(res, 'điền thiếu thông tin', 400)
+            }
+            if(password.length < 6){
+                return functions.setError(res, 'Password quá ngắn', 400)
+            }
+            if(password !== re_password)
+            {
+                return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+            }
+            if(old_password){
+                let checkOldPassword = await Users.findOne({idQLC : idQLC ,password : md5(old_password), type :2})
+                if(!checkOldPassword){
+                    functions.setError(res, 'Mật khẩu cũ không đúng, vui lòng kiểm tra lại', 400)
+                }else{
+                    let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 2 })
+                    if (!checkPass) {
+                        await Users.updateOne({ idQLC: idQLC, type :2 }, {
+                            $set: {
+                                password: md5(password),
+                            }
+                        });
+                        return functions.success(res, 'cập nhập thành công')
+                    }
+                    return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+                }
+            }
+    
+            } catch (error) {
+            console.log(error)
+            return functions.setError(res, error)
+        }
     }
-}
+
 exports.updatePasswordbyInput = async (req, res, next) => {
     try {
         let phoneTK = req.body.phoneTK

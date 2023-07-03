@@ -23,7 +23,7 @@ exports.register = async (req, res) => {
                     phone: phone,
                     address: address,
                     type: 1,
-                    authentic: 0 || null,
+                    authentic: 0 ,
                     password: md5(password),
                     otp: null,
                     fromWeb: "quanlichung.timviec365",
@@ -237,6 +237,7 @@ exports.verifyCheckOTP = async (req,res)=>{
 exports.updatePassword = async (req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC
+        let old_password = req.body.old_password
         let password = req.body.password;
         let re_password = req.body.re_password;
         let checkPassword = await functions.verifyPassword(password)
@@ -253,16 +254,24 @@ exports.updatePassword = async (req, res, next) => {
         {
             return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
         }
-            let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 1 })
-            if (!checkPass) {
-                await Users.updateOne({ idQLC: idQLC, type :1 }, {
-                    $set: {
-                        password: md5(password),
-                    }
-                });
-                return functions.success(res, 'cập nhập thành công')
+        if(old_password){
+            let checkOldPassword = await Users.findOne({idQLC : idQLC ,password : md5(old_password), type :1})
+            if(!checkOldPassword){
+                functions.setError(res, 'Mật khẩu cũ không đúng, vui lòng kiểm tra lại', 400)
+            }else{
+                let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 1 })
+                if (!checkPass) {
+                    await Users.updateOne({ idQLC: idQLC, type :1 }, {
+                        $set: {
+                            password: md5(password),
+                        }
+                    });
+                    return functions.success(res, 'cập nhập thành công')
+                }
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
             }
-            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+        }
+
         } catch (error) {
         console.log(error)
         return functions.setError(res, error)
