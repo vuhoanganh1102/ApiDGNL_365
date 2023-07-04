@@ -11,11 +11,9 @@ exports.check1 = async (req, res) => {
         const timeStart = "2023-05-20 23:59:59"
 
         data = await user.findOne({ idQLC: idQLC, type: 1 }).select("inForCompany.cds.com_vip inForCompany.cds.com_vip_time inForCompany.cds.com_ep_vip createdAt").lean()
-        console.log(data)
         if (data) {
             const createdAt = data.createdAt
             count = await user.countDocuments({ idQLC: idQLC }).lean()
-            console.log(count)
             const comVip = data.inForCompany.cds.com_vip
             const timeVip = data.inForCompany.cds.com_vip_time
             const userVip = data.inForCompany.cds.com_ep_vip
@@ -26,7 +24,6 @@ exports.check1 = async (req, res) => {
             const timeVips = new Date(timeVip)
 
             if (createdTime < startTime) {
-                console.log("thời gian tạo trước 20/05/20");
                 if (comVip === 1) {
                     functions.success(res, "Cong ty tạo trước 20/05/20 va VIP")
                 } else if (comVip === 0) {
@@ -36,7 +33,6 @@ exports.check1 = async (req, res) => {
 
                 }
             } else if (createdTime > startTime) {
-                console.log("thời gian tạo sau 20/05/20");
                 if (timeVip === 0) {//vip
 
                     if (count >= userVip) {
@@ -81,7 +77,7 @@ exports.check1 = async (req, res) => {
 
 
             } else {
-                console.log("Thời gian tạo lập và thời gian bắt đầu bằng nhau");
+                functions.success(res,"Thời gian tạo lập và thời gian bắt đầu bằng nhau");
             }
         } else {
             functions.success(res, " Công ty không tồn tại ")
@@ -101,11 +97,9 @@ exports.check2 = async (req, res) => {
         const timeStart = "2023-05-20 23:59:59"
 
         data = await user.findOne({ idQLC: com_id, type: 1 }).select("inForCompany.cds.com_vip inForCompany.cds.com_vip_time inForCompany.cds.com_ep_vip createdAt").lean()
-        console.log(data)
         if (data) {
             const createdAt = data.createdAt
             count = await user.countDocuments({ idQLC: com_id }).lean()
-            console.log(count)
             const comVip = data.inForCompany.cds.com_vip
             const timeVip = data.inForCompany.cds.com_vip_time
             const userVip = data.inForCompany.cds.com_ep_vip
@@ -116,7 +110,6 @@ exports.check2 = async (req, res) => {
             const timeVips = new Date(timeVip)
 
             if (createdTime < startTime) {
-                console.log("thời gian tạo trước 20/05/20");
                 if (comVip === 1) {
                     functions.success(res, "Cong ty tạo trước 20/05/20 va VIP")
                 } else if (comVip === 0) {
@@ -126,7 +119,6 @@ exports.check2 = async (req, res) => {
 
                 }
             } else if (createdTime > startTime) {
-                console.log("thời gian tạo sau 20/05/20");
                 if (timeVip === 0) {//vip
 
                     if (count >= userVip) {
@@ -171,7 +163,6 @@ exports.check2 = async (req, res) => {
 
 
             } else {
-                console.log("Thời gian tạo lập và thời gian bắt đầu bằng nhau");
                 functions.success(res, "Thời gian tạo lập và thời gian bắt đầu bằng nhau")
 
             }

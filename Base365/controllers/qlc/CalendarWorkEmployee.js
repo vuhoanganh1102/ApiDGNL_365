@@ -12,10 +12,8 @@ exports.getCalendarById = async (req, res) => {
 
     try {
         const _id = req.params.id;
-        console.log(_id)
         // const companyID = req.user.data.companyID
         const data = await functions.getDatafindOne(calEmp, { _id: _id });
-        console.log(data)
         if (data) {
             return await functions.success(res, 'Lấy lich thành công', data);
         };
@@ -30,13 +28,11 @@ exports.getCalendarById = async (req, res) => {
 exports.getAllCalendarEmpByCom = async (req, res) => {
     const companyID = req.body.companyID
     const calendarID = req.body.calendarID
-    console.log(companyID)
     if (!companyID) {
         await functions.setError(res, 'thiếu dữ liệu công ty')
     } else {
 
         const data = await calEmp.find({ companyID :companyID }).select("calendarID ")
-        console.log(data)
         if(!data){
             return  functions.setError(res,"không tìm thấy lịch làm việc cuẩ công ty")
         }else{
@@ -56,7 +52,6 @@ exports.createCalEmp = async (req,res)=>{
     }else if (!companyID) {
         functions.setError(res,"companyID required")
     }else if (isNaN(companyID) ){
-        console.log(companyID)
         functions.setError(res,"companyID not a number")
     }else if (!calendarID) {
         functions.setError(res,"calendarID required")
@@ -103,7 +98,6 @@ exports.editCalendar = async (req, res) => {
         }else if (!companyID) {
             functions.setError(res,"companyID required")
         }else if (isNaN(companyID) ){
-            console.log(companyID)
             functions.setError(res,"companyID not a number")
         }else if (!calendarID) {
             functions.setError(res,"calendarID required")
@@ -116,7 +110,6 @@ exports.editCalendar = async (req, res) => {
             const tApply = timeApply != 0 ? new Date(timeApply *1000) : null
 
             const calendar = await functions.getDatafindOne(calEmp, { _id: _id });
-            console.log(calendar)
             if (!calendar) {
                 functions.setError(res, "Calendar does not exist");
             } else {
@@ -155,14 +148,12 @@ exports.deleteCalendar = async (req, res) => {
 
 exports.deleteCompanyCalendar = async (req, res) => {
     const { companyID } = req.body;
-    console.log(companyID)
     if (!companyID) {
         functions.setError(res, "Company id required");
     } else if (typeof companyID == "number") {
         functions.setError(res, "Company id must be a number");
     } else {
         const calendars = await functions.getDatafind(calEmp, { companyID: companyID });
-        console.log(calendars)
         if (!calendars) {
             await functions.setError(res, "No calendars found in this company");
         } else {
