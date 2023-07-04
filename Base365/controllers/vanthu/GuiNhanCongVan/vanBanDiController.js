@@ -5,7 +5,8 @@ const vanThuService = require("../../../services/vanthu");
 const ThayThe = require("../../../models/Vanthu365/tbl_thay_the");
 const ThongBao = require("../../../models/Vanthu365/tl_thong_bao");
 const UserVT = require("../../../models/Vanthu365/user_model");
-
+const NhomVanBan = require('../../../models/Vanthu/group_van_ban');
+const QuanLyCongVan = require('../../../models/Vanthu365/tbl_qly_congvan');
 //----------------------------------------VAN BAN DI---------------------------------------------------
 
 exports.getDataAndCheck = async(req, res, next) => {
@@ -351,6 +352,145 @@ exports.createVanBanIn = async(req, res, next) => {
     await functions.getDataAxios(vanThuService.arrAPI().SendContractFile, dataSend);
     return functions.success(res, "Create van ban gui di trong cong ty thanh cong!");
   }catch(err){
+    console.log("Error from server!", err);
+    return functions.setError(res, err, 500);
+  }
+}
+
+exports.getListVanBanDiDaGui = async(req, res, next) => {
+  try{
+    let {ten_vb_search, trang_thai_search, page, pageSize} = req.body;
+    page = Number(page);
+    pageSize = Number(pageSize);
+    if(!page || !pageSize) {
+      return functions.setError(res, "Missing input page or pageSize!", 404);
+    }
+    const skip = (page - 1) * pageSize;
+    const limit = pageSize;
+
+    let id = req.id || 145;
+    let condition = {user_send: id};
+    if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
+    if(trang_thai_search) condition.trang_thai_vb = trang_thai_search;
+
+    // let listVanBanDi = await functions.pageFind(VanBan, condition, {_id: 1}, skip, limit);
+    let listVanBanDi = await VanBan.aggregate([
+        {$match: condition},
+        {
+            $lookup: {
+            from: "vanthu_group_van_bans",
+            localField: "nhom_vb",
+            foreignField: "id_group_vb",
+            as: "matchedDocuments"
+            }
+        },
+        // {
+        //     $unwind: "$matchedDocuments"
+        // },
+        // {
+        //     $replaceRoot: {
+        //     newRoot: {
+        //         $mergeObjects: ["$$ROOT", "$matchedDocuments"]
+        //     }
+        //     }
+        // },
+        {$sort: {_id: 1}},
+        {$skip: skip},
+        {$limit: limit}
+        ]);
+    let totalCount = await VanBan.aggregate([
+        {$match: condition},
+        {
+            $lookup: {
+            from: "vanthu_group_van_bans",
+            localField: "nhom_vb",
+            foreignField: "id_group_vb",
+            as: "matchedDocuments"
+            }
+        },
+        {
+          $group: {_id: null, count: { $sum: 1 }}
+        },
+        {
+          $project: {_id: 0, count: 1}
+        }
+        ]);
+    totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
+    return functions.success(res, "Get list van ban gui di success!", {totalCount, listVanBanDi});
+  }catch(err){
+    console.log("Error from server!", err);
+    return functions.setError(res, err, 500);
+  }
+}
+
+exports.createChuyenTiep = async(req, res, next)=> {
+  try{
+    let {ten_nguoi_nhan, id_vb} = req.body;
+    if(!ten_nguoi_nhan || !id_vb) {
+      return functions.setError(res, "Missing input value!", 404);
+    }
+    let vanBan = await VanBan.findOneAndUpdate({_id: id_vb}, {user_forward: ten_nguoi_nhan, update_time: Date.now()}, {new: true});
+    if(!vanBan) {
+      return functions.setError(res, "Van ban not found!", 504);
+    }
+    return functions.success(res, "Chuyen tiep van ban thanh cong!");
+  }catch(err){
+    console.log("Error from server!", err);
+    return functions.setError(res, err, 500);
+  }
+}
+
+exports.deleteVanBan = async(req, res, next)=> {
+  try{
+    let id_vb = req.body.id_vb;
+    if(!id_vb || id_vb==0){
+      return functions.setError(res, "Missing input id_vb!", 404);
+    }
+    let vanBan = await VanBan.deleteOne({_id: id_vb});
+    if(vanBan && vanBan.deletedCount==1) {
+      return functions.success(res, "Delete van ban success!");
+    }
+    return functions.setError(res, "Van ban not found!", 504);
+  }catch(err){
+    console.log("Error from server!", err);
+    return functions.setError(res, err, 500);
+  }
+}
+
+exports.checkLuuQLCV = async(req, res, next)=> {
+  try{
+    let id_vb = req.body.id_vb;
+    if(!id_vb || id_vb==0) {
+      return functions.setError(res, "Missing input id_vb!", 404);
+    }
+    let checkLuuQLCV = await QuanLyCongVan.findOne({cv_id_vb: id_vb});
+    let checkLuu = false;
+    if(checkLuuQLCV) {
+      checkLuu = true;
+    }
+    return functions.success(res, "Check luu van ban noi bo cong ty!", {checkLuu: checkLuu})
+
+  }catch(err){
+    console.log("Error from server!", err);
+    return functions.setError(res, err, 500);
+  }
+}
+
+exports.luuVBCTY = async(req, res, next) => {
+  try{
+    let {id_vb, book_vb, so_vb} = req.body;
+    if(!id_vb || !book_vb || !so_vb) {
+      return functions.setError(res, "Missing input value!", 404);
+    }
+    let congVan = await QuanLyCongVan.findOne({cv_id_vb: id_vb});
+    if(congVan) {
+      return functions.setError(res, "Cong van da duoc luu!", 405);
+    }
+    let vanBan = await VanBan.findOne({_id: id_vb});
+    if(!vanBan) {
+      return functions.setError(res, "Van ban khong tim thay!", 406);
+    } 
+  }catch(err) {
     console.log("Error from server!", err);
     return functions.setError(res, err, 500);
   }
