@@ -1,7 +1,9 @@
 const { isNull } = require('util');
 const Users = require('../../models/Users')
-const functions = require('../../services/qlc/functions')
+const fnc = require('../../services/qlc/functions')
 const md5 = require('md5');
+const functions = require("../../services/functions")
+
 const Deparment = require("../../models/qlc/Deparment")
 
 //đăng kí tài khoản nhân viên 
@@ -367,11 +369,11 @@ exports.updateInfoEmployee = async (req, res, next) => {
             let findUser = Users.findOne({ idQLC: idQLC })
             if (findUser) {
                 if (File.avatarUser) {
-                    let upload = functions.uploadFileQLC('avt_ep', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                    let upload = fnc.uploadFileQLC('avt_ep', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }
-                    avatarUser = functions.createLinkFileQLC('avt_ep', idQLC, File.avatarUser.name)
+                    avatarUser = fnc.createLinkFileQLC('avt_ep', idQLC, File.avatarUser.name)
 
                     data = await Users.updateOne({ idQLC: idQLC }, {
                         $set: {
