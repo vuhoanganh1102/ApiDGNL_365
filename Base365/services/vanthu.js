@@ -9,8 +9,8 @@ dotenv.config();
 const path = require('path');
 
 exports.uploadFileVanThu = (id, file) => {
-    let path = `../Storage/base365/vanthu/dexuat/${id}/`;
-    let filePath = `../Storage/base365/vanthu/dexuat/${id}/` + file.originalFilename;
+    let path = `../store/base365/vanthu/dexuat/${id}/`;
+    let filePath = `../store/base365/vanthu/dexuat/${id}/` + file.originalFilename;
 
     if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
         fs.mkdirSync(path, { recursive: true });
@@ -39,8 +39,8 @@ exports.getMaxID = async(model) => {
     return maxUser._id + 1;
 };
 
-// const storageVanthu = (destination) => {
-//     return storage = multer.diskStorage({
+// const storeVanthu = (destination) => {
+//     return store = multer.diskstore({
 //         destination: (req, file, cb) => {
 //             // console.log(file_kem)
 //             cb(null, destination);
@@ -51,7 +51,7 @@ exports.getMaxID = async(model) => {
 //     })
 
 // };
-// exports.upload = multer({ storage: storageVanthu('../../../Storage/VanThu') });
+// exports.upload = multer({ store: storeVanthu('../../../store/VanThu') });
 exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, status, link, file_kem) => {
     return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
         SenderID: id_user,
@@ -79,7 +79,7 @@ exports.uploadFileNameRandom = async(folder, file_img) => {
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
 
-    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}${month}${day}/`;
+    const dir = `../store/base365/vanthu/uploads/${folder}/${year}${month}${day}/`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
@@ -188,7 +188,7 @@ exports.uploadfile = async(folder, file_img) => {
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
 
-    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
+    const dir = `../store/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
@@ -212,7 +212,7 @@ exports.uploadfile = async(folder, file_img) => {
 }
 exports.deleteFile = (file) => {
     let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`,'');
-    let filePath = '../Storage/base365/vanthu/uploads/' + namefile;
+    let filePath = '../store/base365/vanthu/uploads/' + namefile;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });

@@ -654,7 +654,7 @@ exports.toolCateDetail = async(req, res, next) => {
             // }
 
             // 12. mau sac
-            // const response = await axios.post(' https://raonhanh365.vn/api/select_tbl_mausac.php', form, {
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_mausac.php', form, {
             //     headers: {
             //         'Content-Type': 'multipart/form-data',
             //     },
@@ -765,26 +765,26 @@ exports.toolCateDetail = async(req, res, next) => {
 
 
             //17. loại chung
-            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            let data = response.data.data.items;
-            if (data.length) {
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
 
-                for (let i = 0; i < data.length; i++) {
-                    const newItem = {
-                        _id: data[i].id,
-                        name: data[i].ten_loai,
-                        parent: data[i].id_cha,
-                    };
-                    await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true }, )
-                }
-                page++;
-            } else {
-                result = false;
-            }
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].ten_loai,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
 
             console.log(page);
         } while (result);

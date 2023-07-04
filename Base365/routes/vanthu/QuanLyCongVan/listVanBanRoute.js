@@ -20,4 +20,8 @@ router.post('/getDetail',functions.checkToken,formData.parse(),listVanBanControl
 
 //tạo mới văn bản đi
 router.post('/createSendText',functions.checkToken,formData.parse(),listVanBanController.createSendText)
+
+//sửa văn bản đi
+router.put('/updateSendText',functions.checkToken,formData.parse(),listVanBanController.updateSendText)
+
 module.exports = router;
