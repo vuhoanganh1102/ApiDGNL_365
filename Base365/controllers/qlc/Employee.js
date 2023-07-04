@@ -13,10 +13,11 @@ try{
         if (checkPhone) {
             //  check emailContact co trong trong database hay khong
             let user = await functions.getDatafindOne(Users, { phoneTK: phoneTK, type: 2 })
-            let MaxId = await functions.getMaxID(Users) || 0
+            let MaxId = await functions.getMaxUserID("user")
+
             if (user == null) {
                 const user = new Users({
-                    _id: Number(MaxId) + 1 || 1,
+                    _id: MaxId._id,
                     emailContact: emailContact,
                     phoneTK: phoneTK,
                     userName: userName,
@@ -34,9 +35,9 @@ try{
                     fromWeb: "quanlichung",
                     role: 0,
                     avatarUser: null,
-                    idQLC: (Number(MaxId) + 1),
-                    idTimViec365 : idTimViec365,
-                    idRaoNhanh365 : idRaoNhanh365,
+                    idQLC: MaxId._idQLC,
+                    idTimViec365 : MaxId._idTV365,
+                    idRaoNhanh365 : MaxId._idRN365,
                     "inForPerson.employee.group_id": group_id,
                     "inForPerson.account.birthday": birthday,
                     "inForPerson.account.gender": gender,
@@ -148,18 +149,17 @@ exports.verifyCheckOTP = async (req,res)=>{
 
 
 //hàm đăng nhập
-exports.login = async (req,res)=>{
+exports.login = async (req, res, next) => {
     try {
-        let email = req.body.email
         let phoneTK = req.body.phoneTK
-        password = req.body.password
-        type = 2
-        if ((email||phoneTK) && password) {
-            let checkMail = await functions.checkEmail(email)
+        let email = req.body.email
+            password = req.body.password
+
+        type = 1
+        if (phoneTK&&password) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK)
-            if(checkMail || checkPhone){
-                let findUser = await Users.findOne({$or:[ { email:email, type: 2 },{phoneTK : phoneTK ,type :2}]})
-                let crmtoken = await Users.findOne({ email, type: 2 }).select("idQLC row inForPerson.employee.position_id inForPerson.employee.com_id type")
+            if (checkPhone) {
+                let findUser = await Users.findOne({ phoneTK: phoneTK, type: 2 })
                 console.log(findUser.password)
                 console.log(findUser.idQLC)
                 if (!findUser) {
@@ -169,50 +169,82 @@ exports.login = async (req,res)=>{
                 if (!checkPassword) {
                     return functions.setError(res, "Mật khẩu sai", 404)
                 }
+                // if (findUser.type == type) {
                 if (findUser != null) {
-                const token = await functions.createToken(findUser, "1d");
-                const tokenCRM = await functions.createToken(crmtoken, "1d")
+                    const token = await functions.createToken(findUser, "1d")
+                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
+                    let data = {
+                        access_token: token,
+                        refresh_token: refreshToken,
+                        com_info: {
+                            com_id: findUser._id,
+                            com_email: findUser.email,
+                            com_phone_tk: findUser.phoneTK,
+                            // com_pass: findUser.password,
+                            // com_name: findUser.userName,
+                            // com_address: findUser.address,
+                            // com_authentic: findUser.authentic,
+                            // com_avatar: findUser.avatarCompany,
+                            // idQLC: findUser.idQLC
 
-                const refreshToken = await functions.createToken({userId : findUser._id}, "1y")
-                let data = {
-                    access_token :  token,
-                    access_token_CRM: tokenCRM,
-                    refresh_token : refreshToken,
-                    user_info: {
-                        user_id : findUser._id,
-                        user_email :findUser.email,
-                        user_phoneTK : findUser.phoneTK,
-                        // user_password :findUser.password,
-                        // user_name : findUser.userName,
-                        // user_address : findUser.address,
-                        // user_authentic : findUser.authentic,
-                        // user_avatar : findUser.avatarUser,
-                        // user_com_id: findUser.com_id,
-                        // user_dep_id: findUser.dep_id,
-                        // user_group_id : findUser.group_id,
-                        // user_birthday : findUser.birthday,
-                        // user_gender : findUser.gender,
-                        // user_married : findUser.married,
-                        // user_exp : findUser.exp,
-                        // user_startWorkingTime: findUser.startWorkingTime,
-                        // user_education : findUser.education,
-                        
+                        }
                     }
+                    return functions.success(res, 'Đăng nhập thành công bằng SDT', { data })
 
+                } else {
+                    return functions.setError(res, "sai tai khoan hoac mat khau")
                 }
-                return functions.success(res,"dang nhap thanh cong",{data})
-            }else{
-                await functions.setError(res,"mail khong ton tai ")
+            } else {
+                return functions.setError(res, "không đúng định dạng SDT", 404)
             }
-        }else{
-            await functions.setError(res,"thieu email hoac password")
+        }else if(email&&password){
+            let checkMail = await functions.checkEmail(email)
+            if (checkMail) {
+                let findUser = await Users.findOne({ email: email, type: 2 })
+                if (!findUser) {
+                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
+                }
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (!checkPassword) {
+                    return functions.setError(res, "Mật khẩu sai", 404)
+                }
+                if (findUser != null) {
+                    const token = await functions.createToken(findUser, "1d")
+                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
+                    let data = {
+                        access_token: token,
+                        refresh_token: refreshToken,
+                        com_info: {
+                            com_id: findUser._id,
+                            com_email: findUser.email,
+                            com_phone_tk: findUser.phoneTK,
+                            // com_pass: findUser.password,
+                            // com_name: findUser.userName,
+                            // com_address: findUser.address,
+                            // com_authentic: findUser.authentic,
+                            // com_avatar: findUser.avatarCompany,
+                            // idQLC: findUser.idQLC
+
+                        }
+                    }
+                    return functions.success(res, 'Đăng nhập thành công bằng Email', { data })
+
+                } else {
+                    return functions.setError(res, "sai tai khoan hoac mat khau")
+                }
+            } else {
+                return functions.setError(res, "không đúng định dạng email", 404)
+            }
+        }else {
+            return functions.setError(res, "thiếu dữ liệu email hoặc sdt hoặc password ", 404)
+            
         }
-    }
-    }catch(e){
-        console.log(e);
-        return functions.setError(res, e.message)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
     }
 }
+
     // hàm đổi mật khẩu 
         exports.updatePasswordbyToken = async (req, res, next) => {
             try {
@@ -263,7 +295,7 @@ exports.updatePasswordbyInput = async (req, res, next) => {
             let email = req.body.email
             let password = req.body.password;
             let re_password = req.body.re_password;
-         if (phoneTK&&password&&password){
+         if (phoneTK&&password){
             let checkPassword = await functions.verifyPassword(password)
             if (checkPassword) {
                 return functions.setError(res, "sai dinh dang Mk", 404)
@@ -288,7 +320,7 @@ exports.updatePasswordbyInput = async (req, res, next) => {
                     return functions.success(res, 'cập nhập thành công')
                 }
                 return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
-        }else if(email&&password&&password){
+        }else if(email&&password){
             let checkPassword = await functions.verifyPassword(password)
             if (checkPassword) {
                 return functions.setError(res, "sai dinh dang Mk", 404)
@@ -491,61 +523,74 @@ exports.updateInfoEmployee = async (req, res, next) => {
 
 
 // show info
-exports.info = async (req,res) =>{
-    try{
+exports.info = async (req, res) => {
+    try {
         const idQLC = req.user.data.idQLC
         // const com_id = req.user.data.com_id
-        if((idQLC)==undefined){
-            functions.setError(res," không tìm thấy thông tin từ token ")
-        }else if(isNaN(idQLC)){
-            functions.setError(res,"id phải là số")
-        }else{
+        if ((idQLC) == undefined) {
+            functions.setError(res, " không tìm thấy thông tin từ token ")
+        } else if (isNaN(idQLC)) {
+            functions.setError(res, "id phải là số")
+        } else {
 
-            const data = await Users.findOne({idQLC: idQLC , type :2 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.employee.position_id inForPerson.employee.com_id inForPerson.employee.dep_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education').lean()
-            
+            const data = await Users.findOne({ idQLC: idQLC, type: 2 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.employee.position_id inForPerson.employee.com_id inForPerson.employee.dep_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education').lean()
+
             const data1 = data.inForPerson.employee.com_id
             const data0 = data.inForPerson.employee.dep_id
             const position_id = data.inForPerson.employee.position_id
-            const departments = await Deparment.findOne({_id : data0, com_id :data1 })
-            console.log(departments)
+
             const birthday = data.inForPerson.account.birthday
             const gender = data.inForPerson.account.gender
             const married = data.inForPerson.account.married
             const experience = data.inForPerson.account.experience
             const education = data.inForPerson.account.education
 
-            const data2 = departments.managerId
-            const departmentName = departments.deparmentName
+            const departments = await Deparment.findOne({ _id: data0, com_id: data1 })
+            console.log(departments)
+            if (departments) {
+                const data2 = departments.managerId
+                const departmentName = departments.deparmentName
 
-            if((departments) == undefined){
-            return functions.setError(res, 'Không có dữ liệu phòng ban ', 404);
-            
-        }
-            if((data2&&data) == undefined){
-            return functions.setError(res, 'Không có dữ liệu ', 404);
-            
-        }
-        const companyName1 = await Users.findOne({idQLC : data1 , type :1}).select('userName').lean()
-        const companyName = companyName1.userName
-        const managerName1 = await Users.findOne({_id : data2 , type :2}).select('userName').lean()
-        const managerName = managerName1.userName
+                if ((departments) == undefined) {
+                    return functions.setError(res, 'Không có dữ liệu phòng ban ', 404);
 
-        data.departmentName = departmentName
-        data.managerName = managerName
-        data.companyName = companyName
-        data.birthday = birthday
-        data.position_id = position_id
-        data.gender = gender
-        data.married = married
-        data.experience = experience
-        data.education = education
-        // console.log(managerName)
-            if (data) {
-                return await functions.success(res, 'Lấy thành công', { data });
-            };
+                }
+                if ((data2 && data) == undefined) {
+                    return functions.setError(res, 'Không có dữ liệu ', 404);
+
+                }
+                const companyName1 = await Users.findOne({ idQLC: data1, type: 1 }).select('userName').lean()
+                const companyName = companyName1.userName
+                const managerName1 = await Users.findOne({ _id: data2, type: 2 }).select('userName').lean()
+                const managerName = managerName1.userName
+
+                data.departmentName = departmentName
+                data.managerName = managerName
+                data.companyName = companyName
+                data.birthday = birthday
+                data.position_id = position_id
+                data.gender = gender
+                data.married = married
+                data.experience = experience
+                data.education = education
+                // console.log(managerName)
+                if (data) {
+                    return await functions.success(res, 'Lấy thành công', { data });
+                };
+            } else {
+                data.birthday = birthday
+                data.position_id = position_id
+                data.gender = gender
+                data.married = married
+                data.experience = experience
+                data.education = education
+                return functions.success(res, 'Không có dữ phòng ban ', { data });
+
+            }
+
             return functions.setError(res, 'Không có dữ liệu', 404);
         }
-    }catch (e) {
+    } catch (e) {
         functions.setError(res, e.message)
     }
 } 

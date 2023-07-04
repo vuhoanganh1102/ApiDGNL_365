@@ -139,3 +139,52 @@ exports.checkToken = (req, res, next) => {
         next();
     });
 };
+exports.getDatafindOne = async(model, condition) => {
+    return model.findOne(condition).lean();
+};
+
+exports.getDatafind = async(model, condition) => {
+    return model.find(condition).lean();
+}
+
+exports.getDatafindOneAndUpdate = async(model, condition, projection) => {
+    return model.findOneAndUpdate(condition, projection);
+};
+exports.getMaxUserID = async(type = "user") => {
+    let condition = {};
+    if (type == "user") {
+        condition = { type: { $ne: 1 } };
+    } else {
+        condition = { type: 1 }
+    }
+
+    // ID Chat
+    const maxID = await Users.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+    if (maxID) {
+        _id = Number(maxID._id) + 1;
+    } else _id = 1;
+
+    // ID timviec365
+    const maxIDTimviec = await Users.findOne(condition, { idTimViec365: 1 }).sort({ idTimViec365: -1 }).lean();
+    if (maxIDTimviec) {
+        _idTV365 = Number(maxIDTimviec.idTimViec365) + 1;
+    } else _idTV365 = 1;
+
+    // ID chuyển đổi số
+    const maxIdQLC = await Users.findOne(condition, { idQLC: 1 }).sort({ idQLC: -1 }).lean();
+    if (maxIdQLC) {
+        _idQLC = Number(maxIdQLC.idQLC) + 1;
+    } else _idQLC = 1;
+
+    // ID raonhanh365
+    const maxIdRN365 = await Users.findOne(condition, { idRaoNhanh365: 1 }).sort({ idRaoNhanh365: -1 }).lean();
+    if (maxIdRN365) {
+        _idRN365 = Number(maxIdRN365.idRaoNhanh365) + 1;
+    } else _idRN365 = 1;
+
+    return { _id, _idTV365, _idQLC, _idRN365 }
+}
+
+const hostImage = () => {
+    return "https://cdn.timviec365.vn";
+}
