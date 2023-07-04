@@ -58,7 +58,7 @@ exports.createLinkTilte = (input) => {
     return str
 }
 exports.deleteFileRaoNhanh = (id, file) => {
-    let filePath = `../Storage/base365/raonhanh365/pictures/avt_tindangmua/${id}/` + file;
+    let filePath = `../store/base365/raonhanh365/pictures/avt_tindangmua/${id}/` + file;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });
@@ -129,8 +129,8 @@ exports.createLinkFileRaonhanh = (folder, id, name) => {
 
 exports.uploadFileRaoNhanh = async (folder, id, file,allowedExtensions) => {
 
-    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
-    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+    let path1 = `../store/base365/raonhanh365/pictures/${folder}/${id}/`;
+    let filePath = `../store/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
 
     let fileCheck =  path.extname(filePath);
     if(allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false)
@@ -159,8 +159,8 @@ exports.uploadFileRaoNhanh = async (folder, id, file,allowedExtensions) => {
 }
 
 exports.uploadFileRN2 = (folder, id, file) => {
-    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
-    let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+    let path1 = `../store/base365/raonhanh365/pictures/${folder}/${id}/`;
+    let filePath = `../store/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
     let fileCheck =  path.extname(filePath);
     if (!fs.existsSync(path1)) {   
         fs.mkdirSync(path1, { recursive: true });
@@ -178,8 +178,8 @@ exports.uploadFileRN2 = (folder, id, file) => {
     return true
 }
 exports.uploadFileBase64RaoNhanh = async(folder, id, base64String, file)=>{
-    let path1 = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/`;
-    // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
+    let path1 = `../store/base365/raonhanh365/pictures/${folder}/${id}/`;
+    // let filePath = `../store/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
     if (!fs.existsSync(path1)) {
         fs.mkdirSync(path1, { recursive: true });
     }
