@@ -5,11 +5,7 @@ const md5 = require("md5")
 //đăng kí tài khoản cá nhân 
 exports.register = async (req, res) => {
     try {
-        const { userName, email, password, phoneTK, address, com_id, dep_id ,birthday,phone,
-            gender,
-            married,
-            experience,
-            education,} = req.body
+        const { userName, password, phoneTK, address ,phone, fromWeb,createdAt,idTimViec365 ,idRaoNhanh365,} = req.body
 
         if (userName && password && phoneTK && address) {
             // let checkMail = await functions.checkEmail(email)
@@ -22,24 +18,25 @@ exports.register = async (req, res) => {
                 if (user == null) {
                     const Inuser = new Users({
                         _id: Number(MaxId) + 1 || 1,
-                        email: email,
                         userName: userName,
                         phoneTK: phoneTK,
                         phone: phone || phoneTK,
                         password: md5(password),
                         address: address,
+                        createdAt : new Date(),
                         type: 0,
                         role: 0,
                         otp: null,
                         authentic: 0,
+                        fromWeb: "quanlichung",
                         idQLC: (Number(MaxId) + 1),
-                        "inForPerson.employee.com_id": com_id,
-                        "inForPerson.employee.dep_id": dep_id,
-                        "inForPerson.account.birthday" : birthday,
-                        "inForPerson.account.gender" : gender,
-                        "inForPerson.account.married" : married,
-                        "inForPerson.account.experience" : experience,
-                        "inForPerson.account.education" : education,
+                        idTimViec365 : idTimViec365,
+                        idRaoNhanh365 : idRaoNhanh365,
+                        "inForPerson.account.birthday": null,
+                        "inForPerson.account.gender": 0,
+                        "inForPerson.account.married": 0,
+                        "inForPerson.account.experience": 0,
+                        "inForPerson.account.education": 0,
                     })
                     
                     await Inuser.save()
@@ -69,51 +66,6 @@ exports.register = async (req, res) => {
     }
 
 }
-// hàm xác thực otp bước 1: gửi OTP qua phone khi kích hoạt tài khoản
-// exports.verify = async (req,res)=>{
-//     try{
-//         let otp = req.body.ma_xt || null
-//         let phoneTK = req.user.data.phoneTK;
-//         console.log(phoneTK)
-//         console.log(phoneTK)
-//         let data = []
-//         if(!otp){
-//                 let findUser = await Users.findOne({phoneTK:phoneTK ,type :0})
-//                 if(findUser) {
-//                     let otp = functions.randomNumber
-//                     data = await Users.updateOne({phoneTK:phoneTK ,type :0},{
-//                         $set:{
-//                             otp : otp
-//                         }
-//                     })
-//                     return functions.success(res,"Gửi mã OTP thành công",{data ,otp})
-//                 }else {
-//                     return functions.setError(res,"tài khoản không tồn tại")
-//                 }
-
-
-//         }else if (otp){
-//             let verify = await Users.findOne({phoneTK:phoneTK,otp ,type :0});
-//             if (verify != null){
-//                 await Users.updateOne({phoneTK:phoneTK ,type :0},{
-//                     $set: {
-//                         authentic :1 
-//                     }
-//                 });
-//                 return functions.success(res,"xác thực thành công");
-//             }else{
-//                 return functions.setError(res,"xác thực thất bại",404);
-//             }
-        
-        
-//          }else{
-//             return functions.setError(res,"thiếu dữ liệu sdt",404)
-//         }
-//     } catch(e) {
-//         console.log(e);
-//         return functions.setError(res , e.message)
-//     }
-// }
 exports.verify = async (req,res)=>{
     try{
         let otp = req.body.ma_xt || null

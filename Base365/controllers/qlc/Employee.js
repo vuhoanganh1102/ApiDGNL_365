@@ -7,17 +7,17 @@ const Deparment = require("../../models/qlc/Deparment")
 //đăng kí tài khoản nhân viên 
 exports.register = async (req, res) => {
 try{
-    const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+    const { userName, emailContact, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp, idTimViec365 ,idRaoNhanh365, } = req.body;
     if ((userName && password && com_id && address && phoneTK) !== undefined) {
         let checkPhone = await functions.checkPhoneNumber(phoneTK);
         if (checkPhone) {
-            //  check email co trong trong database hay khong
+            //  check emailContact co trong trong database hay khong
             let user = await functions.getDatafindOne(Users, { phoneTK: phoneTK, type: 2 })
             let MaxId = await functions.getMaxID(Users) || 0
             if (user == null) {
                 const user = new Users({
                     _id: Number(MaxId) + 1 || 1,
-                    email: email,
+                    emailContact: emailContact,
                     phoneTK: phoneTK,
                     userName: userName,
                     phone: phone || phoneTK,
@@ -31,10 +31,12 @@ try{
                     otp: otp,
                     createdAt: new Date(),
                     authentic: 0,
-                    fromWeb: "quanlichung.timviec365",
+                    fromWeb: "quanlichung",
                     role: 0,
                     avatarUser: null,
                     idQLC: (Number(MaxId) + 1),
+                    idTimViec365 : idTimViec365,
+                    idRaoNhanh365 : idRaoNhanh365,
                     "inForPerson.employee.group_id": group_id,
                     "inForPerson.account.birthday": birthday,
                     "inForPerson.account.gender": gender,
@@ -355,7 +357,7 @@ exports.updateInfoEmployee = async (req, res, next) => {
                             address: address,
                             otp: otp,
                             authentic: null || 0,
-                            fromWeb: "quanlichung.timviec365",
+                            fromWeb: "quanlichung",
                             avatarUser: avatarUser,
                             updatedAt: new Date(),
                             "inForPerson.employee.group_id": group_id,
@@ -385,7 +387,7 @@ exports.updateInfoEmployee = async (req, res, next) => {
                             address: address,
                             otp: otp,
                             authentic: null || 0,
-                            fromWeb: "quanlichung.timviec365",
+                            fromWeb: "quanlichung",
                             avatarUser: avatarUser,
                             updatedAt: new Date(),
                             "inForPerson.employee.group_id": group_id,
@@ -498,7 +500,6 @@ exports.info = async (req,res) =>{
         }else if(isNaN(idQLC)){
             functions.setError(res,"id phải là số")
         }else{
-            // const data = await Users.findOne({idQLC}).select(' userName email phoneTK password inForPerson.employee.com_id address inForPerson.employee.position_id inForPerson.employee.dep_id phone avatarUser role inForPerson.employee.group_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.startWorkingTime inForPerson.account.education inForPerson.employee.dep_id inForPerson.employee.position_id ').lean();
 
             const data = await Users.findOne({idQLC: idQLC , type :2 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.employee.position_id inForPerson.employee.com_id inForPerson.employee.dep_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education').lean()
             
@@ -538,7 +539,7 @@ exports.info = async (req,res) =>{
         data.married = married
         data.experience = experience
         data.education = education
-        console.log(managerName)
+        // console.log(managerName)
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
