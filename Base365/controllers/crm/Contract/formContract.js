@@ -161,3 +161,7 @@ exports.deleteDetailContract = async (req,res) =>{
         functions.success(res," xoa thanh cong ", {result})
     }
 }
+
+
+
+//thêm try catch, checktoken

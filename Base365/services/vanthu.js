@@ -4,6 +4,8 @@ const multer = require('multer');
 const axios = require('axios');
 const path = require('path');
 
+
+
 exports.uploadFileVanThu = (id, file) => {
     let path = `../Storage/base365/vanthu/dexuat/${id}/`;
     let filePath = `../Storage/base365/vanthu/dexuat/${id}/` + file.originalFilename;

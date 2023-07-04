@@ -4,6 +4,7 @@ const path = require('path');
 // const { log } = require("console");
 const fs = require('fs');
 const Customer = require('../../models/crm/Customer/customer')
+const User = require('../../models/Users')
 
 exports.getMaxIDCRM = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { cus_id: -1 } }).lean() || 0;
@@ -219,3 +220,16 @@ exports.deleteCustomerByIds = async (arrCus) => {
     throw error;
   }
 };
+
+
+exports.getEmployeesFromDepartment = async(depId) => {
+  try {
+    const employees = await User.find({ 'inForPerson.employee.dep_id': depId }).exec(); // Lấy danh sách nhân viên từ database, theo điều kiện dep_id
+
+    return employees;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Error retrieving employees from department.'); // Ném lỗi nếu có lỗi xảy ra
+  }
+}
+

@@ -20,4 +20,7 @@ router.post("/update_GroupKH",formData.parse(), GroupCustomerController.update)
 // xoá group chỉ định
 router.post("/delete_khach_hang",formData.parse(), GroupCustomerController.delete)
 
+//Api hiện chia sẻ
+router.post('/showShareGroup',formData.parse(),GroupCustomerController.showListShareEmp)
+
 module.exports = router;
