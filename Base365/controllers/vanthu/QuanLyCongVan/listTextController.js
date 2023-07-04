@@ -93,7 +93,7 @@ exports.createIncomingText = async (req, res, next) => {
         if (await functions.checkTime(date_nhan) === false || functions.checkDate(date_nhan) === false) {
             return functions.setError(res, 'invalid date', 400)
         }
-        
+
         if (await !functions.checkNumber(type_gui_vbden) || await !functions.checkNumber(noi_gui_vbden) ||
             await !functions.checkNumber(use_nhan_vbden) || await !functions.checkNumber(use_luu_vbden)
             || await !functions.checkNumber(book_vb)) {
@@ -289,8 +289,8 @@ exports.synthesisFunction = async (req, res, next) => {
         if (!id || !action) {
             return functions.setError(res, 'missing data input', 400)
         }
-        // Chức năng xoá văn bản đến
-        if (action === 'deleteIncomingText') {
+        // Chức năng xoá văn bản 
+        if (action === 'deleteIncomingText' || action === 'deleteSendText') {
             let type_user_xoa = 0;
             let user_xoa = 0;
             if (useId == 0) {
@@ -312,6 +312,8 @@ exports.synthesisFunction = async (req, res, next) => {
             })
             return functions.success(res, 'delete success')
         }
+
+
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)
@@ -345,20 +347,20 @@ exports.createSendText = async (req, res, next) => {
         let name_vbdi = req.body.name_vbdi;
         let type_loai_vb = req.body.type_loai_vb;
         let so_vbdi = req.body.so_vbdi;
-        let dvst_vbdi = req.body.dvst_vbdi;
-        let nst_vbdi = req.body.nst_vbdi;
+        let dvst_vbdi = Number(req.body.dvst_vbdi);
+        let nst_vbdi = Number(req.body.nst_vbdi);
         let date_guidi = req.body.date_guidi;
-        let use_luu_vbdi = req.body.use_luu_vbdi;
-        let use_ky_vbdi = req.body.use_ky_vbdi;
+        let use_luu_vbdi = Number(req.body.use_luu_vbdi);
+        let use_ky_vbdi = Number(req.body.use_ky_vbdi);
         let nhanvb_dep = req.body.nhanvb_dep;
-        let nhan_noibo_vb_di = req.body.nhan_noibo_vb_di;
+        let nhan_noibo_vb_di = Number(req.body.nhan_noibo_vb_di);
         let nhan_ngoai_dep_vbdi = req.body.nhan_ngoai_dep_vbdi;
         let nhanvb_use = req.body.nhanvb_use;
-        let nhan_use_vbdi = req.body.nhan_use_vbdi;
+        let nhan_use_vbdi = Number(req.body.nhan_use_vbdi);
         let nhan_ngoai_user_vbdi = req.body.nhan_ngoai_user_vbdi;
         let trich_yeu_vbdi = req.body.trich_yeu_vbdi;
         let ghi_chu_vbdi = req.body.ghi_chu_vbdi;
-        let book_vb = req.body.book_vb;
+        let book_vb = Number(req.body.book_vb);
         let file = req.files;
         if (type_loai_vb && type_loai_vb.length !== 0) {
             type_loai_vb = type_loai_vb.join(" ")
@@ -389,6 +391,7 @@ exports.createSendText = async (req, res, next) => {
                     cv_file.push({ file: checkUpload })
 
                 }
+
             } else if (file && file.file) {
                 let checkUpload = await vanthu.uploadfile('file_van_ban', file.file)
                 if (checkUpload === false) {
@@ -422,6 +425,156 @@ exports.createSendText = async (req, res, next) => {
                 cv_type_loai: 2,
                 cv_usc_id: comId,
                 cv_time_created: new Date()
+            })
+        } else {
+            return functions.setError(res, 'missing data', 400)
+        }
+        return functions.success(res, 'add successfully')
+    } catch (err) {
+        console.error(err)
+        return functions.setError(res, err)
+    }
+};
+
+
+exports.updateSendText = async (req, res, next) => {
+    try {
+        let comId = req.comId || 1763;
+        let name_vbdi = req.body.name_vbdi;
+        let type_loai_vb = req.body.type_loai_vb;
+        let so_vbdi = req.body.so_vbdi;
+        let dvst_vbdi = Number(req.body.dvst_vbdi);
+        let nst_vbdi = Number(req.body.nst_vbdi);
+        let date_guidi = req.body.date_guidi;
+        let use_luu_vbdi = Number(req.body.use_luu_vbdi);
+        let use_ky_vbdi = Number(req.body.use_ky_vbdi);
+        let nhanvb_dep = req.body.nhanvb_dep;
+        let nhan_noibo_vb_di = Number(req.body.nhan_noibo_vb_di);
+        let nhan_ngoai_dep_vbdi = req.body.nhan_ngoai_dep_vbdi;
+        let nhanvb_use = req.body.nhanvb_use;
+        let nhan_use_vbdi = Number(req.body.nhan_use_vbdi);
+        let nhan_ngoai_user_vbdi = req.body.nhan_ngoai_user_vbdi;
+        let trich_yeu_vbdi = req.body.trich_yeu_vbdi;
+        let ghi_chu_vbdi = req.body.ghi_chu_vbdi;
+        let book_vb = Number(req.body.book_vb);
+        let file = req.files;
+        let id = Number(req.body.id);
+        let useId = req.useId;
+        let noidung = '';
+        let type_edit = 0;
+        let cv_time_update = new Date();
+        if (type_loai_vb && type_loai_vb.length !== 0) {
+            type_loai_vb = type_loai_vb.join(" ")
+        }
+        if (nhanvb_dep && nhanvb_dep.length !== 0) {
+            nhanvb_dep = nhanvb_dep.join(" ")
+        }
+        if (nhanvb_use && nhanvb_use.length !== 0) {
+            nhanvb_use = nhanvb_use.join(" ")
+        }
+        let cv_file = [];
+        if (name_vbdi && so_vbdi && date_guidi && use_luu_vbdi && use_ky_vbdi && trich_yeu_vbdi) {
+            if (await !functions.checkNumber(dvst_vbdi) || await !functions.checkNumber(nst_vbdi) ||
+                await !functions.checkNumber(use_luu_vbdi) || await !functions.checkNumber(use_ky_vbdi)
+                || await !functions.checkNumber(book_vb)) {
+                return functions.setError(res, 'invalid number', 400)
+            }
+            if (await functions.checkTime(date_guidi) === false || functions.checkDate(date_guidi) === false) {
+                return functions.setError(res, 'invalid date', 400)
+            }
+            let check = await tbl_qly_congvan.findById(id);
+            if (!check) return functions.setError(res, 'not found sendtext', 404)
+            if (file && file.file && file.file.length > 0) {
+                for (let i = 0; i < file.file.length; i++) {
+                    let checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i])
+
+                    if (checkUpload === false) {
+                        return functions.setError(res, 'upload failed', 400)
+                    }
+                    cv_file.push({ file: checkUpload })
+
+                }
+                if (check.cv_file) {
+                    for (let i = 0; i < check.cv_file.length; i++) {
+                        vanthu.deleteFile(check.cv_file[i].file)
+                    }
+                }
+                await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
+            } else if (file && file.file) {
+                let checkUpload = await vanthu.uploadfile('file_van_ban', file.file)
+                if (checkUpload === false) {
+                    return functions.setError(res, 'upload failed', 400)
+                }
+                cv_file.push({ file: checkUpload })
+                if (check.cv_file) {
+                    for (let i = 0; i < check.cv_file.length; i++) {
+                        vanthu.deleteFile(check.cv_file[i].file)
+                    }
+                }
+                await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
+            }
+            if (name_vbdi !== check.cv_name) noidung += 'Tên văn bản,';
+            if (type_loai_vb !== check.cv_kieu) noidung += 'Kiểu văn bản,';
+            if (so_vbdi !== check.cv_date) noidung += 'Số văn bản,';
+            if (dvst_vbdi !== check.cv_phong_soan) noidung += 'Đơn vị soạn thảo,';
+            if (nst_vbdi !== check.cv_user_soan) noidung += 'Người soạn thảo,';
+            if (date_guidi !== check.cv_date) noidung += 'Ngày gửi,';
+            if (use_luu_vbdi !== check.cv_user_save) noidung += 'Người lưu trữ,';
+            if (use_ky_vbdi !== check.cv_user_ky) noidung += 'Người ký,';
+            if (nhanvb_dep !== check.cv_type_nhan) noidung += 'Loại nơi nhận,';
+            if (nhan_noibo_vb_di !== check.cv_nhan_noibo) noidung += 'Nơi nhận nội bộ,';
+            if (nhan_ngoai_dep_vbdi !== check.cv_nhan_ngoai) noidung += 'Nơi nhận ngoài,';
+            if (nhanvb_use !== check.cv_type_chuyenden) noidung += 'Loại chuyển đến,';
+            if (nhan_use_vbdi !== check.cv_chuyen_noibo) noidung += 'Chuyển đến nội bộ,';
+            if (nhan_ngoai_user_vbdi !== check.cv_chuyen_ngoai) noidung += 'Chuyển đến ngoài,';
+            if (trich_yeu_vbdi !== check.cv_trich_yeu) noidung += 'Trích yếu,';
+            if (ghi_chu_vbdi !== check.cv_ghi_chu) noidung += 'Ghi chú,';
+            if (book_vb !== check.cv_id_book) noidung += 'Sổ văn bản,';
+            if (file && file.file) noidung += 'File đính kèm,'
+
+            if (noidung !== '') {
+                type_edit = 1;
+                if (useId == 0) {
+                    type_user = 1;
+                    users = comId;
+                }
+                else {
+                    type_user = 2;
+                    users = useId;
+                }
+                let _id = await vanthu.getMaxId(tbl_qlcv_edit)
+                await tbl_qlcv_edit.create({
+                    _id,
+                    ed_cv_id: id,
+                    ed_time: cv_time_update,
+                    ed_type_user: type_user,
+                    ed_nd: noidung,
+                    ed_usc_id: comId
+                })
+            }
+
+            await tbl_qly_congvan.findByIdAndUpdate(id, {
+                cv_name: name_vbdi,
+                cv_kieu: type_loai_vb,
+                cv_so: so_vbdi,
+                cv_type_soan: 1,
+                cv_phong_soan: dvst_vbdi,
+                cv_user_soan: nst_vbdi,
+                cv_id_book: book_vb,
+                // cv_file: cv_file,
+                cv_date: date_guidi,
+                cv_user_save: use_luu_vbdi,
+                cv_user_ky: use_ky_vbdi,
+                cv_type_nhan: nhanvb_dep,
+                cv_nhan_noibo: nhan_noibo_vb_di,
+                cv_nhan_ngoai: nhan_ngoai_dep_vbdi,
+                cv_type_chuyenden: nhanvb_use,
+                cv_chuyen_noibo: nhan_use_vbdi,
+                cv_chuyen_ngoai: nhan_ngoai_user_vbdi,
+                cv_trich_yeu: trich_yeu_vbdi,
+                cv_ghi_chu: ghi_chu_vbdi,
+                cv_type_edit: type_edit,
+                cv_time_edit: cv_time_update
             })
         } else {
             return functions.setError(res, 'missing data', 400)
