@@ -11,6 +11,8 @@ router.post('/getListVanBanDiDaGui',vanThuService.checkToken,formData.parse(), v
 router.post('/createChuyenTiep',vanThuService.checkToken,formData.parse(), vanBanDiController.createChuyenTiep);
 router.post('/deleteVanBan',vanThuService.checkToken,formData.parse(), vanBanDiController.deleteVanBan);
 router.post('/checkLuuQLCV',vanThuService.checkToken,formData.parse(), vanBanDiController.checkLuuQLCV);
+router.post('/luuVBCTY',vanThuService.checkToken,formData.parse(), vanBanDiController.luuVBCTY);
+router.post('/setTrangThaiVanBan',vanThuService.checkToken,formData.parse(), vanBanDiController.setTrangThaiVanBan);
 
 
 module.exports = router

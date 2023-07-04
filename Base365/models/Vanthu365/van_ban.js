@@ -67,10 +67,11 @@ const vanBan = new mongoose.Schema({
         type: String,
         max: 255
     },
-    file_vb: {
-        type: String,
-        max: 255
-    },
+    file_vb: [{
+        file:{
+            type: String
+        }
+    }],
     trang_thai_vb: {
         type: Number
     },

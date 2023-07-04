@@ -1185,10 +1185,19 @@ exports.tool_VanBan = async (req, res, next) => {
 
                     // console.log(typeof (listData[i].thoi_gian_duyet));
                     // let thoiGianDuyet = null;
-                    if (listData[i].id == 49) {
-                        console.log((listData[i].thoi_gian_duyet));
-
-                    };
+                    
+                    let arrLinkFile = [];
+                    let arr;
+                    if(listData[i].file_vb){
+                        arr = listData[i].file_vb.split(',');
+                        for(let i=0; i<arr.length; i++){
+                            arrLinkFile.push({file: arr[i]})
+                        }
+                    }
+                    // if (listData[i].id == 49) {
+                    //     console.log((listData[i].thoi_gian_duyet));
+                    // };
+                    
 
                     const vanBan = new VanBan({
                         _id: listData[i].id,
@@ -1210,7 +1219,7 @@ exports.tool_VanBan = async (req, res, next) => {
                         gui_ngoai_cty: listData[i].gui_ngoai_cty,
                         mail_cty: listData[i].mail_cty,
                         name_com: listData[i].name_com,
-                        file_vb: listData[i].file_vb,
+                        file_vb: arrLinkFile,
                         trang_thai_vb: listData[i].trang_thai_vb,
                         duyet_vb: listData[i].duyet_vb,
                         type_xet_duyet: listData[i].type_xet_duyet,

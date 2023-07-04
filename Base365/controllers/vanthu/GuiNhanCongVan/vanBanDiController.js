@@ -44,7 +44,7 @@ exports.getDataAndCheck = async(req, res, next) => {
 
 
     let file = req.files.file_vb;
-    let file_vb_name='';
+    let file_vb_name=[];
     let NameFile = '';
     let InfoFile = '';
     const y = new Date().getFullYear();
@@ -55,12 +55,14 @@ exports.getDataAndCheck = async(req, res, next) => {
         let checkFile = await functions.checkFile(file[i].path);
         let fileNameOrigin = file[i].name;
 
-        console.log(file[i]);
+        // console.log(file[i]);
         if(!checkFile){
           return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
         }
-        let fileName = await vanThuService.uploadFileNameRandom('file_van_ban', file[i]);
-        file_vb_name += fileName;
+        let linkFile = await vanThuService.uploadfile('file_van_ban', file[i]);
+        if(linkFile) {
+          file_vb_name.push({file: linkFile})
+        }
 
         const filePath = `https://vanthu.timviec365.vn/uploads/file_van_ban/${y}/${m}/${d}/${file[i].fileName}`;
         if(NameFile==''){
@@ -359,7 +361,7 @@ exports.createVanBanIn = async(req, res, next) => {
 
 exports.getListVanBanDiDaGui = async(req, res, next) => {
   try{
-    let {ten_vb_search, trang_thai_search, page, pageSize} = req.body;
+    let {id_vb, ten_vb_search, trang_thai_search, fromDate, toDate, page, pageSize} = req.body;
     page = Number(page);
     pageSize = Number(pageSize);
     if(!page || !pageSize) {
@@ -368,10 +370,13 @@ exports.getListVanBanDiDaGui = async(req, res, next) => {
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
 
-    let id = req.id || 145;
+    let id = req.id || 1763;
     let condition = {user_send: id};
+    if(id_vb) condition._id = Number(id_vb);
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
-    if(trang_thai_search) condition.trang_thai_vb = trang_thai_search;
+    if(trang_thai_search) condition.trang_thai_vb = Number(trang_thai_search);
+    if(fromDate) condition.created_date = {$gte: new Date(fromDate)};
+    if(toDate) condition.created_date = {$lte: new Date(toDate)};
 
     // let listVanBanDi = await functions.pageFind(VanBan, condition, {_id: 1}, skip, limit);
     let listVanBanDi = await VanBan.aggregate([
@@ -482,6 +487,7 @@ exports.luuVBCTY = async(req, res, next) => {
     if(!id_vb || !book_vb || !so_vb) {
       return functions.setError(res, "Missing input value!", 404);
     }
+    let type=2;
     let congVan = await QuanLyCongVan.findOne({cv_id_vb: id_vb});
     if(congVan) {
       return functions.setError(res, "Cong van da duoc luu!", 405);
@@ -489,7 +495,81 @@ exports.luuVBCTY = async(req, res, next) => {
     let vanBan = await VanBan.findOne({_id: id_vb});
     if(!vanBan) {
       return functions.setError(res, "Van ban khong tim thay!", 406);
-    } 
+    }
+    let kieu='', type_hd=0, status_hd=0, type_soan, phong_soan, user_soan, nhan_noibo, chuyen_noibo;
+
+    if(vanBan.type_khan_cap==1) kieu=1;
+    if(vanBan.type_bao_mat==1) kieu=2;
+
+    if(vanBan.nhom_vb==17){
+      type_hd = 1;
+      status_hd = 1;
+      if(vanBan.trang_thai_vb==6) status_hd = 2;
+    }
+    type_soan = 1;
+    phong_soan = "";
+    user_soan = vanBan.user_send;
+    let soan_ngoai="", name_soan = "", nhan_ngoai = "", chuyen_ngoai = "";
+    let type_nhan = 1, type_chuyenden=1;
+    chuyen_noibo = vanBan.user_nhan;
+    if(vanBan.gui_ngoai_cty==1) {
+      type_nhan = type_chuyenden = 2;
+      nhan_noibo = chuyen_noibo = "";
+      nhan_ngoai = chuyen_ngoai = vanBan.mail_cty? vanBan.mail_cty: vanBan.name_com;
+    }
+    let maxIdQLCV = await vanThuService.getMaxId(QuanLyCongVan);
+    congVan = new QuanLyCongVan({
+      _id: maxIdQLCV,
+      cv_id_vb: vanBan._id,
+      cv_id_book: book_vb, 
+      cv_name: vanBan.title_vb, 
+      cv_kieu: kieu, 
+      cv_so: so_vb, 
+      cv_type_soan: type_soan, 
+      cv_soan_ngoai: soan_ngoai, 
+      cv_phong_soan: phong_soan, 
+      cv_user_soan: user_soan, 
+      cv_name_soan: name_soan, 
+      cv_date: vanBan.created_date, 
+      cv_user_save: vanBan.user_nhan, 
+      cv_user_ky: vanBan.nguoi_ky, 
+      cv_type_nhan: type_nhan, 
+      cv_nhan_noibo: nhan_noibo, 
+      cv_nhan_ngoai: nhan_ngoai, 
+      cv_type_chuyenden: type_chuyenden, 
+      cv_chuyen_noibo: chuyen_noibo, 
+      cv_chuyen_ngoai: chuyen_ngoai, 
+      cv_trich_yeu: vanBan.des_vb, 
+      cv_ghi_chu: vanBan.nd_vb, 
+      cv_file: vanBan.file_vb, 
+      cv_type_loai: type, 
+      cv_type_hd: type_hd,
+      cv_status_hd: status_hd,
+      cv_usc_id: vanBan.usc_id, 
+      cv_time_created: vanBan.created_date
+    })
+    congVan = await congVan.save();
+    if(!congVan) {
+      return functions.setError(res, "Luu cong van fail!", 506);
+    }
+    return functions.success(res, "Luu cong van thanh cong!");
+  }catch(err) {
+    console.log("Error from server!", err);
+    return functions.setError(res, err, 500);
+  }
+}
+
+exports.setTrangThaiVanBan = async(req, res, next) => {
+  try{
+    let {id_vb, trang_thai_vb} = req.body;
+    if(!id_vb || !trang_thai_vb) {
+      return functions.setError(res, "Missing input value!", 404);
+    }
+    let vanBan = await VanBan.findOneAndUpdate({_id: id_vb}, {trang_thai_vb: trang_thai_vb}, {new: true});
+    if(!vanBan) {
+      return functions.setError(res, "Khong ton tai van ban!", 504);
+    }
+    return functions.success(res, "Cap nhat trang thai thanh cong!");
   }catch(err) {
     console.log("Error from server!", err);
     return functions.setError(res, err, 500);

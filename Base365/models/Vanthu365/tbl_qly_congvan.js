@@ -92,9 +92,9 @@ const tbl_qly_congvan = new mongoose.Schema({
         type: String
     },
     cv_file: [{
-      file:{
-        type: String
-      }
+        file:{
+            type: String
+        }
     }],
     cv_type_xoa: {
         type: Number,
