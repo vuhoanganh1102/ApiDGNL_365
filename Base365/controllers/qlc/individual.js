@@ -336,7 +336,7 @@ exports.updateInfoindividual = async (req, res, next) => {
         let File = req.files || null;
         let avatarUser = null;
         if ((idQLC) !== undefined) {
-            let findUser = Users.findOne({ idQLC: idQLC })
+            let findUser = Users.findOne({ idQLC: idQLC ,type : 0})
             if (findUser) {
                 if (File.avatarUser) {
                     let upload = fnc.uploadFileQLC('avt_individual', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
@@ -345,7 +345,7 @@ exports.updateInfoindividual = async (req, res, next) => {
                     }
                     avatarUser = fnc.createLinkFileQLC('avt_individual', idQLC, File.avatarUser.name)
 
-                    data = await Users.updateOne({ idQLC: idQLC }, {
+                    data = await Users.updateOne({ idQLC: idQLC ,type :0}, {
                         $set: {
                             userName: userName,
                             email: email,
@@ -372,7 +372,7 @@ exports.updateInfoindividual = async (req, res, next) => {
 
 
                 } else {
-                    data1 = await Users.updateOne({ idQLC: idQLC }, {
+                    data1 = await Users.updateOne({ idQLC: idQLC,type :0 }, {
                         $set: {
                             userName: userName,
                             email: email,
@@ -499,11 +499,7 @@ exports.info = async (req, res) => {
             const married = data.inForPerson.account.married
             const experience = data.inForPerson.account.experience
             const education = data.inForPerson.account.education
-
-            //     if((data2&&data) == undefined){
-            //     return functions.setError(res, 'Không có dữ liệu ', 404);
-
-            // }
+            
             data.birthday = birthday
             data.gender = gender
             data.married = married
