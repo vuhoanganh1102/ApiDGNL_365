@@ -207,8 +207,7 @@ exports.uploadfile = async(folder, file_img) => {
             }
         });
     });
-    let link = process.env.DOMAIN_VAN_THU + `/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/${file_img.originalFilename}`;
-    return link;
+    return filename;
 }
 exports.deleteFile = (file) => {
     let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`,'');

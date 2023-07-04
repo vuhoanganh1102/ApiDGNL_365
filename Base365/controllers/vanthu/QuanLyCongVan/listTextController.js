@@ -32,7 +32,7 @@ exports.getListVanBan = async (req, res, next) => {
             }
         }
         if (dayStart) conditions.cv_date = { $gte: new Date(dayStart) }
-        if (dayEnd) conditions.cv_date = { $gte: new Date(dayEnd) }
+        if (dayEnd) conditions.cv_date = { $lte: new Date(dayEnd) }
         if (book) conditions.cv_id_book = book
         conditions.cv_usc_id = comId;
         conditions.cv_type_xoa = 0;
@@ -329,10 +329,8 @@ exports.getDetail = async (req, res, next) => {
         if (!id || !model) {
             return functions.setError(res, 'missing data input', 400)
         }
-        let data = {};
-        if (model === 'incomingText') {
-            data = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId, cv_type_xoa: 0 })
-        }
+       
+        let data = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId, cv_type_xoa: 0 })
         return functions.success(res, 'delete success', { data })
     } catch (error) {
         console.error(error)
