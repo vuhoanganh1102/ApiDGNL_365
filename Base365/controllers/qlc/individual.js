@@ -7,15 +7,14 @@ const md5 = require("md5")
 //đăng kí tài khoản cá nhân 
 exports.register = async (req, res) => {
     try {
-        const { userName, password, phoneTK, address, phone, fromWeb, createdAt } = req.body
+        const { userName, password, phoneTK, address, phone, fromWeb } = req.body
+        const createdAt = new Date()
 
         if (userName && password && phoneTK && address) {
             // let checkMail = await functions.checkEmail(email)
-            console.log(phoneTK)
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
                 let user = await Users.findOne({ phoneTK: phoneTK, type: 0 })
-                console.log(user)
                 let MaxId = await functions.getMaxUserID("user")
 
                 if (user == null) {
@@ -26,7 +25,7 @@ exports.register = async (req, res) => {
                         phone: phone || phoneTK,
                         password: md5(password),
                         address: address,
-                        createdAt: new Date(),
+                        createdAt: Date.parse(createdAt),
                         type: 0,
                         role: 0,
                         otp: null,
@@ -49,22 +48,22 @@ exports.register = async (req, res) => {
                         access_token: token,
                         refresh_token: refreshToken,
                     }
-                    await functions.success(res, "tạo tài khoản thành công", { Inuser, data })
+                    return functions.success(res, "tạo tài khoản thành công", { Inuser, data })
 
 
 
                 } else {
-                    await functions.setError(res, " sdt đã tồn tại")
+                    return functions.setError(res, " sdt đã tồn tại")
                 }
             } else {
                 functions.setError(res, "định dạng sdt không đúng ")
             }
         } else {
-            functions.setError(res, "thiếu thông tin để đăng kí ")
+            return functions.setError(res, "thiếu thông tin để đăng kí ")
 
         }
     } catch (e) {
-        functions.setError(res, e.message)
+        return functions.setError(res, e.message)
 
     }
 
@@ -107,7 +106,6 @@ exports.verify = async (req, res) => {
             return functions.setError(res, "thiếu dữ liệu sdt", 404)
         }
     } catch (e) {
-        console.log(e);
         return functions.setError(res, e.message)
     }
 }
@@ -120,7 +118,6 @@ exports.verifyCheckOTP = async (req, res) => {
             let findUser = await Users.findOne({ phoneTK: phoneTK, type: 0 }).select("otp")
             if (findUser) {
                 let data = findUser.otp
-                console.log(data)
                 if (data === otp) {
                     functions.success(res, "xác thực thành công")
                 } else {
@@ -169,12 +166,6 @@ exports.login = async (req, res, next) => {
                             com_id: findUser._id,
                             com_email: findUser.email,
                             com_phone_tk: findUser.phoneTK,
-                            // com_pass: findUser.password,
-                            // com_name: findUser.userName,
-                            // com_address: findUser.address,
-                            // com_authentic: findUser.authentic,
-                            // com_avatar: findUser.avatarCompany,
-                            // idQLC: findUser.idQLC
 
                         }
                     }
@@ -207,12 +198,6 @@ exports.login = async (req, res, next) => {
                             com_id: findUser._id,
                             com_email: findUser.email,
                             com_phone_tk: findUser.phoneTK,
-                            // com_pass: findUser.password,
-                            // com_name: findUser.userName,
-                            // com_address: findUser.address,
-                            // com_authentic: findUser.authentic,
-                            // com_avatar: findUser.avatarCompany,
-                            // idQLC: findUser.idQLC
 
                         }
                     }
@@ -229,7 +214,6 @@ exports.login = async (req, res, next) => {
 
         }
     } catch (error) {
-        console.log(error)
         return functions.setError(res, error)
     }
 }
@@ -261,7 +245,6 @@ exports.updatePassword = async (req, res, next) => {
                 functions.setError(res, 'Mật khẩu cũ không đúng, vui lòng kiểm tra lại', 400)
             } else {
                 let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 0 })
-                console.log(checkPass)
                 if (!checkPass) {
                     await Users.updateOne({ idQLC: idQLC, type: 0 }, {
                         $set: {
@@ -275,7 +258,6 @@ exports.updatePassword = async (req, res, next) => {
         }
 
     } catch (error) {
-        console.log(error)
         return functions.setError(res, error)
     }
 }
@@ -301,7 +283,6 @@ exports.updatePasswordbyInput = async (req, res, next) => {
                 return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
             }
             let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 0 })
-            console.log(checkPass)
             if (!checkPass) {
                 await Users.updateOne({ phoneTK: phoneTK, type: 0 }, {
                     $set: {
@@ -341,7 +322,6 @@ exports.updatePasswordbyInput = async (req, res, next) => {
         }
 
     } catch (error) {
-        console.log(error)
         return functions.setError(res, error.message)
     }
 }
@@ -352,7 +332,7 @@ exports.updateInfoindividual = async (req, res, next) => {
         let data = [];
         let data1 = [];
         const { userName, email, phoneTK, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
-
+        let updatedAt = new Date()
         let File = req.files || null;
         let avatarUser = null;
         if ((idQLC) !== undefined) {
@@ -377,7 +357,7 @@ exports.updateInfoindividual = async (req, res, next) => {
                             authentic: null || 0,
                             fromWeb: "quanlichung.timviec365",
                             avatarUser: avatarUser,
-                            updatedAt: new Date(),
+                            updatedAt: Date.parse(updatedAt),
                             "inForPerson.employee.group_id": group_id,
                             "inForPerson.account.birthday": birthday,
                             "inForPerson.account.gender": gender,
@@ -387,7 +367,7 @@ exports.updateInfoindividual = async (req, res, next) => {
                             "inForPerson.account.education": education,
                         }
                     })
-                    await functions.success(res, 'update avartar user success', { data })
+                    return functions.success(res, 'update avartar user success', { data })
 
 
 
@@ -404,7 +384,7 @@ exports.updateInfoindividual = async (req, res, next) => {
                             authentic: null || 0,
                             fromWeb: "quanlichung.timviec365",
                             avatarUser: avatarUser,
-                            updatedAt: new Date(),
+                            updatedAt: Date.parse(updatedAt),
                             "inForPerson.employee.group_id": group_id,
                             "inForPerson.account.birthday": birthday,
                             "inForPerson.account.gender": gender,
@@ -414,15 +394,15 @@ exports.updateInfoindividual = async (req, res, next) => {
                             "inForPerson.account.education": education,
                         }
                     })
-                    await functions.success(res, 'update 1 user success', { data1 })
+                    return functions.success(res, 'update 1 user success', { data1 })
                 }
             } else {
-                functions.setError(res, "không tìm thấy user")
+                return functions.setError(res, "không tìm thấy user")
 
             }
 
         } else {
-            functions.setError(res, "không tìm thấy token")
+            return functions.setError(res, "không tìm thấy token")
         }
     } catch (error) {
         return functions.setError(res, error.message)
@@ -467,7 +447,7 @@ exports.forgotPassword = async (req, res) => {
                         authentic: 1
                     }
                 });
-                await functions.success(res, "xác thực thành công");
+                return functions.success(res, "xác thực thành công");
 
 
 
@@ -493,13 +473,12 @@ exports.forgotPassword = async (req, res) => {
                     password: md5(password),
                 }
             });
-            await functions.success(res, 'cập nhập MK thành công')
+            return functions.success(res, 'cập nhập MK thành công')
 
         } else {
             return functions.setError(res, "thiếu dữ liệu", 404)
         }
     } catch (e) {
-        // console.log(e);
         return functions.setError(res, e.message)
     }
 }
@@ -515,8 +494,6 @@ exports.info = async (req, res) => {
         } else {
 
             const data = await Users.findOne({ idQLC: idQLC, type: 0 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education').lean()
-            console.log(data)
-
             const birthday = data.inForPerson.account.birthday
             const gender = data.inForPerson.account.gender
             const married = data.inForPerson.account.married
@@ -533,11 +510,11 @@ exports.info = async (req, res) => {
             data.experience = experience
             data.education = education
             if (data) {
-                return await functions.success(res, 'Lấy thành công', { data });
+                return functions.success(res, 'Lấy thành công', { data });
             };
             return functions.setError(res, 'Không có dữ liệu', 404);
         }
     } catch (e) {
-        functions.setError(res, e.message)
+        return functions.setError(res, e.message)
     }
 } 

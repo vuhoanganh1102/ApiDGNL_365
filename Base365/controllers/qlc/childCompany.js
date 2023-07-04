@@ -3,9 +3,8 @@ const functions = require("../../services/functions")
 
 //tìm danh sách công ty 
 exports.getListCompany = async(req, res) => {
-        // try{
+        try{
             const com_id = req.body.com_id
-            console.log(com_id)
             if((com_id)==undefined){
                 functions.setError(res,"lack of input")
             }else if(isNaN(com_id)){
@@ -19,11 +18,10 @@ exports.getListCompany = async(req, res) => {
                 return functions.setError(res, 'Không có dữ liệu', 404);
             }
        
-        // }catch(err){
-        // console.log(err);
+        }catch(err){
         
-        // functions.setError(res,err.message)
-        // }
+        functions.setError(res,err.message)
+        }
 };
 //tạo công ty con
 exports.createCompany = async (req, res) => {
@@ -103,30 +101,3 @@ exports.editCompany = async (req, res) => {
         }
     }
 };
-// exports.deleteCompany = async (req, res) => {
-//     const _id = req.params.id;
-
-//     if (isNaN(_id)) {
-//         functions.setError(res, "Id must be a number", 502);
-//     } else {
-//         const company = await functions.getDatafindOne(ChildCompany, { _id: _id });
-//         if (!company) {
-//             functions.setError(res, "company not exist!", 510);
-//         } else {
-//             functions.getDataDeleteOne(ChildCompany, { _id: _id })
-//                 .then(() => functions.success(res, "Delete company successfully!", company))
-//                 .catch(err => functions.setError(res, err.message, 512));
-//         }
-//     }
-// };
-
-
-// exports.deleteAllCompanys = async (req, res) =>{
-//     if (!await functions.getMaxID(ChildCompany)) {
-//         functions.setError( res, "No company existed",513);
-//     }else {
-//         ChildCompany.deleteMany()
-//             .then(() => functions.success(res, "Delete all companies successfully"))
-//             .catch(err => functions.setError(res, err.message,514));
-//     }
-// }
