@@ -6,17 +6,18 @@ const Deparment = require("../../models/qlc/Deparment")
 
 //Đăng kí tài khoản công ty 
 exports.register = async (req, res) => {
-    const { userName, emailContact, phoneTK, password, idTimViec365 ,idRaoNhanh365, address, phone } = req.body;
-
+    const { userName, emailContact, phoneTK, password, address, phone } = req.body;
+    let idTimViec365 =""
+        idRaoNhanh365 =""
     if (userName && password && phoneTK && address) {
         // let checkMail = await functions.checkEmail(email)
         let checkPhone = await functions.checkPhoneNumber(phoneTK)
         if (checkPhone) {
             let finduser = await Users.findOne({ phoneTK: phoneTK, type: 1 })
-            let MaxId = await functions.getMaxID(Users) || 0
+            let MaxId = await functions.getMaxUserID("company")
             if (finduser == null) {
                 const user = new Users({
-                    _id: Number(MaxId) + 1 || 1,
+                    _id: MaxId._id,
                     emailContact: emailContact,
                     phoneTK: phoneTK,
                     userName: userName,
@@ -29,9 +30,9 @@ exports.register = async (req, res) => {
                     fromWeb: "quanlichung",
                     role: 1,
                     createdAt: new Date(),
-                    idQLC: (Number(MaxId) + 1),
-                    idTimViec365 : idTimViec365,
-                    idRaoNhanh365 : idRaoNhanh365,
+                    idQLC: MaxId._idQLC, 
+                    idTimViec365 : MaxId._idTV365,
+                    idRaoNhanh365 : MaxId._idRN365,
                     'inForCompany.cds.com_vip' : 0,
                     'inForCompany.cds.com_ep_vip' : 5,
                     'inForCompany.cds.com_vip_time' : 0,
@@ -65,15 +66,12 @@ exports.login = async (req, res, next) => {
         password = req.body.password
 
         type = 1
-        if ((email||phoneTK) && password) {
-            let checkMail = await functions.checkEmail(email)
+        if (phoneTK&&password) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK)
-            if(checkMail || checkPhone){
-                let findUser = await Users.findOne({$or:[ { email:email, type: 1 },{phoneTK : phoneTK ,type :1}]})
+            if (checkPhone) {
+                let findUser = await Users.findOne({ phoneTK: phoneTK, type: 1 })
                 console.log(findUser.password)
-                
-                let crmtoken = await Users.findOne({ email, type: 1 }).select("idQLC row inForPerson.employee.position_id inForPerson.employee.com_id type")
-                // console.log(crmtoken)
+                console.log(findUser.idQLC)
                 if (!findUser) {
                     return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
@@ -84,11 +82,9 @@ exports.login = async (req, res, next) => {
                 // if (findUser.type == type) {
                 if (findUser != null) {
                     const token = await functions.createToken(findUser, "1d")
-                    const tokenCRM = await functions.createToken(crmtoken, "1d")
                     const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
                     let data = {
-                        access_token:  token,
-                        access_token_CRM: "bear" + " " + tokenCRM,
+                        access_token: token,
                         refresh_token: refreshToken,
                         com_info: {
                             com_id: findUser._id,
@@ -103,15 +99,56 @@ exports.login = async (req, res, next) => {
 
                         }
                     }
-                    return functions.success(res, 'Đăng nhập thành công', {data})
+                    return functions.success(res, 'Đăng nhập thành công bằng SDT', { data })
 
-                }else {
+                } else {
+                    return functions.setError(res, "sai tai khoan hoac mat khau")
+                }
+            } else {
+                return functions.setError(res, "không đúng định dạng SDT", 404)
+            }
+        }else if(email&&password){
+            let checkMail = await functions.checkEmail(email)
+            if (checkMail) {
+                let findUser = await Users.findOne({ email: email, type: 1 })
+                if (!findUser) {
+                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
+                }
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (!checkPassword) {
+                    return functions.setError(res, "Mật khẩu sai", 404)
+                }
+                if (findUser != null) {
+                    const token = await functions.createToken(findUser, "1d")
+                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
+                    let data = {
+                        access_token: token,
+                        refresh_token: refreshToken,
+                        com_info: {
+                            com_id: findUser._id,
+                            com_email: findUser.email,
+                            com_phone_tk: findUser.phoneTK,
+                            // com_pass: findUser.password,
+                            // com_name: findUser.userName,
+                            // com_address: findUser.address,
+                            // com_authentic: findUser.authentic,
+                            // com_avatar: findUser.avatarCompany,
+                            // idQLC: findUser.idQLC
+
+                        }
+                    }
+                    return functions.success(res, 'Đăng nhập thành công bằng Email', { data })
+
+                } else {
                     return functions.setError(res, "sai tai khoan hoac mat khau")
                 }
             } else {
                 return functions.setError(res, "không đúng định dạng email", 404)
             }
-            }
+        }else {
+            return functions.setError(res, "thiếu dữ liệu email hoặc sdt hoặc password ", 404)
+            
+        }
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -256,16 +293,19 @@ exports.updatePasswordbyInput = async (req, res, next) => {
         {
             return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
         }
-            let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 1 })
-            if (!checkPass) {
-                await Users.updateOne({ phoneTK: phoneTK , type : 1}, {
+            let checkPass = await functions.getDatafindOne(Users, { phoneTK:phoneTK, type: 1 })
+            console.log(checkPass)
+            if (checkPass) {
+                await Users.findOneAndUpdate({ phoneTK:phoneTK , type : 1}, {
                     $set: {
                         password: md5(password),
                     }
                 });
-                return functions.success(res, 'cập nhập thành công')
+                await functions.success(res, 'cập nhập thành công' ,{checkPass})
+            }else{
+                functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+
             }
-            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
     }else if(email&&password&&re_password){
         let checkPassword = await functions.verifyPassword(password)
         if (checkPassword) {
@@ -281,8 +321,8 @@ exports.updatePasswordbyInput = async (req, res, next) => {
         {
             return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
         }
-            let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 1 })
-            if (!checkPass) {
+            let checkPass = await functions.getDatafindOne(Users, { email :email, password: md5(password), type: 1 })
+            if (!checkPass) { 
                 await Users.updateOne({ email: email,type : 1 }, {
                     $set: {
                         password: md5(password),

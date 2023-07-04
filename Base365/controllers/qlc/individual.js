@@ -14,10 +14,11 @@ exports.register = async (req, res) => {
             if (checkPhone) {
                 let user = await Users.findOne({ phoneTK: phoneTK, type: 0 })
                 console.log(user)
-                let MaxId = await functions.getMaxID(Users) || 0
+                let MaxId = await functions.getMaxUserID("user")
+
                 if (user == null) {
                     const Inuser = new Users({
-                        _id: Number(MaxId) + 1 || 1,
+                        _id: MaxId._id,
                         userName: userName,
                         phoneTK: phoneTK,
                         phone: phone || phoneTK,
@@ -29,9 +30,9 @@ exports.register = async (req, res) => {
                         otp: null,
                         authentic: 0,
                         fromWeb: "quanlichung",
-                        idQLC: (Number(MaxId) + 1),
-                        idTimViec365 : idTimViec365,
-                        idRaoNhanh365 : idRaoNhanh365,
+                        idQLC: MaxId._idQLC,
+                        idTimViec365 : MaxId._idTV365,
+                        idRaoNhanh365 : MaxId._idRN365,
                         "inForPerson.account.birthday": null,
                         "inForPerson.account.gender": 0,
                         "inForPerson.account.married": 0,
@@ -137,20 +138,56 @@ exports.verifyCheckOTP = async (req,res)=>{
     }
 }
 
-exports.login = async (req, res) => {
-
+exports.login = async (req, res, next) => {
     try {
-        let email = req.body.email
         let phoneTK = req.body.phoneTK
-            password = req.body.password
-            type = 0
-            
-            if ((email||phoneTK) && password) {
+        let email = req.body.email
+        password = req.body.password
 
-            let checkMail = await functions.checkEmail(email)
+        type = 1
+        if (phoneTK&&password) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK)
-            if(checkMail || checkPhone){
-                let findUser = await Users.findOne({$or:[ { email:email, type: 0 },{phoneTK : phoneTK ,type :0}]})
+            if (checkPhone) {
+                let findUser = await Users.findOne({ phoneTK: phoneTK, type: 0 })
+                if (!findUser) {
+                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
+                }
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (!checkPassword) {
+                    return functions.setError(res, "Mật khẩu sai", 404)
+                }
+                // if (findUser.type == type) {
+                if (findUser != null) {
+                    const token = await functions.createToken(findUser, "1d")
+                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
+                    let data = {
+                        access_token: token,
+                        refresh_token: refreshToken,
+                        com_info: {
+                            com_id: findUser._id,
+                            com_email: findUser.email,
+                            com_phone_tk: findUser.phoneTK,
+                            // com_pass: findUser.password,
+                            // com_name: findUser.userName,
+                            // com_address: findUser.address,
+                            // com_authentic: findUser.authentic,
+                            // com_avatar: findUser.avatarCompany,
+                            // idQLC: findUser.idQLC
+
+                        }
+                    }
+                    return functions.success(res, 'Đăng nhập thành công bằng SDT', { data })
+
+                } else {
+                    return functions.setError(res, "sai tai khoan hoac mat khau")
+                }
+            } else {
+                return functions.setError(res, "không đúng định dạng SDT", 404)
+            }
+        }else if(email&&password){
+            let checkMail = await functions.checkEmail(email)
+            if (checkMail) {
+                let findUser = await Users.findOne({ email: email, type: 0 })
                 if (!findUser) {
                     return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
                 }
@@ -164,41 +201,37 @@ exports.login = async (req, res) => {
                     let data = {
                         access_token: token,
                         refresh_token: refreshToken,
-                        user_info: {
-                            user_id: findUser._id,
-                            user_email: findUser.email,
-                            user_phoneTK: findUser.phoneTK,
-                            // user_password: findUser.password,
-                            // user_name: findUser.userName,
-                            // user_address: findUser.address,
-                            // user_authentic: findUser.authentic,
-                            // user_avatar: findUser.avatarUser,
-                            // user_com_id: findUser.com_id,
-                            // user_dep_id: findUser.dep_id,
-                            // user_groupID: findUser.groupID,
-                            // user_birthday: findUser.birthday,
-                            // user_gender: findUser.gender,
-                            // user_married: findUser.married,
-                            // user_exp: findUser.exp,
-                            // user_startWorkingTime: findUser.startWorkingTime,
-                            // user_candiHocVan: findUser.candiHocVan,
+                        com_info: {
+                            com_id: findUser._id,
+                            com_email: findUser.email,
+                            com_phone_tk: findUser.phoneTK,
+                            // com_pass: findUser.password,
+                            // com_name: findUser.userName,
+                            // com_address: findUser.address,
+                            // com_authentic: findUser.authentic,
+                            // com_avatar: findUser.avatarCompany,
+                            // idQLC: findUser.idQLC
 
                         }
-
                     }
-                    return functions.success(res, "dang nhap thanh cong", {data})
+                    return functions.success(res, 'Đăng nhập thành công bằng Email', { data })
+
                 } else {
-                    await functions.setError(res, "mail khong ton tai ")
+                    return functions.setError(res, "sai tai khoan hoac mat khau")
                 }
             } else {
-                await functions.setError(res, "thieu email hoac password")
+                return functions.setError(res, "không đúng định dạng email", 404)
             }
+        }else {
+            return functions.setError(res, "thiếu dữ liệu email hoặc sdt hoặc password ", 404)
+            
         }
-    } catch (e) {
-        console.log(e);
-        return functions.setError(res, e.message)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
     }
 }
+
 
 // hàm đổi mật khẩu 
     exports.updatePassword = async (req, res, next) => {
@@ -222,13 +255,14 @@ exports.login = async (req, res) => {
                 return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
             }
             if(old_password){
-                let checkOldPassword = await Users.findOne({idQLC : idQLC ,password : md5(old_password), type :2})
+                let checkOldPassword = await Users.findOne({idQLC : idQLC ,password : md5(old_password), type :0})
                 if(!checkOldPassword){
                     functions.setError(res, 'Mật khẩu cũ không đúng, vui lòng kiểm tra lại', 400)
                 }else{
-                    let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 2 })
+                    let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 0 })
+                    console.log(checkPass)
                     if (!checkPass) {
-                        await Users.updateOne({ idQLC: idQLC, type :2 }, {
+                        await Users.updateOne({ idQLC: idQLC, type :0 }, {
                             $set: {
                                 password: md5(password),
                             }
@@ -251,7 +285,7 @@ exports.updatePasswordbyInput = async (req, res, next) => {
         let email = req.body.email
         let password = req.body.password;
         let re_password = req.body.re_password;
-     if (phoneTK&&password&&password){
+     if (phoneTK&&password){
         let checkPassword = await functions.verifyPassword(password)
         if (checkPassword) {
             return functions.setError(res, "sai dinh dang Mk", 404)
@@ -267,6 +301,7 @@ exports.updatePasswordbyInput = async (req, res, next) => {
             return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
         }
             let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 0 })
+            console.log(checkPass)
             if (!checkPass) {
                 await Users.updateOne({ phoneTK: phoneTK , type : 0}, {
                     $set: {
@@ -276,7 +311,7 @@ exports.updatePasswordbyInput = async (req, res, next) => {
                 return functions.success(res, 'cập nhập thành công')
             }
             return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
-    }else if(email&&password&&password){
+    }else if(email&&password){
         let checkPassword = await functions.verifyPassword(password)
         if (checkPassword) {
             return functions.setError(res, "sai dinh dang Mk", 404)
