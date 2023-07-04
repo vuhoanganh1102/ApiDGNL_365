@@ -29,7 +29,6 @@ const Users = require("../../models/Users")
 
                 data = await Deparment.find(condition).select('com_id deparmentName managerId deparmentCreated total_emp ')
                 const depID = data.map(item => item._id);
-                console.log(depID)
                 for (let i = 0; i < depID.length; i++) {
                     const depId = depID[i];
                     total_emp = await functions.findCount(Users,{ "inForPerson.employee.com_id":com_id , "inForPerson.employee.dep_id": depId , type: 2,"inForPerson.employee.ep_status": "Active" })
@@ -39,18 +38,15 @@ const Users = require("../../models/Users")
                         { $set: { total_emp: total_emp } }
                     );
                 }
-                // console.log(total_emp)
-                // await Deparment.updateOne({com_id:com_id, _id : depID||_id}, { $set :{ total_emp : total_emp }})
                 if (!data) {
                     return functions.setError(res, 'Không có dữ liệu', 404);
                 };
-                return await functions.success(res, 'Lấy thành công', { data });
+                return  functions.success(res, 'Lấy thành công', { data });
             }
        
         }catch(err){
-        console.log(err);
         
-        functions.setError(res,err.message)
+            return functions.setError(res,err.message)
         }
     };
 
@@ -58,44 +54,24 @@ const Users = require("../../models/Users")
 exports.countUserInDepartment = async (req, res) => {
    try{
     const {dep_id, com_id} = req.body;
-    console.log(dep_id, com_id)
      const total_emp = await functions.findCount(Users,{ "inForPerson.employee.com_id":com_id , "inForPerson.employee.dep_id": dep_id, type: 2})
         // .then(() => functions.success(res, "",{numberUser}))
         // .catch((err) => functions.setError(res, err.message, 501));
         console.log(numberUser)
         if (!numberUser) {
-            functions.setError(res, "Deparment cannot be found or does not exist", 503);
+            return functions.setError(res, "Deparment cannot be found or does not exist", 503);
         } else {
-            functions.success(res, "Deparment found", {numberUser});
+            return functions.success(res, "Deparment found", {numberUser});
         }
    }catch(e){
-    console.log(e)
-    functions.setError(res, "Deparment does not exist", 503);
+    return functions.setError(res, "Deparment does not exist", 503);
    }
 }
 
-
-// //API lấy dữ liệu một phòng ban
-// exports.getDeparmentById = async (req, res) => {
-//     const _id = req.params.id;
-//     if (isNaN(_id)) {
-//         functions.setError(res, "Id must be a number", 502);
-//     } else {
-//         const deparment = await Deparment.findById(_id);
-//         if (!deparment) {
-//             functions.setError(res, "Deparment cannot be found or does not exist", 503);
-//         } else {
-//             functions.success(res, "Deparment found", deparment);
-//         }
-//     }
-//     //
-
-// };
 //API tạo mới một phòng ban
 exports.createDeparment = async (req, res) => {
 
     const { com_id, deparmentName ,managerId,deputyId ,deparmentOrder,deparmentCreated,total_emp} = req.body;
-    console.log(com_id)
     if ((com_id&&deparmentName)==undefined) {
         //Kiểm tra Id công ty khác null
         functions.setError(res, "Company Id required", 504);
@@ -148,9 +124,7 @@ exports.editDeparment = async (req, res) => {
         } else if (isNaN(com_id)) {
             //Kiểm tra Id công ty có phải số không
             functions.setError(res, "Company ID must be a number", 505);
-
         } else {
-
             const deparment = await functions.getDatafindOne(Deparment, { _id: _id });
             if (!deparment) {
                 functions.setError(res, "Deparment does not exist!", 510);
@@ -171,8 +145,6 @@ exports.editDeparment = async (req, res) => {
 exports.deleteDeparment = async (req, res) => {
     const _id = req.body.id;
     const com_id = req.body.com_id;
-    console.log(_id,com_id)
-    
     if((com_id&&_id)== undefined){
         functions.setError(res, "lack of input", 502);
     }else if (isNaN(_id,com_id)) {
@@ -189,15 +161,3 @@ exports.deleteDeparment = async (req, res) => {
         }
     }
 };
-// // API xóa toàn bộ phòng ban hiện có
-// exports.deleteAllDeparmants = async (req, res) => {
-
-//     if (!await functions.getMaxID(Deparment)) {
-//         functions.setError(res, "No deparment existed", 513);
-//     } else {
-//         Deparment.deleteMany()
-//             .then(() => functions.success(res, "Delete all deparments successfully"))
-//             .catch(err => functions.setError(res, err.message, 514));
-//     }
-
-// };

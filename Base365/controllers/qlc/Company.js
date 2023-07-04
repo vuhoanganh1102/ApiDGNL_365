@@ -401,7 +401,7 @@ exports.updateInfoCompany = async (req, res, next) => {
         let File = req.files || null;
         let avatarUser = null;
         if ((idQLC) !== undefined) {
-            let findUser = Users.findOne({ idQLC: idQLC })
+            let findUser = Users.findOne({ idQLC: idQLC,type :1 })
             if (findUser) {
                 if (File.avatarUser) {
                     let upload = fnc.uploadFileQLC('avt_com', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
@@ -410,7 +410,7 @@ exports.updateInfoCompany = async (req, res, next) => {
                     }
                     avatarUser = fnc.createLinkFileQLC('avt_com', idQLC, File.avatarUser.name)
 
-                    data = await Users.updateOne({ idQLC: idQLC }, {
+                    data = await Users.updateOne({ idQLC: idQLC ,type :1 }, {
                         $set: {
                             userName: userName,
                             email: email,
@@ -427,7 +427,7 @@ exports.updateInfoCompany = async (req, res, next) => {
 
 
                 } else {
-                    data1 = await Users.updateOne({ idQLC: idQLC }, {
+                    data1 = await Users.updateOne({ idQLC: idQLC ,type :1 }, {
                         $set: {
                             userName: userName,
                             email: email,
@@ -462,11 +462,18 @@ exports.info = async (req, res) => {
         } else if (isNaN(idQLC)) {
             functions.setError(res, "id must be a Nubmer")
         } else {
-            const data = await Users.findOne({ idQLC }).select('userName email phoneTK address avatarUser authentic').lean();
+            const data = await Users.findOne({ idQLC :idQLC ,type :1 }).select('userName email phoneTK address avatarUser authentic').lean();
 
             const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
-            const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
+            if(!departmentsNum){
+            return functions.setError(res, 'Không có dữ liệu so phong ban', 404);
 
+            }
+            const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
+            if(!userNum){
+                return functions.setError(res, 'Không có dữ liệu so nhan vien', 404);
+    
+                }
             data.departmentsNum = departmentsNum
             data.userNum = userNum
             if (data) {

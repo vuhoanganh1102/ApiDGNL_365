@@ -351,7 +351,7 @@ exports.updateInfoEmployee = async (req, res, next) => {
         let File = req.files || null;
         let avatarUser = null;
         if ((idQLC) !== undefined) {
-            let findUser = Users.findOne({ idQLC: idQLC })
+            let findUser = Users.findOne({ idQLC: idQLC ,type :2 })
             if (findUser) {
                 if (File.avatarUser) {
                     let upload = fnc.uploadFileQLC('avt_ep', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
@@ -360,7 +360,7 @@ exports.updateInfoEmployee = async (req, res, next) => {
                     }
                     avatarUser = fnc.createLinkFileQLC('avt_ep', idQLC, File.avatarUser.name)
 
-                    data = await Users.updateOne({ idQLC: idQLC }, {
+                    data = await Users.updateOne({ idQLC: idQLC ,type :2 }, {
                         $set: {
                             userName: userName,
                             email: email,
@@ -390,7 +390,7 @@ exports.updateInfoEmployee = async (req, res, next) => {
 
 
                 } else {
-                    data1 = await Users.updateOne({ idQLC: idQLC }, {
+                    data1 = await Users.updateOne({ idQLC: idQLC ,type:2 }, {
                         $set: {
                             userName: userName,
                             email: email,
@@ -541,8 +541,16 @@ exports.info = async (req, res) => {
 
                 }
                 const companyName1 = await Users.findOne({ idQLC: data1, type: 1 }).select('userName').lean()
+                if(!companyName1){
+                    return functions.setError(res, 'Không có dữ liệu ten cty ', 404);
+
+                }
                 const companyName = companyName1.userName
-                const managerName1 = await Users.findOne({ _id: data2, type: 2 }).select('userName').lean()
+                const managerName1 = await Users.findOne({ idQLC: data2, type: 2 }).select('userName').lean()
+                if(!managerName1){
+                    return functions.setError(res, 'Không có dữ liệu ten truong phong ', 404);
+
+                }
                 const managerName = managerName1.userName
 
                 data.departmentName = departmentName
