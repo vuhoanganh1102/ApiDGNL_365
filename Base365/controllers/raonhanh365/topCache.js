@@ -10,9 +10,9 @@ const Category = require('../../models/Raonhanh365/Category');
 exports.getTopCache = async (req, res, next) => {
     try {
         let data = {};
-        let cate = await category.find({ active: 1, parentId: 0 }).lean()
+        let cate = await category.find({ active: 1, parentId: 0 },{_id:1,name:1}).lean()
         for (let i = 0; i < cate.length; i++) {
-            let cateChild = await category.find({ parentId: cate[i]._id }).lean();
+            let cateChild = await category.find({ parentId: cate[i]._id },{_id:1,name:1}).lean();
             if (cateChild && cateChild.length > 0) {
                 for (let j = 0; j < cateChild.length; j++) {
                     let data = await CateDetail.findById(cateChild[j]._id);
@@ -21,18 +21,11 @@ exports.getTopCache = async (req, res, next) => {
                         cateChild[j].cateDetail = cateDetail
                 }
             }
-            let cateDetail = await Tags.find({ cateId: cateChild[j]._id }, { _id: 1, name: 1 })
             cate[i].cateChild = cateChild
             let all = await CateDetail.findById(i);
             cate[i].all = all
 
         }
-
-
-
-
-
-
         return functions.success(res, 'get data success', { cate })
     } catch (error) {
         console.log("🚀 ~ file: topCache.js:12 ~ exports.getTopCache= ~ error:", error)
