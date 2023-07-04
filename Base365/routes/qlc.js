@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
+
+var Admin = require('./qlc/admin/Admin')
 var companyRouterQLC = require('./qlc/Company')
 var EmployeeRouterQLC = require('./qlc/Employee')
 var individualRouterQLC = require('./qlc/individual')
@@ -24,6 +26,9 @@ var CalendarWorkEmployee = require("./qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./qlc/settingIP")
 var homePage = require("./qlc/homePage")
 
+
+
+router.use('/Admin', Admin);
 router.use('/Company', companyRouterQLC);
 router.use('/employee', EmployeeRouterQLC);
 router.use('/individual', individualRouterQLC);

@@ -1,12 +1,12 @@
 const Users = require('../../models/Users');
-const functions = require('../../services/functions');
+const functions = require('../../services/qlc/functions');
 const md5 = require('md5');
 const Deparment = require("../../models/qlc/Deparment")
 
 
 //Đăng kí tài khoản công ty 
 exports.register = async (req, res) => {
-    const { userName, email, phoneTK, password, com_vip, position_id, com_id, address, phone } = req.body;
+    const { userName, emailContact, phoneTK, password, idTimViec365 ,idRaoNhanh365, address, phone } = req.body;
 
     if (userName && password && phoneTK && address) {
         // let checkMail = await functions.checkEmail(email)
@@ -17,23 +17,24 @@ exports.register = async (req, res) => {
             if (finduser == null) {
                 const user = new Users({
                     _id: Number(MaxId) + 1 || 1,
-                    email: email,
+                    emailContact: emailContact,
                     phoneTK: phoneTK,
                     userName: userName,
                     phone: phone,
                     address: address,
                     type: 1,
-                    authentic: 0 || null,
+                    authentic: 0 ,
                     password: md5(password),
                     otp: null,
-                    fromWeb: "quanlichung.timviec365",
+                    fromWeb: "quanlichung",
                     role: 1,
                     createdAt: new Date(),
-                    "inForCompany.cds.com_vip": com_vip,
                     idQLC: (Number(MaxId) + 1),
-                    "inForPerson.employee.position_id": position_id,
-                    "inForPerson.employee.com_id": com_id,
-                    avatarCompany: null
+                    idTimViec365 : idTimViec365,
+                    idRaoNhanh365 : idRaoNhanh365,
+                    'inForCompany.cds.com_vip' : 0,
+                    'inForCompany.cds.com_ep_vip' : 5,
+                    'inForCompany.cds.com_vip_time' : 0,
                 })
                 await user.save()
                 const token = await functions.createToken(user, "1d")
@@ -116,50 +117,7 @@ exports.login = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
-// hàm gửi otp qua gmail khi kích hoạt tài khoản
-// exports.verify = async (req,res)=>{
-//     try{
-//         let otp = req.body.ma_xt || null
-//         let phoneTK = req.user.data.phoneTK;
-//         console.log(phoneTK)
-//         let data = []
-//         if(!otp){
-//                 let findUser = await Users.findOne({phoneTK:phoneTK ,type :1})
-//                 if(findUser) {
-//                     let otp = functions.randomNumber
-//                     data = await Users.updateOne({phoneTK:phoneTK ,type :1},{
-//                         $set:{
-//                             otp : otp
-//                         }
-//                     })
-//                     return functions.success(res,"Gửi mã OTP thành công",{data ,otp})
-//                 }else {
-//                     return functions.setError(res,"tài khoản không tồn tại")
-//                 }
 
-
-//         }else if (otp){
-//             let verify = await Users.findOne({phoneTK:phoneTK,otp ,type :1});
-//             if (verify != null){
-//                 await Users.updateOne({phoneTK:phoneTK ,type :1},{
-//                     $set: {
-//                         authentic :1 
-//                     }
-//                 });
-//                 return functions.success(res,"xác thực thành công");
-//             }else{
-//                 return functions.setError(res,"xác thực thất bại",404);
-//             }
-        
-        
-//          }else{
-//             return functions.setError(res,"thiếu dữ liệu sdt",404)
-//         }
-//     } catch(e) {
-//         console.log(e);
-//         return functions.setError(res , e.message)
-//     }
-// }
 exports.verify = async (req,res)=>{
     try{
         let otp = req.body.ma_xt || null
@@ -237,6 +195,7 @@ exports.verifyCheckOTP = async (req,res)=>{
 exports.updatePassword = async (req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC
+        let old_password = req.body.old_password
         let password = req.body.password;
         let re_password = req.body.re_password;
         let checkPassword = await functions.verifyPassword(password)
@@ -253,16 +212,24 @@ exports.updatePassword = async (req, res, next) => {
         {
             return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
         }
-            let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 1 })
-            if (!checkPass) {
-                await Users.updateOne({ idQLC: idQLC, type :1 }, {
-                    $set: {
-                        password: md5(password),
-                    }
-                });
-                return functions.success(res, 'cập nhập thành công')
+        if(old_password){
+            let checkOldPassword = await Users.findOne({idQLC : idQLC ,password : md5(old_password), type :1})
+            if(!checkOldPassword){
+                functions.setError(res, 'Mật khẩu cũ không đúng, vui lòng kiểm tra lại', 400)
+            }else{
+                let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 1 })
+                if (!checkPass) {
+                    await Users.updateOne({ idQLC: idQLC, type :1 }, {
+                        $set: {
+                            password: md5(password),
+                        }
+                    });
+                    return functions.success(res, 'cập nhập thành công')
+                }
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
             }
-            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+        }
+
         } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -416,7 +383,7 @@ exports.updateInfoCompany = async (req, res, next) => {
         let idQLC = req.user.data.idQLC;
         let data = [];
         let data1 = [];
-        const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+        const { userName, email, phoneTK, address} = req.body;
 
         let File = req.files || null;
         let avatarUser = null;
@@ -437,7 +404,7 @@ exports.updateInfoCompany = async (req, res, next) => {
                             phoneTK: phoneTK,
                             avatarUser: avatarUser,
                             address: address,
-                            fromWeb: "quanlichung.timviec365",
+                            fromWeb: "quanlichung",
                             updatedAt: new Date(),
 
                         }
@@ -454,7 +421,7 @@ exports.updateInfoCompany = async (req, res, next) => {
                             phoneTK: phoneTK,
                             avatarUser: avatarUser,
                             address: address,
-                            fromWeb: "quanlichung.timviec365",
+                            fromWeb: "quanlichung",
                             updatedAt: new Date(),
                         }
                     })

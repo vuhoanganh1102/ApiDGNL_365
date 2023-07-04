@@ -11,6 +11,12 @@ const Feedback = new Schema({
     type: {// kieu user
         type: Number
     },
+    email: {// email
+        type: String
+    },
+    phoneTK: {// kieu user
+        type: Number
+    },
     feed_back: {//chi tiet
         type: String
     },

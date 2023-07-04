@@ -120,10 +120,10 @@ exports.postNewMain = async (req, res, next) => {
             district: district,
             ward: ward,
             brand: brand,
-            downPayment:downPayment,
-            hashtag:hashtag,
-            quantityMin:quantityMin,
-            quantityMax:quantityMax,
+            downPayment: downPayment,
+            hashtag: hashtag,
+            quantityMin: quantityMin,
+            quantityMax: quantityMax,
             buySell: 2,
             active: 1,
 
@@ -784,8 +784,12 @@ exports.deleteNews = async (req, res) => {
 // trang chủ
 exports.getNew = async (req, res, next) => {
     try {
-        // let user = await functions.getTokenUser();
-        // let userIdRaoNhanh = user.idRaoNhanh365;
+        let userIdRaoNhanh = null;
+        let user = await functions.getTokenUser(req, res, next);
+        if(user){
+            userIdRaoNhanh =  user.idRaoNhanh365;
+        }
+        console.log("🚀 ~ file: new.js:789 ~ exports.getNew= ~ userIdRaoNhanh:", userIdRaoNhanh)
         let searchItem = {
             _id: 1,
             title: 1,
@@ -814,10 +818,10 @@ exports.getNew = async (req, res, next) => {
                 $match: { buySell: 2, sold: 0, active: 1 },
             },
             {
-                $limit: 50,
+                $sort: { pinHome: -1, createTime: -1, order: -1 },
             },
             {
-                $sort: { pinHome: -1, createTime: -1, order: -1 },
+                $limit: 50,
             },
             {
                 $lookup: {

@@ -99,7 +99,7 @@ exports.createLinkFileHR = (folder, id, name) => {
     return link;
 }
 exports.deleteFileHR = (folder, id, file) => {
-    let filePath = '../Storage/hr/' + folder + '/' + id + '/' + file;
+    let filePath = '../Storage/base365/hr/' + folder + '/' + id + '/' + file;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });
