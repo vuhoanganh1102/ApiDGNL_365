@@ -140,7 +140,7 @@ const vanBan = new mongoose.Schema({
         type: Number,
     },
     update_time: {
-        type: Number
+        type: Date
     }
 
 

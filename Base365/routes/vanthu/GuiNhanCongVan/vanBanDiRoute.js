@@ -6,5 +6,11 @@ const vanThuService = require('../../../services/vanThu');
 
 router.post('/createVanBanIn',vanThuService.checkToken,formData.parse(), vanBanDiController.getDataAndCheck, vanBanDiController.createVanBanIn);
 router.post('/createVanBanOut',vanThuService.checkToken,formData.parse(), vanBanDiController.getDataAndCheck, vanBanDiController.createVanBanOut);
+router.post('/getListVanBanDiDaGui',vanThuService.checkToken,formData.parse(), vanBanDiController.getListVanBanDiDaGui);
+
+router.post('/createChuyenTiep',vanThuService.checkToken,formData.parse(), vanBanDiController.createChuyenTiep);
+router.post('/deleteVanBan',vanThuService.checkToken,formData.parse(), vanBanDiController.deleteVanBan);
+router.post('/checkLuuQLCV',vanThuService.checkToken,formData.parse(), vanBanDiController.checkLuuQLCV);
+
 
 module.exports = router

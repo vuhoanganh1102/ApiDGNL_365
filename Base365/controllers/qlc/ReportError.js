@@ -28,6 +28,8 @@ exports.create = async (req,res)=>{
                 _id: Number(max) +1 || 1,
                 idQLC :idQLC,
                 type :type ,
+                email : email ,
+                phoneTK : phoneTK,
                 curDeviceId: curDeviceId,
                 detail_error : detail_error,
                 gallery_image_error : gallery_image_error || null,
@@ -36,7 +38,7 @@ exports.create = async (req,res)=>{
 
             })
              await reports.save()
-             .then(()=>functions.success(res,"thanh cong",{reports}))
+             .then(()=>functions.success(res,"Đánh giá của bạn đã được gửi đi"))
              .catch((e)=>functions.setError(res, e.message))
         }
         
