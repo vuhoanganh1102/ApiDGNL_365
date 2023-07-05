@@ -465,15 +465,9 @@ exports.info = async (req, res) => {
             const data = await Users.findOne({ idQLC :idQLC ,type :1 }).select('userName email phoneTK address avatarUser authentic').lean();
 
             const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
-            if(!departmentsNum){
-            return functions.setError(res, 'Không có dữ liệu so phong ban', 404);
 
-            }
             const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
-            if(!userNum){
-                return functions.setError(res, 'Không có dữ liệu so nhan vien', 404);
-    
-                }
+            
             data.departmentsNum = departmentsNum
             data.userNum = userNum
             if (data) {

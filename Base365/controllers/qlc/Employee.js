@@ -9,7 +9,7 @@ const Deparment = require("../../models/qlc/Deparment")
 //đăng kí tài khoản nhân viên 
 exports.register = async (req, res) => {
     try {
-        const { userName, emailContact, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp, } = req.body;
+        const { userName, emailContact, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp,team_id } = req.body;
         const createdAt = new Date()
 
         if ((userName && password && com_id && address && phoneTK) !== undefined) {
@@ -26,9 +26,6 @@ exports.register = async (req, res) => {
                         userName: userName,
                         phone: phone || phoneTK,
                         avatarUser: avatarUser,
-                        "inForPerson.employee.position_id": position_id,
-                        "inForPerson.employee.com_id": com_id,
-                        "inForPerson.employee.dep_id": dep_id,
                         type: 2,
                         password: md5(password),
                         address: address,
@@ -41,7 +38,11 @@ exports.register = async (req, res) => {
                         idQLC: MaxId._idQLC,
                         idTimViec365: MaxId._idTV365,
                         idRaoNhanh365: MaxId._idRN365,
+                        "inForPerson.employee.position_id": position_id,
+                        "inForPerson.employee.com_id": com_id,
+                        "inForPerson.employee.dep_id": dep_id,
                         "inForPerson.employee.group_id": group_id,
+                        "inForPerson.employee.team_id": team_id,
                         "inForPerson.account.birthday": birthday,
                         "inForPerson.account.gender": gender,
                         "inForPerson.account.married": married,
@@ -576,7 +577,7 @@ exports.info = async (req, res) => {
 
             }
 
-            return functions.setError(res, 'Không có dữ liệu', 404);
+            // return functions.setError(res, 'Không có dữ liệu', 404);
         }
     } catch (e) {
         functions.setError(res, e.message)
