@@ -43,4 +43,4 @@ const managerUserSchema = new Schema({
 })
 
 
-module.exports = mongoose.model('managerUser', managerUserSchema)
+module.exports = mongoose.model('QLC_ManagerUser', managerUserSchema)
