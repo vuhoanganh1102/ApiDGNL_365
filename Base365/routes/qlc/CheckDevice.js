@@ -11,9 +11,6 @@ router.get("/company/all",functions.checkToken, CheckDeviceController.getALlComp
 //loc danh sach theo cty va phong ban  
 router.get("/company/depart/all",functions.checkToken, CheckDeviceController.getALlCompanyDepartmentDevice);
 
-////loc danh sach theo cty va phong ban 
-// router.get("/company/depart/:id",functions.checkToken, CheckDeviceController.getAllDepDevice);
-
 //lấy dang ki  thiết bị theo Id 
 router.get("/:id",functions.checkToken, CheckDeviceController.getDeviceById);
 

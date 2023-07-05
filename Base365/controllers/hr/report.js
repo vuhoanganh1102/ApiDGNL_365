@@ -9,7 +9,7 @@ const Candidates = require('../../models/hr/Candidates');
 const GetJob = require('../../models/hr/GetJob');
 const QuitJob = require('../../models/hr/personalChange/QuitJob');
 const Salarys = require('../../models/hr/Salarys');
-const Deparment = require('../../models/qlc/Deparment');
+const Deparment = require('../../models/qlc/QLC_Deparment');
 exports.report = async (req, res, next) => {
     try {
         // await Users.findByIdAndUpdate(20,{inForPerson:{account:{gender:2},employee:{com_id:20}}})

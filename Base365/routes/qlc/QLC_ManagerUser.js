@@ -1,12 +1,11 @@
 
 
 const router = require('express').Router();
-const managerUserController = require('../../controllers/qlc/manageUser');
+const managerUserController = require('../../controllers/qlc/QLC_ManageUser');
 const formData = require('express-form-data')
 const functions= require ("../../services/functions")
 
-//API lấy tất cả danh sách nhân viên 
-// router.get("/",formData.parse(),managerUserController.getlistUser);
+
 
 //API lấy danh sách nhân viên
 router.post("/user",formData.parse(),managerUserController.getlistAdmin);

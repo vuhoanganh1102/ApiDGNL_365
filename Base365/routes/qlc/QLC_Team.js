@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const TeamController = require('../../controllers/qlc/team')
+const TeamController = require('../../controllers/qlc/QLC_Team')
 const formData = require('express-form-data')
 const functions = require("../../services/functions")
 

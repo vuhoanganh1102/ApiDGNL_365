@@ -1,5 +1,5 @@
 const functions = require("../../services/functions");
-const Group = require('../../models/qlc/Group');
+const Group = require('../../models/qlc/QLC_Group');
 const Users = require("../../models/Users")
 
 //tìm kiếm danh sách nhom
