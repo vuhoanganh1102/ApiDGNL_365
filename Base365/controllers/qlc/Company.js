@@ -72,8 +72,11 @@ exports.login = async (req, res, next) => {
             if (checkPhone) {
                 let checkTypeUser = await Users.findOne({ phoneTK: phoneTK }).lean()
                 // console.log(checkTypeUser)
-                
-                 if (checkTypeUser.type == 1) {
+                if (checkTypeUser.type == 0) {
+                    type_user = 0
+                    functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
+                }
+                else if (checkTypeUser.type == 1) {
                     type_user = 1
                     let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
                     if (!checkPassword) {
@@ -100,10 +103,6 @@ exports.login = async (req, res, next) => {
                 else if (checkTypeUser.type == 2) {
                     type_user = 2
                     functions.success(res, "tài khoản là tài khoản nhân viên", { type_user })
-            }
-                else if (checkTypeUser.type == 0) {
-                    type_user = 0
-                    functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
                 } else {
                     functions.setError(res, "không tìm thấy tài khoản ")
                 }
@@ -116,8 +115,11 @@ exports.login = async (req, res, next) => {
             if (checkMail) {
                 let checkTypeUser = await Users.findOne({ email: email }).lean()
                 // console.log(checkTypeUser)
-                
-                if (checkTypeUser.type == 1) {
+                if (checkTypeUser.type == 0) {
+                    type_user = 0
+                    functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
+                }
+                else if (checkTypeUser.type == 1) {
                     type_user = 1
                     let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
                     if (!checkPassword) {
@@ -144,10 +146,6 @@ exports.login = async (req, res, next) => {
                 else if (checkTypeUser.type == 2) {
                     type_user = 2
                     functions.success(res, "tài khoản là tài khoản nhân viên", { type_user })
-                    
-                }if (checkTypeUser.type == 0) {
-                    type_user = 0
-                    functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
                 } else {
                     functions.setError(res, "không tìm thấy tài khoản ")
                 }
