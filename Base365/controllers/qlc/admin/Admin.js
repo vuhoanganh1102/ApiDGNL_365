@@ -1,24 +1,23 @@
 const functions = require("../../../services/functions")
-const feedback = require("../../../models/qlc/QLC_Feedback_emp")
+const feedback = require("../../../models/qlc/Feedback_emp")
 const user = require("../../../models/Users")
 const md5 = require('md5');
 
 //cai dat dich vu Vip
-exports.setVip = async (req, res) => {
+exports.setVip = async(req, res) => {
     try {
         let com_ep_vip = req.body.com_ep_vip
         let com_vip_time = req.body.com_vip_time
         let com_id = req.body.com_id
         let now = new Date()
         let inpput = new Date(com_vip_time)
-        // console.log(Date.parse(com_vip_time))
         if (!com_id) {
             functions.setError(res, "vui lòng nhập id công ty")
         } else if (com_ep_vip < 5) {
             await functions.setError(res, "số lượng nhân viên được đăng kí vip không được dưới 5")
         } else if (isNaN(com_ep_vip)) {
             functions.setError(res, "số lượng nhân viên phải là số")
-        } else if (Date.parse(now) >  Date.parse(inpput)) {
+        } else if (Date.parse(now) > Date.parse(inpput)) {
             await functions.setError(res, "số ngày nhập phải lớn hơn hiện tại ")
         } else {
             let find = await user.findOne({ idQLC: com_id, type: 1 }).lean()
@@ -41,7 +40,7 @@ exports.setVip = async (req, res) => {
 }
 
 // lay danh sach KH
-exports.getList = async (req, res) => {
+exports.getList = async(req, res) => {
 
     try {
         const pageNumber = req.body.pageNumber || 1;
@@ -57,8 +56,8 @@ exports.getList = async (req, res) => {
         let data = [];
         let listCondition = {};
         let checkNew1 = new Date(inputNew)
-        let checkNew =  Date.parse(checkNew1)
-        let checkOld1= new Date(inputOld)
+        let checkNew = Date.parse(checkNew1)
+        let checkOld1 = new Date(inputOld)
         let checkOld = Date.parse(checkOld1)
 
         const currentDate = new Date();
@@ -71,23 +70,23 @@ exports.getList = async (req, res) => {
         }
         //tìm kiếm qua trang web
         if (fromWeb) listCondition.fromWeb = fromWeb;
-        
+
         if (inputNew || inputOld) listCondition['createdAt'] = { $gte: checkOld, $lte: checkNew };
-        
+
         if (find) listCondition["userName"] = { $regex: find };
-        
+
         if (type) listCondition.type = type;
         //tiìm kiếm công ty đang vip thì cho vip = 1 
         if (findConditions == 1) listCondition['inForCompany.cds.com_vip'] = 1;
         //tìm kiếm công ty từng vip thì cho time vip != 0
-        if (findConditions == 2) listCondition['inForCompany.cds.com_vip_time'] = { $ne: 0};
+        if (findConditions == 2) listCondition['inForCompany.cds.com_vip_time'] = { $ne: 0 };
         //tìm kiếm công ty chưa vip thì cho vip = 0 va time vip = 0
         if (findConditions == 3) listCondition['inForCompany.cds.com_vip'] = 0, listCondition['inForCompany.cds.com_vip_time'] = 0;
         //danh sach cty dang ki loi , chua kich hoat
         if (findConditions == 4) listCondition["authentic"] = 0;
         //danah sach cong ty ddang ki trong ngay
         if (findConditions == 5) listCondition['createdAt'] = { $gte: inDay }
-        //danh sach cong ty su dung cham cong trong ngay
+            //danh sach cong ty su dung cham cong trong ngay
         if (findConditions == 6) listCondition['inForCompany.cds.type_timekeeping'] = { $ne: 0 }, listCondition['createdAt'] = { $gte: inDay }
 
 
@@ -108,7 +107,7 @@ exports.getList = async (req, res) => {
 
 }
 
-exports.updatePassword = async (req, res, next) => {
+exports.updatePassword = async(req, res, next) => {
     try {
         let password = req.body.password;
         let com_id = req.body.com_id;
@@ -143,7 +142,7 @@ exports.updatePassword = async (req, res, next) => {
     }
 }
 
-exports.getListFeedback = async (req, res) => {
+exports.getListFeedback = async(req, res) => {
     try {
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
