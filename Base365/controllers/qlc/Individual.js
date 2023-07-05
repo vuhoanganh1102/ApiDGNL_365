@@ -355,7 +355,7 @@ exports.updateInfoindividual = async (req, res, next) => {
         let idQLC = req.user.data.idQLC;
         let data = [];
         let data1 = [];
-        const { userName, email, phoneTK, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+        const { userName, email, phoneTK, address, phone, group_id, birthday, gender, married, experience, education, otp } = req.body;
         let updatedAt = new Date()
         let File = req.files || null;
         let avatarUser = null;
@@ -387,7 +387,6 @@ exports.updateInfoindividual = async (req, res, next) => {
                             "inForPerson.account.gender": gender,
                             "inForPerson.account.married": married,
                             "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
                             "inForPerson.account.education": education,
                         }
                     })
@@ -414,7 +413,6 @@ exports.updateInfoindividual = async (req, res, next) => {
                             "inForPerson.account.gender": gender,
                             "inForPerson.account.married": married,
                             "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
                             "inForPerson.account.education": education,
                         }
                     })
