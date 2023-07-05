@@ -3,14 +3,17 @@ const router = require('express').Router();
 const CustomerRouter = require('./Customer/CustomerRoutes')
 const CustomerDetailsRoutes = require('./Customer/CustomerDetailsRoutes')
 const GroupCustomerRoutes = require("./Customer/groupCustomer");
+const Group = require("./groupCustomer")
+
 
 // Lâm - Customer
 router.use('/',CustomerRouter)
 router.use('/',CustomerDetailsRoutes)
-// router.use('/crm',GroupCustomerRouter)
 router.use('/', GroupCustomerRoutes);
 
 
+
+router.use('/',Group)
 
 
 // Trung - Contract
@@ -27,9 +30,9 @@ const CustomerContact = require("./Customer/CustomerContact");
 
 
 //hợp đồng 
-router.use('/contract', formContract);
+router.use('/contract',formContract);
 //hợp đồng bán
-router.use('/contractforcus', Contract);
+router.use('/contractforcus',Contract);
 //cài đặt tong dai
 router.use('/settingContract', settingContract);
 //lien he KH
