@@ -140,7 +140,6 @@ exports.checkToken = (req, res, next)=> {
             if (err) {
                 return res.status(403).json({ message: "Invalid token" });
             }
-            // console.log(user.data);
             var infoLogin = {type: user.data.type, id: user.data.idQLC, name: user.data.userName};
             if(user.data.type!=1){
                 if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
@@ -152,8 +151,9 @@ exports.checkToken = (req, res, next)=> {
                 infoLogin.comId = user.data.idQLC;
             }
             // if(type==1) req.ac = user.data.idQLC;
-
+            req.id = infoLogin.id;
             req.comId = infoLogin.comId;
+            req.name_user = infoLogin.name
             req.infoLogin = infoLogin;
             next();
             

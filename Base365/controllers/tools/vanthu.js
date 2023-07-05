@@ -422,7 +422,7 @@ exports.toolDeXuatXuLy = async (req, res, next) => {
                     let post = await fnc.getDatafindOne(DeXuatXuLy, {id_dx: data[i].new_id})
                     if (post == null) {
                         let newDXXL = new DeXuatXuLy({
-                            id_dx: data[i].id_dx,
+                            _id: data[i].id_dx,
                             id_vb: data[i].id_vb,
                             user_xu_ly: data[i].user_xu_ly,
                             y_kien_xu_ly: data[i].y_kien_xu_ly,
@@ -1186,14 +1186,14 @@ exports.tool_VanBan = async (req, res, next) => {
                     // console.log(typeof (listData[i].thoi_gian_duyet));
                     // let thoiGianDuyet = null;
                     
-                    let arrLinkFile = [];
-                    let arr;
-                    if(listData[i].file_vb){
-                        arr = listData[i].file_vb.split(',');
-                        for(let i=0; i<arr.length; i++){
-                            arrLinkFile.push({file: arr[i]})
-                        }
-                    }
+                    // let arrLinkFile = [];
+                    // let arr;
+                    // if(listData[i].file_vb){
+                    //     arr = listData[i].file_vb.split(',');
+                    //     for(let i=0; i<arr.length; i++){
+                    //         arrLinkFile.push({file: arr[i]})
+                    //     }
+                    // }
                     // if (listData[i].id == 49) {
                     //     console.log((listData[i].thoi_gian_duyet));
                     // };
@@ -1206,8 +1206,8 @@ exports.tool_VanBan = async (req, res, next) => {
                         so_vb: listData[i].so_vb,
                         nd_vb: listData[i].nd_vb,
                         book_vb: listData[i].book_vb,
-                        time_ban_hanh: (listData[i].time_ban_hanh * 1000) > 0 ? listData[i].thoi_gian_duyet * 1000 : null,
-                        time_hieu_luc: (listData[i].time_hieu_luc * 1000) > 0 ? listData[i].thoi_gian_duyet * 1000 : null,
+                        time_ban_hanh: (listData[i].time_ban_hanh * 1000) > 0 ? listData[i].time_ban_hanh * 1000 : null,
+                        time_hieu_luc: (listData[i].time_hieu_luc * 1000) > 0 ? listData[i].time_hieu_luc * 1000 : null,
                         nhom_vb: listData[i].nhom_vb,
                         user_send: listData[i].user_send,
                         name_user_send: listData[i].name_user_send,
@@ -1219,7 +1219,7 @@ exports.tool_VanBan = async (req, res, next) => {
                         gui_ngoai_cty: listData[i].gui_ngoai_cty,
                         mail_cty: listData[i].mail_cty,
                         name_com: listData[i].name_com,
-                        file_vb: arrLinkFile,
+                        file_vb: listData[i].file_vb,
                         trang_thai_vb: listData[i].trang_thai_vb,
                         duyet_vb: listData[i].duyet_vb,
                         type_xet_duyet: listData[i].type_xet_duyet,
@@ -1237,7 +1237,7 @@ exports.tool_VanBan = async (req, res, next) => {
                         type_duyet_chuyen_tiep: listData[i].type_duyet_chuyen_tiep,
                         type_nhan_chuyen_tiep: listData[i].type_nhan_chuyen_tiep,
                         type_thay_the: listData[i].type_thay_the,
-                        created_date: new Date(listData[i].created_date * 1000),
+                        created_date: listData[i].created_date * 1000,
                         type_duyet: listData[i].type_duyet,
                         update_time: listData[i].update_time,
                     });

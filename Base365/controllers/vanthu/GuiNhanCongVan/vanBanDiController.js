@@ -369,16 +369,18 @@ exports.getListVanBanDiDaGui = async(req, res, next) => {
     }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
+    fromDate = fromDate? new Date(fromDate) : null;
+    toDate = toDate? new Date(toDate): null;
 
     let id = req.id || 1763;
     let condition = {user_send: id};
     if(id_vb) condition._id = Number(id_vb);
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
     if(trang_thai_search) condition.trang_thai_vb = Number(trang_thai_search);
-    if(fromDate) condition.created_date = {$gte: new Date(fromDate)};
-    if(toDate) condition.created_date = {$lte: new Date(toDate)};
+    if(fromDate && !toDate) condition.created_date = {$gte: fromDate.getTime()};
+    if(toDate && !fromDate) condition.created_date = {$lte: toDate.getTime()};
+    if(fromDate && toDate) condition.created_date = {$gte: fromDate.getTime(), $lte: toDate.getTime()}
 
-    // let listVanBanDi = await functions.pageFind(VanBan, condition, {_id: 1}, skip, limit);
     let listVanBanDi = await VanBan.aggregate([
         {$match: condition},
         {

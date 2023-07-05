@@ -23,10 +23,10 @@ const vanBan = new mongoose.Schema({
         type: Number
     },
     time_ban_hanh: {
-        type: Date,
+        type: Number,
     },
     time_hieu_luc: {
-        type: Date,
+        type: Number,
     },
     nhom_vb: {
         type: Number,
@@ -67,11 +67,9 @@ const vanBan = new mongoose.Schema({
         type: String,
         max: 255
     },
-    file_vb: [{
-        file:{
-            type: String
-        }
-    }],
+    file_vb: {
+        type: String
+    },
     trang_thai_vb: {
         type: Number
     },
@@ -135,13 +133,13 @@ const vanBan = new mongoose.Schema({
         type: Number
     },
     created_date: {
-        type: Date
+        type: Number
     },
     type_duyet: {
         type: Number,
     },
     update_time: {
-        type: Date
+        type: Number
     }
 
 

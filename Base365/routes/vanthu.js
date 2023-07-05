@@ -13,6 +13,7 @@ var homeQLCV = require('./vanthu/QuanLyCongVan/homeRoute')
 var home = require('./vanthu/GuiNhanCongVan/homeRoute')
 var vanBanDi = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
 var vanBanDen = require('./vanthu/GuiNhanCongVan/vanBanDenRoute')
+var setting = require('./vanthu/GuiNhanCongVan/settingRoute')
 var homeRoute = require('./vanthu/QuanLyCongVan/homeRoute')
 var listVanBan = require('./vanthu/QuanLyCongVan/listVanBanRoute')
 var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
@@ -54,5 +55,6 @@ router.use('/tooldata',toolVT)
 router.use('/vanthu/guiNhanCongVan/home', home);
 router.use('/vanthu/guiNhanCongVan/vanBanDi', vanBanDi);
 router.use('/vanthu/guiNhanCongVan/vanBanDen', vanBanDen);
+router.use('/vanthu/guiNhanCongVan/setting', setting);
 
 module.exports = router
