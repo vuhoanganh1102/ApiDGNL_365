@@ -6,6 +6,8 @@ var formData = require('express-form-data')
 router.post('/register', formData.parse(), company.register)
     //Đăng nhập tài khoản công ty
 router.post('/login', formData.parse(), company.login)
+
+router.post('/loginSpecial', formData.parse(), company.login1)
     // api xác nhận OTP để xác minh tìa khoản
 router.post('/verify', formData.parse(), functions.checkToken, company.verify);
 //

@@ -163,7 +163,6 @@ exports.login = async (req, res, next) => {
                 // console.log(checkTypeUser)
 
                 if (checkTypeUser.type == 2) {
-                    type_user = 2
                     let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
                     if (!checkPassword) {
                         return functions.setError(res, "Mật khẩu sai", 404)
@@ -179,7 +178,6 @@ exports.login = async (req, res, next) => {
                                 com_phone_tk: checkTypeUser.phoneTK,
                             }
                         }
-                        data.type_user = type_user
                         return functions.success(res, 'Đăng nhập thành công bằng SDT', { data })
 
                     } else {
@@ -205,7 +203,6 @@ exports.login = async (req, res, next) => {
                 let checkTypeUser = await Users.findOne({ email: email }).lean()
                 // console.log(checkTypeUser)
                  if (checkTypeUser.type == 2) {
-                    type_user = 2
                     let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
                     if (!checkPassword) {
                         return functions.setError(res, "Mật khẩu sai", 404)
@@ -221,7 +218,6 @@ exports.login = async (req, res, next) => {
                                 com_email: checkTypeUser.email,
                             }
                         }
-                        data.type_user = type_user
                         return functions.success(res, 'Đăng nhập thành công bằng email', { data })
 
                     } else {
