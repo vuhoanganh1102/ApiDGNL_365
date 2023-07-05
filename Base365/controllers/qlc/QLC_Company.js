@@ -65,67 +65,89 @@ exports.login = async (req, res, next) => {
         let phoneTK = req.body.phoneTK
         let email = req.body.email
         password = req.body.password
-
-        type = 1
+        type_user = {};
         if (phoneTK && password) {
+
             let checkPhone = await functions.checkPhoneNumber(phoneTK)
             if (checkPhone) {
-                let findUser = await Users.findOne({ phoneTK: phoneTK, type: 1 })
-                if (!findUser) {
-                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
+                let checkTypeUser = await Users.findOne({ phoneTK: phoneTK }).lean()
+                // console.log(checkTypeUser)
+                if (checkTypeUser.type == 0) {
+                    type_user = 0
+                    functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
                 }
-                let checkPassword = await functions.verifyPassword(password, findUser.password)
-                if (!checkPassword) {
-                    return functions.setError(res, "Mật khẩu sai", 404)
-                }
-                // if (findUser.type == type) {
-                if (findUser != null) {
-                    const token = await functions.createToken(findUser, "1d")
-                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
-                    let data = {
-                        access_token: token,
-                        refresh_token: refreshToken,
-                        com_info: {
-                            com_id: findUser._id,
-                            com_email: findUser.email,
-                            com_phone_tk: findUser.phoneTK,
-                        }
+                else if (checkTypeUser.type == 1) {
+                    type_user = 1
+                    let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
+                    if (!checkPassword) {
+                        return functions.setError(res, "Mật khẩu sai", 404)
                     }
-                    return functions.success(res, 'Đăng nhập thành công bằng SDT', { data })
+                    if (checkTypeUser != null) {
+                        const token = await functions.createToken(checkTypeUser, "1d")
+                        const refreshToken = await functions.createToken({ userId: checkTypeUser._id }, "1y")
+                        let data = {
+                            access_token: token,
+                            refresh_token: refreshToken,
+                            com_info: {
+                                com_id: checkTypeUser._id,
+                                com_phone_tk: checkTypeUser.phoneTK,
+                            }
+                        }
+                        data.type_user = type_user
+                        return functions.success(res, 'Đăng nhập thành công bằng SDT', { data })
 
-                } else {
-                    return functions.setError(res, "sai tai khoan hoac mat khau")
+                    } else {
+                        return functions.setError(res, "sai tai khoan hoac mat khau")
+                    }
                 }
+                else if (checkTypeUser.type == 2) {
+                    type_user = 2
+                    functions.success(res, "tài khoản là tài khoản nhân viên", { type_user })
+                } else {
+                    functions.setError(res, "không tìm thấy tài khoản ")
+                }
+
             } else {
                 return functions.setError(res, "không đúng định dạng SDT", 404)
             }
         } else if (email && password) {
             let checkMail = await functions.checkEmail(email)
             if (checkMail) {
-                let findUser = await Users.findOne({ email: email, type: 1 })
-                if (!findUser) {
-                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
+                let checkTypeUser = await Users.findOne({ email: email }).lean()
+                // console.log(checkTypeUser)
+                if (checkTypeUser.type == 0) {
+                    type_user = 0
+                    functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
                 }
-                let checkPassword = await functions.verifyPassword(password, findUser.password)
-                if (!checkPassword) {
-                    return functions.setError(res, "Mật khẩu sai", 404)
-                }
-                if (findUser != null) {
-                    const token = await functions.createToken(findUser, "1d")
-                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
-                    let data = {
-                        access_token: token,
-                        refresh_token: refreshToken,
-                        com_info: {
-                            com_id: findUser._id,
-                            com_email: findUser.email,
-                            com_phone_tk: findUser.phoneTK,
-                        }
+                else if (checkTypeUser.type == 1) {
+                    type_user = 1
+                    let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
+                    if (!checkPassword) {
+                        return functions.setError(res, "Mật khẩu sai", 404)
                     }
-                    return functions.success(res, 'Đăng nhập thành công bằng Email', { data })
+                    if (checkTypeUser != null) {
+                        const token = await functions.createToken(checkTypeUser, "1d")
+                        const refreshToken = await functions.createToken({ userId: checkTypeUser._id }, "1y")
+                        let data = {
+                            access_token: token,
+                            refresh_token: refreshToken,
+                            com_info: {
+                                com_id: checkTypeUser._id,
+                                com_email: checkTypeUser.email,
+                            }
+                        }
+                        data.type_user = type_user
+                        return functions.success(res, 'Đăng nhập thành công bằng email', { data })
 
+                    } else {
+                        return functions.setError(res, "sai tai khoan hoac mat khau")
+                    }
+                }
+                else if (checkTypeUser.type == 2) {
+                    type_user = 2
+                    functions.success(res, "tài khoản là tài khoản nhân viên", { type_user })
                 } else {
-                    return functions.setError(res, "sai tai khoan hoac mat khau")
+                    functions.setError(res, "không tìm thấy tài khoản ")
                 }
             } else {
                 return functions.setError(res, "không đúng định dạng email", 404)
@@ -401,7 +423,7 @@ exports.updateInfoCompany = async (req, res, next) => {
         let File = req.files || null;
         let avatarUser = null;
         if ((idQLC) !== undefined) {
-            let findUser = Users.findOne({ idQLC: idQLC,type :1 })
+            let findUser = Users.findOne({ idQLC: idQLC, type: 1 })
             if (findUser) {
                 if (File.avatarUser) {
                     let upload = fnc.uploadFileQLC('avt_com', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
@@ -410,7 +432,7 @@ exports.updateInfoCompany = async (req, res, next) => {
                     }
                     avatarUser = fnc.createLinkFileQLC('avt_com', idQLC, File.avatarUser.name)
 
-                    data = await Users.updateOne({ idQLC: idQLC ,type :1 }, {
+                    data = await Users.updateOne({ idQLC: idQLC, type: 1 }, {
                         $set: {
                             userName: userName,
                             emailContact: emailContact,
@@ -427,7 +449,7 @@ exports.updateInfoCompany = async (req, res, next) => {
 
 
                 } else {
-                    data1 = await Users.updateOne({ idQLC: idQLC ,type :1 }, {
+                    data1 = await Users.updateOne({ idQLC: idQLC, type: 1 }, {
                         $set: {
                             userName: userName,
                             emailContact: emailContact,
@@ -462,20 +484,20 @@ exports.info = async (req, res) => {
         } else if (isNaN(idQLC)) {
             functions.setError(res, "id must be a Nubmer")
         } else {
-            const data = await Users.findOne({ idQLC :idQLC ,type :1 }).select('userName email phoneTK address avatarUser authentic').lean();
+            const data = await Users.findOne({ idQLC: idQLC, type: 1 }).select('userName email phoneTK address avatarUser authentic').lean();
 
             const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
 
             const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
-            
+
             data.departmentsNum = departmentsNum
             data.userNum = userNum
             if (data) {
-                return  functions.success(res, 'Lấy thành công', { data });
+                return functions.success(res, 'Lấy thành công', { data });
             };
             return functions.setError(res, 'Không có dữ liệu', 404);
         }
     } catch (e) {
-        return  functions.setError(res, e.message)
+        return functions.setError(res, e.message)
     }
 } 

@@ -1,4 +1,4 @@
-const report = require('../../models/qlc/ReportError')
+const report = require('../../models/qlc/QLC_ReportError')
 const functions = require ('../../services/functions')
 
 
