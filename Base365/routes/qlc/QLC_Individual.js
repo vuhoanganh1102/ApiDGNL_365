@@ -16,7 +16,7 @@ router.post('/updatePassword',functions.checkToken, formData.parse(),  individua
 
 router.post('/updatePasswordbyInput', formData.parse(),  individual.updatePasswordbyInput);
 // hàm cập nhập thông tin công ty
-router.post('/updateInfoindividual',functions.checkToken, formData.parse(),  individual.updateInfoindividual);
+router.post('/updateInfoindividual', functions.checkToken, formData.parse(), individual.updateInfoindividual);
 
 // api api gửi mã OTP qua mail (quên mật khẩu) 
 router.post('/forgotPasswordCheckMail', formData.parse(), individual.forgotPassword);
