@@ -1,5 +1,5 @@
-const feedback = require("../../models/qlc/Feedback")
-const feedback_emp = require("../../models/qlc/Feedback_emp")
+const feedback = require("../../models/qlc/QLC_Feedback")
+const feedback_emp = require("../../models/qlc/QLC_Feedback_emp")
 const functions = require('../../services/functions')
 
 

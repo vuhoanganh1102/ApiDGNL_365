@@ -4,7 +4,7 @@ const fnc = require('../../services/qlc/functions')
 const md5 = require('md5');
 const functions = require("../../services/functions")
 
-const Deparment = require("../../models/qlc/Deparment")
+const Deparment = require("../../models/qlc/QLC_Deparment")
 
 //đăng kí tài khoản nhân viên 
 exports.register = async (req, res) => {

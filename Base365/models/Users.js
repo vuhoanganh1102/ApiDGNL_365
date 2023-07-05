@@ -92,12 +92,12 @@ const UserSchema = new mongoose.Schema({
     },
     createdAt: {
         // Thời gian đăng ký
-        type: Date,
+        type: Number,
         default: null
     },
     updatedAt: {
         // Thời gian cập nhật
-        type: Date,
+        type: Number,
         default: null
     },
     lastActivedAt: {

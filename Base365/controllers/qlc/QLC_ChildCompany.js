@@ -1,4 +1,4 @@
-const ChildCompany = require("../../models/qlc/childCompany")
+const ChildCompany = require("../../models/qlc/QLC_ChildCompany")
 const functions = require("../../services/functions")
 
 //tìm danh sách công ty 
@@ -26,6 +26,7 @@ exports.getListCompany = async(req, res) => {
 //tạo công ty con
 exports.createCompany = async (req, res) => {
 
+   try {
     const {com_id, companyName,companyPhone ,companyEmail,companyAddress} = req.body;
     let File = req.files || null;
     let companyImage = null;
@@ -68,9 +69,14 @@ exports.createCompany = async (req, res) => {
             })
         }
     }
+   } catch (error) {
+    return functions.setError(res , error.message)
+    
+   }
 };
 // sửa công ty con 
 exports.editCompany = async (req, res) => {
+try {
     const _id = req.body.id;
 
     if (isNaN(_id)) {
@@ -100,4 +106,7 @@ exports.editCompany = async (req, res) => {
             }
         }
     }
+} catch (error) {
+    return functions.setError(res , error.message)
+}
 };

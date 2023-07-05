@@ -7,10 +7,10 @@ const functions = require ('../../services/functions')
 exports.create = async (req,res)=>{
     try {
         let {idQLC, type }= req.user.data;
-        let { curDeviceId , detail_error,gallery_image_error, createdAt, from_source } = req.body;
+        let { curDeviceId , detail_error,gallery_image_error, from_source } = req.body;
         let File = req.files || null;
             // gallery_image_error = null;
-
+        let createdAt = new Date()
 
         if(!detail_error){
             functions.setError(res,"chua nhap chi tiet")
@@ -33,7 +33,7 @@ exports.create = async (req,res)=>{
                 curDeviceId: curDeviceId,
                 detail_error : detail_error,
                 gallery_image_error : gallery_image_error || null,
-                createdAt : new Date(),
+                createdAt : Date.parse(createdAt),
                 from_source :from_source
 
             })

@@ -2,29 +2,29 @@ var express = require('express');
 var router = express.Router();
 
 
-var Admin = require('./qlc/admin/Admin')
-var companyRouterQLC = require('./qlc/Company')
-var EmployeeRouterQLC = require('./qlc/Employee')
-var individualRouterQLC = require('./qlc/individual')
-var deparmentRouter = require('./qlc/deparment')
-var teamRouter = require('./qlc/team');
-var groupRouter = require('./qlc/group');
-var shiftRouter = require('./qlc/shift');
-var calendarRouter = require('./qlc/calendar');
-var childCompanyRouter = require('./qlc/ChildCompany')
-var managerUser = require('./qlc/managerUser')
-var DelAppData = require('./qlc/DelAppData')
+var Admin = require('./qlc/admin/QLC_Admin')
+var companyRouterQLC = require('./qlc/QLC_Company')
+var EmployeeRouterQLC = require('./qlc/QLC_Employee')
+var individualRouterQLC = require('./qlc/QLC_Individual')
+var deparmentRouter = require('./qlc/QLC_Deparment')
+var teamRouter = require('./qlc/QLC_Team');
+var groupRouter = require('./qlc/QLC_Group');
+var shiftRouter = require('./qlc/Shift');
+var calendarRouter = require('./qlc/Calendar');
+var childCompanyRouter = require('./qlc/QLC_ChildCompany')
+var managerUser = require('./qlc/QLC_ManagerUser')
+var DelAppData = require('./qlc/QLC_DelAppData')
 var TrackingQR = require('./qlc/TrackingQR')
 var TrackingWifi = require('./qlc/TrackingWifi')
-var CheckVip = require('./qlc/CheckVip')
-var Feedback = require('./qlc/Feedback')
-var ReportError = require('./qlc/ReportError')
-var employeeRoutes = require('./qlc/employee.routes');
-var individualRoutes = require('./qlc/individual.routes');
+var CheckVip = require('./qlc/QLC_CheckVip')
+var Feedback = require('./qlc/QLC_Feedback')
+var ReportError = require('./qlc/QLC_ReportError')
+var employeeRoutes = require('./qlc/Employee.routes');
+var individualRoutes = require('./qlc/Individual.routes');
 var HisOfTrackingRouter = require("./qlc/HisTracking")
 var CalendarWorkEmployee = require("./qlc/CalendarWorkEmployee")
-var SetIpRouter = require("./qlc/settingIP")
-var homePage = require("./qlc/homePage")
+var SetIpRouter = require("./qlc/QLC_SettingIP")
+var homePage = require("./qlc/HomePageChamCong")
 
 
 

@@ -2,7 +2,7 @@ const Users = require('../../models/Users');
 const fnc = require('../../services/qlc/functions');
 const functions = require("../../services/functions")
 const md5 = require('md5');
-const Deparment = require("../../models/qlc/Deparment")
+const Deparment = require("../../models/qlc/QLC_Deparment")
 
 
 //Đăng kí tài khoản công ty 
