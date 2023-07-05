@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const functions= require ("../../services/functions")
 
-const ShiftController = require('../../controllers/qlc/shift')
+const ShiftController = require('../../controllers/qlc/Shift')
 var formData = require('express-form-data')
 //API lấy toàn bộ danh sách ca làm việc
 router.get("/",formData.parse(), ShiftController.getListShifts)

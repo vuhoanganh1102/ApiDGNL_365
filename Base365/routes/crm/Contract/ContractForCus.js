@@ -5,10 +5,13 @@ const formData = require("express-form-data")
 const functions= require ("../../../services/functions")
 
 
+// Api show hợp đòng
+router.post("/list",functions.checkToken,formData.parse(), controller.showContract)
 
-router.post("/",functions.checkToken,formData.parse(), controller.showContract)
 
-router.post("/add",functions.checkToken,formData.parse(), controller.showDetailContract)
+// Api show chi tiết hợp đồng
+router.post("/listdetails",functions.checkToken,formData.parse(), controller.showDetailContract)
 
+// Api xóa hợp đồng
 router.post("/delete",functions.checkToken,formData.parse(), controller.deleteContract)
 module.exports = router
