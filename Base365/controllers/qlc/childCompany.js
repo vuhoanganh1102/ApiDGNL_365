@@ -20,7 +20,7 @@ exports.getListCompany = async(req, res) => {
        
         }catch(err){
         
-        functions.setError(res,err.message)
+        return functions.setError(res,err.message)
         }
 };
 //tạo công ty con
