@@ -2,13 +2,17 @@
 const fs = require('fs');
 const multer = require('multer');
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
+
+const dotenv = require("dotenv");
+dotenv.config();
 const path = require('path');
 
 
 
 exports.uploadFileVanThu = (id, file) => {
-    let path = `../Storage/base365/vanthu/dexuat/${id}/`;
-    let filePath = `../Storage/base365/vanthu/dexuat/${id}/` + file.originalFilename;
+    let path = `../store/base365/vanthu/dexuat/${id}/`;
+    let filePath = `../store/base365/vanthu/dexuat/${id}/` + file.originalFilename;
 
     if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
         fs.mkdirSync(path, { recursive: true });
@@ -37,8 +41,8 @@ exports.getMaxID = async(model) => {
     return maxUser._id + 1;
 };
 
-// const storageVanthu = (destination) => {
-//     return storage = multer.diskStorage({
+// const storeVanthu = (destination) => {
+//     return store = multer.diskstore({
 //         destination: (req, file, cb) => {
 //             // console.log(file_kem)
 //             cb(null, destination);
@@ -49,7 +53,7 @@ exports.getMaxID = async(model) => {
 //     })
 
 // };
-// exports.upload = multer({ storage: storageVanthu('../../../Storage/VanThu') });
+// exports.upload = multer({ store: storeVanthu('../../../store/VanThu') });
 exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, status, link, file_kem) => {
     return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
         SenderID: id_user,
@@ -77,7 +81,7 @@ exports.uploadFileNameRandom = async(folder, file_img) => {
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
 
-    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}${month}${day}/`;
+    const dir = `../store/base365/vanthu/uploads/${folder}/${year}${month}${day}/`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
@@ -127,33 +131,91 @@ exports.sendChat = async (link, data) => {
     });
 }
 
+exports.checkToken = (req, res, next)=> {
+    try{
+        const authHeader = req.headers["authorization"];
+        const token = authHeader && authHeader.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({ message: "Missing token" });
+        }
+        jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
+            if (err) {
+                return res.status(403).json({ message: "Invalid token" });
+            }
+            // console.log(user.data);
+            var infoLogin = {type: user.data.type, id: user.data.idQLC, name: user.data.userName};
+            if(user.data.type!=1){
+                if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
+                    infoLogin.comId = user.data.inForPerson.employee.com_id;
+                }else {
+                    return res.status(404).json({ message: "Missing info inForPerson!" });
+                }
+            }else {
+                infoLogin.comId = user.data.idQLC;
+            }
+            // if(type==1) req.ac = user.data.idQLC;
 
-exports.VT_UploadFile = async(folder, id, file, allowedExtensions) => {
-
-    let path1 = `../Storage/hr/${folder}/${id}/`;
-    let filePath = `../Storage/hr/${folder}/${id}/` + file.name;
-
-    let fileCheck = path.extname(filePath);
-    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
-        return false
+            req.comId = infoLogin.comId;
+            req.infoLogin = infoLogin;
+            next();
+            
+        });
+    }catch(err){
+        console.log(err);
+        return res.status(503).json({ message: "Error from server!" });
     }
-    // const { size } = await promisify(fs.stat)(filePath);
-    // if (size > MAX_IMG_SIZE) {
-    //     return false;
-    // }
+    
+}
 
-    if (!fs.existsSync(path1)) {
-        fs.mkdirSync(path1, { recursive: true });
+exports.arrAPI = ()=>{
+    return {
+        'NotificationOfferReceive': "http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive",
+        'NotificationOfferSent': "http://43.239.223.142:9000/api/V2/Notification/NotificationOfferSent",
+        "NotificationReport": "http://43.239.223.142:9000/api/V2/Notification/NotificationReport",
+        "SendContractFile": "http://43.239.223.142:9000/api/V2/Notification/SendContractFile"
     }
-    fs.readFile(file.path, (err, data) => {
+} 
+
+exports.replaceTitle = (title) => {
+  // Hàm replaceTitle() là hàm tùy chỉnh của bạn để thay thế các ký tự không hợp lệ trong tiêu đề
+  // Hãy thay thế nó bằng cách xử lý phù hợp với yêu cầu của bạn
+    return title.replace(/[^a-zA-Z0-9]/g, '-');
+};
+
+exports.uploadfile = async(folder, file_img) => {
+    let filename='';
+    const time_created = Date.now();
+    const date = new Date(time_created);
+    const year = date.getFullYear();
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    const day = ('0' + date.getDate()).slice(-2);
+
+    const dir = `../store/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    filename = `${file_img.originalFilename}`;
+    const filePath = dir + filename;
+    fs.readFile(file_img.path, (err, data) => {
         if (err) {
             console.log(err)
+            return false
         }
         fs.writeFile(filePath, data, (err) => {
             if (err) {
                 console.log(err)
+                return false
             }
         });
     });
-    return true
+    return filename;
+}
+exports.deleteFile = (file) => {
+    let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`,'');
+    let filePath = '../store/base365/vanthu/uploads/' + namefile;
+    fs.unlink(filePath, (err) => {
+        if (err) console.log(err);
+    });
+    
 }

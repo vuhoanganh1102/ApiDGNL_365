@@ -9,7 +9,7 @@ router.post('/register', formData.parse(), individual.register)
 router.post('/login', formData.parse(), individual.login)
 
 // api xác nhận OTP để xác minh tìa khoản
-router.post('/verify', formData.parse(),  individual.verify);
+router.post('/verify', formData.parse(),functions.checkToken,  individual.verify);
 router.post('/verifyCheckOTP', formData.parse(),functions.checkToken,  individual.verifyCheckOTP);
 
 // hàm đổi mật khẩu 

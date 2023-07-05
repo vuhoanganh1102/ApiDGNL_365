@@ -109,7 +109,7 @@ const tbl_qly_congvan = new mongoose.Schema({
         default: null
     },
     cv_time_xoa: {
-        type: Number,
+        type: Date,
         default: null
     },
 
@@ -120,7 +120,7 @@ const tbl_qly_congvan = new mongoose.Schema({
         type: Number
     },
     cv_time_create: {
-        type: Number
+        type: Date
     },
     cv_time_update: {
         type: Date
@@ -146,7 +146,7 @@ const tbl_qly_congvan = new mongoose.Schema({
         default: 0
     },
     cv_time_edit: {
-        type: Number,
+        type: Date,
         default: null
     },
     cv_type_hd: {

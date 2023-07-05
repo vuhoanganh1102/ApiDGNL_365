@@ -45,11 +45,16 @@ exports.createJobDescription = async(req, res, next) => {
         } else newIdJob = 1;
 
         let roadMap = req.files.roadMap;
-        if(!await hrService.checkFile(roadMap.path)){
-            return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 20MB', 405);
+        let nameFile = '';
+        let linkFil = '';
+        if(roadMap) {
+            if(!await hrService.checkFile(roadMap.path)){
+                return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 20MB', 405);
+            }
+            nameFile = await hrService.uploadFileRoadMap(comId,roadMap);
+            linkFile = await hrService.createLinkFile(folderFile, comId, roadMap.name);
         }
-        let nameFile = await hrService.uploadFileRoadMap(comId,roadMap);
-        let linkFile = await hrService.createLinkFile(folderFile, comId, roadMap.name);
+        
         //tao quy trinh
         let job = new JobDescription({
             id: newIdJob,

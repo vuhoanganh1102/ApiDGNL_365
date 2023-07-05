@@ -12,13 +12,13 @@ exports.getAllCalendar = async (req, res) => {
 exports.getShiftById = async (req, res) => {
 
     const _id = req.body.id;
-    const companyID = req.body.companyID
-    if((_id && companyID) == undefined){
+    const com_id = req.body.com_id
+    if((_id && com_id) == undefined){
         functions.setError(res, "input required", 621);
-    }else if (isNaN(_id && companyID)) {
+    }else if (isNaN(_id && com_id)) {
         functions.setError(res, "Id must be a number", 621);
     } else {
-        const shift = await functions.getDatafindOne(Shifts, { _id: _id, companyID:companyID });
+        const shift = await functions.getDatafindOne(Shifts, { _id: _id, com_id:com_id });
         if (shift) {
             functions.success(res, "Get data successfully", shift);
         } else {
@@ -28,14 +28,13 @@ exports.getShiftById = async (req, res) => {
 };
 exports.getShiftByComId = async (req, res) => {
 
-    const companyID = req.body.companyID;
-    console.log(companyID)
-    if (!companyID) {
+    const com_id = req.body.com_id;
+    if (!com_id) {
         functions.setError(res, "Company id required");
-    } else if ( isNaN(companyID)) {
+    } else if ( isNaN(com_id)) {
         functions.setError(res, "Company id must be a number");
     } else {
-        await functions.getDatafind(Shifts, { companyID: companyID })
+        await functions.getDatafind(Shifts, { com_id: com_id })
             .then((shifts) => functions.success(res, "Get shift's data successfully", shifts))
             .catch(err => functions.setError(res, err.message, 623));
     }
@@ -48,20 +47,20 @@ exports.getTrackingtime = async (req,res)=>{
     try {
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
-        let companyID = request.companyID,
+        let com_id = request.com_id,
             CreateAt = request.CreateAt || true
             inputNew = request.inputNew 
             inputOld = request.inputOld
 
 
 
-        if((companyID && CreateAt && inputNew && inputOld )==undefined){
+        if((com_id && CreateAt && inputNew && inputOld )==undefined){
             functions.setError(res,"lack of input")
-        }else if(isNaN(companyID)){
+        }else if(isNaN(com_id)){
             functions.setError(res,"id must be a Number")
         }else{
-            // const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
-            const data = await Tracking.find({companyID: companyID, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+            // const data = await Tracking.find({com_id: com_id, CreateAt: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
+            const data = await Tracking.find({com_id: com_id, CreateAt: { $gte: inputOld , $lte: inputNew } }).select('_id idQLC Location CreateAt shiftID status  ').skip((pageNumber - 1) * 20).limit(20).sort({ CreateAt : -1});
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
@@ -79,11 +78,11 @@ exports.getTrackingtime = async (req,res)=>{
 exports.getAllCalendarCompany = async (req, res) => {
 
     try {
-        const companyID = req.body.companyID;
+        const com_id = req.body.com_id;
         const calendarID = req.body.calendarID;
-        const numberUser = await functions.findCount(Users,{ "inForPerson.companyID":companyID , "inForPerson.calendarID": calendarID, type: 2})
+        const numberUser = await functions.findCount(Users,{ "inForPerson.com_id":com_id , "inForPerson.calendarID": calendarID, type: 2})
 
-        const data = await functions.getDatafind(Calendar, { companyID: companyID  });
+        const data = await functions.getDatafind(Calendar, { com_id: com_id  });
         if (data) {
             return await functions.success(res, 'Lấy lich thành công', {data,numberUser});
         };
@@ -101,10 +100,10 @@ exports.getCalendarById = async (req, res) => {
     try {
         const _id = req.params.id;
         console.log(_id)
-        // const companyID = req.user.data.companyID
+        // const com_id = req.user.data.com_id
         const data = await functions.getDatafindOne(Calendar, { _id: _id });
         console.log(data)
-        // const data = await Calendar.findOne({ _id: _id }).select(" companyID calendarName idCalendarWork").exec();
+        // const data = await Calendar.findOne({ _id: _id }).select(" com_id calendarName idCalendarWork").exec();
         if (data) {
             return await functions.success(res, 'Lấy lich thành công', data);
         };
@@ -117,11 +116,11 @@ exports.getCalendarById = async (req, res) => {
 //Tạo một lịch làm việc mới
 
 exports.createCalendar = async (req, res) => {
-    const { companyID, calendarName, idCalendarWork, timeApply, timeStart, calendarDetail,shiftID } = req.body;
+    const { com_id, calendarName, idCalendarWork, timeApply, timeStart, calendarDetail,shiftID } = req.body;
 
-    if (!companyID) {
+    if (!com_id) {
         functions.setError(res, "Company id required");
-    } else if (typeof companyID === "number") {
+    } else if (typeof com_id === "number") {
         functions.setError(res, "Company id must be a number");
     } else if (!calendarName) {
         functions.setError(res, "Calendar name required");
@@ -146,7 +145,7 @@ exports.createCalendar = async (req, res) => {
 
         const calendar = new Calendar({
             _id: _id,
-            companyID: companyID,
+            com_id: com_id,
             shiftID: shiftID||0,
             calendarName: calendarName,
             idCalendarWork: idCalendarWork,
@@ -173,11 +172,11 @@ exports.editCalendar = async (req, res) => {
     if (isNaN(_id)) {
         functions.setError(res, "Id must be a number");
     } else {
-        const { companyID, calendarName, idCalendarWork, timeApply, timeStart, calendarDetail,shiftID } = req.body;
+        const { com_id, calendarName, idCalendarWork, timeApply, timeStart, calendarDetail,shiftID } = req.body;
 
-        if (!companyID) {
+        if (!com_id) {
             functions.setError(res, "Company id required");
-        } else if (typeof companyID === "number") {
+        } else if (typeof com_id === "number") {
             functions.setError(res, "Company id must be a number");
         } else if (!calendarName) {
             functions.setError(res, "Calendar name required");
@@ -202,7 +201,7 @@ exports.editCalendar = async (req, res) => {
                 functions.setError(res, "Calendar does not exist");
             } else {
                 await functions.getDatafindOneAndUpdate(Calendar, { _id: _id }, {
-                    companyID: companyID,
+                    com_id: com_id,
                     shiftID: shiftID || 0,
                     calendarName: calendarName,
                     idCalendarWork: idCalendarWork,
@@ -269,19 +268,19 @@ exports.deleteCalendar = async (req, res) => {
 //Xóa toàn bộ lịch làm việc của một công ty
 
 exports.deleteCompanyCalendar = async (req, res) => {
-    const { companyID } = req.body;
-    console.log(companyID)
-    if (!companyID) {
+    const { com_id } = req.body;
+    console.log(com_id)
+    if (!com_id) {
         functions.setError(res, "Company id required");
-    } else if (typeof companyID == "number") {
+    } else if (typeof com_id == "number") {
         functions.setError(res, "Company id must be a number");
     } else {
-        const calendars = await functions.getDatafind(Calendar, { companyID: companyID });
+        const calendars = await functions.getDatafind(Calendar, { com_id: com_id });
         console.log(calendars)
         if (!calendars) {
             await functions.setError(res, "No calendars found in this company");
         } else {
-            await Calendar.deleteMany({ companyID: companyID })
+            await Calendar.deleteMany({ com_id: com_id })
                 .then(() => functions.success(res, "Calendars deleted successfully", calendars))
                 .catch((err) => functions.setError(res, err.message))
         }

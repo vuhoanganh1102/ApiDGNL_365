@@ -66,8 +66,8 @@ exports.HR_CheckTokenCompany = (req, res, next) => {
 
 exports.HR_UploadFile = async(folder, id, file, allowedExtensions) => {
 
-    let path1 = `../Storage/hr/${folder}/${id}/`;
-    let filePath = `../Storage/hr/${folder}/${id}/` + file.name;
+    let path1 = `../store/hr/${folder}/${id}/`;
+    let filePath = `../store/hr/${folder}/${id}/` + file.name;
 
     let fileCheck = path.extname(filePath);
     if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
@@ -99,7 +99,7 @@ exports.createLinkFileHR = (folder, id, name) => {
     return link;
 }
 exports.deleteFileHR = (folder, id, file) => {
-    let filePath = '../Storage/hr/' + folder + '/' + id + '/' + file;
+    let filePath = '../store/base365/hr/' + folder + '/' + id + '/' + file;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });
@@ -138,8 +138,8 @@ exports.createLinkFile = async(folder, id, name) => {
 }
 
 exports.uploadFile = async(folder, id, file) => {
-    let path1 = `../Storage/base365/hr/${folder}/${id}/`;
-    let filePath = `../Storage/base365/hr/${folder}/${id}/` + file.name;
+    let path1 = `../store/base365/hr/${folder}/${id}/`;
+    let filePath = `../store/base365/hr/${folder}/${id}/` + file.name;
     if (!fs.existsSync(path1)) {
         fs.mkdirSync(path1, { recursive: true });
     }
@@ -160,7 +160,7 @@ exports.uploadFileCv = async(id, file) => {
     let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     let fileExtension = file.originalFilename.split('.').pop();
     let name = `cv_${random}.${fileExtension}`
-    let filePath= `../Storage/base365/hr/upload/cv/${id}/`;
+    let filePath= `../store/base365/hr/upload/cv/${id}/`;
     if (!fs.existsSync(filePath)) {
         fs.mkdirSync(filePath, { recursive: true });
     }
@@ -181,7 +181,7 @@ exports.uploadFileSignature = async(file) => {
     let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     let fileExtension = file.originalFilename.split('.').pop();
     let name = `signature_${random}.${fileExtension}`
-    let filePath= `../Storage/base365/hr/upload/signature/`;
+    let filePath= `../store/base365/hr/upload/signature/`;
     if (!fs.existsSync(filePath)) {
         fs.mkdirSync(filePath, { recursive: true });
     }
@@ -202,7 +202,7 @@ exports.uploadFileRoadMap = async(id, file) => {
     let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     let fileExtension = file.originalFilename.split('.').pop();
     let name = `roadmap_${random}.${fileExtension}`
-    let filePath= `../Storage/base365/hr/upload/roadmap/${id}/`;
+    let filePath= `../store/base365/hr/upload/roadmap/${id}/`;
     if (!fs.existsSync(filePath)) {
         fs.mkdirSync(filePath, { recursive: true });
     }
@@ -223,7 +223,7 @@ exports.uploadFileNameRandom = async(folder, file) => {
     let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     let fileExtension = file.originalFilename.split('.').pop();
     let name = `${folder}_${random}.${fileExtension}`
-    let filePath= `../Storage/base365/hr/upload/${folder}/`;
+    let filePath= `../store/base365/hr/upload/${folder}/`;
     if (!fs.existsSync(filePath)) {
         fs.mkdirSync(filePath, { recursive: true });
     }
@@ -247,7 +247,7 @@ exports.createLinkFileCv = async(folder, id, name) => {
 }
 
 exports.deleteFileCv = (id) => {
-    let filePath = '../Storage/hr/upload/cv' +'/' + id;
+    let filePath = '../store/hr/upload/cv' +'/' + id;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });
@@ -255,7 +255,7 @@ exports.deleteFileCv = (id) => {
 
 
 exports.uploadFileBase64 = async(folder, id, base64String, file) => {
-    let path1 = `../Storage/base365/hr/pictures/${folder}/${id}/`;
+    let path1 = `../store/base365/hr/pictures/${folder}/${id}/`;
     // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
     if (!fs.existsSync(path1)) {
         fs.mkdirSync(path1, { recursive: true });
