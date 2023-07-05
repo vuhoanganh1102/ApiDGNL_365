@@ -6,7 +6,7 @@ const funtions = require('../../../services/functions')
 
 
 // get danh sách group
-router.post("/list_group_khach_hang",funtions.checkToken,formData.parse(), GroupCustomerController.getListGroup)
+router.post("/list_group_khach_hang",funtions.checkToken,formData.parse(),GroupCustomerController.getListGroup)
 
 //tạo group mới
 
