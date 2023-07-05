@@ -1,4 +1,4 @@
-const Team = require('../../models/qlc/Team');
+const Team = require('../../models/qlc/QLC_Team');
 const functions = require("../../services/functions");
 const Users = require("../../models/Users")
 

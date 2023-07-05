@@ -1,5 +1,5 @@
 const functions = require("../../services/functions")
-const setIp = require("../../models/qlc/settingIP")
+const setIp = require("../../models/qlc/QLC_SettingIP")
 
 
 

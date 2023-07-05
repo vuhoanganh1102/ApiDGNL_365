@@ -141,67 +141,94 @@ exports.login = async (req, res, next) => {
         let phoneTK = req.body.phoneTK
         let email = req.body.email
         password = req.body.password
-
-        type = 1
+        type_user = {};
+        
         if (phoneTK && password) {
+
             let checkPhone = await functions.checkPhoneNumber(phoneTK)
             if (checkPhone) {
-                let findUser = await Users.findOne({ phoneTK: phoneTK, type: 0 })
-                if (!findUser) {
-                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
-                }
-                let checkPassword = await functions.verifyPassword(password, findUser.password)
-                if (!checkPassword) {
-                    return functions.setError(res, "Mật khẩu sai", 404)
-                }
-                // if (findUser.type == type) {
-                if (findUser != null) {
-                    const token = await functions.createToken(findUser, "1d")
-                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
-                    let data = {
-                        access_token: token,
-                        refresh_token: refreshToken,
-                        com_info: {
-                            com_email: findUser.email,
-                            com_phone_tk: findUser.phoneTK,
-
-                        }
+                let checkTypeUser = await Users.findOne({ phoneTK: phoneTK }).lean()
+                // console.log(checkTypeUser)
+                if (checkTypeUser.type == 0) {
+                    type_user = 0
+                    let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
+                    if (!checkPassword) {
+                        return functions.setError(res, "Mật khẩu sai", 404)
                     }
-                    return functions.success(res, 'Đăng nhập thành công bằng SDT', { data })
+                    if (checkTypeUser != null) {
+                        const token = await functions.createToken(checkTypeUser, "1d")
+                        const refreshToken = await functions.createToken({ userId: checkTypeUser._id }, "1y")
+                        let data = {
+                            access_token: token,
+                            refresh_token: refreshToken,
+                            com_info: {
+                                com_id: checkTypeUser._id,
+                                com_phone_tk: checkTypeUser.phoneTK,
+                            }
+                        }
+                        data.type_user = type_user
+                        return functions.success(res, 'Đăng nhập thành công bằng SDT', { data })
 
-                } else {
-                    return functions.setError(res, "sai tai khoan hoac mat khau")
+                    } else {
+                        return functions.setError(res, "sai tai khoan hoac mat khau")
+                    }
                 }
+                else if (checkTypeUser.type == 1) {
+                    type_user = 1
+                    functions.success(res, "tài khoản là tài khoản cty", { type_user })
+                    
+                }
+                else if (checkTypeUser.type == 2) {
+                    type_user = 2
+                    functions.success(res, "tài khoản là tài khoản nhân viên", { type_user })
+                   
+                } else {
+                    functions.setError(res, "không tìm thấy tài khoản ")
+                }
+
             } else {
                 return functions.setError(res, "không đúng định dạng SDT", 404)
             }
         } else if (email && password) {
             let checkMail = await functions.checkEmail(email)
             if (checkMail) {
-                let findUser = await Users.findOne({ email: email, type: 0 })
-                if (!findUser) {
-                    return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
-                }
-                let checkPassword = await functions.verifyPassword(password, findUser.password)
-                if (!checkPassword) {
-                    return functions.setError(res, "Mật khẩu sai", 404)
-                }
-                if (findUser != null) {
-                    const token = await functions.createToken(findUser, "1d")
-                    const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
-                    let data = {
-                        access_token: token,
-                        refresh_token: refreshToken,
-                        com_info: {
-                            com_email: findUser.email,
-                            com_phone_tk: findUser.phoneTK,
-
-                        }
+                let checkTypeUser = await Users.findOne({ email: email }).lean()
+                // console.log(checkTypeUser)
+                if (checkTypeUser.type == 0) {
+                    type_user = 0
+                    let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
+                    if (!checkPassword) {
+                        return functions.setError(res, "Mật khẩu sai", 404)
                     }
-                    return functions.success(res, 'Đăng nhập thành công bằng Email', { data })
+                    if (checkTypeUser != null) {
+                        const token = await functions.createToken(checkTypeUser, "1d")
+                        const refreshToken = await functions.createToken({ userId: checkTypeUser._id }, "1y")
+                        let data = {
+                            access_token: token,
+                            refresh_token: refreshToken,
+                            com_info: {
+                                com_id: checkTypeUser._id,
+                                com_email: checkTypeUser.email,
+                            }
+                        }
+                        data.type_user = type_user
+                        return functions.success(res, 'Đăng nhập thành công bằng email', { data })
 
+                    } else {
+                        return functions.setError(res, "sai tai khoan hoac mat khau")
+                    }
+                }
+                else if (checkTypeUser.type == 1) {
+                    type_user = 1
+                    functions.success(res, "tài khoản là tài khoản công ty", { type_user })
+                    
+                }
+                else if (checkTypeUser.type == 2) {
+                    type_user = 2
+                    functions.success(res, "tài khoản là tài khoản nhân viên", { type_user })
+                    
                 } else {
-                    return functions.setError(res, "sai tai khoan hoac mat khau")
+                    functions.setError(res, "không tìm thấy tài khoản ")
                 }
             } else {
                 return functions.setError(res, "không đúng định dạng email", 404)
@@ -211,7 +238,7 @@ exports.login = async (req, res, next) => {
 
         }
     } catch (error) {
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 

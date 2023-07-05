@@ -1,4 +1,4 @@
-const ChildCompany = require("../../models/qlc/childCompany")
+const ChildCompany = require("../../models/qlc/QLC_ChildCompany")
 const functions = require("../../services/functions")
 
 //tìm danh sách công ty 
