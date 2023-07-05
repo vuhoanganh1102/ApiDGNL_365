@@ -1,5 +1,5 @@
 const functions = require("../../../services/functions")
-const feedback = require("../../../models/qlc/feedback_emp")
+const feedback = require("../../../models/qlc/QLC_Feedback_emp")
 const user = require("../../../models/Users")
 const md5 = require('md5');
 
@@ -71,7 +71,7 @@ exports.getList = async (req, res) => {
         }
         //tìm kiếm qua trang web
         if (fromWeb) listCondition.fromWeb = fromWeb;
-
+        
         if (inputNew || inputOld) listCondition['createdAt'] = { $gte: checkOld, $lte: checkNew };
         
         if (find) listCondition["userName"] = { $regex: find };

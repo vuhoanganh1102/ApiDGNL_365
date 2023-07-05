@@ -1,4 +1,4 @@
-const Deparment = require("../../models/qlc/Deparment")
+const Deparment = require("../../models/qlc/QLC_Deparment")
 const functions = require("../../services/functions")
 const Users = require("../../models/Users")
 
@@ -70,7 +70,8 @@ exports.countUserInDepartment = async (req, res) => {
 
 //API tạo mới một phòng ban
 exports.createDeparment = async (req, res) => {
-
+    try {
+        
     const { com_id, deparmentName ,managerId,deputyId ,deparmentOrder,deparmentCreated,total_emp} = req.body;
     if ((com_id&&deparmentName)==undefined) {
         //Kiểm tra Id công ty khác null
@@ -107,10 +108,15 @@ exports.createDeparment = async (req, res) => {
                 functions.setError(res, err.message, 509);
             })
     }
+    } catch (error) {
+        return functions.setError(res, error.message)
+        
+    }
 };
 //API thay dổi thông tin của một phòng ban
 exports.editDeparment = async (req, res) => {
-    const _id = req.body.id;
+    try {
+        const _id = req.body.id;
 
     if (isNaN(_id)) {
         functions.setError(res, "Id must be a number", 502)
@@ -140,24 +146,32 @@ exports.editDeparment = async (req, res) => {
             }
         }
     }
+    } catch (error) {
+        return functions.setError(res, error.message)
+        
+    }
 };
 //API xóa một phòng ban theo id
 exports.deleteDeparment = async (req, res) => {
-    const _id = req.body.id;
-    const com_id = req.body.com_id;
-    if((com_id&&_id)== undefined){
-        functions.setError(res, "lack of input", 502);
-    }else if (isNaN(_id,com_id)) {
-        functions.setError(res, "Id must be a number", 502);
-    } else {
-        await Users.updateOne({"inForPerson.employee.com_id":com_id , "inForPerson.employee.dep_id": _id}, { $set :{ "inForPerson.employee.dep_id" : 0 }})
-        const deparment = await functions.getDatafindOne(Deparment, {com_id:com_id, _id: _id });
-        if (!deparment) {
-            functions.setError(res, "Deparment not exist!", 510);
+    try {
+        const _id = req.body.id;
+        const com_id = req.body.com_id;
+        if((com_id&&_id)== undefined){
+            functions.setError(res, "lack of input", 502);
+        }else if (isNaN(_id,com_id)) {
+            functions.setError(res, "Id must be a number", 502);
         } else {
-            functions.getDataDeleteOne(Deparment, {com_id:com_id, _id: _id })
-                .then((deparment) => functions.success(res, "Delete deparment successfully!", {deparment}))
-                .catch(err => functions.setError(res, err.message, 512));
+            await Users.updateOne({"inForPerson.employee.com_id":com_id , "inForPerson.employee.dep_id": _id}, { $set :{ "inForPerson.employee.dep_id" : 0 }})
+            const deparment = await functions.getDatafindOne(Deparment, {com_id:com_id, _id: _id });
+            if (!deparment) {
+                functions.setError(res, "Deparment not exist!", 510);
+            } else {
+                functions.getDataDeleteOne(Deparment, {com_id:com_id, _id: _id })
+                    .then((deparment) => functions.success(res, "Delete deparment successfully!", {deparment}))
+                    .catch(err => functions.setError(res, err.message, 512));
+            }
         }
+    } catch (error) {
+        return functions.setError(res, error.message)
     }
 };

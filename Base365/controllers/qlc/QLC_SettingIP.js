@@ -1,12 +1,12 @@
 const functions = require("../../services/functions")
-const setIp = require("../../models/qlc/settingIP")
+const setIp = require("../../models/qlc/QLC_SettingIP")
 
 
 
 //lấy danh sách 
 
 exports.getListByID = async (req,res)=>{
-    // try{
+    try{
         const _id = req.body.id || null;
         const com_id = req.body.com_id;
         let condition = {}
@@ -27,10 +27,10 @@ exports.getListByID = async (req,res)=>{
                 functions.success(res,'found successfull',{data})
             }
         };
-    // }catch(error){
-    //     console.log(error);
-    //     functions.setError(res,error.message);
-    // }
+    }catch(error){
+        console.log(error);
+        functions.setError(res,error.message);
+    }
 }
 //tạo 1 thiết lập Ip
 exports.createIP = async (req,res)=>{
@@ -83,23 +83,6 @@ exports.editsettingIP = async (req, res) => {
         }
     }
     
-    // exports.deleteSetIpByID = async (req, res) => {
-        //     const _id = req.params.id;
-        //     console.log(_id)
-        //     if (isNaN(_id)) {
-            //         functions.setError(res, "Id must be a number", 621);
-            //     } else {
-                //         const settingIp = await functions.getDatafindOne(setIp, { _id: _id });
-                //         console.log(settingIp)
-//         if (!settingIp) {
-//             functions.setError(res, "setIp does not exist");
-//         } else {
-//             functions.getDataDeleteOne(setIp, { _id: _id })
-//                 .then(() => functions.success(res, "Delete setIp successfully", settingIp))
-//                 .catch((err) => functions.setError(res, err.message));
-//         }
-//     }
-// }
 
 exports.deleteSetIpByID = async (req, res) => {
     const  com_id = req.body.com_id;
@@ -125,13 +108,3 @@ exports.deleteSetIpByID = async (req, res) => {
 
 
 }
-
-// exports.deleteAllsetIp = async (req, res) => {
-//     if (!await functions.getMaxID(setIp)) {
-//         functions.setError(res, "No setIp existed");
-//     } else {
-//         setIp.deleteMany()
-//             .then(() => functions.success(res, "Delete all setIp sucessfully"))
-//             .catch(err => functions.setError(err, err.message));
-//     }
-// }

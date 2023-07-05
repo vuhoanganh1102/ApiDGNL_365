@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const GroupController = require('../../controllers/qlc/group')
+const GroupController = require('../../controllers/qlc/QLC_Group')
 const formData =require('express-form-data')
 const functions= require ("../../services/functions")
 

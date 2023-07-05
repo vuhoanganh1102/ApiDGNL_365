@@ -1,7 +1,7 @@
 
 
 const router = require('express').Router();
-const individualController = require('../../controllers/qlc/individual.controller');
+const individualController = require('../../controllers/qlc/Individual.controller');
 
 //-----------------------------------API crud-----------------------------------
 //API tao moi ca nhan

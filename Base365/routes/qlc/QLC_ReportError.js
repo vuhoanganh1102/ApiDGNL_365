@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const controller = require("../../controllers/qlc/ReportError")
+const controller = require("../../controllers/qlc/QLC_ReportError")
 const formData = require("express-form-data")
 const functions= require ("../../services/functions")
 

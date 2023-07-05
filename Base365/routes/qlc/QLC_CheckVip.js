@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const controller = require("../../controllers/qlc/CheckVip")
+const controller = require("../../controllers/qlc/QLC_CheckVip")
 const formData = require("express-form-data")
 const functions= require ("../../services/functions")
 

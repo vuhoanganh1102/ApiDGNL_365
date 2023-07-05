@@ -1,7 +1,7 @@
 
 
 const router = require('express').Router();
-const employeeController = require('../../controllers/qlc/employee.controller');
+const employeeController = require('../../controllers/qlc/Employee.controller');
 
 //-----------------------------------API crud-----------------------------------
 //API tao moi nhan vien
