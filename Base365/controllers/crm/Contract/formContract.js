@@ -4,7 +4,7 @@ const detailContract = require('../../../models/crm/Contract/DetailFormContract'
 
 exports.addContract = async (req, res) => {
     try {
-        const { com_id,
+        const { 
             name,
             ep_id,
             id_file,
@@ -16,21 +16,22 @@ exports.addContract = async (req, res) => {
          } = req.body;
         let File = req.files || null;
         let pathFile = null;
+        let com_id = '';
         let file = []
         let detail = []
-        if ((name && com_id && id_file) == undefined) {
+        if ((name  && id_file) == undefined) {
             functions.setError(res, "input required", 506);
 
-        } else if (isNaN(com_id)) {
-            functions.setError(res, "form order must be a number", 508);
+        }else {
 
-        } else {
-            //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
-            let maxID = await functions.getMaxID(Contract);
-            if (!maxID) {
+             if(req.data.user.type == 1) {
+             com_id = req.user.data.idQLC
+             //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
+             let maxID = await functions.getMaxID(Contract);
+             if (!maxID) {
                 maxID = 0
             };
-            const _id = Number(maxID) + 1;
+           let _id = Number(maxID) + 1;
             if (File.pathFile) {
                 let upload = functions.upFileCRM('Form_Contract', _id, File.pathFile, ['.jpeg', '.jpg', '.png', '.doc', '.txt', 'docx']);
                 console.log(upload)
@@ -66,6 +67,52 @@ exports.addContract = async (req, res) => {
             }
 
             await functions.success(res, "file upload created successfully", { file,detail })
+             }
+             if(req.data.user.type == 2) {
+                com_id = req.user.data.inForPerson.employee.com_id
+                let maxID = await functions.getMaxID(Contract);
+             if (!maxID) {
+                maxID = 0
+            };
+            let _id = Number(maxID) + 1;
+            if (File.pathFile) {
+                let upload = functions.upFileCRM('Form_Contract', _id, File.pathFile, ['.jpeg', '.jpg', '.png', '.doc', '.txt', 'docx']);
+                console.log(upload)
+                if (!upload) {
+                    return functions.setError(res, 'file không hỗ trợ', 400)
+                }
+                pathFile = functions.createLinkFileCRM('Form_Contract', _id, File.pathFile.name)
+                file = new Contract({
+                    _id: _id,
+                    name: name,
+                    pathFile: pathFile,
+                    com_id: com_id,
+                    ep_id: ep_id,
+                    id_file: id_file,
+                    created_at: new Date(),
+                });
+                await file.save();
+                let maxID1 = await functions.getMaxID(detailContract);
+                if (!maxID1) {
+                    maxID1 = 0
+                };
+                const _id1 = Number(maxID1) + 1;
+                
+                detail = new detailContract({
+                    _id: _id1,
+                    id_form_contract : _id, 
+                    new_field : new_field,
+                    old_field : old_field,
+                    index_field : index_field,
+                    default_field : default_field,
+                });
+                await detail.save();
+            }
+
+            await functions.success(res, "file upload created successfully", { file,detail })
+             }
+            
+            
 
         }   
      }catch(err) {
@@ -75,7 +122,7 @@ exports.addContract = async (req, res) => {
 }
 
 exports.editContract = async (req,res) =>{
-    const {com_id,
+    const {
         _id,
         ep_id,
         id_file,
@@ -93,7 +140,6 @@ exports.editContract = async (req,res) =>{
         functions.setError(res, "form does not exist!", 510);
     } else {
         await Contract.findOneAndUpdate({ _id: _id }, {
-            com_id : com_id,
             ep_id : ep_id,
             id_file : id_file,
             updated_at : new Date(),
@@ -116,7 +162,6 @@ exports.editContract = async (req,res) =>{
     } else {
         await Contract.findOneAndUpdate({ _id: _id }, {
             pathFile : pathFile,
-            com_id : com_id,
             ep_id : ep_id,
             id_file : id_file,
             updated_at : new Date(),
@@ -141,25 +186,39 @@ exports.editContract = async (req,res) =>{
 
 
 exports.deleteContract = async (req,res) =>{
-    const {_id , com_id} = req.body;
-    const data = await Contract.findOne({_id:_id,com_id:com_id})
+    try{
+     const {_id } = req.body;
+    const data = await Contract.findOne({_id:_id})
     if(!data){
         functions.setError(res," hop dong k ton tai ")
     }else{
-       const result = await Contract.findOneAndUpdate({_id:_id,com_id:com_id},{$set : {is_delete : 1}})
+       const result = await Contract.findOneAndUpdate({_id:_id},{$set : {is_delete : 1}})
         functions.success(res," xoa thanh cong ", {result})
        }
     }
+    catch (error) {
+        console.error('Failed to delete', error);
+        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+    }
+    
+}
+
 
 exports.deleteDetailContract = async (req,res) =>{
-    const {_id } = req.body;
-    const data = await detailContract.findOne({id_form_contract: _id })
-    if(!data){
-        functions.setError(res," chi tiet hop dong k ton tai")
-    }else {
-        const result = await detailContract.deleteOne({id_form_contract: _id })
-        functions.success(res," xoa thanh cong ", {result})
+    try{
+        const {_id } = req.body;
+        const data = await detailContract.findOne({id_form_contract: _id })
+        if(!data){
+            functions.setError(res," chi tiet hop dong k ton tai")
+        }else {
+            const result = await detailContract.deleteOne({id_form_contract: _id })
+            functions.success(res," xoa thanh cong ", {result})
+        }
+    } catch (error) {
+        console.error('Failed to delete', error);
+        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
     }
+    
 }
 
 
