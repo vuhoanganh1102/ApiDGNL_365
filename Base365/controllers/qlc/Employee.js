@@ -15,7 +15,7 @@ exports.register = async (req, res) => {
         if ((userName && password && com_id && address && phoneTK) !== undefined) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
-                let user = await functions.getDatafindOne(Users, { phoneTK: phoneTK, type: 2 })
+                let user = await Users.findOne({ phoneTK: phoneTK, type: 2 }).lean()
                 let MaxId = await functions.getMaxUserID("user")
                 
                 if (user == null) {
@@ -405,7 +405,7 @@ exports.updateInfoEmployee = async (req, res, next) => {
                             otp: otp,
                             authentic: null || 0,
                             fromWeb: "quanlichung",
-                            avatarUser: avatarUser,
+                            // avatarUser: avatarUser,
                             updatedAt: Date.parse(updatedAt),
                             "inForPerson.employee.group_id": group_id,
                             "inForPerson.account.birthday": birthday,
