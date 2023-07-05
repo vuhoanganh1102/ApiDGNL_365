@@ -1,8 +1,9 @@
 var express = require('express');
 var router = express.Router();
-const toolData = require('./toolRouter')
+const toolQLTS =  require('../../controllers/tools/qlts');
 
-//Api tool 
-router.use('/tool',toolData)
+//Api tool quét data Lâm
+
+
 
 module.exports = router
