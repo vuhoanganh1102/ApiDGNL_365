@@ -103,9 +103,8 @@ exports.create_Chance = async (req, res) => {
             return res.status(200).json({error :'Bạn không có quyền'})
         }
     }catch (error) {
-        console.error('Failed to add ', error);
-        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
-    }
+        return functions.setError(res, error)
+      } 
     
 }
 exports.update_chance = async (req, res) => {
@@ -165,13 +164,11 @@ exports.update_chance = async (req, res) => {
             return res.status(200).json({ data: Chance_update, message: "update sucess" });
     
         } else {
-            return res.status(404).json({ message: "bad request " });
+            return functions.setError(res,'dieu kien  sai',400)
         }
     }catch (error) {
-        console.error('Failed to update ', error);
-        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
-    }
-    
+        return functions.setError(res, error)
+      } 
 }
 
 exports.deleteChange = async (req, res) => {
@@ -181,12 +178,11 @@ exports.deleteChange = async (req, res) => {
         let del_chance = await Cus_Chance.findOneAndUpdate({ id: chance_id, cus_id: cus_id }, { delete_chance: 1 });
         return res.status(200).json({ data: del_chance, message: 'sucess' });
     } else {
-        return res.status(404).json({ message: "bad request" });
+        return functions.setError(res,'dieu kien  sai',400)
     }
     }catch (error) {
-        console.error('Failed to update ', error);
-        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
-    }
+        return functions.setError(res, error)
+      } 
     
 }
 
