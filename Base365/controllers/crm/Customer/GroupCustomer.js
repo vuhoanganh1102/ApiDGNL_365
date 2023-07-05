@@ -7,7 +7,7 @@ const Users = require('../../../models/Users');
 
 exports.getListGroup = async (req, res) => {
     try {
-        let { page, gr_name } = req.body;
+        let { page,gr_name } = req.body;
         const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
         const startIndex = (page - 1) * perPage;
         const endIndex = page * perPage;
@@ -61,44 +61,75 @@ exports.createGroup = async (req, res) => {
             groupName,
             groupDescription,
             groupParents,
-            companyId,
             dep_id,
             emp_id,
 
 
         } = req.body
+        let company_id = '';
         if (!groupName) {
             //kiểm tra thuộc tính groupName truyền vào
             functions.setError(res, "groupName must not leave empty")
 
         } if (groupName) {
-            const checkName = await Customer_group.findOne({ gr_name: groupName, company_id: req.user.company_id });
-            if (!checkName) {
-                let depId = dep_id
-                let maxId = 0;
-                let Cus_gr = await Customer_group.findOne({}, {}, { sort: { gr_id: -1 } }).lean() || 0;
-                if (Cus_gr) {
-                    maxId = Cus_gr.gr_id;
+            if(req.user.data.type == 1) {
+                company_id = req.user.data.idQLC
+                let checkName = await Customer_group.findOne({ gr_name: groupName, company_id: company_id });
+                if (!checkName) {
+                    let depId = dep_id
+                    let maxId = 0;
+                    let Cus_gr = await Customer_group.findOne({}, {}, { sort: { gr_id: -1 } }).lean() || 0;
+                    if (Cus_gr) {
+                        maxId = Cus_gr.gr_id;
+                    }
+                    let group = new Customer_group({
+                        gr_id: maxId,
+                        gr_name: groupName,
+                        gr_description: groupDescription,
+                        group_parent: (groupParents !== null) ? groupParents : 0,
+                        company_id: company_id,
+                        dep_id: dep_id,
+                        emp_id: emp_id,
+                        created_at: new Date(),
+                        updated_at: new Date(),
+    
+                    })
+                    await group.save();
+                    return res.status(200).json({ data: group, message: "success" });
+    
+                } else {
+                    res.status(400).json({ error: 'tên đã được sử dụng' })
                 }
-                let group = new Customer_group({
-                    gr_id: maxId,
-                    gr_name: groupName,
-                    gr_description: groupDescription,
-                    group_parent: (groupParents !== null) ? groupParents : 0,
-                    company_id: companyId,
-                    dep_id: dep_id,
-                    emp_id: emp_id,
-                    created_at: new Date(),
-                    updated_at: new Date(),
-
-                })
-                await group.save();
-                return res.status(200).json({ data: group, message: "success" });
-
-            } else {
-                res.status(400).json({ error: 'tên đã được sử dụng' })
             }
-
+            if(req.user.data.type == 2) {
+                company_id = req.user.data.inForPerson.employee.com_id
+                let checkName = await Customer_group.findOne({ gr_name: groupName, company_id: company_id });
+                if (!checkName) {
+                    let depId = dep_id
+                    let maxId = 0;
+                    let Cus_gr = await Customer_group.findOne({}, {}, { sort: { gr_id: -1 } }).lean() || 0;
+                    if (Cus_gr) {
+                        maxId = Cus_gr.gr_id;
+                    }
+                    let group = new Customer_group({
+                        gr_id: maxId,
+                        gr_name: groupName,
+                        gr_description: groupDescription,
+                        group_parent: (groupParents !== null) ? groupParents : 0,
+                        company_id: company_id,
+                        dep_id: dep_id,
+                        emp_id: emp_id,
+                        created_at: new Date(),
+                        updated_at: new Date(),
+    
+                    })
+                    await group.save();
+                    return res.status(200).json({ data: group, message: "success" });
+    
+                } else {
+                    res.status(400).json({ error: 'tên đã được sử dụng' })
+                } 
+            }
         }
     } catch (error) {
         console.error("Failed to create", error);
@@ -183,21 +214,46 @@ exports.update = async (req, res) => {
 
 
 exports.delete = async (req, res) => {
-    try {
-        const listDeleteId = req.body.listDeleteId;
-        if (!listDeleteId || !Array.isArray(listDeleteId)) {
-            functions.setError(res, "listDeleteId must not leave empty")
-        } else {
-            await GroupCustomer.deleteMany({ _id: { $in: listDeleteId } })
-                .then(() => functions.success(res, "Group Customer deleted successfully"))
-                .catch((err) => functions.setError(res, err.message))
-        }
-    } catch (error) {
-        console.error("Failed to show", error);
-        res.status(500).json({ error: "Đã xảy ra lỗi trong quá trình xử lý." });
+    const listDeleteId = req.body.listDeleteId;
+    console.log(listDeleteId[0]);
+    
+    // Kiểm tra nếu listDeleteId không phải là mảng
+    if (!Array.isArray(listDeleteId)) {
+      return functions.setError(res, "listDeleteId must be an array");
     }
+  
+    // Kiểm tra số lượng phần tử trong mảng
+    if (listDeleteId.length === 0) {
+      return functions.setError(res, "listDeleteId must contain at least one value");
+    }
+  
+    let numericIds = [];
+  
+    // Kiểm tra và chuyển đổi giá trị thành số
+    if (listDeleteId.length === 1) {
+      const numericId = Number(listDeleteId[0]);
+  
+      // Kiểm tra xem giá trị có phải là số hay không
+      if (isNaN(numericId)) {
+        return functions.setError(res, "listDeleteId must be an array of numeric values");
+      }
+  
+      numericIds.push(numericId);
+    } else {
+      numericIds = listDeleteId.map(Number);
+  
+      // Kiểm tra xem có giá trị không phải số trong mảng hay không
+      if (numericIds.some(isNaN)) {
+        return functions.setError(res, "listDeleteId must be an array of numeric values");
+      }
+    }
+  
+    await Customer_group.deleteMany({ gr_id: { $in: numericIds } })
+      .then(() => functions.success(res, "Group Customer deleted successfully"))
+      .catch((err) => functions.setError(res, err.message));
+  };
+  
+  
 
-
-}
 
 
