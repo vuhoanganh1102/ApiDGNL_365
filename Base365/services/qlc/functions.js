@@ -40,8 +40,8 @@ dotenv.config();
 //QLC
 exports.uploadFileQLC = async(folder, id, file, allowedExtensions) => {
 
-    let path1 = `../Storage/base365/QLC/pictures/${folder}/${id}/`;
-    let filePath = `../Storage/base365/QLC/pictures/${folder}/${id}/` + file.name;
+    let path1 = `../../Storage/base365/QLC/pictures/${folder}/${id}/`;
+    let filePath = `../../Storage/base365/QLC/pictures/${folder}/${id}/` + file.name;
     let fileCheck = path.extname(filePath);
     if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
         return false
@@ -71,7 +71,7 @@ exports.createLinkFileQLC = (folder, id, name) => {
 }
 
 exports.deleteFileQLC = (id, file) => {
-        let filePath = `../Storage/base365/QLC/pictures/${id}/` + file;
+        let filePath = `../../Storage/base365/QLC/pictures/${id}/` + file;
         fs.unlink(filePath, (err) => {
             if (err) console.log(err);
         });

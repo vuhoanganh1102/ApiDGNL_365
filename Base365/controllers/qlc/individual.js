@@ -11,7 +11,6 @@ exports.register = async (req, res) => {
         const createdAt = new Date()
 
         if (userName && password && phoneTK && address) {
-            // let checkMail = await functions.checkEmail(email)
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
                 let user = await Users.findOne({ phoneTK: phoneTK, type: 0 })
@@ -163,7 +162,6 @@ exports.login = async (req, res, next) => {
                         access_token: token,
                         refresh_token: refreshToken,
                         com_info: {
-                            com_id: findUser._id,
                             com_email: findUser.email,
                             com_phone_tk: findUser.phoneTK,
 
@@ -195,7 +193,6 @@ exports.login = async (req, res, next) => {
                         access_token: token,
                         refresh_token: refreshToken,
                         com_info: {
-                            com_id: findUser._id,
                             com_email: findUser.email,
                             com_phone_tk: findUser.phoneTK,
 
@@ -499,7 +496,7 @@ exports.info = async (req, res) => {
             const married = data.inForPerson.account.married
             const experience = data.inForPerson.account.experience
             const education = data.inForPerson.account.education
-            
+
             data.birthday = birthday
             data.gender = gender
             data.married = married
