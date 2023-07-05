@@ -7,4 +7,6 @@ const functions= require ("../../services/functions")
 
 router.post("/",formData.parse(),functions.checkToken, controller.create)
 
+router.post("/createFeedEmp",formData.parse(),functions.checkToken, controller.createFeedEmp)
+
 module.exports = router
