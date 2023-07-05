@@ -235,12 +235,12 @@ exports.addCustomer = async (req, res) => {
 
 exports.showKH = async (req, res) => {
   try {
-    let { page, userId, cus_id, name, phone_number, status, resoure, user_edit_id, time_s, time_e, group_id, group_pins_id } = req.body;
+    let { page , cus_id, name, phone_number, status, resoure, user_edit_id, time_s, time_e, group_id, group_pins_id } = req.body;
     const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
-    const checkUser = await User.findOne({ idQLC: userId });
-
+    
+   
     let query = {
       is_delete: 0,
     };
@@ -283,76 +283,89 @@ exports.showKH = async (req, res) => {
       }
       query.created_at = { $gte: time_s, $lte: time_e };
     }
-    if (
-      checkUser.inForPerson.employee.position_id == 1 ||
-      checkUser.inForPerson.employee.position_id == 2 ||
-      checkUser.inForPerson.employee.position_id == 9 ||
-      checkUser.inForPerson.employee.position_id == 3
-    ) {
-      let id_dataNhanvien = checkUser.idQLC;
-      const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien });
-      const customerIds = shareCusNV.map(item => item.customer_id);
-      const checkCus = await Customer.find({
-        $or: [
-          { emp_id: id_dataNhanvien },
-          { cus_id: { $in: customerIds } }
-        ],
-        ...query // Kết hợp với các điều kiện tìm kiếm khác
-      }).sort({ cus_id : -1 })
+
+    if(req.user.data.type == 1){
+      let com_id = req.user.data.idQLC
+      let showCty = await Customer.find({company_id : com_id, ...query})
+      .sort({ cus_id : -1 })
+      .skip(startIndex)
+      .limit(perPage);
+      return res.status(200).json(showCty);
+    }
+    if(req.user.data.type == 2) {
+      let userId = req.user.data.idQLC
+      const checkUser = await User.findOne({ idQLC: userId });
+      if (
+        checkUser.inForPerson.employee.position_id == 1 ||
+        checkUser.inForPerson.employee.position_id == 2 ||
+        checkUser.inForPerson.employee.position_id == 9 ||
+        checkUser.inForPerson.employee.position_id == 3
+      ) {
+        let id_dataNhanvien = checkUser.idQLC;
+        const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien });
+        const customerIds = shareCusNV.map(item => item.customer_id);
+        const checkCus = await Customer.find({
+          $or: [
+            { emp_id: id_dataNhanvien },
+            { cus_id: { $in: customerIds } }
+          ],
+          ...query // Kết hợp với các điều kiện tìm kiếm khác
+        }).sort({ cus_id : -1 })
+          .skip(startIndex)
+          .limit(perPage);
+        return res.status(200).json(checkCus);
+      }
+  
+      if (
+        checkUser.inForPerson.employee.position_id == 7 ||
+        checkUser.inForPerson.employee.position_id == 8 ||
+        checkUser.inForPerson.employee.position_id == 14 ||
+        checkUser.inForPerson.employee.position_id == 16 ||
+        checkUser.inForPerson.employee.position_id == 22 ||
+        checkUser.inForPerson.employee.position_id == 21 ||
+        checkUser.inForPerson.employee.position_id == 18 ||
+        checkUser.inForPerson.employee.position_id == 19 ||
+        checkUser.inForPerson.employee.position_id == 17
+      ) {
+        let id_com = checkUser.inForPerson.employee.com_id;
+        const checkCus = await Customer.find({ company_id: id_com, ...query })
+        .sort({ cus_id : -1 })
         .skip(startIndex)
         .limit(perPage);
-      return res.status(200).json(checkCus);
-    }
-
-    if (
-      checkUser.inForPerson.employee.position_id == 7 ||
-      checkUser.inForPerson.employee.position_id == 8 ||
-      checkUser.inForPerson.employee.position_id == 14 ||
-      checkUser.inForPerson.employee.position_id == 16 ||
-      checkUser.inForPerson.employee.position_id == 22 ||
-      checkUser.inForPerson.employee.position_id == 21 ||
-      checkUser.inForPerson.employee.position_id == 18 ||
-      checkUser.inForPerson.employee.position_id == 19 ||
-      checkUser.inForPerson.employee.position_id == 17
-    ) {
-      let id_com = checkUser.inForPerson.employee.com_id;
-      const checkCus = await Customer.find({ company_id: id_com, ...query })
-      .sort({ cus_id : -1 })
-      .skip(startIndex)
-      .limit(perPage);
-      return res.status(200).json(checkCus);
-    }
-
-    if (
-      checkUser.inForPerson.employee.position_id == 20 ||
-      checkUser.inForPerson.employee.position_id == 4 ||
-      checkUser.inForPerson.employee.position_id == 12 ||
-      checkUser.inForPerson.employee.position_id == 13 ||
-      checkUser.inForPerson.employee.position_id == 11 ||
-      checkUser.inForPerson.employee.position_id == 10 ||
-      checkUser.inForPerson.employee.position_id == 5 ||
-      checkUser.inForPerson.employee.position_id == 6
-    ) {
-      let id_com = checkUser.inForPerson.employee.com_id;
-      let id_dataNhanvien = checkUser.idQLC;
-      let id_pb = checkUser.inForPerson.employee.dep_id;
-      const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien, dep_id: id_pb });
-      const customerIds = shareCusNV.map(item => item.customer_id);
-      let checkCB = await User.find({
-        "inForPerson.employee.dep_id": id_pb,
-        "inForPerson.employee.com_id": id_com,
-      }).select("idQLC");
-      const shareCb = checkCB.map(item => item.idQLC);
-      const checkCus = await Customer.find({
-        $or: [{ emp_id: { $in: shareCb } }, { cus_id: { $in: customerIds } }],
-        ...query // Kết hợp với các điều kiện tìm kiếm khác
-      })
-      .sort({ cus_id : -1 })
-      .skip(startIndex)
-      .limit(perPage);
-      return res.status(200).json(checkCus);
+        return res.status(200).json(checkCus);
+      }
+  
+      if (
+        checkUser.inForPerson.employee.position_id == 20 ||
+        checkUser.inForPerson.employee.position_id == 4 ||
+        checkUser.inForPerson.employee.position_id == 12 ||
+        checkUser.inForPerson.employee.position_id == 13 ||
+        checkUser.inForPerson.employee.position_id == 11 ||
+        checkUser.inForPerson.employee.position_id == 10 ||
+        checkUser.inForPerson.employee.position_id == 5 ||
+        checkUser.inForPerson.employee.position_id == 6
+      ) {
+        let id_com = checkUser.inForPerson.employee.com_id;
+        let id_dataNhanvien = checkUser.idQLC;
+        let id_pb = checkUser.inForPerson.employee.dep_id;
+        const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien, dep_id: id_pb });
+        const customerIds = shareCusNV.map(item => item.customer_id);
+        let checkCB = await User.find({
+          "inForPerson.employee.dep_id": id_pb,
+          "inForPerson.employee.com_id": id_com,
+        }).select("idQLC");
+        const shareCb = checkCB.map(item => item.idQLC);
+        const checkCus = await Customer.find({
+          $or: [{ emp_id: { $in: shareCb } }, { cus_id: { $in: customerIds } }],
+          ...query // Kết hợp với các điều kiện tìm kiếm khác
+        })
+        .sort({ cus_id : -1 })
+        .skip(startIndex)
+        .limit(perPage);
+        return res.status(200).json(checkCus);
+      }
     }else{
-      res.status(400).json({ error: "Không có kết quả" });
+      res.status(400).json({ error: "Bạn không có quyền xem" });
     }
   } catch (error) {
     console.error("Failed to show", error);
@@ -361,111 +374,6 @@ exports.showKH = async (req, res) => {
 };
 
 
-
-
-// exports.showKH = async (req, res) => {
-//   try {
-//     let { page,userId,cus_id, name, phone_number, status, resoure, user_edit_id, time_s, time_e, group_id, group_pins_id } = req.body;
-
-//     const perPage = 10;
-//     // const userId = req.user.data.idQLC;
-//     const startIndex = (page - 1) * perPage;
-//     const endIndex = page * perPage;
-//     const checkUser = await User.findOne({ idQLC: userId });
-
-//     let query = {
-//       is_delete: 0,
-//     };
-//     // Các điều kiện tìm kiếm từ request body
-//     if (cus_id) {
-//       query.cus_id = cus_id;
-//     }
-//     if (name) {
-//       query.name = { $regex: name, $options: "i" };
-//     }
-//     if (phone_number) {
-//       query.phone_number = { $regex: phone_number, $options: "i" };
-//     }
-//     // Các điều kiện tìm kiếm khác
-
-//     let validCondition = true;
-
-//     // Xử lý điều kiện dựa trên checkUser.inForPerson.employee.position_id
-//     if (
-//       checkUser.inForPerson.employee.position_id == 1 ||
-//       checkUser.inForPerson.employee.position_id == 2 ||
-//       checkUser.inForPerson.employee.position_id == 9 ||
-//       checkUser.inForPerson.employee.position_id == 3
-//     ) {
-//       // Xử lý điều kiện cho vị trí 1, 2, 9, 3
-//     } else if (
-//       checkUser.inForPerson.employee.position_id == 7 ||
-//       checkUser.inForPerson.employee.position_id == 8 ||
-//       checkUser.inForPerson.employee.position_id == 14 ||
-//       checkUser.inForPerson.employee.position_id == 16 ||
-//       checkUser.inForPerson.employee.position_id == 22 ||
-//       checkUser.inForPerson.employee.position_id == 21 ||
-//       checkUser.inForPerson.employee.position_id == 18 ||
-//       checkUser.inForPerson.employee.position_id == 19 ||
-//       checkUser.inForPerson.employee.position_id == 17
-//     ) {
-//       // Xử lý điều kiện cho vị trí 7, 8, 14, 16, 22, 21, 18, 19, 17
-//     } else if (
-//       checkUser.inForPerson.employee.position_id == 20 ||
-//       checkUser.inForPerson.employee.position_id == 4 ||
-//       checkUser.inForPerson.employee.position_id == 12 ||
-//       checkUser.inForPerson.employee.position_id == 13 ||
-//       checkUser.inForPerson.employee.position_id == 11 ||
-//       checkUser.inForPerson.employee.position_id == 10 ||
-//       checkUser.inForPerson.employee.position_id == 5 ||
-//       checkUser.inForPerson.employee.position_id == 6
-//     ) {
-//       // Xử lý điều kiện cho vị trí 20, 4, 12, 13, 11, 10, 5, 6
-//     } else {
-//       validCondition = false;
-//     }
-
-//     if (validCondition) {
-//       // Tìm kiếm các bản ghi từ bảng Customer
-//       const totalItems = await Customer.countDocuments(query);
-//       const paginatedData = await Customer.find(query)
-//         .sort({ cus_id: -1 })
-//         .skip(startIndex)
-//         .limit(perPage);
-
-//       // Tạo mảng data chứa kết quả cuối cùng
-//       let data = [];
-
-//       // Bổ sung dữ liệu từ ShareCustomer nếu có
-//       if (paginatedData.length > 0) {
-//         const customerIds = paginatedData.map(customer => customer.cus_id);
-//         const shareCustomers = await ShareCustomer.find({ customer_id: { $in: customerIds } });
-
-//         data = paginatedData.map(customer => {
-//           const shareCustomer = shareCustomers.find(shareCustomer => shareCustomer.customer_id === customer.cus_id);
-
-//           const mergedData = {
-//             ...customer._doc, // Các cột của bảng Customer
-//             ...(shareCustomer && shareCustomer._doc), // Các cột của bảng ShareCustomer (nếu tồn tại)
-//           };
-
-//           return mergedData;
-//         });
-//       }
-
-//       res.status(200).json({
-//         totalItems,
-//         currentPage: page,
-//         data,
-//       });
-//     } else {
-//       res.status(400).json({ error: "Không có kết quả phù hợp" });
-//     }
-//   } catch (error) {
-//     console.error("Failed to show", error);
-//     res.status(500).json({ error: "Đã xảy ra lỗi trong quá trình xử lý." });
-//   }
-// };
 
 
 
