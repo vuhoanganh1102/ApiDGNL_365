@@ -215,8 +215,7 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
     const listDeleteId = req.body.listDeleteId;
-    console.log(listDeleteId[0]);
-    
+      
     // Kiểm tra nếu listDeleteId không phải là mảng
     if (!Array.isArray(listDeleteId)) {
       return functions.setError(res, "listDeleteId must be an array");

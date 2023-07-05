@@ -6,13 +6,15 @@ const functions= require ("../../../services/functions")
 
 
 
-//thêmm lien hệ
-router.post("/add",functions.checkToken,formData.parse(), controller.addContact)
-//sua lien he
-router.post("/edit",functions.checkToken,formData.parse(), controller.editContact)
-//xoa lien he
-router.post("/delete",functions.checkToken,formData.parse(), controller.deleteContact)
-//lay danh sach lien he
+//thêmm liên hệ  khách hàng
+router.post("/add",functions.checkToken,formData.parse(),controller.addContact)
+
+//sửa liên hệ khách hàng
+router.post("/edit",functions.checkToken,formData.parse(),controller.editContact)
+
+//xóa liên hệ khách hàng
+router.post("/delete",functions.checkToken,formData.parse(),controller.deleteContact)
+
 
 
 
