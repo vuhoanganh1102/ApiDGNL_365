@@ -5,11 +5,15 @@ const formData = require("express-form-data")
 const functions= require ("../../../services/functions")
 
 
+//Api thêm hợp đồng
+router.post("/add",functions.checkToken,formData.parse(), controller.addContract)
 
-router.post("/",functions.checkToken,formData.parse(), controller.addContract)
-
+//Api sửa hợp dồng
 router.post("/edit",functions.checkToken,formData.parse(), controller.editContract)
 
+//Api hiển thị xóa loại hợp đồng
 router.delete("/delete",functions.checkToken,formData.parse(), controller.deleteContract)
+
+//Api xóa hợp đồng bán
 router.delete("/delete/detail",functions.checkToken,formData.parse(), controller.deleteDetailContract)
 module.exports = router

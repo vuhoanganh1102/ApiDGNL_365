@@ -153,15 +153,20 @@ exports.editContact = async(req,res)=>{
 
 //xoa lien he KH
 exports.deleteContact = async (req,res) =>{
-    const {contact_id , id_customer} = req.body;
+    try{
+        const {contact_id , id_customer} = req.body;
     const data = await contact.findOne({contact_id:contact_id,id_customer:id_customer})
     if(!data){
         functions.setError(res," lien he k ton tai ")
     }else{
        const result = await contact.findOneAndUpdate({contact_id:contact_id,id_customer:id_customer},{$set : {is_delete : 1}})
         functions.success(res," xoa thanh cong ", {result})
-       }
+       } 
+    }catch (error) {
+        console.error('Failed to delete ', error);
+        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
     }
+}
 
 exports.getContact = async (req, res) =>{
     try{
@@ -177,15 +182,9 @@ exports.getContact = async (req, res) =>{
             };
             return functions.setError(res, 'Không có dữ liệu', 404);
         }
-    }catch(err){
-        functions.setError(res, err.message)
+    }catch (error) {
+        console.error('Failed to show ', error);
+        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
     }
 }
 
-//hiển thị line
-
-
-//Chỉnh sửa bàn giao line
-
-
-//afffajdutl
