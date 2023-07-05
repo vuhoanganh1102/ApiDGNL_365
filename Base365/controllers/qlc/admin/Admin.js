@@ -1,5 +1,5 @@
 const functions = require("../../../services/functions")
-const feedback = require("../../../models/qlc/feedback_emp")
+const feedback = require("../../../models/qlc/Feedback_emp")
 const user = require("../../../models/Users")
 const md5 = require('md5');
 
