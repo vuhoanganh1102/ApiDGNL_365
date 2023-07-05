@@ -14,7 +14,7 @@ exports.register = async (req, res) => {
     if (userName && password && phoneTK && address) {
         let checkPhone = await functions.checkPhoneNumber(phoneTK)
         if (checkPhone) {
-            let finduser = await Users.findOne({ phoneTK: phoneTK, type: 1 })
+            let finduser = await Users.findOne({ phoneTK: phoneTK, type: 1 }).lean()
             let MaxId = await functions.getMaxUserID("company")
             if (finduser == null) {
                 const user = new Users({
@@ -396,7 +396,7 @@ exports.updateInfoCompany = async (req, res, next) => {
         let idQLC = req.user.data.idQLC;
         let data = [];
         let data1 = [];
-        const { userName, email, phoneTK, address } = req.body;
+        const { userName, emailContact, phone, address } = req.body;
         let updatedAt = new Date()
         let File = req.files || null;
         let avatarUser = null;
@@ -413,8 +413,8 @@ exports.updateInfoCompany = async (req, res, next) => {
                     data = await Users.updateOne({ idQLC: idQLC ,type :1 }, {
                         $set: {
                             userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
+                            emailContact: emailContact,
+                            phone: phone,
                             avatarUser: avatarUser,
                             address: address,
                             fromWeb: "quanlichung",
@@ -430,9 +430,9 @@ exports.updateInfoCompany = async (req, res, next) => {
                     data1 = await Users.updateOne({ idQLC: idQLC ,type :1 }, {
                         $set: {
                             userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
-                            avatarUser: avatarUser,
+                            emailContact: emailContact,
+                            phone: phone,
+                            // avatarUser: avatarUser,
                             address: address,
                             fromWeb: "quanlichung",
                             updatedAt: Date.parse(updatedAt),

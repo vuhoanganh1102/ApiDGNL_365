@@ -13,7 +13,7 @@ exports.register = async (req, res) => {
         if (userName && password && phoneTK && address) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
-                let user = await Users.findOne({ phoneTK: phoneTK, type: 0 })
+                let user = await Users.findOne({ phoneTK: phoneTK, type: 0 }).lean()
                 let MaxId = await functions.getMaxUserID("user")
 
                 if (user == null) {
@@ -380,7 +380,7 @@ exports.updateInfoindividual = async (req, res, next) => {
                             otp: otp,
                             authentic: null || 0,
                             fromWeb: "quanlichung.timviec365",
-                            avatarUser: avatarUser,
+                            // avatarUser: avatarUser,
                             updatedAt: Date.parse(updatedAt),
                             "inForPerson.employee.group_id": group_id,
                             "inForPerson.account.birthday": birthday,
@@ -391,7 +391,7 @@ exports.updateInfoindividual = async (req, res, next) => {
                             "inForPerson.account.education": education,
                         }
                     })
-                    return functions.success(res, 'update 1 user success', { data1 })
+                    return functions.success(res, 'update info user success', { data1 })
                 }
             } else {
                 return functions.setError(res, "không tìm thấy user")

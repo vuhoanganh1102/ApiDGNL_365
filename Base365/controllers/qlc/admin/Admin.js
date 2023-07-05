@@ -1,11 +1,11 @@
 const functions = require("../../../services/functions")
+const feedback = require("../../../models/qlc/feedback_emp")
 const user = require("../../../models/Users")
 const md5 = require('md5');
 
 //cai dat dich vu Vip
 exports.setVip = async (req, res) => {
     try {
-        let idQLC = req.user.data.idQLC
         let com_ep_vip = req.body.com_ep_vip
         let com_vip_time = req.body.com_vip_time
         let com_id = req.body.com_id
@@ -44,7 +44,6 @@ exports.setVip = async (req, res) => {
 exports.getList = async (req, res) => {
 
     try {
-        const idQLC = req.user.data.idQLC
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
 
@@ -111,7 +110,6 @@ exports.getList = async (req, res) => {
 
 exports.updatePassword = async (req, res, next) => {
     try {
-        let idQLC = req.user.data.idQLC
         let password = req.body.password;
         let com_id = req.body.com_id;
         if (password && com_id) {
@@ -147,10 +145,21 @@ exports.updatePassword = async (req, res, next) => {
 
 exports.getListFeedback = async (req, res) => {
     try {
-        const idQLC = req.user.data.idQLC
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
-        let
+        let data = [];
+
+        data = await feedback.find({}).select('name cus_id email phone_number feed_back rating createdAt app_name from_source').skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
+        if (data === []) {
+            await functions.setError(res, 'Không có dữ liệu', 404);
+
+        } else {
+            let count = await feedback.countDocuments({})
+
+            return functions.success(res, 'Lấy thành công', { data, count });
+        }
+
+
     } catch (e) {
         return functions.setError(res, e.message)
     }
