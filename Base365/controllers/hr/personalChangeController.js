@@ -5,6 +5,7 @@ const Appoint = require('../../models/hr/personalChange/Appoint');
 const TranferJob = require('../../models/hr/personalChange/TranferJob');
 const QuitJob = require('../../models/hr/personalChange/QuitJob');
 const QuitJobNew = require('../../models/hr/personalChange/QuitJobNew');
+const Salary = require('../../models/hr/Salarys');
 
 
 exports.getListEmployee = async(req, res, next) => {
@@ -90,6 +91,7 @@ exports.getAndCheckData = async (req, res, next) =>{
     try{
         //check quyen
         let infoLogin = req.infoLogin;
+        console.log("🚀 ~ file: personalChangeController.js:94 ~ exports.getAndCheckData= ~ infoLogin:", infoLogin)
         let checkRole = await hrService.checkRole(infoLogin, 5, 2);
         if(!checkRole) {
             return functions.setError(res, "no right", 444);   
@@ -118,12 +120,17 @@ exports.updateAppoint = async(req, res, next) => {
         let fields = req.fields;
 
         //lay ra id lon nhat
-        let ep_id = req.fields.ep_id;
-        let check = await Appoint.findOne({ep_id: ep_id});
+        let ep_id = Number (req.body.ep_id);
+        let com_id = req.infoLogin.comId;
+        let employee = await Users.findOne({idQLC: ep_id});
+        if(!employee) {
+            return functions.setError(res, "Employee not found!");
+        }
+        let check = await Appoint.findOne({com_id: com_id, ep_id: ep_id});
         if(!check) {
             let newIdAppoint = await Appoint.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             if (newIdAppoint) {
-                newIdAppoint = Number(newIdAppoint._id) + 1;
+                newIdAppoint = Number(newIdAppoint.id) + 1;
             } else newIdAppoint = 1;
             fields.id = newIdAppoint;
         }
@@ -132,13 +139,13 @@ exports.updateAppoint = async(req, res, next) => {
         fields = {...fields, update_position, update_dep_id};
 
         //neu chua co thi them moi
-        let appoint = await Appoint.findOneAndUpdate({ep_id: ep_id},fields, {new: true, upsert: true});
+        let appoint = await Appoint.findOneAndUpdate({com_id: com_id, ep_id: ep_id},fields, {new: true, upsert: true});
         if(appoint){
             return functions.success(res, "Update Appoint success!");
         }
         return functions.setError(res, "Appoint not found!", 405);
-    } catch (e) {
-        console.log("Error from server", e);
+    } catch (error) {
+        console.log("Error from server", error);
         return functions.setError(res, "Error from server", 500);
     }
 }
@@ -247,6 +254,7 @@ exports.updateTranferJob = async(req, res, next) => {
 
         //lay ra id lon nhat
         let ep_id = req.fields.ep_id;
+        let com_id = req.infoLogin.comId;
         //update nhan vien
         let employee = await Users.findOneAndUpdate({idQLC: fields.ep_id}, {
             inForPerson: {
@@ -256,12 +264,12 @@ exports.updateTranferJob = async(req, res, next) => {
                     position_id: update_position
                 }
             }
-        })
+        }, {new: true})
         if(!employee){
             return functions.setError(res, "Employee not found!", 503);
         }
 
-        let check = await TranferJob.findOne({ep_id: ep_id});
+        let check = await TranferJob.findOne({com_id: com_id, ep_id: ep_id});
         if(!check) {
             let newIdTranferJob = await TranferJob.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
             if (newIdTranferJob) {
@@ -274,7 +282,7 @@ exports.updateTranferJob = async(req, res, next) => {
         fields = {...fields, update_position, update_dep_id, mission: Buffer.from(mission), new_com_id};
 
         //neu chua co thi them moi
-        let tranferJob = await TranferJob.findOneAndUpdate({ep_id: ep_id},fields, {new: true, upsert: true});
+        let tranferJob = await TranferJob.findOneAndUpdate({com_id: com_id, ep_id: ep_id},fields, {new: true, upsert: true});
         if(tranferJob){
             return functions.success(res, "Update TranferJob success!");
         }
@@ -388,7 +396,8 @@ exports.updateQuitJob = async(req, res, next) => {
 
         //lay ra id lon nhat
         let ep_id = req.fields.ep_id;
-        let check = await QuitJob.findOne({ep_id: ep_id});
+        let com_id = req.infoLogin.comId;
+        let check = await QuitJob.findOne({com_id: com_id, ep_id: ep_id});
         if(!check) {
             let newIdQuitJob = await QuitJob.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             if (newIdQuitJob) {
@@ -401,7 +410,7 @@ exports.updateQuitJob = async(req, res, next) => {
         fields = {...fields, type, shift_id};
 
         //neu chua co thi them moi
-        let quitJob = await QuitJob.findOneAndUpdate({ep_id: ep_id},fields, {new: true, upsert: true});
+        let quitJob = await QuitJob.findOneAndUpdate({com_id: com_id, ep_id: ep_id},fields, {new: true, upsert: true});
         if(quitJob){
             return functions.success(res, "Update QuitJob success!");
         }
@@ -512,7 +521,8 @@ exports.updateQuitJobNew = async(req, res, next) => {
 
         //lay ra id lon nhat
         let ep_id = req.fields.ep_id;
-        let check = await QuitJobNew.findOne({ep_id: ep_id});
+        let com_id = req.infoLogin.comId;
+        let check = await QuitJobNew.findOne({com_id: com_id, ep_id: ep_id});
         if(!check) {
             let newIdQuitJobNew = await QuitJobNew.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             if (newIdQuitJobNew) {
@@ -522,7 +532,7 @@ exports.updateQuitJobNew = async(req, res, next) => {
         }
 
         //neu chua co thi them moi
-        let quitJob = await QuitJobNew.findOneAndUpdate({ep_id: ep_id},fields, {new: true, upsert: true});
+        let quitJob = await QuitJobNew.findOneAndUpdate({com_id: com_id, ep_id: ep_id},fields, {new: true, upsert: true});
         if(quitJob){
             await Users.findOneAndUpdate({idQLC: ep_id}, {role: 3, type: 0, 
                 inForPerson: {
@@ -569,3 +579,40 @@ exports.deleteQuitJobNew = async(req, res, next) => {
         return functions.setError(res, "Error from server", 500);
     }
 }
+
+exports.getListSalary = async(req, res, next) => {
+    try {
+        //check quyen
+        let infoLogin = req.infoLogin;
+        let {ep_id, fromDate, toDate} = req.body;
+        let condition = {comId: infoLogin.comId};
+        if(ep_id) condition.idUser = ep_id;
+        if(fromDate) condition.timeUp = {$gte: new Date(fromDate)};
+        if(toDate) condition.timeUp = {$lte: new Date(toDate)};
+        let listSalary = await Salary.find(condition).sort({ timeUp: -1 }).lean();
+        let data = [];
+        if(listSalary && listSalary.length>0) {
+            let condition2 = {};
+            for(let i=0; i<listSalary.length; i++){
+                condition2.comId = infoLogin.comId;
+                condition2.idUser = listSalary[i].idUser;
+                condition2.timeUp = { $lt: listSalary[i].timeUp }
+                let checkTangGiam = await Salary.findOne(condition2).lean();
+                if(checkTangGiam && (listSalary[i].salaryBasic - checkTangGiam.salaryBasic)>0) {
+                    checkTangGiam.tang = (listSalary[i].salaryBasic - checkTangGiam.salaryBasic);
+                    data.push(checkTangGiam);
+                }
+                else if(checkTangGiam && (listSalary[i].salaryBasic - checkTangGiam.salaryBasic)<0) {
+                    checkTangGiam.giam = (listSalary[i].salaryBasic - checkTangGiam.salaryBasic);
+                    data.push(checkTangGiam);
+                }
+            }
+        }
+        let total =  await Salary.countDocuments(condition);
+        return functions.success(res, "Get list salary success!", {listSalary: data, total});
+    } catch (e) {
+        console.log("Error from server", e);
+        return functions.setError(res, "Error from server", 500);
+    }
+}
+

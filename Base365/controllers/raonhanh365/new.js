@@ -23,32 +23,29 @@ exports.postNewMain = async (req, res, next) => {
     try {
         let img = req.files.img;
         let video = req.files.video;
-        let listImg = [];
-        let nameVideo = "";
         let userID = req.user.data.idRaoNhanh365;
-        
         let request = req.body;
-            cateID = request.cateID,
-            title = request.title,
-            money = request.money,
-            until = request.until,
-            description = request.description,
-            free = request.free,
-            poster = request.poster,
-            name = request.name,
-            email = request.email,
-            address = request.address,
-            phone = request.phone,
-            status = 0,
-            detailCategory = request.detailCategory,
-            buySell = 2,
-            productType = request.productType,
-            productGroup = request.productGroup,
-            city = request.city,
-            district = request.district,
-            ward = request.ward,
-            brand = request.brand;
-            infoSell = request.infoSell;
+        let cateID = request.cateID;
+        let title = request.title;
+        let money = request.money;
+        let until = request.until;
+        let description = request.description;
+        let free = request.free;
+        let poster = request.poster;
+        let name = request.name;
+        let email = request.email;
+        let address = request.address;
+        let phone = request.phone;
+        let status = 0;
+        let detailCategory = request.detailCategory;
+        let productType = request.productType;
+        let productGroup = request.productGroup;
+        let city = request.city;
+        let district = request.district;
+        let downPayment = request.downPayment;
+        let hashtag = request.hashtag;
+        let quantityMin = request.quantityMin;
+        let quantityMax = request.quantityMax;
         let fields = [
             userID,
             cateID,
@@ -65,74 +62,75 @@ exports.postNewMain = async (req, res, next) => {
             status,
             detailCategory,
         ];
-        
-            
-            // for (let i = 0; i < fields.length; i++) {
-            //     if (!fields[i])
-            //         return functions.setError(res, "Missing input value", 404);
-            // }
-            const maxIDNews = await New.findOne({}, { _id: 1 })
-                .sort({ _id: -1 })
-                .limit(1)
-                .lean();
-            let newIDNews;
-            if (maxIDNews) {
-                newIDNews = Number(maxIDNews._id) + 1;
-            } else newIDNews = 1;
-            
+        for (let i = 0; i < fields.length; i++) {
+            if (!fields[i])
+                return functions.setError(res, "Missing input value", 404);
+        }
+        const maxIDNews = await New.findOne({}, { _id: 1 })
+            .sort({ _id: -1 })
+            .limit(1)
+            .lean();
+        let newIDNews;
+        if (maxIDNews) {
+            newIDNews = Number(maxIDNews._id) + 1;
+        } else newIDNews = 1;
 
-            if (video) {
-                if (video.length == 1) {
-                    let checkVideo = await functions.checkVideo(video[0]);
-                    if (checkVideo) {
-                        nameVideo = video[0].filename;
-                    } else {
-                        video.forEach(async (element) => {
-                            await functions.deleteImg(element);
-                        });
-                        return functions.setError(
-                            res,
-                            "video không đúng định dạng hoặc lớn hơn 100MB ",
-                            407
-                        );
-                    }
-                } else if (video.length > 1) {
-                    await functions.deleteImgVideo(img, video);
-                    return functions.setError(res, "chỉ được đưa lên 1 video", 408);
+        if (video) {
+            if (video.length == 1) {
+                let checkVideo = await functions.checkVideo(video[0]);
+                if (checkVideo) {
+                    nameVideo = video[0].filename;
+                } else {
+                    video.forEach(async (element) => {
+                        await functions.deleteImg(element);
+                    });
+                    return functions.setError(
+                        res,
+                        "video không đúng định dạng hoặc lớn hơn 100MB ",
+                        407
+                    );
                 }
+            } else if (video.length > 1) {
+                await functions.deleteImgVideo(img, video);
+                return functions.setError(res, "chỉ được đưa lên 1 video", 408);
             }
-            req.info = {
-                _id: newIDNews,
-                userID: userID,
-                cateID: cateID,
-                title: title,
-                money: money,
-                until: until,
-                description: description,
-                free: free,
-                poster: poster,
-                name: name,
-                status: status,
-                email: email,
-                address: address,
-                phone: phone,
-                detailCategory: detailCategory,
-                district: district,
-                img: img,
-                video: video,
-                productGroup: productGroup,
-                productType: productType,
-                city: city,
-                district: district,
-                ward: ward,
-                brand: brand,
-                buySell: 2, // tin ban
-                active: 1, // hien thi tin
-                infoSell:infoSell
-            };
-     
-            return next();
-        
+        }
+        req.info = {
+            _id: newIDNews,
+            userID: userID,
+            cateID: cateID,
+            title: title,
+            money: money,
+            until: until,
+            description: description,
+            free: free,
+            poster: poster,
+            name: name,
+            status: status,
+            email: email,
+            address: address,
+            phone: phone,
+            detailCategory: detailCategory,
+            district: district,
+            img: img,
+            video: video,
+            productGroup: productGroup,
+            productType: productType,
+            city: city,
+            district: district,
+            ward: ward,
+            brand: brand,
+            downPayment: downPayment,
+            hashtag: hashtag,
+            quantityMin: quantityMin,
+            quantityMax: quantityMax,
+            buySell: 2,
+            active: 1,
+
+        };
+
+        return next();
+
     } catch (err) {
         console.log(err);
         return functions.setError(res, err);
@@ -214,7 +212,7 @@ exports.postNewsGeneral = async (req, res, next) => {
                 kv_thanhpho: request.kv_thanhpho,
                 kv_quanhuyen: request.kv_quanhuyen,
                 kv_phuongxa: request.kv_phuongxa,
-                   
+
             };
             // cac truong cua ship
             let fieldsShip = {
@@ -226,6 +224,7 @@ exports.postNewsGeneral = async (req, res, next) => {
             };
             //cac truong cua danh muc thu cung
             let fieldsPet = {
+                kindOfPet: req.body.kindOfPet,
                 age: req.body.age,
                 gender: req.body.gender,
                 weigth: req.body.weigth,
@@ -277,19 +276,19 @@ exports.postNewsGeneral = async (req, res, next) => {
                 cv: nameFileCV,
             };
             let fieldsinfoSell = {
-                groupType:req.body.groupType,
-                classify:req.body.classify,
-                numberWarehouses:req.body.numberWarehouses,
-                promotionType:req.body.promotionType,
-                promotionValue:req.body.promotionValue,
-                transport:req.body.transport,
-                transportFee:req.body.transportFee,
-                productValue:req.body.productValue,
-                untilMoney:req.body.untilMoney,
-                untilTranpost:req.body.untilTranpost,
-                tgian_bd:req.body.tgian_bd,
-                tgian_kt:req.body.tgian_kt,
-                dia_chi:req.body.dia_chi,
+                groupType: req.body.groupType,
+                classify: req.body.classify,
+                numberWarehouses: req.body.numberWarehouses,
+                promotionType: req.body.promotionType,
+                promotionValue: req.body.promotionValue,
+                transport: req.body.transport,
+                transportFee: req.body.transportFee,
+                productValue: req.body.productValue,
+                untilMoney: req.body.untilMoney,
+                untilTranpost: req.body.untilTranpost,
+                tgian_bd: req.body.tgian_bd,
+                tgian_kt: req.body.tgian_kt,
+                dia_chi: req.body.dia_chi,
             }
             //
             fields.electroniceDevice = fieldsElectroniceDevice;
@@ -315,9 +314,7 @@ exports.createNews = async (req, res, next) => {
     try {
         let fields = req.fields;
         let userID = req.user.data.idRaoNhanh365;
-        console.log("🚀 ~ file: new.js:315 ~ exports.createNews= ~ userID:", userID)
-        console.log("🚀 ~ file: new.js:314 ~ exports.createNews= ~ fields:", fields)
-        
+
         let cate_Special = null;
         let danh_muc1 = null;
         let danh_muc2 = null;
@@ -325,6 +322,9 @@ exports.createNews = async (req, res, next) => {
         let linkTitle = await raoNhanh.createLinkTilte(fields.title)
         fields.linkTitle = linkTitle
         cate1 = await CategoryRaoNhanh365.findById(fields.cateID);
+        if (!cate1) {
+            return functions.setError(res, 'not found cate', 400)
+        }
         danh_muc1 = cate1.name;
 
         if (cate1.parentId !== 0) {
@@ -345,42 +345,38 @@ exports.createNews = async (req, res, next) => {
             }
         }
         let image = [];
-        if(cate_Special && fields.img && fields.img.length > 1)
-        {
-
+        if (cate_Special && fields.img && fields.img.length > 1) {
             let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-            for(let i = 0; i < fields.img.length; i++)
-            {
-                await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.img[i],['.png','.jpg'])
-                let img  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.img[i].name)
+
+            for (let i = 0; i < fields.img.length; i++) {
+                await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img[i], ['.png', '.jpg'])
+                let img = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.img[i].name)
                 image.push({
-                    nameImg:img
+                    nameImg: img
                 })
             }
-           fields.img = image;
-        }else  if(cate_Special && fields.img){
+            fields.img = image;
+        } else if (cate_Special && fields.img) {
             let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-            await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.img,['.png','.jpg'])
-            let img  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.img.name)
+            await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img, ['.png', '.jpg'])
+            let img = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.img.name)
             image.push({
-                nameImg:img
+                nameImg: img
             })
-           
-           fields.img = image;
-        }
-        if(cate_Special && fields.video)
-        {
 
-            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-           let check = await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.video,['.mp4','.avi','.wmv','.mov'])
-            if(check === false) return functions.setError(res,'khong duoc day video dang nay',400)
-            let video  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.video.name)
-           
-           fields.video = video;
+            fields.img = image;
         }
-       
+        if (cate_Special && fields.video) {
+            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
+            let check = await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.video, ['.mp4', '.avi', '.wmv', '.mov'])
+            if (check === false) return functions.setError(res, 'khong duoc day video dang nay', 400)
+            let video = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.video.name)
+
+            fields.video = video;
+        }
+
         fields.createTime = new Date(Date.now());
-       
+
         const news = new New(fields);
         await news.save();
         return functions.success(res, "create news success");
@@ -394,7 +390,7 @@ exports.createNews = async (req, res, next) => {
 exports.updateNews = async (req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
-       
+
         if (!idNews) return functions.setError(res, "Missing input news_id!", 405);
         let existsNews = await New.find({ _id: idNews });
         let fields = req.fields;
@@ -429,39 +425,36 @@ exports.updateNews = async (req, res, next) => {
             }
         }
         let image = [];
-        if(cate_Special && fields.img && fields.img.length > 1)
-        {
+        if (cate_Special && fields.img && fields.img.length > 1) {
 
             let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-            for(let i = 0; i < fields.img.length; i++)
-            {
-                await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.img[i],['.png','.jpg'])
-                let img  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.img[i].name)
+            for (let i = 0; i < fields.img.length; i++) {
+                await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img[i], ['.png', '.jpg'])
+                let img = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.img[i].name)
                 image.push({
-                    nameImg:img
+                    nameImg: img
                 })
             }
-           fields.img = image;
-        }else if(cate_Special && fields.img) {
+            fields.img = image;
+        } else if (cate_Special && fields.img) {
             console.log(fields.img)
             let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-            await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.img,['.png','.jpg'])
-            let img  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.img.name)
+            await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img, ['.png', '.jpg'])
+            let img = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.img.name)
             image.push({
-                nameImg:img
+                nameImg: img
             })
-           
-           fields.img = image;
+
+            fields.img = image;
         }
-        if(cate_Special && fields.video)
-        {
+        if (cate_Special && fields.video) {
 
             let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-           let check = await raoNhanh.uploadFileRaoNhanh(folder,fields.userID,fields.video,['.mp4','.avi','.wmv','.mov'])
-            if(check === false) return functions.setError(res,'khong duoc day video dang nay',400)
-            let video  = await raoNhanh.createLinkFileRaonhanh(folder,fields.userID,fields.video.name)
-           
-           fields.video = video;
+            let check = await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.video, ['.mp4', '.avi', '.wmv', '.mov'])
+            if (check === false) return functions.setError(res, 'khong duoc day video dang nay', 400)
+            let video = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.video.name)
+
+            fields.video = video;
         }
         if (existsNews) {
             // xoa truong _id
@@ -791,9 +784,12 @@ exports.deleteNews = async (req, res) => {
 // trang chủ
 exports.getNew = async (req, res, next) => {
     try {
-        const authHeader = req.headers["authorization"];
-        const token = authHeader && authHeader.split(" ")[1];
         let userIdRaoNhanh = null;
+        let user = await functions.getTokenUser(req, res, next);
+        if(user){
+            userIdRaoNhanh =  user.idRaoNhanh365;
+        }
+        console.log("🚀 ~ file: new.js:789 ~ exports.getNew= ~ userIdRaoNhanh:", userIdRaoNhanh)
         let searchItem = {
             _id: 1,
             title: 1,
@@ -819,6 +815,15 @@ exports.getNew = async (req, res, next) => {
         };
         let data = await New.aggregate([
             {
+                $match: { buySell: 2, sold: 0, active: 1 },
+            },
+            {
+                $sort: { pinHome: -1, createTime: -1, order: -1 },
+            },
+            {
+                $limit: 50,
+            },
+            {
                 $lookup: {
                     from: "Users",
                     as: "user",
@@ -827,26 +832,9 @@ exports.getNew = async (req, res, next) => {
                 },
             },
             {
-                $match: { buySell: 2, sold: 0, active: 1 },
-            },
-            {
-                $sort: { pinHome: -1, createTime: -1, order: -1 },
-            },
-            {
                 $project: searchItem,
             },
-            {
-                $limit: 50,
-            },
         ]);
-        if (token) {
-            jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
-                if (err) {
-                    return res.status(403).json({ message: "Invalid token" });
-                }
-                userIdRaoNhanh = user.data.idRaoNhanh365;
-            });
-        }
         if (userIdRaoNhanh) {
             let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
             for (let i = 0; i < data.length; i++) {
@@ -1017,14 +1005,14 @@ exports.searchNew = async (req, res, next) => {
             allDay,
             vehicloType,
             loai_hinh_sp,
-        
+
             hang_vattu,
             loai_thiet_bi,
             cong_suat,
-            
+
             khoiluong,
             loai_chung,
-            
+
         } = req.body;
         console.log(page, pageSize)
         if (!page && !pageSize) {
@@ -1177,8 +1165,8 @@ exports.searchNew = async (req, res, next) => {
         if (kv_quanhuyen) condition["realEstate.kv_quanhuyen"] = kv_quanhuyen;
         if (kv_phuongxa) condition["realEstate.kv_phuongxa"] = kv_phuongxa;
         if (product) condition["ship.product"] = product;
-        if (timeStart) condition["ship.timeStart"] = {$gte:{timeStart}};
-        if (timeEnd) condition["ship.timeEnd"] = {$gte:{timeEnd}};
+        if (timeStart) condition["ship.timeStart"] = { $gte: { timeStart } };
+        if (timeEnd) condition["ship.timeEnd"] = { $gte: { timeEnd } };
         if (allDay) condition["ship.allDay"] = allDay;
         if (loai_hinh_sp) condition["beautifull.loai_hinh_sp"] = loai_hinh_sp;
         if (loai_sanpham) condition["beautifull.loai_sanpham"] = loai_sanpham;

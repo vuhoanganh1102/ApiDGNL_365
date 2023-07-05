@@ -654,7 +654,7 @@ exports.toolCateDetail = async(req, res, next) => {
             // }
 
             // 12. mau sac
-            // const response = await axios.post(' https://raonhanh365.vn/api/select_tbl_mausac.php', form, {
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_mausac.php', form, {
             //     headers: {
             //         'Content-Type': 'multipart/form-data',
             //     },
@@ -765,26 +765,26 @@ exports.toolCateDetail = async(req, res, next) => {
 
 
             //17. loại chung
-            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            let data = response.data.data.items;
-            if (data.length) {
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
 
-                for (let i = 0; i < data.length; i++) {
-                    const newItem = {
-                        _id: data[i].id,
-                        name: data[i].ten_loai,
-                        parent: data[i].id_cha,
-                    };
-                    await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true }, )
-                }
-                page++;
-            } else {
-                result = false;
-            }
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].ten_loai,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
 
             console.log(page);
         } while (result);
@@ -800,29 +800,34 @@ exports.updateInfoSell = async(req, res, next) => {
         let result = true;
         let page = 1;
         do {
-            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 2 })
+            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/select_thongtinbanhang.php', { page: page, pb: 2 })
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
+                console.log("🚀 ~ file: raonhanh365.js:807 ~ exports.updateInfoSell=async ~ data:", data)
 
-                    let post = await fnc.getDatafindOne(New, { _id: data[i].id_new });
-                    if (post != null) {
-                        await New.updateOne({ _id: data[i].id_new }, {
-                            $set: {
-                                'infoSell.groupType': data[i].nhom_phan_loai,
-                                'infoSell.classify': data[i].phan_loai,
-                                'infoSell.numberWarehouses': data[i].so_luong_kho,
-                                'infoSell.promotionType': data[i].loai_khuyenmai,
-                                'infoSell.promotionValue': data[i].giatri_khuyenmai,
-                                'infoSell.transport': data[i].van_chuyen,
-                                'infoSell.transportFee': data[i].phi_van_chuyen,
-                                'infoSell.productValue': data[i].gia_sanpham_xt,
-                                'infoSell.untilMoney': data[i].donvi_tien_xt,
-                                'infoSell.untilTranpost': data[i].donvi_tien_vc,
-                            }
-                        });
-                        console.log(data[i].id_new)
-                    }
+
+                    // if(data[i].giatri_khuyenmai === 'undefined') continue;
+                    // console.log("🚀 ~ file: raonhanh365.js:808 ~ exports.updateInfoSell=async ~ giatri_khuyenmai:", data[i].giatri_khuyenmai)
+                    // let post = await fnc.getDatafindOne(New, { _id: data[i].id_new });
+                    // if (post != null) {
+                    //     await New.updateOne({ _id: data[i].id_new }, {
+                    //         $set: {
+                    //             'infoSell.groupType': data[i].nhom_phan_loai,
+                    //             'infoSell.classify': data[i].phan_loai,
+                    //             'infoSell.numberWarehouses': data[i].so_luong_kho,
+                    //             'infoSell.promotionType': data[i].loai_khuyenmai,
+                    //             'infoSell.promotionValue': data[i].giatri_khuyenmai,
+                    //             'infoSell.loai': data[i].loai,
+                    //             'infoSell.transport': data[i].van_chuyen,
+                    //             'infoSell.transportFee': data[i].phi_van_chuyen,
+                    //             'infoSell.productValue': data[i].gia_sanpham_xt,
+                    //             'infoSell.untilMoney': data[i].donvi_tien_xt,
+                    //             'infoSell.untilTranpost': data[i].donvi_tien_vc,
+                    //         }
+                    //     });
+                    //     console.log(data[i].id_new)
+                    // }
                 }
                 page += 1;
             } else result = false;
@@ -1243,45 +1248,45 @@ exports.toolComment = async (req, res, next) => {
     }
 };
 
-exports.updateInfoSell = async (req, res, next) => {
-    try {
-        let result = true;
-        let page = 1;
-        do {
-            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 2 })
-            let data = listItems.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
+// exports.updateInfoSell = async (req, res, next) => {
+//     try {
+//         let result = true;
+//         let page = 1;
+//         do {
+//             let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 2 })
+//             let data = listItems.data.items;
+//             if (data.length > 0) {
+//                 for (let i = 0; i < data.length; i++) {
 
-                    let post = await fnc.getDatafindOne(New, { _id: data[i].id_new });
-                    if (post != null) {
-                        await New.updateOne({ _id: data[i].id_new }, {
-                            $set: {
-                                'infoSell.groupType': data[i].nhom_phan_loai,
-                                'infoSell.classify': data[i].phan_loai,
-                                'infoSell.numberWarehouses': data[i].so_luong_kho,
-                                'infoSell.promotionType': data[i].loai_khuyenmai,
-                                'infoSell.promotionValue': data[i].giatri_khuyenmai,
-                                'infoSell.transport': data[i].van_chuyen,
-                                'infoSell.transportFee': data[i].phi_van_chuyen,
-                                'infoSell.productValue': data[i].gia_sanpham_xt,
-                                'infoSell.untilMoney': data[i].donvi_tien_xt,
-                                'infoSell.untilTranpost': data[i].donvi_tien_vc,
-                            }
-                        });
-                        console.log(data[i].id_new)
-                    }
-                }
-                page += 1;
-            } else result = false;
-        } while (result)
-        await fnc.success(res, 'thành công');
+//                     let post = await fnc.getDatafindOne(New, { _id: data[i].id_new });
+//                     if (post != null) {
+//                         await New.updateOne({ _id: data[i].id_new }, {
+//                             $set: {
+//                                 'infoSell.groupType': data[i].nhom_phan_loai,
+//                                 'infoSell.classify': data[i].phan_loai,
+//                                 'infoSell.numberWarehouses': data[i].so_luong_kho,
+//                                 'infoSell.promotionType': data[i].loai_khuyenmai,
+//                                 'infoSell.promotionValue': data[i].giatri_khuyenmai,
+//                                 'infoSell.transport': data[i].van_chuyen,
+//                                 'infoSell.transportFee': data[i].phi_van_chuyen,
+//                                 'infoSell.productValue': data[i].gia_sanpham_xt,
+//                                 'infoSell.untilMoney': data[i].donvi_tien_xt,
+//                                 'infoSell.untilTranpost': data[i].donvi_tien_vc,
+//                             }
+//                         });
+//                         console.log(data[i].id_new)
+//                     }
+//                 }
+//                 page += 1;
+//             } else result = false;
+//         } while (result)
+//         await fnc.success(res, 'thành công');
 
-    } catch (err) {
-        console.log(err);
-        return fnc.setError(res, err)
-    }
-}
+//     } catch (err) {
+//         console.log(err);
+//         return fnc.setError(res, err)
+//     }
+// }
 
 // danh mục sản phẩm
 exports.toolPriceList = async (req, res, next) => {

@@ -5,4 +5,6 @@ const topCache = require('../../controllers/raonhanh365/topCache');
 
 router.post('/getTopCache',formData.parse(), topCache.getTopCache);
 
+router.post('/supportSellNew',formData.parse(), topCache.supportSellNew);
+
 module.exports = router;

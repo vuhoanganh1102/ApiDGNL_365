@@ -10,7 +10,8 @@ router.post('/login', formData.parse(),  employee.login)
 router.post('/verify', formData.parse(),functions.checkToken,  employee.verify);
 router.post('/verifyCheckOTP', formData.parse(),functions.checkToken,  employee.verifyCheckOTP);
 // hàm đổi mật khẩu 
-router.post('/updatePassword',functions.checkToken, formData.parse(),   employee.updatePassword);
+router.post('/updatePassword',functions.checkToken, formData.parse(),   employee.updatePasswordbyToken);
+router.post('/updatePasswordbyInput', formData.parse(),   employee.updatePasswordbyInput);
 // hàm cập nhập thông tin NV
 router.post('/updateInfoEmployee',functions.checkToken,  formData.parse(),  employee.updateInfoEmployee);
 // api api gửi mã OTP qua mail (quên mật khẩu) 

@@ -10,7 +10,6 @@ const Users = require("../../models/Users")
             let _id = req.body._id 
             let dep_id = req.body.dep_id
             let team_id = req.body.team_id
-            console.log(_id,com_id,dep_id,team_id)
             let data = []
             let condition = {}
             let total_emp = {}
@@ -23,34 +22,27 @@ const Users = require("../../models/Users")
                 if(_id) condition._id = _id
                 if(dep_id) condition.dep_id = dep_id
                 if(team_id) condition.team_id = team_id
-                console.log(_id,com_id,dep_id,team_id)
                 data = await Group.find(condition).select('team_id groupName dep_id managerId deputyManagerId total_emp ')
                 const groupID = data.map(item => item._id)
-                console.log(groupID)
                 for( let i = 0 ; i < groupID.length ; i++){
                     const group = groupID[i];
                     
-                    console.log(group)
                     total_emp = await Users.countDocuments({ "inForPerson.employee.com_id":com_id  , "inForPerson.employee.group_id": group , type: 2,"inForPerson.employee.ep_status": "Active" })
                     
-                    console.log("total_emp:", total_emp)
                     
                     await Group.findOneAndUpdate({com_id: com_id, _id : group},{ $set : {total_emp : total_emp}})
                 }
                 
-                console.log(data)
                 if (!data) {
                     return functions.setError(res, 'Không có dữ liệu', 404);
                 }else{
 
-                    return await functions.success(res, 'Lấy thành công', {data});
+                    return functions.success(res, 'Lấy thành công', {data});
                 }
             }
        
         }catch(err){
-        console.log(err);
-        
-        functions.setError(res,err.message)
+            return functions.setError(res,err.message)
         }
     };
 

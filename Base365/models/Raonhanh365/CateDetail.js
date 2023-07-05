@@ -202,7 +202,6 @@ const CateDetailRaonhanh365Schema = mongoose.Schema({
                 type: Number
             },
             line: {
-
                 // dòng sp
                 type: [{
                     _id: {
@@ -210,6 +209,9 @@ const CateDetailRaonhanh365Schema = mongoose.Schema({
                     },
                     name: {
                         type: String
+                    },
+                    parent: {
+                        type: Number
                     },
                 }],
                 default: null,

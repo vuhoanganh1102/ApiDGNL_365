@@ -115,7 +115,7 @@ exports.report = async (req, res, next) => {
                 condition.timeUp = { $lt: dataLuong[i].timeUp }
 
                 checkTangGiam = await Salarys.findOne(condition)
-                console.log("🚀 ~ file: report.js:118 ~ exports.report= ~ checkTangGiam:", checkTangGiam)
+
                 if (checkTangGiam && dataLuong[i].salaryBasic - checkTangGiam.salaryBasic > 0) {
                     tangLuong++;
                 } else if (checkTangGiam && dataLuong[i].salaryBasic - checkTangGiam.salaryBasic < 0) {
@@ -682,7 +682,7 @@ exports.reportChart = async (req, res, next) => {
                 console.log("🚀 ~ file: report.js:683 ~ exports.reportChart= ~ tuoi:", tuoi)
                 if(old === 1 && tuoi < 30)
                 {
-                   list.push(check[i])
+                    list.push(check[i])
                 }else if(old === 2 && tuoi > 30 && tuoi < 44)
                 {
                     list.push(check[i])

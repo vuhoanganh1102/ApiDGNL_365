@@ -688,7 +688,7 @@ exports.checkDataCandidate = async(req, res, next) => {
             userHiring: userHiring,         
             userRecommend: userRecommend,
             recruitmentNewsId: recruitmentNewsId,
-            timeSendCv: new Date(timeSendCv),
+            timeSendCv: Date(timeSendCv),
             starVote: firstStarVote,
         }
         
@@ -810,7 +810,7 @@ exports.updateCandidate = async(req, res, next) => {
             fields.cv = nameCv;
         }
         //
-        let candi = await Candidate.findOneAndUpdate({id: candidateId}, fields);
+        let candi = await Candidate.findOneAndUpdate({id: candidateId}, fields, {new: true});
         if(!candi) {
             return functions.setError(res, "Candidate not found!", 505);
         }
@@ -819,27 +819,25 @@ exports.updateCandidate = async(req, res, next) => {
         await AnotherSkill.deleteMany({canId: candidateId});
 
         let listSkill = req.body.listSkill;
-        if(!listSkill) {
-            return functions.success(res, "Update info candidate success!");
-        }
-        for(let i=0; i<listSkill.length; i++){
-            
-            const obj = JSON.parse(listSkill[i]);
-            let dataSkill = {
-                canId: candidateId,
-                skillName: obj.skillName,
-                skillVote: obj.skillVote
-            }
-            const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
-            let newIdSkill;
-            if (maxIdSkill) {
-                newIdSkill = Number(maxIdSkill.id) + 1;
-            } else newIdSkill = 1;
-            dataSkill.id = newIdSkill;
-            let skill = new AnotherSkill(dataSkill);
-            await skill.save();
-            if(!skill){
-                return functions.setError(res, `Create skill ${i+1} fail!`, 506);
+        if(listSkill) {
+            for(let i=0; i<listSkill.length; i++){
+                const obj = JSON.parse(listSkill[i]);
+                let dataSkill = {
+                    canId: candidateId,
+                    skillName: obj.skillName,
+                    skillVote: obj.skillVote
+                }
+                const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                let newIdSkill;
+                if (maxIdSkill) {
+                    newIdSkill = Number(maxIdSkill.id) + 1;
+                } else newIdSkill = 1;
+                dataSkill.id = newIdSkill;
+                let skill = new AnotherSkill(dataSkill);
+                await skill.save();
+                if(!skill){
+                    return functions.setError(res, `Create skill ${i+1} fail!`, 506);
+                }
             }
         }
         
@@ -1479,3 +1477,141 @@ exports.addCandidateGetJob = async(req, res, next) => {
         return functions.setError(res, "Err from server!", 500);
     }
 }
+
+	// public function detailCandidateGetJob($id)
+	// {
+	// 	$this->_data['page_title'] 	= 'Chi tiết hồ sơ ứng viên';
+	// 	$infoLogin 	= checkRoleUser();
+	// 	$this->load->model('M_process_interview');
+	// 	$this->_data['list_process_interview'] = $this->M_process_interview->listProcess($infoLogin['com_id']);
+	// 	// Danh sách tin đăng
+	// 	$this->_data['list_new'] = $this->M_recruitment_new->listNew($infoLogin['com_id']);
+	// 	// chi tiết ứng viên
+	// 	$this->_data['detail'] = $this->M_candidate->detailCandidateAllNewBy($id);
+	// 	$this->_data['another_skill'] = $this->M_another_skill->listSkillBy($id);
+	// 	$this->load->model('M_tbl_shedule_interview');
+	// 	$this->_data['list_schedule'] = $this->M_tbl_shedule_interview->listSchedule($id);
+	// 	$this->load->model('M_tbl_get_job');
+	// 	$this->_data['detail_get_job'] = $this->M_tbl_get_job->getDetailBy($id);
+	// 	$this->_data['can_id'] = $id;
+	// 	// $this->_data['detail_interview'] = $this->M_tbl_shedule_interview->getDetail($id, $process_id);
+	// 	$this->load->view('site/profile/t_detail_candidate_get_job', $this->_data);
+	// }
+
+
+exports.detailCandidateGetJob = async(req, res, next) => {
+    try {
+        //lay thong tin tu nguoi dung nhap
+        let comId = req.infoLogin.comId;
+        let canId = req.body.canId;
+        if(!canId){
+            return functions.setError(res, "Missing input canId!", 405);
+        }
+        
+        let list_process_interview = await ProcessInterview.find({comId: comId}, {id: 1, name: 1}).sort({id: 1}).lean();
+        let list_new = await RecruitmentNews.find({comId: comId, isDelete: 0}).sort({id: 1}).lean();
+        let detail = await Candidate.findOne({id: canId});
+        let another_skill = await AnotherSkill.find({canId: canId});
+        let list_schedule = await ScheduleInterview.find({canId: canId});
+        let detail_get_job = await GetJob.findOne({canId: canId});
+        
+        return functions.success(res, 'Get detailCandidateGetJob success!', {list_process_interview, list_new, detail, another_skill, detail_get_job, list_schedule});
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+let detailGenaral = async(comId, canId) => {
+    try {
+        let list_process_interview = await ProcessInterview.find({comId: comId}, {id: 1, name: 1}).sort({id: 1}).lean();
+        let list_new = await RecruitmentNews.find({comId: comId, isDelete: 0}).sort({id: 1}).lean();
+        let detail = await Candidate.findOne({id: canId});
+        let another_skill = await AnotherSkill.find({canId: canId});
+        let list_schedule = await ScheduleInterview.find({canId: canId});
+        
+        let data = {list_process_interview, list_new, detail, another_skill, list_schedule};
+        return data;
+    } catch (e) {
+        console.log("Err from server!", e);
+    }
+}
+
+exports.detailCandidateGetJob = async(req, res, next) => {
+    try {
+        //lay thong tin tu nguoi dung nhap
+        let comId = req.infoLogin.comId;
+        let canId = req.body.canId;
+        if(!canId){
+            return functions.setError(res, "Missing input canId!", 405);
+        }
+        let data = await detailGenaral(comId, canId);
+        let detail_get_job = await GetJob.findOne({canId: canId});
+        data.detail_get_job = detail_get_job;
+        
+        return functions.success(res, 'Get detailCandidateGetJob success!', data);
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.detailCandidateFailJob = async(req, res, next) => {
+    try {
+        //lay thong tin tu nguoi dung nhap
+        let comId = req.infoLogin.comId;
+        let canId = req.body.canId;
+        if(!canId){
+            return functions.setError(res, "Missing input canId!", 405);
+        }
+        let data = await detailGenaral(comId, canId);
+        let detail_fail_job = await FailJob.findOne({canId: canId});
+        data.detail_fail_job = detail_fail_job;
+        
+        return functions.success(res, 'Get detailCandidateFailJob success!', data);
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.detailCandidateCancelJob = async(req, res, next) => {
+    try {
+        //lay thong tin tu nguoi dung nhap
+        let comId = req.infoLogin.comId;
+        let canId = req.body.canId;
+        if(!canId){
+            return functions.setError(res, "Missing input canId!", 405);
+        }
+        let data = await detailGenaral(comId, canId);
+        let detail_cancel_job = await CancelJob.findOne({canId: canId});
+        data.detail_cancel_job = detail_cancel_job;
+        
+        return functions.success(res, 'Get detailCandidateCancelJob success!', data);
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+exports.detailCandidateContactJob = async(req, res, next) => {
+    try {
+        //lay thong tin tu nguoi dung nhap
+        let comId = req.infoLogin.comId;
+        let canId = req.body.canId;
+        if(!canId){
+            return functions.setError(res, "Missing input canId!", 405);
+        }
+        let data = await detailGenaral(comId, canId);
+        let detail_contact_job = await ContactJob.findOne({canId: canId});
+        data.detail_contact_job = detail_contact_job;
+        
+        return functions.success(res, 'Get detailCandidateContactJob success!', data);
+    } catch (e) {
+        console.log("Err from server!", e);
+        return functions.setError(res, "Err from server!", 500);
+    }
+}
+
+
+

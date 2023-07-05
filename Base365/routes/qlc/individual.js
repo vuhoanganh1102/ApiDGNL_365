@@ -9,11 +9,12 @@ router.post('/register', formData.parse(), individual.register)
 router.post('/login', formData.parse(), individual.login)
 
 // api xác nhận OTP để xác minh tìa khoản
-router.post('/verify', formData.parse(), individual.verify);
-router.post('/verifyCheckOTP', formData.parse(), functions.checkToken, individual.verifyCheckOTP);
+router.post('/verify', formData.parse(),functions.checkToken,  individual.verify);
+router.post('/verifyCheckOTP', formData.parse(),functions.checkToken,  individual.verifyCheckOTP);
 
 // hàm đổi mật khẩu 
-router.post('/updatePassword', functions.checkToken, formData.parse(), individual.updatePassword);
+router.post('/updatePassword',functions.checkToken, formData.parse(),  individual.updatePassword);
+router.post('/updatePasswordbyInput', formData.parse(),  individual.updatePasswordbyInput);
 // hàm cập nhập thông tin công ty
 router.post('/updateInfoindividual', functions.checkToken, formData.parse(), individual.updateInfoindividual);
 

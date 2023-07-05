@@ -1,18 +1,19 @@
 const router = require("express").Router()
 const controller = require("../../../controllers/crm/Customer/CustomerContact")
 const formData = require("express-form-data")
+const functions= require ("../../../services/functions")
 
 
 
 
-//thêmm lien he
-router.post("/add",formData.parse(), controller.addContact)
+//thêmm lien hệ
+router.post("/add",functions.checkToken,formData.parse(), controller.addContact)
 //sua lien he
-router.post("/edit",formData.parse(), controller.editContact)
+router.post("/edit",functions.checkToken,formData.parse(), controller.editContact)
 //xoa lien he
-router.post("/delete",formData.parse(), controller.deleteContact)
+router.post("/delete",functions.checkToken,formData.parse(), controller.deleteContact)
 //lay danh sach lien he
-router.post("/get",formData.parse(), controller.getContact)
+
 
 
 

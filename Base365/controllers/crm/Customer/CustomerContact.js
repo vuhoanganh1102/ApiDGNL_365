@@ -1,7 +1,9 @@
 const functions = require('../../../services/CRM/CRMservice')
 const contact = require('../../../models/crm/Customer/contact_customer')
-
-
+const CustomerCare = require('../../../models/crm/Customer/customer_care')
+const ManagerExtension = require('../../../models/crm/manager_extension')
+const Callhistory = require('../../../models/crm/call_history')
+const { create } = require('yallist')
 //them chi tiet lien he KH
 exports.addContact = async(req,res)=>{
     // const user_create_id = req.user.data.user_create_id
@@ -180,3 +182,10 @@ exports.getContact = async (req, res) =>{
     }
 }
 
+//hiển thị line
+
+
+//Chỉnh sửa bàn giao line
+
+
+//afffajdutl

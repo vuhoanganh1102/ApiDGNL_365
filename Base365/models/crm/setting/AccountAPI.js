@@ -3,11 +3,11 @@ const mongoose = require('mongoose')
 //cài đặt hợp đồng 
 
 const AccountAPISchema = new mongoose.Schema({
-    _id: {
+    id: {
         type: Number,
         required: true
     },
-    com_id: { // id cty
+    com_id: { 
         type: Number
     },
     account: {

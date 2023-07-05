@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const vanBan = new mongoose.Schema({
     _id: {
-        type: Number
+        type: Number,
+        required: true
     },
     title_vb: {
         type: String,
@@ -81,7 +82,7 @@ const vanBan = new mongoose.Schema({
         type: Number
     },
     thoi_gian_duyet: {
-        type: Date
+        type: String
     },
     nguoi_xet_duyet: {
         type: String,
@@ -96,6 +97,7 @@ const vanBan = new mongoose.Schema({
 
     nguoi_ky: {
         type: String,
+        default: null,
         max: 255
     },
     so_van_ban: {
@@ -132,13 +134,13 @@ const vanBan = new mongoose.Schema({
         type: Number
     },
     created_date: {
-        type: Number
+        type: Date
     },
     type_duyet: {
         type: Number,
     },
     update_time: {
-        type: Number
+        type: Date
     }
 
 
