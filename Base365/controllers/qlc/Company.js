@@ -72,12 +72,8 @@ exports.login = async (req, res, next) => {
             if (checkPhone) {
                 let checkTypeUser = await Users.findOne({ phoneTK: phoneTK }).lean()
                 // console.log(checkTypeUser)
-                if (checkTypeUser.type == 0) {
-                    type_user = 0
-                    functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
-                }
-                else if (checkTypeUser.type == 1) {
-                    type_user = 1
+     
+                 if (checkTypeUser.type == 1) {
                     let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
                     if (!checkPassword) {
                         return functions.setError(res, "Mật khẩu sai", 404)
@@ -93,15 +89,17 @@ exports.login = async (req, res, next) => {
                                 com_phone_tk: checkTypeUser.phoneTK,
                             }
                         }
-                        data.type_user = type_user
                         return functions.success(res, 'Đăng nhập thành công bằng SDT', { data })
 
                     } else {
                         return functions.setError(res, "sai tai khoan hoac mat khau")
                     }
-                }
-                else if (checkTypeUser.type == 2) {
+                } else if (checkTypeUser.type == 2) {
                     type_user = 2
+                    functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
+                }
+                else if (checkTypeUser.type == 0) {
+                    type_user = 0
                     functions.success(res, "tài khoản là tài khoản nhân viên", { type_user })
                 } else {
                     functions.setError(res, "không tìm thấy tài khoản ")
@@ -120,7 +118,6 @@ exports.login = async (req, res, next) => {
                     functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
                 }
                 else if (checkTypeUser.type == 1) {
-                    type_user = 1
                     let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
                     if (!checkPassword) {
                         return functions.setError(res, "Mật khẩu sai", 404)
@@ -136,7 +133,6 @@ exports.login = async (req, res, next) => {
                                 com_email: checkTypeUser.email,
                             }
                         }
-                        data.type_user = type_user
                         return functions.success(res, 'Đăng nhập thành công bằng email', { data })
 
                     } else {
@@ -160,7 +156,147 @@ exports.login = async (req, res, next) => {
         return functions.setError(res, error.message)
     }
 }
+exports.login1 = async (req, res, next) => {
+    try {
+        let phoneTK = req.body.phoneTK
+        let email = req.body.email
+            password = req.body.password
+            type = req.body.type
+            type_user = {};
+        if (phoneTK&&password) {
+            
+            let checkPhone = await functions.checkPhoneNumber(phoneTK)
+            if (checkPhone) {
+                let checkUser = await Users.findOne({ phoneTK: phoneTK , type : type}).lean()
+                if(checkUser){
+                    type_user = type
+                    let checkPassword = await functions.verifyPassword(password, checkUser.password)
+                    if (!checkPassword) {
+                        return functions.setError(res, "Mật khẩu sai", 404)
+                    }
+                    if (checkUser != null) {
+                        const token = await functions.createToken(checkUser, "1d")
+                        const refreshToken = await functions.createToken({ userId: checkUser._id }, "1y")
+                        let data = {
+                            access_token: token,
+                            refresh_token: refreshToken,
+                            com_info: {
+                                com_id: checkUser._id,
+                                com_email: checkUser.email,
+                            }
+                        }
+                        data.type_user = type_user
 
+                        return functions.success(res, 'Đăng nhập thành công bằng sdt', { data })
+
+                    } else {
+                        return functions.setError(res, "sai tai khoan hoac mat khau")
+                    }
+                }else{
+                    let checkUseOther = await Users.findOne({ phoneTK: phoneTK , type: {$ne : type }}).lean()
+                        if(checkUseOther) {
+                            type_user = checkUseOther.type
+                            let checkPassword = await functions.verifyPassword(password, checkUseOther.password)
+
+                            if (!checkPassword) {
+                                return functions.setError(res, "Mật khẩu sai", 404)
+                            }
+                            if (checkUseOther != null) {
+                                const token = await functions.createToken(checkUseOther, "1d")
+                                const refreshToken = await functions.createToken({ userId: checkUseOther._id }, "1y")
+                                let data = {
+                                    access_token: token,
+                                    refresh_token: refreshToken,
+                                    com_info: {
+                                        com_id: checkUseOther._id,
+                                        com_email: checkUseOther.email,
+                                    }
+                                }
+                                data.type_user = type_user
+                                return functions.success(res, 'Đăng nhập thành công bằng sdt', { data })
+        
+                            } else {
+                                return functions.setError(res, "sai tai khoan hoac mat khau")
+                            }
+                        }else{
+                            return functions.setError(res, "khong tim thay tai khoan ")
+
+                        }
+                    
+
+                }
+            }
+        }else if(email&&password) {
+            
+            let checkPhone = await functions.checkPhoneNumber(email)
+            if (checkPhone) {
+                let checkUser = await Users.findOne({ email: email , type : type}).lean()
+                if(checkUser){
+                    type_user = type
+                    let checkPassword = await functions.verifyPassword(password, checkUser.password)
+                    if (!checkPassword) {
+                        return functions.setError(res, "Mật khẩu sai", 404)
+                    }
+                    if (checkUser != null) {
+                        const token = await functions.createToken(checkUser, "1d")
+                        const refreshToken = await functions.createToken({ userId: checkUser._id }, "1y")
+                        let data = {
+                            access_token: token,
+                            refresh_token: refreshToken,
+                            com_info: {
+                                com_id: checkUser._id,
+                                com_email: checkUser.email,
+                            }
+                        }
+                        data.type_user = type_user
+
+                        return functions.success(res, 'Đăng nhập thành công bằng sdt', { data })
+
+                    } else {
+                        return functions.setError(res, "sai tai khoan hoac mat khau")
+                    }
+                }else{
+                    let checkUseOther = await Users.findOne({ email: email , type: {$ne : type }}).lean()
+                        if(checkUseOther) {
+                            type_user = checkUseOther.type
+                            let checkPassword = await functions.verifyPassword(password, checkUseOther.password)
+
+                            if (!checkPassword) {
+                                return functions.setError(res, "Mật khẩu sai", 404)
+                            }
+                            if (checkUseOther != null) {
+                                const token = await functions.createToken(checkUseOther, "1d")
+                                const refreshToken = await functions.createToken({ userId: checkUseOther._id }, "1y")
+                                let data = {
+                                    access_token: token,
+                                    refresh_token: refreshToken,
+                                    com_info: {
+                                        com_id: checkUseOther._id,
+                                        com_email: checkUseOther.email,
+                                    }
+                                }
+                                data.type_user = type_user
+                                return functions.success(res, 'Đăng nhập thành công bằng sdt', { data })
+        
+                            } else {
+                                return functions.setError(res, "sai tai khoan hoac mat khau")
+                            }
+                        }else{
+                            return functions.setError(res, "khong tim thay tai khoan ")
+
+                        }
+                    
+
+                }
+            }
+        }else{
+            return functions.setError(res, " nhap thieu du lieu ")
+
+        }
+        } catch (error) {
+            return functions.setError(res, error.message)
+        }
+    }
 exports.verify = async (req, res) => {
     try {
         let otp = req.body.ma_xt || null
