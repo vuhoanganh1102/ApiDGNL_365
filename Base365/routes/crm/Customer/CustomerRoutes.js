@@ -9,7 +9,6 @@ const functions = require("../../../services/functions");
 
 router.post('/list',functions.checkToken,formData.parse(),CustomerRoutes.showKH)
 
-
 // Api tìm kiếm trùng
 
 router.post('/searchSame',functions.checkToken,formData.parse(),CustomerRoutes.searchSame)

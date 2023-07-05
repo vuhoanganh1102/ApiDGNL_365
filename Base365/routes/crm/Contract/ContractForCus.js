@@ -10,7 +10,7 @@ router.post("/list",functions.checkToken,formData.parse(), controller.showContra
 
 
 // Api show chi tiết hợp đồng
-router.post("/add",functions.checkToken,formData.parse(), controller.showDetailContract)
+router.post("/listdetails",functions.checkToken,formData.parse(), controller.showDetailContract)
 
 // Api xóa hợp đồng
 router.post("/delete",functions.checkToken,formData.parse(), controller.deleteContract)
