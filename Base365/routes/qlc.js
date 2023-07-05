@@ -11,7 +11,6 @@ var teamRouter = require('./qlc/Team');
 var groupRouter = require('./qlc/Group');
 var shiftRouter = require('./qlc/shift');
 var calendarRouter = require('./qlc/calendar');
-var childCompanyRouter = require('./qlc/ChildCompany')
 var managerUser = require('./qlc/ManagerUser')
 var DelAppData = require('./qlc/DelAppData')
 var TrackingQR = require('./qlc/TrackingQR')
@@ -37,7 +36,6 @@ router.use('/team', teamRouter);
 router.use('/group', groupRouter);
 router.use('/shift', shiftRouter);
 router.use('/calendar', calendarRouter);
-router.use('/childCompany', childCompanyRouter);
 router.use('/managerUser', managerUser);
 router.use('/delAppData', DelAppData);
 router.use('/trackingQR', TrackingQR);

@@ -42,4 +42,4 @@ const DeparmentSchema = new Schema({
     }
 })
 
-module.exports = mongoose.model('Deparments', DeparmentSchema)
+module.exports = mongoose.model('QLC_Deparments', DeparmentSchema)

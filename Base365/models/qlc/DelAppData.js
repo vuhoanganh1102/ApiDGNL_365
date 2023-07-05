@@ -26,4 +26,4 @@ const DelAppDataSchema = new Schema({
     },
 })
 
-module.exports = mongoose.model('DelAppData', DelAppDataSchema);
+module.exports = mongoose.model('QLC_DelAppData', DelAppDataSchema);
