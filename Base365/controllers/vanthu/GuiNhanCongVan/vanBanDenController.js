@@ -62,8 +62,8 @@ exports.getListVanBanMoi = async(req, res, next) => {
     }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
-    time_start = time_start? new Date(time_start): null;
-    time_end = time_end? new Date(time_end): null;
+    time_start = time_start? vanThuService.convertTimestamp(time_start): null;
+    time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     if(trang_thai_search == 1) trang_thai_search = 0;
 
     let id = req.id || 1761;
@@ -115,9 +115,9 @@ exports.getListVanBanMoi = async(req, res, next) => {
 
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
     if(trang_thai_search) condition.trang_thai_vb = Number(trang_thai_search);
-    if(time_start && !time_end) condition.created_date = {$gte: time_start.getTime()};
-    if(time_end && !time_start) condition.created_date = {$lte: time_end.getTime()};
-    if(time_start && time_end) condition.created_date = {$gte: time_start.getTime(), $lte: time_end.getTime()}
+    if(time_start && !time_end) condition.created_date = {$gte: time_start};
+    if(time_end && !time_start) condition.created_date = {$lte: time_end};
+    if(time_start && time_end) condition.created_date = {$gte: time_start, $lte: time_end}
 
     let listVanBanMoi = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
@@ -140,8 +140,8 @@ exports.getListVanBanDaXuLy = async(req, res, next) => {
     }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
-    time_start = time_start? new Date(time_start): null;
-    time_end = time_end? new Date(time_end): null;
+    time_start = time_start? vanThuService.convertTimestamp(time_start): null;
+    time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     if(trang_thai_search == 1) trang_thai_search = 0;
 
     let id = req.id || 1761;
@@ -192,9 +192,9 @@ exports.getListVanBanDaXuLy = async(req, res, next) => {
 
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
     if(trang_thai_search) condition.trang_thai_vb = Number(trang_thai_search);
-    if(time_start && !time_end) condition.created_date = {$gte: time_start.getTime()};
-    if(time_end && !time_start) condition.created_date = {$lte: time_end.getTime()};
-    if(time_start && time_end) condition.created_date = {$gte: time_start.getTime(), $lte: time_end.getTime()}
+    if(time_start && !time_end) condition.created_date = {$gte: time_start};
+    if(time_end && !time_start) condition.created_date = {$lte: time_end};
+    if(time_start && time_end) condition.created_date = {$gte: time_start, $lte: time_end}
 
     let listVanBanDaXuLy = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
@@ -217,8 +217,8 @@ exports.getListVanBanCanDuyet = async(req, res, next) => {
     }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
-    time_start = time_start? new Date(time_start): null;
-    time_end = time_end? new Date(time_end): null;
+    time_start = time_start? vanThuService.convertTimestamp(time_start): null;
+    time_end = time_end? vanThuService.convertTimestamp(time_end): null;
 
     let id = req.id || 1761;
     let com_id = req.comId || 1763;
@@ -227,9 +227,9 @@ exports.getListVanBanCanDuyet = async(req, res, next) => {
     let condition = {type_duyet: 0, trang_thai_vb: 0};
     condition.user_nhan = new RegExp(String(id));
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
-    if(time_start && !time_end) condition.created_date = {$gte: time_start.getTime()};
-    if(time_end && !time_start) condition.created_date = {$lte: time_end.getTime()};
-    if(time_start && time_end) condition.created_date = {$gte: time_start.getTime(), $lte: time_end.getTime()}
+    if(time_start && !time_end) condition.created_date = {$gte: time_start};
+    if(time_end && !time_start) condition.created_date = {$lte: time_end};
+    if(time_start && time_end) condition.created_date = {$gte: time_start, $lte: time_end}
 
     let listVanBanDenCanDuyet = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
@@ -252,8 +252,8 @@ exports.getListVanBanThuHoi = async(req, res, next) => {
     }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
-    time_start = time_start? new Date(time_start): null;
-    time_end = time_end? new Date(time_end): null;
+    time_start = time_start? vanThuService.convertTimestamp(time_start): null;
+    time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     let trang_thai_vb = 3;
 
     let id = req.id || 1761;
@@ -292,9 +292,9 @@ exports.getListVanBanThuHoi = async(req, res, next) => {
     ]};
 
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
-    if(time_start && !time_end) condition.created_date = {$gte: time_start.getTime()};
-    if(time_end && !time_start) condition.created_date = {$lte: time_end.getTime()};
-    if(time_start && time_end) condition.created_date = {$gte: time_start.getTime(), $lte: time_end.getTime()}
+    if(time_start && !time_end) condition.created_date = {$gte: time_start};
+    if(time_end && !time_start) condition.created_date = {$lte: time_end};
+    if(time_start && time_end) condition.created_date = {$gte: time_start, $lte: time_end}
 
     let listVanBanDaXuLy = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
@@ -317,8 +317,8 @@ exports.getListVanBanCapNhat = async(req, res, next) => {
     }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
-    time_start = time_start? new Date(time_start): null;
-    time_end = time_end? new Date(time_end): null;
+    time_start = time_start? vanThuService.convertTimestamp(time_start): null;
+    time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     let id = req.id || 1761;
     let com_id = req.comId || 1763;
     let type;
@@ -372,9 +372,9 @@ exports.getListVanBanCapNhat = async(req, res, next) => {
     if(type_thay_the) condition.type_thay_the = 1;
 
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
-    if(time_start && !time_end) condition.created_date = {$gte: time_start.getTime()};
-    if(time_end && !time_start) condition.created_date = {$lte: time_end.getTime()};
-    if(time_start && time_end) condition.created_date = {$gte: time_start.getTime(), $lte: time_end.getTime()}
+    if(time_start && !time_end) condition.created_date = {$gte: time_start};
+    if(time_end && !time_start) condition.created_date = {$lte: time_end};
+    if(time_start && time_end) condition.created_date = {$gte: time_start, $lte: time_end}
 
     let listVanBanCapNhat = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
@@ -398,8 +398,7 @@ exports.sendFeedback = async(req, res, next) => {
       return functions.setError(res, "Missing input value!", 404);
     }
     let idMax = await vanThuService.getMaxId(FeedBack);
-    let date = new Date(Date.now());
-    let timestamp = Math.round(date.getTime()/1000);
+    let timestamp = vanThuService.convertTimestamp(Date.now());
 
     let feedBack = new FeedBack({
       _id: idMax,
@@ -444,8 +443,7 @@ exports.sendLeader = async(req, res, next) => {
     if(vanBan.user_forward != "") {
       ct_ld = `${vanBan.user_forward},${id_leader}`;
     }
-    let date = new Date(Date.now());
-    let timestamp = Math.round(date.getTime()/1000);
+    let timestamp = vanThuService.convertTimestamp(Date.now());
     vanBan = await VanBan.findOneAndUpdate({_id: id_vb}, {user_forward: ct_ld, update_time: timestamp});
     if(!vanBan) {
       return functions.setError(res, "update van ban that bai!", 506);

@@ -79,13 +79,14 @@ exports.uploadFileNameRandom = async(folder, file_img) => {
     const year = date.getFullYear();
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
+    const timestamp = Math.round(date.getTime()/1000);
 
-    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}${month}${day}/`;
+    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
 
-    filename = `${time_created}-tin-${file_img.originalFilename}`.replace(/,/g, '');
+    filename = `${timestamp}-tin-${file_img.originalFilename}`.replace(/,/g, '');
     const filePath = dir + filename;
     filename = filename + ',';
     // if (NameFile === '') {
@@ -107,6 +108,22 @@ exports.uploadFileNameRandom = async(folder, file_img) => {
         });
     });
     return filename;
+}
+
+exports.getLinkFile = (folder, time, fileName) => {
+    let date = new Date(time*1000);
+    const y = date.getFullYear();
+    const m = ('0' + (date.getMonth() + 1)).slice(-2);
+    const d = ('0' + date.getDate()).slice(-2);
+    let link = process.env.DOMAIN_VAN_THU + `/base365/vanthu/uploads/${folder}/${y}/${m}/${d}/`;
+    let res = '';
+    
+    let arrFile = fileName.split(',').slice(0, -1);
+    for(let i=0; i<arrFile.length; i++) {
+        if(res == '') res = `${link}${arrFile[i]}`
+        else  res = `${res}, ${link}${arrFile[i]}`
+    }
+    return res;
 }
 
 exports.getMaxId = async(model) => {
@@ -141,20 +158,24 @@ exports.checkToken = (req, res, next)=> {
             if (err) {
                 return res.status(403).json({ message: "Invalid token" });
             }
-            var infoLogin = {type: user.data.type, id: user.data.idQLC, name: user.data.userName};
+            if(!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
+                return res.status(404).json({ message: "Token missing info!" });
+            }
+            var infoLogin = {type: user.data.type, role: user.data.role, id: user.data.idQLC, name: user.data.userName};
             if(user.data.type!=1){
                 if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
                     infoLogin.comId = user.data.inForPerson.employee.com_id;
                 }else {
-                    return res.status(404).json({ message: "Missing info inForPerson!" });
+                    return res.status(405).json({ message: "Missing info inForPerson!" });
                 }
             }else {
                 infoLogin.comId = user.data.idQLC;
             }
-            // if(type==1) req.ac = user.data.idQLC;
             req.id = infoLogin.id;
             req.comId = infoLogin.comId;
-            req.name_user = infoLogin.name
+            req.userName = infoLogin.name;
+            req.type = infoLogin.type;
+            req.role = infoLogin.role;
             req.infoLogin = infoLogin;
             next();
             
@@ -189,7 +210,7 @@ exports.uploadfile = async(folder, file_img) => {
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
 
-    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
+    const dir = `../storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
@@ -217,4 +238,13 @@ exports.deleteFile = (file) => {
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });
+}
+
+exports.convertTimestamp = (date) => {
+    let time = new Date(date);
+    return Math.round(time.getTime()/1000);
+}
+
+exports.convertDate = (timestamp) => {
+    return new Date(timestamp*1000);
 }

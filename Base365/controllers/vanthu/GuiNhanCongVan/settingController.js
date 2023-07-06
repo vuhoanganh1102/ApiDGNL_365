@@ -6,6 +6,9 @@ const TextBook = require('../../../models/Vanthu365/tbl_textBook');
 
 exports.thietLapQuyen = async(req, res, next) => {
   try{
+    if(req.type !=1) {
+      return functions.setError(res, "Tai khoan nhan vien khong co quyen cap quyen!", 408);
+    }
     let id = req.comId || 145;
     let {type_cong_ty, type_ngoai, duyet_pb, duyet_tung_pb} = req.body;
     if(!type_cong_ty || !type_ngoai) {
@@ -16,7 +19,7 @@ exports.thietLapQuyen = async(req, res, next) => {
     if(type_ngoai) data_ngoai = type_ngoai.join(", ");
     if(duyet_pb) data_duyet_pb = duyet_pb.join(", ");
     if(duyet_tung_pb) data_duyet_tung_pb = duyet_tung_pb.join(", ");
-    let created_time = new Date(Date.now()).getTime();
+    let created_time =  vanThuService.convertTimestamp(Date.now());
 
     let userModel = await UserModel.findOne({id_user: id});
 
@@ -131,44 +134,6 @@ exports.updateSoVanBan = async(req, res, next) => {
 }
 
 exports.deleteSoVanBan = async(req, res, next) => {
-  try{
-    let id_so_vb = req.body.id_so_vb;
-    if(!id_so_vb) {
-      return functions.setError(res, "Missing input value!", 404);
-    }
-    let soVB = await TextBook.deleteOne({_id: id_so_vb});
-    if(soVB.deletedCount == 0) {
-      return functions.setError(res, "Khong ton tai so van ban!", 404);
-    }
-    return functions.success(res, "Xoa so van ban thanh cong!"); 
-  }catch(err){
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
-  }
-}
-
-//----------------------khac---------------------
-
-//gui feedback (tra loi)
-exports.sendFeedback = async(req, res, next) => {
-  try{
-    let {id_vb, id_user, feedback, name_user} = req.body;
-    if(!id_so_vb) {
-      return functions.setError(res, "Missing input value!", 404);
-    }
-    let soVB = await TextBook.deleteOne({_id: id_so_vb});
-    if(soVB.deletedCount == 0) {
-      return functions.setError(res, "Khong ton tai so van ban!", 404);
-    }
-    return functions.success(res, "Xoa so van ban thanh cong!"); 
-  }catch(err){
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
-  }
-}
-
-//
-exports.sendLeader = async(req, res, next) => {
   try{
     let id_so_vb = req.body.id_so_vb;
     if(!id_so_vb) {

@@ -13,6 +13,7 @@ router.post('/deleteVanBan',vanThuService.checkToken,formData.parse(), vanBanDiC
 router.post('/checkLuuQLCV',vanThuService.checkToken,formData.parse(), vanBanDiController.checkLuuQLCV);
 router.post('/luuVBCTY',vanThuService.checkToken,formData.parse(), vanBanDiController.luuVBCTY);
 router.post('/setTrangThaiVanBan',vanThuService.checkToken,formData.parse(), vanBanDiController.setTrangThaiVanBan);
+router.post('/checkQuyenBanHanh',vanThuService.checkToken,formData.parse(), vanBanDiController.checkQuyenBanHanh);
 
 
 module.exports = router
