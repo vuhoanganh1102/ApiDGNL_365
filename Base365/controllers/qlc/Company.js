@@ -156,7 +156,7 @@ exports.login = async (req, res, next) => {
         return functions.setError(res, error.message)
     }
 }
-exports.login1 = async (req, res, next) => {
+exports.login1Time = async (req, res, next) => {
     try {
         let phoneTK = req.body.phoneTK
         let email = req.body.email
