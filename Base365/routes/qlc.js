@@ -3,27 +3,26 @@ var router = express.Router();
 
 
 var Admin = require('./qlc/admin/QLC_Admin')
-var companyRouterQLC = require('./qlc/QLC_Company')
-var EmployeeRouterQLC = require('./qlc/QLC_Employee')
-var individualRouterQLC = require('./qlc/QLC_Individual')
-var deparmentRouter = require('./qlc/QLC_Deparment')
-var teamRouter = require('./qlc/QLC_Team');
-var groupRouter = require('./qlc/QLC_Group');
-var shiftRouter = require('./qlc/Shift');
-var calendarRouter = require('./qlc/Calendar');
-var childCompanyRouter = require('./qlc/QLC_ChildCompany')
-var managerUser = require('./qlc/QLC_ManagerUser')
-var DelAppData = require('./qlc/QLC_DelAppData')
+var companyRouterQLC = require('./qlc/Company')
+var EmployeeRouterQLC = require('./qlc/Employee')
+var individualRouterQLC = require('./qlc/Individual')
+var deparmentRouter = require('./qlc/Deparment')
+var teamRouter = require('./qlc/Team');
+var groupRouter = require('./qlc/Group');
+var shiftRouter = require('./qlc/shift');
+var calendarRouter = require('./qlc/calendar');
+var managerUser = require('./qlc/ManagerUser')
+var DelAppData = require('./qlc/DelAppData')
 var TrackingQR = require('./qlc/TrackingQR')
 var TrackingWifi = require('./qlc/TrackingWifi')
-var CheckVip = require('./qlc/QLC_CheckVip')
-var Feedback = require('./qlc/QLC_Feedback')
-var ReportError = require('./qlc/QLC_ReportError')
-var employeeRoutes = require('./qlc/Employee.routes');
-var individualRoutes = require('./qlc/Individual.routes');
+var CheckVip = require('./qlc/CheckVip')
+var Feedback = require('./qlc/Feedback')
+var ReportError = require('./qlc/ReportError')
+var employeeRoutes = require('./qlc/Employee');
+var individualRoutes = require('./qlc/Individual');
 var HisOfTrackingRouter = require("./qlc/HisTracking")
 var CalendarWorkEmployee = require("./qlc/CalendarWorkEmployee")
-var SetIpRouter = require("./qlc/QLC_SettingIP")
+var SetIpRouter = require("./qlc/SettingIP")
 var homePage = require("./qlc/HomePageChamCong")
 
 
@@ -37,7 +36,6 @@ router.use('/team', teamRouter);
 router.use('/group', groupRouter);
 router.use('/shift', shiftRouter);
 router.use('/calendar', calendarRouter);
-router.use('/childCompany', childCompanyRouter);
 router.use('/managerUser', managerUser);
 router.use('/delAppData', DelAppData);
 router.use('/trackingQR', TrackingQR);
