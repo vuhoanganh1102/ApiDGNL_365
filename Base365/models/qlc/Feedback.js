@@ -35,4 +35,4 @@ const Feedback = new Schema({
     },
 })
 
-module.exports = mongoose.model('Feedback', Feedback);
+module.exports = mongoose.model('QLC_Feedback', Feedback);

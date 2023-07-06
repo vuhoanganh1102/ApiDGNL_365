@@ -7,13 +7,5 @@ router.get ("/",functions.checkToken, ManageTrackingController.getlistTracking);
 
 
 
-// router.post('/', ManageTrackingController.createListTracking);
-
-
-
-// router.post('/',ManageTrackingController.editTracking );
-
-
-// router.delete('/',ManageTrackingController.deleteTracking);
 
 module.exports = router

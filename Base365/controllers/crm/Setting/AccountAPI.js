@@ -5,28 +5,26 @@ const http = require('http');
 const md5 = require('md5');
 // cài đặt hợp đồng 
 exports.addContract = async (req,res) =>{
-    const com_id = req.user.data.inForPerson.employee.com_id
-
-    const { account, password, switchboard,domain,status,} = req.body;
-
-    if((account&& password&& switchboard&&domain)== undefined) {
-        functions.setError(res," nhap thieu truong ")
-    }else{
-        let max = set.findOne({},{_id:1}).sort( {_id : -1}).limit(1).lean()
-        const setting = new set({
-            _id : Number(max) + 1||1,
-            switchboard:switchboard,
-            account:account,
-            password:md5(password),
-            domain:domain,
-            status:status,
-            created_at: new Date(),
-
-        })
-        await setting.save()
-        .then(()=>functions.success(res , "lasy thanh cong",{setting}))
-        .catch((err)=>functions.setError(res,err.message))
-    }
+  let { account, password, switchboard,domain,status} = req.body;
+     let com_id = req.user.data.idQLC
+     if((account&& password&& switchboard&&domain)== undefined) {
+         functions.setError(res," nhap thieu truong ")
+     }else{
+         let max = set.findOne({},{_id:1}).sort( {_id : -1}).limit(1).lean()
+         const setting = new set({
+             _id : Number(max) + 1||1,
+             switchboard:switchboard,
+             account:account,
+             password:md5(password),
+             domain:domain,
+             status:status,
+             created_at: new Date(),
+         })
+         await setting.save()
+         .then(()=>functions.success(res , "lasy thanh cong",{setting}))
+         .catch((err)=>functions.setError(res,err.message))
+     }
+    
 }
 
 
@@ -36,11 +34,11 @@ exports.addContract = async (req,res) =>{
 //kết nối tổng đài kiểm tra theo com nếu có sẽ hiển thị ko có sẽ tạo mới
 exports.connectTd = async (req,res) => {
     try{
-        let { account,password,switchboard,domain,status,com_id,id} = req.body;
-        console.log(req.body);
-        // const com_id = req.user.data.inForPerson.employee.com_id;
-       let checkCom = await set.find({com_id : com_id})
-       console.log(checkCom);
+        let { account,password,switchboard,domain,status,id} = req.body;
+        let com_id = '';
+       if(req.user.data.type == 1) {
+        com_id = req.user.data.idQLC
+        let checkCom = await set.find({com_id : com_id})
         if(checkCom){
            res.status(200).json({checkCom})
         }else{
@@ -59,17 +57,44 @@ exports.connectTd = async (req,res) => {
         
                 })
                let saveST = await setting.save()
-               res.status(200).json({saveST})
+               return functions.success(res,'get data success',{saveST})
             }
         }
+       }
+       if(req.user.data.type == 2) {
+        com_id = req.user.data.inForPerson.employee.com_id;
+        let checkCom = await set.find({com_id : com_id})
+        if(checkCom){
+           res.status(200).json({checkCom})
+        }else{
+            if((account&& password&& switchboard&&domain)== undefined) {
+                functions.setError(res," nhap thieu truong ")
+            }else{
+                let max = set.findOne({},{id:1}).sort( {id : -1}).limit(1).lean()
+                const setting = new set({
+                    id : Number(max) + 1||1,
+                    switchboard:switchboard,
+                    account:account,
+                    password:password,
+                    domain:domain,
+                    status:status,
+                    created_at: new Date(),
+        
+                })
+               let saveST = await setting.save()
+              return functions.success(res,'get data success',{saveST})
+            }
+        }
+       }
+       else{
+        return functions.setError(res,'không có quyền truy cập',400)
+       }
     }catch (error) {
-      console.error('Failed to connect', error);
-      res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+      return functions.setError(res, error)
     }
 
 }
 
-//hàm chỉnh sửa kết nối tổng đài
 
 
 
@@ -80,69 +105,8 @@ exports.connectTd = async (req,res) => {
 
 
 
-exports.settingSwitchboard = async (req, res) => {
-  try {
-    const { account, password, switchboard,id,domain } = req.body;
 
-    if (!account || !password || !switchboard) {
-      return res.status(400).json({ success: false, message: 'Chưa nhập đủ thông tin' });
-    }
 
-    const apiUrl = 'http://118.68.169.39:8899/api/account/credentials/verify';
-    const requestData = {
-      name: account,
-      password: password,
-    };
-
-    const apiResponse = await sendApiRequest(apiUrl, requestData);
-
-    if (apiResponse.err_code) {
-      return res.status(400).json({ success: false, message: 'Kết nối thất bại, Tài khoản kết nối không tồn tại' });
-    }
-
-    // Tiếp tục xử lý khi kết nối thành công
-    const time = Date.now();
-
-    // Thực hiện thêm mới hoặc cập nhật bản ghi
-    if (!id) {
-      // Thêm mới
-      const newApi = new set({
-        id: generateUniqueId(),
-        id_company: req.session.company_id,
-        account: account,
-        password: password,
-        switchboard: switchboard,
-        domain: domain,
-        status: 1,
-        created_at: time,
-        updated_at: time,
-      });
-
-      await newApi.save();
-
-      req.session.access_token_call = apiResponse.access_token;
-      req.session.set_time_api = time;
-
-      return res.json({ success: true, message: 'Kết nối thành công' });
-    } else {
-      // Cập nhật
-      const updatedData = {
-        account: account,
-        password: password,
-        switchboard: switchboard,
-        domain: domain,
-        updated_at: time,
-      };
-
-      await set.findByIdAndUpdate(id, updatedData);
-
-      return res.json({ success: true, message: 'Cập nhật thành công' });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ success: false, message: 'Lỗi khi gọi API' });
-  }
-};
 
 
 

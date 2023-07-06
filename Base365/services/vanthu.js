@@ -9,8 +9,8 @@ dotenv.config();
 const path = require('path');
 
 exports.uploadFileVanThu = (id, file) => {
-    let path = `../Storage/base365/vanthu/dexuat/${id}/`;
-    let filePath = `../Storage/base365/vanthu/dexuat/${id}/` + file.originalFilename;
+    let path = `../Storage/base365/vanthu/tailieu/${id}/`;
+    let filePath = `../Storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
 
     if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
         fs.mkdirSync(path, { recursive: true });
@@ -69,6 +69,7 @@ exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi,
         .catch(function (error) {
             console.log(error);
         });
+
 }
 
 exports.uploadFileNameRandom = async(folder, file_img) => {
@@ -216,5 +217,4 @@ exports.deleteFile = (file) => {
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });
-    
 }

@@ -60,4 +60,4 @@ const GroupSchema = new Schema({
     }
 })
 
-module.exports = mongoose.model('Groups', GroupSchema)
+module.exports = mongoose.model('QLC_Groups', GroupSchema)

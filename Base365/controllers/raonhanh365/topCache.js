@@ -10,62 +10,23 @@ const Category = require('../../models/Raonhanh365/Category');
 exports.getTopCache = async (req, res, next) => {
     try {
         let data = {};
+        let cate = await category.find({ active: 1, parentId: 0 },{_id:1,name:1}).lean()
+        for (let i = 0; i < cate.length; i++) {
+            let cateChild = await category.find({ parentId: cate[i]._id },{_id:1,name:1}).lean();
+            if (cateChild && cateChild.length > 0) {
+                for (let j = 0; j < cateChild.length; j++) {
+                    let data = await CateDetail.findById(cateChild[j]._id);
+                    let cateDetail = await Tags.find({ cateId: cateChild[j]._id }, { _id: 1, name: 1 })
+                        cateChild[j].data = data
+                        cateChild[j].cateDetail = cateDetail
+                }
+            }
+            cate[i].cateChild = cateChild
+            let all = await CateDetail.findById(i);
+            cate[i].all = all
 
-        let cateId = req.body.cateId;
-
-        let cate = await category.find({ active: 1, parentId: 0 })
-
-        let screen = await CateDetail.findById(cateId, { screen: 1 })
-
-        let productGroup = await CateDetail.findById(cateId, { productGroup: 1 })
-
-        let productMaterial = await CateDetail.findById(cateId, { productMaterial: 1 })
-
-        let productShape = await CateDetail.findById(cateId, { productShape: 1 })
-
-        let petPurebred = await CateDetail.findById(cateId, { petPurebred: 1 })
-
-        let petInfo = await CateDetail.findById(cateId, { petInfo: 1 })
-
-        let origin = await CateDetail.findById(cateId, { origin: 1 })
-
-        let capacity = await CateDetail.findById(cateId, { capacity: 1 })
-
-        let brand = await CateDetail.findById(cateId, { brand: 1 })
-
-        let colors = await CateDetail.findById(cateId, { colors: 1 })
-
-        let processor = await CateDetail.findById(cateId, { processor: 1 })
-
-        let sport = await CateDetail.findById(cateId, { sport: 1 })
-
-        let storyAndRoom = await CateDetail.findById(cateId, { storyAndRoom: 1 })
-
-        let warranty = await CateDetail.findById(cateId, { warranty: 1 })
-
-        let yearManufacture = await CateDetail.findById(cateId, { yearManufacture: 1 })
-
-        let allType = await CateDetail.findById(cateId, { allType: 1 })
-
-        data.cate = cate;
-        data.screen = screen;
-        data.productGroup = productGroup;
-        data.productMaterial = productMaterial;
-        data.productShape = productShape;
-        data.petPurebred = petPurebred;
-        data.petInfo = petInfo;
-        data.origin = origin;
-        data.capacity = capacity;
-        data.brand = brand;
-        data.colors = colors;
-        data.processor = processor;
-        data.sport = sport;
-        data.storyAndRoom = storyAndRoom;
-        data.warranty = warranty;
-        data.yearManufacture = yearManufacture;
-        data.allType = allType;
-
-        return functions.success(res, 'get data success', { data })
+        }
+        return functions.success(res, 'get data success', { cate })
     } catch (error) {
         console.log("🚀 ~ file: topCache.js:12 ~ exports.getTopCache= ~ error:", error)
         return functions.setError(res, error)
@@ -86,21 +47,23 @@ exports.supportSellNew = async (req, res, next) => {
         } else {
             CateDetail1 = await Tags.find({ cateId: cateId, parentId }, { _id: 1, name: 1 })
         }
-        let productLine = await CateDetail.find({ _id: cateId })
+        // let productLine = await CateDetail.find({ _id: cateId })
         let checkCate = await CateDetail.findById(cateId);
-       
+
         let brand = [];
         let lineOfBrand = [];
         if (checkCate && checkCate.brand.length > 0) {
             for (let i = 0; i < checkCate.brand.length; i++) {
                 if (parentId == checkCate.brand[i].parent) {
                     brand.push(checkCate.brand[i])
+                    // lineOfBrand.push(checkCate.brand[i].line)
                 }
-                if(checkCate.brand[i].line && checkCate.brand[i].line.length > 0) {
-                    lineOfBrand.push(checkCate.brand[i].line)
-                }
+
             }
         }
+
+        // let loai = [];
+
         let line = [];
         if (checkCate && checkCate.allType.length > 0) {
             for (let i = 0; i < checkCate.allType.length; i++) {
@@ -109,8 +72,8 @@ exports.supportSellNew = async (req, res, next) => {
                 }
             }
         }
-       
-        
+
+
 
         let screen = [];
         if (checkCate && checkCate.screen.length > 0) {
@@ -233,19 +196,17 @@ exports.supportSellNew = async (req, res, next) => {
             }
         }
         let city1 = [];
-        if(search && search === 'city')
-        {
-            city1 = await City.find({parentId:0})    
-        }else if(search && search === 'district'){
-            city1 = await City.find({parentId:parentId})
-        }else if(search && search === 'ward')
-        {
-            city1 = await PhuongXa.find({district_id:parentId})
+        if (search && search === 'city') {
+            city1 = await City.find({ parentId: 0 })
+        } else if (search && search === 'district') {
+            city1 = await City.find({ parentId: parentId })
+        } else if (search && search === 'ward') {
+            city1 = await PhuongXa.find({ district_id: parentId })
         }
-        
+
         if (cateChild.length > 0) data.cateChild = cateChild
-        if(CateDetail.length > 0) data.CateDetail = CateDetail1
-        if (productLine.length > 0) data.productLine = productLine
+        if (CateDetail.length > 0) data.CateDetail = CateDetail1
+        //  if (productLine.length > 0) data.productLine = productLine
         if (brand.length > 0) data.brand = brand;
         if (line.length > 0) data.line = line;
         if (screen.length > 0) data.screen = screen;
@@ -261,8 +222,8 @@ exports.supportSellNew = async (req, res, next) => {
         if (processor.length > 0) data.processor = processor;
         if (sport.length > 0) data.sport = sport;
         if (storyAndRoom.length > 0) data.storyAndRoom = storyAndRoom;
-        if(city1.length.length > 0) data.city1 = city1;
-        if(lineOfBrand.length > 0) data.lineOfBrand = lineOfBrand
+        if (city1.length.length > 0) data.city1 = city1;
+        if (lineOfBrand.length > 0) data.lineOfBrand = lineOfBrand
         return functions.success(res, 'get data success', { data })
     } catch (err) {
         console.log("🚀 ~ file: topCache.js:97 ~ exports.supportSellNew= ~ err:", err)

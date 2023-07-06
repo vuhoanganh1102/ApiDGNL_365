@@ -16,7 +16,7 @@ var vanBanDen = require('./vanthu/GuiNhanCongVan/vanBanDenRoute')
 var setting = require('./vanthu/GuiNhanCongVan/settingRoute')
 var homeRoute = require('./vanthu/QuanLyCongVan/homeRoute')
 var listVanBan = require('./vanthu/QuanLyCongVan/listVanBanRoute')
-var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
+// var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
 
 //Api thêm mới các loại đề xuất
 router.use('/vanthu/dexuat',adddeXuat);
