@@ -36,7 +36,7 @@ exports.postNewMain = async (req, res, next) => {
         let email = request.email;
         let address = request.address;
         let phone = request.phone;
-        let status = 0;
+        let status = request.status;
         let detailCategory = request.detailCategory;
         let productType = request.productType;
         let productGroup = request.productGroup;
@@ -46,6 +46,8 @@ exports.postNewMain = async (req, res, next) => {
         let hashtag = request.hashtag;
         let quantityMin = request.quantityMin;
         let quantityMax = request.quantityMax;
+        let han_su_dung = request.han_su_dung;
+        let the_tich = request.the_tich;
         let fields = [
             userID,
             cateID,
@@ -126,7 +128,8 @@ exports.postNewMain = async (req, res, next) => {
             quantityMax: quantityMax,
             buySell: 2,
             active: 1,
-
+            han_su_dung:han_su_dung,
+            the_tich:the_tich,
         };
 
         return next();
@@ -233,7 +236,6 @@ exports.postNewsGeneral = async (req, res, next) => {
             let fieldsbeautifull = {
                 loai_hinh_sp: req.body.loai_hinh_sp,
                 loai_sanpham: req.body.loai_sanpham,
-                han_su_dung: req.body.han_su_dung,
                 hang_vattu: req.body.hang_vattu,
 
             };
@@ -785,11 +787,10 @@ exports.deleteNews = async (req, res) => {
 exports.getNew = async (req, res, next) => {
     try {
         let userIdRaoNhanh = null;
-        let user = await functions.getTokenUser(req, res, next);
-        if(user){
-            userIdRaoNhanh =  user.idRaoNhanh365;
-        }
-        console.log("🚀 ~ file: new.js:789 ~ exports.getNew= ~ userIdRaoNhanh:", userIdRaoNhanh)
+        // let user = await functions.getTokenUser(req, res, next);
+        // if(user){
+        //     userIdRaoNhanh =  user.idRaoNhanh365;
+        // }
         let searchItem = {
             _id: 1,
             title: 1,
@@ -816,24 +817,26 @@ exports.getNew = async (req, res, next) => {
         let data = await New.aggregate([
             {
                 $match: { buySell: 2, sold: 0, active: 1 },
-            },
+            }, 
             {
                 $sort: { pinHome: -1, createTime: -1, order: -1 },
             },
             {
                 $limit: 50,
             },
-            {
-                $lookup: {
-                    from: "Users",
-                    as: "user",
-                    localField: "userID",
-                    foreignField: "idRaoNhanh365",
-                },
-            },
+            // {
+            //     $lookup: {
+            //         from: "Users",
+            //         let:{idRaoNhanh365}
+            //         foreignField: "idRaoNhanh365",
+            //         as: "user",
+            //     },
+            // },
+
             {
                 $project: searchItem,
             },
+
         ]);
         if (userIdRaoNhanh) {
             let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
@@ -847,10 +850,7 @@ exports.getNew = async (req, res, next) => {
         }
         return functions.success(res, "get data success", { data });
     } catch (error) {
-        console.log(
-            "🚀 ~ file: new.js:601 ~ exports.getNewBeforeLogin= ~ error:",
-            error
-        );
+        console.error(error);
         return functions.setError(res, error);
     }
 };

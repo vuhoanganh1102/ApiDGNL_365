@@ -159,7 +159,7 @@ serverHR.on('error', (error) => {
 });
 
 //qlts
-var serverQLTS = appHR.listen(3008, () => {
+var serverQLTS = appQLTS.listen(3008, () => {
     console.log(`qlts app is running on port 3008`);
 });
 

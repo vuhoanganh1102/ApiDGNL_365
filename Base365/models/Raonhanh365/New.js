@@ -135,6 +135,10 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    the_tich:{
+          type: Number,
+          default: 0
+    },
     warranty: {
         // bảo hành
         type: Number,

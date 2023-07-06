@@ -15,9 +15,11 @@ var vanBanDi = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
 var vanBanDen = require('./vanthu/GuiNhanCongVan/vanBanDenRoute')
 var setting = require('./vanthu/GuiNhanCongVan/settingRoute')
 var homeRoute = require('./vanthu/QuanLyCongVan/homeRoute')
-var listVanBan = require('./vanthu/QuanLyCongVan/listVanBanRoute')
+var listVanBan = require('./vanthu/QuanLyCongVan/listTextRoute')
 // var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
-
+var contract = require('./vanthu/QuanLyCongVan/contractRoute')
+var history = require('./vanthu/QuanLyCongVan/historyUpdateRoute')
+var dataDelete = require('./vanthu/QuanLyCongVan/dataDidDeleteRoute')
 //Api thêm mới các loại đề xuất
 router.use('/vanthu/dexuat',adddeXuat);
 
@@ -40,11 +42,13 @@ router.use('/vanthu/trangchu',homeQLCV)
 
 router.use('/vanthu/listVanBan',listVanBan)
 
+router.use('/vanthu/contract',contract)
 
+router.use('/vanthu/history',history)
 
+router.use('/vanthu/dataDelete',dataDelete)
 
-
-
+router.use('/vanthu/trangchu',homeRoute)
 
 
 //Api tool quét data văn thư

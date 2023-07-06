@@ -31,8 +31,9 @@ exports.getListVanBan = async (req, res, next) => {
                 ]
             }
         }
-        if (dayStart) conditions.cv_date = { $gte: new Date(dayStart) }
-        if (dayEnd) conditions.cv_date = { $lte: new Date(dayEnd) }
+        if (dayStart) conditions.cv_date = { $gte: dayStart }
+        if (dayEnd) conditions.cv_date = { $lte: dayEnd }
+        if(dayStart && dayEnd) conditions.cv_date = { $gte: dayStart, $lte: dayEnd }
         if (book) conditions.cv_id_book = book
         conditions.cv_usc_id = comId;
         conditions.cv_type_xoa = 0;
@@ -65,7 +66,7 @@ exports.createIncomingText = async (req, res, next) => {
         let text_gui_vbden = req.body.text_gui_vbden;
         let user_gui_vbden = req.body.user_gui_vbden;
         let text_user_gui_vbden = req.body.text_user_gui_vbden;
-        let date_nhan = req.body.date_nhan;
+        let date_nhan = new Date(req.body.date_nhan);
         let use_nhan_vbden = Number(req.body.use_nhan_vbden);
         let use_luu_vbden = Number(req.body.use_luu_vbden);
         let book_vb = Number(req.body.book_vb);
@@ -73,7 +74,7 @@ exports.createIncomingText = async (req, res, next) => {
         let ghi_chu_vbden = req.body.ghi_chu_vbden;
         let file = req.files;
         let cv_file = [];
-        let cv_time_create = new Date();
+        let cv_time_create = new Date().getTime() / 1000;
         if (file && file.file && file.file.length > 0) {
             for (let i = 0; i < file.file.length; i++) {
                 let checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i])
@@ -99,6 +100,7 @@ exports.createIncomingText = async (req, res, next) => {
             || await !functions.checkNumber(book_vb)) {
             return functions.setError(res, 'invalid number', 400)
         }
+
         if (type_vbden.length !== 0) {
             type_vbden = type_vbden.join(" ")
         }
@@ -150,7 +152,7 @@ exports.updateIncomingText = async (req, res, next) => {
         let text_gui_vbden = req.body.text_gui_vbden;
         let user_gui_vbden = req.body.user_gui_vbden;
         let text_user_gui_vbden = req.body.text_user_gui_vbden;
-        let date_nhan = req.body.date_nhan;
+        let date_nhan = new Date(req.body.date_nhan);
         let use_nhan_vbden = Number(req.body.use_nhan_vbden);
         let use_luu_vbden = Number(req.body.use_luu_vbden);
         let book_vb = Number(req.body.book_vb);
@@ -202,7 +204,7 @@ exports.updateIncomingText = async (req, res, next) => {
         if (type_vbden && type_vbden.length !== 0) {
             type_vbden = type_vbden.join(" ")
         }
-        let cv_time_update = new Date();
+        let cv_time_update = new Date().getTime() / 1000;
         let type_edit = 0;
         let noi_dung = '';
         if (await functions.checkTime(date_nhan) === false || functions.checkDate(date_nhan) === false) {
@@ -211,20 +213,20 @@ exports.updateIncomingText = async (req, res, next) => {
 
         if (name_vbden && so_vbden && type_gui_vbden && text_gui_vbden
             && date_nhan && text_user_gui_vbden && use_luu_vbden && use_nhan_vbden && trich_yeu_vbden) {
-            if (name_vbden !== check.cv_name) noi_dung += 'Tên văn bản,'
-            if (type_vbden !== check.cv_kieu) noi_dung += 'Kiểu văn bản,'
-            if (so_vbden !== check.cv_so) noi_dung += 'Số văn bản,'
-            if (type_gui_vbden !== check.cv_type_soan) noi_dung += 'Chọn nơi gửi,'
-            if (noi_gui_vbden !== check.cv_phong_soan) noi_dung += 'Nơi gửi nội bộ,'
-            if (text_gui_vbden !== check.cv_soan_ngoai) noi_dung += 'Nơi gửi ngoài,'
-            if (user_gui_vbden !== check.cv_user_soan) noi_dung += 'Người gửi nội bộ,'
-            if (date_nhan !== check.cv_name_soan) noi_dung += 'Người gửi ngoài,'
-            if (name_vbden !== check.cv_date) noi_dung += 'Ngày nhận,'
-            if (use_nhan_vbden !== check.cv_nhan_noibo) noi_dung += 'Nơi nhận văn bản,'
-            if (use_luu_vbden !== check.cv_user_save) noi_dung += 'Người lưu trữ,'
-            if (trich_yeu_vbden !== check.cv_trich_yeu) noi_dung += 'Trích yếu,'
-            if (ghi_chu_vbden !== check.cv_ghi_chu) noi_dung += 'Ghi chú,'
-            if (book_vb !== check.cv_id_book) noi_dung += 'Sổ văn bản,'
+            if (name_vbden != check.cv_name) noi_dung += 'Tên văn bản,'
+            if (type_vbden != check.cv_kieu) noi_dung += 'Kiểu văn bản,'
+            if (so_vbden != check.cv_so) noi_dung += 'Số văn bản,'
+            if (type_gui_vbden != check.cv_type_soan) noi_dung += 'Chọn nơi gửi,'
+            if (noi_gui_vbden != check.cv_phong_soan) noi_dung += 'Nơi gửi nội bộ,'
+            if (text_gui_vbden != check.cv_soan_ngoai) noi_dung += 'Nơi gửi ngoài,'
+            if (user_gui_vbden != check.cv_user_soan) noi_dung += 'Người gửi nội bộ,'
+            if (text_user_gui_vbden != check.cv_name_soan) noi_dung += 'Người gửi ngoài,'
+            if (date_nhan != check.cv_date) noi_dung += 'Ngày nhận,'
+            if (use_nhan_vbden != check.cv_nhan_noibo) noi_dung += 'Nơi nhận văn bản,'
+            if (use_luu_vbden != check.cv_user_save) noi_dung += 'Người lưu trữ,'
+            if (trich_yeu_vbden != check.cv_trich_yeu) noi_dung += 'Trích yếu,'
+            if (ghi_chu_vbden != check.cv_ghi_chu) noi_dung += 'Ghi chú,'
+            if (book_vb != check.cv_id_book) noi_dung += 'Sổ văn bản,'
             if (file && file.file) noi_dung += 'File đính kèm,'
             let users = 0;
             if (noi_dung !== '') {
@@ -243,6 +245,7 @@ exports.updateIncomingText = async (req, res, next) => {
                     ed_cv_id: id,
                     ed_time: cv_time_update,
                     ed_type_user: type_user,
+                    ed_user: users,
                     ed_nd: noi_dung,
                     ed_usc_id: comId
                 })
@@ -285,12 +288,16 @@ exports.synthesisFunction = async (req, res, next) => {
         let id = Number(req.body.id);
         let action = req.body.action;
         let comId = Number(req.body.comId) || 1763;
-        let useId = Number(req.useId) || 8;
-        if (!id || !action) {
-            return functions.setError(res, 'missing data input', 400)
-        }
-        // Chức năng xoá văn bản 
-        if (action === 'deleteIncomingText' || action === 'deleteSendText') {
+        let useId = Number(req.useId) ;
+        
+        // Chức năng xoá  
+        if (action === 'delete') {
+            if (!id || !action) {
+                return functions.setError(res, 'missing data input', 400)
+            }
+            let checkExists = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId });
+            if (!checkExists) return functions.setError(res, 'not found', 404)
+
             let type_user_xoa = 0;
             let user_xoa = 0;
             if (useId == 0) {
@@ -301,16 +308,37 @@ exports.synthesisFunction = async (req, res, next) => {
                 type_user_xoa = 2;
                 user_xoa = useId;
             }
-            let checkExists = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId });
-            if (!checkExists) return functions.setError(res, 'not found incoming text', 404)
             await tbl_qly_congvan.findByIdAndUpdate(id, {
                 cv_type_kp: 0,
                 cv_type_xoa: 1,
                 cv_type_user_xoa: type_user_xoa,
                 cv_user_xoa: user_xoa,
-                cv_time_xoa: new Date()
+                cv_time_xoa: new Date().getTime() / 1000,
             })
             return functions.success(res, 'delete success')
+        } else if (action === 'activeContract') {
+            if (!id || !action) {
+                return functions.setError(res, 'missing data input', 400)
+            }
+            let checkExists = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId });
+            if (!checkExists) return functions.setError(res, 'not found', 404)
+            await tbl_qly_congvan.findByIdAndUpdate(id, {
+                cv_status_hd: 2
+            })
+            return functions.success(res, 'active contract success')
+        }else if(action === 'recovery')
+        {
+            let type_user_kp = 0;
+            let user_kp = 0; 
+            if (useId == 0){
+                type_user_kp = 1;
+                user_kp = useId;
+            }
+            else{
+                type_user_kp = 2;
+                user_kp = useId;
+            }
+            
         }
 
 
@@ -323,14 +351,13 @@ exports.synthesisFunction = async (req, res, next) => {
 // xem chi tiết (chung)
 exports.getDetail = async (req, res, next) => {
     try {
+        let data = [];
         let id = Number(req.body.id);
-        let model = req.body.model;
-        let comId = Number(req.body.comId) || 1763;
-        if (!id || !model) {
+        let comId = Number(req.body.comId) || 1764;
+        if (!id) {
             return functions.setError(res, 'missing data input', 400)
         }
-       
-        let data = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId, cv_type_xoa: 0 })
+        data = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId, cv_type_xoa: 0 })
         return functions.success(res, 'delete success', { data })
     } catch (error) {
         console.error(error)
@@ -376,7 +403,7 @@ exports.createSendText = async (req, res, next) => {
                 || await !functions.checkNumber(book_vb)) {
                 return functions.setError(res, 'invalid number', 400)
             }
-            if (await functions.checkTime(date_guidi) === false || functions.checkDate(date_guidi) === false) {
+            if (await functions.checkTime(new Date(date_guidi*1000)) === false || functions.checkDate(new Date(date_guidi*1000)) === false) {
                 return functions.setError(res, 'invalid date', 400)
             }
             if (file && file.file && file.file.length > 0) {
@@ -422,7 +449,7 @@ exports.createSendText = async (req, res, next) => {
                 cv_ghi_chu: ghi_chu_vbdi,
                 cv_type_loai: 2,
                 cv_usc_id: comId,
-                cv_time_created: new Date()
+                cv_time_created: new Date().getTime() / 1000
             })
         } else {
             return functions.setError(res, 'missing data', 400)
@@ -434,7 +461,7 @@ exports.createSendText = async (req, res, next) => {
     }
 };
 
-
+// sửa văn bản đi
 exports.updateSendText = async (req, res, next) => {
     try {
         let comId = req.comId || 1763;
@@ -460,7 +487,8 @@ exports.updateSendText = async (req, res, next) => {
         let useId = req.useId;
         let noidung = '';
         let type_edit = 0;
-        let cv_time_update = new Date();
+        let cv_time_update = new Date().getTime() / 1000;
+        if(!id) return functions.setError(res,'missing id',400)
         if (type_loai_vb && type_loai_vb.length !== 0) {
             type_loai_vb = type_loai_vb.join(" ")
         }
@@ -477,7 +505,7 @@ exports.updateSendText = async (req, res, next) => {
                 || await !functions.checkNumber(book_vb)) {
                 return functions.setError(res, 'invalid number', 400)
             }
-            if (await functions.checkTime(date_guidi) === false || functions.checkDate(date_guidi) === false) {
+            if (await functions.checkTime(new Date(date_guidi*1000)) === false || functions.checkDate(new Date(date_guidi*1000)) === false) {
                 return functions.setError(res, 'invalid date', 400)
             }
             let check = await tbl_qly_congvan.findById(id);
@@ -511,23 +539,23 @@ exports.updateSendText = async (req, res, next) => {
                 }
                 await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
             }
-            if (name_vbdi !== check.cv_name) noidung += 'Tên văn bản,';
-            if (type_loai_vb !== check.cv_kieu) noidung += 'Kiểu văn bản,';
-            if (so_vbdi !== check.cv_date) noidung += 'Số văn bản,';
-            if (dvst_vbdi !== check.cv_phong_soan) noidung += 'Đơn vị soạn thảo,';
-            if (nst_vbdi !== check.cv_user_soan) noidung += 'Người soạn thảo,';
-            if (date_guidi !== check.cv_date) noidung += 'Ngày gửi,';
-            if (use_luu_vbdi !== check.cv_user_save) noidung += 'Người lưu trữ,';
-            if (use_ky_vbdi !== check.cv_user_ky) noidung += 'Người ký,';
-            if (nhanvb_dep !== check.cv_type_nhan) noidung += 'Loại nơi nhận,';
-            if (nhan_noibo_vb_di !== check.cv_nhan_noibo) noidung += 'Nơi nhận nội bộ,';
-            if (nhan_ngoai_dep_vbdi !== check.cv_nhan_ngoai) noidung += 'Nơi nhận ngoài,';
-            if (nhanvb_use !== check.cv_type_chuyenden) noidung += 'Loại chuyển đến,';
-            if (nhan_use_vbdi !== check.cv_chuyen_noibo) noidung += 'Chuyển đến nội bộ,';
-            if (nhan_ngoai_user_vbdi !== check.cv_chuyen_ngoai) noidung += 'Chuyển đến ngoài,';
-            if (trich_yeu_vbdi !== check.cv_trich_yeu) noidung += 'Trích yếu,';
-            if (ghi_chu_vbdi !== check.cv_ghi_chu) noidung += 'Ghi chú,';
-            if (book_vb !== check.cv_id_book) noidung += 'Sổ văn bản,';
+            if (name_vbdi != check.cv_name) noidung += 'Tên văn bản,';
+            if (type_loai_vb != check.cv_kieu) noidung += 'Kiểu văn bản,';
+            if (so_vbdi != check.cv_so) noidung += 'Số văn bản,';
+            if (dvst_vbdi != check.cv_phong_soan) noidung += 'Đơn vị soạn thảo,';
+            if (nst_vbdi != check.cv_user_soan) noidung += 'Người soạn thảo,';
+            if (date_guidi != check.cv_date) noidung += 'Ngày gửi,';
+            if (use_luu_vbdi != check.cv_user_save) noidung += 'Người lưu trữ,';
+            if (use_ky_vbdi != check.cv_user_ky) noidung += 'Người ký,';
+            if (nhanvb_dep != check.cv_type_nhan) noidung += 'Loại nơi nhận,';
+            if (nhan_noibo_vb_di != check.cv_nhan_noibo) noidung += 'Nơi nhận nội bộ,';
+            if (nhan_ngoai_dep_vbdi != check.cv_nhan_ngoai) noidung += 'Nơi nhận ngoài,';
+            if (nhanvb_use != check.cv_type_chuyenden) noidung += 'Loại chuyển đến,';
+            if (nhan_use_vbdi != check.cv_chuyen_noibo) noidung += 'Chuyển đến nội bộ,';
+            if (nhan_ngoai_user_vbdi != check.cv_chuyen_ngoai) noidung += 'Chuyển đến ngoài,';
+            if (trich_yeu_vbdi != check.cv_trich_yeu) noidung += 'Trích yếu,';
+            if (ghi_chu_vbdi != check.cv_ghi_chu) noidung += 'Ghi chú,';
+            if (book_vb != check.cv_id_book) noidung += 'Sổ văn bản,';
             if (file && file.file) noidung += 'File đính kèm,'
 
             if (noidung !== '') {
@@ -546,7 +574,8 @@ exports.updateSendText = async (req, res, next) => {
                     ed_cv_id: id,
                     ed_time: cv_time_update,
                     ed_type_user: type_user,
-                    ed_nd: noidung,
+                    ed_user: users,
+                    ed_nd: noi_dung,
                     ed_usc_id: comId
                 })
             }

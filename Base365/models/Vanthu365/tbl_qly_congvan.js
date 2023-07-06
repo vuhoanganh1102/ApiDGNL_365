@@ -38,8 +38,8 @@ const tbl_qly_congvan = new mongoose.Schema({
         default: null
     },
     cv_time_created:{
-        type: Date,
-        default: new Date()
+        type: Number,
+        default: null
     },
     cv_name_soan: {
         type: String,
@@ -47,7 +47,7 @@ const tbl_qly_congvan = new mongoose.Schema({
         default: null
     },
     cv_date: {
-        type: Date,
+        type: Number,
         default: null
     },
     cv_user_save: {
@@ -107,7 +107,7 @@ const tbl_qly_congvan = new mongoose.Schema({
         default: null
     },
     cv_time_xoa: {
-        type: Date,
+        type: Number,
         default: null
     },
 
@@ -118,10 +118,10 @@ const tbl_qly_congvan = new mongoose.Schema({
         type: Number
     },
     cv_time_create: {
-        type: Date
+        type: Number
     },
     cv_time_update: {
-        type: Date
+        type: Number
     },
     cv_type_kp: {
         type: Number,
@@ -144,7 +144,7 @@ const tbl_qly_congvan = new mongoose.Schema({
         default: 0
     },
     cv_time_edit: {
-        type: Date,
+        type: Number,
         default: null
     },
     cv_type_hd: {
