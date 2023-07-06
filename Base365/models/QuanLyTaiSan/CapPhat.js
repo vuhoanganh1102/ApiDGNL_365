@@ -74,4 +74,4 @@ const model_CapPhat = new mongoose.Schema({
     collection:"QLTS_Cap_Phat",
     versionKey: false
 });
-module.exports = mongoose.model.model("QLTS_Cap_Phat",model_CapPhat);
+module.exports = mongoose.model("QLTS_Cap_Phat",model_CapPhat);

@@ -8,4 +8,27 @@ const toolQLTS =  require('../../controllers/tools/qlts');
 router.post('/bao_duong',toolQLTS.toolBaoDuong)
 
 
+
+
+
+
+
+
+
+
+
+
+
+//trung
+router.post('/ViTriTaiSan',toolQLTS.toolViTriTaiSan)
+router.post('/ThuHoiTaiSan',toolQLTS.toolThuHoiTaiSan)
+router.post('/ThongTinTuyChinh',toolQLTS.toolThongTinTuyChinh)
+router.post('/ThongBao',toolQLTS.toolThongBao)
+router.post('/TheoDoiCongSuat',toolQLTS.toolTheoDoiCongSuat)
+router.post('/ThanhLy',toolQLTS.toolThanhLy)
+router.post('/TaiSanDangSuDung',toolQLTS.toolTaiSanDangSuDung)
+router.post('/TaiSanDaiDienNhan',toolQLTS.toolTaiSanDaiDienNhan)
+router.post('/CapPhat',toolQLTS.toolCapPhat)
+
+
 module.exports = router

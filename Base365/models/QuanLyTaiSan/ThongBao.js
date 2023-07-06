@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const model_ThongBao = new mongoose.Schema({
-    id_tb: {
+    _id: {
         type: Number
     },
     id_ts: {
