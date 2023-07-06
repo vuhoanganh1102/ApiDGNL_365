@@ -2,29 +2,28 @@ var express = require('express');
 var router = express.Router();
 
 
-var Admin = require('./qlc/admin/Admin')
+var Admin = require('./qlc/admin/QLC_Admin')
 var companyRouterQLC = require('./qlc/Company')
 var EmployeeRouterQLC = require('./qlc/Employee')
-var individualRouterQLC = require('./qlc/individual')
-var deparmentRouter = require('./qlc/deparment')
-var teamRouter = require('./qlc/team');
-var groupRouter = require('./qlc/group');
+var individualRouterQLC = require('./qlc/Individual')
+var deparmentRouter = require('./qlc/Deparment')
+var teamRouter = require('./qlc/Team');
+var groupRouter = require('./qlc/Group');
 var shiftRouter = require('./qlc/shift');
 var calendarRouter = require('./qlc/calendar');
-var childCompanyRouter = require('./qlc/ChildCompany')
-var managerUser = require('./qlc/managerUser')
+var managerUser = require('./qlc/ManagerUser')
 var DelAppData = require('./qlc/DelAppData')
 var TrackingQR = require('./qlc/TrackingQR')
 var TrackingWifi = require('./qlc/TrackingWifi')
 var CheckVip = require('./qlc/CheckVip')
 var Feedback = require('./qlc/Feedback')
 var ReportError = require('./qlc/ReportError')
-var employeeRoutes = require('./qlc/employee.routes');
-var individualRoutes = require('./qlc/individual.routes');
+var employeeRoutes = require('./qlc/Employee');
+var individualRoutes = require('./qlc/Individual');
 var HisOfTrackingRouter = require("./qlc/HisTracking")
 var CalendarWorkEmployee = require("./qlc/CalendarWorkEmployee")
-var SetIpRouter = require("./qlc/settingIP")
-var homePage = require("./qlc/homePage")
+var SetIpRouter = require("./qlc/SettingIP")
+var homePage = require("./qlc/HomePageChamCong")
 
 
 
@@ -37,7 +36,6 @@ router.use('/team', teamRouter);
 router.use('/group', groupRouter);
 router.use('/shift', shiftRouter);
 router.use('/calendar', calendarRouter);
-router.use('/childCompany', childCompanyRouter);
 router.use('/managerUser', managerUser);
 router.use('/delAppData', DelAppData);
 router.use('/trackingQR', TrackingQR);

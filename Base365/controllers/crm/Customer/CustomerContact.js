@@ -153,15 +153,20 @@ exports.editContact = async(req,res)=>{
 
 //xoa lien he KH
 exports.deleteContact = async (req,res) =>{
-    const {contact_id , id_customer} = req.body;
+    try{
+        const {contact_id , id_customer} = req.body;
     const data = await contact.findOne({contact_id:contact_id,id_customer:id_customer})
     if(!data){
         functions.setError(res," lien he k ton tai ")
     }else{
        const result = await contact.findOneAndUpdate({contact_id:contact_id,id_customer:id_customer},{$set : {is_delete : 1}})
         functions.success(res," xoa thanh cong ", {result})
-       }
+       } 
+    }catch (error) {
+        console.error('Failed to delete ', error);
+        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
     }
+}
 
 exports.getContact = async (req, res) =>{
     try{
@@ -177,66 +182,9 @@ exports.getContact = async (req, res) =>{
             };
             return functions.setError(res, 'Không có dữ liệu', 404);
         }
-    }catch(err){
-        functions.setError(res, err.message)
+    }catch (error) {
+        console.error('Failed to show ', error);
+        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
     }
 }
 
-//hiển thị line
-exports.showCustomerCare = async(req, res) => {
-    try {
-        let { com_id, emp_id, page } = req.body;
-        const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
-        const startIndex = (page - 1) * perPage;
-        
-        const checkline = await ManagerExtension.find({ company_id: com_id });
-        console.log(checkline);
-        
-        const extNumbers = checkline.map(item => item.ext_number);
-        
-        const checkHistory = await Callhistory.find({ extension: { $in: extNumbers } })
-            .skip(startIndex)
-            .limit(perPage);
-        
-        res.status(200).json(checkline);
-    } catch (err) {
-        console.log(err);
-        functions.setError(res, err.message);
-    }
-}
-
-//Chỉnh sửa bàn giao line
-
-exports.showBangiaoLine = async (req,res) => {
-    try{
-       let {id,empId,com_id} = req.body
-       
-       const checkLine = await ManagerExtension.findOne({id : id })
-       if(checkLine) {
-        await customerService.getDatafindOneAndUpdate(ManagerExtension,{id : id},{
-            id : id,
-            company_id : com_id,
-            appID : appID,
-            ext_id : ext_id,
-            ext_number : ext_number,
-            ext_password : ext_password,
-            emp_id : empId,
-            created_at : created_at,
-            updated_at :new Date(),
-        })
-        customerService.success(res, "Api edited successfully");
-       }
-    }catch (err) {
-        console.log(err);
-        functions.setError(res, err.message);
-    }
-}
-//afffajdutl
-exports.Call =async(req,res) => {
-    try{
-
-    }catch (err) {
-        console.log(err);
-        functions.setError(res, err.message);
-    }
-}

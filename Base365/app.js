@@ -11,6 +11,7 @@ var appVanthu = express();
 var appCRM = express();
 var appQLC = express();
 var appHR = express();
+var appQLTS = express();
 
 function configureApp(app) {
     app.set('views', path.join(__dirname, 'views'));
@@ -90,6 +91,12 @@ var hrRouter = require('./routes/hr');
 appHR.use("/api/hr", hrRouter);
 errorApp(appHR)
 
+// Cấu hình appQLTS
+configureApp(appQLTS);
+var qltsRouter = require('./routes/qlts/qltsRouter');
+appQLTS.use("/api", qltsRouter);
+errorApp(appHR)
+
 // timviec365 -> api-base365
 const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
 mongoose.connect(DB_URL)
@@ -149,4 +156,13 @@ var serverHR = appHR.listen(3007, () => {
 
 serverHR.on('error', (error) => {
     console.error('Error occurred while listening on HR port:', error);
+});
+
+//qlts
+var serverQLTS = appQLTS.listen(3008, () => {
+    console.log(`qlts app is running on port 3008`);
+});
+
+serverQLTS.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
 });

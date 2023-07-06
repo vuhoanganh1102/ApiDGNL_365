@@ -10,11 +10,11 @@ var EditDX = require('./vanthu/deXuat/edit_deXuat')
 var TKNP = require('./vanthu/deXuat/thong_ke_nghi_phep')
 var EditDXSend = require('./vanthu/deXuat/User_Dx')
 var homeQLCV = require('./vanthu/QuanLyCongVan/homeRoute')
-var vanBanDi = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
-var home = require('./vanthu/GuiNhanCongVan/homeRoute')
+// var vanBanDi = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
+// var home = require('./vanthu/GuiNhanCongVan/homeRoute')
 var homeRoute = require('./vanthu/QuanLyCongVan/homeRoute')
 var listVanBan = require('./vanthu/QuanLyCongVan/listTextRoute')
-var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
+// var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
 var contract = require('./vanthu/QuanLyCongVan/contractRoute')
 var history = require('./vanthu/QuanLyCongVan/historyUpdateRoute')
 var dataDelete = require('./vanthu/QuanLyCongVan/dataDidDeleteRoute')
@@ -46,7 +46,7 @@ router.use('/vanthu/history',history)
 
 router.use('/vanthu/dataDelete',dataDelete)
 
-
+router.use('/vanthu/trangchu',homeRoute)
 
 
 //Api tool quét data văn thư
@@ -54,7 +54,7 @@ router.use('/tooldata',toolVT)
 
 //----------------------------------------------------------Gui Nhan Cong Van------------------------------------
 //--Van Ban Di
-router.use('/vanthu/guiNhanCongVan/vanBanDi', vanBanDi);
-router.use('/vanthu/guiNhanCongVan/home', home);
+// router.use('/vanthu/guiNhanCongVan/vanBanDi', vanBanDi);
+// router.use('/vanthu/guiNhanCongVan/home', home);
 
 module.exports = router

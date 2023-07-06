@@ -1,5 +1,5 @@
 const fnc = require("../../services/functions")
-const settingIP = require("../../models/qlc/settingIP")
+const settingIP = require("../../models/qlc/SettingIP")
 const Deparment = require("../../models/qlc/Deparment")
 const Group = require("../../models/qlc/Group")
 const CheckDevice = require("../../models/qlc/CheckDevice")

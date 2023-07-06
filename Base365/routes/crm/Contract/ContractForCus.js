@@ -2,13 +2,16 @@ const router = require("express").Router()
 const controller = require("../../../controllers/crm/Contract/ContractForCus")
 const formData = require("express-form-data")
 
-// const functions= require ("../../services/functions")
+const functions= require ("../../../services/functions")
 
 
+// Api show hợp đòng
+router.post("/list",functions.checkToken,formData.parse(), controller.showContract)
 
-router.post("/",formData.parse(), controller.showContract)
 
-router.post("/add",formData.parse(), controller.showDetailContract)
+// Api show chi tiết hợp đồng
+router.post("/listdetails",functions.checkToken,formData.parse(), controller.showDetailContract)
 
-router.post("/delete",formData.parse(), controller.deleteContract)
+// Api xóa hợp đồng
+router.post("/delete",functions.checkToken,formData.parse(), controller.deleteContract)
 module.exports = router
