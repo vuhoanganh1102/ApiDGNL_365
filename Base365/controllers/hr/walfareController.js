@@ -78,7 +78,6 @@ exports.addAchievement = async (req, res, next) => {
 exports.addAchievementGroup = async (req, res, next) => {
     try {
         let comId = Number(req.infoLogin.comId);
-        console.log("🚀 ~ file: walfareController.js:78 ~ exports.addAchievementGroup= ~ comId:", comId)
         let achievementId = req.body.achievement_id;
         let content = req.body.content;
         let type = 2;
