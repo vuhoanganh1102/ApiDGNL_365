@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const model_ThuHoi = new mongoose.Schema({
-    thuhoi_id: {
+    _id: {
         type: Number
     },
     thuhoi_ng_tao: {
@@ -10,7 +10,7 @@ const model_ThuHoi = new mongoose.Schema({
         type: Number
     },
     thuhoi_taisan: {
-        type: Number
+        type: String
     },
     id_cty: {
         type: Number
@@ -40,7 +40,7 @@ const model_ThuHoi = new mongoose.Schema({
         type : Number
     },
     thuhoi__lydo : {
-        type : Number
+        type : String
     },
     loai_thuhoi : {
         type : Number
@@ -61,13 +61,13 @@ const model_ThuHoi = new mongoose.Schema({
         type : Number
     },
     th_ly_do_tu_choi_ban_giao : {
-        type : Number
+        type : String
     },
     th_ly_do_tu_choi_nhan : {
-        type : Number
+        type : String
     },
     th_ly_do_tu_choi_thuhoi : {
-        type : Number
+        type : String
     }
 },
     {
