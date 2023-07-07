@@ -280,6 +280,7 @@ exports.postNewsGeneral = async (req, res, next) => {
             let fieldsinfoSell = {
                 groupType: req.body.groupType,
                 classify: req.body.classify,
+                loai:req.body.loai,
                 numberWarehouses: req.body.numberWarehouses,
                 promotionType: req.body.promotionType,
                 promotionValue: req.body.promotionValue,
