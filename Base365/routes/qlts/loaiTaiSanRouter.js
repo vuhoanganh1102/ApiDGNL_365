@@ -11,4 +11,6 @@ router.post('/add',formData.parse(),controllerLoaiTs.addLoaiTaiSan)
 router.post('/list',formData.parse(),controllerLoaiTs.showLoaiTs)
 
 
+
+
 module.exports = router

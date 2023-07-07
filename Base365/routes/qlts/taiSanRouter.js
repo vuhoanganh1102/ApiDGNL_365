@@ -10,4 +10,7 @@ router.post('/add',formData.parse(),controllerTs.addTaiSan)
 //Api hiển thị dữ liệu thêm mới
 router.post('/showadd',formData.parse(),controllerTs.showadd)
 
+//Api hiển thị chi tiết tài sản
+router.post('/details',formData.parse(),controllerTs.showCTts)
+
 module.exports = router
