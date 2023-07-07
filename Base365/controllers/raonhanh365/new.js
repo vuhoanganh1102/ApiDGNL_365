@@ -36,7 +36,7 @@ exports.postNewMain = async (req, res, next) => {
         let email = request.email;
         let address = request.address;
         let phone = request.phone;
-        let status = 0;
+        let status = request.status;
         let detailCategory = request.detailCategory;
         let productType = request.productType;
         let productGroup = request.productGroup;
@@ -46,6 +46,8 @@ exports.postNewMain = async (req, res, next) => {
         let hashtag = request.hashtag;
         let quantityMin = request.quantityMin;
         let quantityMax = request.quantityMax;
+        let han_su_dung = request.han_su_dung;
+        let the_tich = request.the_tich;
         let fields = [
             userID,
             cateID,
@@ -126,7 +128,8 @@ exports.postNewMain = async (req, res, next) => {
             quantityMax: quantityMax,
             buySell: 2,
             active: 1,
-
+            han_su_dung: han_su_dung,
+            the_tich: the_tich,
         };
 
         return next();
@@ -233,7 +236,6 @@ exports.postNewsGeneral = async (req, res, next) => {
             let fieldsbeautifull = {
                 loai_hinh_sp: req.body.loai_hinh_sp,
                 loai_sanpham: req.body.loai_sanpham,
-                han_su_dung: req.body.han_su_dung,
                 hang_vattu: req.body.hang_vattu,
 
             };
@@ -278,6 +280,7 @@ exports.postNewsGeneral = async (req, res, next) => {
             let fieldsinfoSell = {
                 groupType: req.body.groupType,
                 classify: req.body.classify,
+                loai: req.body.loai,
                 numberWarehouses: req.body.numberWarehouses,
                 promotionType: req.body.promotionType,
                 promotionValue: req.body.promotionValue,
@@ -785,11 +788,10 @@ exports.deleteNews = async (req, res) => {
 exports.getNew = async (req, res, next) => {
     try {
         let userIdRaoNhanh = null;
-        let user = await functions.getTokenUser(req, res, next);
-        if(user){
-            userIdRaoNhanh =  user.idRaoNhanh365;
-        }
-        console.log("🚀 ~ file: new.js:789 ~ exports.getNew= ~ userIdRaoNhanh:", userIdRaoNhanh)
+        // let user = await functions.getTokenUser(req, res, next);
+        // if(user){
+        //     userIdRaoNhanh =  user.idRaoNhanh365;
+        // }
         let searchItem = {
             _id: 1,
             title: 1,
@@ -823,17 +825,19 @@ exports.getNew = async (req, res, next) => {
             {
                 $limit: 50,
             },
-            {
-                $lookup: {
-                    from: "Users",
-                    as: "user",
-                    localField: "userID",
-                    foreignField: "idRaoNhanh365",
-                },
-            },
+            // {
+            //     $lookup: {
+            //         from: "Users",
+            //         let:{idRaoNhanh365}
+            //         foreignField: "idRaoNhanh365",
+            //         as: "user",
+            //     },
+            // },
+
             {
                 $project: searchItem,
             },
+
         ]);
         if (userIdRaoNhanh) {
             let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
@@ -847,10 +851,7 @@ exports.getNew = async (req, res, next) => {
         }
         return functions.success(res, "get data success", { data });
     } catch (error) {
-        console.log(
-            "🚀 ~ file: new.js:601 ~ exports.getNewBeforeLogin= ~ error:",
-            error
-        );
+        console.error(error);
         return functions.setError(res, error);
     }
 };
@@ -1789,7 +1790,6 @@ exports.getDetailNew = async (req, res, next) => {
             return functions.setError(res, "missing data", 400);
         }
         let id = linkTitle.split("-").reverse()[0];
-
         let buy = id.match(/[a-zA-Z]+/g)[0];
         let id_new = Number(id.replace(buy, ''));
         let danh_muc1 = null;
@@ -1945,12 +1945,11 @@ exports.getDetailNew = async (req, res, next) => {
             }
         ]);
         let thongTinSao = {};
-
-        thongTinSao.cousao = cousao;
-        thongTinSao.sumsao = sumsao[0].count;
+        if (sumsao && sumsao.length !== 0) {  
+            thongTinSao.cousao = cousao;
+            thongTinSao.sumsao = sumsao[0].count;
+        }
         data[0].thongTinSao = thongTinSao
-        data[0].thongTinChiTiet = thongTinChiTiet;
-
         data[0].danhmuc = { danh_muc1, danh_muc2, danh_muc3 };
         tintuongtu = await New.find({ cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } }, {
             _id: 1,

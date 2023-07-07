@@ -422,7 +422,7 @@ exports.toolDeXuatXuLy = async (req, res, next) => {
                     let post = await fnc.getDatafindOne(DeXuatXuLy, {id_dx: data[i].new_id})
                     if (post == null) {
                         let newDXXL = new DeXuatXuLy({
-                            id_dx: data[i].id_dx,
+                            _id: data[i].id_dx,
                             id_vb: data[i].id_vb,
                             user_xu_ly: data[i].user_xu_ly,
                             y_kien_xu_ly: data[i].y_kien_xu_ly,
@@ -882,19 +882,27 @@ exports.tool_qlcv_congVan = async (req, res, next) => {
             let listData = data.data.items;
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
+                    let cv_file = [];
+                    if(listData[i].cv_file){
+                        let file = listData[i].cv_file.split(',')
+                        for(let j = 0; j < file.length; j++) {
+                            cv_file.push({file:file[j]});
+                        }
+                    }
+                   
                     const qlCongVan = new congVan({
                         _id: listData[i].cv_id,
                         cv_id_vb: listData[i].cv_id_vb,
                         cv_id_book: listData[i].cv_id_book,
                         cv_name: listData[i].cv_name,
-                        cv_kieu: listData[i].cv_kieu.trim(),
+                        cv_kieu: listData[i].cv_kieu,
                         cv_so: listData[i].cv_so,
                         cv_type_soan: listData[i].cv_type_soan,
                         cv_soan_ngoai: listData[i].cv_soan_ngoai,
                         cv_phong_soan: listData[i].cv_phong_soan,
                         cv_user_soan: listData[i].cv_user_soan,
                         cv_name_soan: listData[i].cv_name_soan,
-                        cv_date: new Date (listData[i].cv_date * 1000),
+                        cv_date:listData[i].cv_date,
                         cv_user_save: listData[i].cv_user_save,
                         cv_user_ky: listData[i].cv_user_ky,
                         cv_type_nhan: listData[i].cv_type_nhan,
@@ -905,14 +913,14 @@ exports.tool_qlcv_congVan = async (req, res, next) => {
                         cv_chuyen_ngoai: listData[i].cv_chuyen_ngoai,
                         cv_trich_yeu: listData[i].cv_trich_yeu,
                         cv_ghi_chu: listData[i].cv_ghi_chu,
-                        cv_file: listData[i].cv_file,
+                        cv_file: cv_file,
                         cv_type_xoa: listData[i].cv_type_xoa,
                         cv_type_user_xoa: listData[i].cv_type_user_xoa,
                         cv_user_xoa: listData[i].cv_user_xoa,
                         cv_time_xoa: listData[i].cv_time_xoa,
                         cv_type_loai: listData[i].cv_type_loai,
                         cv_usc_id: listData[i].cv_usc_id,
-                        cv_time_created:  new Date (listData[i].cv_time_created * 1000),
+                        cv_time_created: listData[i].cv_time_created,
                         cv_time: listData[i].cv_time,
                         cv_type_kp: listData[i].cv_type_kp,
                         cv_type_user_kp: listData[i].cv_type_user_kp,
@@ -1185,10 +1193,19 @@ exports.tool_VanBan = async (req, res, next) => {
 
                     // console.log(typeof (listData[i].thoi_gian_duyet));
                     // let thoiGianDuyet = null;
-                    if (listData[i].id == 49) {
-                        console.log((listData[i].thoi_gian_duyet));
-
-                    };
+                    
+                    // let arrLinkFile = [];
+                    // let arr;
+                    // if(listData[i].file_vb){
+                    //     arr = listData[i].file_vb.split(',');
+                    //     for(let i=0; i<arr.length; i++){
+                    //         arrLinkFile.push({file: arr[i]})
+                    //     }
+                    // }
+                    // if (listData[i].id == 49) {
+                    //     console.log((listData[i].thoi_gian_duyet));
+                    // };
+                    
 
                     const vanBan = new VanBan({
                         _id: listData[i].id,
@@ -1197,8 +1214,8 @@ exports.tool_VanBan = async (req, res, next) => {
                         so_vb: listData[i].so_vb,
                         nd_vb: listData[i].nd_vb,
                         book_vb: listData[i].book_vb,
-                        time_ban_hanh: (listData[i].time_ban_hanh * 1000) > 0 ? listData[i].thoi_gian_duyet * 1000 : null,
-                        time_hieu_luc: (listData[i].time_hieu_luc * 1000) > 0 ? listData[i].thoi_gian_duyet * 1000 : null,
+                        time_ban_hanh: listData[i].time_ban_hanh,
+                        time_hieu_luc: listData[i].time_hieu_luc,
                         nhom_vb: listData[i].nhom_vb,
                         user_send: listData[i].user_send,
                         name_user_send: listData[i].name_user_send,
@@ -1214,7 +1231,7 @@ exports.tool_VanBan = async (req, res, next) => {
                         trang_thai_vb: listData[i].trang_thai_vb,
                         duyet_vb: listData[i].duyet_vb,
                         type_xet_duyet: listData[i].type_xet_duyet,
-                        thoi_gian_duyet: (listData[i].thoi_gian_duyet * 1000) > 0 ? listData[i].thoi_gian_duyet * 1000 : null,
+                        thoi_gian_duyet: listData[i].thoi_gian_duyet,
                         nguoi_xet_duyet: listData[i].nguoi_xet_duyet,
                         nguoi_theo_doi: listData[i].nguoi_theo_doi,
                         nguoi_ky: listData[i].nguoi_ky,
@@ -1228,7 +1245,7 @@ exports.tool_VanBan = async (req, res, next) => {
                         type_duyet_chuyen_tiep: listData[i].type_duyet_chuyen_tiep,
                         type_nhan_chuyen_tiep: listData[i].type_nhan_chuyen_tiep,
                         type_thay_the: listData[i].type_thay_the,
-                        created_date: new Date(listData[i].created_date * 1000),
+                        created_date: listData[i].created_date,
                         type_duyet: listData[i].type_duyet,
                         update_time: listData[i].update_time,
                     });

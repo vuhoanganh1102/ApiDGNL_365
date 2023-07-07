@@ -2,9 +2,10 @@ const router = require('express').Router();
 const functions = require('../../../services/functions')
 const listVanBanController = require('../../../controllers/vanthu/QuanLyCongVan/listTextController')
 var formData = require('express-form-data');
+const permissions = require('../../../controllers/vanthu/QuanLyCongVan/settingController.js')
 
 // lấy danh sách văn bản đến
-router.post('/getListVanBan',functions.checkToken,formData.parse(),listVanBanController.getListVanBan)
+router.post('/getListVanBan',functions.checkToken,permissions.checkPermission('list_vb',3),formData.parse(),listVanBanController.getListVanBan)
 
 // thêm văn bản đến
 router.post('/createIncomingText',functions.checkToken,formData.parse(),listVanBanController.createIncomingText)

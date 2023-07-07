@@ -24,7 +24,6 @@ const textBook = new mongoose.Schema({
         type: Number
     }
 
-
 });
 
 module.exports = mongoose.model('Vanthu_text_book', textBook);

@@ -49,7 +49,9 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-
+    chat_lieu:{
+        type:String
+    },
     image: {
         // ảnh bài viết
         type: String,
@@ -134,6 +136,10 @@ const newSchema = new mongoose.Schema({
         // tình trạng  0 đã tìm ứng viên, 1 tìm ứng viên
         type: Number,
         default: 0
+    },
+    the_tich:{
+          type: Number,
+          default: 0
     },
     warranty: {
         // bảo hành
