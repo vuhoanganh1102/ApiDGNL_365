@@ -10,7 +10,7 @@ const TagsSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
-    parentId: {
+    parent: {
         //thich/tym/haha/phan no
         type: Number,
         default: 0,

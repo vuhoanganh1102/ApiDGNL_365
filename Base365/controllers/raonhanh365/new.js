@@ -128,8 +128,8 @@ exports.postNewMain = async (req, res, next) => {
             quantityMax: quantityMax,
             buySell: 2,
             active: 1,
-            han_su_dung:han_su_dung,
-            the_tich:the_tich,
+            han_su_dung: han_su_dung,
+            the_tich: the_tich,
         };
 
         return next();
@@ -280,6 +280,7 @@ exports.postNewsGeneral = async (req, res, next) => {
             let fieldsinfoSell = {
                 groupType: req.body.groupType,
                 classify: req.body.classify,
+                loai: req.body.loai,
                 numberWarehouses: req.body.numberWarehouses,
                 promotionType: req.body.promotionType,
                 promotionValue: req.body.promotionValue,
@@ -817,7 +818,7 @@ exports.getNew = async (req, res, next) => {
         let data = await New.aggregate([
             {
                 $match: { buySell: 2, sold: 0, active: 1 },
-            }, 
+            },
             {
                 $sort: { pinHome: -1, createTime: -1, order: -1 },
             },
@@ -1789,7 +1790,6 @@ exports.getDetailNew = async (req, res, next) => {
             return functions.setError(res, "missing data", 400);
         }
         let id = linkTitle.split("-").reverse()[0];
-
         let buy = id.match(/[a-zA-Z]+/g)[0];
         let id_new = Number(id.replace(buy, ''));
         let danh_muc1 = null;
@@ -1945,12 +1945,11 @@ exports.getDetailNew = async (req, res, next) => {
             }
         ]);
         let thongTinSao = {};
-
-        thongTinSao.cousao = cousao;
-        thongTinSao.sumsao = sumsao[0].count;
+        if (sumsao && sumsao.length !== 0) {  
+            thongTinSao.cousao = cousao;
+            thongTinSao.sumsao = sumsao[0].count;
+        }
         data[0].thongTinSao = thongTinSao
-        data[0].thongTinChiTiet = thongTinChiTiet;
-
         data[0].danhmuc = { danh_muc1, danh_muc2, danh_muc3 };
         tintuongtu = await New.find({ cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } }, {
             _id: 1,
