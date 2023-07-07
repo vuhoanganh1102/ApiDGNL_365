@@ -691,10 +691,10 @@ exports.checkQuyenBanHanh = async(req, res, next) => {
 exports.getUserByEmail = async(req, res, next) => {
   try{
     let {type, email} = req.body;
-    if(!type) {
-      return functions.setError(res, "Missing input type!", 404);
+    if(!type || !email) {
+      return functions.setError(res, "Missing input type or email!", 404);
     }
-    let user = Users.findOne({email: email, type: type}, {_id: 1, idQLC: 1, userName: 1, email: 1});
+    let user = await Users.findOne({email: email, type: type}, {_id: 1, idQLC: 1, userName: 1, email: 1});
     if(!user) {
       return functions.setError(res, "User khong ton tai!", 405);
     }
