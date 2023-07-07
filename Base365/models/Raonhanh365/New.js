@@ -49,7 +49,9 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-
+    chat_lieu:{
+        type:String
+    },
     image: {
         // ảnh bài viết
         type: String,
