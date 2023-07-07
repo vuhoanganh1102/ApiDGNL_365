@@ -202,35 +202,33 @@ exports.replaceTitle = (title) => {
     return title.replace(/[^a-zA-Z0-9]/g, '-');
 };
 
-exports.uploadfile = async(folder, file_img) => {
+exports.uploadfile = async(folder, file_img,time) => {
     let filename='';
-    const time_created = Date.now();
-    const date = new Date(time_created);
+    const date = new Date(time);
     const year = date.getFullYear();
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
+    const timestamp = Math.round(date.getTime()/1000);
 
-    const dir = `../storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
+    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
 
-    filename = `${file_img.originalFilename}`;
+    filename = `${timestamp}-${file_img.originalFilename}`.replace(/,/g, '');
     const filePath = dir + filename;
+    filename = filename + ',';
     fs.readFile(file_img.path, (err, data) => {
         if (err) {
             console.log(err)
-            return false
         }
         fs.writeFile(filePath, data, (err) => {
             if (err) {
                 console.log(err)
-                return false
             }
         });
     });
-    let link = process.env.DOMAIN_VAN_THU + `/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/${file_img.originalFilename}`;
-    return link;
+    return filename;
 }
 exports.deleteFile = (file) => {
     let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`,'');

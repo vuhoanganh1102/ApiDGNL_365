@@ -56,7 +56,7 @@ exports.getListVanBan = async (req, res, next) => {
 // tạo mới văn bản đến
 exports.createIncomingText = async (req, res, next) => {
     try {
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let name_vbden = req.body.name_vbden;
         let type_vbden = req.body.type_vbden;
         let so_vbden = req.body.so_vbden;
@@ -73,18 +73,17 @@ exports.createIncomingText = async (req, res, next) => {
         let ghi_chu_vbden = req.body.ghi_chu_vbden;
         let file = req.files;
         let cv_file = [];
-        let cv_time_create = new Date().getTime() / 1000;
+        let cv_time_create = new Date();
         if (file && file.file && file.file.length > 0) {
             for (let i = 0; i < file.file.length; i++) {
-                let checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i])
-
+                let checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i],cv_time_create)
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload failed', 400)
                 }
                 cv_file.push({ file: checkUpload })
             }
         } else if (file && file.file) {
-            let checkUpload = await vanthu.uploadfile('file_van_ban', file.file)
+            let checkUpload = await vanthu.uploadfile('file_van_ban', file.file,cv_time_create)
             if (checkUpload === false) {
                 return functions.setError(res, 'upload failed', 400)
             }
