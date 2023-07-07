@@ -10,8 +10,10 @@ var EditDX = require('./vanthu/deXuat/edit_deXuat')
 var TKNP = require('./vanthu/deXuat/thong_ke_nghi_phep')
 var EditDXSend = require('./vanthu/deXuat/User_Dx')
 var homeQLCV = require('./vanthu/QuanLyCongVan/homeRoute')
-// var vanBanDi = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
-// var home = require('./vanthu/GuiNhanCongVan/homeRoute')
+var home = require('./vanthu/GuiNhanCongVan/homeRoute')
+var vanBanDi = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
+var vanBanDen = require('./vanthu/GuiNhanCongVan/vanBanDenRoute')
+var setting = require('./vanthu/GuiNhanCongVan/settingRoute')
 var homeRoute = require('./vanthu/QuanLyCongVan/homeRoute')
 var listVanBan = require('./vanthu/QuanLyCongVan/listTextRoute')
 // var guiNhanCongVan = require('./vanthu/GuiNhanCongVan/vanBanDiRoute')
@@ -54,7 +56,9 @@ router.use('/tooldata',toolVT)
 
 //----------------------------------------------------------Gui Nhan Cong Van------------------------------------
 //--Van Ban Di
-// router.use('/vanthu/guiNhanCongVan/vanBanDi', vanBanDi);
-// router.use('/vanthu/guiNhanCongVan/home', home);
+router.use('/vanthu/guiNhanCongVan/home', home);
+router.use('/vanthu/guiNhanCongVan/vanBanDi', vanBanDi);
+router.use('/vanthu/guiNhanCongVan/vanBanDen', vanBanDen);
+router.use('/vanthu/guiNhanCongVan/setting', setting);
 
 module.exports = router
