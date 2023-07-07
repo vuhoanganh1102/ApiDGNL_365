@@ -64,10 +64,10 @@ const model_Tai_San = new mongoose.Schema({
         type : Number
     },
     don_vi_tinh : {
-        type : Number
+        type : String
     },
     ghi_chu : {
-        type : Number
+        type : String
     }
 },
     {
