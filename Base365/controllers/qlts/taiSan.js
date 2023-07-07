@@ -104,7 +104,7 @@ exports.showCTts = async (req, res) => {
         com_id = req.user.data.inForPerson.employee.com_id;
       } else {
         return functions.setError(res, 'không có quyền truy cập', 400);
-      }
+      }//ll
   
       let checkts = await TaiSan.findOne({ ts_id: ts_id });
       if (!checkts) {
