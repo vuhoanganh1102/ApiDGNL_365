@@ -25,49 +25,49 @@ const model_Tai_San = new mongoose.Schema({
         type: Number
     },
     ts_so_luong: {
-        tpye: String
+        type: String
     },
     soluong_cp_bb: {
         type: Number
     },
-    ts_gia_tri : {
-        type : Number
+    ts_gia_tri: {
+        type: Number
     },
-    ts_don_vi : {
-        type : String
+    ts_don_vi: {
+        type: String
     },
-    ts_vi_tri : {
-        type : String
+    ts_vi_tri: {
+        type: String
     },
-    ts_trangthai : {
-        type : Number
+    ts_trangthai: {
+        type: Number
     },
-    ts_date_sd : {
-        type : Number
+    ts_date_sd: {
+        type: Number
     },
-    ts_type_quyen : {
-        type : String
+    ts_type_quyen: {
+        type: String
     },
-    ts_type_quyen_xoa : {
-        type : Number
+    ts_type_quyen_xoa: {
+        type: Number
     },
-    ts_id_ng_xoa : {
-        type : String
+    ts_id_ng_xoa: {
+        type: String
     },
-    ts_da_xoa : {
-        type : Number
+    ts_da_xoa: {
+        type: Number
     },
-    ts_date_create : {
-        type : String
+    ts_date_create: {
+        type: String
     },
-    ts_date_delete : {
-        type : Number
+    ts_date_delete: {
+        type: Number
     },
-    don_vi_tinh : {
-        type : Number
+    don_vi_tinh: {
+        type: String
     },
-    ghi_chu : {
-        type : Number
+    ghi_chu: {
+        type: String
     }
 },
     {

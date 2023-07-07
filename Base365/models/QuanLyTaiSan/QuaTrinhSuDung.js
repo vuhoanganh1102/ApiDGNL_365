@@ -25,19 +25,19 @@ const model_QuaTrinhSuDung = new mongoose.Schema({
         type: String
     },
     qt_ngay_thuchien: {
-        tpye: String
+        type: String
     },
     qt_nghiep_vu: {
         type: String
     },
-    vitri_ts : {
-        type : String
+    vitri_ts: {
+        type: String
     },
-    ghi_chu : {
-        type : String
+    ghi_chu: {
+        type: String
     },
-    time_created : {
-        typoe : Number
+    time_created: {
+        type: Number
     }
 },
     {
