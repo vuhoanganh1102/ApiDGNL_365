@@ -4,12 +4,13 @@ const functions = require("../../../services/functions");
 exports.getTotalVanBan = async(req, res, next) => {
   try{
     let id = req.id || 145;
-    let vanbanden = await VanBan.countDocuments({user_nhan: id});
+    console.log(req.comId);
+    let vanbanden = await VanBan.countDocuments({user_nhan: new RegExp(id)});
     let vanbandi = await VanBan.countDocuments({user_send: id});
     // let tong_so_vb = await VanBan.countDocuments({$or: [{user_nhan: id}, {user_send: id}]});
     let tong_so_vb = vanbanden + vanbandi;
     let vanbanchoduyet = await VanBan.countDocuments({user_send: id, trang_thai_vb: 0});
-    let vanbancanduyet = await VanBan.countDocuments({user_nhan: id, trang_thai_vb: 0});
+    let vanbancanduyet = await VanBan.countDocuments({user_nhan: new RegExp(id), trang_thai_vb: 0});
     let ht_vbdi = Math.round(((vanbandi-vanbanchoduyet)/vanbandi)*100);
     let ht_vbden = Math.round(((vanbanden-vanbancanduyet)/vanbanden)*100);
     let condition = new RegExp(id);

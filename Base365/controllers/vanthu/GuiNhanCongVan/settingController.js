@@ -9,7 +9,7 @@ exports.thietLapQuyen = async(req, res, next) => {
     if(req.type !=1) {
       return functions.setError(res, "Tai khoan nhan vien khong co quyen cap quyen!", 408);
     }
-    let id = req.comId || 145;
+    let id = req.comId;
     let {type_cong_ty, type_ngoai, duyet_pb, duyet_tung_pb} = req.body;
     if(!type_cong_ty || !type_ngoai) {
       return functions.setError(res, "Missing input value!", 404);
@@ -57,6 +57,18 @@ exports.thietLapQuyen = async(req, res, next) => {
   }
 }
 
+exports.getListQuyen = async(req, res) => {
+  try{
+    let comId = req.comId;
+    let listQuyen = await UserModel.findOne({id_user: comId});
+    if(!listQuyen) {
+      return functions.setError(res, "Chua thiet lap quyen cho cong ty!", 404);
+    }
+    return functions.success(res, "Get quyen success!", {listQuyen: listQuyen});
+  }catch(err) {
+
+  }
+}
 //-----------------------so van ban-----------------------
 exports.getListSoVanBan = async(req, res, next) => {
   try{
@@ -65,7 +77,7 @@ exports.getListSoVanBan = async(req, res, next) => {
     if(id_so_vb) {
       let so_vb = await TextBook.findOne({_id: id_so_vb}).lean();
       if(!so_vb) return functions.setError(res, "So van ban not found!", 504);
-      return functions.success(res, so_vb);
+      return functions.success(res, "Get so van ban thanh cong!", {so_vb: so_vb});
     }
     if(!page || !pageSize) {
       return functions.setError(res, "Missing input page or pageSize!", 404);

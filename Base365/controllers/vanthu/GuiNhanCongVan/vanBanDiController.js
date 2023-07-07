@@ -1,4 +1,4 @@
-// const AdminUser = require('../../../models/AdminUser');
+const Users = require('../../../models/Users');
 const VanBan = require('../../../models/Vanthu365/van_ban');
 const functions = require("../../../services/functions");
 const vanThuService = require("../../../services/vanthu");
@@ -7,6 +7,7 @@ const ThongBao = require("../../../models/Vanthu365/tl_thong_bao");
 const UserVT = require("../../../models/Vanthu365/user_model");
 const NhomVanBan = require('../../../models/Vanthu/group_van_ban');
 const QuanLyCongVan = require('../../../models/Vanthu365/tbl_qly_congvan');
+const FeedBack = require('../../../models/Vanthu365/tbl_feedback');
 
 const folder = 'file_van_ban';
 //----------------------------------------VAN BAN DI---------------------------------------------------
@@ -17,6 +18,7 @@ let checkBanHanh = async(type, comId, empId, type_ban_hanh)=>{
     if(type==1) banHanh = true;
     else {
       let user_model = await UserVT.findOne({id_user: comId});
+      if(!user_model) return false;
       let data_banhanh;
       if(type_ban_hanh == 1) {
         data_banhanh = user_model.type_cong_ty;
@@ -36,7 +38,7 @@ exports.getDataAndCheck = async(req, res, next) => {
     let {ten_vanban, so_vanban, trich_yeu, noidung_vanban, nam_vb, ten_so_vanban, nhom_van_ban, thoi_gian_ban_hanh,
       nguoi_theo_doi, ghi_chu, 
       xet_duyet_van_ban, loai_xet_duyet,  thoi_gian_duyet, data_nguoi_duyet,
-      data_nhan, type_khan_cap, type_bao_mat, type_tai, type_duyet_chuyen_tiep, type_nhan_chuyen_tiep 
+      type_khan_cap, type_bao_mat, type_tai, type_duyet_chuyen_tiep, type_nhan_chuyen_tiep 
     } = req.body;
 
     let fieldsCheck = [ten_vanban, so_vanban, trich_yeu, nam_vb, ten_so_vanban, xet_duyet_van_ban, nhom_van_ban, thoi_gian_ban_hanh];
@@ -272,7 +274,7 @@ exports.createVanBanIn = async(req, res, next) => {
       type_thu_hoi = 1;
     }
 
-    let list_duyet = await UserVT.findOne({duyet_pb: 1, type_cong_ty: 1},{id_user: comId}).lean();
+    let list_duyet = await UserVT.findOne({id_user: comId}, {duyet_pb: 1, type_cong_ty: 1});
     let data_banhanh = '';
     if(list_duyet) {
       data_banhanh = list_duyet.type_cong_ty;
@@ -408,7 +410,7 @@ exports.getListVanBanDiDaGui = async(req, res, next) => {
     if(fromDate) fromDate = fromDate? vanThuService.convertTimestamp(fromDate): null;
     if(toDate) toDate = toDate? vanThuService.convertTimestamp(toDate): null;
 
-    let id = req.id || 1763;
+    let id = req.id;
     let condition = {user_send: id};
     if(id_vb) condition._id = Number(id_vb);
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
@@ -468,6 +470,46 @@ exports.getListVanBanDiDaGui = async(req, res, next) => {
     return functions.success(res, "Get list van ban gui di success!", {totalCount, listVanBanDi});
   }catch(err){
     console.log("Error from server!", err);
+    return functions.setError(res, err, 500);
+  }
+}
+
+exports.getDetailVanBan = async(req, res, next) => {
+  try{
+    let id_vb = req.body.id_vb;
+    let id = req.id;
+    if(!id_vb) {
+      return functions.setError(res, "Missing input value!", 404);
+    }
+    let vanBan = await VanBan.findOne({_id: id_vb}).lean();
+    if(!vanBan) {
+      return functions.setError(res, "Khong tin tai van ban!", 405);
+    }
+    //check luu van ban
+    let checkLuuQLCV = await QuanLyCongVan.findOne({cv_id_vb: id_vb});
+    let checkLuu = false;
+    if(checkLuuQLCV) {
+      checkLuu = true;
+    }
+    vanBan.check_qlcv = checkLuu;
+
+    //lay ra phan hoi
+    let feedBack = await FeedBack.findOne({vb_fb: id_vb}).lean();
+    vanBan.feedBack = feedBack;
+
+    //lay ra thong tin van ban thay the
+    let thayThe;
+    if(vanBan.type_thay_the==1) {
+      thayThe = await ThayThe.findOne({id_vb_tt: id_vb}).lean();
+    }
+    vanBan.thayThe = thayThe;
+
+    //neu la van ban den se chuyen du lieu da xem hay chua
+    let checkThongBao = await ThongBao.findOneAndUpdate({id_user_nhan: req.id, id_van_ban: id_vb, view: 0, type: 1}, {view: 1});
+
+    return functions.success(res, "Get detail van ban success!", {vanBan: vanBan});
+  }catch(err) {
+    console.log(err);
     return functions.setError(res, err, 500);
   }
 }
@@ -640,6 +682,23 @@ exports.checkQuyenBanHanh = async(req, res, next) => {
     else banHanh = await checkBanHanh(req.type, req.comId, req.id, 2);
 
     return functions.success(res, "Check ban hanh", {banHanh: banHanh});
+  }catch(err){
+    console.log("Error from server!", err);
+    return functions.setError(res, err, 500);
+  }
+}
+
+exports.getUserByEmail = async(req, res, next) => {
+  try{
+    let {type, email} = req.body;
+    if(!type) {
+      return functions.setError(res, "Missing input type!", 404);
+    }
+    let user = Users.findOne({email: email, type: type}, {_id: 1, idQLC: 1, userName: 1, email: 1});
+    if(!user) {
+      return functions.setError(res, "User khong ton tai!", 405);
+    }
+    return functions.success(res, "Get user by email success!", {user: user});
   }catch(err){
     console.log("Error from server!", err);
     return functions.setError(res, err, 500);

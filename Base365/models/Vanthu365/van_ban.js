@@ -71,7 +71,8 @@ const vanBan = new mongoose.Schema({
         type: String
     },
     trang_thai_vb: {
-        type: Number
+        type: Number,
+        
     },
     duyet_vb: {
         type: Number
@@ -115,22 +116,28 @@ const vanBan = new mongoose.Schema({
         max: 255
     },
     type_khan_cap: {
-        type: Number
+        type: Number,
+        default: 0
     },
     type_bao_mat: {
-        type: Number
+        type: Number,
+        default: 0
     },
     type_tai: {
-        type: Number
+        type: Number,
+        default: 0
     },
     type_duyet_chuyen_tiep: {
-        type: Number
+        type: Number,
+        default: 0
     },
     type_nhan_chuyen_tiep: {
-        type: Number
+        type: Number,
+        default: 0
     },
     type_thay_the: {
-        type: Number
+        type: Number,
+        default: 0
     },
     created_date: {
         type: Number

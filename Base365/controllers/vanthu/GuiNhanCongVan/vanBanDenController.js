@@ -66,8 +66,9 @@ exports.getListVanBanMoi = async(req, res, next) => {
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     if(trang_thai_search == 1) trang_thai_search = 0;
 
-    let id = req.id || 1761;
-    let com_id = req.comId || 1763;
+    let id = req.id;
+    let com_id = req.comId;
+    let minTime = vanThuService.convertTimestamp(Date.now())-2592000;
 
     let condition = {$and: [
       {$or: [
@@ -111,6 +112,7 @@ exports.getListVanBanMoi = async(req, res, next) => {
           },
         ],
       },
+      {created_date: {$gt: minTime}}
     ]};
 
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
@@ -144,8 +146,8 @@ exports.getListVanBanDaXuLy = async(req, res, next) => {
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     if(trang_thai_search == 1) trang_thai_search = 0;
 
-    let id = req.id || 1761;
-    let com_id = req.comId || 1763;
+    let id = req.id;
+    let com_id = req.comId;
 
 
     let condition = {$and: [
