@@ -37,7 +37,7 @@ const model_Tai_San = new mongoose.Schema({
         type : String
     },
     ts_vi_tri : {
-        type : String
+        type : Number
     },
     ts_trangthai : {
         type : Number

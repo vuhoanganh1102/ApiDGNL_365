@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const model_CapPhat = new mongoose.Schema({
-    cp_id:{
+    _id:{
         type: Number,
     },
     cap_phat_taisan:{
