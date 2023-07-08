@@ -62,6 +62,7 @@ exports.postNewMain = async (req, res, next) => {
         let hashtag = request.hashtag;
         let order = request.order;
         let the_tich = request.the_tich;
+        let warranty = request. warranty;
         for (let i = 0; i < address.length; i++) {
             diachi.push(address[i])
         }
@@ -106,7 +107,8 @@ exports.postNewMain = async (req, res, next) => {
             img,
             video,
             CV,
-            the_tich
+            the_tich,
+            warranty
         };
         return next();
     } catch (err) {
