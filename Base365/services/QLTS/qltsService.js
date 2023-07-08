@@ -12,7 +12,7 @@ exports.getMaxID = async (model) => {
   };
 
 
-exports.validateCustomerInput = (ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly) => {
+exports.validateTaiSanInput = (ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly,id_loai_ts,id_nhom_ts,ts_vi_tri) => {
     if (!ts_ten) {
       throw { code: 400, message: 'Tên tài sản bắt buộc.' };
     }
@@ -24,6 +24,15 @@ exports.validateCustomerInput = (ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly) =>
     }
     else if(!id_ten_quanly){
       throw {code : 400 , message : "id_ten_quanly không không được bỏ trống"} 
+    }
+    else if(!id_loai_ts){
+      throw {code : 400 , message : "id_loai_ts không không được bỏ trống"} 
+    }
+    else if(!id_nhom_ts){
+      throw {code : 400 , message : "id_nhom_ts không không được bỏ trống"} 
+    }
+    else if(!ts_vi_tri){
+      throw {code : 400 , message : "ts_vi_tri không không được bỏ trống"} 
     }
     return true;
   };
