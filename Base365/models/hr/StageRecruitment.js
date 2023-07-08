@@ -18,9 +18,9 @@ const RecruitmentStageSchema = new Schema({
     // muc tieu
     target: { type: String, required: true },
     //  thời gian 
-    completeTime: { type: String, default: null },
+    completeTime: { type: String},
     //  mo ta cong viec
-    description: { type: String, default: null },
+    description: { type: String},
     //  trạng thái xóa
     isDelete: { type: Number, default:0 },
     deletedAt: {type: Date, default: null}

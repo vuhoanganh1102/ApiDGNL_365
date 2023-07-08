@@ -222,8 +222,8 @@ exports.getListVanBanCanDuyet = async(req, res, next) => {
     time_start = time_start? vanThuService.convertTimestamp(time_start): null;
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
 
-    let id = req.id || 1761;
-    let com_id = req.comId || 1763;
+    let id = req.id ;
+    let com_id = req.comId ;
 
 
     let condition = {type_duyet: 0, trang_thai_vb: 0};
@@ -258,8 +258,8 @@ exports.getListVanBanThuHoi = async(req, res, next) => {
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     let trang_thai_vb = 3;
 
-    let id = req.id || 1761;
-    let com_id = req.comId || 1763;
+    let id = req.id ;
+    let com_id = req.comId ;
 
     let condition = {$and: [
       {$or: [
@@ -321,8 +321,8 @@ exports.getListVanBanCapNhat = async(req, res, next) => {
     const limit = pageSize;
     time_start = time_start? vanThuService.convertTimestamp(time_start): null;
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
-    let id = req.id || 1761;
-    let com_id = req.comId || 1763;
+    let id = req.id ;
+    let com_id = req.comId ;
     let type;
 
     let condition = {

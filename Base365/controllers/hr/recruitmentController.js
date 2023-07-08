@@ -315,7 +315,7 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     }
                 },
                 {
-                    $count: "totalDocuments"
+                    $count: "getJob"
                 }
             ]);
 
@@ -330,7 +330,7 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     }
                 },
                 {
-                    $count: "totalDocuments"
+                    $count: "failJob"
                 }
             ]);
 
@@ -345,13 +345,13 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     }
                 },
                 {
-                    $count: "totalDocuments"
+                    $count: "interviewJob"
                 }
             ]);
-            
-            listRecruitmentNews[i].totalCandidateGetJob = totalCandidateGetJob[0].totalDocuments;
-            listRecruitmentNews[i].totalCandidateFailJob = totalCandidateFailJob[0].totalDocuments;
-            listRecruitmentNews[i].totalCandidateInterview = totalCandidateInterview[0].totalDocuments;
+            console.log(totalCandidateInterview)
+            listRecruitmentNews[i].totalCandidateGetJob = totalCandidateGetJob[0].count;
+            listRecruitmentNews[i].totalCandidateFailJob = totalCandidateFailJob[0].count;
+            listRecruitmentNews[i].totalCandidateInterview = totalCandidateInterview[0].count;
             let hr = await Users.findOne({idQLC: listRecruitmentNews[i].hrName});
             if(hr) {
                 listRecruitmentNews[i].hrName = hr.userName;
@@ -362,6 +362,61 @@ exports.getListRecruitmentNews= async(req, res, next) => {
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
+    }
+}
+
+let getTotal = async(model, condition)=>{
+    try{
+        let total = await Candidate.aggregate([
+            {$match: condition},
+            {
+                $lookup: {
+                    from: "HR_GetJobs",
+                    localField: "id",
+                    foreignField: "canId",
+                    as: "getJob"
+                }
+            },
+            {
+                $count: "getJob"
+            }
+        ]);
+    }catch(err){
+        console.log(err);
+    }
+}
+exports.listNewActive = async(req, res)=>{
+    try{
+        let comId = req.infoLogin.comId;
+        let condition = {comId: comId, isDelete: 0};
+        let countAllActiveNew = await functions.findCount(RecruitmentNews, condition);
+        let recruitmentNew = await RecruitmentNews.find(condition).sort({id: 1}).lean();
+
+        //thong ke
+        for(let i=0; i<recruitmentNew.length; i<i++) {
+            let condition2 = {comId: comId, isDelete: 0, recruitmentNewsId: recruitmentNew[i].id};
+
+            let sohoso = await functions.findCount(Candidate, condition2);
+            recruitmentNew[i].sohoso = sohoso;
+            let totalCandidateGetJob = await Candidate.aggregate([
+                {$match: condition2},
+                {
+                    $lookup: {
+                        from: "HR_GetJobs",
+                        localField: "id",
+                        foreignField: "canId",
+                        as: "getJob"
+                    }
+                },
+                {
+                    $count: "getJob"
+                }
+            ]);
+            console.log(totalCandidateGetJob);
+        }
+        return functions.success(res, "Get listNewActive success!", {countAllActiveNew, recruitmentNew});
+    }catch(err) {
+        console.log("Err from server!", err);
     }
 }
 
@@ -410,6 +465,36 @@ exports.getTotalCandidateFollowDayMonth = async(req, res, next) => {
     }
 }
 
+let getListInterview = async(type, recruitmentNewsId, )=> {
+    try{
+        let listInterview = await Candidate.aggregate([
+            {$match: {recruitmentNewsId: recruitmentNewsId,isDelete: 0}},
+            {
+                $lookup: {
+                    from: "HR_ScheduleInterviews",
+                    localField: "id",
+                    foreignField: "canId",
+                    as: "listInterview"
+                }
+            },
+            {
+                $unwind: "$listInterview"
+            },
+            {
+                $replaceRoot: {
+                    newRoot: { $mergeObjects: ["$$ROOT", "$listInterview"]}   
+                }
+            },
+            {$match: {result: type}},
+            {$project: {id: 1, name: 1, phone:1, email: 1}},
+            {$sort: {id: 1}}
+        ]);
+        return listInterview;
+    }catch(err){
+        console.log(err);
+    }
+}
+
 exports.getDetailRecruitmentNews= async(req, res, next) => {
     try {
         let {recruitmentNewsId} = req.body;
@@ -423,65 +508,35 @@ exports.getDetailRecruitmentNews= async(req, res, next) => {
         let condition = {isDelete: 0, comId: comId, id: recruitmentNewsId};
         
         var recruitmentNews = await RecruitmentNews.findOne(condition, {title: 1, number: 1,timeStart: 1, timeEnd: 1, createdBy: 1, hrName: 1}).lean();
+        if(!recruitmentNews) {
+            return functions.setError(res, "Khong ton tai tin tuyen dung!", 406);
+        }
         let hr = await Users.findOne({idQLC: recruitmentNews.hrName});
         if(hr){
             recruitmentNews.hrName = hr.userName;
         }
 
-        let listCandidate = await Candidate.find({recruitmentNewsId: recruitmentNewsId, isDelete: 0}, {name: 1, phone:1, email: 1});
+        let listCandidate = await Candidate.find({recruitmentNewsId: recruitmentNewsId, isDelete: 0}, {id: 1, name: 1, phone:1, email: 1}).sort({id: 1});
 
-        let listCandidateGetJob = await Candidate.aggregate([
-            {$match: {comId: comId, isDelete: 0}},
-            {
-                $lookup: {
-                    from: "HR_GetJobs",
-                    localField: "id",
-                    foreignField: "canId",
-                    as: "getJob"
-                }
-            },
-            {$project: {name: 1, phone:1, email: 1}}
-        ]);
+        let listOfferJob = await Candidate.find({recruitmentNewsId: recruitmentNewsId, isOfferJob: 1, isDelete: 0}, {id: 1, name: 1, phone:1, email: 1}).sort({id: 1});
+        // let listCandidateGetJob = await Candidate.aggregate([
+        //     {$match: {comId: comId, isDelete: 0}},
+        //     {
+        //         $lookup: {
+        //             from: "HR_GetJobs",
+        //             localField: "id",
+        //             foreignField: "canId",
+        //             as: "getJob"
+        //         }
+        //     },
+        //     {$project: {name: 1, phone:1, email: 1}}
+        // ]);
+        let listInterview = await getListInterview(recruitmentNewsId, 1);
 
-        let listCandidateFailJob = await Candidate.aggregate([
-            {$match: {comId: comId, isDelete: 0}},
-            {
-                $lookup: {
-                    from: "HR_FailJobs",
-                    localField: "id",
-                    foreignField: "canId",
-                    as: "failJob"
-                }
-            },
-            {$project: {name: 1, phone:1, email: 1}}
-        ])
+        let listInterviewPass = await getListInterview(recruitmentNewsId, 2);
 
-        let listCandidateContactJob = await Candidate.aggregate([
-            {$match: {comId: comId, isDelete: 0}},
-            {
-                $lookup: {
-                    from: "HR_ContactJobs",
-                    localField: "id",
-                    foreignField: "canId",
-                    as: "contactJob"
-                }
-            },
-            {$project: {name: 1, phone:1, email: 1}}
-        ])
-
-        let listCandidateInterview = await Candidate.aggregate([
-            {$match: {comId: comId, isDelete: 0}},
-            {
-                $lookup: {
-                    from: "HR_ScheduleInterviews",
-                    localField: "id",
-                    foreignField: "canId",
-                    as: "InterviewJob"
-                }
-            },
-            {$project: {name: 1, phone:1, email: 1}}
-        ])
-        return functions.success(res, "Get list recruitment news success", {recruitmentNews, listCandidate, listCandidateGetJob,listCandidateFailJob,listCandidateContactJob, listCandidateInterview });
+        let listInterviewFail = await getListInterview(recruitmentNewsId, 3);
+        return functions.success(res, "Get list recruitment news success", {recruitmentNews, listCandidate, listOfferJob,listInterview, listInterviewPass, listInterviewFail});
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
@@ -607,8 +662,13 @@ exports.softDeleteRecuitmentNews = async(req, res, next) =>{
 
 exports.createSampleNews = async(req, res, next) =>{
     try{
+        let comId = req.infoLogin.comId;
         let newsId = req.body.newsId;
-        let recruitmentNews = await RecruitmentNews.findOneAndUpdate({id: newsId}, {
+        let resetSample = await RecruitmentNews.updateMany({comId: comId}, {isSample: 0});
+        if(!resetSample) {
+            return functions.setError(res, "Reset sample fail!", 504);
+        }
+        let recruitmentNews = await RecruitmentNews.findOneAndUpdate({id: newsId, comId: comId}, {
             isSample: 1
         })
         if(!recruitmentNews) {
@@ -1613,5 +1673,5 @@ exports.detailCandidateContactJob = async(req, res, next) => {
     }
 }
 
-
+let Can
 
