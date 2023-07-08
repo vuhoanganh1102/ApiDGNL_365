@@ -18,7 +18,7 @@ const path = require('path');
 //check ảnh
 const { promisify } = require('util');
 
-
+const jwt = require('jsonwebtoken');
 // giới hạn dung lượng video < 100MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
 // danh sách các loại video cho phép
@@ -234,3 +234,12 @@ exports.checkRight = (moduleId, perId) => {
         
     };
 };
+
+exports.checkTokenUser = async(req, res, next) => {
+    if (req.headers && req.headers.authorization) {
+        const token = req.headers.authorization.split(' ')[1];
+       return jwt.decode(token).data.idRaoNhanh365
+    } else {
+        return null;
+    }
+}
