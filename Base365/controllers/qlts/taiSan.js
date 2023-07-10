@@ -3,6 +3,7 @@ const ViTri_ts = require('../../models/QuanLyTaiSan/ViTri_ts');
 const LoaiTaiSan = require('../../models/QuanLyTaiSan/LoaiTaiSan');
 const quanlytaisanService = require('../../services/QLTS/qltsService')
 const NhomTs = require('../../models/QuanLyTaiSan/NhomTaiSan')
+const TaiSanViTri = require('../../models/QuanLyTaiSan/TaiSanVitri')
 const User = require('../../models/Users')
 
 
@@ -81,19 +82,19 @@ exports.showDataSearch = async (req, res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     let checktaisan = await TaiSan.distinct('id_ten_quanly', { id_cty: com_id })
-    let checktUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan } }).select('idQLC userName');
-    let checkVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
-    let checkloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id }).select('id_loai ten_loai')
+    let listUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan } }).select('idQLC userName');
+    let listVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
+    let listloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id }).select('id_loai ten_loai')
     let checkNhom = await NhomTs.find({id_cty: com_id}).select('id_nhom')
     let item = {
      
-      totalUser: checktUser.length,
-      totalVitri: checkVitri.length,
-      totalloaiTaiSan: checkloaiTaiSan.length,
+      totalUser: listUser.length,
+      totalVitri: listVitri.length,
+      totalloaiTaiSan: listloaiTaiSan.length,
       totalNhom : checkNhom.length,
-      checktUser,
-      checkVitri,
-      checkloaiTaiSan,
+      listUser,
+      listVitri,
+      listloaiTaiSan,
     }
     return functions.success(res, 'get data success', { item })
   } catch (error) {
@@ -108,13 +109,13 @@ exports.showadd = async (req, res) => {
     if (req.user.data.type = 1) {
       let com_id = req.user.data.idQLC
       let checktaisan = await TaiSan.distinct('id_ten_quanly', { id_cty: com_id })
-      let checktUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan } }).select('idQLC userName');;
-      let checkVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
-      let checkloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id }).select('id_loai ten_loai')
+      let listUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan } }).select('idQLC userName');;
+      let listVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
+      let listloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id }).select('id_loai ten_loai')
       let item = {
-        checktUser,
-        checkVitri,
-        checkloaiTaiSan
+        listUser,
+        listVitri,
+        listloaiTaiSan
       }
       return functions.success(res, 'get data success', { item })
     } else {
@@ -130,17 +131,18 @@ exports.showadd = async (req, res) => {
 exports.addTaiSan = async (req, res) => {
   try {
     let {
-      id_loai_ts, id_nhom_ts, id_dv_quanly,
-      id_ten_quanly, ts_ten, sl_bandau, ts_so_luong,
+      id_loai_ts,id_dv_quanly,
+      id_ten_quanly,ts_ten, sl_bandau, ts_so_luong,
       soluong_cp_bb, ts_gia_tri, ts_don_vi, ts_vi_tri,
       ts_trangthai, ts_da_xoa, ts_date_delete,
       don_vi_tinh, ghi_chu
     } = req.body
-    let createDate = Math.floor(Date.now() / 1000);
-    if (req.user.data.type == 1) {
+    const createDate = Math.floor(Date.now() / 1000);
+    if (req.user.data.type == 1){
       let com_id = req.user.data.idQLC;
-      const validationResult = quanlytaisanService.validateTaiSanInput(ts_ten, ts_don_vi, id_dv_quanly, id_loai_ts, id_nhom_ts, id_ten_quanly, ts_vi_tri);
+      const validationResult = quanlytaisanService.validateTaiSanInput(ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly,id_loai_ts,ts_vi_tri);
       if (validationResult === true) {
+        const checkidNhom = await LoaiTaiSan.findOne({id_loai :id_loai_ts,loai_da_xoa : 0}).select('id_nhom_ts')
         let maxID = await quanlytaisanService.getMaxID(TaiSan);
         let ts_id = 0;
         if (maxID) {
@@ -150,12 +152,11 @@ exports.addTaiSan = async (req, res) => {
           ts_id: ts_id,
           id_cty: com_id,
           id_loai_ts: id_loai_ts,
-          id_nhom_ts: id_nhom_ts,
+          id_nhom_ts: checkidNhom.id_nhom_ts,
           id_dv_quanly: id_dv_quanly,
           id_ten_quanly: id_ten_quanly,
           ts_ten: ts_ten,
           sl_bandau: sl_bandau,
-          ts_so_luong: ts_so_luong,
           soluong_cp_bb: soluong_cp_bb,
           ts_gia_tri: ts_gia_tri,
           ts_don_vi: ts_don_vi,
@@ -167,8 +168,22 @@ exports.addTaiSan = async (req, res) => {
           don_vi_tinh: don_vi_tinh,
           ghi_chu: ghi_chu,
         })
-        let save = await createNew.save()
-        return functions.success(res, 'save data success', { save })
+        let save = await createNew.save();
+        let maxIDTSVT = await quanlytaisanService.getMaxIDTSVT(TaiSanViTri);
+        let tsvt_id = 0;
+        if (maxIDTSVT) {
+          tsvt_id = Number(maxIDTSVT) + 1;
+        }
+        let createNewTSVT = new TaiSanViTri({
+          tsvt_id: tsvt_id,
+          tsvt_cty: save.id_cty,
+          tsvt_taisan: save.ts_id,
+          tsvt_vitri : save.ts_vi_tri,
+          tsvt_soluong : ts_so_luong
+          
+        })
+        let saveTSVT = await createNewTSVT.save();
+        return functions.success(res, 'save data success', { save,saveTSVT})
       }
     }
     else {

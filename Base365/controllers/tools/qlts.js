@@ -3,6 +3,8 @@ const LoaiTS = require('../../models/QuanLyTaiSan/LoaiTaiSan');
 const TaiSan = require('../../models/QuanLyTaiSan/TaiSan');
 const ViTriTs = require('../../models/QuanLyTaiSan/ViTri_ts');
 const fnc = require('../../services/functions');
+const Nhomts = require('../../models/QuanLyTaiSan/NhomTaiSan');
+const TaiSanVT = require('../../models/QuanLyTaiSan/TaiSanVitri')
 const axios = require('axios');
 
 //Lam 
@@ -152,7 +154,6 @@ exports.toolTaisan = async  (req, res, next) => {
 
 
 //lam
-
 exports.toolViTriTS = async  (req, res, next) => {
     try {
         let result = true;
@@ -169,6 +170,73 @@ exports.toolViTriTS = async  (req, res, next) => {
                         dv_quan_ly: listData[i].dv_quan_ly,
                         quyen_dv_qly: listData[i].quyen_dv_qly,
                         ghi_chu_vitri: listData[i].ghi_chu_vitri
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else { result = false; }
+
+        } while (result);
+        await fnc.success(res, "thanh cong ");
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+//lam
+exports.toolNhomts = async  (req, res, next) => {
+    try {
+        let result = true;
+        page = 1;
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 14 });
+            let listData = data.data.items;
+            if (listData.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new Nhomts({
+                        id_nhom: listData[i].id_nhom,
+                        ten_nhom: listData[i].ten_nhom,
+                        id_cty: listData[i].id_cty,
+                        nhom_type_quyen: listData[i].nhom_type_quyen,
+                        nhom_id_ng_xoa: listData[i].nhom_id_ng_xoa,
+                        nhom_da_xoa: listData[i].nhom_da_xoa,
+                        nhom_date_create: listData[i].nhom_date_create,
+                        nhom_date_delete: listData[i].nhom_date_delete,
+                        nhom_type_quyen_xoa: listData[i].nhom_type_quyen_xoa,
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else { result = false; }
+
+        } while (result);
+        await fnc.success(res, "thanh cong ");
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+exports.toolTSvitri = async (req,res,next)=> {
+    try {
+        let result = true;
+        page = 1;
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 21 });
+            let listData = data.data.items;
+            if (listData.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new TaiSanVT({
+                        tsvt_id: listData[i].tsvt_id,
+                        tsvt_cty: listData[i].tsvt_cty,
+                        tsvt_taisan: listData[i].tsvt_taisan,
+                        tsvt_vitri: listData[i].tsvt_vitri,
+                        tsvt_soluong: listData[i].tsvt_soluong
                     });
                     await save.save();
                 }

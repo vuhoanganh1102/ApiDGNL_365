@@ -1,18 +1,23 @@
 
 
 
+exports.getMaxIDTSVT = async (model) => {
+  const maxTSVT = await model.findOne({}, {}, { sort: { tsvt_id: -1 } }).lean() || 0;
+  return maxTSVT.tsvt_id;
+};
 
-
-
-
+exports.getMaxIDnhom = async (model) => {
+  const maxNhom = await model.findOne({}, {}, { sort: { id_nhom: -1 } }).lean() || 0;
+  return maxNhom.id_nhom;
+};
 
 exports.getMaxID = async (model) => {
-    const maxUser = await model.findOne({}, {}, { sort: { ts_id: -1 } }).lean() || 0;
-    return maxUser.ts_id;
+    const maxTs = await model.findOne({}, {}, { sort: { ts_id: -1 } }).lean() || 0;
+    return maxTs.ts_id;
   };
 
 
-exports.validateTaiSanInput = (ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly,id_loai_ts,id_nhom_ts,ts_vi_tri) => {
+exports.validateTaiSanInput = (ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly,id_loai_ts,ts_vi_tri) => {
     if (!ts_ten) {
       throw { code: 400, message: 'Tên tài sản bắt buộc.' };
     }
@@ -27,9 +32,6 @@ exports.validateTaiSanInput = (ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly,id_lo
     }
     else if(!id_loai_ts){
       throw {code : 400 , message : "id_loai_ts không không được bỏ trống"} 
-    }
-    else if(!id_nhom_ts){
-      throw {code : 400 , message : "id_nhom_ts không không được bỏ trống"} 
     }
     else if(!ts_vi_tri){
       throw {code : 400 , message : "ts_vi_tri không không được bỏ trống"} 
