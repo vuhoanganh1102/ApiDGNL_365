@@ -83,7 +83,7 @@ exports.toolDeparment = async(req, res, next) => {
                         deparmentName: element.dep_name,
                         managerId: element.manager_id,
                         deparmentCreated: element.dep_create_time,
-                        deparmentOrder,
+                        deparmentOrder:element.dep_create_time,
                     })
                     await department.save();
                 }

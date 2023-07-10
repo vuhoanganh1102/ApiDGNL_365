@@ -682,32 +682,32 @@ exports.toolCateDetail = async(req, res, next) => {
             // }
 
             // 13.hãng
-            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_hang.php', form, {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data',
-            //     },
-            // });
-            // let data = response.data.data.items;
-            // if (data.length) {
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_hang.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data.data.items;
+            if (data.length) {
 
-            //     for (let i = 0; i < data.length; i++) {
-            //         const newItem = {
-            //             _id: data[i].id,
-            //             name: data[i].ten_hang,
-            //             parent: data[i].id_parent,
-            //         };
-            //         if(data[i].id_danhmuc == 0)
-            //         {
-            //             await CateDetail.findOneAndUpdate({ _id: 22 }, { $addToSet: { brand: newItem } }, { upsert: true }, )
-            //         }else{
-            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true }, )
-            //         }
+                for (let i = 0; i < data.length; i++) {
+                    const newItem = {
+                        _id: data[i].id,
+                        name: data[i].ten_hang,
+                        parent: data[i].id_parent,
+                    };
+                    if(data[i].id_danhmuc == 0)
+                    {
+                        await CateDetail.findOneAndUpdate({ _id: 22 }, { $addToSet: { brand: newItem } }, { upsert: true }, )
+                    }else{
+                        await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true }, )
+                    }
                     
-            //     }
-            //     page++;
-            // } else {
-            //     result = false;
-            // }
+                }
+                page++;
+            } else {
+                result = false;
+            }
 
             //14. dòng ( dòng của hãng)
             // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
@@ -1756,7 +1756,7 @@ exports.toolTags = async(req, res, next) => {
                     const tags = new Tags({
                         _id: data[i].tags_id,
                         name: data[i].ten_tags,
-                        parentId: data[i].id_parent,
+                        parent: data[i].id_parent,
                         typeTags: data[i].type_tags,
                         cateId: data[i].id_danhmuc,
                         type: data[i].type

@@ -2,20 +2,18 @@ const functions = require('../../../services/functions');
 const tbl_qly_congvan = require('../../../models/Vanthu365/tbl_qly_congvan');
 const vanthu = require('../../../services/vanthu.js');
 const tbl_qlcv_edit = require('../../../models/Vanthu365/tbl_qlcv_edit');
+const Users = require('../../../models/Users');
 // danh sách văn bản 
 exports.getListVanBan = async (req, res, next) => {
     try {
         // khai báo biến
         let key = req.body.key;
-        if (key) {
-            key = key.toUpperCase();
-        }
         let page = Number(req.body.page);
         let pageSize = Number(req.body.pageSize);
         let book = req.body.book;
         let dayStart = req.body.dayStart;
         let dayEnd = req.body.dayEnd;
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let type = Number(req.body.type);
         //tạo phân trang
         let skip = (page - 1) * pageSize;
@@ -26,14 +24,15 @@ exports.getListVanBan = async (req, res, next) => {
         if (key) {
             conditions = {
                 $or: [
-                    { cv_name: { $regex: key } },
-                    { cv_so: { $regex: key } }
+                    { cv_name: { $regex: key.toUpperCase() } },
+                    { cv_so: { $regex: key } },
+                    { cv_name: { $regex: key.toLowerCase() } },
                 ]
             }
         }
-        if (dayStart) conditions.cv_date = { $gte: dayStart }
-        if (dayEnd) conditions.cv_date = { $lte: dayEnd }
-        if(dayStart && dayEnd) conditions.cv_date = { $gte: dayStart, $lte: dayEnd }
+        if (dayStart) conditions.cv_date = { $gte: new Date (dayStart).getTime() / 1000 }
+        if (dayEnd) conditions.cv_date = { $lte: new Date (dayEnd).getTime() / 1000 }
+        if(dayStart && dayEnd) conditions.cv_date = { $gte: new Date (dayStart).getTime() / 1000, $lte: new Date (dayEnd).getTime() / 1000 }
         if (book) conditions.cv_id_book = book
         conditions.cv_usc_id = comId;
         conditions.cv_type_xoa = 0;
@@ -43,13 +42,13 @@ exports.getListVanBan = async (req, res, next) => {
         } else {
             conditions.cv_type_loai = 2;
         }
-        let db_qr = await tbl_qly_congvan.find(conditions).sort({ cv_date: -1 }).skip(skip).limit(limit)
+        let db_qr = await tbl_qly_congvan.find(conditions).sort({ cv_date: -1 }).skip(skip).limit(limit);
         let count = await tbl_qly_congvan.countDocuments(conditions)
         data.count = count;
         data.db_qr = db_qr;
         return functions.success(res, 'get data success', { data })
     } catch (error) {
-        console.log("🚀 ~ file: listVanBanController.js:27 ~ exports.getListVanBanDen= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error)
     }
 };
@@ -57,7 +56,7 @@ exports.getListVanBan = async (req, res, next) => {
 // tạo mới văn bản đến
 exports.createIncomingText = async (req, res, next) => {
     try {
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let name_vbden = req.body.name_vbden;
         let type_vbden = req.body.type_vbden;
         let so_vbden = req.body.so_vbden;
@@ -74,18 +73,17 @@ exports.createIncomingText = async (req, res, next) => {
         let ghi_chu_vbden = req.body.ghi_chu_vbden;
         let file = req.files;
         let cv_file = [];
-        let cv_time_create = new Date().getTime() / 1000;
+        let cv_time_create = new Date();
         if (file && file.file && file.file.length > 0) {
             for (let i = 0; i < file.file.length; i++) {
-                let checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i])
-
+                let checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i],cv_time_create)
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload failed', 400)
                 }
                 cv_file.push({ file: checkUpload })
             }
         } else if (file && file.file) {
-            let checkUpload = await vanthu.uploadfile('file_van_ban', file.file)
+            let checkUpload = await vanthu.uploadfile('file_van_ban', file.file,cv_time_create)
             if (checkUpload === false) {
                 return functions.setError(res, 'upload failed', 400)
             }
@@ -118,7 +116,7 @@ exports.createIncomingText = async (req, res, next) => {
                 cv_phong_soan: noi_gui_vbden,
                 cv_user_soan: user_gui_vbden,
                 cv_id_book: book_vb,
-                cv_date: date_nhan,
+                cv_date: date_nhan.getTime()/1000,
                 cv_name_soan: text_user_gui_vbden,
                 cv_user_save: use_luu_vbden,
                 cv_type_nhan: 1,
@@ -288,7 +286,8 @@ exports.synthesisFunction = async (req, res, next) => {
         let id = Number(req.body.id);
         let action = req.body.action;
         let comId = Number(req.body.comId) || 1763;
-        let useId = Number(req.useId) ;
+        let useId = Number(req.useId)||0;
+        let listId = req.body.listId;
         
         // Chức năng xoá  
         if (action === 'delete') {
@@ -328,20 +327,43 @@ exports.synthesisFunction = async (req, res, next) => {
             return functions.success(res, 'active contract success')
         }else if(action === 'recovery')
         {
+            if(!listId || listId.length === 0)
+            {
+                return functions.setError(res, 'missing data',400)
+            }
             let type_user_kp = 0;
             let user_kp = 0; 
             if (useId == 0){
                 type_user_kp = 1;
-                user_kp = useId;
+                user_kp = comId;
             }
             else{
                 type_user_kp = 2;
                 user_kp = useId;
             }
-            
+            for(let  i =  0   ;  i < listId.length; i++){
+               let check  = await tbl_qly_congvan.findOne({_id:listId[i],cv_usc_id:comId});
+             
+               if(!check) return functions.setError(res,'Không tìm thấy văn bản',400)
+               await tbl_qly_congvan.findByIdAndUpdate(listId[i],{cv_type_xoa:0,cv_type_kp:1,cv_type_user_kp:type_user_kp,
+                cv_user_kp:user_kp,cv_time_kp:new Date().getTime()/1000,})
+            }
+            return functions.success(res, 'recovery success')
+        }else if(action === 'deleteAll')
+        {
+            if(!listId || listId.length === 0)
+            {
+                return functions.setError(res, 'missing data',400)
+            }
+            for(let  i =  0;  i < listId.length; i++){
+               let check  = await tbl_qly_congvan.findOne({_id:listId[i]});
+               if(!check) return functions.setError(res,'Không tìm thấy văn bản',400)
+               await tbl_qly_congvan.findByIdAndDelete(listId[i])
+               await tbl_qlcv_edit.deleteMany({ed_cv_id:listId[i]})
+            }
+            return functions.success(res, 'recovery success')
         }
-
-
+        return functions.setError(res,'Hãy nhập hành động',400)
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)
