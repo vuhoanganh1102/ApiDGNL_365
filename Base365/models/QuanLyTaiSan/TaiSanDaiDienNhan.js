@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const model_TaiSanDaiDienNhan = new mongoose.Schema({
-    id_dd_nhan: {
+    _id: {
         type: Number
     },
     id_cty_dd: {

@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 const model_ThanhLy = new mongoose.Schema({
-    tl_id: {
+    _id: {
         type: Number
     },
     thanhly_taisan: {
-        type: Number
+        type: String
     },
     tl_id_bb_cp: {
         type: Number
@@ -43,7 +43,7 @@ const model_ThanhLy = new mongoose.Schema({
         type : Number
     },
     tl_lydo : {
-        type : Number
+        type : String
     },
     tl_lydo_tuchoi : {
         type : String
