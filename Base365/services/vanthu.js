@@ -89,13 +89,6 @@ exports.uploadFileNameRandom = async(folder, file_img) => {
     filename = `${timestamp}-tin-${file_img.originalFilename}`.replace(/,/g, '');
     const filePath = dir + filename;
     filename = filename + ',';
-    // if (NameFile === '') {
-    //     NameFile += `'${file_img.name.replace(/,/g, '')}'`;
-    //     InfoFile += `'https://vanthu.timviec365.vn/uploads/file_van_ban/${year}/${month}/${day}/${filename}'`;
-    // } else {
-    //     NameFile += `,'${file_img.name.replace(/,/g, '')}'`;
-    //     InfoFile += `,'https://vanthu.timviec365.vn/uploads/file_van_ban/${year}/${month}/${day}/${filename}'`;
-    // }
 
     fs.readFile(file_img.path, (err, data) => {
         if (err) {

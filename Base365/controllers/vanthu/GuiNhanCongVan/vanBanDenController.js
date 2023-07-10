@@ -149,7 +149,6 @@ exports.getListVanBanDaXuLy = async(req, res, next) => {
     let id = req.id;
     let com_id = req.comId;
 
-
     let condition = {$and: [
       {$or: [
           //
@@ -298,10 +297,10 @@ exports.getListVanBanThuHoi = async(req, res, next) => {
     if(time_end && !time_start) condition.created_date = {$lte: time_end};
     if(time_start && time_end) condition.created_date = {$gte: time_start, $lte: time_end}
 
-    let listVanBanDaXuLy = await listVanBan(condition,skip, limit);
+    let listVanBanDaThuHoi = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
-    return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, listVanBanDaXuLy});
+    return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, listVanBanDaThuHoi});
   }catch(err) {
     console.log("Error from server!", err);
     return functions.setError(res, err, 500);

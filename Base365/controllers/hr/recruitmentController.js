@@ -281,6 +281,7 @@ exports.softDeleteStageRecruitment = async(req, res, next) => {
 
 exports.getListRecruitmentNews= async(req, res, next) => {
     try {
+        console.time("TIME-PROCESS");
         let {page, pageSize, title, fromDate, toDate} = req.body;
 
         //id company lay ra sau khi dang nhap
@@ -304,7 +305,8 @@ exports.getListRecruitmentNews= async(req, res, next) => {
             let condtion = {recruitmentNewsId: listRecruitmentNews[i].id, isDelete: 0};
             let numberCandi = await Candidate.countDocuments({recruitmentNewsId: listRecruitmentNews[i].id});
             let totalCandidate = await Candidate.find({recruitmentNewsId: listRecruitmentNews[i].id, isDelete: 0}).lean().count();
-            let totalCandidateGetJob = await Candidate.aggregate([
+            
+            const await1 = Candidate.aggregate([
                 {$match: {comId: comId, isDelete: 0}},
                 {
                     $lookup: {
@@ -315,11 +317,12 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     }
                 },
                 {
-                    $count: "getJob"
+                    $count: "count"
                 }
             ]);
 
-            let totalCandidateFailJob = await Candidate.aggregate([
+            
+            const await2 = Candidate.aggregate([
                 {$match: {comId: comId, isDelete: 0}},
                 {
                     $lookup: {
@@ -330,11 +333,11 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     }
                 },
                 {
-                    $count: "failJob"
+                    $count: "count"
                 }
             ]);
 
-            let totalCandidateInterview = await Candidate.aggregate([
+            const await3 = Candidate.aggregate([
                 {$match: {comId: comId, isDelete: 0}},
                 {
                     $lookup: {
@@ -345,10 +348,12 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     }
                 },
                 {
-                    $count: "interviewJob"
+                    $count: "count"
                 }
             ]);
-            console.log(totalCandidateInterview)
+            const totalCandidateGetJob = await await1;
+            const totalCandidateFailJob = await await2;
+            const totalCandidateInterview = await await3;
             listRecruitmentNews[i].totalCandidateGetJob = totalCandidateGetJob[0].count;
             listRecruitmentNews[i].totalCandidateFailJob = totalCandidateFailJob[0].count;
             listRecruitmentNews[i].totalCandidateInterview = totalCandidateInterview[0].count;
@@ -358,6 +363,7 @@ exports.getListRecruitmentNews= async(req, res, next) => {
             }
         }
         const totalCount = await functions.findCount(RecruitmentNews, listCondition);
+        console.timeEnd("TIME-PROCESS");
         return functions.success(res, "Get list recruitment news success", {totalCount: totalCount, data: listRecruitmentNews });
     } catch (e) {
         console.log("Err from server", e);
