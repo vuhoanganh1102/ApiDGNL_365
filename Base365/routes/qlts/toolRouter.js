@@ -6,7 +6,9 @@ const toolQLTS =  require('../../controllers/tools/qlts');
 
 //Api tool quét data Lâm
 router.post('/bao_duong',toolQLTS.toolBaoDuong)
-
+router.post('/loaitaisan',toolQLTS.toolLoaits)
+router.post('/taisan',toolQLTS.toolTaisan)
+router.post('/vitrits',toolQLTS.toolViTriTS)
 
 
 

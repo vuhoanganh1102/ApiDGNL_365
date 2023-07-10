@@ -4,7 +4,7 @@ const model_ThongBao = new mongoose.Schema({
         type: Number
     },
     id_ts: {
-        type: Number
+        type: [String]
     },
     id_cty: {
         type: Number
@@ -33,9 +33,6 @@ const model_ThongBao = new mongoose.Schema({
     date_create : {
         type : Number
     }
-},
-    {
-        collection: "QLTS_ThongBao",
-        versionKey: false
-    });
+  
+});
 module.exports = mongoose.model("QLTS_ThongBao", model_ThongBao);

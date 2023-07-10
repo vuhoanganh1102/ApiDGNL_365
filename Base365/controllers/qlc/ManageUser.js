@@ -6,7 +6,7 @@ const md5 = require('md5');
 exports.getlistAdmin = async(req, res) => {
     try{
         const pageNumber = req.body.pageNumber || 1;
-        let com_id = req.body.com_id
+        let com_id = req.user.data.inForPerson.employee.com_id
         let idQLC = req.body.idQLC;
         let dep_id = req.body.dep_id
         let role = req.body.role
@@ -37,8 +37,9 @@ exports.getlistAdmin = async(req, res) => {
 };
 //tao nv
 exports.createUser = async(req, res) => {
+    let com_id = req.user.data.inForPerson.employee.com_id
 
-    const {com_id, userName, email, phoneTK,idQLC, password,role,address,birthday,dep_id,group_id,team_id,positionID, gender,ep_status, createdAt} = req.body;
+    const { userName, email, phoneTK,idQLC, password,role,address,birthday,dep_id,group_id,team_id,positionID, gender,ep_status, createdAt} = req.body;
 
     if ((com_id&&userName&& email&& password&&role&&address&&positionID&& gender)==undefined) {
         //Kiểm tra tên nhân viên khác null
@@ -94,10 +95,11 @@ exports.createUser = async(req, res) => {
 
 // chỉnh sửa
 exports.editUser = async(req, res) => {
+    let com_id = req.user.data.inForPerson.employee.com_id
 
-    const {com_id, userName, email, phoneTK,idQLC, password,role,address,birthday,dep_id,group_id,team_id,positionID, gender, createdAt} = req.body;
+    const { userName, email, phoneTK,idQLC, password,role,address,birthday,dep_id,group_id,team_id,positionID, gender, createdAt} = req.body;
 
-    if ((com_id&&userName&& email&&idQLC&& password&&role&&address&&positionID&& gender)==undefined) {
+    if ((email&&idQLC)==undefined) {
         //Kiểm tra tên nhân viên khác null
         functions.setError(res, "info required", 506);
     } else if (isNaN(com_id)) {
@@ -139,7 +141,8 @@ exports.editUser = async(req, res) => {
 //xoa nhan vien
 exports.deleteUser = async(req, res) => {
     //tạo biến đọc idQLC
-    const com_id = req.body.com_id;
+    let com_id = req.user.data.inForPerson.employee.com_id
+
     const idQLC = req.body.idQLC;
 
     //nếu idQLC không phải số

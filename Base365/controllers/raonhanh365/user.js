@@ -221,7 +221,7 @@ exports.profileInformation = async (req,res,next) => {
         
         let fields = {userName: 1,phone: 1, type: 1, email: 1, address: 1,
             createdAt: 1, money: 1,idRaoNhanh365:1,phoneTK:1,avatarUser:1,type:1,
-            _id:1,emailContact:1,chat365_secret:1
+            _id:1,emailContact:1,chat365_secret:1,inforRN365:1
         };
         let dataUser = {}
 

@@ -93,7 +93,7 @@ errorApp(appHR)
 
 // Cấu hình appQLTS
 configureApp(appQLTS);
-var qltsRouter = require('./routes/qlts/qltsRouter');
+var qltsRouter = require('./routes/qltsRouter');
 appQLTS.use("/api", qltsRouter);
 errorApp(appHR)
 

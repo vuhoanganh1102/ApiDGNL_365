@@ -10,19 +10,20 @@ const Category = require('../../models/Raonhanh365/Category');
 exports.getTopCache = async (req, res, next) => {
     try {
         let data = {};
-        let cate = await category.find({ active: 1, parentId: 0 },{_id:1,name:1}).lean()
+        let cate = await category.find({ active: 1, parentId: 0 }, { _id: 1, name: 1,parentId: 1 }).lean()
         for (let i = 0; i < cate.length; i++) {
-            let cateChild = await category.find({ parentId: cate[i]._id },{_id:1,name:1}).lean();
+            let cateChild = await category.find({ parentId: cate[i]._id }, { _id: 1, name: 1,parentId: 1 }).lean();
             if (cateChild && cateChild.length > 0) {
                 for (let j = 0; j < cateChild.length; j++) {
                     let data = await CateDetail.findById(cateChild[j]._id);
-                    let cateDetail = await Tags.find({ cateId: cateChild[j]._id }, { _id: 1, name: 1 })
-                        cateChild[j].data = data
-                        cateChild[j].cateDetail = cateDetail
+                    let cateDetail = await Tags.find({ cateId: cateChild[j]._id })
+                    cateChild[j].data = data
+                    cateChild[j].cateDetail = cateDetail
                 }
             }
             cate[i].cateChild = cateChild
-            let all = await CateDetail.findById(i);
+            let all = await CateDetail.findById(cate[i]._id);
+            // let tags = await Tags.find({ cateId: cateChild[j]._id })
             cate[i].all = all
 
         }
@@ -207,23 +208,23 @@ exports.supportSellNew = async (req, res, next) => {
         if (cateChild.length > 0) data.cateChild = cateChild
         if (CateDetail.length > 0) data.CateDetail = CateDetail1
         //  if (productLine.length > 0) data.productLine = productLine
-        if (brand.length > 0) data.brand = brand;
-        if (line.length > 0) data.line = line;
-        if (screen.length > 0) data.screen = screen;
-        if (capacity.length > 0) data.capacity = capacity;
-        if (colors.length > 0) data.colors = colors;
-        if (origin.length > 0) data.origin = origin;
-        if (petInfo.length > 0) data.petInfo = petInfo;
-        if (petPurebred.length > 0) data.petPurebred = petPurebred;
-        if (processor.length > 0) data.processor = processor;
-        if (productGroup.length > 0) data.productGroup = productGroup;
-        if (productMaterial.length > 0) data.productMaterial = productMaterial;
-        if (productShape.length > 0) data.productShape = productShape;
-        if (processor.length > 0) data.processor = processor;
-        if (sport.length > 0) data.sport = sport;
-        if (storyAndRoom.length > 0) data.storyAndRoom = storyAndRoom;
-        if (city1.length.length > 0) data.city1 = city1;
-        if (lineOfBrand.length > 0) data.lineOfBrand = lineOfBrand
+        data.brand = brand;
+        data.line = line;
+        data.screen = screen;
+        data.capacity = capacity;
+        data.colors = colors;
+        data.origin = origin;
+        data.petInfo = petInfo;
+        data.petPurebred = petPurebred;
+        data.processor = processor;
+        data.productGroup = productGroup;
+        data.productMaterial = productMaterial;
+        data.productShape = productShape;
+        data.processor = processor
+        data.sport = sport;
+        data.storyAndRoom = storyAndRoom;
+        data.city1 = city1;
+        data.lineOfBrand = lineOfBrand
         return functions.success(res, 'get data success', { data })
     } catch (err) {
         console.log("🚀 ~ file: topCache.js:97 ~ exports.supportSellNew= ~ err:", err)

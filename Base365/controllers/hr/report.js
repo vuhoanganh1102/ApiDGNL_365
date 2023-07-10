@@ -399,7 +399,7 @@ exports.report = async (req, res, next) => {
                 $project: { 'quit.ep_id': 1, 'quit.current_position': 1, 'quit.created_at': 1, idQLC: 1, userName: 1, 'inForPerson.account': 1, emailContact: 1, phone: 1, 'inForPerson.employee': 1 }
             },
         ])
-        console.log(condition)
+     
         //Biểu đồ thống kê bổ nhiệm, quy hoạch
         let chartBoNhiem = await Users.aggregate([
             {
@@ -658,7 +658,6 @@ exports.reportChart = async (req, res, next) => {
         else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
             let tuoi = 0;
             let list =[];
-            console.log("🚀 ~ file: report.js:665 ~ exports.reportChart= ~ condition:", condition)
 
             let check = await Users.aggregate([
                 {
@@ -679,7 +678,6 @@ exports.reportChart = async (req, res, next) => {
                 let sinhnhat =  new Date(check[i].inForPerson.account.birthday).getFullYear()
                 let namhientai = new Date().getFullYear();
                 tuoi = namhientai - sinhnhat;
-                console.log("🚀 ~ file: report.js:683 ~ exports.reportChart= ~ tuoi:", tuoi)
                 if(old === 1 && tuoi < 30)
                 {
                     list.push(check[i])
