@@ -67,7 +67,7 @@ exports.getListContract = async (req, res, next) => {
 // thêm mới hợp đồng đến
 exports.createSendContract = async (req, res, next) => {
     try {
-        let comId = req.comId;
+        let comId = req.comId ;
         let name_vbden = req.body.name_vbden;
         let so_vbden = req.body.so_vbden;
         let type_gui_vbden = Number(req.body.type_gui_vbden);

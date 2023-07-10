@@ -270,7 +270,7 @@ exports.synthesisFunction = async (req, res, next) => {
         let id = Number(req.body.id);
         let action = req.body.action;
         let comId = Number(req.comId);
-        let useId = Number(req.useId)||0;
+        let useId = Number(req.useId);
         let listId = req.body.listId;
         console.log(comId);
         // Chức năng xoá  
@@ -278,7 +278,7 @@ exports.synthesisFunction = async (req, res, next) => {
             if (!id || !action) {
                 return functions.setError(res, 'missing data input', 400)
             }
-            let checkExists = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId });
+            let checkExists = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId,cv_type_xoa:0 });
             if (!checkExists) return functions.setError(res, 'not found', 404)
 
             let type_user_xoa = 0;
@@ -359,7 +359,7 @@ exports.getDetail = async (req, res, next) => {
     try {
         let data = [];
         let id = Number(req.body.id);
-        let comId = Number(req.body.comId);
+        let comId = Number(req.comId);
         if (!id) {
             return functions.setError(res, 'missing data input', 400)
         }
