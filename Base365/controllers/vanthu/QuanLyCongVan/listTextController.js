@@ -113,7 +113,7 @@ exports.createIncomingText = async (req, res, next) => {
                 cv_phong_soan: noi_gui_vbden,
                 cv_user_soan: user_gui_vbden,
                 cv_id_book: book_vb,
-                cv_date: vanthu.convertTimestamp(date_nhan),
+                cv_date: date_nhan.getTime()/1000,
                 cv_name_soan: text_user_gui_vbden,
                 cv_user_save: use_luu_vbden,
                 cv_type_nhan: 1,
