@@ -221,6 +221,7 @@ exports.uploadfile = async(folder, file_img) => {
             }
         });
     });
+    console.log(filename)
     return filename;
 }
 exports.deleteFile = (file) => {

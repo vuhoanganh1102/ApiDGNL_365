@@ -23,119 +23,96 @@ exports.postNewMain = async (req, res, next) => {
     try {
         let img = req.files.img;
         let video = req.files.video;
+        let CV  = req.files.CV;
+        let diachi = [];
         let userID = req.user.data.idRaoNhanh365;
         let request = req.body;
         let cateID = request.cateID;
         let title = request.title;
         let money = request.money;
+        let endvalue = request.endvalue;
+        let downPayment = request.downPayment;
         let until = request.until;
-        let description = request.description;
-        let free = request.free;
-        let poster = request.poster;
+        let buySell = 2;
+        let detailCategory = request.detailCategory;
         let name = request.name;
+        let phone = request.phone;
         let email = request.email;
         let address = request.address;
-        let phone = request.phone;
-        let status = request.status;
-        let detailCategory = request.detailCategory;
-        let productType = request.productType;
-        let productGroup = request.productGroup;
         let city = request.city;
         let district = request.district;
-        let downPayment = request.downPayment;
-        let hashtag = request.hashtag;
+        let ward = request.ward;
+        let apartmentNumber = request.apartmentNumber;
+        let status = request.status;
+        let free = request.free;
+        let timeSell = request.timeSell;
+        let totalSold = request.totalSold;
         let quantityMin = request.quantityMin;
         let quantityMax = request.quantityMax;
-        let han_su_dung = request.han_su_dung;
+        let com_city = request.com_city;
+        let com_district = request.com_district;
+        let com_ward = request.com_ward;
+        let com_address_num = request.com_address_num;
+        let timePromotionStart = request.timePromotionStart;
+        let timePromotionEnd = request.timePromotionEnd;
+        let productType = request.productType;
+        let productGroup = request.productGroup;
+        let poster = request.poster;
+        let description = request.description;
+        let hashtag = request.hashtag;
+        let order = request.order;
         let the_tich = request.the_tich;
-        let fields = [
+        let warranty = request. warranty;
+        for (let i = 0; i < address.length; i++) {
+            diachi.push(address[i])
+        }
+        const _id = await functions.getMaxID(New) + 1
+        req.info = {
+            _id,
+            title,
             userID,
             cateID,
-            title,
+            address: diachi,
             money,
+            endvalue,
+            downPayment,
             until,
-            description,
-            free,
-            poster,
-            name,
-            email,
-            address,
-            phone,
-            status,
+            buySell,
             detailCategory,
-        ];
-        for (let i = 0; i < fields.length; i++) {
-            if (!fields[i])
-                return functions.setError(res, "Missing input value", 404);
-        }
-        const maxIDNews = await New.findOne({}, { _id: 1 })
-            .sort({ _id: -1 })
-            .limit(1)
-            .lean();
-        let newIDNews;
-        if (maxIDNews) {
-            newIDNews = Number(maxIDNews._id) + 1;
-        } else newIDNews = 1;
-
-        if (video) {
-            if (video.length == 1) {
-                let checkVideo = await functions.checkVideo(video[0]);
-                if (checkVideo) {
-                    nameVideo = video[0].filename;
-                } else {
-                    video.forEach(async (element) => {
-                        await functions.deleteImg(element);
-                    });
-                    return functions.setError(
-                        res,
-                        "video không đúng định dạng hoặc lớn hơn 100MB ",
-                        407
-                    );
-                }
-            } else if (video.length > 1) {
-                await functions.deleteImgVideo(img, video);
-                return functions.setError(res, "chỉ được đưa lên 1 video", 408);
-            }
-        }
-        req.info = {
-            _id: newIDNews,
-            userID: userID,
-            cateID: cateID,
-            title: title,
-            money: money,
-            until: until,
-            description: description,
-            free: free,
-            poster: poster,
-            name: name,
-            status: status,
-            email: email,
-            address: address,
-            phone: phone,
-            detailCategory: detailCategory,
-            district: district,
-            img: img,
-            video: video,
-            productGroup: productGroup,
-            productType: productType,
-            city: city,
-            district: district,
-            ward: ward,
-            brand: brand,
-            downPayment: downPayment,
-            hashtag: hashtag,
-            quantityMin: quantityMin,
-            quantityMax: quantityMax,
-            buySell: 2,
-            active: 1,
-            han_su_dung: han_su_dung,
-            the_tich: the_tich,
+            name,
+            phone,
+            email,
+            city,
+            district,
+            ward,
+            apartmentNumber,
+            status,
+            free,
+            timeSell,
+            totalSold,
+            quantityMin,
+            quantityMax,
+            com_city,
+            com_district,
+            com_ward,
+            com_address_num,
+            timePromotionStart,
+            timePromotionEnd,
+            productType,
+            productGroup,
+            poster,
+            description,
+            hashtag,
+            order,
+            img,
+            video,
+            CV,
+            the_tich,
+            warranty
         };
-
         return next();
-
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return functions.setError(res, err);
     }
 };
@@ -215,7 +192,10 @@ exports.postNewsGeneral = async (req, res, next) => {
                 kv_thanhpho: request.kv_thanhpho,
                 kv_quanhuyen: request.kv_quanhuyen,
                 kv_phuongxa: request.kv_phuongxa,
-
+                can_ban_mua: request.can_ban_mua,
+                dia_chi: request.dia_chi,
+                huong_ban_cong: request.huong_ban_cong,
+                cangoc: request.cangoc,
             };
             // cac truong cua ship
             let fieldsShip = {
@@ -249,18 +229,12 @@ exports.postNewsGeneral = async (req, res, next) => {
                 loai_sanpham: req.body.loai_sanpham,
 
             };
-            let cv = req.files.cv;
-            let nameFileCV = "";
-            if (cv) {
-                if (await functions.checkFileCV(cv.path)) {
-                    nameFileCV = cv.originalFilename;
-                } else {
-                    return functions.setError(
-                        res,
-                        "Vui lòng chọn file có định đạng: PDF",
-                        506
-                    );
-                }
+
+            let noiThatNgoaiThat = {
+                chat_lieu: req.body.chat_lieu,
+                kich_co: req.body.kich_co,
+                hinhdang: req.body.hinhdang,
+                brand: req.body.brand,
             }
             //cac truong cua danh muc cong viec
             let fieldsJob = {
@@ -275,7 +249,6 @@ exports.postNewsGeneral = async (req, res, next) => {
                 salary: req.body.salary,
                 gender: req.body.gender,
                 degree: req.body.degree,
-                cv: nameFileCV,
             };
             let fieldsinfoSell = {
                 groupType: req.body.groupType,
@@ -293,7 +266,6 @@ exports.postNewsGeneral = async (req, res, next) => {
                 tgian_kt: req.body.tgian_kt,
                 dia_chi: req.body.dia_chi,
             }
-            //
             fields.electroniceDevice = fieldsElectroniceDevice;
             fields.vehicle = fieldsVehicle;
             fields.realEstate = fieldsRealEstate;
@@ -302,13 +274,14 @@ exports.postNewsGeneral = async (req, res, next) => {
             fields.Job = fieldsJob;
             fields.beautifull = fieldsbeautifull;
             fields.wareHouse = fieldwareHouse;
-            fields.infoSell = fieldsinfoSell
+            fields.infoSell = fieldsinfoSell;
+            fields.noiThatNgoaiThat = noiThatNgoaiThat;
             req.fields = fields;
             return next();
         }
         return functions.setError(res, "Category not found!", 505);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return functions.setError(res, err);
     }
 };
@@ -316,8 +289,6 @@ exports.postNewsGeneral = async (req, res, next) => {
 exports.createNews = async (req, res, next) => {
     try {
         let fields = req.fields;
-        let userID = req.user.data.idRaoNhanh365;
-
         let cate_Special = null;
         let danh_muc1 = null;
         let danh_muc2 = null;
@@ -377,6 +348,13 @@ exports.createNews = async (req, res, next) => {
 
             fields.video = video;
         }
+        if(cate_Special && fields.CV){
+            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
+            let check = await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.CV, ['.pdf', '.jpg', '.docx', '.png'])
+            if (check === false) return functions.setError(res, 'khong duoc day video dang nay', 400)
+            let CV = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.CV.name)
+            fields['Job.cv'] = CV
+        }
 
         fields.createTime = new Date(Date.now());
 
@@ -384,7 +362,7 @@ exports.createNews = async (req, res, next) => {
         await news.save();
         return functions.success(res, "create news success");
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return functions.setError(res, err);
     }
 };
@@ -467,7 +445,7 @@ exports.updateNews = async (req, res, next) => {
         }
         return functions.setError(res, "News not found!", 505);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return functions.setError(res, err);
     }
 };
@@ -491,7 +469,7 @@ exports.hideNews = async (req, res, next) => {
         }
         return functions.setError(res, "News not found!", 505);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return functions.setError(res, err);
     }
 };
@@ -530,7 +508,7 @@ exports.pinNews = async (req, res, next) => {
         }
         return functions.setError(res, "News not found!", 505);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return functions.setError(res, err);
     }
 };
@@ -568,7 +546,7 @@ exports.pushNews = async (req, res, next) => {
         }
         return functions.setError(res, "News not found!", 505);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return functions.setError(res, err);
     }
 };
@@ -646,114 +624,8 @@ exports.searchSellNews = async (req, res, next) => {
     }
 };
 
-// đăng tin do dien tu
-exports.postNewElectron = async (req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 1 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id);
-        }
-        let fields = req.info;
-        const exists = listID.includes(Number(fields.cateID));
-        if (exists) {
-            let request = req.body,
-                microprocessor = request.microprocessor,
-                ram = request.ram,
-                hardDrive = request.hardDrive,
-                typeHarđrive = request.typeHarđrive,
-                screen = request.screen,
-                size = request.size,
-                brand = request.brand,
-                machineSeries = request.machineSeries;
-            let subFields = {
-                microprocessor,
-                ram,
-                hardDrive,
-                typeHarđrive,
-                screen,
-                size,
-                brand,
-                machineSeries,
-            };
-            fields.createTime = new Date(Date.now());
-            fields.electroniceDevice = subFields;
-            const news = new New(fields);
-            await news.save();
-            return functions.success(res, "create news electronic device success");
-        }
-        return functions.setError(
-            res,
-            "Category electronic device not found!",
-            505
-        );
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err);
-    }
-};
 
-// đăng tin
-exports.postNewVehicle = async (req, res, next) => {
-    try {
-        let listID = [];
-        let listCategory = await functions.getDatafind(Category, { parentId: 2 });
-        for (let i = 0; i < listCategory.length; i++) {
-            listID.push(listCategory[i]._id);
-        }
-        const exists = listID.includes(req.info.cateID);
-        if (exists) {
-            let request = req.body,
-                brandMaterials = request.brandMaterials,
-                vehicles = request.vehicles,
-                spareParts = request.spareParts,
-                interior = request.interior,
-                device = request.device,
-                color = request.color,
-                capacity = request.capacity,
-                connectInternet = request.connectInternet,
-                generalType = request.generalType,
-                wattage = request.wattage,
-                resolution = request.resolution,
-                engine = request.engine,
-                accessary = request.accessary,
-                frameMaterial = request.frameMaterial,
-                volume = request.volume,
-                manufacturingYear = request.manufacturingYear,
-                fuel = request.fuel,
-                numberOfSeats = request.numberOfSeats,
-                gearBox = request.gearBox,
-                style = request.style,
-                payload = request.payload,
-                carNumber = request.carNumber,
-                km = request.km,
-                origin = request.origin,
-                version = request.version;
-            let newRN = New({
-                cateID: cateID,
-                title: title,
-                money: money,
-                until: until,
-                description: description,
-                free: free,
-                poster: poster,
-                name: name,
-                status: status,
-                email: email,
-                address: address,
-                phone: phone,
-                detailCategory: detailCategory,
-                district: district,
-                img: img,
-                video: video,
-            });
-        }
-        return next();
-    } catch (err) {
-        console.log(err);
-        return functions.setError(res, err);
-    }
-};
+
 
 exports.deleteNews = async (req, res) => {
     try {
@@ -778,8 +650,8 @@ exports.deleteNews = async (req, res) => {
                     .catch((err) => functions.setError(res, err.message, 514));
             }
         }
-    } catch (e) {
-        console.log("Error from server", e);
+    } catch (err) {
+        console.error(err);
         return functions.setError(res, "Error from server", 500);
     }
 };
@@ -787,11 +659,7 @@ exports.deleteNews = async (req, res) => {
 // trang chủ
 exports.getNew = async (req, res, next) => {
     try {
-        let userIdRaoNhanh = null;
-        // let user = await functions.getTokenUser(req, res, next);
-        // if(user){
-        //     userIdRaoNhanh =  user.idRaoNhanh365;
-        // }
+        let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         let searchItem = {
             _id: 1,
             title: 1,
@@ -813,35 +681,41 @@ exports.getNew = async (req, res, next) => {
             until: 1,
             endvalue: 1,
             type: 1,
-            free: 1
+            free: 1,
+            link: 1
         };
         let data = await New.aggregate([
+            {
+                $sort: { pinHome: -1 },
+            },
             {
                 $match: { buySell: 2, sold: 0, active: 1 },
             },
             {
-                $sort: { pinHome: -1, createTime: -1, order: -1 },
-            },
-            {
                 $limit: 50,
             },
-            // {
-            //     $lookup: {
-            //         from: "Users",
-            //         let:{idRaoNhanh365}
-            //         foreignField: "idRaoNhanh365",
-            //         as: "user",
-            //     },
-            // },
-
+            {
+                $sort: { createTime: -1, order: -1 }
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: 'userID',
+                    foreignField: "idRaoNhanh365",
+                    as: "user",
+                },
+            },
             {
                 $project: searchItem,
             },
 
         ]);
-        if (userIdRaoNhanh) {
-            let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
-            for (let i = 0; i < data.length; i++) {
+
+
+        for (let i = 0; i < data.length; i++) {
+            data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-c${data[i]._id}.html`;
+            if (userIdRaoNhanh) {
+                let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
                     if (data[i].userID === dataLoveNew[j].id_user) {
                         data[i].islove = 1;
@@ -858,9 +732,7 @@ exports.getNew = async (req, res, next) => {
 // tìm kiếm tin
 exports.searchNew = async (req, res, next) => {
     try {
-        let userIdRaoNhanh = 0;
-        const authHeader = req.headers["authorization"];
-        const token = authHeader && authHeader.split(" ")[1];
+
         let link = req.body.link;
         let buySell = 1;
         let searchItem = {};
@@ -1201,8 +1073,14 @@ exports.searchNew = async (req, res, next) => {
         if (payBy) condition["Job.payBy"] = payBy;
         if (benefit) condition["Job.benefit"] = benefit;
         if (money) condition.startvalue = { $gte: money };
-        if (endvalue) condition.endvalue = { $lte: endvalue };
+        if (endvalue) condition.money = { $lte: endvalue };
         let data = await New.aggregate([
+            {
+                $match: condition,
+            },
+            {
+                $limit: limit,
+            },
             {
                 $lookup: {
                     from: "Users",
@@ -1212,30 +1090,22 @@ exports.searchNew = async (req, res, next) => {
                 },
             },
             {
-                $match: condition,
-            },
-            {
                 $project: searchItem,
             },
             {
                 $skip: skip,
             },
-            {
-                $limit: limit,
-            },
-        ]);
-        if (token) {
-            jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
-                if (err) {
-                    return res.status(403).json({ message: "Invalid token" });
-                }
-                userIdRaoNhanh = user.data.idRaoNhanh365;
-            });
-        }
-        if (userIdRaoNhanh) {
 
-            let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
-            for (let i = 0; i < data.length; i++) {
+        ]);
+        let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
+        for (let i = 0; i < data.length; i++) {
+            if(buySell === 1){
+                data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-ct${data[i]._id}.html`;
+            }else{
+                data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-c${data[i]._id}.html`;
+            }
+            if (userIdRaoNhanh) {
+                let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
                     if (data[i].userID === dataLoveNew[j].id_user) {
                         data[i].islove = 1;
@@ -1243,7 +1113,6 @@ exports.searchNew = async (req, res, next) => {
                 }
             }
         }
-        //let data = await New.find(condition, searchItem).skip(skip).limit(limit);
         const totalCount = await New.countDocuments(condition);
         const totalPages = Math.ceil(totalCount / pageSize);
         return functions.success(res, "get data success", {
@@ -1252,7 +1121,7 @@ exports.searchNew = async (req, res, next) => {
             data,
         });
     } catch (error) {
-        console.log("🚀 ~ file: new.js:747 ~ exports.searchNew= ~ error:", error);
+        console.error(error);
         return functions.setError(res, error);
     }
 };
@@ -1493,7 +1362,7 @@ exports.createBuyNew = async (req, res) => {
         }
         return functions.success(res, "post new success");
     } catch (error) {
-        console.log("🚀 ~ file: new.js:1300 ~ exports.createBuyNew= ~ error:", error)
+        console.error(error);
         return functions.setError(res, error);
     }
 };
@@ -1783,8 +1652,7 @@ exports.getDetailNew = async (req, res, next) => {
         let cm_page = req.body.cm_page
         let cm_limit = 10;
         let cm_start = (cm_page - 1) * cm_limit;
-        const authHeader = req.headers["authorization"];
-        const token = authHeader && authHeader.split(" ")[1];
+        let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         let linkTitle = req.body.linkTitle.replace(".html", "");
         if (!linkTitle) {
             return functions.setError(res, "missing data", 400);
@@ -1801,8 +1669,6 @@ exports.getDetailNew = async (req, res, next) => {
         let tintuongtu = [];
         let ListComment = [];
         let ListLike = [];
-        let userIdRaoNhanh = 0;
-        let thongTinChiTiet = {};
         if ((await functions.checkNumber(id_new)) === false) {
             return functions.setError(res, "invalid number", 404);
         }
@@ -1914,6 +1780,9 @@ exports.getDetailNew = async (req, res, next) => {
         }
         let data = await New.aggregate([
             {
+                $match: { _id: id_new },
+            },
+            {
                 $lookup: {
                     from: "Users",
                     localField: "userID",
@@ -1924,9 +1793,7 @@ exports.getDetailNew = async (req, res, next) => {
             {
                 $project: searchitem,
             },
-            {
-                $match: { _id: id_new },
-            },
+
         ]);
 
         let cousao = await Evaluate.find({ newId: 0, blUser: data[0].userID }).count();
@@ -1945,10 +1812,11 @@ exports.getDetailNew = async (req, res, next) => {
             }
         ]);
         let thongTinSao = {};
-        if (sumsao && sumsao.length !== 0) {  
+        if (sumsao && sumsao.length !== 0) {
             thongTinSao.cousao = cousao;
             thongTinSao.sumsao = sumsao[0].count;
         }
+       
         data[0].thongTinSao = thongTinSao
         data[0].danhmuc = { danh_muc1, danh_muc2, danh_muc3 };
         tintuongtu = await New.find({ cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } }, {
@@ -2005,17 +1873,9 @@ exports.getDetailNew = async (req, res, next) => {
         if (tintuongtu) {
             data[0].tintuongtu = tintuongtu;
         }
-        if (token) {
-            jwt.verify(token, process.env.NODE_SERCET, (err, user) => {
-                if (err) {
-                    return res.status(403).json({ message: "Invalid token" });
-                }
-                userIdRaoNhanh = user.data.idRaoNhanh365;
-            });
-        }
-        if (userIdRaoNhanh) {
-            let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
-            for (let i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
+            if (userIdRaoNhanh) {
+                let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
                     if (data[i].userID === dataLoveNew[j].id_user) {
                         data[i].islove = 1;
@@ -2035,24 +1895,69 @@ exports.getDetailNew = async (req, res, next) => {
                     }
                 },
                 {
+                    $match: {
+                        'new._id': id_new
+                    }
+                },
+                {
                     $lookup: {
                         from: "Users",
                         localField: 'userID',
                         foreignField: 'idRaoNhanh365',
                         as: 'user'
                     }
-                },
-                {
-                    $match: {
-                        'new._id': id_new
+                }, {
+                    $project: {
+                        "new._id": 1,
+                       "new.title": 1,
+                        "new.money": 1,
+                        "new.endvalue": 1,
+                        "new.city": 1,
+                        "new.userID": 1,
+                        "new.img": 1,
+                        "new.updateTime": 1,
+                        "new.type": 1,
+                        "new.active": 1,
+                        "new.until": 1,
+                        "new.address": 1,
+                        "new.ward": 1,
+                        "new.detailCategory": 1,
+                        "new.district": 1,
+                        "new.viewCount": 1,
+                        "new.apartmentNumber": 1,
+                        "new.com_city": 1,
+                        "new.com_district": 1,
+                        "new.com_ward": 1,
+                        "new.com_address_num": 1,
+                        "new.bidding": 1,
+                        "new.tgian_kt": 1,
+                        "new.tgian_bd": 1,
+                        user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
+                        _id:1, 
+                        newId:1, 
+                        userID:1,
+                        userName:1, 
+                        userIntro:1, 
+                        userFile:1, 
+                        userProfile:1, 
+                        userProfileFile:1, 
+                        productName:1, 
+                        productDesc:1, 
+                        productLink:1, 
+                        price:1, 
+                        priceUnit:1, 
+                        promotion:1, 
+                        promotionFile:1, 
+                        status:1, 
+                        createTime:1, 
+                        note:1, 
+                        updatedAt:1,
                     }
                 }
+
             ])
             return functions.success(res, "get data success", { data, dataBidding });
         }
-
-
-
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.log("🚀 ~ file: new.js:1757 ~ exports.getDetailNew= ~ error:", error)
@@ -2719,7 +2624,7 @@ exports.deleteUv = async (req, res, next) => {
             return functions.success(res, "Candidate not found");
         }
     } catch (err) {
-
+        console.log(err);
         return functions.setError(res, "Err from server", 500);
     }
 };
@@ -2751,6 +2656,7 @@ exports.manageDiscount = async (req, res, next) => {
         let data = await New.find(search, searchItem);
         return functions.success(res, "get data success", { data });
     } catch (err) {
+        console.error(err);
         return functions.setError(res, err);
     }
 };
