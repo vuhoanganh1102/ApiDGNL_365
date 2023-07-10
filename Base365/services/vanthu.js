@@ -215,7 +215,7 @@ exports.uploadfile = async(folder, file_img,time) => {
         fs.mkdirSync(dir, { recursive: true });
     }
 
-    filename = `${timestamp}-${file_img.originalFilename}`.replace(/,/g, '');
+    filename = `${timestamp}-tin-${file_img.originalFilename}`.replace(/,/g, '');
     const filePath = dir + filename;
     filename = filename + ',';
     fs.readFile(file_img.path, (err, data) => {
@@ -228,7 +228,6 @@ exports.uploadfile = async(folder, file_img,time) => {
             }
         });
     });
-    console.log(filename)
     return filename;
 }
 exports.deleteFile = (file) => {

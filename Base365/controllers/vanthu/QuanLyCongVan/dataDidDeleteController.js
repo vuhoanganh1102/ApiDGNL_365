@@ -5,7 +5,7 @@ const tbl_qlcv_edit = require('../../../models/Vanthu365/tbl_qlcv_edit');
 
 exports.getDataDidDelete = async (req, res, next) => {
     try {
-        let comId = Number(req.comId) || 1763;
+        let comId = Number(req.comId);
 
         let data = {};
 
@@ -37,7 +37,7 @@ exports.getDataDidDelete = async (req, res, next) => {
 exports.getDetailDataDelete = async (req, res, next) => {
     try {
         let data = {};
-        let comId = req.body.comId || 1763;
+        let comId = req.comId;
         let dateNow = new Date();
         let day = dateNow.getDate();
         let month = dateNow.getMonth() + 1;

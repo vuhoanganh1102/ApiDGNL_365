@@ -886,10 +886,13 @@ exports.tool_qlcv_congVan = async (req, res, next) => {
                     if(listData[i].cv_file){
                         let file = listData[i].cv_file.split(',')
                         for(let j = 0; j < file.length; j++) {
-                            cv_file.push({file:file[j]});
+                            if(file[j]!=='')
+                            {
+                                cv_file.push({file:file[j]});
+                            }
                         }
                     }
-                   
+                  
                     const qlCongVan = new congVan({
                         _id: listData[i].cv_id,
                         cv_id_vb: listData[i].cv_id_vb,

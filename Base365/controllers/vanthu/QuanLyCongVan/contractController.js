@@ -20,7 +20,7 @@ exports.getListContract = async (req, res, next) => {
         let dayEnd = req.body.dayEnd;
         let status = req.body.status;
 
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let type = Number(req.body.type);
         //tạo phân trang
         let skip = (page - 1) * pageSize;
@@ -66,7 +66,7 @@ exports.getListContract = async (req, res, next) => {
 // thêm mới hợp đồng đến
 exports.createSendContract = async (req, res, next) => {
     try {
-        let comId = req.comId || 1763;
+        let comId = req.comId ;
         let name_vbden = req.body.name_vbden;
         let so_vbden = req.body.so_vbden;
         let type_gui_vbden = Number(req.body.type_gui_vbden);
@@ -151,7 +151,7 @@ exports.createSendContract = async (req, res, next) => {
 exports.updateSendContract = async (req, res, next) => {
     try {
 
-        let comId = req.comId || 1763;
+        let comId = req.comId ;
         let name_vbden = req.body.name_vbden;
         let so_vbden = req.body.so_vbden;
         let type_gui_vbden = Number(req.body.type_gui_vbden);
@@ -294,7 +294,7 @@ exports.updateSendContract = async (req, res, next) => {
 // tạo hợp đồng đi
 exports.createContract = async (req, res, next) => {
     try {
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let name_vbdi = req.body.name_vbdi;
         let so_vbdi = req.body.so_vbdi;
         let dvst_vbdi = Number(req.body.dvst_vbdi);
@@ -389,7 +389,7 @@ exports.createContract = async (req, res, next) => {
 // sửa hợp đồng đi
 exports.updateContract =  async (req, res, next) => {
     try {
-        let comId = req.comId || 1763;
+        let comId = req.comId ;
         let name_vbdi = req.body.name_vbdi;
         let so_vbdi = req.body.so_vbdi;
         let dvst_vbdi = Number(req.body.dvst_vbdi);

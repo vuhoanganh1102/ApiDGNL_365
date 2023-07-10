@@ -141,7 +141,7 @@ exports.createIncomingText = async (req, res, next) => {
 // sửa văn bản đến
 exports.updateIncomingText = async (req, res, next) => {
     try {
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let name_vbden = req.body.name_vbden;
         let type_vbden = req.body.type_vbden;
         let so_vbden = req.body.so_vbden;
@@ -285,8 +285,8 @@ exports.synthesisFunction = async (req, res, next) => {
     try {
         let id = Number(req.body.id);
         let action = req.body.action;
-        let comId = Number(req.body.comId) || 1763;
-        let useId = Number(req.useId)||0;
+        let comId = Number(req.comId);
+        let useId = Number(req.useId);
         let listId = req.body.listId;
         
         // Chức năng xoá  
@@ -294,7 +294,7 @@ exports.synthesisFunction = async (req, res, next) => {
             if (!id || !action) {
                 return functions.setError(res, 'missing data input', 400)
             }
-            let checkExists = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId });
+            let checkExists = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId,cv_type_xoa:0 });
             if (!checkExists) return functions.setError(res, 'not found', 404)
 
             let type_user_xoa = 0;
@@ -375,7 +375,7 @@ exports.getDetail = async (req, res, next) => {
     try {
         let data = [];
         let id = Number(req.body.id);
-        let comId = Number(req.body.comId) || 1764;
+        let comId = Number(req.comId);
         if (!id) {
             return functions.setError(res, 'missing data input', 400)
         }
@@ -390,7 +390,7 @@ exports.getDetail = async (req, res, next) => {
 // tạo mới văn bản đi
 exports.createSendText = async (req, res, next) => {
     try {
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let name_vbdi = req.body.name_vbdi;
         let type_loai_vb = req.body.type_loai_vb;
         let so_vbdi = req.body.so_vbdi;
@@ -486,7 +486,7 @@ exports.createSendText = async (req, res, next) => {
 // sửa văn bản đi
 exports.updateSendText = async (req, res, next) => {
     try {
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let name_vbdi = req.body.name_vbdi;
         let type_loai_vb = req.body.type_loai_vb;
         let so_vbdi = req.body.so_vbdi;
