@@ -12,4 +12,7 @@ router.post('/edit',functions.checkToken,formData.parse(),controller.edit)
 
 router.post('/delete',functions.checkToken,formData.parse(),controller.delete)
 
+router.post('/getList',functions.checkToken,formData.parse(),controller.getList)
+
+router.post('/updateStatus',functions.checkToken,formData.parse(),controller.updateStatus)
 module.exports = router

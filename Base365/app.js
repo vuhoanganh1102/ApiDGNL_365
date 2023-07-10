@@ -82,7 +82,10 @@ errorApp(appCRM)
 // Cấu hình appQLC
 configureApp(appQLC);
 var qlcRouter = require('./routes/qlc');
+var ToolQLC = require('./routes/qlc/Tools');
 appQLC.use("/api", qlcRouter);
+appQLC.use("/api/tool", ToolQLC)
+
 errorApp(appQLC)
 
 // Cấu hình appHR
