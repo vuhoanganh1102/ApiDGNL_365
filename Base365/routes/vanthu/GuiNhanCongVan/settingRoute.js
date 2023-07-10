@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const settingController = require("../../../controllers/vanthu/GuiNhanCongVan/settingController");
 var formData = require('express-form-data');
-const vanThuService = require('../../../services/vanThu');
+const vanThuService = require('../../../services/vanthu');
 
 router.post('/thietLapQuyen', vanThuService.checkToken, settingController.thietLapQuyen);
 router.post('/getListQuyen', vanThuService.checkToken, settingController.getListQuyen);

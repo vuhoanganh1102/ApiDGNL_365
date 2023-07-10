@@ -4,7 +4,7 @@ const tbl_qlcv_role = require('../../../models/Vanthu365/tbl_qlcv_role')
 // danh sách phân quyền người dùng
 exports.getdecentralization =  async (req,res,next)=>{
     try {
-        let comId =  req.comID || 1763;
+        let comId =  req.comID;
         let emId =  Number(req.body.emId);
         let data = await tbl_qlcv_role.find({ro_use_id:emId,ro_usc_id:comId})
         return functions.success(res,'get data success',{data})

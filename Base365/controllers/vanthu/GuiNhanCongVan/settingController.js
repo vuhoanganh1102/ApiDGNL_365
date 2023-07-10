@@ -36,6 +36,7 @@ exports.thietLapQuyen = async(req, res, next) => {
       }
       return functions.success(res, "Cap nhat quyen thanh cong!");
     }
+
     let idMax = await vanThuService.getMaxId(UserModel);
     userModel = new UserModel({
       _id: idMax,
@@ -66,7 +67,8 @@ exports.getListQuyen = async(req, res) => {
     }
     return functions.success(res, "Get quyen success!", {listQuyen: listQuyen});
   }catch(err) {
-
+    console.log("Err from server!", err);
+    return functions.setError(res, err, 500);
   }
 }
 //-----------------------so van ban-----------------------
@@ -134,7 +136,7 @@ exports.updateSoVanBan = async(req, res, next) => {
     if(!id_so_vb || !name_book) {
       return functions.setError(res, "Missing input value!", 404);
     }
-    let soVB = await TextBook.findOneAndUpdate({_id: id_so_vb}, {name_book: name_book}, {new: 1});
+    let soVB = await TextBook.findOneAndUpdate({_id: id_so_vb}, {name_book: name_book}, {new: true});
     if(!soVB) {
       return functions.setError(res, "Khong ton tai so van ban!", 404);
     }
