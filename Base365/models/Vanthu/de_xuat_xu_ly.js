@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Vanthu_de_xuat_xu_ly = new Schema({
-    id_dx: {
+    _id: {
         type: Number,
         required : true
     },

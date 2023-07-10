@@ -4,11 +4,6 @@ const formData = require('express-form-data');
 const functions = require('../../services/functions')
 const newRN = require('../../controllers/raonhanh365/new');
 
-
-
-router.post('/postNew', formData.parse(), newRN.postNewMain, newRN.postNewElectron);
-
-
 // tìm kiếm tin
 router.post('/searchNew',formData.parse(), newRN.searchNew);
 //------------------------api lien quan den tin ban---------------------------
