@@ -89,13 +89,6 @@ exports.uploadFileNameRandom = async(folder, file_img) => {
     filename = `${timestamp}-tin-${file_img.originalFilename}`.replace(/,/g, '');
     const filePath = dir + filename;
     filename = filename + ',';
-    // if (NameFile === '') {
-    //     NameFile += `'${file_img.name.replace(/,/g, '')}'`;
-    //     InfoFile += `'https://vanthu.timviec365.vn/uploads/file_van_ban/${year}/${month}/${day}/${filename}'`;
-    // } else {
-    //     NameFile += `,'${file_img.name.replace(/,/g, '')}'`;
-    //     InfoFile += `,'https://vanthu.timviec365.vn/uploads/file_van_ban/${year}/${month}/${day}/${filename}'`;
-    // }
 
     fs.readFile(file_img.path, (err, data) => {
         if (err) {
@@ -202,9 +195,9 @@ exports.replaceTitle = (title) => {
     return title.replace(/[^a-zA-Z0-9]/g, '-');
 };
 
-exports.uploadfile = async(folder, file_img,time) => {
+exports.uploadfile = async(folder, file_img) => {
     let filename='';
-    const date = new Date(time);
+    const date = new Date(Date.now());
     const year = date.getFullYear();
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);

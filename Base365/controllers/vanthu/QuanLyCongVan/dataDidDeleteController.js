@@ -37,7 +37,7 @@ exports.getDataDidDelete = async (req, res, next) => {
 exports.getDetailDataDelete = async (req, res, next) => {
     try {
         let data = {};
-        let comId = req.body.comId || 1763;
+        let comId = req.comId || 1763;
         let dateNow = new Date();
         let day = dateNow.getDate();
         let month = dateNow.getMonth() + 1;
@@ -53,8 +53,8 @@ exports.getDetailDataDelete = async (req, res, next) => {
         if (searchKey) {
             conditions = {
                 $or: [
-                    { cv_name: { $regex: key } },
-                    { cv_so: { $regex: key } }
+                    { cv_name: { $regex: searchKey } },
+                    { cv_so: { $regex: searchKey } }
                 ]
             }
         }

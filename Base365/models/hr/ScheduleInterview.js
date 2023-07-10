@@ -75,6 +75,10 @@ const ScheduleInterviewSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now(),
+    },
+    result: {
+        type: Number,
+        default: 0
     }
 },{
     collection: 'HR_ScheduleInterviews',
