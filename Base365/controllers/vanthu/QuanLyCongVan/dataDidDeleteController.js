@@ -53,8 +53,8 @@ exports.getDetailDataDelete = async (req, res, next) => {
         if (searchKey) {
             conditions = {
                 $or: [
-                    { cv_name: { $regex: key } },
-                    { cv_so: { $regex: key } }
+                    { cv_name: { $regex: searchKey } },
+                    { cv_so: { $regex: searchKey } }
                 ]
             }
         }

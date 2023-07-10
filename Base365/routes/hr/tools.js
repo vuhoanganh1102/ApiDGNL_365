@@ -46,5 +46,6 @@ router.post('/scheduleInter', toolHr.toolScheduleInterview);
 router.post('/inviteInter', toolHr.toolInviteInterview);
 router.post('/recruitment', toolHr.toolRecruitment);
 router.post('/recruitmentNews', toolHr.toolRecruitmentNews);
+router.post('/getJob', toolHr.getJob);
 
 module.exports = router;

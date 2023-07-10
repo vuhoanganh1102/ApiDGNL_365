@@ -15,16 +15,16 @@ const GetJob = new Schema({
         require: true
     },
     resiredSalary: {
-        type: Number,
+        type: String,
         default: 0
     },
     salary: {
-        type: Number,
+        type: String,
         default: 0
     },
     interviewTime: {
-        type: Date,
-        default: Date.now()
+        type: String,
+        default: ""
     },
     empInterview: {
         type: Number,

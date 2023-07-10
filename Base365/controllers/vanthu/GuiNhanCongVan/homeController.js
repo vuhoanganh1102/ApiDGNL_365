@@ -3,7 +3,11 @@ const functions = require("../../../services/functions");
 
 exports.getTotalVanBan = async(req, res, next) => {
   try{
+<<<<<<< HEAD
     let id = req.id ;
+=======
+    let id = req.id;
+>>>>>>> da175efcbe1b9af320070b8def2860f580f7d806
     let vanbanden = await VanBan.countDocuments({user_nhan: new RegExp(id)});
     let vanbandi = await VanBan.countDocuments({user_send: id});
     // let tong_so_vb = await VanBan.countDocuments({$or: [{user_nhan: id}, {user_send: id}]});

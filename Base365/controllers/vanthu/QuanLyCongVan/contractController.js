@@ -2,6 +2,7 @@ const functions = require('../../../services/functions')
 const vanthu = require('../../../services/vanthu.js');
 const tbl_qly_congvan = require('../../../models/Vanthu365/tbl_qly_congvan');
 const tbl_qlcv_edit = require('../../../models/Vanthu365/tbl_qlcv_edit');
+const folder = 'file_van_ban';
 // danh sách hợp đồng
 exports.getListContract = async (req, res, next) => {
     try {
@@ -74,34 +75,32 @@ exports.createSendContract = async (req, res, next) => {
         let text_gui_vbden = req.body.text_gui_vbden;
         let user_gui_vbden = req.body.user_gui_vbden;
         let text_user_gui_vbden = req.body.text_user_gui_vbden;
-        let date_nhan = Number(req.body.date_nhan);
+        let date_nhan = req.body.date_nhan;
         let use_nhan_vbden = Number(req.body.use_nhan_vbden);
         let use_luu_vbden = Number(req.body.use_luu_vbden);
         let book_vb = Number(req.body.book_vb);
         let trich_yeu_vbden = req.body.trich_yeu_vbden;
         let ghi_chu_vbden = req.body.ghi_chu_vbden;
-        let file = req.files;
+        let file = req.files.file;
         let user_ky = Number(req.body.user_ky);
         let money_hd = Number(req.body.money_hd);
-        let cv_file = [];
+        let cv_file = '';
         let cv_time_create = new Date().getTime() / 1000;
-        if (file && file.file && file.file.length > 0) {
-            for (let i = 0; i < file.file.length; i++) {
-                let checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i])
+        if (file && file.length > 0) {
+            for (let i = 0; i < file.length; i++) {
+                let checkFile = await functions.checkFile(file[i].path);
+                let fileNameOrigin = file[i].name;
 
-                if (checkUpload === false) {
-                    return functions.setError(res, 'upload failed', 400)
+                if(!checkFile){
+                    return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                 }
-                cv_file.push({ file: checkUpload })
+                let fileName = await vanthu.uploadfile(folder, file[i]);
+                if(fileName) {
+                    cv_file += fileName;
+                }
             }
-        } else if (file && file.file) {
-            let checkUpload = await vanthu.uploadfile('file_van_ban', file.file)
-            if (checkUpload === false) {
-                return functions.setError(res, 'upload failed', 400)
-            }
-            cv_file.push({ file: checkUpload })
         }
-        if (await functions.checkTime(new Date(date_nhan * 1000)) === false || functions.checkDate(new Date(date_nhan * 1000)) === false) {
+        if (functions.checkDate(date_nhan) === false) {
             return functions.setError(res, 'invalid date', 400)
         }
 
@@ -123,7 +122,7 @@ exports.createSendContract = async (req, res, next) => {
                 cv_user_soan: user_gui_vbden,
                 cv_name_soan: text_user_gui_vbden,
                 cv_id_book: book_vb,
-                cv_date: date_nhan,
+                cv_date: vanthu.convertTimestamp(date_nhan),
                 cv_user_save: use_luu_vbden,
                 cv_user_ky: user_ky,
                 cv_type_chuyenden: 1,
@@ -151,7 +150,7 @@ exports.createSendContract = async (req, res, next) => {
 exports.updateSendContract = async (req, res, next) => {
     try {
 
-        let comId = req.comId ;
+        let comId = req.comId;
         let name_vbden = req.body.name_vbden;
         let so_vbden = req.body.so_vbden;
         let type_gui_vbden = Number(req.body.type_gui_vbden);
@@ -159,16 +158,16 @@ exports.updateSendContract = async (req, res, next) => {
         let text_gui_vbden = req.body.text_gui_vbden;
         let user_gui_vbden = req.body.user_gui_vbden;
         let text_user_gui_vbden = req.body.text_user_gui_vbden;
-        let date_nhan = Number(req.body.date_nhan);
+        let date_nhan = req.body.date_nhan;
         let use_nhan_vbden = Number(req.body.use_nhan_vbden);
         let use_luu_vbden = Number(req.body.use_luu_vbden);
         let book_vb = Number(req.body.book_vb);
         let trich_yeu_vbden = req.body.trich_yeu_vbden;
         let ghi_chu_vbden = req.body.ghi_chu_vbden;
-        let file = req.files;
+        let file = req.files.file;
         let user_ky = Number(req.body.user_ky);
         let money_hd = Number(req.body.money_hd);
-        let cv_file = [];
+        let cv_file = '';
         let id = req.body.id;
         let useId = req.body.useId;
         if (!id) return functions.setError(res, 'not found id', 404);
@@ -176,33 +175,19 @@ exports.updateSendContract = async (req, res, next) => {
         if (!check) {
             return functions.setError(res, 'not found contract', 404);
         }
-        let checkUpload = '';
-        if (file && file.file && file.file.length > 0) {
-            for (let i = 0; i < file.file.length; i++) {
-                checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i])
-                if (checkUpload === false) {
-                    return functions.setError(res, 'upload failed', 400)
+        if (file && file.length > 0) {
+            for (let i = 0; i < file.length; i++) {
+                let checkFile = await functions.checkFile(file[i].path);
+                let fileNameOrigin = file[i].name;
+
+                if(!checkFile){
+                    return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                 }
-                cv_file.push({ file: checkUpload })
-            }
-            if (check.cv_file) {
-                for (let i = 0; i < check.cv_file.length; i++) {
-                    vanthu.deleteFile(check.cv_file[i].file)
-                }
-            }
-            await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
-        } else if (file && file.file) {
-            checkUpload = await vanthu.uploadfile('file_van_ban', file.file)
-            if (checkUpload === false) {
-                return functions.setError(res, 'upload failed', 400)
-            }
-            cv_file.push({ file: checkUpload })
-            if (check.cv_file) {
-                for (let i = 0; i < check.cv_file.length; i++) {
-                    vanthu.deleteFile(check.cv_file[i].file)
+                let fileName = await vanthu.uploadfile(folder, file[i]);
+                if(fileName) {
+                    cv_file += fileName;
                 }
             }
-            await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
         }
 
         if (await !functions.checkNumber(type_gui_vbden) || await !functions.checkNumber(noi_gui_vbden) ||
@@ -213,7 +198,7 @@ exports.updateSendContract = async (req, res, next) => {
         let cv_time_update = new Date().getTime() / 1000;
         let type_edit = 0;
         let noi_dung = '';
-        if (await functions.checkTime(new Date(date_nhan * 1000)) === false || functions.checkDate(new Date(date_nhan * 1000)) === false) {
+        if (functions.checkDate(date_nhan) === false) {
             return functions.setError(res, 'invalid date', 400)
         }
 
@@ -269,7 +254,7 @@ exports.updateSendContract = async (req, res, next) => {
                 cv_user_soan: user_gui_vbden,
                 cv_name_soan: text_user_gui_vbden,
                 cv_user_ky: user_ky,
-                cv_date: date_nhan,
+                cv_date: vanthu.convertTimestamp(date_nhan),
                 cv_money: money_hd,
                 cv_user_save: use_luu_vbden,
                 cv_type_chuyenden: 1,
@@ -312,41 +297,36 @@ exports.createContract = async (req, res, next) => {
         let ghi_chu_vbdi = req.body.ghi_chu_vbdi;
         let book_vb = Number(req.body.book_vb);
         let money_hd = Number(req.body.money_hd);
-        let file = req.files;
+        let file = req.files.file;
         if (nhanvb_dep && nhanvb_dep.length !== 0) {
             nhanvb_dep = nhanvb_dep.join(" ")
         }
         if (nhanvb_use && nhanvb_use.length !== 0) {
             nhanvb_use = nhanvb_use.join(" ")
         }
-        let cv_file = [];
+        let cv_file = '';
         if (name_vbdi && so_vbdi && date_guidi && use_luu_vbdi && use_ky_vbdi && trich_yeu_vbdi) {
             if (await !functions.checkNumber(dvst_vbdi) || await !functions.checkNumber(nst_vbdi) ||
                 await !functions.checkNumber(use_luu_vbdi) || await !functions.checkNumber(use_ky_vbdi)
                 || await !functions.checkNumber(book_vb)) {
                 return functions.setError(res, 'invalid number', 400)
             }
-            if (await functions.checkTime(new Date(date_guidi*1000)) === false || functions.checkDate(new Date(date_guidi*1000)) === false) {
+            if (functions.checkDate(date_guidi) === false) {
                 return functions.setError(res, 'invalid date', 400)
             }
-            if (file && file.file && file.file.length > 0) {
-                for (let i = 0; i < file.file.length; i++) {
-                    let checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i])
+            if (file && file.length > 0) {
+                for (let i = 0; i < file.length; i++) {
+                    let checkFile = await functions.checkFile(file[i].path);
+                    let fileNameOrigin = file[i].name;
 
-                    if (checkUpload === false) {
-                        return functions.setError(res, 'upload failed', 400)
+                    if(!checkFile){
+                        return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                     }
-                    cv_file.push({ file: checkUpload })
-
+                    let fileName = await vanthu.uploadfile(folder, file[i]);
+                    if(fileName) {
+                        cv_file += fileName;
+                    }
                 }
-
-            } else if (file && file.file) {
-                let checkUpload = await vanthu.uploadfile('file_van_ban', file.file)
-                if (checkUpload === false) {
-                    return functions.setError(res, 'upload failed', 400)
-                }
-                cv_file.push({ file: checkUpload })
-
             }
             let _id = await vanthu.getMaxID(tbl_qly_congvan)
             await tbl_qly_congvan.create({
@@ -361,7 +341,7 @@ exports.createContract = async (req, res, next) => {
                 cv_money:money_hd,
                 cv_status_hd:1,
                 cv_type_hd:1,
-                cv_date:date_guidi,
+                cv_date: vanthu.convertTimestamp(date_guidi),
                 cv_user_save:use_luu_vbdi,
                 cv_user_ky:use_ky_vbdi,
                 cv_type_nhan:nhanvb_dep,
@@ -389,7 +369,7 @@ exports.createContract = async (req, res, next) => {
 // sửa hợp đồng đi
 exports.updateContract =  async (req, res, next) => {
     try {
-        let comId = req.comId ;
+        let comId = req.comId;
         let name_vbdi = req.body.name_vbdi;
         let so_vbdi = req.body.so_vbdi;
         let dvst_vbdi = Number(req.body.dvst_vbdi);
@@ -406,7 +386,7 @@ exports.updateContract =  async (req, res, next) => {
         let trich_yeu_vbdi = req.body.trich_yeu_vbdi;
         let ghi_chu_vbdi = req.body.ghi_chu_vbdi;
         let book_vb = Number(req.body.book_vb);
-        let file = req.files;
+        let file = req.files.file;
         let id = Number(req.body.id);
         let useId = Number(req.useId);
         let noidung = '';
@@ -420,46 +400,31 @@ exports.updateContract =  async (req, res, next) => {
         if (nhanvb_use && nhanvb_use.length !== 0) {
             nhanvb_use = nhanvb_use.join(" ")
         }
-        let cv_file = [];
+        let cv_file = '';
         if (name_vbdi && so_vbdi && date_guidi && use_luu_vbdi && use_ky_vbdi && trich_yeu_vbdi) {
             if (await !functions.checkNumber(dvst_vbdi) || await !functions.checkNumber(nst_vbdi) ||
                 await !functions.checkNumber(use_luu_vbdi) || await !functions.checkNumber(use_ky_vbdi)
                 || await !functions.checkNumber(book_vb)) {
                 return functions.setError(res, 'invalid number', 400)
             }
-            if (await functions.checkTime(new Date(date_guidi*1000)) === false || functions.checkDate(new Date(date_guidi*1000)) === false) {
+            if (functions.checkDate(date_guidi) === false) {
                 return functions.setError(res, 'invalid date', 400)
             }
             let check = await tbl_qly_congvan.findById(id);
             if (!check) return functions.setError(res, 'not found sendtext', 404)
-            if (file && file.file && file.file.length > 0) {
-                for (let i = 0; i < file.file.length; i++) {
-                    let checkUpload = await vanthu.uploadfile('file_van_ban', file.file[i])
+            if (file && file.length > 0) {
+                for (let i = 0; i < file.length; i++) {
+                    let checkFile = await functions.checkFile(file[i].path);
+                    let fileNameOrigin = file[i].name;
 
-                    if (checkUpload === false) {
-                        return functions.setError(res, 'upload failed', 400)
+                    if(!checkFile){
+                        return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                     }
-                    cv_file.push({ file: checkUpload })
-
-                }
-                if (check.cv_file) {
-                    for (let i = 0; i < check.cv_file.length; i++) {
-                        vanthu.deleteFile(check.cv_file[i].file)
+                    let fileName = await vanthu.uploadfile(folder, file[i]);
+                    if(fileName) {
+                        cv_file += fileName;
                     }
                 }
-                await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
-            } else if (file && file.file) {
-                let checkUpload = await vanthu.uploadfile('file_van_ban', file.file)
-                if (checkUpload === false) {
-                    return functions.setError(res, 'upload failed', 400)
-                }
-                cv_file.push({ file: checkUpload })
-                if (check.cv_file) {
-                    for (let i = 0; i < check.cv_file.length; i++) {
-                        vanthu.deleteFile(check.cv_file[i].file)
-                    }
-                }
-                await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
             }
             if (name_vbdi != check.cv_name) noidung += 'Tên văn bản,';
 
@@ -510,7 +475,7 @@ exports.updateContract =  async (req, res, next) => {
                 cv_type_soan: 1,
                 cv_phong_soan: dvst_vbdi,
                 cv_user_soan: nst_vbdi,
-                cv_date: date_guidi,
+                cv_date: vanthu.convertTimestamp(date_guidi),
                 cv_user_save: use_luu_vbdi,
                 cv_money:money_hd,
                 cv_user_ky: use_ky_vbdi,
@@ -523,7 +488,8 @@ exports.updateContract =  async (req, res, next) => {
                 cv_trich_yeu: trich_yeu_vbdi,
                 cv_ghi_chu: ghi_chu_vbdi,
                 cv_type_edit: type_edit,
-                cv_time_edit: cv_time_update
+                cv_time_edit: cv_time_update,
+                cv_file: cv_file
             })
         } else {
             return functions.setError(res, 'missing data', 400)
