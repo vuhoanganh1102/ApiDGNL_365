@@ -6,12 +6,6 @@ const ModelNameSchema = new Schema({
     id: {
         type: Number,
         required: true,
-        unique: true,
-        autoIncrement: true
-    },
-    //
-    provisionId: { 
-        type: Number 
     },
     // ngày bắt đầu
     timeStart: { 
@@ -24,7 +18,7 @@ const ModelNameSchema = new Schema({
     // áp dng cho đối tượng nào
     applyFor: { 
         type: String
-     },
+    },
     // nội dung
     content: {
          type: String
