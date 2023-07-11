@@ -42,12 +42,12 @@ const HR_CandidateSchema = new Schema({
 
     },
     timeSendCv:{
-        type: String,
+        type: Date,
         default: null
 
     },
     interviewTime: {
-        type: String,
+        type: Date,
         default: null
 
     },
@@ -76,12 +76,12 @@ const HR_CandidateSchema = new Schema({
         default: null
     },
     createdAt: {
-        type: String,
-        default: null
+        type: Date,
+        default: Date.now()
 
     },
     updatedAt: {
-        type: String,
+        type: Date,
         default: null
 
     },
@@ -104,7 +104,7 @@ const HR_CandidateSchema = new Schema({
 
     },
     birthday: {
-        type: String,
+        type: Date,
         default: null
 
     },

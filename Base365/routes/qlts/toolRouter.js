@@ -13,9 +13,8 @@ router.post('/nhomts',toolQLTS.toolNhomts)
 router.post('/tsvitri',toolQLTS.toolTSvitri)
 router.post('/phanquyen',toolQLTS.toolPhanQuyen)
 
-
-
-
+//dung
+router.post('/kiemke',toolQLTS.kiemKe);
 
 
 

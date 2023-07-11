@@ -187,7 +187,7 @@ exports.arrAPI = ()=>{
         "NotificationReport": "http://43.239.223.142:9000/api/V2/Notification/NotificationReport",
         "SendContractFile": "http://43.239.223.142:9000/api/V2/Notification/SendContractFile"
     }
-} 
+}
 
 exports.replaceTitle = (title) => {
   // Hàm replaceTitle() là hàm tùy chỉnh của bạn để thay thế các ký tự không hợp lệ trong tiêu đề

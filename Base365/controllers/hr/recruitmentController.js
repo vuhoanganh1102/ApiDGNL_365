@@ -281,7 +281,6 @@ exports.softDeleteStageRecruitment = async(req, res, next) => {
 
 exports.getListRecruitmentNews= async(req, res, next) => {
     try {
-        console.time("TIME-PROCESS");
         let {page, pageSize, title, fromDate, toDate} = req.body;
 
         //id company lay ra sau khi dang nhap
@@ -299,71 +298,15 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         if(title) listCondition.title =  new RegExp(title, 'i');
         if(fromDate) listCondition.timeStart = {$gte: new Date(fromDate)};
         if(toDate) listCondition.timeEnd = {$lte: new Date(toDate)};
-        let fields = {id: 1, title: 1, number: 1,timeStart: 1, timeEnd: 1, createdBy: 1, hrName: 1, address: 1, recruitmentId: 1};
-        var listRecruitmentNews = await functions.pageFindWithFields(RecruitmentNews, listCondition, fields,{ _id: 1 }, skip, limit);
+
+        var listRecruitmentNews = await functions.pageFind(RecruitmentNews, listCondition,{ _id: 1 }, skip, limit);
         for(let i=0; i<listRecruitmentNews.length; i++){
-            let condtion = {recruitmentNewsId: listRecruitmentNews[i].id, isDelete: 0};
-            let numberCandi = await Candidate.countDocuments({recruitmentNewsId: listRecruitmentNews[i].id});
-            let totalCandidate = await Candidate.find({recruitmentNewsId: listRecruitmentNews[i].id, isDelete: 0}).lean().count();
-            
-            const await1 = Candidate.aggregate([
-                {$match: {comId: comId, isDelete: 0}},
-                {
-                    $lookup: {
-                        from: "HR_GetJobs",
-                        localField: "id",
-                        foreignField: "canId",
-                        as: "getJob"
-                    }
-                },
-                {
-                    $count: "count"
-                }
-            ]);
-
-            
-            const await2 = Candidate.aggregate([
-                {$match: {comId: comId, isDelete: 0}},
-                {
-                    $lookup: {
-                        from: "HR_FailJobs",
-                        localField: "id",
-                        foreignField: "canId",
-                        as: "failJob"
-                    }
-                },
-                {
-                    $count: "count"
-                }
-            ]);
-
-            const await3 = Candidate.aggregate([
-                {$match: {comId: comId, isDelete: 0}},
-                {
-                    $lookup: {
-                        from: "HR_ScheduleInterviews",
-                        localField: "id",
-                        foreignField: "canId",
-                        as: "interviewJob"
-                    }
-                },
-                {
-                    $count: "count"
-                }
-            ]);
-            const totalCandidateGetJob = await await1;
-            const totalCandidateFailJob = await await2;
-            const totalCandidateInterview = await await3;
-            listRecruitmentNews[i].totalCandidateGetJob = totalCandidateGetJob[0].count;
-            listRecruitmentNews[i].totalCandidateFailJob = totalCandidateFailJob[0].count;
-            listRecruitmentNews[i].totalCandidateInterview = totalCandidateInterview[0].count;
             let hr = await Users.findOne({idQLC: listRecruitmentNews[i].hrName});
             if(hr) {
-                listRecruitmentNews[i].hrName = hr.userName;
+                listRecruitmentNews[i].nameHr = hr.userName;
             }
         }
         const totalCount = await functions.findCount(RecruitmentNews, listCondition);
-        console.timeEnd("TIME-PROCESS");
         return functions.success(res, "Get list recruitment news success", {totalCount: totalCount, data: listRecruitmentNews });
     } catch (e) {
         console.log("Err from server", e);
@@ -377,16 +320,20 @@ let getTotal = async(model, condition)=>{
             {$match: condition},
             {
                 $lookup: {
-                    from: "HR_GetJobs",
+                    from: `${model}`,
                     localField: "id",
                     foreignField: "canId",
-                    as: "getJob"
+                    as: "documents"
                 }
             },
             {
-                $count: "getJob"
+                $unwind: "$documents"
+            },
+            {
+                $count: "count"
             }
         ]);
+        return total.length!=0 ? total[0].count: 0;
     }catch(err){
         console.log(err);
     }
@@ -395,30 +342,23 @@ exports.listNewActive = async(req, res)=>{
     try{
         let comId = req.infoLogin.comId;
         let condition = {comId: comId, isDelete: 0};
+        let fields = {id: 1, title: 1, number: 1,timeStart: 1, timeEnd: 1, createdBy: 1, hrName: 1, address: 1, recruitmentId: 1};
         let countAllActiveNew = await functions.findCount(RecruitmentNews, condition);
-        let recruitmentNew = await RecruitmentNews.find(condition).sort({id: 1}).lean();
+        let recruitmentNew = await RecruitmentNews.find(condition, fields).sort({id: 1}).lean();
 
         //thong ke
         for(let i=0; i<recruitmentNew.length; i<i++) {
             let condition2 = {comId: comId, isDelete: 0, recruitmentNewsId: recruitmentNew[i].id};
 
-            let sohoso = await functions.findCount(Candidate, condition2);
-            recruitmentNew[i].sohoso = sohoso;
-            let totalCandidateGetJob = await Candidate.aggregate([
-                {$match: condition2},
-                {
-                    $lookup: {
-                        from: "HR_GetJobs",
-                        localField: "id",
-                        foreignField: "canId",
-                        as: "getJob"
-                    }
-                },
-                {
-                    $count: "getJob"
-                }
-            ]);
-            console.log(totalCandidateGetJob);
+            let sohoso = functions.findCount(Candidate, condition2);
+            let henphongvan = getTotal("HR_ScheduleInterviews", condition2);
+            let truotphongvan = getTotal("HR_FailJobs", condition2);
+            let quaphongvan = getTotal("HR_GetJobs", condition2);
+
+            recruitmentNew[i].sohoso = await sohoso;
+            recruitmentNew[i].henphongvan = await henphongvan;
+            recruitmentNew[i].truotphongvan = await truotphongvan;
+            recruitmentNew[i].quaphongvan = await quaphongvan;
         }
         return functions.success(res, "Get listNewActive success!", {countAllActiveNew, recruitmentNew});
     }catch(err) {
@@ -428,13 +368,6 @@ exports.listNewActive = async(req, res)=>{
 
 exports.getTotalCandidateFollowDayMonth = async(req, res, next) => {
     try {
-        // Get Today Start Date and End Date
-        // let startOfDay = new Date();
-        // startOfDay.setHours(0, 0, 0, 0);
-        // let endOfDay = new Date();
-        // endOfDay.setHours(23, 59, 59, 999);
-        // console.log(startOfDay, endOfDay);
-
         let comId = req.infoLogin.comId;
         // Số lượng tài liệu theo ngày hôm nay
         const today = new Date();
@@ -452,7 +385,6 @@ exports.getTotalCandidateFollowDayMonth = async(req, res, next) => {
         endOfWeek.setDate(endOfWeek.getDate() + 7);
 
         let totalCandidateWeek = await Candidate.countDocuments({comId: comId, isDelete: 0, timeSendCv: {$gte: startOfWeek, $lt: endOfWeek}});
-
 
         // Số lượng tài liệu theo tháng này
         const startOfMonth = new Date();
