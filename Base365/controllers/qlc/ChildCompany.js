@@ -11,18 +11,14 @@ exports.getListCompany = async(req, res) => {
         if(type == 1){
 
         // let com_id = req.body.com_id
-        if ((com_id) == undefined) {
-            functions.setError(res, "lack of input")
-        } else if (isNaN(com_id)) {
-            functions.setError(res, "id must be a Number")
-        } else {
-
-            const data = await ChildCompany.find({ com_id: com_id }).select('companyName companyImage com_id companyPhone companyAddress ')
+       
+            const data = await Users.find({ "inForCompany.cds.com_parent_id": com_id }).select('companyName companyImage com_id companyPhone companyAddress ')
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
+
             return functions.setError(res, 'Không có dữ liệu', 404);
-        }
+
     }
     return functions.setError(res, "Tài khoản không phải Công ty", 604);   
     } catch (err) {
@@ -67,7 +63,7 @@ exports.createCompany = async(req, res) => {
                 return functions.success(res, "Tạo thành công",{company});
                 }else{//no avatar
                     const company = new ChildCompany({
-                        _id: Number(maxID._id)+1,
+                        _id: _id,
                         companyName: companyName,
                         companyImage: companyImage,
                         com_id: com_id,
@@ -94,26 +90,26 @@ exports.createCompany = async(req, res) => {
 exports.editCompany = async(req, res) => {
     try {
         const type = req.user.data.type
-        const com_id = req.user.data.com_id
-        // let com_id = req.body.com_id
+        // const com_id = req.user.data.com_id
+        let com_id = req.body.com_id
         const _id = req.body.id;
         if(type == 1){
 
        
             const { companyName, companyPhone, companyEmail, companyAddress } = req.body;
 
-                const company = await functions.getDatafindOne(ChildCompany, {com_id:com_id,_id: _id });
+                const company = await functions.getDatafindOne(Users, {idQLC:com_id , type : 1});
                 if (company) {
-                    await functions.getDatafindOneAndUpdate(ChildCompany, {com_id:com_id,_id: _id }, {
+                    await functions.getDatafindOneAndUpdate(Users, {idQLC:com_id, type : 1 }, {
                         companyName: companyName,
                         companyPhone: companyPhone,
                         companyEmail: companyEmail,
                         companyAddress: companyAddress,
 
                     })
-                   return functions.success(res, "Deparment edited successfully", { company })
+                   return functions.success(res, "Chỉnh sửa thành công", { company })
                 }    
-                return functions.setError(res, "company does not exist!", 510);
+                return functions.setError(res, "không tìm thấy công ty ", 510);
                 
                 
          
