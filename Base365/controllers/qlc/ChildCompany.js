@@ -78,7 +78,7 @@ exports.createCompany = async(req, res) => {
     } catch (error) {
         return functions.setError(res, error.message)
     }
-};
+}; 
 // sửa công ty con 
 exports.editCompany = async(req, res) => {
     try {
