@@ -24,6 +24,10 @@ const DelAppDataSchema = new Schema({
     note: { //chi tiết
         type: String
     },
+}, {
+    collection: 'QLC_DelAppData',
+    versionKey: false,
+    timestamp: true
 })
 
 module.exports = mongoose.model('QLC_DelAppData', DelAppDataSchema);

@@ -5,10 +5,6 @@ const formData = require('express-form-data')
 
 //API lấy tất cả dữ liệu phòng ban 
 router.post("/get", formData.parse(), DeparmentController.getListDeparment);
-//API đếm số lượng nhân viên phòng ban 
-router.post("/count", formData.parse(), DeparmentController.countUserInDepartment);
-
-
 
 //API tạo mới một phòng ban
 router.post("/", formData.parse(), DeparmentController.createDeparment);

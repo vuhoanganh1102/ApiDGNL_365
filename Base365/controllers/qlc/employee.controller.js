@@ -2,7 +2,7 @@ const Employee = require("../../models/Users");
 const functions = require("../../services/functions");
 
 //tao moi 1 nhan vien
-exports.createEmployee = async (req, res) => {
+exports.createEmployee = async(req, res) => {
 
     const companyID = req.body.companyID;
     const type = 2;
@@ -58,8 +58,7 @@ exports.createEmployee = async (req, res) => {
         //Kiểm tra trinh do hoc van khác null
         functions.setError(res, "candiHocVan required", 413);
 
-    }
-    else {
+    } else {
         let checkPhoneNumber = await functions.checkPhoneNumber(phoneTK);
         if (checkPhoneNumber) {
             let checkUser = await functions.getDatafindOne(Employee, { phoneTK: phoneTK, type: 2 });
@@ -113,16 +112,19 @@ exports.createEmployee = async (req, res) => {
 };
 
 // lay ra danh sach tat ca nhan vien
-exports.getEmployee = async (req, res, next) => {
+exports.getEmployee = async(req, res, next) => {
     try {
         let idQLC = req.query.idQLC;
         let type = 2;
         if (idQLC) {
-            let employee = await Employee.findOne({ idQLC: idQLC },
-                {
-                    phoneTK: 1, userName: 1, phone: 1, emailContact: 1, address: 1,
-                    inForPerson: { gender: 1, birthday: 1, candiHocVan: 1, married: 1, positionID: 1, depID: 1, groupID: 1 }
-                });
+            let employee = await Employee.findOne({ idQLC: idQLC }, {
+                phoneTK: 1,
+                userName: 1,
+                phone: 1,
+                emailContact: 1,
+                address: 1,
+                inForPerson: { gender: 1, birthday: 1, candiHocVan: 1, married: 1, positionID: 1, depID: 1, groupID: 1 }
+            });
             if (employee) {
                 return functions.success(res, "Get employee by idQLC success", { employee: employee });
             } else {
@@ -144,8 +146,7 @@ exports.getEmployee = async (req, res, next) => {
 }
 
 //chinh sua thong tin nhan vien
-exports.editEmployee = async (req, res) => {
-    console.log(req.body);
+exports.editEmployee = async(req, res) => {
     const idQLC = req.body.idQLC;
     const companyID = req.body.companyID;
     const type = 2;
@@ -224,13 +225,13 @@ exports.editEmployee = async (req, res) => {
                 }
             })
 
-                .then((manager) => functions.success(res, "Deparment edited successfully", manager))
+            .then((manager) => functions.success(res, "Deparment edited successfully", manager))
                 .catch((err) => functions.setError(res, err.message, 511));
         }
     }
 };
 
-exports.deleteEmployee = async (req, res, next) => {
+exports.deleteEmployee = async(req, res, next) => {
     try {
         let idQLC = req.query.idQLC;
         if (idQLC) {
@@ -251,7 +252,7 @@ exports.deleteEmployee = async (req, res, next) => {
 
 //tim kiem danh sach nhan vien theo cac dieu kien---------------------------------------------------------------------------
 
-exports.getListEmployeeByFields = async (req, res, next) => {
+exports.getListEmployeeByFields = async(req, res, next) => {
     try {
         if (req.body) {
             if (!req.body.page) {
@@ -274,82 +275,82 @@ exports.getListEmployeeByFields = async (req, res, next) => {
 
             //tim theo kinh nghiem lam viec va hoc van
             if (req.body.exp && req.body.candiHocVan) {
-                listEmployee = await functions.pageFindWithFields(Employee,
-                    { "inForPerson.exp": exp, "inForPerson.candiHocVan": candiHocVan, type: type },
-                    {
-                        phoneTK: 1, userName: 1, phone: 1, emailContact: 1, address: 1,
+                listEmployee = await functions.pageFindWithFields(Employee, { "inForPerson.exp": exp, "inForPerson.candiHocVan": candiHocVan, type: type }, {
+                        phoneTK: 1,
+                        userName: 1,
+                        phone: 1,
+                        emailContact: 1,
+                        address: 1,
                         inForPerson: { gender: true, birthday: true, candiHocVan: true, married: true, positionID: true, depID: true, groupID: true }
-                    },
-                    { _id: 1 }
-                    , skip,
+                    }, { _id: 1 }, skip,
                     limit
                 )
                 totalCount = await Employee.countDocuments({ "inForPerson.exp": exp, "inForPerson.candiHocVan": candiHocVan, type: type });
             }
             //tim theo kinh nghiem lam viec va cap bac
             else if (req.body.exp && req.body.positionID) {
-                listEmployee = await functions.pageFindWithFields(Employee,
-                    { "inForPerson.exp": exp, "inForPerson.positionID": positionID, type: type },
-                    {
-                        phoneTK: 1, userName: 1, phone: 1, emailContact: 1, address: 1,
+                listEmployee = await functions.pageFindWithFields(Employee, { "inForPerson.exp": exp, "inForPerson.positionID": positionID, type: type }, {
+                        phoneTK: 1,
+                        userName: 1,
+                        phone: 1,
+                        emailContact: 1,
+                        address: 1,
                         inForPerson: { gender: true, birthday: true, candiHocVan: true, married: true, positionID: true, depID: true, groupID: true }
-                    },
-                    { _id: 1 }
-                    , skip,
+                    }, { _id: 1 }, skip,
                     limit
                 )
                 totalCount = await Employee.countDocuments({ "inForPerson.exp": exp, "inForPerson.positionID": positionID, type: type });
             }
             //tim theo kinh nghiem lam viec
             else if (req.body.exp) {
-                listEmployee = await functions.pageFindWithFields(Employee,
-                    { "inForPerson.exp": { "$eq": exp, "$exists": true }, type: type },
-                    {
-                        phoneTK: 1, userName: 1, phone: 1, emailContact: 1, address: 1,
+                listEmployee = await functions.pageFindWithFields(Employee, { "inForPerson.exp": { "$eq": exp, "$exists": true }, type: type }, {
+                        phoneTK: 1,
+                        userName: 1,
+                        phone: 1,
+                        emailContact: 1,
+                        address: 1,
                         inForPerson: { gender: true, birthday: true, candiHocVan: true, married: true, positionID: true, depID: true, groupID: true }
-                    },
-                    { _id: 1 }
-                    , skip,
+                    }, { _id: 1 }, skip,
                     limit
                 );
                 totalCount = await Employee.countDocuments({ "inForPerson.exp": exp, type: type });
             }
             //tim theo hoc van
             else if (req.body.candiHocVan) {
-                listEmployee = await functions.pageFindWithFields(Employee,
-                    { "inForPerson.candiHocVan": candiHocVan, type: type },
-                    {
-                        phoneTK: 1, userName: 1, phone: 1, emailContact: 1, address: 1,
+                listEmployee = await functions.pageFindWithFields(Employee, { "inForPerson.candiHocVan": candiHocVan, type: type }, {
+                        phoneTK: 1,
+                        userName: 1,
+                        phone: 1,
+                        emailContact: 1,
+                        address: 1,
                         inForPerson: { gender: true, birthday: true, candiHocVan: true, married: true, positionID: true, depID: true, groupID: true }
-                    },
-                    { _id: 1 }
-                    , skip,
+                    }, { _id: 1 }, skip,
                     limit
                 );
                 totalCount = await Employee.countDocuments({ "inForPerson.candiHocVan": candiHocVan, type: type });
-            }//tim theo vi tri
+            } //tim theo vi tri
             else if (req.body.positionID) {
-                listEmployee = await functions.pageFindWithFields(Employee,
-                    { "inForPerson.positionID": positionID, type: type },
-                    {
-                        phoneTK: 1, userName: 1, phone: 1, emailContact: 1, address: 1,
+                listEmployee = await functions.pageFindWithFields(Employee, { "inForPerson.positionID": positionID, type: type }, {
+                        phoneTK: 1,
+                        userName: 1,
+                        phone: 1,
+                        emailContact: 1,
+                        address: 1,
                         inForPerson: { gender: true, birthday: true, candiHocVan: true, married: true, positionID: true, depID: true, groupID: true }
-                    },
-                    { _id: 1 }
-                    , skip,
+                    }, { _id: 1 }, skip,
                     limit
                 );
                 totalCount = await Employee.countDocuments({ "inForPerson.positionID": positionID, type: type });
-            }//tim theo phong ban
+            } //tim theo phong ban
             else if (req.body.depID) {
-                listEmployee = await functions.pageFindWithFields(Employee,
-                    { "inForPerson.depID": depID, type: type },
-                    {
-                        phoneTK: 1, userName: 1, phone: 1, emailContact: 1, address: 1,
+                listEmployee = await functions.pageFindWithFields(Employee, { "inForPerson.depID": depID, type: type }, {
+                        phoneTK: 1,
+                        userName: 1,
+                        phone: 1,
+                        emailContact: 1,
+                        address: 1,
                         inForPerson: { gender: true, birthday: true, candiHocVan: true, married: true, positionID: true, depID: true, groupID: true }
-                    },
-                    { _id: 1 }
-                    , skip,
+                    }, { _id: 1 }, skip,
                     limit
                 );
                 totalCount = await Employee.countDocuments({ "inForPerson.depID": depID, type: type });
