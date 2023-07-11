@@ -13,4 +13,27 @@ router.post('/nhomts',toolQLTS.toolNhomts)
 router.post('/tsvitri',toolQLTS.toolTSvitri)
 router.post('/phanquyen',toolQLTS.toolPhanQuyen)
 
+
+
+
+
+
+
+
+
+
+
+
+//trung
+router.post('/ViTriTaiSan',toolQLTS.toolViTriTaiSan)
+router.post('/ThuHoiTaiSan',toolQLTS.toolThuHoiTaiSan)
+router.post('/ThongTinTuyChinh',toolQLTS.toolThongTinTuyChinh)
+router.post('/ThongBao',toolQLTS.toolThongBao)
+router.post('/TheoDoiCongSuat',toolQLTS.toolTheoDoiCongSuat)
+router.post('/ThanhLy',toolQLTS.toolThanhLy)
+router.post('/TaiSanDangSuDung',toolQLTS.toolTaiSanDangSuDung)
+router.post('/TaiSanDaiDienNhan',toolQLTS.toolTaiSanDaiDienNhan)
+router.post('/CapPhat',toolQLTS.toolCapPhat)
+
+
 module.exports = router

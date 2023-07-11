@@ -882,13 +882,13 @@ exports.tool_qlcv_congVan = async (req, res, next) => {
             let listData = data.data.items;
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
-                    let cv_file = [];
-                    if(listData[i].cv_file){
-                        let file = listData[i].cv_file.split(',')
-                        for(let j = 0; j < file.length; j++) {
-                            cv_file.push({file:file[j]});
-                        }
-                    }
+                    // let cv_file = [];
+                    // if(listData[i].cv_file){
+                    //     let file = listData[i].cv_file.split(',')
+                    //     for(let j = 0; j < file.length; j++) {
+                    //         cv_file.push({file:file[j]});
+                    //     }
+                    // }
                    
                     const qlCongVan = new congVan({
                         _id: listData[i].cv_id,
@@ -913,7 +913,7 @@ exports.tool_qlcv_congVan = async (req, res, next) => {
                         cv_chuyen_ngoai: listData[i].cv_chuyen_ngoai,
                         cv_trich_yeu: listData[i].cv_trich_yeu,
                         cv_ghi_chu: listData[i].cv_ghi_chu,
-                        cv_file: cv_file,
+                        cv_file: listData[i].cv_file,
                         cv_type_xoa: listData[i].cv_type_xoa,
                         cv_type_user_xoa: listData[i].cv_type_user_xoa,
                         cv_user_xoa: listData[i].cv_user_xoa,

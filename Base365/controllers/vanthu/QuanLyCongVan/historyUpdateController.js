@@ -3,10 +3,10 @@ const vanthu = require('../../../services/vanthu.js');
 const tbl_qly_congvan = require('../../../models/Vanthu365/tbl_qly_congvan');
 const tbl_qlcv_edit = require('../../../models/Vanthu365/tbl_qlcv_edit');
 
-
+// lịch sử cập nhật
 exports.getDataHistory = async (req, res, next) => {
     try {
-        let comId = Number(req.comId) || 1763;
+        let comId = Number(req.comId);
 
         let data = {};
 
@@ -36,11 +36,11 @@ exports.getDataHistory = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
-
+// chi tiết lịch sử cập nhật
 exports.getDetailHistoryUpdate = async (req,res,next) => {
     try {
         let id = Number(req.body.id);
-        let comId = req.body.comId || 1763;
+        let comId = req.comId ;
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
         let skip = (page - 1) * pageSize;

@@ -156,18 +156,22 @@ exports.login = async (req, res, next) => {
         return functions.setError(res, error.message)
     }
 }
-exports.login1 = async (req, res, next) => {
+exports.login1Time = async (req, res, next) => {
     try {
         let phoneTK = req.body.phoneTK
         let email = req.body.email
             password = req.body.password
             type = req.body.type
+            conditions = {}
             type_user = {};
-        if (phoneTK&&password) {
+
+            if(phoneTK) conditions.phoneTK = phoneTK
+            if(email) conditions.email = email
+            if(type) conditions.type = type
             
-            let checkPhone = await functions.checkPhoneNumber(phoneTK)
-            if (checkPhone) {
-                let checkUser = await Users.findOne({ phoneTK: phoneTK , type : type}).lean()
+                let checkUser = await Users.findOne(conditions).lean()
+                console.log(checkUser)
+
                 if(checkUser){
                     type_user = type
                     let checkPassword = await functions.verifyPassword(password, checkUser.password)
@@ -181,8 +185,10 @@ exports.login1 = async (req, res, next) => {
                             access_token: token,
                             refresh_token: refreshToken,
                             com_info: {
-                                com_id: checkUser._id,
+                                type: checkUser.type,
                                 com_email: checkUser.email,
+                                com_phone: checkUser.phoneTK,
+
                             }
                         }
                         data.type_user = type_user
@@ -193,7 +199,13 @@ exports.login1 = async (req, res, next) => {
                         return functions.setError(res, "sai tai khoan hoac mat khau")
                     }
                 }else{
-                    let checkUseOther = await Users.findOne({ phoneTK: phoneTK , type: {$ne : type }}).lean()
+
+                    if(!checkUser) conditions["type"] = {$ne : type }
+                    console.log(conditions)
+
+                    let checkUseOther = await Users.findOne(conditions).lean()
+                    // console.log(checkUseOther)
+
                         if(checkUseOther) {
                             type_user = checkUseOther.type
                             let checkPassword = await functions.verifyPassword(password, checkUseOther.password)
@@ -208,8 +220,9 @@ exports.login1 = async (req, res, next) => {
                                     access_token: token,
                                     refresh_token: refreshToken,
                                     com_info: {
-                                        com_id: checkUseOther._id,
+                                        type: checkUseOther.type,
                                         com_email: checkUseOther.email,
+                                        com_phone: checkUseOther.phoneTK,
                                     }
                                 }
                                 data.type_user = type_user
@@ -225,78 +238,11 @@ exports.login1 = async (req, res, next) => {
                     
 
                 }
+            }catch (error) {
+                return functions.setError(res, error.message)
             }
-        }else if(email&&password) {
-            
-            let checkPhone = await functions.checkPhoneNumber(email)
-            if (checkPhone) {
-                let checkUser = await Users.findOne({ email: email , type : type}).lean()
-                if(checkUser){
-                    type_user = type
-                    let checkPassword = await functions.verifyPassword(password, checkUser.password)
-                    if (!checkPassword) {
-                        return functions.setError(res, "Mật khẩu sai", 404)
-                    }
-                    if (checkUser != null) {
-                        const token = await functions.createToken(checkUser, "1d")
-                        const refreshToken = await functions.createToken({ userId: checkUser._id }, "1y")
-                        let data = {
-                            access_token: token,
-                            refresh_token: refreshToken,
-                            com_info: {
-                                com_id: checkUser._id,
-                                com_email: checkUser.email,
-                            }
-                        }
-                        data.type_user = type_user
-
-                        return functions.success(res, 'Đăng nhập thành công bằng sdt', { data })
-
-                    } else {
-                        return functions.setError(res, "sai tai khoan hoac mat khau")
-                    }
-                }else{
-                    let checkUseOther = await Users.findOne({ email: email , type: {$ne : type }}).lean()
-                        if(checkUseOther) {
-                            type_user = checkUseOther.type
-                            let checkPassword = await functions.verifyPassword(password, checkUseOther.password)
-
-                            if (!checkPassword) {
-                                return functions.setError(res, "Mật khẩu sai", 404)
-                            }
-                            if (checkUseOther != null) {
-                                const token = await functions.createToken(checkUseOther, "1d")
-                                const refreshToken = await functions.createToken({ userId: checkUseOther._id }, "1y")
-                                let data = {
-                                    access_token: token,
-                                    refresh_token: refreshToken,
-                                    com_info: {
-                                        com_id: checkUseOther._id,
-                                        com_email: checkUseOther.email,
-                                    }
-                                }
-                                data.type_user = type_user
-                                return functions.success(res, 'Đăng nhập thành công bằng sdt', { data })
+        } 
         
-                            } else {
-                                return functions.setError(res, "sai tai khoan hoac mat khau")
-                            }
-                        }else{
-                            return functions.setError(res, "khong tim thay tai khoan ")
-
-                        }
-                    
-
-                }
-            }
-        }else{
-            return functions.setError(res, " nhap thieu du lieu ")
-
-        }
-        } catch (error) {
-            return functions.setError(res, error.message)
-        }
-    }
 exports.verify = async (req, res) => {
     try {
         let otp = req.body.ma_xt || null
