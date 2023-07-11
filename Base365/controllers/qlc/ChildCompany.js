@@ -7,11 +7,11 @@ exports.getListCompany = async(req, res) => {
     try {
         const com_id = req.user.data.com_id
         const type = req.user.data.type
+        // let com_id = req.body.com_id
         if(type == 1){
 
-        // let com_id = req.body.com_id
        
-            const data = await Users.find({ "inForCompany.cds.com_parent_id": com_id }).select('companyName companyImage com_id companyPhone companyAddress ')
+            const data = await Users.find({ "inForCompany.cds.com_parent_id": com_id }).select('userName avatarUser com_id phone address ')
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
@@ -29,58 +29,71 @@ exports.getListCompany = async(req, res) => {
 exports.createCompany = async(req, res) => {
     try {
         
-        const com_id = req.user.data.com_id
-        const type = req.user.data.type
-        // let com_id = req.body.com_id
-        const { companyName, companyPhone, companyEmail, companyAddress } = req.body;
+        // const com_id = req.user.data.com_id
+        // const type = req.user.data.type
+        let com_id = req.body.com_id
+        const { userName, phone, emailContact, address } = req.body;
         let File = req.files || null;
-        let companyImage = null;
-        if(type == 1){
+        let avatarUser = null;
+        let now = new Date()
+        // if(type == 1){
 
-        if (com_id && companyEmail && companyPhone && companyAddress && companyName) {
-            const check_com_parent = await Users.findOne({ idQLC: com_id, type: 1 }).lean();
+        if (com_id && emailContact && phone && address && userName) {
+            // const check_com_parent = await Users.findOne({ idQLC: com_id, type: 1 }).lean();
             
-            if (check_com_parent) {
-                let maxID = await ChildCompany.findOne({},{},{sort:{_id:-1}}).lean() ||0;
-                let _id = Number(maxID._id) + 1
-                if (File.companyImage) {
-                    let upload = fnc.uploadFileQLC('avt_child_com', _id, File.companyImage, ['.jpeg', '.jpg', '.png']);
+            // if (check_com_parent) {
+                let maxID = await functions.getMaxUserID("company")
+                let _id = maxID._id
+                if (File.avatarUser) {
+                    let upload = fnc.uploadFileQLC('avt_child_com', _id, File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }
-                    companyImage = fnc.createLinkFileQLC('avt_child_com', _id, File.companyImage.name)
-                    const company = new ChildCompany({
+                    avatarUser = fnc.createLinkFileQLC('avt_child_com', _id, File.avatarUser.name)
+                    const company = new Users({
                         _id: _id ,
-                        companyName: companyName,
-                        companyImage: companyImage,
+                        userName: userName,
+                        avatarUser: avatarUser,
                         com_id: com_id,
-                        companyPhone: companyPhone,
-                        companyEmail: companyEmail,
-                        companyAddress: companyAddress,
+                        type: 1,
+                        idQLC: maxID._idQLC,
+                        idTimViec365: maxID._idTV365,
+                        idRaoNhanh365: maxID._idRN365,
+                        phone: phone,
+                        emailContact: emailContact,
+                        address: address,
+                        createdAt:Date.parse(now),
+                        "inForCompany.cds.com_parent_id": com_id,
                     });
                     await company.save()
                 return functions.success(res, "Tạo thành công",{company});
                 }else{//no avatar
-                    const company = new ChildCompany({
+                    const company = new Users({
                         _id: _id,
-                        companyName: companyName,
-                        companyImage: companyImage,
+                        userName: userName,
+                        avatarUser: avatarUser,
                         com_id: com_id,
-                        companyPhone: companyPhone,
-                        companyEmail: companyEmail,
-                        companyAddress: companyAddress,
+                        type: 1,
+                        idQLC: maxID._idQLC,
+                        idTimViec365: maxID._idTV365,
+                        idRaoNhanh365: maxID._idRN365,
+                        phone: phone,
+                        emailContact: emailContact,
+                        address: address,
+                        createdAt:Date.parse(now),
+                        "inForCompany.cds.com_parent_id": com_id,
                     });
                     await company.save()
                 return functions.success(res, "Tạo thành công",{company});
                 }
 
-            }
-            return functions.setError(res, "Công ty mẹ không tồn tại");
+            // }
+            // return functions.setError(res, "Công ty mẹ không tồn tại");
         }
         return functions.setError(res, "Thiếu thông tin truyền lên");
 
-    }
-    return functions.setError(res, "Tài khoản không phải Công ty", 604);   
+    // }
+    // return functions.setError(res, "Tài khoản không phải Công ty", 604);   
     } catch (error) {
         return functions.setError(res, error.message)
     }
@@ -95,15 +108,15 @@ exports.editCompany = async(req, res) => {
         if(type == 1){
 
        
-            const { companyName, companyPhone, companyEmail, companyAddress } = req.body;
+            const { userName, phone, emailContact, address } = req.body;
 
                 const company = await functions.getDatafindOne(Users, {idQLC:com_id , type : 1});
                 if (company) {
                     await functions.getDatafindOneAndUpdate(Users, {idQLC:com_id, type : 1 }, {
-                        companyName: companyName,
-                        companyPhone: companyPhone,
-                        companyEmail: companyEmail,
-                        companyAddress: companyAddress,
+                        userName: userName,
+                        phone: phone,
+                        emailContact: emailContact,
+                        address: address,
 
                     })
                    return functions.success(res, "Chỉnh sửa thành công", { company })
