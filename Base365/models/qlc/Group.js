@@ -21,9 +21,6 @@ const GroupSchema = new Schema({
     gr_name: {
         type: String,
     },
-    parent_gr: {
-        type: Number
-    },
 
 }, {
     collection: 'QLC_Groups',
