@@ -6,7 +6,11 @@ const fnc = require("../../services/qlc/functions")
 //tìm danh sách công ty 
 exports.getListCompany = async(req, res) => {
     try {
-        const com_id = req.body.com_id
+        const com_id = req.user.data.com_id
+        const type = req.user.data.type
+        if(type == 1){
+
+        // let com_id = req.body.com_id
         if ((com_id) == undefined) {
             functions.setError(res, "lack of input")
         } else if (isNaN(com_id)) {
@@ -19,7 +23,8 @@ exports.getListCompany = async(req, res) => {
             };
             return functions.setError(res, 'Không có dữ liệu', 404);
         }
-
+    }
+    return functions.setError(res, "Tài khoản không phải Công ty", 604);   
     } catch (err) {
 
         return functions.setError(res, err.message)
@@ -28,12 +33,15 @@ exports.getListCompany = async(req, res) => {
 //tạo công ty con
 exports.createCompany = async(req, res) => {
     try {
-        // const com_id = req.user.data.idQLC
-        const com_id = req.body.com_id
+        
+        const com_id = req.user.data.com_id
+        const type = req.user.data.type
+        // let com_id = req.body.com_id
         const { companyName, companyPhone, companyEmail, companyAddress } = req.body;
         let File = req.files || null;
         let companyImage = null;
-        console.log(companyName, companyPhone, companyEmail, companyAddress,com_id)
+        if(type == 1){
+
         if (com_id && companyEmail && companyPhone && companyAddress && companyName) {
             const check_com_parent = await Users.findOne({ idQLC: com_id, type: 1 }).lean();
             
@@ -76,7 +84,8 @@ exports.createCompany = async(req, res) => {
         }
         return functions.setError(res, "Thiếu thông tin truyền lên");
 
-
+    }
+    return functions.setError(res, "Tài khoản không phải Công ty", 604);   
     } catch (error) {
         return functions.setError(res, error.message)
     }
@@ -84,35 +93,32 @@ exports.createCompany = async(req, res) => {
 // sửa công ty con 
 exports.editCompany = async(req, res) => {
     try {
+        const type = req.user.data.type
+        const com_id = req.user.data.com_id
+        // let com_id = req.body.com_id
         const _id = req.body.id;
+        if(type == 1){
 
-        if (isNaN(_id)) {
-            functions.setError(res, "Id must be a number", 502)
-        } else {
-            const { companyName, companyPhone, companyEmail, companyAddress, com_id } = req.body;
+       
+            const { companyName, companyPhone, companyEmail, companyAddress } = req.body;
 
-            if (!companyName) {
-                //Kiểm tra tên cty
-                functions.setError(res, "company name required", 506)
+                const company = await functions.getDatafindOne(ChildCompany, {com_id:com_id,_id: _id });
+                if (company) {
+                    await functions.getDatafindOneAndUpdate(ChildCompany, {com_id:com_id,_id: _id }, {
+                        companyName: companyName,
+                        companyPhone: companyPhone,
+                        companyEmail: companyEmail,
+                        companyAddress: companyAddress,
 
-            } else {
-
-                const company = await functions.getDatafindOne(ChildCompany, { _id: _id });
-                if (!company) {
-                    functions.setError(res, "company does not exist!", 510);
-                } else {
-                    await functions.getDatafindOneAndUpdate(ChildCompany, { _id: _id }, {
-                            companyName: companyName,
-                            companyPhone: companyPhone,
-                            companyEmail: companyEmail,
-                            companyAddress: companyAddress,
-
-                        })
-                        .then((company) => functions.success(res, "Deparment edited successfully", { company }))
-                        .catch((err) => functions.setError(res, err.message, 511));
-                }
-            }
+                    })
+                   return functions.success(res, "Deparment edited successfully", { company })
+                }    
+                return functions.setError(res, "company does not exist!", 510);
+                
+                
+         
         }
+        return functions.setError(res, "Tài khoản không phải Công ty", 604);   
     } catch (error) {
         return functions.setError(res, error.message)
     }

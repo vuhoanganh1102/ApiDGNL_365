@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const GroupSchema = new Schema({
     //ID của nhóm
-    _id: {
+    group_id: {
         type: Number,
         required: true
     },
