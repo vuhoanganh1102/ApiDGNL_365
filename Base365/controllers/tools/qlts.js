@@ -16,7 +16,7 @@ const ThanhLy = require('../../models/QuanLyTaiSan/ThanhLy')
 const TaiSanDangSuDung = require('../../models/QuanLyTaiSan/TaiSanDangSuDung')
 const TaiSanDaiDienNhan = require('../../models/QuanLyTaiSan/TaiSanDaiDienNhan')
 const CapPhat = require('../../models/QuanLyTaiSan/CapPhat')
-
+const KiemKe = require('../../models/QuanLyTaiSan/KiemKe');
 
 
 
@@ -977,3 +977,62 @@ exports.toolPhanQuyen  = async (req,res,next)=> {
         return fnc.setError(res, error)
     }
 }
+
+//dung
+exports.kiemKe = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const response = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 10 });
+            let data = response.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    // if (await functions.checkDate(data[i].time_start) === false) continue
+                    let id_ts=[];
+                    const res = JSON.parse(data[i].id_ts);
+                    const array = res.ds_ts;
+                    for(let i=0; i<array.length; i++){
+                        id_ts.push(array[i][0]);
+                    }
+                    
+                    console.log(id_ts);
+                    await KiemKe.findOneAndUpdate({id_kiemke: data[i].id_kiemke}, 
+                        {
+                            id_cty: data[i].id_cty,
+                            "id_ts.ds_ts": id_ts,
+                            id_ngtao_kk: data[i].id_ngtao_kk,
+                            id_ngduyet_kk: data[i].id_ngduyet_kk,
+                            id_ng_kiemke: data[i].id_ng_kiemke,
+                            kk_loai: data[i].kk_loai,
+                            kk_loai_time: data[i].kk_loai_time,
+                            kk_noidung: data[i].kk_noidung,
+                            kk_ky: data[i].kk_ky,
+                            kk_denngay: data[i].kk_denngay,
+                            kk_donvi: data[i].kk_donvi,
+                            kk_batdau: data[i].kk_batdau,
+                            kk_ketthuc: data[i].kk_ketthuc,
+                            kk_hoanthanh: data[i].kk_hoanthanh,
+                            kk_ngayduyet: data[i].kk_ngayduyet,
+                            kk_trangthai: data[i].kk_trangthai,
+                            kk_tiendo: data[i].kk_tiendo,
+                            kk_type_quyen: data[i].kk_type_quyen,
+                            kk_id_ng_xoa: data[i].kk_id_ng_xoa,
+                            xoa_kiem_ke: data[i].xoa_kiem_ke,
+                            kk_date_create: data[i].kk_date_create,
+                            kk_date_delete: data[i].kk_date_delete,
+                            kk_type_quyen_xoa: data[i].kk_type_quyen_xoa,
+                            kk_type_quyen_duyet: data[i].kk_type_quyen_duyet,
+                        }, 
+                        { upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
