@@ -1,13 +1,19 @@
 const mongoose = require("mongoose");
 const model_KiemKe = new mongoose.Schema({
     id_kiemke: {
-        type: Number
+        type: Number,
+        required: true,
     },
     id_cty: {
         type: Number
     },
     id_ts: {
-        type: String
+        type: {
+            ds_ts: {
+                type: []
+            }
+        },
+        default: null
     },
     id_ngtao_kk: {
         type: Number
@@ -77,8 +83,8 @@ const model_KiemKe = new mongoose.Schema({
     }
 
 },
-    {
-        collection: "QLTS_Kiem_Ke",
-        versionKey: false
-    });
+{
+    collection: "QLTS_Kiem_Ke",
+    versionKey: false
+});
 module.exports = mongoose.model("QLTS_Kiem_Ke", model_KiemKe);

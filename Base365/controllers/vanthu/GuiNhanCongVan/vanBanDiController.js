@@ -160,6 +160,7 @@ exports.createVanBanOut = async(req, res, next) => {
         return functions.setError(res, "Tai khoan chua duoc phan quyen de ban hanh ngoai cong ty!", 409);
       }
     }
+    id_user_nhan = id_user_nhan.join(", ");
     fields = {...fields, 
       user_cty: id_cong_ty, 
       mail_cty: mail_congty,
@@ -190,7 +191,7 @@ exports.createVanBanOut = async(req, res, next) => {
     }
 
     let Status = 2;
-    let ListReceive = fields.id_user_nhan;// mang
+    let ListReceive = id_user_nhan;// mang
     if(fields.xet_duyet_van_ban == 2){
       Status = 1;
       ListReceive = fields.nguoi_xet_duyet;
@@ -207,12 +208,11 @@ exports.createVanBanOut = async(req, res, next) => {
       Message: fields.nhom_vb,
       Type: type_user,
       Title: fields.title_vb,
-      Link: link
+      Link: link,
+      SenderId: req.id
     }
-
     // gui email
-    await functions.getDataAxios(vanThuService.arrAPI().NotificationReport, dataSend);
-
+    let dataSendChat = await functions.getDataAxios(vanThuService.arrAPI().NotificationReport, dataSend);
     //gui file qua chat
     dataSend = {
       SenderId: req.id,
@@ -225,7 +225,7 @@ exports.createVanBanOut = async(req, res, next) => {
       Title: fields.title_vb,
       Link: link
     }
-    await functions.getDataAxios(vanThuService.arrAPI().SendContractFile, dataSend);
+    dataSendChat = await functions.getDataAxios(vanThuService.arrAPI().SendContractFile, dataSend);
 
     let maxIdThongBao = await vanThuService.getMaxId(ThongBao);
     let fieldsThongBao = {_id: maxIdThongBao, id_user: fields.user_send, id_user_nhan: id_user_nhan, type: 1, view: 0, created_date: fields.created_date, id_van_ban: maxIdVB};
@@ -348,7 +348,7 @@ exports.createVanBanIn = async(req, res, next) => {
     }
     let type_user = '';
     let type_sent = '';
-    if(req.role == 2){
+    if(req.type == 2){
       type_user = 1;
       type_sent = 3;
     }else {
@@ -373,11 +373,13 @@ exports.createVanBanIn = async(req, res, next) => {
       Status: Status,
       Message: fields.nhom_vb,
       Type: type_user,
-      Title: fields.title_vb
+      Title: fields.title_vb,
+      SenderId: req.id,
+      Link: link
     }
-    await functions.getDataAxios(vanThuService.arrAPI().NotificationReport, dataSend)
-
+    let dataSendchat = await functions.getDataAxios(vanThuService.arrAPI().NotificationReport, dataSend);
     //gui file qua chat
+    
     dataSend = {
       SenderId: req.id,
       ReceiveId: `[${ListReceive}]`,
@@ -389,7 +391,7 @@ exports.createVanBanIn = async(req, res, next) => {
       Title: fields.title_vb,
       Link: link
     }
-    await functions.getDataAxios(vanThuService.arrAPI().SendContractFile, dataSend);
+    dataSendchat = await functions.getDataAxios(vanThuService.arrAPI().SendContractFile, dataSend);
     return functions.success(res, "Create van ban gui di trong cong ty thanh cong!");
   }catch(err){
     console.log("Error from server!", err);
