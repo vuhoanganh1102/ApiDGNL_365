@@ -21,11 +21,6 @@ const GroupSchema = new Schema({
     gr_name: {
         type: String,
     },
-    //ID quản lý nhóm
-    managerId: {
-        type: Number
-    },
-    //
     parent_gr: {
         type: Number
     },
