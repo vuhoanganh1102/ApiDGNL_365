@@ -1,4 +1,3 @@
-const ChildCompany = require("../../models/qlc/ChildCompany")
 const Users = require("../../models/Users")
 const functions = require("../../services/functions")
 const fnc = require("../../services/qlc/functions")
