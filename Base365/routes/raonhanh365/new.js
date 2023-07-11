@@ -38,10 +38,10 @@ router.get('/createToken',newRN.createToken)
 router.get('/newfavorite/:linkTitle',functions.checkToken,newRN.newfavorite)
 
 // quản lí tin mua
-router.get('/managenew/:linkTitle',functions.checkToken,newRN.managenew)
+router.post('/managenew',functions.checkToken,formData.parse(),newRN.managenew)
 
 // quản lí tin bán
-router.get('/manageNewBuySell/:linkTitle',functions.checkToken,newRN.manageNewBuySell)
+router.post('/manageNewBuySell',functions.checkToken,formData.parse(),newRN.manageNewBuySell)
 
 // tin đang dự thầu
 router.get('/newisbidding/:linkTitle',functions.checkToken,newRN.newisbidding)
@@ -92,6 +92,12 @@ router.get('/getListNewsApplied',functions.checkToken, newRN.getListNewsApplied)
 //api lay ra danh sach ung vien dang ung tuyen cua 1 tin
 router.get('/getListCandidateApplied',functions.checkToken, newRN.getListCandidateApplied);
 
+// lấy thông tin nạp tiền
+router.get('/getDatabank',functions.checkToken,newRN.getDatabank)
 
+// nạp tiền
+router.post('/napTien',formData.parse(),functions.checkToken,newRN.napTien)
 
+// nạp tiền
+router.post('/getDetailForUpdateNew',formData.parse(),newRN.getDetailForUpdateNew)
 module.exports = router;
