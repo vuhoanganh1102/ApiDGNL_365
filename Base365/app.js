@@ -97,8 +97,8 @@ errorApp(appHR)
 // Cấu hình appQLTS
 configureApp(appQLTS);
 var qltsRouter = require('./routes/qltsRouter');
-appQLTS.use("/api", qltsRouter);
-errorApp(appHR)
+appQLTS.use("/api/qlts", qltsRouter);
+errorApp(appQLTS)
 
 // timviec365 -> api-base365
 const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365

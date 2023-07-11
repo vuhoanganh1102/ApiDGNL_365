@@ -1,5 +1,6 @@
 const LoaiTaiSan = require('../../models/QuanLyTaiSan/LoaiTaiSan');
 const quanlytaisanService = require('../../services/QLTS/qltsService');
+const functions = require('../../services/functions')
 
 exports.addLoaiTaiSan = async (req,res) => {
     try{
@@ -141,7 +142,7 @@ exports.showLoaiTs = async (req, res) => {
         return functions.setError(res, 'không có quyền truy cập', 400);
       }
       if (datatype == 1) {
-        let chinhsualoai = await LoaiTaiSan.findByIdAndUpdate({ id_loai: id, id_cty: com_id },
+        let chinhsualoai = await LoaiTaiSan.findOneAndUpdate({ id_loai: id, id_cty: com_id },
           {
             $set: {
               loai_da_xoa: 1,
@@ -154,7 +155,7 @@ exports.showLoaiTs = async (req, res) => {
         return functions.success(res, 'get data success', { chinhsualoai });
       }
       if (datatype == 2) {
-        let khoiphuc = await LoaiTaiSan.findByIdAndUpdate({ id_loai: id, id_cty: com_id },
+        let khoiphuc = await LoaiTaiSan.findOneAndUpdate({ id_loai: id, id_cty: com_id },
           {
             $set: {
             loai_da_xoa: 0,
@@ -167,7 +168,7 @@ exports.showLoaiTs = async (req, res) => {
         return functions.success(res, 'get data success', { khoiphuc });
       }
       if (datatype == 3) {
-        await LoaiTaiSan.findByIdAndDelete({ id_loai: id, id_cty: com_id })
+        await LoaiTaiSan.findOneAndDelete({ id_loai: id, id_cty: com_id })
         return functions.success(res, 'thanh cong');
       } else {
         return functions.setError(res, 'không có quyền xóa', 400)

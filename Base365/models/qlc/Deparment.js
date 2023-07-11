@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const DeparmentSchema = new Schema({
     //ID phòng ban
-    _id: {
+    dep_id: {
         type: Number,
         required: true
     },
@@ -34,7 +34,7 @@ const DeparmentSchema = new Schema({
 
     //Săp xếp theo thứ tự
     deparmentOrder: {
-        type: Number
+        type: String
     },
     // tổng số nhân viên 
     total_emp : {

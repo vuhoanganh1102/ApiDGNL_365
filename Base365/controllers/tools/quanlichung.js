@@ -78,8 +78,8 @@ exports.toolDeparment = async(req, res, next) => {
                     //     deparmentOrder = null;
                     // };
                     const department = new Deparment({
-                        _id: element.dep_id,
-                        companyID: element.com_id,
+                        dep_id: element.dep_id,
+                        com_id: element.com_id,
                         deparmentName: element.dep_name,
                         managerId: element.manager_id,
                         deparmentCreated: element.dep_create_time,
