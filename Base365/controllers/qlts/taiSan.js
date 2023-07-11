@@ -140,8 +140,13 @@ exports.addTaiSan = async (req, res) => {
     const createDate = Math.floor(Date.now() / 1000);
     if (req.user.data.type == 1){
       let com_id = req.user.data.idQLC;
-      const validationResult = quanlytaisanService.validateTaiSanInput(ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly,id_loai_ts,ts_vi_tri);
-      if (validationResult === true) {
+    }else if (req.user.data.type == 2) {
+      com_id = req.user.data.inForPerson.employee.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    const validationResult = quanlytaisanService.validateTaiSanInput(ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly,id_loai_ts,ts_vi_tri);
+    if (validationResult === true) {
         const checkidNhom = await LoaiTaiSan.findOne({id_loai :id_loai_ts,loai_da_xoa : 0}).select('id_nhom_ts')
         let maxID = await quanlytaisanService.getMaxID(TaiSan);
         let ts_id = 0;
@@ -185,10 +190,6 @@ exports.addTaiSan = async (req, res) => {
         let saveTSVT = await createNewTSVT.save();
         return functions.success(res, 'save data success', { save,saveTSVT})
       }
-    }
-    else {
-      return functions.setError(res, 'không có quyền truy cập', 400)
-    }
   } catch (error) {
     console.log(error);
     return functions.setError(res, error)

@@ -11,5 +11,6 @@ router.post('/taisan',toolQLTS.toolTaisan)
 router.post('/vitrits',toolQLTS.toolViTriTS)
 router.post('/nhomts',toolQLTS.toolNhomts)
 router.post('/tsvitri',toolQLTS.toolTSvitri)
+router.post('/phanquyen',toolQLTS.toolPhanQuyen)
 
 module.exports = router

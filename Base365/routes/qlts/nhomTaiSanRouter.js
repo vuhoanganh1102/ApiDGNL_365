@@ -13,5 +13,12 @@ router.post('/list',functions.checkToken,formData.parse(),controllerNhomTs.showN
 //Api hiển thị chi tiết nhóm
 router.post('/details',functions.checkToken,formData.parse(),controllerNhomTs.showCTNhomTs)
 
+//Api sửa 
+router.post('/edit',functions.checkToken,formData.parse(),controllerNhomTs.editNhom)
+
+//Api xóa
+router.post('/edit',functions.checkToken,formData.parse(),controllerNhomTs.xoaNhom)
+
+
 
 module.exports = router

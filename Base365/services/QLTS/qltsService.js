@@ -15,6 +15,15 @@ exports.getMaxID = async (model) => {
     const maxTs = await model.findOne({}, {}, { sort: { ts_id: -1 } }).lean() || 0;
     return maxTs.ts_id;
   };
+exports.getMaxIDloai = async (model) => {
+  const maxlts = await model.findOne({}, {}, { sort: { id_loai: -1 } }).lean() || 0;
+  return maxlts.id_loai;
+};
+
+exports.getMaxIDVT = async (model) => {
+  const maxVt = await model.findOne({}, {}, { sort: { id_vitri: -1 } }).lean() || 0;
+  return maxVt.id_vitri;
+};
 
 
 exports.validateTaiSanInput = (ts_ten,ts_don_vi,id_dv_quanly,id_ten_quanly,id_loai_ts,ts_vi_tri) => {
