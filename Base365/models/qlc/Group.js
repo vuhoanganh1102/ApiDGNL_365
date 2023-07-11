@@ -58,6 +58,10 @@ const GroupSchema = new Schema({
     total_emp : {
         type :Number,
     }
+}, {
+    collection: 'QLC_Groups',
+    versionKey: false,
+    timestamp: true
 })
 
 module.exports = mongoose.model('QLC_Groups', GroupSchema)

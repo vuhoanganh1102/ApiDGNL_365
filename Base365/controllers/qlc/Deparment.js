@@ -7,9 +7,8 @@ const Users = require("../../models/Users")
 exports.getListDeparment = async(req, res) => {
     try {
         let com_id = req.body.com_id
-        let _id = req.body._id
+        let dep_id = req.body.dep_id
             // let dep_id = req.body.dep_id
-        console.log(_id, com_id)
 
         let condition = {};
         let data = []
@@ -22,22 +21,21 @@ exports.getListDeparment = async(req, res) => {
             functions.setError(res, "id must be a Number")
         } else {
             if (com_id) condition.com_id = com_id
-            if (_id) condition._id = _id
-            console.log(_id, com_id)
+            if (dep_id) condition.dep_id = dep_id
 
 
 
-            data = await Deparment.find(condition).select('com_id deparmentName managerId deparmentCreated total_emp ')
-            const depID = data.map(item => item._id);
-            for (let i = 0; i < depID.length; i++) {
-                const depId = depID[i];
-                total_emp = await functions.findCount(Users, { "inForPerson.employee.com_id": com_id, "inForPerson.employee.dep_id": depId, type: 2, "inForPerson.employee.ep_status": "Active" })
+            const data = await Deparment.find(condition);
+            // const depID = data.map(item => item._id);
+            // for (let i = 0; i < depID.length; i++) {
+            //     const depId = depID[i];
+            //     total_emp = await functions.findCount(Users, { "inForPerson.employee.com_id": com_id, "inForPerson.employee.dep_id": depId, type: 2, "inForPerson.employee.ep_status": "Active" })
 
-                await Deparment.findOneAndUpdate({ com_id: com_id, _id: depId }, { $set: { total_emp: total_emp } });
-            }
-            if (!data) {
-                return functions.setError(res, 'Không có dữ liệu', 404);
-            };
+            //     await Deparment.findOneAndUpdate({ com_id: com_id, _id: depId }, { $set: { total_emp: total_emp } });
+            // }
+            // if (!data) {
+            //     return functions.setError(res, 'Không có dữ liệu', 404);
+            // };
             return functions.success(res, 'Lấy thành công', { data });
         }
 
@@ -54,7 +52,6 @@ exports.countUserInDepartment = async(req, res) => {
         const total_emp = await functions.findCount(Users, { "inForPerson.employee.com_id": com_id, "inForPerson.employee.dep_id": dep_id, type: 2 })
             // .then(() => functions.success(res, "",{numberUser}))
             // .catch((err) => functions.setError(res, err.message, 501));
-        console.log(numberUser)
         if (!numberUser) {
             return functions.setError(res, "Deparment cannot be found or does not exist", 503);
         } else {
@@ -68,43 +65,35 @@ exports.countUserInDepartment = async(req, res) => {
 //API tạo mới một phòng ban
 exports.createDeparment = async(req, res) => {
     try {
+        // const com_id = req.user.data.com_id
+        const com_id = req.body.com_id
 
-        const { com_id, deparmentName, managerId, deputyId, deparmentOrder, deparmentCreated, total_emp } = req.body;
-        if ((com_id && deparmentName) == undefined) {
+        const { deparmentName, managerId, deputyId, deparmentOrder, deparmentCreated, total_emp } = req.body;
+        if (com_id && deparmentName) {
             //Kiểm tra Id công ty khác null
-            functions.setError(res, "Company Id required", 504);
 
-        } else if (isNaN(com_id)) {
-            //Kiểm tra Id company có phải số không
-            functions.setError(res, "Company Id must be a number", 505);
-
-        } else if (!deparmentName) {
-            //Kiểm tra ID phòng ban khác null
-            functions.setError(res, "name Deparment required", 506);
-
-        } else {
-            //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
-            let maxID = await functions.getMaxID(Deparment);
-
-            const deparment = new Deparment({
-                _id: Number(maxID) + 1 || 1,
-                com_id: com_id,
-                deparmentName: deparmentName,
-                managerId: managerId || null,
-                deputyId: deputyId || null,
-                deparmentCreated: new Date(),
-                deparmentOrder: deparmentOrder || 0,
-                total_emp: total_emp,
-            });
-
-            await deparment.save()
-                .then(() => {
-                    functions.success(res, "Deparment created successfully", { deparment })
-                })
-                .catch((err) => {
-                    functions.setError(res, err.message, 509);
-                })
+                        //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
+                        let maxID = await Deparment.findOne({},{},{sort:{dep_id:-1}}).lean() || 0 ;
+                        console.log(maxID)
+                        const deparments = new Deparment({
+                            dep_id: Number(maxID.dep_id) + 1 || 1,
+                            com_id: com_id,
+                            deparmentName: deparmentName,
+                            managerId: managerId || null,
+                            deputyId: deputyId || null,
+                            deparmentCreated: new Date(),
+                            deparmentOrder: deparmentOrder || 0,
+                            total_emp: total_emp,
+                        });
+            
+                        await deparments.save()
+            return functions.success(res, "Tạo thành công", {deparments});
+                            
+            
         }
+            return functions.setError(res, "nhập thiếu thông tin", 504);
+            
+        
     } catch (error) {
         return functions.setError(res, error.message)
 

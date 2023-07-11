@@ -7,9 +7,15 @@ const functions = require('../../services/functions');
 router.post('/create',functions.checkToken,formData.parse(),controller.create)
 
 
-// router.post('/edit',functions.checkToken,formData.parse(),controller.edit)
+router.post('/edit',functions.checkToken,formData.parse(),controller.edit)
 
 
-// router.post('/delete',functions.checkToken,formData.parse(),controller.delete)
+router.post('/delete',functions.checkToken,formData.parse(),controller.delete)
+
+
+router.post('/updateStatus',functions.checkToken,formData.parse(),controller.updateStatus)
+
+
+router.post('/getListDetail',functions.checkToken,formData.parse(),controller.getListDetail)
 
 module.exports = router

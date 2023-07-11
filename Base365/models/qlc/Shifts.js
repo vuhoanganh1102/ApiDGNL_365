@@ -3,64 +3,74 @@ const Schema = mongoose.Schema;
 
 const ShiftSchema = new Schema({
     //Id của ca làm việc
-    _id: {
+    shift_id: {
         type: Number,
+        unique: true
     },
     //Id của công ty
-    companyID: {
+    com_id: {
         type: Number
-    },
-    //Thời điểm tạo ca làm việc
-    createdAt: {
-        type: Date,
-        default: Date.now()
     },
     //Tên ca làm việc
-    shiftName: {
+    shift_name: {
         type: String,
     },
-    //Giờ vào ca
-    timeCheckIn: {
-        type: String
-    },
-    //Giờ hết ca
-    timeCheckOut: {
-        type: String
+    //Thời điểm tạo ca làm việc
+    start_time: {
+        type: String,
+        default: null
     },
     //Giớ check in sớm nhất
-    timeCheckInEarliest: {
-        type: String
+    start_time_latest: {
+        type: String,
+        default: null
+    },
+    //Giờ hết ca
+    end_time: {
+        type: String,
+        default: null
     },
     //Giớ check out muộn nhất
-    timeCheckOutLastest: {
-        type: String
+    end_time_earliest: {
+        type: String,
+        default: null
+    },
+
+    create_time: {
+        type: Date,
+        default: Date.now
     },
     //Id hình thức tính công
-    idTypeCalculateWork: {
+    over_night: {
         type: Number,
+        default: 0
     },
     //Hình thức tính công
-    typeCalculateWork: {
-        type: String
+    shift_type: {
+        type: Number,
+        default: 1
     },
     //Số công theo ca
-    numOfWorkPerShift: {
-        type: Number
+    num_to_calculate: {
+        type: Number,
+        default: 1
     },
     //Số tiền theo ca
-    money: {
-        type: Number
-    },
-    over_night: {
-        type: Number
+    num_to_money: {
+        type: Number,
+        default: 0
     },
     is_overtime: {
-        type: Number
+        type: Number,
+        default: 0
     },
     status: {
-        type: Number
-    },
-    
+        type: Number,
+        default: 1
+    }
+}, {
+    collection: 'QLC_Shifts',
+    versionKey: false
 })
 
-module.exports = mongoose.model("Shifts", ShiftSchema); 
+module.exports = mongoose.model("QLC_Shifts", ShiftSchema);

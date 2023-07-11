@@ -11,6 +11,7 @@ exports.setVip = async(req, res) => {
         let com_id = req.body.com_id
         let now = new Date()
         let inpput = new Date(com_vip_time)
+            // console.log(Date.parse(com_vip_time))
         if (!com_id) {
             functions.setError(res, "vui lòng nhập id công ty")
         } else if (com_ep_vip < 5) {
@@ -46,13 +47,14 @@ exports.getList = async(req, res) => {
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
 
-        let fromWeb = request.fromWeb
-        inputNew = request.inputNew
-        inputOld = request.inputOld
-        find = request.find
-        findConditions = request.findConditions
+        let fromWeb = request.fromWeb,
+            inputNew = request.inputNew,
+            inputOld = request.inputOld,
+            find = request.find,
+            findConditions = request.findConditions,
+            com_id = request.com_id;
 
-        let type = 1
+        let type = 1;
         let data = [];
         let listCondition = {};
         let checkNew1 = new Date(inputNew)
@@ -68,8 +70,14 @@ exports.getList = async(req, res) => {
         if (checkOld > checkNew) {
             await functions.setError(res, "thời gian nhập không đúng quy định")
         }
+
+        listCondition.type = 1;
         //tìm kiếm qua trang web
         if (fromWeb) listCondition.fromWeb = fromWeb;
+        if (com_id) {
+            listCondition.idQLC = com_id;
+
+        }
 
         if (inputNew || inputOld) listCondition['createdAt'] = { $gte: checkOld, $lte: checkNew };
 
@@ -91,15 +99,18 @@ exports.getList = async(req, res) => {
 
 
 
-        data = await user.find(listCondition).select('com_id userName Email phoneTK address fromWeb createdAt status_com authentic inForCompany.cds.com_vip inForCompany.cds.com_ep_vip inForCompany.cds.com_vip_time ').skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 });
-        if (data === []) {
-            await functions.setError(res, 'Không có dữ liệu', 404);
+        data = await user.find(listCondition).select('com_id userName email phoneTK phone emailContact address fromWeb createdAt status_com authentic inForCompany.cds.com_vip inForCompany.cds.com_ep_vip inForCompany.cds.com_vip_time idQLC').skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
 
-        } else {
-            let count = await user.countDocuments(listCondition)
-
-            return functions.success(res, 'Lấy thành công', { data, count });
+        for (let i = 0; i < data.length; i++) {
+            const element = data[i];
+            element.count_emp = await user.countDocuments({
+                "inForPerson.employee.com_id": element.idQLC
+            });
         }
+
+        let count = await user.countDocuments(listCondition)
+
+        return functions.success(res, 'Lấy thành công', { data, count });
     } catch (err) {
         return functions.setError(res, err.message);
     };
