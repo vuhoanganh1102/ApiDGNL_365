@@ -7,12 +7,8 @@ const folder = 'file_van_ban';
 exports.getListContract = async (req, res, next) => {
     try {
         let key = req.body.key;
-        if (key) {
-            key = key.toUpperCase();
-        }
         let page = Number(req.body.page);
         let pageSize = Number(req.body.pageSize);
-
         let book = req.body.book;
         let money_min = req.body.money_min;
         let money_max = req.body.money_max;
@@ -32,15 +28,15 @@ exports.getListContract = async (req, res, next) => {
         if (key) {
             conditions = {
                 $or: [
-                    { cv_name: { $regex: key } },
+                    { cv_name: new RegExp(key, 'i')  },
                     { cv_so: { $regex: key } }
                 ]
             }
         }
         if (!type) return functions.setError(res, 'missing input value', 400)
-        if (dayStart) conditions.cv_date = { $gte: dayStart }
-        if (dayEnd) conditions.cv_date = { $lte: dayEnd }
-        if (dayStart && dayEnd) conditions.cv_date = { $gte: dayStart, $lte: dayEnd }
+        if (dayStart) conditions.cv_date = { $gte: new Date(dayStart).getTime() / 1000 }
+        if (dayEnd) conditions.cv_date = { $lte: new Date(dayEnd).getTime() / 1000 }
+        if (dayStart && dayEnd) conditions.cv_date = { $gte: new Date(dayStart).getTime() / 1000, $lte: new Date(dayEnd).getTime() / 1000 }
         if (book) conditions.cv_id_book = book
         if (status) conditions.cv_status_hd = status
         if (money_min) conditions.cv_money = { $gte: money_min }
@@ -85,7 +81,7 @@ exports.createSendContract = async (req, res, next) => {
         let user_ky = Number(req.body.user_ky);
         let money_hd = Number(req.body.money_hd);
         let cv_file = '';
-        let cv_time_create = new Date().getTime() / 1000;
+        let cv_time_create = new Date();
         if (file && file.length > 0) {
             for (let i = 0; i < file.length; i++) {
                 let checkFile = await functions.checkFile(file[i].path);
@@ -94,14 +90,11 @@ exports.createSendContract = async (req, res, next) => {
                 if(!checkFile){
                     return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                 }
-                let fileName = await vanthu.uploadfile(folder, file[i]);
+                let fileName = await vanthu.uploadfile(folder, file[i],cv_time_create);
                 if(fileName) {
                     cv_file += fileName;
                 }
             }
-        }
-        if (functions.checkDate(date_nhan) === false) {
-            return functions.setError(res, 'invalid date', 400)
         }
 
         if (await !functions.checkNumber(type_gui_vbden) || await !functions.checkNumber(noi_gui_vbden) ||
@@ -122,7 +115,7 @@ exports.createSendContract = async (req, res, next) => {
                 cv_user_soan: user_gui_vbden,
                 cv_name_soan: text_user_gui_vbden,
                 cv_id_book: book_vb,
-                cv_date: vanthu.convertTimestamp(date_nhan),
+                cv_date: new Date(date_nhan).getTime() / 1000,
                 cv_user_save: use_luu_vbden,
                 cv_user_ky: user_ky,
                 cv_type_chuyenden: 1,
@@ -135,7 +128,7 @@ exports.createSendContract = async (req, res, next) => {
                 cv_status_hd: 1,
                 cv_money: money_hd,
                 cv_usc_id: comId,
-                cv_time_created: cv_time_create
+                cv_time_created: Math.round(cv_time_create.getTime() / 1000)
             })
         } else {
             return functions.setError(res, 'missing data', 400)
@@ -149,7 +142,6 @@ exports.createSendContract = async (req, res, next) => {
 // sửa  hợp đồng đến
 exports.updateSendContract = async (req, res, next) => {
     try {
-
         let comId = req.comId;
         let name_vbden = req.body.name_vbden;
         let so_vbden = req.body.so_vbden;
@@ -158,7 +150,7 @@ exports.updateSendContract = async (req, res, next) => {
         let text_gui_vbden = req.body.text_gui_vbden;
         let user_gui_vbden = req.body.user_gui_vbden;
         let text_user_gui_vbden = req.body.text_user_gui_vbden;
-        let date_nhan = req.body.date_nhan;
+        let date_nhan = new Date (req.body.date_nhan);
         let use_nhan_vbden = Number(req.body.use_nhan_vbden);
         let use_luu_vbden = Number(req.body.use_luu_vbden);
         let book_vb = Number(req.body.book_vb);
@@ -183,11 +175,12 @@ exports.updateSendContract = async (req, res, next) => {
                 if(!checkFile){
                     return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                 }
-                let fileName = await vanthu.uploadfile(folder, file[i]);
+                let fileName = await vanthu.uploadfile(folder, file[i],new Date(check.cv_time_created * 1000));
                 if(fileName) {
                     cv_file += fileName;
                 }
             }
+            await tbl_qly_congvan.findByIdAndUpdate(id,{cv_file})
         }
 
         if (await !functions.checkNumber(type_gui_vbden) || await !functions.checkNumber(noi_gui_vbden) ||
@@ -198,10 +191,6 @@ exports.updateSendContract = async (req, res, next) => {
         let cv_time_update = new Date().getTime() / 1000;
         let type_edit = 0;
         let noi_dung = '';
-        if (functions.checkDate(date_nhan) === false) {
-            return functions.setError(res, 'invalid date', 400)
-        }
-
         if (name_vbden && so_vbden && type_gui_vbden && text_gui_vbden
             && date_nhan && text_user_gui_vbden && use_luu_vbden && use_nhan_vbden && trich_yeu_vbden && user_ky) {
             if (name_vbden != check.cv_name) noi_dung += 'Tên hợp đồng,'
@@ -211,8 +200,8 @@ exports.updateSendContract = async (req, res, next) => {
             if (text_gui_vbden != check.cv_soan_ngoai) noi_dung += 'Nơi gửi ngoài,'
             if (user_gui_vbden != check.cv_user_soan) noi_dung += 'Người gửi nội bộ,'
             if (text_user_gui_vbden != check.cv_name_soan) noi_dung += 'Người gửi ngoài,'
-            if (date_nhan != check.cv_date) noi_dung += 'Ngày nhận,'
-            if (use_nhan_vbden != check.cv_nhan_noibo) noi_dung += 'Nơi nhận văn bản,'
+            if ( date_nhan.getTime() / 1000 != check.cv_date) noi_dung += 'Ngày nhận,'
+            if (use_nhan_vbden != check.cv_chuyen_noibo) noi_dung += 'Người nhận hợp đồng,'
             if (use_luu_vbden != check.cv_user_save) noi_dung += 'Người lưu trữ,'
             if (trich_yeu_vbden != check.cv_trich_yeu) noi_dung += 'Trích yếu,'
             if (ghi_chu_vbden != check.cv_ghi_chu) noi_dung += 'Ghi chú,'
@@ -249,12 +238,11 @@ exports.updateSendContract = async (req, res, next) => {
                 cv_so: so_vbden,
                 cv_type_soan: type_gui_vbden,
                 cv_soan_ngoai: text_gui_vbden,
-                cv_file: cv_file,
                 cv_phong_soan: noi_gui_vbden,
                 cv_user_soan: user_gui_vbden,
                 cv_name_soan: text_user_gui_vbden,
                 cv_user_ky: user_ky,
-                cv_date: vanthu.convertTimestamp(date_nhan),
+                cv_date: date_nhan.getTime() / 1000,
                 cv_money: money_hd,
                 cv_user_save: use_luu_vbden,
                 cv_type_chuyenden: 1,
@@ -298,6 +286,7 @@ exports.createContract = async (req, res, next) => {
         let book_vb = Number(req.body.book_vb);
         let money_hd = Number(req.body.money_hd);
         let file = req.files.file;
+        let cv_time_created = new Date();
         if (nhanvb_dep && nhanvb_dep.length !== 0) {
             nhanvb_dep = nhanvb_dep.join(" ")
         }
@@ -311,18 +300,14 @@ exports.createContract = async (req, res, next) => {
                 || await !functions.checkNumber(book_vb)) {
                 return functions.setError(res, 'invalid number', 400)
             }
-            if (functions.checkDate(date_guidi) === false) {
-                return functions.setError(res, 'invalid date', 400)
-            }
             if (file && file.length > 0) {
                 for (let i = 0; i < file.length; i++) {
                     let checkFile = await functions.checkFile(file[i].path);
                     let fileNameOrigin = file[i].name;
-
                     if(!checkFile){
                         return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                     }
-                    let fileName = await vanthu.uploadfile(folder, file[i]);
+                    let fileName = await vanthu.uploadfile(folder, file[i],cv_time_created);
                     if(fileName) {
                         cv_file += fileName;
                     }
@@ -341,7 +326,7 @@ exports.createContract = async (req, res, next) => {
                 cv_money:money_hd,
                 cv_status_hd:1,
                 cv_type_hd:1,
-                cv_date: vanthu.convertTimestamp(date_guidi),
+                cv_date: new Date(date_guidi).getTime() / 1000,
                 cv_user_save:use_luu_vbdi,
                 cv_user_ky:use_ky_vbdi,
                 cv_type_nhan:nhanvb_dep,
@@ -354,7 +339,7 @@ exports.createContract = async (req, res, next) => {
                 cv_ghi_chu:ghi_chu_vbdi,
                 cv_type_loai:2,
                 cv_usc_id:comId,
-                cv_time_created: new Date().getTime() / 1000,
+                cv_time_created: Math.round(cv_time_created.getTime() / 1000),
             })
         } else {
             return functions.setError(res, 'missing data', 400)
@@ -374,7 +359,7 @@ exports.updateContract =  async (req, res, next) => {
         let so_vbdi = req.body.so_vbdi;
         let dvst_vbdi = Number(req.body.dvst_vbdi);
         let nst_vbdi = Number(req.body.nst_vbdi);
-        let date_guidi = req.body.date_guidi;
+        let date_guidi = new Date(req.body.date_guidi);
         let use_luu_vbdi = Number(req.body.use_luu_vbdi);
         let use_ky_vbdi = Number(req.body.use_ky_vbdi);
         let nhanvb_dep = req.body.nhanvb_dep;
@@ -407,9 +392,6 @@ exports.updateContract =  async (req, res, next) => {
                 || await !functions.checkNumber(book_vb)) {
                 return functions.setError(res, 'invalid number', 400)
             }
-            if (functions.checkDate(date_guidi) === false) {
-                return functions.setError(res, 'invalid date', 400)
-            }
             let check = await tbl_qly_congvan.findById(id);
             if (!check) return functions.setError(res, 'not found sendtext', 404)
             if (file && file.length > 0) {
@@ -420,18 +402,19 @@ exports.updateContract =  async (req, res, next) => {
                     if(!checkFile){
                         return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                     }
-                    let fileName = await vanthu.uploadfile(folder, file[i]);
+                    let fileName = await vanthu.uploadfile(folder, file[i],new Date(check.cv_time_created * 1000));
                     if(fileName) {
                         cv_file += fileName;
                     }
                 }
+                await tbl_qly_congvan.findByIdAndUpdate(id,{cv_file})
             }
             if (name_vbdi != check.cv_name) noidung += 'Tên văn bản,';
 
             if (so_vbdi != check.cv_so) noidung += 'Số văn bản,';
             if (dvst_vbdi != check.cv_phong_soan) noidung += 'Đơn vị soạn thảo,';
             if (nst_vbdi != check.cv_user_soan) noidung += 'Người soạn thảo,';
-            if (date_guidi != check.cv_date) noidung += 'Ngày gửi,';
+            if (date_guidi.getTime() /1000 != check.cv_date) noidung += 'Ngày gửi,';
             if (use_luu_vbdi != check.cv_user_save) noidung += 'Người lưu trữ,';
             if (use_ky_vbdi != check.cv_user_ky) noidung += 'Người ký,';
             if (nhanvb_dep != check.cv_type_nhan) noidung += 'Loại nơi nhận,';
@@ -475,7 +458,7 @@ exports.updateContract =  async (req, res, next) => {
                 cv_type_soan: 1,
                 cv_phong_soan: dvst_vbdi,
                 cv_user_soan: nst_vbdi,
-                cv_date: vanthu.convertTimestamp(date_guidi),
+                cv_date:date_guidi.getTime() /1000,
                 cv_user_save: use_luu_vbdi,
                 cv_money:money_hd,
                 cv_user_ky: use_ky_vbdi,
@@ -489,7 +472,6 @@ exports.updateContract =  async (req, res, next) => {
                 cv_ghi_chu: ghi_chu_vbdi,
                 cv_type_edit: type_edit,
                 cv_time_edit: cv_time_update,
-                cv_file: cv_file
             })
         } else {
             return functions.setError(res, 'missing data', 400)
