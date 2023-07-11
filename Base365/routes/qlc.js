@@ -50,6 +50,6 @@ router.use('/hisOfTracking', HisOfTrackingRouter);
 router.use('/calendarWorkEmployee', CalendarWorkEmployee);
 router.use('/setIp', SetIpRouter);
 router.use('/homePage', homePage);
-router.use('/childCompany', childCompanyRouter);
+router.use('/childCompany', childCompanyRouter); 
 
 module.exports = router;
