@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const GroupSchema = new Schema({
     //ID của nhóm
-    _id: {
+    group_id: {
         type: Number,
         required: true
     },
@@ -58,6 +58,10 @@ const GroupSchema = new Schema({
     total_emp : {
         type :Number,
     }
+}, {
+    collection: 'QLC_Groups',
+    versionKey: false,
+    timestamp: true
 })
 
 module.exports = mongoose.model('QLC_Groups', GroupSchema)

@@ -36,13 +36,14 @@ exports.createFeedEmp = async(req, res) => {
         if ((idQLC && rating && feed_back) == undefined) {
             functions.setError(res, "lost info")
         } else {
-            const max = await feedback_emp.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean()
-            if (!max) {
-                return max = 0
+            let max = await feedback_emp.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
+            let idmax = 0;
+            console.log(max);
+            if (max != null) {
+                idmax = max._id;
             }
-            console.log(max)
             let feedbacks = new feedback_emp({
-                _id: Number(max._id) + 1,
+                _id: Number(idmax) + 1,
                 idQLC: idQLC,
                 cus_id: cus_id,
                 email: email,
@@ -60,6 +61,7 @@ exports.createFeedEmp = async(req, res) => {
                 .catch((e) => functions.setError(res, e.message))
         }
     } catch (e) {
+        console.log(e);
         return functions.setError(res, e.message)
     }
 }

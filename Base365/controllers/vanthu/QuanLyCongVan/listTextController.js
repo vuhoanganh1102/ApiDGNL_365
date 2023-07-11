@@ -2,7 +2,6 @@ const functions = require('../../../services/functions');
 const tbl_qly_congvan = require('../../../models/Vanthu365/tbl_qly_congvan');
 const vanthu = require('../../../services/vanthu.js');
 const tbl_qlcv_edit = require('../../../models/Vanthu365/tbl_qlcv_edit');
-const Users = require('../../../models/Users');
 const folder = 'file_van_ban';
 // danh sách văn bản 
 exports.getListVanBan = async (req, res, next) => {
@@ -25,15 +24,14 @@ exports.getListVanBan = async (req, res, next) => {
         if (key) {
             conditions = {
                 $or: [
-                    { cv_name: { $regex: key.toUpperCase() } },
+                    { cv_name: new RegExp(key, 'i') },
                     { cv_so: { $regex: key } },
-                    { cv_name: { $regex: key.toLowerCase() } },
                 ]
             }
         }
-        if (dayStart) conditions.cv_date = { $gte: new Date (dayStart).getTime() / 1000 }
-        if (dayEnd) conditions.cv_date = { $lte: new Date (dayEnd).getTime() / 1000 }
-        if(dayStart && dayEnd) conditions.cv_date = { $gte: new Date (dayStart).getTime() / 1000, $lte: new Date (dayEnd).getTime() / 1000 }
+        if (dayStart) conditions.cv_date = { $gte: new Date(dayStart).getTime() / 1000 }
+        if (dayEnd) conditions.cv_date = { $lte: new Date(dayEnd).getTime() / 1000 }
+        if (dayStart && dayEnd) conditions.cv_date = { $gte: new Date(dayStart).getTime() / 1000, $lte: new Date(dayEnd).getTime() / 1000 }
         if (book) conditions.cv_id_book = book
         conditions.cv_usc_id = comId;
         conditions.cv_type_xoa = 0;
@@ -76,15 +74,15 @@ exports.createIncomingText = async (req, res, next) => {
         let cv_file = '';
         let cv_time_create = new Date();
         if (file && file.length > 0) {
-            for (let i = 0; i < file.file.length; i++) {
+            for (let i = 0; i < file.length; i++) {
                 let checkFile = await functions.checkFile(file[i].path);
                 let fileNameOrigin = file[i].name;
 
-                if(!checkFile){
+                if (!checkFile) {
                     return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                 }
-                let fileName = await vanthu.uploadfile(folder, file[i]);
-                if(fileName) {
+                let fileName = await vanthu.uploadfile(folder, file[i], cv_time_create);
+                if (fileName) {
                     cv_file += fileName;
                 }
             }
@@ -113,7 +111,7 @@ exports.createIncomingText = async (req, res, next) => {
                 cv_phong_soan: noi_gui_vbden,
                 cv_user_soan: user_gui_vbden,
                 cv_id_book: book_vb,
-                cv_date: date_nhan.getTime()/1000,
+                cv_date: date_nhan.getTime() / 1000,
                 cv_name_soan: text_user_gui_vbden,
                 cv_user_save: use_luu_vbden,
                 cv_type_nhan: 1,
@@ -123,7 +121,7 @@ exports.createIncomingText = async (req, res, next) => {
                 cv_ghi_chu: ghi_chu_vbden,
                 cv_type_loai: 1,
                 cv_usc_id: comId,
-                cv_time_created: cv_time_create
+                cv_time_created: Math.round(cv_time_create.getTime() / 1000)
             })
         } else {
             return functions.setError(res, 'missing data', 400)
@@ -158,7 +156,7 @@ exports.updateIncomingText = async (req, res, next) => {
         let useId = req.useId;
         let cv_file = '';
         if (!id) return functions.setError(res, 'not found incomming text', 404);
-        let check = await tbl_qly_congvan.findById(id)
+        let check = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId })
         if (!check) {
             return functions.setError(res, 'not found incomming text', 404);
         }
@@ -166,17 +164,16 @@ exports.updateIncomingText = async (req, res, next) => {
             for (let i = 0; i < file.length; i++) {
                 let checkFile = await functions.checkFile(file[i].path);
                 let fileNameOrigin = file[i].name;
-
-                if(!checkFile){
+                if (!checkFile) {
                     return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                 }
-                let fileName = await vanthu.uploadfile(folder, file[i]);
-                if(fileName) {
+                let fileName = await vanthu.uploadfile(folder, file[i], new Date(check.cv_time_created * 1000));
+                if (fileName) {
                     cv_file += fileName;
                 }
             }
+            await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
         }
-
         if (await !functions.checkNumber(type_gui_vbden) || await !functions.checkNumber(noi_gui_vbden) ||
             await !functions.checkNumber(use_nhan_vbden) || await !functions.checkNumber(use_luu_vbden)
             || await !functions.checkNumber(book_vb)) {
@@ -202,7 +199,7 @@ exports.updateIncomingText = async (req, res, next) => {
             if (text_gui_vbden != check.cv_soan_ngoai) noi_dung += 'Nơi gửi ngoài,'
             if (user_gui_vbden != check.cv_user_soan) noi_dung += 'Người gửi nội bộ,'
             if (text_user_gui_vbden != check.cv_name_soan) noi_dung += 'Người gửi ngoài,'
-            if (date_nhan != check.cv_date) noi_dung += 'Ngày nhận,'
+            if (date_nhan.getTime() /1000 != check.cv_date) noi_dung += 'Ngày nhận,'
             if (use_nhan_vbden != check.cv_nhan_noibo) noi_dung += 'Nơi nhận văn bản,'
             if (use_luu_vbden != check.cv_user_save) noi_dung += 'Người lưu trữ,'
             if (trich_yeu_vbden != check.cv_trich_yeu) noi_dung += 'Trích yếu,'
@@ -240,7 +237,7 @@ exports.updateIncomingText = async (req, res, next) => {
                 cv_phong_soan: noi_gui_vbden,
                 cv_user_soan: user_gui_vbden,
                 cv_id_book: book_vb,
-                cv_date: date_nhan,
+                cv_date: date_nhan.getTime() / 1000,
                 cv_name_soan: text_user_gui_vbden,
                 cv_user_save: use_luu_vbden,
                 cv_type_nhan: 1,
@@ -250,7 +247,6 @@ exports.updateIncomingText = async (req, res, next) => {
                 cv_usc_id: comId,
                 cv_type_edit: type_edit,
                 cv_time_edit: cv_time_update,
-                cv_file: cv_file
             })
 
         } else {
@@ -272,13 +268,12 @@ exports.synthesisFunction = async (req, res, next) => {
         let comId = Number(req.comId);
         let useId = Number(req.useId);
         let listId = req.body.listId;
-        console.log(comId);
         // Chức năng xoá  
         if (action === 'delete') {
             if (!id || !action) {
                 return functions.setError(res, 'missing data input', 400)
             }
-            let checkExists = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId,cv_type_xoa:0 });
+            let checkExists = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId, cv_type_xoa: 0 });
             if (!checkExists) return functions.setError(res, 'not found', 404)
 
             let type_user_xoa = 0;
@@ -309,45 +304,43 @@ exports.synthesisFunction = async (req, res, next) => {
                 cv_status_hd: 2
             })
             return functions.success(res, 'active contract success')
-        }else if(action === 'recovery')
-        {
-            if(!listId || listId.length === 0)
-            {
-                return functions.setError(res, 'missing data',400)
+        } else if (action === 'recovery') {
+            if (!listId || listId.length === 0) {
+                return functions.setError(res, 'missing data', 400)
             }
             let type_user_kp = 0;
-            let user_kp = 0; 
-            if (useId == 0){
+            let user_kp = 0;
+            if (useId == 0) {
                 type_user_kp = 1;
                 user_kp = comId;
             }
-            else{
+            else {
                 type_user_kp = 2;
                 user_kp = useId;
             }
-            for(let  i =  0   ;  i < listId.length; i++){
-               let check  = await tbl_qly_congvan.findOne({_id:listId[i],cv_usc_id:comId});
-             
-               if(!check) return functions.setError(res,'Không tìm thấy văn bản',400)
-               await tbl_qly_congvan.findByIdAndUpdate(listId[i],{cv_type_xoa:0,cv_type_kp:1,cv_type_user_kp:type_user_kp,
-                cv_user_kp:user_kp,cv_time_kp:new Date().getTime()/1000,})
+            for (let i = 0; i < listId.length; i++) {
+                let check = await tbl_qly_congvan.findOne({ _id: listId[i], cv_usc_id: comId });
+
+                if (!check) return functions.setError(res, 'Không tìm thấy văn bản', 400)
+                await tbl_qly_congvan.findByIdAndUpdate(listId[i], {
+                    cv_type_xoa: 0, cv_type_kp: 1, cv_type_user_kp: type_user_kp,
+                    cv_user_kp: user_kp, cv_time_kp: new Date().getTime() / 1000,
+                })
             }
             return functions.success(res, 'recovery success')
-        }else if(action === 'deleteAll')
-        {
-            if(!listId || listId.length === 0)
-            {
-                return functions.setError(res, 'missing data',400)
+        } else if (action === 'deleteAll') {
+            if (!listId || listId.length === 0) {
+                return functions.setError(res, 'missing data', 400)
             }
-            for(let  i =  0;  i < listId.length; i++){
-               let check  = await tbl_qly_congvan.findOne({_id:listId[i]});
-               if(!check) return functions.setError(res,'Không tìm thấy văn bản',400)
-               await tbl_qly_congvan.findByIdAndDelete(listId[i])
-               await tbl_qlcv_edit.deleteMany({ed_cv_id:listId[i]})
+            for (let i = 0; i < listId.length; i++) {
+                let check = await tbl_qly_congvan.findOne({ _id: listId[i] });
+                if (!check) return functions.setError(res, 'Không tìm thấy văn bản', 400)
+                await tbl_qly_congvan.findByIdAndDelete(listId[i])
+                await tbl_qlcv_edit.deleteMany({ ed_cv_id: listId[i] })
             }
             return functions.success(res, 'recovery success')
         }
-        return functions.setError(res,'Hãy nhập hành động',400)
+        return functions.setError(res, 'Hãy nhập hành động', 400)
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)
@@ -364,6 +357,9 @@ exports.getDetail = async (req, res, next) => {
             return functions.setError(res, 'missing data input', 400)
         }
         data = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId, cv_type_xoa: 0 })
+        if (data.cv_file && data.cv_file !=="") {
+            data.cv_file = await vanthu.getLinkFile('file_van_ban',data.cv_time_created,data.cv_file)
+        }
         return functions.success(res, 'delete success', { data })
     } catch (error) {
         console.error(error)
@@ -393,6 +389,7 @@ exports.createSendText = async (req, res, next) => {
         let ghi_chu_vbdi = req.body.ghi_chu_vbdi;
         let book_vb = Number(req.body.book_vb);
         let file = req.files.file;
+        let cv_time_created = new Date();
         if (type_loai_vb && type_loai_vb.length !== 0) {
             type_loai_vb = type_loai_vb.join(" ")
         }
@@ -414,11 +411,11 @@ exports.createSendText = async (req, res, next) => {
                     let checkFile = await functions.checkFile(file[i].path);
                     let fileNameOrigin = file[i].name;
 
-                    if(!checkFile){
+                    if (!checkFile) {
                         return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                     }
-                    let fileName = await vanthu.uploadfile(folder, file[i]);
-                    if(fileName) {
+                    let fileName = await vanthu.uploadfile(folder, file[i],cv_time_created);
+                    if (fileName) {
                         cv_file += fileName;
                     }
                 }
@@ -434,7 +431,7 @@ exports.createSendText = async (req, res, next) => {
                 cv_user_soan: nst_vbdi,
                 cv_id_book: book_vb,
                 cv_file: cv_file,
-                cv_date: vanthu.convertTimestamp(date_guidi),
+                cv_date: new Date(date_guidi).getTime() / 1000,
                 cv_user_save: use_luu_vbdi,
                 cv_user_ky: use_ky_vbdi,
                 cv_type_nhan: nhanvb_dep,
@@ -447,7 +444,7 @@ exports.createSendText = async (req, res, next) => {
                 cv_ghi_chu: ghi_chu_vbdi,
                 cv_type_loai: 2,
                 cv_usc_id: comId,
-                cv_time_created: new Date().getTime() / 1000
+                cv_time_created: Math.round(cv_time_created.getTime() / 1000)
             })
         } else {
             return functions.setError(res, 'missing data', 400)
@@ -468,7 +465,7 @@ exports.updateSendText = async (req, res, next) => {
         let so_vbdi = req.body.so_vbdi;
         let dvst_vbdi = Number(req.body.dvst_vbdi);
         let nst_vbdi = Number(req.body.nst_vbdi);
-        let date_guidi = req.body.date_guidi;
+        let date_guidi = new Date(req.body.date_guidi);
         let use_luu_vbdi = Number(req.body.use_luu_vbdi);
         let use_ky_vbdi = Number(req.body.use_ky_vbdi);
         let nhanvb_dep = req.body.nhanvb_dep;
@@ -480,13 +477,13 @@ exports.updateSendText = async (req, res, next) => {
         let trich_yeu_vbdi = req.body.trich_yeu_vbdi;
         let ghi_chu_vbdi = req.body.ghi_chu_vbdi;
         let book_vb = Number(req.body.book_vb);
-        let file = req.files;
+        let file = req.files.file;
         let id = Number(req.body.id);
         let useId = req.useId;
         let noidung = '';
         let type_edit = 0;
         let cv_time_update = new Date().getTime() / 1000;
-        if(!id) return functions.setError(res,'missing id',400)
+        if (!id) return functions.setError(res, 'missing id', 400)
         if (type_loai_vb && type_loai_vb.length !== 0) {
             type_loai_vb = type_loai_vb.join(" ")
         }
@@ -512,22 +509,22 @@ exports.updateSendText = async (req, res, next) => {
                 for (let i = 0; i < file.length; i++) {
                     let checkFile = await functions.checkFile(file[i].path);
                     let fileNameOrigin = file[i].name;
-
-                    if(!checkFile){
+                    if (!checkFile) {
                         return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                     }
-                    let fileName = await vanthu.uploadfile(folder, file[i]);
-                    if(fileName) {
+                    let fileName = await vanthu.uploadfile(folder, file[i], new Date(check.cv_time_created * 1000));
+                    if (fileName) {
                         cv_file += fileName;
                     }
                 }
+                await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
             }
             if (name_vbdi != check.cv_name) noidung += 'Tên văn bản,';
             if (type_loai_vb != check.cv_kieu) noidung += 'Kiểu văn bản,';
             if (so_vbdi != check.cv_so) noidung += 'Số văn bản,';
             if (dvst_vbdi != check.cv_phong_soan) noidung += 'Đơn vị soạn thảo,';
             if (nst_vbdi != check.cv_user_soan) noidung += 'Người soạn thảo,';
-            if (date_guidi != check.cv_date) noidung += 'Ngày gửi,';
+            if (date_guidi.getTime() / 1000 != check.cv_date) noidung += 'Ngày gửi,';
             if (use_luu_vbdi != check.cv_user_save) noidung += 'Người lưu trữ,';
             if (use_ky_vbdi != check.cv_user_ky) noidung += 'Người ký,';
             if (nhanvb_dep != check.cv_type_nhan) noidung += 'Loại nơi nhận,';
@@ -540,7 +537,7 @@ exports.updateSendText = async (req, res, next) => {
             if (ghi_chu_vbdi != check.cv_ghi_chu) noidung += 'Ghi chú,';
             if (book_vb != check.cv_id_book) noidung += 'Sổ văn bản,';
             if (file && file.file) noidung += 'File đính kèm,'
-
+            let users = 0;
             if (noidung !== '') {
                 type_edit = 1;
                 if (useId == 0) {
@@ -571,8 +568,7 @@ exports.updateSendText = async (req, res, next) => {
                 cv_phong_soan: dvst_vbdi,
                 cv_user_soan: nst_vbdi,
                 cv_id_book: book_vb,
-                // cv_file: cv_file,
-                cv_date: vanthu.convertTimestamp(date_guidi),
+                cv_date: date_guidi.getTime() / 1000 ,
                 cv_user_save: use_luu_vbdi,
                 cv_user_ky: use_ky_vbdi,
                 cv_type_nhan: nhanvb_dep,

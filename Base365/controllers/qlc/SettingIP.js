@@ -18,9 +18,7 @@ exports.getListByID = async(req, res) => {
             } else {
                 if (_id) condition._id = _id
                 if (com_id) condition.com_id = com_id
-                console.log(_id, com_id)
                 const data = await setIp.find(condition).select('_id fromSite accessIP createAt updateAt');
-                console.log(data)
                 if (!data) {
                     functions.setError(res, 'not found')
                 } else {
@@ -60,7 +58,6 @@ exports.createIP = async(req, res) => {
 }
 exports.editsettingIP = async(req, res) => {
     const _id = req.body.id;
-    console.log(_id)
     const { com_id, accessIP, fromSite, updateAt } = req.body;
     if ((accessIP && fromSite && com_id) == undefined) {
         functions.setError(res, "info required")
@@ -87,7 +84,6 @@ exports.editsettingIP = async(req, res) => {
 exports.deleteSetIpByID = async(req, res) => {
     const com_id = req.body.com_id;
     const _id = req.body.id;
-    // console.log(_id,com_id)
 
     if (!com_id) {
         functions.setError(res, "Company id required");
@@ -95,7 +91,6 @@ exports.deleteSetIpByID = async(req, res) => {
         functions.setError(res, "Company id must be a number");
     } else {
         const settingIp = await functions.getDatafind(setIp, { com_id: com_id, _id: _id });
-        // console.log(settingIp)
         if (!settingIp) {
             functions.setError(res, "No setIp found in this company");
         } else {

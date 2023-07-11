@@ -17,13 +17,18 @@ const jwt = require("jsonwebtoken");
 const Users = require("../../models/Users");
 const ApplyNews = require("../../models/Raonhanh365/ApplyNews");
 const AdminUser = require("../../models/Raonhanh365/Admin/AdminUser");
+const NetworkOperator = require("../../models/Raonhanh365/NetworkOperator");
+const History = require("../../models/Raonhanh365/History")
+const { default: axios } = require("axios");
+const md5 = require("md5");
 dotenv.config();
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
     try {
+        let buySell = 2;
         let img = req.files.img;
         let video = req.files.video;
-        let CV  = req.files.CV;
+        let CV = req.files.CV;
         let diachi = [];
         let userID = req.user.data.idRaoNhanh365;
         let request = req.body;
@@ -32,8 +37,8 @@ exports.postNewMain = async (req, res, next) => {
         let money = request.money;
         let endvalue = request.endvalue;
         let downPayment = request.downPayment;
+        let dc_unit = request.dc_unit;
         let until = request.until;
-        let buySell = 2;
         let detailCategory = request.detailCategory;
         let name = request.name;
         let phone = request.phone;
@@ -62,7 +67,7 @@ exports.postNewMain = async (req, res, next) => {
         let hashtag = request.hashtag;
         let order = request.order;
         let the_tich = request.the_tich;
-        let warranty = request. warranty;
+        let warranty = request.warranty;
         for (let i = 0; i < address.length; i++) {
             diachi.push(address[i])
         }
@@ -108,7 +113,8 @@ exports.postNewMain = async (req, res, next) => {
             video,
             CV,
             the_tich,
-            warranty
+            warranty,
+            dc_unit
         };
         return next();
     } catch (err) {
@@ -348,7 +354,7 @@ exports.createNews = async (req, res, next) => {
 
             fields.video = video;
         }
-        if(cate_Special && fields.CV){
+        if (cate_Special && fields.CV) {
             let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
             let check = await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.CV, ['.pdf', '.jpg', '.docx', '.png'])
             if (check === false) return functions.setError(res, 'khong duoc day video dang nay', 400)
@@ -454,7 +460,7 @@ exports.hideNews = async (req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
         if (!idNews) return functions.setError(res, "Missing input news_id!", 405);
-        let existsNews = await New.find({ _id: idNews });
+        let existsNews = await New.findOne({ _id: idNews });
         if (existsNews) {
             let active = 0;
             if (existsNews.active == 0) {
@@ -623,9 +629,6 @@ exports.searchSellNews = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
-
-
-
 
 exports.deleteNews = async (req, res) => {
     try {
@@ -1099,9 +1102,9 @@ exports.searchNew = async (req, res, next) => {
         ]);
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         for (let i = 0; i < data.length; i++) {
-            if(buySell === 1){
+            if (buySell === 1) {
                 data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-ct${data[i]._id}.html`;
-            }else{
+            } else {
                 data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-c${data[i]._id}.html`;
             }
             if (userIdRaoNhanh) {
@@ -1187,15 +1190,11 @@ exports.createBuyNew = async (req, res) => {
         if (
             title &&
             name &&
-            city && money &&
-            district &&
-            ward &&
-            apartmentNumber &&
+            money &&
             description &&
             han_su_dung &&
             status &&
             phi_duthau &&
-            endvalue &&
             phone &&
             email &&
             tgian_kt && tgian_bd && noidung_nhs
@@ -1653,10 +1652,11 @@ exports.getDetailNew = async (req, res, next) => {
         let cm_limit = 10;
         let cm_start = (cm_page - 1) * cm_limit;
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
-        let linkTitle = req.body.linkTitle.replace(".html", "");
+        let linkTitle = req.body.linkTitle;
         if (!linkTitle) {
             return functions.setError(res, "missing data", 400);
         }
+        linkTitle = linkTitle.replace(".html", "")
         let id = linkTitle.split("-").reverse()[0];
         let buy = id.match(/[a-zA-Z]+/g)[0];
         let id_new = Number(id.replace(buy, ''));
@@ -1791,6 +1791,9 @@ exports.getDetailNew = async (req, res, next) => {
                 },
             },
             {
+                $match: { buySell:buysell },
+            },
+            {
                 $project: searchitem,
             },
 
@@ -1816,7 +1819,7 @@ exports.getDetailNew = async (req, res, next) => {
             thongTinSao.cousao = cousao;
             thongTinSao.sumsao = sumsao[0].count;
         }
-       
+
         data[0].thongTinSao = thongTinSao
         data[0].danhmuc = { danh_muc1, danh_muc2, danh_muc3 };
         tintuongtu = await New.find({ cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } }, {
@@ -1887,16 +1890,8 @@ exports.getDetailNew = async (req, res, next) => {
         if (buysell === 1) {
             dataBidding = await Bidding.aggregate([
                 {
-                    $lookup: {
-                        from: "RN365_News",
-                        localField: 'newId',
-                        foreignField: '_id',
-                        as: 'new'
-                    }
-                },
-                {
                     $match: {
-                        'new._id': id_new
+                        newId: id_new
                     }
                 },
                 {
@@ -1908,50 +1903,24 @@ exports.getDetailNew = async (req, res, next) => {
                     }
                 }, {
                     $project: {
-                        "new._id": 1,
-                       "new.title": 1,
-                        "new.money": 1,
-                        "new.endvalue": 1,
-                        "new.city": 1,
-                        "new.userID": 1,
-                        "new.img": 1,
-                        "new.updateTime": 1,
-                        "new.type": 1,
-                        "new.active": 1,
-                        "new.until": 1,
-                        "new.address": 1,
-                        "new.ward": 1,
-                        "new.detailCategory": 1,
-                        "new.district": 1,
-                        "new.viewCount": 1,
-                        "new.apartmentNumber": 1,
-                        "new.com_city": 1,
-                        "new.com_district": 1,
-                        "new.com_ward": 1,
-                        "new.com_address_num": 1,
-                        "new.bidding": 1,
-                        "new.tgian_kt": 1,
-                        "new.tgian_bd": 1,
                         user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
-                        _id:1, 
-                        newId:1, 
-                        userID:1,
-                        userName:1, 
-                        userIntro:1, 
-                        userFile:1, 
-                        userProfile:1, 
-                        userProfileFile:1, 
-                        productName:1, 
-                        productDesc:1, 
-                        productLink:1, 
-                        price:1, 
-                        priceUnit:1, 
-                        promotion:1, 
-                        promotionFile:1, 
-                        status:1, 
-                        createTime:1, 
-                        note:1, 
-                        updatedAt:1,
+                        _id: 1,
+                        userName: 1,
+                        userIntro: 1,
+                        userFile: 1,
+                        userProfile: 1,
+                        userProfileFile: 1,
+                        productName: 1,
+                        productDesc: 1,
+                        productLink: 1,
+                        price: 1,
+                        priceUnit: 1,
+                        promotion: 1,
+                        promotionFile: 1,
+                        status: 1,
+                        createTime: 1,
+                        note: 1,
+                        updatedAt: 1,
                     }
                 }
 
@@ -2075,12 +2044,16 @@ exports.newfavorite = async (req, res, next) => {
 // quản lí tin mua
 exports.managenew = async (req, res, next) => {
     try {
-        let linkTitle = req.params.linkTitle;
+        let linkTitle = req.body.linkTitle;
         let userID = req.user.data.idRaoNhanh365;
+        let page = req.body.page || 1;
+        let pageSize = req.body.pageSize || 10;
+        let limit = (page - 1) * pageSize;
+        let skip = pageSize;
         let data = [];
         let tin_conhan = await New.find({
             userID,
-            timeEndReceivebidding: { $gte: new Date(Date.now()) },
+            'bidding.han_su_dung': { $gte: new Date(Date.now()) },
             buySell: 1,
         }).count();
         let tin_dangan = await New.find({ userID, active: 0, buySell: 1 }).count();
@@ -2101,30 +2074,36 @@ exports.managenew = async (req, res, next) => {
             apartmentNumber: 1,
             endvalue: 1,
             until: 1,
-            linkTitle: 1
+            linkTitle: 1,
+            cateID: 1,
+            money: 1,
+            free: 1,
+            infoSell: 1,
         };
         if (linkTitle === "quan-ly-tin-mua.html") {
-            data = await New.find({ userID, buySell: 1 }, searchItem);
+            data = await New.find({ userID, buySell: 1, cateID: { $nin: [120, 121] } }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-con-han.html") {
             data = await New.find(
                 {
                     userID,
                     buySell: 1,
-                    timeEndReceivebidding: { $gte: new Date(Date.now()) },
+                    'bidding.han_su_dung': { $gte: new Date(Date.now()) },
+                    cateID: { $nin: [120, 121] }
                 },
                 searchItem
-            );
+            ).skip(skip).limit(limit);
         } else if (linkTitle === "tin-het-han.html") {
             data = await New.find(
                 {
                     userID,
                     buySell: 1,
-                    timeEndReceivebidding: { $lte: new Date(Date.now()) },
+                    'bidding.han_su_dung': { $lte: new Date(Date.now()) },
+                    cateID: { $nin: [120, 121] }
                 },
                 searchItem
-            );
+            ).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-an.html") {
-            data = await New.find({ userID, buySell: 1, active: 0 }, searchItem);
+            data = await New.find({ userID, buySell: 1, $or: [{ active: 0 }, { sold: 1 }], cateID: { $nin: [120, 121] } }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -2167,7 +2146,8 @@ exports.newisbidding = async (req, res, next) => {
             active: 1,
             han_su_dung: 1,
             status: 1,
-            Bidding: { _id: 1 }
+            Bidding: { _id: 1 },
+            cateID: 1
 
         };
         let tinConHan = await New.aggregate([
@@ -2306,13 +2286,18 @@ exports.getListCate = async (req, res, next) => {
 // quản lí tin bán
 exports.manageNewBuySell = async (req, res, next) => {
     try {
-        let linkTitle = req.params.linkTitle;
+        let linkTitle = req.body.linkTitle;
         let userID = req.user.data.idRaoNhanh365;
         let data = [];
-        let tong_soluong = await New.find({ userID, buySell: 2 }).count();
-        let tinDangDang = await New.find({ userID, sold: 1, buySell: 2 }).count();
-        let tinDaBan = await New.find({ userID, sold: 0, buySell: 2 }).count();
-        let tinDangAn = await New.find({ userID, active: 0, buySell: 2 }).count();
+        let page = req.body.page || 1;
+        let pageSize = req.body.pageSize || 10;
+        let limit = (page - 1) * pageSize;
+        let skip = pageSize;
+        let tong_soluong = await New.find({ userID, buySell: 2, cateID: { $nin: [120, 121] } }).count();
+        let tinDangDang = await New.find({ userID, sold: 1, buySell: 2, cateID: { $nin: [120, 121] } }).count();
+        let tinDaBan = await New.find({ userID, sold: 0, buySell: 2, cateID: { $nin: [120, 121] } }).count();
+        let tinDangAn = await New.find({ userID, active: 0, buySell: 2, cateID: { $nin: [120, 121] } }).count();
+        let tinHetHang = await New.find({ userID, active: 1, totalSold: 0, buySell: 2, cateID: { $nin: [120, 121] } }).count();
         let searchItem = {
             title: 1,
             pinHome: 1,
@@ -2335,16 +2320,20 @@ exports.manageNewBuySell = async (req, res, next) => {
             quantitySold: 1,
             totalSold: 1,
             free: 1,
-            new_day_tin: 1
+            new_day_tin: 1,
+            cateID: 1,
+
         };
         if (linkTitle === "quan-ly-tin-ban.html") {
-            data = await New.find({ userID, buySell: 2 }, searchItem);
+            data = await New.find({ userID, buySell: 2, cateID: { $nin: [120, 121] } }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-dang.html") {
-            data = await New.find({ userID, sold: 1, buySell: 2 }, searchItem);
+            data = await New.find({ userID, sold: 1, buySell: 2, cateID: { $nin: [120, 121] } }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-da-ban.html") {
-            data = await New.find({ userID, sold: 0, buySell: 2 }, searchItem);
+            data = await New.find({ userID, sold: 0, buySell: 2, cateID: { $nin: [120, 121] } }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-an.html") {
-            data = await New.find({ userID, active: 0, buySell: 2 }, searchItem);
+            data = await New.find({ userID, active: 0, buySell: 2, cateID: { $nin: [120, 121] } }, searchItem).skip(skip).limit(limit);
+        } else if (linkTitle === "tin-het-hang.html") {
+            data = await New.find({ userID, active: 1, buySell: 2, totalSold: 0, cateID: { $nin: [120, 121] } }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -2353,6 +2342,7 @@ exports.manageNewBuySell = async (req, res, next) => {
             tinDangDang,
             tinDangAn,
             tinDaBan,
+            tinHetHang,
             data,
         });
     } catch (error) {
@@ -2403,6 +2393,7 @@ exports.listCanNew = async (req, res, next) => {
             apartmentNumber: 1,
             address: 1,
             benefit: 1,
+            cateID: 1
         };
         if (linkTitle === "quan-ly-tin-tim-ung-vien.html") {
             data = await New.find({ userID, cateID: 120 }, searchItem);
@@ -2490,6 +2481,7 @@ exports.listJobNew = async (req, res, next) => {
             apartmentNumber: 1,
             address: 1,
             benefit: 1,
+            cateID: 1
         };
         if (linkTitle === "quan-ly-tin-tim-viec-lam.html") {
             data = await New.find({ userID, cateID: 121 }, searchItem);
@@ -2640,6 +2632,7 @@ exports.manageDiscount = async (req, res, next) => {
             'infoSell.promotionType': 1,
             timePromotionStart: 1,
             timePromotionEnd: 1,
+            cateID: 1
         };
         let userID = req.user.data.idRaoNhanh365;
         let search = { userID };
@@ -2660,6 +2653,7 @@ exports.manageDiscount = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
+
 exports.getListNewsApplied = async (req, res, next) => {
     try {
         let userId = req.user.data.idRaoNhanh365;
@@ -2685,7 +2679,8 @@ exports.getListNewsApplied = async (req, res, next) => {
             }, {
                 $project: {
                     'new.id': 1, 'new.title': 1, 'new.han_su_dung': 1, 'new.name': 1, 'new.linkTitle': 1, 'user.idRaoNhanh365': 1,
-                    'user._id': 1, 'user.userName': 1, 'user.inforRN365.xacThucLienket': 1, 'user.inforRN365.store_name': 1, _id: 1, status: 1, time: 1
+                    'user._id': 1, 'user.userName': 1, 'user.inforRN365.xacThucLienket': 1, 'user.inforRN365.store_name': 1, _id: 1, status: 1, time: 1,
+                    'new.cateID': 1,
                 }
             }
         ])
@@ -2707,7 +2702,7 @@ exports.listJobWithPin = async (req, res, next) => {
         let data = await New.find({
             userID: userID,
             $or: [{ pinHome: 1 }, { pinCate: 1 }, { timePushNew: { $ne: null } }],
-        }, { _id: 1, title: 1, money: 1, endvalue: 1, until: 1, createTime: 1, free: 1, img: 1, dia_chi: 1, address: 1, pinHome: 1, pinCate: 1, new_day_tin: 1, sold: 1, cateID: 1, updateTime: 1 });
+        }, { _id: 1, cateID: 1, title: 1, money: 1, endvalue: 1, until: 1, createTime: 1, free: 1, img: 1, dia_chi: 1, address: 1, pinHome: 1, pinCate: 1, new_day_tin: 1, sold: 1, cateID: 1, updateTime: 1 });
         return functions.success(
             res, "Get List New With Pin Of User Success!", { data }
         );
@@ -2920,7 +2915,7 @@ exports.getListCandidateApplied = async (req, res, next) => {
         let searchItem = {
             new: {
                 _id: 1, userID: 1, timeSell: 1, title: 1, linkTitle: 1, han_su_dung: 1,
-                name: 1
+                name: 1, cateID: 1
             }, user: { _id: 1, userName: 1, 'inforRN365.store_name': 1, type: 1, chat365_secret: 1, phone: 1 }
             , _id: 1, time: 1, status: 1, note: 1
         }
@@ -2955,5 +2950,224 @@ exports.getListCandidateApplied = async (req, res, next) => {
     } catch (err) {
         console.log("Err from server", err);
         return functions.setError(res, "Err from server", 500);
+    }
+};
+
+
+// api lấy thông tin ngân hàng
+exports.getDatabank = async (req, res, next) => {
+    try {
+        let data = await NetworkOperator.find({ active: 1 });
+        return functions.success(res, 'get data success', { data })
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// nạp tiền
+exports.napTien = async (req, res, next) => {
+    try {
+        let nhaCungCap = req.body.nhaCungCap;
+        let maThe = req.body.maThe;
+        let soSerial = req.body.soSerial;
+        let menhGia = req.body.menhGia;
+        let idRaoNhanh365 = req.user.data.idRaoNhanh365;
+        if (nhaCungCap && maThe && soSerial && menhGia) {
+            let partner_id = 66878317039;
+            let partner_key = '982fd3f73b5a4c2374a4c3fe08ebca85';
+            let request_id =  Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+            let sign = md5(partner_key,maThe,soSerial)
+            let ngay_nap = new Date();
+            let check =  await axios({
+                method: "post",
+                url: "https://work247.vn/apiRaonhanh/connectChargingws.php",
+                data: {
+                    telco: nhaCungCap,
+                    code: maThe,
+                    serial: soSerial,
+                    amount: menhGia,
+                    request_id:request_id,
+                    partner_id:partner_id,
+                    sign:sign,
+                    command:'charging'
+                },
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if(check.status == 1 || check.status == 99){
+                let bangGia = await NetworkOperator.findOne({active:1,nameAfter:nhaCungCap,})
+                let tienNhan = menhGia - ((menhGia * bangGia.discount)/ 100);
+                await Users.findOneAndUpdate({idRaoNhanh365},{$inc: { 'inforRN365.money': +tienNhan } })
+                await History.create({
+                    userId:idRaoNhanh365,
+                    seri:soSerial,
+                    cardId:maThe,
+                    tranId:',',
+                    price:menhGia,
+                    priceSuccess:tienNhan,
+                    content:'Nạp tiền',
+                    networkOperatorName:nhaCungCap,
+                    time:ngay_nap,
+
+
+                })
+            }
+            return functions.setError(res, 'mã thẻ sai',400)
+        }
+        return functions.setError(res, 'missing data',400)
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// lấy data cho sửa tin
+exports.getDetailForUpdateNew = async (req, res, next) => {
+    try {
+        let linkTitle = req.body.linkTitle;
+        if (!linkTitle) {
+            return functions.setError(res, "missing data", 400);
+        }
+        linkTitle = linkTitle.replace(".html", "")
+        let id = linkTitle.split("-").reverse()[0];
+        let buy = id.match(/[a-zA-Z]+/g)[0];
+        let id_new = Number(id.replace(buy, ''));
+        let danh_muc1 = null;
+        let danh_muc2 = null;
+        let danh_muc3 = null;
+        let cate_Special = null;
+        let buysell = null;
+        let searchitem = null;
+        if ((await functions.checkNumber(id_new)) === false) {
+            return functions.setError(res, "invalid number", 404);
+        }
+        let check = await New.findById(id_new, { cateID: 1, userID: 1 });
+        if (!check) {
+            return functions.setError(res, "not found", 404);
+        }
+        cate1 = await CategoryRaoNhanh365.findById(check.cateID);
+        danh_muc1 = cate1.name;
+
+        if (cate1.parentId !== 0) {
+            cate2 = await CategoryRaoNhanh365.findById(cate1.parentId);
+            danh_muc2 = cate2.name;
+            if (cate2.parentId !== 0) {
+                cate3 = await CategoryRaoNhanh365.findById(cate2.parentId);
+                danh_muc3 = cate3.name;
+            }
+        }
+        if (danh_muc3) {
+            cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc3);
+        } else {
+            if (danh_muc2) {
+                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc2);
+            } else {
+                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc1);
+            }
+        }
+        if (buy === "ct") {
+            buysell = 1;
+            searchitem = {
+                _id: 1,
+                title: 1,
+                money: 1,
+                endvalue: 1,
+                city: 1,
+                userID: 1,
+                img: 1,
+                updateTime: 1,
+                type: 1,
+                active: 1,
+                until: 1,
+                address: 1,
+                ward: 1,
+                detailCategory: 1,
+                district: 1,
+                viewCount: 1,
+                apartmentNumber: 1,
+                com_city: 1,
+                com_district: 1,
+                com_ward: 1,
+                com_address_num: 1,
+                bidding: 1,
+                tgian_kt: 1,
+                tgian_bd: 1,
+                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
+            };
+        } else if (buy === "c") {
+            buysell = 2;
+            searchitem = {
+                _id: 1,
+                title: 1,
+                linkTitle: 1,
+                free: 1,
+                address: 1,
+                money: 1,
+                createTime: 1,
+                cateID: 1,
+                pinHome: 1,
+                pinCate: 1,
+                new_day_tin: 1,
+                buySell: 1,
+                email: 1,
+                tgian_kt: 1,
+                tgian_bd: 1,
+                phone: 1,
+                userID: 1,
+                img: 1,
+                updateTime: 1,
+                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
+                district: 1,
+                ward: 1,
+                description: 1,
+                city: 1,
+                islove: 1,
+                until: 1,
+                endvalue: 1,
+                type: 1,
+                detailCategory: 1,
+                infoSell: 1,
+                timePromotionStart: 1,
+                timePromotionEnd: 1,
+                quantitySold: 1,
+                infoSell: 1,
+                viewCount: 1,
+                poster: 1,
+                sold: 1,
+                com_city: 1,
+                com_district: 1,
+                com_ward: 1,
+                com_address_num: 1,
+
+            };
+        } else {
+            return functions.setError(res, "not found data", 404);
+        }
+        if (cate_Special) {
+            searchitem[`${cate_Special}`] = 1;
+        }
+        let data = await New.aggregate([
+            {
+                $match: { _id: id_new },
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "idRaoNhanh365",
+                    as: "user",
+                },
+            },
+            {
+                $match: { buySell:buysell },
+            },
+            {
+                $project: searchitem,
+            },
+
+        ]);
+        return functions.success(res, "get data success", { data });
+    } catch (error) {
+        console.log("🚀 ~ file: new.js:1757 ~ exports.getDetailNew= ~ error:", error)
+        return functions.setError(res, error);
     }
 };

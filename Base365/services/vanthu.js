@@ -195,15 +195,15 @@ exports.replaceTitle = (title) => {
     return title.replace(/[^a-zA-Z0-9]/g, '-');
 };
 
-exports.uploadfile = async(folder, file_img) => {
+exports.uploadfile = async(folder, file_img,time) => {
     let filename='';
-    const date = new Date(Date.now());
+    const date = new Date(time);
     const year = date.getFullYear();
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
     const timestamp = Math.round(date.getTime()/1000);
 
-    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
+    const dir = `../storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
@@ -225,7 +225,7 @@ exports.uploadfile = async(folder, file_img) => {
 }
 exports.deleteFile = (file) => {
     let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`,'');
-    let filePath = '../Storage/base365/vanthu/uploads/' + namefile;
+    let filePath = '../storage/base365/vanthu/uploads/' + namefile;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });

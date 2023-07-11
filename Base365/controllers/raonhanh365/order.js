@@ -9,7 +9,6 @@ const { CommaAndColonSeparatedRecord } = require('mongodb-connection-string-url'
 // đặt hàng
 exports.order = async (req, res, next) => {
     try {
-
         let request = req.body;
         let codeOrder = request.arr_madh.split(',');
         let phone = request.sdt_lienhe;
@@ -26,7 +25,6 @@ exports.order = async (req, res, next) => {
         let paymentMethod = request.phuong_thuc;
         let cartID = request.arr_idgh.split(',');
         let unitPrice = request.arr_dongia.split(',');
-        let buyerId = req.user.data.idRaoNhanh365 || 3585;
         let idRaoNhanh365 = req.user.data.idRaoNhanh365;
         let status = 0;
         let amountPaid = 0;
@@ -43,18 +41,14 @@ exports.order = async (req, res, next) => {
                         return functions.setError(res, 'invalid number', 400)
                     }
 
-                    let check_money = await User.find({ idRaoNhanh365 })
-                    if (!check_money || check_money.length === 0) {
+                    let check_money = await User.findOne({ idRaoNhanh365 })
+                    if (!check_money) {
                         return functions.setError(res, 'người dùng không tồn tại', 400)
                     }
                     if (paymentMethod === 0 && tien_ttoan_ctra !== 0) {
-                        if (tien_ttoan_ctra > check_money[0].money) {
+                        if (tien_ttoan_ctra > check_money.inforRN365.money) {
                             return functions.setError(res, 'Số tiền của bạn không đầy đủ mua hàng', 400)
                         }
-                    }
-                    let check_sellerId = await User.find({ idRaoNhanh365 })
-                    if (!check_sellerId || check_sellerId.length === 0) {
-                        return functions.setError(res, 'người dùng không tồn tại', 400)
                     }
                     if (await functions.checkPhoneNumber(phone) === false) {
                         return functions.setError(res, 'invalid phone number', 400)
@@ -82,12 +76,12 @@ exports.order = async (req, res, next) => {
                     await Order.create({
                         _id, codeOrder: codeOrder[i], phone, deliveryAddress, sellerId: sellerId[i], note, paymentType,
                         totalProductCost: totalProductCost[i], promotionType: promotionType[i], promotionValue: promotionValue[i], shipFee: shipFee[i], shipType: shipType[i],
-                        tien_ttoan_ctra, paymentMethod, unitPrice: unitPrice[i], buyerId, status
+                        tien_ttoan_ctra, paymentMethod, unitPrice: unitPrice[i], buyerId:idRaoNhanh365, status
                     }
                     )
                     if (paymentMethod == 0) {
-                        let tienConLai = check_money[0].money - tien_ttoan_ctra;
-                        await User.findOneAndUpdate({ idRaoNhanh365: buyerId }, { money: tienConLai })
+                        let tienConLai = check_money.inforRN365.money - tien_ttoan_ctra;
+                        await User.findOneAndUpdate({ idRaoNhanh365 }, { 'inforRN365.money': tienConLai })
                     }
                     await Cart.findByIdAndDelete(cartID[i])
                 } else {
@@ -187,11 +181,14 @@ exports.manageOrderBuy = async (req, res, next) => {
         let sl_daHuy = await Order.find({ buyerId, status: 4 }).count();
         let sl_hoanTat = await Order.find({ buyerId, status: 5 }).count();
         let searchItem = {
-            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
+            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1,cateID:1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
         }
         if (linkTitle === 'quan-ly-don-hang-mua.html') {
             data = await Order.aggregate([
+                {
+                    $match: { buyerId, status: 0 }
+                },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -208,9 +205,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { buyerId, status: 0 }
-                },
+               
                 {
                     $project: searchItem
                 }, {
@@ -222,6 +217,9 @@ exports.manageOrderBuy = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-mua.html') {
             data = await Order.aggregate([
                 {
+                    $match: { buyerId, status: 1 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -237,9 +235,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { buyerId, status: 1 }
-                },
+               
                 {
                     $project: searchItem
                 }, {
@@ -251,6 +247,9 @@ exports.manageOrderBuy = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-mua.html') {
             data = await Order.aggregate([
                 {
+                    $match: { buyerId, status: 2 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -266,9 +265,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { buyerId, status: 2 }
-                },
+                
                 {
                     $project: searchItem
                 }, {
@@ -280,6 +277,9 @@ exports.manageOrderBuy = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-mua.html') {
             data = await Order.aggregate([
                 {
+                    $match: { buyerId, status: 3 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -295,9 +295,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { buyerId, status: 3 }
-                },
+                
                 {
                     $project: searchItem
                 }, {
@@ -309,6 +307,9 @@ exports.manageOrderBuy = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-mua.html') {
             data = await Order.aggregate([
                 {
+                    $match: { buyerId, status: 4 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -324,9 +325,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { buyerId, status: 4 }
-                },
+               
                 {
                     $project: searchItem
                 }, {
@@ -338,6 +337,9 @@ exports.manageOrderBuy = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-mua.html') {
             data = await Order.aggregate([
                 {
+                    $match: { buyerId, status: 5 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -353,9 +355,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { buyerId, status: 5 }
-                },
+                
                 {
                     $project: searchItem
                 }, {
@@ -387,13 +387,16 @@ exports.manageOrderSell = async (req, res, next) => {
         let sl_daHuy = await Order.find({ sellerId, status: 4 }).count();
         let sl_hoanTat = await Order.find({ sellerId, status: 5 }).count();
         let searchItem = {
-            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
+            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1,cateID:1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
             
         };
         if (linkTitle === 'quan-ly-don-hang-ban.html') {
 
             data = await Order.aggregate([
+                {
+                    $match: { sellerId, status: 0, orderActive: 1 }
+                },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -410,9 +413,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { sellerId, status: 0, orderActive: 1 }
-                },
+                
                 {
                     $project: searchItem
                 }
@@ -421,6 +422,9 @@ exports.manageOrderSell = async (req, res, next) => {
 
             data = await Order.aggregate([
                 {
+                    $match: { sellerId, status: 1, orderActive: 1 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -436,9 +440,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { sellerId, status: 1, orderActive: 1 }
-                },
+               
                 {
                     $project: searchItem
                 }
@@ -446,6 +448,9 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
+                    $match: { sellerId, status: 2, orderActive: 1 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -461,9 +466,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { sellerId, status: 2, orderActive: 1 }
-                },
+               
                 {
                     $project: searchItem
                 }
@@ -471,6 +474,9 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
+                    $match: { sellerId, status: 3, orderActive: 1 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -486,9 +492,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { sellerId, status: 3, orderActive: 1 }
-                },
+               
                 {
                     $project: searchItem
                 }
@@ -496,6 +500,9 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
+                    $match: { sellerId, status: 4, orderActive: 1 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -511,9 +518,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { sellerId, status: 4, orderActive: 1 }
-                },
+                
                 {
                     $project: searchItem
                 }
@@ -521,6 +526,9 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
+                    $match: { sellerId, status: 5, orderActive: 1 }
+                },
+                {
                     $lookup: {
                         from: "RN365_News",
                         localField: "newId",
@@ -536,9 +544,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                {
-                    $match: { sellerId, status: 5, orderActive: 1 }
-                },
+                
                 {
                     $project: searchItem
                 }
