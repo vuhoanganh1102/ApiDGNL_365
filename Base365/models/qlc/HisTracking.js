@@ -54,7 +54,7 @@ const HisOfTracking = new mongoose.Schema({
         //id công ty
         type: Number
     },
-    depID: {
+    de: {
         //id công ty
         type: Number
     },

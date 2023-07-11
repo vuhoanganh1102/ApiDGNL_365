@@ -3,61 +3,33 @@ const Schema = mongoose.Schema;
 
 const GroupSchema = new Schema({
     //ID của nhóm
-    group_id: {
+    gr_id: {
         type: Number,
         required: true
     },
-
-    //ID tổ của nhóm
-    team_id: {
-        type: Number,
-    },
-
-    //ID cty
-    com_id: {
-        type: Number,
-    },
-
-    //ID phong của nhóm
+    //ID phong ban
     dep_id: {
         type: Number,
     },
-
+    com_id: {
+        type: Number,
+    },
+    team_id: {
+        type: Number,
+    },
     // Tên của nhóm
-    groupName: {
+    gr_name: {
         type: String,
     },
-
-    //Ngày thành lập nhóm
-    groupCreated: {
-        type: Date,
-        default: Date.now()
-    },
-
     //ID quản lý nhóm
     managerId: {
         type: Number
     },
-
-    //ID pho quan ly nhom
-    deputyManagerId: {
+    //
+    parent_gr: {
         type: Number
     },
 
-    //so luong thanh vien
-    numberMember: {
-        type: Number,
-        default: 0
-    },
-
-    //Sắp xếp theo thứ tự
-    parentGroup: {
-        type: Number
-    },
-    // tổng số nhân viên 
-    total_emp : {
-        type :Number,
-    }
 }, {
     collection: 'QLC_Groups',
     versionKey: false,
