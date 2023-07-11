@@ -2,13 +2,9 @@ var express = require('express');
 var router = express.Router();
 const toolData = require('./qlts/toolRouter')
 const taisanRouter = require('./qlts/taiSanRouter')
-<<<<<<< HEAD
-const nhomTsRouter = require('./qlts/nhomTaiSanRouter')
-=======
 var capPhat = require('./qlts/CapPhat.js')
 var ThuHoi = require('./qlts/ThuHoi.js')
->>>>>>> a8bc31a5397217c1749139574c25474a9f586736
-
+var nhomTsRouter = require('./qlts/nhomTaiSanRouter')
 //Api tool quét data
 router.use('/tool',toolData)
 
