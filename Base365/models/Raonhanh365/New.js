@@ -783,6 +783,14 @@ const newSchema = new mongoose.Schema({
         cv: {
             type: String,
             default: 0
+        },
+        salary_fr: {
+            type: Number,
+            default: 0
+        },
+        salary_to: {
+            type: Number,
+            default: 0
         }
     },
     noiThatNgoaiThat:{

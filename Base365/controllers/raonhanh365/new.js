@@ -244,17 +244,27 @@ exports.postNewsGeneral = async (req, res, next) => {
             }
             //cac truong cua danh muc cong viec
             let fieldsJob = {
+                jobType: req.body.jobType,
+                jobDetail: req.body.jobDetail,
+                jobKind: req.body.jobKind,
                 minAge: req.body.minAge,
+                maxAge: req.body.maxAge,
+                salary: req.body.salary,
+                gender: req.body.gender,
                 exp: req.body.exp,
                 level: req.body.level,
+                degree: req.body.degree,
                 skill: req.body.skill,
                 quantity: req.body.quantity,
+                city: req.body.city,
+                district: req.body.district,
+                ward: req.body.ward,
                 addressNumber: req.body.addressNumber,
                 payBy: req.body.payBy,
                 benefit: req.body.benefit,
-                salary: req.body.salary,
-                gender: req.body.gender,
-                degree: req.body.degree,
+                cv: req.body.cv,
+                salary_fr: req.body.salary_fr,
+                salary_to: req.body.salary_to,
             };
             let fieldsinfoSell = {
                 groupType: req.body.groupType,
@@ -381,9 +391,7 @@ exports.updateNews = async (req, res, next) => {
         if (!idNews) return functions.setError(res, "Missing input news_id!", 405);
         let existsNews = await New.find({ _id: idNews });
         let fields = req.fields;
-        console.log("🚀 ~ file: new.js:398 ~ exports.updateNews= ~ fields:", fields)
         let userID = req.user.data.idRaoNhanh365;
-        console.log("🚀 ~ file: new.js:399 ~ exports.updateNews= ~ userID:", userID)
         let linkTitle = await raoNhanh.createLinkTilte(fields.title)
         fields.linkTitle = linkTitle
         fields.updateTime = new Date(Date.now());
@@ -1791,7 +1799,7 @@ exports.getDetailNew = async (req, res, next) => {
                 },
             },
             {
-                $match: { buySell:buysell },
+                $match: { buySell: buysell },
             },
             {
                 $project: searchitem,
@@ -2048,8 +2056,8 @@ exports.managenew = async (req, res, next) => {
         let userID = req.user.data.idRaoNhanh365;
         let page = req.body.page || 1;
         let pageSize = req.body.pageSize || 10;
-        let limit = (page - 1) * pageSize;
-        let skip = pageSize;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let data = [];
         let tin_conhan = await New.find({
             userID,
@@ -2291,8 +2299,8 @@ exports.manageNewBuySell = async (req, res, next) => {
         let data = [];
         let page = req.body.page || 1;
         let pageSize = req.body.pageSize || 10;
-        let limit = (page - 1) * pageSize;
-        let skip = pageSize;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let tong_soluong = await New.find({ userID, buySell: 2, cateID: { $nin: [120, 121] } }).count();
         let tinDangDang = await New.find({ userID, sold: 1, buySell: 2, cateID: { $nin: [120, 121] } }).count();
         let tinDaBan = await New.find({ userID, sold: 0, buySell: 2, cateID: { $nin: [120, 121] } }).count();
@@ -2975,10 +2983,10 @@ exports.napTien = async (req, res, next) => {
         if (nhaCungCap && maThe && soSerial && menhGia) {
             let partner_id = 66878317039;
             let partner_key = '982fd3f73b5a4c2374a4c3fe08ebca85';
-            let request_id =  Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-            let sign = md5(partner_key,maThe,soSerial)
+            let request_id = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+            let sign = md5(partner_key, maThe, soSerial)
             let ngay_nap = new Date();
-            let check =  await axios({
+            let check = await axios({
                 method: "post",
                 url: "https://work247.vn/apiRaonhanh/connectChargingws.php",
                 data: {
@@ -2986,34 +2994,34 @@ exports.napTien = async (req, res, next) => {
                     code: maThe,
                     serial: soSerial,
                     amount: menhGia,
-                    request_id:request_id,
-                    partner_id:partner_id,
-                    sign:sign,
-                    command:'charging'
+                    request_id: request_id,
+                    partner_id: partner_id,
+                    sign: sign,
+                    command: 'charging'
                 },
                 headers: { 'Content-Type': 'application/json' }
             });
-            if(check.status == 1 || check.status == 99){
-                let bangGia = await NetworkOperator.findOne({active:1,nameAfter:nhaCungCap,})
-                let tienNhan = menhGia - ((menhGia * bangGia.discount)/ 100);
-                await Users.findOneAndUpdate({idRaoNhanh365},{$inc: { 'inforRN365.money': +tienNhan } })
+            if (check.status == 1 || check.status == 99) {
+                let bangGia = await NetworkOperator.findOne({ active: 1, nameAfter: nhaCungCap, })
+                let tienNhan = menhGia - ((menhGia * bangGia.discount) / 100);
+                await Users.findOneAndUpdate({ idRaoNhanh365 }, { $inc: { 'inforRN365.money': +tienNhan } })
                 await History.create({
-                    userId:idRaoNhanh365,
-                    seri:soSerial,
-                    cardId:maThe,
-                    tranId:',',
-                    price:menhGia,
-                    priceSuccess:tienNhan,
-                    content:'Nạp tiền',
-                    networkOperatorName:nhaCungCap,
-                    time:ngay_nap,
+                    userId: idRaoNhanh365,
+                    seri: soSerial,
+                    cardId: maThe,
+                    tranId: ',',
+                    price: menhGia,
+                    priceSuccess: tienNhan,
+                    content: 'Nạp tiền',
+                    networkOperatorName: nhaCungCap,
+                    time: ngay_nap,
 
 
                 })
             }
-            return functions.setError(res, 'mã thẻ sai',400)
+            return functions.setError(res, 'mã thẻ sai', 400)
         }
-        return functions.setError(res, 'missing data',400)
+        return functions.setError(res, 'missing data', 400)
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -3158,7 +3166,7 @@ exports.getDetailForUpdateNew = async (req, res, next) => {
                 },
             },
             {
-                $match: { buySell:buysell },
+                $match: { buySell: buysell },
             },
             {
                 $project: searchitem,
