@@ -460,7 +460,7 @@ exports.hideNews = async (req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
         if (!idNews) return functions.setError(res, "Missing input news_id!", 405);
-        let existsNews = await New.find({ _id: idNews });
+        let existsNews = await New.findOne({ _id: idNews });
         if (existsNews) {
             let active = 0;
             if (existsNews.active == 0) {
