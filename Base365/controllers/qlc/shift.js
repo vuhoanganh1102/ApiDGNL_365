@@ -18,7 +18,6 @@ exports.getListShifts = async(req, res) => {
 exports.getShiftById = async(req, res) => {
     try {
         const { shift_id } = req.body;
-
         if (shift_id) {
             const shift = await Shifts.findOne({
                 shift_id: shift_id
@@ -34,19 +33,7 @@ exports.getShiftById = async(req, res) => {
         return functions.setError(res, error);
     }
 };
-//API lấy danh sách ca làm việc theo Id công ty
-exports.getShiftByComId = async(req, res) => {
-    const com_id = req.user.data.com_id;
-    if (!com_id) {
-        functions.setError(res, "Company id required");
-    } else if (isNaN(com_id)) {
-        functions.setError(res, "Company id must be a number");
-    } else {
-        await functions.getDatafind(Shifts, { com_id: com_id })
-            .then((shifts) => functions.success(res, "Get shift's data successfully", shifts))
-            .catch(err => functions.setError(res, err.message, 623));
-    }
-};
+
 
 exports.createShift = async(req, res) => {
     try {
@@ -118,50 +105,21 @@ exports.editShift = async(req, res) => {
 
 
 
-exports.deleteShift = async(req, res) => {
-    const _id = req.params.id;
-    if (!functions.checkNumber(_id)) {
-        functions.setError(res, "Id must be a number", 621);
-    } else {
-        const shift = await functions.getDatafindOne(Shifts, { _id: _id });
-        if (!shift) {
-            functions.setError(res, "Shifts does not exist");
-        } else {
-            functions.getDataDeleteOne(Shifts, { _id: _id })
-                .then(() => functions.success(res, "Delete shift successfully", shift))
-                .catch((err) => functions.setError(res, err.message));
-        }
-    }
-}
 
 exports.deleteShiftCompany = async(req, res) => {
-    const { com_id } = req.body;
-
-    if (!com_id) {
-        functions.setError(res, "Company id required");
-    } else if (isNaN(com_id)) {
-        functions.setError(res, "Company id must be a number");
-    } else {
-        const shifts = await functions.getDatafind(Shifts, { com_id: com_id });
-        if (!shifts) {
-            functions.setError(res, "No shifts found in this company");
-        } else {
-            await Shifts.deleteMany({ com_id: com_id })
-                .then(() => functions.success(res, "Shifts deleted successfully", shifts))
-                .catch((err) => functions.setError(res, err.message));
+    const com_id = req.user.data.com_id
+    // let com_id = req.body.com_id
+    let shift_id = req.body.shift_id
+    
+        const shifts = await functions.getDatafind(Shifts, { com_id: com_id, shift_id : shift_id });
+        if (shifts) {
+            await Shifts.deleteOne({ com_id: com_id , shift_id :shift_id })
+            .then(() => functions.success(res, "Shifts deleted successfully", shifts))
+            .catch((err) => functions.setError(res, err.message));
         }
-    }
+        
+        return functions.setError(res, "không tìm thấy ca làm việc của công ty");
 
 
 
-}
-
-exports.deleteAllShifts = async(req, res) => {
-    if (!await functions.getMaxID(Shifts)) {
-        functions.setError(res, "No shift existed");
-    } else {
-        Shifts.deleteMany()
-            .then(() => functions.success(res, "Delete all shifts sucessfully"))
-            .catch(err => functions.setError(err, err.message));
-    }
 }
