@@ -39,7 +39,6 @@ exports.getDataHistory = async (req, res, next) => {
 // chi tiết lịch sử cập nhật
 exports.getDetailHistoryUpdate = async (req,res,next) => {
     try {
-        let id = Number(req.body.id);
         let comId = req.comId ;
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
@@ -54,27 +53,32 @@ exports.getDetailHistoryUpdate = async (req,res,next) => {
         if(!type) return functions.setError(res,'missing type',400)
       
         let conditions = {};
-        switch (type_vb ) {
+        switch (type_vb) {
             case 1:
-                conditions.cv_type_loai = 1
-                conditions.cv_type_hd = 0
+                conditions.cv_type_loai = 1;
+                conditions.cv_type_hd = 0;
+                break;
             case 2:
-                conditions.cv_type_loai = 2
-                conditions.cv_type_hd = 0
+                conditions.cv_type_loai = 2;
+                conditions.cv_type_hd = 0;
+                break;
             case 3:
-                conditions.cv_type_loai = 1
-                conditions.cv_type_hd = 1
+                conditions.cv_type_loai = 1;
+                conditions.cv_type_hd = 1;
+                break;
             case 4:
-                conditions.cv_type_loai = 2
-                conditions.cv_type_hd = 1
+                conditions.cv_type_loai = 2;
+                conditions.cv_type_hd = 1;
+                break;
             case 5:
-                conditions.cv_type_hd = 1
+                conditions.cv_type_hd = 1;
+                break;
             default:
-                conditions.cv_type_hd = 0
+                conditions.cv_type_hd = 0;
         } 
         if(type_book)   conditions.cv_date_book = type_book;  
-        if (date_start) conditions.cv_date = { $gte: date_start }
-        if (date_end) conditions.cv_date = { $lte: date_end }
+        if(date_start) conditions.cv_date = { $gte: date_start }
+        if(date_end) conditions.cv_date = { $lte: date_end }
         if(date_start && date_end) conditions.cv_date = { $gte: date_start, $lte: date_end }
         conditions.cv_usc_id = comId
         conditions.cv_type_xoa = 0
@@ -84,9 +88,9 @@ exports.getDetailHistoryUpdate = async (req,res,next) => {
             conditions.cv_type_kp = 1 
         }
         if(name_vb){
-            conditions.cv_name_vb = {$regex: name_vb}
+            conditions.name_vb = new RegExp(name_vb,'i')
         }
-        let data = await tbl_qly_congvan.find(conditions).skip(skip).limit(limit);
+        let data = await tbl_qly_congvan.find(conditions).sort({cv_time_edit:-1}).skip(skip).limit(limit);
         return functions.success(res,'get data success',{data})
     } catch (error) {
         console.error(error);
