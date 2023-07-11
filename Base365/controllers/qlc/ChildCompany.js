@@ -49,44 +49,25 @@ exports.createCompany = async(req, res) => {
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }
-                    avatarUser = fnc.createLinkFileQLC('avt_child_com', _id, File.avatarUser.name)
-                    const company = new Users({
-                        _id: _id ,
-                        userName: userName,
-                        avatarUser: avatarUser,
-                        com_id: com_id,
-                        type: 1,
-                        idQLC: maxID._idQLC,
-                        idTimViec365: maxID._idTV365,
-                        idRaoNhanh365: maxID._idRN365,
-                        phone: phone,
-                        emailContact: emailContact,
-                        address: address,
-                        createdAt:Date.parse(now),
-                        "inForCompany.cds.com_parent_id": com_id,
-                    });
-                    await company.save()
-                return functions.success(res, "Tạo thành công",{company});
-                }else{//no avatar
-                    const company = new Users({
-                        _id: _id,
-                        userName: userName,
-                        avatarUser: avatarUser,
-                        com_id: com_id,
-                        type: 1,
-                        idQLC: maxID._idQLC,
-                        idTimViec365: maxID._idTV365,
-                        idRaoNhanh365: maxID._idRN365,
-                        phone: phone,
-                        emailContact: emailContact,
-                        address: address,
-                        createdAt:Date.parse(now),
-                        "inForCompany.cds.com_parent_id": com_id,
-                    });
-                    await company.save()
-                return functions.success(res, "Tạo thành công",{company});
+                    avatarUser = fnc.createLinkFileQLC('avt_child_com', _id, File.avatarUser.name)   
                 }
-
+                const company = new Users({
+                    _id: _id ,
+                    userName: userName,
+                    avatarUser: avatarUser,
+                    com_id: com_id,
+                    type: 1,
+                    idQLC: maxID._idQLC,
+                    idTimViec365: maxID._idTV365,
+                    idRaoNhanh365: maxID._idRN365,
+                    phone: phone,
+                    emailContact: emailContact,
+                    address: address,
+                    createdAt:Date.parse(now),
+                    "inForCompany.cds.com_parent_id": com_id,
+                });
+                await company.save()
+                    return functions.success(res, "Tạo thành công",{company});
             }
             return functions.setError(res, "Công ty mẹ không tồn tại");
         }
