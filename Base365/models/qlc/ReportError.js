@@ -29,4 +29,4 @@ const ReportError = new Schema({
     },
 })
 
-module.exports = mongoose.model('QLC_ReportError', ReportError);
+module.exports = mongoose.model('ReportError', ReportError);

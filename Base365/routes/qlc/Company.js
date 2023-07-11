@@ -7,7 +7,7 @@ router.post('/register', formData.parse(), company.register)
     //Đăng nhập tài khoản công ty
 router.post('/login', formData.parse(), company.login)
 
-router.post('/login1Time', formData.parse(), company.login1Time)
+// router.post('/login1Time', formData.parse(), company.login1Time)
     // api xác nhận OTP để xác minh tìa khoản
 router.post('/verify', formData.parse(), functions.checkToken, company.verify);
 //

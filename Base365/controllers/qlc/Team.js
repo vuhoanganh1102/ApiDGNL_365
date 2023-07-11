@@ -9,7 +9,6 @@ exports.getListTeam = async(req, res) => {
         let com_id = req.body.com_id
         let _id = req.body._id
         let dep_id = req.body.dep_id
-        console.log(_id, com_id)
         let data = []
         let condition = {}
         let total_emp = {}
@@ -21,19 +20,11 @@ exports.getListTeam = async(req, res) => {
             if (com_id) condition.com_id = com_id
             if (_id) condition._id = _id
             if (dep_id) condition.dep_id = dep_id
-            console.log(_id, com_id, dep_id)
             data = await Team.find(condition).select('com_id teamName dep_id deputyteam_id managerteam_id total_emp ')
-                // console.log(data)
             const teamID = data.map(item => item._id)
-            console.log(teamID)
             for (let i = 0; i < teamID.length; i++) {
                 const team = teamID[i];
-
-                console.log(team)
                 total_emp = await Users.countDocuments({ "inForPerson.employee.com_id": com_id, "inForPerson.employee.team_id": team, type: 2, "inForPerson.employee.ep_status": "Active" })
-
-                console.log(total_emp)
-
                 await Team.findOneAndUpdate({ com_id: com_id, _id: team }, { $set: { total_emp: total_emp } })
             }
 
@@ -54,11 +45,9 @@ exports.getListTeam = async(req, res) => {
 exports.countUserInTeam = async(req, res) => {
         try {
             const { dep_id, com_id, team_id } = req.body;
-            console.log(dep_id, com_id, team_id)
             const numberUser = await functions.findCount(Users, { "inForPerson.employee.com_id": com_id, "inForPerson.employee.dep_id": dep_id, "inForPerson.employee.team_id": team_id, type: 2 })
                 // .then(() => functions.success(res, "",{numberUser}))
                 // .catch((err) => functions.setError(res, err.message, 501));
-            console.log(numberUser)
             if (!numberUser) {
                 functions.setError(res, "Deparment cannot be found or does not exist", 503);
             } else {

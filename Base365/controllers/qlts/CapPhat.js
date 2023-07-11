@@ -7,7 +7,13 @@ const user = require('../../models/Users')
 
 exports.create = async(req,res)=>{
     try{
-        const id_cty = req.user.data.idQLC
+        const type = req.user.data.type
+        const id_cty = ""
+        if(type == 1){
+             id_cty = req.user.data.idQLC
+        }else{
+            id_cty = req.user.data.inForPerson.employee.com_id
+        }
         const idQLC = req.user.data.idQLC
         const pageNumber = req.body.pageNumber || 1;
         const id_pb = req.body.id_pb;
@@ -31,16 +37,16 @@ exports.create = async(req,res)=>{
 
             if(listItemsType) data.listItemsType = listItemsType
     
-            let listDepartment = await dep.find({com_id: idQLC}).select('deparmentName').lean()
-            let listEmp = await user.find({"inForPerson.employee.com_id" : idQLC , type : 2}).select('userName').lean()
+            let listDepartment = await dep.find({com_id: id_cty}).select('deparmentName').lean()
+            let listEmp = await user.find({"inForPerson.employee.com_id" : id_cty , type : 2}).select('userName').lean()
     
             
             
             if(listDepartment) data.listDepartment = listDepartment
             if(listEmp)  data.listEmp = listEmp 
     
-            let capPhat_choNhan = await capPhat.find({cp_trangthai : 5 ,cp_da_xoa : 0 ,id_pb : id_pb ,com_id: idQLC }).skip((pageNumber - 1)*10).limit(10).sort({_id : -1}).lean()
-            let count = await capPhat.countDocuments({cp_trangthai : 5 ,cp_da_xoa : 0 ,id_pb : id_pb ,com_id: idQLC })
+            let capPhat_choNhan = await capPhat.find({cp_trangthai : 5 ,cp_da_xoa : 0 ,id_pb : id_pb ,com_id: id_cty }).skip((pageNumber - 1)*10).limit(10).sort({_id : -1}).lean()
+            let count = await capPhat.countDocuments({cp_trangthai : 5 ,cp_da_xoa : 0 ,id_pb : id_pb ,com_id: id_cty })
     
             if(capPhat_choNhan) data.capPhat_choNhan = capPhat_choNhan
             if(count) data.count = count
@@ -48,6 +54,7 @@ exports.create = async(req,res)=>{
                 _id : Number(max._id) + 1 ,
                 id_phongban: id_pb,
                 cp_id_ng_tao : idQLC,
+                id_cty : id_cty,
                 cp_trangthai : cp_trangthai||0,
                 ts_daidien_nhan :ts_daidien_nhan,
                 cp_date_create :  Date.parse(now),
@@ -69,7 +76,7 @@ exports.create = async(req,res)=>{
              let updateThongBao = new thongBao({
                 _id : Number(maxThongBao._id) +1,
                 id_ts : ts_daidien_nhan,
-                id_cty : idQLC,
+                id_cty : id_cty,
                 id_ng_tao : idQLC,
                 type_quyen :1,
                 type_quyen_tao:1,
@@ -96,8 +103,14 @@ exports.create = async(req,res)=>{
 
 exports.edit = async(req,res)=>{
     try{
+        const type = req.user.data.type
+        const id_cty = ""
+        if(type == 1){
+            id_cty = req.user.data.idQLC
+        }else{
+            id_cty = req.user.data.inForPerson.employee.com_id
+        }
         const idQLC = req.user.data.idQLC
-        const id_cty = req.user.data.idQLC
         const _id = req.body.id;
         const cp_ngay = req.body.cp_ngay;
         const cp_lydo = req.body.cp_lydo;
@@ -123,8 +136,13 @@ exports.edit = async(req,res)=>{
 
 exports.delete = async (req , res) =>{
     try{
-
-        const id_cty = req.user.data.idQLC 
+        const type = req.user.data.type
+        const id_cty = ""
+        if(type == 1){
+             id_cty = req.user.data.idQLC
+        }else{
+            id_cty = req.user.data.inForPerson.employee.com_id
+        }
         const datatype = req.body.datatype
         const _id = req.body.id
         const type_quyen = req.body.type_quyen
@@ -132,8 +150,8 @@ exports.delete = async (req , res) =>{
         const date_delete = new Date()
 
         if(datatype == 1){
-            const cap1 = await capPhat.findOne({ _id: _id, id_cty : id_cty });
-            if (!cap1) {
+            const data = await capPhat.findOne({ _id: _id, id_cty : id_cty });
+            if (!data) {
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
                 await capPhat.findOneAndUpdate({ _id: _id }, {
@@ -144,13 +162,13 @@ exports.delete = async (req , res) =>{
                     cp_date_delete : Date.parse(date_delete),
 
                     })
-                    .then((cap1) => fnc.success(res, "cập nhật thành công", {cap1}))
+                    .then((data) => fnc.success(res, "cập nhật thành công", {data}))
                     .catch((err) => fnc.setError(res, err.message, 511));
             }
         }
         if(datatype == 2){
-            const cap1 = await capPhat.findOne({ _id: _id , id_cty : id_cty});
-            if (!cap1) {
+            const data = await capPhat.findOne({ _id: _id , id_cty : id_cty});
+            if (!data) {
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
                 await capPhat.findOneAndUpdate({ _id: _id, id_cty: id_cty }, {
@@ -161,7 +179,7 @@ exports.delete = async (req , res) =>{
                     cp_date_delete : 0,
 
                     })
-                    .then((cap1) => fnc.success(res, "cập nhật thành công", {cap1}))
+                    .then((data) => fnc.success(res, "cập nhật thành công", {data}))
                     .catch((err) => fnc.setError(res, err.message, 511));
             }
         }
@@ -186,18 +204,29 @@ exports.delete = async (req , res) =>{
 // dong y tiep nhan cap phat
 exports.updateStatus = async (req , res) =>{
     try{
-        const id_cty = req.user.data.idQLC
+        const type = req.user.data.type
+        const id_cty = ""
+        if(type == 1){
+             id_cty = req.user.data.idQLC
+        }else{
+            id_cty = req.user.data.inForPerson.employee.com_id
+        }
         const id_nhanvien = req.body.id_nhanvien
+        const id_phongban = req.body.id_phongban
+        let listConditions = {};
+        if(id_cty) listConditions.id_cty = id_cty
+        if(id_nhanvien) listConditions.id_nhanvien = id_nhanvien
+        if(id_phongban) listConditions.id_phongban = id_phongban
 
-        const cap1 = await capPhat.findOne({ id_nhanvien: id_nhanvien , id_cty : id_cty});
-            if (!cap1) {
+        const data = await capPhat.findOne(listConditions);
+            if (!data) {
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
-                await capPhat.findOneAndUpdate({ id_nhanvien: id_nhanvien, id_cty: id_cty }, {
+                await capPhat.findOneAndUpdate(listConditions , {
                     cp_trangthai: 6,
 
                     })
-                    .then((cap1) => fnc.success(res, "cập nhật thành công", {cap1}))
+                    .then((data) => fnc.success(res, "cập nhật thành công", {data}))
                     .catch((err) => fnc.setError(res, err.message, 511));
             }
 
@@ -210,8 +239,14 @@ exports.updateStatus = async (req , res) =>{
 
     exports.getList = async (req , res) =>{
         try{
-            // const id_cty = req.user.data.idQLC
-            const id_cty = req.body.id_cty
+            const type = req.user.data.type
+            // const id_cty = ""
+            // if(type == 1){
+            //      id_cty = req.user.data.idQLC
+            // }else{
+            //     id_cty = req.user.data.inForPerson.employee.com_id
+            // }
+            const id_cty = req.body.id_cty//test
             const id_nhanvien = req.body.id_nhanvien
             const id_phongban = req.body.id_phongban
             const cp_trangthai = 6
@@ -224,20 +259,20 @@ exports.updateStatus = async (req , res) =>{
             
             let data = {}
             let listConditions = {};
-             
+             // lay danh sach chi tiet phong ban - nhan vien
             let listDepartment = await dep.find({com_id: id_cty}).select('deparmentName').lean()
             let listEmp = await user.find({"inForPerson.employee.com_id" : id_cty , type : 2}).select('userName inForPerson.employee.position_id').lean()
     
             if(listDepartment) data.listDepartment = listDepartment
             if(listEmp)  data.listEmp = listEmp
+            //-------------------------------------------------------------------------------------------
     
-    
-    
+            //dieu kien tim kiem
             if(id_cty) listConditions.id_cty = id_cty
             if(id_nhanvien) listConditions.id_nhanvien = id_nhanvien
             if(id_phongban) listConditions.id_phongban = id_phongban
             if(cp_trangthai) listConditions.cp_trangthai = cp_trangthai
-    
+            // tim kiem
             let danhSach = await capPhat.find(listConditions).select('id_nhanvien id_phongban cap_phat_taisan ts_daidien_nhan').lean()
 
             if(!danhSach){
@@ -246,15 +281,17 @@ exports.updateStatus = async (req , res) =>{
             }else{
 
                 if(danhSach) data.danhSach =  danhSach
+                // lay ten phong ban
                 if((danhSach[0].id_phongban)!=0) depName = await dep.findOne({com_id: id_cty, _id: danhSach[0].id_phongban }).select('deparmentName').lean()
                 console.log(danhSach[0].id_phongban)
-
+                // lay ten nhan vien
                 if((danhSach[0].id_nhanvien)!=0) userName = await user.findOne({"inForPerson.employee.com_id" : id_cty , type : 2}).select('userName inForPerson.employee.dep_id inForPerson.employee.position_id ').lean()
                 console.log(userName)
 
                 // .then((depNameofUser) => {
                 //     depNameofUser = dep.findOne({com_id: id_cty, _id : inForPerson.employee.dep_id}).select('deparmentName').lean()
                 // })
+                // lay so luong tai san cap phat
                 if(danhSach.cap_phat_taisan) 
                    countCapital = danhSach.map(item => item.id_cty);
                    console.log(countCapital)
@@ -262,7 +299,7 @@ exports.updateStatus = async (req , res) =>{
                       const depId = countCapital[i];
                       total_emp = await functions.findCount(TaiSan, { })
                   }
-
+                // lay nguoi dai dien --- chua ro vi api trả ra bằng  "0"
                 if(danhSach.ts_daidien_nhan) countUser = capPhat.countDocuments({})
 
 
@@ -281,9 +318,15 @@ exports.updateStatus = async (req , res) =>{
         }
         }
 
-exports.getList = async (req , res) =>{
+exports.getListDetail = async (req , res) =>{
     try{
-        // const id_cty = req.user.data.idQLC
+        const type = req.user.data.type
+        // const id_cty = ""
+        // if(type == 1){
+        //      id_cty = req.user.data.idQLC
+        // }else{
+        //     id_cty = req.user.data.inForPerson.employee.com_id
+        // }
         const id_cty = req.body.id_cty
         let option = req.body.option
         const id_nhanvien = req.body.id_nhanvien
@@ -309,5 +352,5 @@ exports.getList = async (req , res) =>{
         return fnc.setError(res , e.message)
     }
     }
-    // if(option == 3) listConditions.thuhoi_trangthai = 0 //thu hôi chờ nhận
-    // if(option == 4) listConditions.thuhoi_trangthai = 1 // đồng ý thu hồi 
+
+
