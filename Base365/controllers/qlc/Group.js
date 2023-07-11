@@ -6,17 +6,17 @@ const Users = require("../../models/Users")
 
 exports.getListGroupByFields = async(req, res) => {
     try {
-        // const type = req.user.data.type
+        const type = req.user.data.type
 
-        // let com_id = req.user.data.com_id
-        let com_id = req.body.com_id
+        let com_id = req.user.data.com_id
+        // let com_id = req.body.com_id
         let gr_id = req.body.gr_id
         let dep_id = req.body.dep_id
         let team_id = req.body.team_id
         let data = []
         let condition = {}
         let total_emp = {}
-    // if(type == 1){
+    if(type == 1){
 
             if (com_id) condition.com_id = com_id
             if (gr_id) condition.gr_id = gr_id
@@ -28,9 +28,6 @@ exports.getListGroupByFields = async(req, res) => {
                 const group = groupID[i];
 
                 total_emp = await Users.countDocuments({ "inForPerson.employee.com_id": com_id, "inForPerson.employee.gr_id": group, type: 2, "inForPerson.employee.ep_status": "Active" })
-
-
-                // await Group.findOneAndUpdate({ com_id: com_id, gr_id: group }, { $set: { total_emp: total_emp } })
                 if(total_emp) data.total_emp = total_emp
             }
 
@@ -39,8 +36,8 @@ exports.getListGroupByFields = async(req, res) => {
                 
             }
             return functions.setError(res, 'Không có dữ liệu', 404);
-    // }
-    // return functions.setError(res, "Tài khoản không phải Công ty", 604);
+    }
+    return functions.setError(res, "Tài khoản không phải Công ty", 604);
 
     } catch (err) {
         return functions.setError(res, err.message)
