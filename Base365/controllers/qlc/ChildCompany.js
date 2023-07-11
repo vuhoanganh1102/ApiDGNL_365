@@ -29,19 +29,19 @@ exports.getListCompany = async(req, res) => {
 exports.createCompany = async(req, res) => {
     try {
         
-        // const com_id = req.user.data.com_id
-        // const type = req.user.data.type
-        let com_id = req.body.com_id
+        const com_id = req.user.data.com_id
+        const type = req.user.data.type
+        // let com_id = req.body.com_id
         const { userName, phone, emailContact, address } = req.body;
         let File = req.files || null;
         let avatarUser = null;
         let now = new Date()
-        // if(type == 1){
+        if(type == 1){
 
         if (com_id && emailContact && phone && address && userName) {
-            // const check_com_parent = await Users.findOne({ idQLC: com_id, type: 1 }).lean();
+            const check_com_parent = await Users.findOne({ idQLC: com_id, type: 1 }).lean();
             
-            // if (check_com_parent) {
+            if (check_com_parent) {
                 let maxID = await functions.getMaxUserID("company")
                 let _id = maxID._id
                 if (File.avatarUser) {
@@ -87,13 +87,13 @@ exports.createCompany = async(req, res) => {
                 return functions.success(res, "Tạo thành công",{company});
                 }
 
-            // }
-            // return functions.setError(res, "Công ty mẹ không tồn tại");
+            }
+            return functions.setError(res, "Công ty mẹ không tồn tại");
         }
         return functions.setError(res, "Thiếu thông tin truyền lên");
 
-    // }
-    // return functions.setError(res, "Tài khoản không phải Công ty", 604);   
+    }
+    return functions.setError(res, "Tài khoản không phải Công ty", 604);   
     } catch (error) {
         return functions.setError(res, error.message)
     }
