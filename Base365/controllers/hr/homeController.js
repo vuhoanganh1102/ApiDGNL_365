@@ -11,9 +11,21 @@ const Candidate = require('../../models/hr/Candidates');
 exports.getListInfo= async(req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
+
+        var currentDate = new Date(); // Lấy ngày hiện tại
+        // Thiết lập ngày bắt đầu
+        var startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        startDate.setHours(0, 0, 0, 0); // Đặt giờ, phút, giây và mili-giây về 0
+
+        // Thiết lập ngày kết thúc
+        var nextMonth = currentDate.getMonth() + 1;
+        var endDate = new Date(currentDate.getFullYear(), nextMonth, 0);
+        endDate.setHours(23, 59, 59, 999); // Đặt giờ, phút, giây và mili-giây về cuối ngày
+
         let totalEmployee = await Users.countDocuments({"inForPerson.employee.com_id": comId});
-        let totalAchievement = await AchievementFors.countDocuments({comId: comId});
-        let totalInfringe = await InfringesFors.countDocuments({comId: comId});
+        let totalAchievement = await AchievementFors.countDocuments({comId: comId, createdAt: {$gte: startDate, $lt: endDate}});
+        let totalInfringe = await InfringesFors.countDocuments({comId: comId, createdAt: {$gte: startDate, $lt: endDate}});
+        
         let totalCandi = await Candidates.countDocuments({comId: comId, isDelete: 0});
         let totalCandidateInterview = await Candidate.aggregate([
                 {$match: {comId: comId, isDelete: 0}},
@@ -22,9 +34,10 @@ exports.getListInfo= async(req, res, next) => {
                         from: "HR_ScheduleInterviews",
                         localField: "id",
                         foreignField: "canId",
-                        as: "interviewJob"
+                        as: "Interview"
                     }
                 },
+                {$match: {"Interview.isSwitch": 0}},
                 {
                     $count: "totalDocuments"
                 }
@@ -36,15 +49,16 @@ exports.getListInfo= async(req, res, next) => {
                         from: "HR_GetJobs",
                         localField: "id",
                         foreignField: "canId",
-                        as: "getJob"
+                        as: "GetJob"
                     }
                 },
+                {$match: {"GetJob.isSwitch": 0}},
                 {
                     $count: "totalDocuments"
                 }
             ]);
-        totalCandidateGetJob = totalCandidateGetJob[0].totalDocuments;
-        totalCandidateInterview = totalCandidateInterview[0].totalDocuments;
+        totalCandidateGetJob = totalCandidateGetJob.length>0? totalCandidateGetJob[0].totalDocuments: 0;
+        totalCandidateInterview = totalCandidateInterview.length>0? totalCandidateInterview[0].totalDocuments: 0;
 
         return functions.success(res, `Get list infomaiton for page home success`, {totalEmployee, totalAchievement, totalInfringe, totalCandi, totalCandidateInterview, totalCandidateGetJob});
     } catch (e) {
