@@ -825,6 +825,7 @@ exports.updateLeaderDetail = async(req, res, next) => {
             if (updateUserHr) {
                 return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công', { updateUserHr });
             }
+            return functions.setError(res, "Lanh dao not found!", 405);
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
@@ -884,9 +885,8 @@ exports.updateEmpUseSignature = async(req, res, next) => {
 
             if (updateUserHr) {
                 return functions.success(res, 'cập nhật người sử dụng con dấu thành công');
-            }else {
-                return functions.setError(res, "Employee not found!", 505);
             }
+            return functions.setError(res, "Employee not found!", 405);
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
