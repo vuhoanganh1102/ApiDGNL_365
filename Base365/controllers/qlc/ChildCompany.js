@@ -9,22 +9,19 @@ exports.getListCompany = async(req, res) => {
         const type = req.user.data.type
         // let com_id = req.body.com_id
         if(type == 1){
-
-       
             const data = await Users.find({ "inForCompany.cds.com_parent_id": com_id }).select('userName avatarUser com_id phone address ')
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
-
             return functions.setError(res, 'Không có dữ liệu', 404);
-
-    }
-    return functions.setError(res, "Tài khoản không phải Công ty", 604);   
-    } catch (err) {
-
+        }
+    return functions.setError(res, "Tài khoản không phải Công ty", 604);
+    } 
+    catch (err) {
         return functions.setError(res, err.message)
     }
 };
+
 //tạo công ty con
 exports.createCompany = async(req, res) => {
     try {
@@ -74,7 +71,7 @@ exports.createCompany = async(req, res) => {
         return functions.setError(res, "Thiếu thông tin truyền lên");
 
     }
-    return functions.setError(res, "Tài khoản không phải Công ty", 604);   
+    return functions.setError(res, "Tài khoản không phải Công ty", 604);
     } catch (error) {
         return functions.setError(res, error.message)
     }
@@ -87,10 +84,7 @@ exports.editCompany = async(req, res) => {
         let com_id = req.body.com_id
         const _id = req.body.id;
         if(type == 1){
-
-       
             const { userName, phone, emailContact, address } = req.body;
-
                 const company = await functions.getDatafindOne(Users, {idQLC:com_id , type : 1});
                 if (company) {
                     await functions.getDatafindOneAndUpdate(Users, {idQLC:com_id, type : 1 }, {
@@ -98,16 +92,12 @@ exports.editCompany = async(req, res) => {
                         phone: phone,
                         emailContact: emailContact,
                         address: address,
-
                     })
                    return functions.success(res, "Chỉnh sửa thành công", { company })
                 }    
                 return functions.setError(res, "không tìm thấy công ty ", 510);
-                
-                
-         
         }
-        return functions.setError(res, "Tài khoản không phải Công ty", 604);   
+        return functions.setError(res, "Tài khoản không phải Công ty", 604);
     } catch (error) {
         return functions.setError(res, error.message)
     }
