@@ -6,15 +6,15 @@ const Users = require("../../models/Users")
 //API lấy tất cả dữ liệu phòng ban 
 exports.getListDeparment = async (req, res) => {
     try {
-        // const com_id = req.user.data.com_id
-        // const type = req.user.data.type
-        let com_id = req.body.com_id
+        const com_id = req.user.data.com_id
+        const type = req.user.data.type
+        // let com_id = req.body.com_id
         let dep_id = req.body.dep_id
 
         let condition = {};
         let data = []
         let total_emp = {}
-        // if (type == 1) {
+        if (type == 1) {
 
             if (com_id) condition.com_id = com_id
             if (dep_id) condition.dep_id = dep_id
@@ -33,8 +33,8 @@ exports.getListDeparment = async (req, res) => {
                 return functions.setError(res, 'Không có dữ liệu', 404);
             };
             return functions.success(res, 'Lấy thành công', {data});
-        // }
-        // return functions.setError(res, "Tài khoản không phải Công ty", 604);
+        }
+        return functions.setError(res, "Tài khoản không phải Công ty", 604);
 
     } catch (err) {
 
