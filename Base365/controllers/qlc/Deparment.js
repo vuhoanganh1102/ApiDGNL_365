@@ -6,15 +6,15 @@ const Users = require("../../models/Users")
 //API lấy tất cả dữ liệu phòng ban 
 exports.getListDeparment = async (req, res) => {
     try {
-        const com_id = req.user.data.com_id
-        const type = req.user.data.type
-        // let com_id = req.body.com_id
+        // const com_id = req.user.data.com_id
+        // const type = req.user.data.type
+        let com_id = req.body.com_id
         let dep_id = req.body.dep_id
 
         let condition = {};
         let data = []
         let total_emp = {}
-        if (type == 1) {
+        // if (type == 1) {
 
             if (com_id) condition.com_id = com_id
             if (dep_id) condition.dep_id = dep_id
@@ -27,14 +27,14 @@ exports.getListDeparment = async (req, res) => {
                 const depId = depID[i];
                 total_emp = await functions.findCount(Users, { "inForPerson.employee.com_id": com_id, "inForPerson.employee.dep_id": depId, type: 2, "inForPerson.employee.ep_status": "Active" })
 
-                await Deparment.findOneAndUpdate({ com_id: com_id, dep_id: depId }, { $set: { total_emp: total_emp } });
+                if(total_emp) data.total_emp = total_emp
             }
             if (!data) {
                 return functions.setError(res, 'Không có dữ liệu', 404);
             };
-            return functions.success(res, 'Lấy thành công', { data });
-        }
-        return functions.setError(res, "Tài khoản không phải Công ty", 604);
+            return functions.success(res, 'Lấy thành công', {data});
+        // }
+        // return functions.setError(res, "Tài khoản không phải Công ty", 604);
 
     } catch (err) {
 
@@ -49,7 +49,7 @@ exports.createDeparment = async (req, res) => {
         const com_id = req.user.data.com_id
         // const com_id = req.body.com_id
         const type = req.user.data.type
-
+        let now = new Date()
         if (type == 1) {
 
             const { dep_name, manager_id, deparmentOrder } = req.body;
@@ -63,7 +63,7 @@ exports.createDeparment = async (req, res) => {
                     com_id: com_id,
                     dep_name: dep_name,
                     manager_id: manager_id || null,
-                    deparmentCreated: new Date(),
+                    dep_create_time:  Date.parse(now),
                     deparmentOrder: deparmentOrder || 0,
                 });
 

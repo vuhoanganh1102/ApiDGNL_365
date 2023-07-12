@@ -418,13 +418,14 @@ exports.updateInfoCompany = async(req, res, next) => {
             let findUser = Users.findOne({ idQLC: idQLC, type: 1 })
             if (findUser) {
                 if (File && File.avatarUser) {
-                    let upload = fnc.uploadFileQLC('avt_com', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                    //  const namefiles = req.files.avatarUser.originalFilename;
+                    let upload = await fnc.uploadAvaComQLC( File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }
-                    avatarUser = fnc.createLinkFileQLC('avt_com', idQLC, File.avatarUser.name)
-
-                    data = await Users.updateOne({ idQLC: idQLC, type: 1 }, {
+                    avatarUser = upload
+                } 
+                data = await Users.updateOne({ idQLC: idQLC, type: 1 }, {
                         $set: {
                             userName: userName,
                             emailContact: emailContact,
@@ -433,29 +434,12 @@ exports.updateInfoCompany = async(req, res, next) => {
                             address: address,
                             fromWeb: "quanlichung",
                             updatedAt: Date.parse(updatedAt),
-
                         }
                     })
-                    await functions.success(res, 'update avartar company success', { data });
-                } else {
-                    data1 = await Users.updateOne({ idQLC: idQLC, type: 1 }, {
-                        $set: {
-                            userName: userName,
-                            emailContact: emailContact,
-                            phone: phone,
-                            // avatarUser: avatarUser,
-                            address: address,
-                            fromWeb: "quanlichung",
-                            updatedAt: Date.parse(updatedAt),
-                        }
-                    })
-                    await functions.success(res, 'update company info success', { data1 })
-                }
+                    await functions.success(res, 'update company info success', { data })
             } else {
                 return functions.setError(res, "không tìm thấy user")
-
             }
-
         } else {
             return functions.setError(res, "không tìm thấy token")
         }
@@ -464,29 +448,19 @@ exports.updateInfoCompany = async(req, res, next) => {
         return functions.setError(res, error.message)
     }
 }
-
-
 exports.info = async(req, res) => {
     try {
         const idQLC = req.user.data.idQLC
-        if ((idQLC) == undefined) {
-            functions.setError(res, "lack of input")
-        } else if (isNaN(idQLC)) {
-            functions.setError(res, "id must be a Nubmer")
-        } else {
             const data = await Users.findOne({ idQLC: idQLC, type: 1 }).select('userName email phoneTK address avatarUser authentic inForCompany.cds.com_vip createdAt').lean();
-
             const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
-
             const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
-
             data.departmentsNum = departmentsNum
             data.userNum = userNum
             if (data) {
                 return functions.success(res, 'Lấy thành công', { data });
             };
             return functions.setError(res, 'Không có dữ liệu', 404);
-        }
+
     } catch (e) {
         return functions.setError(res, e.message)
     }
