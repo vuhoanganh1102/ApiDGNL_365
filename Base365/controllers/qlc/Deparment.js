@@ -52,8 +52,8 @@ exports.createDeparment = async (req, res) => {
 
         if (type == 1) {
 
-            const { deparmentName, managerId, deputyId, deparmentOrder, deparmentCreated, total_emp } = req.body;
-            if (com_id && deparmentName) {
+            const { dep_name, manager_id, deparmentOrder } = req.body;
+            if (com_id && dep_name) {
                 //Kiểm tra Id công ty khác null
 
                 //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
@@ -61,12 +61,10 @@ exports.createDeparment = async (req, res) => {
                 const deparments = new Deparment({
                     dep_id: Number(maxID.dep_id) + 1 || 1,
                     com_id: com_id,
-                    deparmentName: deparmentName,
-                    managerId: managerId || null,
-                    deputyId: deputyId || null,
+                    dep_name: dep_name,
+                    manager_id: manager_id || null,
                     deparmentCreated: new Date(),
                     deparmentOrder: deparmentOrder || 0,
-                    total_emp: total_emp,
                 });
 
                 await deparments.save()
@@ -91,15 +89,14 @@ exports.editDeparment = async (req, res) => {
         const type = req.user.data.type
         const dep_id = req.body.dep_id;
         if (type == 1) {
-            const { com_id, deparmentName, managerId, deputyId } = req.body;
+            const { com_id, dep_name, manager_id } = req.body;
 
             const deparment = await functions.getDatafindOne(Deparment, { dep_id: dep_id });
             if (deparment) {
                 await functions.getDatafindOneAndUpdate(Deparment, { com_id: com_id, dep_id: dep_id }, {
                     com_id: com_id,
-                    deparmentName: deparmentName,
-                    managerId: managerId || null,
-                    deputyId: deputyId || null,
+                    dep_name: dep_name,
+                    manager_id: manager_id || null,
                 })
                 return functions.success(res, "Sửa phòng ban thành công", { deparment })
 
