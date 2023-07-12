@@ -1,7 +1,6 @@
 const Users = require("../../models/Users")
 const fnc = require("../../services/qlc/functions")
 const functions = require("../../services/functions")
-
 const md5 = require("md5")
 
 //đăng kí tài khoản cá nhân 
@@ -14,10 +13,10 @@ exports.register = async(req, res) => {
             if (checkPhone) {
                 let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1}}).lean()
                 let MaxId = await functions.getMaxUserID("user")
-
+                let _id = MaxId._id
                 if (!user) {
                     const Inuser = new Users({
-                        _id: MaxId._id,
+                        _id: _id,
                         userName: userName,
                         phoneTK: phoneTK,
                         phone: phone,
@@ -25,7 +24,7 @@ exports.register = async(req, res) => {
                         address: address,
                         createdAt: Date.parse(createdAt),
                         type: 0,
-                        chat365_secret : processBase64(MaxId._id),
+                        chat365_secret : Buffer.from(_id.toString()).toString('base64'),
                         fromWeb: "quanlichung",
                         idQLC: MaxId._idQLC,
                         idTimViec365: MaxId._idTV365,
