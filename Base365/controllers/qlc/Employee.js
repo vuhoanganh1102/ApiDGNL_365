@@ -4,22 +4,23 @@ const fnc = require('../../services/qlc/functions')
 const md5 = require('md5');
 const functions = require("../../services/functions")
 
-const Deparment = require("../../models/qlc/Deparment")
+const Deparment = require("../../models/qlc/Deparment");
+const { deflateSync } = require('zlib');
 
 //đăng kí tài khoản nhân viên 
 exports.register = async(req, res) => {
     try {
         const { userName, emailContact, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp, team_id } = req.body;
         const createdAt = new Date()
-
         if ((userName && password && com_id && address && phoneTK) !== undefined) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
                 let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1} }).lean()
                 let MaxId = await functions.getMaxUserID("user")
+                let _id = MaxId._id
                 if (!user) {
                     const user = new Users({
-                        _id: MaxId._id,
+                        _id: _id,
                         emailContact: emailContact,
                         phoneTK: phoneTK,
                         userName: userName,
@@ -30,7 +31,7 @@ exports.register = async(req, res) => {
                         address: address,
                         createdAt: Date.parse(createdAt),
                         fromWeb: "quanlichung",
-                        chat365_secret : processBase64(MaxId._id),
+                        chat365_secret : Buffer.from(_id.toString()).toString('base64'),
                         role: 0,
                         avatarUser: null,
                         idQLC: MaxId._idQLC,
@@ -41,7 +42,7 @@ exports.register = async(req, res) => {
                         "inForPerson.employee.dep_id": dep_id,
                         "inForPerson.employee.group_id": group_id,
                         "inForPerson.employee.team_id": team_id,
-                        "inForPerson.account.birthday": birthday,
+                        "inForPerson.account.birthday": Date.parse(birthday),
                         "inForPerson.account.gender": gender,
                         "inForPerson.account.married": married,
                         "inForPerson.account.experience": experience,
