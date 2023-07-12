@@ -152,6 +152,9 @@ exports.listUserOnline = async (req, res, next) => {
         {
             let tin = await  New.findOne({userID:data[i].idRaoNhanh365},{ title: 1,_id:1,linkTitle: 1,type: 1})       
             data[i].tin = tin 
+            if(data[i].new.img){
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID);
+            }
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
@@ -296,13 +299,8 @@ exports.updateAvatar = async (req, res, next) => {
             if (!upload) {
                 return functions.setError(res, "Định dạng ảnh không hợp lệ");
             }
-            avatarUser = functions.createLinkFileRaonhanh(
-                "img_user",
-                _id,
-                File.avatarUser.name
-            );
             await User.findByIdAndUpdate(_id, {
-                avatarUser
+                avatarUser:upload
             });
         }
         return functions.success(res, "update data user success");
