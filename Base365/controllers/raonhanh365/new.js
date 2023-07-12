@@ -11,7 +11,6 @@ const ApplyNewsRN = require("../../models/Raonhanh365/ApplyNews");
 const raoNhanh = require("../../services/rao nhanh/raoNhanh");
 const Comments = require("../../models/Raonhanh365/Comments");
 const Evaluate = require("../../models/Raonhanh365/Evaluate");
-
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const Users = require("../../models/Users");
@@ -1202,17 +1201,17 @@ exports.createBuyNew = async (req, res) => {
                     if (File.Image.length > 10)
                         return functions.setError(res, "Gửi quá nhiều ảnh", 400);
                     for (let i = 0; i < File.Image.length; i++) {
-                        let img = await raoNhanh.uploadFileRaoNhanh(
+                        let image = await raoNhanh.uploadFileRaoNhanh(
                             "avt_tindangmua",
                             userID,
                             File.Image[i],
-                            ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf']
+                            ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf','.mp3','.mp4']
                         );
                         if (!img) {
-                            return functions.setError(res, 'upload file failed');
+                            return functions.setError(res, 'upload file failed',400);
                         }
                         img.push({
-                            nameImg:img
+                            nameImg:image
                         })
                     }
                 }
@@ -1220,47 +1219,41 @@ exports.createBuyNew = async (req, res) => {
             if (File.new_file_dthau) {
                 if (File.new_file_dthau.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_dthau, [
+                new_file_dthau = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_dthau, [
                     ".jpg",
                     ".png",
                     ".docx",
                     ".pdf",
+                    ".xlsx",
+                    ".xls"
                 ]);
-                new_file_dthau = functions.createLinkFileRaonhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_dthau.name
-                );
+                if(new_file_dthau === false) return functions.setError(res,'upload file failed',400)
             }
             if (File.new_file_nophs) {
                 if (File.new_file_nophs.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                raoNhanh.uploadFileRaoNhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_nophs,
-                    [".jpg", ".png", ".docx", ".pdf"]
-                );
-                new_file_nophs = functions.createLinkFileRaonhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_nophs.name
-                );
+                    new_file_nophs = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_nophs, [
+                        ".jpg",
+                        ".png",
+                        ".docx",
+                        ".pdf",
+                        ".xlsx",
+                        ".xls"
+                    ]);
+                    if(new_file_nophs === false) return functions.setError(res,'upload file failed',400)
             }
             if (File.new_file_chidan) {
                 if (File.new_file_chidan.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                raoNhanh.uploadFileRaoNhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_chidan,
-                    [".jpg", ".png", ".docx", ".pdf"]
-                );
-                new_file_chidan = functions.createLinkFileRaonhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_chidan.name
-                );
+                    new_file_chidan = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_chidan, [
+                        ".jpg",
+                        ".png",
+                        ".docx",
+                        ".pdf",
+                        ".xlsx",
+                        ".xls"
+                    ]);
+                    if(new_file_chidan === false) return functions.setError(res,'upload file failed',400)
             }
             //lưu dữ liệu vào DB
             const postNew = new New({
@@ -1971,7 +1964,7 @@ exports.managenew = async (req, res, next) => {
         let data = [];
         let tin_conhan = await New.find({
             userID,
-            'bidding.han_su_dung': { $gte: new Date(Date.now()) },
+            'bidding.han_su_dung': { $gte: new Date() },
             buySell: 1,
         }).count();
         let tin_dangan = await New.find({ userID, active: 0, buySell: 1 }).count();
@@ -1979,7 +1972,6 @@ exports.managenew = async (req, res, next) => {
         let tin_hethan = tong_soluong - tin_conhan;
         let searchItem = {
             title: 1,
-            bidding: 1,
             active: 1,
             createTime: 1,
             sold: 1,
@@ -1997,6 +1989,12 @@ exports.managenew = async (req, res, next) => {
             money: 1,
             free: 1,
             infoSell: 1,
+            address:1,
+            dia_chi:1,
+            pinCate:1,
+            pinHome:1,
+            'bidding.han_su_dung':1,
+            
         };
         if (linkTitle === "quan-ly-tin-mua.html") {
             data = await New.find({ userID, buySell: 1, cateID: { $nin: [120, 121] } }, searchItem).skip(skip).limit(limit);
@@ -2005,7 +2003,7 @@ exports.managenew = async (req, res, next) => {
                 {
                     userID,
                     buySell: 1,
-                    'bidding.han_su_dung': { $gte: new Date(Date.now()) },
+                    'bidding.han_su_dung': { $gte: new Date() },
                     cateID: { $nin: [120, 121] }
                 },
                 searchItem
@@ -2015,7 +2013,7 @@ exports.managenew = async (req, res, next) => {
                 {
                     userID,
                     buySell: 1,
-                    'bidding.han_su_dung': { $lte: new Date(Date.now()) },
+                    'bidding.han_su_dung': { $lte: new Date() },
                     cateID: { $nin: [120, 121] }
                 },
                 searchItem
@@ -2025,10 +2023,8 @@ exports.managenew = async (req, res, next) => {
         } else {
             return functions.setError(res, "page not found ", 404);
         }
-        data.push({
-            soluong: { tong_soluong, tin_conhan, tin_hethan, tin_dangan },
-        });
-        return functions.success(res, "get data success", { data });
+       
+        return functions.success(res, "get data success", { tong_soluong, tin_conhan, tin_hethan, tin_dangan,data });
     } catch (error) {
         return functions.setError(res, error);
     }
@@ -3082,6 +3078,20 @@ exports.getDetailForUpdateNew = async (req, res, next) => {
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.log("🚀 ~ file: new.js:1757 ~ exports.getDetailNew= ~ error:", error)
+        return functions.setError(res, error);
+    }
+};
+
+// api lấy danh sách đấu thầu theo id
+exports.getDataBidding = async(req, res, next) => {
+    try {
+        let id = Number (req.body.id);
+        let data = await Bidding.find({
+            newId: id,
+        })        
+        return functions.success(res, "get data success", { data });
+    } catch (error) {
+        console.error(error)
         return functions.setError(res, error);
     }
 };
