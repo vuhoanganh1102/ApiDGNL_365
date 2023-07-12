@@ -296,13 +296,8 @@ exports.updateAvatar = async (req, res, next) => {
             if (!upload) {
                 return functions.setError(res, "Định dạng ảnh không hợp lệ");
             }
-            avatarUser = functions.createLinkFileRaonhanh(
-                "img_user",
-                _id,
-                File.avatarUser.name
-            );
             await User.findByIdAndUpdate(_id, {
-                avatarUser
+                avatarUser:upload
             });
         }
         return functions.success(res, "update data user success");
