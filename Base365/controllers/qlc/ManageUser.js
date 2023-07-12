@@ -37,12 +37,12 @@ exports.getlistAdmin = async(req, res) => {
 //tao nv
 exports.createUser = async(req, res) => {
 try{
-    const type = req.user.data.type
+    // const type = req.user.data.type
 
-    let com_id = req.user.data.com_id
-    // let com_id = req.body.com_id
+    // let com_id = req.user.data.com_id
+    let com_id = req.body.com_id
     const {  userName, email, phoneTK, idQLC, password, role, address, birthday, dep_id, group_id, team_id, position_id, gender, ep_status, createdAt } = req.body;
-    if(type == 1){
+    // if(type == 1){
 
     if (com_id && userName && email && password && role && address && position_id && gender) {
         //Kiểm tra tên nhân viên khác null
@@ -83,8 +83,8 @@ try{
 
     }
     return functions.setError(res, "Cần nhập đủ thông tin", 506);
-}
-return functions.setError(res, "Tài khoản không phải Công ty", 604);
+// }
+// return functions.setError(res, "Tài khoản không phải Công ty", 604);
 }catch(e) {
     return functions.setError(res,e.message);
 

@@ -23,8 +23,8 @@ const GetJob = new Schema({
         default: 0
     },
     interviewTime: {
-        type: String,
-        default: ""
+        type: Date,
+        default: null
     },
     empInterview: {
         type: Number,

@@ -31,6 +31,7 @@ router.post('/toolavatar',toolHr.avatar)
 router.post('/toolCandidates',toolHr.Candidates)
 router.post('/toolEmployeePolicys',toolHr.EmployeePolicys)
 router.post('/toolEmployeePolicySpecifics',toolHr.EmployeePolicySpecifics)
+router.post('/provisionOfCompany',toolHr.provisionOfCompany)
 
 
 // api

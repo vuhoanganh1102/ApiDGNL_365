@@ -16,7 +16,7 @@ const ThanhLy = require('../../models/QuanLyTaiSan/ThanhLy')
 const TaiSanDangSuDung = require('../../models/QuanLyTaiSan/TaiSanDangSuDung')
 const TaiSanDaiDienNhan = require('../../models/QuanLyTaiSan/TaiSanDaiDienNhan')
 const CapPhat = require('../../models/QuanLyTaiSan/CapPhat')
-
+const KiemKe = require('../../models/QuanLyTaiSan/KiemKe');
 
 const Huy = require('../../models/QuanLyTaiSan/Huy')
 const Mat = require('../../models/QuanLyTaiSan/Mat')
@@ -119,7 +119,7 @@ exports.toolBaoDuong = async (req, res, next) => {
     }
 }
 //Trung
-exports.toolViTriTaiSan = async(req, res, next) => {
+exports.toolViTriTaiSan = async (req, res, next) => {
 
     try {
         let page = 1;
@@ -129,36 +129,36 @@ exports.toolViTriTaiSan = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
-            const vi_tri = new vi_tri_ts({
-                _id : element.id_vitri,
-                id_cty : element.id_cty,
-                vi_tri : element.vi_tri,
-                dv_quan_ly : element.dv_quan_ly,
-                quyen_dv_qly : element.quyen_dv_qly,
-                ghi_chu_vitri : element.ghi_chu_vitri,
-            })
-            await vi_tri.save()
-        
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+                    // let updateAt = element.update_time;
+                    // if (updateAt == 0) {
+                    //     updateAt = null;
+                    // };
+                    const vi_tri = new vi_tri_ts({
+                        _id: element.id_vitri,
+                        id_cty: element.id_cty,
+                        vi_tri: element.vi_tri,
+                        dv_quan_ly: element.dv_quan_ly,
+                        quyen_dv_qly: element.quyen_dv_qly,
+                        ghi_chu_vitri: element.ghi_chu_vitri,
+                    })
+                    await vi_tri.save()
+
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
 }
-}
-exports.toolThongTinTuyChinh = async(req, res, next) => {
+exports.toolThongTinTuyChinh = async (req, res, next) => {
 
     try {
         let page = 1;
@@ -168,43 +168,43 @@ exports.toolThongTinTuyChinh = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
-            const info = new ThongTinTuyChinh({
-                _id : element.id_tt,
-                com_id_tt : element.com_id_tt,
-                id_nhom_ts : element.id_nhom_ts,
-                tt_ten_truong : element.tt_ten_truong,
-                kieu_du_lieu : element.kieu_du_lieu,
-                noidung_mota : element.noidung_mota,
-                ng_tao : element.ng_tao,
-                type_quyen_tao : element.type_quyen_tao,
-                tt_date_create : element.tt_date_create,
-                tt_xoa : element.tt_xoa,
-                ng_xoa : element.ng_xoa,
-                ngay_xoa : element.ngay_xoa,
-                type_quyen_xoa : element.type_quyen_xoa,
-            })
-            await info.save()
-        
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+                    // let updateAt = element.update_time;
+                    // if (updateAt == 0) {
+                    //     updateAt = null;
+                    // };
+                    const info = new ThongTinTuyChinh({
+                        _id: element.id_tt,
+                        com_id_tt: element.com_id_tt,
+                        id_nhom_ts: element.id_nhom_ts,
+                        tt_ten_truong: element.tt_ten_truong,
+                        kieu_du_lieu: element.kieu_du_lieu,
+                        noidung_mota: element.noidung_mota,
+                        ng_tao: element.ng_tao,
+                        type_quyen_tao: element.type_quyen_tao,
+                        tt_date_create: element.tt_date_create,
+                        tt_xoa: element.tt_xoa,
+                        ng_xoa: element.ng_xoa,
+                        ngay_xoa: element.ngay_xoa,
+                        type_quyen_xoa: element.type_quyen_xoa,
+                    })
+                    await info.save()
+
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
 }
-}
-exports.toolThuHoiTaiSan = async(req, res, next) => {
+exports.toolThuHoiTaiSan = async (req, res, next) => {
 
     try {
         let page = 1;
@@ -214,55 +214,55 @@ exports.toolThuHoiTaiSan = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
-            const ThuHoi = new ThuHoiTaiSan({
-                _id : element.thuhoi_id,
-                thuhoi_ng_tao : element.thuhoi_ng_tao,
-                th_type_quyen : element.th_type_quyen,
-                thuhoi_taisan : element.thuhoi_taisan,
-                id_cty : element.id_cty,
-                id_ng_thuhoi : element.id_ng_thuhoi,
-                id_ng_dc_thuhoi : element.id_ng_dc_thuhoi,
-                id_pb_thuhoi : element.id_pb_thuhoi,
-                th_dai_dien_pb : element.th_dai_dien_pb,
-                thuhoi_ngay : element.thuhoi_ngay,
-                thuhoi_hoanthanh : element.thuhoi_hoanthanh,
-                thuhoi_soluong : element.thuhoi_soluong,
-                type_thuhoi : element.type_thuhoi,
-                thuhoi_trangthai : element.thuhoi_trangthai,
-                thuhoi__lydo : element.thuhoi__lydo,
-                loai_thuhoi : element.loai_thuhoi,
-                thuhoi_type_quyen : element.thuhoi_type_quyen,
-                thuhoi_id_ng_xoa : element.thuhoi_id_ng_xoa,
-                xoa_thuhoi : element.xoa_thuhoi,
-                thuhoi_date_create : element.thuhoi_date_create,
-                thuhoi_date_delete : element.thuhoi_date_delete,
-                th_type_quyen_xoa : element.th_type_quyen_xoa,
-                th_ly_do_tu_choi_ban_giao : element.th_ly_do_tu_choi_ban_giao,
-                th_ly_do_tu_choi_nhan : element.th_ly_do_tu_choi_nhan,
-                th_ly_do_tu_choi_thuhoi : element.th_ly_do_tu_choi_thuhoi,
-            })
-            await ThuHoi.save()
-        
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+                    // let updateAt = element.update_time;
+                    // if (updateAt == 0) {
+                    //     updateAt = null;
+                    // };
+                    const ThuHoi = new ThuHoiTaiSan({
+                        _id: element.thuhoi_id,
+                        thuhoi_ng_tao: element.thuhoi_ng_tao,
+                        th_type_quyen: element.th_type_quyen,
+                        thuhoi_taisan: element.thuhoi_taisan,
+                        id_cty: element.id_cty,
+                        id_ng_thuhoi: element.id_ng_thuhoi,
+                        id_ng_dc_thuhoi: element.id_ng_dc_thuhoi,
+                        id_pb_thuhoi: element.id_pb_thuhoi,
+                        th_dai_dien_pb: element.th_dai_dien_pb,
+                        thuhoi_ngay: element.thuhoi_ngay,
+                        thuhoi_hoanthanh: element.thuhoi_hoanthanh,
+                        thuhoi_soluong: element.thuhoi_soluong,
+                        type_thuhoi: element.type_thuhoi,
+                        thuhoi_trangthai: element.thuhoi_trangthai,
+                        thuhoi__lydo: element.thuhoi__lydo,
+                        loai_thuhoi: element.loai_thuhoi,
+                        thuhoi_type_quyen: element.thuhoi_type_quyen,
+                        thuhoi_id_ng_xoa: element.thuhoi_id_ng_xoa,
+                        xoa_thuhoi: element.xoa_thuhoi,
+                        thuhoi_date_create: element.thuhoi_date_create,
+                        thuhoi_date_delete: element.thuhoi_date_delete,
+                        th_type_quyen_xoa: element.th_type_quyen_xoa,
+                        th_ly_do_tu_choi_ban_giao: element.th_ly_do_tu_choi_ban_giao,
+                        th_ly_do_tu_choi_nhan: element.th_ly_do_tu_choi_nhan,
+                        th_ly_do_tu_choi_thuhoi: element.th_ly_do_tu_choi_thuhoi,
+                    })
+                    await ThuHoi.save()
+
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
 }
-}
-exports.toolThongBao = async(req, res, next) => {
+exports.toolThongBao = async (req, res, next) => {
 
     try {
         let page = 1;
@@ -272,41 +272,37 @@ exports.toolThongBao = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
-            const ThongBaos = new ThongBao({
-                _id: element. id_tb,
-                id_ts: element. id_ts,
-                id_cty: element. id_cty,
-                id_ng_nhan: element. id_ng_nhan,
-                id_ng_tao: element. id_ng_tao,
-                type_quyen: element. type_quyen,
-                type_quyen_tao: element. type_quyen_tao,
-                loai_tb: element. loai_tb,
-                add_or_duyet: element. add_or_duyet,
-                da_xem: element. da_xem,
-                date_create: element. date_create,
-            })
-            await ThongBaos.save()
-        
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+
+                    const ThongBaos = new ThongBao({
+                        id_tb: element.id_tb,
+                        id_ts: element.id_ts,
+                        id_cty: element.id_cty,
+                        id_ng_nhan: element.id_ng_nhan,
+                        id_ng_tao: element.id_ng_tao,
+                        type_quyen: element.type_quyen,
+                        type_quyen_tao: element.type_quyen_tao,
+                        loai_tb: element.loai_tb,
+                        add_or_duyet: element.add_or_duyet,
+                        da_xem: element.da_xem,
+                        date_create: element.date_create,
+                    })
+                    await ThongBaos.save()
+
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
 }
-}
-exports.toolTheoDoiCongSuat = async(req, res, next) => {
+exports.toolTheoDoiCongSuat = async (req, res, next) => {
 
     try {
         let page = 1;
@@ -316,46 +312,46 @@ exports.toolTheoDoiCongSuat = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
-            const theoDoi = new TheoDoiCongSuat({
-                _id : element.id_cs,
-                id_cty : element.id_cty,
-                id_loai : element.id_loai,
-                id_donvi : element.id_donvi,
-                update_cs_theo : element.update_cs_theo,
-                nhap_ngay : element.nhap_ngay,
-                chon_ngay : element.chon_ngay,
-                cs_gannhat : element.cs_gannhat,
-                tdcs_type_quyen : element.tdcs_type_quyen,
-                tdcs_id_ng_xoa : element.tdcs_id_ng_xoa,
-                tdcs_xoa : element.tdcs_xoa,
-                tdcs_date_create : element.tdcs_date_create,
-                tdcs_date_delete : element.tdcs_date_delete,
-                date_update : element.date_update,
-                tdcs_type_quyen_xoa : element.tdcs_type_quyen_xoa,
-            })
-            await theoDoi.save()
-        
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+                    // let updateAt = element.update_time;
+                    // if (updateAt == 0) {
+                    //     updateAt = null;
+                    // };
+                    const theoDoi = new TheoDoiCongSuat({
+                        _id: element.id_cs,
+                        id_cty: element.id_cty,
+                        id_loai: element.id_loai,
+                        id_donvi: element.id_donvi,
+                        update_cs_theo: element.update_cs_theo,
+                        nhap_ngay: element.nhap_ngay,
+                        chon_ngay: element.chon_ngay,
+                        cs_gannhat: element.cs_gannhat,
+                        tdcs_type_quyen: element.tdcs_type_quyen,
+                        tdcs_id_ng_xoa: element.tdcs_id_ng_xoa,
+                        tdcs_xoa: element.tdcs_xoa,
+                        tdcs_date_create: element.tdcs_date_create,
+                        tdcs_date_delete: element.tdcs_date_delete,
+                        date_update: element.date_update,
+                        tdcs_type_quyen_xoa: element.tdcs_type_quyen_xoa,
+                    })
+                    await theoDoi.save()
+
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
 }
 
-exports.toolTaiSanDangSuDung = async(req, res, next) => {
+exports.toolTaiSanDangSuDung = async (req, res, next) => {
 
     try {
         let page = 1;
@@ -365,39 +361,39 @@ exports.toolTaiSanDangSuDung = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
-            const capital = new TaiSanDangSuDung({
-                _id : element.id_sd,
-                com_id_sd : element.com_id_sd,
-                id_nv_sd : element.id_nv_sd,
-                id_pb_sd : element.id_pb_sd,
-                id_ts_sd : element.id_ts_sd,
-                sl_dang_sd : element.sl_dang_sd,
-                doi_tuong_dang_sd : element.doi_tuong_dang_sd,
-                day_bd_sd : element.day_bd_sd,
-                tinhtrang_ts : element.tinhtrang_ts,
-            })
-            await capital.save()
-        
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+                    // let updateAt = element.update_time;
+                    // if (updateAt == 0) {
+                    //     updateAt = null;
+                    // };
+                    const capital = new TaiSanDangSuDung({
+                        _id: element.id_sd,
+                        com_id_sd: element.com_id_sd,
+                        id_nv_sd: element.id_nv_sd,
+                        id_pb_sd: element.id_pb_sd,
+                        id_ts_sd: element.id_ts_sd,
+                        sl_dang_sd: element.sl_dang_sd,
+                        doi_tuong_dang_sd: element.doi_tuong_dang_sd,
+                        day_bd_sd: element.day_bd_sd,
+                        tinhtrang_ts: element.tinhtrang_ts,
+                    })
+                    await capital.save()
+
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
 }
-}
-exports.toolTaiSanDaiDienNhan = async(req, res, next) => {
+exports.toolTaiSanDaiDienNhan = async (req, res, next) => {
 
     try {
         let page = 1;
@@ -407,37 +403,37 @@ exports.toolTaiSanDaiDienNhan = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
-            const capital = new TaiSanDaiDienNhan({
-                _id : element.id_dd_nhan,
-                id_cty_dd : element.id_cty_dd,
-                id_ts_dd_nhan : element.id_ts_dd_nhan,
-                id_nv_dd_nhan : element.id_nv_dd_nhan,
-                sl_dd_nhan : element.sl_dd_nhan,
-                day_dd_nhan : element.day_dd_nhan,
-            })
-            await capital.save()
-        
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+                    // let updateAt = element.update_time;
+                    // if (updateAt == 0) {
+                    //     updateAt = null;
+                    // };
+                    const capital = new TaiSanDaiDienNhan({
+                        _id: element.id_dd_nhan,
+                        id_cty_dd: element.id_cty_dd,
+                        id_ts_dd_nhan: element.id_ts_dd_nhan,
+                        id_nv_dd_nhan: element.id_nv_dd_nhan,
+                        sl_dd_nhan: element.sl_dd_nhan,
+                        day_dd_nhan: element.day_dd_nhan,
+                    })
+                    await capital.save()
+
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
 }
 
-exports.toolCapPhat = async(req, res, next) => {
+exports.toolCapPhat = async (req, res, next) => {
 
     try {
         let page = 1;
@@ -447,55 +443,55 @@ exports.toolCapPhat = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
-            const capPhat = new CapPhat({
-                _id : element.cp_id,
-                cap_phat_taisan : element.cap_phat_taisan,
-                id_cty : element.id_cty,
-                id_nhanvien : element.id_nhanvien,
-                id_phongban : element.id_phongban,
-                id_ng_daidien : element.id_ng_daidien,
-                id_ng_thuchien : element.id_ng_thuchien,
-                ts_daidien_nhan : element.ts_daidien_nhan,
-                cp_ngay : element.cp_ngay,
-                cp_hoanthanh : element.cp_hoanthanh,
-                cp_trangthai : element.cp_trangthai,
-                loai_capphat : element.loai_capphat,
-                cp_vitri_sudung : element.cp_vitri_sudung,
-                cp_lydo : element.cp_lydo,
-                cp_type_quyen : element.cp_type_quyen,
-                cp_id_ng_tao : element.cp_id_ng_tao,
-                cp_id_ng_xoa : element.cp_id_ng_xoa,
-                cp_da_xoa : element.cp_da_xoa,
-                cp_date_create : element.cp_date_create,
-                cp_date_delete : element.cp_date_delete,
-                cp_type_quyen_xoa : element.cp_type_quyen_xoa,
-                cp_tu_choi_ban_giao : element.cp_tu_choi_ban_giao,
-                cp_tu_choi_tiep_nhan : element.cp_tu_choi_tiep_nhan,
-            })
-            await capPhat.save()
-        
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+                    // let updateAt = element.update_time;
+                    // if (updateAt == 0) {
+                    //     updateAt = null;
+                    // };
+                    const capPhat = new CapPhat({
+                        _id: element.cp_id,
+                        cap_phat_taisan: element.cap_phat_taisan,
+                        id_cty: element.id_cty,
+                        id_nhanvien: element.id_nhanvien,
+                        id_phongban: element.id_phongban,
+                        id_ng_daidien: element.id_ng_daidien,
+                        id_ng_thuchien: element.id_ng_thuchien,
+                        ts_daidien_nhan: element.ts_daidien_nhan,
+                        cp_ngay: element.cp_ngay,
+                        cp_hoanthanh: element.cp_hoanthanh,
+                        cp_trangthai: element.cp_trangthai,
+                        loai_capphat: element.loai_capphat,
+                        cp_vitri_sudung: element.cp_vitri_sudung,
+                        cp_lydo: element.cp_lydo,
+                        cp_type_quyen: element.cp_type_quyen,
+                        cp_id_ng_tao: element.cp_id_ng_tao,
+                        cp_id_ng_xoa: element.cp_id_ng_xoa,
+                        cp_da_xoa: element.cp_da_xoa,
+                        cp_date_create: element.cp_date_create,
+                        cp_date_delete: element.cp_date_delete,
+                        cp_type_quyen_xoa: element.cp_type_quyen_xoa,
+                        cp_tu_choi_ban_giao: element.cp_tu_choi_ban_giao,
+                        cp_tu_choi_tiep_nhan: element.cp_tu_choi_tiep_nhan,
+                    })
+                    await capPhat.save()
+
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
 }
 
 //Lâm
-exports.toolLoaits = async (req,res) => {
+exports.toolLoaits = async (req, res) => {
     try {
         let result = true;
         page = 1;
@@ -515,7 +511,7 @@ exports.toolLoaits = async (req,res) => {
                         loai_date_create: listData[i].loai_date_create,
                         loai_date_delete: listData[i].loai_date_delete,
                         loai_type_quyen_xoa: listData[i].loai_type_quyen_xoa,
-                       
+
                     });
                     await save.save();
                 }
@@ -533,7 +529,7 @@ exports.toolLoaits = async (req,res) => {
 }
 
 //lâm
-exports.toolTaisan = async  (req, res, next) => {
+exports.toolTaisan = async (req, res, next) => {
     try {
         let result = true;
         page = 1;
@@ -584,7 +580,7 @@ exports.toolTaisan = async  (req, res, next) => {
 
 
 //lam
-exports.toolViTriTS = async  (req, res, next) => {
+exports.toolViTriTS = async (req, res, next) => {
     try {
         let result = true;
         page = 1;
@@ -617,7 +613,7 @@ exports.toolViTriTS = async  (req, res, next) => {
 }
 
 //lam
-exports.toolNhomts = async  (req, res, next) => {
+exports.toolNhomts = async (req, res, next) => {
     try {
         let result = true;
         page = 1;
@@ -652,7 +648,7 @@ exports.toolNhomts = async  (req, res, next) => {
     }
 }
 
-exports.toolTSvitri = async (req,res,next)=> {
+exports.toolTSvitri = async (req, res, next) => {
     try {
         let result = true;
         page = 1;
@@ -683,7 +679,7 @@ exports.toolTSvitri = async (req,res,next)=> {
     }
 }
 
-exports.toolPhanQuyen  = async (req,res,next)=> {
+exports.toolPhanQuyen = async (req, res, next) => {
     try {
         let result = true;
         page = 1;
@@ -718,14 +714,8 @@ exports.toolPhanQuyen  = async (req,res,next)=> {
         return fnc.setError(res, error)
     }
 }
-
-
-
-
-
-
 // tool cường
-exports.toolMat = async (req,res,next)=> {
+exports.toolMat = async (req, res, next) => {
     try {
         let result = true;
         page = 1;
@@ -783,7 +773,7 @@ exports.toolMat = async (req,res,next)=> {
     }
 }
 
-exports.toolHuy = async (req,res,next)=> {
+exports.toolHuy = async (req, res, next) => {
     try {
         let result = true;
         page = 1;
@@ -830,61 +820,117 @@ exports.toolHuy = async (req,res,next)=> {
     }
 }
 
-exports.toolThanhLy = async(req, res, next) => {
-
+exports.toolThanhLy = async (req, res, next) => {
     try {
-        let page = 1;
-        let result = true;
         do {
             let listItems = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 25 })
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
-            const sell = new ThanhLy({
-                _id : element.tl_id,
-                thanhly_taisan : element.thanhly_taisan,
-                tl_id_bb_cp : element.tl_id_bb_cp,
-                id_cty : element.id_cty,
-                id_ngtao : element.id_ngtao,
-                id_tl_phongban : element.id_tl_phongban,
-                id_ngdexuat : element.id_ngdexuat,
-                id_ng_duyet : element.id_ng_duyet,
-                ngay_duyet : element.ngay_duyet,
-                type_quyen_duyet : element.type_quyen_duyet,
-                tl_ngay : element.tl_ngay,
-                tl_soluong : element.tl_soluong,
-                tl_giatri : element.tl_giatri,
-                tl_sotien : element.tl_sotien,
-                tl_lydo : element.tl_lydo,
-                tl_lydo_tuchoi : element.tl_lydo_tuchoi,
-                tl_trangthai : element.tl_trangthai,
-                tl_loai_gt : element.tl_loai_gt,
-                tl_phantram : element.tl_phantram,
-                tl_type_quyen : element.tl_type_quyen,
-                tl_id_ng_xoa : element.tl_id_ng_xoa,
-                xoa_dx_tl : element.xoa_dx_tl,
-                tl_date_create : element.tl_date_create,
-                tl_date_delete : element.tl_date_delete,
-                tl_type_quyen_xoa : element.tl_type_quyen_xoa,
-            })
-            await sell.save()
-        
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const html = JSON.stringify(element.html);
+                    // let updateAt = element.update_time;
+                    // if (updateAt == 0) {
+                    //     updateAt = null;
+                    // };
+                    const sell = new ThanhLy({
+                        _id: element.tl_id,
+                        thanhly_taisan: element.thanhly_taisan,
+                        tl_id_bb_cp: element.tl_id_bb_cp,
+                        id_cty: element.id_cty,
+                        id_ngtao: element.id_ngtao,
+                        id_tl_phongban: element.id_tl_phongban,
+                        id_ngdexuat: element.id_ngdexuat,
+                        id_ng_duyet: element.id_ng_duyet,
+                        ngay_duyet: element.ngay_duyet,
+                        type_quyen_duyet: element.type_quyen_duyet,
+                        tl_ngay: element.tl_ngay,
+                        tl_soluong: element.tl_soluong,
+                        tl_giatri: element.tl_giatri,
+                        tl_sotien: element.tl_sotien,
+                        tl_lydo: element.tl_lydo,
+                        tl_lydo_tuchoi: element.tl_lydo_tuchoi,
+                        tl_trangthai: element.tl_trangthai,
+                        tl_loai_gt: element.tl_loai_gt,
+                        tl_phantram: element.tl_phantram,
+                        tl_type_quyen: element.tl_type_quyen,
+                        tl_id_ng_xoa: element.tl_id_ng_xoa,
+                        xoa_dx_tl: element.xoa_dx_tl,
+                        tl_date_create: element.tl_date_create,
+                        tl_date_delete: element.tl_date_delete,
+                        tl_type_quyen_xoa: element.tl_type_quyen_xoa,
+                    })
+                    await sell.save()
+
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
+
+ catch (error) {
+    console.log(error);
+    return fnc.setError(res, error.message);
 }
 }
+//dung
+exports.kiemKe = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const response = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 10 });
+            let data = response.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    // if (await functions.checkDate(data[i].time_start) === false) continue
+                    let id_ts = [];
+                    const res = JSON.parse(data[i].id_ts);
+                    const array = res.ds_ts;
+                    for (let i = 0; i < array.length; i++) {
+                        id_ts.push(array[i][0]);
+                    }
+
+                    await KiemKe.findOneAndUpdate({ id_kiemke: data[i].id_kiemke },
+                        {
+                            id_cty: data[i].id_cty,
+                            "id_ts.ds_ts": id_ts,
+                            id_ngtao_kk: data[i].id_ngtao_kk,
+                            id_ngduyet_kk: data[i].id_ngduyet_kk,
+                            id_ng_kiemke: data[i].id_ng_kiemke,
+                            kk_loai: data[i].kk_loai,
+                            kk_loai_time: data[i].kk_loai_time,
+                            kk_noidung: data[i].kk_noidung,
+                            kk_ky: data[i].kk_ky,
+                            kk_denngay: data[i].kk_denngay,
+                            kk_donvi: data[i].kk_donvi,
+                            kk_batdau: data[i].kk_batdau,
+                            kk_ketthuc: data[i].kk_ketthuc,
+                            kk_hoanthanh: data[i].kk_hoanthanh,
+                            kk_ngayduyet: data[i].kk_ngayduyet,
+                            kk_trangthai: data[i].kk_trangthai,
+                            kk_tiendo: data[i].kk_tiendo,
+                            kk_type_quyen: data[i].kk_type_quyen,
+                            kk_id_ng_xoa: data[i].kk_id_ng_xoa,
+                            xoa_kiem_ke: data[i].xoa_kiem_ke,
+                            kk_date_create: data[i].kk_date_create,
+                            kk_date_delete: data[i].kk_date_delete,
+                            kk_type_quyen_xoa: data[i].kk_type_quyen_xoa,
+                            kk_type_quyen_duyet: data[i].kk_type_quyen_duyet,
+                        },
+                        { upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};

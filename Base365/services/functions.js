@@ -1007,5 +1007,46 @@ exports.checkFile = async(filePath) => {
 
     return true;
 };
+//lay ra max id dua vao model va truong muon lay
+exports.getMaxIdByField = async(model, field)=>{
+    let maxId = await model.findOne({}, {[field]: 1}).sort({ [field]: -1 }).limit(1).lean();
+    if (maxId) {
+        maxId = Number(maxId[`${field}`]) + 1;
+    } else maxId = 1;
+    return maxId;
+}
+//chuyen thoi gian ve dang int
+exports.convertTimestamp = (date) => {
+    let time = new Date(date);
+    return Math.round(time.getTime()/1000);
+}
+//chuyen thoi gian ve dang date
+exports.convertDate = (timestamp) => {
+    return new Date(timestamp*1000);
+}
 
-
+exports.dataFromToken = async(req, res, next) => {
+    const user = req.user;
+    if(!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
+        return res.status(404).json({ message: "Token missing info!" });
+    }
+    //
+    var infoLogin = {type: user.data.type, role: user.data.role, id: user.data.idQLC, name: user.data.userName};
+    if(user.data.type!=1){
+        if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
+            infoLogin.comId = user.data.inForPerson.employee.com_id;
+        }else {
+            return res.status(405).json({ message: "Missing info inForPerson!" });
+        }
+    }else {
+        infoLogin.comId = user.data.idQLC;
+    }
+    //
+    req.userId = infoLogin.id;
+    req.comId = infoLogin.comId;
+    req.userName = infoLogin.name;
+    req.type = infoLogin.type;
+    req.role = infoLogin.role;
+    req.infoLogin = infoLogin;
+    next();
+}
