@@ -15,15 +15,15 @@ exports.register = async(req, res) => {
         if ((userName && password && com_id && address && phoneTK) !== undefined) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
-                let user = await Users.findOne({ phoneTK: phoneTK, type: 2 }).lean()
+                let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1} }).lean()
                 let MaxId = await functions.getMaxUserID("user")
-                if (user == null) {
+                if (!user) {
                     const user = new Users({
                         _id: MaxId._id,
                         emailContact: emailContact,
                         phoneTK: phoneTK,
                         userName: userName,
-                        phone: phone || phoneTK,
+                        phone: phone,
                         avatarUser: avatarUser,
                         type: 2,
                         password: md5(password),
@@ -49,8 +49,6 @@ exports.register = async(req, res) => {
                         "inForPerson.employee.startWorkingTime": startWorkingTime,
                         "inForPerson.account.education": education,
                     })
-
-
                     await user.save()
                     const token = await functions.createToken(user, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
@@ -61,18 +59,15 @@ exports.register = async(req, res) => {
                     functions.success(res, "tạo tài khoản thành công", { user, data })
                 } else {
                     return functions.setError(res, 'SDT đã tồn tại', 404);
-
                 }
             } else {
                 return functions.setError(res, ' định dạng sdt không đúng', 404);
             }
-
         } else {
             return functions.setError(res, 'Một trong các trường yêu cầu bị thiếu', 404)
         }
     } catch (e) {
         return functions.setError(res, e.message)
-
     }
 
 }
