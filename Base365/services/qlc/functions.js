@@ -68,8 +68,8 @@ exports.uploadAvaComQLC = async( file, allowedExtensions) => {
 }
 exports.uploadAvaEmpQLC = async(id, file, allowedExtensions) => {
     let namefile = "app_" + file.name;
-    let path1 = `../storage/base365/qlc//upload/employee/ep${id}/` ;
-    let filePath = `../storage/base365/qlc//upload/employee/ep${id}/` + namefile;
+    let path1 = `../storage/base365/qlc/upload/employee/ep${id}/` ;
+    let filePath = `../storage/base365/qlc/upload/employee/ep${id}/` + namefile;
     let fileCheck = path.extname(filePath);
     if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
         return false

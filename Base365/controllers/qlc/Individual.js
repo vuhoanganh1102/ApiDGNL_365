@@ -9,19 +9,18 @@ exports.register = async(req, res) => {
     try {
         const { userName, password, phoneTK, address, phone, fromWeb } = req.body
         const createdAt = new Date()
-
         if (userName && password && phoneTK && address) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
-                let user = await Users.findOne({ phoneTK: phoneTK, type: 0 }).lean()
+                let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1}}).lean()
                 let MaxId = await functions.getMaxUserID("user")
 
-                if (user == null) {
+                if (!user) {
                     const Inuser = new Users({
                         _id: MaxId._id,
                         userName: userName,
                         phoneTK: phoneTK,
-                        phone: phone || phoneTK,
+                        phone: phone,
                         password: md5(password),
                         address: address,
                         createdAt: Date.parse(createdAt),
@@ -39,7 +38,6 @@ exports.register = async(req, res) => {
                         "inForPerson.account.experience": 0,
                         "inForPerson.account.education": 0,
                     })
-
                     await Inuser.save()
                     const token = await functions.createToken(Inuser, "1d")
                     const refreshToken = await functions.createToken({ userId: Inuser._id }, "1y")
@@ -56,13 +54,10 @@ exports.register = async(req, res) => {
             }
         } else {
             return functions.setError(res, "thiếu thông tin để đăng kí ")
-
         }
     } catch (e) {
         return functions.setError(res, e.message)
-
     }
-
 }
 exports.verify = async(req, res) => {
     try {
