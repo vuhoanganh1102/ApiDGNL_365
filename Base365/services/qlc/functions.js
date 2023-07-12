@@ -38,10 +38,20 @@ dotenv.config();
 
 
 //QLC
-exports.uploadFileQLC = async(folder, id, file, allowedExtensions) => {
+exports.uploadAvaComQLC = async( file, allowedExtensions) => {
+    // const namefiles = req.files.name
+    let date = new Date();
+    let namefile = 'app' + Math.round(date.getTime()/1000) + "_" + file.name;
 
-    let path1 = `./storage/base365/QLC/pictures/${folder}/${id}/`;
-    let filePath = `./storage/base365/QLC/pictures/${folder}/${id}/` + file.name;
+    const targetDir = 'upload/company/logo/';
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+  
+    // const targetFilePath = targetDir + year + '/' + month + '/' + day + '/' + namefile;
+
+    let path1 = `../storage/base365/qlc/upload/company/logo/${year}/${month}/${day}/`;
+    let filePath = `../storage/base365/qlc/upload/company/logo/${year}/${month}/${day}/` + namefile;
     let fileCheck = path.extname(filePath);
     if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
         return false
@@ -61,19 +71,86 @@ exports.uploadFileQLC = async(folder, id, file, allowedExtensions) => {
             }
         });
     });
-    return true
+    return namefile
+}
+exports.uploadAvaEmpQLC = async(id, file, allowedExtensions) => {
+    let namefile = "app_" + file.name;
+    let path1 = `../storage/base365/qlc//upload/employee/ep${id}/` ;
+    let filePath = `../storage/base365/qlc//upload/employee/ep${id}/` + namefile;
+    let fileCheck = path.extname(filePath);
+    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
+        return false
+    }
+
+    if (!fs.existsSync(path1)) {
+        fs.mkdirSync(path1, { recursive: true });
+    }
+    fs.readFile(file.path, (err, data) => {
+        if (err) {
+            console.log(err)
+        }
+
+        fs.writeFile(filePath, data, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+    return namefile
 }
 
+// const namefile = "app_" + namefile;
+
+// const targetDir = '../upload/employee/ep' + id + '/';
+
+
 // hàm tạo link file QLC
-exports.createLinkFileQLC = (folder, id, name) => {
-    let link = process.env.PORT_QLC + '/storage/base365/QLC/pictures/' + folder + '/' + id + '/' + name;
+exports.createAvatarQLC = (namefiles) => {
+    let link = namefiles;
+    return link;
+}
+exports.createLinkFileQLC = (folder1,folder2, timestamp, name) => {
+    let link = process.env.PORT_QLC + '../storage/base365/QLC/upload/' + folder1 + '/'+ folder2 + '/' + timestamp + '/' + name;
     return link;
 }
 
-exports.deleteFileQLC = (id, file) => {
-        let filePath = `./storage/base365/QLC/pictures/${id}/` + file;
+exports.deleteFileQLC = (folder,timestamp, file) => {
+        let filePath = `../storage/base365/QLC/upload/${folder}/${timestamp}/` + file;
         fs.unlink(filePath, (err) => {
             if (err) console.log(err);
         });
     }
+exports.uploadAvatar = async(allowedExtensions) =>{
+    const namefiles = req.files.logo.name;
+    // const tmp = namefiles.split('.');
+    // const file_extension = tmp[tmp.length - 1];
+    const namefile = 'app' + Date.now() + "_" + namefiles;
+    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
+        return false
+    }
+    const targetDir = '../upload/company/logo/';
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1;
+    const day = new Date().getDate();
+  
+    if (!fs.existsSync(targetDir + year)) {
+      fs.mkdirSync(targetDir + year, { recursive: true });
+    }
+    if (!fs.existsSync(targetDir + year + '/' + month)) {
+      fs.mkdirSync(targetDir + year + '/' + month, { recursive: true });
+    }
+    if (!fs.existsSync(targetDir + year + '/' + month + '/' + day)) {
+      fs.mkdirSync(targetDir + year + '/' + month + '/' + day, { recursive: true });
+    }
+  
+    const targetFilePath = targetDir + year + '/' + month + '/' + day + '/' + namefile;
+  
+    const logo_path = year + '/' + month + '/' + day + '/' + namefile;
+    return {
+        result: true,
+        message: "Cập nhật logo công ty thành công",
+        id: logo_path,
+      };
+}
+
 

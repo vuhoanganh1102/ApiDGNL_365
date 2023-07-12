@@ -50,9 +50,11 @@ const HisOfTracking = new mongoose.Schema({
         //id ca làm việc
         type: Number
     },
-    ts_com_id: {
+    com_id: {
         //id công ty
-        type: Number
+        type: Number,
+        default : 0
+
     },
     note: {
         //note
@@ -65,20 +67,23 @@ const HisOfTracking = new mongoose.Schema({
   
     status: {
         //trạng thái của công: 1 là công chấm mặt, 2 là công chấm QR, 3 là bù công',
-        type: Number
+        type: Number,
+        default : 1
     },
     ts_error: { //trạng thái thất bại
         type: String,
     },
     is_success: { //trạng thái Thành công
         type: String,
+        default : 1
+
     },
 
 
 }, {
-    collection: 'CC365_HistoryOfTracking',
+    collection: 'QLC_Time_sheets',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("CC365_HistoryOfTracking", HisOfTracking)
+module.exports = mongoose.model("QLC_Time_sheets", HisOfTracking)
