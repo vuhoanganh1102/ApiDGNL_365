@@ -25,9 +25,7 @@ exports.register = async(req, res) => {
                     phone: phone,
                     address: address,
                     type: 1,
-                    authentic: 0,
                     password: md5(password),
-                    otp: null,
                     fromWeb: "quanlichung",
                     role: 1,
                     createdAt: Date.parse(createdAt),
@@ -48,7 +46,7 @@ exports.register = async(req, res) => {
                     phoneTK: user.phoneTK,
                     createdAt: user.createdAt,
                     type: user.type,
-                    com_id : user.idQLC
+                    com_id: user.idQLC
                 }, "1d")
                 const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                 let data = {
@@ -429,24 +427,24 @@ exports.updateInfoCompany = async(req, res, next) => {
             if (findUser) {
                 if (File && File.avatarUser) {
                     //  const namefiles = req.files.avatarUser.originalFilename;
-                    let upload = await fnc.uploadAvaComQLC( File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                    let upload = await fnc.uploadAvaComQLC(File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }
                     avatarUser = upload
-                } 
+                }
                 data = await Users.updateOne({ idQLC: idQLC, type: 1 }, {
-                        $set: {
-                            userName: userName,
-                            emailContact: emailContact,
-                            phone: phone,
-                            avatarUser: avatarUser,
-                            address: address,
-                            fromWeb: "quanlichung",
-                            updatedAt: Date.parse(updatedAt),
-                        }
-                    })
-                    await functions.success(res, 'update company info success', { data })
+                    $set: {
+                        userName: userName,
+                        emailContact: emailContact,
+                        phone: phone,
+                        avatarUser: avatarUser,
+                        address: address,
+                        fromWeb: "quanlichung",
+                        updatedAt: Date.parse(updatedAt),
+                    }
+                })
+                await functions.success(res, 'update company info success', { data })
             } else {
                 return functions.setError(res, "không tìm thấy user")
             }
@@ -461,17 +459,17 @@ exports.updateInfoCompany = async(req, res, next) => {
 exports.info = async(req, res) => {
     try {
         const idQLC = req.user.data.idQLC
-            const data = await Users.findOne({ idQLC: idQLC, type: 1 }).select('userName email phoneTK address avatarUser authentic inForCompany.cds.com_vip createdAt').lean();
-            const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
-            const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
-            if(departmentsNum) data.departmentsNum = departmentsNum
-            if(userNum) data.userNum = userNum
-            if(userNum) data.userNum = userNum
+        const data = await Users.findOne({ idQLC: idQLC, type: 1 }).select('userName email phoneTK address avatarUser authentic inForCompany.cds.com_vip createdAt').lean();
+        const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
+        const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
+        if (departmentsNum) data.departmentsNum = departmentsNum
+        if (userNum) data.userNum = userNum
+        if (userNum) data.userNum = userNum
 
-            if (data) {
-                return functions.success(res, 'Lấy thành công', { data });
-            };
-            return functions.setError(res, 'Không có dữ liệu', 404);
+        if (data) {
+            return functions.success(res, 'Lấy thành công', { data });
+        };
+        return functions.setError(res, 'Không có dữ liệu', 404);
 
     } catch (e) {
         return functions.setError(res, e.message)
