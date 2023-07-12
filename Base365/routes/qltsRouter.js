@@ -5,6 +5,9 @@ const taisanRouter = require('./qlts/taiSanRouter')
 const nhomTsRouter = require('./qlts/nhomTaiSanRouter')
 var capPhat = require('./qlts/CapPhat.js')
 var ThuHoi = require('./qlts/ThuHoi.js')
+var mat = require('./qlts/matRouter')
+var huy = require('./qlts/huyRouter')
+
 
 //Api tool quét data
 router.use('/tool',toolData)
@@ -17,6 +20,7 @@ router.use('/ThuHoi', ThuHoi);
 //Api nhóm tài sản
 router.use('/nhomts',nhomTsRouter)
 
-
-
+//API mất huỷ thanh lý
+router.use('/mat',mat)
+router.use('/huy',huy)
 module.exports = router

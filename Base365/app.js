@@ -97,7 +97,7 @@ errorApp(appHR)
 // Cấu hình appQLTS
 configureApp(appQLTS);
 var qltsRouter = require('./routes/qltsRouter');
-appQLTS.use("/api", qltsRouter);
+appQLTS.use("/api/qlts", qltsRouter);
 errorApp(appHR)
 
 // timviec365 -> api-base365

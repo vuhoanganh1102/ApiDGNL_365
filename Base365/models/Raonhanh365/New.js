@@ -294,6 +294,9 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    han_su_dung:{
+        type:Date
+    },
     productGroup: {
         // nhóm sản phẩm
         type: Number,
@@ -933,7 +936,6 @@ const newSchema = new mongoose.Schema({
             default: null
         }
     }
-
 }, {
     collection: 'RN365_News',
     versionKey: false,
