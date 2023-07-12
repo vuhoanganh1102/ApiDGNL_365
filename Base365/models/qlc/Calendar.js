@@ -8,11 +8,11 @@ const CalendarSchema = new Schema({
         // require: true
     },
     // ID của công ty tạo lịch làm việc
-    companyID: {
+    com_id: {
         type: Number,
     },
     // ID ca lam viec
-    shiftID: {
+    shift_id: {
         type: Number,
         
     },
@@ -27,7 +27,7 @@ const CalendarSchema = new Schema({
     },
     //Id lịch làm việc
     //1: Thứ 2 - thứ 6, 2: Thứ 2 - thứ 7, 3: Thứ 2 - thứ CN
-    idCalendarWork: {
+    typeCalender: {
         type: Number
     },
     //Lịch làm việc

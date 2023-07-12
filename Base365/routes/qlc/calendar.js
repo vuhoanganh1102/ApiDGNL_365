@@ -4,31 +4,23 @@ const functions = require("../../services/functions")
 const CalendarController = require("../../controllers/qlc/calendar")
 var formData = require('express-form-data')
 
-//Lấy danh sách toàn bộ lịch làm việc
-router.get("/", formData.parse(), CalendarController.getAllCalendar);
-
 //:ấy danh sách lịch làm việc của một công ty
-router.get("/company/all", formData.parse(), CalendarController.getAllCalendarCompany)
-
-//Lấy thông tin của 1 lịch làm việc
-router.get("/:id", formData.parse(), CalendarController.getCalendarById)
+router.post("/list", formData.parse(),functions.checkToken, CalendarController.getAllCalendarCompany)
 
 //Tạo một lịch làm việc mới
-router.post("/", formData.parse(), CalendarController.createCalendar)
+router.post("/create", formData.parse(),functions.checkToken, CalendarController.createCalendar)
 
 //Chỉnh sửa một lịch làm việc đã có sẵn
-router.post("/:id", formData.parse(), CalendarController.editCalendar)
+router.post("/edit", formData.parse(),functions.checkToken, CalendarController.editCalendar)
 
 //Copy một lịch làm việc đã có sẵn
-router.post("/copy/:id", formData.parse(), CalendarController.copyCalendar)
+router.post("/copy", formData.parse(),functions.checkToken, CalendarController.copyCalendar)
 
 //Xóa một lịch làm việc đã có sẵn
-router.delete("/:id", formData.parse(), CalendarController.deleteCalendar)
+router.delete("/del", formData.parse(),functions.checkToken, CalendarController.deleteCalendar)
 
 //Xóa toàn bộ lịch làm việc của một công ty
-router.delete("/company/all", formData.parse(), CalendarController.deleteCompanyCalendar)
+router.delete("/delAll", formData.parse(),functions.checkToken, CalendarController.deleteCompanyCalendar)
 
-//Xóa toàn bộ lịch làm việc của hệ thống
-router.delete("/", formData.parse(), CalendarController.deleteAllCalendars)
 
 module.exports = router

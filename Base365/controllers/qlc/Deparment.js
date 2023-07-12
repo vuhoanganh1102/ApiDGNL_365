@@ -68,9 +68,7 @@ exports.createDeparment = async (req, res) => {
                 });
 
                 await deparments.save()
-                return functions.success(res, "Tạo thành công", { deparments });
-
-
+                return functions.success(res, "Tạo thành công", {deparments});
             }
             return functions.setError(res, "nhập thiếu thông tin", 504);
         }
@@ -89,8 +87,7 @@ exports.editDeparment = async (req, res) => {
         const type = req.user.data.type
         const dep_id = req.body.dep_id;
         if (type == 1) {
-            const { com_id, dep_name, manager_id } = req.body;
-
+            const {dep_name, manager_id } = req.body;
             const deparment = await functions.getDatafindOne(Deparment, { dep_id: dep_id });
             if (deparment) {
                 await functions.getDatafindOneAndUpdate(Deparment, { com_id: com_id, dep_id: dep_id }, {
@@ -99,15 +96,12 @@ exports.editDeparment = async (req, res) => {
                     manager_id: manager_id || null,
                 })
                 return functions.success(res, "Sửa phòng ban thành công", { deparment })
-
             }
             functions.setError(res, "Deparment does not exist!", 510);
-
         }
         return functions.setError(res, "Tài khoản không phải Công ty", 604);
     } catch (error) {
         return functions.setError(res, error.message)
-
     }
 };
 //API xóa một phòng ban theo id

@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const TeamSchema = new Schema({
     //ID của tổ
-    _id: {
+    team_id: {
         type: Number,
         required: true
     },
@@ -19,30 +19,16 @@ const TeamSchema = new Schema({
     teamName: {
         type: String,
     },
-
     //Ngày thành lập tổ
-    teamCreated: {
+    createdAt: {
         type: Date,
         default: Date.now()
     },
-
-    //ID quản lý tổ
-    managerTeamId: {
-        type: Number
-    },
-    //ID phó tổ
-    deputyTeamId: {
-        type: Number
-    },
-
     //Sắp xếp theo thứ tự
     teamOrder: {
         type: Number
     },
-    // tổng số nhân viên 
-    total_emp : {
-        type :Number,
-    }
+
 })
 
 module.exports = mongoose.model('Teams', TeamSchema)
