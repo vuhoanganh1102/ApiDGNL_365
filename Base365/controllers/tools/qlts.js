@@ -476,12 +476,9 @@ exports.toolThongBao = async(req, res, next) => {
                 for (let i = 0; i < data.length; i++) {
             const element = data[i];
             const html = JSON.stringify(element.html);
-            // let updateAt = element.update_time;
-            // if (updateAt == 0) {
-            //     updateAt = null;
-            // };
+            
             const ThongBaos = new ThongBao({
-                _id: element. id_tb,
+                id_tb: element. id_tb,
                 id_ts: element. id_ts,
                 id_cty: element. id_cty,
                 id_ng_nhan: element. id_ng_nhan,
@@ -500,7 +497,6 @@ exports.toolThongBao = async(req, res, next) => {
     } else {
         result = false;
     }
-    console.log(page)
 } while (result);
 return fnc.success(res, 'Thành công')
 } catch (error) {
@@ -996,7 +992,6 @@ exports.kiemKe = async (req, res, next) => {
                         id_ts.push(array[i][0]);
                     }
                     
-                    console.log(id_ts);
                     await KiemKe.findOneAndUpdate({id_kiemke: data[i].id_kiemke}, 
                         {
                             id_cty: data[i].id_cty,
