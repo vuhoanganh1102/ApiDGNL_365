@@ -14,4 +14,6 @@ router.post("/listCom",formData.parse(), controller.getList)
 router.post("/updatePassword",formData.parse(), controller.updatePassword)
 
 router.post("/getListFeedback",formData.parse(), controller.getListFeedback)
+
+router.post("/getListReportErr",formData.parse(), controller.getListReportErr)
 module.exports = router

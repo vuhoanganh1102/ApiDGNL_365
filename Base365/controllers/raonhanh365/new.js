@@ -68,8 +68,10 @@ exports.postNewMain = async (req, res, next) => {
         let order = request.order;
         let the_tich = request.the_tich;
         let warranty = request.warranty;
-        for (let i = 0; i < address.length; i++) {
-            diachi.push(address[i])
+        if (address && address.length > 0) {
+            for (let i = 0; i < address.length; i++) {
+                diachi.push(address[i])
+            }
         }
         const _id = await functions.getMaxID(New) + 1
         req.info = {
@@ -244,17 +246,27 @@ exports.postNewsGeneral = async (req, res, next) => {
             }
             //cac truong cua danh muc cong viec
             let fieldsJob = {
+                jobType: req.body.jobType,
+                jobDetail: req.body.jobDetail,
+                jobKind: req.body.jobKind,
                 minAge: req.body.minAge,
+                maxAge: req.body.maxAge,
+                salary: req.body.salary,
+                gender: req.body.gender,
                 exp: req.body.exp,
                 level: req.body.level,
+                degree: req.body.degree,
                 skill: req.body.skill,
                 quantity: req.body.quantity,
+                city: req.body.city,
+                district: req.body.district,
+                ward: req.body.ward,
                 addressNumber: req.body.addressNumber,
                 payBy: req.body.payBy,
                 benefit: req.body.benefit,
-                salary: req.body.salary,
-                gender: req.body.gender,
-                degree: req.body.degree,
+                cv: req.body.cv,
+                salary_fr: req.body.salary_fr,
+                salary_to: req.body.salary_to,
             };
             let fieldsinfoSell = {
                 groupType: req.body.groupType,
@@ -295,74 +307,37 @@ exports.postNewsGeneral = async (req, res, next) => {
 exports.createNews = async (req, res, next) => {
     try {
         let fields = req.fields;
-        let cate_Special = null;
-        let danh_muc1 = null;
-        let danh_muc2 = null;
-        let danh_muc3 = null;
         let linkTitle = await raoNhanh.createLinkTilte(fields.title)
         fields.linkTitle = linkTitle
-        cate1 = await CategoryRaoNhanh365.findById(fields.cateID);
-        if (!cate1) {
-            return functions.setError(res, 'not found cate', 400)
-        }
-        danh_muc1 = cate1.name;
-
-        if (cate1.parentId !== 0) {
-            cate2 = await CategoryRaoNhanh365.findById(cate1.parentId);
-            danh_muc2 = cate2.name;
-            if (cate2.parentId !== 0) {
-                cate3 = await CategoryRaoNhanh365.findById(cate2.parentId);
-                danh_muc3 = cate3.name;
-            }
-        }
-        if (danh_muc3) {
-            cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc3);
-        } else {
-            if (danh_muc2) {
-                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc2);
-            } else {
-                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc1);
-            }
-        }
+        let nameCate = await raoNhanh.getNameCate(fields.cateID, 1)
+        let folder = await raoNhanh.checkFolderCateRaoNhanh(nameCate)
         let image = [];
-        if (cate_Special && fields.img && fields.img.length > 1) {
-            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-
+        if (fields.img && fields.img.length) {
             for (let i = 0; i < fields.img.length; i++) {
-                await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img[i], ['.png', '.jpg'])
-                let img = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.img[i].name)
-                image.push({
-                    nameImg: img
-                })
+                let img = await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img[i], ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf'])
+                if (img) {
+                    image.push({
+                        nameImg: img
+                    })
+                } else {
+                    return functions.setError(res, 'upload file failed', 400)
+                }
             }
             fields.img = image;
-        } else if (cate_Special && fields.img) {
-            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-            await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img, ['.png', '.jpg'])
-            let img = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.img.name)
-            image.push({
-                nameImg: img
-            })
-
-            fields.img = image;
         }
-        if (cate_Special && fields.video) {
-            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
+        if (fields.video) {
             let check = await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.video, ['.mp4', '.avi', '.wmv', '.mov'])
-            if (check === false) return functions.setError(res, 'khong duoc day video dang nay', 400)
-            let video = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.video.name)
+            if (check === false) return functions.setError(res, 'upload file failed', 400)
 
-            fields.video = video;
+            fields.video = check;
         }
-        if (cate_Special && fields.CV) {
-            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-            let check = await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.CV, ['.pdf', '.jpg', '.docx', '.png'])
-            if (check === false) return functions.setError(res, 'khong duoc day video dang nay', 400)
-            let CV = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.CV.name)
-            fields['Job.cv'] = CV
+        if (fields.CV && fields.cateID === 119) {
+            let check = await raoNhanh.uploadFileRaoNhanh('timviec', fields.userID, fields.CV, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png'])
+            if (check === false) return functions.setError(res, 'upload file failed', 400)
+            fields['Job.cv'] = check
         }
 
-        fields.createTime = new Date(Date.now());
+        fields.createTime = new Date();
 
         const news = new New(fields);
         await news.save();
@@ -377,71 +352,37 @@ exports.createNews = async (req, res, next) => {
 exports.updateNews = async (req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
-
         if (!idNews) return functions.setError(res, "Missing input news_id!", 405);
-        let existsNews = await New.find({ _id: idNews });
+        let existsNews = await New.findById(idNews);
         let fields = req.fields;
-        console.log("🚀 ~ file: new.js:398 ~ exports.updateNews= ~ fields:", fields)
-        let userID = req.user.data.idRaoNhanh365;
-        console.log("🚀 ~ file: new.js:399 ~ exports.updateNews= ~ userID:", userID)
         let linkTitle = await raoNhanh.createLinkTilte(fields.title)
         fields.linkTitle = linkTitle
-        fields.updateTime = new Date(Date.now());
-        let cate_Special = null;
-        let danh_muc1 = null;
-        let danh_muc2 = null;
-        let danh_muc3 = null;
-        cate1 = await CategoryRaoNhanh365.findById(fields.cateID);
-        danh_muc1 = cate1.name;
-
-        if (cate1.parentId !== 0) {
-            cate2 = await CategoryRaoNhanh365.findById(cate1.parentId);
-            danh_muc2 = cate2.name;
-            if (cate2.parentId !== 0) {
-                cate3 = await CategoryRaoNhanh365.findById(cate2.parentId);
-                danh_muc3 = cate3.name;
-            }
-        }
-        if (danh_muc3) {
-            cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc3);
-        } else {
-            if (danh_muc2) {
-                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc2);
-            } else {
-                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc1);
-            }
-        }
+        let nameCate = await raoNhanh.getNameCate(fields.cateID, 1)
+        let folder = await raoNhanh.checkFolderCateRaoNhanh(nameCate)
         let image = [];
-        if (cate_Special && fields.img && fields.img.length > 1) {
-
-            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
+        if (fields.img && fields.img.length) {
             for (let i = 0; i < fields.img.length; i++) {
-                await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img[i], ['.png', '.jpg'])
-                let img = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.img[i].name)
-                image.push({
-                    nameImg: img
-                })
+                let img = await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img[i], ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf'])
+                if (img) {
+                    image.push({
+                        nameImg: img
+                    })
+                } else {
+                    return functions.setError(res, 'upload file failed', 400)
+                }
             }
             fields.img = image;
-        } else if (cate_Special && fields.img) {
-            console.log(fields.img)
-            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
-            await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.img, ['.png', '.jpg'])
-            let img = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.img.name)
-            image.push({
-                nameImg: img
-            })
-
-            fields.img = image;
         }
-        if (cate_Special && fields.video) {
-
-            let folder = await raoNhanh.checkFolderCateRaoNhanh(cate_Special)
+        if (fields.video) {
             let check = await raoNhanh.uploadFileRaoNhanh(folder, fields.userID, fields.video, ['.mp4', '.avi', '.wmv', '.mov'])
-            if (check === false) return functions.setError(res, 'khong duoc day video dang nay', 400)
-            let video = await raoNhanh.createLinkFileRaonhanh(folder, fields.userID, fields.video.name)
+            if (check === false) return functions.setError(res, 'upload file failed', 400)
 
-            fields.video = video;
+            fields.video = check;
+        }
+        if (fields.CV && fields.cateID === 119) {
+            let check = await raoNhanh.uploadFileRaoNhanh('timviec', fields.userID, fields.CV, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png'])
+            if (check === false) return functions.setError(res, 'upload file failed', 400)
+            fields['Job.cv'] = check
         }
         if (existsNews) {
             // xoa truong _id
@@ -717,6 +658,7 @@ exports.getNew = async (req, res, next) => {
 
         for (let i = 0; i < data.length; i++) {
             data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-c${data[i]._id}.html`;
+            data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID)
             if (userIdRaoNhanh) {
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
@@ -735,7 +677,6 @@ exports.getNew = async (req, res, next) => {
 // tìm kiếm tin
 exports.searchNew = async (req, res, next) => {
     try {
-
         let link = req.body.link;
         let buySell = 1;
         let searchItem = {};
@@ -890,7 +831,6 @@ exports.searchNew = async (req, res, next) => {
             loai_chung,
 
         } = req.body;
-        console.log(page, pageSize)
         if (!page && !pageSize) {
             return functions.setError(res, "missing data", 400);
         }
@@ -900,7 +840,6 @@ exports.searchNew = async (req, res, next) => {
             (await functions.checkNumber(page)) === false ||
             (await functions.checkNumber(pageSize)) === false
         ) {
-
             return functions.setError(res, "page not found", 404);
         }
         if (link === "tat-ca-tin-dang-ban.html") {
@@ -1048,7 +987,6 @@ exports.searchNew = async (req, res, next) => {
         if (loai_sanpham) condition["beautifull.loai_sanpham"] = loai_sanpham;
         if (han_su_dung) condition["beautifull.han_su_dung"] = han_su_dung;
         if (hang_vattu) condition["beautifull.hang_vattu"] = hang_vattu;
-
         if (loai_thiet_bi) condition["wareHouse.loai_thiet_bi"] = loai_thiet_bi;
         if (hang) condition["wareHouse.hang"] = hang;
         if (cong_suat) condition["wareHouse.cong_suat"] = cong_suat;
@@ -1102,6 +1040,7 @@ exports.searchNew = async (req, res, next) => {
         ]);
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         for (let i = 0; i < data.length; i++) {
+            data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID)
             if (buySell === 1) {
                 data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-ct${data[i]._id}.html`;
             } else {
@@ -1134,7 +1073,6 @@ exports.createBuyNew = async (req, res) => {
         // lấy id user từ req
         let userID = req.user.data.idRaoNhanh365;
         let type = req.user.data.type;
-
         // khởi tạo các biến có thể có
         let new_file_dthau = null;
 
@@ -1179,13 +1117,12 @@ exports.createBuyNew = async (req, res) => {
         let _id = (await functions.getMaxID(New)) + 1;
 
         // lấy thời gian hiện tại
-        let createTime = new Date(Date.now());
+        let createTime = new Date();
 
         // khai báo đây là tin mua với giá trị là 1
         let buySell = 1;
 
         let File = req.files;
-
         // kiểm tra các điều kiện bắt buộc
         if (
             title &&
@@ -1265,32 +1202,19 @@ exports.createBuyNew = async (req, res) => {
                     if (File.Image.length > 10)
                         return functions.setError(res, "Gửi quá nhiều ảnh", 400);
                     for (let i = 0; i < File.Image.length; i++) {
-                        raoNhanh.uploadFileRaoNhanh(
+                        let img = await raoNhanh.uploadFileRaoNhanh(
                             "avt_tindangmua",
                             userID,
                             File.Image[i],
-                            [".jpg", ".png"]
+                            ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf']
                         );
+                        if (!img) {
+                            return functions.setError(res, 'upload file failed');
+                        }
                         img.push({
-                            nameImg: functions.createLinkFileRaonhanh(
-                                "avt_tindangmua",
-                                userID,
-                                File.Image[i].name
-                            ),
-                        });
+                            nameImg:img
+                        })
                     }
-                } else {
-                    raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.Image, [
-                        ".jpg",
-                        ".png",
-                    ]);
-                    img.push({
-                        nameImg: functions.createLinkFileRaonhanh(
-                            "avt_tindangmua",
-                            userID,
-                            File.Image.name
-                        ),
-                    });
                 }
             }
             if (File.new_file_dthau) {
@@ -1365,7 +1289,6 @@ exports.createBuyNew = async (req, res) => {
         return functions.setError(res, error);
     }
 };
-
 // sửa tin mua
 exports.updateBuyNew = async (req, res, next) => {
     try {
@@ -1644,7 +1567,6 @@ exports.updateBuyNew = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // chi tiết tin 
 exports.getDetailNew = async (req, res, next) => {
     try {
@@ -1791,7 +1713,7 @@ exports.getDetailNew = async (req, res, next) => {
                 },
             },
             {
-                $match: { buySell:buysell },
+                $match: { buySell: buysell },
             },
             {
                 $project: searchitem,
@@ -1933,7 +1855,6 @@ exports.getDetailNew = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // yêu thích tin
 exports.loveNew = async (req, res, next) => {
     try {
@@ -1955,7 +1876,6 @@ exports.loveNew = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // tao token
 exports.createToken = async (req, res, next) => {
     try {
@@ -1968,7 +1888,6 @@ exports.createToken = async (req, res, next) => {
         console.log(error);
     }
 };
-
 // danh sách yêu thích tin
 exports.newfavorite = async (req, res, next) => {
     try {
@@ -2040,7 +1959,6 @@ exports.newfavorite = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // quản lí tin mua
 exports.managenew = async (req, res, next) => {
     try {
@@ -2048,8 +1966,8 @@ exports.managenew = async (req, res, next) => {
         let userID = req.user.data.idRaoNhanh365;
         let page = req.body.page || 1;
         let pageSize = req.body.pageSize || 10;
-        let limit = (page - 1) * pageSize;
-        let skip = pageSize;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let data = [];
         let tin_conhan = await New.find({
             userID,
@@ -2115,7 +2033,6 @@ exports.managenew = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // tin đang dự thầu
 exports.newisbidding = async (req, res, next) => {
     try {
@@ -2243,7 +2160,6 @@ exports.newisbidding = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // danh sách danh mục con/cha
 exports.getListCate = async (req, res, next) => {
     try {
@@ -2282,7 +2198,6 @@ exports.getListCate = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // quản lí tin bán
 exports.manageNewBuySell = async (req, res, next) => {
     try {
@@ -2291,8 +2206,8 @@ exports.manageNewBuySell = async (req, res, next) => {
         let data = [];
         let page = req.body.page || 1;
         let pageSize = req.body.pageSize || 10;
-        let limit = (page - 1) * pageSize;
-        let skip = pageSize;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let tong_soluong = await New.find({ userID, buySell: 2, cateID: { $nin: [120, 121] } }).count();
         let tinDangDang = await New.find({ userID, sold: 1, buySell: 2, cateID: { $nin: [120, 121] } }).count();
         let tinDaBan = await New.find({ userID, sold: 0, buySell: 2, cateID: { $nin: [120, 121] } }).count();
@@ -2353,7 +2268,6 @@ exports.manageNewBuySell = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // danh sách tin tìm ứng viên
 exports.listCanNew = async (req, res, next) => {
     try {
@@ -2975,10 +2889,10 @@ exports.napTien = async (req, res, next) => {
         if (nhaCungCap && maThe && soSerial && menhGia) {
             let partner_id = 66878317039;
             let partner_key = '982fd3f73b5a4c2374a4c3fe08ebca85';
-            let request_id =  Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-            let sign = md5(partner_key,maThe,soSerial)
+            let request_id = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+            let sign = md5(partner_key, maThe, soSerial)
             let ngay_nap = new Date();
-            let check =  await axios({
+            let check = await axios({
                 method: "post",
                 url: "https://work247.vn/apiRaonhanh/connectChargingws.php",
                 data: {
@@ -2986,34 +2900,34 @@ exports.napTien = async (req, res, next) => {
                     code: maThe,
                     serial: soSerial,
                     amount: menhGia,
-                    request_id:request_id,
-                    partner_id:partner_id,
-                    sign:sign,
-                    command:'charging'
+                    request_id: request_id,
+                    partner_id: partner_id,
+                    sign: sign,
+                    command: 'charging'
                 },
                 headers: { 'Content-Type': 'application/json' }
             });
-            if(check.status == 1 || check.status == 99){
-                let bangGia = await NetworkOperator.findOne({active:1,nameAfter:nhaCungCap,})
-                let tienNhan = menhGia - ((menhGia * bangGia.discount)/ 100);
-                await Users.findOneAndUpdate({idRaoNhanh365},{$inc: { 'inforRN365.money': +tienNhan } })
+            if (check.status == 1 || check.status == 99) {
+                let bangGia = await NetworkOperator.findOne({ active: 1, nameAfter: nhaCungCap, })
+                let tienNhan = menhGia - ((menhGia * bangGia.discount) / 100);
+                await Users.findOneAndUpdate({ idRaoNhanh365 }, { $inc: { 'inforRN365.money': +tienNhan } })
                 await History.create({
-                    userId:idRaoNhanh365,
-                    seri:soSerial,
-                    cardId:maThe,
-                    tranId:',',
-                    price:menhGia,
-                    priceSuccess:tienNhan,
-                    content:'Nạp tiền',
-                    networkOperatorName:nhaCungCap,
-                    time:ngay_nap,
+                    userId: idRaoNhanh365,
+                    seri: soSerial,
+                    cardId: maThe,
+                    tranId: ',',
+                    price: menhGia,
+                    priceSuccess: tienNhan,
+                    content: 'Nạp tiền',
+                    networkOperatorName: nhaCungCap,
+                    time: ngay_nap,
 
 
                 })
             }
-            return functions.setError(res, 'mã thẻ sai',400)
+            return functions.setError(res, 'mã thẻ sai', 400)
         }
-        return functions.setError(res, 'missing data',400)
+        return functions.setError(res, 'missing data', 400)
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -3158,7 +3072,7 @@ exports.getDetailForUpdateNew = async (req, res, next) => {
                 },
             },
             {
-                $match: { buySell:buysell },
+                $match: { buySell: buysell },
             },
             {
                 $project: searchitem,

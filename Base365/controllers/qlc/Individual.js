@@ -12,7 +12,7 @@ exports.register = async(req, res) => {
         if (userName && password && phoneTK && address) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
-                let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1}}).lean()
+                let user = await Users.findOne({ phoneTK: phoneTK, type: { $ne: 1 } }).lean()
                 let MaxId = await functions.getMaxUserID("user")
 
                 if (!user) {

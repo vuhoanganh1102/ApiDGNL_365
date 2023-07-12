@@ -1,6 +1,7 @@
 const functions = require('../../services/functions');
 const KiemKe = require('../../models/QuanLyTaiSan/KiemKe');
 const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
+const TaiSan = require('../../models/QuanLyTaiSan/TaiSan');
 
 exports.getAndCheckData = async(req, res, next) => {
   try{
@@ -195,6 +196,30 @@ exports.duyet = async(req, res, next) => {
       kk_trangthai: 3
     }, {new: true});
     if(kiemKe) return functions.success(res, "Duyet kiem ke thanh cong!");
+    return functions.setError(res, "Kiem ke not found!", 504);
+  }catch(error){
+    console.log(error);
+    return functions.setError(res, error.message, 500);
+  }
+}
+
+exports.chiTiet = async(req, res, next) => {
+  try{
+    const id_kk = req.body.id_kk;
+    if(!id_kk) return functions.setError(res, "Missing input id_kk!", 404);
+    let kiemKe = await KiemKe.findOne({id_kiemke: id_kk});
+    let danhSachTaiSan = [];
+    
+    if(kiemKe) {
+      if(kiemKe.id_ts && kiemKe.id_ts.ds_ts) {
+        let id_ts = kiemKe.id_ts.ds_ts;
+        for(let i=0; i<id_ts.length; i++) {
+          // let taiSan = await TaiSan;
+        }
+        console.log(id_ts);
+      }
+      return functions.success(res, "Lay thong tin chi tiet kiem ke thanh cong!", {kiemKe: kiemKe});
+    }
     return functions.setError(res, "Kiem ke not found!", 504);
   }catch(error){
     console.log(error);
