@@ -49,6 +49,6 @@ exports.getListInfo= async(req, res, next) => {
         return functions.success(res, `Get list infomaiton for page home success`, {totalEmployee, totalAchievement, totalInfringe, totalCandi, totalCandidateInterview, totalCandidateGetJob});
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.massage, 500);
     }
 }
