@@ -6,6 +6,9 @@ const taisanRouter = require('./qlts/taiSanRouter')
 const nhomTsRouter = require('./qlts/nhomTaiSanRouter')
 var capPhat = require('./qlts/CapPhat.js')
 var ThuHoi = require('./qlts/ThuHoi.js')
+var mat = require('./qlts/matRouter')
+var huy = require('./qlts/huyRouter')
+
 var kiemKeRouter = require('./qlts/kiemKeRouter');
 
 //Api tool quét data
@@ -19,6 +22,9 @@ router.use('/ThuHoi', ThuHoi);
 //Api nhóm tài sản
 router.use('/nhomts',nhomTsRouter)
 
+//API mất huỷ thanh lý
+router.use('/mat',mat)
+router.use('/huy',huy)
 //api kiem ke
 router.use('/kiemKe', [functions.checkToken, functions.dataFromToken], kiemKeRouter);
 
