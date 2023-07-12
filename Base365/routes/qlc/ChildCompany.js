@@ -4,7 +4,7 @@ const formData = require('express-form-data')
 const functions = require("../../services/functions")
 
 //API lấy tất cả dữ liệu cty 
-router.post("/", formData.parse(),functions.checkToken,  CompanyController.getListCompany);
+router.post("/list", formData.parse(),functions.checkToken,  CompanyController.getListCompany);
 
 //API tạo mới một cty
 router.post("/create", formData.parse(),functions.checkToken,  CompanyController.createCompany);
