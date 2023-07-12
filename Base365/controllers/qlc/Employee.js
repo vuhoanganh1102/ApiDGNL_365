@@ -50,7 +50,17 @@ exports.register = async(req, res) => {
                         "inForPerson.account.education": education,
                     })
                     await user.save()
-                    const token = await functions.createToken(user, "1d")
+                    const token = await functions.createToken({
+                        _id: user._id,
+                        idTimViec365: user.idTimViec365,
+                        idQLC: user.idQLC,
+                        idRaoNhanh365: user.idRaoNhanh365,
+                        emailContact: user.emailContact,
+                        phoneTK: user.phoneTK,
+                        createdAt: user.createdAt,
+                        type: user.type,
+                        com_id : user.inForPerson.employee.com_id,
+                    }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {
                         access_token: token,
