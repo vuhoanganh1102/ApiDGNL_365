@@ -356,8 +356,7 @@ exports.updateInfoindividual = async(req, res, next) => {
                  data = await Users.updateOne({ idQLC: idQLC, type: 0 }, {
                         $set: {
                             userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
+                            emailContact: emailContact,
                             phone: phone,
                             avatarUser: avatarUser,
                             address: address,
