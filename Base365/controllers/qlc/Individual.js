@@ -48,9 +48,6 @@ exports.register = async(req, res) => {
                         refresh_token: refreshToken,
                     }
                     return functions.success(res, "tạo tài khoản thành công", { Inuser, data })
-
-
-
                 } else {
                     return functions.setError(res, " sdt đã tồn tại")
                 }
@@ -355,36 +352,36 @@ exports.updateInfoindividual = async(req, res, next) => {
             let findUser = Users.findOne({ idQLC: idQLC, type: 0 })
             if (findUser) {
                 if (File && File.avatarUser) {
-                    let upload = await fnc.uploadAvaEmpQLC( idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                    let upload = await fnc.uploadAvaEmpQLC(idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }
                     avatarUser = upload
                 }
-                 data = await Users.updateOne({ idQLC: idQLC, type: 0 }, {
-                        $set: {
-                            userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
-                            phone: phone,
-                            avatarUser: avatarUser,
-                            address: address,
-                            otp: otp,
-                            authentic: null || 0,
-                            fromWeb: "quanlichung.timviec365",
-                            avatarUser: avatarUser,
-                            updatedAt: Date.parse(updatedAt),
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": birthday,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
-                        }
-                    })
-                    return functions.success(res, 'update info user success', { data })
-                
+                data = await Users.updateOne({ idQLC: idQLC, type: 0 }, {
+                    $set: {
+                        userName: userName,
+                        email: email,
+                        phoneTK: phoneTK,
+                        phone: phone,
+                        avatarUser: avatarUser,
+                        address: address,
+                        otp: otp,
+                        authentic: null || 0,
+                        fromWeb: "quanlichung.timviec365",
+                        avatarUser: avatarUser,
+                        updatedAt: Date.parse(updatedAt),
+                        "inForPerson.employee.group_id": group_id,
+                        "inForPerson.account.birthday": birthday,
+                        "inForPerson.account.gender": gender,
+                        "inForPerson.account.married": married,
+                        "inForPerson.account.experience": experience,
+                        "inForPerson.employee.startWorkingTime": startWorkingTime,
+                        "inForPerson.account.education": education,
+                    }
+                })
+                return functions.success(res, 'update info user success', { data })
+
             } else {
                 return functions.setError(res, "không tìm thấy user")
 
