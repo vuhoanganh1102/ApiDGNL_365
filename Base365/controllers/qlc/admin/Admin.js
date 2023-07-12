@@ -1,5 +1,6 @@
 const functions = require("../../../services/functions")
 const feedback = require("../../../models/qlc/Feedback_emp")
+const report = require("../../../models/qlc/ReportError")
 const user = require("../../../models/Users")
 const md5 = require('md5');
 
@@ -169,6 +170,25 @@ exports.getListFeedback = async(req, res) => {
             return functions.success(res, 'Lấy thành công', { data, count });
         }
 
+
+    } catch (e) {
+        return functions.setError(res, e.message)
+    }
+
+}
+exports.getListReportErr = async(req, res) => {
+    try {
+        const pageNumber = req.body.pageNumber || 1;
+        
+        let data = await report.find({}).select('curDeviceId type detail_error gallery_image_error createdAt from_source createdAt').skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
+        if (data === []) {
+            await functions.setError(res, 'Không có dữ liệu', 404);
+
+        } else {
+            let count = await feedback.countDocuments({})
+
+            return functions.success(res, 'Lấy thành công', { data, count });
+        }
 
     } catch (e) {
         return functions.setError(res, e.message)
