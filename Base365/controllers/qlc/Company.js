@@ -39,7 +39,17 @@ exports.register = async(req, res) => {
                     'inForCompany.cds.com_vip_time': 0,
                 })
                 await user.save()
-                const token = await functions.createToken(user, "1d")
+                const token = await functions.createToken({
+                    _id: user._id,
+                    idTimViec365: user.idTimViec365,
+                    idQLC: user.idQLC,
+                    idRaoNhanh365: user.idRaoNhanh365,
+                    email: user.email,
+                    phoneTK: user.phoneTK,
+                    createdAt: user.createdAt,
+                    type: user.type,
+                    com_id : user.idQLC
+                }, "1d")
                 const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                 let data = {
                     access_token: token,
@@ -454,8 +464,10 @@ exports.info = async(req, res) => {
             const data = await Users.findOne({ idQLC: idQLC, type: 1 }).select('userName email phoneTK address avatarUser authentic inForCompany.cds.com_vip createdAt').lean();
             const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
             const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
-            data.departmentsNum = departmentsNum
-            data.userNum = userNum
+            if(departmentsNum) data.departmentsNum = departmentsNum
+            if(userNum) data.userNum = userNum
+            if(userNum) data.userNum = userNum
+
             if (data) {
                 return functions.success(res, 'Lấy thành công', { data });
             };
