@@ -15,6 +15,7 @@ const setipShema = new mongoose.Schema({
     },
     accessIP :{//địa chỉ ip
         type :String,
+        
     },
     fromSite : {// site cài IP 
         type: String,

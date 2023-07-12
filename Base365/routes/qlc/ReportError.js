@@ -5,6 +5,6 @@ const functions = require("../../services/functions")
 
 //báo lỗi
 
-router.post("/", formData.parse(), controller.create)
+router.post("/", formData.parse(),functions.checkToken, controller.create)
 
 module.exports = router

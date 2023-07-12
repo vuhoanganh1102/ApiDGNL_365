@@ -90,7 +90,31 @@ exports.uploadAvaEmpQLC = async(id, file, allowedExtensions) => {
     });
     return namefile
 }
+exports.uploadErrQLC = async(token, id, file, allowedExtensions) => {
+  const paths = (token !== 1 ? "ep_" + id : "com_" + id)
+  let namefile = file.name;
+  let path1 = `../storage/base365/qlc/upload/error/` + paths + '/';
+  let filePath = `../storage/base365/qlc/upload/error/` + paths + '/'+ namefile;
+  let fileCheck = path.extname(filePath);
+  if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
+      return false
+  }
+  if (!fs.existsSync(path1)) {
+      fs.mkdirSync(path1, { recursive: true });
+  }
+  fs.readFile(file.path, (err, data) => {
+      if (err) {
+          console.log(err)
+      }
 
+      fs.writeFile(filePath, data, (err) => {
+          if (err) {
+              console.log(err)
+          }
+      });
+  });
+  return namefile
+}
 // hàm tạo link file QLC
 exports.createAvatarQLC = (namefiles) => {
     let link = namefiles;
