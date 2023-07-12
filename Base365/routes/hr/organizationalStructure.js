@@ -51,4 +51,9 @@ router.post('/deleteEmpUseSignature', formData.parse(), hrService.checkRoleUser,
 //danh sách chữ ký lãnh đạo
 router.post('/listSignatureLeader', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.listSignatureLeader)
 
+// danh sách nhân viên chưa chấm công hoặc đã chấm công
+router.post('/listEmUntimed', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.listEmUntimed)
+
+
+
 module.exports = router;

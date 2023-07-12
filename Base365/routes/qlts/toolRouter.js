@@ -29,10 +29,17 @@ router.post('/ThuHoiTaiSan',toolQLTS.toolThuHoiTaiSan)
 router.post('/ThongTinTuyChinh',toolQLTS.toolThongTinTuyChinh)
 router.post('/ThongBao',toolQLTS.toolThongBao)
 router.post('/TheoDoiCongSuat',toolQLTS.toolTheoDoiCongSuat)
-router.post('/ThanhLy',toolQLTS.toolThanhLy)
 router.post('/TaiSanDangSuDung',toolQLTS.toolTaiSanDangSuDung)
 router.post('/TaiSanDaiDienNhan',toolQLTS.toolTaiSanDaiDienNhan)
 router.post('/CapPhat',toolQLTS.toolCapPhat)
+
+
+
+// cường
+router.post('/ThanhLy',toolQLTS.toolThanhLy)
+router.post('/Mat',toolQLTS.toolMat)
+router.post('/Huy',toolQLTS.toolHuy)
+
 
 
 module.exports = router
