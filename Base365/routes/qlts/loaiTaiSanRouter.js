@@ -16,7 +16,6 @@ router.post('/edit',functions.checkToken,formData.parse(),controllerLoaiTs.editL
 //Api xóa loại
 router.post('/delete',functions.checkToken,formData.parse(),controllerLoaiTs.deleteLoaiTs)
 
-//Api chi tiết
 
 
 module.exports = router

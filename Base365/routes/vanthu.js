@@ -25,25 +25,25 @@ var settingqlcv = require('./vanthu/QuanLyCongVan/settingRoute.js')
 router.use('/vanthu/dexuat',adddeXuat);
 
 //Api setting đề xuất
-router.use('/vanthu/setting',settingDXroutes)
+router.use('/vanthu/setting',settingDXroutes);
 
 //Api  de xuat và hiển thị đề xuất
-router.use('/vanthu/catedx',cateDXroutes)
+router.use('/vanthu/catedx',cateDXroutes);
 
 //Api xóa để xuất và sửa đề xuất
-router.use('/vanthu/deletedx',DeleteDX)
-router.use('/vanthu/editdx',EditDX)
+router.use('/vanthu/deletedx',DeleteDX);
+router.use('/vanthu/editdx',EditDX);
 
 //Api gửi nhận đề xuất
-router.use('/vanthu/DeXuat',EditDXSend)
+router.use('/vanthu/DeXuat',EditDXSend);
 
-router.use('/vanthu/thongkenp',TKNP)
+router.use('/vanthu/thongkenp',TKNP);
 
-router.use('/vanthu/trangchu',homeQLCV)
+router.use('/vanthu/trangchu',homeQLCV);
 
-router.use('/vanthu/listVanBan',listVanBan)
+router.use('/vanthu/listVanBan',listVanBan);
 
-router.use('/vanthu/contract',contract)
+router.use('/vanthu/contract',contract);
 
 router.use('/vanthu/history',history)
 

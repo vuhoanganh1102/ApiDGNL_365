@@ -9,7 +9,12 @@ const functions = require('../../services/functions')
 router.post('/add',functions.checkToken,formData.parse(),controllerViTriTs.addViTriTaiSan)
 
 //Api hiển thị
-router.post('/list',functions.checkToken,formData.parse(),controllerViTriTs.showViTriTs)
+router.post('/list',functions.checkToken,formData.parse(),controllerViTriTs.show)
 
+//Api đổ dữ liệu thêm mới
+router.post('/showadd',functions.checkToken,formData.parse(),controllerViTriTs.showaddViTri)
+
+//Api xóa
+router.post("/delete",functions.checkToken,formData.parse(),controllerViTriTs.deleteVT)
 
 module.exports = router
