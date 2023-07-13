@@ -1062,51 +1062,59 @@ exports.listSignatureLeader = async (req, res, next) => {
 // danh sách nhân viên chưa chấm công hoặc đã chấm công
 exports.listEmUntimed = async (req, res, next) => {
     try {
-        let data = {};
+        let {com_id, dep_id, position_id, group_id, team_id, birthday, gender, married, page, pageSize} = req.body;
+        if(!com_id) com_id = req.infoLogin.comId;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        const skip = (page-1)*pageSize;
 
+        let condition = {type: 2, "inForPerson.employee.com_id": com_id};
+        if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
+        if(group_id) condition["inForPerson.employee.group_id"] = group_id;
+        if(team_id) condition["inForPerson.employee.team_id"] = team_id;
+        if(position_id) condition["inForPerson.employee.position_id"] = position_id;
+
+        if(gender) condition["inForPerson.account.gender"] = gender;
+        if(married) condition["inForPerson.account.married"] = married;
+        if(birthday) condition["inForPerson.account.birthday"] = new RegExp(birthday);
+
+        let fields = {idQLC: 1, userName: 1, phone: 1, email: 1, address: 1,
+            inForPerson: {
+                account: {birthday: 1, gender: 1, married: 1, experience: 1, education: 1},
+                employee: {com_id: 1, dep_id: 1,group_id: 1, team_id: 1,position_id: 1,start_working_time: 1}
+            }
+        };
+        let listEmployee = [];
+        let total = 0;
         // chấm công hoặc chưa chấm công
         let type_timekeep = Number(req.body.type_timekeep);
-
-        // id company lấy từ token
-        let comId = req.infoLogin.comId;
-
-        let type = req.body.type;
-
-        // id phòng ban
-        let depId = Number(req.body.depId);
-
-        // id tổ
-        let nestId = Number(req.body.nestId);
-
-        let arr_dep = await Deparment.find({ com_id: comId });
-        if (type_timekeep === 1) {
-            var title = 'Danh sách nhân viên chấm công của tổng công ty';
-
-            if (type === 2) {
-                title = 'Danh sách nhân viên chấm công của công ty';
-            }
-            if (depId) {
-                let nameDep = arr_dep.find((a) => a.dep_id === depId);
-                title = `Danh sách nhân viên chấm công ${nameDep.dep_name}`
-            }
-            if (nestId) {
-                let nest = await Team.findOne({ nest_id: nestId })
-                title = `Danh sách nhân viên chấm công ${nest.gr_name}`
-            }
-            if (groupId) {
-                let group = await group
-            }
-
-
+        if (type_timekeep === 1 || type_timekeep===2) {
+            let condition2;
+            if(type_timekeep===1) condition2 = {Time_sheets: {$ne: []}};
+            if(type_timekeep===2) condition2 = {Time_sheets: {$eq: []}};
+            listEmployee = await Users.aggregate([
+                {$match: condition},
+                {
+                    $lookup: {
+                        from: "QLC_Time_sheets",
+                        localField: "idQLC",
+                        foreignField: "idQLC",
+                        as: "Time_sheets"
+                    }
+                },
+                {$match: condition2},
+                {$project: {...fields, Time_sheets: 1}},
+                {$sort: {idQLC: -1}},
+                {$skip: skip},
+                {$limit: pageSize},
+            ]);
+        }else {
+            listEmployee = await functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
         }
-
-
-        console.log(title)
-
-
-        return functions.success(res, 'get data success', { data })
+        total = listEmployee.length;
+        return functions.success(res, 'get data success', {total, listEmployee })
     } catch (error) {
-        console.error(error)
-        return functions.setError(res, error)
+        console.log(error)
+        return functions.setError(res, error.massage, 500);
     }
 };
