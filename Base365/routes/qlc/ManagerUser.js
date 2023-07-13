@@ -18,6 +18,6 @@ router.post("/edit", formData.parse(),functions.checkToken,  managerUserControll
 router.delete("/del", formData.parse(),functions.checkToken,  managerUserController.deleteUser);
 
 // API xóa toàn bộ nv hiện có cua cty
-router.delete("/delAllUser",functions.checkToken,  managerUserController.deleteCompanyALlUser);
+// router.delete("/delAllUser",functions.checkToken,  managerUserController.deleteCompanyALlUser);
 
 module.exports = router
