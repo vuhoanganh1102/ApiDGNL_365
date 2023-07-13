@@ -52,7 +52,7 @@ exports.createDeparment = async (req, res) => {
         let now = new Date()
         if (type == 1) {
 
-            const { dep_name, manager_id, deparmentOrder } = req.body;
+            const { dep_name, manager_id, dep_order } = req.body;
             if (com_id && dep_name) {
                 //Kiểm tra Id công ty khác null
 
@@ -64,7 +64,7 @@ exports.createDeparment = async (req, res) => {
                     dep_name: dep_name,
                     manager_id: manager_id || null,
                     dep_create_time:  Date.parse(now),
-                    deparmentOrder: deparmentOrder || 0,
+                    dep_order: dep_order || 0,
                 });
 
                 await deparments.save()
@@ -87,13 +87,14 @@ exports.editDeparment = async (req, res) => {
         const type = req.user.data.type
         const dep_id = req.body.dep_id;
         if (type == 1) {
-            const {dep_name, manager_id } = req.body;
+            const {dep_name, manager_id,dep_order } = req.body;
             const deparment = await functions.getDatafindOne(Deparment, { dep_id: dep_id });
             if (deparment) {
                 await functions.getDatafindOneAndUpdate(Deparment, { com_id: com_id, dep_id: dep_id }, {
                     com_id: com_id,
                     dep_name: dep_name,
-                    manager_id: manager_id || null,
+                    manager_id: manager_id,
+                    dep_order : dep_order,
                 })
                 return functions.success(res, "Sửa phòng ban thành công", { deparment })
             }

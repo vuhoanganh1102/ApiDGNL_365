@@ -104,7 +104,7 @@ exports.report = async (req, res, next) => {
         // })
         delete condition.type
         delete condition.com_id
-
+       
         let dataLuong = await Salarys.find({ comId }).sort({ timeUp: -1 });
         let tangLuong = 0;
         let giamLuong = 0;

@@ -60,6 +60,12 @@ exports.register = async(req, res) => {
                         createdAt: user.createdAt,
                         type: user.type,
                         com_id : user.inForPerson.employee.com_id,
+                        userName : user.userName,
+                        position_id : user.inForPerson.employee.position_id,
+                        dep_id : user.inForPerson.employee.dep_id,
+                        group_id : user.inForPerson.employee.group_id,
+                        team_id : user.inForPerson.employee.team_id,
+
                     }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {
