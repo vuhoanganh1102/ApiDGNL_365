@@ -84,7 +84,7 @@ exports.getDeviceById = async (req,res)=>{
 }
 //tao moi yeu cau
 exports.createDevice = async (req,res)=>{
-    const {idQLC ,  curDeviceName , newDeviceName,curDevice,newDevice } =req.body 
+    const {idQLC ,  curDeviceName , newDeviceName,current_device,new_device } =req.body 
     //check loi 
     if(idQLC) {
         
@@ -92,13 +92,13 @@ exports.createDevice = async (req,res)=>{
         if(!maxID) {
             maxID = 0
         }
-        const _id = Number(maxID) + 1;
+        const ed_id = Number(maxID) + 1;
         
         const device = new Device({
-            _id: _id,
+            ed_id: ed_id,
             idQLC:idQLC,
-            curDevice: curDevice,
-            newDevice: newDevice,
+            current_device: current_device,
+            new_device: new_device,
             curDeviceName: curDeviceName,
             newDeviceName: newDeviceName,
         })
