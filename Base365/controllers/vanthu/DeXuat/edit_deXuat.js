@@ -2,7 +2,10 @@ const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const setting_dx = require('../../../models/Vanthu/setting_dx');
 const His_Handle = require('../../../models/Vanthu/history_handling_dx');
 const QuitJob = require('../../../models/hr/personalChange/QuitJob');
-const User = require('../../../models/Users')
+const CalendarWorkEmployee = require('../../../models/qlc/CalendarWorkEmployee')
+const Cyclecalendar = require('../../../models/qlc/Calendar')
+const User = require('../../../models/Users');
+const functions = require('../../../services/vanthu')
 const axios = require('axios');
 //hàm khôi phục 
 exports.edit_del_type = async (req, res) => {
@@ -75,7 +78,7 @@ exports.edit_active = async (req, res) => {
             },
             { new: true }
           );
-          res.status(200).json({ message: 'Đã duyệt đề xuất' });
+         return res.status(200).json({ message: 'Đã duyệt đề xuất' });
         } else {
           const historyDuyet = await His_Handle.find({ id_dx: check._id, type_handling: 2 }).sort({ id_his: 1 });
           const listDuyet = historyDuyet.map((item) => item.id_user).join(',');
@@ -96,7 +99,7 @@ exports.edit_active = async (req, res) => {
               },
               { new: true }
             );
-            res.status(200).json({ message: 'Đã duyệt đề xuất' });
+            return res.status(200).json({ message: 'Đã duyệt đề xuất' });
           } else {
            return res.status(200).json({ message: 'Không thể duyệt đề xuất' });
           }
@@ -207,7 +210,7 @@ exports.edit_active = async (req, res) => {
         let ep_id = check.id_user
         let chekUser = await User.findOne({idQLC : ep_id}).select('inForPerson.employee.position_id  inForPerson.employee.dep_id')
         const createQJ = new QuitJob({
-          id : await functions.getMaxID(QuitJobNew) + 1,
+          id : await functions.getMaxIDQJ(QuitJob) + 1,
           ep_id : ep_id,
           com_id : com_id,
           current_position : chekUser.inForPerson.employee.position_id ,
@@ -220,8 +223,6 @@ exports.edit_active = async (req, res) => {
         return res.status(200).json({ message: 'Thôi việc thành công' });
       } else if (type == 6) {
         // Tiếp nhận
-        const { ep_id } = req.body;
-
         await De_Xuat.findOneAndUpdate(
           { _id: _id },
           {
@@ -232,7 +233,6 @@ exports.edit_active = async (req, res) => {
           },
           { new: true }
         );
-
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
           id_dx: check._id,
@@ -241,34 +241,17 @@ exports.edit_active = async (req, res) => {
         });
         await createHis.save();
 
-        res.status(200).json({ message: 'Tiếp nhận đề xuất thành công' });
+        return res.status(200).json({ message: 'Tiếp nhận đề xuất thành công' });
       } else if (type == 7) {
         // Tăng ca
-        const historyDuyet = await De_Xuat.findOne({ _id: _id }).populate('id_user');
-        const nd = JSON.parse(historyDuyet.noi_dung);
+        const historyDuyet = await De_Xuat.findOne({ _id: _id })
+        const nd = historyDuyet.tang_ca;
         const month_apply = new Date(nd.time_tc).getFullYear() + '-' + (new Date(nd.time_tc).getMonth() + 1) + '-01';
+        const checkcalaendar = await CalendarWorkEmployee.findOne({
+          idQLC : check.id_user
+        })
 
-        const response = await axios.get(`https://chamcong.24hpay.vn/service/detail_cycle.php?id_ep=${historyDuyet.id_user}&month_apply=${month_apply}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const item_tcs = response.data.data.item.cy_detail;
-        const items_tc = JSON.stringify(item_tcs);
-
-        const data_item_tc = item_tcs.find((item) => item.date === nd.time_tc);
-
-        let shift_old = '';
-        if (data_item_tc) {
-          const shift_olds = data_item_tc.shift_id.split(',');
-          if (!shift_olds.includes(nd.ca_tang)) {
-            shift_olds.push(nd.ca_tang);
-          }
-          shift_old = shift_olds.join(',');
-        } else {
-          shift_old = nd.ca_tang;
-        }
+        
 
         const shift_new = JSON.stringify({ date: nd.time_tc, shift_id: shift_old });
         const arr_cycle = items_tc.replace(JSON.stringify(data_item_tc), shift_new);

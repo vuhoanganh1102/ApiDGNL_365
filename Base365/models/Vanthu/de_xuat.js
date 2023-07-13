@@ -431,17 +431,6 @@ const Vanthu_de_xuat = new Schema({
             }
         }
 
-        // nd: {
-        //     ngaybatdau_nghi: {
-        //         type: Date
-        //     },
-        //     ngayketthuc_nghi: {
-        //         type: Date
-        //     },
-        //     ca_nghi: {
-        //         type: Date
-        //     },
-        // }
     },
     name_user: {
         type: String,

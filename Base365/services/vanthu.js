@@ -52,19 +52,11 @@ exports.getMaxID = async(model) => {
     return maxUser._id + 1;
 };
 
-// const storageVanthu = (destination) => {
-//     return storage = multer.diskStorage({
-//         destination: (req, file, cb) => {
-//             // console.log(file_kem)
-//             cb(null, destination);
-//         },
-//         filename: (req, file, cb) => {
-//             cb(null, Date.now() + path.extname(file));
-//         }
-//     })
+exports.getMaxIDQJ = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { id: -1 } }).lean() || 0;
+    return maxUser.id + 1;
+};
 
-// };
-// exports.upload = multer({ storage: storageVanthu('../../../Storage/VanThu') });
 exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, status, link, file_kem) => {
     return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
         SenderID: id_user,
