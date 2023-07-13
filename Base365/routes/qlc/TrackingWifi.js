@@ -6,9 +6,13 @@ const functions= require ("../../services/functions")
 
 
 // đổ danh sách wifi chấm công 
-router.post("/",formData.parse(), controller.getlist)
+router.post("/list",formData.parse(),functions.checkToken, controller.getlist)
 //tạo để test
-router.post("/create",formData.parse(), controller.CreateQR)
+router.post("/create",formData.parse(),functions.checkToken, controller.Create)
+
+router.post("/edit",formData.parse(),functions.checkToken, controller.edit)
+
+router.post("/delete",formData.parse(),functions.checkToken, controller.delete)
 
 
 module.exports = router
