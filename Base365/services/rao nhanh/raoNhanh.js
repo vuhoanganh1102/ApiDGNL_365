@@ -267,8 +267,10 @@ exports.getNameCate = async (cateId,number) =>{
     name.danh_muc2 = danh_muc2
     if(number === 2){
         return name
-    }else{
+    }else if(danh_muc2){
         return danh_muc2
+    }else if(danh_muc1){
+        return danh_muc1
     }
 }
 // lấy link file
