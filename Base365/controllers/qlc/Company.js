@@ -9,23 +9,24 @@ const Deparment = require("../../models/qlc/Deparment")
 exports.register = async(req, res) => {
     const { userName, emailContact, phoneTK, password, address, phone } = req.body;
     let idTimViec365 = ""
-    idRaoNhanh365 = ""
+        idRaoNhanh365 = ""
     const createdAt = new Date()
     if (userName && password && phoneTK && address) {
         let checkPhone = await functions.checkPhoneNumber(phoneTK)
         if (checkPhone) {
             let finduser = await Users.findOne({ phoneTK: phoneTK, type: 1 }).lean()
             let MaxId = await functions.getMaxUserID("company")
+            let _id = MaxId._id
             if (finduser == null) {
                 const user = new Users({
-                    _id: MaxId._id,
+                    _id: _id,
                     emailContact: emailContact,
                     phoneTK: phoneTK,
                     userName: userName,
                     phone: phone,
                     address: address,
                     type: 1,
-                    chat365_secret : processBase64(MaxId._id),
+                    chat365_secret : Buffer.from(_id.toString()).toString('base64'),
                     password: md5(password),
                     fromWeb: "quanlichung",
                     role: 1,

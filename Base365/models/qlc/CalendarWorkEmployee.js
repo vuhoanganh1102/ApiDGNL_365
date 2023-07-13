@@ -9,19 +9,18 @@ const CalendarWorkEmployee = new Schema({
     idQLC: {
         type: Number
     },
-    companyID: {//ID cty
+    com_id: {//ID cty
         type: Number
     },
-    shiftID: {//ID ca 
+    shift_id: {//ID ca 
         type: Number
     },
-    calendarID: {//ID lịch làm việc
+    calendar_id: {//ID lịch làm việc
         type: Number
     },
     calendarName: {//ID lịch làm việc
         type: String,
     },
-
     timeApply: {//thời điểm áp dụng
         type: Date
     },
