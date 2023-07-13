@@ -101,7 +101,6 @@ router.post('/napTien',formData.parse(),functions.checkToken,newRN.napTien)
 // support for update new
 router.post('/getDetailForUpdateNew',formData.parse(),newRN.getDetailForUpdateNew)
 
-
-// nạp tiền
+// lấy thông tin đấu thầu
 router.post('/getDataBidding',formData.parse(),functions.checkToken,newRN.getDataBidding)
 module.exports = router;

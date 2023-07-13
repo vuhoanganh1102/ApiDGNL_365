@@ -120,18 +120,15 @@ exports.bidding = async (req, res, next) => {
         }
         if (uploadfile.userFile) {
             if (uploadfile.userFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
-            raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userFile, ['.jpg', '.png', '.docx', '.pdf'])
-            userFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.userFile.name)
+            userFile = await raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userFile, ['.jpg', '.png', '.docx', '.pdf'])
         } 
          if (uploadfile.userProfileFile) {
             if (uploadfile.userProfileFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
-            raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userProfileFile, ['.jpg', '.png', '.docx', '.pdf'])
-            userProfileFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.userProfileFile.name)
+            userProfileFile = await raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userProfileFile, ['.jpg', '.png', '.docx', '.pdf'])
         } 
         if (uploadfile.promotionFile) {
             if (uploadfile.promotionFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
-            raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
-            promotionFile = functions.createLinkFileRaonhanh('avt_dthau', userID, uploadfile.promotionFile.name)
+            promotionFile = await raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
         }
         await Bidding.create({ _id, newId, userName, userIntro, userID, productName, productDesc, status, price, priceUnit, productLink, userFile, userProfile, userProfileFile, promotion, promotionFile })
         return functions.success(res, 'bidding success')
@@ -364,8 +361,14 @@ exports.manageOrderBuy = async (req, res, next) => {
                     $limit: pageSize
                 }
             ])
+            
         } else {
             return functions.setError(res, 'link not exits', 404)
+        }
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].new.img){
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID);
+            }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
@@ -549,8 +552,14 @@ exports.manageOrderSell = async (req, res, next) => {
                     $project: searchItem
                 }
             ])
+            
         } else {
             return functions.setError(res, 'link not exits', 404)
+        }
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].new.img){
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID);
+            }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
