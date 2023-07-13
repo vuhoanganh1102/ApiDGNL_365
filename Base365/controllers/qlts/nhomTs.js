@@ -164,7 +164,7 @@ exports.editNhom = async (req, res) => {
       return functions.setError(res, 'ten_nhom đã được sử dụng', 400);
     } else {
       let chinhsuanhom = await NhomTaiSan.findOneAndUpdate(
-        {id_nhom: id_nhom },
+        {id_nhom: id_nhom,id_cty : com_id },
         { $set: { ten_nhom: ten_nhom } },
         { new: true }
       );
@@ -181,10 +181,10 @@ exports.editNhom = async (req, res) => {
 exports.xoaNhom = async (req, res) => {
   try {
     let { datatype, id_nhom, type_quyen } = req.body;
-    
+
     let com_id = '';
     let nhom_id_ng_xoa = req.user.data.idQLC;
-    console.log(req.user.data.type);
+    
     const deleteDate = Math.floor(Date.now() / 1000);
     if (typeof id_nhom === 'undefined') {
       return functions.setError(res, 'id nhóm không được bỏ trống', 400);
@@ -192,7 +192,7 @@ exports.xoaNhom = async (req, res) => {
     if (isNaN(Number(id_nhom))) {
       return functions.setError(res, 'id nhóm phải là một số', 400);
     }
-    console.log(typeof id_nhom);
+   
     if (req.user.data.type == 1) {
       com_id = req.user.data.idQLC;
     } 

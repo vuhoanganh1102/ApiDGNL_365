@@ -20,29 +20,30 @@ var listVanBan = require('./vanthu/QuanLyCongVan/listTextRoute')
 var contract = require('./vanthu/QuanLyCongVan/contractRoute')
 var history = require('./vanthu/QuanLyCongVan/historyUpdateRoute')
 var dataDelete = require('./vanthu/QuanLyCongVan/dataDidDeleteRoute')
+var settingqlcv = require('./vanthu/QuanLyCongVan/settingRoute.js')
 //Api thêm mới các loại đề xuất
 router.use('/vanthu/dexuat',adddeXuat);
 
 //Api setting đề xuất
-router.use('/vanthu/setting',settingDXroutes)
+router.use('/vanthu/setting',settingDXroutes);
 
 //Api  de xuat và hiển thị đề xuất
-router.use('/vanthu/catedx',cateDXroutes)
+router.use('/vanthu/catedx',cateDXroutes);
 
 //Api xóa để xuất và sửa đề xuất
-router.use('/vanthu/deletedx',DeleteDX)
-router.use('/vanthu/editdx',EditDX)
+router.use('/vanthu/deletedx',DeleteDX);
+router.use('/vanthu/editdx',EditDX);
 
 //Api gửi nhận đề xuất
-router.use('/vanthu/DeXuat',EditDXSend)
+router.use('/vanthu/DeXuat',EditDXSend);
 
-router.use('/vanthu/thongkenp',TKNP)
+router.use('/vanthu/thongkenp',TKNP);
 
-router.use('/vanthu/trangchu',homeQLCV)
+router.use('/vanthu/trangchu',homeQLCV);
 
-router.use('/vanthu/listVanBan',listVanBan)
+router.use('/vanthu/listVanBan',listVanBan);
 
-router.use('/vanthu/contract',contract)
+router.use('/vanthu/contract',contract);
 
 router.use('/vanthu/history',history)
 
@@ -50,7 +51,7 @@ router.use('/vanthu/dataDelete',dataDelete)
 
 router.use('/vanthu/trangchu',homeRoute)
 
-
+router.use('/vanthu/setting',settingqlcv)
 //Api tool quét data văn thư
 router.use('/tooldata',toolVT)
 

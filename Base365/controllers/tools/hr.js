@@ -10,6 +10,7 @@ const HR_CrontabQuitJobs = require('../../models/hr/CrontabQuitJobs');
 const HR_Candidates = require('../../models/hr/Candidates');
 const HR_EmployeePolicys = require('../../models/hr/EmployeePolicys');
 const HR_EmployeePolicySpecifics = require('../../models/hr/EmployeePolicySpecifics');
+const HR_ProvisionOfCompanys = require('../../models/hr/ProvisionOfCompanys');
 
 const HR_DepartmentDetails = require('../../models/hr/DepartmentDetails');
 const HR_DescPositions = require('../../models/hr/DescPositions');
@@ -521,6 +522,7 @@ exports.Candidates = async (req, res, next) => {
                     let userRecommend = data[i].user_recommend
                     let recruitmentNewsId = data[i].recruitment_news_id
                     let timeSendCv = data[i].time_send_cv
+                    if (await functions.checkDate(timeSendCv) === false) continue
                     let interviewTime = data[i].interview_time
                     let interviewResult = data[i].interview_result
                     let interviewVote = data[i].interview_vote
@@ -534,6 +536,7 @@ exports.Candidates = async (req, res, next) => {
                     let isOfferJob = data[i].is_offer_job
                     let gender = data[i].can_gender
                     let birthday = data[i].can_birthday
+                    if (await functions.checkDate(birthday) === false) continue
                     let education = data[i].can_education
                     let exp = data[i].can_exp
                     let isMarried = data[i].can_is_married
@@ -687,28 +690,66 @@ exports.policy = async (req, res, next) => {
     }
 };
 
+// exports.provisionOfCompany = async (req, res, next) => {
+//     try {
+//         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=1');
+//         for (let i = 0; i < data.length; i++) {
+//             let _id = Number(data[i].id);
+//             let provisionId = data[i].provision_id;
+//             let timeStart = data[i].time_start;
+//             let supervisorName = data[i].supervisor_name;
+//             let applyFor = data[i].apply_for;
+//             let content = data[i].content;
+//             let createdBy = data[i].created_by;
+//             let isDelete = data[i].is_delete;
+//             let createdAt = data[i].created_at;
+//             let name = data[i].name;
+//             let file = data[i].file;
+//             let deletedAt = data[i].deleted_at;
+//             let data_recruitment = new HR_Policys({ _id, provisionId, timeStart, supervisorName, applyFor, content, createdBy, isDelete, createdAt, name, file, deletedAt });
+//             await HR_Policys.create(data_recruitment);
+//         }
+//         return functions.success(res, "Thành công");
+//     } catch (error) {
+//         return functions.setError(res, error.message);
+//     }
+// };
 exports.provisionOfCompany = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=1');
-        for (let i = 0; i < data.length; i++) {
-            let _id = Number(data[i].id);
-            let provisionId = data[i].provision_id;
-            let timeStart = data[i].time_start;
-            let supervisorName = data[i].supervisor_name;
-            let applyFor = data[i].apply_for;
-            let content = data[i].content;
-            let createdBy = data[i].created_by;
-            let isDelete = data[i].is_delete;
-            let createdAt = data[i].created_at;
-            let name = data[i].name;
-            let file = data[i].file;
-            let deletedAt = data[i].deleted_at;
-            // const check_id = await HR_Cancel.findById(_id);
-            // if (!check_id || check_id.length === 0) {
-            let data_recruitment = new HR_Policys({ _id, provisionId, timeStart, supervisorName, applyFor, content, createdBy, isDelete, createdAt, name, file, deletedAt });
-            await HR_Policys.create(data_recruitment);
-            // }
-        }
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=${page}`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    if (await functions.checkDate(data[i].time_start) === false) continue
+                    await HR_ProvisionOfCompanys.findOneAndUpdate({id: data[i].id}, 
+                        {
+                            description: data[i].description,
+                            isDelete: data[i].is_delete,
+                            name: data[i].name,
+                            timeStart: data[i].time_start,
+                            supervisorName: data[i].supervisor_name,
+                            comId: data[i].com_id,
+                            file: data[i].file,
+                            createdAt: data[i].created_at,
+                            deletedAt: data[i].deleted_at,
+                        }, 
+                        { upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -1303,6 +1344,8 @@ exports.getJob = async (req, res, next) => {
             let data = response.data;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
+                    let interviewTime = data[i].interview_time;
+                    if (await functions.checkDate(interviewTime) === false) continue
                     await HR_GetJobs.findOneAndUpdate({ id: Number(data[i].id) }, 
                         { 
                             canId: data[i].can_id ,

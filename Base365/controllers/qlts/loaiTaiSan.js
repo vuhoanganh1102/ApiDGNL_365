@@ -102,11 +102,11 @@ exports.showLoaiTs = async (req, res) => {
         }
         let checloai = await LoaiTaiSan.find({ id_cty: com_id })
         if (checloai.some(loai => loai.ten_loai === ten_loai)) {
-          return functions.setError(res, 'ten_nhom đã được sử dụng', 400);
+          return functions.setError(res, 'tên loại đã được sử dụng', 400);
         } else {
-          let chinhsualoai = await NhomTaiSan.findOneAndUpdate(
-            { id_loai: id_loai },
-            { $set: { id_nhom: id_nhom,
+          let chinhsualoai = await LoaiTaiSan.findOneAndUpdate(
+            { id_loai: id_loai,id_cty : com_id },
+            { $set: { id_nhom_ts: id_nhom,
                     ten_loai : ten_loai} 
                 },
             { new: true }   

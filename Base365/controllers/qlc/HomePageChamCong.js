@@ -2,8 +2,8 @@ const functions = require("../../services/functions");
 const users = require("../../models/Users")
 const calEmp = require("../../models/qlc/CalendarWorkEmployee")
 const Tracking = require("../../models/qlc/HisTracking")
-//lấy danh sách user chưa đăng kí lịch làm việc
-exports.getlistUserNoneSetCarlendar = async (req, res) => {
+    //lấy danh sách user chưa đăng kí lịch làm việc
+exports.getlistUserNoneSetCarlendar = async(req, res) => {
 
     try {
 
@@ -12,14 +12,13 @@ exports.getlistUserNoneSetCarlendar = async (req, res) => {
         let companyID = req.body.companyID;
         let data = [];
         let data2 = [];
-        let results =[];
+        let results = [];
         let data3 = []
-            shiftID = req.body.shiftID
-            CreateAt = req.body.CreateAt || true
-            inputNew = req.body.inputNew || null
-            inputOld = req.body.inputOld || null
+        shiftID = req.body.shiftID
+        CreateAt = req.body.CreateAt || true
+        inputNew = req.body.inputNew || null
+        inputOld = req.body.inputOld || null
         if ((companyID) == undefined) {
-            console.log(companyID)
             functions.setError(res, "id must be a Number")
 
         } else if (isNaN(companyID)) {
@@ -27,10 +26,10 @@ exports.getlistUserNoneSetCarlendar = async (req, res) => {
         } else {
             //ta tìm danh sách nhân viên của công ty
             data = await users.find({ "inForPerson.companyID": companyID, type: 2 }).select('_id idQLC depID companyID email phoneTK avatarUser')
-            //ta tìm danh sách nhân viên đã có lịch làm việc của công ty
+                //ta tìm danh sách nhân viên đã có lịch làm việc của công ty
             data2 = await calEmp.find({ companyID: companyID }).select(' idQLC companyID  ')
-            //ta so sánh 2 mảng 
-            // Lọc ra các phần tử không giống nhau trong cả hai mảng
+                //ta so sánh 2 mảng 
+                // Lọc ra các phần tử không giống nhau trong cả hai mảng
 
             function compareObjects(obj1, obj2) {
                 return JSON.stringify(obj1.idQLC) === JSON.stringify(obj2.idQLC);
@@ -60,19 +59,19 @@ exports.getlistUserNoneSetCarlendar = async (req, res) => {
 
             }
 
-            
-            
-            
+
+
+
             //lấy thành công danh sách NV đã chấm công gần nhất
-            
+
             data3 = await Tracking.find({ companyID: companyID }).select('_id idQLC imageTrack Location CreateAt shiftID status Success ').skip((pageNumber2 - 1) * 20).limit(20).sort({ _id: -1 });
             if (!data3) {
-                
-                
+
+
                 return functions.setError(res, 'Không có dữ liệu danh sách NV đã chấm công gần nhất ', 404);
-                
+
             }
-            
+
         }
         // await functions.success(res, 'Lấy thành công danh sách NV chưa đăng kí lịch làm việc', { results , pageNumber1 });
         // await functions.success(res, 'Lấy thành công danh sách NV đã chấm công gần nhất', { data3 , pageNumber2 });

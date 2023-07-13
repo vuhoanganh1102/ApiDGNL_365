@@ -8,6 +8,19 @@ const dotenv = require("dotenv");
 dotenv.config();
 const path = require('path');
 
+
+
+
+// hàm khi thành công
+exports.success = async (res, messsage = "", data = []) => {
+    return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
+};
+
+// hàm thực thi khi thất bại
+exports.setError = async (res, message, code = 500) => {
+    return res.status(code).json({ code, message })
+};
+
 exports.uploadFileVanThu = (id, file) => {
     let path = `../Storage/base365/vanthu/tailieu/${id}/`;
     let filePath = `../Storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
@@ -60,7 +73,7 @@ exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi,
         Message: name_dx,
         ListFollower: id_user_theo_doi,
         Status: status,
-        Link: status,
+        Link: link,
         file_kem: file_kem,
         // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link
     }).then(function (response) {
@@ -187,7 +200,7 @@ exports.arrAPI = ()=>{
         "NotificationReport": "http://43.239.223.142:9000/api/V2/Notification/NotificationReport",
         "SendContractFile": "http://43.239.223.142:9000/api/V2/Notification/SendContractFile"
     }
-} 
+}
 
 exports.replaceTitle = (title) => {
   // Hàm replaceTitle() là hàm tùy chỉnh của bạn để thay thế các ký tự không hợp lệ trong tiêu đề
@@ -195,15 +208,15 @@ exports.replaceTitle = (title) => {
     return title.replace(/[^a-zA-Z0-9]/g, '-');
 };
 
-exports.uploadfile = async(folder, file_img) => {
+exports.uploadfile = async(folder, file_img,time) => {
     let filename='';
-    const date = new Date(Date.now());
+    const date = new Date(time);
     const year = date.getFullYear();
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
     const day = ('0' + date.getDate()).slice(-2);
     const timestamp = Math.round(date.getTime()/1000);
 
-    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
+    const dir = `../storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
@@ -225,7 +238,7 @@ exports.uploadfile = async(folder, file_img) => {
 }
 exports.deleteFile = (file) => {
     let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`,'');
-    let filePath = '../Storage/base365/vanthu/uploads/' + namefile;
+    let filePath = '../storage/base365/vanthu/uploads/' + namefile;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });

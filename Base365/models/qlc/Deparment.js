@@ -13,33 +13,30 @@ const DeparmentSchema = new Schema({
         type: Number,
     },
 
-    deparmentName: {
+    dep_name: {
         type: String,
     },
 
     //Ngày lập phòng ban
-    deparmentCreated: {
+    dep_create_time: {
         type: Date,
         default: Date.now()
     },
 
     //ID Trưởng phòng 
-    managerId: {
-        type: Number
+    manager_id: {
+        type: Number,
+        default: 0
     },
     //ID phó phòng 
-    deputyId: {
-        type: Number
-    },
-
-    //Săp xếp theo thứ tự
-    deparmentOrder: {
-        type: String
-    },
-    // tổng số nhân viên 
-    total_emp : {
-        type :Number,
+    dep_order: {
+        type: Number,
+        default: 0
     }
+}, {
+    collection: 'QLC_Deparments',
+    versionKey: false,
+    timestamp: true
 })
 
 module.exports = mongoose.model('QLC_Deparments', DeparmentSchema)

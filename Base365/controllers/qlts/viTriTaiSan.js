@@ -5,9 +5,8 @@ const functions = require('../../services/functions')
 
 exports.addViTriTaiSan = async (req, res) => {
     try{
-        let { ten_vitri,dv_quan_ly,ghi_chu_vitri } = req.body;
+        let { ten_vitri,dv_quan_ly,ghi_chu_vitri,quyen_dv_qly } = req.body;
         let com_id = '';
-        let quyen_dv_qly = '';
         if (req.user.data.type == 1) {
           com_id = req.user.data.idQLC;
         }
@@ -25,10 +24,11 @@ exports.addViTriTaiSan = async (req, res) => {
                 id_vitri = Number(maxID) + 1;
             }
             let createNew = new ViTriTs({
-                id_vitri: id_nhom,
+                id_vitri: id_vitri,
               vi_tri: ten_vitri,
               id_cty: com_id,
               dv_quan_ly : dv_quan_ly,
+              quyen_dv_qly : quyen_dv_qly,
               ghi_chu_vitri : ghi_chu_vitri
             })
             let save = await createNew.save()
@@ -124,12 +124,10 @@ exports.show = async (req, res) => {
 exports.deleteVT = async(req,res) => {
     try {
       let { datatype, id_vitri, type_quyen } = req.body;
-      
       let com_id = '';
-      let nhom_id_ng_xoa = req.user.data.idQLC;
       console.log(req.user.data.type);
       if (typeof id_vitri === 'undefined') {
-        return functions.setError(res, 'id nhóm không được bỏ trống', 400);
+        return functions.setError(res, 'id_vitri không được bỏ trống', 400);
       }
       if (isNaN(Number(id_vitri))) {
         return functions.setError(res, 'id nhóm phải là một số', 400);
@@ -142,7 +140,7 @@ exports.deleteVT = async(req,res) => {
       } else {
         return functions.setError(res, 'không có quyền truy cập');
       }     
-      await NhomTaiSan.findOneAndDelete({ id_vitri: id_vitri, id_cty: com_id })
+      await ViTriTs.findOneAndDelete({ id_vitri: id_vitri, id_cty: com_id })
       return functions.success(res, 'thanh cong');
       
     } catch (error) {

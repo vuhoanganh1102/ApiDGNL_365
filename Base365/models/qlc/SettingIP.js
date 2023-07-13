@@ -30,4 +30,4 @@ const setipShema = new mongoose.Schema({
         tpye: Date,
     }    
 });
-module.exports = mongoose.model('QLC_SettingIP', setipShema)
+module.exports = mongoose.model('settingIP', setipShema)

@@ -82,6 +82,10 @@ const HisOfTracking = new mongoose.Schema({
     },
 
 
+}, {
+    collection: 'CC365_HistoryOfTracking',
+    versionKey: false,
+    timestamp: true
 })
 
-module.exports = mongoose.model("HistoryOfTracking", HisOfTracking)
+module.exports = mongoose.model("CC365_HistoryOfTracking", HisOfTracking)
