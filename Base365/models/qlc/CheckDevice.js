@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const CheckDevice = new mongoose.Schema({
     //Id bảng
-    _id : {
+    ed_id : {
         type : Number,
         required : true 
     },
@@ -10,27 +10,30 @@ const CheckDevice = new mongoose.Schema({
         type : Number
     },
     // // ID thiết bị hiện tại 
-    curDevice :{
+    current_device :{
         type : String
     },
     //tên thiết bị hiện tại
-    curDeviceName:{
-        type : String
+    current_device_name:{
+        type : String,
+        default : null
     },
     //ID thiết bị mới 
-    newDevice :{
-        type : String
+    new_device :{
+        type : String,
+        default : null
     },
     //tên thiết bị mới 
-    newDeviceName:{
-        type : String
+    new_device_name:{
+        type : String,
+        default : null
     },
-    typeDevice :{
+    type_device :{
         type : Number,
         default : 0
     },
     //Thời điểm tạo 
-    createdAt: {
+    create_time: {
         type: Date,
         default: Date.now()
     },
