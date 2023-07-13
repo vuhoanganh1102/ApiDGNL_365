@@ -156,6 +156,7 @@ exports.toolNewRN = async (req, res, next) => {
                             money: data[i].new_money,
                             endvalue: data[i].gia_kt,
                             downPayment: data[i].datcoc,
+                            dc_unit:data[i].dc_unit,
                             until: data[i].new_unit,
                             cateID: data[i].new_cate_id,
                             type: data[i].new_type,
@@ -177,6 +178,7 @@ exports.toolNewRN = async (req, res, next) => {
                             electroniceDevice: {
                                 warranty: data[i].new_baohanh
                             },
+                            warranty:data[i].new_baohanh,
                             free: data[i].chotang_mphi,
                             sold: data[i].da_ban,
                             timeSell: timeSell,
@@ -261,6 +263,7 @@ exports.updateNewDescription = async (req, res, next) => {
                     if (post != null) {
                         await New.updateOne({ _id: idnew }, {
                             $set: {
+                                'chat_lieu':data[i].chat_lieu,
                                 'the_tich': data[i].the_tich,
                                 'han_su_dung': data[i].han_su_dung,
                                 'poster': data[i].canhan_moigioi,
@@ -298,7 +301,7 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'vehicle.so_cho': data[i].so_cho,
                                 'vehicle.trong_tai': data[i].trong_tai,
                                 'vehicle.loai_linhphu_kien': data[i].loai_linhphu_kien,
-                                'vehicle.km': data[i].so_km_da_di,
+                                'vehicle.so_km_da_di': data[i].so_km_da_di,
                                 'realEstate.ten_toa_nha': data[i].ten_toa_nha,
                                 'realEstate.td_macanho': data[i].td_macanho,
                                 'realEstate.ten_phan_khu': data[i].ten_phan_khu,
@@ -323,6 +326,11 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'realEstate.kv_thanhpho': data[i].kv_thanhpho,
                                 'realEstate.kv_quanhuyen': data[i].kv_quanhuyen,
                                 'realEstate.kv_phuongxa': data[i].kv_phuongxa,
+                                'realEstate.can_ban_mua': data[i].can_ban_mua,
+                                'realEstate.dia_chi': data[i].dia_chi,
+                                'realEstate.huong_ban_cong': data[i].huong_ban_cong,
+                                'realEstate.cangoc': data[i].cangoc,
+
                                 'ship.product': data[i].loai_hinh_sp,
                                 'ship.timeStart': data[i].tgian_bd,
                                 'ship.timeEnd': data[i].tgian_kt,
@@ -1089,6 +1097,7 @@ exports.toolComment = async (req, res, next) => {
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
+                    console.log(new Date(data[i].cm_time * 1000))
                     const cmt = new Comments({
                         _id: data[i].cm_id,
                         url: data[i].cm_url,
@@ -1111,7 +1120,6 @@ exports.toolComment = async (req, res, next) => {
             } else {
                 result = false;
             }
-            console.log(page);
         } while (result);
 
         return fnc.success(res, "Thành công");
