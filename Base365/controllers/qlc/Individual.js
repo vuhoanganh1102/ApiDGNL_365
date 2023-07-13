@@ -1,7 +1,6 @@
 const Users = require("../../models/Users")
 const fnc = require("../../services/qlc/functions")
 const functions = require("../../services/functions")
-
 const md5 = require("md5")
 
 //đăng kí tài khoản cá nhân 
@@ -9,26 +8,23 @@ exports.register = async(req, res) => {
     try {
         const { userName, password, phoneTK, address, phone, fromWeb } = req.body
         const createdAt = new Date()
-
         if (userName && password && phoneTK && address) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
-                let user = await Users.findOne({ phoneTK: phoneTK, type: 0 }).lean()
+                let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1}}).lean()
                 let MaxId = await functions.getMaxUserID("user")
-
-                if (user == null) {
+                let _id = MaxId._id
+                if (!user) {
                     const Inuser = new Users({
-                        _id: MaxId._id,
+                        _id: _id,
                         userName: userName,
                         phoneTK: phoneTK,
-                        phone: phone || phoneTK,
+                        phone: phone,
                         password: md5(password),
                         address: address,
                         createdAt: Date.parse(createdAt),
                         type: 0,
-                        role: 0,
-                        otp: null,
-                        authentic: 0,
+                        chat365_secret : Buffer.from(_id.toString()).toString('base64'),
                         fromWeb: "quanlichung",
                         idQLC: MaxId._idQLC,
                         idTimViec365: MaxId._idTV365,
@@ -39,7 +35,6 @@ exports.register = async(req, res) => {
                         "inForPerson.account.experience": 0,
                         "inForPerson.account.education": 0,
                     })
-
                     await Inuser.save()
                     const token = await functions.createToken(Inuser, "1d")
                     const refreshToken = await functions.createToken({ userId: Inuser._id }, "1y")
@@ -48,9 +43,6 @@ exports.register = async(req, res) => {
                         refresh_token: refreshToken,
                     }
                     return functions.success(res, "tạo tài khoản thành công", { Inuser, data })
-
-
-
                 } else {
                     return functions.setError(res, " sdt đã tồn tại")
                 }
@@ -59,13 +51,10 @@ exports.register = async(req, res) => {
             }
         } else {
             return functions.setError(res, "thiếu thông tin để đăng kí ")
-
         }
     } catch (e) {
         return functions.setError(res, e.message)
-
     }
-
 }
 exports.verify = async(req, res) => {
     try {
@@ -347,8 +336,7 @@ exports.updateInfoindividual = async(req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC;
         let data = [];
-        let data1 = [];
-        const { userName, email, phoneTK, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+        const { userName, emailContact, phoneTK, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
         let updatedAt = new Date()
         let File = req.files || null;
         let avatarUser = null;
@@ -356,61 +344,35 @@ exports.updateInfoindividual = async(req, res, next) => {
             let findUser = Users.findOne({ idQLC: idQLC, type: 0 })
             if (findUser) {
                 if (File && File.avatarUser) {
-                    let upload = fnc.uploadFileQLC('avt_individual', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                    let upload = await fnc.uploadAvaEmpQLC( idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }
-                    avatarUser = fnc.createLinkFileQLC('avt_individual', idQLC, File.avatarUser.name)
-
-                    data = await Users.updateOne({ idQLC: idQLC, type: 0 }, {
-                        $set: {
-                            userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
-                            phone: phone,
-                            avatarUser: avatarUser,
-                            address: address,
-                            otp: otp,
-                            authentic: null || 0,
-                            fromWeb: "quanlichung.timviec365",
-                            avatarUser: avatarUser,
-                            updatedAt: Date.parse(updatedAt),
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": birthday,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
-                        }
-                    })
-                    return functions.success(res, 'update avartar user success', { data })
-
-                } else {
-                    data1 = await Users.updateOne({ idQLC: idQLC, type: 0 }, {
-                        $set: {
-                            userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
-                            phone: phone,
-                            avatarUser: avatarUser,
-                            address: address,
-                            otp: otp,
-                            authentic: null || 0,
-                            fromWeb: "quanlichung.timviec365",
-                            // avatarUser: avatarUser,
-                            updatedAt: Date.parse(updatedAt),
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": birthday,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
-                        }
-                    })
-                    return functions.success(res, 'update info user success', { data1 })
+                    avatarUser = upload
                 }
+                 data = await Users.updateOne({ idQLC: idQLC, type: 0 }, {
+                        $set: {
+                            userName: userName,
+                            emailContact: emailContact,
+                            phone: phone,
+                            avatarUser: avatarUser,
+                            address: address,
+                            otp: otp,
+                            authentic: null || 0,
+                            fromWeb: "quanlichung.timviec365",
+                            avatarUser: avatarUser,
+                            updatedAt: Date.parse(updatedAt),
+                            "inForPerson.employee.group_id": group_id,
+                            "inForPerson.account.birthday": birthday,
+                            "inForPerson.account.gender": gender,
+                            "inForPerson.account.married": married,
+                            "inForPerson.account.experience": experience,
+                            "inForPerson.employee.startWorkingTime": startWorkingTime,
+                            "inForPerson.account.education": education,
+                        }
+                    })
+                    return functions.success(res, 'update info user success', { data })
+                
             } else {
                 return functions.setError(res, "không tìm thấy user")
 
@@ -498,33 +460,34 @@ exports.forgotPassword = async(req, res) => {
     }
 }
 
-exports.info = async(req, res) => {
+exports.info = async (req, res) => {
     try {
         const idQLC = req.user.data.idQLC
-            // const com_id = req.user.data.com_id
-        if ((idQLC) == undefined) {
-            functions.setError(res, " không tìm thấy thông tin từ token ")
-        } else if (isNaN(idQLC)) {
-            functions.setError(res, "id phải là số")
-        } else {
-
-            const data = await Users.findOne({ idQLC: idQLC, type: 0 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education').lean()
-            const birthday = data.inForPerson.account.birthday
-            const gender = data.inForPerson.account.gender
-            const married = data.inForPerson.account.married
-            const experience = data.inForPerson.account.experience
-            const education = data.inForPerson.account.education
-
-            data.birthday = birthday
-            data.gender = gender
-            data.married = married
-            data.experience = experience
-            data.education = education
-            if (data) {
-                return functions.success(res, 'Lấy thành công', { data });
-            };
-            return functions.setError(res, 'Không có dữ liệu', 404);
-        }
+        // const com_id = req.user.data.com_id
+        const data = await Users.aggregate([
+            { $match: { idQLC: idQLC, type: 0 } },
+            {
+                $project:
+                {
+                    "ep_name": "$userName",
+                    "ep_email": "$email",
+                    "ep_phone": "$phone",
+                    "ep_phone_tk": "$phoneTK",
+                    "ep_address": "$address",
+                    "ep_ava": "$avatarUser",
+                    "ep_authentic": "$authentic",
+                    "ep_birth_day": "$inForPerson.account.birthday",
+                    "ep_gender": "$inForPerson.account.gender",
+                    "ep_married": "$inForPerson.account.married",
+                    "ep_exp": "$inForPerson.account.experience",
+                    "ep_education": "$inForPerson.account.education"
+                }
+            }
+        ]);
+        if (data) {
+            return functions.success(res, 'Lấy thành công', { data });
+        };
+        return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (e) {
         return functions.setError(res, e.message)
     }

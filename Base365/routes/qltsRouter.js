@@ -8,6 +8,9 @@ const loaiTsRouter = require('./qlts/loaiTaiSanRouter')
 const vitriTsRouter = require('./qlts/viTriTaiSanRouter')
 var capPhat = require('./qlts/CapPhat.js')
 var ThuHoi = require('./qlts/ThuHoi.js')
+var mat = require('./qlts/matRouter')
+var huy = require('./qlts/huyRouter')
+
 var kiemKeRouter = require('./qlts/kiemKeRouter');
 
 //Api tool quét data
@@ -26,6 +29,9 @@ router.use('/loaits',loaiTsRouter)
 
 // vị trí tài sản
 router.use('/vitrits',vitriTsRouter)
+//API mất huỷ thanh lý
+router.use('/mat',mat)
+router.use('/huy',huy)
 //api kiem ke
 router.use('/kiemKe', [functions.checkToken, functions.dataFromToken], kiemKeRouter);
 

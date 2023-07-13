@@ -27,12 +27,12 @@ exports.getListDeparment = async (req, res) => {
                 const depId = depID[i];
                 total_emp = await functions.findCount(Users, { "inForPerson.employee.com_id": com_id, "inForPerson.employee.dep_id": depId, type: 2, "inForPerson.employee.ep_status": "Active" })
 
-                await Deparment.findOneAndUpdate({ com_id: com_id, dep_id: depId }, { $set: { total_emp: total_emp } });
+                if(total_emp) data.total_emp = total_emp
             }
             if (!data) {
                 return functions.setError(res, 'Không có dữ liệu', 404);
             };
-            return functions.success(res, 'Lấy thành công', { data });
+            return functions.success(res, 'Lấy thành công', {data});
         }
         return functions.setError(res, "Tài khoản không phải Công ty", 604);
 
@@ -49,11 +49,11 @@ exports.createDeparment = async (req, res) => {
         const com_id = req.user.data.com_id
         // const com_id = req.body.com_id
         const type = req.user.data.type
-
+        let now = new Date()
         if (type == 1) {
 
-            const { deparmentName, managerId, deputyId, deparmentOrder, deparmentCreated, total_emp } = req.body;
-            if (com_id && deparmentName) {
+            const { dep_name, manager_id, deparmentOrder } = req.body;
+            if (com_id && dep_name) {
                 //Kiểm tra Id công ty khác null
 
                 //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
@@ -61,18 +61,14 @@ exports.createDeparment = async (req, res) => {
                 const deparments = new Deparment({
                     dep_id: Number(maxID.dep_id) + 1 || 1,
                     com_id: com_id,
-                    deparmentName: deparmentName,
-                    managerId: managerId || null,
-                    deputyId: deputyId || null,
-                    deparmentCreated: new Date(),
+                    dep_name: dep_name,
+                    manager_id: manager_id || null,
+                    dep_create_time:  Date.parse(now),
                     deparmentOrder: deparmentOrder || 0,
-                    total_emp: total_emp,
                 });
 
                 await deparments.save()
-                return functions.success(res, "Tạo thành công", { deparments });
-
-
+                return functions.success(res, "Tạo thành công", {deparments});
             }
             return functions.setError(res, "nhập thiếu thông tin", 504);
         }
@@ -91,26 +87,21 @@ exports.editDeparment = async (req, res) => {
         const type = req.user.data.type
         const dep_id = req.body.dep_id;
         if (type == 1) {
-            const { com_id, deparmentName, managerId, deputyId } = req.body;
-
+            const {dep_name, manager_id } = req.body;
             const deparment = await functions.getDatafindOne(Deparment, { dep_id: dep_id });
             if (deparment) {
                 await functions.getDatafindOneAndUpdate(Deparment, { com_id: com_id, dep_id: dep_id }, {
                     com_id: com_id,
-                    deparmentName: deparmentName,
-                    managerId: managerId || null,
-                    deputyId: deputyId || null,
+                    dep_name: dep_name,
+                    manager_id: manager_id || null,
                 })
                 return functions.success(res, "Sửa phòng ban thành công", { deparment })
-
             }
             functions.setError(res, "Deparment does not exist!", 510);
-
         }
         return functions.setError(res, "Tài khoản không phải Công ty", 604);
     } catch (error) {
         return functions.setError(res, error.message)
-
     }
 };
 //API xóa một phòng ban theo id

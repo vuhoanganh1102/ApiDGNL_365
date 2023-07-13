@@ -10,7 +10,7 @@ exports.getListGroupByFields = async(req, res) => {
 
         let com_id = req.user.data.com_id
         // let com_id = req.body.com_id
-        let group_id = req.body.group_id
+        let gr_id = req.body.gr_id
         let dep_id = req.body.dep_id
         let team_id = req.body.team_id
         let data = []
@@ -18,33 +18,24 @@ exports.getListGroupByFields = async(req, res) => {
         let total_emp = {}
     if(type == 1){
 
-        if ((com_id) == undefined) {
-            functions.setError(res, "lack of input")
-        } else if (isNaN(com_id)) {
-            functions.setError(res, "id must be a Number")
-        } else {
             if (com_id) condition.com_id = com_id
-            if (group_id) condition.group_id = group_id
+            if (gr_id) condition.gr_id = gr_id
             if (dep_id) condition.dep_id = dep_id
             if (team_id) condition.team_id = team_id
-            data = await Group.find(condition).select('team_id groupName dep_id managerId deputyManagerId total_emp ')
-            const groupID = data.map(item => item.group_id)
+            data = await Group.find(condition).select('team_id gr_name dep_id com_id')
+            const groupID = data.map(item => item.gr_id)
             for (let i = 0; i < groupID.length; i++) {
                 const group = groupID[i];
 
-                total_emp = await Users.countDocuments({ "inForPerson.employee.com_id": com_id, "inForPerson.employee.group_id": group, type: 2, "inForPerson.employee.ep_status": "Active" })
-
-
-                await Group.findOneAndUpdate({ com_id: com_id, group_id: group }, { $set: { total_emp: total_emp } })
+                total_emp = await Users.countDocuments({ "inForPerson.employee.com_id": com_id, "inForPerson.employee.gr_id": group, type: 2, "inForPerson.employee.ep_status": "Active" })
+                if(total_emp) data.total_emp = total_emp
             }
 
-            if (!data) {
-                return functions.setError(res, 'Không có dữ liệu', 404);
-            } else {
-
+            if (data) {
                 return functions.success(res, 'Lấy thành công', { data });
+                
             }
-        }
+            return functions.setError(res, 'Không có dữ liệu', 404);
     }
     return functions.setError(res, "Tài khoản không phải Công ty", 604);
 
@@ -58,23 +49,20 @@ exports.createGroup = async(req, res) => {
     try{
         const type = req.user.data.type
         const com_id = req.user.data.com_id
-        const { dep_id, team_id, groupName, deputyManagerId, managerId, total_emp, groupCreated } = req.body;
+        // const com_id = req.body.com_id
+        const { dep_id, team_id, gr_name } = req.body;
     if(type == 1){
     
-        if (dep_id && com_id && team_id && groupName) {
+        if (dep_id && com_id && team_id && gr_name) {
             
             
-            let max = await Group.findOne({},{},{sort:{group_id:-1}}).lean() || 0
+            let max = await Group.findOne({},{},{sort:{gr_id:-1}}).lean() || 0
             const data = new Group({
-                group_id: Number(max) + 1 || 1,
-                com_id: com_id,
+                gr_id: Number(max) + 1 || 1,
                 dep_id: dep_id,
-                team_id: team_id,
-                groupName: groupName,
-                deputyManagerId: deputyManagerId || null,
-                managerId: managerId || null,
-                total_emp: 0,
-                groupCreated: new Date()
+                com_id:com_id,
+                team_id:team_id,
+                gr_name: gr_name,
             });
             
             await data.save()
@@ -99,22 +87,19 @@ exports.editGroup = async(req, res) => {
         const type = req.user.data.type
         const com_id = req.user.data.com_id
         // const com_id = req.body.com_id
-        const group_id = req.body.group_id
+        const gr_id = req.body.gr_id
     if(type == 1){
 
-        const { dep_id, team_id, groupName, deputyManagerId, managerId } = req.body;
+        const { dep_id, team_id, gr_name } = req.body;
 
         if (com_id) {
     
-            const data = await functions.getDatafindOne(Group, { com_id: com_id, dep_id: dep_id, team_id: team_id, group_id: group_id });
+            const data = await functions.getDatafindOne(Group, { com_id: com_id, dep_id: dep_id, team_id: team_id, gr_id: gr_id });
             if (data) {
-                await functions.getDatafindOneAndUpdate(Group, { com_id: com_id, dep_id: dep_id, team_id: team_id, group_id: group_id }, {
+                await functions.getDatafindOneAndUpdate(Group, { com_id: com_id, dep_id: dep_id, team_id: team_id, gr_id: gr_id }, {
                     dep_id: dep_id,
-                    groupName: groupName,
-                    com_id: com_id,
+                    gr_name: gr_name,
                     team_id: team_id,
-                    deputyManagerId: deputyManagerId || null,
-                    managerId: managerId || null
                 })
                 return functions.success(res, "Sửa thành công", {data});
                 
@@ -139,25 +124,25 @@ exports.editGroup = async(req, res) => {
 
 exports.deleteGroup = async(req, res) => {
 try{
-    const {group_id} = req.body
+    const {gr_id} = req.body
     const type = req.user.data.type
 
     const com_id = req.user.data.com_id
     // const com_id = req.body.com_id
     if(type == 1){
 
-    if (com_id && group_id) {
+    if (com_id && gr_id) {
         
-        await Users.updateOne({ "inForPerson.employee.com_id": com_id, "inForPerson.employee.group_id": group_id }, { $set: { "inForPerson.employee.group_id": 0 } })
+        await Users.updateOne({ "inForPerson.employee.com_id": com_id, "inForPerson.employee.gr_id": gr_id }, { $set: { "inForPerson.employee.gr_id": 0 } })
         
-        const data = await functions.getDatafindOne(Group, { com_id: com_id, group_id: group_id });
+        const data = await functions.getDatafindOne(Group, { com_id: com_id, gr_id: gr_id });
         if (data) {
-            functions.getDataDeleteOne(Group, { com_id: com_id, group_id: group_id })
+            functions.getDataDeleteOne(Group, { com_id: com_id, gr_id: gr_id })
             return functions.success(res, "Xóa thành công", { data })
             }
             return functions.setError(res, "Nhóm không tồn tại ", 610);
         }
-        return functions.setError(res, "Nhập thiếu trường ", 502);
+        return functions.setError(res, "Nhập thiếu trường gr_id ", 502);
     }
     return functions.setError(res, "Tài khoản không phải Công ty", 604);
 

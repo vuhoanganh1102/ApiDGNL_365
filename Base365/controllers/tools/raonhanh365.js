@@ -139,7 +139,7 @@ exports.toolNewRN = async (req, res, next) => {
                     const images = data[i].new_image.split(";").map((image, index) => {
                         const parts = image.split("/");
 
-                        const filename = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/' + parts[parts.length - 2] + '/' + data[i].new_id + '/' + parts[parts.length - 1];
+                        const filename = parts[parts.length - 1];
 
                         return {
                             nameImg: filename

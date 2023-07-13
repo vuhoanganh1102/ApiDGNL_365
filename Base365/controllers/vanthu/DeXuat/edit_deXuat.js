@@ -1,7 +1,8 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const setting_dx = require('../../../models/Vanthu/setting_dx');
 const His_Handle = require('../../../models/Vanthu/history_handling_dx');
-const QuitJobNew = require('../../../models/hr/personalChange/QuitJobNew')
+const QuitJob = require('../../../models/hr/personalChange/QuitJob');
+const User = require('../../../models/Users')
 const axios = require('axios');
 //hàm khôi phục 
 exports.edit_del_type = async (req, res) => {
@@ -39,28 +40,30 @@ exports.edit_del_type = async (req, res) => {
 
 exports.edit_active = async (req, res) => {
   try {
-    const { _id, type, id_user, ngay_bd_tv, id_ep, ca_dbdnghi, token } = req.body;
+    const { _id, type, id_user, ngaybatdau_tv, id_ep, ca_dbdnghi, token,shift_id,ly_do } = req.body;
     const timeNow = new Date();
-
+    let com_id = '';
+    if(req.user.data.type == 2){
+      com_id = req.user.data.inForPerson.employee.com_id
+    }else{
+      return  functions.setError(res, 'không có quyền truy cập', 400);
+    }
     const check = await De_Xuat.findOne({ _id: _id });
     if (check) {
+      // Duyệt đề xuất
       if (type == 1) {
-        // Duyệt đề xuất
         const maxID = await functions.getMaxID(His_Handle);
         let newID = 0;
         if (maxID) {
           newID = Number(maxID) + 1;
         }
-
         const createHis = new His_Handle({
           _id: newID,
           id_dx: check._id,
           type_handling: 2,
           time: timeNow
         });
-
         await createHis.save();
-
         if (check.kieu_duyet == 0) {
           await De_Xuat.findOneAndUpdate(
             { _id: _id },
@@ -95,7 +98,7 @@ exports.edit_active = async (req, res) => {
             );
             res.status(200).json({ message: 'Đã duyệt đề xuất' });
           } else {
-            res.status(200).json({ message: 'Không thể duyệt đề xuất' });
+           return res.status(200).json({ message: 'Không thể duyệt đề xuất' });
           }
         }
       } else if (type == 2) {
@@ -135,7 +138,7 @@ exports.edit_active = async (req, res) => {
 
         await axios.post('https://mess.timviec365.vn/Notification/NotificationOfferSent', notificationData);
 
-        res.status(200).json({ message: 'Từ chối đề xuất thành công' });
+       return res.status(200).json({ message: 'Từ chối đề xuất thành công' });
       } else if (type == 3) {
         // Bắt buộc đi làm
         await De_Xuat.findOneAndUpdate(
@@ -157,7 +160,7 @@ exports.edit_active = async (req, res) => {
         });
         await createHis.save();
 
-        res.status(200).json({ message: 'Bắt buộc đi làm thành công' });
+        return res.status(200).json({ message: 'Bắt buộc đi làm thành công' });
       } else if (type == 4) {
         // Duyệt chuyển tiếp
         const { id_uct } = req.body;
@@ -177,16 +180,17 @@ exports.edit_active = async (req, res) => {
         });
         await createHis.save();
 
-        res.status(200).json({ message: 'Chuyển tiếp đề xuất thành công' });
-      } else if (type == 5) {
-        // Thôi việc
+        return res.status(200).json({ message: 'Chuyển tiếp đề xuất thành công' });
+      } // Thôi việc
+      else if (type == 5){
+        
         await De_Xuat.findOneAndUpdate(
           { _id: _id },
           {
             $set: {
               type_duyet: 5,
               time_duyet: timeNow,
-              time_start_out: ngay_bd_tv,
+              time_start_out: ngaybatdau_tv,
               active: 1
             }
           },
@@ -200,17 +204,20 @@ exports.edit_active = async (req, res) => {
           time: timeNow
         });
         await createHis.save();
-
-        const data = {
-          token: token,
-          ep_id: check.id_user,
-          time_start: ngay_bd_tv,
-          shift_id: ca_dbdnghi
-        };
-
-        await axios.post('https://phanmemnhansu.timviec365.vn/quitJob', data);
-
-        res.status(200).json({ message: 'Thôi việc thành công' });
+        let ep_id = check.id_user
+        let chekUser = await User.findOne({idQLC : ep_id}).select('inForPerson.employee.position_id  inForPerson.employee.dep_id')
+        const createQJ = new QuitJob({
+          id : await functions.getMaxID(QuitJobNew) + 1,
+          ep_id : ep_id,
+          com_id : com_id,
+          current_position : chekUser.inForPerson.employee.position_id ,
+          current_dep_id : chekUser.inForPerson.employee.dep_id,
+          shift_id : shift_id,
+          created_at : ngaybatdau_tv,
+          note : ly_do,
+        });
+        await createQJ.save();
+        return res.status(200).json({ message: 'Thôi việc thành công' });
       } else if (type == 6) {
         // Tiếp nhận
         const { ep_id } = req.body;

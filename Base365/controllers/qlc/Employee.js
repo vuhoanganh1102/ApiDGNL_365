@@ -4,34 +4,34 @@ const fnc = require('../../services/qlc/functions')
 const md5 = require('md5');
 const functions = require("../../services/functions")
 
-const Deparment = require("../../models/qlc/Deparment")
+const Deparment = require("../../models/qlc/Deparment");
+const { deflateSync } = require('zlib');
 
 //đăng kí tài khoản nhân viên 
 exports.register = async(req, res) => {
     try {
         const { userName, emailContact, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp, team_id } = req.body;
         const createdAt = new Date()
-
         if ((userName && password && com_id && address && phoneTK) !== undefined) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
-                let user = await Users.findOne({ phoneTK: phoneTK, type: 2 }).lean()
+                let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1} }).lean()
                 let MaxId = await functions.getMaxUserID("user")
-                if (user == null) {
+                let _id = MaxId._id
+                if (!user) {
                     const user = new Users({
-                        _id: MaxId._id,
+                        _id: _id,
                         emailContact: emailContact,
                         phoneTK: phoneTK,
                         userName: userName,
-                        phone: phone || phoneTK,
+                        phone: phone,
                         avatarUser: avatarUser,
                         type: 2,
                         password: md5(password),
                         address: address,
-                        otp: otp,
                         createdAt: Date.parse(createdAt),
-                        authentic: 0,
                         fromWeb: "quanlichung",
+                        chat365_secret : Buffer.from(_id.toString()).toString('base64'),
                         role: 0,
                         avatarUser: null,
                         idQLC: MaxId._idQLC,
@@ -42,17 +42,25 @@ exports.register = async(req, res) => {
                         "inForPerson.employee.dep_id": dep_id,
                         "inForPerson.employee.group_id": group_id,
                         "inForPerson.employee.team_id": team_id,
-                        "inForPerson.account.birthday": birthday,
+                        "inForPerson.account.birthday": Date.parse(birthday),
                         "inForPerson.account.gender": gender,
                         "inForPerson.account.married": married,
                         "inForPerson.account.experience": experience,
                         "inForPerson.employee.startWorkingTime": startWorkingTime,
                         "inForPerson.account.education": education,
                     })
-
-
                     await user.save()
-                    const token = await functions.createToken(user, "1d")
+                    const token = await functions.createToken({
+                        _id: user._id,
+                        idTimViec365: user.idTimViec365,
+                        idQLC: user.idQLC,
+                        idRaoNhanh365: user.idRaoNhanh365,
+                        emailContact: user.emailContact,
+                        phoneTK: user.phoneTK,
+                        createdAt: user.createdAt,
+                        type: user.type,
+                        com_id : user.inForPerson.employee.com_id,
+                    }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {
                         access_token: token,
@@ -61,18 +69,15 @@ exports.register = async(req, res) => {
                     functions.success(res, "tạo tài khoản thành công", { user, data })
                 } else {
                     return functions.setError(res, 'SDT đã tồn tại', 404);
-
                 }
             } else {
                 return functions.setError(res, ' định dạng sdt không đúng', 404);
             }
-
         } else {
             return functions.setError(res, 'Một trong các trường yêu cầu bị thiếu', 404)
         }
     } catch (e) {
         return functions.setError(res, e.message)
-
     }
 
 }
@@ -375,7 +380,6 @@ exports.updateInfoEmployee = async(req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC;
         let data = [];
-        let data1 = [];
         const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
         let updatedAt = new Date()
         let File = req.files || null;
@@ -384,17 +388,16 @@ exports.updateInfoEmployee = async(req, res, next) => {
             let findUser = Users.findOne({ idQLC: idQLC, type: 2 })
             if (findUser) {
                 if (File && File.avatarUser) {
-                    let upload = fnc.uploadFileQLC('avt_ep', idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                    let upload = await fnc.uploadAvaEmpQLC( idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }
-                    avatarUser = fnc.createLinkFileQLC('avt_ep', idQLC, File.avatarUser.name)
-
+                    avatarUser = upload
+                } 
                     data = await Users.updateOne({ idQLC: idQLC, type: 2 }, {
                         $set: {
                             userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
+                            emailContact: emailContact,
                             phone: phone,
                             avatarUser: avatarUser,
                             "inForPerson.employee.position_id": position_id,
@@ -415,43 +418,10 @@ exports.updateInfoEmployee = async(req, res, next) => {
                             "inForPerson.account.education": education,
                         }
                     })
-                    await functions.success(res, 'update avartar user success', { data })
-
-
-
-                } else {
-                    data1 = await Users.updateOne({ idQLC: idQLC, type: 2 }, {
-                        $set: {
-                            userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
-                            phone: phone,
-                            avatarUser: avatarUser,
-                            "inForPerson.employee.position_id": position_id,
-                            "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": dep_id,
-                            address: address,
-                            otp: otp,
-                            authentic: null || 0,
-                            fromWeb: "quanlichung",
-                            // avatarUser: avatarUser,
-                            updatedAt: Date.parse(updatedAt),
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": birthday,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
-                        }
-                    })
-                    return functions.success(res, 'update 1 user success', { data1 })
-                }
+                    return functions.success(res, 'update 1 user success', { data })
             } else {
                 return functions.setError(res, "không tìm thấy user")
-
             }
-
         } else {
             return functions.setError(res, "không tìm thấy token")
         }

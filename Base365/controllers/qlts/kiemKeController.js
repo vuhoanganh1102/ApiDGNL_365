@@ -1,29 +1,35 @@
 const functions = require('../../services/functions');
 const KiemKe = require('../../models/QuanLyTaiSan/KiemKe');
 const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
+const TaiSan = require('../../models/QuanLyTaiSan/TaiSan');
 
-exports.create = async(req, res, next)=>{
+exports.getAndCheckData = async(req, res, next) => {
   try{
     let {ky_1, ky_2, loai_kk, taisan_kk, ng_kk, vitrits, noidung, denngay, day_start, day_end} = req.body;
-    
-    if(ky_1 && ky_2 && loai_kk && taisan_kk && denngay && day_start && day_end) {
-      let ky_kk;
-      if(ky_1<=12) ky_kk = `01-${ky_1}-${ky_2}`;
-      else if(ky_1==13) ky_kk  = `01-01-${ky_2}`;
-      else if(ky_1==14) ky_kk  = `01-04-${ky_2}`;
-      else if(ky_1==15) ky_kk  = `01-07-${ky_2}`;
-      else if(ky_1==16) ky_kk  = `01-10-${ky_2}`;
-      let maxId = await functions.getMaxIdByField(KiemKe, 'id_kiemke');
-      let comId = req.comId;
-      let id = req.userId;
-      let type = req.type;
-      let kk_date_create = functions.convertTimestamp(Date.now());
-      ky_kk = functions.convertTimestamp(ky_kk); 
-      denngay = functions.convertTimestamp(denngay);
-      day_start = functions.convertTimestamp(day_start);
-      day_end = functions.convertTimestamp(day_end);
-      let fields = {
-        id_kiemke: maxId,
+    //kiem tra dinh dang ngay
+    if(!ky_1 || !ky_2 || !loai_kk || !taisan_kk || !denngay || !day_start || !day_end) {
+      return functions.setError(res, "Missing input value!", 404);
+    }
+    if(!await functions.checkDate(denngay) || !await functions.checkDate(day_start) || !await functions.checkDate(day_end)){
+      return functions.setError(res, "Ngay khong dung dinh dang!", 405);
+    }
+    let comId = req.comId;
+    let id = req.userId;
+    let type = req.type;
+
+    let ky_kk;
+    if(ky_1<=12) ky_kk = `01-${ky_1}-${ky_2}`;
+    else if(ky_1==13) ky_kk  = `01-01-${ky_2}`;
+    else if(ky_1==14) ky_kk  = `01-04-${ky_2}`;
+    else if(ky_1==15) ky_kk  = `01-07-${ky_2}`;
+    else if(ky_1==16) ky_kk  = `01-10-${ky_2}`;
+
+    let kk_date_create = functions.convertTimestamp(Date.now());
+    ky_kk = functions.convertTimestamp(ky_kk); 
+    denngay = functions.convertTimestamp(denngay);
+    day_start = functions.convertTimestamp(day_start);
+    day_end = functions.convertTimestamp(day_end);
+    let fieldsKK = {
         id_cty: comId,
         "id_ts.ds_ts": taisan_kk,
         id_ngtao_kk: id,
@@ -42,34 +48,181 @@ exports.create = async(req, res, next)=>{
         xoa_kiem_ke: 0,
         kk_date_create: kk_date_create,
       }
-      let kiemKe = new KiemKe(fields);
-      kiemKe = await kiemKe.save();
-      if(kiemKe) {
-        // id_ts,id_cty,id_ng_nhan, id_ng_tao, type_quyen,type_quyen_tao,loai_tb, add_or_duyet,da_xem,date_create) VALUES 
-        // ('$last_id','$id_cty','$ng_kk','$id_ng_tao','2','$type_quyen','12','1','0','$date_create')"
-        let fieldsTB = {
-          id_ts: maxId,
-          id_cty: comId,
-          id_ng_nhan: ng_kk,
-          id_ng_tao: id,
-          type_quyen: 2,
-          type_quyen_tao: type,
-          loai_tb: 12,
-          add_or_duyet: 1,
-          da_xem: 0,
-          date_create: kk_date_create
-        }
-        let thongBao = new ThongBao(fields);
-        thongBao = await thongBao.save();
-        if(!thongBao) {
-          return functions.setError(res, "Create thong bao fail!", 505);
-        }
-        return functions.success(res, "create kiem ke success!", maxId);
+    let fieldsTB = {
+        id_cty: comId,
+        id_ng_nhan: ng_kk,
+        id_ng_tao: id,
+        type_quyen: 2,
+        type_quyen_tao: type,
+        loai_tb: 12,
+        add_or_duyet: 1,
+        da_xem: 0,
+        date_create: kk_date_create
       }
-      return functions.setError(res, "Create kiem ke fail!", 504);
-    }
-    return functions.setError(res, "Missing input value!", 404);
+      req.fieldsKK = fieldsKK;
+      req.fieldsTB = fieldsTB;
+      return next();
   }catch(error) {
+    console.log(error);
+    return functions.setError(res, error.message, 500);
+  }
+}
+
+exports.create = async(req, res, next)=>{
+  try{
+    let fieldsKK = req.fieldsKK;
+    let maxIdKK = await functions.getMaxIdByField(KiemKe, 'id_kiemke');
+    fieldsKK.id_kiemke = maxIdKK;
+    
+    let kiemKe = new KiemKe(fieldsKK);
+    kiemKe = await kiemKe.save();
+    if(kiemKe) {
+      let maxIdThongBao = await functions.getMaxIdByField(ThongBao, 'id_tb');
+      let fieldsTB = req.fieldsTB;
+      fieldsTB.id_tb =  maxIdThongBao;
+      fieldsTB.id_ts = maxIdKK;
+      let thongBao = new ThongBao(fieldsTB);
+      thongBao = await thongBao.save();
+      if(thongBao) {
+        return functions.success(res, "Create kiem ke success!");
+      }
+      return functions.setError(res, "Create thong bao fail!", 505);
+    }
+    return functions.setError(res, "Create kiem ke fail!", 505);
+  }catch(error) {
+    console.log(error);
+    return functions.setError(res, error.message, 500);
+  }
+}
+
+exports.update = async(req, res, next)=>{
+  try{
+    let id_kk = req.body.id_kk;
+    if(id_kk) {
+      let fieldsKK = req.fieldsKK;
+      const comId = req.comId;
+      let kiemKe = await KiemKe.findOneAndUpdate({id_kiemke: id_kk, id_cty: comId}, fieldsKK, {new: true});
+      if(kiemKe) {
+        return functions.success(res, "Update kiem ke success!", {kiemKe: kiemKe});
+      }
+      return functions.setError(res, "Kiem ke not found!", 505);
+    }
+    return functions.setError(res, "Missing input id_kk!", 403);
+  }catch(error) {
+    console.log(error);
+    return functions.setError(res, error.message, 500);
+  }
+}
+
+exports.danhSachKiemKe = async(req, res, next)=>{
+  try{
+    let {page, pageSize, key} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 20;
+    const limit = pageSize;
+    const skip = (page-1)*limit;
+    const comId = req.comId;
+
+    condition = {id_cty: comId, xoa_kiem_ke: 0};
+    if(key) {
+      if(!isNaN(parseFloat(key)) && isFinite(key)) condition.id_kiemke = key;
+      else condition.kk_noidung = new RegExp(key, 'i');
+    }
+    
+    let danhSachKiemKe = await functions.pageFind(KiemKe, condition, {id_kiemke: 1}, skip, limit);
+    return functions.success(res, "Danh sach kiem ke:", {danhSachKiemKe: danhSachKiemKe});
+  }catch(error) {
+    console.log(error);
+    return functions.setError(res, error.message, 500);
+  }
+}
+
+exports.delete = async(req, res, next) => {
+  try{
+    const {id_kk, datatype} = req.body;
+    const userId = req.userId;
+    const comId = req.comId;
+    const type = req.type;
+    const time = functions.convertTimestamp(Date.now());
+    
+    if(!id_kk){
+      return functions.setError(res, "Missing input id_kk", 404);
+    }
+    if(datatype!=1 && datatype!=2 && datatype!=3) {
+      return functions.setError(res, "Vui long truyen datatype = 1/2/3", 404);
+    }
+    //
+    if(datatype==1) {
+      let kiemKe = await KiemKe.findOneAndUpdate({id_kiemke: id_kk, id_cty: comId}, {
+        xoa_kiem_ke: 1,
+        kk_type_quyen: type,
+        kk_id_ng_xoa: userId,
+        kk_date_delete: time,
+      }, {new: true});
+      if(kiemKe) return functions.success(res, "Xoa tam thoi kiem ke thanh cong!");
+    }
+    else if(datatype==2) {
+      let kiemKe = await KiemKe.findOneAndUpdate({id_kiemke: id_kk, id_cty: comId},{
+        xoa_kiem_ke: 0,
+        kk_type_quyen: 0,
+        kk_id_ng_xoa: 0,
+        kk_date_delete: 0,
+      }, {new: true});
+      if(kiemKe) return functions.success(res, "Khoi phuc kiem ke thanh cong!");
+    }
+    else if(datatype==3) {
+      let kiemKe = await KiemKe.findOneAndDelete({id_kiemke: id_kk, id_cty: comId});
+      if(kiemKe) return functions.success(res, "Xoa vinh vien kiem ke thanh cong!");
+    }
+    return functions.setError(res, "Kiem ke not found!", 505);
+  }catch(error){
+    console.log(error);
+    return functions.setError(res, error.message, 500);
+  }
+}
+
+exports.duyet = async(req, res, next) => {
+  try{
+    const id_kk = req.body.id_kk;
+    const ng_duyet = req.userId;
+    const type = req.type;
+    const comId = req.comId;
+    const time = functions.convertTimestamp(Date.now());
+    let kiemKe = await KiemKe.findOneAndUpdate({id_kiemke: id_kk, id_cty: comId}, {
+      id_ngduyet_kk: ng_duyet,
+      kk_ngayduyet: time,
+      kk_type_quyen_duyet: type,
+      kk_tiendo: 100,
+      kk_trangthai: 3
+    }, {new: true});
+    if(kiemKe) return functions.success(res, "Duyet kiem ke thanh cong!");
+    return functions.setError(res, "Kiem ke not found!", 504);
+  }catch(error){
+    console.log(error);
+    return functions.setError(res, error.message, 500);
+  }
+}
+
+exports.chiTiet = async(req, res, next) => {
+  try{
+    const id_kk = req.body.id_kk;
+    if(!id_kk) return functions.setError(res, "Missing input id_kk!", 404);
+    let kiemKe = await KiemKe.findOne({id_kiemke: id_kk});
+    let danhSachTaiSan = [];
+    
+    if(kiemKe) {
+      if(kiemKe.id_ts && kiemKe.id_ts.ds_ts) {
+        let id_ts = kiemKe.id_ts.ds_ts;
+        for(let i=0; i<id_ts.length; i++) {
+          // let taiSan = await TaiSan;
+        }
+        console.log(id_ts);
+      }
+      return functions.success(res, "Lay thong tin chi tiet kiem ke thanh cong!", {kiemKe: kiemKe});
+    }
+    return functions.setError(res, "Kiem ke not found!", 504);
+  }catch(error){
+    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }

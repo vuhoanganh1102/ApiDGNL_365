@@ -80,10 +80,10 @@ exports.toolDeparment = async(req, res, next) => {
                     const department = new Deparment({
                         dep_id: element.dep_id,
                         com_id: element.com_id,
-                        deparmentName: element.dep_name,
-                        managerId: element.manager_id,
-                        deparmentCreated: element.dep_create_time,
-                        deparmentOrder:element.dep_create_time,
+                        dep_name: element.dep_name,
+                        manager_id: element.manager_id,
+                        dep_create_time: element.dep_create_time,
+                        dep_order:element.dep_order,
                     })
                     await department.save();
                 }

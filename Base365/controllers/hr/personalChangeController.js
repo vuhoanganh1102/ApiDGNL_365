@@ -91,7 +91,6 @@ exports.getAndCheckData = async (req, res, next) =>{
     try{
         //check quyen
         let infoLogin = req.infoLogin;
-        console.log("🚀 ~ file: personalChangeController.js:94 ~ exports.getAndCheckData= ~ infoLogin:", infoLogin)
         let checkRole = await hrService.checkRole(infoLogin, 5, 2);
         if(!checkRole) {
             return functions.setError(res, "no right", 444);   

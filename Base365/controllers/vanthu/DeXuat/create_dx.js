@@ -2098,13 +2098,13 @@ exports.showadd = async (req, res) => {
                 const showUserduyet = await User.find({
                     'inForPerson.employee.com_id': com_id, $or: [
                         { 'inForPerson.employee.com_id': com_id, 'inForPerson.employee.position_id': 5 },// chức vụ của người duyệt
-                        { 'inForPerson.employee.com_id': com_id, 'inForPerson.employee.position_id': 6 },// chức vụ của người theo dõi
+                        { 'inForPerson.employee.com_id': com_id, 'inForPerson.employee.position_id': 6 },
                     ]
                 }).select('idQLC userName avatarUser')
                 const showUserTheoDoi = await User.find({
                     'inForPerson.employee.com_id': com_id,
                     'inForPerson.employee.com_id': com_id,
-                    'inForPerson.employee.position_id': { $in: [2, 9, 3, 20, 4, 12, 13, 10, 11] }
+                    'inForPerson.employee.position_id': { $in: [2, 9, 3, 20, 4, 12, 13, 10, 11] }// chức vụ  người theo dõi
                 }).select('idQLC userName avatarUser')
                 return functions.success(res, 'get data success', { showUserduyet, showUserTheoDoi });
             }

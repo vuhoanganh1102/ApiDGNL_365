@@ -98,6 +98,9 @@ router.get('/getDatabank',functions.checkToken,newRN.getDatabank)
 // nạp tiền
 router.post('/napTien',formData.parse(),functions.checkToken,newRN.napTien)
 
-// nạp tiền
+// support for update new
 router.post('/getDetailForUpdateNew',formData.parse(),newRN.getDetailForUpdateNew)
+
+// lấy thông tin đấu thầu
+router.post('/getDataBidding',formData.parse(),functions.checkToken,newRN.getDataBidding)
 module.exports = router;
