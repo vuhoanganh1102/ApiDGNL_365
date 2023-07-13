@@ -4,22 +4,23 @@ const fnc = require('../../services/qlc/functions')
 const md5 = require('md5');
 const functions = require("../../services/functions")
 
-const Deparment = require("../../models/qlc/Deparment")
+const Deparment = require("../../models/qlc/Deparment");
+const { deflateSync } = require('zlib');
 
 //đăng kí tài khoản nhân viên 
 exports.register = async(req, res) => {
     try {
         const { userName, emailContact, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp, team_id } = req.body;
         const createdAt = new Date()
-
         if ((userName && password && com_id && address && phoneTK) !== undefined) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
                 let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1} }).lean()
                 let MaxId = await functions.getMaxUserID("user")
+                let _id = MaxId._id
                 if (!user) {
                     const user = new Users({
-                        _id: MaxId._id,
+                        _id: _id,
                         emailContact: emailContact,
                         phoneTK: phoneTK,
                         userName: userName,
@@ -28,10 +29,9 @@ exports.register = async(req, res) => {
                         type: 2,
                         password: md5(password),
                         address: address,
-                        otp: otp,
                         createdAt: Date.parse(createdAt),
-                        authentic: 0,
                         fromWeb: "quanlichung",
+                        chat365_secret : Buffer.from(_id.toString()).toString('base64'),
                         role: 0,
                         avatarUser: null,
                         idQLC: MaxId._idQLC,
@@ -42,7 +42,7 @@ exports.register = async(req, res) => {
                         "inForPerson.employee.dep_id": dep_id,
                         "inForPerson.employee.group_id": group_id,
                         "inForPerson.employee.team_id": team_id,
-                        "inForPerson.account.birthday": birthday,
+                        "inForPerson.account.birthday": Date.parse(birthday),
                         "inForPerson.account.gender": gender,
                         "inForPerson.account.married": married,
                         "inForPerson.account.experience": experience,
@@ -50,7 +50,23 @@ exports.register = async(req, res) => {
                         "inForPerson.account.education": education,
                     })
                     await user.save()
-                    const token = await functions.createToken(user, "1d")
+                    const token = await functions.createToken({
+                        _id: user._id,
+                        idTimViec365: user.idTimViec365,
+                        idQLC: user.idQLC,
+                        idRaoNhanh365: user.idRaoNhanh365,
+                        emailContact: user.emailContact,
+                        phoneTK: user.phoneTK,
+                        createdAt: user.createdAt,
+                        type: user.type,
+                        com_id : user.inForPerson.employee.com_id,
+                        userName : user.userName,
+                        position_id : user.inForPerson.employee.position_id,
+                        dep_id : user.inForPerson.employee.dep_id,
+                        group_id : user.inForPerson.employee.group_id,
+                        team_id : user.inForPerson.employee.team_id,
+
+                    }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {
                         access_token: token,
@@ -152,6 +168,7 @@ exports.login = async(req, res, next) => {
         let type = request.type;
         if (account && password && type) {
             let user;
+           
             if (!pass_type) {
                 password = md5(password);
             }
@@ -168,6 +185,7 @@ exports.login = async(req, res, next) => {
                     type: type
                 }).lean();
             }
+         
             if (user) {
                 const token = await functions.createToken({
                     _id: user._id,
@@ -385,8 +403,7 @@ exports.updateInfoEmployee = async(req, res, next) => {
                     data = await Users.updateOne({ idQLC: idQLC, type: 2 }, {
                         $set: {
                             userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
+                            emailContact: emailContact,
                             phone: phone,
                             avatarUser: avatarUser,
                             "inForPerson.employee.position_id": position_id,

@@ -1,7 +1,6 @@
 const Users = require("../../models/Users")
 const fnc = require("../../services/qlc/functions")
 const functions = require("../../services/functions")
-
 const md5 = require("md5")
 
 //đăng kí tài khoản cá nhân 
@@ -14,10 +13,10 @@ exports.register = async(req, res) => {
             if (checkPhone) {
                 let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1}}).lean()
                 let MaxId = await functions.getMaxUserID("user")
-
+                let _id = MaxId._id
                 if (!user) {
                     const Inuser = new Users({
-                        _id: MaxId._id,
+                        _id: _id,
                         userName: userName,
                         phoneTK: phoneTK,
                         phone: phone,
@@ -25,9 +24,7 @@ exports.register = async(req, res) => {
                         address: address,
                         createdAt: Date.parse(createdAt),
                         type: 0,
-                        role: 0,
-                        otp: null,
-                        authentic: 0,
+                        chat365_secret : Buffer.from(_id.toString()).toString('base64'),
                         fromWeb: "quanlichung",
                         idQLC: MaxId._idQLC,
                         idTimViec365: MaxId._idTV365,
@@ -339,7 +336,7 @@ exports.updateInfoindividual = async(req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC;
         let data = [];
-        const { userName, email, phoneTK, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+        const { userName, emailContact, phoneTK, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
         let updatedAt = new Date()
         let File = req.files || null;
         let avatarUser = null;
@@ -356,8 +353,7 @@ exports.updateInfoindividual = async(req, res, next) => {
                  data = await Users.updateOne({ idQLC: idQLC, type: 0 }, {
                         $set: {
                             userName: userName,
-                            email: email,
-                            phoneTK: phoneTK,
+                            emailContact: emailContact,
                             phone: phone,
                             avatarUser: avatarUser,
                             address: address,
@@ -464,33 +460,34 @@ exports.forgotPassword = async(req, res) => {
     }
 }
 
-exports.info = async(req, res) => {
+exports.info = async (req, res) => {
     try {
         const idQLC = req.user.data.idQLC
-            // const com_id = req.user.data.com_id
-        if ((idQLC) == undefined) {
-            functions.setError(res, " không tìm thấy thông tin từ token ")
-        } else if (isNaN(idQLC)) {
-            functions.setError(res, "id phải là số")
-        } else {
-
-            const data = await Users.findOne({ idQLC: idQLC, type: 0 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education').lean()
-            const birthday = data.inForPerson.account.birthday
-            const gender = data.inForPerson.account.gender
-            const married = data.inForPerson.account.married
-            const experience = data.inForPerson.account.experience
-            const education = data.inForPerson.account.education
-
-            data.birthday = birthday
-            data.gender = gender
-            data.married = married
-            data.experience = experience
-            data.education = education
-            if (data) {
-                return functions.success(res, 'Lấy thành công', { data });
-            };
-            return functions.setError(res, 'Không có dữ liệu', 404);
-        }
+        // const com_id = req.user.data.com_id
+        const data = await Users.aggregate([
+            { $match: { idQLC: idQLC, type: 0 } },
+            {
+                $project:
+                {
+                    "ep_name": "$userName",
+                    "ep_email": "$email",
+                    "ep_phone": "$phone",
+                    "ep_phone_tk": "$phoneTK",
+                    "ep_address": "$address",
+                    "ep_ava": "$avatarUser",
+                    "ep_authentic": "$authentic",
+                    "ep_birth_day": "$inForPerson.account.birthday",
+                    "ep_gender": "$inForPerson.account.gender",
+                    "ep_married": "$inForPerson.account.married",
+                    "ep_exp": "$inForPerson.account.experience",
+                    "ep_education": "$inForPerson.account.education"
+                }
+            }
+        ]);
+        if (data) {
+            return functions.success(res, 'Lấy thành công', { data });
+        };
+        return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (e) {
         return functions.setError(res, e.message)
     }

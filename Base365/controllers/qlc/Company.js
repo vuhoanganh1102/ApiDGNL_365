@@ -9,25 +9,25 @@ const Deparment = require("../../models/qlc/Deparment")
 exports.register = async(req, res) => {
     const { userName, emailContact, phoneTK, password, address, phone } = req.body;
     let idTimViec365 = ""
-    idRaoNhanh365 = ""
+        idRaoNhanh365 = ""
     const createdAt = new Date()
     if (userName && password && phoneTK && address) {
         let checkPhone = await functions.checkPhoneNumber(phoneTK)
         if (checkPhone) {
             let finduser = await Users.findOne({ phoneTK: phoneTK, type: 1 }).lean()
             let MaxId = await functions.getMaxUserID("company")
+            let _id = MaxId._id
             if (finduser == null) {
                 const user = new Users({
-                    _id: MaxId._id,
+                    _id: _id,
                     emailContact: emailContact,
                     phoneTK: phoneTK,
                     userName: userName,
                     phone: phone,
                     address: address,
                     type: 1,
-                    authentic: 0,
+                    chat365_secret : Buffer.from(_id.toString()).toString('base64'),
                     password: md5(password),
-                    otp: null,
                     fromWeb: "quanlichung",
                     role: 1,
                     createdAt: Date.parse(createdAt),
@@ -39,7 +39,18 @@ exports.register = async(req, res) => {
                     'inForCompany.cds.com_vip_time': 0,
                 })
                 await user.save()
-                const token = await functions.createToken(user, "1d")
+                const token = await functions.createToken({
+                    _id: user._id,
+                    idTimViec365: user.idTimViec365,
+                    idQLC: user.idQLC,
+                    idRaoNhanh365: user.idRaoNhanh365,
+                    email: user.email,
+                    phoneTK: user.phoneTK,
+                    createdAt: user.createdAt,
+                    type: user.type,
+                    com_id : user.idQLC,
+                    userName : user.userName,
+                }, "1d")
                 const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                 let data = {
                     access_token: token,
@@ -222,8 +233,32 @@ exports.verifyCheckOTP = async(req, res) => {
 
     }
 }
+exports.CheckUpdatePasswordByInput = async(req, res, next) => {
+    try {
+        let input = req.body.input
+            if (input) {
+                let user;
+                if (!await functions.checkPhoneNumber(input)) {
+                    user = await Users.findOne({
+                        email: input,
+                    }).lean();
+                } else {
+                    user = await Users.findOne({
+                        phoneTK: input,
+                    }).lean();
+                }
+                if (user) {
+                    return functions.success(res, " tài khoản tồn tại ")
+                }
+                return functions.setError(res," tài khoản chưa tồn tại ")
+            }
+            return functions.setError(res," nhập thiếu email hoặc sdt ")
 
 
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
 // hàm đổi mật khẩu 
 exports.updatePassword = async(req, res, next) => {
     try {
@@ -454,8 +489,10 @@ exports.info = async(req, res) => {
             const data = await Users.findOne({ idQLC: idQLC, type: 1 }).select('userName email phoneTK address avatarUser authentic inForCompany.cds.com_vip createdAt').lean();
             const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
             const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
-            data.departmentsNum = departmentsNum
-            data.userNum = userNum
+            if(departmentsNum) data.departmentsNum = departmentsNum
+            if(userNum) data.userNum = userNum
+            if(userNum) data.userNum = userNum
+
             if (data) {
                 return functions.success(res, 'Lấy thành công', { data });
             };

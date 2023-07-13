@@ -15,6 +15,7 @@ const setipShema = new mongoose.Schema({
     },
     accessIP :{//địa chỉ ip
         type :String,
+
     },
     fromSite : {// site cài IP 
         type: String,
@@ -30,4 +31,4 @@ const setipShema = new mongoose.Schema({
         tpye: Date,
     }    
 });
-module.exports = mongoose.model('settingIP', setipShema)
+module.exports = mongoose.model('QLC_SettingIP', setipShema)

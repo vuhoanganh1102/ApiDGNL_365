@@ -11,7 +11,6 @@ const ApplyNewsRN = require("../../models/Raonhanh365/ApplyNews");
 const raoNhanh = require("../../services/rao nhanh/raoNhanh");
 const Comments = require("../../models/Raonhanh365/Comments");
 const Evaluate = require("../../models/Raonhanh365/Evaluate");
-
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const Users = require("../../models/Users");
@@ -124,7 +123,6 @@ exports.postNewMain = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
-
 // đăng tin chung cho tat ca cac tin
 exports.postNewsGeneral = async (req, res, next) => {
     try {
@@ -303,7 +301,7 @@ exports.postNewsGeneral = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
-
+// tạo tin bán
 exports.createNews = async (req, res, next) => {
     try {
         let fields = req.fields;
@@ -347,8 +345,7 @@ exports.createNews = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
-
-//chinh sua tat ca cac loai tin
+//chỉnh sửa tin bán
 exports.updateNews = async (req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
@@ -396,7 +393,7 @@ exports.updateNews = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
-
+// ẩn tin
 exports.hideNews = async (req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
@@ -420,7 +417,7 @@ exports.hideNews = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
-
+// ghim tin
 exports.pinNews = async (req, res, next) => {
     try {
         console.log(req.body.news_id);
@@ -459,7 +456,7 @@ exports.pinNews = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
-
+// đẩy tin
 exports.pushNews = async (req, res, next) => {
     try {
         let idNews = Number(req.body.news_id);
@@ -497,7 +494,7 @@ exports.pushNews = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
-
+// tìm kiếm tin bán
 exports.searchSellNews = async (req, res, next) => {
     try {
         if (req.body) {
@@ -570,7 +567,7 @@ exports.searchSellNews = async (req, res, next) => {
         return functions.setError(res, err);
     }
 };
-
+// xoá tin
 exports.deleteNews = async (req, res) => {
     try {
         let idNews = req.query.idNews;
@@ -599,7 +596,6 @@ exports.deleteNews = async (req, res) => {
         return functions.setError(res, "Error from server", 500);
     }
 };
-
 // trang chủ
 exports.getNew = async (req, res, next) => {
     try {
@@ -1093,7 +1089,8 @@ exports.createBuyNew = async (req, res) => {
             apartmentNumber,
             description,
             status,
-            endvalue, money,
+            endvalue, 
+            money,
             until,
             noidung_nhs,
             com_city,
@@ -1202,17 +1199,17 @@ exports.createBuyNew = async (req, res) => {
                     if (File.Image.length > 10)
                         return functions.setError(res, "Gửi quá nhiều ảnh", 400);
                     for (let i = 0; i < File.Image.length; i++) {
-                        let img = await raoNhanh.uploadFileRaoNhanh(
+                        let image = await raoNhanh.uploadFileRaoNhanh(
                             "avt_tindangmua",
                             userID,
                             File.Image[i],
-                            ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf']
+                            ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.mp3', '.mp4']
                         );
                         if (!img) {
-                            return functions.setError(res, 'upload file failed');
+                            return functions.setError(res, 'upload file failed', 400);
                         }
                         img.push({
-                            nameImg:img
+                            nameImg: image
                         })
                     }
                 }
@@ -1220,47 +1217,41 @@ exports.createBuyNew = async (req, res) => {
             if (File.new_file_dthau) {
                 if (File.new_file_dthau.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_dthau, [
+                new_file_dthau = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_dthau, [
                     ".jpg",
                     ".png",
                     ".docx",
                     ".pdf",
+                    ".xlsx",
+                    ".xls"
                 ]);
-                new_file_dthau = functions.createLinkFileRaonhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_dthau.name
-                );
+                if (new_file_dthau === false) return functions.setError(res, 'upload file failed', 400)
             }
             if (File.new_file_nophs) {
                 if (File.new_file_nophs.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                raoNhanh.uploadFileRaoNhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_nophs,
-                    [".jpg", ".png", ".docx", ".pdf"]
-                );
-                new_file_nophs = functions.createLinkFileRaonhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_nophs.name
-                );
+                new_file_nophs = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_nophs, [
+                    ".jpg",
+                    ".png",
+                    ".docx",
+                    ".pdf",
+                    ".xlsx",
+                    ".xls"
+                ]);
+                if (new_file_nophs === false) return functions.setError(res, 'upload file failed', 400)
             }
             if (File.new_file_chidan) {
                 if (File.new_file_chidan.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                raoNhanh.uploadFileRaoNhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_chidan,
-                    [".jpg", ".png", ".docx", ".pdf"]
-                );
-                new_file_chidan = functions.createLinkFileRaonhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_chidan.name
-                );
+                new_file_chidan = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_chidan, [
+                    ".jpg",
+                    ".png",
+                    ".docx",
+                    ".pdf",
+                    ".xlsx",
+                    ".xls"
+                ]);
+                if (new_file_chidan === false) return functions.setError(res, 'upload file failed', 400)
             }
             //lưu dữ liệu vào DB
             const postNew = new New({
@@ -1334,8 +1325,6 @@ exports.updateBuyNew = async (req, res, next) => {
         } = req.body;
         //  tạo mảng img
         let img = [];
-
-
 
         // lấy thời gian hiện tại
         let updateTime = new Date(Date.now());
@@ -1432,41 +1421,25 @@ exports.updateBuyNew = async (req, res, next) => {
                     if (File.Image.length > 10)
                         return functions.setError(res, "Gửi quá nhiều ảnh", 400);
                     for (let i = 0; i < File.Image.length; i++) {
-                        let check = await raoNhanh.uploadFileRaoNhanh(
+                        let image = await raoNhanh.uploadFileRaoNhanh(
                             "avt_tindangmua",
                             userID,
                             File.Image[i],
-                            [".jpg", ".png"]
+                            ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.mp3', '.mp4']
                         );
-                        if (check === false) return functions.setError(res, 'sai định dạng ảnh', 400)
+                        if (!img) {
+                            return functions.setError(res, 'upload file failed', 400);
+                        }
                         img.push({
-                            nameImg: functions.createLinkFileRaonhanh(
-                                "avt_tindangmua",
-                                userID,
-                                File.Image[i].name
-                            ),
-                        });
+                            nameImg: image
+                        })
                     }
                     if (files_old.img) {
                         for (let i = 0; i < files_old.img.length; i++) {
-                            let text = files_old.img[i].nameImg.split("/").reverse()[0];
-                            raoNhanh.deleteFileRaoNhanh(userID, text);
+                            raoNhanh.deleteFileRaoNhanh(userID, files_old.img[i].nameImg);
                         }
                     }
                     await New.findByIdAndUpdate(newId, { img })
-                } else {
-                    let check = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.Image, [
-                        ".jpg",
-                        ".png",
-                    ]);
-                    if (check === false) return functions.setError(res, 'sai định dạng ảnh', 400)
-                    img.push({
-                        nameImg: functions.createLinkFileRaonhanh(
-                            "avt_tindangmua",
-                            userID,
-                            File.Image.name
-                        ),
-                    });
                 }
                 if (files_old.img) {
                     for (let i = 0; i < files_old.img.length; i++) {
@@ -1479,41 +1452,31 @@ exports.updateBuyNew = async (req, res, next) => {
             if (File.new_file_dthau) {
                 if (File.new_file_dthau.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                let check = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_dthau, [
+                new_file_dthau = await raoNhanh.uploadFileRaoNhanh("avt_tindangmua", userID, File.new_file_dthau, [
                     ".jpg",
                     ".png",
                     ".docx",
                     ".pdf",
                 ]);
-                if (check === false) return functions.setError(res, 'sai định dạng ảnh', 400)
-                new_file_dthau = functions.createLinkFileRaonhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_dthau.name
-                );
+                if (new_file_dthau === false) return functions.setError(res, 'sai định dạng file', 400)
                 if (files_old.new_file_dthau) {
-                    let text = files_old.new_file_dthau.split("/").reverse()[0];
-                    raoNhanh.deleteFileRaoNhanh(userID, text);
+
+                    raoNhanh.deleteFileRaoNhanh(userID, files_old.new_file_dthau);
                 }
                 await New.findByIdAndUpdate(newId, { bidding: { new_file_dthau } })
             }
             if (File.new_file_nophs) {
                 if (File.new_file_nophs.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                let check = await raoNhanh.uploadFileRaoNhanh(
+                new_file_nophs = await raoNhanh.uploadFileRaoNhanh(
                     "avt_tindangmua",
                     userID,
                     File.new_file_nophs,
                     [".jpg", ".png", ".docx", ".pdf"]
                 );
-                if (check === false) return functions.setError(res, 'sai định dạng ảnh', 400)
-                new_file_nophs = functions.createLinkFileRaonhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_nophs.name
-                );
+                if (new_file_nophs === false) return functions.setError(res, 'sai định dạng file', 400)
                 if (files_old.new_file_nophs) {
-                    let text = files_old.new_file_nophs.split("/").reverse()[0];
+                    let text = files_old.new_file_nophs
                     raoNhanh.deleteFileRaoNhanh(userID, text);
                 }
                 await New.findByIdAndUpdate(newId, { bidding: { new_file_nophs } })
@@ -1521,20 +1484,16 @@ exports.updateBuyNew = async (req, res, next) => {
             if (File.new_file_chidan) {
                 if (File.new_file_chidan.length)
                     return functions.setError(res, "Gửi quá nhiều file");
-                let check = await raoNhanh.uploadFileRaoNhanh(
+                new_file_chidan = await raoNhanh.uploadFileRaoNhanh(
                     "avt_tindangmua",
                     userID,
                     File.new_file_chidan,
                     [".jpg", ".png", ".docx", ".pdf"]
                 );
-                if (check === false) return functions.setError(res, 'sai định dạng ảnh', 400)
-                new_file_chidan = await functions.createLinkFileRaonhanh(
-                    "avt_tindangmua",
-                    userID,
-                    File.new_file_chidan.name
-                );
+                if (new_file_chidan === false) return functions.setError(res, 'sai định dạng file', 400)
+
                 if (files_old.new_file_chidan) {
-                    let text = files_old.new_file_chidan.split("/").reverse()[0];
+                    let text = files_old.new_file_chidan;
                     raoNhanh.deleteFileRaoNhanh(userID, text);
                 }
 
@@ -1557,11 +1516,10 @@ exports.updateBuyNew = async (req, res, next) => {
                 'bidding.donvi_thau': donvi_thau,
                 'bidding.phi_duthau': phi_duthau,
             })
-
         } else {
             return functions.setError(res, "missing data", 404);
         }
-        return functions.success(res, "post new success");
+        return functions.success(res, "update new success");
     } catch (error) {
         console.log("🚀 ~ file: new.js:1300 ~ exports.createBuyNew= ~ error:", error)
         return functions.setError(res, error);
@@ -1578,14 +1536,10 @@ exports.getDetailNew = async (req, res, next) => {
         if (!linkTitle) {
             return functions.setError(res, "missing data", 400);
         }
-        linkTitle = linkTitle.replace(".html", "")
-        let id = linkTitle.split("-").reverse()[0];
+        let linkTitlee = linkTitle.replace(".html", "")
+        let id = linkTitlee.split("-").reverse()[0];
         let buy = id.match(/[a-zA-Z]+/g)[0];
         let id_new = Number(id.replace(buy, ''));
-        let danh_muc1 = null;
-        let danh_muc2 = null;
-        let danh_muc3 = null;
-        let cate_Special = null;
         let buysell = null;
         let searchitem = null;
         let tintuongtu = [];
@@ -1598,27 +1552,8 @@ exports.getDetailNew = async (req, res, next) => {
         if (!check) {
             return functions.setError(res, "not found", 404);
         }
-        cate1 = await CategoryRaoNhanh365.findById(check.cateID);
-        danh_muc1 = cate1.name;
-
-        if (cate1.parentId !== 0) {
-            cate2 = await CategoryRaoNhanh365.findById(cate1.parentId);
-            danh_muc2 = cate2.name;
-            if (cate2.parentId !== 0) {
-                cate3 = await CategoryRaoNhanh365.findById(cate2.parentId);
-                danh_muc3 = cate3.name;
-            }
-        }
-        if (danh_muc3) {
-            cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc3);
-        } else {
-            if (danh_muc2) {
-                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc2);
-            } else {
-                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc1);
-            }
-        }
-
+        let danhmuc = await raoNhanh.getNameCate(check.cateID, 2)
+        let cate_Special = await raoNhanh.getNameCate(check.cateID, 1)
         if (buy === "ct") {
             buysell = 1;
             searchitem = {
@@ -1629,6 +1564,7 @@ exports.getDetailNew = async (req, res, next) => {
                 city: 1,
                 userID: 1,
                 img: 1,
+                cateID:1,
                 updateTime: 1,
                 type: 1,
                 active: 1,
@@ -1692,7 +1628,6 @@ exports.getDetailNew = async (req, res, next) => {
                 com_district: 1,
                 com_ward: 1,
                 com_address_num: 1,
-
             };
         } else {
             return functions.setError(res, "not found data", 404);
@@ -1721,11 +1656,11 @@ exports.getDetailNew = async (req, res, next) => {
 
         ]);
 
-        let cousao = await Evaluate.find({ newId: 0, blUser: data[0].userID }).count();
+        let cousao = await Evaluate.find({ blUser: 0, userId: data[0].userID }).count();
         let sumsao = await Evaluate.aggregate([
             {
                 $match: {
-                    newId: 0, blUser: data[0].userID
+                    blUser: 0, userId: data[0].userID
                 }
             },
             {
@@ -1743,7 +1678,6 @@ exports.getDetailNew = async (req, res, next) => {
         }
 
         data[0].thongTinSao = thongTinSao
-        data[0].danhmuc = { danh_muc1, danh_muc2, danh_muc3 };
         tintuongtu = await New.find({ cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } }, {
             _id: 1,
             title: 1,
@@ -1770,9 +1704,11 @@ exports.getDetailNew = async (req, res, next) => {
             sold: 1,
             createTime: 1,
             free: 1,
-
         }).limit(6);
-        let url = 'https://raonhanh365.vn/' + linkTitle + '.html';
+        for (let i = 0; i < 6; i++) {
+            tintuongtu[i].img = await raoNhanh.getLinkFile(tintuongtu[i].img, tintuongtu[i].cateID)
+        }
+        let url = linkTitle;
         ListComment = await Comments.find({ url, parent_id: 0 }, {}, { time: -1 }, { cm_start }, { cm_limit }).lean();
         ListLike = await LikeRN.find({ forUrlNew: url, commentId: 0, type: { $lt: 8 } }, {}, { type: 1 })
         let ListReplyComment = [];
@@ -1781,24 +1717,26 @@ exports.getDetailNew = async (req, res, next) => {
         if (ListComment.length !== 0) {
             for (let i = 0; i < ListComment.length; i++) {
                 ListLikeComment = await LikeRN.find({ forUrlNew: url, type: { $lt: 8 }, commentId: ListComment[i]._id }, {}, { type: 1 })
-                //
-                ListReplyComment = await Comments.find({ url, parent_id: ListComment[i]._id }, {}, { time: -1 }).lean()
+                ListReplyComment = await Comments.find({ url, parent_id: ListComment[i]._id }, {}, { time: -1 }).lean();
+                // lấy lượt like của từng trả lời
+                if(ListReplyComment && ListReplyComment.length > 0){
+                    for (let j = 0; j < ListReplyComment.length; j++) {
+                        ListLikeCommentChild = await LikeRN.find({ forUrlNew: url, type: { $lt: 8 }, commentId: ListReplyComment[j]._id }, {}, { type: 1 })
+                        ListReplyComment[j].ListLikeCommentChild = ListLikeCommentChild
+                        ListReplyComment[i].img = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365` + ListReplyComment[i].img
+                    }
+                }
                 ListComment[i].ListLikeComment = ListLikeComment
                 ListComment[i].ListReplyComment = ListReplyComment
-                // lấy lượt like của từng trả lời
-                for (let j = 0; j < ListReplyComment.length; j++) {
-                    ListLikeCommentChild = await LikeRN.find({ forUrlNew: url, type: { $lt: 8 }, commentId: ListReplyComment[j]._id }, {}, { type: 1 })
-                    ListReplyComment[j].ListLikeCommentChild = ListLikeCommentChild
+                if(ListComment[i].img){
+                    ListComment[i].img = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365` + ListComment[i].img
                 }
             }
         }
-        data[0].ListComment = ListComment;
-        data[0].ListLike = ListLike;
+       
         await New.findByIdAndUpdate(id_new, { $inc: { viewCount: +1 } });
-        if (tintuongtu) {
-            data[0].tintuongtu = tintuongtu;
-        }
         for (let i = 0; i < data.length; i++) {
+            data[i].img = await raoNhanh.getLinkFile(data[i].img,data[i].cateID)
             if (userIdRaoNhanh) {
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
@@ -1809,6 +1747,10 @@ exports.getDetailNew = async (req, res, next) => {
             }
         }
         let dataBidding = null;
+        data[0].ListComment = ListComment;
+        data[0].ListLike = ListLike;
+        data[0].tintuongtu = tintuongtu;
+        data[0].danhmuc = danhmuc;
         if (buysell === 1) {
             dataBidding = await Bidding.aggregate([
                 {
@@ -1847,8 +1789,10 @@ exports.getDetailNew = async (req, res, next) => {
                 }
 
             ])
+           
             return functions.success(res, "get data success", { data, dataBidding });
         }
+        
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.log("🚀 ~ file: new.js:1757 ~ exports.getDetailNew= ~ error:", error)
@@ -1867,8 +1811,8 @@ exports.loveNew = async (req, res, next) => {
         if (checkLove && checkLove.length !== 0) {
             await LoveNews.findOneAndDelete({ id_new: id, id_user: user });
         } else {
-            createdAt = new Date(Date.now());
-            let _id = 1 || (await functions.getMaxID(LoveNews)) + 1;
+            createdAt = new Date();
+            let _id = await functions.getMaxID(LoveNews) + 1 ;
             await LoveNews.create({ _id, id_new: id, id_user: user, createdAt });
         }
         return functions.success(res, "love new success");
@@ -1942,7 +1886,7 @@ exports.newfavorite = async (req, res, next) => {
         let check = await LoveNews.find({ id_user: userID });
         if (check && check.length) {
             for (let i = 0; i < check.length; i++) {
-                let datanew = await New.find(
+                data = await New.find(
                     { _id: check[i].id_new, buySell },
                     searchItem
                 );
@@ -1950,11 +1894,14 @@ exports.newfavorite = async (req, res, next) => {
                     { _id: check[i].id_new, buySell },
                     searchItem
                 ).count();
-                data.push(datanew[0]);
             }
         }
-        data.push({ soLuong: soLuong });
-        return functions.success(res, "get data success", { data });
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].img){
+                data[i].img = await raoNhanh.getLinkFile(data[i].img,data[i].cateID);
+            }
+        }
+        return functions.success(res, "get data success", { data,soLuong });
     } catch (error) {
         return functions.setError(res, error);
     }
@@ -1971,7 +1918,7 @@ exports.managenew = async (req, res, next) => {
         let data = [];
         let tin_conhan = await New.find({
             userID,
-            'bidding.han_su_dung': { $gte: new Date(Date.now()) },
+            'bidding.han_su_dung': { $gte: new Date() },
             buySell: 1,
         }).count();
         let tin_dangan = await New.find({ userID, active: 0, buySell: 1 }).count();
@@ -1979,7 +1926,6 @@ exports.managenew = async (req, res, next) => {
         let tin_hethan = tong_soluong - tin_conhan;
         let searchItem = {
             title: 1,
-            bidding: 1,
             active: 1,
             createTime: 1,
             sold: 1,
@@ -1997,6 +1943,12 @@ exports.managenew = async (req, res, next) => {
             money: 1,
             free: 1,
             infoSell: 1,
+            address: 1,
+            dia_chi: 1,
+            pinCate: 1,
+            pinHome: 1,
+            'bidding.han_su_dung': 1,
+
         };
         if (linkTitle === "quan-ly-tin-mua.html") {
             data = await New.find({ userID, buySell: 1, cateID: { $nin: [120, 121] } }, searchItem).skip(skip).limit(limit);
@@ -2005,7 +1957,7 @@ exports.managenew = async (req, res, next) => {
                 {
                     userID,
                     buySell: 1,
-                    'bidding.han_su_dung': { $gte: new Date(Date.now()) },
+                    'bidding.han_su_dung': { $gte: new Date() },
                     cateID: { $nin: [120, 121] }
                 },
                 searchItem
@@ -2015,7 +1967,7 @@ exports.managenew = async (req, res, next) => {
                 {
                     userID,
                     buySell: 1,
-                    'bidding.han_su_dung': { $lte: new Date(Date.now()) },
+                    'bidding.han_su_dung': { $lte: new Date() },
                     cateID: { $nin: [120, 121] }
                 },
                 searchItem
@@ -2025,10 +1977,12 @@ exports.managenew = async (req, res, next) => {
         } else {
             return functions.setError(res, "page not found ", 404);
         }
-        data.push({
-            soluong: { tong_soluong, tin_conhan, tin_hethan, tin_dangan },
-        });
-        return functions.success(res, "get data success", { data });
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].img){
+                data[i].img = await raoNhanh.getLinkFile(data[i].img,data[i].cateID);
+            }
+        }
+        return functions.success(res, "get data success", { tong_soluong, tin_conhan, tin_hethan, tin_dangan, data });
     } catch (error) {
         return functions.setError(res, error);
     }
@@ -2150,6 +2104,11 @@ exports.newisbidding = async (req, res, next) => {
         } else {
             return functions.setError(res, "page not found ", 404);
         }
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].img){
+                data[i].img = await raoNhanh.getLinkFile(data[i].img,data[i].cateID);
+            }
+        }
         return functions.success(res, "get data success", {
             sl_tatCaTin,
             sl_tinConHan,
@@ -2252,6 +2211,11 @@ exports.manageNewBuySell = async (req, res, next) => {
         } else {
             return functions.setError(res, "page not found ", 404);
         }
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].img){
+                data[i].img = await raoNhanh.getLinkFile(data[i].img,data[i].cateID);
+            }
+        }
         return functions.success(res, "get data success", {
             tong_soluong,
             tinDangDang,
@@ -2318,6 +2282,11 @@ exports.listCanNew = async (req, res, next) => {
         } else {
             return functions.setError(res, "page not found ", 404);
         }
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].img){
+                data[i].img = await raoNhanh.getLinkFile(data[i].img,data[i].cateID);
+            }
+        }
         return functions.success(res, "get data success", {
             tong_soluong,
             tinDangTimUngVien,
@@ -2328,35 +2297,6 @@ exports.listCanNew = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
-// // danh sách tin đang ứng tuyển
-// exports.listJobNewApply = async (req, res, next) => {
-//     try {
-//         let userID = req.user.data._id;
-//         let data = [];
-//         data = await User.aggregate([
-//             {
-//                 $lookup: {
-//                     from: "Order",
-//                     localField: "_id",
-//                     foreignField: "sellerId",
-//                     as: "Order"
-//                 }
-//             },
-//             {
-//                 $match: { "Order.buyerId": 5}
-//             },
-//              {
-//                 $project: { title: 1,img:1,userName:1, Order: {status:1,newId:1,createdAt:1 } }
-//             }
-//         ])
-//         return functions.success(res, 'get data success', {data})
-//     }
-//     catch (error) {
-//         return functions.setError(res, error)
-//     }
-// }
-
 // danh sách tin tìm việc làm
 exports.listJobNew = async (req, res, next) => {
     try {
@@ -2406,6 +2346,11 @@ exports.listJobNew = async (req, res, next) => {
         } else {
             return functions.setError(res, "page not found ", 404);
         }
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].img){
+                data[i].img = await raoNhanh.getLinkFile(data[i].img,data[i].cateID);
+            }
+        }
         return functions.success(res, "get data success", {
             tong_soluong,
             tinDangTimViec,
@@ -2416,7 +2361,7 @@ exports.listJobNew = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
+// thích tin
 exports.likeNews = async (req, res, next) => {
     try {
         let { forUrlNew } = req.body;
@@ -2475,7 +2420,7 @@ exports.likeNews = async (req, res, next) => {
         return functions.setError(res, "Err from server", 500);
     }
 };
-
+// ứng tuyển
 exports.createApplyNews = async (req, res, next) => {
     try {
         let { candidateId, newId } = req.body;
@@ -2512,7 +2457,7 @@ exports.createApplyNews = async (req, res, next) => {
         return functions.setError(res, "Err from server", 500);
     }
 };
-
+// xoá ứng viên
 exports.deleteUv = async (req, res, next) => {
     try {
         let { newId } = req.body;
@@ -2534,7 +2479,6 @@ exports.deleteUv = async (req, res, next) => {
         return functions.setError(res, "Err from server", 500);
     }
 };
-
 // Quản lý khuyến mãi
 exports.manageDiscount = async (req, res, next) => {
     try {
@@ -2561,6 +2505,11 @@ exports.manageDiscount = async (req, res, next) => {
             search["infoSell.promotionType"] = promotionType;
         }
         let data = await New.find(search, searchItem);
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].img){
+                data[i].img = await raoNhanh.getLinkFile(data[i].img,data[i].cateID);
+            }
+        }
         return functions.success(res, "get data success", { data });
     } catch (err) {
         console.error(err);
@@ -2617,6 +2566,11 @@ exports.listJobWithPin = async (req, res, next) => {
             userID: userID,
             $or: [{ pinHome: 1 }, { pinCate: 1 }, { timePushNew: { $ne: null } }],
         }, { _id: 1, cateID: 1, title: 1, money: 1, endvalue: 1, until: 1, createTime: 1, free: 1, img: 1, dia_chi: 1, address: 1, pinHome: 1, pinCate: 1, new_day_tin: 1, sold: 1, cateID: 1, updateTime: 1 });
+        for(let i = 0; i < data.length; i++) {  
+            if(data[i].img){
+                data[i].img = await raoNhanh.getLinkFile(data[i].img,data[i].cateID);
+            }
+        }
         return functions.success(
             res, "Get List New With Pin Of User Success!", { data }
         );
@@ -2625,7 +2579,6 @@ exports.listJobWithPin = async (req, res, next) => {
         return functions.setError(res, "Err from server", 500);
     }
 };
-
 // thêm mới khuyến mãi
 exports.addDiscount = async (req, res, next) => {
     try {
@@ -2701,7 +2654,6 @@ exports.addDiscount = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // bình luận
 exports.comment = async (req, res, next) => {
     try {
@@ -2718,23 +2670,16 @@ exports.comment = async (req, res, next) => {
 
         if (url && parent_id && ip) {
             if (File.Image) {
-                let data = await raoNhanh.uploadFileRaoNhanh(
+                let img = await raoNhanh.uploadFileRaoNhanh(
                     "comment",
-                    `${new Date().getFullYear()}/${new Date().getMonth() + 1
-                    }/${new Date().getDate()}`,
+                    `${time.getFullYear()}/${time.getMonth() + 1
+                    }/${time.getDate()}`,
                     File.Image,
                     [".jpg", ".png"]
                 );
-                if (!data) {
+                if (!img) {
                     return functions.setError("Ảnh không phù hợp");
                 }
-                let img = raoNhanh.createLinkFileRaonhanh(
-                    "comment",
-                    `${new Date().getFullYear()}/${new Date().getMonth() + 1
-                    }/${new Date().getDate()}`,
-                    File.Image.name
-                );
-
                 await Comments.create({
                     _id,
                     url,
@@ -2771,7 +2716,6 @@ exports.comment = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
 // sửa bình luận
 exports.updateComment = async (req, res, next) => {
     try {
@@ -2781,24 +2725,21 @@ exports.updateComment = async (req, res, next) => {
         let content = comment;
         let ip = req.ip;
         let tag = req.body.tag || null;
+        
         if (id_comment && ip) {
+            let check = await Comments.findById(id_comment);
+            let date  = new Date(check.time)
             if (File.Image) {
-                let data = await raoNhanh.uploadFileRaoNhanh(
+                let img = await raoNhanh.uploadFileRaoNhanh(
                     "comment",
-                    `${new Date().getFullYear()}/${new Date().getMonth() + 1
-                    }/${new Date().getDate()}`,
+                    `${date.getFullYear()}/${date.getMonth() + 1
+                    }/${date.getDate()}`,
                     File.Image,
                     [".jpg", ".png"]
                 );
-                if (!data) {
+                if (!img) {
                     return functions.setError("Ảnh không phù hợp");
                 }
-                let img = raoNhanh.createLinkFileRaonhanh(
-                    "comment",
-                    `${new Date().getFullYear()}/${new Date().getMonth() + 1
-                    }/${new Date().getDate()}`,
-                    File.Image.name
-                );
                 await Comments.findOneAndUpdate(
                     { id_comment, sender_idchat: userID },
                     { content, img, tag }
@@ -2822,7 +2763,7 @@ exports.updateComment = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
-
+// danh sách ứng viên đang ứng tuyển
 exports.getListCandidateApplied = async (req, res, next) => {
     try {
         let userID = req.user.data.idRaoNhanh365;
@@ -2866,8 +2807,6 @@ exports.getListCandidateApplied = async (req, res, next) => {
         return functions.setError(res, "Err from server", 500);
     }
 };
-
-
 // api lấy thông tin ngân hàng
 exports.getDatabank = async (req, res, next) => {
     try {
@@ -2877,7 +2816,6 @@ exports.getDatabank = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
-
 // nạp tiền
 exports.napTien = async (req, res, next) => {
     try {
@@ -2933,155 +2871,16 @@ exports.napTien = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
-
-// lấy data cho sửa tin
-exports.getDetailForUpdateNew = async (req, res, next) => {
+// api lấy danh sách đấu thầu theo id
+exports.getDataBidding = async (req, res, next) => {
     try {
-        let linkTitle = req.body.linkTitle;
-        if (!linkTitle) {
-            return functions.setError(res, "missing data", 400);
-        }
-        linkTitle = linkTitle.replace(".html", "")
-        let id = linkTitle.split("-").reverse()[0];
-        let buy = id.match(/[a-zA-Z]+/g)[0];
-        let id_new = Number(id.replace(buy, ''));
-        let danh_muc1 = null;
-        let danh_muc2 = null;
-        let danh_muc3 = null;
-        let cate_Special = null;
-        let buysell = null;
-        let searchitem = null;
-        if ((await functions.checkNumber(id_new)) === false) {
-            return functions.setError(res, "invalid number", 404);
-        }
-        let check = await New.findById(id_new, { cateID: 1, userID: 1 });
-        if (!check) {
-            return functions.setError(res, "not found", 404);
-        }
-        cate1 = await CategoryRaoNhanh365.findById(check.cateID);
-        danh_muc1 = cate1.name;
-
-        if (cate1.parentId !== 0) {
-            cate2 = await CategoryRaoNhanh365.findById(cate1.parentId);
-            danh_muc2 = cate2.name;
-            if (cate2.parentId !== 0) {
-                cate3 = await CategoryRaoNhanh365.findById(cate2.parentId);
-                danh_muc3 = cate3.name;
-            }
-        }
-        if (danh_muc3) {
-            cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc3);
-        } else {
-            if (danh_muc2) {
-                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc2);
-            } else {
-                cate_Special = await raoNhanh.checkNameCateRaoNhanh(danh_muc1);
-            }
-        }
-        if (buy === "ct") {
-            buysell = 1;
-            searchitem = {
-                _id: 1,
-                title: 1,
-                money: 1,
-                endvalue: 1,
-                city: 1,
-                userID: 1,
-                img: 1,
-                updateTime: 1,
-                type: 1,
-                active: 1,
-                until: 1,
-                address: 1,
-                ward: 1,
-                detailCategory: 1,
-                district: 1,
-                viewCount: 1,
-                apartmentNumber: 1,
-                com_city: 1,
-                com_district: 1,
-                com_ward: 1,
-                com_address_num: 1,
-                bidding: 1,
-                tgian_kt: 1,
-                tgian_bd: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
-            };
-        } else if (buy === "c") {
-            buysell = 2;
-            searchitem = {
-                _id: 1,
-                title: 1,
-                linkTitle: 1,
-                free: 1,
-                address: 1,
-                money: 1,
-                createTime: 1,
-                cateID: 1,
-                pinHome: 1,
-                pinCate: 1,
-                new_day_tin: 1,
-                buySell: 1,
-                email: 1,
-                tgian_kt: 1,
-                tgian_bd: 1,
-                phone: 1,
-                userID: 1,
-                img: 1,
-                updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
-                district: 1,
-                ward: 1,
-                description: 1,
-                city: 1,
-                islove: 1,
-                until: 1,
-                endvalue: 1,
-                type: 1,
-                detailCategory: 1,
-                infoSell: 1,
-                timePromotionStart: 1,
-                timePromotionEnd: 1,
-                quantitySold: 1,
-                infoSell: 1,
-                viewCount: 1,
-                poster: 1,
-                sold: 1,
-                com_city: 1,
-                com_district: 1,
-                com_ward: 1,
-                com_address_num: 1,
-
-            };
-        } else {
-            return functions.setError(res, "not found data", 404);
-        }
-        if (cate_Special) {
-            searchitem[`${cate_Special}`] = 1;
-        }
-        let data = await New.aggregate([
-            {
-                $match: { _id: id_new },
-            },
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "userID",
-                    foreignField: "idRaoNhanh365",
-                    as: "user",
-                },
-            },
-            {
-                $match: { buySell: buysell },
-            },
-            {
-                $project: searchitem,
-            },
-
-        ]);
+        let id = Number(req.body.id);
+        let data = await Bidding.find({
+            newId: id,
+        })
         return functions.success(res, "get data success", { data });
     } catch (error) {
-        console.log("🚀 ~ file: new.js:1757 ~ exports.getDetailNew= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error);
     }
 };

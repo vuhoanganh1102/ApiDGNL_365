@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const CheckDevice = new mongoose.Schema({
     //Id bảng
-    _id : {
+    ed_id : {
         type : Number,
         required : true 
     },
@@ -9,39 +9,35 @@ const CheckDevice = new mongoose.Schema({
     idQLC: {
         type : Number
     },
-    //Id của công ty
-    companyId: {
-        type: Number
-    },
-    //Id phòng ban 
-    depID: {
-        type : Number
-    },
     // // ID thiết bị hiện tại 
-    curDevice :{
+    current_device :{
         type : String
     },
     //tên thiết bị hiện tại
-    curDeviceName:{
-        type : String
+    current_device_name:{
+        type : String,
+        default : null
     },
     //ID thiết bị mới 
-    newDevice :{
-        type : String
-    },
-    typeDevice :{
-        type : Number
+    new_device :{
+        type : String,
+        default : null
     },
     //tên thiết bị mới 
-    newDeviceName:{
-        type : String
+    new_device_name:{
+        type : String,
+        default : null
+    },
+    type_device :{
+        type : Number,
+        default : 0
     },
     //Thời điểm tạo 
-    createdAt: {
+    create_time: {
         type: Date,
         default: Date.now()
     },
 
 })
 
-module.exports = mongoose.model('CheckDevice',CheckDevice)
+module.exports = mongoose.model('QLC_Employee_device',CheckDevice)

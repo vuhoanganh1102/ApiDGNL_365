@@ -37,12 +37,12 @@ exports.getlistAdmin = async(req, res) => {
 //tao nv
 exports.createUser = async(req, res) => {
 try{
-    // const type = req.user.data.type
+    const type = req.user.data.type
 
-    // let com_id = req.user.data.com_id
-    let com_id = req.body.com_id
+    let com_id = req.user.data.com_id
+    // let com_id = req.body.com_id
     const {  userName, email, phoneTK, idQLC, password, role, address, birthday, dep_id, group_id, team_id, position_id, gender, ep_status, createdAt } = req.body;
-    // if(type == 1){
+    if(type == 1){
 
     if (com_id && userName && email && password && role && address && position_id && gender) {
         //Kiểm tra tên nhân viên khác null
@@ -83,8 +83,8 @@ try{
 
     }
     return functions.setError(res, "Cần nhập đủ thông tin", 506);
-// }
-// return functions.setError(res, "Tài khoản không phải Công ty", 604);
+}
+return functions.setError(res, "Tài khoản không phải Công ty", 604);
 }catch(e) {
     return functions.setError(res,e.message);
 
@@ -159,13 +159,23 @@ try{
 }
 };
 
+// exports.deleteCompanyALlUser = async(req, res) => {
+//     try {
+//         const com_id = req.user.data.com_id
+//         // const com_id = req.body.com_id
+//         const type = req.user.data.type
+//         if (type == 1) {
 
-exports.deleteAllUser = async(req, res) => {
-    if (!await functions.getMaxID(manageUser)) {
-        functions.setError(res, "No manager existed", 513);
-    } else {
-        manageUser.deleteMany()
-            .then(() => functions.success(res, "Delete all companies successfully"))
-            .catch(err => functions.setError(res, err.message, 514));
-    }
-}
+//             const user = await functions.getDatafind(manageUser, { "inForPerson.employee.com_id": com_id });
+//             if (user) {
+//                 await manageUser.deleteMany({ "inForPerson.employee.com_id": com_id })
+//                 return functions.success(res, "xóa thành công ", {user})
+//             }
+//             return functions.setError(res, "không tìm thấy nhân viên nào trong công ty");
+//         }
+//         return functions.setError(res, "Tài khoản không phải Công ty", 604);
+//     } catch (error) {
+//         return functions.setError(res, error.message)
+//     }
+//     }
+
