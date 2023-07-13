@@ -152,7 +152,7 @@ exports.verifyCheckOTP = async (req, res) => {
 exports.login = async (req, res, next) => {
     try {
         let phoneTK = req.body.phoneTK
-        let email = req.body.email
+        let email = req.body.email || null;
         password = req.body.password
         type_user = {};
         if (phoneTK && password) {
@@ -187,7 +187,7 @@ exports.login = async (req, res, next) => {
                 else if (checkTypeUser.type == 1) {
                     type_user = 1
                     functions.success(res, "tài khoản là tài khoản cty", { type_user })
-                }else if (checkTypeUser.type == 0) {
+                } else if (checkTypeUser.type == 0) {
                     type_user = 0
                     functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
                 } else {
@@ -202,7 +202,7 @@ exports.login = async (req, res, next) => {
             if (checkMail) {
                 let checkTypeUser = await Users.findOne({ email: email }).lean()
                 // console.log(checkTypeUser)
-                 if (checkTypeUser.type == 2) {
+                if (checkTypeUser.type == 2) {
                     let checkPassword = await functions.verifyPassword(password, checkTypeUser.password)
                     if (!checkPassword) {
                         return functions.setError(res, "Mật khẩu sai", 404)
@@ -230,7 +230,7 @@ exports.login = async (req, res, next) => {
                 } else if (checkTypeUser.type == 0) {
                     type_user = 0
                     functions.success(res, "tài khoản là tài khoản cá nhân", { type_user })
-       
+
 
                 } else {
                     functions.setError(res, "không tìm thấy tài khoản ")
@@ -527,81 +527,81 @@ exports.info = async (req, res) => {
         } else {
 
             const data = await Users.findOne({ idQLC: idQLC, type: 2 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.employee.position_id inForPerson.employee.com_id inForPerson.employee.dep_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education').lean()
-            if(!data){
-                     return functions.setError(res, 'không có dữ liệu ')
+            if (!data) {
+                return functions.setError(res, 'không có dữ liệu ')
 
-            }else{
-                
-            const data1 = data.inForPerson.employee.com_id
-            const data0 = data.inForPerson.employee.dep_id
-            const position_id = data.inForPerson.employee.position_id
-
-            const birthday = data.inForPerson.account.birthday
-            const gender = data.inForPerson.account.gender
-            const married = data.inForPerson.account.married
-            const experience = data.inForPerson.account.experience
-            const education = data.inForPerson.account.education
-
-            const departments = await Deparment.findOne({ _id: data0, com_id: data1 })
-            if (!departments) {
-                
-                data.birthday = birthday
-                data.position_id = position_id
-                data.gender = gender
-                data.married = married
-                data.experience = experience
-                data.education = education
-                return functions.success(res, 'Không có dữ phòng ban ', { data });
             } else {
-                const data2 = departments.managerId
-                const departmentName = departments.deparmentName
-                const companyName1 = await Users.findOne({ idQLC: data1, type: 1 }).select('userName').lean()
-                if (!companyName1) {
-                    data.departmentName = departmentName
+
+                const data1 = data.inForPerson.employee.com_id
+                const data0 = data.inForPerson.employee.dep_id
+                const position_id = data.inForPerson.employee.position_id
+
+                const birthday = data.inForPerson.account.birthday
+                const gender = data.inForPerson.account.gender
+                const married = data.inForPerson.account.married
+                const experience = data.inForPerson.account.experience
+                const education = data.inForPerson.account.education
+
+                const departments = await Deparment.findOne({ _id: data0, com_id: data1 })
+                if (!departments) {
+
                     data.birthday = birthday
                     data.position_id = position_id
                     data.gender = gender
                     data.married = married
                     data.experience = experience
                     data.education = education
-                return functions.success(res, 'Không có dữ liệu ten cty  ', { data });
-                }
-                //tìm thấy tên công ty
-                const companyName = companyName1.userName
+                    return functions.success(res, 'Không có dữ phòng ban ', { data });
+                } else {
+                    const data2 = departments.managerId
+                    const departmentName = departments.deparmentName
+                    const companyName1 = await Users.findOne({ idQLC: data1, type: 1 }).select('userName').lean()
+                    if (!companyName1) {
+                        data.departmentName = departmentName
+                        data.birthday = birthday
+                        data.position_id = position_id
+                        data.gender = gender
+                        data.married = married
+                        data.experience = experience
+                        data.education = education
+                        return functions.success(res, 'Không có dữ liệu ten cty  ', { data });
+                    }
+                    //tìm thấy tên công ty
+                    const companyName = companyName1.userName
 
-                const managerName1 = await Users.findOne({ idQLC: data2, type: 2 }).select('userName').lean()
-                if (!managerName1) {
+                    const managerName1 = await Users.findOne({ idQLC: data2, type: 2 }).select('userName').lean()
+                    if (!managerName1) {
+                        data.departmentName = departmentName
+
+                        data.birthday = birthday
+                        data.position_id = position_id
+                        data.gender = gender
+                        data.married = married
+                        data.experience = experience
+                        data.education = education
+                        return functions.success(res, 'Không có dữ liệu ten truong phong   ', { data });
+                    }
+                    //tìm thấy tên trưởng phòng 
+                    const managerName = managerName1.userName
+
                     data.departmentName = departmentName
-                    
+                    data.managerName = managerName
+                    data.companyName = companyName
                     data.birthday = birthday
                     data.position_id = position_id
                     data.gender = gender
                     data.married = married
                     data.experience = experience
                     data.education = education
-                return functions.success(res, 'Không có dữ liệu ten truong phong   ', { data });
+                    if (data) {
+                        return functions.success(res, 'Lấy thành công', { data });
+                    };
                 }
-                //tìm thấy tên trưởng phòng 
-                const managerName = managerName1.userName
-
-                data.departmentName = departmentName
-                data.managerName = managerName
-                data.companyName = companyName
-                data.birthday = birthday
-                data.position_id = position_id
-                data.gender = gender
-                data.married = married
-                data.experience = experience
-                data.education = education
-                if (data) {
-                    return functions.success(res, 'Lấy thành công', { data });
-                };
-            }
             }
 
             // return functions.setError(res, 'Không có dữ liệu', 404);
         }
     } catch (e) {
-       return functions.setError(res, e.message)
+        return functions.setError(res, e.message)
     }
 } 

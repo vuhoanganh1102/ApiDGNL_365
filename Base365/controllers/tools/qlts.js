@@ -628,7 +628,7 @@ exports.toolTaiSan = async (req, res, next) => {
                         id_nhom_ts: item.id_nhom_ts,
                         id_dv_quanly: item.id_dv_quanly,
                         id_ten_quanly: item.id_ten_quanly,
-                        ts_ten: item.item,
+                        ts_ten: item.ts_ten,
                         sl_bandau: item.sl_bandau,
                         ts_so_luong: item.ts_so_luong,
                         soluong_cp_bb: item.soluong_cp_bb,
