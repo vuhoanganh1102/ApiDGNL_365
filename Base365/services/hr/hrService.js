@@ -73,25 +73,20 @@ exports.HR_UploadFile = async(folder, id, file, allowedExtensions) => {
     if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
         return false
     }
-    // const { size } = await promisify(fs.stat)(filePath);
-    // if (size > MAX_IMG_SIZE) {
-    //     return false;
-    // }
-
     if (!fs.existsSync(path1)) {
         fs.mkdirSync(path1, { recursive: true });
     }
     fs.readFile(file.path, (err, data) => {
         if (err) {
-            console.log(err)
+            return false
         }
         fs.writeFile(filePath, data, (err) => {
             if (err) {
-                console.log(err)
+                return false
             }
         });
     });
-    return true
+    return file.name
 }
 
 exports.createLinkFileHR = (folder, id, name) => {

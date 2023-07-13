@@ -12,12 +12,12 @@ const Salarys = require('../../models/hr/Salarys');
 const Deparment = require('../../models/qlc/Deparment');
 exports.report = async (req, res, next) => {
     try {
-        // await Users.findByIdAndUpdate(20,{inForPerson:{account:{gender:2},employee:{com_id:20}}})
+        // await Users.findByIdAndUpdate(20,{inForPerson:{account:{gender:2},employee:{com_id:1763}}})
         // return
         // await Appoint.create({
         //     id:2,com_id:20,ep_id:16
         // })
-        //return
+        // return
         let comId = req.comId;
         let depId = req.body.depId || null;
         let from_date = req.body.from_date || null;

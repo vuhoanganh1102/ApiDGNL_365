@@ -27,7 +27,7 @@ exports.addProvision = async (req, res, next) => {
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload failed', 404)
                 }
-                link = HR.createLinkFileHR('provision', comId, File.provision.name)
+                link = checkUpload
             } else {
                 link = null;
             }

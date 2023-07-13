@@ -40,7 +40,7 @@ const HR_Notifys = require('../../models/hr/Notify.js');
 const HR_Permisions = require('../../models/hr/Permision.js');
 const HR_Policys = require('../../models/hr/Policys.js');
 const HR_StageRecruitments = require('../../models/hr/StageRecruitment.js');
-
+const HR_Luong = require('../../models/hr/Salarys');
 // tool hr cường
 exports.AchievementFors = async (req, res, next) => {
     try {
@@ -1401,3 +1401,47 @@ exports.getJob = async (req, res, next) => {
 // };
 
 
+exports.salary = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_get_job?page=${page}`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let interviewTime = data[i].interview_time;
+                    if (await functions.checkDate(interviewTime) === false) continue
+                    await HR_GetJobs.findOneAndUpdate({ id: Number(data[i].id) }, 
+                        { 
+                            canId: data[i].can_id ,
+                            resiredSalary: data[i].resired_salary ,
+                            salary: data[i].salary ,
+                            interviewTime: data[i].interview_time ,
+                            empInterview: data[i].ep_interview ,
+                            note: data[i].note ,
+                            email: data[i].uv_email ,
+                            contentSend: Buffer.from(data[i].contentsend, 'base64'),
+                            isSwitch: data[i].is_switch ,
+                            isDelete: data[i].is_delete ,
+                            deletedAt: data[i].deleted_at ,
+                            createdAt: data[i].created_at 
+                        },{ upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
