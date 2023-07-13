@@ -159,13 +159,23 @@ try{
 }
 };
 
+exports.deleteCompanyALlUser = async(req, res) => {
+    try {
+        const com_id = req.user.data.com_id
+        // const com_id = req.body.com_id
+        const type = req.user.data.type
+        if (type == 1) {
 
-exports.deleteAllUser = async(req, res) => {
-    if (!await functions.getMaxID(manageUser)) {
-        functions.setError(res, "No manager existed", 513);
-    } else {
-        manageUser.deleteMany()
-            .then(() => functions.success(res, "Delete all companies successfully"))
-            .catch(err => functions.setError(res, err.message, 514));
+            const user = await functions.getDatafind(manageUser, { "inForPerson.employee.com_id": com_id });
+            if (user) {
+                await manageUser.deleteMany({ "inForPerson.employee.com_id": com_id })
+                return functions.success(res, "xóa thành công ", {user})
+            }
+            return functions.setError(res, "không tìm thấy nhân viên nào trong công ty");
+        }
+        return functions.setError(res, "Tài khoản không phải Công ty", 604);
+    } catch (error) {
+        return functions.setError(res, error.message)
     }
-}
+    }
+

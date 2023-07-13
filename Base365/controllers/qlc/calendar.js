@@ -27,7 +27,7 @@ exports.getAllCalendarCompany = async(req, res) => {
 
                     if(total_emp) data.total_emp = total_emp
                 }
-                    return functions.success(res, 'tạo thành công ', { data })
+                    return functions.success(res, 'lấy thành công ', { data })
                 }
                 return functions.setError(res, 'không tìm thấy lịch làm việc')
             }
@@ -66,7 +66,7 @@ exports.createCalendar = async(req, res) => {
                 calendarDetail: calendarDetail
             })
             await calendar.save()
-                   return functions.success(res, "Calendar saved successfully", {calendar});
+                   return functions.success(res, "tạo thành công", {calendar});
         }
         return functions.setError(res, "nhập thiếu thông tin", 504);
     }

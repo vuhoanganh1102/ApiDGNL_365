@@ -15,7 +15,7 @@ exports.getListByID = async(req, res) => {
             let condition = {}
                 if (_id) condition._id = _id
                 if (com_id) condition.com_id = com_id
-                const data = await setIp.find(condition).select('_id fromSite accessIP createAt updateAt');
+                const data = await setIp.find(condition).select('_id fromSite accessIP createAt updateAt').sort({_id: -1}).lean();
                 if (data) {
                     return functions.success(res, 'tạo thành công ', { data })
                 }

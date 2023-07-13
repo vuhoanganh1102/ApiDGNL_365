@@ -107,19 +107,18 @@ exports.editShift = async(req, res) => {
 
 
 exports.deleteShiftCompany = async(req, res) => {
-    const com_id = req.user.data.com_id
-    // let com_id = req.body.com_id
-    let shift_id = req.body.shift_id
-    
-        const shifts = await functions.getDatafind(Shifts, { com_id: com_id, shift_id : shift_id });
-        if (shifts) {
-            await Shifts.deleteOne({ com_id: com_id , shift_id :shift_id })
-            .then(() => functions.success(res, "Shifts deleted successfully", shifts))
-            .catch((err) => functions.setError(res, err.message));
-        }
-        
-        return functions.setError(res, "không tìm thấy ca làm việc của công ty");
-
-
+    try{
+        const com_id = req.user.data.com_id
+        // let com_id = req.body.com_id
+        let shift_id = req.body.shift_id
+            const shifts = await functions.getDatafind(Shifts, { com_id: com_id, shift_id : shift_id });
+            if (shifts) {
+                await Shifts.deleteOne({ com_id: com_id , shift_id :shift_id })
+                return functions.success(res, "xoá thành công", {shifts})
+            }
+            return functions.setError(res, "không tìm thấy ca làm việc của công ty");
+    }catch(e){
+        return functions.setError(res, e.message);
+    }
 
 }
