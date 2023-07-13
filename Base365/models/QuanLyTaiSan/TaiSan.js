@@ -26,7 +26,8 @@ const model_Tai_San = new mongoose.Schema({
         type: Number
     },
     ts_so_luong: {
-        tpye: String
+        type: Number,
+        default : 0
     },
     soluong_cp_bb: {
         type: Number

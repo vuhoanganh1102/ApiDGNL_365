@@ -150,7 +150,7 @@ exports.editNhom = async (req, res) => {
   try {
     let { ten_nhom, id_nhom } = req.body;
     let com_id = '';
-
+   
     if (req.user.data.type == 1) {
       com_id = req.user.data.idQLC;
     } else if (req.user.data.type == 2) {
@@ -164,7 +164,7 @@ exports.editNhom = async (req, res) => {
       return functions.setError(res, 'ten_nhom đã được sử dụng', 400);
     } else {
       let chinhsuanhom = await NhomTaiSan.findOneAndUpdate(
-        {id_nhom: id_nhom },
+        {id_nhom: id_nhom,id_cty : com_id },
         { $set: { ten_nhom: ten_nhom } },
         { new: true }
       );
@@ -180,27 +180,29 @@ exports.editNhom = async (req, res) => {
 
 exports.xoaNhom = async (req, res) => {
   try {
-    let { datatype, id, type_quyen } = req.body;
+    let { datatype, id_nhom, type_quyen } = req.body;
+
     let com_id = '';
-    let id_user = '';
     let nhom_id_ng_xoa = req.user.data.idQLC;
+    
     const deleteDate = Math.floor(Date.now() / 1000);
-    if (typeof id === 'undefined') {
+    if (typeof id_nhom === 'undefined') {
       return functions.setError(res, 'id nhóm không được bỏ trống', 400);
     }
-    if (isNaN(Number(id))) {
+    if (isNaN(Number(id_nhom))) {
       return functions.setError(res, 'id nhóm phải là một số', 400);
     }
+   
     if (req.user.data.type == 1) {
       com_id = req.user.data.idQLC;
-    } else if (req.user.data.type == 2) {
+    } 
+    else if (req.user.data.type == 2) {
       com_id = req.user.data.inForPerson.employee.com_id;
-      id_user = req.user.data.idQLC
     } else {
-      return functions.setError(res, 'không có quyền truy cập', 400);
+      return functions.setError(res, 'không có quyền truy cập');
     }
     if (datatype == 1) {
-      let chinhsuanhom = await NhomTaiSan.findByIdAndUpdate({ id_nhom: id, id_cty: com_id },
+      let chinhsuanhom = await NhomTaiSan.findOneAndUpdate({ id_nhom: id_nhom, id_cty: com_id },
         {
           $set: {
             nhom_da_xoa: 1,
@@ -213,7 +215,7 @@ exports.xoaNhom = async (req, res) => {
       return functions.success(res, 'get data success', { chinhsuanhom });
     }
     if (datatype == 2) {
-      let khoiphuc = await NhomTaiSan.findByIdAndUpdate({ id_nhom: id, id_cty: com_id },
+      let khoiphuc = await NhomTaiSan.findOneAndUpdate({ id_nhom: id_nhom, id_cty: com_id },
         {
           $set: {
             nhom_da_xoa: 0,
@@ -226,7 +228,7 @@ exports.xoaNhom = async (req, res) => {
       return functions.success(res, 'get data success', { khoiphuc });
     }
     if (datatype == 3) {
-      await NhomTaiSan.findByIdAndDelete({ id_nhom: id, id_cty: com_id })
+      await NhomTaiSan.findOneAndDelete({ id_nhom: id_nhom, id_cty: com_id })
       return functions.success(res, 'thanh cong');
     } else {
       return functions.setError(res, 'không có quyền xóa', 400)

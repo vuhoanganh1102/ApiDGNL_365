@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const model_ViTri_ts = new mongoose.Schema({
-    _id: {
+    id_vitri: {
         type: Number
     },
     id_cty: {
@@ -10,13 +10,15 @@ const model_ViTri_ts = new mongoose.Schema({
         type: String
     },
     dv_quan_ly: {
-        type: Number
+        type: Number,
+        default : 0
     },
     quyen_dv_qly: {
         type: Number
     },
     ghi_chu_vitri: {
-        type: String
+        type: String,
+        default :""
     },
 },
     {
