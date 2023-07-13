@@ -534,7 +534,7 @@ exports.toolTaisan = async (req, res, next) => {
         let result = true;
         page = 1;
         do {
-            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 20 });
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb : 20 });
             let listData = data.data.items;
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {

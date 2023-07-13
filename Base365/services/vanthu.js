@@ -8,6 +8,19 @@ const dotenv = require("dotenv");
 dotenv.config();
 const path = require('path');
 
+
+
+
+// hàm khi thành công
+exports.success = async (res, messsage = "", data = []) => {
+    return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
+};
+
+// hàm thực thi khi thất bại
+exports.setError = async (res, message, code = 500) => {
+    return res.status(code).json({ code, message })
+};
+
 exports.uploadFileVanThu = (id, file) => {
     let path = `../Storage/base365/vanthu/tailieu/${id}/`;
     let filePath = `../Storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
@@ -60,7 +73,7 @@ exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi,
         Message: name_dx,
         ListFollower: id_user_theo_doi,
         Status: status,
-        Link: status,
+        Link: link,
         file_kem: file_kem,
         // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link
     }).then(function (response) {

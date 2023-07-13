@@ -17,7 +17,7 @@ router.post('/details',functions.checkToken,formData.parse(),controllerNhomTs.sh
 router.post('/edit',functions.checkToken,formData.parse(),controllerNhomTs.editNhom)
 
 //Api xóa
-router.post('/edit',functions.checkToken,formData.parse(),controllerNhomTs.xoaNhom)
+router.post('/delete',functions.checkToken,formData.parse(),controllerNhomTs.xoaNhom)
 
 
 

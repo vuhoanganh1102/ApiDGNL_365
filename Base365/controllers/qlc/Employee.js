@@ -162,6 +162,7 @@ exports.login = async(req, res, next) => {
         let type = request.type;
         if (account && password && type) {
             let user;
+           
             if (!pass_type) {
                 password = md5(password);
             }
@@ -178,6 +179,7 @@ exports.login = async(req, res, next) => {
                     type: type
                 }).lean();
             }
+         
             if (user) {
                 const token = await functions.createToken({
                     _id: user._id,
