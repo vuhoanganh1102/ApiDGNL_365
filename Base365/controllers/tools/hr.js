@@ -412,16 +412,26 @@ exports.DepartmentDetails = async (req, res, next) => {
 };
 exports.DescPositions = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_desc_position');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].id);
-            let positionId = data[i].position_id;
-            let comId = data[i].com_id;
-            let description = data[i].description;
-            let DescPositions = new HR_DescPositions({ id, positionId, comId, description });
-            await DescPositions.save();
+        //
+        let page = 1;
+        let result = true;
+        while(result){
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_desc_position?page=${page}`);
+            if(data.length === 0)
+            {
+                result = false
+            }
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].id);
+                let positionId = data[i].position_id;
+                let comId = data[i].com_id;
+                let description = data[i].description;
+                let DescPositions = new HR_DescPositions({ id, positionId, comId, description });
+                await DescPositions.save();
+            }
+            page++;
+            console.log(page)
         }
-        return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -690,30 +700,6 @@ exports.policy = async (req, res, next) => {
     }
 };
 
-// exports.provisionOfCompany = async (req, res, next) => {
-//     try {
-//         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=1');
-//         for (let i = 0; i < data.length; i++) {
-//             let _id = Number(data[i].id);
-//             let provisionId = data[i].provision_id;
-//             let timeStart = data[i].time_start;
-//             let supervisorName = data[i].supervisor_name;
-//             let applyFor = data[i].apply_for;
-//             let content = data[i].content;
-//             let createdBy = data[i].created_by;
-//             let isDelete = data[i].is_delete;
-//             let createdAt = data[i].created_at;
-//             let name = data[i].name;
-//             let file = data[i].file;
-//             let deletedAt = data[i].deleted_at;
-//             let data_recruitment = new HR_Policys({ _id, provisionId, timeStart, supervisorName, applyFor, content, createdBy, isDelete, createdAt, name, file, deletedAt });
-//             await HR_Policys.create(data_recruitment);
-//         }
-//         return functions.success(res, "Thành công");
-//     } catch (error) {
-//         return functions.setError(res, error.message);
-//     }
-// };
 exports.provisionOfCompany = async (req, res, next) => {
     try {
         let page = 1;
