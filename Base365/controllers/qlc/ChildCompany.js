@@ -44,13 +44,14 @@ exports.createCompany = async(req, res) => {
             if (check_com_parent) {
                 let maxID = await functions.getMaxUserID("company")
                 let _id = maxID._id
-                if (File.avatarUser) {
-                    let upload = fnc.uploadFileQLC('avt_child_com', _id, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                if (File && File.avatarUser) {
+                    //  const namefiles = req.files.avatarUser.originalFilename;
+                    let upload = await fnc.uploadAvaComQLC( File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }
-                    avatarUser = fnc.createLinkFileQLC('avt_child_com', _id, File.avatarUser.name)   
-                }
+                    avatarUser = upload
+                } 
                 const company = new Users({
                     _id: _id ,
                     userName: userName,
@@ -85,12 +86,8 @@ exports.editCompany = async(req, res) => {
         const type = req.user.data.type
         // const com_id = req.user.data.com_id
         let com_id = req.body.com_id
-        const _id = req.body.id;
         if(type == 1){
-
-       
             const { userName, phone, emailContact, address } = req.body;
-
                 const company = await functions.getDatafindOne(Users, {idQLC:com_id , type : 1});
                 if (company) {
                     await functions.getDatafindOneAndUpdate(Users, {idQLC:com_id, type : 1 }, {
@@ -103,9 +100,6 @@ exports.editCompany = async(req, res) => {
                    return functions.success(res, "Chỉnh sửa thành công", { company })
                 }    
                 return functions.setError(res, "không tìm thấy công ty ", 510);
-                
-                
-         
         }
         return functions.setError(res, "Tài khoản không phải Công ty", 604);   
     } catch (error) {
