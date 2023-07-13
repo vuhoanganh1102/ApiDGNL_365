@@ -12,7 +12,7 @@ const UserDX = require("../../../models/Users")
 
 exports.ChitietDx = async (req, res) => {
   try {
-    let { _id } = req.body;
+    let {_id} = req.body;
     let dexuat = await DeXuat.findOne({ _id });
     if (!dexuat) {
       res.status(404).json({ message: 'Không tìm thấy bản ghi dexuat' });
@@ -24,10 +24,10 @@ exports.ChitietDx = async (req, res) => {
       const checkusertheodoi = dexuat.id_user_theo_doi.split(',').map(Number); 
       const usertd = await UserDX.find({ idQLC: { $in: checkusertheodoi }  });
       // Tiếp tục xử lý và trả về kết quả
-      let namnUserDuyet = users.map(user => user.userName);
-      let namnUsertd = usertd.map(user => user.userName);
+      const namnUserDuyet = users.map(user => ({ userName: user.userName, avatarUser: user.avatarUser }));
+      const namnUsertd = usertd.map(user => ({ userName: user.userName, avatarUser: user.avatarUser }));
       let data = { dexuat, namnUserDuyet, namnUsertd };
-      res.status(200).json(data);
+      return functions.success(res, 'get data success', { data });
     }
   } catch (error) {
     console.error(error);
@@ -45,27 +45,28 @@ exports.showHome = async (req, res) => {
     const perPage = 6; // Số lượng giá trị hiển thị trên mỗi trang
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
-    let com_id = req.user.data.inForPerson.employee.com_id
-  
-    let id_user = req.user.data.idQLC
+    let com_id = '';
+    let id_user = '';
     let dxChoDuyet = '';
     let totaldx = '';
     let dxCanduyet = '';
     let dxduyet = '';
     if (req.user.data.type == 1) {
+      com_id = req.user.data.idQLC
       totaldx = await DeXuat.countDocuments({ com_id, del_type: 1 }); // đếm tổng số đề xuất
       dxChoDuyet = await DeXuat.countDocuments({ com_id, del_type: 1, type_duyet: 7 }) //đếm tổng số đề xuất chờ duyệt
       dxCanduyet = await DeXuat.countDocuments({ com_id, del_type: 1, type_time: 2, type_duyet: 0 }) // đếm số đề xuất cần duyệt
       dxduyet = await DeXuat.countDocuments({ com_id,com_id, del_type: 1, type_duyet: 5 }) // đếm tổng số dề xuất đã được duyệt
       let showCT = await DeXuat.find({ com_id }).sort({ _id: -1 }).skip(startIndex).limit(perPage);
-      res.status(200).json({ totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showCT }); // hiển thị trang home công ty
+      return res.status(200).json({ totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showCT }); // hiển thị trang home công ty
     } else if (req.user.data.type == 2) {
+      id_user = req.user.data.idQLC
       totaldx = await DeXuat.countDocuments({ id_user, del_type: 1 }); // đếm tổng số đề xuất
       dxChoDuyet = await DeXuat.countDocuments({id_user : id_user, del_type: 1, type_duyet: 7 }) //đếm tổng số đề xuất chờ duyệt
-      dxCanduyet = await DeXuat.countDocuments({id_user : id_user, del_type: 1, type_time: 2, type_duyet: 0 }) // đếm số đề xuất cần duyệt
+      dxCanduyet = await DeXuat.countDocuments({id_user_duyet : id_user, del_type: 1, type_time: 2, type_duyet: 0 }) // đếm số đề xuất cần duyệt
       dxduyet = await DeXuat.countDocuments({ id_user : id_user, del_type: 1, type_duyet: 5 })// đếm tổng số dề xuất đã được duyệt
       let showNV = await DeXuat.find({ id_user, del_type: 1 }).sort({ _id: -1 }).skip(startIndex).limit(perPage);
-      res.status(200).json({ totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showNV });// hiển thị trang home nhân viên
+      return res.status(200).json({ totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showNV });// hiển thị trang home nhân viên
     }else{
       res.status(400).json({ error: 'Bạn ko có quyền' });
     }
@@ -80,10 +81,14 @@ exports.showHome = async (req, res) => {
 exports.showNghi = async (req, res) => {
   try {
     const { page, time_s, time_e, dep_id, emp_id, type_duyet } = req.body;
-    const com_id = req.user.data.inForPerson.employee.com_id;
+    let com_id = '';
     const perPage = 10;
     const skip = (page - 1) * perPage;
-
+    if(req.user.data.type == 1) {
+      com_id = req.user.data.idQLC
+    }else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
     const query = {
       del_type: 1,
       type_dx: { $in: [1, 18] },
@@ -216,15 +221,20 @@ exports.findNameCate = async (req, res) => {
 
 exports.findthanhVien = async (req, res) => {
   try {
-    let { page,com_id } = req.body
-    // let com_id = req.user.data.inForPerson.employee.com_id
+    let { page } = req.body
+    let com_id = '';
     const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
     const startIndex = (page - 1) * perPage;
-    const checkTV = await UserDX.find({ 'inForPerson.employee.com_id': com_id })
-      .select('idQlC userName inForPerson ')
+    if(req.user.data.type == 1) {
+      com_id = req.user.data.idQLC
+      const checkTV = await UserDX.find({ 'inForPerson.employee.com_id': com_id,type : 2 })
+      .select('idQlC userName inForPerson.employee.position_id ')
       .sort({ 'inForPerson.employee.dep_id': -1 })
       .skip(startIndex).limit(perPage);
-    res.status(200).json(checkTV);
+      return functions.success(res, 'get data success', { checkTV });
+    }else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }  
   } catch (error) {
     console.error('Failed to find', error);
     res.status(500).json({ error: 'Failed to find' });

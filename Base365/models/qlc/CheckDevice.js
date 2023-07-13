@@ -9,14 +9,6 @@ const CheckDevice = new mongoose.Schema({
     idQLC: {
         type : Number
     },
-    //Id của công ty
-    companyId: {
-        type: Number
-    },
-    //Id phòng ban 
-    depID: {
-        type : Number
-    },
     // // ID thiết bị hiện tại 
     curDevice :{
         type : String
@@ -29,12 +21,13 @@ const CheckDevice = new mongoose.Schema({
     newDevice :{
         type : String
     },
-    typeDevice :{
-        type : Number
-    },
     //tên thiết bị mới 
     newDeviceName:{
         type : String
+    },
+    typeDevice :{
+        type : Number,
+        default : 0
     },
     //Thời điểm tạo 
     createdAt: {
@@ -44,4 +37,4 @@ const CheckDevice = new mongoose.Schema({
 
 })
 
-module.exports = mongoose.model('CheckDevice',CheckDevice)
+module.exports = mongoose.model('QLC_Employee_device',CheckDevice)

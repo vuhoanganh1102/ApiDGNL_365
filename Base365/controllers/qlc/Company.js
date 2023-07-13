@@ -48,7 +48,8 @@ exports.register = async(req, res) => {
                     phoneTK: user.phoneTK,
                     createdAt: user.createdAt,
                     type: user.type,
-                    com_id: user.idQLC
+                    com_id: user.idQLC,
+                    userName: user.userName,
                 }, "1d")
                 const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                 let data = {
@@ -232,9 +233,33 @@ exports.verifyCheckOTP = async(req, res) => {
 
     }
 }
+exports.CheckUpdatePasswordByInput = async(req, res, next) => {
+        try {
+            let input = req.body.input
+            if (input) {
+                let user;
+                if (!await functions.checkPhoneNumber(input)) {
+                    user = await Users.findOne({
+                        email: input,
+                    }).lean();
+                } else {
+                    user = await Users.findOne({
+                        phoneTK: input,
+                    }).lean();
+                }
+                if (user) {
+                    return functions.success(res, " tài khoản tồn tại ")
+                }
+                return functions.setError(res, " tài khoản chưa tồn tại ")
+            }
+            return functions.setError(res, " nhập thiếu email hoặc sdt ")
 
 
-// hàm đổi mật khẩu 
+        } catch (error) {
+            return functions.setError(res, error)
+        }
+    }
+    // hàm đổi mật khẩu 
 exports.updatePassword = async(req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC

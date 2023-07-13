@@ -12,38 +12,12 @@ const functions = require('../../services/functions')
 
 exports.showAll = async (req, res) => {
   try {
-    let { page, perPage, ts_ten, id_nhom_ts, id_vitri, id_user, ts_trangthai } = req.body;
+    let { page, perPage, ts_ten, id_nhom_ts, ts_vi_tri, id_ten_quanly, ts_trangthai } = req.body;
     let com_id = '';
-
-    // Thiết lập giá trị mặc định cho page và perPage nếu không được cung cấp
-    page = page || 1;
-    perPage = perPage || 10;
-
-    // Tính toán startIndex và endIndex
-    const startIndex = (page - 1) * perPage;
-    const endIndex = page * perPage;
-
-    let query = {
-      ts_da_xoa: 0,
-    };
-
-    if (ts_ten) {
-      query.ts_ten = { $regex: ts_ten, $options: "i" };
-    }
-    if (id_nhom_ts) {
-      query.id_nhom_ts = id_nhom_ts;
-    }
-    if (id_vitri) {
-      query.id_vitri = id_vitri;
-    }
-    if (id_user) {
-      query.id_user = id_user;
-    }
-    if (ts_trangthai) {
-      query.ts_trangthai = ts_trangthai;
-    }
-
-    // Kiểm tra loại người dùng và lấy com_id tương ứng
+    
+    page = parseInt(page) || 1; // Trang hiện tại (mặc định là trang 1)
+    perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
+     
     if (req.user.data.type == 1) {
       com_id = req.user.data.idQLC;
     } else if (req.user.data.type == 2) {
@@ -51,14 +25,61 @@ exports.showAll = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
+    // Tính toán startIndex và endIndex
+    const startIndex = (page - 1) * perPage;
+    const endIndex = page * perPage;
 
-    let searchTs = await TaiSan.find({ id_cty: com_id, ...query })
-      .sort({ ts_id: -1 })
-      .skip(startIndex)
-      .limit(perPage);
+    let matchQuery = {
+      id_cty: com_id,// Lọc theo com_id
+      ts_da_xoa : 0 
+    };
+
+    if (ts_ten) {
+      matchQuery.ts_ten = { $regex: ts_ten, $options: "i" };
+    }
+    if (id_nhom_ts) {
+      matchQuery.id_nhom_ts = parseInt(id_nhom_ts);
+    }
+    if (ts_vi_tri) {
+      matchQuery.ts_vi_tri = parseInt(ts_vi_tri);;
+    }
+    if (id_ten_quanly) {
+      matchQuery.id_ten_quanly = parseInt(id_ten_quanly);
+    }
+    if (ts_trangthai) {
+      matchQuery.ts_trangthai = parseInt(ts_trangthai);
+    }
+    let searchTs = await TaiSan.aggregate([
+      {
+        $match: matchQuery,
+      },
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San', // Tên bảng khác bạn muốn tham gia
+          localField: 'id_loai_ts',
+          foreignField: 'id_loai',
+          as: 'name_loai',
+        },
+      },
+      {
+        $lookup: {
+          from: 'QLTS_ViTri_ts', // Tên bảng khác bạn muốn tham gia
+          localField: 'ts_vi_tri',
+          foreignField: 'id_vitri',
+          as: 'name_vitri',
+        },
+      }
+      ,
+      {
+        $skip: startIndex, // Bỏ qua các bản ghi từ startIndex
+      },
+      {
+        $limit: perPage, // Giới hạn số lượng bản ghi trả về là perPage
+      },
+    ])
 
     // Lấy tổng số lượng tài sản
-    const totalTsCount = await TaiSan.countDocuments({ id_cty: com_id, ...query });
+    const totalTsCount = await TaiSan.countDocuments(matchQuery);
 
     // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
     const totalPages = Math.ceil(totalTsCount / perPage);
@@ -239,9 +260,99 @@ exports.showCTts = async (req, res) => {
 
 exports.deleteTs = async (req, res) => {
   try {
-   
+    let { datatype, ts_id, type_quyen } = req.body;
+
+    let com_id = '';
+    let ts_id_ng_xoa = req.user.data.idQLC;
+    const deleteDate = Math.floor(Date.now() / 1000);
+    if (typeof ts_id === 'undefined') {
+      return functions.setError(res, 'id tài sản không được bỏ trống', 400);
+    }
+    if (isNaN(Number(ts_id))) {
+      return functions.setError(res, 'id tài sản phải là một số', 400);
+    }
+    if (req.user.data.type == 1) {
+      com_id = req.user.data.idQLC;
+    } 
+    else if (req.user.data.type == 2) {
+      com_id = req.user.data.inForPerson.employee.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập');
+    }
+    if (datatype == 1) {
+      let chinhsua = await TaiSan.findOneAndUpdate({ ts_id: ts_id, id_cty: com_id },
+        {
+          $set: {
+            ts_da_xoa: 1,
+            ts_type_quyen_xoa: type_quyen,
+            ts_id_ng_xoa : ts_id_ng_xoa,
+            ts_date_delete: deleteDate
+          }
+        }, { new: true }
+      )
+      return functions.success(res, 'get data success', { chinhsua });
+    }
+    if (datatype == 2) {
+      let khoiphuc = await TaiSan.findOneAndUpdate({ ts_id: ts_id, id_cty: com_id },
+        {
+          $set: {
+            ts_da_xoa: 0,
+            ts_type_quyen_xoa: 0,
+            ts_id_ng_xoa: 0,
+            ts_date_delete: 0
+          }
+        }, { new: true }
+      )
+      return functions.success(res, 'get data success', { khoiphuc });
+    }
+    if (datatype == 3) {
+      await TaiSan.findOneAndDelete({ ts_id: ts_id, id_cty: com_id })
+      return functions.success(res, 'thanh cong');
+    } else {
+      return functions.setError(res, 'không có quyền xóa', 400)
+    }
+
   } catch (error) {
     console.log(error);
     return functions.setError(res, error);
   }
 }
+
+
+exports.editTS = async (req, res) => {
+  try {
+    let { ts_id,id_loai_ts_edit, ts_gia_tri_edit,ts_trangthai_edit,
+      ts_ten_edit,ts_so_luong_edit,ts_don_vi_edit,ts_vi_tri_edit,
+      ghi_chu_edit,don_vi_tinh_edit,id_ten_quanly_edit
+    } = req.body;
+    let com_id = '';
+   
+    if (req.user.data.type == 1) {
+      com_id = req.user.data.idQLC;
+    } else if (req.user.data.type == 2) {
+      com_id = req.user.data.inForPerson.employee.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+
+    let checkTs = await TaiSan.find({ id_cty: com_id })
+    if (checkTs.some(ts => ts.ts_ten === ts_ten)) {
+      return functions.setError(res, 'tên tài sản  đã được sử dụng', 400);
+    } else {
+      let chinhsua = await TaiSan.findOneAndUpdate(
+        {ts_id: ts_id,id_cty : com_id },
+        { $set: { ts_ten: ts_ten_edit,
+                  id_loai_ts : id_loai_ts_edit,
+                  ts_gia_tri : ts_gia_tri_edit,
+                  ts_trangthai : ts_trangthai_edit,
+                  } },
+        { new: true }
+      );
+
+      return functions.success(res, 'get data success', { chinhsua});
+    }
+  } catch (error) {
+    console.log(error);
+    return functions.setError(res, error);
+  }
+};

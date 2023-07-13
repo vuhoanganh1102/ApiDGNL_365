@@ -20,7 +20,7 @@ router.post('/showadd',functions.checkToken,formData.parse(),controllerTs.showad
 router.post('/details',functions.checkToken,formData.parse(),controllerTs.showCTts)
 
 
-//Api xóa tài khoản
+//Api xóa tài sản
 router.post('/delete',functions.checkToken,formData.parse(),controllerTs.deleteTs)
 
 module.exports = router

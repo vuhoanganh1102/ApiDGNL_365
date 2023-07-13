@@ -14,4 +14,10 @@ router.post("/create", formData.parse(), functions.checkToken, managerUserContro
 //API thay dổi thông tin của một user
 router.post("/edit", formData.parse(), functions.checkToken, managerUserController.editUser);
 
+//API xóa một user theo id
+router.delete("/del", formData.parse(), functions.checkToken, managerUserController.deleteUser);
+
+// API xóa toàn bộ nv hiện có cua cty
+// router.delete("/delAllUser",functions.checkToken,  managerUserController.deleteCompanyALlUser);
+
 module.exports = router
