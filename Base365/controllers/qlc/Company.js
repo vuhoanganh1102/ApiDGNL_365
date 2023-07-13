@@ -206,6 +206,7 @@ exports.verify = async(req, res) => {
         return functions.setError(res, e.message)
     }
 }
+
 exports.verifyCheckOTP = async(req, res) => {
     try {
         let otp = req.body.ma_xt || null
@@ -233,33 +234,35 @@ exports.verifyCheckOTP = async(req, res) => {
 
     }
 }
+
 exports.CheckUpdatePasswordByInput = async(req, res, next) => {
-        try {
-            let input = req.body.input
-            if (input) {
-                let user;
-                if (!await functions.checkPhoneNumber(input)) {
-                    user = await Users.findOne({
-                        email: input,
-                    }).lean();
-                } else {
-                    user = await Users.findOne({
-                        phoneTK: input,
-                    }).lean();
-                }
-                if (user) {
-                    return functions.success(res, " tài khoản tồn tại ")
-                }
-                return functions.setError(res, " tài khoản chưa tồn tại ")
+    try {
+        let input = req.body.input
+        if (input) {
+            let user;
+            if (!await functions.checkPhoneNumber(input)) {
+                user = await Users.findOne({
+                    email: input,
+                }).lean();
+            } else {
+                user = await Users.findOne({
+                    phoneTK: input,
+                }).lean();
             }
-            return functions.setError(res, " nhập thiếu email hoặc sdt ")
-
-
-        } catch (error) {
-            return functions.setError(res, error)
+            if (user) {
+                return functions.success(res, " tài khoản tồn tại ")
+            }
+            return functions.setError(res, " tài khoản chưa tồn tại ")
         }
+        return functions.setError(res, " nhập thiếu email hoặc sdt ")
+
+
+    } catch (error) {
+        return functions.setError(res, error)
     }
-    // hàm đổi mật khẩu 
+}
+
+// hàm đổi mật khẩu 
 exports.updatePassword = async(req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC
