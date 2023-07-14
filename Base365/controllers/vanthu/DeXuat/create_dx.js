@@ -1425,9 +1425,10 @@ exports.dxHoaHong = async (req, res) => {
             id_user_theo_doi,
             type_duyet,
             chu_ky,
-            doanh_thu_td,
-            muc_doanh_thu,
+            item_mdt_date,
+            dt_money,
             ly_do,
+            name_dt,
             time_hh,
             link
         } = req.body;
@@ -1458,8 +1459,9 @@ exports.dxHoaHong = async (req, res) => {
                     hoa_hong: {
                         chu_ky: chu_ky,
                         time_hh: time_hh,
-                        doanh_thu_td: doanh_thu_td,
-                        muc_doanh_thu: muc_doanh_thu,
+                        item_mdt_date: item_mdt_date,
+                        dt_money : dt_money,
+                        name_dt: name_dt,
                         ly_do: ly_do,
                     },
                 },
