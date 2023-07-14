@@ -19,7 +19,7 @@ exports.getListGroupByFields = async (req, res) => {
             if (gr_id) condition.gr_id = gr_id
             if (dep_id) condition.dep_id = dep_id
             if (team_id) condition.team_id = team_id
-            data = await Group.find(condition).select('team_id gr_name dep_id com_id')
+            data = await Group.find(condition).select('gr_id team_id gr_name dep_id com_id')
             const groupID = data.map(item => item.gr_id)
             for (let i = 0; i < groupID.length; i++) {
                 const group = groupID[i];
@@ -47,7 +47,7 @@ exports.createGroup = async (req, res) => {
             if (dep_id && com_id && team_id && gr_name) {
                 let max = await Group.findOne({}, {}, { sort: { gr_id: -1 } }).lean() || 0
                 const data = new Group({
-                    gr_id: Number(max) + 1 || 1,
+                    gr_id: Number(max.gr_id) + 1 || 1,
                     dep_id: dep_id,
                     com_id: com_id,
                     team_id: team_id,

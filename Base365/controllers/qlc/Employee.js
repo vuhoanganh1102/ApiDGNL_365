@@ -65,7 +65,10 @@ exports.register = async(req, res) => {
                         dep_id : user.inForPerson.employee.dep_id,
                         group_id : user.inForPerson.employee.group_id,
                         team_id : user.inForPerson.employee.team_id,
-
+                        startWorkingTime : user.inForPerson.employee.startWorkingTime,
+                        married : user.inForPerson.account.married,
+                        experience : user.inForPerson.account.experience,
+                        education : user.inForPerson.account.education,
                     }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {

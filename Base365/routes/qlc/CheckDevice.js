@@ -5,7 +5,7 @@ const formData = require('express-form-data')
 //lấy danh sách thiết bị 
 
 //loc danh sach theo cty 
-router.post("/list",functions.checkToken,formData.parse(), CheckDeviceController.getALlCompanyDevice);
+router.post("/list",functions.checkToken,formData.parse(), CheckDeviceController.getlist);
 
 // //loc danh sach theo cty va phong ban  
 // router.get("/company/depart/all",functions.checkToken, CheckDeviceController.getALlCompanyDepartmentDevice);
