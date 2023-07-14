@@ -84,35 +84,32 @@ exports.getDeviceById = async (req,res)=>{
 }
 //tao moi yeu cau
 exports.createDevice = async (req,res)=>{
-    const {idQLC ,  curDeviceName , newDeviceName,current_device,new_device } =req.body 
+    
+    const {idQLC ,  current_device_name , new_device_name,current_device,new_device,type_device } =req.body 
     //check loi 
     if(idQLC) {
-        
         let maxID = await functions.getMaxID(Device)
         if(!maxID) {
             maxID = 0
         }
         const ed_id = Number(maxID) + 1;
-        
         const device = new Device({
             ed_id: ed_id,
             idQLC:idQLC,
             current_device: current_device,
             new_device: new_device,
-            curDeviceName: curDeviceName,
-            newDeviceName: newDeviceName,
+            current_device_name: current_device_name,
+            new_device_name: new_device_name,
         })
-        
         await device.save()
            return functions.success(res,"create check device successful",{device})
-        
     }
     return functions.setError(res,"idQLC required")
 }
 //chinh sua yeu cau 
 exports.editDevice = async (req,res)=>{
     const _id = req.params.id;
-        const {idQLC , dep_id , curDeviceName , newDeviceName} = req.body;
+        const {idQLC , dep_id , current_device_name , new_device_name} = req.body;
             const device = await functions.getDatafindOne(Device,{_id : _id})
             if(!device){
                 functions.setError(res,"check device doesnt existed")
@@ -121,8 +118,8 @@ exports.editDevice = async (req,res)=>{
                 await functions.getDatafindOneAndUpdate(Device,{_id : _id},{
                     idQLC: idQLC,
                     dep_id: dep_id,
-                    curDeviceName: curDeviceName,
-                    newDeviceName: newDeviceName
+                    current_device_name: current_device_name,
+                    new_device_name: new_device_name
                 })
                 .then((device)=> functions.success(res,"check device edited successful", device ))
                 .catch((err)=> functions.setError(res,err.message));
