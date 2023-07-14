@@ -185,7 +185,7 @@ exports.getListReportErr = async(req, res) => {
             await functions.setError(res, 'Không có dữ liệu', 404);
 
         } else {
-            let count = await feedback.countDocuments({})
+            let count = await report.countDocuments({})
 
             return functions.success(res, 'Lấy thành công', { data, count });
         }
