@@ -2,68 +2,55 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const delete_Dx = require('../../../models/Vanthu/delete_dx');
 const his_handle = require('../../../models/Vanthu/history_handling_dx');
-
+const functions = require('../../../services/functions')
 
 // hàm khi người dùng ấn hủy tiếp nhận hoặc từ chối
 exports.delete_dx = async (req, res) => {
     try {
-        let id_user = req.user.data.idQLC;
-        console.log(id_user);
-        let id = req.body.id;
-        console.log("id la :  " + id);
-        let de_xuat = [];
-        if (!isNaN(id)) {
-            de_xuat = await De_Xuat.findOne({ _id: id });
-
-            if (!de_xuat) {
-                return res.status(200).json("de xuat khong ton tai");
-            } else {
-
-                // lưu vào bảng deletedx
-                let maxID = 0;
-                const dx = await delete_Dx.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-                console.log(dx);
-                if (dx) {
-                    maxID = dx.id_del;
-                }
-
-                let del_dx = new delete_Dx({
-                    id_del: maxID + 1,
-                    user_del: id_user,
-                    user_del_com: de_xuat.com_id,
-                    id_dx_del: id,
-                    time_del: Date.now()
-
-                });
-                await del_dx.save();// lưu vao bang del_dx
-
-
-                //lưu vào bảng history handlingdx
-                const max_hisHandle = await his_handle.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-                if (max_hisHandle) {
-                    maxID = max_hisHandle.id_his;
-                }
-                let his_handel_duyet = new his_handle({
-                    id_his: maxID + 1,
-                    id_dx: id,
-                    id_user: id_user,
-                    type_handling: 3,//2- đồng ý // 3- hủy duyệt //1-xác nhận
-                    time: new Date()
-                });
-                await his_handel_duyet.save()// lưu trạng thái xử lí vào bảng his_handle;
-
-                // Sửa đổi trang thái dx trong bảng đề xuất del_type từ 1 -> 2
-                await De_Xuat.findOneAndUpdate({ _id: id }, {
-                    del_type: 2,
-                    active: 2,
-                    delete_Dx: Date.now(),
-                    type_duyet: 3
-                });
-                return res.status(200).json({ data: del_dx, message: 'xoa thanh cong ' });
-            }
-        } else {
-            return res.status(404).json("id phai la 1 so Number");
+        let { id, type } = req.body;
+        if (!id) {
+            return functions.setError(res, 'Thông tin truyền lên không đầy đủ', 400);
         }
+        let id_com = 0;
+        if (req.user.data.type == 1) {
+            id_com = req.user.data.idQLC
+        } else if (req.user.data.type == 2) {
+            id_com = req.user.data.inForPerson.employee.com_id
+        } else {
+            return functions.setError(res, 'không có quyền truy cập', 400);
+        }
+        if (type === 1) {
+            await De_Xuat.deleteMany({ _id: { $in: id }, com_id: id_com });
+            await delete_Dx.deleteMany({ id_dx_del: { $in: id }, user_del_com: id_com });
+        }
+        else if (type == 0) {
+            // Kiểm tra và cập nhật trạng thái của đề xuất
+            const deXuat = await De_Xuat.findOne({ _id: id });
+
+            if (!deXuat) {
+                return res.status(400).json({ message: 'Đề xuất không tồn tại!' });
+            }
+
+            deXuat.del_type = 2;
+            await deXuat.save();
+
+            const deleteDX = new delete_Dx({
+                user_del: deXuat.id_user,
+                user_del_com: id_com,
+                id_dx_del: id,
+                time_del: new Date()
+            });
+            await deleteDX.save();
+            return res.status(200).json({ message: 'Đã cập nhật trạng thái của đề xuất thành công!' });
+        }
+        else if (type === 2) {
+            // Khôi phục đề xuất
+            await De_Xuat.updateMany({ _id: { $in: id }, del_type: 1 }, { del_type: 0 });
+            await delete_Dx.deleteMany({ id_dx_del: { $in: id }, user_del_com: id_com });
+      
+            return res.status(200).json({ message: 'Bạn đã khôi phục đề xuất thành công!' });
+          }
+        
     } catch (error) {
         console.error('Failed to add delete', error);
         res.status(500).json({ error: 'Failed to add delete' });

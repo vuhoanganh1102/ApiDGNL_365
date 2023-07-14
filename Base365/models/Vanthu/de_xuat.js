@@ -230,9 +230,8 @@ const Vanthu_de_xuat = new Schema({
                 type: Date,
                 default: null,
             },
-            time_end_tc: {
-                type: Date,
-                default: null,
+            shift_id : {
+                type : Number
             },
             ly_do: {
                 type: String,
@@ -371,14 +370,18 @@ const Vanthu_de_xuat = new Schema({
                 default : null
             },
             time_hh : {
-                type : Date,
-                default : null
-            },
-            doanh_thu_td : {
                 type : String,
                 default : null
             },
-            muc_doanh_thu : {
+            item_mdt_date : {
+                type : String,
+                default : null
+            },
+            dt_money : { //tong doanh thu
+                type : String,
+                default : null
+            },
+            name_dt : { //muc doanh thu
                 type : String,
                 default : null
             },

@@ -9,7 +9,17 @@ dotenv.config();
 const path = require('path');
 
 
-
+exports.covert = async(checkConvert) => {
+        let date = '';
+        let moth = '';
+        if(checkConvert.getDate() < 10 || checkConvert.getMonth() < 10) {
+             date = "0" + checkConvert.getDate() 
+             moth = "0" + checkConvert.getMonth()
+        }
+          let year = checkConvert.getFullYear()
+          let newdate = year + "-" + moth + "-" + date
+          return newdate
+}
 
 // hàm khi thành công
 exports.success = async (res, messsage = "", data = []) => {
@@ -56,6 +66,15 @@ exports.getMaxIDQJ = async(model) => {
     const maxUser = await model.findOne({}, {}, { sort: { id: -1 } }).lean() || 0;
     return maxUser.id + 1;
 };
+exports.getMaxIDrose = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { ro_id: -1 } }).lean() || 0;
+    return maxUser.ro_id + 1;
+};
+exports.getMaxIDtp = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { pay_id: -1 } }).lean() || 0;
+    return maxUser.pay_id + 1;
+};
+
 
 exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, status, link, file_kem) => {
     return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
