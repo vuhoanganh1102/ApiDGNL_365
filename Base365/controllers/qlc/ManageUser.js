@@ -110,26 +110,24 @@ return functions.setError(res, "Tài khoản không phải Công ty", 604);
 exports.editUser = async(req, res) => {
 try{
     const type = req.user.data.type
-    let com_id = req.user.data.com_id
+    // let com_id = req.user.data.com_id
     // let com_id = req.body.com_id
-    const {userName, email, phoneTK, idQLC, password, role, address, birthday, dep_id, group_id, team_id, position_id, gender, createdAt,ep_status } = req.body;
+    const {userName, email, phoneTK, idQLC, password, role, address, birthday, dep_id, group_id, team_id, position_id, gender, createdAt,ep_status } = await req.body;
     if(type == 1){
 
-    if ((com_id && userName && email && idQLC && password && role && address && position_id && gender) == undefined) {
-        //Kiểm tra tên nhân viên khác null
         const manager = await functions.getDatafindOne(manageUser, { idQLC: idQLC, type: 2 });
         if (manager) {
             await functions.getDatafindOneAndUpdate(manageUser, { idQLC: idQLC, type: 2 }, {
-                "inForPerson.employee.com_id": com_id,
+                // "inForPerson.employee.com_id": com_id,
                 userName: userName,
                 email: email,
                 phoneTK: phoneTK,
-                password: md5(password),
+                password: await md5(password),
                 "inForPerson.account.gender": gender,
                 "inForPerson.account.birthday": birthday,
                 address: address,
                 "inForPerson.employee.position_id": position_id,
-                type: 2,
+                // type: 2,
                 "inForPerson.employee.dep_id": dep_id,
                 "inForPerson.employee.group_id": group_id,
                 "inForPerson.employee.team_id": team_id,
@@ -139,11 +137,9 @@ try{
             })
             return functions.success(res, "Sửa thành công", { manager })
         }
-        return functions.setError(res, "người dùng không tồn tại", 510);
-    }
-    return functions.setError(res, "thiếu thông tin", 506);
+        return functions.setError(res, "người dùng không tồn tại");
 }
-return functions.setError(res, "Tài khoản không phải Công ty", 604);
+return functions.setError(res, "Tài khoản không phải Công ty");
 }catch(e){
 return functions.setError(res, e.message);
     
