@@ -3,6 +3,7 @@ const fnc = require('../../services/qlc/functions');
 const functions = require("../../services/functions")
 const md5 = require('md5');
 const Deparment = require("../../models/qlc/Deparment")
+const comErr = require("../../models/qlc/Com_error")
 
 
 //Đăng kí tài khoản công ty 
@@ -66,6 +67,9 @@ exports.register = async(req, res) => {
 
         }
     } else {
+        let finduser = await Users.findOne({ phoneTK: phoneTK, type: 1 }).lean()
+
+
         return functions.setError(res, 'Một trong số các trường yêu cầu bị thiếu', 404)
     }
 }

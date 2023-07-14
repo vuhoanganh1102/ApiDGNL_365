@@ -46,11 +46,8 @@ exports.createCalendar = async(req, res) => {
         if (type == 1) {
         const { cy_name, status, apply_month, is_personal, cy_detail } = req.body;
         if (com_id&&cy_name&&apply_month) {
-            let maxId = await functions.getMaxID(Cycle);
-            if (!maxId) {
-                maxId = 0;
-            }
-            const cy_id = Number(maxId) + 1;
+            let maxId = await Cycle.findOne({},{},{sort : {cy_id : -1}}).lean() || 0;
+            const cy_id = Number(maxId.cy_id) + 1 || 1 ;
             const tCreate = apply_month != 0 ? new Date(apply_month * 1000) : null
             const calendar = new Cycle({
                 cy_id: cy_id,
@@ -91,7 +88,7 @@ exports.editCalendar = async(req, res) => {
                             com_id: com_id,
                             cy_name: cy_name,
                             status: status,
-                            apply_month: apply_month,
+                            apply_month: Date.parse(apply_month),
                             is_personal: is_personal,
                             cy_detail: cy_detail
                         })
@@ -116,13 +113,11 @@ exports.copyCalendar = async(req, res) => {
         if (type == 1) {
             const calendar = await functions.getDatafindOne(Cycle, {com_id: com_id, cy_id: cy_id });
             if (calendar) {
-                let maxId = await functions.getMaxID(Cycle);
-                if (!maxId) {
-                    maxId = 0;
-                }
-                const newId = Number(maxId) + 1;
+                let maxId = await Cycle.findOne({},{},{sort : {cy_id : -1}}).lean() || 0;
+                const newId = Number(maxId.cy_id) + 1  ;
                 const newCalendar = new Cycle({
                     ...calendar,
+                    _id: undefined,
                     cy_id: newId,
                 })
                 await newCalendar.save()
@@ -148,9 +143,9 @@ exports.deleteCalendar = async(req, res) => {
             const calendar = await functions.getDatafindOne(Cycle, {com_id: com_id, cy_id: cy_id });
             if (calendar) {
                 await functions.getDataDeleteOne(Cycle, {com_id: com_id, cy_id: cy_id })
-                return functions.success(res, "Delete calendar successfully", {calendar})
+                return functions.success(res, "xóa thành công", {calendar})
             }
-            return functions.setError(res, "Calendar does not exist");
+            return functions.setError(res, "lịch làm việc không tồn tại");
     }
     return functions.setError(res, "Tài khoản không phải Công ty");
 } catch (error) {
@@ -169,9 +164,9 @@ exports.deleteCompanyCalendar = async(req, res) => {
             const calendars = await functions.getDatafind(Cycle, { com_id: com_id });
             if (calendars) {
                 await Cycle.deleteMany({ com_id: com_id })
-                return functions.success(res, "Calendars deleted successfully", {calendars})
+                return functions.success(res, "xóa thành công", {calendars})
             }
-            return functions.setError(res, "No calendars found in this company");
+            return functions.setError(res, "lịch làm việc không tồn tại");
         }
         return functions.setError(res, "Tài khoản không phải Công ty", 604);
     } catch (error) {
