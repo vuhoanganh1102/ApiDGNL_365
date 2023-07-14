@@ -7,7 +7,7 @@ exports.thong_ke_nghi_phep = async (req, res) => {
             id_nhan_vien,
             nghi_nhieu_nhat //3-nghỉ nhiều nhất 2- nghỉ đột xuất nhiều nhất 1- nghỉ có kế hoạch nhiều nhất 
         } = req.body;
-        console.log("nghi_nhieu_nhat:  " + nghi_nhieu_nhat);
+      
         let time_seach_from = req.body.time_seach_from ? req.body.time_seach_from : new Date("1970-01-01").getTime();
         let time_seach_to = req.body.time_seach_to ? req.body.time_seach_to : new Date().getTime();
         let filter = {};
@@ -17,10 +17,7 @@ exports.thong_ke_nghi_phep = async (req, res) => {
         if (id_nhan_vien) { filter.id_user = id_nhan_vien };
         filter.type_dx = 1;
         filter.active = 1;
-
         let de_xuat = await De_Xuat.find(filter);
-        console.log("de_xuat" + de_xuat)
-
         let danh_sach_nv_nghi = [];
         let list_nv = [];
         for (let i = 0; i < de_xuat.length; i++) {
@@ -43,20 +40,17 @@ exports.thong_ke_nghi_phep = async (req, res) => {
 
                 }
                 danh_sach_nv_nghi.push(info_nguoi_nghi);
-                console.log("danh_sach_nv_nghi: " + danh_sach_nv_nghi[j].tong_ngay_nghi)
-
             }
 
             if (nghi_nhieu_nhat) {//nghỉ nhiều nhất 
 
                 let danh_sach_nghi_nhieu_nhat = [];
                 let nguoi_nghi_nhieu_nhat = danh_sach_nv_nghi[0] || 0;
-                console.log("nguoi_nghi_nhieu_nhat: " + nguoi_nghi_nhieu_nhat.tong_ngay_nghi);
                 for (let i = 0; i < danh_sach_nv_nghi.length; i++) {
 
                     if (danh_sach_nv_nghi[i].tong_ngay_nghi > nguoi_nghi_nhieu_nhat.tong_ngay_nghi) {
                         nguoi_nghi_nhieu_nhat = danh_sach_nv_nghi[i];
-                        console.log("2")
+
                     }
                 }
                 for (let i = 0; i < danh_sach_nv_nghi.length; i++) {

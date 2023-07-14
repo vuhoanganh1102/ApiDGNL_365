@@ -1425,9 +1425,10 @@ exports.dxHoaHong = async (req, res) => {
             id_user_theo_doi,
             type_duyet,
             chu_ky,
-            doanh_thu_td,
-            muc_doanh_thu,
+            item_mdt_date,
+            dt_money,
             ly_do,
+            name_dt,
             time_hh,
             link
         } = req.body;
@@ -1458,8 +1459,9 @@ exports.dxHoaHong = async (req, res) => {
                     hoa_hong: {
                         chu_ky: chu_ky,
                         time_hh: time_hh,
-                        doanh_thu_td: doanh_thu_td,
-                        muc_doanh_thu: muc_doanh_thu,
+                        item_mdt_date: item_mdt_date,
+                        dt_money : dt_money,
+                        name_dt: name_dt,
                         ly_do: ly_do,
                     },
                 },
@@ -1712,7 +1714,7 @@ exports.dxTangCa = async (req, res) => {
             type_duyet,
             ly_do,
             time_tc,
-            time_end_tc,
+            shift_id,
             link
         } = req.body;
         let createDate = new Date()
@@ -1743,7 +1745,7 @@ exports.dxTangCa = async (req, res) => {
                     tang_ca: {
                         ly_do: ly_do,
                         time_tc: time_tc,
-                        time_end_tc: time_end_tc
+                        shift_id: shift_id
                     },
                 },
                 name_user: name_user,
@@ -1998,7 +2000,8 @@ exports.dxThuongPhat = async (req, res) => {
             type_duyet,
             type_tp,
             so_tien_tp,
-            nguoi_tp,
+            nguoi_phat_tp,
+            id_nguoi_tp,
             time_tp,
             ly_do,
             link
@@ -2008,6 +2011,11 @@ exports.dxThuongPhat = async (req, res) => {
         let com_id = req.user.data.inForPerson.employee.com_id
         let name_user = req.user.data.userName;
         let file_kem = req.files.file_kem;
+        if(type_tp == 1){
+            nguoi_tp = id_nguoi_tp;
+        }else{
+            nguoi_tp = nguoi_phat_tp;
+        }
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
@@ -2104,7 +2112,7 @@ exports.showadd = async (req, res) => {
                 const showUserTheoDoi = await User.find({
                     'inForPerson.employee.com_id': com_id,
                     'inForPerson.employee.com_id': com_id,
-                    'inForPerson.employee.position_id': { $in: [2, 9, 3, 20, 4, 12, 13, 10, 11] }// chức vụ  người theo dõi
+                    'inForPerson.employee.position_id': { $in: [2, 9, 3, 20, 4, 12, 13, 10, 11] }// chức vụ của người theo dõi
                 }).select('idQLC userName avatarUser')
                 return functions.success(res, 'get data success', { showUserduyet, showUserTheoDoi });
             }

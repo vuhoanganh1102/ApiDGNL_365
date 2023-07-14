@@ -8,6 +8,7 @@ const Shifts = require("../../models/qlc/Shifts")
 const ReportError = require("../../models/qlc/ReportError")
 const Feedback = require("../../models/qlc/Feedback")
 const CalendarWorkEmployee = require("../../models/qlc/CalendarWorkEmployee")
+const Calendar = require("../../models/qlc/Cycle")
 const Company = require("../../models/Users")
 
 const axios = require('axios');
@@ -210,6 +211,7 @@ exports.toolCompany = async(req, res, next) => {
 }
 
 
+
 //lịch làm việc của nhân viên
 exports.toolCalendarWorkEmployee = async(req, res, next) => {
 
@@ -217,66 +219,16 @@ exports.toolCalendarWorkEmployee = async(req, res, next) => {
         let page = 1;
         let result = true;
         do {
-            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 15 })
+            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 14 })
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            // const html = JSON.stringify(element.html);
-            // let deparmentOrder = element.dep_order;
-            // if (deparmentOrder == 0) {
-            //     deparmentOrder = null;
-            // };
+            const element = data[i];         
             const calendar = new CalendarWorkEmployee({
-                _id: element.cy_id,
-                companyID: element.com_id,
-                calendarName: element.cy_name,
-                timeApply: element.apply_month,
-                Detail: element.cy_detail,
-                Status: element.status,
-                isPersonal: element.is_personal,
-                // deparmentOrder,
-            })
-            await calendar.save();
-        }
-        page++;
-    } else {
-        result = false;
-    }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
-}
-//lịch làm việc của nhân viên
-exports.toolCalendarWorkEmployee = async(req, res, next) => {
-
-    try {
-        let page = 1;
-        let result = true;
-        do {
-            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 10 })
-            let data = listItems.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            // // const html = JSON.stringify(element.html);
-            // let deparmentOrder = element.dep_order;
-            // if (deparmentOrder == 0) {
-            //     deparmentOrder = null;
-            // };
-            const calendar = new CalendarWorkEmployee({
-                _id: element.cy_id,
-                companyID: element.com_id,
-                calendarName: element.cy_name,
-                timeApply: element.apply_month,
-                Detail: element.cy_detail,
-                Status: element.status,
-                isPersonal: element.is_personal,
-                // deparmentOrder,
+                epcy_id: element.epcy_id,
+                idQLC: element.ep_id,
+                cy_id: element.cy_id,
+                update_time: element.update_time,
             })
             await calendar.save();
         }
@@ -509,6 +461,43 @@ exports.toolHisTracking = async(req, res, next) => {
                 // deparmentOrder,
             })
             await tracking.save();
+        }
+        page++;
+    } else {
+        result = false;
+    }
+    console.log(page)
+} while (result);
+return fnc.success(res, 'Thành công')
+} catch (error) {
+console.log(error);
+return fnc.setError(res, error.message);
+}
+}
+
+
+// lịch làm việc
+exports.toolCalendar = async(req, res, next) => {
+
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 10 })
+            let data = listItems.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+            const element = data[i];
+            const department = new Calendar({
+                cy_id : data[i].cy_id , 
+                com_id : data[i].com_id , 
+                cy_name : data[i].cy_name , 
+                apply_month : data[i].apply_month , 
+                cy_detail : data[i].cy_detail , 
+                status : data[i].status , 
+                is_personal : data[i].is_personal , 
+            })
+            await department.save();
         }
         page++;
     } else {

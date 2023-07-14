@@ -26,7 +26,8 @@ const ThongBao = require('../../models/Vanthu365/tl_thong_bao');
 const NguoiDuyetVanBan = require('../../models/Vanthu365/user_duyet_vb');
 const UserModel = require('../../models/Vanthu365/user_model');
 const VanBan = require('../../models/Vanthu365/van_ban');
-
+const ThuongPhat = require('../../models/Vanthu/tb_thuong_phat')
+const Rose = require('../../models/Vanthu/tb_rose')
 // danh mục các loại đề xuất
 exports.toolCateDeXuat = async (req, res, next) => {
     try {
@@ -1265,3 +1266,12 @@ exports.tool_VanBan = async (req, res, next) => {
     }
 }
 
+
+exports.tooltbthuongphat = async(req,res) => {
+    try{
+
+    }catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
