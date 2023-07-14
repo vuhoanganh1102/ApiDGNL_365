@@ -32,6 +32,7 @@ router.post('/softDeleteStage', formData.parse(), hrService.checkRoleUser, hrSer
 //lay ra ds tin va tim kiem tin
 router.post('/listNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListRecruitmentNews);
 router.post('/listNewActive', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.listNewActive);
+router.post('/listSchedule', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.listSchedule);
 
 //chi tiet tin tuyen dung
 router.post('/detailNews', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getDetailRecruitmentNews);
