@@ -35,7 +35,7 @@ exports.getListRecruitment= async(req, res, next) => {
         return functions.success(res, "Get list recruitment success", {totalCount: totalCount, data: listRecruit });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -109,7 +109,7 @@ exports.createRecruitment = async(req, res, next) => {
         return functions.success(res, 'Create recruitment success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -129,7 +129,7 @@ exports.updateRecruitment = async(req, res, next) => {
         return functions.success(res, "update recruitment success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -146,7 +146,7 @@ exports.softDeleteRecruitment = async(req, res, next) => {
         return functions.success(res, "Soft delete stage recruitment success!");
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -163,7 +163,7 @@ exports.deleteRecruitment = async(req, res, next) => {
         return functions.success(res, "Recruitment not found");
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -196,7 +196,7 @@ exports.getStageRecruitment = async(req, res, next) => {
         return functions.success(res, "get stage recruitment success!", {data: data});
     }catch(e){
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 //them moi giai doan
@@ -227,7 +227,7 @@ exports.createStageRecruitment = async(req, res, next) => {
         return functions.success(res, 'Create stage recruitment success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -252,7 +252,7 @@ exports.updateStageRecruitment = async(req, res, next) => {
         return functions.success(res, "update state recruitment success!");
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -269,7 +269,7 @@ exports.softDeleteStageRecruitment = async(req, res, next) => {
         return functions.success(res, "Soft delete recruitment success!");
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -312,7 +312,7 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         return functions.success(res, "Get list recruitment news success", {totalCount: totalCount, data: listRecruitmentNews });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -371,6 +371,7 @@ exports.listNewActive = async(req, res)=>{
         return functions.success(res, "Get listNewActive success!", {countAllActiveNew, recruitmentNew});
     }catch(err) {
         console.log("Err from server!", err);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -407,7 +408,7 @@ exports.getTotalCandidateFollowDayMonth = async(req, res, next) => {
         return functions.success(res, "Get list candidate success",{totalCandidateDay, totalCandidateWeek, totalCandidateMonth} );
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -515,12 +516,9 @@ exports.getDetailRecruitmentNews= async(req, res, next) => {
         return functions.success(res, "Get list recruitment news success", {recruitmentNews, listCandidate, listOfferJob,listInterview, listInterviewPass, listInterviewFail});
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
-
-
-
 
 exports.checkDataRecruitmentNews = async(req, res, next) => {
     try {
@@ -564,7 +562,7 @@ exports.checkDataRecruitmentNews = async(req, res, next) => {
         return next();
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.massage);
     }
 }
 
@@ -597,7 +595,7 @@ exports.createRecruitmentNews = async(req, res, next) => {
         return functions.success(res, 'Create recruitmentNews success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -615,7 +613,7 @@ exports.updateRecruitmentNews = async(req, res, next) => {
         return functions.success(res, "Update news success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -632,7 +630,7 @@ exports.softDeleteRecuitmentNews = async(req, res, next) =>{
         return functions.success(res, "Soft delete news success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -653,13 +651,11 @@ exports.createSampleNews = async(req, res, next) =>{
         return functions.success(res, "Create sample news success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
 //---------------------------------ung vien
-
-
 exports.getListCandidate= async(req, res, next) => {
     try {
         let {page, pageSize, fromDate, toDate, name, recruitmentNewsId, userHiring, gender, status} = req.body;
@@ -699,10 +695,10 @@ exports.checkDataCandidate = async(req, res, next) => {
                 name, email, phone, cvFrom, userRecommend, recruitmentNewsId,
                 timeSendCv, gender, birthday, education, exp, isMarried, address, userHiring, firstStarVote, hometown
                 ];
-        // for(let i=0; i<fields.length; i++){
-        //     if(!fields[i])
-        //         return functions.setError(res, `Missing input value ${i+1}`, 404);
-        // }
+        for(let i=0; i<fields.length; i++){
+            if(!fields[i])
+                return functions.setError(res, `Missing input value ${i+1}`, 404);
+        }
         // them cac truong muon them hoac sua
         req.info = {
             name: name,
@@ -727,7 +723,7 @@ exports.checkDataCandidate = async(req, res, next) => {
         return next();
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -823,7 +819,7 @@ exports.createCandidate = async(req, res, next) => {
         return functions.success(res, 'Create candidate success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -876,7 +872,7 @@ exports.updateCandidate = async(req, res, next) => {
         return functions.success(res, "Update info candidate success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -896,12 +892,11 @@ exports.softDeleteCandidate = async(req, res, next) =>{
         return functions.success(res, "Soft delete candidate success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
 //------------them cac giai doan tuyen dung 
-
 let getCandidateProcess = async(model, condition)=> {
     return listCandidate = await model.aggregate([
         {
@@ -970,9 +965,6 @@ exports.getListProcessInterview= async(req, res, next) => {
 
         //truyen canId de lay thong tin chi tiet ve ung vien
         if(canId) condition["candidate.id"] = Number(canId);
-        // console.log(condition);
-
-        // let listProcess = await ProcessInterview.find({comId: comId});
 
         //danh sach ung vien nhan viec
         let listProcess = await ProcessInterview.aggregate([
@@ -1088,7 +1080,7 @@ exports.checkDataProcess = async(req, res, next) => {
         return next();
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1114,7 +1106,7 @@ exports.createProcessInterview = async(req, res, next) => {
         return functions.success(res, 'Create process interview success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1132,7 +1124,7 @@ exports.updateProcessInterview = async(req, res, next) => {
         return functions.success(res, "Update info Process Interview success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1150,7 +1142,7 @@ exports.deleteProcessInterview = async(req, res, next) => {
         return functions.success(res, "Process Interview not found");
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1190,7 +1182,7 @@ exports.checkDataJob = async(req, res, next) => {
         return next();
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1241,7 +1233,7 @@ exports.createContactJob = async(req, res, next) => {
         return functions.success(res, 'Create contactJob success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1291,7 +1283,7 @@ exports.createCancelJob = async(req, res, next) => {
         return functions.success(res, 'Create cancelJob success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1345,7 +1337,7 @@ exports.createFailJob = async(req, res, next) => {
         return functions.success(res, 'Create failJob success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1424,7 +1416,7 @@ exports.addCandidateProcessInterview = async(req, res, next) => {
         return functions.success(res, 'Create scheduleInterview success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1498,7 +1490,7 @@ exports.addCandidateGetJob = async(req, res, next) => {
         return functions.success(res, 'Create getJob success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1521,7 +1513,7 @@ exports.detailCandidateGetJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateGetJob success!', {list_process_interview, list_new, detail, another_skill, detail_get_job, list_schedule});
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1555,7 +1547,7 @@ exports.detailCandidateGetJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateGetJob success!', data);
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1574,7 +1566,7 @@ exports.detailCandidateFailJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateFailJob success!', data);
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1593,7 +1585,7 @@ exports.detailCandidateCancelJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateCancelJob success!', data);
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1612,7 +1604,7 @@ exports.detailCandidateContactJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateContactJob success!', data);
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
