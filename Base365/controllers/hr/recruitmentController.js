@@ -20,11 +20,8 @@ const Users = require('../../models/Users');
 exports.getListRecruitment= async(req, res, next) => {
     try {
         let {page, pageSize, name, recruitmentId} = req.body;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pageSize", 401);
-        }
-        page = Number(req.body.page);
-        pageSize = Number(req.body.pageSize);
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let infoLogin = req.infoLogin;
@@ -285,10 +282,8 @@ exports.getListRecruitmentNews= async(req, res, next) => {
 
         //id company lay ra sau khi dang nhap
         let comId = req.infoLogin.comId;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pagesize", 401);
-        }
-        
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
@@ -298,14 +293,21 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         if(title) listCondition.title =  new RegExp(title, 'i');
         if(fromDate) listCondition.timeStart = {$gte: new Date(fromDate)};
         if(toDate) listCondition.timeEnd = {$lte: new Date(toDate)};
-
-        var listRecruitmentNews = await functions.pageFind(RecruitmentNews, listCondition,{ _id: 1 }, skip, limit);
-        for(let i=0; i<listRecruitmentNews.length; i++){
-            let hr = await Users.findOne({idQLC: listRecruitmentNews[i].hrName});
-            if(hr) {
-                listRecruitmentNews[i].nameHr = hr.userName;
-            }
-        }
+        let listRecruitmentNews = await RecruitmentNews.aggregate([
+            {$match: listCondition},
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "hrName",
+                    foreignField: "idQLC",
+                    as: "documents"
+                }
+            },
+            {$skip: skip},
+            {$limit: limit},
+            {$project: {id: 1, title: 1, posApply: 1,cityId: 1,address: 1,cateId: 1,salaryId: 1,number: 1,timeStart: 1,timeEnd: 1,recruitmentId: 1,hrName: 1,createdAt: 1,isDelete: 1,comId: 1, isSample: 1, "documents.userName": 1}},
+            {$sort: {id: -1}},
+        ]);
         const totalCount = await functions.findCount(RecruitmentNews, listCondition);
         return functions.success(res, "Get list recruitment news success", {totalCount: totalCount, data: listRecruitmentNews });
     } catch (e) {
@@ -353,16 +355,18 @@ exports.listNewActive = async(req, res)=>{
         //thong ke
         for(let i=0; i<recruitmentNew.length; i++) {
             let condition2 = {comId: comId, isDelete: 0, recruitmentNewsId: recruitmentNew[i].id};
-
+            let news = recruitmentNew[i];
             let sohoso = functions.findCount(Candidate, condition2);
-            let henphongvan = getTotal("HR_ScheduleInterviews", condition2);
-            let truotphongvan = getTotal("HR_FailJobs", condition2);
-            let quaphongvan = getTotal("HR_GetJobs", condition2);
+            let henphongvan = await  getTotal("HR_ScheduleInterviews", condition2);
+            let truotphongvan = await getTotal("HR_FailJobs", condition2);
+            let quaphongvan = await getTotal("HR_GetJobs", condition2);
 
-            recruitmentNew[i].sohoso = await sohoso;
-            recruitmentNew[i].henphongvan = await henphongvan;
-            recruitmentNew[i].truotphongvan = await truotphongvan;
-            recruitmentNew[i].quaphongvan = await quaphongvan;
+            news.sohoso = sohoso;
+            news.henphongvan = henphongvan;
+            news.truotphongvan = truotphongvan;
+            news.quaphongvan = quaphongvan;
+
+            recruitmentNew[i] = news;
         }
         return functions.success(res, "Get listNewActive success!", {countAllActiveNew, recruitmentNew});
     }catch(err) {
@@ -502,18 +506,7 @@ exports.getDetailRecruitmentNews= async(req, res, next) => {
         let listCandidate = await Candidate.find({recruitmentNewsId: recruitmentNewsId, isDelete: 0}, {id: 1, name: 1, phone:1, email: 1}).sort({id: 1});
 
         let listOfferJob = await Candidate.find({recruitmentNewsId: recruitmentNewsId, isOfferJob: 1, isDelete: 0}, {id: 1, name: 1, phone:1, email: 1}).sort({id: 1});
-        // let listCandidateGetJob = await Candidate.aggregate([
-        //     {$match: {comId: comId, isDelete: 0}},
-        //     {
-        //         $lookup: {
-        //             from: "HR_GetJobs",
-        //             localField: "id",
-        //             foreignField: "canId",
-        //             as: "getJob"
-        //         }
-        //     },
-        //     {$project: {name: 1, phone:1, email: 1}}
-        // ]);
+
         let listInterview = await getListInterview(recruitmentNewsId, 1);
 
         let listInterviewPass = await getListInterview(recruitmentNewsId, 2);
@@ -673,12 +666,8 @@ exports.getListCandidate= async(req, res, next) => {
 
         //id company lay ra sau khi dang nhap
         let comId = req.infoLogin.comId;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pagesize", 401);
-        }
-        
-        page = Number(page);
-        pageSize = Number(pageSize);
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let listCondition = {isDelete: 0, comId: comId};
@@ -934,9 +923,6 @@ let getCandidateProcess = async(model, condition)=> {
         },
         {$match: condition},
         
-        // {
-        //     $project: {name: 1, phone: 1, recruitmentNewsId: 1, userHiring: 1, }
-        // },
         {
             $lookup: {
                 from: "HR_RecruitmentNews",
@@ -1066,11 +1052,6 @@ exports.getListProcessInterview= async(req, res, next) => {
             "userHiring.userName": 1
             }
         },
-        
-        // {$project: {name: 1, phone: 1, "userHiring.userName": 1, "recruitmentNews.title": 1}},
-        // {$sort: {id: 1}},
-        // {$skip: skip},
-        // {$limit: limit}
         ]);
         let listCandidateGetJob = await getCandidateProcess(GetJob, condition);
         let listCandidateCancelJob = await getCandidateProcess(CancelJob, condition);
@@ -1521,27 +1502,6 @@ exports.addCandidateGetJob = async(req, res, next) => {
     }
 }
 
-	// public function detailCandidateGetJob($id)
-	// {
-	// 	$this->_data['page_title'] 	= 'Chi tiết hồ sơ ứng viên';
-	// 	$infoLogin 	= checkRoleUser();
-	// 	$this->load->model('M_process_interview');
-	// 	$this->_data['list_process_interview'] = $this->M_process_interview->listProcess($infoLogin['com_id']);
-	// 	// Danh sách tin đăng
-	// 	$this->_data['list_new'] = $this->M_recruitment_new->listNew($infoLogin['com_id']);
-	// 	// chi tiết ứng viên
-	// 	$this->_data['detail'] = $this->M_candidate->detailCandidateAllNewBy($id);
-	// 	$this->_data['another_skill'] = $this->M_another_skill->listSkillBy($id);
-	// 	$this->load->model('M_tbl_shedule_interview');
-	// 	$this->_data['list_schedule'] = $this->M_tbl_shedule_interview->listSchedule($id);
-	// 	$this->load->model('M_tbl_get_job');
-	// 	$this->_data['detail_get_job'] = $this->M_tbl_get_job->getDetailBy($id);
-	// 	$this->_data['can_id'] = $id;
-	// 	// $this->_data['detail_interview'] = $this->M_tbl_shedule_interview->getDetail($id, $process_id);
-	// 	$this->load->view('site/profile/t_detail_candidate_get_job', $this->_data);
-	// }
-
-
 exports.detailCandidateGetJob = async(req, res, next) => {
     try {
         //lay thong tin tu nguoi dung nhap
@@ -1655,6 +1615,4 @@ exports.detailCandidateContactJob = async(req, res, next) => {
         return functions.setError(res, "Err from server!", 500);
     }
 }
-
-let Can
 
