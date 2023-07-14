@@ -16,7 +16,7 @@ exports.getListEmployee = async(req, res, next) => {
         return functions.success(res, "Get list appoint success", {totalCount: totalCount, listEmployee });
     }catch(e){
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -26,18 +26,12 @@ exports.getListAppoint = async(req, res, next) => {
         //check quyen
         let infoLogin = req.infoLogin;
         let com_id = infoLogin.comId;
-        let checkRole = await hrService.checkRole(infoLogin, 4, 1);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-        //
+
         let {page, pageSize, appointId, ep_id, update_dep_id, fromDate, toDate} = req.body;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pageSize", 401);
-        }
-        
-        page = Number(req.body.page);
-        pageSize = Number(req.body.pageSize);
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let listCondition = {com_id: com_id};
@@ -83,7 +77,7 @@ exports.getListAppoint = async(req, res, next) => {
         return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: listAppoint });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -91,10 +85,6 @@ exports.getAndCheckData = async (req, res, next) =>{
     try{
         //check quyen
         let infoLogin = req.infoLogin;
-        let checkRole = await hrService.checkRole(infoLogin, 5, 2);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
         let {ep_id, com_id, new_com_id, current_position, current_dep_id, update_position, update_dep_id, created_at, decision_id, note, mission} = req.body;
         if(!com_id) {
             com_id = infoLogin.comId;
@@ -106,7 +96,7 @@ exports.getAndCheckData = async (req, res, next) =>{
         next();
     }catch(e){
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -145,7 +135,7 @@ exports.updateAppoint = async(req, res, next) => {
         return functions.setError(res, "Appoint not found!", 405);
     } catch (error) {
         console.log("Error from server", error);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -154,11 +144,6 @@ exports.deleteAppoint = async(req, res, next) => {
     try {
         //check quyen
         let infoLogin = req.infoLogin;
-        let checkRole = await hrService.checkRole(infoLogin, 5, 2);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-
         let ep_id = Number(req.body.ep_id);
         if(!ep_id){
             return functions.setError(res, "Missing input value ep_id", 404);
@@ -170,7 +155,7 @@ exports.deleteAppoint = async(req, res, next) => {
         return functions.setError(res, "Appoint not found", 505);
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -182,18 +167,11 @@ exports.getListTranferJob = async(req, res, next) => {
         //check quyen
         let infoLogin = req.infoLogin;
         let com_id = infoLogin.comId;
-        let checkRole = await hrService.checkRole(infoLogin, 4, 1);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-        //
         let {page, pageSize, ep_id, update_dep_id, fromDate, toDate} = req.body;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pageSize", 401);
-        }
-        
-        page = Number(req.body.page);
-        pageSize = Number(req.body.pageSize);
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let listCondition = {com_id: com_id};
@@ -238,7 +216,7 @@ exports.getListTranferJob = async(req, res, next) => {
         return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: listTranferJob });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -288,7 +266,7 @@ exports.updateTranferJob = async(req, res, next) => {
         return functions.setError(res, "TranferJob not found!", 405);
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -297,11 +275,6 @@ exports.deleteTranferJob = async(req, res, next) => {
     try {
         //check quyen
         let infoLogin = req.infoLogin;
-        let checkRole = await hrService.checkRole(infoLogin, 5, 2);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-
         let ep_id = req.body.ep_id;
         if(!ep_id){
             return functions.setError(res, "Missing input value ep_id", 404);
@@ -313,7 +286,7 @@ exports.deleteTranferJob = async(req, res, next) => {
         return functions.setError(res, "TranferJob not found", 505);
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -325,18 +298,11 @@ exports.getListQuitJob = async(req, res, next) => {
         //check quyen
         let infoLogin = req.infoLogin;
         let com_id = infoLogin.comId;
-        let checkRole = await hrService.checkRole(infoLogin, 4, 1);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);
-        }
-        //
         let {page, pageSize, ep_id, current_dep_id, fromDate, toDate} = req.body;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pageSize", 401);
-        }
-        
-        page = Number(req.body.page);
-        pageSize = Number(req.body.pageSize);
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let listCondition = {com_id: com_id};
@@ -381,7 +347,7 @@ exports.getListQuitJob = async(req, res, next) => {
         return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: listQuitJob });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -416,7 +382,7 @@ exports.updateQuitJob = async(req, res, next) => {
         return functions.setError(res, "QuitJob not found!", 405);
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -425,11 +391,6 @@ exports.deleteQuitJob = async(req, res, next) => {
     try {
         //check quyen
         let infoLogin = req.infoLogin;
-        let checkRole = await hrService.checkRole(infoLogin, 5, 2);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-
         let ep_id = req.body.ep_id;
         if(!ep_id){
             return functions.setError(res, "Missing input value ep_id", 404);
@@ -441,7 +402,7 @@ exports.deleteQuitJob = async(req, res, next) => {
         return functions.setError(res, "QuitJob not found", 505);
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -454,18 +415,11 @@ exports.getListQuitJobNew = async(req, res, next) => {
         //check quyen
         let infoLogin = req.infoLogin;
         let com_id = infoLogin.comId;
-        let checkRole = await hrService.checkRole(infoLogin, 4, 1);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-        //
         let {page, pageSize, ep_id, current_dep_id, fromDate, toDate} = req.body;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pageSize", 401);
-        }
-        
-        page = Number(req.body.page);
-        pageSize = Number(req.body.pageSize);
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let listCondition = {com_id: com_id};
@@ -510,7 +464,7 @@ exports.getListQuitJobNew = async(req, res, next) => {
         return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: listQuitJobNew });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -550,7 +504,7 @@ exports.updateQuitJobNew = async(req, res, next) => {
         return functions.setError(res, "QuitJobNew not found!", 405);
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -559,11 +513,6 @@ exports.deleteQuitJobNew = async(req, res, next) => {
     try {
         //check quyen
         let infoLogin = req.infoLogin;
-        let checkRole = await hrService.checkRole(infoLogin, 5, 2);
-        if(!checkRole) {
-            return functions.setError(res, "no right", 444);   
-        }
-
         let ep_id = req.body.ep_id;
         if(!ep_id){
             return functions.setError(res, "Missing input value ep_id", 404);
@@ -575,15 +524,19 @@ exports.deleteQuitJobNew = async(req, res, next) => {
         return functions.setError(res, "QuitJobNew not found", 505);
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
 exports.getListSalary = async(req, res, next) => {
     try {
-        //check quyen
         let infoLogin = req.infoLogin;
-        let {ep_id, fromDate, toDate} = req.body;
+        let {ep_id, fromDate, toDate, page, pageSize} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
+
         let condition = {comId: infoLogin.comId};
         if(ep_id) condition.idUser = ep_id;
         if(fromDate) condition.timeUp = {$gte: new Date(fromDate)};
@@ -611,7 +564,7 @@ exports.getListSalary = async(req, res, next) => {
         return functions.success(res, "Get list salary success!", {listSalary: data, total});
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 

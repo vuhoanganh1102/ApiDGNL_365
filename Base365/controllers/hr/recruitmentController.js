@@ -20,11 +20,8 @@ const Users = require('../../models/Users');
 exports.getListRecruitment= async(req, res, next) => {
     try {
         let {page, pageSize, name, recruitmentId} = req.body;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pageSize", 401);
-        }
-        page = Number(req.body.page);
-        pageSize = Number(req.body.pageSize);
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let infoLogin = req.infoLogin;
@@ -38,7 +35,7 @@ exports.getListRecruitment= async(req, res, next) => {
         return functions.success(res, "Get list recruitment success", {totalCount: totalCount, data: listRecruit });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -112,7 +109,7 @@ exports.createRecruitment = async(req, res, next) => {
         return functions.success(res, 'Create recruitment success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -132,7 +129,7 @@ exports.updateRecruitment = async(req, res, next) => {
         return functions.success(res, "update recruitment success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -149,7 +146,7 @@ exports.softDeleteRecruitment = async(req, res, next) => {
         return functions.success(res, "Soft delete stage recruitment success!");
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -166,7 +163,7 @@ exports.deleteRecruitment = async(req, res, next) => {
         return functions.success(res, "Recruitment not found");
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -199,7 +196,7 @@ exports.getStageRecruitment = async(req, res, next) => {
         return functions.success(res, "get stage recruitment success!", {data: data});
     }catch(e){
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 //them moi giai doan
@@ -230,7 +227,7 @@ exports.createStageRecruitment = async(req, res, next) => {
         return functions.success(res, 'Create stage recruitment success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -255,7 +252,7 @@ exports.updateStageRecruitment = async(req, res, next) => {
         return functions.success(res, "update state recruitment success!");
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -272,7 +269,7 @@ exports.softDeleteStageRecruitment = async(req, res, next) => {
         return functions.success(res, "Soft delete recruitment success!");
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -285,10 +282,8 @@ exports.getListRecruitmentNews= async(req, res, next) => {
 
         //id company lay ra sau khi dang nhap
         let comId = req.infoLogin.comId;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pagesize", 401);
-        }
-        
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
@@ -298,19 +293,26 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         if(title) listCondition.title =  new RegExp(title, 'i');
         if(fromDate) listCondition.timeStart = {$gte: new Date(fromDate)};
         if(toDate) listCondition.timeEnd = {$lte: new Date(toDate)};
-
-        var listRecruitmentNews = await functions.pageFind(RecruitmentNews, listCondition,{ _id: 1 }, skip, limit);
-        for(let i=0; i<listRecruitmentNews.length; i++){
-            let hr = await Users.findOne({idQLC: listRecruitmentNews[i].hrName});
-            if(hr) {
-                listRecruitmentNews[i].nameHr = hr.userName;
-            }
-        }
+        let listRecruitmentNews = await RecruitmentNews.aggregate([
+            {$match: listCondition},
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "hrName",
+                    foreignField: "idQLC",
+                    as: "documents"
+                }
+            },
+            {$skip: skip},
+            {$limit: limit},
+            {$project: {id: 1, title: 1, posApply: 1,cityId: 1,address: 1,cateId: 1,salaryId: 1,number: 1,timeStart: 1,timeEnd: 1,recruitmentId: 1,hrName: 1,createdAt: 1,isDelete: 1,comId: 1, isSample: 1, "documents.userName": 1}},
+            {$sort: {id: -1}},
+        ]);
         const totalCount = await functions.findCount(RecruitmentNews, listCondition);
         return functions.success(res, "Get list recruitment news success", {totalCount: totalCount, data: listRecruitmentNews });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -353,20 +355,23 @@ exports.listNewActive = async(req, res)=>{
         //thong ke
         for(let i=0; i<recruitmentNew.length; i++) {
             let condition2 = {comId: comId, isDelete: 0, recruitmentNewsId: recruitmentNew[i].id};
-
+            let news = recruitmentNew[i];
             let sohoso = functions.findCount(Candidate, condition2);
-            let henphongvan = getTotal("HR_ScheduleInterviews", condition2);
-            let truotphongvan = getTotal("HR_FailJobs", condition2);
-            let quaphongvan = getTotal("HR_GetJobs", condition2);
+            let henphongvan = await  getTotal("HR_ScheduleInterviews", condition2);
+            let truotphongvan = await getTotal("HR_FailJobs", condition2);
+            let quaphongvan = await getTotal("HR_GetJobs", condition2);
 
-            recruitmentNew[i].sohoso = await sohoso;
-            recruitmentNew[i].henphongvan = await henphongvan;
-            recruitmentNew[i].truotphongvan = await truotphongvan;
-            recruitmentNew[i].quaphongvan = await quaphongvan;
+            news.sohoso = sohoso;
+            news.henphongvan = henphongvan;
+            news.truotphongvan = truotphongvan;
+            news.quaphongvan = quaphongvan;
+
+            recruitmentNew[i] = news;
         }
         return functions.success(res, "Get listNewActive success!", {countAllActiveNew, recruitmentNew});
     }catch(err) {
         console.log("Err from server!", err);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -403,7 +408,7 @@ exports.getTotalCandidateFollowDayMonth = async(req, res, next) => {
         return functions.success(res, "Get list candidate success",{totalCandidateDay, totalCandidateWeek, totalCandidateMonth} );
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -502,18 +507,7 @@ exports.getDetailRecruitmentNews= async(req, res, next) => {
         let listCandidate = await Candidate.find({recruitmentNewsId: recruitmentNewsId, isDelete: 0}, {id: 1, name: 1, phone:1, email: 1}).sort({id: 1});
 
         let listOfferJob = await Candidate.find({recruitmentNewsId: recruitmentNewsId, isOfferJob: 1, isDelete: 0}, {id: 1, name: 1, phone:1, email: 1}).sort({id: 1});
-        // let listCandidateGetJob = await Candidate.aggregate([
-        //     {$match: {comId: comId, isDelete: 0}},
-        //     {
-        //         $lookup: {
-        //             from: "HR_GetJobs",
-        //             localField: "id",
-        //             foreignField: "canId",
-        //             as: "getJob"
-        //         }
-        //     },
-        //     {$project: {name: 1, phone:1, email: 1}}
-        // ]);
+
         let listInterview = await getListInterview(recruitmentNewsId, 1);
 
         let listInterviewPass = await getListInterview(recruitmentNewsId, 2);
@@ -522,12 +516,9 @@ exports.getDetailRecruitmentNews= async(req, res, next) => {
         return functions.success(res, "Get list recruitment news success", {recruitmentNews, listCandidate, listOfferJob,listInterview, listInterviewPass, listInterviewFail});
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
-
-
-
 
 exports.checkDataRecruitmentNews = async(req, res, next) => {
     try {
@@ -571,7 +562,7 @@ exports.checkDataRecruitmentNews = async(req, res, next) => {
         return next();
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.massage);
     }
 }
 
@@ -604,7 +595,7 @@ exports.createRecruitmentNews = async(req, res, next) => {
         return functions.success(res, 'Create recruitmentNews success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -622,7 +613,7 @@ exports.updateRecruitmentNews = async(req, res, next) => {
         return functions.success(res, "Update news success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -639,7 +630,7 @@ exports.softDeleteRecuitmentNews = async(req, res, next) =>{
         return functions.success(res, "Soft delete news success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -660,25 +651,19 @@ exports.createSampleNews = async(req, res, next) =>{
         return functions.success(res, "Create sample news success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
 //---------------------------------ung vien
-
-
 exports.getListCandidate= async(req, res, next) => {
     try {
         let {page, pageSize, fromDate, toDate, name, recruitmentNewsId, userHiring, gender, status} = req.body;
 
         //id company lay ra sau khi dang nhap
         let comId = req.infoLogin.comId;
-        if(!page || !pageSize){
-            return functions.setError(res, "Missing input page or pagesize", 401);
-        }
-        
-        page = Number(page);
-        pageSize = Number(pageSize);
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let listCondition = {isDelete: 0, comId: comId};
@@ -710,10 +695,10 @@ exports.checkDataCandidate = async(req, res, next) => {
                 name, email, phone, cvFrom, userRecommend, recruitmentNewsId,
                 timeSendCv, gender, birthday, education, exp, isMarried, address, userHiring, firstStarVote, hometown
                 ];
-        // for(let i=0; i<fields.length; i++){
-        //     if(!fields[i])
-        //         return functions.setError(res, `Missing input value ${i+1}`, 404);
-        // }
+        for(let i=0; i<fields.length; i++){
+            if(!fields[i])
+                return functions.setError(res, `Missing input value ${i+1}`, 404);
+        }
         // them cac truong muon them hoac sua
         req.info = {
             name: name,
@@ -738,7 +723,7 @@ exports.checkDataCandidate = async(req, res, next) => {
         return next();
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -834,7 +819,7 @@ exports.createCandidate = async(req, res, next) => {
         return functions.success(res, 'Create candidate success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -887,7 +872,7 @@ exports.updateCandidate = async(req, res, next) => {
         return functions.success(res, "Update info candidate success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -907,12 +892,11 @@ exports.softDeleteCandidate = async(req, res, next) =>{
         return functions.success(res, "Soft delete candidate success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, err.message);
     }
 }
 
 //------------them cac giai doan tuyen dung 
-
 let getCandidateProcess = async(model, condition)=> {
     return listCandidate = await model.aggregate([
         {
@@ -934,9 +918,6 @@ let getCandidateProcess = async(model, condition)=> {
         },
         {$match: condition},
         
-        // {
-        //     $project: {name: 1, phone: 1, recruitmentNewsId: 1, userHiring: 1, }
-        // },
         {
             $lookup: {
                 from: "HR_RecruitmentNews",
@@ -984,9 +965,6 @@ exports.getListProcessInterview= async(req, res, next) => {
 
         //truyen canId de lay thong tin chi tiet ve ung vien
         if(canId) condition["candidate.id"] = Number(canId);
-        // console.log(condition);
-
-        // let listProcess = await ProcessInterview.find({comId: comId});
 
         //danh sach ung vien nhan viec
         let listProcess = await ProcessInterview.aggregate([
@@ -1066,11 +1044,6 @@ exports.getListProcessInterview= async(req, res, next) => {
             "userHiring.userName": 1
             }
         },
-        
-        // {$project: {name: 1, phone: 1, "userHiring.userName": 1, "recruitmentNews.title": 1}},
-        // {$sort: {id: 1}},
-        // {$skip: skip},
-        // {$limit: limit}
         ]);
         let listCandidateGetJob = await getCandidateProcess(GetJob, condition);
         let listCandidateCancelJob = await getCandidateProcess(CancelJob, condition);
@@ -1107,7 +1080,7 @@ exports.checkDataProcess = async(req, res, next) => {
         return next();
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1133,7 +1106,7 @@ exports.createProcessInterview = async(req, res, next) => {
         return functions.success(res, 'Create process interview success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1151,7 +1124,7 @@ exports.updateProcessInterview = async(req, res, next) => {
         return functions.success(res, "Update info Process Interview success!");
     }catch(err){
         console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1169,7 +1142,7 @@ exports.deleteProcessInterview = async(req, res, next) => {
         return functions.success(res, "Process Interview not found");
     } catch (e) {
         console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1209,7 +1182,7 @@ exports.checkDataJob = async(req, res, next) => {
         return next();
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1260,7 +1233,7 @@ exports.createContactJob = async(req, res, next) => {
         return functions.success(res, 'Create contactJob success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1310,7 +1283,7 @@ exports.createCancelJob = async(req, res, next) => {
         return functions.success(res, 'Create cancelJob success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1364,7 +1337,7 @@ exports.createFailJob = async(req, res, next) => {
         return functions.success(res, 'Create failJob success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1443,7 +1416,7 @@ exports.addCandidateProcessInterview = async(req, res, next) => {
         return functions.success(res, 'Create scheduleInterview success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1517,30 +1490,9 @@ exports.addCandidateGetJob = async(req, res, next) => {
         return functions.success(res, 'Create getJob success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
-
-	// public function detailCandidateGetJob($id)
-	// {
-	// 	$this->_data['page_title'] 	= 'Chi tiết hồ sơ ứng viên';
-	// 	$infoLogin 	= checkRoleUser();
-	// 	$this->load->model('M_process_interview');
-	// 	$this->_data['list_process_interview'] = $this->M_process_interview->listProcess($infoLogin['com_id']);
-	// 	// Danh sách tin đăng
-	// 	$this->_data['list_new'] = $this->M_recruitment_new->listNew($infoLogin['com_id']);
-	// 	// chi tiết ứng viên
-	// 	$this->_data['detail'] = $this->M_candidate->detailCandidateAllNewBy($id);
-	// 	$this->_data['another_skill'] = $this->M_another_skill->listSkillBy($id);
-	// 	$this->load->model('M_tbl_shedule_interview');
-	// 	$this->_data['list_schedule'] = $this->M_tbl_shedule_interview->listSchedule($id);
-	// 	$this->load->model('M_tbl_get_job');
-	// 	$this->_data['detail_get_job'] = $this->M_tbl_get_job->getDetailBy($id);
-	// 	$this->_data['can_id'] = $id;
-	// 	// $this->_data['detail_interview'] = $this->M_tbl_shedule_interview->getDetail($id, $process_id);
-	// 	$this->load->view('site/profile/t_detail_candidate_get_job', $this->_data);
-	// }
-
 
 exports.detailCandidateGetJob = async(req, res, next) => {
     try {
@@ -1561,7 +1513,7 @@ exports.detailCandidateGetJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateGetJob success!', {list_process_interview, list_new, detail, another_skill, detail_get_job, list_schedule});
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1595,7 +1547,7 @@ exports.detailCandidateGetJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateGetJob success!', data);
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1614,7 +1566,7 @@ exports.detailCandidateFailJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateFailJob success!', data);
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1633,7 +1585,7 @@ exports.detailCandidateCancelJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateCancelJob success!', data);
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1652,9 +1604,7 @@ exports.detailCandidateContactJob = async(req, res, next) => {
         return functions.success(res, 'Get detailCandidateContactJob success!', data);
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
-
-let Can
 
