@@ -7,28 +7,42 @@ exports.getlistAdmin = async(req, res) => {
     try {
         const pageNumber = req.body.pageNumber || 1;
         const type = req.user.data.type
-        let com_id = req.user.data.com_id
-        // let com_id = req.body.com_id
-        let idQLC = req.body.idQLC;
-        let dep_id = req.body.dep_id
-        let role = req.body.role
+        // let com_id = req.user.data.com_id
+        let com_id = req.body.com_id
+        let findbyNameUser = req.body.findbyNameUser
+        let findbyNameDeparment = req.body.findbyNameDeparment
         if(type == 1){
-
         let condition = {};
-        //Function tìm user là TK nhân viên và TK Cty
         if (com_id) {
-            if (idQLC) condition.idQLC = idQLC
-            if (dep_id) condition.dep_id = "inForPerson.employee.dep_id"
-            if (role) condition.role = role
-            const data = await manageUser.find(condition).select('userName phoneTK email inForPerson.employee.dep_id inForPerson.employee.position_id ').skip((pageNumber - 1) * 20).limit(20).sort({ _id: 1 });
+            if (com_id) condition.com_id = Number(com_id)
+            if (findbyNameUser) condition["userName"] = { $regex: findbyNameUser };//tìm kiếm theo tên 
+            if (findbyNameDeparment) condition["nameDeparment"] = { $regex: findbyNameDeparment };//tìmm kiếm theo tên phòng ban 
+            let data = await manageUser.aggregate([
+                { $lookup: { 
+                    from: "QLC_Deparments", 
+                    localField: "inForPerson.employee.dep_id", 
+                    foreignField: "dep_id", 
+                    as: "nameDeparment" }},
+                { $project: { 
+                    "userName": "$userName", 
+                    "dep_id": "$inForPerson.employee.dep_id", 
+                    "com_id": "$inForPerson.employee.com_id", 
+                    "position_id": "$inForPerson.employee.position_id", 
+                    "phoneTK" : "$phoneTK",
+                    "email" : "$email",
+                    "idQLC": "$idQLC", 
+                    "nameDeparment": "$nameDeparment.dep_name", 
+                }},
+                {$match: condition},
+            ]).skip((pageNumber - 1) * 10).limit(10).sort({ _id: -1 });
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data, pageNumber });
             };
-            return functions.setError(res, 'Không có dữ liệu', 404);
+            return functions.setError(res, 'Không có dữ liệu');
         }
-        return functions.setError(res, "")
+        return functions.setError(res, "thiếu com_id")
     }
-    return functions.setError(res, "Tài khoản không phải Công ty", 604);
+    return functions.setError(res, "Tài khoản không phải Công ty");
     } catch (err) {
         console.log(err);
         functions.setError(res, err.message)
@@ -39,8 +53,8 @@ exports.createUser = async(req, res) => {
 try{
     const type = req.user.data.type
 
-    let com_id = req.user.data.com_id
-    // let com_id = req.body.com_id
+    // let com_id = req.user.data.com_id
+    let com_id = req.body.com_id
     const {  userName, email, phoneTK, idQLC, password, role, address, birthday, dep_id, group_id, team_id, position_id, gender, ep_status, createdAt } = req.body;
     if(type == 1){
 
