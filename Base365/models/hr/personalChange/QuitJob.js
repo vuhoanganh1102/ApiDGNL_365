@@ -13,21 +13,6 @@ const QuitJobSchema = new Schema({
         type: Number,
         required: true
     },
-
-    com_id: {
-        type: Number,
-        required: true
-    },
-    
-    current_position: {
-        type: Number,
-        default: 0,
-    },
-    
-    current_dep_id: {
-        type: Number,
-        default: 0,
-    },
     
     created_at: {
         type: Date,
@@ -35,25 +20,11 @@ const QuitJobSchema = new Schema({
         default: null
     },
     
-    decision_id: {
-        type: Number,
-        default: 0,
-    },
     // ly do
     note: {
         type: String,
         default: null,
-    },
-
-    type: {
-        type: Number,
-        default: 0,
-    },
-
-    shift_id: {
-        type: Number,
-        default: 0,
-    },
+    }
 },{
     collection: 'HR_QuitJobs',
     versionKey: false,

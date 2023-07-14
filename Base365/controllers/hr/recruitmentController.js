@@ -907,44 +907,25 @@ let getCandidateProcess = async(model, condition)=> {
                 as: "candidate"
             }
         },
-        
-        {
-            $unwind: "$candidate"
-        },
-        {
-            $replaceRoot: {
-                newRoot: { $mergeObjects: ["$$ROOT", "$candidate"]}   
-            }
-        },
         {$match: condition},
-        
+        {
+            $project: {canId: 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
+        },
         {
             $lookup: {
                 from: "HR_RecruitmentNews",
-                localField: "recruitmentNewsId",
+                localField: "candidate.recruitmentNewsId",
                 foreignField: "id",
                 as: "recruitmentNews"
             }
         },
+        {$match: {"candidate.recruitmentNewsId": {$ne: 0}, "candidate.userHiring": {$ne: 0}} },
         {
-            $unwind: "$recruitmentNews"
-        },
-        {
-            $lookup: {
-                from: "Users",
-                localField: "userHiring",
-                foreignField: "_id",
-                as: "userHiring"
+            $project: {canId: 1,
+            "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
+            "recruitmentNews.title": 1
             }
         },
-        {
-            $unwind: "$userHiring"
-        },
-        
-        {$project: {id: 1, name: 1, phone: 1, email: 1, gender: 1, hometown: 1, birthday: 1, education: 1, school: 1, exp: 1, isMarried: 1, address: 1, cvFrom: 1, timeSendCv: 1, "userHiring.userName": 1, "recruitmentNews.title": 1}},
-        // {$sort: {id: 1}},
-        // {$skip: skip},
-        // {$limit: limit}
         ]);
 }
 
@@ -967,84 +948,43 @@ exports.getListProcessInterview= async(req, res, next) => {
         if(canId) condition["candidate.id"] = Number(canId);
 
         //danh sach ung vien nhan viec
-        let listProcess = await ProcessInterview.aggregate([
-        {$match: {"comId": comId}},
-        {
-            $lookup: {
-                from: "HR_ScheduleInterviews",
-                localField: "id",
-                foreignField: "processInterviewId",
-                as: "ScheduleInterviews"
-            }
-        },
-        
-        {
-            $unwind: "$ScheduleInterviews"
-        },
-        {
-            $replaceRoot: {
-                newRoot: { $mergeObjects: ["$$ROOT", "$ScheduleInterviews"]}   
-            }
-        },
-        
-        {
-            $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1}
-        },
-        //
-        {
-            $lookup: {
-                from: "HR_Candidates",
-                localField: "ScheduleInterviews.canId",
-                foreignField: "id",
-                as: "candidate"
-            }
-        },
-        
-        {
-            $unwind: "$candidate"
-        },
+        let listProcess = await ProcessInterview.find({comId: comId}).lean();
+        for(let i=0; i<listProcess.length; i++) {
+            let processInterview = listProcess[i];
+            let listCandidate = await ScheduleInterview.aggregate([
+                {$match: {processInterviewId: processInterview.id}},
+                {
+                    $lookup: {
+                        from: "HR_Candidates",
+                        localField: "canId",
+                        foreignField: "id",
+                        as: "candidate"
+                    }
+                },
+                {$match: condition},
+                {
+                    $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
+                },
+                {
+                    $lookup: {
+                        from: "HR_RecruitmentNews",
+                        localField: "candidate.recruitmentNewsId",
+                        foreignField: "id",
+                        as: "recruitmentNews"
+                    }
+                },
+                {
+                    $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, 
+                    "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
+                    "recruitmentNews.title": 1
+                    }
+                },
+            ]);
+            processInterview.totalCandidate = listCandidate.length;
+            processInterview.listCandidate = listCandidate;
+            listProcess[i] = processInterview;
+        }
 
-        {$match: condition},
-        
-        {
-            $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, "candidate.name": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
-        },
-        {
-            $lookup: {
-                from: "HR_RecruitmentNews",
-                localField: "candidate.recruitmentNewsId",
-                foreignField: "id",
-                as: "recruitmentNews"
-            }
-        },
-        {
-            $unwind: "$recruitmentNews"
-        },
-        {
-            $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, 
-            "candidate.name": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
-            "recruitmentNews.title": 1
-            }
-        },
-        {
-            $lookup: {
-                from: "Users",
-                localField: "candidate.userHiring",
-                foreignField: "_id",
-                as: "userHiring"
-            }
-        },
-        {
-            $unwind: "$userHiring"
-        },
-        {
-            $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, 
-            "candidate.name": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1, "candidate.id": 1,
-            "recruitmentNews.title": 1,
-            "userHiring.userName": 1
-            }
-        },
-        ]);
         let listCandidateGetJob = await getCandidateProcess(GetJob, condition);
         let listCandidateCancelJob = await getCandidateProcess(CancelJob, condition);
         let listCandidateFailJob = await getCandidateProcess(FailJob, condition);
@@ -1294,6 +1234,10 @@ exports.createFailJob = async(req, res, next) => {
         if(!canId || !type || !contentsend || !email) {
             return functions.setError(res, `Missing input value`, 405);
         }
+        let {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote} = req.body;
+        if(!name || !cvFrom || !userHiring || !recruitmentNewsId || !timeSendCv || !starVote) {
+            return functions.setError(res, `Missing input value`, 405);
+        }
         canId = Number(canId);
 
         let infoFailJob = {canId, type, email, note};
@@ -1313,10 +1257,7 @@ exports.createFailJob = async(req, res, next) => {
         await hrService.sendEmailtoCandidate(email, '[hr.timviec365.vn] Thư Trả lời kết quả phỏng vấn', infoFailJob.contentsend);
 
         //cap nhat thong tin ung vien
-        let {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote} = req.body;
-        if(!name || !cvFrom || !userHiring || !recruitmentNewsId || !timeSendCv || !starVote) {
-            return functions.setError(res, `Missing input value`, 405);
-        }
+        
 
         //cap nhat thong tin ung vien
         let infoCan = {name, cvFrom, userHiring, timeSendCv, recruitmentNewsId, starVote, isSwitch: 1, status: 2};
@@ -1464,9 +1405,9 @@ exports.addCandidateGetJob = async(req, res, next) => {
             }
             
             //xoa thang thai ung vien sau khi cap nhat
-            let a = await FailJob.deleteMany({canId: canId});
-            let b = await CancelJob.deleteMany({canId: canId});
-            let c =await ContactJob.deleteMany({canId: canId});
+            let a = await FailJob.deleteOne({canId: canId});
+            let b = await CancelJob.deleteOne({canId: canId});
+            let c =await ContactJob.deleteOne({canId: canId});
             await ScheduleInterview.deleteOne({canId: canId});
 
             // console.log(a, b, c);
