@@ -1049,7 +1049,7 @@ exports.listEmUntimed = async (req, res, next) => {
                     $lookup: {
                         from: "QLC_Time_sheets",
                         localField: "idQLC",
-                        foreignField: "idQLC",
+                        foreignField: "ep_id",
                         as: "Time_sheets"
                     }
                 },
