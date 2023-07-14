@@ -17,7 +17,7 @@ const CalendarSchema = new Schema({
 
     },
     apply_month : {
-        type: Number,
+        type: String,
 
     },
     cy_detail : {
