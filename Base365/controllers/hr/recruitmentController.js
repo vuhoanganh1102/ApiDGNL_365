@@ -340,14 +340,18 @@ let getTotal = async(model, condition)=>{
 }
 exports.listNewActive = async(req, res)=>{
     try{
+        let {page, pageSize} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 3;
+        const skip = (page-1)*pageSize;
         let comId = req.infoLogin.comId;
         let condition = {comId: comId, isDelete: 0};
         let fields = {id: 1, title: 1, number: 1,timeStart: 1, timeEnd: 1, createdBy: 1, hrName: 1, address: 1, recruitmentId: 1};
         let countAllActiveNew = await functions.findCount(RecruitmentNews, condition);
-        let recruitmentNew = await RecruitmentNews.find(condition, fields).sort({id: 1}).lean();
+        let recruitmentNew = await functions.pageFindWithFields(RecruitmentNews, condition, fields, {id: -1}, skip, pageSize);
 
         //thong ke
-        for(let i=0; i<recruitmentNew.length; i<i++) {
+        for(let i=0; i<recruitmentNew.length; i++) {
             let condition2 = {comId: comId, isDelete: 0, recruitmentNewsId: recruitmentNew[i].id};
 
             let sohoso = functions.findCount(Candidate, condition2);
@@ -400,6 +404,47 @@ exports.getTotalCandidateFollowDayMonth = async(req, res, next) => {
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
+    }
+}
+
+exports.listSchedule = async(req, res, next) => {
+    try{
+        let {page, pageSize} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 3;
+        let comId = req.infoLogin.comId;
+        let totalSchedule = await Candidate.aggregate([
+                {$match: {comId: comId, isDelete: 0}},
+                {
+                    $lookup: {
+                        from: "HR_ScheduleInterviews",
+                        localField: "id",
+                        foreignField: "canId",
+                        as: "Interview"
+                    }
+                },
+                {$match: {"Interview.isSwitch": 0}},
+                {
+                    $count: "totalDocuments"
+                }
+            ]);
+        totalSchedule = totalSchedule.length>0? totalSchedule[0].totalDocuments: 0;
+
+        let listSchedule = await Candidate.aggregate([
+                {$match: {comId: comId, isDelete: 0}},
+                {
+                    $lookup: {
+                        from: "HR_ScheduleInterviews",
+                        localField: "id",
+                        foreignField: "canId",
+                        as: "Interview"
+                    }
+                },
+                {$match: {"Interview.isSwitch": 0}},
+            ]);
+        return functions.success(res, "Get listSchedule success", {totalSchedule, listSchedule})
+    }catch(error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -649,9 +694,9 @@ exports.getListCandidate= async(req, res, next) => {
         const listCandidate = await functions.pageFind(Candidate, listCondition, { _id: 1 }, skip, limit);
         const totalCount = await functions.findCount(Candidate, listCondition);
         return functions.success(res, "Get list candidate success", {totalCount: totalCount, data: listCandidate });
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+    } catch (error) {
+        console.log("Err from server", error);
+        return functions.setError(res, error.message);
     }
 }
 
