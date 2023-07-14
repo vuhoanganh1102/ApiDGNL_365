@@ -20,7 +20,7 @@ exports.getlist = async(req, res) => {
                 { $lookup: { 
                     from: "qlc_employee_devices", 
                     localField: "idQLC", 
-                    foreignField: "idQLC", 
+                    foreignField: "ep_id", 
                     as: "listDevice" }},
                 { $project: { 
                     "userName": "$userName", 
@@ -36,6 +36,7 @@ exports.getlist = async(req, res) => {
                 {$match: condition},
             ]);
             if (data) {
+             
                 return functions.success(res, 'Lấy thành công', { data });
             };
             return functions.setError(res, 'Không có dữ liệu');
@@ -53,15 +54,15 @@ exports.getlist = async(req, res) => {
 //tao moi yeu cau
 exports.createDevice = async (req,res)=>{
     try {
-    const {idQLC ,  current_device_name , new_device_name,current_device,new_device,type_device } =req.body 
+    const {ep_id , current_device_name , new_device_name,current_device,new_device,type_device } =req.body 
     //check loi 
-    if(idQLC && current_device) {
+    if(ep_id && current_device) {
         let maxID = await Device.findOne({},{},{sort : {ed_id : -1}}).lean() || 0
 
         const ed_id = Number(maxID.ed_id) + 1 || 1;
         const device = new Device({
             ed_id: ed_id,
-            idQLC:idQLC,
+            ep_id:ep_id,
             current_device: current_device,
             new_device: new_device,
             current_device_name: current_device_name,
@@ -71,7 +72,38 @@ exports.createDevice = async (req,res)=>{
         await device.save()
            return functions.success(res,"tạo thành công",{device})
     }
-    return functions.setError(res,"vui lòng nhập đủ idQLC và current_device")
+    return functions.setError(res,"vui lòng nhập đủ ep_id và current_device")
+} catch (err) {
+
+    return functions.setError(res, err.message)
+}
+
+}
+//duyet 
+exports.add = async (req,res)=>{
+    try {
+        ed_id = req.body.ed_id
+            const device = await functions.getDatafindOne(Device, {ed_id :ed_id });
+            if (device) {
+                newIDDevice = device.new_device
+                newNameDevice = device.new_device_name
+                await functions.getDatafindOneAndUpdate(Device, { ed_id : ed_id }, {
+                    current_device: newIDDevice,
+                    current_device_name: newNameDevice,
+                    new_device: null,
+                    new_device_name: null,
+                })
+                await functions.getDatafindOneAndUpdate(Device, { ed_id : ed_id }, {
+                    current_device: newIDDevice,
+                    current_device_name: newNameDevice,
+                    new_device: null,
+                    new_device_name: null,
+                })
+                return functions.success(res, "duyệt thành công", { data });
+            }
+            return functions.setError(res, "ed_id không tồn tại ");
+
+
 } catch (err) {
 
     return functions.setError(res, err.message)
@@ -81,14 +113,14 @@ exports.createDevice = async (req,res)=>{
 // //chinh sua yeu cau 
 // exports.editDevice = async (req,res)=>{
 //     const _id = req.params.id;
-//         const {idQLC , dep_id , current_device_name , new_device_name} = req.body;
+//         const {ep_id , dep_id , current_device_name , new_device_name} = req.body;
 //             const device = await functions.getDatafindOne(Device,{_id : _id})
 //             if(!device){
 //                 functions.setError(res,"check device doesnt existed")
 //             }else{
             
 //                 await functions.getDatafindOneAndUpdate(Device,{_id : _id},{
-//                     idQLC: idQLC,
+//                     ep_id: ep_id,
 //                     dep_id: dep_id,
 //                     current_device_name: current_device_name,
 //                     new_device_name: new_device_name

@@ -132,5 +132,3 @@ exports.deleteFileQLC = (folder,timestamp, file) => {
         });
     }
 
-
-

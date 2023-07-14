@@ -17,7 +17,7 @@ router.post("/list",functions.checkToken,formData.parse(), CheckDeviceController
 router.post("/create",functions.checkToken,formData.parse(), CheckDeviceController.createDevice)
 
 //chinh sua yeu cau dang ki thiet bi
-// router.post("/edit",functions.checkToken,formData.parse(), CheckDeviceController.editDevice)
+router.post("/add",functions.checkToken,formData.parse(), CheckDeviceController.add)
 
 //xoa yeu cau cau dang ki thiet bi
 router.delete("/del",functions.checkToken,formData.parse(), CheckDeviceController.deleteDevice)
