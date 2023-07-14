@@ -1022,12 +1022,9 @@ exports.listEmUntimed = async (req, res, next) => {
                 employee: {com_id: 1, dep_id: 1,group_id: 1, team_id: 1,position_id: 1,start_working_time: 1}
             }
         };
-        if(emp_id) {
-            let employee = await Users.findOne({idQLC: emp_id}, fields);
-            return functions.success(res, "Get employee success!", {employee});
-        }
 
         let condition = {type: 2, "inForPerson.employee.com_id": com_id};
+        if(emp_id) condition.idQLC = emp_id;
         if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
         if(group_id) condition["inForPerson.employee.group_id"] = group_id;
         if(team_id) condition["inForPerson.employee.team_id"] = team_id;
@@ -1069,6 +1066,6 @@ exports.listEmUntimed = async (req, res, next) => {
         return functions.success(res, 'get data success', {total, company ,listEmployee})
     } catch (error) {
         console.log(error)
-        return functions.setError(res, error.massage, 500);
+        return functions.setError(res, error.message, 500);
     }
 };
