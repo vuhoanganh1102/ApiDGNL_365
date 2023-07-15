@@ -80,8 +80,10 @@ exports.order = async (req, res, next) => {
                     }
                     )
                     if (paymentMethod == 0) {
-                        let tienConLai = check_money.inforRN365.money - tien_ttoan_ctra;
-                        await User.findOneAndUpdate({ idRaoNhanh365 }, { 'inforRN365.money': tienConLai })
+                        if(check_money.inforRN365){
+                            let tienConLai = check_money.inforRN365.money - tien_ttoan_ctra;
+                            await User.findOneAndUpdate({ idRaoNhanh365 }, { 'inforRN365.money': tienConLai })
+                        }
                     }
                     await Cart.findByIdAndDelete(cartID[i])
                 } else {
@@ -205,9 +207,11 @@ exports.manageOrderBuy = async (req, res, next) => {
                
                 {
                     $project: searchItem
-                }, {
+                },
+                {
                     $skip: skip
-                }, {
+                }, 
+                {
                     $limit: pageSize
                 }
             ])
@@ -367,7 +371,7 @@ exports.manageOrderBuy = async (req, res, next) => {
         }
         for(let i = 0; i < data.length; i++) {  
             if(data[i].new.img){
-                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID);
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID,2);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
@@ -558,7 +562,7 @@ exports.manageOrderSell = async (req, res, next) => {
         }
         for(let i = 0; i < data.length; i++) {  
             if(data[i].new.img){
-                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID);
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID,2);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })

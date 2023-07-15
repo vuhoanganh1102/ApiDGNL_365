@@ -66,32 +66,27 @@ exports.HR_CheckTokenCompany = (req, res, next) => {
 
 exports.HR_UploadFile = async(folder, id, file, allowedExtensions) => {
 
-    let path1 = `../storage/hr/${folder}/${id}/`;
-    let filePath = `../storage/hr/${folder}/${id}/` + file.name;
+    let path1 = `../storage/base365/hr/${folder}/${id}/`;
+    let filePath = `../storage/base365/hr/${folder}/${id}/` + file.name;
 
     let fileCheck = path.extname(filePath);
     if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
         return false
     }
-    // const { size } = await promisify(fs.stat)(filePath);
-    // if (size > MAX_IMG_SIZE) {
-    //     return false;
-    // }
-
     if (!fs.existsSync(path1)) {
         fs.mkdirSync(path1, { recursive: true });
     }
     fs.readFile(file.path, (err, data) => {
         if (err) {
-            console.log(err)
+            return false
         }
         fs.writeFile(filePath, data, (err) => {
             if (err) {
-                console.log(err)
+                return false
             }
         });
     });
-    return true
+    return file.name
 }
 
 exports.createLinkFileHR = (folder, id, name) => {
@@ -547,3 +542,13 @@ exports.sendEmailtoCandidate = async(email, subject, data) => {
     })
 };
 
+exports.getLinkFile = async (data,folder,id)=>{
+    if(data && data.length > 0) {
+        for(let i = 0; i < data.length; i++) {
+            if(data[i].file){
+                data[i].file = process.env.DOMAIN_HR +'/base365/hr/' + folder + '/' + id + '/' +  data[i].file;
+            }
+        }
+    }
+    return data
+}
