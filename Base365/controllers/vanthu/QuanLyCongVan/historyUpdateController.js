@@ -90,8 +90,9 @@ exports.getDetailHistoryUpdate = async (req,res,next) => {
         if(name_vb){
             conditions.name_vb = new RegExp(name_vb,'i')
         }
+      
         let data = await tbl_qly_congvan.find(conditions).sort({cv_time_edit:-1}).skip(skip).limit(limit);
-    
+       
         return functions.success(res,'get data success',{data})
     } catch (error) {
         console.error(error);

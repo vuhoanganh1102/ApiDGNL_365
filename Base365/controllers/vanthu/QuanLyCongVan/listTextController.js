@@ -38,9 +38,10 @@ exports.getListVanBan = async (req, res, next) => {
         conditions.cv_type_hd = 0;
         if (type === 1) {
             conditions.cv_type_loai = 1;
-        } else {
+        } else if(type === 2) {
             conditions.cv_type_loai = 2;
         }
+        console.log(conditions)
         let db_qr = await tbl_qly_congvan.find(conditions).sort({ cv_date: -1 }).skip(skip).limit(limit);
         let count = await tbl_qly_congvan.countDocuments(conditions)
         data.count = count;
@@ -99,6 +100,7 @@ exports.createIncomingText = async (req, res, next) => {
         }
 
         let _id = await vanthu.getMaxID(tbl_qly_congvan)
+
         if (name_vbden && so_vbden && type_gui_vbden && text_gui_vbden
             && date_nhan && text_user_gui_vbden && use_luu_vbden && use_nhan_vbden && trich_yeu_vbden) {
             await tbl_qly_congvan.create({

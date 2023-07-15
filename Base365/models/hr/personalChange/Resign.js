@@ -1,32 +1,32 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const AppointSchema = new Schema({
+const HR_Resignschema = new Schema({
     // id tu dong tang
     id: {
         type: Number,
         required: true,
-        unique: true,
-        autoIncrement: true
     },
-    
+
     ep_id: {
         type: Number,
+        required: true
     },
-    
-    current_position: {
+    com_id: {
         type: Number,
-        default: 0,
+        required: true
     },
-    
-    current_dep_id: {
+
+    decision_id: {
         type: Number,
-        default: 0,
+        require: true
     },
+
     created_at: {
         type: Date,
+        require: true,
         default: null
     },
-    
+
     decision_id: {
         type: Number,
         default: 0,
@@ -36,10 +36,18 @@ const AppointSchema = new Schema({
         type: String,
         default: null,
     },
-},{
-    collection: 'HR_Appoints',
+
+    shift_id: {
+        type: String,
+        default: null,
+    },
+    type: {
+        type:Number
+    }
+}, {
+    collection: 'HR_Resigns',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("HR_Appoints",AppointSchema);
+module.exports = mongoose.model("HR_Resign", HR_Resignschema);
