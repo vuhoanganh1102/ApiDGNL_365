@@ -30,24 +30,22 @@ exports.edit_active = async (req, res) => {
     if (check) {
       // Duyệt đề xuất
       if (type == 1) {
-       return vanthu.browseProposals(His_Handle,De_Xuat,_id,check)
+       return vanthu.browseProposals(res,His_Handle,De_Xuat,_id,check)
       }
       // Từ chối đề xuất 
       if (type == 2) {
-        return vanthu.refuseProposal(His_Handle,De_Xuat,_id,id_ep,check)
+        return vanthu.refuseProposal(res,His_Handle,De_Xuat,_id,id_ep,check)
       } 
       // Bắt buộc đi làm
       if (type == 3) {
-        return vanthu.compulsoryWork(His_Handle,De_Xuat,_id,check)
+        return vanthu.compulsoryWork(res,His_Handle,De_Xuat,_id,check)
       }
       // Duyệt chuyển tiếp
       if (type == 4) {
-        return vanthu.forwardBrowsing(His_Handle,De_Xuat,_id,id_uct,check)
-      } 
-      
+        return vanthu.forwardBrowsing(res,His_Handle,De_Xuat,_id,id_uct,check)
+      }   
       // Thôi việc
-      if (type == 5){
-        
+      if (type == 5){      
         await De_Xuat.findOneAndUpdate(
           { _id: _id },
           {
@@ -60,7 +58,6 @@ exports.edit_active = async (req, res) => {
           },
           { new: true }
         );
-
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
           id_dx: check._id,
@@ -69,19 +66,22 @@ exports.edit_active = async (req, res) => {
         });
         await createHis.save();
         let ep_id = check.id_user
-        let chekUser = await User.findOne({ idQLC: ep_id }).select('inForPerson.employee.position_id  inForPerson.employee.dep_id')
+        let maxIDTQJ = await functions.getMaxIDQJ(QuitJob)
+            let idTB = 0;
+            if (maxIDTQJ) {
+                idTB = Number(maxIDTQJ) + 1;
+            }
+            console.log(idTB);
         const createQJ = new QuitJob({
-          id: await functions.getMaxIDQJ(QuitJob) + 1,
+          id : idTB,
           ep_id: ep_id,
           com_id: com_id,
-          current_position: chekUser.inForPerson.employee.position_id,
-          current_dep_id: chekUser.inForPerson.employee.dep_id,
-          shift_id: shift_id,
           created_at: ngaybatdau_tv,
           note: ly_do,
         });
+        console.log(createQJ);
         await createQJ.save();
-        return res.status(200).json({ message: 'Thôi việc thành công' });
+        return functions.success(res, 'Thôi việc thành công');
       } else if (type == 6) {
         // Tiếp nhận
         await De_Xuat.findOneAndUpdate(
@@ -101,8 +101,7 @@ exports.edit_active = async (req, res) => {
           time: timeNow
         });
         await createHis.save();
-
-        return res.status(200).json({ message: 'Tiếp nhận đề xuất thành công' });
+        return functions.success(res, 'Tiếp nhận đề xuất thành công');
       } else if (type == 7) {
         // Tăng ca
         const historyDuyet = await De_Xuat.findOne({ _id: _id })
@@ -121,7 +120,9 @@ exports.edit_active = async (req, res) => {
         }).select('cy_id')
 
 
-        let checkCalendaremp = await Calendar.findOne({ cy_id: checkcalaendar.cy_id, apply_month: month_apply })
+        let checkCalendaremp = await Calendar.findOne({ 
+          cy_id: checkcalaendar.cy_id,
+           apply_month: month_apply })
 
         if (checkCalendaremp) {
           var items_tc = JSON.parse(checkCalendaremp.cy_detail)
@@ -171,9 +172,10 @@ exports.edit_active = async (req, res) => {
             },
             { new: true }
           );
-          return res.status(200).json({ message: `Đề xuất tăng ca đã được duyệt` });
+          
+          return functions.success(res, 'Đề xuất tăng ca đã được duyệt');
         } else {
-          return res.status(200).json({ message: 'Thông tin truyền lên không đầy đủ, vui lòng thử lại!' });
+          return functions.setError(res,'Thông tin truyền lên không đầy đủ, vui lòng thử lại!',400)
         }
       }//đề xuất thưởng phạt
       else if (type == 19){
@@ -231,14 +233,14 @@ exports.edit_active = async (req, res) => {
             { new: true }
           );
         }
-        return functions.success(res, 'save data success', { savehh});
+        return functions.success(res, 'duyệt đề xuất thành công', { savehh});
       }
     } else {
-      return res.status(404).json({ error: 'Không tìm thấy đề xuất' });
+      return functions.setError(res, 'Không tìm thấy đề xuất',400);
     }
   } catch (error) {
     console.error('Failed ', error);
-    return res.status(500).json({ error: 'Failed ' });
+    return functions.setError(res, error);
   }
 };
 
