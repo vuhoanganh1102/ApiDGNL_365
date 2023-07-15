@@ -3,12 +3,12 @@ const fs = require('fs');
 const multer = require('multer');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-
+const linktb = require('./rao nhanh/raoNhanh')
 const dotenv = require("dotenv");
 dotenv.config();
 const path = require('path');
 
-
+ const functions = require('./functions')
 exports.covert = async(checkConvert) => {
         let date = '';
         let moth = '';
@@ -265,41 +265,23 @@ exports.convertDate = (timestamp) => {
 }
 
 // duyệt đề xuất
-exports.browseProposals = async (His_Handle, De_Xuat, _id,check) => {
-    try {
-        let timeNow = new Date();
-        const maxID = await functions.getMaxID(His_Handle);
-        let newID = 0;
-        if (maxID) {
-            newID = Number(maxID) + 1;
-        }
-        const createHis = new His_Handle({
-            _id: newID,
-            id_dx: check._id,
-            type_handling: 2,
-            time: timeNow
-        });
-        await createHis.save();
-        if (check.kieu_duyet == 0) {
-            await De_Xuat.findOneAndUpdate(
-                { _id: _id },
-                {
-                    $set: {
-                        type_duyet: 5,
-                        time_duyet: timeNow
-                    }
-                },
-                { new: true }
-            );
-            res.status(200).json({ message: 'Đã duyệt đề xuất' });
-        } else {
-            const historyDuyet = await His_Handle.find({ id_dx: check._id, type_handling: 2 }).sort({ id_his: 1 });
-            const listDuyet = historyDuyet.map((item) => item.id_user).join(',');
-            const arrDuyet = listDuyet.split(',');
-            const arrDuyet1 = check.id_user_duyet.split(',');
-            arrDuyet.sort();
-            arrDuyet1.sort();
-            if (JSON.stringify(arrDuyet) === JSON.stringify(arrDuyet1)) {
+exports.browseProposals = async (res,His_Handle, De_Xuat, _id,check) => {
+        try {
+            console.log(12);
+            let timeNow = new Date();
+            const maxID = await functions.getMaxID(His_Handle);
+            let newID = 0;
+            if (maxID) {
+                newID = Number(maxID) + 1;
+            }
+            const createHis = new His_Handle({
+                _id: newID,
+                id_dx: check._id,
+                type_handling: 2,
+                time: timeNow
+            });
+            await createHis.save();
+            if (check.kieu_duyet == 0) {
                 await De_Xuat.findOneAndUpdate(
                     { _id: _id },
                     {
@@ -312,16 +294,35 @@ exports.browseProposals = async (His_Handle, De_Xuat, _id,check) => {
                 );
                 res.status(200).json({ message: 'Đã duyệt đề xuất' });
             } else {
-                return res.status(200).json({ message: 'Không thể duyệt đề xuất' });
+                const historyDuyet = await His_Handle.find({ id_dx: check._id, type_handling: 2 }).sort({ id_his: 1 });
+                const listDuyet = historyDuyet.map((item) => item.id_user).join(',');
+                const arrDuyet = listDuyet.split(',');
+                const arrDuyet1 = check.id_user_duyet.split(',');
+                arrDuyet.sort();
+                arrDuyet1.sort();
+                if (JSON.stringify(arrDuyet) === JSON.stringify(arrDuyet1)) {
+                    await De_Xuat.findOneAndUpdate(
+                        { _id: _id },
+                        {
+                            $set: {
+                                type_duyet: 5,
+                                time_duyet: timeNow
+                            }
+                        },
+                        { new: true }
+                    );
+                    res.status(200).json({ message: 'Đã duyệt đề xuất' });
+                } else {
+                    return res.status(200).json({ message: 'Không thể duyệt đề xuất' });
+                }
             }
-        }
-    } catch (error) {
-        return functions.setError(res, error);
-    }
+        } catch (error) {
+            return functions.setError(res, error);
+        }  
 }
 
 // từ chối đề xuất
-exports.refuseProposal = async (His_Handle, De_Xuat, _id,id_ep,check) => {
+exports.refuseProposal = async (res,His_Handle, De_Xuat, _id,id_ep,check) => {
     try {
         let timeNow = new Date()
         await De_Xuat.findOneAndUpdate(
@@ -343,7 +344,7 @@ exports.refuseProposal = async (His_Handle, De_Xuat, _id,id_ep,check) => {
         await createHis.save();
 
         const deXuatInfo = await De_Xuat.findOne({ _id: _id });
-        const link = `https://vanthu.timviec365.vn/chi-tiet-dx/${replaceTitle(deXuatInfo.name_dx)}-dx${_id}.html`;
+        const link = `https://vanthu.timviec365.vn/chi-tiet-dx/${linktb.createLinkTilte(deXuatInfo.name_dx)}-dx${_id}.html`;
         const notificationData = {
             EmployeeId: deXuatInfo.id_user,
             SenderId: id_ep,
@@ -357,12 +358,13 @@ exports.refuseProposal = async (His_Handle, De_Xuat, _id,id_ep,check) => {
         await axios.post('https://mess.timviec365.vn/Notification/NotificationOfferSent', notificationData);
         return res.status(200).json({ message: 'Từ chối đề xuất thành công' });
     } catch (error) {
+        console.log(error);
         return functions.setError(res, error);
     }
 }
 
 // bắt buộc đi làm
-exports.compulsoryWork = async (His_Handle,De_Xuat,_id,check) => {
+exports.compulsoryWork = async (res,His_Handle,De_Xuat,_id,check) => {
     try {
         let timeNow = new Date();
         await De_Xuat.findOneAndUpdate(
@@ -389,7 +391,7 @@ exports.compulsoryWork = async (His_Handle,De_Xuat,_id,check) => {
 }
 
 // duyệt chuyển tiếp
-exports.forwardBrowsing = async (His_Handle,De_Xuat,_id,id_uct,check)=>{
+exports.forwardBrowsing = async (res,His_Handle,De_Xuat,_id,id_uct,check)=>{
     try {
         let timeNow = new Date()
         const user_td = `${check.id_user_theo_doi},${id_uct}`;
