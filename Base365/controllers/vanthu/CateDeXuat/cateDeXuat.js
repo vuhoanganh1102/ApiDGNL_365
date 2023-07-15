@@ -30,8 +30,8 @@ exports.ChitietDx = async (req, res) => {
       return functions.success(res, 'get data success', { data });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Không thể hiển thị' });
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 };
 
@@ -68,11 +68,11 @@ exports.showHome = async (req, res) => {
       let showNV = await DeXuat.find({ id_user, del_type: 1 }).sort({ _id: -1 }).skip(startIndex).limit(perPage);
       return res.status(200).json({ totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showNV });// hiển thị trang home nhân viên
     }else{
-      res.status(400).json({ error: 'Bạn ko có quyền' });
+      return functions.setError(message, 'Bạn ko có quyền',400);
     }
   } catch (error) {
-    console.error('Failed to get DX', error);
-    res.status(500).json({ error: 'Failed to get DX' });
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 };
 
@@ -125,10 +125,10 @@ exports.showNghi = async (req, res) => {
       .limit(perPage)
       .lean();
 
-    res.status(200).json(shownghi);
+    return res.status(200).json(shownghi);
   } catch (error) {
-    console.error('Failed to shownghi', error);
-    res.status(500).json({ error: 'Failed to shownghi' });
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 };
 
@@ -172,8 +172,8 @@ exports.changeCate = async (req, res) => {
       }
     }
   } catch (error) {
-    console.error('Failed to changeCate', error);
-    return res.status(500).json({ error: 'Failed to changeCate' });
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 };
 
@@ -188,7 +188,15 @@ exports.changeCate = async (req, res) => {
 exports.findNameCate = async (req, res) => {
   try {
     let { name_cate_dx, page } = req.body;
-    let com_id =  req.user.data.inForPerson.employee.com_id;
+    
+    let com_id ='';
+    if(req.user.data.type == 1) {
+      com_id = req.user.data.idQLC
+    }else if(req.user.data.type == 2) {
+      com_id = req.user.data.inForPerson.employee.com_id
+    }else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
     const perPage = 10;
     page = parseInt(page) || 1;
 

@@ -4,192 +4,48 @@ const His_Handle = require('../../../models/Vanthu/history_handling_dx');
 const QuitJob = require('../../../models/hr/personalChange/QuitJob');
 const CalendarWorkEmployee = require('../../../models/qlc/CalendarWorkEmployee');
 const Calendar = require('../../../models/qlc/Cycle')
-const ThuongPhat = require('../../../models/Vanthu/tb_thuong_phat');
-const HoaHong = require('../../../models/Vanthu/tb_rose')
+const ThuongPhat = require('../../../models/Tinhluong/Tinhluong365ThuongPhat');
+const HoaHong = require('../../../models/Tinhluong/TinhluongRose')
 const User = require('../../../models/Users');
 const functions = require('../../../services/vanthu')
 
 const axios = require('axios');
-//hàm khôi phục 
-exports.edit_del_type = async (req, res) => {
-  try {
-    let id = req.body.id;
-    let del_type = req.body.delType;
+const vanthu = require('../../../services/vanthu')
 
-    let page = Number(req.body.page) ? Number(req.body.page) : 1;
-    let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
-    const skip = (page - 1) * pageSize;
-    if (!isNaN(id)) {
-      let de_xuat = await De_Xuat.findOne({ _id: id }).skip(skip).limit(pageSize);
 
-      if (de_xuat) {
-        await De_Xuat.findByIdAndUpdate({ _id: id }, {
-          del_type: del_type
-        });
-        return res.status(200).json('update del_type thanh cong');
-      } else {
-        return res.status(200).json("doi tuong khong ton tai");
-      }
-    } else {
-      return res.status(404).json("id phai la 1 so Number");
-    }
-  } catch (error) {
-    console.error('Failed ', error);
-    res.status(500).json({ error: 'Failed ' });
-  }
-}
 
 
 //ham duyet
-
-
-
 exports.edit_active = async (req, res) => {
   try {
-    const { _id, type, id_user, ngaybatdau_tv, id_ep, shift_id, ly_do } = req.body;
+    const { _id, type, id_user, ngaybatdau_tv, id_ep,shift_id,ly_do,id_uct } = req.body;
     const timeNow = new Date();
     let com_id = '';
     if (req.user.data.type == 2) {
       com_id = req.user.data.inForPerson.employee.com_id
     } else {
-      return functions.setError(res, 'không có quyền truy cập', 400);
+      return functions.setError(res, 'bạn phải là tài khoản nhân viên', 400);
     }
     const check = await De_Xuat.findOne({ _id: _id });
     if (check) {
       // Duyệt đề xuất
       if (type == 1) {
-        const maxID = await functions.getMaxID(His_Handle);
-        let newID = 0;
-        if (maxID) {
-          newID = Number(maxID) + 1;
-        }
-        const createHis = new His_Handle({
-          _id: newID,
-          id_dx: check._id,
-          type_handling: 2,
-          time: timeNow
-        });
-        await createHis.save();
-        if (check.kieu_duyet == 0) {
-          await De_Xuat.findOneAndUpdate(
-            { _id: _id },
-            {
-              $set: {
-                type_duyet: 5,
-                time_duyet: timeNow
-              }
-            },
-            { new: true }
-          );
-          return res.status(200).json({ message: 'Đã duyệt đề xuất' });
-        } else {
-          const historyDuyet = await His_Handle.find({ id_dx: check._id, type_handling: 2 }).sort({ id_his: 1 });
-          const listDuyet = historyDuyet.map((item) => item.id_user).join(',');
-
-          const arrDuyet = listDuyet.split(',');
-          const arrDuyet1 = check.id_user_duyet.split(',');
-          arrDuyet.sort();
-          arrDuyet1.sort();
-
-          if (JSON.stringify(arrDuyet) === JSON.stringify(arrDuyet1)) {
-            await De_Xuat.findOneAndUpdate(
-              { _id: _id },
-              {
-                $set: {
-                  type_duyet: 5,
-                  time_duyet: timeNow
-                }
-              },
-              { new: true }
-            );
-            return res.status(200).json({ message: 'Đã duyệt đề xuất' });
-          } else {
-            return res.status(200).json({ message: 'Không thể duyệt đề xuất' });
-          }
-        }
-      } else if (type == 2) {
-        // Từ chối đề xuất
-        await De_Xuat.findOneAndUpdate(
-          { _id: _id },
-          {
-            $set: {
-              type_duyet: 3,
-              time_duyet: timeNow
-            }
-          },
-          { new: true }
-        );
-
-        const createHis = new His_Handle({
-          _id: await functions.getMaxID(His_Handle) + 1,
-          id_dx: check._id,
-          type_handling: 3,
-          time: timeNow
-        });
-        await createHis.save();
-
-        const deXuatInfo = await De_Xuat.findOne({ _id: _id });
-        const link = `https://vanthu.timviec365.vn/chi-tiet-dx/${replaceTitle(deXuatInfo.name_dx)}-dx${_id}.html`;
-
-        const notificationData = {
-          EmployeeId: deXuatInfo.id_user,
-          SenderId: id_ep,
-          CompanyId: deXuatInfo.com_id,
-          Message: deXuatInfo.name_dx,
-          ListFollower: `[${deXuatInfo.id_user_theo_doi}]`,
-          Status: deXuatInfo.name_cate_dx,
-          Link: link,
-          type: 1
-        };
-
-        await axios.post('https://mess.timviec365.vn/Notification/NotificationOfferSent', notificationData);
-
-        return res.status(200).json({ message: 'Từ chối đề xuất thành công' });
-      } else if (type == 3) {
-        // Bắt buộc đi làm
-        await De_Xuat.findOneAndUpdate(
-          { _id: _id },
-          {
-            $set: {
-              type_duyet: 6,
-              time_duyet: timeNow
-            }
-          },
-          { new: true }
-        );
-
-        const createHis = new His_Handle({
-          _id: await functions.getMaxID(His_Handle) + 1,
-          id_dx: check._id,
-          type_handling: 6,
-          time: timeNow
-        });
-        await createHis.save();
-
-        return res.status(200).json({ message: 'Bắt buộc đi làm thành công' });
-      } else if (type == 4) {
-        // Duyệt chuyển tiếp
-        const { id_uct } = req.body;
-        const user_td = `${check.id_user_theo_doi},${id_uct}`;
-
-        await De_Xuat.findOneAndUpdate(
-          { _id: _id },
-          { id_user_duyet: id_uct, id_user_theo_doi: user_td },
-          { new: true }
-        );
-
-        const createHis = new His_Handle({
-          _id: await functions.getMaxID(His_Handle) + 1,
-          id_dx: check._id,
-          type_handling: 2,
-          time: timeNow
-        });
-        await createHis.save();
-
-        return res.status(200).json({ message: 'Chuyển tiếp đề xuất thành công' });
-      } // Thôi việc
-      else if (type == 5) {
-
+       return vanthu.browseProposals(res,His_Handle,De_Xuat,_id,check)
+      }
+      // Từ chối đề xuất 
+      if (type == 2) {
+        return vanthu.refuseProposal(res,His_Handle,De_Xuat,_id,id_ep,check)
+      } 
+      // Bắt buộc đi làm
+      if (type == 3) {
+        return vanthu.compulsoryWork(res,His_Handle,De_Xuat,_id,check)
+      }
+      // Duyệt chuyển tiếp
+      if (type == 4) {
+        return vanthu.forwardBrowsing(res,His_Handle,De_Xuat,_id,id_uct,check)
+      }   
+      // Thôi việc
+      if (type == 5){      
         await De_Xuat.findOneAndUpdate(
           { _id: _id },
           {
@@ -202,7 +58,6 @@ exports.edit_active = async (req, res) => {
           },
           { new: true }
         );
-
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
           id_dx: check._id,
@@ -211,19 +66,22 @@ exports.edit_active = async (req, res) => {
         });
         await createHis.save();
         let ep_id = check.id_user
-        let chekUser = await User.findOne({ idQLC: ep_id }).select('inForPerson.employee.position_id  inForPerson.employee.dep_id')
+        let maxIDTQJ = await functions.getMaxIDQJ(QuitJob)
+            let idTB = 0;
+            if (maxIDTQJ) {
+                idTB = Number(maxIDTQJ) + 1;
+            }
+            console.log(idTB);
         const createQJ = new QuitJob({
-          id: await functions.getMaxIDQJ(QuitJob) + 1,
+          id : idTB,
           ep_id: ep_id,
           com_id: com_id,
-          current_position: chekUser.inForPerson.employee.position_id,
-          current_dep_id: chekUser.inForPerson.employee.dep_id,
-          shift_id: shift_id,
           created_at: ngaybatdau_tv,
           note: ly_do,
         });
+        console.log(createQJ);
         await createQJ.save();
-        return res.status(200).json({ message: 'Thôi việc thành công' });
+        return functions.success(res, 'Thôi việc thành công');
       } else if (type == 6) {
         // Tiếp nhận
         await De_Xuat.findOneAndUpdate(
@@ -243,8 +101,7 @@ exports.edit_active = async (req, res) => {
           time: timeNow
         });
         await createHis.save();
-
-        return res.status(200).json({ message: 'Tiếp nhận đề xuất thành công' });
+        return functions.success(res, 'Tiếp nhận đề xuất thành công');
       } else if (type == 7) {
         // Tăng ca
         const historyDuyet = await De_Xuat.findOne({ _id: _id })
@@ -263,7 +120,9 @@ exports.edit_active = async (req, res) => {
         }).select('cy_id')
 
 
-        let checkCalendaremp = await Calendar.findOne({ cy_id: checkcalaendar.cy_id, apply_month: month_apply })
+        let checkCalendaremp = await Calendar.findOne({ 
+          cy_id: checkcalaendar.cy_id,
+           apply_month: month_apply })
 
         if (checkCalendaremp) {
           var items_tc = JSON.parse(checkCalendaremp.cy_detail)
@@ -313,9 +172,10 @@ exports.edit_active = async (req, res) => {
             },
             { new: true }
           );
-          return res.status(200).json({ message: `Đề xuất tăng ca đã được duyệt` });
+          
+          return functions.success(res, 'Đề xuất tăng ca đã được duyệt');
         } else {
-          return res.status(200).json({ message: 'Thông tin truyền lên không đầy đủ, vui lòng thử lại!' });
+          return functions.setError(res,'Thông tin truyền lên không đầy đủ, vui lòng thử lại!',400)
         }
       }//đề xuất thưởng phạt
       else if (type == 19){
@@ -373,14 +233,14 @@ exports.edit_active = async (req, res) => {
             { new: true }
           );
         }
-        return functions.success(res, 'save data success', { savehh});
+        return functions.success(res, 'duyệt đề xuất thành công', { savehh});
       }
     } else {
-      return res.status(404).json({ error: 'Không tìm thấy đề xuất' });
+      return functions.setError(res, 'Không tìm thấy đề xuất',400);
     }
   } catch (error) {
     console.error('Failed ', error);
-    return res.status(500).json({ error: 'Failed ' });
+    return functions.setError(res, error);
   }
 };
 

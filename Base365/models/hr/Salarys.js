@@ -8,61 +8,43 @@ const SalarySchema = new Schema({
         unique: true,
         autoIncrement: true
     },
-    
-    idUser: {
+    sb_id_user: {
         type: Number,
-
     },
-    
-    comId: {
+    sb_id_com: {
         type: Number,
-
     },
-    
-    salaryBasic: {
+    sb_salary_basic: {
         type: Number,
-
     },
-    
-    salaryBh: {
+    sb_salary_bh: {
         type: String,
-
     },
-    
-    pcBh: {
+    sb_pc_bh: {
         type: Number,
-
     },
-    
-    timeUp: {
+    sb_time_up: {
         type: Date,
-
     },
-    
-    location: {
+    sb_location: {
         type: Number,
-
     },
-    
-    lydo: {
+    sb_lydo: {
         type: String,
     },
-    quyetdinh: {
+    sb_quyetdinh: {
         type: String,
-        
     },
-    first: {
+    sb_first: {
         type: Number,
-        
     },
-    created_at: {
+    sb_time_created: {
         type: Date,
-        default: Date.now(),
     },
-},{
+}, {
     collection: 'HR_Salarys',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("HR_Salarys",SalarySchema);
+module.exports = mongoose.model("HR_Salarys", SalarySchema);
