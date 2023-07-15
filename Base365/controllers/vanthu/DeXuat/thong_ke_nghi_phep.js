@@ -70,6 +70,4 @@ exports.thong_ke_nghi_phep = async (req, res) => {
         console.error('Failed to show nghi phep ', error);
         res.status(500).json({ error: ' Failed to show nghi phep ' });
     }
-
-
 }

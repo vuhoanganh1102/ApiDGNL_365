@@ -43,11 +43,9 @@ exports.edit_active = async (req, res) => {
       // Duyệt chuyển tiếp
       if (type == 4) {
         return vanthu.forwardBrowsing(res,His_Handle,De_Xuat,_id,id_uct,check)
-      } 
-      
+      }   
       // Thôi việc
-      if (type == 5){
-        
+      if (type == 5){      
         await De_Xuat.findOneAndUpdate(
           { _id: _id },
           {
@@ -60,7 +58,6 @@ exports.edit_active = async (req, res) => {
           },
           { new: true }
         );
-
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
           id_dx: check._id,
@@ -123,7 +120,9 @@ exports.edit_active = async (req, res) => {
         }).select('cy_id')
 
 
-        let checkCalendaremp = await Calendar.findOne({ cy_id: checkcalaendar.cy_id, apply_month: month_apply })
+        let checkCalendaremp = await Calendar.findOne({ 
+          cy_id: checkcalaendar.cy_id,
+           apply_month: month_apply })
 
         if (checkCalendaremp) {
           var items_tc = JSON.parse(checkCalendaremp.cy_detail)
@@ -234,7 +233,7 @@ exports.edit_active = async (req, res) => {
             { new: true }
           );
         }
-        return functions.success(res, 'save data success', { savehh});
+        return functions.success(res, 'duyệt đề xuất thành công', { savehh});
       }
     } else {
       return functions.setError(res, 'Không tìm thấy đề xuất',400);
