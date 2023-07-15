@@ -4,8 +4,8 @@ const His_Handle = require('../../../models/Vanthu/history_handling_dx');
 const QuitJob = require('../../../models/hr/personalChange/QuitJob');
 const CalendarWorkEmployee = require('../../../models/qlc/CalendarWorkEmployee');
 const Calendar = require('../../../models/qlc/Cycle')
-const ThuongPhat = require('../../../models/Vanthu/tb_thuong_phat');
-const HoaHong = require('../../../models/Vanthu/tb_rose')
+// const ThuongPhat = require('../../../models/Vanthu/tb_thuong_phat');
+// const HoaHong = require('../../../models/Vanthu/tb_rose')
 const User = require('../../../models/Users');
 const functions = require('../../../services/vanthu')
 
