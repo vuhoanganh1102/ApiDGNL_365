@@ -32,6 +32,11 @@ router.post('/toolCandidates',toolHr.Candidates)
 router.post('/toolEmployeePolicys',toolHr.EmployeePolicys)
 router.post('/toolEmployeePolicySpecifics',toolHr.EmployeePolicySpecifics)
 router.post('/provisionOfCompany',toolHr.provisionOfCompany)
+router.post('/toolAppoint',toolHr.appoint)
+router.post('/toolQuitJob',toolHr.quitJob)
+router.post('/toolTransferJob',toolHr.transferJob)
+router.post('/toolResign',toolHr.toolResign)
+router.post('/toolSalary',toolHr.toolSalary)
 
 
 // api
