@@ -6,5 +6,5 @@ const functions = require('../../../services/functions');
 
 router.post('/edit_active',functions.checkToken,data.parse(), edit_Controller.edit_active);
 
-//router.post('/edit_time_tiep_nhan', data.parse(), edit_Controller.edit_tiep_nhan);
+
 module.exports = router;
