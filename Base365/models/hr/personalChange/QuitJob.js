@@ -8,18 +8,16 @@ const QuitJobSchema = new Schema({
         unique: true,
         autoIncrement: true
     },
-    
+
     ep_id: {
         type: Number,
         required: true
     },
-    
     created_at: {
         type: Date,
         require: true,
         default: null
     },
-    
     // ly do
     note: {
         type: String,

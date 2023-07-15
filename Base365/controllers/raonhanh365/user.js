@@ -131,30 +131,21 @@ exports.announceResult = async (req, res, next) => {
 exports.listUserOnline = async (req, res, next) => {
     try {
         let data = [];
-            data = await User.aggregate([
-                {
-                    $lookup: {
-                        from: "RN365_News",
-                        localField: "idRaoNhanh365",
-                        foreignField: "userID",
-                        as: "new"
-                    }
-                },
-                {
-                    $match: { isOnline: 1 }
-                }, {
-                    $project: { userName: 1, avatarUser: 1,idRaoNhanh365:1, _id:1, type: 1,city:1,district:1,address:1}
-                }, {
-                    $limit: 20
-                }
-            ]);
-        for(let i = 0 ; i < data.length; i++)
-        {
-            let tin = await  New.findOne({userID:data[i].idRaoNhanh365},{ title: 1,_id:1,linkTitle: 1,type: 1})       
-            data[i].tin = tin 
-            if(data[i].new.img){
-                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID);
-            }
+        data = await User.aggregate([
+            {
+                $match: { isOnline: 1 }
+            },
+            {
+                $limit: 20
+            },
+            {
+                $project: { userName: 1, avatarUser: 1, idRaoNhanh365: 1, _id: 1, type: 1, city: 1, district: 1, address: 1 }
+            },
+            
+        ]);
+        for (let i = 0; i < data.length; i++) {
+            let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1, _id: 1, linkTitle: 1, type: 1, buySell: 1 })
+            if(tin) data[i].tin = tin
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
@@ -173,31 +164,31 @@ exports.historyTransaction = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
-exports.createVerifyPayment = async(req, res, next) => {
+exports.createVerifyPayment = async (req, res, next) => {
     try {
         let cccdFrontImg = req.files.cccdFrontImg;
         let cccdBackImg = req.files.cccdBackImg;
-        let {userId, cccd, phoneContact, bank, stk, ownerName} = req.body;
-        if(!userId || !cccd || !phoneContact || !bank || !stk || !ownerName){
+        let { userId, cccd, phoneContact, bank, stk, ownerName } = req.body;
+        if (!userId || !cccd || !phoneContact || !bank || !stk || !ownerName) {
             return functions.setError(res, "Missing input value!", 404);
         }
-        let user = await User.findOne({_id: userId}, {userName: 1});
-        if(!user)
+        let user = await User.findOne({ _id: userId }, { userName: 1 });
+        if (!user)
             return functions.setError(res, "User not fount!", 404);
-        
-        
-        if(!await functions.checkImage(cccdFrontImg.path)){
+
+
+        if (!await functions.checkImage(cccdFrontImg.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        if(!await functions.checkImage(cccdBackImg.path)){
+        if (!await functions.checkImage(cccdBackImg.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        raoNhanh.uploadFileRN2(folderUserImg,userId,cccdFrontImg);
+        raoNhanh.uploadFileRN2(folderUserImg, userId, cccdFrontImg);
         cccdFrontImg = functions.createLinkFileRaonhanh(folderUserImg, userId, cccdFrontImg.name);
 
-        raoNhanh.uploadFileRN2(folderUserImg,userId,cccdBackImg);
+        raoNhanh.uploadFileRN2(folderUserImg, userId, cccdBackImg);
         cccdBackImg = functions.createLinkFileRaonhanh(folderUserImg, userId, cccdBackImg.name);
-        await User.findOneAndUpdate({_id: userId}, {
+        await User.findOneAndUpdate({ _id: userId }, {
             phone: phoneContact,
             inforRN365: {
                 cccd: cccd,
@@ -218,64 +209,67 @@ exports.createVerifyPayment = async(req, res, next) => {
 }
 
 // tổng quan thông tin tài khoản cá nhân
-exports.profileInformation = async (req,res,next) => {
-    try{
+exports.profileInformation = async (req, res, next) => {
+    try {
         let userIdRaoNhanh = req.body.userId;
-        
-        let fields = {userName: 1,phone: 1, type: 1, email: 1, address: 1,
-            createdAt: 1, money: 1,idRaoNhanh365:1,phoneTK:1,avatarUser:1,type:1,
-            _id:1,emailContact:1,chat365_secret:1,inforRN365:1
+
+        let fields = {
+            userName: 1, phone: 1, type: 1, email: 1, address: 1,
+            createdAt: 1, money: 1, idRaoNhanh365: 1, phoneTK: 1, avatarUser: 1, type: 1,
+            _id: 1, emailContact: 1, chat365_secret: 1, inforRN365: 1
         };
         let dataUser = {}
 
         //thong tin tk
-        let userInFor = await User.findOne({_id: userIdRaoNhanh}, fields);
+        let userInFor = await User.findOne({ _id: userIdRaoNhanh }, fields);
 
         //tin da dang
-        let numberOfNew = await New.find({userID: userIdRaoNhanh, active: 1}).count();
-        
+        let numberOfNew = await New.find({ userID: userIdRaoNhanh, active: 1 }).count();
+
         //tin da dang trong 30
         var currentDate = new Date();  // Lấy ngày hiện tại
         var thirtyDaysAgo = new Date(currentDate.getTime() - (30 * 24 * 60 * 60 * 1000));  // Trừ 30 ngày từ ngày hiện tại
-        let numberOfNewNgay = await New.find({userID: userIdRaoNhanh, active: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
+        let numberOfNewNgay = await New.find({ userID: userIdRaoNhanh, active: 1, updateTime: { $gte: thirtyDaysAgo, $lte: currentDate } }).count();
 
         //tin da ban
-        let numberOfNewSold = await New.find({userID: userIdRaoNhanh, active: 1, sold: 1}).count();
-        
+        let numberOfNewSold = await New.find({ userID: userIdRaoNhanh, active: 1, sold: 1 }).count();
+
         //tin da ban trong 30
-        let numberOfNewNgaySold = await New.find({userID: userIdRaoNhanh, active: 1, sold: 1, updateTime: {$gte: thirtyDaysAgo, $lte: currentDate}}).count();
+        let numberOfNewNgaySold = await New.find({ userID: userIdRaoNhanh, active: 1, sold: 1, updateTime: { $gte: thirtyDaysAgo, $lte: currentDate } }).count();
 
         //so luong danh gia va so sao
-        let listEvaluate = await Evaluate.find({userId: userIdRaoNhanh, newId: 0, active: 1}, {_id: 1, stars: 1,userId:1,blUser:1,parentId:1,comment:1,time:1,active:1,csbl:1,tgianHetcs:1,csuaBl:1});
-        let numberEvaluate = await Evaluate.countDocuments({userId: userIdRaoNhanh, newId: 0, active: 1});
+        let listEvaluate = await Evaluate.find({ userId: userIdRaoNhanh, newId: 0, active: 1 }, { _id: 1, stars: 1, userId: 1, blUser: 1, parentId: 1, comment: 1, time: 1, active: 1, csbl: 1, tgianHetcs: 1, csuaBl: 1 });
+        let numberEvaluate = await Evaluate.countDocuments({ userId: userIdRaoNhanh, newId: 0, active: 1 });
         let numberStar = 0;
-        for(let i=0; i<listEvaluate.length; i++) {
+        for (let i = 0; i < listEvaluate.length; i++) {
             numberStar += listEvaluate[i].stars;
         }
         // numberEvaluate = listEvaluate.count();
 
-        fields = {_id: 1, image: 1, title: 1, createTime: 1, updateTime: 1, address: 1, money: 1, sold: 1, unit: 1,
-        cateID: 1, linkTitle: 1, free: 1, img: 1,userID:1,type:1,dia_chi:1,endvalue:1,img:1,until:1,address:1}
+        fields = {
+            _id: 1, image: 1, title: 1, createTime: 1, updateTime: 1, address: 1, money: 1, sold: 1, unit: 1,
+            cateID: 1, linkTitle: 1, free: 1, img: 1, userID: 1, type: 1, dia_chi: 1, endvalue: 1, img: 1, until: 1, address: 1
+        }
         //tin dang ban
-        let listSellNews = await New.find({userID: userIdRaoNhanh, active: 1, buySell: 2}, fields);
+        let listSellNews = await New.find({ userID: userIdRaoNhanh, active: 1, buySell: 2 }, fields);
 
         //tin dang mua
-        let listBuyNews = await New.find({userID: userIdRaoNhanh, active: 1, buySell: 1}, fields);
+        let listBuyNews = await New.find({ userID: userIdRaoNhanh, active: 1, buySell: 1 }, fields);
 
         // let numberOfNewSold = await New.find({userID: userID, sold: 1}).count();
-        let likeNew = await LoveNews.find({userID: userIdRaoNhanh}).count()
+        let likeNew = await LoveNews.find({ userID: userIdRaoNhanh }).count()
         dataUser.InforUser = userInFor;
         dataUser.numberOfNew = numberOfNew;
         dataUser.numberOfNewNgay = numberOfNewNgay;
         dataUser.numberOfNewSold = numberOfNewSold;
         dataUser.numberOfNewNgaySold = numberOfNewNgaySold;
-        dataUser.evaluate = {numberEvaluate, numberStar};
+        dataUser.evaluate = { numberEvaluate, numberStar };
         dataUser.likeCount = likeNew
         dataUser.listSellNews = listSellNews;
         dataUser.listBuyNews = listBuyNews;
 
-        return functions.success(res, 'get Data User Success', {dataUser});
-    } catch(err){
+        return functions.success(res, 'get Data User Success', { dataUser });
+    } catch (err) {
         console.log("Err from server", err);
         return functions.setError(res, "Err from server", 500);
     }
@@ -300,7 +294,7 @@ exports.updateAvatar = async (req, res, next) => {
                 return functions.setError(res, "Định dạng ảnh không hợp lệ");
             }
             await User.findByIdAndUpdate(_id, {
-                avatarUser:upload
+                avatarUser: upload
             });
         }
         return functions.success(res, "update data user success");

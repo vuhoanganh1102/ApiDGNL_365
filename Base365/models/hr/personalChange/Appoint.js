@@ -9,14 +9,8 @@ const AppointSchema = new Schema({
         autoIncrement: true
     },
     
-    com_id: {
-        type: Number,
-        required: true
-    },
-
     ep_id: {
         type: Number,
-        required: true
     },
     
     current_position: {
@@ -28,20 +22,8 @@ const AppointSchema = new Schema({
         type: Number,
         default: 0,
     },
-    
-    update_position: {
-        type: Number,
-        require: true,
-    },
-    
-    update_dep_id: {
-        type: Number,
-        require: true
-    },
-    
     created_at: {
         type: Date,
-        require: true,
         default: null
     },
     
@@ -59,5 +41,5 @@ const AppointSchema = new Schema({
     versionKey: false,
     timestamp: true
 });
-AppointSchema.index({ep_id:1,com_id:1})
+
 module.exports = mongoose.model("HR_Appoints",AppointSchema);
