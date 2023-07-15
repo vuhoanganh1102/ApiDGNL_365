@@ -10,23 +10,23 @@ const Com_error = new Schema({
     },
     com_email : {
         type: String,
-
+        default : null
     },
     com_phone : {
         type: String,
-
+        default : null
     },
     com_name : {
         type: String,
-
+        default : null
     },
     com_address : {
         type: String,
-
+        default : null
     },
     com_pass : {
         type: String,
- 
+        default : null
 
     },
     com_time_err : {

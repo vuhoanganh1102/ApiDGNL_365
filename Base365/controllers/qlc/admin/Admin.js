@@ -1,7 +1,9 @@
 const functions = require("../../../services/functions")
+const fnc = require("../../../services/qlc/functions")
 const feedback = require("../../../models/qlc/Feedback_emp")
 const report = require("../../../models/qlc/ReportError")
 const user = require("../../../models/Users")
+const comErr = require("../../../models/qlc/Com_error")
 const md5 = require('md5');
 
 //cai dat dich vu Vip
@@ -72,6 +74,46 @@ exports.setVipOnly = async(req, res) => {
             return functions.setError(res, " vui lòng nhập trạng thái ")
         }
         
+    } catch (e) {
+        functions.setError(res, e.message)
+    }
+}
+exports.listComErr = async(req, res) => {
+    try {
+        const pageNumber = req.body.pageNumber || 1;
+        const request = req.body;
+        let inputNew = request.inputNew
+        let inputOld = request.inputOld
+        let find = request.find
+        let data = [];
+        let listCondition = {};
+
+        let checkNew1 = new Date(inputNew);
+        checkNew1.setDate(checkNew1.getDate() + 1); // + 1 ngay
+        let checkNew = Date.parse(checkNew1);
+        let checkOld1 = new Date(inputOld)
+        let checkOld = Date.parse(checkOld1)
+        if (checkOld > checkNew) {
+            await functions.setError(res, "thời gian nhập không đúng quy định")
+        }
+        if (inputNew || inputOld) listCondition['com_time_err'] = { $gte: checkOld, $lte: checkNew };
+        
+        if (find) listCondition["$or"] = [
+            { "com_name": { $regex: find } },
+            { "com_email": { $regex: find } },
+            { "com_phone": { $regex: find } }
+        ];
+        
+        data = await comErr.find(listCondition).skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
+        if (data === []) {
+            await functions.setError(res, 'Không có dữ liệu', 404);
+
+        } else {
+            let count = await feedback.countDocuments({})
+
+            return functions.success(res, 'Lấy thành công', { data, count });
+        }
+
     } catch (e) {
         functions.setError(res, e.message)
     }
@@ -201,7 +243,7 @@ exports.getListFeedback = async(req, res) => {
         const request = req.body;
         let data = [];
 
-        data = await feedback.find({}).select('name cus_id email phone_number feed_back rating createdAt app_name from_source').skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
+        data = await feedback.find({}).skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
         if (data === []) {
             await functions.setError(res, 'Không có dữ liệu', 404);
 
@@ -222,6 +264,10 @@ exports.getListReportErr = async(req, res) => {
         const pageNumber = req.body.pageNumber || 1;
         
         let data = await report.find({}).select('curDeviceId type detail_error gallery_image_error createdAt from_source createdAt').skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
+        for (let i = 0; i < data.length; i++) {
+            data[i].gallery_image_error = await fnc.createLinkFileQLC( data[i].gallery_image_error)
+          
+        }
         if (data === []) {
             await functions.setError(res, 'Không có dữ liệu', 404);
 

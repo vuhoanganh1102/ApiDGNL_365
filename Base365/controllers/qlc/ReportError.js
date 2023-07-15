@@ -6,14 +6,12 @@ const fnc = require('../../services/qlc/functions')
 
 exports.create = async(req, res) => {
     try {
-        let idQLC = req.user.data.type
+        let idQLC = req.user.data.idQLC
         let type = req.user.data.type
-        console.log(idQLC,type)
-        let { curDeviceId, detail_error, gallery_image_error, from_source } = req.body;
+        let { device_id, detail_error, gallery_image_error, from_source } = req.body;
         let File = req.files || null;
             gallery_image_error = null;
-        let createdAt = new Date()
-
+        let now = new Date()
         if (detail_error) {
           if(File&& File.gallery_image_error){
             let upload = await fnc.uploadErrQLC(type, idQLC, File.gallery_image_error, ['.jpeg', '.jpg', '.png']);
@@ -22,25 +20,21 @@ exports.create = async(req, res) => {
             }
             gallery_image_error = upload
           }
-            let max = await report.findOne({},{},{sort : { _id: -1 }}).lean() || 0 
-            console.log(max)
+            let max = await report.findOne({},{},{sort : { id_report: -1 }}).lean() || 0 
             let reports = new report({
-                _id: Number(max._id) + 1 || 1,
+                id_report: Number(max.id_report) + 1 || 1,
                 idQLC: idQLC,
-                type: type,
-                curDeviceId: curDeviceId,
+                type_user: type,
+                device_id: device_id,
                 detail_error: detail_error,
                 gallery_image_error: gallery_image_error,
-                createdAt: Date.parse(createdAt),
+                time_create: Date.parse(now),
                 from_source: from_source
-
             })
             await reports.save()
                 return functions.success(res, "Đánh giá của bạn đã được gửi đi")
-               
         }
         return functions.setError(res, "chua nhap chi tiet")
-        
     } catch (error) {
         console.log(error);
         return functions.setError(res, error)

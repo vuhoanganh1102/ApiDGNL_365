@@ -8,72 +8,92 @@ const comErr = require("../../models/qlc/Com_error")
 
 //Đăng kí tài khoản công ty 
 exports.register = async(req, res) => {
-    const { userName, emailContact, phoneTK, password, address, phone } = req.body;
-    let idTimViec365 = ""
-        idRaoNhanh365 = ""
-    const createdAt = new Date()
-    if (userName && password && phoneTK && address) {
-        let checkPhone = await functions.checkPhoneNumber(phoneTK)
-        if (checkPhone) {
-            let finduser = await Users.findOne({ phoneTK: phoneTK, type: 1 }).lean()
-            let MaxId = await functions.getMaxUserID("company")
-            let _id = MaxId._id
-            if (finduser == null) {
-                const user = new Users({
-                    _id: _id,
-                    emailContact: emailContact,
-                    phoneTK: phoneTK,
-                    userName: userName,
-                    phone: phone,
-                    address: address,
-                    type: 1,
-                    chat365_secret : Buffer.from(_id.toString()).toString('base64'),
-                    password: md5(password),
-                    fromWeb: "quanlichung",
-                    role: 1,
-                    createdAt: Date.parse(createdAt),
-                    idQLC: MaxId._idQLC,
-                    idTimViec365: MaxId._idTV365,
-                    idRaoNhanh365: MaxId._idRN365,
-                    'inForCompany.cds.com_vip': 0,
-                    'inForCompany.cds.com_ep_vip': 5,
-                    'inForCompany.cds.com_vip_time': 0,
-                })
-                await user.save()
-                const token = await functions.createToken({
-                    _id: user._id,
-                    idTimViec365: user.idTimViec365,
-                    idQLC: user.idQLC,
-                    idRaoNhanh365: user.idRaoNhanh365,
-                    email: user.email,
-                    phoneTK: user.phoneTK,
-                    createdAt: user.createdAt,
-                    type: user.type,
-                    com_id : user.idQLC,
-                    userName : user.userName,
-                }, "1d")
-                const refreshToken = await functions.createToken({ userId: user._id }, "1y")
-                let data = {
-                    access_token: token,
-                    refresh_token: refreshToken,
+    try{
+        const { userName, emailContact, phoneTK, password, address, phone } = req.body;
+        let idTimViec365 = ""
+            idRaoNhanh365 = ""
+        const createdAt = new Date()
+        if (userName && password && phoneTK && address) {
+            let checkPhone = await functions.checkPhoneNumber(phoneTK)
+            if (checkPhone) {
+                let finduser = await Users.findOne({ phoneTK: phoneTK, type: 1 }).lean()
+                let MaxId = await functions.getMaxUserID("company")
+                let _id = MaxId._id
+                if (finduser == null) {
+                    const user = new Users({
+                        _id: _id,
+                        emailContact: emailContact,
+                        phoneTK: phoneTK,
+                        userName: userName,
+                        phone: phone,
+                        address: address,
+                        type: 1,
+                        chat365_secret : Buffer.from(_id.toString()).toString('base64'),
+                        password: md5(password),
+                        fromWeb: "quanlichung",
+                        role: 1,
+                        createdAt: Date.parse(createdAt),
+                        idQLC: MaxId._idQLC,
+                        idTimViec365: MaxId._idTV365,
+                        idRaoNhanh365: MaxId._idRN365,
+                        'inForCompany.cds.com_vip': 0,
+                        'inForCompany.cds.com_ep_vip': 5,
+                        'inForCompany.cds.com_vip_time': 0,
+                    })
+                    await user.save()
+                    const token = await functions.createToken({
+                        _id: user._id,
+                        idTimViec365: user.idTimViec365,
+                        idQLC: user.idQLC,
+                        idRaoNhanh365: user.idRaoNhanh365,
+                        email: user.email,
+                        phoneTK: user.phoneTK,
+                        createdAt: user.createdAt,
+                        type: user.type,
+                        com_id : user.idQLC,
+                        userName : user.userName,
+                    }, "1d")
+                    const refreshToken = await functions.createToken({ userId: user._id }, "1y")
+                    let data = {
+                        access_token: token,
+                        refresh_token: refreshToken,
+                    }//tìm kiếm trong bảng đăng kí lỗi , nếu tồn tại sdt đăng kí thành công thì xóa 
+                    let checkComErr = await comErr.findOne({ com_phone: phoneTK }).lean()
+                    if(checkComErr){
+                        await comErr.deleteOne({com_phone: phoneTK})
+                    }
+                    return functions.success(res, "tạo tài khoản thành công", { user, data })
+                } else {
+                    return functions.setError(res, 'sdt đã tồn tại', 404);
                 }
-                return functions.success(res, "tạo tài khoản thành công", { user, data })
+    
             } else {
-                return functions.setError(res, 'sdt đã tồn tại', 404);
+                return functions.setError(res, 'sai dinh dang sdt', 404)
+    
             }
-
-        } else {
-            return functions.setError(res, 'sai dinh dang sdt', 404)
-
+        } else {//nếu nhập thiếu trường thì lưu lại bảng đăng kí lỗi 
+            let writeErr = await comErr.findOne({ com_phone: phoneTK }).lean()
+            if(!writeErr){
+                const max1 = await comErr.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean()||0
+                const com = await new comErr({
+                    id: Number(max1.id) +1 || 1,
+                    com_email:emailContact,
+                    com_phone:phoneTK,
+                    com_name:userName,
+                    com_address:address,
+                    com_pass:password,
+                    com_time_err:Date.parse(createdAt),
+            })
+            await com.save()
+            return functions.success(res, 'Một trong số các trường yêu cầu bị thiếu, danh sách đăng kí lỗi đã được ghi lại',{com})
         }
-    } else {
-        let finduser = await Users.findOne({ phoneTK: phoneTK, type: 1 }).lean()
-
-
-        return functions.setError(res, 'Một trong số các trường yêu cầu bị thiếu', 404)
+        return functions.setError(res, 'Một trong số các trường yêu cầu bị thiếu')
     }
+    }catch(e){
+        return functions.setError(res, e.message)
+    }
+   
 }
-
 //Đăng nhập tài khoản công ty
 exports.login = async(req, res, next) => {
     try {
@@ -409,9 +429,6 @@ exports.forgotPassword = async(req, res) => {
                     }
                 });
                 await functions.success(res, "xác thực thành công");
-
-
-
             } else {
                 return functions.setError(res, "xác thực thất bại", 404);
             }
@@ -490,18 +507,15 @@ exports.updateInfoCompany = async(req, res, next) => {
 exports.info = async(req, res) => {
     try {
         const idQLC = req.user.data.idQLC
-            const data = await Users.findOne({ idQLC: idQLC, type: 1 }).select('userName email phoneTK address avatarUser authentic inForCompany.cds.com_vip createdAt').lean();
-            const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
-            const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
-            if(departmentsNum) data.departmentsNum = departmentsNum
-            if(userNum) data.userNum = userNum
-            if(userNum) data.userNum = userNum
-
+            const data = await Users.findOne({ idQLC: idQLC, type: 1 }).select('idQLC userName email phoneTK address avatarUser authentic inForCompany.cds.com_vip createdAt').lean();
             if (data) {
+                const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
+                const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
+                if(departmentsNum) data.departmentsNum = departmentsNum
+                if(userNum) data.userNum = userNum
                 return functions.success(res, 'Lấy thành công', { data });
             };
             return functions.setError(res, 'Không có dữ liệu', 404);
-
     } catch (e) {
         return functions.setError(res, e.message)
     }

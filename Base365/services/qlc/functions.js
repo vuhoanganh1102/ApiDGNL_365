@@ -120,8 +120,9 @@ exports.createAvatarQLC = (namefiles) => {
     let link = namefiles;
     return link;
 }
-exports.createLinkFileQLC = (folder1,folder2, timestamp, name) => {
-    let link = process.env.PORT_QLC + '../storage/base365/QLC/upload/' + folder1 + '/'+ folder2 + '/' + timestamp + '/' + name;
+exports.createLinkFileQLC = (token, name) => {
+    const paths = (token !== 1 ? "ep_" + id : "com_" + id)
+    let link = process.env.PORT_QLC + '../storage/base365/QLC/upload/error/' + paths + '/' + name;
     return link;
 }
 
