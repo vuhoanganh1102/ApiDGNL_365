@@ -4,7 +4,7 @@ const functions = require("../../services/functions")
 const formData = require('express-form-data')
 
 //API lấy tất cả dữ liệu phòng ban 
-router.post("/list", formData.parse(),functions.checkToken, DeparmentController.getListDeparment);
+router.post("/list", formData.parse(), DeparmentController.getListDeparment);
 
 //API tạo mới một phòng ban
 router.post("/create", formData.parse(),functions.checkToken, DeparmentController.createDeparment);

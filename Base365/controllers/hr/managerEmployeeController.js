@@ -46,7 +46,7 @@ exports.getListEmployee= async(req, res, next) => {
         return functions.success(res, "Get list employee success", {totalCount: totalCount, companyName, listEmployee});
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -105,7 +105,7 @@ exports.createEmployee = async(req, res, next) => {
         return functions.success(res, 'Create employee success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -138,6 +138,7 @@ exports.updateEmployee = async(req, res, next) => {
                 education: education
               },
               employee: {
+                com_id: comId,
                 start_working_time: start_working_time,
                 position_id: position_id
               }
@@ -149,6 +150,6 @@ exports.updateEmployee = async(req, res, next) => {
         return functions.success(res, 'Update employee success!');
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }

@@ -20,12 +20,16 @@ exports.delete_dx = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    if (type === 1) {
-      await De_Xuat.deleteMany({ _id: { $in: id }, com_id: id_com });
-      await delete_Dx.deleteMany({ id_dx_del: { $in: id }, user_del_com: id_com });
+    if (type == 1) { // gửi về kiểu mảng / xóa vĩnh viễn đề xuất
+      
+      let idArraya = id.map(idItem => parseInt(idItem));
+      console.log(idArraya);
+      await De_Xuat.deleteMany({ _id: { $in: idArraya }, com_id: id_com });
+      await delete_Dx.deleteMany({ id_dx_del: { $in: idArraya }, user_del_com: id_com });
+      return res.status(200).json({ message: 'xóa thành công!' });
     }
     else if (type == 0) {
-      // Kiểm tra và cập nhật trạng thái của đề xuất
+      // Kiểm tra và cập nhật trạng thái của đề xuất / thêm vào bảng xóa
       const deXuat = await De_Xuat.findOne({ _id: id });
 
       if (!deXuat) {
@@ -34,8 +38,8 @@ exports.delete_dx = async (req, res) => {
 
       deXuat.del_type = 2;
       await deXuat.save();
-
-      const deleteDX = new delete_Dx({
+      let deleteDX = new delete_Dx({
+        _id :  await functions.getMaxID(delete_Dx) + 1,
         user_del: deXuat.id_user,
         user_del_com: id_com,
         id_dx_del: id,
@@ -44,12 +48,17 @@ exports.delete_dx = async (req, res) => {
       await deleteDX.save();
       return res.status(200).json({ message: 'Đã cập nhật trạng thái của đề xuất thành công!' });
     }
-    else if (type === 2) {
-      // Khôi phục đề xuất
-      await De_Xuat.updateMany({ _id: { $in: id }, del_type: 1 }, { del_type: 0 });
-      await delete_Dx.deleteMany({ id_dx_del: { $in: id }, user_del_com: id_com });
+    else if (type == 2) {
+      // Khôi phục đề xuất 
+      
+      let idArray = id.map(idItem => parseInt(idItem));
+     
+      await De_Xuat.updateMany({ _id: { $in: idArray }, del_type: 1 }, { del_type: 0 });
+      await delete_Dx.deleteMany({ id_dx_del: { $in: idArray }, user_del_com: id_com });
 
       return res.status(200).json({ message: 'Bạn đã khôi phục đề xuất thành công!' });
+    }else{
+       return res.status(400).json({ message: 'không thể thực thi!' });
     }
 
   } catch (error) {

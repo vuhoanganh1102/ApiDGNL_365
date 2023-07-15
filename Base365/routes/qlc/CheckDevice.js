@@ -5,7 +5,7 @@ const formData = require('express-form-data')
 //lấy danh sách thiết bị 
 
 //loc danh sach theo cty 
-router.post("/list",functions.checkToken,formData.parse(), CheckDeviceController.getALlCompanyDevice);
+router.post("/list",functions.checkToken,formData.parse(), CheckDeviceController.getlist);
 
 // //loc danh sach theo cty va phong ban  
 // router.get("/company/depart/all",functions.checkToken, CheckDeviceController.getALlCompanyDepartmentDevice);
@@ -17,7 +17,7 @@ router.post("/list",functions.checkToken,formData.parse(), CheckDeviceController
 router.post("/create",functions.checkToken,formData.parse(), CheckDeviceController.createDevice)
 
 //chinh sua yeu cau dang ki thiet bi
-// router.post("/edit",functions.checkToken,formData.parse(), CheckDeviceController.editDevice)
+router.post("/add",functions.checkToken,formData.parse(), CheckDeviceController.add)
 
 //xoa yeu cau cau dang ki thiet bi
 router.delete("/del",functions.checkToken,formData.parse(), CheckDeviceController.deleteDevice)

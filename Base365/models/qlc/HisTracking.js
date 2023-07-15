@@ -5,7 +5,7 @@ const HisOfTracking = new mongoose.Schema({
         type: Number,
         required: true
     },
-    idQLC: {
+    ep_id: {
         type: Number
     },
     ts_image: {

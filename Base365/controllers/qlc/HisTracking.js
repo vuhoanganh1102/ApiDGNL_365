@@ -5,15 +5,15 @@ const calEmp = require('../../models/qlc/CalendarWorkEmployee')
 exports.CreateTracking = async(req, res) => {
 
 
-    const { idQLC, com_id, role, ts_image, device, ts_lat, ts_long, ts_location_name, wifi_name, wifi_ip, wifi_mac, shift_id, bluetooth_address, note, at_time, status, ts_error, is_success, dep_id } = req.body;
+    const { ep_id, com_id, role, ts_image, device, ts_lat, ts_long, ts_location_name, wifi_name, wifi_ip, wifi_mac, shift_id, bluetooth_address, note, at_time, status, ts_error, is_success, dep_id } = req.body;
 
 
-    if ((idQLC && com_id && role && ts_image && device && ts_lat && ts_long && ts_location_name && wifi_name && wifi_ip && wifi_mac && shift_id && bluetooth_address && note && at_time && status && ts_error && is_success) == undefined) {
+    if ((ep_id && com_id && role && ts_image && device && ts_lat && ts_long && ts_location_name && wifi_name && wifi_ip && wifi_mac && shift_id && bluetooth_address && note && at_time && status && ts_error && is_success) == undefined) {
         functions.setError(res, "some field required");
     } else if (isNaN(com_id)) {
         functions.setError(res, "Company id must be a number");
-    } else if (isNaN(idQLC)) {
-        functions.setError(res, "idQLC id must be a number");
+    } else if (isNaN(ep_id)) {
+        functions.setError(res, "ep_id id must be a number");
     } else {
         let maxId = await functions.getMaxID(Tracking);
         if (!maxId) {
@@ -22,7 +22,7 @@ exports.CreateTracking = async(req, res) => {
         const sheet_id = Number(maxId) + 1;
         const tracking = new Tracking({
             sheet_id: sheet_id,
-            idQLC: idQLC,
+            ep_id: ep_id,
             com_id: com_id,
             dep_id: dep_id,
             role: role,
@@ -73,11 +73,11 @@ exports.getListUserTrackingSuccess = async(req, res) => {
         } else if (isNaN(com_id && shift_id)) {
             functions.setError(res, "id must be a Number")
         } else {
-            const data = await Tracking.find({ com_id: com_id, shift_id: shift_id, at_time: { $gte: inputOld, $lte: inputNew } }).select('_id idQLC ts_image ts_location_name at_time shift_id status is_success ').skip((pageNumber - 1) * 20).limit(20).sort({ sheet_id: -1 });
+            const data = await Tracking.find({ com_id: com_id, shift_id: shift_id, at_time: { $gte: inputOld, $lte: inputNew } }).select('_id ep_id ts_image ts_location_name at_time shift_id status is_success ').skip((pageNumber - 1) * 20).limit(20).sort({ sheet_id: -1 });
             if (data) { //lấy thành công danh sách NV đã chấm công 
                 //so sanh loại bỏ phan tu trung lap
                 function compare(personA, personB) {
-                    return personA.idQLC === personB.idQLC && personA.shift_id === personB.shift_id;
+                    return personA.ep_id === personB.ep_id && personA.shift_id === personB.shift_id;
                 }
 
                 let newData = functions.arrfil(data, compare);
@@ -106,14 +106,14 @@ exports.getlistUserNoneHistoryOfTracking = async(req, res) => {
     com_id = req.body.com_id;
     shift_id = req.body.shift_id
         //ta tìm danh sách lịch sử nhân viên của công ty đã chấm công   
-    const data = await Tracking.find({ com_id: com_id, shift_id: shift_id, at_time: { $gte: inputOld, $lte: inputNew } }).select('_id idQLC shift_id ')
+    const data = await Tracking.find({ com_id: com_id, shift_id: shift_id, at_time: { $gte: inputOld, $lte: inputNew } }).select('_id ep_id shift_id ')
         //ta tìm danh sách nhân viên đã có lịch làm việc của công ty
-    const data2 = await calEmp.find({ com_id: com_id, shift_id: shift_id, }).select('_id idQLC shift_id  ')
+    const data2 = await calEmp.find({ com_id: com_id, shift_id: shift_id, }).select('_id ep_id shift_id  ')
         //ta so sánh 2 mảng 
         // Lọc ra các phần tử không giống nhau trong cả hai mảng
 
     function compareObjects(obj1, obj2) {
-        return JSON.stringify(obj1.idQLC) === JSON.stringify(obj2.idQLC);
+        return JSON.stringify(obj1.ep_id) === JSON.stringify(obj2.ep_id);
     }
 
     function removeSimilarElements(data, data2) {
@@ -130,7 +130,7 @@ exports.getlistUserNoneHistoryOfTracking = async(req, res) => {
     const ketQua = removeSimilarElements(data, data2);
     //LỌC PHẦN TỬ LẶP LẠI 
     function compare(personA, personB) {
-        return personA.idQLC === personB.idQLC && personA.shift_id === personB.shift_id;
+        return personA.ep_id === personB.ep_id && personA.shift_id === personB.shift_id;
     }
 
     let newData = functions.arrfil(ketQua, compare);
@@ -154,7 +154,7 @@ exports.getlist = async(req, res) => {
         // const com_id = req.user.data.com_id
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
-        let idQLC = request.idQLC 
+        let ep_id = request.ep_id 
             com_id = Number(request.com_id)
             dep_id =   Number(request.dep_id) 
             inputNew = request.inputNew 
@@ -165,11 +165,11 @@ exports.getlist = async(req, res) => {
     
 
             if (com_id) listCondition.com_id = com_id;
-            if (idQLC) listCondition.idQLC = idQLC;
+            if (ep_id) listCondition.ep_id = ep_id;
             if (dep_id) listCondition.dep_id = dep_id;
             if (inputNew&&inputOld) listCondition["at_time"] = { $gte: inputOld, $lte: inputNew };
-            // const data = await Tracking.find({com_id: com_id, at_time: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id idQLC ts_location_name at_time shift_id status  ').skip((pageNumber - 1) * 20).limit(20).sort({ at_time : -1});
-            data = await Tracking.find(listCondition).select('_id idQLC ts_location_name at_time shift_id status  ').skip((pageNumber - 1) * 20).limit(20).sort({ sheet_id: -1 });
+            // const data = await Tracking.find({com_id: com_id, at_time: { $gte: '2023-06-01', $lte: '2023-06-06' } }).select('_id ep_id ts_location_name at_time shift_id status  ').skip((pageNumber - 1) * 20).limit(20).sort({ at_time : -1});
+            data = await Tracking.find(listCondition).select('_id ep_id ts_location_name at_time shift_id status  ').skip((pageNumber - 1) * 20).limit(20).sort({ sheet_id: -1 });
             console.log(data)
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });

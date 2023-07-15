@@ -15,6 +15,6 @@ router.post("/edit", formData.parse(), functions.checkToken,GroupController.edit
 router.delete("/del", formData.parse(),functions.checkToken, GroupController.deleteGroup);
 
 //API tim kiem theo cac dieu kien
-router.post('/search', formData.parse(),functions.checkToken, GroupController.getListGroupByFields);
+router.post('/search', formData.parse(), GroupController.getListGroupByFields);
 
 module.exports = router

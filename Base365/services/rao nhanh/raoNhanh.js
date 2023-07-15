@@ -274,9 +274,12 @@ exports.getNameCate = async (cateId,number) =>{
     }
 }
 // lấy link file
-exports.getLinkFile = async (file, cateId) => {
+exports.getLinkFile = async (file,cateId,buySell) => {
     let nameCate = await exports.getNameCate(cateId,1);
-    let folder = await exports.checkFolderCateRaoNhanh(nameCate)
+    let folder = await exports.checkFolderCateRaoNhanh(nameCate);
+    if(buySell == 1){
+        folder = 'avt_tindangmua'
+    }
     let link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/${folder}/`;
     let res = '';
     let arr = [];

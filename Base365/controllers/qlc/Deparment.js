@@ -1,48 +1,33 @@
 const Deparment = require("../../models/qlc/Deparment")
 const functions = require("../../services/functions")
 const Users = require("../../models/Users")
+const fnc = require("../../services/qlc/functions")
 
 
-//API lấy tất cả dữ liệu phòng ban 
 exports.getListDeparment = async (req, res) => {
     try {
-        const com_id = req.user.data.com_id
-        const type = req.user.data.type
-        // let com_id = req.body.com_id
+        let com_id = req.body.com_id
         let dep_id = req.body.dep_id
-
         let condition = {};
         let data = []
         let total_emp = {}
-        if (type == 1) {
-
             if (com_id) condition.com_id = com_id
             if (dep_id) condition.dep_id = dep_id
-
-
-
             data = await Deparment.find(condition);
             const depID = data.map(item => item.dep_id);
             for (let i = 0; i < depID.length; i++) {
                 const depId = depID[i];
                 total_emp = await functions.findCount(Users, { "inForPerson.employee.com_id": com_id, "inForPerson.employee.dep_id": depId, type: 2, "inForPerson.employee.ep_status": "Active" })
-
                 if(total_emp) data.total_emp = total_emp
             }
             if (!data) {
                 return functions.setError(res, 'Không có dữ liệu', 404);
             };
             return functions.success(res, 'Lấy thành công', {data});
-        }
-        return functions.setError(res, "Tài khoản không phải Công ty", 604);
-
     } catch (err) {
-
         return functions.setError(res, err.message)
-    }
+    } 
 };
-
-
 //API tạo mới một phòng ban
 exports.createDeparment = async (req, res) => {
     try {
@@ -98,7 +83,7 @@ exports.editDeparment = async (req, res) => {
                 })
                 return functions.success(res, "Sửa phòng ban thành công", { deparment })
             }
-            functions.setError(res, "Deparment does not exist!", 510);
+            return functions.setError(res, "Deparment does not exist!", 510);
         }
         return functions.setError(res, "Tài khoản không phải Công ty", 604);
     } catch (error) {

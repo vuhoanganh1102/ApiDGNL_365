@@ -5,21 +5,18 @@ const Users = require("../../models/Users")
 //tìm kiếm danh sách nhom
 exports.getListGroupByFields = async (req, res) => {
     try {
-        const type = req.user.data.type
-        let com_id = req.user.data.com_id
-        // let com_id = req.body.com_id
+        let com_id = req.body.com_id
         let gr_id = req.body.gr_id
         let dep_id = req.body.dep_id
         let team_id = req.body.team_id
         let data = []
         let condition = {}
         let total_emp = {}
-        if (type == 1) {
             if (com_id) condition.com_id = com_id
             if (gr_id) condition.gr_id = gr_id
             if (dep_id) condition.dep_id = dep_id
             if (team_id) condition.team_id = team_id
-            data = await Group.find(condition).select('team_id gr_name dep_id com_id')
+            data = await Group.find(condition).select('gr_id team_id gr_name dep_id com_id')
             const groupID = data.map(item => item.gr_id)
             for (let i = 0; i < groupID.length; i++) {
                 const group = groupID[i];
@@ -30,8 +27,6 @@ exports.getListGroupByFields = async (req, res) => {
                 return functions.success(res, 'Lấy thành công', { data });
             }
             return functions.setError(res, 'Không có dữ liệu', 404);
-        }
-        return functions.setError(res, "Tài khoản không phải Công ty", 604);
     } catch (err) {
         return functions.setError(res, err.message)
     }
@@ -47,7 +42,7 @@ exports.createGroup = async (req, res) => {
             if (dep_id && com_id && team_id && gr_name) {
                 let max = await Group.findOne({}, {}, { sort: { gr_id: -1 } }).lean() || 0
                 const data = new Group({
-                    gr_id: Number(max) + 1 || 1,
+                    gr_id: Number(max.gr_id) + 1 || 1,
                     dep_id: dep_id,
                     com_id: com_id,
                     team_id: team_id,
