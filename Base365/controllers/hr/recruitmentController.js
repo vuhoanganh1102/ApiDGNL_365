@@ -15,6 +15,7 @@ const Remind = require('../../models/hr/Remind');
 const Notify = require('../../models/hr/Notify');
 const AnotherSkill = require('../../models/hr/AnotherSkill');
 const Users = require('../../models/Users');
+const folderCv = 'cv';
 
 // lay ra danh sach tat ca cac quy trinh tuyen dung cua cty
 exports.getListRecruitment= async(req, res, next) => {
@@ -677,6 +678,13 @@ exports.getListCandidate= async(req, res, next) => {
         if(toDate) listCondition.timeSendCv = {$lte: new Date(toDate)};
 
         const listCandidate = await functions.pageFind(Candidate, listCondition, { _id: 1 }, skip, limit);
+        for(let i=0; i<listCandidate.length; i++) {
+            let candidate = listCandidate[i];
+            if(candidate.cv) {
+                candidate.linkFileCv = hrService.createLinkFile(folderCv, candidate.cv);
+                listCandidate[i] = candidate;
+            }
+        }
         const totalCount = await functions.findCount(Candidate, listCondition);
         return functions.success(res, "Get list candidate success", {totalCount: totalCount, data: listCandidate });
     } catch (error) {
@@ -746,7 +754,7 @@ exports.createCandidate = async(req, res, next) => {
         // luu cv
         let cv = req.files.cv;
         if(cv && await hrService.checkFile(cv.path)){
-            let nameCv = await hrService.uploadFileCv(newIdCandi,cv);
+            let nameCv = await hrService.uploadFileNameRandom(folderCv,cv);
             fields.cv = nameCv;
         }
 
@@ -993,7 +1001,7 @@ exports.getListProcessInterview= async(req, res, next) => {
         return functions.success(res, "Get list process interview success", {listProcess, listCandidateGetJob, listCandidateCancelJob, listCandidateFailJob, listCandidateContactJob});
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 

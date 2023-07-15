@@ -307,46 +307,31 @@ exports.getListQuitJob = async(req, res, next) => {
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let listCondition = {com_id: com_id};
+        let listCondition = {hs_com_id: com_id};
 
         // dua dieu kien vao ob listCondition
         if(ep_id) listCondition.ep_id = Number(ep_id);
         if(current_dep_id) listCondition.current_dep_id = Number(current_dep_id);
-        if(fromDate) listCondition.created_at = {$gte: new Date(fromDate)};
-        if(toDate) listCondition.created_at = {$lte: new Date(toDate)};
-
-        // const listQuitJob = await functions.pageFind(QuitJob, listCondition, { _id: 1 }, skip, limit); 
-        let fields = {com_id: 1, ep_id: 1, current_position: 1, current_dep_id: 1, update_position: 1, update_dep_id: 1, created_at: 1, decision_id: 1, note: 1, userName: 1}
-        let listQuitJob = await QuitJob.aggregate([
-        {$match: listCondition},
-        {
-            $lookup: {
-            from: "Users",
-            localField: "ep_id",
-            foreignField: "idQLC",
-            as: "matchedDocuments"
-            }
-        },
-        {
-            $unwind: "$matchedDocuments"
-        },
-        {
-            $replaceRoot: {
-            newRoot: {
-                $mergeObjects: ["$$ROOT", "$matchedDocuments"]
-            }
-            }
-        },
-        {
-            $project: fields
-        },
-        // {$project: fields},
-        {$sort: {id: 1}},
-        {$skip: skip},
-        {$limit: limit}
+        if(fromDate && !toDate) listCondition.hs_time_end = {$gte: new Date(fromDate)};
+        if(toDate && !fromDate) listCondition.hs_time_end = {$lte: new Date(toDate)};
+        if(fromDate && toDate) listCondition.hs_time_end = {$gte: new Date(fromDate), $lte: new Date(toDate)};
+        let listResign = await EmployeeHistory.aggregate([
+            {$match: listCondition},
+            {
+                $lookup: {
+                from: "HR_Resigns",
+                localField: "hs_ep_id",
+                foreignField: "ep_id",
+                as: "matchedDocuments"
+                }
+            },
+            {$match: {matchedDocuments: {$ne: []}}},
+            {$sort: {hs_ep_id: -1}},
+            {$skip: skip},
+            {$limit: limit},
         ]);
-        const totalCount = await functions.findCount(QuitJob, listCondition);
-        return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: listQuitJob });
+        const totalCount = listResign.length;
+        return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: listResign });
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, e.message);
@@ -355,33 +340,81 @@ exports.getListQuitJob = async(req, res, next) => {
 
 exports.updateQuitJob = async(req, res, next) => {
     try {
-        let {type, shift_id} = req.body;
-        if(!type || !shift_id) {
-            return functions.setError(res, "Missing input value!", 405);
+        let infoLogin = req.infoLogin;
+        let {ep_id, com_id, new_com_id, current_position, current_dep_id, update_position, update_dep_id, created_at, decision_id, note, mission, type, shift_id} = req.body;
+        if(!com_id) {
+            com_id = infoLogin.comId;
         }
-        let fields = req.fields;
-
-        //lay ra id lon nhat
-        let ep_id = req.fields.ep_id;
-        let com_id = req.infoLogin.comId;
-        let check = await QuitJob.findOne({com_id: com_id, ep_id: ep_id});
-        if(!check) {
-            let newIdQuitJob = await QuitJob.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
-            if (newIdQuitJob) {
-                newIdQuitJob = Number(newIdQuitJob.id) + 1;
-            } else newIdQuitJob = 1;
-            fields.id = newIdQuitJob;
+        if(ep_id && created_at && type) {
+            let employee = await Users.findOne({idQLC: ep_id});
+            if(employee) {
+                await Users.findOneAndUpdate({idQLC: ep_id}, {role: 3, type: 0, 
+                    inForPerson: {
+                        employee: {
+                            com_id: 0,
+                            dep_id: 0,
+                            group_id: 0,
+                            team_id: 0,
+                            position_id: 0,
+                            ep_status: "Deny",
+                            time_quit_job: created_at
+                        }
+                    }});
+                
+                let fieldsResign = {
+                    ep_id: ep_id,
+                    com_id: com_id,
+                    decision_id: decision_id,
+                    created_at: created_at,
+                    decision_id: decision_id,
+                    note: note,
+                    shift_id: shift_id,
+                    type: type
+                }
+                let resign = await Resign.findOne({id: decision_id});
+                if(!resign) {
+                    let maxIdResign = await functions.getMaxIdByField(Resign, 'id');
+                    fieldsResign.id = maxIdResign;
+                }
+                resign = await Resign.findOneAndUpdate({ep_id: ep_id}, fieldsResign, {new: true, upsert: true});
+                if(resign) {
+                    let employee_hs = await EmployeeHistory.findOne({hs_ep_id: ep_id, hs_com_id: com_id});
+                    let hs_time_end = new Date(created_at);
+                    let hs_time_start = (employee.inForPerson && employee.inForPerson.employee)? employee.inForPerson.employee.start_working_time: 0;
+                    let hs_dep_id = (employee.inForPerson && employee.inForPerson.employee)? employee.inForPerson.employee.dep_id: 0;
+                    let hs_group_id = (employee.inForPerson && employee.inForPerson.employee)?employee.inForPerson.employee.dep_id.group_id: 0;
+                    let resign = await Resign.findOne({ep_id, com_id});
+                    let hs_resign_id = 0;
+                    if(resign) hs_resign_id = resign.id;
+                    if(employee_hs) {
+                        employee_hs = await EmployeeHistory.updateOne({ep_id: ep_id, com_id: com_id}, {
+                            hs_time_end,
+                            hs_time_start,
+                            hs_dep_id,
+                            hs_group_id,
+                            hs_resign_id,
+                        });
+                    }else {
+                        let hs_id = await functions.getMaxIdByField(EmployeeHistory, 'hs_id')
+                        employee_hs = new EmployeeHistory({
+                            hs_id,
+                            hs_com_id: com_id,
+                            hs_ep_id: ep_id,
+                            hs_time_end,
+                            hs_time_start,
+                            hs_dep_id,
+                            hs_group_id,
+                            hs_resign_id
+                        });
+                        employee_hs = await  employee_hs.save();
+                    }
+                    return functions.success(res, "Cho nhan vien nghi viec thanh cong!");
+                }
+                return functions.setError(res, "Update or Create resign fail!");
+            }
+            return functions.setError(res, "Employee not found!", 404);
         }
-
-        //them cac truong cho phan bo nhiem vao
-        fields = {...fields, type, shift_id};
-
-        //neu chua co thi them moi
-        let quitJob = await QuitJob.findOneAndUpdate({com_id: com_id, ep_id: ep_id},fields, {new: true, upsert: true});
-        if(quitJob){
-            return functions.success(res, "Update QuitJob success!");
-        }
-        return functions.setError(res, "QuitJob not found!", 405);
+        return functions.setError(res, "Missing input value!", 404);
     } catch (e) {
         console.log("Error from server", e);
         return functions.setError(res, e.message);
@@ -423,16 +456,15 @@ exports.getListQuitJobNew = async(req, res, next) => {
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let listCondition = {};
+        let listCondition ={hs_com_id: com_id};
 
         // dua dieu kien vao ob listCondition
         if(ep_id) listCondition.ep_id = Number(ep_id);
         if(current_dep_id) listCondition.hs_dep_id = Number(current_dep_id);
-        if(fromDate) listCondition.created_at = {$gte: new Date(fromDate)};
-        if(toDate) listCondition.created_at = {$lte: new Date(toDate)};
+        if(fromDate && !toDate) listCondition.hs_time_end = {$gte: new Date(fromDate)};
+        if(toDate && !fromDate) listCondition.hs_time_end = {$lte: new Date(toDate)};
+        if(fromDate && toDate) listCondition.hs_time_end = {$gte: new Date(fromDate), $lte: new Date(toDate)};
         let listQuitJob = await EmployeeHistory.aggregate([
-            {$skip: skip},
-            {$limit: limit},
             {$match: listCondition},
             {
                 $lookup: {
@@ -444,8 +476,10 @@ exports.getListQuitJobNew = async(req, res, next) => {
             },
             {$match: {matchedDocuments: {$ne: []}}},
             {$sort: {hs_ep_id: -1}},
+            {$skip: skip},
+            {$limit: limit},
         ]);
-        const totalCount = await functions.findCount(EmployeeHistory, listCondition);
+        const totalCount = listQuitJob.length;
         return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: listQuitJob });
     } catch (e) {
         console.log("Err from server", e);
@@ -483,14 +517,14 @@ exports.updateQuitJobNew = async(req, res, next) => {
                             time_quit_job: created_at
                         }
                     }});
-                    let employee_hs = await EmployeeHistory.findOne({ep_id: ep_id, com_id: com_id});
-                    let hs_time_end = new Date(created_at);
-                    let hs_time_start = (employee.inForPerson && employee.inForPerson.employee)? employee.inForPerson.employee.start_working_time: 0;
-                    let hs_dep_id = (employee.inForPerson && employee.inForPerson.employee)? employee.inForPerson.employee.dep_id: 0;
-                    let hs_group_id = (employee.inForPerson && employee.inForPerson.employee)?employee.inForPerson.employee.dep_id.group_id: 0;
-                    let resign = await Resign.findOne({ep_id, com_id});
-                    let hs_resign_id = 0;
-                    if(resign) hs_resign_id = resign.id;
+                let employee_hs = await EmployeeHistory.findOne({hs_ep_id: ep_id, hs_com_id: com_id});
+                let hs_time_end = new Date(created_at);
+                let hs_time_start = (employee.inForPerson && employee.inForPerson.employee)? employee.inForPerson.employee.start_working_time: 0;
+                let hs_dep_id = (employee.inForPerson && employee.inForPerson.employee)? employee.inForPerson.employee.dep_id: 0;
+                let hs_group_id = (employee.inForPerson && employee.inForPerson.employee)?employee.inForPerson.employee.dep_id.group_id: 0;
+                let resign = await Resign.findOne({ep_id, com_id});
+                let hs_resign_id = 0;
+                if(resign) hs_resign_id = resign.id;
                 if(employee_hs) {
                     employee_hs = await EmployeeHistory.updateOne({ep_id: ep_id, com_id: com_id}, {
                         hs_time_end,
