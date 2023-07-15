@@ -364,7 +364,10 @@ exports.checkRoleUser = (req, res, next)=> {
             }
             var infoLogin = {type: user.data.type, id: user.data.idQLC, name: user.data.userName};
             if(user.data.type!=1){
-                if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
+                if(user.data && user.data.com_id) {
+                    infoLogin.comId = user.data.com_id;
+                }
+                else if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
                     infoLogin.comId = user.data.inForPerson.employee.com_id;
                 }else {
                     return res.status(404).json({ message: "Missing info inForPerson!" });

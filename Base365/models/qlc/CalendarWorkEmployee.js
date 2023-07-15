@@ -1,38 +1,22 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const CalendarWorkEmployee = new Schema({
-    _id: {//ID danh sách nhân viên có lịch làm việc
+const Employee_cycle = new Schema({
+    epcy_id: {//ID danh sách nhân viên có lịch làm việc
         type: Number,
         required: true
     },
-    idQLC: {
+    ep_id: {
         type: Number
     },
-    com_id: {//ID cty
+    cy_id: {//ID lịch làm việc
         type: Number
     },
-    shift_id: {//ID ca 
-        type: Number
+    update_time: {//thời điểm áp dụng
+        type: Date,
+        default : new Date(),
     },
-    calendar_id: {//ID lịch làm việc
-        type: Number
-    },
-    calendarName: {//ID lịch làm việc
-        type: String,
-    },
-    timeApply: {//thời điểm áp dụng
-        type: Date
-    },
-    Detail: { //chi tiết
-        type: String
-    },
-    Status: { //chua biet
-        type: String
-    },
-    isPersonal: { //chua biet
-        type: String
-    },
+
 })
 
-module.exports = mongoose.model('CalendarWorkEmployee', CalendarWorkEmployee);
+module.exports = mongoose.model('QLC_Employee_cycle', Employee_cycle);

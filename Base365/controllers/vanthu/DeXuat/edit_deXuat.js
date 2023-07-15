@@ -2,36 +2,42 @@ const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const setting_dx = require('../../../models/Vanthu/setting_dx');
 const His_Handle = require('../../../models/Vanthu/history_handling_dx');
 const QuitJob = require('../../../models/hr/personalChange/QuitJob');
-const User = require('../../../models/Users')
+const CalendarWorkEmployee = require('../../../models/qlc/CalendarWorkEmployee');
+const Calendar = require('../../../models/qlc/Cycle')
+const ThuongPhat = require('../../../models/Vanthu/tb_thuong_phat');
+const HoaHong = require('../../../models/Vanthu/tb_rose')
+const User = require('../../../models/Users');
+const functions = require('../../../services/vanthu')
+
 const axios = require('axios');
 const vanthu = require('../../../services/vanthu')
 //hàm khôi phục 
 exports.edit_del_type = async (req, res) => {
-    try {
-        let id = req.body.id;
-        let del_type = req.body.delType;
+  try {
+    let id = req.body.id;
+    let del_type = req.body.delType;
 
-        let page = Number(req.body.page) ? Number(req.body.page) : 1;
-        let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
-        const skip = (page - 1) * pageSize;
-        if (!isNaN(id)) {
-            let de_xuat = await De_Xuat.findOne({ _id: id }).skip(skip).limit(pageSize);
+    let page = Number(req.body.page) ? Number(req.body.page) : 1;
+    let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
+    const skip = (page - 1) * pageSize;
+    if (!isNaN(id)) {
+      let de_xuat = await De_Xuat.findOne({ _id: id }).skip(skip).limit(pageSize);
 
-            if (de_xuat) {
-                await De_Xuat.findByIdAndUpdate({ _id: id }, {
-                    del_type: del_type
-                });
-                return res.status(200).json('update del_type thanh cong');
-            } else {
-                return res.status(200).json("doi tuong khong ton tai");
-            }
-        } else {
-            return res.status(404).json("id phai la 1 so Number");
-        }
-    } catch (error) {
-        console.error('Failed ', error);
-        res.status(500).json({ error: 'Failed ' });
+      if (de_xuat) {
+        await De_Xuat.findByIdAndUpdate({ _id: id }, {
+          del_type: del_type
+        });
+        return res.status(200).json('update del_type thanh cong');
+      } else {
+        return res.status(200).json("doi tuong khong ton tai");
+      }
+    } else {
+      return res.status(404).json("id phai la 1 so Number");
     }
+  } catch (error) {
+    console.error('Failed ', error);
+    res.status(500).json({ error: 'Failed ' });
+  }
 }
 
 
@@ -41,14 +47,14 @@ exports.edit_del_type = async (req, res) => {
 
 exports.edit_active = async (req, res) => {
   try {
-    const { _id, type, id_user, ngaybatdau_tv, id_ep, ca_dbdnghi, token,shift_id,ly_do,id_uct } = req.body;
+    const { _id, type, id_user, ngaybatdau_tv, id_ep,shift_id,ly_do,id_uct } = req.body;
     const timeNow = new Date();
     let com_id = '';
-    if(req.user.data.type == 2){
+    if (req.user.data.type == 2) {
       com_id = req.user.data.inForPerson.employee.com_id
-    }else{
+    } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
-    }                 
+    }
     const check = await De_Xuat.findOne({ _id: _id });
     if (check) {
       // Duyệt đề xuất
@@ -92,23 +98,21 @@ exports.edit_active = async (req, res) => {
         });
         await createHis.save();
         let ep_id = check.id_user
-        let chekUser = await User.findOne({idQLC : ep_id}).select('inForPerson.employee.position_id  inForPerson.employee.dep_id')
+        let chekUser = await User.findOne({ idQLC: ep_id }).select('inForPerson.employee.position_id  inForPerson.employee.dep_id')
         const createQJ = new QuitJob({
-          id : await functions.getMaxID(QuitJobNew) + 1,
-          ep_id : ep_id,
-          com_id : com_id,
-          current_position : chekUser.inForPerson.employee.position_id ,
-          current_dep_id : chekUser.inForPerson.employee.dep_id,
-          shift_id : shift_id,
-          created_at : ngaybatdau_tv,
-          note : ly_do,
+          id: await functions.getMaxIDQJ(QuitJob) + 1,
+          ep_id: ep_id,
+          com_id: com_id,
+          current_position: chekUser.inForPerson.employee.position_id,
+          current_dep_id: chekUser.inForPerson.employee.dep_id,
+          shift_id: shift_id,
+          created_at: ngaybatdau_tv,
+          note: ly_do,
         });
         await createQJ.save();
         return res.status(200).json({ message: 'Thôi việc thành công' });
       } else if (type == 6) {
         // Tiếp nhận
-        const { ep_id } = req.body;
-
         await De_Xuat.findOneAndUpdate(
           { _id: _id },
           {
@@ -119,7 +123,6 @@ exports.edit_active = async (req, res) => {
           },
           { new: true }
         );
-
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
           id_dx: check._id,
@@ -128,55 +131,64 @@ exports.edit_active = async (req, res) => {
         });
         await createHis.save();
 
-        res.status(200).json({ message: 'Tiếp nhận đề xuất thành công' });
+        return res.status(200).json({ message: 'Tiếp nhận đề xuất thành công' });
       } else if (type == 7) {
         // Tăng ca
-        const historyDuyet = await De_Xuat.findOne({ _id: _id }).populate('id_user');
-        const nd = JSON.parse(historyDuyet.noi_dung);
-        const month_apply = new Date(nd.time_tc).getFullYear() + '-' + (new Date(nd.time_tc).getMonth() + 1) + '-01';
+        const historyDuyet = await De_Xuat.findOne({ _id: _id })
+        const nd = historyDuyet.noi_dung.tang_ca;
 
-        const response = await axios.get(`https://chamcong.24hpay.vn/service/detail_cycle.php?id_ep=${historyDuyet.id_user}&month_apply=${month_apply}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const item_tcs = response.data.data.item.cy_detail;
-        const items_tc = JSON.stringify(item_tcs);
-
-        const data_item_tc = item_tcs.find((item) => item.date === nd.time_tc);
-
-        let shift_old = '';
-        if (data_item_tc) {
-          const shift_olds = data_item_tc.shift_id.split(',');
-          if (!shift_olds.includes(nd.ca_tang)) {
-            shift_olds.push(nd.ca_tang);
-          }
-          shift_old = shift_olds.join(',');
+        let month_apply = 0;
+        if (new Date(nd.time_tc).getMonth() + 1 < 10) {
+          month_apply = new Date(nd.time_tc).getFullYear() + '-0' + (new Date(nd.time_tc).getMonth() + 1) + '-01';
         } else {
-          shift_old = nd.ca_tang;
+          month_apply = new Date(nd.time_tc).getFullYear() + '-' + (new Date(nd.time_tc).getMonth() + 1) + '-01';
         }
 
-        const shift_new = JSON.stringify({ date: nd.time_tc, shift_id: shift_old });
-        const arr_cycle = items_tc.replace(JSON.stringify(data_item_tc), shift_new);
 
-        const name = `Lịch làm việc ${historyDuyet.name_user} Tháng ${new Date(nd.time_tc).getFullYear()}-${new Date(nd.time_tc).getMonth() + 1}`;
+        const checkcalaendar = await CalendarWorkEmployee.findOne({
+          idQLC: historyDuyet.id_user
+        }).select('cy_id')
 
-        const cycleData = {
-          cycle_name: name,
-          month_apply: month_apply,
-          detail_cycle: arr_cycle,
-          id_ep: historyDuyet.id_user,
-          id_com: historyDuyet.com_id
-        };
 
-        const cycleResponse = await axios.post('https://chamcong.24hpay.vn/service/employee_update_cycle.php', cycleData, {
-          headers: {
-            Authorization: `Bearer ${token}`
+        let checkCalendaremp = await Calendar.findOne({ cy_id: checkcalaendar.cy_id, apply_month: month_apply })
+
+        if (checkCalendaremp) {
+          var items_tc = JSON.parse(checkCalendaremp.cy_detail)
+        }
+        for(let i = 0; i < items_tc.length ; i++){
+           if(new Date(nd.time_tc).getTime() == new Date(items_tc[i].date).getTime())
+           {
+              var data_item_tc = items_tc[i]
+           }
+        }
+        let shift_olds = data_item_tc.shift_id.split(',');
+        if(shift_olds.length > 1)
+        {
+          if(shift_olds.includes(nd.shift_id))
+          {
+            shift_olds =[...nd.shift_id]
           }
-        });
-
-        if (cycleResponse.data.data.message !== '') {
+        }
+        
+        let checkConvert = nd.time_tc
+        let timeDate = await functions.covert(checkConvert)
+        let shift_new = '{"date" : "' + timeDate + '","shift_id": "' + shift_olds + '"}';
+        let covect  = JSON.stringify(items_tc);
+        let arrCycle = covect.replace(JSON.stringify(data_item_tc[0]), JSON.stringify(shift_new));
+        let name = `Lịch làm việc ${historyDuyet.name_user} Tháng ${new Date(nd.time_tc).toISOString().slice(0, 7)}`;
+        const updatedCalendarawait = await Calendar.findOneAndUpdate(
+          { cy_id: checkCalendaremp.cy_id },
+          {
+            $set: {
+              com_id: checkCalendaremp.com_id,
+              cy_name: name,
+              month_apply: month_apply,
+              cy_detail : arrCycle,
+            }
+          },
+          { new: true }
+        );
+        if (updatedCalendarawait) {
           await De_Xuat.findOneAndUpdate(
             { _id: _id },
             {
@@ -188,18 +200,74 @@ exports.edit_active = async (req, res) => {
             },
             { new: true }
           );
-
-          res.status(200).json({ message: `Đề xuất tăng ca đã được thêm vào ${name}` });
+          return res.status(200).json({ message: `Đề xuất tăng ca đã được duyệt` });
         } else {
-          res.status(200).json({ message: 'Thông tin truyền lên không đầy đủ, vui lòng thử lại!' });
+          return res.status(200).json({ message: 'Thông tin truyền lên không đầy đủ, vui lòng thử lại!' });
         }
+      }//đề xuất thưởng phạt
+      else if (type == 19){
+        let id_eptp = '';
+        const ndtp = check.noi_dung.thuong_phat
+        if(ndtp.type == 1) {
+          id_eptp = check.id_user;
+        }else{
+          id_eptp = ndtp.nguoi_tp
+        }
+         const createTP = new ThuongPhat({
+          pay_id: await functions.getMaxIDtp(ThuongPhat) + 1,
+          pay_id_user: check.id_user,
+          pay_id_com: check.com_id,
+          pay_price : ndtp.so_tien_tp,
+          pay_status: ndtp.type_tp,
+          pay_case : ndtp.ly_do,
+          pay_day : ndtp.time_tp
+        });
+        let savetp = await createTP.save();
+        if(createTP){
+          await De_Xuat.findOneAndUpdate(
+            { _id: _id },
+            {
+              $set: {
+                active: 1,
+              }
+            },
+            { new: true }
+          );
+        }
+        return functions.success(res, 'save data success', { savetp});
+      }// //đề xuất hoa hồng
+      else if (type == 20){
+        let id_ephh  = check.id_user
+        const ndhh = check.noi_dung.hoa_hong;
+        const createhh = new HoaHong({
+          ro_id : await functions.getMaxIDrose(HoaHong) + 1,
+          ro_id_user: id_ephh,
+          ro_id_com: check.com_id,
+          ro_time : ndhh.time_hh,
+          ro_time_end: ndhh.item_mdt_date,
+          ro_note : ndhh.ly_do,
+          ro_time_created : timeNow
+        });
+        let savehh = await createhh.save();
+        if(createhh){
+          await De_Xuat.findOneAndUpdate(
+            { _id: _id },
+            {
+              $set: {
+                active: 1,
+              }
+            },
+            { new: true }
+          );
+        }
+        return functions.success(res, 'save data success', { savehh});
       }
     } else {
-      res.status(404).json({ error: 'Không tìm thấy đề xuất' });
+      return res.status(404).json({ error: 'Không tìm thấy đề xuất' });
     }
   } catch (error) {
     console.error('Failed ', error);
-    res.status(500).json({ error: 'Failed ' });
+    return res.status(500).json({ error: 'Failed ' });
   }
 };
 

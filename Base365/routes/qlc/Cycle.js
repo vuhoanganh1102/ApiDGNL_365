@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const functions = require("../../services/functions")
-
-const CalendarController = require("../../controllers/qlc/calendar")
+const CalendarController = require("../../controllers/qlc/Cycle")
 var formData = require('express-form-data')
 
 //:ấy danh sách lịch làm việc của một công ty

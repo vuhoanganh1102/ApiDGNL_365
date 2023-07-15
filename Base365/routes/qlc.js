@@ -10,12 +10,13 @@ var deparmentRouter = require('./qlc/Deparment')
 var teamRouter = require('./qlc/Team');
 var groupRouter = require('./qlc/Group');
 var shiftRouter = require('./qlc/shift');
-var calendarRouter = require('./qlc/calendar');
+var calendarRouter = require('./qlc/Cycle');
 var managerUser = require('./qlc/ManagerUser')
 var DelAppData = require('./qlc/DelAppData')
 var TrackingQR = require('./qlc/TrackingQR')
 var TrackingWifi = require('./qlc/TrackingWifi')
 var CheckVip = require('./qlc/CheckVip')
+var CheckDevice = require('./qlc/CheckDevice')
 var Feedback = require('./qlc/Feedback')
 var ReportError = require('./qlc/ReportError')
 var employeeRoutes = require('./qlc/Employee');
@@ -42,6 +43,7 @@ router.use('/delAppData', DelAppData);
 router.use('/trackingQR', TrackingQR);
 router.use('/trackingWifi', TrackingWifi);
 router.use('/checkVip', CheckVip);
+router.use('/checkdevice', CheckDevice);
 router.use('/feedback', Feedback);
 router.use('/reportError', ReportError);
 router.use('/employeeRoutes', employeeRoutes);

@@ -1,4 +1,4 @@
-const Calendar = require("../../models/qlc/Calendar");
+const Cycle = require("../../models/qlc/Cycle");
 const CalendarOfEmp = require("../../models/qlc/CalendarWorkEmployee");
 const functions = require("../../services/functions");
 const Users = require("../../models/Users");
@@ -12,22 +12,22 @@ exports.getAllCalendarCompany = async(req, res) => {
         // const com_id = req.body.com_id
         const type = req.user.data.type
         if (type == 1) {
-            const _id = req.body._id ;
+            const cy_id = req.body.cy_id ;
             let condition = {}
             let total_emp = {}
 
-                if (_id) condition._id = _id
+                if (cy_id) condition.cy_id = cy_id
                 if (com_id) condition.com_id = com_id
-                const data = await Calendar.find(condition).lean();
+                const data = await Cycle.find(condition).lean();
                 if (data) {
-                    const calendarID = data.map(item => item._id);
+                    const calendarID = data.map(item => item.cy_id);
                     for (let i = 0; i < calendarID.length; i++) {
                     const cId = calendarID[i];
                         total_emp = await functions.findCount(CalendarOfEmp, { com_id: com_id, calendar_id : cId })
 
                     if(total_emp) data.total_emp = total_emp
                 }
-                    return functions.success(res, 'tạo thành công ', { data })
+                    return functions.success(res, 'lấy thành công ', { data })
                 }
                 return functions.setError(res, 'không tìm thấy lịch làm việc')
             }
@@ -44,29 +44,25 @@ exports.createCalendar = async(req, res) => {
         // const com_id = req.body.com_id
         const type = req.user.data.type
         if (type == 1) {
-        const { calendarName, typeCalender, timeApply, timeStart, calendarDetail, shift_id } = req.body;
-        if (com_id&&typeCalender&&timeApply) {
-            let maxId = await functions.getMaxID(Calendar);
+        const { cy_name, status, apply_month, is_personal, cy_detail } = req.body;
+        if (com_id&&cy_name&&apply_month) {
+            let maxId = await functions.getMaxID(Cycle);
             if (!maxId) {
                 maxId = 0;
             }
-            const _id = Number(maxId) + 1;
-            const tCreate = timeApply != 0 ? new Date(timeApply * 1000) : null,
-                tUpdate = timeStart != 0 ? new Date(timeStart * 1000) : null
-            const calendar = new Calendar({
-                _id: _id,
+            const cy_id = Number(maxId) + 1;
+            const tCreate = apply_month != 0 ? new Date(apply_month * 1000) : null
+            const calendar = new Cycle({
+                cy_id: cy_id,
                 com_id: com_id,
-                shift_id: shift_id || 0,
-                calendarName: calendarName,
-                typeCalender: typeCalender,
-                timeApply: tCreate,
-                timeStart: tUpdate,
-                isCopy: false,
-                timeCopy: null,
-                calendarDetail: calendarDetail
+                cy_name: cy_name,
+                status: status,
+                apply_month: tCreate,
+                cy_detail: cy_detail,
+                is_personal : is_personal,
             })
             await calendar.save()
-                   return functions.success(res, "Calendar saved successfully", {calendar});
+                   return functions.success(res, "tạo thành công", {calendar});
         }
         return functions.setError(res, "nhập thiếu thông tin", 504);
     }
@@ -84,27 +80,24 @@ exports.editCalendar = async(req, res) => {
         const com_id = req.user.data.com_id
         // const com_id = req.body.com_id
         const type = req.user.data.type
-        const _id = req.body._id;
+        const cy_id = req.body.cy_id;
         if (type == 1) {
 
-            const { com_id, calendarName, typeCalender, timeApply, timeStart, calendarDetail, shift_id } = req.body;
+            const {cy_name, status, apply_month, is_personal, cy_detail } = req.body;
 
-                const calendar = await functions.getDatafindOne(Calendar, { _id: _id });
+                const calendar = await functions.getDatafindOne(Cycle, { cy_id: cy_id });
                 if (calendar) {
-                    await functions.getDatafindOneAndUpdate(Calendar, { _id: _id }, {
+                    await functions.getDatafindOneAndUpdate(Cycle, { cy_id: cy_id }, {
                             com_id: com_id,
-                            shift_id: shift_id || 0,
-                            calendarName: calendarName,
-                            typeCalender: typeCalender,
-                            timeApply: timeApply,
-                            timeStart: timeStart,
-                            isCopy: false,
-                            timeCopy: null,
-                            calendarDetail: calendarDetail
+                            cy_name: cy_name,
+                            status: status,
+                            apply_month: apply_month,
+                            is_personal: is_personal,
+                            cy_detail: cy_detail
                         })
-                        return functions.success(res, "Calendar edited successfully", {calendar})
+                        return functions.success(res, "sửa thành công ", {calendar})
                     }
-                    return functions.setError(res, "Calendar does not exist");
+                    return functions.setError(res, "lịch không tồn tại");
             }
             return functions.setError(res, "Tài khoản không phải Công ty", 604);
         } catch (error) {
@@ -119,25 +112,25 @@ exports.copyCalendar = async(req, res) => {
         const com_id = req.user.data.com_id
         // const com_id = req.body.com_id
         const type = req.user.data.type
-        const _id = req.body._id;
+        const cy_id = req.body.cy_id;
         if (type == 1) {
-            const calendar = await functions.getDatafindOne(Calendar, {com_id: com_id, _id: _id });
+            const calendar = await functions.getDatafindOne(Cycle, {com_id: com_id, cy_id: cy_id });
             if (calendar) {
-                let maxId = await functions.getMaxID(Calendar);
+                let maxId = await functions.getMaxID(Cycle);
                 if (!maxId) {
                     maxId = 0;
                 }
                 const newId = Number(maxId) + 1;
-                const newCalendar = new Calendar({
+                const newCalendar = new Cycle({
                     ...calendar,
-                    _id: newId,
+                    cy_id: newId,
                 })
                 await newCalendar.save()
-                      return functions.success(res, "Calendar copied successfully", {newCalendar});
+                      return functions.success(res, "copy thành công", {newCalendar});
                 }
-                return functions.setError(res, "Calendar does not exist");
+                return functions.setError(res, "lịch không tồn tại");
             }
-            return functions.setError(res, "Tài khoản không phải Công ty", 604);
+            return functions.setError(res, "Tài khoản không phải Công ty");
         } catch (error) {
             return functions.setError(res, error.message)
         }
@@ -150,16 +143,16 @@ exports.deleteCalendar = async(req, res) => {
         const com_id = req.user.data.com_id
         // const com_id = req.body.com_id
         const type = req.user.data.type
-        const _id = req.body._id;
+        const cy_id = req.body.cy_id;
         if (type == 1) {
-            const calendar = await functions.getDatafindOne(Calendar, {com_id: com_id, _id: _id });
+            const calendar = await functions.getDatafindOne(Cycle, {com_id: com_id, cy_id: cy_id });
             if (calendar) {
-                await functions.getDataDeleteOne(Calendar, {com_id: com_id, _id: _id })
+                await functions.getDataDeleteOne(Cycle, {com_id: com_id, cy_id: cy_id })
                 return functions.success(res, "Delete calendar successfully", {calendar})
             }
             return functions.setError(res, "Calendar does not exist");
     }
-    return functions.setError(res, "Tài khoản không phải Công ty", 604);
+    return functions.setError(res, "Tài khoản không phải Công ty");
 } catch (error) {
     return functions.setError(res, error.message)
 }
@@ -173,9 +166,9 @@ exports.deleteCompanyCalendar = async(req, res) => {
         const type = req.user.data.type
         if (type == 1) {
 
-            const calendars = await functions.getDatafind(Calendar, { com_id: com_id });
+            const calendars = await functions.getDatafind(Cycle, { com_id: com_id });
             if (calendars) {
-                await Calendar.deleteMany({ com_id: com_id })
+                await Cycle.deleteMany({ com_id: com_id })
                 return functions.success(res, "Calendars deleted successfully", {calendars})
             }
             return functions.setError(res, "No calendars found in this company");
