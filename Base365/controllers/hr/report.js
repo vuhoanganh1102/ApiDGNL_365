@@ -299,7 +299,7 @@ exports.report = async (req, res, next) => {
                         }
                     },
                     {
-                        $match: { 'lichPv.isSwitch': 0}
+                        $match: { 'lichPv.isSwitch': 0 }
                     },
                     {
                         $count: 'SL'
@@ -318,7 +318,7 @@ exports.report = async (req, res, next) => {
                         }
                     },
                     {
-                        $match: { 'getJob.isSwitch': 0}
+                        $match: { 'getJob.isSwitch': 0 }
                     },
                     {
                         $count: 'SL'
@@ -337,7 +337,7 @@ exports.report = async (req, res, next) => {
                         }
                     },
                     {
-                        $match: {  'CancelJobs.isSwitch': 0 }
+                        $match: { 'CancelJobs.isSwitch': 0 }
                     },
                     {
                         $count: 'SL'
@@ -557,7 +557,7 @@ exports.report = async (req, res, next) => {
 }
 exports.reportChart = async (req, res, next) => {
     try {
-        let comId = req.comId;
+        let comId = req.infoLogin.comId;
         let depId = req.body.depId || null;
         let page = req.body.page || 1;
         let link = req.body.link;
@@ -591,11 +591,11 @@ exports.reportChart = async (req, res, next) => {
 
         //if(old === 1) condition['inForPerson.account.birthday'] = getYear() - inForPerson.account.birthday;
 
-
+        console.log(condition);
         if (link === 'bieu-do-danh-sach-nhan-vien.html') {
             data = await Users.find(condition, searchItem, { skip }, { limit });
+            return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-nghi-viec.html') {
-
             data = await Users.aggregate([
                 {
                     $match: condition
@@ -618,6 +618,7 @@ exports.reportChart = async (req, res, next) => {
                     $limit: limit
                 }
             ])
+            return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-bo-nhiem.html') {
             data = await Users.aggregate([
                 {
@@ -641,6 +642,7 @@ exports.reportChart = async (req, res, next) => {
                     $limit: limit
                 }
             ])
+            return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-chuyen-cong-tac.html') {
             data = await Users.aggregate([
                 {
@@ -664,6 +666,7 @@ exports.reportChart = async (req, res, next) => {
                     $limit: limit
                 }
             ])
+            return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-tang-giam-luong.html') {
             data = await Users.aggregate([
                 {
@@ -687,8 +690,7 @@ exports.reportChart = async (req, res, next) => {
                     $limit: limit
                 }
             ])
-        }
-        else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
+        }else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
             let tuoi = 0;
             let list = [];
 
@@ -721,6 +723,7 @@ exports.reportChart = async (req, res, next) => {
                 }
             }
             data = list
+            return functions.success(res, 'get data success', { data })
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {

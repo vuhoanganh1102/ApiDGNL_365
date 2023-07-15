@@ -109,7 +109,7 @@ exports.bidding = async (req, res, next) => {
         let userProfileFile = null;
         let promotion = req.body.promotion || null;
         let promotionFile = null;
-        let _id = await functions.getMaxID(Bidding) + 1;
+        let _id = 1 || await functions.getMaxID(Bidding) + 1;
         let status = 0;
         let userIntro = req.body.userIntro || null;
         let userName = req.user.data.userName;
