@@ -173,9 +173,10 @@ exports.edit_active = async (req, res) => {
             },
             { new: true }
           );
-          return res.status(200).json({ message: `Đề xuất tăng ca đã được duyệt` });
+          
+          return functions.success(res, 'Đề xuất tăng ca đã được duyệt');
         } else {
-          return functions.success(res, 'Thông tin truyền lên không đầy đủ, vui lòng thử lại!');
+          return functions.setError(res,'Thông tin truyền lên không đầy đủ, vui lòng thử lại!',400)
         }
       }//đề xuất thưởng phạt
       else if (type == 19){
@@ -236,11 +237,11 @@ exports.edit_active = async (req, res) => {
         return functions.success(res, 'save data success', { savehh});
       }
     } else {
-      return res.status(404).json({ error: 'Không tìm thấy đề xuất' });
+      return functions.setError(res, 'Không tìm thấy đề xuất',400);
     }
   } catch (error) {
     console.error('Failed ', error);
-    return res.status(500).json({ error: 'Failed ' });
+    return functions.setError(res, error);
   }
 };
 
