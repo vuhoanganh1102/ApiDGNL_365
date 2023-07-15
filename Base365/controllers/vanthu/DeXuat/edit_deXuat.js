@@ -11,40 +11,11 @@ const functions = require('../../../services/vanthu')
 
 const axios = require('axios');
 const vanthu = require('../../../services/vanthu')
-//hàm khôi phục 
-exports.edit_del_type = async (req, res) => {
-  try {
-    let id = req.body.id;
-    let del_type = req.body.delType;
 
-    let page = Number(req.body.page) ? Number(req.body.page) : 1;
-    let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
-    const skip = (page - 1) * pageSize;
-    if (!isNaN(id)) {
-      let de_xuat = await De_Xuat.findOne({ _id: id }).skip(skip).limit(pageSize);
 
-      if (de_xuat) {
-        await De_Xuat.findByIdAndUpdate({ _id: id }, {
-          del_type: del_type
-        });
-        return res.status(200).json('update del_type thanh cong');
-      } else {
-        return res.status(200).json("doi tuong khong ton tai");
-      }
-    } else {
-      return res.status(404).json("id phai la 1 so Number");
-    }
-  } catch (error) {
-    console.error('Failed ', error);
-    res.status(500).json({ error: 'Failed ' });
-  }
-}
 
 
 //ham duyet
-
-
-
 exports.edit_active = async (req, res) => {
   try {
     const { _id, type, id_user, ngaybatdau_tv, id_ep,shift_id,ly_do,id_uct } = req.body;
@@ -53,7 +24,7 @@ exports.edit_active = async (req, res) => {
     if (req.user.data.type == 2) {
       com_id = req.user.data.inForPerson.employee.com_id
     } else {
-      return functions.setError(res, 'không có quyền truy cập', 400);
+      return functions.setError(res, 'bạn phải là tài khoản nhân viên', 400);
     }
     const check = await De_Xuat.findOne({ _id: _id });
     if (check) {

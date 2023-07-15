@@ -188,7 +188,15 @@ exports.changeCate = async (req, res) => {
 exports.findNameCate = async (req, res) => {
   try {
     let { name_cate_dx, page } = req.body;
-    let com_id =  req.user.data.inForPerson.employee.com_id;
+    
+    let com_id ='';
+    if(req.user.data.type == 1) {
+      com_id = req.user.data.idQLC
+    }else if(req.user.data.type == 2) {
+      com_id = req.user.data.inForPerson.employee.com_id
+    }else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
     const perPage = 10;
     page = parseInt(page) || 1;
 
