@@ -101,3 +101,4 @@ const BiddingSchema = new mongoose.Schema({
 })
 
 module.exports = mongoose.model("RN365_Bidding", BiddingSchema);
+

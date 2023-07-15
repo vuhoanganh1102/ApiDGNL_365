@@ -38,8 +38,12 @@ exports.supportSellNew = async (req, res, next) => {
     try {
         let cateId = Number(req.body.id);
         let parentId = req.body.parentId;
+        let type = req.body.type;
         let data = {};
-        if (!cateId) return functions.setError(res, 'missing data', 400)
+        if(type ==="cateChild"){
+            data = await Category.find({parentId:{$ne:0}})
+            return functions.success(res,'get data success',{data})
+        }
         let search = req.body.search;
         let cateChild = await Category.find({ parentId: cateId })
         let CateDetail1 = [];
