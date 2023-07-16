@@ -2,6 +2,7 @@ const functions = require('../../services/functions');
 const KiemKe = require('../../models/QuanLyTaiSan/KiemKe');
 const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
 const TaiSan = require('../../models/QuanLyTaiSan/TaiSan');
+const TaiSanDangSD= require('../../models/QuanLyTaiSan/TaiSanDangSuDung');
 
 exports.getAndCheckData = async(req, res, next) => {
   try{
@@ -129,8 +130,9 @@ exports.danhSachKiemKe = async(req, res, next)=>{
       else condition.kk_noidung = new RegExp(key, 'i');
     }
     
-    let danhSachKiemKe = await functions.pageFind(KiemKe, condition, {id_kiemke: 1}, skip, limit);
-    return functions.success(res, "Danh sach kiem ke:", {danhSachKiemKe: danhSachKiemKe});
+    let danhSachKiemKe = await functions.pageFind(KiemKe, condition, {id_kiemke: -1}, skip, limit);
+    let total = danhSachKiemKe.length;
+    return functions.success(res, "Danh sach kiem ke:", {total: total, danhSachKiemKe: danhSachKiemKe});
   }catch(error) {
     console.log(error);
     return functions.setError(res, error.message, 500);
@@ -206,18 +208,32 @@ exports.duyet = async(req, res, next) => {
 exports.chiTiet = async(req, res, next) => {
   try{
     const id_kk = req.body.id_kk;
+    const com_id = req.comId;
     if(!id_kk) return functions.setError(res, "Missing input id_kk!", 404);
-    let kiemKe = await KiemKe.findOne({id_kiemke: id_kk});
+    let kiemKe = await KiemKe.findOne({id_kiemke: id_kk}).lean();
     let danhSachTaiSan = [];
     
     if(kiemKe) {
       if(kiemKe.id_ts && kiemKe.id_ts.ds_ts) {
         let id_ts = kiemKe.id_ts.ds_ts;
         for(let i=0; i<id_ts.length; i++) {
-          // let taiSan = await TaiSan;
+          let ts_detail = {
+            ts_so_luong: 0,
+            ts_dang_sd: 0,
+          };
+
+          //tong so luong
+          let taiSan = await TaiSan.findOne({ts_id: id_ts[i], id_cty: com_id});
+          if(taiSan) ts_detail["ts_so_luong"] = taiSan.ts_so_luong;
+          danhSachTaiSan.push(ts_detail);
+
+          //
+          let ts_dang_sd  = await TaiSanDangSD.findOne({id_ts_sd: id_ts[i], com_id_sd: com_id});
+          // if(ts_dang_sd) ts_detail["ts_dang_sd"] = ts_dang_sd.
         }
-        console.log(id_ts);
+        kiemKe.danhSachTaiSan = danhSachTaiSan;
       }
+
       return functions.success(res, "Lay thong tin chi tiet kiem ke thanh cong!", {kiemKe: kiemKe});
     }
     return functions.setError(res, "Kiem ke not found!", 504);
