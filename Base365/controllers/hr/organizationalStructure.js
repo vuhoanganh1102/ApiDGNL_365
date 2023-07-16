@@ -529,8 +529,11 @@ exports.listPosition = async (req, res, next) => {
             }
             listPosition[i].users = users;
         }
-        
-        return functions.success(res, 'Lấy chi tiết công ty thành công', { listPosition });
+        let index = listPosition.length-4;
+        let data = listPosition.slice(0, index);
+        let listPositionEmployee = listPosition.slice(index);
+        data.push(listPositionEmployee);
+        return functions.success(res, 'Lấy chi tiết công ty thành công', { data });
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
