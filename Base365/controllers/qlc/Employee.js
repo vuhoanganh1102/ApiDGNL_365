@@ -188,8 +188,10 @@ exports.login = async(req, res, next) => {
                     type: type
                 }).lean();
             }
-         
+            
             if (user) {
+                let com = ""
+                let com_id = user.type === 1 ? com = user.idQLC : com = user.inForPerson.employee.com_id
                 const token = await functions.createToken({
                     _id: user._id,
                     idTimViec365: user.idTimViec365,
@@ -198,7 +200,8 @@ exports.login = async(req, res, next) => {
                     email: user.email,
                     phoneTK: user.phoneTK,
                     createdAt: user.createdAt,
-                    type: user.type
+                    type: user.type,
+                    com_id : com_id
                 }, "1d")
                 const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                 let data = {
@@ -245,6 +248,8 @@ exports.login = async(req, res, next) => {
                     }
                 }
                 if (user) {
+                    let com = ""
+                    let com_id = user.type === 1 ? com = user.idQLC : com = user.inForPerson.employee.com_id
                     const token = await functions.createToken({
                         _id: user._id,
                         idTimViec365: user.idTimViec365,
@@ -253,7 +258,8 @@ exports.login = async(req, res, next) => {
                         email: user.email,
                         phoneTK: user.phoneTK,
                         createdAt: user.createdAt,
-                        type: user.type
+                        type: user.type,
+                        com_id : com_id,
                     }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {
@@ -389,7 +395,7 @@ exports.updateInfoEmployee = async(req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC;
         let data = [];
-        const { userName, email, phoneTK, password, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
+        const { userName, emailContact, phoneTK, password, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
         let updatedAt = new Date()
         let File = req.files || null;
         let avatarUser = null;
@@ -422,7 +428,7 @@ exports.updateInfoEmployee = async(req, res, next) => {
                             "inForPerson.account.birthday": birthday,
                             "inForPerson.account.gender": gender,
                             "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
+                            "inForPerson.account.experience": experience, 
                             "inForPerson.employee.startWorkingTime": startWorkingTime,
                             "inForPerson.account.education": education,
                         }
@@ -518,57 +524,48 @@ exports.info = async(req, res) => {
     try {
         const idQLC = req.user.data.idQLC
             // const com_id = req.user.data.com_id
-        if ((idQLC) == undefined) {
-            functions.setError(res, " không tìm thấy thông tin từ token ")
-        } else {
+            const data = await Users.aggregate([
+                {$match: 
+                    { idQLC: idQLC, type: 2 }},
+                { $lookup: { 
+                        from: "QLC_Deparments", 
+                        localField: "inForPerson.employee.dep_id", 
+                        foreignField: "dep_id", 
+                        as: "nameDeparment" }},
+                { $project: { 
+                        "userName": "$userName", 
+                        "dep_id": "$inForPerson.employee.dep_id", 
+                        "com_id": "$inForPerson.employee.com_id", 
+                        "position_id": "$inForPerson.employee.position_id", 
+                        "start_working_time": "$inForPerson.employee.start_working_time", 
+                        "idQLC" : "$idQLC",
+                        "phoneTK" : "$phoneTK",
+                        "phone" : "$phone",
+                        "address" : "$address",
+                        "avatarUser" : "$avatarUser",
+                        "authentic" : "$authentic",
+                        "birthday" : "$inForPerson.account.birthday",
+                        "gender" : "$inForPerson.account.gender",
+                        "married" : "$inForPerson.account.married",
+                        "experience" : "$inForPerson.account.experience",
+                        "education" : "$inForPerson.account.education",
+                        "emailContact" : "$emailContact",
+                        "idQLC": "$idQLC", 
+                        "nameDeparment": "$nameDeparment.dep_name", 
+                    }},
 
-            const data = await Users.findOne({ idQLC: idQLC, type: 2 }).select('userName email phone phoneTK address avatarUser authentic inForPerson.employee.position_id inForPerson.employee.com_id inForPerson.employee.dep_id inForPerson.account.birthday inForPerson.account.gender inForPerson.account.married inForPerson.account.experience inForPerson.account.education inForPerson.employee.start_working_time').lean()
-            if (!data) {
-                return functions.setError(res, 'không có dữ liệu ')
-            } else {
+            ])
+            if(data){
+                const avatar = await fnc.createLinkFileEmpQLC(data[0].idQLC , data[0].avatarUser)
+                let companyName = await Users.findOne({ idQLC: data[0].com_id, type: 1 }).select('userName').lean();
+                if(companyName) data[0].companyName = companyName
+                if(avatar) data[0].avatar = avatar
 
-                const com_id = data.inForPerson.employee.com_id
-                const dep_id = data.inForPerson.employee.dep_id
-                const position_id = data.inForPerson.employee.position_id
-
-                const birthday = data.inForPerson.account.birthday
-                const gender = data.inForPerson.account.gender
-                const married = data.inForPerson.account.married
-                const experience = data.inForPerson.account.experience
-                const education = data.inForPerson.account.education
-
-                data.birthday = birthday
-                data.position_id = position_id
-                data.gender = gender
-                data.married = married
-                data.experience = experience
-                data.education = education
-                data.start_working_time = data.inForPerson.employee.start_working_time
-
-                let companyName = "";
-                if (com_id != 0) {
-                    const company = await Users.findOne({ idQLC: com_id, type: 1 }).select('userName').lean();
-                    if (company) {
-                        companyName = company.userName;
-                    }
-                }
-                data.companyName = companyName;
-
-                let departmentName = "";
-                if (dep_id != 0) {
-                    const departments = await Deparment.findOne({ dep_id: dep_id, com_id: com_id });
-                    if (departments) {
-                        departmentName = departments.dep_name;
-                    }
-                }
-                data.departmentName = departmentName;
-
-                return functions.success(res, 'Lấy thành công', { data });
-            }
-
-            // return functions.setError(res, 'Không có dữ liệu', 404);
-        }
-    } catch (e) {
-        return functions.setError(res, e.message)
+                return functions.success(res, "lấy thành công" ,{data})    
+            }  
+            return functions.setError(res , " không tìm thấy nhân viên ")
+    
+    } catch (e) { 
+        return functions.setError(res, e.message)  
     }
 }

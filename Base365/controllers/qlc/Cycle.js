@@ -56,7 +56,7 @@ exports.createCalendar = async(req, res) => {
                 status: status,
                 apply_month: tCreate,
                 cy_detail: cy_detail,
-                is_personal : is_personal,
+                is_personal : is_personal, 
             })
             await calendar.save()
                    return functions.success(res, "tạo thành công", {calendar});
@@ -171,5 +171,5 @@ exports.deleteCompanyCalendar = async(req, res) => {
         return functions.setError(res, "Tài khoản không phải Công ty", 604);
     } catch (error) {
         return functions.setError(res, error.message)
-    }
+    } 
     }

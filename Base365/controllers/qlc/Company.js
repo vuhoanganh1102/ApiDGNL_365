@@ -508,15 +508,18 @@ exports.info = async(req, res) => {
     try {
         const idQLC = req.user.data.idQLC
             const data = await Users.findOne({ idQLC: idQLC, type: 1 }).select('idQLC userName email phoneTK address avatarUser authentic inForCompany.cds.com_vip createdAt').lean();
+            console.log(data)
             if (data) {
+                const avatar = await fnc.createLinkFileComQLC(data.createdAt , data.avatarUser)
                 const departmentsNum = await Deparment.countDocuments({ com_id: idQLC })
                 const userNum = await Users.countDocuments({ "inForPerson.employee.com_id": idQLC })
                 if(departmentsNum) data.departmentsNum = departmentsNum
                 if(userNum) data.userNum = userNum
+                if(avatar) data.avatar = avatar
                 return functions.success(res, 'Lấy thành công', { data });
             };
             return functions.setError(res, 'Không có dữ liệu', 404);
-    } catch (e) {
-        return functions.setError(res, e.message)
+    } catch (e) { 
+        return functions.setError(res, e.message) 
     }
-}
+} 

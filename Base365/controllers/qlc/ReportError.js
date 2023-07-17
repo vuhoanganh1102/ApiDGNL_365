@@ -6,8 +6,10 @@ const fnc = require('../../services/qlc/functions')
 
 exports.create = async(req, res) => {
     try {
-        let idQLC = req.user.data.idQLC
-        let type = req.user.data.type
+        // let idQLC = req.user.data.idQLC
+        // let type = req.user.data.type
+        let idQLC = req.body.idQLC
+        let type = req.body.type
         let { device_id, detail_error, gallery_image_error, from_source } = req.body;
         let File = req.files || null;
             gallery_image_error = null;
@@ -23,7 +25,7 @@ exports.create = async(req, res) => {
             let max = await report.findOne({},{},{sort : { id_report: -1 }}).lean() || 0 
             let reports = new report({
                 id_report: Number(max.id_report) + 1 || 1,
-                idQLC: idQLC,
+                user_id: idQLC,
                 type_user: type,
                 device_id: device_id,
                 detail_error: detail_error,
@@ -35,9 +37,9 @@ exports.create = async(req, res) => {
                 return functions.success(res, "Đánh giá của bạn đã được gửi đi")
         }
         return functions.setError(res, "chua nhap chi tiet")
-    } catch (error) {
-        console.log(error);
+    } catch (error) { 
+        console.log(error); 
         return functions.setError(res, error)
     }
-
+ 
 }

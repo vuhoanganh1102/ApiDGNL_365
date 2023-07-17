@@ -6,15 +6,15 @@ const Users = require("../../models/Users")
 
 exports.getListTeam = async(req, res) => {
     try {
-        const com_id = req.user.data.com_id
-        const type = req.user.data.type
-        // let com_id = req.body.com_id
-        let team_id = req.body.team_id
+        // const com_id = req.user.data.com_id
+        // const type = req.user.data.type
+        let com_id = req.body.com_id
         let dep_id = req.body.dep_id
+        let team_id = req.body.team_id
         let data = []
         let condition = {}
         let total_emp = {}
-        if (type == 1) {
+        // if (type == 1) {
         
             if (com_id) condition.com_id = com_id
             if (team_id) condition.team_id = team_id
@@ -31,8 +31,8 @@ exports.getListTeam = async(req, res) => {
                 return functions.setError(res, 'Không có dữ liệu', 404);
             };
             return functions.success(res, 'Lấy thành công', {data});
-        }
-        return functions.setError(res, "Tài khoản không phải Công ty", 604);
+        // }
+        // return functions.setError(res, "Tài khoản không phải Công ty", 604);
 
     } catch (err) {
         functions.setError(res, err.message)

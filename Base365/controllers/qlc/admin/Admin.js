@@ -263,22 +263,43 @@ exports.getListReportErr = async(req, res) => {
     try {
         const pageNumber = req.body.pageNumber || 1;
         
-        let data = await report.find({}).select('curDeviceId type detail_error gallery_image_error createdAt from_source createdAt').skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
+        let data = await report.aggregate([
+            { $lookup:{
+                from: "Users",
+                localField : "user_id",
+                foreignField : "idQLC",
+                as : "user"}},
+            {$project:{
+                "id_report" : "$id_report",
+                "user_id" : "$user_id",
+                "detail_error" : "$detail_error",
+                "gallery_image_error" : "$gallery_image_error",
+                "time_create" : "$time_create",
+                "from_source" : "$from_source",
+                "user_id" : "$user_id",
+                // "user" : "$user",
+                "userName" : "$user.userName",
+                "type" : "$user.type",
+                "phoneTK" : "$user.phoneTK",
+                "email" : "$user.email",
+            }},
+            // {$match:{idQLC }}
+        ]).skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 });
         for (let i = 0; i < data.length; i++) {
-            data[i].gallery_image_error = await fnc.createLinkFileQLC( data[i].gallery_image_error)
+            data[i].gallery_image_error = await fnc.createLinkFileErrQLC(data[i].type, data[i].user_id, data[i].gallery_image_error)
           
-        }
+        } 
         if (data === []) {
-            await functions.setError(res, 'Không có dữ liệu', 404);
+            await functions.setError(res, 'Không có dữ liệu', 404); 
 
         } else {
             let count = await report.countDocuments({})
 
             return functions.success(res, 'Lấy thành công', { data, count });
-        }
-
+        } 
+ 
     } catch (e) {
         return functions.setError(res, e.message)
     }
-
-}
+ 
+} 
