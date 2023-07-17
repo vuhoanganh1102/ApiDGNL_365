@@ -1,5 +1,7 @@
 const Users = require("../../models/Users")
 const functions = require("../../services/functions")
+const fnc = require('../../services/qlc/functions')
+
 //lấy danh sách nhân viên cần cập nhật khuôn mặt
 exports.getlist = async(req, res) => {
     try {
@@ -29,8 +31,10 @@ exports.getlist = async(req, res) => {
                     "userName": "$userName", 
                     "dep_id": "$inForPerson.employee.dep_id", 
                     "com_id": "$inForPerson.employee.com_id", 
+                    "allow_update_face": "$inForPerson.employee.allow_update_face", 
                     "position_id": "$inForPerson.employee.position_id", 
                     "phoneTK" : "$phoneTK",
+                    "avatarUser" : "$avatarUser",
                     "email" : "$email",
                     "idQLC": "$idQLC", 
                     "nameDeparment": "$nameDeparment.dep_name", 
@@ -38,6 +42,8 @@ exports.getlist = async(req, res) => {
                 {$match: condition},
             ]).skip((pageNumber - 1) * 10).limit(10).sort({ _id: -1 });
             if (data) {
+                const avatar = await fnc.createLinkFileEmpQLC(data[0].idQLC , data[0].avatarUser)
+                if(avatar) data[0].avatar = avatar
                 return await functions.success(res, 'Lấy thành công', { data, pageNumber });
             };
             return functions.setError(res, 'Không có dữ liệu');
