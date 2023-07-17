@@ -127,8 +127,8 @@ let checkFile = async(filePath) => {
     return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.pdf', '.doc', '.docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'ods', 'odt', 'odp', 'rtf', 'sxc', 'sxi', 'txt'].includes(extname);
 };
 
-exports.createLinkFile = async(folder, id, name) => {
-    let link = process.env.DOMAIN_RAO_NHANH + '/base365/hr/pictures/' + folder + '/' + id + '/' + name;
+exports.createLinkFile = (folder, name) => {
+    let link = process.env.DOMAIN_HR + '/base365/hr/upload/' + folder + '/' + name;
     return link;
 }
 

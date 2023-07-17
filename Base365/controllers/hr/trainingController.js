@@ -3,7 +3,7 @@ const hrService = require('../../services/hr/hrService');
 const JobDescription = require('../../models/hr/JobDescriptions');
 const ProcessTraining = require('../../models/hr/ProcessTraining');
 const StageProcessTraining = require('../../models/hr/StageProcessTraining');
-const folderFile = 'job';
+const folderFile = 'roadmap';
 
 // lay ra danh sach cac vi tri cong viec trong cty
 exports.getListJobDescription= async(req, res, next) => {
@@ -20,7 +20,14 @@ exports.getListJobDescription= async(req, res, next) => {
 
         // dua dieu kien vao ob listCondition
         if(name) listCondition.name =  new RegExp(name, 'i');
-        const listJob = await functions.pageFind(JobDescription, listCondition, { _id: 1 }, skip, limit); 
+        let listJob = await functions.pageFind(JobDescription, listCondition, { _id: 1 }, skip, limit); 
+        for(let i=0; i<listJob.length;i++) {
+            let job = listJob[i];
+            if(job.roadMap!="") {
+                job.linkFile = hrService.createLinkFile(folderFile, job.roadMap);
+                listJob[i] = job;
+            }
+        }
         const totalCount = await functions.findCount(JobDescription, listCondition);
         return functions.success(res, "Get list job description success", {totalCount: totalCount, data: listJob });
     } catch (e) {
@@ -50,8 +57,7 @@ exports.createJobDescription = async(req, res, next) => {
             if(!await hrService.checkFile(roadMap.path)){
                 return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 20MB', 405);
             }
-            nameFile = await hrService.uploadFileRoadMap(comId,roadMap);
-            linkFile = await hrService.createLinkFile(folderFile, comId, roadMap.name);
+            nameFile = await hrService.uploadFileNameRandom(folderFile,roadMap);
         }
         
         //tao quy trinh
@@ -107,12 +113,12 @@ exports.getListProcessTraining= async(req, res, next) => {
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         
-        let listCondition = {comId: comId};
+        let listCondition = {comId: comId, isDelete: 0};
 
         // dua dieu kien vao ob listCondition
-        if(name) listCondition.name =  new RegExp(name);
+        if(name) listCondition.name =  new RegExp(name, 'i');
         if(processTrainId) listCondition.id =  processTrainId;
-        const listProcess = await functions.pageFind(ProcessTraining, listCondition, { _id: 1 }, skip, limit); 
+        const listProcess = await functions.pageFind(ProcessTraining, listCondition, { _id: -1 }, skip, limit); 
         const totalCount = await functions.findCount(ProcessTraining, listCondition);
         return functions.success(res, "Get list process training success", {totalCount: totalCount, data: listProcess });
     } catch (e) {
