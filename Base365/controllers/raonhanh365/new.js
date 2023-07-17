@@ -2127,7 +2127,8 @@ exports.newisbidding = async (req, res, next) => {
                 },
                 {
                     $skip: skip 
-                }, {
+                }, 
+                {
                     $limit:  limit 
                 },
                 {
@@ -2147,6 +2148,9 @@ exports.newisbidding = async (req, res, next) => {
                         foreignField: "_id",
                         as: "new",
                     },
+                },
+                {
+                    $unwind:"$new"
                 },
                 {
                     $match: {
@@ -2175,6 +2179,9 @@ exports.newisbidding = async (req, res, next) => {
                         foreignField: "_id",
                         as: "new",
                     },
+                },
+                {
+                    $unwind:"$new"
                 },
                 {
                     $match: {
