@@ -21,6 +21,7 @@ var contract = require('./vanthu/QuanLyCongVan/contractRoute')
 var history = require('./vanthu/QuanLyCongVan/historyUpdateRoute')
 var dataDelete = require('./vanthu/QuanLyCongVan/dataDidDeleteRoute')
 var settingqlcv = require('./vanthu/QuanLyCongVan/settingRoute.js')
+
 //Api thêm mới các loại đề xuất
 router.use('/vanthu/dexuat',adddeXuat);
 

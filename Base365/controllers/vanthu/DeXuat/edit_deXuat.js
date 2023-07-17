@@ -4,47 +4,18 @@ const His_Handle = require('../../../models/Vanthu/history_handling_dx');
 const QuitJob = require('../../../models/hr/personalChange/QuitJob');
 const CalendarWorkEmployee = require('../../../models/qlc/CalendarWorkEmployee');
 const Calendar = require('../../../models/qlc/Cycle')
-const ThuongPhat = require('../../../models/Vanthu/tb_thuong_phat');
-const HoaHong = require('../../../models/Vanthu/tb_rose')
+const ThuongPhat = require('../../../models/Tinhluong/Tinhluong365ThuongPhat');
+const HoaHong = require('../../../models/Tinhluong/TinhluongRose')
 const User = require('../../../models/Users');
 const functions = require('../../../services/vanthu')
 
 const axios = require('axios');
 const vanthu = require('../../../services/vanthu')
-//hàm khôi phục 
-exports.edit_del_type = async (req, res) => {
-  try {
-    let id = req.body.id;
-    let del_type = req.body.delType;
 
-    let page = Number(req.body.page) ? Number(req.body.page) : 1;
-    let pageSize = Number(req.body.pageSize) ? Number(req.body.pageSize) : 10;
-    const skip = (page - 1) * pageSize;
-    if (!isNaN(id)) {
-      let de_xuat = await De_Xuat.findOne({ _id: id }).skip(skip).limit(pageSize);
 
-      if (de_xuat) {
-        await De_Xuat.findByIdAndUpdate({ _id: id }, {
-          del_type: del_type
-        });
-        return res.status(200).json('update del_type thanh cong');
-      } else {
-        return res.status(200).json("doi tuong khong ton tai");
-      }
-    } else {
-      return res.status(404).json("id phai la 1 so Number");
-    }
-  } catch (error) {
-    console.error('Failed ', error);
-    res.status(500).json({ error: 'Failed ' });
-  }
-}
 
 
 //ham duyet
-
-
-
 exports.edit_active = async (req, res) => {
   try {
     const { _id, type, id_user, ngaybatdau_tv, id_ep,shift_id,ly_do,id_uct } = req.body;
@@ -53,30 +24,28 @@ exports.edit_active = async (req, res) => {
     if (req.user.data.type == 2) {
       com_id = req.user.data.inForPerson.employee.com_id
     } else {
-      return functions.setError(res, 'không có quyền truy cập', 400);
+      return functions.setError(res, 'bạn phải là tài khoản nhân viên', 400);
     }
     const check = await De_Xuat.findOne({ _id: _id });
     if (check) {
       // Duyệt đề xuất
       if (type == 1) {
-       return vanthu.browseProposals(His_Handle,De_Xuat,_id,check)
+       return vanthu.browseProposals(res,His_Handle,De_Xuat,_id,check)
       }
       // Từ chối đề xuất 
       if (type == 2) {
-        return vanthu.refuseProposal(His_Handle,De_Xuat,_id,id_ep,check)
+        return vanthu.refuseProposal(res,His_Handle,De_Xuat,_id,id_ep,check)
       } 
       // Bắt buộc đi làm
       if (type == 3) {
-        return vanthu.compulsoryWork(His_Handle,De_Xuat,_id,check)
+        return vanthu.compulsoryWork(res,His_Handle,De_Xuat,_id,check)
       }
       // Duyệt chuyển tiếp
       if (type == 4) {
-        return vanthu.forwardBrowsing(His_Handle,De_Xuat,_id,id_uct,check)
-      } 
-      
+        return vanthu.forwardBrowsing(res,His_Handle,De_Xuat,_id,id_uct,check)
+      }   
       // Thôi việc
-      if (type == 5){
-        
+      if (type == 5){      
         await De_Xuat.findOneAndUpdate(
           { _id: _id },
           {
@@ -89,7 +58,6 @@ exports.edit_active = async (req, res) => {
           },
           { new: true }
         );
-
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
           id_dx: check._id,
@@ -98,19 +66,22 @@ exports.edit_active = async (req, res) => {
         });
         await createHis.save();
         let ep_id = check.id_user
-        let chekUser = await User.findOne({ idQLC: ep_id }).select('inForPerson.employee.position_id  inForPerson.employee.dep_id')
+        let maxIDTQJ = await functions.getMaxIDQJ(QuitJob)
+            let idTB = 0;
+            if (maxIDTQJ) {
+                idTB = Number(maxIDTQJ) + 1;
+            }
+            console.log(idTB);
         const createQJ = new QuitJob({
-          id: await functions.getMaxIDQJ(QuitJob) + 1,
+          id : idTB,
           ep_id: ep_id,
           com_id: com_id,
-          current_position: chekUser.inForPerson.employee.position_id,
-          current_dep_id: chekUser.inForPerson.employee.dep_id,
-          shift_id: shift_id,
           created_at: ngaybatdau_tv,
           note: ly_do,
         });
+        console.log(createQJ);
         await createQJ.save();
-        return res.status(200).json({ message: 'Thôi việc thành công' });
+        return functions.success(res, 'Thôi việc thành công');
       } else if (type == 6) {
         // Tiếp nhận
         await De_Xuat.findOneAndUpdate(
@@ -130,8 +101,7 @@ exports.edit_active = async (req, res) => {
           time: timeNow
         });
         await createHis.save();
-
-        return res.status(200).json({ message: 'Tiếp nhận đề xuất thành công' });
+        return functions.success(res, 'Tiếp nhận đề xuất thành công');
       } else if (type == 7) {
         // Tăng ca
         const historyDuyet = await De_Xuat.findOne({ _id: _id })
@@ -150,7 +120,9 @@ exports.edit_active = async (req, res) => {
         }).select('cy_id')
 
 
-        let checkCalendaremp = await Calendar.findOne({ cy_id: checkcalaendar.cy_id, apply_month: month_apply })
+        let checkCalendaremp = await Calendar.findOne({ 
+          cy_id: checkcalaendar.cy_id,
+           apply_month: month_apply })
 
         if (checkCalendaremp) {
           var items_tc = JSON.parse(checkCalendaremp.cy_detail)
@@ -200,9 +172,10 @@ exports.edit_active = async (req, res) => {
             },
             { new: true }
           );
-          return res.status(200).json({ message: `Đề xuất tăng ca đã được duyệt` });
+          
+          return functions.success(res, 'Đề xuất tăng ca đã được duyệt');
         } else {
-          return res.status(200).json({ message: 'Thông tin truyền lên không đầy đủ, vui lòng thử lại!' });
+          return functions.setError(res,'Thông tin truyền lên không đầy đủ, vui lòng thử lại!',400)
         }
       }//đề xuất thưởng phạt
       else if (type == 19){
@@ -260,14 +233,14 @@ exports.edit_active = async (req, res) => {
             { new: true }
           );
         }
-        return functions.success(res, 'save data success', { savehh});
+        return functions.success(res, 'duyệt đề xuất thành công', { savehh});
       }
     } else {
-      return res.status(404).json({ error: 'Không tìm thấy đề xuất' });
+      return functions.setError(res, 'Không tìm thấy đề xuất',400);
     }
   } catch (error) {
     console.error('Failed ', error);
-    return res.status(500).json({ error: 'Failed ' });
+    return functions.setError(res, error);
   }
 };
 
