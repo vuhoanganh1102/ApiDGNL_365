@@ -1752,13 +1752,13 @@ exports.getDetailNew = async (req, res, next) => {
                     for (let j = 0; j < ListReplyComment.length; j++) {
                         ListLikeCommentChild = await LikeRN.find({ forUrlNew: url, type: { $lt: 8 }, commentId: ListReplyComment[j]._id }, {}, { type: 1 })
                         ListReplyComment[j].ListLikeCommentChild = ListLikeCommentChild
-                        ListReplyComment[i].img = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365` + ListReplyComment[i].img
+                        ListReplyComment[i].img = process.env.DOMAIN_RAO_NHANH+ '/' + ListReplyComment[i].img
                     }
                 }
                 ListComment[i].ListLikeComment = ListLikeComment
                 ListComment[i].ListReplyComment = ListReplyComment
                 if (ListComment[i].img) {
-                    ListComment[i].img = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365` + ListComment[i].img
+                    ListComment[i].img = process.env.DOMAIN_RAO_NHANH + '/' + ListComment[i].img
                 }
             }
         }
