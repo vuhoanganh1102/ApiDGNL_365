@@ -31,4 +31,4 @@ const TeamSchema = new Schema({
 
 })
 
-module.exports = mongoose.model('Teams', TeamSchema)
+module.exports = mongoose.model('QLC_Teams', TeamSchema)
