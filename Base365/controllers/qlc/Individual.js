@@ -472,7 +472,8 @@ exports.info = async (req, res) => {
                     "ep_phone": "$phone",
                     "ep_phone_tk": "$phoneTK",
                     "ep_address": "$address",
-                    "ep_ava": "$avatarUser",
+                    "avatarUser": "$avatarUser",
+                    "idQLC": "$idQLC",
                     "ep_authentic": "$authentic",
                     "ep_birth_day": "$inForPerson.account.birthday",
                     "ep_gender": "$inForPerson.account.gender",
@@ -483,10 +484,14 @@ exports.info = async (req, res) => {
             }
         ]);
         if (data) {
+
+            const avatar = await fnc.createLinkFileEmpQLC(data[0].idQLC , data[0].avatarUser)
+            if(avatar) data[0].avatar = avatar
+
             return functions.success(res, 'Lấy thành công', { data });
         };
         return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (e) {
         return functions.setError(res, e.message)
     }
-}
+} 

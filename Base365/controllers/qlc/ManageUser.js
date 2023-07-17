@@ -110,24 +110,19 @@ return functions.setError(res, "Tài khoản không phải Công ty", 604);
 exports.editUser = async(req, res) => {
 try{
     const type = req.user.data.type
-    // let com_id = req.user.data.com_id
-    // let com_id = req.body.com_id
-    const {userName, email, phoneTK, idQLC, password, role, address, birthday, dep_id, group_id, team_id, position_id, gender, createdAt,ep_status } = await req.body;
+    const {userName, email, phoneTK, idQLC, role, address, birthday, dep_id, group_id, team_id, position_id, gender, createdAt,ep_status } = await req.body;
     if(type == 1){
 
         const manager = await functions.getDatafindOne(manageUser, { idQLC: idQLC, type: 2 });
         if (manager) {
             await functions.getDatafindOneAndUpdate(manageUser, { idQLC: idQLC, type: 2 }, {
-                // "inForPerson.employee.com_id": com_id,
                 userName: userName,
                 email: email,
                 phoneTK: phoneTK,
-                password: await md5(password),
                 "inForPerson.account.gender": gender,
                 "inForPerson.account.birthday": birthday,
                 address: address,
                 "inForPerson.employee.position_id": position_id,
-                // type: 2,
                 "inForPerson.employee.dep_id": dep_id,
                 "inForPerson.employee.group_id": group_id,
                 "inForPerson.employee.team_id": team_id,
