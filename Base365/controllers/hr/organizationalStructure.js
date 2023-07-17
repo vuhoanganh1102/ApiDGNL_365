@@ -440,7 +440,7 @@ exports.description = async (req, res, next) => {
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
-            let info
+            let info = {};
 
             if (groupId) {
                 info = await HR_NestDetails.findOne({ comId: comId, grId: groupId, type: 1 }, { description: 1, id: 1 })
@@ -452,12 +452,10 @@ exports.description = async (req, res, next) => {
 
                 info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId }, { description: 1, id: 1 })
             }
-            if (info && info.description == null) {
-                info.description = "chưa cập nhật"
+            if (!info || info.description == null) {
+                info = {description: "chưa cập nhật"}
             }
-            if (info) {
-                return functions.success(res, 'Lấy chi tiết công ty thành công', { info });
-            } else return functions.setError(res, "không tìm thấy thông tin", 400);
+            return functions.success(res, 'Lấy chi tiết công ty thành công', { info });
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
 
 
@@ -479,14 +477,22 @@ exports.updateDescription = async (req, res, next) => {
             let info
 
             if (groupId) {
-                info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: groupId, type: 1 }, { description: des }, { new: true })
+                let group = await HR_NestDetails.findOne({comId: comId, grId: groupId, type: 1});
+                let fields = { comId: comId, grId: groupId, type: 1 , description: des };
+                if(!group) fields.id = await functions.getMaxIdByField(HR_NestDetails, 'id');
+                info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: groupId, type: 1 }, fields, { new: true, upsert: true })
             }
             if (teamId && !groupId) {
-                info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: teamId, type: 0 }, { description: des }, { new: true })
+                let team = await HR_NestDetails.findOne({comId: comId, grId: teamId, type: 0});
+                let fields = { comId: comId, grId: teamId, type: 0 , description: des };
+                if(!team) fields.id = await functions.getMaxIdByField(HR_NestDetails, 'id');
+                info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: teamId, type: 0 }, fields, { new: true, upsert: true })
             }
             if (depId && !teamId && !groupId) {
-
-                info = await HR_DepartmentDetails.findOneAndUpdate({ comId: comId, depId: depId }, { description: des }, { new: true })
+                let dep = await HR_DepartmentDetails.findOne({comId: comId, depId: depId});
+                let fields = { comId: comId, depId: depId, description: des };
+                if(!dep) fields.id = await functions.getMaxIdByField(HR_DepartmentDetails, 'id');
+                info = await HR_DepartmentDetails.findOneAndUpdate({ comId: comId, depId: depId }, fields, { new: true, upsert: true })
             }
             if (info) {
                 return functions.success(res, 'Cập nhật mô tả chi tiết thành công', { info });
