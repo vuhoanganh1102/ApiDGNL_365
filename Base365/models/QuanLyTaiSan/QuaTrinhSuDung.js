@@ -10,25 +10,25 @@ const model_QuaTrinhSuDung = new mongoose.Schema({
         type: Number
     },
     so_lg: {
-        type: String
+        type: Number
     },
     id_cty: {
-        type: String
+        type: Number
     },
     id_ng_sudung: {
-        type: String
+        type: Number
     },
     id_phong_sudung: {
-        type: String
+        type: Number
     },
     id_cty_sudung: {
-        type: String
+        type: Number
     },
     qt_ngay_thuchien: {
-        tpye: String
+        tpye: Number
     },
     qt_nghiep_vu: {
-        type: String
+        type: Number
     },
     vitri_ts : {
         type : String

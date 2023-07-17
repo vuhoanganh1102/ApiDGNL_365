@@ -3,6 +3,7 @@ const KiemKe = require('../../models/QuanLyTaiSan/KiemKe');
 const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
 const TaiSan = require('../../models/QuanLyTaiSan/TaiSan');
 const TaiSanDangSD= require('../../models/QuanLyTaiSan/TaiSanDangSuDung');
+const QuaTrinhSuDung= require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
 
 exports.getAndCheckData = async(req, res, next) => {
   try{
@@ -214,22 +215,80 @@ exports.chiTiet = async(req, res, next) => {
     let danhSachTaiSan = [];
     
     if(kiemKe) {
+      let quaTrinhSD = await QuaTrinhSuDung.find( {id_cty: com_id});
+      let tsDangSD  = await TaiSanDangSD.find({com_id_sd: com_id});
       if(kiemKe.id_ts && kiemKe.id_ts.ds_ts) {
         let id_ts = kiemKe.id_ts.ds_ts;
         for(let i=0; i<id_ts.length; i++) {
+          let id_tai_san = id_ts[i];
           let ts_detail = {
             ts_so_luong: 0,
             ts_dang_sd: 0,
+            ts_huy: 0,
           };
 
           //tong so luong
           let taiSan = await TaiSan.findOne({ts_id: id_ts[i], id_cty: com_id});
           if(taiSan) ts_detail["ts_so_luong"] = taiSan.ts_so_luong;
-          danhSachTaiSan.push(ts_detail);
+          
+          //loc ra tai san dang su dung
+          const sl_dang_sd = tsDangSD.reduce((sum, item) => {
+            if (item.id_ts_sd === id_tai_san) {
+              return sum + parseInt(item.sl_dang_sd);
+            }
+            return sum;
+          }, 0);
+          ts_detail["ts_dang_sd"] = sl_dang_sd;
 
-          //
-          let ts_dang_sd  = await TaiSanDangSD.findOne({id_ts_sd: id_ts[i], com_id_sd: com_id});
-          // if(ts_dang_sd) ts_detail["ts_dang_sd"] = ts_dang_sd.
+          //so luong tai san hong
+          const sl_huy = quaTrinhSD.reduce((sum, item) => {
+            if (
+              item.id_ts === id_tai_san &&
+              item.qt_nghiep_vu === 7
+            ) {
+              return sum + parseInt(item.so_lg);
+            }
+            return sum;
+          }, 0);
+          ts_detail["ts_huy"] = sl_huy;
+
+          //so luong tai san thanh ly
+          const sl_thanhly = quaTrinhSD.reduce((sum, item) => {
+            if (
+              item.id_ts === id_tai_san &&
+              item.qt_nghiep_vu === 8
+            ) {
+              return sum + parseInt(item.so_lg);
+            }
+            return sum;
+          }, 0);
+          ts_detail["ts_thanhly"] = sl_thanhly;
+
+          //so luong tai san mat
+          const sl_mat = quaTrinhSD.reduce((sum, item) => {
+            if (
+              item.id_ts === id_tai_san &&
+              item.qt_nghiep_vu === 6
+            ) {
+              return sum + parseInt(item.so_lg);
+            }
+            return sum;
+          }, 0);
+          ts_detail["ts_mat"] = sl_mat;
+
+          //so luong tai san sua chua
+          const sl_suachua = quaTrinhSD.reduce((sum, item) => {
+            if (
+              item.id_ts === id_tai_san &&
+              item.qt_nghiep_vu === 4
+            ) {
+              return sum + parseInt(item.so_lg);
+            }
+            return sum;
+          }, 0);
+          ts_detail["ts_suachua"] = sl_suachua;
+
+          danhSachTaiSan.push(ts_detail);
         }
         kiemKe.danhSachTaiSan = danhSachTaiSan;
       }
