@@ -3,7 +3,7 @@ const fnc = require('../../services/qlc/functions');
 const functions = require("../../services/functions")
 const md5 = require('md5');
 const Deparment = require("../../models/qlc/Deparment")
-const comErr = require("../../models/qlc/Com_error")
+const comErr = require("../../models/qlc/ComError")
 
 
 //Đăng kí tài khoản công ty 
