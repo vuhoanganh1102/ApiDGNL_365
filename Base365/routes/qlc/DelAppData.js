@@ -7,7 +7,7 @@ const functions = require("../../services/functions")
 
 
 //Xóa toàn bộ lịch sử chấm công
-router.delete("/", formData.parse(), controller.deleteAllTRacking)
+router.delete("/", formData.parse(),functions.checkToken, controller.deleteAllTRacking)
 
 
 module.exports = router

@@ -26,6 +26,7 @@ var CalendarWorkEmployee = require("./qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./qlc/SettingIP")
 var homePage = require("./qlc/HomePageChamCong")
 var childCompanyRouter = require('./qlc/ChildCompany')
+var ListFaceAndAllowFace = require('./qlc/ListFaceAndAllowFace')
 
 
 
@@ -53,5 +54,6 @@ router.use('/calendarWorkEmployee', CalendarWorkEmployee);
 router.use('/setIp', SetIpRouter);
 router.use('/homePage', homePage);
 router.use('/childCompany', childCompanyRouter); 
+router.use('/face', ListFaceAndAllowFace); 
 
 module.exports = router;
