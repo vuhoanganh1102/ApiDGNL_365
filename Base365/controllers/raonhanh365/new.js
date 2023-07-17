@@ -894,7 +894,31 @@ exports.searchNew = async (req, res, next) => {
                 buySell: 1
             };
         } else {
-            return functions.setError(res, "page not found", 404);
+            searchItem = {
+                _id: 1,
+                title: 1,
+                linkTitle: 1,
+                address: 1,
+                money: 1,
+                createTime: 1,
+                cateID: 1,
+                pinHome: 1,
+                userID: 1,
+                img: 1,
+                updateTime: 1,
+                user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
+                district: 1,
+                ward: 1,
+                city: 1,
+                endvalue: 1,
+                islove: 1,
+                until: 1,
+                endvalue: 1,
+                type: 1,
+                free: 1,
+                viewCount: 1,
+                buySell: 1
+            };
         }
         let condition = { buySell };
         if (search_key) {
