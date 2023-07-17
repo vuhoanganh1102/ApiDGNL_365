@@ -29,8 +29,8 @@ exports.register = async(req, res) => {
                         type: 2,
                         password: md5(password),
                         address: address,
-                        createdAt: Date.parse(createdAt),
-                        fromWeb: "quanlichung",
+                        createdAt: Date.parse(createdAt)/1000,
+                        fromWeb: "quanlychung",
                         chat365_secret : Buffer.from(_id.toString()).toString('base64'),
                         role: 0,
                         avatarUser: null,
@@ -42,7 +42,7 @@ exports.register = async(req, res) => {
                         "inForPerson.employee.dep_id": dep_id,
                         "inForPerson.employee.group_id": group_id,
                         "inForPerson.employee.team_id": team_id,
-                        "inForPerson.account.birthday": Date.parse(birthday),
+                        "inForPerson.account.birthday": Date.parse(birthday)/1000,
                         "inForPerson.account.gender": gender,
                         "inForPerson.account.married": married,
                         "inForPerson.account.experience": experience,
@@ -77,13 +77,13 @@ exports.register = async(req, res) => {
                     }
                     functions.success(res, "tạo tài khoản thành công", { user, data })
                 } else {
-                    return functions.setError(res, 'SDT đã tồn tại', 404);
+                    return functions.setError(res, 'SDT đã tồn tại');
                 }
             } else {
-                return functions.setError(res, ' định dạng sdt không đúng', 404);
+                return functions.setError(res, ' định dạng sdt không đúng');
             }
         } else {
-            return functions.setError(res, 'Một trong các trường yêu cầu bị thiếu', 404)
+            return functions.setError(res, 'Một trong các trường yêu cầu bị thiếu')
         }
     } catch (e) {
         return functions.setError(res, e.message)
@@ -121,12 +121,12 @@ exports.verify = async(req, res) => {
                 });
                 return functions.success(res, "xác thực thành công");
             } else {
-                return functions.setError(res, "xác thực thất bại", 404);
+                return functions.setError(res, "xác thực thất bại");
             }
 
 
         } else {
-            return functions.setError(res, "thiếu dữ liệu sdt", 404)
+            return functions.setError(res, "thiếu dữ liệu sdt")
         }
     } catch (e) {
         return functions.setError(res, e.message)
@@ -293,21 +293,21 @@ exports.updatePasswordbyToken = async(req, res, next) => {
         let re_password = req.body.re_password;
         let checkPassword = await functions.verifyPassword(password)
         if (checkPassword) {
-            return functions.setError(res, "sai dinh dang Mk", 404)
+            return functions.setError(res, "sai dinh dang Mk")
         }
         if (!password || !re_password) {
-            return functions.setError(res, 'điền thiếu thông tin', 400)
+            return functions.setError(res, 'điền thiếu thông tin')
         }
         if (password.length < 6) {
-            return functions.setError(res, 'Password quá ngắn', 400)
+            return functions.setError(res, 'Password quá ngắn')
         }
         if (password !== re_password) {
-            return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+            return functions.setError(res, 'Password nhập lại không trùng khớp')
         }
         if (old_password) {
             let checkOldPassword = await Users.findOne({ idQLC: idQLC, password: md5(old_password), type: 2 })
             if (!checkOldPassword) {
-                functions.setError(res, 'Mật khẩu cũ không đúng, vui lòng kiểm tra lại', 400)
+                functions.setError(res, 'Mật khẩu cũ không đúng, vui lòng kiểm tra lại')
             } else {
                 let checkPass = await functions.getDatafindOne(Users, { idQLC, password: md5(password), type: 2 })
                 if (!checkPass) {
@@ -318,7 +318,7 @@ exports.updatePasswordbyToken = async(req, res, next) => {
                     });
                     return functions.success(res, 'cập nhập thành công')
                 }
-                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ')
             }
         }
 
@@ -335,16 +335,16 @@ exports.updatePasswordbyInput = async(req, res, next) => {
             if (phoneTK && password) {
                 let checkPassword = await functions.verifyPassword(password)
                 if (checkPassword) {
-                    return functions.setError(res, "sai dinh dang Mk", 404)
+                    return functions.setError(res, "sai dinh dang Mk")
                 }
                 if (!password || !re_password) {
-                    return functions.setError(res, 'Missing data', 400)
+                    return functions.setError(res, 'Missing data')
                 }
                 if (password.length < 6) {
-                    return functions.setError(res, 'Password quá ngắn', 400)
+                    return functions.setError(res, 'Password quá ngắn')
                 }
                 if (password !== re_password) {
-                    return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+                    return functions.setError(res, 'Password nhập lại không trùng khớp')
                 }
                 let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 2 })
                 if (!checkPass) {
@@ -355,20 +355,20 @@ exports.updatePasswordbyInput = async(req, res, next) => {
                     });
                     return functions.success(res, 'cập nhập thành công')
                 }
-                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ')
             } else if (email && password) {
                 let checkPassword = await functions.verifyPassword(password)
                 if (checkPassword) {
-                    return functions.setError(res, "sai dinh dang Mk", 404)
+                    return functions.setError(res, "sai dinh dang Mk")
                 }
                 if (!password || !re_password) {
-                    return functions.setError(res, 'Missing data', 400)
+                    return functions.setError(res, 'Missing data')
                 }
                 if (password.length < 6) {
-                    return functions.setError(res, 'Password quá ngắn', 400)
+                    return functions.setError(res, 'Password quá ngắn')
                 }
                 if (password !== re_password) {
-                    return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+                    return functions.setError(res, 'Password nhập lại không trùng khớp')
                 }
                 let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 2 })
                 if (!checkPass) {
@@ -379,10 +379,10 @@ exports.updatePasswordbyInput = async(req, res, next) => {
                     });
                     return functions.success(res, 'cập nhập thành công')
                 }
-                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ', 404)
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ')
 
             } else {
-                return functions.setError(res, ' điền thiếu trường ', 404)
+                return functions.setError(res, ' điền thiếu trường ')
             }
 
         } catch (error) {
@@ -405,7 +405,7 @@ exports.updateInfoEmployee = async(req, res, next) => {
                 if (File && File.avatarUser) {
                     let upload = await fnc.uploadAvaEmpQLC( idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
-                        return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
+                        return functions.setError(res, 'Định dạng ảnh không hợp lệ')
                     }
                     avatarUser = upload
                 } 
@@ -421,9 +421,9 @@ exports.updateInfoEmployee = async(req, res, next) => {
                             address: address,
                             otp: otp,
                             authentic: null || 0,
-                            fromWeb: "quanlichung",
+                            fromWeb: "quanlychung",
                             avatarUser: avatarUser,
-                            updatedAt: Date.parse(updatedAt),
+                            updatedAt: Date.parse(updatedAt)/1000,
                             "inForPerson.employee.group_id": group_id,
                             "inForPerson.account.birthday": birthday,
                             "inForPerson.account.gender": gender,
@@ -471,7 +471,7 @@ exports.forgotPassword = async(req, res) => {
                     return functions.setError(res, "tài khoản không tồn tại")
                 }
             } else {
-                return functions.setError(res, " email không đúng định dạng ", 404)
+                return functions.setError(res, " email không đúng định dạng ")
             }
 
         } else if (otp && (phoneTK || email)) {
@@ -487,21 +487,21 @@ exports.forgotPassword = async(req, res) => {
 
 
             } else {
-                return functions.setError(res, "xác thực thất bại", 404);
+                return functions.setError(res, "xác thực thất bại");
             }
         } else if (password && re_password) {
             let checkPassword = await functions.verifyPassword(password)
             if (!checkPassword) {
-                return functions.setError(res, "sai dinh dang Mk", 404)
+                return functions.setError(res, "sai dinh dang Mk")
             }
             if (!password && !re_password) {
-                return functions.setError(res, 'Missing data', 400)
+                return functions.setError(res, 'Missing data')
             }
             if (password.length < 6) {
-                return functions.setError(res, 'Password quá ngắn', 400)
+                return functions.setError(res, 'Password quá ngắn')
             }
             if (password !== re_password) {
-                return functions.setError(res, 'Password nhập lại không trùng khớp', 400)
+                return functions.setError(res, 'Password nhập lại không trùng khớp')
             }
             await Users.updateOne({ $or: [{ email: email, authentic: 1, type: 2 }, { phoneTK: phoneTK, authentic: 1, type: 2 }] }, {
                 $set: {
@@ -511,7 +511,7 @@ exports.forgotPassword = async(req, res) => {
             return functions.success(res, 'cập nhập MK thành công')
 
         } else {
-            return functions.setError(res, "thiếu dữ liệu", 404)
+            return functions.setError(res, "thiếu dữ liệu")
         }
     } catch (e) {
         return functions.setError(res, e.message)
