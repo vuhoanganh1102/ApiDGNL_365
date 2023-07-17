@@ -612,7 +612,7 @@ exports.getNew = async (req, res, next) => {
             userID: 1,
             img: 1,
             updateTime: 1,
-            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
+            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1,lastActivedAt:1,time_login:1 },
             district: 1,
             ward: 1,
             city: 1,
@@ -2221,11 +2221,6 @@ exports.newisbidding = async (req, res, next) => {
 // danh sách danh mục con/cha
 exports.getListCate = async (req, res, next) => {
     try {
-        let page = Number(req.body.page) || 1;
-        let pageSize = Number(req.body.pageSize) || 10;
-        const skip = (page - 1) * pageSize;
-        const limit = pageSize;
-
         let parentId = req.body.parentId;
         if (!parentId) {
             parentId = 0;
@@ -2235,8 +2230,6 @@ exports.getListCate = async (req, res, next) => {
             { parentId: parentId },
             { name: 1, parentId: 1 },
             { _id: 1 },
-            skip,
-            limit
         );
         const totalCount = await functions.findCount(CategoryRaoNhanh365, {
             parentId: parentId,

@@ -135,17 +135,18 @@ exports.listUserOnline = async (req, res, next) => {
             {
                 $match: { isOnline: 1 }
             },
+
             {
                 $limit: 20
             },
             {
                 $project: { userName: 1, avatarUser: 1, idRaoNhanh365: 1, _id: 1, type: 1, city: 1, district: 1, address: 1 }
             },
-            
+
         ]);
         for (let i = 0; i < data.length; i++) {
             let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1, _id: 1, linkTitle: 1, type: 1, buySell: 1 })
-            if(tin) data[i].tin = tin
+            if (tin) data[i].tin = tin
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
@@ -211,7 +212,7 @@ exports.createVerifyPayment = async (req, res, next) => {
 // tổng quan thông tin tài khoản cá nhân
 exports.profileInformation = async (req, res, next) => {
     try {
-        let userIdRaoNhanh = req.body.userId;
+        let userIdRaoNhanh = req.user.data.idRaoNhanh365;
 
         let fields = {
             userName: 1, phone: 1, type: 1, email: 1, address: 1,
@@ -221,7 +222,7 @@ exports.profileInformation = async (req, res, next) => {
         let dataUser = {}
 
         //thong tin tk
-        let userInFor = await User.findOne({ _id: userIdRaoNhanh }, fields);
+        let userInFor = await User.findOne({ idRaoNhanh365: userIdRaoNhanh }, fields);
 
         //tin da dang
         let numberOfNew = await New.find({ userID: userIdRaoNhanh, active: 1 }).count();

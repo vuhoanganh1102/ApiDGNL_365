@@ -105,7 +105,7 @@ exports.updatePolicy = async (req, res, next) => {
         let comId = infoLogin.comId;
         let File = req.files;
         let fileName = null;
-
+        
         if (id && name && provisionId && timeStart && supervisorName && applyFor && content) {
            
             if (await functions.checkNumber(provisionId) === false) {
@@ -115,7 +115,8 @@ exports.updatePolicy = async (req, res, next) => {
             if (!check) {
                 return functions.setError(res, 'not found policy', 404)
             }
-            if (File) {
+            if (File.policy) {
+                console.log(File.policy)
                 let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload failed', 404)
@@ -562,7 +563,6 @@ exports.updateEmployeePolicySpecific = async (req, res, next) => {
                     name, employeePolicyId, timeStart, supervisorName, comId,
                     applyFor, content, updateAt, createdBy
                 })
-                
             }
         } else {
             return functions.setError(res, 'missing data', 400)

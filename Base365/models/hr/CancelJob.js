@@ -10,7 +10,7 @@ const CancelJob = new Schema({
         autoIncrement: true
     },
     // ID ứng vien
-    canId: { type: String, required: true },
+    canId: { type: Number, required: true },
     // kiểu
     type: { type: Number , default: 0},
     // Xóa hay chưa
