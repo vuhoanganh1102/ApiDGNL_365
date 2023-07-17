@@ -39,24 +39,24 @@ exports.createIP = async(req, res) => {
     if (ip_access && from_site && com_id) {
         const maxId = await setIp.findOne({},{},{sort : {id_acc : -1}}).lean() || 0;
         const id_acc = Number(maxId.id_acc) + 1 || 1;
-        data1.forEach(async (item) => {//// them nhieu ip
-            const newData = new setIp({
-                id_acc: id_acc,
-                from_site: item.from_site,
-                ip_access: item.ip_access,
-                created_time: Date.parse(now)/1000,
-            });   
+        // data1.forEach(async (item) => {//// them nhieu ip
+        //     const newData = new setIp({
+        //         id_acc: id_acc,
+        //         from_site: item.from_site,
+        //         ip_access: item.ip_access,
+        //         created_time: Date.parse(now)/1000,
+        //     });   
           
-            await newData.save();
-        });
-        // const newData = new setIp({ //them 1 ip
-        //     id_acc: id_acc,
-        //     com_id: com_id,
-        //     from_site: from_site,
-        //     ip_access: ip_access,
-        //     created_time: new Date().toJSON().slice(0, 10),
-        // })
-        // await newData.save()
+        //     await newData.save();
+        // });
+        const newData = new setIp({ //them 1 ip
+            id_acc: id_acc,
+            com_id: com_id,
+            from_site: from_site,
+            ip_access: ip_access,
+            created_time: Date.parse(now)/1000,
+        })
+        await newData.save()
         return functions.success(res, 'Tạo thành công', { newData })
     }
     return functions.setError(res, "thiếu thông tin IP hoặc from_site ")
