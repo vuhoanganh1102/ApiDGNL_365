@@ -1029,11 +1029,12 @@ exports.searchNew = async (req, res, next) => {
                 },
             },
             {
-                $project: searchItem,
-            },
-            {
                 $skip: skip,
             },
+            {
+                $project: searchItem,
+            },
+
 
         ]);
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
@@ -1054,10 +1055,9 @@ exports.searchNew = async (req, res, next) => {
             }
         }
         const totalCount = await New.countDocuments(condition);
-        const totalPages = Math.ceil(totalCount / pageSize);
+
         return functions.success(res, "get data success", {
             totalCount,
-            totalPages,
             data,
         });
     } catch (error) {
@@ -1207,7 +1207,7 @@ exports.createBuyNew = async (req, res) => {
                             File.Image[i],
                             ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.mp3', '.mp4']
                         );
-                        if (!img) {
+                        if (!image) {
                             return functions.setError(res, 'upload file failed', 400);
                         }
                         img.push({
@@ -1843,7 +1843,11 @@ exports.createToken = async (req, res, next) => {
 exports.newfavorite = async (req, res, next) => {
     try {
         let userID = req.user.data.idRaoNhanh365;
-        let linkTitle = req.params.linkTitle;
+        let linkTitle = req.body.linkTitle;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let searchItem = null;
         let buySell = null;
         if (linkTitle === "tin-mua-da-yeu-thich.html") {
@@ -1893,7 +1897,7 @@ exports.newfavorite = async (req, res, next) => {
 
         let soLuong = 0;
         let tin = 0;
-        let check = await LoveNews.find({ id_user: userID });
+        let check = await LoveNews.find({ id_user: userID }).skip(skip).limit(limit);
         if (check && check.length) {
             for (let i = 0; i < check.length; i++) {
                 tin = await New.findOne(
@@ -1922,8 +1926,8 @@ exports.managenew = async (req, res, next) => {
     try {
         let linkTitle = req.body.linkTitle;
         let userID = req.user.data.idRaoNhanh365;
-        let page = req.body.page || 1;
-        let pageSize = req.body.pageSize || 10;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
         let skip = (page - 1) * pageSize;
         let limit = pageSize;
         let data = [];
@@ -2002,8 +2006,12 @@ exports.managenew = async (req, res, next) => {
 // tin đang dự thầu
 exports.newisbidding = async (req, res, next) => {
     try {
-        let linkTitle = req.params.linkTitle;
+        let linkTitle = req.body.linkTitle;
         let userID = req.user.data.idRaoNhanh365;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let sl_tatCaTin = await Bidding.find({ userID }).count();
         let sl_tinConHan = 0;
         let searchItem = {
@@ -2090,10 +2098,18 @@ exports.newisbidding = async (req, res, next) => {
                         as: "new",
                     },
                 },
-
+                {
+                    $unwind:"$new"
+                },
+                {
+                    $skip: skip 
+                }, {
+                    $limit:  limit 
+                },
                 {
                     $project: searchItem,
                 },
+
             ]);
         } else if (linkTitle === "tin-dang-du-thau-con-han.html") {
             data = await Bidding.aggregate([
@@ -2112,6 +2128,12 @@ exports.newisbidding = async (req, res, next) => {
                     $match: {
                         'new.bidding.han_su_dung': { $gte: new Date() },
                     },
+                },
+                {
+                    $skip:  skip 
+                },
+                {
+                    $limit:  limit 
                 },
                 {
                     $project: searchItem,
@@ -2136,15 +2158,22 @@ exports.newisbidding = async (req, res, next) => {
                     },
                 },
                 {
+                    $skip:  skip 
+                },
+                {
+                    $limit:  limit 
+                },
+                {
                     $project: searchItem,
                 },
             ]);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
+        
         for (let i = 0; i < data.length; i++) {
-            if (data[i].img) {
-                data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, data[i].buySell);
+            if (data[i].new && data[i].new.img) {
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img, data[i].new.cateID, data[i].new.buySell);
             }
         }
         return functions.success(res, "get data success", {
@@ -2154,21 +2183,15 @@ exports.newisbidding = async (req, res, next) => {
             data,
         });
     } catch (error) {
+        console.log(error);
         return functions.setError(res, error);
     }
 };
 // danh sách danh mục con/cha
 exports.getListCate = async (req, res, next) => {
     try {
-        let page, pageSize;
-        if (!req.body.page) {
-            page = 1;
-        }
-        if (!req.body.pageSize) {
-            pageSize = 50;
-        }
-        page = Number(req.body.page);
-        pageSize = Number(req.body.pageSize);
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
 
@@ -2201,8 +2224,8 @@ exports.manageNewBuySell = async (req, res, next) => {
         let linkTitle = req.body.linkTitle;
         let userID = req.user.data.idRaoNhanh365;
         let data = [];
-        let page = req.body.page || 1;
-        let pageSize = req.body.pageSize || 10;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
         let skip = (page - 1) * pageSize;
         let limit = pageSize;
         let tong_soluong = await New.find({ userID, buySell: 2, cateID: { $nin: [120, 121] } }).count();
@@ -2274,8 +2297,11 @@ exports.manageNewBuySell = async (req, res, next) => {
 // danh sách tin tìm ứng viên
 exports.listCanNew = async (req, res, next) => {
     try {
-        let linkTitle = req.params.linkTitle;
-
+        let linkTitle = req.body.linkTitle;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let userID = req.user.data.idRaoNhanh365;
         let data = [];
         let tong_soluong = await New.find({ userID, cateID: 120 }).count();
@@ -2314,11 +2340,11 @@ exports.listCanNew = async (req, res, next) => {
             buySell: 1
         };
         if (linkTitle === "quan-ly-tin-tim-ung-vien.html") {
-            data = await New.find({ userID, cateID: 120 }, searchItem);
+            data = await New.find({ userID, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-tim.html") {
-            data = await New.find({ userID, status: 1, cateID: 120 }, searchItem);
+            data = await New.find({ userID, status: 1, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-da-tim.html") {
-            data = await New.find({ userID, status: 0, cateID: 120 }, searchItem);
+            data = await New.find({ userID, status: 0, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -2340,8 +2366,12 @@ exports.listCanNew = async (req, res, next) => {
 // danh sách tin tìm việc làm
 exports.listJobNew = async (req, res, next) => {
     try {
-        let linkTitle = req.params.linkTitle;
+        let linkTitle = req.body.linkTitle;
         let userID = req.user.data.idRaoNhanh365;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let data = [];
         let tong_soluong = await New.find({ userID, cateID: 121 }).count();
         let tinDangTimViec = await New.find({
@@ -2379,11 +2409,11 @@ exports.listJobNew = async (req, res, next) => {
             buySell: 1
         };
         if (linkTitle === "quan-ly-tin-tim-viec-lam.html") {
-            data = await New.find({ userID, cateID: 121 }, searchItem);
+            data = await New.find({ userID, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-tim.html") {
-            data = await New.find({ userID, status: 1, cateID: 121 }, searchItem);
+            data = await New.find({ userID, status: 1, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-da-tim.html") {
-            data = await New.find({ userID, status: 0, cateID: 121 }, searchItem);
+            data = await New.find({ userID, status: 0, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -2503,12 +2533,10 @@ exports.createApplyNews = async (req, res, next) => {
 exports.deleteUv = async (req, res, next) => {
     try {
         let { newId } = req.body;
-        let candidateId = req.user.data.idRaoNhanh365;
         if (!newId) {
             return functions.setError(res, "Missing input value", 404);
         }
         let candidate = await functions.getDataDeleteOne(ApplyNewsRN, {
-            uvId: candidateId,
             newId: newId,
         });
         if (candidate.deletedCount === 1) {
@@ -2563,6 +2591,10 @@ exports.manageDiscount = async (req, res, next) => {
 exports.getListNewsApplied = async (req, res, next) => {
     try {
         let userId = req.user.data.idRaoNhanh365;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let skip = (page - 1)* pageSize;
+        let limit = pageSize;
         let data = await ApplyNewsRN.aggregate([
             {
                 $match: { uvId: userId }
@@ -2583,7 +2615,12 @@ exports.getListNewsApplied = async (req, res, next) => {
                     as: 'user'
                 }
             },
-
+            {
+                $skip:skip
+            },
+            {
+                $limit:limit
+            },
             {
                 $project: {
                     'new._id': 1, 'new.title': 1, 'new.han_su_dung': 1, 'new.name': 1, 'new.linkTitle': 1, 'user.idRaoNhanh365': 1,
