@@ -113,15 +113,29 @@ exports.uploadErrQLC = async(token, id, file, allowedExtensions) => {
           }
       });
   });
-  return namefile
+  return namefile 
 }
 // hàm tạo link file QLC
 exports.createAvatarQLC = (namefiles) => {
     let link = namefiles;
     return link;
 }
-exports.createLinkFileQLC = (folder1,folder2, timestamp, name) => {
-    let link = process.env.PORT_QLC + '../storage/base365/QLC/upload/' + folder1 + '/'+ folder2 + '/' + timestamp + '/' + name;
+exports.createLinkFileErrQLC = (token,id, file) => {
+    const paths = (token !== 1 ? "ep_" + id : "com_" + id)
+    let link = process.env.port_picture_qlc + '/storage/base365/QLC/upload/error/' + paths + '/' + file;
+    return link;
+}
+exports.createLinkFileComQLC = (createAt, file) => {
+    const dates = new Date(createAt)
+    const year = dates.getFullYear();
+    const month = dates.getMonth() + 1;
+    const day = dates.getDate();
+    // const paths = `${year}/${month}/${day}/`
+    let link = process.env.port_picture_qlc + `/storage/base365/QLC/upload/company/logo/${year}/${month}/${day}/` + file;
+    return link;
+}
+exports.createLinkFileEmpQLC = (id, file) => {
+    let link = process.env.port_picture_qlc + `/storage/base365/qlc/upload/employee/ep${id}/` + file;
     return link;
 }
 
@@ -132,3 +146,4 @@ exports.deleteFileQLC = (folder,timestamp, file) => {
         });
     }
 
+ 

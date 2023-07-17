@@ -19,7 +19,7 @@ router.post('/updatePasswordbyInput', formData.parse(), individual.updatePasswor
 router.post('/updateInfoindividual', functions.checkToken, formData.parse(), individual.updateInfoindividual);
 
 // api api gửi mã OTP qua mail (quên mật khẩu) 
-router.post('/forgotPasswordCheckMail', formData.parse(), individual.forgotPassword);
+// router.post('/forgotPasswordCheckMail', formData.parse(), individual.forgotPassword);
 // api 
 router.post('/info', formData.parse(), functions.checkToken, individual.info);
 

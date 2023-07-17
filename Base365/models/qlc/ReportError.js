@@ -2,16 +2,16 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ReportError = new Schema({
-    _id: {//ID danh sách bao loi
+    id_report: {//ID danh sách bao loi
         type: Number,
     },
-    idQLC: {
+    user_id: {
         type: Number
     },
-    curDeviceId: {//ID thiet bi
+    device_id: {//ID thiet bi
         type: String
     },
-    type: {// kieu user
+    type_user: {// kieu user
         type: Number
     },
     detail_error: {//chi tiet loi
@@ -21,8 +21,9 @@ const ReportError = new Schema({
         type: String,
     },
 
-    createdAt: {//thời điểm tao
-        type: String,
+    time_create: {//thời điểm tao
+        type: Date,
+        default : new Date()
     },
     from_source: { //nguon
         type: Number,
