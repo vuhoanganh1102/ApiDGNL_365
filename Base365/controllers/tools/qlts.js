@@ -783,9 +783,20 @@ exports.toolHuy = async (req, res, next) => {
             let listData = data.data.items;
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
+                    let str = listData[i].huy_taisan
+                    str = str.replaceAll('[[','')
+                    str = str.replaceAll(']]','')
+                    str = str.replaceAll('"','')
+                    str = str.replaceAll('ds_huy:','')
+                    str = str.replaceAll('{','')
+                    str = str.replaceAll('}','')
+                    let huy_taisan = [];
+                    str.split(',').map((item)=>{
+                        huy_taisan.push({ds_huy:`${item}`})
+                    })
                     const save = new Huy({
                         huy_id: listData[i].huy_id,
-                        huy_taisan: listData[i].huy_taisan,
+                        huy_taisan: huy_taisan,
                         id_ng_dexuat: listData[i].id_ng_dexuat,
                         huy_id_bb_cp: listData[i].huy_id_bb_cp,
                         id_cty: listData[i].id_cty,

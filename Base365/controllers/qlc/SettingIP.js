@@ -11,11 +11,11 @@ exports.getListByID = async(req, res) => {
         // const com_id = req.body.com_id
         const type = req.user.data.type
         if (type == 1) {
-            const _id = req.body.id || null;
+            const id_acc = req.body.id_acc;
             let condition = {}
-                if (_id) condition._id = _id
+                if (id_acc) condition.id_acc = id_acc
                 if (com_id) condition.com_id = com_id
-                const data = await setIp.find(condition).select('_id fromSite accessIP createAt updateAt').sort({_id: -1}).lean();
+                const data = await setIp.find(condition).select('id_acc from_site ip_access created_time update_time').sort({id_acc: -1}).lean();
                 if (data) {
                     return functions.success(res, 'tạo thành công ', { data })
                 }
@@ -31,32 +31,41 @@ exports.getListByID = async(req, res) => {
 exports.createIP = async(req, res) => {
     try {
         const com_id = req.user.data.com_id
-        // const com_id = req.body.com_id
+        const data1 = req.body.data1
         const type = req.user.data.type
         if (type == 1) {
-    const {  accessIP, fromSite } = req.body;
+    const {  ip_access, from_site } = req.body;
     // let nameApp = "";
-    if (accessIP && fromSite && com_id) {
-        const maxId = await functions.getMaxID(setIp);
-        const _id = Number(maxId) + 1 || 1;
-        const settingIP = new setIp({
-            _id: _id,
-            com_id: com_id,
-            fromSite: fromSite,
-            accessIP: accessIP,
-            createAt: new Date().toJSON().slice(0, 10),
-        })
-        await settingIP.save()
-        return functions.success(res, 'create successful', { settingIP })
+    if (ip_access && from_site && com_id) {
+        const maxId = await setIp.findOne({},{},{sort : {id_acc : -1}}).lean() || 0;
+        const id_acc = Number(maxId.id_acc) + 1 || 1;
+        data1.forEach(async (item) => {//// them nhieu ip
+            const newData = new setIp({
+                id_acc: id_acc,
+                from_site: item.from_site,
+                ip_access: item.ip_access,
+                created_time: new Date().toJSON().slice(0, 10),
+            });   
+          
+            await newData.save();
+        });
+        // const newData = new setIp({ //them 1 ip
+        //     id_acc: id_acc,
+        //     com_id: com_id,
+        //     from_site: from_site,
+        //     ip_access: ip_access,
+        //     created_time: new Date().toJSON().slice(0, 10),
+        // })
+        // await newData.save()
+        return functions.success(res, 'Tạo thành công', { newData })
     }
-    return functions.setError(res, "thiếu thông tin")
+    return functions.setError(res, "thiếu thông tin IP hoặc from_site ")
 }
 return functions.setError(res, "Tài khoản không phải Công ty");
 
 } catch (error) {
 return functions.setError(res, error.message)
 }
-
 }
 exports.editsettingIP = async(req, res) => {
     try {
@@ -64,19 +73,19 @@ exports.editsettingIP = async(req, res) => {
         // const com_id = req.body.com_id
         const type = req.user.data.type
     if (type == 1) {
-    const {_id,accessIP, fromSite } = req.body;
-    if (accessIP && fromSite && com_id) {
-        const settingIP = await functions.getDatafindOne(setIp, { com_id: com_id, _id: _id });
+    const {id_acc,ip_access, from_site } = req.body;
+    if (ip_access && from_site && com_id) {
+        const settingIP = await functions.getDatafindOne(setIp, { com_id: com_id, id_acc: id_acc });
         if (settingIP) {
-            await functions.getDatafindOneAndUpdate(setIp, { com_id: com_id, _id: _id }, {
-                    fromSite: fromSite,
+            await functions.getDatafindOneAndUpdate(setIp, { com_id: com_id, id_acc: id_acc }, {
+                    from_site: from_site,
                     // nameApp: nameApp,
-                    accessIP: accessIP,
-                    updateAt: new Date(),
+                    ip_access: ip_access,
+                    update_time: new Date(),
                 })
-                return functions.success(res, "setIp edited successfully", { settingIP })
+                return functions.success(res, " sửa thành công ", { settingIP })
         }
-        return functions.setError(res, "setIp does not exist!");
+        return functions.setError(res, "IP không tồn tại!");
 
     }
     return functions.setError(res, "thiếu thông tin")
@@ -96,18 +105,18 @@ exports.deleteSetIpByID = async(req, res) => {
         // const com_id = req.body.com_id
         const type = req.user.data.type
         if (type == 1) {
-    const _id = req.body._id;
+    const id_acc = req.body.id_acc;
 
-    if (com_id&&_id) {
+    if (com_id&&id_acc) {
         
-        const settingIp = await functions.getDatafind(setIp, { com_id: com_id, _id: _id });
+        const settingIp = await functions.getDatafind(setIp, { com_id: com_id, id_acc: id_acc });
         if (settingIp) {
-            await functions.getDataDeleteOne(setIp, { com_id: com_id, _id: _id })
-            return functions.success(res, "setIp deleted successfully", { settingIp })
+            await functions.getDataDeleteOne(setIp, { com_id: com_id, id_acc: id_acc })
+            return functions.success(res, "xóa thành công", { settingIp })
         }
-        return functions.setError(res, "No setIp found in this company");
+        return functions.setError(res, "không tìm thấy IP");
     }
-    return functions.setError(res, "Company and _id required");
+    return functions.setError(res, "nhập id_acc cần xóa");
 }
 return functions.setError(res, "Tài khoản không phải Công ty");
 

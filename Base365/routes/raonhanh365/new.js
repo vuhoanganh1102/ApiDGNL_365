@@ -35,7 +35,7 @@ router.post('/loveNew',functions.checkToken,formData.parse(),newRN.loveNew)
 router.get('/createToken',newRN.createToken)
 
 // danh sách tin đã yêu thích
-router.get('/newfavorite/:linkTitle',functions.checkToken,newRN.newfavorite)
+router.post('/newfavorite',formData.parse(),functions.checkToken,newRN.newfavorite)
 
 // quản lí tin mua
 router.post('/managenew',functions.checkToken,formData.parse(),newRN.managenew)
@@ -44,19 +44,19 @@ router.post('/managenew',functions.checkToken,formData.parse(),newRN.managenew)
 router.post('/manageNewBuySell',functions.checkToken,formData.parse(),newRN.manageNewBuySell)
 
 // tin đang dự thầu
-router.get('/newisbidding/:linkTitle',functions.checkToken,newRN.newisbidding)
+router.post('/newisbidding',formData.parse(),functions.checkToken,newRN.newisbidding)
 
 // danh sách danh mục cha va con
 router.post('/getListCate',formData.parse(), newRN.getListCate);
 
 // quản lí tin tìm ứng viên
-router.get('/listCanNew/:linkTitle',functions.checkToken,newRN.listCanNew)
+router.post('/listCanNew',formData.parse(),functions.checkToken,newRN.listCanNew)
 
 // quản lí đang ứng tuyển
 // router.get('/listJobNewApply',functions.checkToken,newRN.listJobNewApply)
 
 // quản lý tin tìm việc làm
-router.get('/listJobNew/:linkTitle',functions.checkToken,newRN.listJobNew)
+router.post('/listJobNew',functions.checkToken,formData.parse(),newRN.listJobNew)
 
 //api thich tin
 router.post('/likeNews', formData.parse(), functions.checkToken, newRN.likeNews);

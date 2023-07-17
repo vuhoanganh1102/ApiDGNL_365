@@ -4,62 +4,55 @@ const functions = require('../../services/functions')
 
 
 exports.create = async(req, res) => {
+try{
     let idQLC = req.user.data.idQLC
     let { rating, feed_back, app_name, from_source, type } = req.body
     let createdAt = new Date()
-    if ((idQLC && type && rating && feed_back) == undefined) {
-        functions.setError(res, "lost info")
-    } else {
-        const max = await feedback.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean()
-
-        let feedbacks = new feedback({
-            _id: Number(max._id) + 1 || 1,
-            idQLC: idQLC,
-            type: type,
+    if (idQLC && type && rating && feed_back) {
+        const max = await feedback.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean()||0
+        
+        let fb = new feedback({
+            id: Number(max.id) + 1 || 1,
+            id_user: idQLC,
+            type_user: type,
             feed_back: feed_back,
             rating: rating,
-            createdAt: Date.parse(createdAt),
-            app_name: app_name || null,
-            from_source: from_source || null,
-
+            create_date: Date.parse(createdAt),
+            app_name: app_name,
+            from_source: from_source,
+            
         })
-        await feedbacks.save()
-            .then(() => functions.success(res, 'thanh cong', { feedbacks }))
-            .catch((e) => functions.setError(res, e.message))
+        await fb.save()
+        return functions.success(res, 'lấy thành công', { fb })
     }
+    return functions.setError(res, "lost info")
+}catch(e){
+    return functions.setError(res, e.message)
+}
+    
 }
 exports.createFeedEmp = async(req, res) => {
     try {
-        let idQLC = req.user.data.idQLC
-        let { cus_id, rating, feed_back, app_name, from_source, email, phone_number, name } = req.body
+        let { cus_id, cus_name , rating, feed_back, app_name, from_source, email, phone_number } = req.body
         let createdAt = new Date()
-        if ((idQLC && rating && feed_back) == undefined) {
-            functions.setError(res, "lost info")
-        } else {
-            let max = await feedback_emp.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            let idmax = 0;
-            console.log(max);
-            if (max != null) {
-                idmax = max._id;
-            }
+        if (rating && feed_back) {
+            let max = await feedback_emp.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean()|| 0;
             let feedbacks = new feedback_emp({
-                _id: Number(idmax) + 1,
-                idQLC: idQLC,
+                id: Number(max.id) + 1 || 1,
                 cus_id: cus_id,
+                cus_name : cus_name,
                 email: email,
                 phone_number: phone_number,
-                name: name,
                 feed_back: feed_back,
                 rating: rating,
-                createdAt: Date.parse(createdAt),
-                app_name: app_name || null,
-                from_source: from_source || null,
-
+                create_date: Date.parse(createdAt),
+                app_name: app_name ,
+                from_source: from_source,
             })
             await feedbacks.save()
-                .then(() => functions.success(res, 'thanh cong', { feedbacks }))
-                .catch((e) => functions.setError(res, e.message))
+            return functions.success(res, 'lấy thành công', {feedbacks})
         }
+        return functions.setError(res, "thiếu thông tin")
     } catch (e) {
         console.log(e);
         return functions.setError(res, e.message)

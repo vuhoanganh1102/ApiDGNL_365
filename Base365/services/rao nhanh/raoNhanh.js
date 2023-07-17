@@ -280,7 +280,7 @@ exports.getLinkFile = async (file,cateId,buySell) => {
     if(buySell == 1){
         folder = 'avt_tindangmua'
     }
-    let link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/${folder}/`;
+    let link = process.env.DOMAIN_RAO_NHANH + `/pictures/${folder}/`;
     let res = '';
     let arr = [];
     for (let i = 0; i < file.length; i++) {
