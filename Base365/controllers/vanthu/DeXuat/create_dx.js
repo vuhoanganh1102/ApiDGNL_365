@@ -6,7 +6,7 @@ const thongBao = require('../../../models/Vanthu365/tl_thong_bao');
 const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
 const DeXuat = require("../../../models/Vanthu/de_xuat");
 const User = require('../../../models/Users');
-const { find } = require('../../../models/AdminUser');
+
 //đề xuất xin nghỉ 
 exports.de_xuat_xin_nghi = async (req, res) => {
     try {
@@ -96,10 +96,8 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                     view: 0,
                     created_date: new Date()
                 });
-
                 createTBs.push(createTB);
             }
-
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
             return functions.success(res, 'get data success', {saveDX, saveCreateTb});
