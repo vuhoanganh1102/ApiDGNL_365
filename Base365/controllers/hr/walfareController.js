@@ -262,6 +262,7 @@ exports.addInfinges = async (req, res, next) => {
         let list_user = req.body.list_user;
         let list_user_name = req.body.list_user_name;
         let price = req.body.price;
+        let resion = req.body.resion;
         if (list_user.length !== 0) {
             for (let j = 0; j < list_user.length; j++) {
                 let check_user = await Users.findOne({'inForPerson.employee.com_id':comId,idQLC:list_user[j] },{_id:1})
