@@ -35,7 +35,7 @@ exports.createIP = async(req, res) => {
         const type = req.user.data.type
         if (type == 1) {
     const {  ip_access, from_site } = req.body;
-    // let nameApp = "";
+    let now = new Date();
     if (ip_access && from_site && com_id) {
         const maxId = await setIp.findOne({},{},{sort : {id_acc : -1}}).lean() || 0;
         const id_acc = Number(maxId.id_acc) + 1 || 1;
@@ -44,7 +44,7 @@ exports.createIP = async(req, res) => {
                 id_acc: id_acc,
                 from_site: item.from_site,
                 ip_access: item.ip_access,
-                created_time: new Date().toJSON().slice(0, 10),
+                created_time: Date.parse(now)/1000,
             });   
           
             await newData.save();
@@ -75,13 +75,15 @@ exports.editsettingIP = async(req, res) => {
     if (type == 1) {
     const {id_acc,ip_access, from_site } = req.body;
     if (ip_access && from_site && com_id) {
+    let now = new Date();
         const settingIP = await functions.getDatafindOne(setIp, { com_id: com_id, id_acc: id_acc });
         if (settingIP) {
             await functions.getDatafindOneAndUpdate(setIp, { com_id: com_id, id_acc: id_acc }, {
                     from_site: from_site,
                     // nameApp: nameApp,
                     ip_access: ip_access,
-                    update_time: new Date(),
+                    update_time: Date.parse(now)/1000,
+
                 })
                 return functions.success(res, " sửa thành công ", { settingIP })
         }

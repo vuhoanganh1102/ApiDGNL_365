@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const Com_error = new Schema({
+const ComError = new Schema({
     //loi dang ki cty
     
     id : {
@@ -36,4 +36,4 @@ const Com_error = new Schema({
 
 });
 
-module.exports = mongoose.model("QLC_Com_error", Com_error);
+module.exports = mongoose.model("QLC_ComError", ComError);
