@@ -1,7 +1,9 @@
 const functions = require("../../../services/functions")
+const fnc = require("../../../services/qlc/functions")
 const feedback = require("../../../models/qlc/Feedback_emp")
 const report = require("../../../models/qlc/ReportError")
 const user = require("../../../models/Users")
+const comErr = require("../../../models/qlc/ComError")
 const md5 = require('md5');
 
 //cai dat dich vu Vip
@@ -40,7 +42,82 @@ exports.setVip = async(req, res) => {
         functions.setError(res, e.message)
     }
 }
+exports.setVipOnly = async(req, res) => {
+    try {
+        let putVip = req.body.putVip
+        let putAuthen = req.body.putAuthen
+        let com_id = req.body.com_id
+        if(putVip){// putVip = 1 là cty vip; putVip = 2 là từng vip; putVip = 0 là chưa vip
+            let find = await user.findOne({ idQLC: com_id, type: 1 }).lean()
+            if (find) {
+                let data = await user.updateOne({ idQLC: com_id, type: 1 }, {
+                    $set: {
+                        'inForCompany.cds.com_vip': putVip,
+                    }
+                })
+                return functions.success(res, "cập nhật thành công ", { data })
+            }
+            return functions.setError(res, " không tìm thấy công ty ")
+        }else if(putAuthen){
+            let find = await user.findOne({ idQLC: com_id, type: 1 }).lean()
+            if (find) {
+                let data = await user.updateOne({ idQLC: com_id, type: 1 }, {
+                    $set: {
+                        authentic: putAuthen,
+                    }
+                })
+                return functions.success(res, "cập nhật thành công ", { data })
+            }
+            return functions.setError(res, " không tìm thấy công ty ")
+        }else{
 
+            return functions.setError(res, " vui lòng nhập trạng thái ")
+        }
+        
+    } catch (e) {
+        functions.setError(res, e.message)
+    }
+}
+exports.listComErr = async(req, res) => {
+    try {
+        const pageNumber = req.body.pageNumber || 1;
+        const request = req.body;
+        let inputNew = request.inputNew
+        let inputOld = request.inputOld
+        let find = request.find
+        let data = [];
+        let listCondition = {};
+
+        let checkNew1 = new Date(inputNew);
+        checkNew1.setDate(checkNew1.getDate() + 1); // + 1 ngay
+        let checkNew = Date.parse(checkNew1);
+        let checkOld1 = new Date(inputOld)
+        let checkOld = Date.parse(checkOld1)
+        if (checkOld > checkNew) {
+            await functions.setError(res, "thời gian nhập không đúng quy định")
+        }
+        if (inputNew || inputOld) listCondition['com_time_err'] = { $gte: checkOld, $lte: checkNew };
+        
+        if (find) listCondition["$or"] = [
+            { "com_name": { $regex: find } },
+            { "com_email": { $regex: find } },
+            { "com_phone": { $regex: find } }
+        ];
+        
+        data = await comErr.find(listCondition).skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
+        if (data === []) {
+            await functions.setError(res, 'Không có dữ liệu', 404);
+
+        } else {
+            let count = await feedback.countDocuments({})
+
+            return functions.success(res, 'Lấy thành công', { data, count });
+        }
+
+    } catch (e) {
+        functions.setError(res, e.message)
+    }
+}
 // lay danh sach KH
 exports.getList = async(req, res) => {
 
@@ -58,11 +135,11 @@ exports.getList = async(req, res) => {
         let type = 1;
         let data = [];
         let listCondition = {};
-        let checkNew1 = new Date(inputNew)
-        let checkNew = Date.parse(checkNew1)
+        let checkNew1 = new Date(inputNew);
+        checkNew1.setDate(checkNew1.getDate() + 1); // + 1 ngay
+        let checkNew = Date.parse(checkNew1);
         let checkOld1 = new Date(inputOld)
         let checkOld = Date.parse(checkOld1)
-
         const currentDate = new Date();
         const previousDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000)
         const inDay1 = new Date(previousDate)
@@ -71,7 +148,7 @@ exports.getList = async(req, res) => {
         if (checkOld > checkNew) {
             await functions.setError(res, "thời gian nhập không đúng quy định")
         }
-
+        
         listCondition.type = 1;
         //tìm kiếm qua trang web
         if (fromWeb) listCondition.fromWeb = fromWeb;
@@ -82,7 +159,13 @@ exports.getList = async(req, res) => {
 
         if (inputNew || inputOld) listCondition['createdAt'] = { $gte: checkOld, $lte: checkNew };
 
-        if (find) listCondition["userName"] = { $regex: find };
+        // if (find) listCondition["userName"] = { $regex: find };
+
+        if (find) listCondition["$or"] = [
+            { "userName": { $regex: find } },
+            { "email": { $regex: find } },
+            { "phoneTK": { $regex: find } }
+        ];
 
         if (type) listCondition.type = type;
         //tiìm kiếm công ty đang vip thì cho vip = 1 
@@ -160,7 +243,7 @@ exports.getListFeedback = async(req, res) => {
         const request = req.body;
         let data = [];
 
-        data = await feedback.find({}).select('name cus_id email phone_number feed_back rating createdAt app_name from_source').skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
+        data = await feedback.find({}).skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
         if (data === []) {
             await functions.setError(res, 'Không có dữ liệu', 404);
 
@@ -180,18 +263,43 @@ exports.getListReportErr = async(req, res) => {
     try {
         const pageNumber = req.body.pageNumber || 1;
         
-        let data = await report.find({}).select('curDeviceId type detail_error gallery_image_error createdAt from_source createdAt').skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 }).lean();
+        let data = await report.aggregate([
+            { $lookup:{
+                from: "Users",
+                localField : "user_id",
+                foreignField : "idQLC",
+                as : "user"}},
+            {$project:{
+                "id_report" : "$id_report",
+                "user_id" : "$user_id",
+                "detail_error" : "$detail_error",
+                "gallery_image_error" : "$gallery_image_error",
+                "time_create" : "$time_create",
+                "from_source" : "$from_source",
+                "user_id" : "$user_id",
+                // "user" : "$user",
+                "userName" : "$user.userName",
+                "type" : "$user.type",
+                "phoneTK" : "$user.phoneTK",
+                "email" : "$user.email",
+            }},
+            // {$match:{idQLC }}
+        ]).skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 });
+        for (let i = 0; i < data.length; i++) {
+            data[i].gallery_image_error = await fnc.createLinkFileErrQLC(data[i].type, data[i].user_id, data[i].gallery_image_error)
+          
+        } 
         if (data === []) {
-            await functions.setError(res, 'Không có dữ liệu', 404);
+            await functions.setError(res, 'Không có dữ liệu', 404); 
 
         } else {
             let count = await report.countDocuments({})
 
             return functions.success(res, 'Lấy thành công', { data, count });
-        }
-
+        } 
+ 
     } catch (e) {
         return functions.setError(res, e.message)
     }
-
-}
+ 
+} 

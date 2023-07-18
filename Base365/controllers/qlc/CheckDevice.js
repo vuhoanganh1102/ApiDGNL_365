@@ -1,4 +1,5 @@
 const Device = require("../../models/qlc/CheckDevice")
+const timeSheet = require("../../models/qlc/HisTracking")
 const Users = require("../../models/Users")
 const functions= require ("../../services/functions")
 
@@ -33,6 +34,7 @@ exports.getlist = async(req, res) => {
                     "new_device": "$listDevice.new_device", 
                     "new_device_name": "$listDevice.new_device_name", 
                 }},
+                // { $unwind: "$current_device" },
                 {$match: condition},
             ]);
             if (data) {
@@ -83,66 +85,41 @@ exports.createDevice = async (req,res)=>{
 exports.add = async (req,res)=>{
     try {
         ed_id = req.body.ed_id
-            const device = await functions.getDatafindOne(Device, {ed_id :ed_id });
-            if (device) {
-                newIDDevice = device.new_device
-                newNameDevice = device.new_device_name
+            const data = await functions.getDatafindOne(Device, {ed_id :ed_id });
+            if (data) {
+                newIDDevice = data.new_device
+                newNameDevice = data.new_device_name
                 await functions.getDatafindOneAndUpdate(Device, { ed_id : ed_id }, {
                     current_device: newIDDevice,
                     current_device_name: newNameDevice,
                     new_device: null,
                     new_device_name: null,
                 })
-                await functions.getDatafindOneAndUpdate(Device, { ed_id : ed_id }, {
-                    current_device: newIDDevice,
-                    current_device_name: newNameDevice,
-                    new_device: null,
-                    new_device_name: null,
+                await functions.getDatafindOneAndUpdate(timeSheet, { ed_id : ed_id , status : 2, ts_image : ''}, {
+                    is_success: 1,
                 })
-                return functions.success(res, "duyệt thành công", { data });
+                return functions.success(res, "duyệt thành công");
             }
             return functions.setError(res, "ed_id không tồn tại ");
-
-
 } catch (err) {
-
     return functions.setError(res, err.message)
 }
 
 }
-// //chinh sua yeu cau 
-// exports.editDevice = async (req,res)=>{
-//     const _id = req.params.id;
-//         const {ep_id , dep_id , current_device_name , new_device_name} = req.body;
-//             const device = await functions.getDatafindOne(Device,{_id : _id})
-//             if(!device){
-//                 functions.setError(res,"check device doesnt existed")
-//             }else{
-            
-//                 await functions.getDatafindOneAndUpdate(Device,{_id : _id},{
-//                     ep_id: ep_id,
-//                     dep_id: dep_id,
-//                     current_device_name: current_device_name,
-//                     new_device_name: new_device_name
-//                 })
-//                 .then((device)=> functions.success(res,"check device edited successful", device ))
-//                 .catch((err)=> functions.setError(res,err.message));
-//     }
-// }
-//xoa yeu cau cau dang ki thiet bi
-exports.deleteDevice = async (req,res)=>{
-    const _id = req.params.id;
 
-    if(isNaN(_id)){
-        functions.setError(res,"id must be a number");
-    }else {
-        const devices = await functions.getDatafindOne(Device,{_id :_id})
-        if(!devices) {
-            functions.setError(res, "check device doesnt exist")
-        }else {
-            await functions.getDataDeleteOne(Device, {_id :_id})
-            .then(()=> functions.success(res,"delete check device successful",devices))
-            .catch((err)=>functions.setError(res,err.message))
-        }
+exports.delete = async (req, res) => {
+    try {
+        const ed_id = req.body.ed_id
+            if (ed_id) {
+                const data = await functions.getDatafindOne(Device, { ed_id: ed_id });
+                if (data) {
+                    functions.getDataDeleteOne(Device, { ed_id: ed_id })
+                    return functions.success(res, "xóa thành công !", { data })
+                }
+                return functions.setError(res, "không tồn tại!", 510);
+            }
+            return functions.setError(res, "Thiếu trường ed_id ", );
+    } catch (error) {
+        return functions.setError(res, error.message)
     }
-}
+};

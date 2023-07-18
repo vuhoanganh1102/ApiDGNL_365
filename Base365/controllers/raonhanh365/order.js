@@ -76,11 +76,11 @@ exports.order = async (req, res, next) => {
                     await Order.create({
                         _id, codeOrder: codeOrder[i], phone, deliveryAddress, sellerId: sellerId[i], note, paymentType,
                         totalProductCost: totalProductCost[i], promotionType: promotionType[i], promotionValue: promotionValue[i], shipFee: shipFee[i], shipType: shipType[i],
-                        tien_ttoan_ctra, paymentMethod, unitPrice: unitPrice[i], buyerId:idRaoNhanh365, status
+                        tien_ttoan_ctra, paymentMethod, unitPrice: unitPrice[i], buyerId: idRaoNhanh365, status
                     }
                     )
                     if (paymentMethod == 0) {
-                        if(check_money.inforRN365){
+                        if (check_money.inforRN365) {
                             let tienConLai = check_money.inforRN365.money - tien_ttoan_ctra;
                             await User.findOneAndUpdate({ idRaoNhanh365 }, { 'inforRN365.money': tienConLai })
                         }
@@ -109,7 +109,7 @@ exports.bidding = async (req, res, next) => {
         let userProfileFile = null;
         let promotion = req.body.promotion || null;
         let promotionFile = null;
-        let _id = 1 || await functions.getMaxID(Bidding) + 1;
+        let _id = await functions.getMaxID(Bidding) + 1;
         let status = 0;
         let userIntro = req.body.userIntro || null;
         let userName = req.user.data.userName;
@@ -123,11 +123,11 @@ exports.bidding = async (req, res, next) => {
         if (uploadfile.userFile) {
             if (uploadfile.userFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
             userFile = await raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userFile, ['.jpg', '.png', '.docx', '.pdf'])
-        } 
-         if (uploadfile.userProfileFile) {
+        }
+        if (uploadfile.userProfileFile) {
             if (uploadfile.userProfileFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
             userProfileFile = await raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.userProfileFile, ['.jpg', '.png', '.docx', '.pdf'])
-        } 
+        }
         if (uploadfile.promotionFile) {
             if (uploadfile.promotionFile.length) return functions.setError(res, 'Tải lên quá nhiều file', 400)
             promotionFile = await raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
@@ -167,12 +167,14 @@ exports.announceResult = async (req, res, next) => {
 // quản lý đơn hàng mua
 exports.manageOrderBuy = async (req, res, next) => {
     try {
-        let linkTitle = req.params.linkTitle;
+
+        let linkTitle = req.body.linkTitle;
         let buyerId = req.user.data.idRaoNhanh365;
         let data = [];
-        let page = req.body.page || 1;
-        let pageSize = req.body.pageSize || 50;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
         let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let sl_choXacNhan = await Order.find({ buyerId, status: 0 }).count();
         let sl_dangXuLy = await Order.find({ buyerId, status: 1 }).count();
         let sl_dangGiao = await Order.find({ buyerId, status: 2 }).count();
@@ -180,7 +182,7 @@ exports.manageOrderBuy = async (req, res, next) => {
         let sl_daHuy = await Order.find({ buyerId, status: 4 }).count();
         let sl_hoanTat = await Order.find({ buyerId, status: 5 }).count();
         let searchItem = {
-            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1,cateID:1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
+            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
         }
         if (linkTitle === 'quan-ly-don-hang-mua.html') {
@@ -196,6 +198,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -204,16 +207,10 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-               
-                {
-                    $project: searchItem
-                },
-                {
-                    $skip: skip
-                }, 
-                {
-                    $limit: pageSize
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-mua.html') {
             data = await Order.aggregate([
@@ -236,7 +233,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-               
+
                 {
                     $project: searchItem
                 }, {
@@ -266,7 +263,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                
+
                 {
                     $project: searchItem
                 }, {
@@ -288,6 +285,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -296,14 +294,10 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                
-                {
-                    $project: searchItem
-                }, {
-                    $skip: skip
-                }, {
-                    $limit: pageSize
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-mua.html') {
             data = await Order.aggregate([
@@ -318,6 +312,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -326,14 +321,10 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-               
-                {
-                    $project: searchItem
-                }, {
-                    $skip: skip
-                }, {
-                    $limit: pageSize
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-mua.html') {
             data = await Order.aggregate([
@@ -348,6 +339,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -356,22 +348,19 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                
-                {
-                    $project: searchItem
-                }, {
-                    $skip: skip
-                }, {
-                    $limit: pageSize
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
+
             ])
-            
+
         } else {
             return functions.setError(res, 'link not exits', 404)
         }
-        for(let i = 0; i < data.length; i++) {  
-            if(data[i].new.img){
-                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID,2);
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].new.img) {
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img, data[i].new.cateID, 2);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
@@ -384,9 +373,13 @@ exports.manageOrderBuy = async (req, res, next) => {
 // quản lý đơn hàng bán
 exports.manageOrderSell = async (req, res, next) => {
     try {
-        let linkTitle = req.params.linkTitle;
+        let linkTitle = req.body.linkTitle;
         let sellerId = req.user.data.idRaoNhanh365;
         let data = [];
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         let sl_choXacNhan = await Order.find({ sellerId, status: 0 }).count();
         let sl_dangXuLy = await Order.find({ sellerId, status: 1 }).count();
         let sl_dangGiao = await Order.find({ sellerId, status: 2 }).count();
@@ -394,9 +387,9 @@ exports.manageOrderSell = async (req, res, next) => {
         let sl_daHuy = await Order.find({ sellerId, status: 4 }).count();
         let sl_hoanTat = await Order.find({ sellerId, status: 5 }).count();
         let searchItem = {
-            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1,cateID:1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
+            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
-            
+
         };
         if (linkTitle === 'quan-ly-don-hang-ban.html') {
 
@@ -412,6 +405,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -420,10 +414,10 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                
-                {
-                    $project: searchItem
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-ban.html') {
 
@@ -440,6 +434,9 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 {
+                    $unwind: "$new"
+                },
+                {
                     $lookup: {
                         from: "Users",
                         localField: "buyerId",
@@ -447,10 +444,10 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-               
-                {
-                    $project: searchItem
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-ban.html') {
             data = await Order.aggregate([
@@ -465,6 +462,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -473,10 +471,10 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-               
-                {
-                    $project: searchItem
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-ban.html') {
             data = await Order.aggregate([
@@ -491,6 +489,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -499,10 +498,10 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-               
-                {
-                    $project: searchItem
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-ban.html') {
             data = await Order.aggregate([
@@ -517,6 +516,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -525,10 +525,10 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                
-                {
-                    $project: searchItem
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-ban.html') {
             data = await Order.aggregate([
@@ -543,6 +543,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -551,18 +552,18 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                
-                {
-                    $project: searchItem
-                }
+                { $unwind: "$user" },
+                { $skip: skip },
+                { $limit: limit },
+                { $project: searchItem }
             ])
-            
+
         } else {
             return functions.setError(res, 'link not exits', 404)
         }
-        for(let i = 0; i < data.length; i++) {  
-            if(data[i].new.img){
-                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img,data[i].new.cateID,2);
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].new.img) {
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img, data[i].new.cateID, 2);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })

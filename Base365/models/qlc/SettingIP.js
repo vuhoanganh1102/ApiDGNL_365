@@ -1,34 +1,27 @@
 const mongoose = require('mongoose')
 
 
-const setipShema = new mongoose.Schema({
+const access_ip = new mongoose.Schema({
 
-    _id:{// id cài đặt ip
+    id_acc:{// id cài đặt ip
         type: Number,
         default : true
-    // },
-    // idQLC: {// id user
-    //     type : Number,
     },
     com_id :{// id công ty
         type: Number,
     },
-    accessIP :{//địa chỉ ip
+    ip_access :{//địa chỉ ip
         type :String,
 
     },
-    fromSite : {// site cài IP 
+    from_site : {// site cài IP 
         type: String,
     },
-    // nameApp: { // ứng dụng cài đặt IP
-    //     type: String,
-    // },
-    createAt: {//thời điểm tạo
-        type: Date,
-        default : Date.now()
+    created_time: {//thời điểm tạo
+        type: Number,
     },
-    updateAt : {//o là chưa up date lần nào
+    update_time : {//o là chưa up date lần nào
         tpye: Date,
     }    
 });
-module.exports = mongoose.model('QLC_SettingIP', setipShema)
+module.exports = mongoose.model('QLC_Access_ip', access_ip)
