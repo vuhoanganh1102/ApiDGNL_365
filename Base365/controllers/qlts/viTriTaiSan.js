@@ -73,14 +73,11 @@ exports.show = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-
     page = parseInt(page) || 1; // Trang hiện tại (mặc định là trang 1)
     perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
-
     let matchQuery = {
       id_cty: com_id, // Lọc theo com_id
     };
-
     if (id_vitri) {
       matchQuery.id_vitri = parseInt(id_vitri); // Lọc theo id_vitri nếu có
     }
@@ -95,8 +92,8 @@ exports.show = async (req, res) => {
       {
         $lookup: {
           from: 'qlc_deparments', // Tên bảng khác bạn muốn tham gia
-          localField: 'dv_quan_ly',
-          foreignField: 'dep_id',
+          localField:'dv_quan_ly',
+          foreignField:  'dep_id',
           as: 'name_dep',
         },
       },

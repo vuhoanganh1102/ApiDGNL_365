@@ -205,63 +205,64 @@ exports.toolThongTinTuyChinh = async (req, res, next) => {
     }
 }
 exports.toolThuHoiTaiSan = async (req, res, next) => {
-
     try {
         let page = 1;
         let result = true;
         do {
-            let listItems = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 29 })
+            let listItems = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 29 });
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    const element = data[i];
-                    const html = JSON.stringify(element.html);
-                    // let updateAt = element.update_time;
-                    // if (updateAt == 0) {
-                    //     updateAt = null;
-                    // };
+                    const ds_thuhoi = JSON.parse(data[i].thuhoi_taisan).ds_thuhoi;
+                    const updated_ds_thuhoi = ds_thuhoi.map((item) => ({
+                        ts_id: item[0],
+                        sl_th: item[1]
+                    }));
+                    
                     const ThuHoi = new ThuHoiTaiSan({
-                        _id: element.thuhoi_id,
-                        thuhoi_ng_tao: element.thuhoi_ng_tao,
-                        th_type_quyen: element.th_type_quyen,
-                        thuhoi_taisan: element.thuhoi_taisan,
-                        id_cty: element.id_cty,
-                        id_ng_thuhoi: element.id_ng_thuhoi,
-                        id_ng_dc_thuhoi: element.id_ng_dc_thuhoi,
-                        id_pb_thuhoi: element.id_pb_thuhoi,
-                        th_dai_dien_pb: element.th_dai_dien_pb,
-                        thuhoi_ngay: element.thuhoi_ngay,
-                        thuhoi_hoanthanh: element.thuhoi_hoanthanh,
-                        thuhoi_soluong: element.thuhoi_soluong,
-                        type_thuhoi: element.type_thuhoi,
-                        thuhoi_trangthai: element.thuhoi_trangthai,
-                        thuhoi__lydo: element.thuhoi__lydo,
-                        loai_thuhoi: element.loai_thuhoi,
-                        thuhoi_type_quyen: element.thuhoi_type_quyen,
-                        thuhoi_id_ng_xoa: element.thuhoi_id_ng_xoa,
-                        xoa_thuhoi: element.xoa_thuhoi,
-                        thuhoi_date_create: element.thuhoi_date_create,
-                        thuhoi_date_delete: element.thuhoi_date_delete,
-                        th_type_quyen_xoa: element.th_type_quyen_xoa,
-                        th_ly_do_tu_choi_ban_giao: element.th_ly_do_tu_choi_ban_giao,
-                        th_ly_do_tu_choi_nhan: element.th_ly_do_tu_choi_nhan,
-                        th_ly_do_tu_choi_thuhoi: element.th_ly_do_tu_choi_thuhoi,
-                    })
-                    await ThuHoi.save()
-
+                        thuhoi_id: data[i].thuhoi_id,
+                        thuhoi_ng_tao: data[i].thuhoi_ng_tao,
+                        th_type_quyen: data[i].th_type_quyen,
+                        thuhoi_taisan: {
+                            ds_thuhoi: updated_ds_thuhoi
+                        },
+                        id_cty: data[i].id_cty,
+                        id_ng_thuhoi: data[i].id_ng_thuhoi,
+                        id_ng_dc_thuhoi: data[i].id_ng_dc_thuhoi,
+                        id_pb_thuhoi: data[i].id_pb_thuhoi,
+                        th_dai_dien_pb: data[i].th_dai_dien_pb,
+                        thuhoi_ngay: data[i].thuhoi_ngay,
+                        thuhoi_hoanthanh: data[i].thuhoi_hoanthanh,
+                        thuhoi_soluong: data[i].thuhoi_soluong,
+                        type_thuhoi: data[i].type_thuhoi,
+                        thuhoi_trangthai: data[i].thuhoi_trangthai,
+                        thuhoi__lydo: data[i].thuhoi__lydo,
+                        loai_thuhoi: data[i].loai_thuhoi,
+                        thuhoi_type_quyen: data[i].thuhoi_type_quyen,
+                        thuhoi_id_ng_xoa: data[i].thuhoi_id_ng_xoa,
+                        xoa_thuhoi: data[i].xoa_thuhoi,
+                        thuhoi_date_create: data[i].thuhoi_date_create,
+                        thuhoi_date_delete: data[i].thuhoi_date_delete,
+                        th_type_quyen_xoa: data[i].th_type_quyen_xoa,
+                        th_ly_do_tu_choi_ban_giao: data[i].th_ly_do_tu_choi_ban_giao,
+                        th_ly_do_tu_choi_nhan: data[i].th_ly_do_tu_choi_nhan,
+                        th_ly_do_tu_choi_thuhoi: data[i].th_ly_do_tu_choi_thuhoi,
+                    });
+                    await ThuHoi.save();
                 }
                 page++;
             } else {
                 result = false;
             }
-            console.log(page)
+            console.log(page);
         } while (result);
-        return fnc.success(res, 'Thành công')
+        return fnc.success(res, 'Thành công');
     } catch (error) {
         console.log(error);
         return fnc.setError(res, error.message);
     }
-}
+};
+
 exports.toolThongBao = async (req, res, next) => {
 
     try {
