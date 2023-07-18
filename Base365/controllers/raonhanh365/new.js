@@ -658,8 +658,11 @@ exports.getNew = async (req, res, next) => {
             if (userIdRaoNhanh) {
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
-                    if (data[i].userID === dataLoveNew[j].id_user) {
+                    if (data[i]._id === dataLoveNew[j].id_new) {
                         data[i].islove = 1;
+                    }
+                    if(data[i].islove !== 1){
+                        data[i].islove = 0;
                     }
                 }
             }
@@ -1072,10 +1075,14 @@ exports.searchNew = async (req, res, next) => {
             if (userIdRaoNhanh) {
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
-                    if (data[i].userID === dataLoveNew[j].id_user) {
+                    if (data[i]._id === dataLoveNew[j].id_new) {
                         data[i].islove = 1;
                     }
+                    if(data[i].islove !== 1){
+                        data[i].islove = 0;
+                    }
                 }
+                
             }
         }
         const totalCount = await New.countDocuments(condition);
@@ -1769,10 +1776,14 @@ exports.getDetailNew = async (req, res, next) => {
             if (userIdRaoNhanh) {
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
-                    if (data[i].userID === dataLoveNew[j].id_user) {
+                    if (data[i]._id === dataLoveNew[j].id_new) {
                         data[i].islove = 1;
                     }
+                    if(data[i].islove !== 1){
+                        data[i].islove = 0;
+                    }
                 }
+                
             }
         }
         let dataBidding = null;
