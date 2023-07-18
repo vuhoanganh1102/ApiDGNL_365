@@ -6,7 +6,7 @@ const functions = require("../../services/functions")
 
 
 //Xóa toàn bộ lịch sử chấm công
-router.post("/create", formData.parse(), controller.create)
+router.post("/create", formData.parse(),functions.checkToken, controller.create)
 
 
 module.exports = router

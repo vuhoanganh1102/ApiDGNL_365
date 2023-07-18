@@ -3,8 +3,8 @@ const WorkDay = require("../../models/qlc/CC365_CompanyWorkday")
 
 exports.create = async( req, res )=>{
     try{
-        // let com_id = req.user.data.com_id
-        let com_id = req.body.com_id
+        let com_id = req.user.data.com_id
+        // let com_id = req.body.com_id
         let num_days = req.body.num_days
         let month = req.body.month
         let year = req.body.year
@@ -12,7 +12,6 @@ exports.create = async( req, res )=>{
             const apply_month = year +"-"+ month
             const fullMonth = apply_month + "-" + "01"
             let data = await WorkDay.findOne({com_id:com_id, apply_month:fullMonth})
-            console.log(data)
             if(!data){
                 const max1 = await WorkDay.findOne({}, { cw_id: 1 }).sort({ cw_id: -1 }).limit(1).lean()||0
                 const com = new WorkDay({
