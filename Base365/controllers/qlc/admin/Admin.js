@@ -3,7 +3,7 @@ const fnc = require("../../../services/qlc/functions")
 const feedback = require("../../../models/qlc/Feedback_emp")
 const report = require("../../../models/qlc/ReportError")
 const user = require("../../../models/Users")
-const comErr = require("../../../models/qlc/Com_error")
+const comErr = require("../../../models/qlc/ComError")
 const md5 = require('md5');
 
 //cai dat dich vu Vip

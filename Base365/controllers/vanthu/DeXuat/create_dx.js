@@ -6,7 +6,9 @@ const thongBao = require('../../../models/Vanthu365/tl_thong_bao');
 const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
 const DeXuat = require("../../../models/Vanthu/de_xuat");
 const User = require('../../../models/Users');
-const { find } = require('../../../models/AdminUser');
+const SettingD = require('../../../models/Vanthu/setting_dx');
+const { log } = require('console');
+
 //đề xuất xin nghỉ 
 exports.de_xuat_xin_nghi = async (req, res) => {
     try {
@@ -96,10 +98,8 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                     view: 0,
                     created_date: new Date()
                 });
-
                 createTBs.push(createTB);
             }
-
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
             return functions.success(res, 'get data success', {saveDX, saveCreateTb});
@@ -131,7 +131,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -239,7 +239,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -351,7 +351,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -463,7 +463,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -570,7 +570,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -675,7 +675,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -780,7 +780,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -886,7 +886,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -987,7 +987,7 @@ exports.lich_lam_viec = async (req, res) => {
             let name_user = "";
             if(req.user.data.type == 2){
                 id_user = req.user.data.idQLC
-                com_id = req.user.data.inForPerson.employee.com_id
+                com_id = req.user.data.com_id
                 name_user = req.user.data.userName  
             }else{
                 return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1084,7 +1084,7 @@ exports.dxCong = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1181,7 +1181,7 @@ exports.dxCoSoVatChat = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1282,7 +1282,7 @@ exports.dxDangKiSuDungXe = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1385,7 +1385,7 @@ exports.dxHoaHong = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1485,7 +1485,7 @@ exports.dxKhieuNai = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1585,7 +1585,7 @@ exports.dxPhongHop = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1687,7 +1687,7 @@ exports.dxTangCa = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1787,7 +1787,7 @@ exports.dxThaiSan = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1886,7 +1886,7 @@ exports.dxThanhToan = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -1991,7 +1991,7 @@ exports.dxThuongPhat = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -2083,22 +2083,22 @@ exports.showadd = async (req, res) => {
     try {
         let com_id = '';
         if (req.user.data.type == 2) {
-            if (inForPerson.employee.com_id == 0) {
-                return functions.setError(res, 'nhân viên đã nghỉ việc không thể truy xuất', 400);
+            const checkUserNv = await User.findOne({idQLC : req.user.data.idQLC}).select('inForPerson')
+            if (checkUserNv.inForPerson.employee.ep_status !== "Active") {
+                return functions.setError(res, 'nhân viên đã nghỉ việc', 400);
             } else {
-                com_id = req.user.data.inForPerson.employee.com_id
-                const showUserduyet = await User.find({
-                    'inForPerson.employee.com_id': com_id, $or: [
-                        { 'inForPerson.employee.com_id': com_id, 'inForPerson.employee.position_id': 5 },// chức vụ của người duyệt
-                        { 'inForPerson.employee.com_id': com_id, 'inForPerson.employee.position_id': 6 },
-                    ]
-                }).select('idQLC userName avatarUser')
-                const showUserTheoDoi = await User.find({
+                com_id = req.user.data.com_id
+                const showUserduyet = await SettingD.findOne({com_id : com_id}).select('list_user')
+                const idUserD = showUserduyet.list_user.split(',').map(Number);
+                const listUserDuyet = await User.find({
+                    idQLC :{ $in: idUserD },
+                    'inForPerson.employee.ep_status' : 'Active'
+                }).select('idQLC userName avatarUser inForPerson.employee.dep_id inForPerson.employee.position_id')
+                const listUserTheoDoi = await User.find({
                     'inForPerson.employee.com_id': com_id,
-                    'inForPerson.employee.com_id': com_id,
-                    'inForPerson.employee.position_id': { $in: [2, 9, 3, 20, 4, 12, 13, 10, 11] }// chức vụ của người theo dõi
-                }).select('idQLC userName avatarUser')
-                return functions.success(res, 'get data success', { showUserduyet, showUserTheoDoi });
+                    'inForPerson.employee.ep_status' : 'Active'
+                }).select('idQLC userName avatarUser ')
+                return functions.success(res, 'data success', { listUserDuyet,listUserTheoDoi});
             }
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);

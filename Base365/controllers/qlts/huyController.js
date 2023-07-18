@@ -5,7 +5,15 @@ const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
 const TaiSanDangSuDung = require('../../models/QuanLyTaiSan/TaiSanDangSuDung');
 const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
 
-
+// tạo đề xuất tài sản huỷ
+exports.createAssetProposeCancel = async (req,res,next)=>{
+    try {
+        
+    } catch (error) {
+        console.error(error)
+        return functions.setError(res,error)
+    }
+}
 // lấy danh sách đề xuất tài sản huỷ
 exports.getDataAssetProposeCancel = async (req, res, next) => {
     try {
@@ -251,3 +259,4 @@ exports.rejectAssetDisposal = async (req,res,next)=>{
         return functions.setError(res, error)
     }
 }
+

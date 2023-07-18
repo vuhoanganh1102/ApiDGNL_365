@@ -55,7 +55,7 @@ exports.showAll = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'QLTS_Loai_Tai_San', // Tên bảng khác bạn muốn tham gia
+          from: 'QLTS_Loai_Tai_San',
           localField: 'id_loai_ts',
           foreignField: 'id_loai',
           as: 'name_loai',
@@ -63,20 +63,56 @@ exports.showAll = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'QLTS_ViTri_ts', // Tên bảng khác bạn muốn tham gia
+          from: 'QLTS_ViTri_ts',
           localField: 'ts_vi_tri',
           foreignField: 'id_vitri',
           as: 'name_vitri',
         },
-      }
-      ,
-      {
-        $skip: startIndex, // Bỏ qua các bản ghi từ startIndex
       },
       {
-        $limit: perPage, // Giới hạn số lượng bản ghi trả về là perPage
+        $lookup: {
+          from: 'qlc_deparments', // Tên bảng khác bạn muốn tham gia
+          localField: 'dv_quan_ly',
+          foreignField: 'dep_id',
+          as: 'name_dep',
+        },
       },
-    ])
+      {
+        $lookup: {
+          from: 'QTLTS_ThuHoi',
+          let: { ts_id: '$ts_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $in: ['$ts_id', '$thuhoi_taisan.ds_thuhoi.ts_id'] },
+              },
+            },
+          ],
+          as: 'so_luongth',
+        },
+      },
+      {
+        $project : {
+           "ts_id" : "$ts_id",
+           "ts_ten" : "$ts_ten",
+           "ten_nguoi_cam" : "$",
+           "ts_so_luong" : "$ts_so_luong",
+           "soluong_cp_bb" : "$soluong_cp_bb",
+           "loai_tai_san" : "$ten_loai",
+           "gia_tri" : "$ts_gia_tri",
+           "tinh_trang_su_dung" : "$ts_trangthai",
+           "vi_tri_tai_san" : "$name_vitri.vi_tri",
+           "Don_vi_quan_ly" : "$"
+        }
+      },
+      {
+        $skip: startIndex,
+      },
+      {
+        $limit: perPage,
+      },
+    ]);
+    
 
     // Lấy tổng số lượng tài sản
     const totalTsCount = await TaiSan.countDocuments(matchQuery);

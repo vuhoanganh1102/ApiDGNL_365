@@ -3,7 +3,7 @@ const fnc = require('../../services/qlc/functions');
 const functions = require("../../services/functions")
 const md5 = require('md5');
 const Deparment = require("../../models/qlc/Deparment")
-const comErr = require("../../models/qlc/Com_error")
+const comErr = require("../../models/qlc/ComError")
 
 
 //Đăng kí tài khoản công ty 
@@ -118,8 +118,37 @@ exports.register = async(req, res) => {
                     return functions.setError(res, 'Một trong số các trường yêu cầu bị thiếu, danh sách đăng kí lỗi đã được cập nhật')
                 };
             }
-        } catch (e) {
-            return functions.setError(res, e.message)
+        } else {
+            //nếu nhập thiếu trường thì lưu lại bảng đăng kí lỗi 
+            let writeErr = await comErr.findOne({ com_phone: phoneTK }).lean()
+                //nếu không tìm thấy thì tạo mới 
+            if (!writeErr) {
+                const max1 = await comErr.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean() || 0
+                const com = new comErr({
+                    id: Number(max1.id) + 1 || 1,
+                    com_email: emailContact,
+                    com_phone: phoneTK,
+                    com_name: userName,
+                    com_address: address,
+                    com_pass: password,
+                    com_time_err: Date.parse(createdAt) / 1000,
+                })
+                await com.save()
+                return functions.setError(res, 'Một trong số các trường yêu cầu bị thiếu, danh sách đăng kí lỗi đã được ghi lại')
+            } else {
+                //nếu tìm thấy thì cập nhật 
+                await comErr.updateOne({ com_phone: phoneTK }, {
+                    $set: {
+                        com_email: emailContact,
+                        com_phone: phoneTK,
+                        com_name: userName,
+                        com_address: address,
+                        com_pass: password,
+                        com_time_err: Date.parse(createdAt) / 1000,
+                    }
+                })
+                return functions.setError(res, 'Một trong số các trường yêu cầu bị thiếu, danh sách đăng kí lỗi đã được cập nhật')
+            };
         }
 
     }

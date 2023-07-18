@@ -8,7 +8,6 @@ exports.addContract = async (req, res) => {
             name,
             ep_id,
             id_file,
-            created_at,
             new_field,
             old_field,
             index_field,

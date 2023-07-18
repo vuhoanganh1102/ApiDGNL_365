@@ -13,8 +13,8 @@ exports.deXuat_user_send = async (req, res) => {
     let id_user = 0;
     let com_id = 0;
     if(req.user.data.type == 2) {
-       id_user = req.user.idQLC
-       com_id = req.user.data.inForPerson.employee.com_id;
+       id_user = req.user.data.idQLC
+       com_id = req.user.data.com_id;
     }else{
       return functions.setError(res,'Bạn không có quyền truy cập.',400)
     }
@@ -100,8 +100,8 @@ exports.de_xuat_send_to_me = async (req, res) => {
     let id_user_duyet = 0;
     let com_id = 0;
     if(req.user.data.type == 2) {
-       id_user_duyet = req.user.idQLC
-       com_id = req.user.data.inForPerson.employee.com_id;
+       id_user_duyet  = req.user.data.idQLC
+       com_id = req.user.data.com_id;
     }else{
       return functions.setError(res,'Bạn không có quyền truy cập.',400)
     }
@@ -163,8 +163,6 @@ exports.de_xuat_send_to_me = async (req, res) => {
         .skip(startIndex)
         .limit(perPage);
       return functions.success(res,'get data success',{showTC})
-       
-     
     } else{
       return functions.setError(res,'type khong hop le',400)
       }
@@ -181,8 +179,8 @@ exports.de_xuat_theo_doi = async (req, res) => {
     let id_user_theo_doi = 0;
     let com_id = 0;
     if(req.user.data.type == 2) {
-       id_user_theo_doi = req.user.idQLC
-       com_id = req.user.data.inForPerson.employee.com_id;
+       id_user_theo_doi = req.user.data.idQLC
+       com_id = req.user.data.com_id;
     }else{
       return functions.setError(res,'Bạn không có quyền truy cập.',400)
     }
@@ -270,7 +268,7 @@ exports.admin_danh_sach_de_xuat = async (req, res) => {
 
     let com_id = '';
     if(req.user.data.type == 1){
-      com_id = req.user.data.idQLC
+      com_id = req.user.data.com_id
     }else{
       return functions.setError(res,'Bạn không có quyền truy cập.',400)
     }
