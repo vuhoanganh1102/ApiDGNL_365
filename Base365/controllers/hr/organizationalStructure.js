@@ -498,21 +498,22 @@ exports.detailInfoCompany = async (req, res, next) => {
 exports.description = async (req, res, next) => {
     try {
         if (req.infoLogin) {
-            let comId = req.infoLogin.comId;
+            let comId = req.body.comId;
+            if(!comId) comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
             let info = {};
 
             if (groupId) {
-                info = await HR_NestDetails.findOne({ comId: comId, grId: groupId, type: 1 }, { description: 1, id: 1 })
+                info = await HR_NestDetails.findOne({ comId: comId, grId: groupId, type: 1 })
             }
             if (teamId && !groupId) {
-                info = await HR_NestDetails.findOne({ comId: comId, grId: teamId, type: 0 }, { description: 1, id: 1 })
+                info = await HR_NestDetails.findOne({ comId: comId, grId: teamId, type: 0 })
             }
             if (depId && !teamId && !groupId) {
 
-                info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId }, { description: 1, id: 1 })
+                info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId })
             }
             if (!info || info.description == null) {
                 info = {description: "chưa cập nhật"}
@@ -531,7 +532,8 @@ exports.description = async (req, res, next) => {
 exports.updateDescription = async (req, res, next) => {
     try {
         if (req.infoLogin) {
-            let comId = req.infoLogin.comId;
+            let comId = req.body.comId;
+            if(!comId) comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
