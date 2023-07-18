@@ -39,6 +39,28 @@ const positionNames = {
     1: 'Sinh viên thực tập'
 };
 
+let totalDD = async(res, condition) => {
+    try{
+        let empDD = await Users.aggregate([
+            {$match: condition},
+            {
+                $lookup: {
+                    from: "QLC_Time_sheets",
+                    localField: "idQLC",
+                    foreignField: "ep_id",
+                    as: "Time_sheets"
+                }
+            },
+            {$match: {Time_sheets: {$ne: []}}},
+            {$project: {Time_sheets: 1}},
+        ]);
+        return empDD.length;
+    }catch(e){
+        return functions.setError(res, e.message);
+    }
+    
+}
+
 //cơ cấu tổ chức công ty, công ty con và phòng ban
 exports.detailInfoCompany = async (req, res, next) => {
     try {
@@ -64,9 +86,13 @@ exports.detailInfoCompany = async (req, res, next) => {
                         employee: {
                             com_id: 1,
                             position_id: 1,
+                            dep_id: 1,
+                            group_id: 1,
+                            team_id: 1,
                         }
                     }
                 });
+                const listEmpDD = await Tracking.find({com_id: com_id});
                 let listGiamDoc = listEmployee.filter(employee=> {
                     if(
                         employee.inForPerson &&
@@ -135,8 +161,29 @@ exports.detailInfoCompany = async (req, res, next) => {
                         })
                         infoDep.total_emp = countEmpDep
 
-                        let countEmpDepDD = await Tracking.countDocuments({ com_id: com_id, dep_id: infoDepParent[i].dep_id, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
-                        infoDep.tong_nv_da_diem_danh = countEmpDepDD
+                        let countEmpDepDD = await Tracking.countDocuments({ com_id: com_id })
+                        for(let m=0; m<listEmpDD.length; m++) {
+                            
+                        }
+                        const conditionDD = {
+                            type: 2,
+                            "inForPerson.employee.com_id": com_id,
+                        }
+                        let conditionDep = {...conditionDD, "inForPerson.employee.dep_id": infoDepParent[i].dep_id};
+                        let empDD = await Users.aggregate([
+                            {$match: conditionDep},
+                            {
+                                $lookup: {
+                                    from: "QLC_Time_sheets",
+                                    localField: "idQLC",
+                                    foreignField: "ep_id",
+                                    as: "Time_sheets"
+                                }
+                            },
+                            {$match: {Time_sheets: {$ne: []}}},
+                            {$project: {Time_sheets: 1}},
+                        ]);
+                        infoDep.tong_nv_da_diem_danh = await totalDD(res, conditionDep);
 
                         result.infoCompany.infoDep.push(infoDep)
 
@@ -180,6 +227,8 @@ exports.detailInfoCompany = async (req, res, next) => {
                                 "inForPerson.employee.team_id": infoTeamParent[j].team_id
                             })
                             infoTeam.tong_nv = countEmpTeam
+                            let conditionTeam = {...conditionDep, "inForPerson.employee.team_id": infoTeamParent[j].team_id};
+                            infoTeam.tong_nv_da_diem_danh = await totalDD(res, conditionTeam);
                             result.infoCompany.infoDep[i].infoTeam.push(infoTeam)
 
                             //thông tin nhóm công ty cha
@@ -226,6 +275,8 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     "inForPerson.employee.group_id": infoGroupParent[k].gr_id
                                 })
                                 infoGroup.group_tong_nv = countEmpGroup
+                                let conditionGroup = {...conditionTeam, "inForPerson.employee.group_id": infoGroupParent[k].gr_id};
+                                infoGroup.tong_nv_da_diem_danh = await totalDD(res, conditionGroup);
                                 result.infoCompany.infoDep[i].infoTeam[j].infoGroup.push(infoGroup)
 
                             }
@@ -250,8 +301,9 @@ exports.detailInfoCompany = async (req, res, next) => {
                         })
                         infochild.com_name = infoChildCompany[i].userName
                         infochild.tong_nv = countChildEmp
+                        let comId_child = infoChildCompany[i].idQLC;
 
-                        let countChildEmpDD = await Tracking.countDocuments({ com_id: infoChildCompany[i].idQLC, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
+                        let countChildEmpDD = await Tracking.countDocuments({ com_id: infoChildCompany[i].idQLC })
                         infochild.tong_nv_da_diem_danh = countChildEmpDD
 
                         let infoChildGiamDoc = await Users.findOne({
@@ -316,11 +368,13 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
                                     "inForPerson.employee.dep_id": infoDepChild[j].dep_id
                                 })
-                                infoDep.tong_nv = countEmp
-
-                                let countEmpDepChildDD = await Tracking.countDocuments({ com_id: infoChildCompany[i].idQLC, dep_id: infoDepChild[j].dep_id, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
-
-                                infoDep.tong_nv_da_diem_danh = countEmpDepChildDD
+                                infoDep.tong_nv = countEmp 
+                                const conditionDD2 = {
+                                    type: 2,
+                                    "inForPerson.employee.com_id": comId_child,
+                                }
+                                let conditionDep_child = {...conditionDD2, "inForPerson.employee.dep_id": infoDepChild[j].dep_id};
+                                infoDep.tong_nv_da_diem_danh = await totalDD(res, conditionDep_child);
                                 result.infoCompany.infoChildCompany[i].infoDep.push(infoDep)
 
                                 //thông tin tổ công ty con
@@ -368,6 +422,10 @@ exports.detailInfoCompany = async (req, res, next) => {
                                         "inForPerson.employee.team_id": infoTeamChild[k].team_id
                                     })
                                     infoTeam.tong_nv = countEmpTeam
+
+                                    let conditionTeam_child = {...conditionDep_child, "inForPerson.employee.team_id": infoTeamChild[k].team_id};
+                                    infoTeam.tong_nv_da_diem_danh = await totalDD(res, conditionTeam_child);
+
                                     result.infoCompany.infoChildCompany[i].infoDep[j].infoTeam.push(infoTeam)
 
                                     //thông tin nhóm công ty con
@@ -377,7 +435,7 @@ exports.detailInfoCompany = async (req, res, next) => {
                                         let infoGroupMota = await HR_NestDetails.findOne({ grId: infoGroupChild[k].gr_id, type: 1, comId: infoChildCompany[i].idQLC }, { description: 1 })
                                         infoGroup = {}
                                         infoGroup.gr_id = infoGroupChild[l].gr_id
-                                        infoGroup.gr_name = infoGroupChild[l].groupName
+                                        infoGroup.gr_name = infoGroupChild[l].gr_name
                                         if (infoGroupMota && infoGroupMota.description != null) {
                                             infoGroup.description = infoGroupMota.description
                                         } else infoGroup.description = "chưa cập nhật"
@@ -413,6 +471,10 @@ exports.detailInfoCompany = async (req, res, next) => {
                                             "inForPerson.employee.group_id": infoGroupChild[l].gr_id
                                         })
                                         infoGroup.group_tong_nv = countEmpGroup
+
+                                        let conditionGroup_child = {...conditionTeam_child, "inForPerson.employee.group_id": infoGroupChild[l].gr_id};
+                                        infoGroup.tong_nv_da_diem_danh = await totalDD(res, conditionGroup_child);
+
                                         result.infoCompany.infoChildCompany[i].infoDep[j].infoTeam[k].infoGroup.push(infoGroup)
                                     }
                                 }
@@ -428,7 +490,7 @@ exports.detailInfoCompany = async (req, res, next) => {
 
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -461,7 +523,7 @@ exports.description = async (req, res, next) => {
 
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 
 }
@@ -502,7 +564,7 @@ exports.updateDescription = async (req, res, next) => {
 
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 
 }
@@ -548,7 +610,7 @@ exports.listPosition = async (req, res, next) => {
         return functions.success(res, 'Lấy chi tiết công ty thành công', { data });
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -573,7 +635,7 @@ exports.missionDetail = async (req, res, next) => {
 
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 
 }
@@ -610,7 +672,7 @@ exports.updateMission = async (req, res, next) => {
         return functions.setError(res, "Update mission fail!", 505);
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 
 }
@@ -652,7 +714,7 @@ exports.uploadSignature = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -672,7 +734,7 @@ exports.deleteSignature = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -753,7 +815,7 @@ exports.listInfoLeader = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -807,7 +869,7 @@ exports.leaderDetail = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -832,7 +894,7 @@ exports.updateLeaderDetail = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -893,7 +955,7 @@ exports.updateEmpUseSignature = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -949,7 +1011,7 @@ exports.deleteEmpUseSignature = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1019,7 +1081,7 @@ exports.listSignatureLeader = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 

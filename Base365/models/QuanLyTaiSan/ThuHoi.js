@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_ThuHoi = new mongoose.Schema({
-    _id: {
-        type: Number
+    thuhoi_id: {
+        type: Number,
+        require: true
     },
     thuhoi_ng_tao: {
         type: Number
@@ -10,7 +11,18 @@ const model_ThuHoi = new mongoose.Schema({
         type: Number
     },
     thuhoi_taisan: {
-        type: String
+        ds_thuhoi: {
+          type: [
+            {
+              ts_id: {
+                type: Number
+              },
+              sl_th: {
+                type: Number
+              }
+            }
+          ]
+        }
     },
     id_cty: {
         type: Number
@@ -30,44 +42,44 @@ const model_ThuHoi = new mongoose.Schema({
     thuhoi_ngay: {
         type: Number
     },
-    thuhoi_hoanthanh : {
-        type : Number
+    thuhoi_hoanthanh: {
+        type: Number
     },
-    thuhoi_soluong : {
-        type : Number
+    thuhoi_soluong: {
+        type: Number
     },
-    thuhoi_trangthai : {
-        type : Number
+    thuhoi_trangthai: {
+        type: Number
     },
-    thuhoi__lydo : {
-        type : String
+    thuhoi__lydo: {
+        type: String
     },
-    loai_thuhoi : {
-        type : Number
+    loai_thuhoi: {
+        type: Number
     },
-    thuhoi_type_quyen : {
-        type : String
+    thuhoi_type_quyen: {
+        type: String
     },
-    thuhoi_id_ng_xoa : {
-        type : Number
+    thuhoi_id_ng_xoa: {
+        type: Number
     },
-    xoa_thuhoi : {
-        type : Number
+    xoa_thuhoi: {
+        type: Number
     },
-    thuhoi_date_create : {
-        type : Number
+    thuhoi_date_create: {
+        type: Number
     },
-    thuhoi_date_delete : {
-        type : Number
+    thuhoi_date_delete: {
+        type: Number
     },
-    th_ly_do_tu_choi_ban_giao : {
-        type : String
+    th_ly_do_tu_choi_ban_giao: {
+        type: String
     },
-    th_ly_do_tu_choi_nhan : {
-        type : String
+    th_ly_do_tu_choi_nhan: {
+        type: String
     },
-    th_ly_do_tu_choi_thuhoi : {
-        type : String
+    th_ly_do_tu_choi_thuhoi: {
+        type: String
     }
 },
     {
