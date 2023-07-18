@@ -45,19 +45,18 @@ exports.create = async( req, res )=>{
 exports.list = async( req, res )=>{
     try{
         let com_id = req.user.data.com_id
-        // let com_id = req.body.com_id
-        let month = req.body.month
-        let year = req.body.year
+        let dates = new Date();
+        const year = dates.getFullYear();
+        const month = dates.getMonth() + 1;
         let Conditions = {};
-        const apply_month = year +"-"+ month  + "-" + "01"
-        if(com_id) Conditions.com_id = com_id
-        if(month&&year) Conditions["apply_month"] = apply_month
+        const apply_month = year +"-"+ "0"+ month  + "-" + "01"
+        Conditions.com_id = com_id
+        Conditions["apply_month"] = apply_month
         let data = await WorkDay.findOne(Conditions).lean()
         if(data){
             return functions.success(res, "lấy thành công",{data});
         }
         return functions.setError(res , "Bạn chưa cài đặt số ngày công tiêu chuẩn trong tháng")
-
     }catch(e){
         return functions.setError(res , e.message)
     }
