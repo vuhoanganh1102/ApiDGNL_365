@@ -47,9 +47,9 @@ exports.list = async( req, res )=>{
         let com_id = req.user.data.com_id
         let dates = new Date();
         const year = dates.getFullYear();
-        const month = dates.getMonth() + 1;
+        const month = ("0" + (dates.getMonth() + 1)).slice(-2)// get month 2 digit
         let Conditions = {};
-        const apply_month = year +"-"+ "0"+ month  + "-" + "01"
+        const apply_month = year +"-"+ month  + "-" + "01"
         Conditions.com_id = com_id
         Conditions["apply_month"] = apply_month
         let data = await WorkDay.findOne(Conditions).lean()
