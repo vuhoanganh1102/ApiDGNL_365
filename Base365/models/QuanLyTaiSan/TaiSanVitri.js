@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_TaiSanViTri = new mongoose.Schema({
     tsvt_id: {
-        type: Number
+        type: Number,
+        require : true
     },
     tsvt_cty: {
         type: Number
@@ -13,7 +14,8 @@ const model_TaiSanViTri = new mongoose.Schema({
         type: Number
     },
     tsvt_soluong: {
-        type: Number
+        type: Number,
+        default : 0
     }
 },
     {

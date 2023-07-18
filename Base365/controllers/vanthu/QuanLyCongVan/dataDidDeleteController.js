@@ -5,7 +5,7 @@ const tbl_qlcv_edit = require('../../../models/Vanthu365/tbl_qlcv_edit');
 
 exports.getDataDidDelete = async (req, res, next) => {
     try {
-        let comId = Number(req.comId) || 1763;
+        let comId = Number(req.comId);
 
         let data = {};
 
@@ -20,7 +20,7 @@ exports.getDataDidDelete = async (req, res, next) => {
         let list = await tbl_qly_congvan.find({ cv_type_xoa: 1, cv_usc_id: comId },
             {
                 cv_id: 1, cv_name: 1, cv_so: 1, cv_type_user_xoa: 1, cv_user_xoa: 1, cv_time_xoa: 1, cv_type_loai: 1
-            })
+            }).sort({cv_time_xoa:-1}).limit(6)
 
         data.countTextReceve = countTextReceve;
         data.countTextSend = countTextSend;
@@ -36,8 +36,9 @@ exports.getDataDidDelete = async (req, res, next) => {
 
 exports.getDetailDataDelete = async (req, res, next) => {
     try {
+        console.log(new Date(1688175706 *  1000))
         let data = {};
-        let comId = req.body.comId || 1763;
+        let comId = req.comId;
         let dateNow = new Date();
         let day = dateNow.getDate();
         let month = dateNow.getMonth() + 1;
@@ -53,8 +54,8 @@ exports.getDetailDataDelete = async (req, res, next) => {
         if (searchKey) {
             conditions = {
                 $or: [
-                    { cv_name: { $regex: key } },
-                    { cv_so: { $regex: key } }
+                    { cv_name: new RegExp(searchKey,'i') },
+                    { cv_so: { $regex: searchKey } }
                 ]
             }
         }
@@ -63,10 +64,11 @@ exports.getDetailDataDelete = async (req, res, next) => {
         if (cv_type_loai === 1) conditions.cv_type_loai = 1
         if (cv_type_loai === 2) conditions.cv_type_loai = 2
         conditions.cv_usc_id = comId;
+        conditions.cv_type_xoa = 1;
         conditions.cv_time_xoa = { $gte: timeNow }
-        let dataToday = await tbl_qly_congvan.find(conditions)
+        let dataToday = await tbl_qly_congvan.find(conditions).sort({cv_time_xoa:-1})
         conditions.cv_time_xoa = { $lt: timeNow }
-        let dataPrevious = await tbl_qly_congvan.find(conditions)
+        let dataPrevious = await tbl_qly_congvan.find(conditions).sort({cv_time_xoa:-1})
         data.dataToday = dataToday;
         data.dataPrevious = dataPrevious
         return functions.success(res, 'get data success', { data })

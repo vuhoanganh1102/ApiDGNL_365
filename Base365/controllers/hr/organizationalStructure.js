@@ -11,7 +11,9 @@ const HR_NestDetails = require('../../models/hr/NestDetail');
 const Tracking = require('../../models/qlc/HisTracking');
 const HR_DescPositions = require('../../models/hr/DescPositions');
 const HR_SignatureImages = require('../../models/hr/SignatureImage');
-const HR_InfoLeaders = require('../../models/hr/InfoLeaders')
+const HR_InfoLeaders = require('../../models/hr/InfoLeaders');
+// const Team = require('../../models/qlc/Team');
+
 
 const positionNames = {
     19: 'Chủ tịch hội đồng quản trị',
@@ -38,7 +40,7 @@ const positionNames = {
 };
 
 //cơ cấu tổ chức công ty, công ty con và phòng ban
-exports.detailInfoCompany = async(req, res, next) => {
+exports.detailInfoCompany = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             // let com_id = req.infoLogin.comId
@@ -49,7 +51,7 @@ exports.detailInfoCompany = async(req, res, next) => {
             let inputNew = req.body.inputNew
             let inputOld = req.body.inputOld
             let result = {}
-                //thông tin công ty cha
+            //thông tin công ty cha
             result.infoCompany = {}
             let infoCompany = await Users.findOne({ idQLC: com_id, type: 1 }, { userName: 1 })
 
@@ -425,7 +427,7 @@ exports.detailInfoCompany = async(req, res, next) => {
 }
 
 //hiển thị mô tả chi tiết của phòng ban, tổ trong công ty
-exports.description = async(req, res, next) => {
+exports.description = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let comId = req.infoLogin.comId;
@@ -460,7 +462,7 @@ exports.description = async(req, res, next) => {
 
 }
 
-exports.updateDescription = async(req, res, next) => {
+exports.updateDescription = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let comId = req.infoLogin.comId;
@@ -494,77 +496,49 @@ exports.updateDescription = async(req, res, next) => {
 }
 
 //danh sách chức vụ
-exports.listPosition = async(req, res, next) => {
+exports.listPosition = async (req, res, next) => {
     try {
-        if (req.infoLogin) {
-            let comId = req.infoLogin.comId;
-                //tìm kiếm những chức vụ của công ty đó trong bảng hr
-            const positionOrder = {
-                19: 1,
-                18: 2,
-                17: 3,
-                21: 4,
-                22: 5,
-                16: 6,
-                14: 7,
-                8: 8,
-                7: 9,
-                6: 10,
-                5: 11,
-                13: 12,
-                12: 13,
-                4: 14,
-                20: 15,
-                11: 16,
-                10: 17,
-                3: 18,
-                2: 19,
-                9: 20,
-                1: 21
-            };
+        let comId = req.infoLogin.comId;
+        //tìm kiếm những chức vụ của công ty đó trong bảng hr
+        const arrPosition = [19, 18, 17, 21, 22, 16, 14, 8, 7, 6, 5, 13, 12, 4, 20, 11, 10, 3, 2, 9, 1];
+        let listPosition = [];
+        //21 chuc vu
+        let findUser = await Users.find({
+            "inForPerson.employee.com_id": comId
+        }, { idQLC: 1, userName: 1, "inForPerson.employee.position_id": 1});
 
-            const companyPositions = await HR_DescPositions.find({ comId: comId });
-
-            const sortedPositions = companyPositions.sort((a, b) => {
-                const orderA = positionOrder[a.positionId] || Infinity;
-                const orderB = positionOrder[b.positionId] || Infinity;
-                return orderA - orderB;
+        let position = await HR_DescPositions.find({comId: comId});
+        for(let i=0; i<arrPosition.length; i++) {
+            listPosition.push({
+                positionId: arrPosition[i],
+                positionName: positionNames[arrPosition[i]],
+                mission: 'Chưa cập nhật',
+                users: [],
             });
-
-            const result = sortedPositions.map((position) => {
-                return {
-                    positionId: position.positionId,
-                    positionName: positionNames[position.positionId] || 'Chức vụ không xác định',
-                    des: position.description || 'Chưa cập nhật',
-                    users: {
-                        userName: [],
-                        id: [],
-                    },
-                };
-            });
-            for (let i = 0; i < result.length; i++) {
-                let findUser = await Users.find({
-                    "inForPerson.employee.com_id": comId,
-                    "inForPerson.employee.position_id": result[i].positionId
-                }, { idQLC: 1, userName: 1 })
-                result[i].users.userName = findUser.map((user) => user.userName);
-                result[i].users.id = findUser.map((user) => user.idQLC);
+            for(let j=0; j<position.length; j++) {
+                if(position[j] && position[j].positionId == arrPosition[i]) {
+                    listPosition[i].mission =  position[j].description;
+                }
             }
-            if (result) {
-                return functions.success(res, 'Lấy chi tiết công ty thành công', { result });
-            } else return functions.setError(res, "Cty không có nhân viên hoặc chưa có dữ liệu về chức vụ", 400);
-        } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
-
-
+            
+            let users = [];
+            for(let j=0; j<findUser.length; j++) {
+                if(findUser[j] && findUser[j].inForPerson && findUser[j].inForPerson.employee && findUser[j].inForPerson.employee.position_id == arrPosition[i]) {
+                    users.push(findUser[j].userName);
+                }
+            }
+            listPosition[i].users = users;
+        }
+        
+        return functions.success(res, 'Lấy chi tiết công ty thành công', { listPosition });
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
-
 }
 
 //chi tiết nhiệm vụ mỗi chức vụ
-exports.missionDetail = async(req, res, next) => {
+exports.missionDetail = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let comId = req.infoLogin.comId;
@@ -590,17 +564,18 @@ exports.missionDetail = async(req, res, next) => {
 }
 
 //cập nhật chi tiết nhiệm vụ mỗi
-exports.updateMission = async(req, res, next) => {
+exports.updateMission = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let comId = req.infoLogin.comId;
 
             let positionId = req.body.positionId
             let description = req.body.description
-            if(!positionId || !description) {
+            if (!positionId || !description) {
                 return functions.setError(res, "Missing input value!", 404);
             }
-            let mission = await HR_DescPositions.findOneAndUpdate({ comId: comId, positionId: positionId }, { description: description }, { new: true })
+            let maxId = await functions.getMaxIdByField(HR_DescPositions, 'id');
+            let mission = await HR_DescPositions.findOneAndUpdate({ comId: comId, positionId: positionId }, {id: maxId, description: description }, { new: true, upsert: true })
             if (mission) {
                 return functions.success(res, 'cập nhật chi tiết nhiệm vụ thành công', { mission });
 
@@ -615,20 +590,20 @@ exports.updateMission = async(req, res, next) => {
 }
 
 //tải lên chữ ký
-exports.uploadSignature = async(req, res, next) => {
+exports.uploadSignature = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let empId = req.body.empId
-            
+
             const maxID = await HR_SignatureImages.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
             if (maxID) {
                 newIDMax = Number(maxID.id) + 1;
             } else newIDMax = 1
             let file = req.files.signature;
-            if(!file){
+            if (!file) {
                 return functions.setError(res, "Missing signature image!", 504);
             }
-            if(!await functions.checkImage(file.path)){
+            if (!await functions.checkImage(file.path)) {
                 return functions.setError(res, "Anh khong dung dinh dang hoac qua kich thuoc!", 505);
             }
             let nameFile = await hrFunctions.uploadFileSignature(file);
@@ -656,7 +631,7 @@ exports.uploadSignature = async(req, res, next) => {
 }
 
 //xóa chữ kí đã tải lên
-exports.deleteSignature = async(req, res, next) => {
+exports.deleteSignature = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let empId = req.body.empId
@@ -676,7 +651,7 @@ exports.deleteSignature = async(req, res, next) => {
 }
 
 //danh sách, tìm kiếm lãnh đạo
-exports.listInfoLeader = async(req, res, next) => {
+exports.listInfoLeader = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let keyword = req.body.keyword
@@ -757,7 +732,7 @@ exports.listInfoLeader = async(req, res, next) => {
 }
 
 //chi tiết lãnh đạo
-exports.leaderDetail = async(req, res, next) => {
+exports.leaderDetail = async (req, res, next) => {
     try {
         if (req.infoLogin && req.body.empId) {
             let empId = req.body.empId
@@ -782,11 +757,11 @@ exports.leaderDetail = async(req, res, next) => {
                         newIDMax = Number(maxID.id) + 1;
                     } else newIDMax = 1
                     let desPosition = 0;
-                    if(infoUser && infoUser.inForPerson && infoUser.inForPerson.employee && infoUser.inForPerson.employee.position_id) desPosition = infoUser.inForPerson.employee.position_id
+                    if (infoUser && infoUser.inForPerson && infoUser.inForPerson.employee && infoUser.inForPerson.employee.position_id) desPosition = infoUser.inForPerson.employee.position_id
                     let insertUser = new HR_InfoLeaders({
                         id: newIDMax,
                         epId: empId,
-                        avatar: (infoUser.avatarUser?infoUser.avatarUse:null),
+                        avatar: (infoUser.avatarUser ? infoUser.avatarUse : null),
                         description: description,
                         desPosition: desPosition,
                         created_at: new Date(Date.now())
@@ -794,7 +769,7 @@ exports.leaderDetail = async(req, res, next) => {
                     insertUser.save()
                     if (insertUser) {
                         return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công');
-                    }else {
+                    } else {
                         return functions.setError(res, 'update info leader fail!');
                     }
                 }
@@ -811,12 +786,12 @@ exports.leaderDetail = async(req, res, next) => {
 }
 
 //cập nhật chi tiết lãnh đạo
-exports.updateLeaderDetail = async(req, res, next) => {
+exports.updateLeaderDetail = async (req, res, next) => {
     try {
         if (req.infoLogin && req.body.empId) {
             let empId = req.body.empId
             let description = req.body.description
-            if(!description){
+            if (!description) {
                 return functions.setError(res, "Missing input description!");
             }
 
@@ -825,6 +800,7 @@ exports.updateLeaderDetail = async(req, res, next) => {
             if (updateUserHr) {
                 return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công', { updateUserHr });
             }
+            return functions.setError(res, "Lanh dao not found!", 405);
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
@@ -835,7 +811,7 @@ exports.updateLeaderDetail = async(req, res, next) => {
 }
 
 //Thêm mới nhân viên sử dụng con dấu
-exports.updateEmpUseSignature = async(req, res, next) => {
+exports.updateEmpUseSignature = async (req, res, next) => {
     try {
         if (req.infoLogin && req.body.empId) {
             let comId = req.infoLogin.comId;
@@ -884,9 +860,8 @@ exports.updateEmpUseSignature = async(req, res, next) => {
 
             if (updateUserHr) {
                 return functions.success(res, 'cập nhật người sử dụng con dấu thành công');
-            }else {
-                return functions.setError(res, "Employee not found!", 505);
             }
+            return functions.setError(res, "Employee not found!", 405);
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
@@ -897,7 +872,7 @@ exports.updateEmpUseSignature = async(req, res, next) => {
 }
 
 //Danh sách nhân viên sử dụng con dấu (có tìm kiếm)
-exports.listEmpUseSignature = async(req, res, next) => {
+exports.listEmpUseSignature = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let keyword = req.body.keyword
@@ -939,7 +914,7 @@ exports.listEmpUseSignature = async(req, res, next) => {
 
                 if (infoUser.inForPerson.employee.dep_id) {
                     let infoDep = await Deparment.findOne({ _id: infoUser.inForPerson.employee.dep_id, com_id: comId });
-                    if(infoDep && infoDep.deparmentName) {
+                    if (infoDep && infoDep.deparmentName) {
                         info.dep_name = infoDep.deparmentName
                     }
 
@@ -958,7 +933,7 @@ exports.listEmpUseSignature = async(req, res, next) => {
 }
 
 //Xóa nhân viên sử dụng con dấu
-exports.deleteEmpUseSignature = async(req, res, next) => {
+exports.deleteEmpUseSignature = async (req, res, next) => {
     try {
         if (req.infoLogin && req.body.empId) {
             let comId = req.infoLogin.comId;
@@ -975,7 +950,7 @@ exports.deleteEmpUseSignature = async(req, res, next) => {
 
             if (updateUserHr) {
                 return functions.success(res, 'xóa người sử dụng con dấu thành công');
-            }else {
+            } else {
                 return functions.setError(res, "Emplyee not found!", 505);
             }
         } else {
@@ -988,7 +963,7 @@ exports.deleteEmpUseSignature = async(req, res, next) => {
 }
 
 //danh sách, tìm kiếm chữ ký lãnh đạo
-exports.listSignatureLeader = async(req, res, next) => {
+exports.listSignatureLeader = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let keyword = req.body.keyword
@@ -1056,3 +1031,64 @@ exports.listSignatureLeader = async(req, res, next) => {
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
+
+// danh sách nhân viên chưa chấm công hoặc đã chấm công
+exports.listEmUntimed = async (req, res, next) => {
+    try {
+        let {com_id, dep_id, position_id, group_id, team_id, birthday, gender, married, page, pageSize} = req.body;
+        if(!com_id) com_id = req.infoLogin.comId;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        const skip = (page-1)*pageSize;
+
+        let condition = {type: 2, "inForPerson.employee.com_id": com_id};
+        if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
+        if(group_id) condition["inForPerson.employee.group_id"] = group_id;
+        if(team_id) condition["inForPerson.employee.team_id"] = team_id;
+        if(position_id) condition["inForPerson.employee.position_id"] = position_id;
+
+        if(gender) condition["inForPerson.account.gender"] = gender;
+        if(married) condition["inForPerson.account.married"] = married;
+        if(birthday) condition["inForPerson.account.birthday"] = new RegExp(birthday);
+
+        let fields = {idQLC: 1, userName: 1, phone: 1, phoneTK: 1, email: 1, address: 1,
+            inForPerson: {
+                account: {birthday: 1, gender: 1, married: 1, experience: 1, education: 1},
+                employee: {com_id: 1, dep_id: 1,group_id: 1, team_id: 1,position_id: 1,start_working_time: 1}
+            }
+        };
+        let company = await Users.findOne({idQLC: com_id}, {userName: 1, idQLC: 1});
+        let listEmployee = [];
+        let total = 0;
+        // chấm công hoặc chưa chấm công
+        let type_timekeep = Number(req.body.type_timekeep);
+        if (type_timekeep === 1 || type_timekeep===2) {
+            let condition2;
+            if(type_timekeep===1) condition2 = {Time_sheets: {$ne: []}};
+            if(type_timekeep===2) condition2 = {Time_sheets: {$eq: []}};
+            listEmployee = await Users.aggregate([
+                {$match: condition},
+                {
+                    $lookup: {
+                        from: "QLC_Time_sheets",
+                        localField: "idQLC",
+                        foreignField: "idQLC",
+                        as: "Time_sheets"
+                    }
+                },
+                {$match: condition2},
+                {$project: {...fields, Time_sheets: 1}},
+                {$sort: {idQLC: -1}},
+                {$skip: skip},
+                {$limit: pageSize},
+            ]);
+        }else {
+            listEmployee = await functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
+        }
+        total = listEmployee.length;
+        return functions.success(res, 'get data success', {total, company ,listEmployee})
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error.massage, 500);
+    }
+};

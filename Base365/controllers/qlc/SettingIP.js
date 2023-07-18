@@ -6,43 +6,38 @@ const setIp = require("../../models/qlc/SettingIP")
 //lấy danh sách 
 
 exports.getListByID = async(req, res) => {
-        try {
+    try {
+        const com_id = req.user.data.com_id
+        // const com_id = req.body.com_id
+        const type = req.user.data.type
+        if (type == 1) {
             const _id = req.body.id || null;
-            const com_id = req.body.com_id;
             let condition = {}
-            if (!com_id) {
-                functions.setError(res, "id required")
-            } else if (isNaN(com_id)) {
-                functions.setError(res, "id not a number")
-
-            } else {
                 if (_id) condition._id = _id
                 if (com_id) condition.com_id = com_id
-                console.log(_id, com_id)
-                const data = await setIp.find(condition).select('_id fromSite accessIP createAt updateAt');
-                console.log(data)
-                if (!data) {
-                    functions.setError(res, 'not found')
-                } else {
-                    functions.success(res, 'found successfull', { data })
+                const data = await setIp.find(condition).select('_id fromSite accessIP createAt updateAt').sort({_id: -1}).lean();
+                if (data) {
+                    return functions.success(res, 'tạo thành công ', { data })
                 }
-            };
+                return functions.setError(res, 'không tìm thấy cài đặt IP')
+            }
+            return functions.setError(res, "Tài khoản không phải Công ty");
         } catch (error) {
             console.log(error);
             functions.setError(res, error.message);
         }
     }
-    //tạo 1 thiết lập Ip
+//tạo 1 thiết lập Ip
 exports.createIP = async(req, res) => {
-    const { com_id, accessIP, fromSite, createAt, updateAt } = req.body;
+    try {
+        const com_id = req.user.data.com_id
+        // const com_id = req.body.com_id
+        const type = req.user.data.type
+        if (type == 1) {
+    const {  accessIP, fromSite } = req.body;
     // let nameApp = "";
-    if ((accessIP && fromSite && com_id) == undefined) {
-        functions.setError(res, "info required")
-    } else if (isNaN(com_id)) {
-        functions.setError(res, "fromSite must be a number")
-    } else {
+    if (accessIP && fromSite && com_id) {
         const maxId = await functions.getMaxID(setIp);
-
         const _id = Number(maxId) + 1 || 1;
         const settingIP = new setIp({
             _id: _id,
@@ -50,61 +45,75 @@ exports.createIP = async(req, res) => {
             fromSite: fromSite,
             accessIP: accessIP,
             createAt: new Date().toJSON().slice(0, 10),
-            updateAt: updateAt || null
         })
         await settingIP.save()
-            .then(() => functions.success(res, 'create successful', { settingIP }))
-            .catch((e) => functions.setError(res, e.message))
+        return functions.success(res, 'create successful', { settingIP })
     }
+    return functions.setError(res, "thiếu thông tin")
+}
+return functions.setError(res, "Tài khoản không phải Công ty");
+
+} catch (error) {
+return functions.setError(res, error.message)
+}
 
 }
 exports.editsettingIP = async(req, res) => {
-    const _id = req.body.id;
-    console.log(_id)
-    const { com_id, accessIP, fromSite, updateAt } = req.body;
-    if ((accessIP && fromSite && com_id) == undefined) {
-        functions.setError(res, "info required")
-    } else if (isNaN(com_id)) {
-        functions.setError(res, "com_id must be a number")
-    } else {
+    try {
+        const com_id = req.user.data.com_id
+        // const com_id = req.body.com_id
+        const type = req.user.data.type
+    if (type == 1) {
+    const {_id,accessIP, fromSite } = req.body;
+    if (accessIP && fromSite && com_id) {
         const settingIP = await functions.getDatafindOne(setIp, { com_id: com_id, _id: _id });
-        if (!settingIP) {
-            functions.setError(res, "setIp does not exist!");
-        } else {
+        if (settingIP) {
             await functions.getDatafindOneAndUpdate(setIp, { com_id: com_id, _id: _id }, {
                     fromSite: fromSite,
                     // nameApp: nameApp,
                     accessIP: accessIP,
                     updateAt: new Date(),
                 })
-                .then((settingIP) => functions.success(res, "setIp edited successfully", { settingIP }))
-                .catch((err) => functions.setError(res, err.message));
+                return functions.success(res, "setIp edited successfully", { settingIP })
         }
+        return functions.setError(res, "setIp does not exist!");
+
     }
+    return functions.setError(res, "thiếu thông tin")
+}
+return functions.setError(res, "Tài khoản không phải Công ty");
+
+} catch (error) {
+return functions.setError(res, error.message)
+}
+
 }
 
 
 exports.deleteSetIpByID = async(req, res) => {
-    const com_id = req.body.com_id;
-    const _id = req.body.id;
-    // console.log(_id,com_id)
+    try {
+        const com_id = req.user.data.com_id
+        // const com_id = req.body.com_id
+        const type = req.user.data.type
+        if (type == 1) {
+    const _id = req.body._id;
 
-    if (!com_id) {
-        functions.setError(res, "Company id required");
-    } else if (isNaN(com_id)) {
-        functions.setError(res, "Company id must be a number");
-    } else {
+    if (com_id&&_id) {
+        
         const settingIp = await functions.getDatafind(setIp, { com_id: com_id, _id: _id });
-        // console.log(settingIp)
-        if (!settingIp) {
-            functions.setError(res, "No setIp found in this company");
-        } else {
+        if (settingIp) {
             await functions.getDataDeleteOne(setIp, { com_id: com_id, _id: _id })
-                .then(() => functions.success(res, "setIp deleted successfully", { settingIp }))
-                .catch((err) => functions.setError(res, err.message));
+            return functions.success(res, "setIp deleted successfully", { settingIp })
         }
+        return functions.setError(res, "No setIp found in this company");
     }
+    return functions.setError(res, "Company and _id required");
+}
+return functions.setError(res, "Tài khoản không phải Công ty");
 
+} catch (error) {
+return functions.setError(res, error.message)
+}
 
 
 }

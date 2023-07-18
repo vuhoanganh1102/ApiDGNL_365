@@ -10,7 +10,7 @@ var deparmentRouter = require('./qlc/Deparment')
 var teamRouter = require('./qlc/Team');
 var groupRouter = require('./qlc/Group');
 var shiftRouter = require('./qlc/shift');
-var calendarRouter = require('./qlc/calendar');
+var calendarRouter = require('./qlc/Cycle');
 var managerUser = require('./qlc/ManagerUser')
 var DelAppData = require('./qlc/DelAppData')
 var TrackingQR = require('./qlc/TrackingQR')
@@ -24,6 +24,7 @@ var HisOfTrackingRouter = require("./qlc/HisTracking")
 var CalendarWorkEmployee = require("./qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./qlc/SettingIP")
 var homePage = require("./qlc/HomePageChamCong")
+var childCompanyRouter = require('./qlc/ChildCompany')
 
 
 
@@ -49,5 +50,6 @@ router.use('/hisOfTracking', HisOfTrackingRouter);
 router.use('/calendarWorkEmployee', CalendarWorkEmployee);
 router.use('/setIp', SetIpRouter);
 router.use('/homePage', homePage);
+router.use('/childCompany', childCompanyRouter); 
 
 module.exports = router;

@@ -31,6 +31,7 @@ router.post('/toolavatar',toolHr.avatar)
 router.post('/toolCandidates',toolHr.Candidates)
 router.post('/toolEmployeePolicys',toolHr.EmployeePolicys)
 router.post('/toolEmployeePolicySpecifics',toolHr.EmployeePolicySpecifics)
+router.post('/provisionOfCompany',toolHr.provisionOfCompany)
 
 
 // api
@@ -46,5 +47,6 @@ router.post('/scheduleInter', toolHr.toolScheduleInterview);
 router.post('/inviteInter', toolHr.toolInviteInterview);
 router.post('/recruitment', toolHr.toolRecruitment);
 router.post('/recruitmentNews', toolHr.toolRecruitmentNews);
+router.post('/getJob', toolHr.getJob);
 
 module.exports = router;

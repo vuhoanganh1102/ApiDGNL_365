@@ -10,6 +10,7 @@ const HR_CrontabQuitJobs = require('../../models/hr/CrontabQuitJobs');
 const HR_Candidates = require('../../models/hr/Candidates');
 const HR_EmployeePolicys = require('../../models/hr/EmployeePolicys');
 const HR_EmployeePolicySpecifics = require('../../models/hr/EmployeePolicySpecifics');
+const HR_ProvisionOfCompanys = require('../../models/hr/ProvisionOfCompanys');
 
 const HR_DepartmentDetails = require('../../models/hr/DepartmentDetails');
 const HR_DescPositions = require('../../models/hr/DescPositions');
@@ -34,6 +35,7 @@ const RecruitmentNews = require('../../models/hr/RecruitmentNews');
 const HR_Cancel = require('../../models/hr/CancelJob.js');
 const HR_FailJob = require('../../models/hr/FailJob.js');
 const HR_ContactJob = require('../../models/hr/ContactJob.js');
+const HR_GetJobs = require('../../models/hr/GetJob');
 const HR_Notifys = require('../../models/hr/Notify.js');
 const HR_Permisions = require('../../models/hr/Permision.js');
 const HR_Policys = require('../../models/hr/Policys.js');
@@ -152,15 +154,10 @@ exports.failJob = async (req, res, next) => {
                 let deletedAt = data[i].deleted_at;
                 let note = data[i].note;
                 let email = data[i].email;
-                let contentsend = data[i].contentsend;
+                let contentsend = Buffer.from(data[i].contentsend, 'base64');
                 let isSwitch = data[i].is_switch;
                 let createdAt = data[i].created_at;
-                // const check_id = await HR_Cancel.findById(_id);
-                // if (!check_id || check_id.length === 0) {
-                let data_recruitment = new HR_FailJob({ id, canId, isDelete, deletedAt, note, email, contentsend, isSwitch, createdAt });
-                await HR_FailJob.create(data_recruitment);
-                // }
-            
+                await HR_FailJob.findOneAndUpdate({id: id}, {canId, type, isDelete, deletedAt, note, email, contentsend, isSwitch, createdAt });
             }
             page++;
             console.log(page)
@@ -415,16 +412,26 @@ exports.DepartmentDetails = async (req, res, next) => {
 };
 exports.DescPositions = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_desc_position');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].id);
-            let positionId = data[i].position_id;
-            let comId = data[i].com_id;
-            let description = data[i].description;
-            let DescPositions = new HR_DescPositions({ id, positionId, comId, description });
-            await DescPositions.save();
+        //
+        let page = 1;
+        let result = true;
+        while(result){
+            let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_desc_position?page=${page}`);
+            if(data.length === 0)
+            {
+                result = false
+            }
+            for (let i = 0; i < data.length; i++) {
+                let id = Number(data[i].id);
+                let positionId = data[i].position_id;
+                let comId = data[i].com_id;
+                let description = data[i].description;
+                let DescPositions = new HR_DescPositions({ id, positionId, comId, description });
+                await DescPositions.save();
+            }
+            page++;
+            console.log(page)
         }
-        return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -504,49 +511,67 @@ exports.EmployeePolicySpecifics = async (req, res, next) => {
 }
 exports.Candidates = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_candidate');
-        for (let i = 0; i < data.length; i++) {
-            let id = Number(data[i].id)
-            let name = data[i].name
-            let email = data[i].email
-            let phone = data[i].phone
-            let cvFrom = data[i].cv_from
-            let userRecommend = data[i].user_recommend
-            let recruitmentNewsId = data[i].recruitment_news_id
-            let timeSendCv = new Date (data[i].time_send_cv)
-            if(await functions.checkDate(timeSendCv)=== false) continue
-            let interviewTime = data[i].interview_time
-            let interviewResult = data[i].interview_result
-            let interviewVote = data[i].interview_vote
-            let salaryAgree = data[i].salary_agree
-            let status = data[i].status
-            let cv = data[i].cv
-            let createdAt = data[i].created_at
-            let updatedAt = data[i].updated_at
-            let isDelete = data[i].is_delete
-            let comId = data[i].com_id
-            let isOfferJob = data[i].is_offer_job
-            let gender = data[i].can_gender
-            let birthday = data[i].can_birthday
-            let education = data[i].can_education
-            let exp = data[i].can_exp
-            let isMarried = data[i].can_is_married
-            let address = data[i].can_address
-            let userHiring = data[i].user_hiring
-            let starVote = data[i].star_vote
-            let school = data[i].school
-            let hometown = data[i].hometown
-            let isSwitch = data[i].is_switch
-            let epIdCrm = data[i].ep_id_crm
-            let Candidates = new HR_Candidates({id,name,email,phone,cvFrom,userRecommend,recruitmentNewsId,timeSendCv,interviewTime,interviewResult,interviewVote,salaryAgree,status,cv,createdAt,updatedAt,isDelete,comId,isOfferJob,gender,birthday,education,exp,isMarried,address,userHiring,starVote,school,hometown,isSwitch,epIdCrm});
-            await Candidates.save();
-        }
-        return functions.success(res, 'pull data success');
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_candidate?page=${page}`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let id = Number(data[i].id)
+                    let name = data[i].name
+                    let email = data[i].email
+                    let phone = data[i].phone
+                    let cvFrom = data[i].cv_from
+                    let userRecommend = data[i].user_recommend
+                    let recruitmentNewsId = data[i].recruitment_news_id
+                    let timeSendCv = data[i].time_send_cv
+                    if (await functions.checkDate(timeSendCv) === false) continue
+                    let interviewTime = data[i].interview_time
+                    let interviewResult = data[i].interview_result
+                    let interviewVote = data[i].interview_vote
+                    let salaryAgree = data[i].salary_agree
+                    let status = data[i].status
+                    let cv = data[i].cv
+                    let createdAt = data[i].created_at
+                    let updatedAt = data[i].updated_at
+                    let isDelete = data[i].is_delete
+                    let comId = data[i].com_id
+                    let isOfferJob = data[i].is_offer_job
+                    let gender = data[i].can_gender
+                    let birthday = data[i].can_birthday
+                    if (await functions.checkDate(birthday) === false) continue
+                    let education = data[i].can_education
+                    let exp = data[i].can_exp
+                    let isMarried = data[i].can_is_married
+                    let address = data[i].can_address
+                    let userHiring = data[i].user_hiring
+                    let starVote = data[i].star_vote
+                    let school = data[i].school
+                    let hometown = data[i].hometown
+                    let isSwitch = data[i].is_switch
+                    let epIdCrm = data[i].ep_id_crm
+                    await HR_Candidates.findOneAndUpdate({ id: id }, {name,email,phone,cvFrom,userRecommend,recruitmentNewsId,timeSendCv,interviewTime,interviewResult,interviewVote,salaryAgree,status,cv,createdAt,updatedAt,isDelete,comId,isOfferJob,gender,birthday,education,exp,isMarried,address,userHiring,starVote,school,hometown,isSwitch,epIdCrm},{ upsert: true });
+                }
+                page++;
+                console.log(page);
+            } else {
+                result = false;
+            }
+        } while (result);
 
+        return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
     }
-}
+};
+
 // Notify
 exports.notify = async (req, res, next) => {
     try {
@@ -677,26 +702,40 @@ exports.policy = async (req, res, next) => {
 
 exports.provisionOfCompany = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=1');
-        for (let i = 0; i < data.length; i++) {
-            let _id = Number(data[i].id);
-            let provisionId = data[i].provision_id;
-            let timeStart = data[i].time_start;
-            let supervisorName = data[i].supervisor_name;
-            let applyFor = data[i].apply_for;
-            let content = data[i].content;
-            let createdBy = data[i].created_by;
-            let isDelete = data[i].is_delete;
-            let createdAt = data[i].created_at;
-            let name = data[i].name;
-            let file = data[i].file;
-            let deletedAt = data[i].deleted_at;
-            // const check_id = await HR_Cancel.findById(_id);
-            // if (!check_id || check_id.length === 0) {
-            let data_recruitment = new HR_Policys({ _id, provisionId, timeStart, supervisorName, applyFor, content, createdBy, isDelete, createdAt, name, file, deletedAt });
-            await HR_Policys.create(data_recruitment);
-            // }
-        }
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_provisions_of_company?page=${page}`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    if (await functions.checkDate(data[i].time_start) === false) continue
+                    await HR_ProvisionOfCompanys.findOneAndUpdate({id: data[i].id}, 
+                        {
+                            description: data[i].description,
+                            isDelete: data[i].is_delete,
+                            name: data[i].name,
+                            timeStart: data[i].time_start,
+                            supervisorName: data[i].supervisor_name,
+                            comId: data[i].com_id,
+                            file: data[i].file,
+                            createdAt: data[i].created_at,
+                            deletedAt: data[i].deleted_at,
+                        }, 
+                        { upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -721,24 +760,36 @@ exports.avatar = async (req, res, next) => {
 //stageRecruitment
 exports.stageRecruitment = async (req, res, next) => {
     try {
-        let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_stage_recruitment?page=1');
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_stage_recruitment?page=${page}`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    await HR_StageRecruitments.findOneAndUpdate({ id: Number(data[i].id) }, 
+                        { 
+                            recruitmentId: data[i].recruitment_id ,
+                            name: data[i].name,
+                            positionAssumed: data[i].position_assumed,
+                            target: data[i].target,
+                            complete_time: data[i].complete_time, 
+                            defscription: Buffer.from(data[i].description,'base64'), 
+                            isDelete: data[i].is_delete
+                        },{ upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
 
-        for (let i = 0; i < data.length; i++) {
-            if(!data[i].name) continue;
-            let id = Number(data[i].id);
-            let recruitmentId = data[i].recruitment_id;
-            let name = data[i].name;
-            let positionAssumed = data[i].position_assumed;
-            let target = data[i].target;
-            let complete_time = data[i].complete_time;
-            let description = Buffer.from(data[i].description,'base64');
-            let isDelete = data[i].is_delete;
-            // const check_id = await HR_Cancel.findById(_id);
-            // if (!check_id || check_id.length === 0) {
-            let data_recruitment = new HR_StageRecruitments({ id, recruitmentId, name, positionAssumed, target, complete_time, description, isDelete });
-            await HR_StageRecruitments.create(data_recruitment);
-            // }
-        }
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -746,7 +797,7 @@ exports.stageRecruitment = async (req, res, next) => {
 };
 exports.toolInfringe = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -794,7 +845,7 @@ exports.toolInfringe = async (req, res, next) => {
 
 exports.toolJobDes = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -837,7 +888,7 @@ exports.toolJobDes = async (req, res, next) => {
 
 exports.toolAnotherSkill = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -875,7 +926,7 @@ exports.toolAnotherSkill = async (req, res, next) => {
 
 exports.toolPermisionDetail = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -913,7 +964,7 @@ exports.toolPermisionDetail = async (req, res, next) => {
 
 exports.toolRemind = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -955,7 +1006,7 @@ exports.toolRemind = async (req, res, next) => {
 
 exports.toolProcessInterview = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -993,7 +1044,7 @@ exports.toolProcessInterview = async (req, res, next) => {
 
 exports.toolProcessTraining = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -1034,7 +1085,6 @@ exports.toolProcessTraining = async (req, res, next) => {
 
 exports.toolSignatureImage = async (req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         do {
@@ -1073,7 +1123,7 @@ exports.toolSignatureImage = async (req, res, next) => {
 
 exports.toolInviteInterview = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -1115,7 +1165,7 @@ exports.toolInviteInterview = async (req, res, next) => {
 
 exports.toolScheduleInterview = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -1161,7 +1211,7 @@ exports.toolScheduleInterview = async (req, res, next) => {
 
 exports.toolRecruitment = async (req, res, next) => {
     try {
-        console.log(".....")
+        
         let page = 1;
         let result = true;
         do {
@@ -1204,7 +1254,6 @@ exports.toolRecruitment = async (req, res, next) => {
 
 exports.toolRecruitmentNews = async (req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         do {
@@ -1266,6 +1315,50 @@ exports.toolRecruitmentNews = async (req, res, next) => {
     }
 };
 
+exports.getJob = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_get_job?page=${page}`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    let interviewTime = data[i].interview_time;
+                    if (await functions.checkDate(interviewTime) === false) continue
+                    await HR_GetJobs.findOneAndUpdate({ id: Number(data[i].id) }, 
+                        { 
+                            canId: data[i].can_id ,
+                            resiredSalary: data[i].resired_salary ,
+                            salary: data[i].salary ,
+                            interviewTime: data[i].interview_time ,
+                            empInterview: data[i].ep_interview ,
+                            note: data[i].note ,
+                            email: data[i].uv_email ,
+                            contentSend: Buffer.from(data[i].contentsend, 'base64'),
+                            isSwitch: data[i].is_switch ,
+                            isDelete: data[i].is_delete ,
+                            deletedAt: data[i].deleted_at ,
+                            createdAt: data[i].created_at 
+                        },{ upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
 // // provisionCompany
 // exports.stageRecruitment = async (req, res, next) => {
 //     try {

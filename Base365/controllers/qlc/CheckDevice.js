@@ -1,23 +1,17 @@
 const Device = require("../../models/qlc/CheckDevice")
 const functions= require ("../../services/functions")
 
-//lấy danh sách thiết bị 
-exports.getAllDevice = async (req,res)=>{
-    await functions.getDatafind(Device,{})
-    .then((devices)=> functions.success(res,"Get data successful",devices))
-    .catch((e)=>functions.setError(res,err.message));
 
-};
 //loc danh sach theo cty 
 exports.getALlCompanyDevice = async (req,res)=>{
-    const {companyId} =req.body
+    const {com_id} =req.body
     
-    if (!companyId) {
+    if (!com_id) {
         functions.setError(res, "company Id required")
-    }else if (isNaN(companyId)) {
+    }else if (isNaN(com_id)) {
         functions.setError(res, "company Id must be a number")
     }else {
-        const companyDevice = await functions.getDatafind(Device,{companyId : companyId});
+        const companyDevice = await functions.getDatafind(Device,{com_id : com_id});
         if(!companyDevice){
             functions.setError(res,"company device cannot be found or does not existed")
         }else {
@@ -27,18 +21,18 @@ exports.getALlCompanyDevice = async (req,res)=>{
 };
 //loc danh sach theo cty va phong ban
 exports.getALlCompanyDevice = async (req,res)=>{
-    const {companyId, depID} =req.body
-    if (!companyId) {
+    const {com_id, dep_id} =req.body
+    if (!com_id) {
         functions.setError(res, "company Id required")
-    }else if (isNaN(companyId) ) {
+    }else if (isNaN(com_id) ) {
         functions.setError(res, "company Id must be a number")
-    }else if (!depID) {
+    }else if (!dep_id) {
         functions.setError(res,"department Id required")
-    }else if (isNaN(depID) ) {
+    }else if (isNaN(dep_id) ) {
         functions.setError(res, "department Id must be a number")
 
     }else {
-        const companyDevice = await functions.getDatafind(Device,{companyId : companyId},{depID : depID});
+        const companyDevice = await functions.getDatafind(Device,{com_id : com_id},{dep_id : dep_id});
         if(!companyDevice){
             functions.setError(res,"company device cannot be found or does not existed")
         }else {
@@ -48,15 +42,15 @@ exports.getALlCompanyDevice = async (req,res)=>{
 };
 // ////loc danh sach theo cty va phong ban 
 // exports.getAllDepDevice = async (req,res)=>{
-//     const {companyId, depID} =req.body;
+//     const {com_id, dep_id} =req.body;
 
-//     if (!companyId) {
+//     if (!com_id) {
 //         functions.setError(res, "company Id required")
-//     }else if (isNaN(companyId)) {
+//     }else if (isNaN(com_id)) {
 //         functions.setError(res, "company Id must be a number")
-//     }else if (!depID) {
+//     }else if (!dep_id) {
 //         functions.setError(res,"department Id required")
-//     }else if (isNaN(depID)) {
+//     }else if (isNaN(dep_id)) {
 //         functions.setError(res, "department Id must be a number")
 //     // }else if (!_id) {
 //     //     functions.setError(res," _Id required")
@@ -64,7 +58,7 @@ exports.getALlCompanyDevice = async (req,res)=>{
 //     //     functions.setError(res, "_Id must be a number")
 
 //     }else {
-//         const companyDevice = await functions.getDatafindOne(Device,{companyId : companyId},{depID : depID});
+//         const companyDevice = await functions.getDatafindOne(Device,{com_id : com_id},{dep_id : dep_id});
 //         if(!companyDevice){
 //             functions.setError(res,"company device cannot be found or does not existed")
 //         }else {
@@ -90,84 +84,45 @@ exports.getDeviceById = async (req,res)=>{
 }
 //tao moi yeu cau
 exports.createDevice = async (req,res)=>{
-    const {userId , companyId, depID , curDeviceName , newDeviceName} =req.body 
+    
+    const {idQLC ,  current_device_name , new_device_name,current_device,new_device,type_device } =req.body 
     //check loi 
-    if(!userId) {
-        functions.setError(res,"userId required")
-    }else if (isNaN(userId)){
-        functions.setError(res,"userId must be a number ")
-    }else if (!companyId) {
-        functions.setError(res,"companyId required")
-    }else if (isNaN(companyId)){
-        functions.setError(res,"companyId required")
-    }else if (!depID) {
-        functions.setError(res,"companyId required")
-    }else if (isNaN(depID)){
-        functions.setError(res,"companyId required")
-    }else if (!curDeviceName) {
-        functions.setError(res,"companyId required")
-    }else if (!newDeviceName) {
-        functions.setError(res,"companyId required")
-    }else {
+    if(idQLC) {
         let maxID = await functions.getMaxID(Device)
         if(!maxID) {
             maxID = 0
         }
-        const _id = Number(maxID) + 1;
-
+        const ed_id = Number(maxID) + 1;
         const device = new Device({
-            _id: _id,
-            userId:userId,
-            companyId: companyId,
-            depID: depID,
-            curDeviceName: curDeviceName,
-            newDeviceName: newDeviceName,
+            ed_id: ed_id,
+            idQLC:idQLC,
+            current_device: current_device,
+            new_device: new_device,
+            current_device_name: current_device_name,
+            new_device_name: new_device_name,
         })
-
         await device.save()
-        .then(()=>{
-            functions.success(res,"create check device successful",{device})
-        })
-        .catch(err => functions.setError(res,err.message));
-
+           return functions.success(res,"create check device successful",{device})
     }
+    return functions.setError(res,"idQLC required")
 }
 //chinh sua yeu cau 
 exports.editDevice = async (req,res)=>{
     const _id = req.params.id;
-
-    if(isNaN(_id)){
-        functions.setError(res, "id must be a number")
-    } else {
-        const {userId , depID , curDeviceName , newDeviceName} = req.body;
-        if(!userId) {
-            functions.setError(res,"userId required")
-        }else if (isNaN(userId)){
-            functions.setError(res,"userId must be a number ")
-        }else if (!depID) {
-            functions.setError(res,"companyId required")
-        }else if (isNaN(depID)){
-            functions.setError(res,"companyId required")
-        }else if (!curDeviceName) {
-            functions.setError(res,"companyId required")
-        }else if (!newDeviceName) {
-            functions.setError(res,"companyId required")
-        }else {
+        const {idQLC , dep_id , current_device_name , new_device_name} = req.body;
             const device = await functions.getDatafindOne(Device,{_id : _id})
             if(!device){
                 functions.setError(res,"check device doesnt existed")
             }else{
             
                 await functions.getDatafindOneAndUpdate(Device,{_id : _id},{
-                    userId: userId,
-                    depID: depID,
-                    curDeviceName: curDeviceName,
-                    newDeviceName: newDeviceName
+                    idQLC: idQLC,
+                    dep_id: dep_id,
+                    current_device_name: current_device_name,
+                    new_device_name: new_device_name
                 })
                 .then((device)=> functions.success(res,"check device edited successful", device ))
                 .catch((err)=> functions.setError(res,err.message));
-            }
-        }
     }
 }
 //xoa yeu cau cau dang ki thiet bi
@@ -185,15 +140,5 @@ exports.deleteDevice = async (req,res)=>{
             .then(()=> functions.success(res,"delete check device successful",devices))
             .catch((err)=>functions.setError(res,err.message))
         }
-    }
-}
-//xoa yeu cau cau dang ki thiet bi
-exports.deleteAllDevice = async (req,res)=>{
-    if(!await functions.getMaxID(Device)){
-        functions.setError(res,"no check device existed")
-    }else {
-        Device.deleteMany()
-        .then(()=>functions.success(res, "delete all check device successful"))
-        .catch((err)=> functions.setError(res, err.message))
     }
 }

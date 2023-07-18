@@ -32,9 +32,10 @@ const Blog = require('../../models/Raonhanh365/Admin/Blog');
 const loveNew = require('../../models/Raonhanh365/LoveNews');
 const CateVl = require('../../models/Raonhanh365/CateVl.js');
 const PhuongXa = require('../../models/Raonhanh365/PhuongXa');
+const NetworkOperator = require('../../models/Raonhanh365/NetworkOperator');
 
 // danh mục sản phẩm
-exports.toolCategory = async(req, res, next) => {
+exports.toolCategory = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -138,7 +139,7 @@ exports.toolNewRN = async (req, res, next) => {
                     const images = data[i].new_image.split(";").map((image, index) => {
                         const parts = image.split("/");
 
-                        const filename = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/' + parts[parts.length - 2] + '/' + data[i].new_id + '/' + parts[parts.length - 1];
+                        const filename = parts[parts.length - 1];
 
                         return {
                             nameImg: filename
@@ -155,6 +156,7 @@ exports.toolNewRN = async (req, res, next) => {
                             money: data[i].new_money,
                             endvalue: data[i].gia_kt,
                             downPayment: data[i].datcoc,
+                            dc_unit:data[i].dc_unit,
                             until: data[i].new_unit,
                             cateID: data[i].new_cate_id,
                             type: data[i].new_type,
@@ -173,9 +175,10 @@ exports.toolNewRN = async (req, res, next) => {
                             ward: data[i].phuong_xa,
                             apartmentNumber: data[i].new_sonha,
                             status: data[i].new_tinhtrang,
-                            electroniceDevice:{
-                                warranty:data[i].new_baohanh
+                            electroniceDevice: {
+                                warranty: data[i].new_baohanh
                             },
+                            warranty:data[i].new_baohanh,
                             free: data[i].chotang_mphi,
                             sold: data[i].da_ban,
                             timeSell: timeSell,
@@ -194,7 +197,7 @@ exports.toolNewRN = async (req, res, next) => {
                             refreshTime: data[i].refreshTime,
                             timeHome: data[i].timeHome,
                             timeCate: data[i].timeCate,
-                            baohanh:data[i].new_baohanh,
+                            baohanh: data[i].new_baohanh,
                             quantitySold: data[i].sluong_daban,
                             totalSold: data[i].tong_sluong,
                             quantityMin: data[i].soluong_min,
@@ -203,8 +206,8 @@ exports.toolNewRN = async (req, res, next) => {
                             timePromotionEnd: data[i].timePromotionEnd,
                             img: images,
                             video: data[i].new_video,
-                            new_day_tin:data[i].new_day_tin,
-                            dia_chi:data[i].dia_chi
+                            new_day_tin: data[i].new_day_tin,
+                            dia_chi: data[i].dia_chi
                         });
                         await newRN.save();
                     }
@@ -225,46 +228,44 @@ exports.updateNewDescription = async (req, res, next) => {
     try {
         let result = true;
         let page = 1;
-       
+
         do {
             let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/select_tbl_newdes.php', { page: page, pb: 1 })
             let data = listItems.data.items;
             if (data.length > 0) {
-               
+
                 for (let i = 0; i < data.length; i++) {
-                   
-                    let idnew = Number (data[i].new_id)
-                    let post = await New.findOne({_id:idnew}, {userID:1});                    
+
+                    let idnew = Number(data[i].new_id)
+                    let post = await New.findOne({ _id: idnew }, { userID: 1 });
                     if (await fnc.checkNumber(data[i].donvi_thau) === false) {
                         continue
                     }
                     if (await fnc.checkNumber(data[i].dien_tich) === false) {
                         continue
                     }
-                    
+
                     let new_file_dthau = null;
                     let new_file_nophs = null;
                     let new_file_chidan = null;
-                    if(data[i].new_file_dthau && data[i].new_file_dthau != 0) 
-                    {
-                        new_file_dthau = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID +'/'+ data[i].new_file_dthau.split('/')[1];
+                    if (data[i].new_file_dthau && data[i].new_file_dthau != 0) {
+                        new_file_dthau = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_dthau.split('/')[1];
                     }
-                    if(data[i].new_file_nophs && data[i].new_file_nophs != 0) 
-                    {
-                        new_file_nophs = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID +'/'+ data[i].new_file_nophs.split('/')[1];
-                       
+                    if (data[i].new_file_nophs && data[i].new_file_nophs != 0) {
+                        new_file_nophs = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_nophs.split('/')[1];
+
                     }
-                    if(data[i].new_file_chidan && data[i].new_file_chidan != 0) 
-                    {
-                        new_file_chidan = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID +'/'+ data[i].new_file_chidan.split('/')[1];
-                       
+                    if (data[i].new_file_chidan && data[i].new_file_chidan != 0) {
+                        new_file_chidan = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_chidan.split('/')[1];
+
                     }
-             
+
                     if (post != null) {
                         await New.updateOne({ _id: idnew }, {
                             $set: {
-                                'the_tich':data[i].the_tich,
-                                'han_su_dung':data[i].han_su_dung,
+                                'chat_lieu':data[i].chat_lieu,
+                                'the_tich': data[i].the_tich,
+                                'han_su_dung': data[i].han_su_dung,
                                 'poster': data[i].canhan_moigioi,
                                 'description': data[i].new_description,
                                 'productType': data[i].loai_sanpham,
@@ -300,7 +301,7 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'vehicle.so_cho': data[i].so_cho,
                                 'vehicle.trong_tai': data[i].trong_tai,
                                 'vehicle.loai_linhphu_kien': data[i].loai_linhphu_kien,
-                                'vehicle.km': data[i].so_km_da_di,
+                                'vehicle.so_km_da_di': data[i].so_km_da_di,
                                 'realEstate.ten_toa_nha': data[i].ten_toa_nha,
                                 'realEstate.td_macanho': data[i].td_macanho,
                                 'realEstate.ten_phan_khu': data[i].ten_phan_khu,
@@ -325,6 +326,11 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'realEstate.kv_thanhpho': data[i].kv_thanhpho,
                                 'realEstate.kv_quanhuyen': data[i].kv_quanhuyen,
                                 'realEstate.kv_phuongxa': data[i].kv_phuongxa,
+                                'realEstate.can_ban_mua': data[i].can_ban_mua,
+                                'realEstate.dia_chi': data[i].dia_chi,
+                                'realEstate.huong_ban_cong': data[i].huong_ban_cong,
+                                'realEstate.cangoc': data[i].cangoc,
+
                                 'ship.product': data[i].loai_hinh_sp,
                                 'ship.timeStart': data[i].tgian_bd,
                                 'ship.timeEnd': data[i].tgian_kt,
@@ -364,26 +370,26 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'food.typeFood': data[i].nhom_sanpham,
                                 'food.expiry': data[i].han_su_dung,
                                 'addressProcedure': data[i].com_address_num,
-                                'productGroup':data[i].nhom_sanpham,
-                                'com_city':data[i].com_city,
-                                'com_district':data[i].com_district,
-                                'com_ward':data[i].com_ward,
-                                'com_address_num':data[i].com_address_num,
-                                'bidding.han_bat_dau':data[i].han_bat_dau,
-                                'bidding.han_su_dung':data[i].han_su_dung,
-                                tgian_bd:data[i].tgian_bd,
-                                tgian_kt:data[i].tgian_kt,
-                                'bidding.new_job_kind':data[i].new_job_kind,
-                                'bidding.new_file_dthau':new_file_dthau,
-                                'bidding.noidung_nhs':data[i].noidung_nhs,
-                                'bidding.new_file_nophs':new_file_nophs,
-                                'bidding.noidung_chidan':data[i].noidung_chidan,
-                                'bidding.new_file_chidan':new_file_chidan,
-                                'bidding.donvi_thau':data[i].donvi_thau,
-                                'bidding.phi_duthau':data[i].phi_duthau,
-                                'bidding.file_mota':data[i].file_mota,
-                                'bidding.file_thutuc':data[i].file_thutuc,
-                                'bidding.file_hoso':data[i].file_hoso,
+                                'productGroup': data[i].nhom_sanpham,
+                                'com_city': data[i].com_city,
+                                'com_district': data[i].com_district,
+                                'com_ward': data[i].com_ward,
+                                'com_address_num': data[i].com_address_num,
+                                'bidding.han_bat_dau': data[i].han_bat_dau,
+                                'bidding.han_su_dung': data[i].han_su_dung,
+                                tgian_bd: data[i].tgian_bd,
+                                tgian_kt: data[i].tgian_kt,
+                                'bidding.new_job_kind': data[i].new_job_kind,
+                                'bidding.new_file_dthau': new_file_dthau,
+                                'bidding.noidung_nhs': data[i].noidung_nhs,
+                                'bidding.new_file_nophs': new_file_nophs,
+                                'bidding.noidung_chidan': data[i].noidung_chidan,
+                                'bidding.new_file_chidan': new_file_chidan,
+                                'bidding.donvi_thau': data[i].donvi_thau,
+                                'bidding.phi_duthau': data[i].phi_duthau,
+                                'bidding.file_mota': data[i].file_mota,
+                                'bidding.file_thutuc': data[i].file_thutuc,
+                                'bidding.file_hoso': data[i].file_hoso,
                             }
                         });
                     }
@@ -398,17 +404,17 @@ exports.updateNewDescription = async (req, res, next) => {
         console.log(err);
         return fnc.setError(res, err)
     }
-}   
+}
 
 
-exports.toolCateDetail = async(req, res, next) => {
+exports.toolCateDetail = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
         do {
             const form = new FormData();
             form.append('page', page);
-            let cate = await Category.find({parentId:0})
+            let cate = await Category.find({ parentId: 0 })
             //1. nhóm sp
             // const response = await axios.post('https://raonhanh365.vn/api/select_ds_nhomsp.php', form, {
             //     headers: {
@@ -536,9 +542,9 @@ exports.toolCateDetail = async(req, res, next) => {
             //             name: data[i].noi_xuatxu,
             //             parent: data[i].id_parents,
             //         };
-                    
+
             //             await CateDetail.findOneAndUpdate({ _id: cate[i].id_danhmuc }, { $addToSet: { origin: newItem } }, { upsert: true }, )
-                 
+
 
             //     }
             //     page++;
@@ -696,13 +702,12 @@ exports.toolCateDetail = async(req, res, next) => {
                         name: data[i].ten_hang,
                         parent: data[i].id_parent,
                     };
-                    if(data[i].id_danhmuc == 0)
-                    {
-                        await CateDetail.findOneAndUpdate({ _id: 22 }, { $addToSet: { brand: newItem } }, { upsert: true }, )
-                    }else{
-                        await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true }, )
+                    if (data[i].id_danhmuc == 0) {
+                        await CateDetail.findOneAndUpdate({ _id: 22 }, { $addToSet: { brand: newItem } }, { upsert: true },)
+                    } else {
+                        await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true },)
                     }
-                    
+
                 }
                 page++;
             } else {
@@ -804,11 +809,11 @@ exports.toolCateDetail = async(req, res, next) => {
         return fnc.success(res, "Thành công");
     } catch (error) {
         console.error(error);
-        return fnc.setError(res, error.message, )
+        return fnc.setError(res, error.message,)
     }
 };
 
-exports.updateInfoSell = async(req, res, next) => {
+exports.updateInfoSell = async (req, res, next) => {
     try {
         let result = true;
         let page = 1;
@@ -817,7 +822,7 @@ exports.updateInfoSell = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                console.log("🚀 ~ file: raonhanh365.js:807 ~ exports.updateInfoSell=async ~ data:", data)
+                    console.log("🚀 ~ file: raonhanh365.js:807 ~ exports.updateInfoSell=async ~ data:", data)
 
 
                     // if(data[i].giatri_khuyenmai === 'undefined') continue;
@@ -854,7 +859,7 @@ exports.updateInfoSell = async(req, res, next) => {
 }
 
 // bang gia
-exports.toolPriceList = async(req, res, next) => {
+exports.toolPriceList = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -899,7 +904,7 @@ exports.toolPriceList = async(req, res, next) => {
 };
 
 // city
-exports.toolCity = async(req, res, next) => {
+exports.toolCity = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
@@ -953,7 +958,7 @@ exports.toolLike = async (req, res, next) => {
                 },
             });
             let data = response.data.data.items;
-            
+
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const like = new LikeRN({
@@ -967,7 +972,7 @@ exports.toolLike = async (req, res, next) => {
                         ip: data[i].lk_ip,
                         time: data[i].lk_time,
                     });
-                
+
 
                     await LikeRN.create(like);
                 }
@@ -984,100 +989,100 @@ exports.toolLike = async (req, res, next) => {
     }
 };
 //lich su nap the
-exports.toolHistory = async(req, res, next) => {
+exports.toolHistory = async (req, res, next) => {
     try {
-    console.log(".....")
-    let page = 1;
-    let result = true;
-    do {
-    const form = new FormData();
-    form.append('page', page);
-    const response = await axios.post('https://raonhanh365.vn/api/select_history.php', form, {
-    headers: {
-    'Content-Type': 'multipart/form-data',
-    },
-    });
-    
-    let data = response.data.data.items;
-    if (data.length > 0) {
-    for (let i = 0; i < data.length; i++) {
-    const history = new History({
-        _id: data[i].his_id,
-        userId: data[i].his_user_id,
-        seri: data[i].his_seri,
-        cardId: data[i].his_mathe,
-        tranId: data[i].his_tranid,
-        price: data[i].his_price,
-        priceSuccess: data[i].his_price_suc,
-        time: data[i].his_time,
-        networkOperatorName: data[i].his_nhamang,
-        bank: data[i].his_bank,
-        bankNumber: data[i].his_bank_number,
-        cardHolder: data[i].his_cardholder,
-        type: data[i].his_type,
-        status: data[i].his_status,
-        content: data[i].noi_dung,
-        countGetMoney: data[i].count_ntien,
-        distinguish: data[i].his_pb,
-    });
-    
-        await History.create(history);
-    }
-        page++;
-    } else {
-        result = false;
-    }
-        console.log(page);
-    } while (result);
-    
-    return fnc.success(res, "Thành công");
-    } catch (error) {
-    return fnc.setError(res, error.message);
-    }
-};
-//tin ung tuyen
-exports.toolApplyNew = async(req, res, next) => {
-    try {
-    console.log(".....")
-    let page = 1;
-    let result = true;
-    do {
-    const form = new FormData();
-    form.append('page', page);
-    const response = await axios.post('https://raonhanh365.vn/api/select_apply_new.php', form, {
-        headers: {
-        'Content-Type': 'multipart/form-data',
-        },
-    });
-    
-    let data = response.data.data.items;
-    if (data.length > 0) {
-        for (let i = 0; i < data.length; i++) {
-            const applyNew = new ApplyNews({
-                _id: data[i].id,
-                uvId: data[i].uv_id,
-                newId: data[i].new_id ,
-                time: Date(data[i].apply_time) ,
-                status: data[i].status ,
-                note: data[i].note ,
-                isDelete: data[i].is_delete ,
-                });
-                await applyNew.save();
-        }
-        page++;
-    } else {
-        result = false;
-    }
-        console.log(page);
-    } while (result);
-    
-    return fnc.success(res, "Thành công");
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_history.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const history = new History({
+                        _id: data[i].his_id,
+                        userId: data[i].his_user_id,
+                        seri: data[i].his_seri,
+                        cardId: data[i].his_mathe,
+                        tranId: data[i].his_tranid,
+                        price: data[i].his_price,
+                        priceSuccess: data[i].his_price_suc,
+                        time: data[i].his_time,
+                        networkOperatorName: data[i].his_nhamang,
+                        bank: data[i].his_bank,
+                        bankNumber: data[i].his_bank_number,
+                        cardHolder: data[i].his_cardholder,
+                        type: data[i].his_type,
+                        status: data[i].his_status,
+                        content: data[i].noi_dung,
+                        countGetMoney: data[i].count_ntien,
+                        distinguish: data[i].his_pb,
+                    });
+
+                    await History.create(history);
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
     } catch (error) {
         return fnc.setError(res, error.message);
     }
 };
-exports.toolComment = async(req, res, next) => {
-        try {   
+//tin ung tuyen
+exports.toolApplyNew = async (req, res, next) => {
+    try {
+        console.log(".....")
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_apply_new.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const applyNew = new ApplyNews({
+                        _id: data[i].id,
+                        uvId: data[i].uv_id,
+                        newId: data[i].new_id,
+                        time: Date(data[i].apply_time),
+                        status: data[i].status,
+                        note: data[i].note,
+                        isDelete: data[i].is_delete,
+                    });
+                    await applyNew.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+exports.toolComment = async (req, res, next) => {
+    try {
         let page = 1;
         let result = true;
         do {
@@ -1085,47 +1090,47 @@ exports.toolComment = async(req, res, next) => {
             form.append('page', page);
             const response = await axios.post('https://raonhanh365.vn/api/select_cm_comment.php', form, {
                 headers: {
-                'Content-Type': 'multipart/form-data',
+                    'Content-Type': 'multipart/form-data',
                 },
             });
-        
+
             let data = response.data.data.items;
             if (data.length > 0) {
-            for (let i = 0; i < data.length; i++) {
-            const cmt = new Comments({
-                _id: data[i].cm_id,
-                url: data[i].cm_url,
-                parent_id: data[i].cm_parent_id  ,
-                content : data[i].cm_comment ,
-                img: data[i].cm_img ,
-                sender_idchat : data[i].cm_sender_idchat ,
-                tag: data[i].cm_tag ,
-                ip: data[i].cm_ip ,
-                time : data[i].cm_time ,
-                active: data[i].cm_active ,
-                pb: data[i].cm_pb ,
-                id_dh: data[i].id_dh ,
-                unit: data[i].cm_unit ,
-                id_new: data[i].id_new ,
-            });
-            await Comments.create(cmt);
-        }
-            page++;
-        } else {
-            result = false;
-        }
-            console.log(page);
+                for (let i = 0; i < data.length; i++) {
+                    console.log(new Date(data[i].cm_time * 1000))
+                    const cmt = new Comments({
+                        _id: data[i].cm_id,
+                        url: data[i].cm_url,
+                        parent_id: data[i].cm_parent_id,
+                        content: data[i].cm_comment,
+                        img: data[i].cm_img,
+                        sender_idchat: data[i].cm_sender_idchat,
+                        tag: data[i].cm_tag,
+                        ip: data[i].cm_ip,
+                        time: data[i].cm_time,
+                        active: data[i].cm_active,
+                        pb: data[i].cm_pb,
+                        id_dh: data[i].id_dh,
+                        unit: data[i].cm_unit,
+                        id_new: data[i].id_new,
+                    });
+                    await Comments.create(cmt);
+                }
+                page++;
+            } else {
+                result = false;
+            }
         } while (result);
-        
-            return fnc.success(res, "Thành công");
-        } catch (error) {
-            return fnc.setError(res, error.message);
-        }
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
 };
 
 //tag index
-exports.toolTagsIndex = async(req, res, next) => {
-    try {   
+exports.toolTagsIndex = async (req, res, next) => {
+    try {
         let page = 1;
         let result = true;
         do {
@@ -1359,7 +1364,7 @@ exports.toolTagsIndex = async (req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1406,7 +1411,7 @@ exports.toolAdminUserRight = async (req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1451,7 +1456,7 @@ exports.toolBidding = async (req, res, next) => {
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    let _id   = data[i].id;               
+                    let _id = data[i].id;
                     let newId = data[i].new_id;
                     let userID = data[i].user_id;
                     let userName = data[i].user_name;
@@ -1469,29 +1474,29 @@ exports.toolBidding = async (req, res, next) => {
                     let status = data[i].status;
                     let createTime = data[i].create_time;
                     let note = data[i].note;
-              
-                await Bidding.create({_id,newId,userID,userName,userIntro,userFile,userProfile,userProfileFile,productName,productDesc,productLink,price,priceUnit,promotion,promotionFile,status,createTime,note});
-            }
-            page++;
-        } else {
-            result = false;
-        }
-        console.log(page);
-    } while (result);
 
-    return fnc.success(res, "Thành công");
-} catch (error) {
-    return fnc.setError(res, error.message);
-}
+                    await Bidding.create({ _id, newId, userID, userName, userIntro, userFile, userProfile, userProfileFile, productName, productDesc, productLink, price, priceUnit, promotion, promotionFile, status, createTime, note });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
 };
 
 
-exports.toolAdminMenuOrder = async(req, res, next) => {
+exports.toolAdminMenuOrder = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1500,7 +1505,7 @@ exports.toolAdminMenuOrder = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1525,12 +1530,12 @@ exports.toolAdminMenuOrder = async(req, res, next) => {
     }
 };
 
-exports.toolModule = async(req, res, next) => {
+exports.toolModule = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1539,7 +1544,7 @@ exports.toolModule = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1569,12 +1574,12 @@ exports.toolModule = async(req, res, next) => {
     }
 };
 
-exports.toolOrder = async(req, res, next) => {
+exports.toolOrder = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1583,7 +1588,7 @@ exports.toolOrder = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1609,7 +1614,7 @@ exports.toolOrder = async(req, res, next) => {
                         bankName: data[i].ten_nganhang,
                         amountPaid: data[i].tien_ttoan,
                         totalProductCost: data[i].tong_tien_sp,
-                        buyTime:  new Date (data[i].tgian_xacnhan * 1000) ,
+                        buyTime: new Date(data[i].tgian_xacnhan * 1000),
                         status: data[i].trang_thai,
                         sellerConfirmTime: data[i].tgian_xnbh,
                         deliveryStartTime: data[i].tgian_giaohang,
@@ -1642,12 +1647,12 @@ exports.toolOrder = async(req, res, next) => {
     }
 };
 
-exports.toolEvaluate = async(req, res, next) => {
+exports.toolEvaluate = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1656,7 +1661,7 @@ exports.toolEvaluate = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1669,11 +1674,11 @@ exports.toolEvaluate = async(req, res, next) => {
                         stars: data[i].eva_stars,
                         comment: data[i].eva_comment,
                         time: data[i].eva_comment_time,
-                        active: data[i].eva_active, 
-                        showUsc: data[i].eva_show_usc, 
+                        active: data[i].eva_active,
+                        showUsc: data[i].eva_show_usc,
                         csbl: data[i].da_csbl,
-                        csuaBl: data[i].eva_csua_bl, 
-                        tgianHetcs: data[i].tgian_hetcs 
+                        csuaBl: data[i].eva_csua_bl,
+                        tgianHetcs: data[i].tgian_hetcs
                     });
                     await Evaluate.create(evaluate);
                 }
@@ -1690,12 +1695,12 @@ exports.toolEvaluate = async(req, res, next) => {
     }
 };
 
-exports.toolCart = async(req, res, next) => {
+exports.toolCart = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1704,7 +1709,7 @@ exports.toolCart = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1735,12 +1740,12 @@ exports.toolCart = async(req, res, next) => {
     }
 };
 
-exports.toolTags = async(req, res, next) => {
+exports.toolTags = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1749,7 +1754,7 @@ exports.toolTags = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1776,12 +1781,12 @@ exports.toolTags = async(req, res, next) => {
     }
 };
 
-exports.toolContact = async(req, res, next) => {
+exports.toolContact = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1790,7 +1795,7 @@ exports.toolContact = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1819,12 +1824,12 @@ exports.toolContact = async(req, res, next) => {
     }
 };
 
-exports.toolRegisterFail = async(req, res, next) => {
+exports.toolRegisterFail = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1833,7 +1838,7 @@ exports.toolRegisterFail = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1863,12 +1868,12 @@ exports.toolRegisterFail = async(req, res, next) => {
     }
 };
 
-exports.toolSearch = async(req, res, next) => {
+exports.toolSearch = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1877,7 +1882,7 @@ exports.toolSearch = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1904,12 +1909,12 @@ exports.toolSearch = async(req, res, next) => {
     }
 };
 
-exports.toolTblTags = async(req, res, next) => {
+exports.toolTblTags = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1918,7 +1923,7 @@ exports.toolTblTags = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1942,12 +1947,12 @@ exports.toolTblTags = async(req, res, next) => {
     }
 };
 
-exports.toolPushNewsTime = async(req, res, next) => {
+exports.toolPushNewsTime = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1956,7 +1961,7 @@ exports.toolPushNewsTime = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -1980,12 +1985,12 @@ exports.toolPushNewsTime = async(req, res, next) => {
 };
 
 
-exports.toolBlog = async(req, res, next) => {
+exports.toolBlog = async (req, res, next) => {
     try {
         console.log(".....")
         let page = 1;
         let result = true;
-        let id=1;
+        let id = 1;
         do {
             const form = new FormData();
             form.append('page', page);
@@ -1994,7 +1999,7 @@ exports.toolBlog = async(req, res, next) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            
+
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
@@ -2145,7 +2150,7 @@ exports.toolAdminTranslate = async (req, res, next) => {
     }
 };
 
-exports.toolBaoHanh = async (req,res,next) =>{
+exports.toolBaoHanh = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2184,7 +2189,7 @@ exports.toolBaoHanh = async (req,res,next) =>{
     }
 }
 
-exports.toolLoveNew = async (req,res,next) =>{
+exports.toolLoveNew = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2223,7 +2228,7 @@ exports.toolLoveNew = async (req,res,next) =>{
     }
 }
 
-exports.toolCateVl = async (req,res,next) =>{
+exports.toolCateVl = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2261,7 +2266,7 @@ exports.toolCateVl = async (req,res,next) =>{
         return fnc.setError(res, error.message);
     }
 }
-exports.toolPhuongXa = async (req,res,next) =>{
+exports.toolPhuongXa = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2294,6 +2299,29 @@ exports.toolPhuongXa = async (req,res,next) =>{
             console.log(page);
         } while (result);
 
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
+
+exports.toolbanggiacknt  =async (req, res, next) => {
+    try {
+        
+            const response = await axios.get('https://raonhanh365.vn/api/select_ds_banggiacknt.php');
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const loveNew1 = new NetworkOperator({
+                        _id: data[i].id,
+                        nameBefore: data[i].nha_mang,
+                        nameAfter: data[i].ten_nhmang,
+                        discount: data[i].chiet_khau,
+                        active: data[i].bg_active,
+                    });
+                    await loveNew1.save();
+                }
+            }
         return fnc.success(res, "Thành công");
     } catch (error) {
         return fnc.setError(res, error.message);

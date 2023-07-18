@@ -4,6 +4,8 @@ const TaiSan = require('../../../models/QuanLyTaiSan/TaiSan');
 const QuaTrinhSuDung = require("../../../models/QuanLyTaiSan/QuaTrinhSuDung");
 const TaiSanDangSuDung = require("../../../models/QuanLyTaiSan/TaiSanDangSuDung");
 const Users = require("../../../models/Users");
+const fnc = require("../../../services/functions")
+
 
 //Tài sản đang sửa chữa
 
@@ -21,7 +23,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
         //  id_ng_xoa = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = user_xoa.inForPerson.employee.type.com_id;
+        com_id = req.user.data.inForPerson.employee.com_id;
         // id_ng_xoa = req.user.data.idQLC;
 
     }
@@ -64,17 +66,13 @@ exports.HoanThanhSuaChua = async (req, res) => {
 
         return res.status(200).json({ data: hoan_thanh_sua_chua, message: "thanhcong" });
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
 
     }
 }
 
-// exports.XoaSuaChua = async(req,res) =>{
-//     let {datatype , id, type_quyen,id_ng_xoa, } = req.body;
-//     let com_id = req.user.data.idQLC;
 
-// }
 
 //edit_suachua
 exports.SuaChuaBB = async (req, res) => {
@@ -90,14 +88,14 @@ exports.SuaChuaBB = async (req, res) => {
 
 
     } else if (req.user.data.type == 2) {
-        com_id = user_xoa.inForPerson.employee.type.com_id;
+        com_id = req.user.data.inForPerson.employee.com_id;
 
 
     }
 
     try {
         let q_sua_chua = await SuaChua.findOne({ id_cty: com_id, sc_id: id_sc });
-        console.log(q_sua_chua);
+
         let sc_quyen_sd = q_sua_chua.sc_quyen_sd;
         let sl_sc_cu = q_sua_chua.sl_sc;
         let ng_sd = q_sua_chua.sc_ng_sd;
@@ -144,7 +142,7 @@ exports.SuaChuaBB = async (req, res) => {
 
         return res.status(200).json({ data: { taisan: taisan, suachua: suachua }, message: "thanh cong" });
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 
@@ -166,29 +164,79 @@ exports.Seach = async (req, res) => {
         }
 
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
 
-exports.listDataSuaChua = async (req, res) => {
-    let trang_thai = req.body.trang_thai;
-    let limit = req.body.limit || 10;
-    let skip = req.body.skip || 1;
+exports.listBBDangSuaChua = async (req, res) => {
+
 
     try {
-        if (isNaN(trang_thai)) {
-            return res.status(404).json({ message: "trang thai phai la 1 so" });
-        } else {
-            let listData = await SuaChua.find({ sc_trangthai: trang_thai }).skip((skip - 1) * limit).limit(limit);
-            if (listData) {
-                return res.status(200).json({ data: listData, message: "thanh cong" });
-            } else {
-                return res.status(202).json({ data: [], message: "khong co du lieu" });
-            }
+        let skip = req.body.skip || 1;
+        let limit = req.body.limit || 10;
+        let key = req.body.key || null;
+
+        let com_id = 0;
+
+        if (req.user.data.type == 1) {
+            com_id = req.user.data.idQLC;
+
+        } else if (req.user.data.type == 2) {
+            com_id = req.user.data.inForPerson.employee.com_id;
         }
+        let filter = {
+            id_cty: com_id,
+            sc_trangthai: 1,
+            sc_da_xoa: 0,
+        }
+
+
+        if (key) {
+            filter.sc_id = Number(key);
+        }
+        let tsda_suachua = await SuaChua.aggregate([
+            {
+                $match:
+                    filter
+            },
+            {
+                $lookup: {
+                    from: 'QLTS_Tai_San',
+                    localField: 'suachua_taisan',
+                    foreignField: 'ts_id',
+                    as: 'infoTS'
+                }
+            },
+            {
+                $project: {
+                    'sc_ngay': '$sc_ngay',
+                    'sc_dukien': '$sc_dukien',
+                    'suachua_taisan': '$suachua_taisan',
+                    'sc_id': '$sc_id',
+                    'sc_chiphi_dukien': '$sc_chiphi_dukien',
+                    'sc_noidung': '$sc_noidung',
+                    'sl_sc': '$sl_sc',
+                    'ten_ts': '$infoTS.ts_ten',
+                }
+            },
+            {
+                $sort: {
+                    sc_id: -1
+                }
+            },
+            {
+                $skip: (skip++ - 1) * limit
+            },
+            {
+                $limit: limit
+            }
+        ]);
+        fnc.success(res, 'OK', [tsda_suachua]);
+
+
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -209,7 +257,7 @@ exports.XoabbSuaChua = async (req, res) => {
         id_ng_xoa = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = user_xoa.inForPerson.employee.type.com_id;
+        com_id = req.user.data.inForPerson.employee.com_id;
         id_ng_xoa = req.user.data.idQLC;
 
     }
@@ -276,7 +324,7 @@ exports.XoabbSuaChua = async (req, res) => {
         }
         return res.status(200).json({ data: { bb_crr: bb_crr, update_taisan: update_taisan }, message: "thanh cong" });
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -380,10 +428,10 @@ exports.deleteAll = async (req, res) => {
         //     return res.status(404).json({ message: "loai_xoa khong dung" });
         // }
     } catch (error) {
-        {
-            console.log(error);
-            return res.status(500).json({ message: error.message });
-        }
+
+
+        return res.status(500).json({ message: error.message });
+
     }
 }
 
@@ -396,7 +444,7 @@ exports.details = async (req, res) => {
 
 
     } else if (req.user.data.type == 2) {
-        com_id = user_xoa.inForPerson.employee.type.com_id;
+        com_id = req.user.data.inForPerson.employee.com_id;
 
     }
     try {
@@ -451,7 +499,7 @@ exports.details = async (req, res) => {
             return res.status(200).json({ data: info_bb, message: 'thanh cong' });
         }
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -469,7 +517,7 @@ exports.xoa_bb_sua_chua = async (req, res) => {
         id_ng_xoa = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = user_xoa.inForPerson.employee.type.com_id;
+        com_id = req.user.data.inForPerson.employee.com_id;
         id_ng_xoa = req.user.data.idQLC;
 
     }
@@ -493,7 +541,7 @@ exports.xoa_bb_sua_chua = async (req, res) => {
             }
         }
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -516,7 +564,7 @@ exports.xoa_all = async (req, res) => {
     }
 
     try {
-        console.log("comId" + com_id);
+
         if (isNaN(xoa_vinh_vien) || isNaN(type_quyen)) {
             return res.status(404).json({ message: "xoa_vinh_vien,type_quyen phai la 1 so  " });
         } else {
@@ -539,7 +587,7 @@ exports.xoa_all = async (req, res) => {
             }
         }
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 
@@ -547,8 +595,8 @@ exports.xoa_all = async (req, res) => {
 
 
 exports.details_bb_da_sua_chua = async (req, res) => {
-    let token = req.user;
-    // console.log("token: " + token);
+
+
 
     let id_bb = req.body.id_bb;
     let com_id = 0;
@@ -558,10 +606,10 @@ exports.details_bb_da_sua_chua = async (req, res) => {
         com_id = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = user_xoa.inForPerson.employee.type.com_id;
+        com_id = req.user.data.inForPerson.employee.com_id;
     }
     try {
-        console.log("id_bb: " + id_bb);
+
         if (isNaN(id_bb)) {
             return res.status(404).json({ message: "id bien ban phai la 1 so " });
         }
@@ -611,8 +659,99 @@ exports.details_bb_da_sua_chua = async (req, res) => {
             return res.status(200).json({ data: info_bb, message: 'thanh cong' });
         }
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
+    }
+}
+exports.listBBDaSuaChua = async (req, res) => {
+    try {
+        let skip = req.body.page || 1;
+        let limit = req.body.perPage || 10;
+        let type_quyen = req.body.type_quyen;
+        let key = req.body.key;
+        let com_id = 0;
+        let ep_id = 0;
+        if (req.user.data.type == 1) {
+            com_id = req.user.data.idQLC;
+
+        } else if (req.user.data.type == 2) {
+            com_id = req.user.data.inForPerson.employee.com_id;
+            ep_id = req.user.data.inForPerson.employee.dep_id;
+        }
+        let filter = {
+            id_cty: com_id,
+            sc_trangthai: 1,
+            sc_da_xoa: 0,
+        }
+        if (key) {
+            filter.sc_id = Number(key);
+        }
+
+        let condition = {};
+        let filter2 = {};
+        let filter3 = {};
+        if (type_quyen == 2) {
+            // condition = ep_id;
+            filter2.sc_id_ng_tao = ep_id;
+            filter3.sc_ng_thuchien = ep_id;
+
+        }
+        console.log("condition: " + condition);
+        let tsda_suachua = await SuaChua.aggregate([
+            {
+                $match:
+                {
+                    $and: [
+                        filter,
+                        {
+                            $or: [
+                                filter2,
+                                filter3
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                $lookup: {
+                    from: 'QLTS_Tai_San',
+                    localField: 'suachua_taisan',
+                    foreignField: 'ts_id',
+                    as: 'infoTS'
+                }
+
+            },
+            {
+                $project: {
+                    'sc_ngay': '$sc_ngay',
+                    'sc_dukien': '$sc_dukien',
+                    'sc_hoanthanh': '$sc_hoanthanh',
+                    'suachua_taisan': '$suachua_taisan',
+                    'sc_id': '$sc_id',
+                    'sc_chiphi_dukien': '$sc_chiphi_dukien',
+                    'sc_chiphi_thucte': '$sc_chiphi_thucte',
+                    'sc_noidung': '$sc_noidung',
+                    'sl_sc': '$sl_sc',
+                    'ten_ts': '$infoTS.ts_ten',
+                }
+            },
+            {
+                $sort: {
+                    sc_id: -1
+                }
+            },
+            {
+                $skip: (skip - 1) * limit
+            },
+            {
+                $limit: limit
+            }
+        ]);
+        fnc.success(res, 'OK', [tsda_suachua]);
+    } catch (error) {
+        console.log(error);
+        fnc.setError(res, "loi he thong");
+
     }
 }
 
@@ -631,7 +770,7 @@ exports.addSuaChua = async (req, res) => {
         id_ng_tao = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = user_xoa.inForPerson.employee.type.com_id;
+        com_id = req.user.data.inForPerson.employee.com_id;
         id_ng_tao = req.user.data.idQLC;
 
     }
@@ -642,10 +781,10 @@ exports.addSuaChua = async (req, res) => {
         let ID_bb_sua_chua = 0;
         let maxID_1 = await ThongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
         if (maxID_1) {
-            maxID = maxID_1._id;
+            maxID = maxID_1.id_tb;
         }
         let new_thongBao_1 = new ThongBao({
-            _id: Number(maxID + 1),
+            id_tb: Number(maxID + 1),
 
             id_cty: com_id,
             id_ng_nhan: com_id,
@@ -662,10 +801,10 @@ exports.addSuaChua = async (req, res) => {
         maxID = 0;
         let maxID_2 = await ThongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
         if (maxID_2) {
-            maxID = maxID_2._id;
+            maxID = maxID_2.id_tb;
         }
         let new_thongBao_2 = new ThongBao({
-            _id: Number(maxID + 1),
+            id_tb: Number(maxID + 1),
             id_cty: com_id,
             id_ng_nhan: ng_sd,
             id_ng_tao: id_ng_tao,
@@ -782,7 +921,7 @@ exports.addSuaChua = async (req, res) => {
                     time_created: new Date().getTime()
                 });
                 await qr_qtr_sd.save();
-                console.log("OK");
+
 
 
             } else {
@@ -845,7 +984,7 @@ exports.addSuaChua = async (req, res) => {
         }
         return res.status(200).json({ data: bb_sc, message: "thanh cong" });
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -857,9 +996,9 @@ exports.tuChoiSC = async (req, res) => {
         if (req.user.data.type == 1) {
             com_id = req.user.data.idQLC;
         } else if (req.user.data.type == 2) {
-            com_id = user_xoa.inForPerson.employee.type.com_id;
+            com_id = req.user.data.inForPerson.employee.com_id;
         }
-        console.log(com_id)
+
         let tuchoi_sua_chua = await SuaChua.findOneAndUpdate({ sc_id: id_bb, id_cty: com_id }, { sc_trangthai: 2, sc_lydo_tuchoi: content });
         let q_suachua = await SuaChua.findOne({ id_cty: com_id, sc_id: id_bb });
         let ng_sd = q_suachua.sc_ng_sd;
@@ -890,7 +1029,7 @@ exports.tuChoiSC = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error)
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -965,10 +1104,6 @@ exports.xoaBBcanSC = async (req, res) => {
                 }
                 if (sc_quyen_sd == 2) {
                     let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
-                    console.log("com_id: " + com_id);
-                    console.log("ng_sd: " + ng_sd);
-                    console.log("id_ts: " + id_ts);
-                    console.log("q_taisan_doituong: " + q_taisan_doituong);
                     let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
                     let update_sl = sl_ts_cu - sl_sc;
                     let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_nv_sd: ng_sd },
@@ -995,12 +1130,13 @@ exports.xoaBBcanSC = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
 // chua biết cần trả ra những trường gì vì chưa test được
 exports.detailBBCanSuaChua = async (req, res) => {
+
     let id = req.body.id;
     try {
         let com_id = 0;
@@ -1008,7 +1144,7 @@ exports.detailBBCanSuaChua = async (req, res) => {
             com_id = req.user.data.idQLC;
 
         } else if (req.user.data.type == 2) {
-            com_id = user_xoa.inForPerson.employee.type.com_id;
+            com_id = req.user.data.inForPerson.employee.com_id;
         }
         if (isNaN(id)) {
             return res.status(404).json({ message: "id phai la 1 Number" });
@@ -1062,8 +1198,82 @@ exports.detailBBCanSuaChua = async (req, res) => {
         return res.status(200).json({ data: info_bb, message: "success" });
 
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
+    }
+
+}
+
+exports.listBBCanSuaChua = async (req, res) => {
+    try {
+        let skip = req.body.skip || 1;
+        let limit = req.body.limit || 10;
+        let com_id = 0;
+        if (req.user.data.type == 1) {
+            com_id = req.user.data.idQLC;
+
+        } else if (req.user.data.type == 2) {
+            com_id = req.user.data.inForPerson.employee.com_id;
+        }
+        let filter = {
+            id_cty: com_id,
+            sc_trangthai: 1,
+            sc_da_xoa: 0,
+        }
+
+
+        if (key) {
+            filter.sc_id = Number(key);
+        }
+        let tsda_suachua = await SuaChua.aggregate([
+            {
+                $match:
+                    filter
+            },
+            {
+                $lookup: {
+                    from: 'QLTS_Tai_San',
+                    localField: 'suachua_taisan',
+                    foreignField: 'ts_id',
+                    as: 'tenTaiSan'
+                }
+            },
+            {
+                $project: {
+                    "sc_date_create": "$sc_date_create",
+                    "ten_ts": "$tenTaiSan.ts_ten",
+                    "sc_quyen_sd": "$sc_quyen_sd",
+                    "sc_ng_sd": '$sc_ng_sd',
+                    'sc_ngay_hong': '$sc_ngay_hong',
+                    "sc_hoanthanh": '$sc_hoanthanh',
+                    'sc_id': '$sc_id',
+                    'sc_trangthai': '$sc_trangthai',
+                    'suachua_taisan': '$suachua_taisan',
+                    'sl_sc': '$sl_sc',
+                    'sc_noidung': '$sc_noidung',
+                    'sc_ts_vitri': '$sc_ts_vitri',
+                    'ts_date_sd': '$tenTaiSan.ts_date_sd'
+                }
+            },
+            {
+                $skip: (skip++ - 1) * 10
+            },
+            {
+                $limit: limit
+            },
+            {
+                $sort: {
+                    sc_id: -1
+                }
+            }
+        ]);
+
+
+
+        fnc.success(res, "thanh cong ", [tscan_suachua]);
+    } catch (error) {
+        console.log(error);
+        fnc.setError(res, "loi he thong");
     }
 
 }

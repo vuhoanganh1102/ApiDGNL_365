@@ -2,7 +2,7 @@ const functions = require("../../services/functions")
 const user = require("../../models/Users")
 
 
-exports.check1 = async (req, res) => {
+exports.check1 = async(req, res) => {
     try {
         const idQLC = req.user.data.idQLC
         let data = []
@@ -28,60 +28,60 @@ exports.check1 = async (req, res) => {
                 if (comVip == 1) {
                     vip = true
 
-                    functions.success(res, "Cong ty tạo trước 20/05/20 va VIP",{vip})
+                    functions.success(res, "Cong ty tạo trước 20/05/20 va VIP", { vip })
                 } else if (comVip == 0) {
                     vip = false
-                    
-                    functions.success(res, "Cong ty tạo trước 20/05/20 va thường",{vip})
+
+                    functions.success(res, "Cong ty tạo trước 20/05/20 va thường", { vip })
                 } else {
                     functions.setError(res, "Công ty tạo trước 20/05/20, vip không xác định ")
 
                 }
             } else if (createdTime > startTime) {
-                if (timeVip == 0) {//vip
+                if (timeVip == 0) { //vip
 
                     if (count >= userVip) {
                         if (comVip == 0) {
                             is_add = false
                             vip = false
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty thường và số lượng nhân viên vượt quá gói mặc định",{is_add,vip})
-                            
+                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty thường và số lượng nhân viên vượt quá gói mặc định", { is_add, vip })
+
                         } else {
                             is_add = false
                             vip = true
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty vip và số lượng nhân viên vượt quá gói mặc định",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty vip và số lượng nhân viên vượt quá gói mặc định", { is_add, vip })
 
                         }
                     } else {
                         if (comVip == 0) {
                             is_add = true
                             vip = false
-                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty thường và con them duoc nhan vien ",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty thường và con them duoc nhan vien ", { is_add, vip })
                         } else {
                             is_add = true
                             vip = true
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty vip và con them duoc nhan vien ",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty vip và con them duoc nhan vien ", { is_add, vip })
 
                         }
                     }
 
 
-                } else {//
-                    if (now >= timeVips) {//het han vip
+                } else { //
+                    if (now >= timeVips) { //het han vip
                         if (count >= userVip) {
                             vip = false
                             is_add = false
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 va het han VIP va số lượng nhân viên vượt quá góp vip",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 va het han VIP va số lượng nhân viên vượt quá góp vip", { is_add, vip })
 
                         } else {
                             is_add = true
                             vip = false
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 va het han VIP va con  them duoc nhân viên vip",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 va het han VIP va con  them duoc nhân viên vip", { is_add, vip })
                         }
 
                     } else { // con han vip
@@ -89,12 +89,12 @@ exports.check1 = async (req, res) => {
                             is_add = false
                             vip = true
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 va VIP va số lượng nhân viên vượt quá góp vip",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 va VIP va số lượng nhân viên vượt quá góp vip", { is_add, vip })
                         } else {
                             is_add = true
                             vip = true
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 va VIP va con  them duoc nhân viên vip",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 va VIP va con  them duoc nhân viên vip", { is_add, vip })
 
                         }
                     }
@@ -103,7 +103,7 @@ exports.check1 = async (req, res) => {
 
 
             } else {
-                functions.success(res,"Thời gian tạo lập và thời gian bắt đầu bằng nhau");
+                functions.success(res, "Thời gian tạo lập và thời gian bắt đầu bằng nhau");
             }
         } else {
             functions.success(res, " Công ty không tồn tại ")
@@ -114,7 +114,7 @@ exports.check1 = async (req, res) => {
     }
 }
 
-exports.check2 = async (req, res) => {
+exports.check2 = async(req, res) => {
     try {
         const com_id = req.body.com_id
         let data = []
@@ -137,89 +137,71 @@ exports.check2 = async (req, res) => {
 
             if (createdTime < startTime) {
                 if (comVip == 1) {
-                    vip = true
-
-                    functions.success(res, "Cong ty tạo trước 20/05/20 va VIP",{vip})
+                    vip = true;
+                    functions.success(res, "Cong ty tạo trước 20/05/20 va VIP", { vip })
                 } else if (comVip == 0) {
-                    vip = false
-                    
-                    functions.success(res, "Cong ty tạo trước 20/05/20 va thường",{vip})
+                    vip = true;
+                    functions.success(res, "Cong ty tạo trước 20/05/20 va thường", { vip })
                 } else {
                     functions.setError(res, "Công ty tạo trước 20/05/20, vip không xác định ")
-
                 }
             } else if (createdTime > startTime) {
-                if (timeVip == 0) {//vip
+                if (timeVip == 0) { //vip
 
                     if (count >= userVip) {
                         if (comVip == 0) {
-                            is_add = false
-                            vip = false
-
-                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty thường và số lượng nhân viên vượt quá gói mặc định",{is_add,vip})
-                            
+                            is_add = false;
+                            vip = false;
+                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty thường và số lượng nhân viên vượt quá gói mặc định", { is_add, vip })
                         } else {
-                            is_add = false
-                            vip = true
-
-                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty vip và số lượng nhân viên vượt quá gói mặc định",{is_add,vip})
-
+                            is_add = false;
+                            vip = true;
+                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty vip và số lượng nhân viên vượt quá gói mặc định", { is_add, vip })
                         }
                     } else {
                         if (comVip == 0) {
                             is_add = true
                             vip = false
-                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty thường và con them duoc nhan vien ",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty thường và con them duoc nhan vien ", { is_add, vip })
                         } else {
                             is_add = true
                             vip = true
-
-                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty vip và con them duoc nhan vien ",{is_add,vip})
-
+                            functions.success(res, "Cong ty tạo sau 20/05/20 và cty vip và con them duoc nhan vien ", { is_add, vip })
                         }
                     }
-
-
-                } else {//
-                    if (now >= timeVips) {//het han vip
+                } else { //
+                    if (now >= timeVips) { //het han vip
                         if (count >= userVip) {
                             vip = false
                             is_add = false
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 va het han VIP va số lượng nhân viên vượt quá góp vip",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 va het han VIP va số lượng nhân viên vượt quá góp vip", { is_add, vip })
 
                         } else {
                             is_add = true
                             vip = false
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 va het han VIP va con  them duoc nhân viên vip",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 va het han VIP va con  them duoc nhân viên vip", { is_add, vip })
                         }
-
                     } else { // con han vip
                         if (count >= userVip) {
                             is_add = false
                             vip = true
 
-                            functions.success(res, "Cong ty tạo sau 20/05/20 va VIP va số lượng nhân viên vượt quá góp vip",{is_add,vip})
+                            functions.success(res, "Cong ty tạo sau 20/05/20 va VIP va số lượng nhân viên vượt quá góp vip", { is_add, vip })
                         } else {
-                            is_add = true
-                            vip = true
-
-                            functions.success(res, "Cong ty tạo sau 20/05/20 va VIP va con  them duoc nhân viên vip",{is_add,vip})
-
+                            is_add = true;
+                            vip = true;
+                            functions.success(res, "Cong ty tạo sau 20/05/20 va VIP va con  them duoc nhân viên vip", { is_add, vip });
                         }
                     }
                 }
-
-
-
             } else {
-                functions.success(res,"Thời gian tạo lập và thời gian bắt đầu bằng nhau");
+                functions.success(res, "Thời gian tạo lập và thời gian bắt đầu bằng nhau");
             }
         } else {
             functions.success(res, " Công ty không tồn tại ")
         }
-
     } catch (e) {
         functions.setError(res, e.message)
     }

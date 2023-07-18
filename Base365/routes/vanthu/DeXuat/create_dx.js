@@ -28,4 +28,7 @@ router.post('/addDxTs',functions.checkToken,formData.parse(),Controller.dxThaiSa
 router.post('/addDXTT',functions.checkToken,formData.parse(),Controller.dxThanhToan)
 router.post('/addDXTP',functions.checkToken,formData.parse(),Controller.dxThuongPhat)
 
+
+//Api đổ dữ liệu danh sách người duyệt và người theo dõi
+router.post('/showadd',functions.checkToken,formData.parse(),Controller.showadd)
 module.exports = router;

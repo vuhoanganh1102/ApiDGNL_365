@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const model_CapPhat = new mongoose.Schema({
-    cp_id:{
+    _id:{
         type: Number,
+        require : true
     },
     cap_phat_taisan:{
         type :String,
@@ -22,7 +23,7 @@ const model_CapPhat = new mongoose.Schema({
         type: Number
     },
     ts_daidien_nhan:{
-        type : Number
+        type : [String]
     },
     cp_ngay:{
         type: Number
@@ -69,9 +70,6 @@ const model_CapPhat = new mongoose.Schema({
     cp_tu_choi_tiep_nhan:{
         type :String
     }
-},
-{
-    collection:"QLTS_Cap_Phat",
-    versionKey: false
+
 });
 module.exports = mongoose.model("QLTS_Cap_Phat",model_CapPhat);

@@ -1,12 +1,14 @@
 const functions = require('../../../services/functions');
 const Users = require('../../../models/Users');
-const tbl_qlcv_role = require('../../../models/Vanthu365/tbl_qlcv_role')
+const tbl_qlcv_role = require('../../../models/Vanthu365/tbl_qlcv_role');
+const vanthu = require('../../../services/vanthu');
 // danh sách phân quyền người dùng
 exports.getdecentralization =  async (req,res,next)=>{
     try {
-        let comId =  req.comID || 1763;
+        let comId = req.comId;
         let emId =  Number(req.body.emId);
-        let data = await tbl_qlcv_role.find({ro_use_id:emId,ro_usc_id:comId})
+        if(!emId) return functions.setError(res,'missing id employee',400);
+        let data = await tbl_qlcv_role.find({ro_user_id:emId,ro_usc_id:comId})
         return functions.success(res,'get data success',{data})
     } catch (error) {
         return functions.setError(res, error)
@@ -16,21 +18,41 @@ exports.getdecentralization =  async (req,res,next)=>{
 exports.decentralization =  async (req,res,next) => {
     try {
         let emId = req.body.emId; 
+        let comId = req.comId;
         let quyen1 = req.body.quyen1; 
         let quyen2 = req.body.quyen2; 
         let quyen3 = req.body.quyen3; 
         let quyen4 = req.body.quyen4; 
         let quyen5 = req.body.quyen5; 
         let quyen6 = req.body.quyen6; 
-        
-        await tbl_qlcv_role.findOneAndUpdate({ro_use_id:emId},{
-            ro_list_vb:quyen1,
-            ro_list_hd:quyen2,
-            ro_search_vb:quyen3,
-            ro_lsu_vb:quyen4,
-            ro_thongke_vb:quyen5,
-            ro_dele_vb:quyen6,
-        },{ upsert: true })
+        if(!emId) return functions.setError(res,'missing id employee',400);
+        let checkUser = await Users.findOne({'inForPerson.employee.com_id':comId,idQLC:emId})
+        if(!checkUser) return functions.setError(res,'not found employee',400);
+        let check = await tbl_qlcv_role.findOne({ro_user_id:emId,ro_usc_id:comId});
+        if(check){
+            await tbl_qlcv_role.findOneAndUpdate({ro_user_id:emId,ro_usc_id:comId},{
+                ro_list_vb:quyen1,
+                ro_list_hd:quyen2,
+                ro_search_vb:quyen3,
+                ro_lsu_vb:quyen4,
+                ro_thongke_vb:quyen5,
+                ro_dele_vb:quyen6,
+            })
+        }else{
+            let _id = await vanthu.getMaxID(tbl_qlcv_role)
+            await tbl_qlcv_role.create({
+                _id,
+                ro_user_id:emId,
+                ro_usc_id:comId,
+                ro_list_vb:quyen1,
+                ro_list_hd:quyen2,
+                ro_search_vb:quyen3,
+                ro_lsu_vb:quyen4,
+                ro_thongke_vb:quyen5,
+                ro_dele_vb:quyen6,
+            })
+        }
+       
 
         return functions.success(res,'Phân quyền cho người dùng thành công!')
     } catch (error) {

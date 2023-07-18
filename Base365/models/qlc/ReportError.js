@@ -26,6 +26,7 @@ const ReportError = new Schema({
     },
     from_source: { //nguon
         type: Number,
+        default : 'quanlichung'
     },
 })
 

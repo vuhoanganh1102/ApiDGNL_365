@@ -138,6 +138,7 @@ exports.updateEmployee = async(req, res, next) => {
                 education: education
               },
               employee: {
+                com_id: comId,
                 start_working_time: start_working_time,
                 position_id: position_id
               }

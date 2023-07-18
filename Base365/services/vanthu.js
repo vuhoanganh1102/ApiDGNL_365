@@ -8,6 +8,19 @@ const dotenv = require("dotenv");
 dotenv.config();
 const path = require('path');
 
+
+
+
+// hàm khi thành công
+exports.success = async (res, messsage = "", data = []) => {
+    return res.status(200).json({ data: { result: true, message: messsage, ...data }, error: null, })
+};
+
+// hàm thực thi khi thất bại
+exports.setError = async (res, message, code = 500) => {
+    return res.status(code).json({ code, message })
+};
+
 exports.uploadFileVanThu = (id, file) => {
     let path = `../Storage/base365/vanthu/tailieu/${id}/`;
     let filePath = `../Storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
@@ -89,13 +102,6 @@ exports.uploadFileNameRandom = async (folder, file_img) => {
     filename = `${timestamp}-tin-${file_img.originalFilename}`.replace(/,/g, '');
     const filePath = dir + filename;
     filename = filename + ',';
-    // if (NameFile === '') {
-    //     NameFile += `'${file_img.name.replace(/,/g, '')}'`;
-    //     InfoFile += `'https://vanthu.timviec365.vn/uploads/file_van_ban/${year}/${month}/${day}/${filename}'`;
-    // } else {
-    //     NameFile += `,'${file_img.name.replace(/,/g, '')}'`;
-    //     InfoFile += `,'https://vanthu.timviec365.vn/uploads/file_van_ban/${year}/${month}/${day}/${filename}'`;
-    // }
 
     fs.readFile(file_img.path, (err, data) => {
         if (err) {
@@ -210,12 +216,12 @@ exports.uploadfile = async (folder, file_img, time) => {
     const day = ('0' + date.getDate()).slice(-2);
     const timestamp = Math.round(date.getTime() / 1000);
 
-    const dir = `../Storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
+    const dir = `../storage/base365/vanthu/uploads/${folder}/${year}/${month}/${day}/`;
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
 
-    filename = `${timestamp}-${file_img.originalFilename}`.replace(/,/g, '');
+    filename = `${timestamp}-tin-${file_img.originalFilename}`.replace(/,/g, '');
     const filePath = dir + filename;
     filename = filename + ',';
     fs.readFile(file_img.path, (err, data) => {
@@ -231,8 +237,8 @@ exports.uploadfile = async (folder, file_img, time) => {
     return filename;
 }
 exports.deleteFile = (file) => {
-    let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`, '');
-    let filePath = '../Storage/base365/vanthu/uploads/' + namefile;
+    let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`,'');
+    let filePath = '../storage/base365/vanthu/uploads/' + namefile;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });

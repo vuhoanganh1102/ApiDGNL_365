@@ -36,6 +36,10 @@ const feedback_emp = new Schema({
     from_source: { //nguon
         type: Number,
     },
+}, {
+    collection: 'QLC_Feedback_emp',
+    versionKey: false,
+    timestamp: true
 })
 
 module.exports = mongoose.model('QLC_Feedback_emp', feedback_emp);

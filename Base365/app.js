@@ -82,7 +82,10 @@ errorApp(appCRM)
 // Cấu hình appQLC
 configureApp(appQLC);
 var qlcRouter = require('./routes/qlc');
+var ToolQLC = require('./routes/qlc/Tools');
 appQLC.use("/api", qlcRouter);
+appQLC.use("/api/tool", ToolQLC)
+
 errorApp(appQLC)
 
 // Cấu hình appHR
@@ -93,9 +96,9 @@ errorApp(appHR)
 
 // Cấu hình appQLTS
 configureApp(appQLTS);
-var qltsRouter = require('./routes/qlts/qltsRouter');
-appQLTS.use("/api", qltsRouter);
-errorApp(appHR)
+var qltsRouter = require('./routes/qltsRouter');
+appQLTS.use("/api/qlts", qltsRouter);
+errorApp(appQLTS)
 
 // timviec365 -> api-base365
 const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365

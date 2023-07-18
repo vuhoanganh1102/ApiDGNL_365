@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_NhomTaiSan= new mongoose.Schema({
     id_nhom: {
-        type: Number
+        type: Number,
+        require : true
     },
     ten_nhom: {
         type: String
@@ -10,22 +11,27 @@ const model_NhomTaiSan= new mongoose.Schema({
         type: Number
     },
     nhom_type_quyen: {
-        type: Number
+        type: Number,
+        default : 0
     },
     nhom_id_ng_xoa: {
-        type: Number
+        type: Number,
+        default : 0
     },
     nhom_da_xoa: {
-        type: Number
+        type: Number,
+        default : 0
     },
     nhom_date_create: {
         type: Number
     },
     nhom_date_delete:{
-        type : Number
+        type : Number,
+        default : 0
     },
     nhom_type_quyen_xoa:{
-        type : Number
+        type : Number,
+        default : 0
     }
 },{
     collection: "QLTS_Nhom_Tai_San",

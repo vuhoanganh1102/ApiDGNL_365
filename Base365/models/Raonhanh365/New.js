@@ -34,6 +34,10 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    dc_unit:{
+        type: Number,
+        default: 0
+    },
     until: {
         // loại tiền
         type: Number,
@@ -51,11 +55,6 @@ const newSchema = new mongoose.Schema({
     },
     chat_lieu:{
         type:String
-    },
-    image: {
-        // ảnh bài viết
-        type: String,
-        default: null
     },
     video: {
         // video của bài viết
@@ -180,7 +179,6 @@ const newSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
-  
     new_day_tin:{
         type:String,
         default: null
@@ -225,9 +223,6 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    han_su_dung:{
-        type:Date
-    },
     pinCount: {
         // số lượng tin ghim
         type: Number,
@@ -250,10 +245,6 @@ const newSchema = new mongoose.Schema({
     },
     quantitySold: {
         // số lượng đã bán
-        type: Number,
-        default: 0
-    },
-    until:{
         type: Number,
         default: 0
     },
@@ -303,6 +294,9 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    han_su_dung:{
+        type:Date
+    },
     productGroup: {
         // nhóm sản phẩm
         type: Number,
@@ -312,11 +306,6 @@ const newSchema = new mongoose.Schema({
         // 0 là cá nhân 1 là môi giới 
         type: Number,
         default: 0
-    },
-    baohanh:{
-        
-         type: Number,
-         default: 0
     },
     img: [{
         // danh sách ảnh
@@ -582,6 +571,22 @@ const newSchema = new mongoose.Schema({
         kv_phuongxa: {
             type: String,
             default: 0
+        },
+        can_ban_mua:{
+            type: Number,
+            default: 0
+        },
+        dia_chi:{
+            type: String,
+            default: 0
+        },
+        huong_ban_cong:{
+            type: String,
+            default: 0
+        },
+        cangoc:{
+            type: String,
+            default: 0
         }
     },
     //ship
@@ -661,8 +666,6 @@ const newSchema = new mongoose.Schema({
             type: Number,
             default: 0
         },
-        
-        
     },
     // thú cưng
     pet: {
@@ -692,33 +695,33 @@ const newSchema = new mongoose.Schema({
         jobType: {
             // ngành nghề
             type: String,
-            default: null
+            default: 0
         },
         jobDetail: {
             // chi thiet cong việc
             type: String,
-            default: null
+            default: 0
         },
 
         jobKind: {
             // hình thức làm việc
             type: String,
-            default: null
+            default: 0
         },
         minAge: {
             // tuổi nhỏ nhất
             type: String,
-            default: null
+            default: 0
         },
         maxAge: {
             // tuổi lớn nhất
             type: String,
-            default: null
+            default: 0
         },
         salary: {
             // luong
             type: String,
-            default: null
+            default: 0
         },
         gender: {
             // luong
@@ -728,62 +731,87 @@ const newSchema = new mongoose.Schema({
         exp: {
             // kinh nghiệm
             type: String,
-            default: null
+            default: 0
         },
         level: {
             // chứng chỉ
             type: String,
-            default: null
+            default: 0
         },
         degree: {
             // bang cap
             type: String,
-            default: null
+            default: 0
         },
         skill: {
             // kỹ năng 
             type: String,
-            default: null
+            default: 0
         },
         quantity: {
             // số lượng tuyển
             type: String,
-            default: null
+            default: 0
         },
         city: {
             // thành phố
             type: String,
-            default: null
+            default: 0
         },
         district: {
             // quận huyện
             type: String,
-            default: null
+            default: 0
         },
         ward: {
             type: String,
-            default: null
+            default: 0
         },
         addressNumber: {
             // số nhà
             type: String,
-            default: null
+            default: 0
         },
         payBy: {
             // hình thức trả lương
             type: String,
-            default: null
+            default: 0
         },
 
         benefit: {
             // quyền lợi
             type: String,
-            default: null
+            default: 0
         },
         cv: {
             type: String,
-
-            default: null
+            default: 0
+        },
+        salary_fr: {
+            type: Number,
+            default: 0
+        },
+        salary_to: {
+            type: Number,
+            default: 0
+        }
+    },
+    noiThatNgoaiThat:{
+        chat_lieu: {
+            type: String,
+            default: 0
+        },
+        kich_co:{
+            type: String,
+            default: 0
+        },
+        hinhdang:{
+            type: String,
+            default: 0
+        },
+        brand:{
+            type: String,
+            default: 0
         }
     },
     // thông tin bán hàng
@@ -861,9 +889,7 @@ const newSchema = new mongoose.Schema({
         han_su_dung:{
             type:Date,
             default: null
-        }
-        ,
-       
+        },
         new_job_kind:{
             type:Number,
             default: null
@@ -910,7 +936,6 @@ const newSchema = new mongoose.Schema({
             default: null
         }
     }
-
 }, {
     collection: 'RN365_News',
     versionKey: false,
