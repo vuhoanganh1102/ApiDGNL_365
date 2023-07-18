@@ -8,7 +8,7 @@ const hr = require('../../services/hr/hrService');
 const Candidates = require('../../models/hr/Candidates');
 const GetJob = require('../../models/hr/GetJob');
 const QuitJob = require('../../models/hr/personalChange/QuitJob');
-const Salarys = require('../../models/hr/Salarys');
+const Salarys = require('../../models/Tinhluong/Tinhluong365SalaryBasic');
 const Deparment = require('../../models/qlc/Deparment');
 const Resign = require('../../models/hr/personalChange/Resign');
 exports.report = async (req, res, next) => {
@@ -674,9 +674,9 @@ exports.reportChart = async (req, res, next) => {
                 },
                 {
                     $lookup: {
-                        from: 'HR_Salarys',
+                        from: 'Tinhluong365SalaryBasic',
                         localField: 'idQLC',
-                        foreignField: 'idUser',
+                        foreignField: 'sb_id_user',
                         as: 'HR_Salarys'
                     }
                 },
