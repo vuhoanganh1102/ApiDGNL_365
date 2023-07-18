@@ -5,7 +5,7 @@ const Appoint = require('../../models/hr/personalChange/Appoint');
 const TranferJob = require('../../models/hr/personalChange/TranferJob');
 const QuitJob = require('../../models/hr/personalChange/QuitJob');
 const QuitJobNew = require('../../models/hr/personalChange/QuitJobNew');
-const Salary = require('../../models/hr/Salarys');
+const Salary = require('../../models/Tinhluong/Tinhluong365SalaryBasic');
 const Resign = require('../../models/hr/personalChange/Resign');
 const EmployeeHistory = require('../../models/qlc/EmployeeHistory');
 
@@ -588,31 +588,37 @@ exports.getListSalary = async(req, res, next) => {
         page = Number(page);
         pageSize = Number(pageSize);
 
-        let condition = {comId: infoLogin.comId};
-        if(ep_id) condition.idUser = ep_id;
-        if(fromDate) condition.timeUp = {$gte: new Date(fromDate)};
-        if(toDate) condition.timeUp = {$lte: new Date(toDate)};
-        let listSalary = await Salary.find(condition).sort({ timeUp: -1 }).lean();
-        let data = [];
-        if(listSalary && listSalary.length>0) {
-            let condition2 = {};
-            for(let i=0; i<listSalary.length; i++){
-                condition2.comId = infoLogin.comId;
-                condition2.idUser = listSalary[i].idUser;
-                condition2.timeUp = { $lt: listSalary[i].timeUp }
-                let checkTangGiam = await Salary.findOne(condition2).lean();
-                if(checkTangGiam && (listSalary[i].salaryBasic - checkTangGiam.salaryBasic)>0) {
-                    checkTangGiam.tang = (listSalary[i].salaryBasic - checkTangGiam.salaryBasic);
-                    data.push(checkTangGiam);
+        let condition = {sb_id_com: infoLogin.comId};
+        if(ep_id) condition.sb_id_user = ep_id;
+        if(fromDate && !toDate) condition.sb_time_up = {$gte: new Date(fromDate)};
+        if(toDate && !fromDate) condition.sb_time_up = {$lte: new Date(toDate)};
+        if(fromDate && toDate) condition.sb_time_up = {$gte: new Date(fromDate), $lte: new Date(toDate)};
+
+        let dataLuong = await Salary.find(condition).sort({ sb_time_up: -1 });
+        let tangLuong = 0;
+        let giamLuong = 0;
+        let arr = [];
+        if (dataLuong.length !== 0) {
+            for (let i = 0; i < dataLuong.length; i++) {
+                condition.sb_id_user = dataLuong[i].sb_id_user;
+                condition.sb_time_up = { $lt: dataLuong[i].sb_time_up }
+
+                checkTangGiam = await Salary.findOne(condition)
+
+                if (checkTangGiam && dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic > 0) {
+                    tangLuong++;
+                } else if (checkTangGiam && dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic < 0) {
+                    giamLuong++;
                 }
-                else if(checkTangGiam && (listSalary[i].salaryBasic - checkTangGiam.salaryBasic)<0) {
-                    checkTangGiam.giam = (listSalary[i].salaryBasic - checkTangGiam.salaryBasic);
-                    data.push(checkTangGiam);
+                if (checkTangGiam) {
+                    let tangGiam = dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic
+                    checkTangGiam.tangGiam = tangGiam
+                    arr.push(checkTangGiam)
                 }
             }
         }
-        let total =  await Salary.countDocuments(condition);
-        return functions.success(res, "Get list salary success!", {listSalary: data, total});
+        let total =  arr.length;
+        return functions.success(res, "Get list salary success!", {total, listSalary: arr, });
     } catch (e) {
         console.log("Error from server", e);
         return functions.setError(res, e.message);
