@@ -3,7 +3,7 @@ const fnc = require('../../services/qlc/functions');
 const functions = require("../../services/functions")
 const md5 = require('md5');
 const Deparment = require("../../models/qlc/Deparment")
-const comErr = require("../../models/qlc/Com_error")
+const comErr = require("../../models/qlc/ComError")
 
 
 //Đăng kí tài khoản công ty 
@@ -88,7 +88,7 @@ exports.register = async(req, res) => {
             return functions.setError(res, 'Một trong số các trường yêu cầu bị thiếu, danh sách đăng kí lỗi đã được ghi lại')
             }else{
                 //nếu tìm thấy thì cập nhật 
-                await Users.updateOne({com_phone: phoneTK}, {
+                await comErr.updateOne({com_phone: phoneTK}, {
                     $set: {
                         com_email:emailContact,
                         com_phone:phoneTK,

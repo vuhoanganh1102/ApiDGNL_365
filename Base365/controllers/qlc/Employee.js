@@ -6,6 +6,7 @@ const functions = require("../../services/functions")
 
 const Deparment = require("../../models/qlc/Deparment");
 const { deflateSync } = require('zlib');
+const { log } = require('console');
 
 //đăng kí tài khoản nhân viên 
 exports.register = async(req, res) => {
@@ -264,6 +265,7 @@ exports.login = async(req, res, next) => {
         return functions.setError(res, "Chưa đủ thông tin truyền lên");
 
     } catch (error) {
+        console.log(error);
         return functions.setError(res, error)
     }
 }

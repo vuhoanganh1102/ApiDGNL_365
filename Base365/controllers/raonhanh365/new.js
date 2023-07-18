@@ -612,7 +612,7 @@ exports.getNew = async (req, res, next) => {
             userID: 1,
             img: 1,
             updateTime: 1,
-            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1,lastActivedAt:1,time_login:1 },
+            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
             district: 1,
             ward: 1,
             city: 1,
@@ -658,8 +658,11 @@ exports.getNew = async (req, res, next) => {
             if (userIdRaoNhanh) {
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
-                    if (data[i].userID === dataLoveNew[j].id_user) {
+                    if (data[i]._id === dataLoveNew[j].id_new) {
                         data[i].islove = 1;
+                    }
+                    if (data[i].islove !== 1) {
+                        data[i].islove = 0;
                     }
                 }
             }
@@ -682,6 +685,7 @@ exports.searchNew = async (req, res, next) => {
             search_key,
             cateID,
             brand,
+            startvalue,
             wattage,
             microprocessor,
             ram,
@@ -818,14 +822,11 @@ exports.searchNew = async (req, res, next) => {
             allDay,
             vehicloType,
             loai_hinh_sp,
-
             hang_vattu,
             loai_thiet_bi,
             cong_suat,
-
             khoiluong,
             loai_chung,
-
         } = req.body;
         if (!page && !pageSize) {
             return functions.setError(res, "missing data", 400);
@@ -913,7 +914,6 @@ exports.searchNew = async (req, res, next) => {
                 endvalue: 1,
                 islove: 1,
                 until: 1,
-                endvalue: 1,
                 type: 1,
                 free: 1,
                 viewCount: 1,
@@ -929,9 +929,9 @@ exports.searchNew = async (req, res, next) => {
         if (brand) condition.brand = brand;
         if (wattage) condition.wattage = wattage;
         if (han_su_dung) condition.han_su_dung = han_su_dung;
-        if (com_city) condition.com_city = com_city;
-        if (com_district) condition.com_district = com_district;
-        if (com_ward) condition.com_ward = com_ward;
+        if (city) condition.city = city;
+        if (district) condition.district = district;
+        if (ward) condition.ward = ward;
         if (com_address_num) condition.com_address_num = com_address_num;
         if (productType) condition.productType = productType;
         if (productGroup) condition.productGroup = productGroup;
@@ -1035,8 +1035,9 @@ exports.searchNew = async (req, res, next) => {
         if (ward) condition["Job.ward"] = ward;
         if (payBy) condition["Job.payBy"] = payBy;
         if (benefit) condition["Job.benefit"] = benefit;
-        if (money) condition.startvalue = { $gte: money };
+        if (startvalue) condition.money = { $gte: startvalue };
         if (endvalue) condition.money = { $lte: endvalue };
+        if (startvalue && endvalue) condition.startvalue = { $gte: startvalue, $lte: endvalue };
         let data = await New.aggregate([
             {
                 $match: condition,
@@ -1072,10 +1073,16 @@ exports.searchNew = async (req, res, next) => {
             if (userIdRaoNhanh) {
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
-                    if (data[i].userID === dataLoveNew[j].id_user) {
+                    if (data[i]._id === dataLoveNew[j].id_new) {
                         data[i].islove = 1;
                     }
+                    if (data[i].islove !== 1) {
+                        data[i].islove = 0;
+                    }
                 }
+
+            } else {
+                data[i].islove = 0;
             }
         }
         const totalCount = await New.countDocuments(condition);
@@ -1706,36 +1713,54 @@ exports.getDetailNew = async (req, res, next) => {
         }
 
         data[0].thongTinSao = thongTinSao
-        tintuongtu = await New.find({ cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } }, {
-            _id: 1,
-            title: 1,
-            linkTitle: 1,
-            free: 1,
-            address: 1,
-            money: 1,
-            createTime: 1,
-            cateID: 1,
-            pinHome: 1,
-            userID: 1,
-            img: 1,
-            updateTime: 1,
-            user: { _id: 1, avatarUser: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1, 'inforRN365.xacThucLienket': 1, email: 1, 'inforRN365.store_name': 1 },
-            district: 1,
-            ward: 1,
-            city: 1,
-            dia_chi: 1,
-            islove: 1,
-            until: 1,
-            endvalue: 1,
-            active: 1,
-            type: 1,
-            sold: 1,
-            createTime: 1,
-            free: 1,
-            buySell: 1
-        }).limit(6);
-        for (let i = 0; i < 6; i++) {
-            tintuongtu[i].img = await raoNhanh.getLinkFile(tintuongtu[i].img, tintuongtu[i].cateID, tintuongtu[i].buySell)
+        tintuongtu = await New.aggregate([
+            { $match: { cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } } },
+            { $limit: 6 },
+            {
+                $lookup: {
+                    from: 'Users',
+                    foreignField: 'idRaoNhanh365',
+                    localField: 'userID',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    linkTitle: 1,
+                    free: 1,
+                    address: 1,
+                    money: 1,
+                    createTime: 1,
+                    cateID: 1,
+                    pinHome: 1,
+                    userID: 1,
+                    img: 1,
+                    updateTime: 1,
+                    user: { _id: 1, avatarUser: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1, 'inforRN365.xacThucLienket': 1, email: 1, 'inforRN365.store_name': 1 },
+                    district: 1,
+                    ward: 1,
+                    city: 1,
+                    dia_chi: 1,
+                    islove: 1,
+                    until: 1,
+                    endvalue: 1,
+                    active: 1,
+                    type: 1,
+                    sold: 1,
+                    createTime: 1,
+                    free: 1,
+                    buySell: 1
+                }
+            }
+        ]);
+        for (let i = 0; i < tintuongtu.length; i++) {
+          
+            if (tintuongtu[i].img) {
+                tintuongtu[i].img = await raoNhanh.getLinkFile(tintuongtu[i].img, tintuongtu[i].cateID, tintuongtu[i].buySell)
+            }
         }
         let url = linkTitle;
         ListComment = await Comments.find({ url, parent_id: 0 }, {}, { time: -1 }, { cm_start }, { cm_limit }).lean();
@@ -1752,7 +1777,7 @@ exports.getDetailNew = async (req, res, next) => {
                     for (let j = 0; j < ListReplyComment.length; j++) {
                         ListLikeCommentChild = await LikeRN.find({ forUrlNew: url, type: { $lt: 8 }, commentId: ListReplyComment[j]._id }, {}, { type: 1 })
                         ListReplyComment[j].ListLikeCommentChild = ListLikeCommentChild
-                        ListReplyComment[i].img = process.env.DOMAIN_RAO_NHANH+ '/' + ListReplyComment[i].img
+                        ListReplyComment[i].img = process.env.DOMAIN_RAO_NHANH + '/' + ListReplyComment[i].img
                     }
                 }
                 ListComment[i].ListLikeComment = ListLikeComment
@@ -1769,10 +1794,14 @@ exports.getDetailNew = async (req, res, next) => {
             if (userIdRaoNhanh) {
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
-                    if (data[i].userID === dataLoveNew[j].id_user) {
+                    if (data[i]._id === dataLoveNew[j].id_new) {
                         data[i].islove = 1;
                     }
+                    if (data[i].islove !== 1) {
+                        data[i].islove = 0;
+                    }
                 }
+
             }
         }
         let dataBidding = null;
@@ -2123,13 +2152,13 @@ exports.newisbidding = async (req, res, next) => {
                     },
                 },
                 {
-                    $unwind:"$new"
+                    $unwind: "$new"
                 },
                 {
-                    $skip: skip 
-                }, 
+                    $skip: skip
+                },
                 {
-                    $limit:  limit 
+                    $limit: limit
                 },
                 {
                     $project: searchItem,
@@ -2150,7 +2179,7 @@ exports.newisbidding = async (req, res, next) => {
                     },
                 },
                 {
-                    $unwind:"$new"
+                    $unwind: "$new"
                 },
                 {
                     $match: {
@@ -2158,10 +2187,10 @@ exports.newisbidding = async (req, res, next) => {
                     },
                 },
                 {
-                    $skip:  skip 
+                    $skip: skip
                 },
                 {
-                    $limit:  limit 
+                    $limit: limit
                 },
                 {
                     $project: searchItem,
@@ -2181,7 +2210,7 @@ exports.newisbidding = async (req, res, next) => {
                     },
                 },
                 {
-                    $unwind:"$new"
+                    $unwind: "$new"
                 },
                 {
                     $match: {
@@ -2189,10 +2218,10 @@ exports.newisbidding = async (req, res, next) => {
                     },
                 },
                 {
-                    $skip:  skip 
+                    $skip: skip
                 },
                 {
-                    $limit:  limit 
+                    $limit: limit
                 },
                 {
                     $project: searchItem,
@@ -2201,7 +2230,7 @@ exports.newisbidding = async (req, res, next) => {
         } else {
             return functions.setError(res, "page not found ", 404);
         }
-        
+
         for (let i = 0; i < data.length; i++) {
             if (data[i].new && data[i].new.img) {
                 data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img, data[i].new.cateID, data[i].new.buySell);
@@ -2617,7 +2646,7 @@ exports.getListNewsApplied = async (req, res, next) => {
         let userId = req.user.data.idRaoNhanh365;
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
-        let skip = (page - 1)* pageSize;
+        let skip = (page - 1) * pageSize;
         let limit = pageSize;
         let data = await ApplyNewsRN.aggregate([
             {
@@ -2640,10 +2669,10 @@ exports.getListNewsApplied = async (req, res, next) => {
                 }
             },
             {
-                $skip:skip
+                $skip: skip
             },
             {
-                $limit:limit
+                $limit: limit
             },
             {
                 $project: {
