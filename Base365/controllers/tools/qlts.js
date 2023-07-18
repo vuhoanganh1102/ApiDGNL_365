@@ -17,6 +17,7 @@ const TaiSanDangSuDung = require('../../models/QuanLyTaiSan/TaiSanDangSuDung')
 const TaiSanDaiDienNhan = require('../../models/QuanLyTaiSan/TaiSanDaiDienNhan')
 const CapPhat = require('../../models/QuanLyTaiSan/CapPhat')
 const KiemKe = require('../../models/QuanLyTaiSan/KiemKe');
+const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
 
 const Huy = require('../../models/QuanLyTaiSan/Huy')
 const Mat = require('../../models/QuanLyTaiSan/Mat')
@@ -945,3 +946,41 @@ exports.kiemKe = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
+
+exports.QuaTrinhSuDung = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const response = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 17 });
+            let data = response.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    await QuaTrinhSuDung.findOneAndUpdate({ quatrinh_id: data[i].quatrinh_id },
+                        {
+                            id_ts: data[i].id_ts,
+                            id_bien_ban: data[i].id_bien_ban,
+                            so_lg: data[i].so_lg,
+                            id_cty: data[i].id_cty,
+                            id_ng_sudung: data[i].id_ng_sudung,
+                            id_phong_sudung: data[i].id_phong_sudung,
+                            id_cty_sudung: data[i].id_cty_sudung,
+                            qt_ngay_thuchien: data[i].qt_ngay_thuchien,
+                            qt_nghiep_vu: data[i].qt_nghiep_vu,
+                            vitri_ts: data[i].vitri_ts,
+                            ghi_chu: data[i].ghi_chu,
+                            time_created: data[i].time_created
+                        },
+                        { upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
