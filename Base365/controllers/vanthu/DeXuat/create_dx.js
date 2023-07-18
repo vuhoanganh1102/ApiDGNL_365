@@ -30,7 +30,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         let name_user = "";
         if(req.user.data.type == 2){
             id_user = req.user.data.idQLC
-            com_id = req.user.data.inForPerson.employee.com_id
+            com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
             return functions.setError(res, 'không có quyền truy cập', 400);
