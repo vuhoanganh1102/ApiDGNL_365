@@ -5,8 +5,9 @@ const functions = require("../../services/functions")
 
 
 
-//Xóa toàn bộ lịch sử chấm công
+//cài đặt ngày công chấm công
 router.post("/create", formData.parse(),functions.checkToken, controller.create)
-
+// lấy danh sách cài đặt ngày công chấm công 
+router.post("/list", formData.parse(),functions.checkToken, controller.list)
 
 module.exports = router
