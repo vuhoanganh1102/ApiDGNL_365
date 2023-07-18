@@ -171,8 +171,7 @@ exports.showNghi = async (req, res) => {
       .skip(skip)
       .limit(perPage)
       .lean();
-
-    return res.status(200).json(shownghi);
+    return functions.success(res, 'get data success', { shownghi});
   } catch (error) {
     console.error('Failed ', error);
     return functions.setError(res, error);
@@ -204,20 +203,20 @@ exports.changeCate = async (req, res) => {
         hideCateStr = hideCateStr.replace(',' + idStr, '');
         hideCate.id_cate_dx = hideCateStr;
         await hideCate.save();
-        return res.status(200).json({ success: true, message: 'Hủy ẩn loại đề xuất thành công!' });
+        return functions.success(res, 'Hủy ẩn loại đề xuất thành công!');
       } else {
-        return res.status(200).json({ success: true, message: 'Loại đề xuất này chưa được ẩn!' });
+        return functions.success(res, 'Loại đề xuất này chưa được ẩn!');
       }
     } else {
       // Thêm ẩn loại đề xuất
       const idStr = id.toString();
       if (hideCateStr.includes(idStr)) {
-        return res.status(200).json({ success: true, message: 'Loại đề xuất này đã được ẩn rồi!' });
+        return functions.success(res,  'Loại đề xuất này đã được ẩn rồi!');
       } else {
         hideCateStr += ',' + idStr;
         hideCate.id_cate_dx = hideCateStr;
         await hideCate.save();
-        return res.status(200).json({ success: true, message: 'Ẩn loại đề xuất thành công!' });
+        return functions.success(res,  'Ẩn loại đề xuất thành công!');
       }
     }
      }else{
@@ -261,9 +260,9 @@ exports.findNameCate = async (req, res) => {
       const checkhide = await HideCateDX.findOne({ id_com : com_id }).select('id_cate_dx');
       if (checkhide) {
         const idHideCateDX = checkhide.id_cate_dx.split(',').map(Number);
-        res.status(200).json({ result,idHideCateDX, currentPage: page, totalPages, });
+        return functions.success(res, 'get data success', { result,idHideCateDX, currentPage: page, totalPages, });
       } else {
-        res.status(200).json({ result,idHideCateDX : [], currentPage: page, totalPages, }); // Trả về mảng rỗng nếu không tìm thấy giá trị
+        return functions.success(res, 'get data success', { result,idHideCateDX : [], currentPage: page, totalPages, });
       }
     }else {
       return functions.setError(res, 'không có quyền truy cập', 400);
