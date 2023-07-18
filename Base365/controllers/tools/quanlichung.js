@@ -9,6 +9,7 @@ const ReportError = require("../../models/qlc/ReportError")
 const Feedback = require("../../models/qlc/Feedback")
 const CalendarWorkEmployee = require("../../models/qlc/CalendarWorkEmployee")
 const Calendar = require("../../models/qlc/Cycle")
+const workDay = require("../../models/qlc/CC365_CompanyWorkday")
 const Company = require("../../models/Users")
 
 const axios = require('axios');
@@ -493,11 +494,41 @@ exports.toolCalendar = async(req, res, next) => {
                 com_id : data[i].com_id , 
                 cy_name : data[i].cy_name , 
                 apply_month : data[i].apply_month , 
-                cy_detail : data[i].cy_detail , 
-                status : data[i].status , 
-                is_personal : data[i].is_personal , 
             })
             await department.save();
+        }
+        page++;
+    } else {
+        result = false;
+    }
+    console.log(page)
+} while (result);
+return fnc.success(res, 'Thành công')
+} catch (error) {
+console.log(error);
+return fnc.setError(res, error.message);
+}
+}
+exports.toolCompanyWorkday = async(req, res, next) => {
+
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 9 })
+            let data = listItems.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+            const workDays = new workDay({
+                
+                
+                cw_id : data[i].cw_id , 
+                num_days : data[i].num_days , 
+                // apply_month : data[i].apply_month.split("-"),
+                apply_month : data[i].apply_month , 
+                com_id : data[i].com_id , 
+            })
+            await workDays.save();
         }
         page++;
     } else {

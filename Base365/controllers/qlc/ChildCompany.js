@@ -17,7 +17,6 @@ exports.getListCompany = async(req, res) => {
             };
 
             return functions.setError(res, 'Không có dữ liệu', 404);
-
     }
     return functions.setError(res, "Tài khoản không phải Công ty", 604);   
     } catch (err) {
