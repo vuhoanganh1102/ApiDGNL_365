@@ -48,11 +48,8 @@ exports.list = async( req, res )=>{
         let dates = new Date();
         const year = dates.getFullYear();
         const month = ("0" + (dates.getMonth() + 1)).slice(-2)// get month 2 digit
-        let Conditions = {};
         const apply_month = year +"-"+ month  + "-" + "01"
-        Conditions.com_id = com_id
-        Conditions["apply_month"] = apply_month
-        let data = await WorkDay.findOne(Conditions).lean()
+        let data = await WorkDay.findOne({com_id:com_id,apply_month:apply_month}).lean()
         if(data){
             return functions.success(res, "lấy thành công",{data});
         }
