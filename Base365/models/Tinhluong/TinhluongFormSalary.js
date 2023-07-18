@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Counter = require('../Counter');
-let connection = mongoose.createConnection('mongodb://127.0.0.1:27017/api-base365');
+let connection = mongoose.createConnection('mongodb://localhost:27017/api-base365');
 
-
+// lưu các loại form lương 
 const TinhluongFormSalarySchema = new Schema({
     fs_id:{
         type: Number,
@@ -20,7 +20,7 @@ const TinhluongFormSalarySchema = new Schema({
     fs_name:{
         type: String,
         default:""
-    },s
+    },
     fs_data:{
         type: Number,
         default:0
@@ -38,7 +38,7 @@ const TinhluongFormSalarySchema = new Schema({
         default:new Date('1970-01-01T00:00:00.000+00:00')
     },
 },{
-    collection: 'TinhluongFormSalarys',
+    collection: 'TinhluongFormSalary',
     versionKey: false,
     timestamp: true
 })

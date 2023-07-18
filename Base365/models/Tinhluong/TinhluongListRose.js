@@ -4,46 +4,38 @@ const Counter = require('../Counter');
 let connection = mongoose.createConnection('mongodb://localhost:27017/api-base365');
 
 
-const TinhluongHolidaySchema = new Schema({
-    ho_id:{
+const TinhluongListRoseSchema = new Schema({
+    lr_id:{
         type: Number,
         require:true
     },
-    ho_id_lho: {
-        type: Number,
-        require:true
-    },
-    ho_id_user: {
-        type: String,
+    lr_name: {
+        type:String,
         default:""
     },
-    ho_id_group:{
-        type: String,
+    lr_note: {
+        type:String,
         default:""
     },
-    ho_id_com:{
-        type: String,
-        default:"" 
-    },
-    ho_id_thuong_phat:{
-        type: String,
+    lr_status:{
+        type:String,
         default:""
     },
-    ho_time_created:{
+    lr_time_created:{
         type:Date,
         default:new Date('1970-01-01T00:00:00.000+00:00')
-    },
+    }
 },{
-    collection: 'TinhluongHoliday',
+    collection: 'TinhluongListRose',
     versionKey: false,
     timestamp: true
 })
 
 
 // lúc insert lấy dữ liệu ở bảng Counter ra => tăng lên 1 rồi save 
-TinhluongHolidaySchema.pre('save', async function(next) {
+TinhluongListRoseSchema.pre('save', async function(next) {
     try{
-        await Counter.findOneAndUpdate({TableId: 'TinhluongHolidayId'}, {$inc: { Count: 1} });
+        await Counter.findOneAndUpdate({TableId: 'TinhluongListRoseId'}, {$inc: { Count: 1} });
         next();
     }
     catch(e){
@@ -51,4 +43,4 @@ TinhluongHolidaySchema.pre('save', async function(next) {
     }
 });
 
-module.exports = connection.model("TinhluongHoliday", TinhluongHolidaySchema); 
+module.exports = connection.model("TinhluongListRose", TinhluongListRoseSchema); 

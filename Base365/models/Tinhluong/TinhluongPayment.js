@@ -4,54 +4,54 @@ const Counter = require('../Counter');
 let connection = mongoose.createConnection('mongodb://localhost:27017/api-base365');
 
 
-const TinhluongPercentGrSchema = new Schema({
-    pr_id:{
+const TinhluongPaymentSchema = new Schema({
+    pay_id:{
         type: Number,
         require:true
     },
-    pr_id_user: {
+    pay_com: {
         type: Number,
         require:true
     },
-    pr_id_group: {
-        type: Number,
-        require:true
+    pay_name: {
+        type: String,
+        default:""
     },
-    pr_id_tl:{
-        type: Number,
-        default:0
-    },
-    pr_money:{
+    pay_unit:{
         type: Number,
         default:0
     },
-    pr_rose:{
+    pay_for_time:{
         type: Number,
         default:0
     },
-    pr_lr_type:{
-        type: Number,
-        default:0
-    },
-    pr_time:{
+    pay_time_start:{
         type:Date,
         default:new Date('1970-01-01T00:00:00.000+00:00')
     },
-    pr_percent:{
+    pay_time_end:{
+        type:Date,
+        default:new Date('1970-01-01T00:00:00.000+00:00')
+    },
+    pay_status:{
+        type:Date,
+        default:0
+    },
+    pay_for:{
         type:mongoose.Types.Decimal128,
         default:0
     },
 },{
-    collection: 'TinhluongPercentGr',
+    collection: 'TinhluongPayment',
     versionKey: false,
     timestamp: true
 })
 
 
 // lúc insert lấy dữ liệu ở bảng Counter ra => tăng lên 1 rồi save 
-TinhluongPercentGrSchema.pre('save', async function(next) {
+TinhluongPaymentSchema.pre('save', async function(next) {
     try{
-        await Counter.findOneAndUpdate({TableId: 'TinhluongPercentGrId'}, {$inc: { Count: 1} });
+        await Counter.findOneAndUpdate({TableId: 'TinhluongPaymentId'}, {$inc: { Count: 1} });
         next();
     }
     catch(e){
@@ -59,4 +59,4 @@ TinhluongPercentGrSchema.pre('save', async function(next) {
     }
 });
 
-module.exports = connection.model("TinhluongPercentGr", TinhluongPercentGrSchema); 
+module.exports = connection.model("TinhluongPayment", TinhluongPaymentSchema); 

@@ -4,42 +4,42 @@ const Counter = require('../Counter');
 let connection = mongoose.createConnection('mongodb://localhost:27017/api-base365');
 
 
-const TinhluongWelfareShiftSchema = new Schema({
-    wf_id:{
+const TinhluongDetailPaymentSchema = new Schema({
+    dp_id:{
         type: Number,
         require:true
     },
-    wf_money: {
-        type: Number,
-        require:true
-    },
-    wf_time: {
-        type:Date,
-        default:new Date('1970-01-01T00:00:00.000+00:00')
-    },
-    wf_time_end:{
-        type:Date,
-        default:new Date('1970-01-01T00:00:00.000+00:00')
-    },
-    wf_shift:{
+    dp_use_id: {
         type: Number,
         default:0
     },
-    wf_com:{
+    dp_money: {
+        type: Number,
+        default:0
+    },
+    dp_time:{
+        type:Date,
+        default:new Date('1970-01-01T00:00:00.000+00:00')
+    },
+    dp_pay_id:{
+        type: Number,
+        default:0
+    },
+    dp_com_id:{
         type: Number,
         default:0
     }
 },{
-    collection: 'TinhluongWelfareShift',
+    collection: 'TinhluongDetailPayment',
     versionKey: false,
     timestamp: true
 })
 
 
 // lúc insert lấy dữ liệu ở bảng Counter ra => tăng lên 1 rồi save 
-TinhluongWelfareShiftSchema.pre('save', async function(next) {
+TinhluongDetailPaymentSchema.pre('save', async function(next) {
     try{
-        await Counter.findOneAndUpdate({TableId: 'TinhluongWelfareShiftId'}, {$inc: { Count: 1} });
+        await Counter.findOneAndUpdate({TableId: 'TinhluongDetailPaymentId'}, {$inc: { Count: 1} });
         next();
     }
     catch(e){
@@ -47,4 +47,4 @@ TinhluongWelfareShiftSchema.pre('save', async function(next) {
     }
 });
 
-module.exports = connection.model("TinhluongWelfareShift", TinhluongWelfareShiftSchema); 
+module.exports = connection.model("TinhluongDetailPayment", TinhluongDetailPaymentSchema); 
