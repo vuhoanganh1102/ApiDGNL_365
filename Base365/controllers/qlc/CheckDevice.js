@@ -34,6 +34,7 @@ exports.getlist = async(req, res) => {
                     "new_device": "$listDevice.new_device", 
                     "new_device_name": "$listDevice.new_device_name", 
                 }},
+                // { $unwind: "$current_device" },
                 {$match: condition},
             ]);
             if (data) {
