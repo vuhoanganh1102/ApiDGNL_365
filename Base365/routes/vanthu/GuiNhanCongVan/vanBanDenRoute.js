@@ -2,7 +2,7 @@ const router = require('express').Router();
 const vanBanDenController = require("../../../controllers/vanthu/GuiNhanCongVan/vanBanDenController");
 var formData = require('express-form-data');
 const functions = require('../../../services/functions');
-const vanThuService = require('../../../services/vanThu');
+const vanThuService = require('../../../services/vanthu');
 
 router.post('/getListVanBanMoi', vanThuService.checkToken, formData.parse(), vanBanDenController.getListVanBanMoi);
 router.post('/getListVanBanDaXuLy', vanThuService.checkToken, formData.parse(), vanBanDenController.getListVanBanDaXuLy);

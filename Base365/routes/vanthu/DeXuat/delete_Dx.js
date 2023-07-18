@@ -8,6 +8,6 @@ const functions = require('../../../services/functions')
 router.post('/delete_dx',functions.checkToken,formData.parse(), controller.delete_dx);
 
 // hàm hiển thị danh sách các đề xuất đã xóa
-router.post('/ds_de_xuat_da_xoa',functions.checkToken, formData.parse(), controller.de_xuat_da_xoa_All);
+router.post('/ds_de_xuat_da_xoa',functions.checkToken,formData.parse(), controller.de_xuat_da_xoa_All);
 
 module.exports = router;
