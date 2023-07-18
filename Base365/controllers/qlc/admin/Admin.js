@@ -269,6 +269,8 @@ exports.getListReportErr = async(req, res) => {
                 localField : "user_id",
                 foreignField : "idQLC",
                 as : "user"}},
+            { $unwind: "$user" },
+
             {$project:{
                 "id_report" : "$id_report",
                 "user_id" : "$user_id",

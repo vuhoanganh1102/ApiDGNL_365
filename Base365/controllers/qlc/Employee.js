@@ -187,6 +187,7 @@ exports.login = async(req, res, next) => {
                     phoneTK: user.phoneTK,
                     createdAt: user.createdAt,
                     type: user.type,
+                    userName: user.userName,
                     com_id : com_id
                 }, "1d")
                 const refreshToken = await functions.createToken({ userId: user._id }, "1y")
@@ -245,6 +246,7 @@ exports.login = async(req, res, next) => {
                         phoneTK: user.phoneTK,
                         createdAt: user.createdAt,
                         type: user.type,
+                        userName: user.userName,
                         com_id : com_id,
                     }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
@@ -481,6 +483,8 @@ exports.info = async(req, res) => {
                         localField: "inForPerson.employee.dep_id", 
                         foreignField: "dep_id", 
                         as: "nameDeparment" }},
+                { $unwind: "$nameDeparment" },
+
                 { $project: { 
                         "userName": "$userName", 
                         "dep_id": "$inForPerson.employee.dep_id", 
