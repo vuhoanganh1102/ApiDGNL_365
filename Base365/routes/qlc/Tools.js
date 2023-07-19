@@ -16,5 +16,7 @@ router.post('/toolFeedback', qlc.toolFeedback);
 router.post('/toolReportError', qlc.toolReportError);
 router.post('/toolCalendarWorkEmployee', qlc.toolCalendarWorkEmployee);
 router.post('/toolCalendar', qlc.toolCalendar);
+router.post('/toolCompanyWorkday', qlc.toolCompanyWorkday);
 
 module.exports = router;
+ 

@@ -99,7 +99,7 @@ exports.createRecruitment = async(req, res, next) => {
                 positionAssumed: listStage[i].posAssum,
                 target: listStage[i].target,
                 completeTime: listStage[i].time,
-                description: Buffer.from(listStage[i].des, 'base64')
+                description: listStage[i].des
             });
             let stageRecruitment = await StageRecruitment.create(stageRecruit);
             if(!stageRecruitment) {
@@ -222,7 +222,7 @@ exports.createStageRecruitment = async(req, res, next) => {
             positionAssumed: posAssum,
             target: target,
             completeTime: time,
-            description: Buffer.from(des, 'base64')
+            description: des
         });
         await StageRecruitment.create(stageRecruit);
         return functions.success(res, 'Create stage recruitment success!');
@@ -245,7 +245,7 @@ exports.updateStageRecruitment = async(req, res, next) => {
             posAssum: posAssum,
             target: target,
             completeTime: time,
-            description: des
+            description: des,
         })
         if(!stageRecruit) {
             return functions.setError(res, "Stage recruitment not found!", 505);
@@ -301,10 +301,10 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     from: "Users",
                     localField: "hrName",
                     foreignField: "idQLC",
-                    as: "documents"
+                    as: "nameHR"
                 }
             },
-            {$project: {id: 1, title: 1, posApply: 1,cityId: 1,address: 1,cateId: 1,salaryId: 1,number: 1,timeStart: 1,timeEnd: 1,recruitmentId: 1,hrName: 1,createdAt: 1,isDelete: 1,comId: 1, isSample: 1, "documents.userName": 1}},
+            {$project: {id: 1, title: 1, posApply: 1,cityId: 1,address: 1,cateId: 1,salaryId: 1,number: 1,timeStart: 1,timeEnd: 1,recruitmentId: 1,hrName: 1,createdAt: 1,createdBy: 1, isDelete: 1,comId: 1, isSample: 1, "nameHR.userName": 1}},
             {$sort: {id: -1}},
             {$skip: skip},
             {$limit: limit},
@@ -351,13 +351,13 @@ exports.listNewActive = async(req, res)=>{
         let condition = {comId: comId, isDelete: 0};
         let fields = {id: 1, title: 1, number: 1,timeStart: 1, timeEnd: 1, createdBy: 1, hrName: 1, address: 1, recruitmentId: 1};
         let countAllActiveNew = await functions.findCount(RecruitmentNews, condition);
-        let recruitmentNew = await functions.pageFindWithFields(RecruitmentNews, condition, fields, {id: -1}, skip, pageSize);
+        let recruitmentNew = await functions.pageFind(RecruitmentNews, condition, {id: -1}, skip, pageSize);
 
         //thong ke
         for(let i=0; i<recruitmentNew.length; i++) {
             let condition2 = {comId: comId, isDelete: 0, recruitmentNewsId: recruitmentNew[i].id};
             let news = recruitmentNew[i];
-            let sohoso = functions.findCount(Candidate, condition2);
+            let sohoso = await functions.findCount(Candidate, condition2);
             let henphongvan = await  getTotal("HR_ScheduleInterviews", condition2);
             let truotphongvan = await getTotal("HR_FailJobs", condition2);
             let quaphongvan = await getTotal("HR_GetJobs", condition2);
@@ -659,7 +659,7 @@ exports.createSampleNews = async(req, res, next) =>{
 //---------------------------------ung vien
 exports.getListCandidate= async(req, res, next) => {
     try {
-        let {page, pageSize, fromDate, toDate, name, recruitmentNewsId, userHiring, gender, status} = req.body;
+        let {page, pageSize, fromDate, toDate, name, recruitmentNewsId, userHiring, gender, status, canId} = req.body;
 
         //id company lay ra sau khi dang nhap
         let comId = req.infoLogin.comId;
@@ -669,6 +669,20 @@ exports.getListCandidate= async(req, res, next) => {
         const limit = pageSize;
         let listCondition = {isDelete: 0, comId: comId};
         // dua dieu kien vao ob listCondition
+        if(canId) {
+            let candidate = await Candidate.aggregate([
+                {$match: {id: Number(canId)}},
+                {
+                    $lookup: {
+                        from: "HR_AnotherSkills",
+                        localField: "id",
+                        foreignField: "canId",
+                        as: "listSkill"
+                    }
+                },
+            ]);
+            return functions.success(res, "Get candidate success", {candidate});
+        }
         if(name) listCondition.name =  new RegExp(name, 'i');
         if(recruitmentNewsId) listCondition.recruitmentNewsId =  Number(recruitmentNewsId);
         if(userHiring) listCondition.userHiring =  Number(userHiring);

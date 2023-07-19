@@ -27,6 +27,7 @@ var SetIpRouter = require("./qlc/SettingIP")
 var homePage = require("./qlc/HomePageChamCong")
 var childCompanyRouter = require('./qlc/ChildCompany')
 var ListFaceAndAllowFace = require('./qlc/ListFaceAndAllowFace')
+var CompanyWorkday = require('./qlc/CompanyWorkday')
 
 
 
@@ -55,5 +56,6 @@ router.use('/setIp', SetIpRouter);
 router.use('/homePage', homePage);
 router.use('/childCompany', childCompanyRouter); 
 router.use('/face', ListFaceAndAllowFace); 
+router.use('/CompanyWorkday', CompanyWorkday); 
 
 module.exports = router;

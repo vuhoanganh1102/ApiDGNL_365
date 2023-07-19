@@ -16,13 +16,14 @@ exports.getlist = async(req, res) => {
             if (com_id) condition["com_id"] = Number(com_id)
             if (dep_id) condition.dep_id = Number(dep_id)
             if (findbyNameUser) condition["userName"] = { $regex: findbyNameUser };
-            console.log(condition)
             let data = await Users.aggregate([
                 { $lookup: { 
                     from: "qlc_employee_devices", 
                     localField: "idQLC", 
                     foreignField: "ep_id", 
                     as: "listDevice" }},
+                { $unwind: "$listDevice" },
+
                 { $project: { 
                     "userName": "$userName", 
                     "dep_id": "$inForPerson.employee.dep_id", 
@@ -34,7 +35,6 @@ exports.getlist = async(req, res) => {
                     "new_device": "$listDevice.new_device", 
                     "new_device_name": "$listDevice.new_device_name", 
                 }},
-                // { $unwind: "$current_device" },
                 {$match: condition},
             ]);
             if (data) {

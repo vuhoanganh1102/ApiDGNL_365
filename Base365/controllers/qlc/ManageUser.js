@@ -23,6 +23,9 @@ exports.getlistAdmin = async(req, res) => {
                     localField: "inForPerson.employee.dep_id", 
                     foreignField: "dep_id", 
                     as: "nameDeparment" }},
+
+                { $unwind: "$nameDeparment" },
+
                 { $project: { 
                     "userName": "$userName", 
                     "dep_id": "$inForPerson.employee.dep_id", 
@@ -34,7 +37,7 @@ exports.getlistAdmin = async(req, res) => {
                     "nameDeparment": "$nameDeparment.dep_name", 
                 }},
                 {$match: condition},
-            ]).skip((pageNumber - 1) * 10).limit(10).sort({ _id: -1 });
+            ]).skip((pageNumber - 1) * 5).limit(5).sort({ _id: 1 });
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data, pageNumber });
             };
