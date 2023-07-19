@@ -71,7 +71,6 @@ exports.edit_active = async (req, res) => {
             if (maxIDTQJ) {
                 idTB = Number(maxIDTQJ) + 1;
             }
-            console.log(idTB);
         const createQJ = new QuitJob({
           id : idTB,
           ep_id: ep_id,
@@ -79,7 +78,6 @@ exports.edit_active = async (req, res) => {
           created_at: ngaybatdau_tv,
           note: ly_do,
         });
-        console.log(createQJ);
         await createQJ.save();
         return functions.success(res, 'Thôi việc thành công');
       } else if (type == 6) {
@@ -113,17 +111,12 @@ exports.edit_active = async (req, res) => {
         } else {
           month_apply = new Date(nd.time_tc).getFullYear() + '-' + (new Date(nd.time_tc).getMonth() + 1) + '-01';
         }
-
-
         const checkcalaendar = await CalendarWorkEmployee.findOne({
           idQLC: historyDuyet.id_user
         }).select('cy_id')
-
-
         let checkCalendaremp = await Calendar.findOne({ 
           cy_id: checkcalaendar.cy_id,
            apply_month: month_apply })
-
         if (checkCalendaremp) {
           var items_tc = JSON.parse(checkCalendaremp.cy_detail)
         }
