@@ -231,3 +231,13 @@ exports.supportSellNew = async (req, res, next) => {
         return functions.setError(res, err)
     }
 }
+
+exports.ward = async (req, res,next)=>{
+    try {
+        let id = Number(req.body.id);
+        let data = await PhuongXa.find({district_id:id})
+        return functions.success(res,'get data success',{data})
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}

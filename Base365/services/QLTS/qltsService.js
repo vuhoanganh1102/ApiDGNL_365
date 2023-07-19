@@ -54,4 +54,27 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
   };
 
+exports.getDataFromToken = async(req, res, next) => {
+    let user = req.user;
+    if (!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
+        return res.status(404).json({ message: "Token missing info!" });
+    }
+    var infoLogin = { type: user.data.type, role: user.data.role, id: user.data.idQLC, name: user.data.userName };
+    if (user.data.type != 1) {
+        if (user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id) {
+            infoLogin.comId = user.data.inForPerson.employee.com_id;
+        } else {
+            return res.status(405).json({ message: "Missing info inForPerson!" });
+        }
+    } else {
+        infoLogin.comId = user.data.idQLC;
+    }
+    req.id = infoLogin.id;
+    req.com_id = infoLogin.comId;
+    req.userName = infoLogin.name;
+    req.type = infoLogin.type;
+    req.role = infoLogin.role;
+    req.infoLogin = infoLogin;
+    next();
+}
 
