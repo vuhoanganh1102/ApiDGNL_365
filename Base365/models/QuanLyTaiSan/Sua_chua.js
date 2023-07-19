@@ -98,4 +98,4 @@ const model_Sua_chua = new mongoose.Schema({
         collection: "QLTS_Sua_chua",
         versionKey: false
     });
-module.exports = mongoose.model("QLTS___Sua_chua", model_Sua_chua);
+module.exports = mongoose.model("QLTS_Sua_chua", model_Sua_chua);

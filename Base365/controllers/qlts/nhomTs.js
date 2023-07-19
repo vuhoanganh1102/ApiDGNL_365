@@ -10,14 +10,12 @@ exports.addNhomTaiSan = async (req, res) => {
   try {
     let { ten_nhom } = req.body;
     let com_id = '';
-    let createDate = Math.floor(Date.now() / 1000);
-    if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC;
-    }else if (req.user.data.type == 2) {
-      com_id = req.user.data.inForPerson.employee.com_id;
+    if (req.user.data.type == 1|| req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
+    let createDate = Math.floor(Date.now() / 1000);
     if (typeof ten_nhom === 'undefined') {
       return functions.setError(res, 'tên nhóm  không được bỏ trống', 400);
     } else {
@@ -55,6 +53,11 @@ exports.showNhomTs = async (req, res) => {
   try {
     let { id_nhom, page, perPage } = req.body
     let com_id = '';
+    if (req.user.data.type == 1|| req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
     page = page || 1;
     perPage = perPage || 10;
     let query = {
@@ -65,13 +68,7 @@ exports.showNhomTs = async (req, res) => {
     if (id_nhom) {
       query.id_nhom = id_nhom;
     }
-    if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC;
-    } else if (req.user.data.type == 2) {
-      com_id = req.user.data.inForPerson.employee.com_id;
-    } else {
-      return functions.setError(res, 'không có quyền truy cập', 400);
-    }
+    
     const showNhom = await NhomTaiSan.find({ id_cty: com_id, ...query })
       .sort({ id_nhom: -1 })
       .skip(startIndex)
@@ -94,6 +91,11 @@ exports.showCTNhomTs = async (req, res) => {
   try {
     let { id, page, perPage } = req.body;
     let com_id = '';
+    if (req.user.data.type == 1|| req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
     page = page || 1;
@@ -101,13 +103,7 @@ exports.showCTNhomTs = async (req, res) => {
     let query = {
       loai_da_xoa: 0,
     };
-    if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC;
-    } else if (req.user.data.type == 2) {
-      com_id = req.user.data.inForPerson.employee.com_id;
-    } else {
-      return functions.setError(res, 'không có quyền truy cập', 400);
-    }
+    
     const showdetails = await LoaiTaiSan.find({ id_nhom_ts: id, id_cty: com_id, ...query })
       .sort({ id_loai: -1 })
       .skip(startIndex)
@@ -151,14 +147,11 @@ exports.editNhom = async (req, res) => {
     let { ten_nhom, id_nhom } = req.body;
     let com_id = '';
    
-    if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC;
-    } else if (req.user.data.type == 2) {
-      com_id = req.user.data.inForPerson.employee.com_id;
+    if (req.user.data.type == 1|| req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-
     let checkNhom = await NhomTaiSan.find({ id_cty: com_id })
     if (checkNhom.some(nhom => nhom.ten_nhom === ten_nhom)) {
       return functions.setError(res, 'ten_nhom đã được sử dụng', 400);
@@ -181,25 +174,20 @@ exports.editNhom = async (req, res) => {
 exports.xoaNhom = async (req, res) => {
   try {
     let { datatype, id_nhom, type_quyen } = req.body;
-
     let com_id = '';
-    let nhom_id_ng_xoa = req.user.data.idQLC;
-    
+    let nhom_id_ng_xoa = '';
+    if (req.user.data.type == 1|| req.user.data.type == 2) {
+    com_id = req.user.data.com_id;
+    nhom_id_ng_xoa = req.user.data.idQLC;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
     const deleteDate = Math.floor(Date.now() / 1000);
     if (typeof id_nhom === 'undefined') {
       return functions.setError(res, 'id nhóm không được bỏ trống', 400);
     }
     if (isNaN(Number(id_nhom))) {
       return functions.setError(res, 'id nhóm phải là một số', 400);
-    }
-   
-    if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC;
-    } 
-    else if (req.user.data.type == 2) {
-      com_id = req.user.data.inForPerson.employee.com_id;
-    } else {
-      return functions.setError(res, 'không có quyền truy cập');
     }
     if (datatype == 1) {
       let chinhsuanhom = await NhomTaiSan.findOneAndUpdate({ id_nhom: id_nhom, id_cty: com_id },
