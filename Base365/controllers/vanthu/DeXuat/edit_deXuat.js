@@ -22,7 +22,7 @@ exports.edit_active = async (req, res) => {
     const timeNow = new Date();
     let com_id = '';
     if (req.user.data.type == 2) {
-      com_id = req.user.data.inForPerson.employee.com_id
+      com_id = req.user.data.com_id
     } else {
       return functions.setError(res, 'bạn phải là tài khoản nhân viên', 400);
     }

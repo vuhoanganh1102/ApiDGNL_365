@@ -140,8 +140,10 @@ exports.updateStatus = async (req , res) =>{
         const id_cty = ""
         if(type == 1){
              id_cty = req.user.data.idQLC
-        }else{
+        }else if(type == 1){
             id_cty = req.user.data.inForPerson.employee.com_id
+        }else{
+            return fnc.setError(res, "bạn chưa có quyền", 510);
         }
         const id_nhanvien = req.body.id_nhanvien
         const id_phongban = req.body.id_phongban
@@ -173,13 +175,14 @@ exports.updateStatus = async (req , res) =>{
 exports.getListDetail = async (req , res) =>{
     try{
         const type = req.user.data.type
-        // const id_cty = ""
-        // if(type == 1){
-        //      id_cty = req.user.data.idQLC
-        // }else{
-        //     id_cty = req.user.data.inForPerson.employee.com_id
-        // }
-        const id_cty = req.body.id_cty
+        const id_cty = ""
+        if(type == 1){
+             id_cty = req.user.data.idQLC
+        }else if(type == 2){
+            id_cty = req.user.data.inForPerson.employee.com_id
+        }else {
+            return fnc.setError(res, "bạn chưa có quyền", 510);
+        }
         const type_quyen = req.body.type_quyen
         let option = req.body.option
         const id_nhanvien = req.body.id_nhanvien
@@ -210,6 +213,7 @@ exports.getListDetail = async (req , res) =>{
        }
 
     }catch(e){
+        console.log(e);
         return fnc.setError(res , e.message)
     }
     }

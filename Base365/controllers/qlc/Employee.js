@@ -6,6 +6,7 @@ const functions = require("../../services/functions")
 
 const Deparment = require("../../models/qlc/Deparment");
 const { deflateSync } = require('zlib');
+const { log } = require('console');
 
 //đăng kí tài khoản nhân viên 
 exports.register = async(req, res) => {
@@ -186,6 +187,7 @@ exports.login = async(req, res, next) => {
                     phoneTK: user.phoneTK,
                     createdAt: user.createdAt,
                     type: user.type,
+                    userName: user.userName,
                     com_id : com_id
                 }, "1d")
                 const refreshToken = await functions.createToken({ userId: user._id }, "1y")
@@ -244,6 +246,7 @@ exports.login = async(req, res, next) => {
                         phoneTK: user.phoneTK,
                         createdAt: user.createdAt,
                         type: user.type,
+                        userName: user.userName,
                         com_id : com_id,
                     }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
@@ -264,6 +267,7 @@ exports.login = async(req, res, next) => {
         return functions.setError(res, "Chưa đủ thông tin truyền lên");
 
     } catch (error) {
+        console.log(error);
         return functions.setError(res, error)
     }
 }
@@ -479,6 +483,8 @@ exports.info = async(req, res) => {
                         localField: "inForPerson.employee.dep_id", 
                         foreignField: "dep_id", 
                         as: "nameDeparment" }},
+                { $unwind: "$nameDeparment" },
+
                 { $project: { 
                         "userName": "$userName", 
                         "dep_id": "$inForPerson.employee.dep_id", 

@@ -1,4 +1,4 @@
-const AdminUser = require('../../../models/AdminUser');
+
 const SettingDX = require('../../../models/Vanthu/setting_dx');
 const functions = require("../../../services/functions");
 const Group = require("../../../models/qlc/Group");
@@ -12,8 +12,8 @@ exports.findOrCreateSettingDx = async (req, res) => {
     let {  type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh } = req.body;
     let createDate = new Date();
     let com_id = '';
-    if(req.type == 1){
-       com_id = req.comId
+    if(req.user.data.type == 1){
+       com_id = req.user.data.com_id
        if (!functions.checkNumber(com_id)) {
         return functions.setError(res, 'com_id phải là 1 số', 400);
        } else {
@@ -60,14 +60,14 @@ exports.editSettingDx = async (req, res) => {
     let updateDate = new Date();
     let com_id = '';
     let { type_setting, type_browse, time_limit, shift_id, time_limit_l, list_user, time_tp, time_hh, time_created } = req.body;
-    if (req.type == 1) {
-      com_id = req.comId
+    if (req.user.data.type == 1) {
+      com_id = req.user.data.com_id
     }else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     const editSetting = await functions.getDatafindOne(SettingDX, { com_id: com_id });
     if (!editSetting) {
-      return functions.setError(res, 'c cài đặt không tồn tại', 400);
+      return functions.setError(res, ' cài đặt không tồn tại', 400);
     } else {
       let chinhsuasetting = await SettingDX.findOneAndUpdate(
         {  com_id: com_id },
@@ -82,14 +82,13 @@ exports.editSettingDx = async (req, res) => {
             list_user: list_user,
             time_tp: time_tp,
             time_hh: time_hh,
-            time_created: time_created,
             update_time: updateDate
           }
         },
         { new: true }
       );
 
-      return functions.success(res, 'get data success', { chinhsuasetting });
+      return functions.success(res, 'chỉnh sửa thành công', { chinhsuasetting });
     }
   } catch (error) {
     console.log(error);

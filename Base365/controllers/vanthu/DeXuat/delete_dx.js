@@ -13,15 +13,12 @@ exports.delete_dx = async (req, res) => {
       return functions.setError(res, 'Thông tin truyền lên không đầy đủ', 400);
     }
     let id_com = 0;
-    if (req.user.data.type == 1) {
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
       id_com = req.user.data.idQLC
-    } else if (req.user.data.type == 2) {
-      id_com = req.user.data.inForPerson.employee.com_id
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     if (type == 1) { // gửi về kiểu mảng / xóa vĩnh viễn đề xuất
-
       let idArraya = id.map(idItem => parseInt(idItem));
       console.log(idArraya);
       await De_Xuat.deleteMany({ _id: { $in: idArraya }, com_id: id_com });
@@ -86,7 +83,7 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
     let com_id = '';
 
     if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC;
+      com_id = req.user.data.com_id;
       if (time_start && time_end && time_start > time_end) {
         return res.status(400).json({ error: 'time_start phải nhỏ hơn time_end' });
       }
@@ -117,7 +114,7 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
         .limit(pageSize);
       return res.status(200).json({ listDeXuatCom, totalPages });
     } else if (req.user.data.type == 2) {
-      com_id = req.user.data.inForPerson.employee.com_id;
+      com_id = req.user.data.com_id;
       // Kiểm tra điều kiện time_start và time_end
       if (time_start && time_end && time_start > time_end) {
         return res.status(400).json({ error: 'time_start phải nhỏ hơn time_end' });
