@@ -22,6 +22,7 @@ const KhauHao = require('../../models/QuanLyTaiSan/KhauHao');
 const Huy = require('../../models/QuanLyTaiSan/Huy');
 const Mat = require('../../models/QuanLyTaiSan/Mat')
 const tailieuDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem')
+const BaoHanh = require('../../models/QuanLyTaiSan/BaoHanh')
 
 
 
@@ -1053,3 +1054,39 @@ exports.tailieuDinhKem = async (req, res, next) => {
         return fnc.setError(res, error)
     }
 }
+exports.BaoHanh = async (req, res, next) => {
+    try {
+        let result = true;
+        page = 1;
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 2 });
+            let listData = data.data.items;
+            if (listData.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new BaoHanh({
+                        bh_id: listData[i].bh_id,
+                        baohanh_taisan: listData[i].baohanh_taisan,
+                        id_cty: listData[i].id_cty,
+                        bh_thoigian: listData[i].bh_thoigian,
+                        bh_loai_thoigian: listData[i].bh_loai_thoigian,
+                        bh_dieu_kien: listData[i].bh_dieu_kien,
+                        bh_han_bh: listData[i].bh_han_bh,
+                        xoa_baohanh: listData[i].xoa_baohanh,
+                        date_delete: listData[i].date_delete,
+                        date_create: listData[i].date_create
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else { result = false; }
+
+        } while (result);
+        await fnc.success(res, "thanh cong ");
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+

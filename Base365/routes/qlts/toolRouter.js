@@ -14,11 +14,12 @@ router.post('/tsvitri',toolQLTS.toolTSvitri)
 router.post('/phanquyen',toolQLTS.toolPhanQuyen)
 router.post('/khauhao',toolQLTS.toolKhauHao)
 router.post('/tepdinhkem',toolQLTS.tailieuDinhKem)
+router.post('/BaoHanh',toolQLTS.BaoHanh)
+
 
 //dung
 router.post('/kiemke',toolQLTS.kiemKe);
 router.post('/QuaTrinhSuDung',toolQLTS.QuaTrinhSuDung);
-
 
 
 //trung

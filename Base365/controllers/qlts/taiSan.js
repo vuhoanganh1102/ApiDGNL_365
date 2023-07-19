@@ -5,11 +5,10 @@ const quanlytaisanService = require('../../services/QLTS/qltsService')
 const NhomTs = require('../../models/QuanLyTaiSan/NhomTaiSan')
 const TaiSanViTri = require('../../models/QuanLyTaiSan/TaiSanVitri')
 const User = require('../../models/Users')
-
-
 const functions = require('../../services/functions');
 const serviceQLTS = require('../../services/QLTS/qltsService')
 const KhauHao = require('../../models/QuanLyTaiSan/KhauHao');
+const TepDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem')
 
 
 exports.showAll = async (req, res) => {
@@ -470,7 +469,9 @@ exports.khauhaoCTTS = async (req, res) => {
   }
 };
 
-exports.showFile = async(req,res) => {
+
+// Phần tài liệu đính kèm
+exports.addFile = async(req,res) => {
   try{
     let {ts_id} = req.body;
     let com_id = '';
@@ -480,11 +481,111 @@ exports.showFile = async(req,res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     let createDate = Math.floor(Date.now() / 1000);
-    let file = req.files.tep_ten;
-    if(file) {
-      
+    let tep_dinh_kem = req.files.tep_ten;
+    if(tep_dinh_kem) {
+      let checkFile = await functions.checkFile(tep_dinh_kem.path);
+      if(!checkFile){
+        return functions.setError(res, `File khong dung dinh dang hoac qua kich cho phep!`, 411);
+      }
+      fileName = await quanlytaisanService.uploadFileNameRandom('file_tai_san', phieu_trinh);
     }
+    let maxIdTep = await functions.getMaxIdByField( TepDinhKem,'tep_id');
+      let createNew = new TepDinhKem({
+        tep_id: maxIdTep,
+        id_cty: com_id,
+        id_ts: ts_id,
+        tep_ten: fileName,
+        tep_ngay_upload : createDate,
+      })
+      let save = await createNew.save();
+      return functions.success(res, 'thêm thành công tệp', { save });
   } catch (error) {
+    console.log(error);
+    return functions.setError(res, error);
+  }
+}
+
+
+exports.showFile = async(req,res) => {
+  try{
+    let {ts_id,page, perPage} = req.body;
+    let com_id = '';
+    page = page || 1;
+    perPage = perPage || 10;
+    const startIndex = (page - 1) * perPage;
+    const endIndex = page * perPage;
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    if (typeof ts_id === 'undefined') {
+      return functions.setError(res, 'id tài sản không được bỏ trống', 400);
+    }
+    if (isNaN(Number(ts_id))) {
+      return functions.setError(res, 'id tài sản phải là một số', 400);
+    }
+    let showtep = await TepDinhKem.find({id_ts : ts_id})
+      .sort({ tep_id: -1 })
+      .skip(startIndex)
+      .limit(perPage);
+      const totalTsCount = await TepDinhKem.countDocuments({ id_cty: com_id ,id_ts: ts_id});
+
+      // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
+      const totalPages = Math.ceil(totalTsCount / perPage);
+      const hasNextPage = endIndex < totalTsCount;
+      return functions.success(res, 'get data success', { showtep, totalPages, hasNextPage });
+
+  }catch (error) {
+    console.log(error);
+    return functions.setError(res, error);
+  }
+}
+
+exports.deleteFile = async(req,res) => {
+  try{
+    let {tep_id} = req.body;
+    if (typeof tep_id === 'undefined') {
+      return functions.setError(res, 'id tệp đính kèm không được bỏ trống', 400);
+    }
+    if (isNaN(Number(tep_id))) {
+      return functions.setError(res, 'id tệp phải là một số', 400);
+    }
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    await TepDinhKem.deleteOne({ tep_id: tep_id, id_cty: com_id })
+    return functions.success(res, 'xóa tiệp thành công');
+  }catch (error) {
+    console.log(error);
+    return functions.setError(res, error);
+  }
+}
+
+// Phần Sửa chữa
+
+exports.showScCT = async (req,res )=> {
+  try{
+   let{ts_id} = req.body;
+   let com_id = '';
+    page = page || 1;
+    perPage = perPage || 10;
+    const startIndex = (page - 1) * perPage;
+    const endIndex = page * perPage;
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    if (typeof ts_id === 'undefined') {
+      return functions.setError(res, 'id tài sản không được bỏ trống', 400);
+    }
+    if (isNaN(Number(ts_id))) {
+      return functions.setError(res, 'id tài sản phải là một số', 400);
+    }
+  }catch (error) {
     console.log(error);
     return functions.setError(res, error);
   }
