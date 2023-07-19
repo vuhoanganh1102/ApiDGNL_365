@@ -12,14 +12,12 @@ router.post('/vitrits',toolQLTS.toolViTriTS)
 router.post('/nhomts',toolQLTS.toolNhomts)
 router.post('/tsvitri',toolQLTS.toolTSvitri)
 router.post('/phanquyen',toolQLTS.toolPhanQuyen)
+router.post('/khauhao',toolQLTS.toolKhauHao)
+router.post('/tepdinhkem',toolQLTS.tailieuDinhKem)
 
 //dung
 router.post('/kiemke',toolQLTS.kiemKe);
 router.post('/QuaTrinhSuDung',toolQLTS.QuaTrinhSuDung);
-
-
-
-
 
 
 

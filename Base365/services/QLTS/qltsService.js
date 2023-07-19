@@ -54,4 +54,54 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
   };
 
+exports.numberWithCommas = (number) => {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
 
+exports.getLinkFile = (folder, time, fileName) => {
+  let date = new Date(time * 1000);
+  const y = date.getFullYear();
+  const m = ('0' + (date.getMonth() + 1)).slice(-2);
+  const d = ('0' + date.getDate()).slice(-2);
+  let link = process.env.DOMAIN_VAN_THU + `/base365/qlts/uploads/${folder}/${y}/${m}/${d}/`;
+  let res = '';
+
+  let arrFile = fileName.split(',').slice(0, -1);
+  for (let i = 0; i < arrFile.length; i++) {
+      if (res == '') res = `${link}${arrFile[i]}`
+      else res = `${res}, ${link}${arrFile[i]}`
+  }
+  return res;
+}
+
+
+exports.uploadFileNameRandom = async (folder, file_img) => {
+  let filename = '';
+  const time_created = Date.now();
+  const date = new Date(time_created);
+  const year = date.getFullYear();
+  const month = ('0' + (date.getMonth() + 1)).slice(-2);
+  const day = ('0' + date.getDate()).slice(-2);
+  const timestamp = Math.round(date.getTime() / 1000);
+
+  const dir = `../Storage/base365/qlts/uploads/${folder}/${year}/${month}/${day}/`;
+  if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+  }
+
+  filename = `${timestamp}-tin-${file_img.originalFilename}`.replace(/,/g, '');
+  const filePath = dir + filename;
+  filename = filename + ',';
+
+  fs.readFile(file_img.path, (err, data) => {
+      if (err) {
+          console.log(err)
+      }
+      fs.writeFile(filePath, data, (err) => {
+          if (err) {
+              console.log(err)
+          }
+      });
+  });
+  return filename;
+}

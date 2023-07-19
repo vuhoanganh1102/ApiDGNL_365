@@ -1994,7 +1994,7 @@ exports.dxThuongPhat = async (req, res) => {
             com_id = req.user.data.com_id
             name_user = req.user.data.userName  
         }else{
-            return functions.setError(res, 'không có quyền truy cập', 400);
+            return functions.setError(res,'không có quyền truy cập', 400);
         }
         let file_kem = req.files.file_kem;
         if(type_tp == 1){

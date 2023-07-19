@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_Mat = new mongoose.Schema({
     mat_id: {
-        type: Number
+        type: Number,
+        require : true
     },
     id_cty: {
         type: Number
