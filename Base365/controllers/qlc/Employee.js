@@ -16,7 +16,7 @@ exports.register = async(req, res) => {
         if ((userName && password && com_id && address && phoneTK) !== undefined) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
-                let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1} }).lean()
+                let user = await Users.findOne({ phoneTK: phoneTK, type: { $ne: 1 } }).lean()
                 let MaxId = await functions.getMaxUserID("user")
                 let _id = MaxId._id
                 if (!user) {
@@ -30,9 +30,9 @@ exports.register = async(req, res) => {
                         type: 2,
                         password: md5(password),
                         address: address,
-                        createdAt: Date.parse(createdAt)/1000,
+                        createdAt: Date.parse(createdAt) / 1000,
                         fromWeb: "quanlychung",
-                        chat365_secret : Buffer.from(_id.toString()).toString('base64'),
+                        chat365_secret: Buffer.from(_id.toString()).toString('base64'),
                         role: 0,
                         avatarUser: null,
                         idQLC: MaxId._idQLC,
@@ -43,7 +43,7 @@ exports.register = async(req, res) => {
                         "inForPerson.employee.dep_id": dep_id,
                         "inForPerson.employee.group_id": group_id,
                         "inForPerson.employee.team_id": team_id,
-                        "inForPerson.account.birthday": Date.parse(birthday)/1000,
+                        "inForPerson.account.birthday": Date.parse(birthday) / 1000,
                         "inForPerson.account.gender": gender,
                         "inForPerson.account.married": married,
                         "inForPerson.account.experience": experience,
@@ -60,16 +60,16 @@ exports.register = async(req, res) => {
                         phoneTK: user.phoneTK,
                         createdAt: user.createdAt,
                         type: user.type,
-                        com_id : user.inForPerson.employee.com_id,
-                        userName : user.userName,
-                        position_id : user.inForPerson.employee.position_id,
-                        dep_id : user.inForPerson.employee.dep_id,
-                        group_id : user.inForPerson.employee.group_id,
-                        team_id : user.inForPerson.employee.team_id,
-                        startWorkingTime : user.inForPerson.employee.startWorkingTime,
-                        married : user.inForPerson.account.married,
-                        experience : user.inForPerson.account.experience,
-                        education : user.inForPerson.account.education,
+                        com_id: user.inForPerson.employee.com_id,
+                        userName: user.userName,
+                        position_id: user.inForPerson.employee.position_id,
+                        dep_id: user.inForPerson.employee.dep_id,
+                        group_id: user.inForPerson.employee.group_id,
+                        team_id: user.inForPerson.employee.team_id,
+                        startWorkingTime: user.inForPerson.employee.startWorkingTime,
+                        married: user.inForPerson.account.married,
+                        experience: user.inForPerson.account.experience,
+                        education: user.inForPerson.account.education,
                     }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {
@@ -99,19 +99,19 @@ exports.verify = async(req, res) => {
         let phoneTK = req.user.data.phoneTK;
         let data = []
         if (otp) {
-                data = await Users.updateOne({ phoneTK: phoneTK, type: 2 }, {
-                    $set: {
-                        otp: otp
-                    }
-                });
-                return functions.success(res, "lưu OTP thành công", { data })
+            data = await Users.updateOne({ phoneTK: phoneTK, type: 2 }, {
+                $set: {
+                    otp: otp
+                }
+            });
+            return functions.success(res, "lưu OTP thành công", { data })
         } else if (!otp) {
-                await Users.updateOne({ phoneTK: phoneTK, type: 2 }, {
-                    $set: {
-                        authentic: 1
-                    }
-                });
-                return functions.success(res, "xác thực thành công");
+            await Users.updateOne({ phoneTK: phoneTK, type: 2 }, {
+                $set: {
+                    authentic: 1
+                }
+            });
+            return functions.success(res, "xác thực thành công");
         } else {
             return functions.setError(res, "thiếu dữ liệu sdt")
         };
@@ -157,7 +157,7 @@ exports.login = async(req, res, next) => {
         let type = request.type;
         if (account && password && type) {
             let user;
-           
+
             if (!pass_type) {
                 password = md5(password);
             }
@@ -174,7 +174,7 @@ exports.login = async(req, res, next) => {
                     type: type
                 }).lean();
             }
-            
+
             if (user) {
                 let com = ""
                 let com_id = user.type === 1 ? com = user.idQLC : com = user.inForPerson.employee.com_id
@@ -188,7 +188,7 @@ exports.login = async(req, res, next) => {
                     createdAt: user.createdAt,
                     type: user.type,
                     userName: user.userName,
-                    com_id : com_id
+                    com_id: com_id
                 }, "1d")
                 const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                 let data = {
@@ -247,7 +247,7 @@ exports.login = async(req, res, next) => {
                         createdAt: user.createdAt,
                         type: user.type,
                         userName: user.userName,
-                        com_id : com_id,
+                        com_id: com_id,
                     }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {
@@ -355,36 +355,36 @@ exports.updateInfoEmployee = async(req, res, next) => {
             let findUser = Users.findOne({ idQLC: idQLC, type: 2 })
             if (findUser) {
                 if (File && File.avatarUser) {
-                    let upload = await fnc.uploadAvaEmpQLC( idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                    let upload = await fnc.uploadAvaEmpQLC(idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ')
                     }
                     avatarUser = upload
-                } 
-                    data = await Users.updateOne({ idQLC: idQLC, type: 2 }, {
-                        $set: {
-                            userName: userName,
-                            emailContact: emailContact,
-                            phone: phone,
-                            avatarUser: avatarUser,
-                            "inForPerson.employee.position_id": position_id,
-                            "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": dep_id,
-                            address: address,
-                            otp: otp,
-                            authentic: null || 0,
-                            avatarUser: avatarUser,
-                            updatedAt: Date.parse(updatedAt)/1000,
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": Date.parse(birthday)/1000,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience, 
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
-                        }
-                    })
-                    return functions.success(res, 'cập nhật thành công')
+                }
+                data = await Users.updateOne({ idQLC: idQLC, type: 2 }, {
+                    $set: {
+                        userName: userName,
+                        emailContact: emailContact,
+                        phone: phone,
+                        avatarUser: avatarUser,
+                        "inForPerson.employee.position_id": position_id,
+                        "inForPerson.employee.com_id": com_id,
+                        "inForPerson.employee.dep_id": dep_id,
+                        address: address,
+                        otp: otp,
+                        authentic: null || 0,
+                        avatarUser: avatarUser,
+                        updatedAt: Date.parse(updatedAt) / 1000,
+                        "inForPerson.employee.group_id": group_id,
+                        "inForPerson.account.birthday": Date.parse(birthday) / 1000,
+                        "inForPerson.account.gender": gender,
+                        "inForPerson.account.married": married,
+                        "inForPerson.account.experience": experience,
+                        "inForPerson.employee.startWorkingTime": startWorkingTime,
+                        "inForPerson.account.education": education,
+                    }
+                })
+                return functions.success(res, 'cập nhật thành công')
             } else {
                 return functions.setError(res, "không tìm thấy user")
             }
@@ -475,50 +475,56 @@ exports.info = async(req, res) => {
     try {
         const idQLC = req.user.data.idQLC
             // const com_id = req.user.data.com_id
-            const data = await Users.aggregate([
-                {$match: 
-                    { idQLC: idQLC, type: 2 }},
-                { $lookup: { 
-                        from: "QLC_Deparments", 
-                        localField: "inForPerson.employee.dep_id", 
-                        foreignField: "dep_id", 
-                        as: "nameDeparment" }},
-                { $unwind: "$nameDeparment" },
+        const data = await Users.aggregate([{
+                $match: { idQLC: idQLC, type: 2 }
+            },
+            {
+                $lookup: {
+                    from: "QLC_Deparments",
+                    localField: "inForPerson.employee.dep_id",
+                    foreignField: "dep_id",
+                    as: "nameDeparment"
+                }
+            },
+            { $unwind: "$nameDeparment" },
 
-                { $project: { 
-                        "userName": "$userName", 
-                        "dep_id": "$inForPerson.employee.dep_id", 
-                        "com_id": "$inForPerson.employee.com_id", 
-                        "position_id": "$inForPerson.employee.position_id", 
-                        "start_working_time": "$inForPerson.employee.start_working_time", 
-                        "idQLC" : "$idQLC",
-                        "phoneTK" : "$phoneTK",
-                        "phone" : "$phone",
-                        "address" : "$address",
-                        "avatarUser" : "$avatarUser",
-                        "authentic" : "$authentic",
-                        "birthday" : "$inForPerson.account.birthday",
-                        "gender" : "$inForPerson.account.gender",
-                        "married" : "$inForPerson.account.married",
-                        "experience" : "$inForPerson.account.experience",
-                        "education" : "$inForPerson.account.education",
-                        "emailContact" : "$emailContact",
-                        "idQLC": "$idQLC", 
-                        "nameDeparment": "$nameDeparment.dep_name", 
-                    }},
+            {
+                $project: {
+                    "userName": "$userName",
+                    "dep_id": "$inForPerson.employee.dep_id",
+                    "com_id": "$inForPerson.employee.com_id",
+                    "position_id": "$inForPerson.employee.position_id",
+                    "start_working_time": "$inForPerson.employee.start_working_time",
+                    "idQLC": "$idQLC",
+                    "phoneTK": "$phoneTK",
+                    "phone": "$phone",
+                    "address": "$address",
+                    "avatarUser": "$avatarUser",
+                    "authentic": "$authentic",
+                    "birthday": "$inForPerson.account.birthday",
+                    "gender": "$inForPerson.account.gender",
+                    "married": "$inForPerson.account.married",
+                    "experience": "$inForPerson.account.experience",
+                    "education": "$inForPerson.account.education",
+                    "emailContact": "$emailContact",
+                    "idQLC": "$idQLC",
+                    "nameDeparment": "$nameDeparment.dep_name",
+                }
+            },
 
-            ])
-            if(data){
-                const avatar = await fnc.createLinkFileEmpQLC(data[0].idQLC , data[0].avatarUser)
-                let companyName = await Users.findOne({ idQLC: data[0].com_id, type: 1 }).select('userName').lean();
-                if(companyName) data[0].companyName = companyName
-                if(avatar) data[0].avatar = avatar
+        ])
+        if (data) {
+            const user = data[0];
+            const avatar = await fnc.createLinkFileEmpQLC(data[0].idQLC, data[0].avatarUser)
+            let companyName = await Users.findOne({ idQLC: data[0].com_id, type: 1 }).select('userName').lean();
+            if (companyName) data[0].companyName = companyName
+            if (avatar) data[0].avatar = avatar
 
-                return functions.success(res, "lấy thành công" ,{data})    
-            }  
-            return functions.setError(res , " không tìm thấy nhân viên ")
-    
-    } catch (e) { 
-        return functions.setError(res, e.message)  
+            return functions.success(res, "lấy thành công", { data })
+        }
+        return functions.setError(res, " không tìm thấy nhân viên ")
+
+    } catch (e) {
+        return functions.setError(res, e.message)
     }
 }
