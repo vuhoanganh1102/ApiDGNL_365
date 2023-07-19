@@ -11,7 +11,6 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
         kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
         id_user_duyet,
         id_user_theo_doi,
-        // file_kem,
         ly_do,
         thanhviendc_bn,
         name_ph_bn,
