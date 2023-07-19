@@ -3,12 +3,10 @@ const model_Huy = new mongoose.Schema({
     huy_id: {
         type: Number
     },
-    huy_taisan: [{
-        ds_huy: {
-            type: Number
-        }
+    huy_taisan: {
+        type: Number
     }
-    ],
+    ,
     id_ng_dexuat: {
         type: Number
     },

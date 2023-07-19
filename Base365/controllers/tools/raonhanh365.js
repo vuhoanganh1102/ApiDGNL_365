@@ -244,22 +244,6 @@ exports.updateNewDescription = async (req, res, next) => {
                     if (await fnc.checkNumber(data[i].dien_tich) === false) {
                         continue
                     }
-
-                    let new_file_dthau = null;
-                    let new_file_nophs = null;
-                    let new_file_chidan = null;
-                    if (data[i].new_file_dthau && data[i].new_file_dthau != 0) {
-                        new_file_dthau = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_dthau.split('/')[1];
-                    }
-                    if (data[i].new_file_nophs && data[i].new_file_nophs != 0) {
-                        new_file_nophs = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_nophs.split('/')[1];
-
-                    }
-                    if (data[i].new_file_chidan && data[i].new_file_chidan != 0) {
-                        new_file_chidan = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_chidan.split('/')[1];
-
-                    }
-
                     if (post != null) {
                         await New.updateOne({ _id: idnew }, {
                             $set: {
@@ -380,11 +364,11 @@ exports.updateNewDescription = async (req, res, next) => {
                                 tgian_bd: data[i].tgian_bd,
                                 tgian_kt: data[i].tgian_kt,
                                 'bidding.new_job_kind': data[i].new_job_kind,
-                                'bidding.new_file_dthau': new_file_dthau,
+                                'bidding.new_file_dthau': data[i].new_file_dthau,
                                 'bidding.noidung_nhs': data[i].noidung_nhs,
-                                'bidding.new_file_nophs': new_file_nophs,
+                                'bidding.new_file_nophs': data[i].new_file_nophs,
                                 'bidding.noidung_chidan': data[i].noidung_chidan,
-                                'bidding.new_file_chidan': new_file_chidan,
+                                'bidding.new_file_chidan': data[i].new_file_chidan,
                                 'bidding.donvi_thau': data[i].donvi_thau,
                                 'bidding.phi_duthau': data[i].phi_duthau,
                                 'bidding.file_mota': data[i].file_mota,
@@ -2274,7 +2258,7 @@ exports.toolPhuongXa = async (req, res, next) => {
         do {
             const form = new FormData();
             form.append('page', page);
-            const response = await axios.get('https://raonhanh365.vn/api/select_tbl_phuong_xa.php', form, {
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_phuong_xa.php', form, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

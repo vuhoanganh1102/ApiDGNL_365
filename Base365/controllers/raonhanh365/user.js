@@ -135,7 +135,6 @@ exports.listUserOnline = async (req, res, next) => {
             {
                 $match: { isOnline: 1 }
             },
-
             {
                 $limit: 20
             },
