@@ -446,7 +446,17 @@ exports.listSchedule = async(req, res, next) => {
                         as: "Interview"
                     }
                 },
+                { $unwind: { path: "$Interview", preserveNullAndEmptyArrays: true } },
                 {$match: {"Interview.isSwitch": 0}},
+                {
+                    $lookup: {
+                        from: "HR_RecruitmentNews",
+                        localField: "recruitmentNewsId",
+                        foreignField: "id",
+                        as: "RecruitmentNews"
+                    }
+                },
+                { $unwind: { path: "$RecruitmentNews", preserveNullAndEmptyArrays: true } },
             ]);
         return functions.success(res, "Get listSchedule success", {totalSchedule, listSchedule})
     }catch(error) {
@@ -766,10 +776,12 @@ exports.createCandidate = async(req, res, next) => {
         fields.id = newIdCandi;
 
         // luu cv
-        let cv = req.files.cv;
-        if(cv && await hrService.checkFile(cv.path)){
-            let nameCv = await hrService.uploadFileNameRandom(folderCv,cv);
-            fields.cv = nameCv;
+        if(req.files) {
+            let cv = req.files.cv;
+            if(cv && await hrService.checkFile(cv.path)){
+                let nameCv = await hrService.uploadFileNameRandom(folderCv,cv);
+                fields.cv = nameCv;
+            }
         }
 
         // tao
@@ -957,7 +969,7 @@ exports.getListProcessInterview= async(req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         let {fromDate, toDate, name, recruitmentNewsId, userHiring, gender, status, canId} = req.body;
-        let condition = {"candidate.comId": comId};
+        let condition = {"candidate.comId": comId, "candidate.isDelete": 0};
         if(fromDate) condition["candidate.timeSendCv"]= {$gte: new Date(fromDate)};
         if(toDate) condition["candidate.timeSendCv"] = {$lte: new Date(toDate)};
         if(name) condition["candidate.name"] = new RegExp(name, 'i');
@@ -985,7 +997,7 @@ exports.getListProcessInterview= async(req, res, next) => {
                 },
                 {$match: condition},
                 {
-                    $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
+                    $project: {name: 1, processBefore: 1, canId: 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
                 },
                 {
                     $lookup: {
@@ -996,7 +1008,7 @@ exports.getListProcessInterview= async(req, res, next) => {
                     }
                 },
                 {
-                    $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, 
+                    $project: {name: 1, processBefore: 1, canId: 1, 
                     "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
                     "recruitmentNews.title": 1
                     }

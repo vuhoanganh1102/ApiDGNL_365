@@ -54,9 +54,35 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
   };
 
+<<<<<<< HEAD
 exports.numberWithCommas = (number) => {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
+=======
+exports.getDataFromToken = async(req, res, next) => {
+    let user = req.user;
+    if (!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
+        return res.status(404).json({ message: "Token missing info!" });
+    }
+    var infoLogin = { type: user.data.type, role: user.data.role, id: user.data.idQLC, name: user.data.userName };
+    if (user.data.type != 1) {
+        if (user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id) {
+            infoLogin.comId = user.data.inForPerson.employee.com_id;
+        } else {
+            return res.status(405).json({ message: "Missing info inForPerson!" });
+        }
+    } else {
+        infoLogin.comId = user.data.idQLC;
+    }
+    req.id = infoLogin.id;
+    req.com_id = infoLogin.comId;
+    req.userName = infoLogin.name;
+    req.type = infoLogin.type;
+    req.role = infoLogin.role;
+    req.infoLogin = infoLogin;
+    next();
+}
+>>>>>>> 1349a59543276b30cf6c4ef4e5e9b495b63bf3f2
 
 exports.getLinkFile = (folder, time, fileName) => {
   let date = new Date(time * 1000);
