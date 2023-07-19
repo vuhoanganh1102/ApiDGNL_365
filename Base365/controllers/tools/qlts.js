@@ -790,10 +790,8 @@ exports.toolHuy = async (req, res, next) => {
                     str = str.replaceAll('ds_huy:','')
                     str = str.replaceAll('{','')
                     str = str.replaceAll('}','')
-                    let huy_taisan = [];
-                    str.split(',').map((item)=>{
-                        huy_taisan.push({ds_huy:`${item}`})
-                    })
+                    let huy_taisan = str.split(',')[0];
+                    console.log("🚀 ~ file: qlts.js:794 ~ exports.toolHuy= ~ str:", str)
                     const save = new Huy({
                         huy_id: listData[i].huy_id,
                         huy_taisan: huy_taisan,
