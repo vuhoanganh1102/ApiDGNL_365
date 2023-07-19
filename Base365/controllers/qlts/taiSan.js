@@ -8,8 +8,9 @@ const User = require('../../models/Users')
 const functions = require('../../services/functions');
 const serviceQLTS = require('../../services/QLTS/qltsService')
 const KhauHao = require('../../models/QuanLyTaiSan/KhauHao');
-const TepDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem')
-
+const TepDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem');
+const SuaChua = require('../../models/QuanLyTaiSan/Sua_chua');
+const BaoDuong = require('../../models/QuanLyTaiSan/BaoDuong')
 
 exports.showAll = async (req, res) => {
   try {
@@ -286,6 +287,9 @@ exports.showCTts = async (req, res) => {
   }
 };
 
+
+
+
 exports.deleteTs = async (req, res) => {
   try {
     let { datatype, ts_id, type_quyen } = req.body;
@@ -384,6 +388,8 @@ exports.editTS = async (req, res) => {
   }
 };
 
+
+
 exports.quatrinhsd = async (req, res) => {
   try {
     let com_id = '';
@@ -399,6 +405,8 @@ exports.quatrinhsd = async (req, res) => {
     return functions.setError(res, error);
   }
 };
+
+
 
 exports.khauhaoCTTS = async (req, res) => {
   try {
@@ -564,11 +572,11 @@ exports.deleteFile = async(req,res) => {
   }
 }
 
-// Phần Sửa chữa
+// Phần  Sửa chữa theo id tài sản
 
 exports.showScCT = async (req,res )=> {
   try{
-   let{ts_id} = req.body;
+   let{ts_id,page, perPage} = req.body;
    let com_id = '';
     page = page || 1;
     perPage = perPage || 10;
@@ -585,6 +593,48 @@ exports.showScCT = async (req,res )=> {
     if (isNaN(Number(ts_id))) {
       return functions.setError(res, 'id tài sản phải là một số', 400);
     }
+    let listSCCT = await SuaChua.find({suachua_taisan : ts_id , id_cty : com_id})
+      .select('id_sc sc_trangthai sc_ngay sc_dukien sc_hoanthanh sc_chiphi_dukien sc_chiphi_thucte sc_nguoi_thuchien sc_donvi')
+      .sort({sc_id : -1})
+      .skip(startIndex)
+      .limit(perPage);
+      const totalTsCount = await SuaChua.countDocuments({ id_cty: com_id ,suachua_taisan : ts_id});
+
+      // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
+      const totalPages = Math.ceil(totalTsCount / perPage);
+      const hasNextPage = endIndex < totalTsCount;
+      return functions.success(res, 'get data success', { listSCCT, totalPages, hasNextPage });
+  }catch (error) {
+    console.log(error);
+    return functions.setError(res, error);
+  }
+}
+
+//Phần Bảo dưỡng theo id tài sản
+exports.showBDCT = async (req,res) => {
+  try{
+    let{ts_id,page, perPage} = req.body;
+    let com_id = '';
+     page = page || 1;
+     perPage = perPage || 10;
+     const startIndex = (page - 1) * perPage;
+     const endIndex = page * perPage;
+     if (req.user.data.type == 1 || req.user.data.type == 2) {
+       com_id = req.user.data.com_id;
+     } else {
+       return functions.setError(res, 'không có quyền truy cập', 400);
+     }
+     if (typeof ts_id === 'undefined') {
+       return functions.setError(res, 'id tài sản không được bỏ trống', 400);
+     }
+     if (isNaN(Number(ts_id))) {
+       return functions.setError(res, 'id tài sản phải là một số', 400);
+     }
+     let listBDCT = await BaoDuong.find({baoduong_taisan : ts_id , id_cty : com_id})
+      .select('id_bd bd_trangthai bd_ngay bd_dukien bd_hoanthanh bd_chiphi_dukien bd_chiphi_thucte bd_nguoi_thuchien donvi_')
+      .sort({sc_id : -1})
+      .skip(startIndex)
+      .limit(perPage);
   }catch (error) {
     console.log(error);
     return functions.setError(res, error);

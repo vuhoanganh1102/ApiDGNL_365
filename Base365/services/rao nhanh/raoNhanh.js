@@ -88,8 +88,8 @@ exports.checkNameCateRaoNhanh = async (data) => {
             return 'Thể thao'
         case 'Du lịch':
             return 'Du lịch'
-        case 'Đồ dùng văn phòng, công nông nghiệp':
-            return 'Đồ dùng văn phòng, công nông nghiệp'
+        case 'Nội thất - Ngoại thất':
+            return 'noiThatNgoaiThat'
     }
 }
 
@@ -257,6 +257,7 @@ exports.getNameCate = async (cateId,number) =>{
     let danh_muc1 = null;
     let danh_muc2 = null;
     cate1 = await Category.findById(cateId);
+    if(!cate1) return null
     danh_muc1 = cate1.name;
     if (cate1.parentId !== 0) {
         cate2 = await Category.findById(cate1.parentId);
