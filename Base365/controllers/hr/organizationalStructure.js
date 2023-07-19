@@ -581,9 +581,10 @@ exports.listPosition = async (req, res, next) => {
         //21 chuc vu
         let findUser = await Users.find({
             "inForPerson.employee.com_id": comId
-        }, { idQLC: 1, userName: 1, "inForPerson.employee.position_id": 1});
-
+        }, { idQLC: 1, userName: 1, inForPerson: {employee: {position_id: 1}}});
+        // console.log(findUser)
         let position = await HR_DescPositions.find({comId: comId});
+        const conditionNV = {type: 2,"inForPerson.employee.com_id": comId};
         for(let i=0; i<arrPosition.length; i++) {
             listPosition.push({
                 positionId: arrPosition[i],
@@ -602,6 +603,12 @@ exports.listPosition = async (req, res, next) => {
                 if(findUser[j] && findUser[j].inForPerson && findUser[j].inForPerson.employee && findUser[j].inForPerson.employee.position_id == arrPosition[i]) {
                     users.push(findUser[j].userName);
                 }
+            }
+            
+            if(i>=arrPosition.length-4) {
+                let conditionDNV = {...conditionNV, "inForPerson.employee.position_id": arrPosition[i]};
+                let tong_nv = await functions.findCount(Users, conditionDNV);
+                listPosition[i].tong_nv = tong_nv;
             }
             listPosition[i].users = users;
         }
