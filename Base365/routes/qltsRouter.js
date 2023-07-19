@@ -10,6 +10,7 @@ var capPhat = require('./qlts/CapPhat.js')
 var ThuHoi = require('./qlts/ThuHoi.js')
 var mat = require('./qlts/matRouter')
 var huy = require('./qlts/huyRouter')
+var phanQuyen = require('./qlts/phanQuyen')
 
 var kiemKeRouter = require('./qlts/kiemKeRouter');
 
@@ -35,5 +36,7 @@ router.use('/huy',huy)
 //api kiem ke
 router.use('/kiemKe', [functions.checkToken, functions.dataFromToken], kiemKeRouter);
 
+//api Phân quyền
+router.use('/phanQuyen',phanQuyen)
 
 module.exports = router
