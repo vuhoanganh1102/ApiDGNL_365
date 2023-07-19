@@ -83,7 +83,6 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             if (tb) {
                 idTB = Number(tb._id) + 1;
             }
-
             // Tiếp tục tạo các bản ghi mới với idTB mới tăng dần
             const id_user_nhan_arr = id_user_duyet.split(',');
             let createTBs = [];
@@ -150,7 +149,6 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -184,7 +182,6 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "dề xuất bổ nhệm ", link, file_kem);
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
             let idTB = 0;
             if (tb) {
                 idTB = Number(tb._id) + 1;
@@ -225,14 +222,11 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            //  file_kem,
             ly_do,
             phong_ban,
-            //  type_time,
             danh_sach_tai_san,
             so_luong_tai_san,
             link
@@ -262,7 +256,6 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -276,13 +269,11 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                         danh_sach_tai_san: danh_sach_tai_san,
                         so_luong_tai_san: (so_luong_tai_san),
                     }
-
                 },
                 name_user: name_user,
                 id_user: id_user,
                 com_id: com_id,
                 kieu_duyet: kieu_duyet,
-
                 phong_ban: phong_ban,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
@@ -297,19 +288,16 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             let idTB = 0;
             if (tb) {
                 idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
-
             let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
                 const id_user_nhan = parseInt(id_user_nhan_arr[i]);
-
                 let createTB = new ThongBao({
                     _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
                     id_user: id_user,
@@ -319,7 +307,6 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                     view: 0,
                     created_date: new Date(),
                 });
-
                 createTBs.push(createTB);
             }
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
@@ -337,11 +324,9 @@ exports.de_xuat_doi_ca = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            // file_kem,
             ly_do,
             phong_ban,
             ngay_can_doi,
@@ -374,8 +359,6 @@ exports.de_xuat_doi_ca = async (req, res) => {
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
-
-            //console.log("mx : " + maxID);
             const new_de_xuat = new De_Xuat({
                 _id: (maxID + 1),
                 name_dx: name_dx,
@@ -406,16 +389,13 @@ exports.de_xuat_doi_ca = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             let idTB = 0;
             if (tb) {
                 idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
-
             let createTBs = []; // Mảng chứa các đối tượng ThongBao
-
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
                 const id_user_nhan = parseInt(id_user_nhan_arr[i]);
 
@@ -448,13 +428,10 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
     try {
         let {
             name_dx,
-            // type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            // file_kem,
             ly_do,
-
             cv_nguoi_lc,
             pb_nguoi_lc,
             noi_cong_tac,
@@ -482,12 +459,9 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
-
-            //console.log("mx : " + maxID);
             const new_de_xuat = new De_Xuat({
                 _id: (maxID + 1),
                 name_dx: name_dx,
@@ -512,12 +486,9 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 time_create: new Date(),
             })
-
-
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             let idTB = 0;
             if (tb) {
@@ -557,11 +528,9 @@ exports.de_xuat_tang_luong = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            //  file_kem,
             ly_do,
             mucluong_ht,
             mucluong_tang,
@@ -590,7 +559,6 @@ exports.de_xuat_tang_luong = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -622,7 +590,6 @@ exports.de_xuat_tang_luong = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             let idTB = 0;
             if (tb) {
@@ -644,7 +611,6 @@ exports.de_xuat_tang_luong = async (req, res) => {
                     view: 0,
                     created_date: new Date()
                 });
-
                 createTBs.push(createTB);
             }
 
@@ -663,7 +629,6 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
@@ -726,7 +691,6 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-           
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             let idTB = 0;
             if (tb) {
@@ -738,7 +702,6 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
                 const id_user_nhan = parseInt(id_user_nhan_arr[i]);
-
                 let createTB = new ThongBao({
                     _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
                     id_user: id_user,
@@ -767,12 +730,9 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            //   file_kem,
-
             ly_do,
             tien_tam_ung,
             ngay_tam_ung,
@@ -799,7 +759,6 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -825,7 +784,6 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
                 kieu_duyet: 0,
                 type_duyet: 0,
                 type_time: 0,
-                // time_start_out: " ",
                 time_create: new Date(),
                 active: 1,//1-bên 3 đã đồng ý , 2 - bên 3 không đồng ý 
                 del_type: 1,//1-active , 2 --delete
@@ -835,7 +793,6 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             let idTB = 0;
             if (tb) {
@@ -876,7 +833,6 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
     try {
         let {
             name_dx,
-            // type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
@@ -907,7 +863,6 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -999,11 +954,9 @@ exports.lich_lam_viec = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
-
             const new_de_xuat = new De_Xuat({
                 _id: (maxID + 1),
                 name_dx: name_dx,
@@ -1037,7 +990,6 @@ exports.lich_lam_viec = async (req, res) => {
                 idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
-
             let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
@@ -1153,7 +1105,6 @@ exports.dxCong = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            res.status(200).json({ saveCreateTb, savedDXC })
             return functions.success(res, 'get data success', { savedDXC, saveCreateTb });
         };
     } catch (error) {
@@ -1438,7 +1389,6 @@ exports.dxHoaHong = async (req, res) => {
                 idTB = Number(maxIDTB) + 1;
             }
             const id_user_nhan_arr = savedDXHH.id_user_duyet.split(',');
-
             let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
@@ -1567,7 +1517,6 @@ exports.dxPhongHop = async (req, res) => {
     try {
         let {
             name_dx,
-            type_dx,
             noi_dung,
             kieu_duyet,
             id_user_duyet,
@@ -1669,7 +1618,6 @@ exports.dxTangCa = async (req, res) => {
     try {
         let {
             name_dx,
-            type_dx,
             noi_dung,
             kieu_duyet,
             id_user_duyet,
@@ -2075,7 +2023,6 @@ exports.dxThuongPhat = async (req, res) => {
         return functions.setError(res, error);
     }
 }
-
 
 
 exports.showadd = async (req, res) => {
