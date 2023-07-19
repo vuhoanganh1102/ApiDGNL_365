@@ -631,7 +631,7 @@ exports.showBDCT = async (req,res) => {
        return functions.setError(res, 'id tài sản phải là một số', 400);
      }
      let listBDCT = await BaoDuong.find({baoduong_taisan : ts_id , id_cty : com_id})
-      .select('id_bd bd_trangthai bd_ngay bd_dukien bd_hoanthanh bd_chiphi_dukien bd_chiphi_thucte bd_nguoi_thuchien donvi_')
+      .select('id_bd bd_trang_thai bd_ngay_batdau bd_dukien_ bd_hoanthanh bd_chiphi_dukien bd_chiphi_thucte bd_nguoi_thuchien donvi_bd')
       .sort({sc_id : -1})
       .skip(startIndex)
       .limit(perPage);
