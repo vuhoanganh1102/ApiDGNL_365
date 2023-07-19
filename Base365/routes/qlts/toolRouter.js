@@ -15,7 +15,7 @@ router.post('/phanquyen', toolQLTS.toolPhanQuyen)
 
 //dung
 router.post('/kiemke', toolQLTS.kiemKe);
-
+//router.post('/QuaTrinhSuDung',toolQLTS.QuaTrinhSuDung);
 
 
 

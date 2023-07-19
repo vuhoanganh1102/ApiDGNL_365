@@ -17,7 +17,7 @@ const CalendarSchema = new Schema({
 
     },
     apply_month : {
-        type: Number,
+        type: String,
 
     },
     cy_detail : {
@@ -26,11 +26,12 @@ const CalendarSchema = new Schema({
     },
     status : {
         type: Number,
+        default :1
 
     },
     is_personal : {
         type: Number,
-
+        default : 0
     },
 
 });

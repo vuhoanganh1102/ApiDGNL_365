@@ -7,9 +7,11 @@ const functions= require ("../../../services/functions")
 
 router.post("/vip",formData.parse(), controller.setVip)
 
+router.post("/put",formData.parse(), controller.setVipOnly)
 
 router.post("/listCom",formData.parse(), controller.getList)
 
+router.post("/listComErr",formData.parse(), controller.listComErr)
 
 router.post("/updatePassword",formData.parse(), controller.updatePassword)
 

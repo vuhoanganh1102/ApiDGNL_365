@@ -11,10 +11,10 @@ router.post('/order',formData.parse(),functions.checkToken,orderRN.order)
 router.post('/bidding',formData.parse(),functions.checkToken,orderRN.bidding)
 
 // quản lý đơn mua
-router.get('/manageOrderBuy/:linkTitle',functions.checkToken,orderRN.manageOrderBuy)
+router.post('/manageOrderBuy',formData.parse(),functions.checkToken,orderRN.manageOrderBuy)
 
 // quản lý đơn bán
-router.get('/manageOrderSell/:linkTitle',functions.checkToken,orderRN.manageOrderSell)
+router.post('/manageOrderSell',formData.parse(),functions.checkToken,orderRN.manageOrderSell)
 
 // trạng thái đơn hàng
 router.post('/statusOrder',formData.parse(),functions.checkToken,orderRN.statusOrder)

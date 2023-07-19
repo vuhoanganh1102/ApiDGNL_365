@@ -11,13 +11,12 @@ exports.getListCompany = async(req, res) => {
         if(type == 1){
 
        
-            const data = await Users.find({ "inForCompany.cds.com_parent_id": com_id }).select('userName avatarUser com_id phone address ')
+            const data = await Users.find({ "inForCompany.cds.com_parent_id": com_id }).select('userName avatarUser idQLC com_id phone address ')
             if (data) {
                 return await functions.success(res, 'Lấy thành công', { data });
             };
 
             return functions.setError(res, 'Không có dữ liệu', 404);
-
     }
     return functions.setError(res, "Tài khoản không phải Công ty", 604);   
     } catch (err) {

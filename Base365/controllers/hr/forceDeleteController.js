@@ -108,7 +108,7 @@ exports.delete= async(req, res, next) => {
         return functions.success(res, "Delete success");
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -152,6 +152,6 @@ exports.restoreDelete= async(req, res, next) => {
         return functions.success(res, "Restore delete success");
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message, 500);
     }
 }

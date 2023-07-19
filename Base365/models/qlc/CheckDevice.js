@@ -6,7 +6,7 @@ const CheckDevice = new mongoose.Schema({
         required : true 
     },
     //Id người dùng
-    idQLC: {
+    ep_id: {
         type : Number
     },
     // // ID thiết bị hiện tại 

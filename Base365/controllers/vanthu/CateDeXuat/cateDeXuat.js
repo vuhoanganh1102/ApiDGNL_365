@@ -15,7 +15,7 @@ exports.ChitietDx = async (req, res) => {
     let {_id} = req.body;
     let dexuat = await DeXuat.findOne({ _id });
     if (!dexuat) {
-      res.status(404).json({ message: 'Không tìm thấy bản ghi dexuat' });
+      return functions.setError(res, 'Không tìm thấy bản ghi dexuat', 400);
     } else {
       const checkuserduyet = dexuat.id_user_duyet.split(',').map(Number);
       // Tìm bản ghi trong bảng User dựa trên checkuserduyet
@@ -24,14 +24,20 @@ exports.ChitietDx = async (req, res) => {
       const checkusertheodoi = dexuat.id_user_theo_doi.split(',').map(Number); 
       const usertd = await UserDX.find({ idQLC: { $in: checkusertheodoi }  });
       // Tiếp tục xử lý và trả về kết quả
-      const namnUserDuyet = users.map(user => ({ userName: user.userName, avatarUser: user.avatarUser }));
-      const namnUsertd = usertd.map(user => ({ userName: user.userName, avatarUser: user.avatarUser }));
+      const namnUserDuyet = users.map(user => ({ 
+        userName: user.userName, 
+        avatarUser: user.avatarUser 
+      }));
+      const namnUsertd = usertd.map(user => ({ 
+        userName: user.userName,
+        avatarUser: user.avatarUser 
+      }));
       let data = { dexuat, namnUserDuyet, namnUsertd };
       return functions.success(res, 'get data success', { data });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Không thể hiển thị' });
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 };
 
@@ -52,27 +58,68 @@ exports.showHome = async (req, res) => {
     let dxCanduyet = '';
     let dxduyet = '';
     if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC
-      totaldx = await DeXuat.countDocuments({ com_id, del_type: 1 }); // đếm tổng số đề xuất
-      dxChoDuyet = await DeXuat.countDocuments({ com_id, del_type: 1, type_duyet: 7 }) //đếm tổng số đề xuất chờ duyệt
-      dxCanduyet = await DeXuat.countDocuments({ com_id, del_type: 1, type_time: 2, type_duyet: 0 }) // đếm số đề xuất cần duyệt
-      dxduyet = await DeXuat.countDocuments({ com_id,com_id, del_type: 1, type_duyet: 5 }) // đếm tổng số dề xuất đã được duyệt
-      let showCT = await DeXuat.find({ com_id }).sort({ _id: -1 }).skip(startIndex).limit(perPage);
-      return res.status(200).json({ totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showCT }); // hiển thị trang home công ty
+      com_id = req.user.data.com_id
+      totaldx = await DeXuat.countDocuments({ 
+        com_id, del_type: 1 
+      }); // đếm tổng số đề xuất
+      dxChoDuyet = await DeXuat.countDocuments({ 
+        com_id,
+        del_type: 1, 
+        type_duyet: 7
+       }) //đếm tổng số đề xuất chờ duyệt
+      dxCanduyet = await DeXuat.countDocuments({
+         com_id,
+         del_type: 1, 
+         type_time: 2, 
+         type_duyet: 0 
+        }) // đếm số đề xuất cần duyệt
+      dxduyet = await DeXuat.countDocuments({ 
+        com_id,
+        com_id, 
+        del_type: 1,
+        type_duyet: 5 
+        }) // đếm tổng số dề xuất đã được duyệt
+      let showCT = await DeXuat.find({ com_id,del_type: 1})
+      .sort({ _id: -1 })
+      .skip(startIndex).
+      limit(perPage);
+      // hiển thị trang home công ty
+      return functions.success(res, 'get data success', {totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showCT });
     } else if (req.user.data.type == 2) {
-      id_user = req.user.data.idQLC
-      totaldx = await DeXuat.countDocuments({ id_user, del_type: 1 }); // đếm tổng số đề xuất
-      dxChoDuyet = await DeXuat.countDocuments({id_user : id_user, del_type: 1, type_duyet: 7 }) //đếm tổng số đề xuất chờ duyệt
-      dxCanduyet = await DeXuat.countDocuments({id_user_duyet : id_user, del_type: 1, type_time: 2, type_duyet: 0 }) // đếm số đề xuất cần duyệt
-      dxduyet = await DeXuat.countDocuments({ id_user : id_user, del_type: 1, type_duyet: 5 })// đếm tổng số dề xuất đã được duyệt
-      let showNV = await DeXuat.find({ id_user, del_type: 1 }).sort({ _id: -1 }).skip(startIndex).limit(perPage);
-      return res.status(200).json({ totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showNV });// hiển thị trang home nhân viên
+      id_user = req.user.data.com_id
+      totaldx = await DeXuat.countDocuments({ 
+        id_user, 
+        del_type: 1 
+      }); // đếm tổng số đề xuất
+      dxChoDuyet = await DeXuat.countDocuments({
+        id_user : id_user, 
+        del_type: 1, 
+        type_duyet: 7 
+      }) //đếm tổng số đề xuất chờ duyệt
+      dxCanduyet = await DeXuat.countDocuments({
+        id_user_duyet : id_user, 
+        del_type: 1, 
+        type_time: 2, 
+        type_duyet: 0 
+      }) // đếm số đề xuất cần duyệt
+      dxduyet = await DeXuat.countDocuments({ 
+        id_user : id_user, 
+        del_type: 1, 
+        type_duyet: 5 
+      })// đếm tổng số dề xuất đã được duyệt
+      let showNV = await DeXuat.find({ 
+        id_user, del_type: 1 
+      }).sort({ _id: -1 })
+      .skip(startIndex)
+      .limit(perPage);
+      // hiển thị trang home nhân viên
+      return functions.success(res, 'get data success', {totaldx, dxChoDuyet, dxCanduyet, dxduyet, data: showNV });
     }else{
-      res.status(400).json({ error: 'Bạn ko có quyền' });
+      return functions.setError(message, 'Bạn ko có quyền',400);
     }
   } catch (error) {
-    console.error('Failed to get DX', error);
-    res.status(500).json({ error: 'Failed to get DX' });
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 };
 
@@ -85,7 +132,7 @@ exports.showNghi = async (req, res) => {
     const perPage = 10;
     const skip = (page - 1) * perPage;
     if(req.user.data.type == 1) {
-      com_id = req.user.data.idQLC
+      com_id = req.user.data.com_id
     }else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -124,11 +171,10 @@ exports.showNghi = async (req, res) => {
       .skip(skip)
       .limit(perPage)
       .lean();
-
-    res.status(200).json(shownghi);
+    return functions.success(res, 'get data success', { shownghi});
   } catch (error) {
-    console.error('Failed to shownghi', error);
-    res.status(500).json({ error: 'Failed to shownghi' });
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 };
 
@@ -143,8 +189,10 @@ exports.showNghi = async (req, res) => {
 exports.changeCate = async (req, res) => {
   try {
     const {  id, value } = req.body;
-     let com_id =  req.user.data.inForPerson.employee.com_id;
-    // Kiểm tra xem loại đề xuất đã được ẩn hay chưa
+     let com_id =  '';
+     if(req.user.data.type == 1){
+      com_id = req.user.data.com_id
+      // Kiểm tra xem loại đề xuất đã được ẩn hay chưa
     const hideCate = await HideCateDX.findOne({ id_com: com_id });
     let hideCateStr = hideCate.id_cate_dx.toString();
 
@@ -155,25 +203,29 @@ exports.changeCate = async (req, res) => {
         hideCateStr = hideCateStr.replace(',' + idStr, '');
         hideCate.id_cate_dx = hideCateStr;
         await hideCate.save();
-        return res.status(200).json({ success: true, message: 'Hủy ẩn loại đề xuất thành công!' });
+        return functions.success(res, 'Hủy ẩn loại đề xuất thành công!');
       } else {
-        return res.status(200).json({ success: true, message: 'Loại đề xuất này chưa được ẩn!' });
+        return functions.success(res, 'Loại đề xuất này chưa được ẩn!');
       }
     } else {
       // Thêm ẩn loại đề xuất
       const idStr = id.toString();
       if (hideCateStr.includes(idStr)) {
-        return res.status(200).json({ success: true, message: 'Loại đề xuất này đã được ẩn rồi!' });
+        return functions.success(res,  'Loại đề xuất này đã được ẩn rồi!');
       } else {
         hideCateStr += ',' + idStr;
         hideCate.id_cate_dx = hideCateStr;
         await hideCate.save();
-        return res.status(200).json({ success: true, message: 'Ẩn loại đề xuất thành công!' });
+        return functions.success(res,  'Ẩn loại đề xuất thành công!');
       }
     }
+     }else{
+      return functions.setError(res, 'không có quyền truy cập', 400);
+     }
+    
   } catch (error) {
-    console.error('Failed to changeCate', error);
-    return res.status(500).json({ error: 'Failed to changeCate' });
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 };
 
@@ -188,9 +240,12 @@ exports.changeCate = async (req, res) => {
 exports.findNameCate = async (req, res) => {
   try {
     let { name_cate_dx, page } = req.body;
-    let com_id =  req.user.data.inForPerson.employee.com_id;
-    const perPage = 10;
-    page = parseInt(page) || 1;
+    
+    let com_id ='';
+    if(req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id
+      const perPage = 10;
+      page = parseInt(page) || 1;
 
     const regex = new RegExp(name_cate_dx, 'i');
 
@@ -205,13 +260,17 @@ exports.findNameCate = async (req, res) => {
       const checkhide = await HideCateDX.findOne({ id_com : com_id }).select('id_cate_dx');
       if (checkhide) {
         const idHideCateDX = checkhide.id_cate_dx.split(',').map(Number);
-        res.status(200).json({ result,idHideCateDX, currentPage: page, totalPages, });
+        return functions.success(res, 'get data success', { result,idHideCateDX, currentPage: page, totalPages, });
       } else {
-        res.status(200).json({ result,idHideCateDX : [], currentPage: page, totalPages, }); // Trả về mảng rỗng nếu không tìm thấy giá trị
+        return functions.success(res, 'get data success', { result,idHideCateDX : [], currentPage: page, totalPages, });
       }
+    }else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    
   } catch (error) {
-    console.error('Failed to search', error);
-    res.status(500).json({ error: 'Failed to search' });
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 };
 
@@ -226,7 +285,7 @@ exports.findthanhVien = async (req, res) => {
     const perPage = 10; // Số lượng giá trị hiển thị trên mỗi trang
     const startIndex = (page - 1) * perPage;
     if(req.user.data.type == 1) {
-      com_id = req.user.data.idQLC
+      com_id = req.user.data.com_id
       const checkTV = await UserDX.find({ 'inForPerson.employee.com_id': com_id,type : 2 })
       .select('idQlC userName inForPerson.employee.position_id ')
       .sort({ 'inForPerson.employee.dep_id': -1 })
@@ -235,8 +294,65 @@ exports.findthanhVien = async (req, res) => {
     }else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }  
-  } catch (error) {
-    console.error('Failed to find', error);
-    res.status(500).json({ error: 'Failed to find' });
+  }  catch (error) {
+    console.error('Failed ', error);
+    return functions.setError(res, error);
   }
 }
+
+//Api hiển thị đề xuất tạm ứng
+exports.listtamung = async (req, res) => {
+  try {
+    let { page, id_user, time } = req.body;
+    let com_id = '';
+    page = parseInt(page) || 1;
+    const perPage = 8;
+
+    if (req.user.data.type == 1) {
+      com_id = req.user.data.com_id;
+
+      let matchQuery = {
+        com_id: com_id,
+        type_dx: 3,
+      };
+
+      if (id_user) {
+        matchQuery.id_user = parseInt(id_user);
+      }
+
+      if (time) {
+        matchQuery.time = new Date(time);
+      }
+
+      const startIndex = (page - 1) * perPage;
+      const endIndex = page * perPage;
+
+      const listDeXuat = await DeXuat.find(matchQuery)
+        .select('name_user noi_dung.tam_ung.sotien_tam_ung type_duyet id_user')
+        .sort({_id : -1})
+        .skip(startIndex)
+        .limit(perPage);
+
+      const totalTsCount = await DeXuat.countDocuments(matchQuery);
+
+      const listUserId = listDeXuat.map(item => item.id_user);
+      const listUser = await UserDX.find({ idQLC: { $in: listUserId } })
+        .select('userName avatarUser idQLC');
+
+      const data = {
+        listDeXuat,
+        listUser,
+      };
+
+      const totalPages = Math.ceil(totalTsCount / perPage);
+      const hasNextPage = endIndex < totalTsCount;
+
+      return functions.success(res, 'get data success', { data, totalPages, hasNextPage });
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+  }catch (error) {
+    console.error('Failed ', error);
+    return functions.setError(res, error);
+  }
+};

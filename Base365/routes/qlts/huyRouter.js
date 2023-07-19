@@ -7,6 +7,10 @@ const functions = require('../../services/functions');
 // danh sách tài sản đề xuất huỷ
 router.post('/getDataAssetProposeCancel',functions.checkToken,formData.parse(),controller.getDataAssetProposeCancel)
 
+// duyệt đề xuất tài sản báo huỷ
+router.post('/approveAssetDisposal',functions.checkToken,formData.parse(),controller.approveAssetDisposal)
 
+// từ chối đề xuất tài sản huỷ
+router.post('/rejectAssetDisposal',functions.checkToken,formData.parse(),controller.rejectAssetDisposal)
 
 module.exports = router

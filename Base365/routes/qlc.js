@@ -16,6 +16,7 @@ var DelAppData = require('./qlc/DelAppData')
 var TrackingQR = require('./qlc/TrackingQR')
 var TrackingWifi = require('./qlc/TrackingWifi')
 var CheckVip = require('./qlc/CheckVip')
+var CheckDevice = require('./qlc/CheckDevice')
 var Feedback = require('./qlc/Feedback')
 var ReportError = require('./qlc/ReportError')
 var employeeRoutes = require('./qlc/Employee');
@@ -25,6 +26,8 @@ var CalendarWorkEmployee = require("./qlc/CalendarWorkEmployee")
 var SetIpRouter = require("./qlc/SettingIP")
 var homePage = require("./qlc/HomePageChamCong")
 var childCompanyRouter = require('./qlc/ChildCompany')
+var ListFaceAndAllowFace = require('./qlc/ListFaceAndAllowFace')
+var CompanyWorkday = require('./qlc/CompanyWorkday')
 
 
 
@@ -42,6 +45,7 @@ router.use('/delAppData', DelAppData);
 router.use('/trackingQR', TrackingQR);
 router.use('/trackingWifi', TrackingWifi);
 router.use('/checkVip', CheckVip);
+router.use('/checkdevice', CheckDevice);
 router.use('/feedback', Feedback);
 router.use('/reportError', ReportError);
 router.use('/employeeRoutes', employeeRoutes);
@@ -51,5 +55,7 @@ router.use('/calendarWorkEmployee', CalendarWorkEmployee);
 router.use('/setIp', SetIpRouter);
 router.use('/homePage', homePage);
 router.use('/childCompany', childCompanyRouter); 
+router.use('/face', ListFaceAndAllowFace); 
+router.use('/CompanyWorkday', CompanyWorkday); 
 
 module.exports = router;

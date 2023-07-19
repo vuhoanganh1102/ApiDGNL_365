@@ -3,13 +3,23 @@ const fs = require('fs');
 const multer = require('multer');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-
+const linktb = require('./rao nhanh/raoNhanh')
 const dotenv = require("dotenv");
 dotenv.config();
 const path = require('path');
 
-
-
+ const functions = require('./functions')
+exports.covert = async(checkConvert) => {
+        let date = '';
+        let moth = '';
+        if(checkConvert.getDate() < 10 || checkConvert.getMonth() < 10) {
+             date = "0" + checkConvert.getDate() 
+             moth = "0" + checkConvert.getMonth()
+        }
+          let year = checkConvert.getFullYear()
+          let newdate = year + "-" + moth + "-" + date
+          return newdate
+}
 
 // hàm khi thành công
 exports.success = async (res, messsage = "", data = []) => {
@@ -52,19 +62,20 @@ exports.getMaxID = async (model) => {
     return maxUser._id + 1;
 };
 
-// const storageVanthu = (destination) => {
-//     return storage = multer.diskStorage({
-//         destination: (req, file, cb) => {
-//             // console.log(file_kem)
-//             cb(null, destination);
-//         },
-//         filename: (req, file, cb) => {
-//             cb(null, Date.now() + path.extname(file));
-//         }
-//     })
+exports.getMaxIDQJ = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { id: -1 } }).lean() || 0;
+    return maxUser.id + 1;
+};
+exports.getMaxIDrose = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { ro_id: -1 } }).lean() || 0;
+    return maxUser.ro_id + 1;
+};
+exports.getMaxIDtp = async(model) => {
+    const maxUser = await model.findOne({}, {}, { sort: { pay_id: -1 } }).lean() || 0;
+    return maxUser.pay_id + 1;
+};
 
-// };
-// exports.upload = multer({ storage: storageVanthu('../../../Storage/VanThu') });
+
 exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, status, link, file_kem) => {
     return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
         SenderID: id_user,
@@ -237,7 +248,7 @@ exports.uploadfile = async (folder, file_img, time) => {
     return filename;
 }
 exports.deleteFile = (file) => {
-    let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`,'');
+    let namefile = file.replace(`${process.env.DOMAIN_VAN_THU}/base365/vanthu/uploads/`, '');
     let filePath = '../storage/base365/vanthu/uploads/' + namefile;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
@@ -251,4 +262,155 @@ exports.convertTimestamp = (date) => {
 
 exports.convertDate = (timestamp) => {
     return new Date(timestamp * 1000);
+}
+
+// duyệt đề xuất
+exports.browseProposals = async (res,His_Handle, De_Xuat, _id,check) => {
+        try {
+            console.log(12);
+            let timeNow = new Date();
+            const maxID = await functions.getMaxID(His_Handle);
+            let newID = 0;
+            if (maxID) {
+                newID = Number(maxID) + 1;
+            }
+            const createHis = new His_Handle({
+                _id: newID,
+                id_dx: check._id,
+                type_handling: 2,
+                time: timeNow
+            });
+            await createHis.save();
+            if (check.kieu_duyet == 0) {
+                await De_Xuat.findOneAndUpdate(
+                    { _id: _id },
+                    {
+                        $set: {
+                            type_duyet: 5,
+                            time_duyet: timeNow
+                        }
+                    },
+                    { new: true }
+                );
+                res.status(200).json({ message: 'Đã duyệt đề xuất' });
+            } else {
+                const historyDuyet = await His_Handle.find({ id_dx: check._id, type_handling: 2 }).sort({ id_his: 1 });
+                const listDuyet = historyDuyet.map((item) => item.id_user).join(',');
+                const arrDuyet = listDuyet.split(',');
+                const arrDuyet1 = check.id_user_duyet.split(',');
+                arrDuyet.sort();
+                arrDuyet1.sort();
+                if (JSON.stringify(arrDuyet) === JSON.stringify(arrDuyet1)) {
+                    await De_Xuat.findOneAndUpdate(
+                        { _id: _id },
+                        {
+                            $set: {
+                                type_duyet: 5,
+                                time_duyet: timeNow
+                            }
+                        },
+                        { new: true }
+                    );
+                    res.status(200).json({ message: 'Đã duyệt đề xuất' });
+                } else {
+                    return res.status(200).json({ message: 'Không thể duyệt đề xuất' });
+                }
+            }
+        } catch (error) {
+            return functions.setError(res, error);
+        }  
+}
+
+// từ chối đề xuất
+exports.refuseProposal = async (res,His_Handle, De_Xuat, _id,id_ep,check) => {
+    try {
+        let timeNow = new Date()
+        await De_Xuat.findOneAndUpdate(
+            { _id: _id },
+            {
+                $set: {
+                    type_duyet: 3,
+                    time_duyet: timeNow
+                }
+            },
+            { new: true }
+        );
+        const createHis = new His_Handle({
+            _id: await functions.getMaxID(His_Handle) + 1,
+            id_dx: check._id,
+            type_handling: 3,
+            time: timeNow
+        });
+        await createHis.save();
+
+        const deXuatInfo = await De_Xuat.findOne({ _id: _id });
+        const link = `https://vanthu.timviec365.vn/chi-tiet-dx/${linktb.createLinkTilte(deXuatInfo.name_dx)}-dx${_id}.html`;
+        const notificationData = {
+            EmployeeId: deXuatInfo.id_user,
+            SenderId: id_ep,
+            CompanyId: deXuatInfo.com_id,
+            Message: deXuatInfo.name_dx,
+            ListFollower: `[${deXuatInfo.id_user_theo_doi}]`,
+            Status: deXuatInfo.name_cate_dx,
+            Link: link,
+            type: 1
+        };
+        await axios.post('https://mess.timviec365.vn/Notification/NotificationOfferSent', notificationData);
+        return res.status(200).json({ message: 'Từ chối đề xuất thành công' });
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error);
+    }
+}
+
+// bắt buộc đi làm
+exports.compulsoryWork = async (res,His_Handle,De_Xuat,_id,check) => {
+    try {
+        let timeNow = new Date();
+        await De_Xuat.findOneAndUpdate(
+            { _id: _id },
+            {
+                $set: {
+                    type_duyet: 6,
+                    time_duyet: timeNow
+                }
+            },
+            { new: true }
+        );
+        const createHis = new His_Handle({
+            _id: await functions.getMaxID(His_Handle) + 1,
+            id_dx: check._id,
+            type_handling: 6,
+            time: timeNow
+        });
+        await createHis.save();
+        return res.status(200).json({ message: 'Bắt buộc đi làm thành công' });
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// duyệt chuyển tiếp
+exports.forwardBrowsing = async (res,His_Handle,De_Xuat,_id,id_uct,check)=>{
+    try {
+        let timeNow = new Date()
+        const user_td = `${check.id_user_theo_doi},${id_uct}`;
+        await De_Xuat.findOneAndUpdate(
+          { _id: _id },
+          { id_user_duyet: id_uct, id_user_theo_doi: user_td },
+          { new: true }
+        );
+
+        const createHis = new His_Handle({
+          _id: await functions.getMaxID(His_Handle) + 1,
+          id_dx: check._id,
+          type_handling: 2,
+          time: timeNow
+        });
+        await createHis.save();
+
+        return res.status(200).json({ message: 'Chuyển tiếp đề xuất thành công' });
+    } catch (error) {
+        return functions.setError(res,error)
+    }
 }

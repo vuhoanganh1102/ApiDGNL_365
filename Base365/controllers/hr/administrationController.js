@@ -6,6 +6,7 @@ const Policys = require('../../models/hr/Policys');
 const EmployeePolicys = require('../../models/hr/EmployeePolicys');
 const PerUser = require('../../models/hr/PerUsers');
 const EmployeePolicySpecifics = require('../../models/hr/EmployeePolicySpecifics');
+
 // thêm nhóm quy định
 exports.addProvision = async (req, res, next) => {
     try {
@@ -19,15 +20,13 @@ exports.addProvision = async (req, res, next) => {
         let link = '';
 
         if (name && description && timeStart && supervisorName) {
-            if (await functions.checkDate(timeStart) === false || await functions.checkTime(timeStart) === false) {
-                return functions.setError(res, 'invalid date', 404)
-            }
-            if (File.provision) {
-                let checkUpload = await HR.HR_UploadFile('provision', comId, File.provision, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
+           
+            if (File.policy) {
+                let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload failed', 404)
                 }
-                link = HR.createLinkFileHR('provision', comId, File.provision.name)
+                link = checkUpload
             } else {
                 link = null;
             }
@@ -59,23 +58,21 @@ exports.addPolicy = async (req, res, next) => {
         let link = '';
 
         if (name && provisionId && timeStart && supervisorName && applyFor && content) {
-            if (await functions.checkDate(timeStart) === false || await functions.checkTime(timeStart) === false) {
-                return functions.setError(res, 'invalid date', 404)
-            }
+           
             if (await functions.checkNumber(provisionId) === false) {
                 return functions.setError(res, 'invalid number', 404)
             }
             if (File.policy) {
                 let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
-                    return functions.setError(res, 'upload faild', 404)
+                    return functions.setError(res, 'upload failed', 404)
                 }
-                link = HR.createLinkFileHR('policy', comId, File.policy.name)
+                link = checkUpload
             } else {
                 link = null;
             }
-            let checkProvisionId = await ProvisionOfCompanys.find({ id: provisionId, isDelete: 0 })
-            if (!checkProvisionId || checkProvisionId.length === 0) {
+            let checkProvisionId = await ProvisionOfCompanys.findOne({ id: provisionId, isDelete: 0 })
+            if (!checkProvisionId) {
                 return functions.setError(res, 'not found data provision', 404)
             }
             let id = await HR.getMaxId(Policys)
@@ -83,14 +80,14 @@ exports.addPolicy = async (req, res, next) => {
         } else {
             return functions.setError(res, 'missing data', 404)
         }
-        return functions.success(res, 'add provision success')
+        return functions.success(res, 'add policy success')
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)
     }
 }
 
-//chinh sua quy dinh
+// chỉnh sửa quy định
 exports.updatePolicy = async (req, res, next) => {
     try {
         let infoLogin = req.infoLogin;
@@ -106,32 +103,28 @@ exports.updatePolicy = async (req, res, next) => {
             createdBy = infoLogin.name;
         }
         let comId = infoLogin.comId;
-        let createdAt = new Date();
         let File = req.files;
         let fileName = null;
-
+        
         if (id && name && provisionId && timeStart && supervisorName && applyFor && content) {
-            if (await functions.checkDate(timeStart) === false || await functions.checkTime(timeStart) === false) {
-                return functions.setError(res, 'invalid date', 404)
-            }
+           
             if (await functions.checkNumber(provisionId) === false) {
                 return functions.setError(res, 'invalid number', 404)
             }
-            if (File) {
+            let check = await Policys.findOne({id: id,isDelete:0});
+            if (!check) {
+                return functions.setError(res, 'not found policy', 404)
+            }
+            if (File.policy) {
+                console.log(File.policy)
                 let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload failed', 404)
                 }
-                link = HR.createLinkFileHR('policy', comId, File.policy.name)
+                link = checkUpload
+                await Policys.findOneAndUpdate({ id: id},{ file: link})
             }
-            let check = await ProvisionOfCompanys.findOne({ id: provisionId });
-            if (!check) {
-                return functions.setError(res, 'not found provision', 404)
-            }
-            let policy = await Policys.findOneAndUpdate({ id: id }, { name, provisionId, timeStart, supervisorName, createdBy, comId, applyFor, content, createdAt, file: link }, { upsert: true, new: true });
-            if (!policy) {
-                return functions.setError(res, "Policy not found!", 505);
-            }
+             await Policys.findOneAndUpdate({ id: id }, { name, provisionId, timeStart, supervisorName, createdBy, comId, applyFor, content });
             return functions.success(res, 'update policy success')
         } else {
             return functions.setError(res, 'missing data', 404)
@@ -166,9 +159,9 @@ exports.listProvision = async (req, res, next) => {
             data = await ProvisionOfCompanys.find({ name: { $regex: `.*${keyWords}.*` }, comId, isDelete: 0 }).skip(skip).limit(pageSize);
             totalProvisionOfCompanys = await ProvisionOfCompanys.find({ name: { $regex: `.*${keyWords}.*` }, comId, isDelete: 0 }).count();
         }
+             data = await HR.getLinkFile(data,'policy',comId)
         let tongSoTrang = Math.ceil(totalProvisionOfCompanys / pageSize)
-        data.push({ tongSoTrang: tongSoTrang, tongSoBanGhi: totalProvisionOfCompanys })
-        return functions.success(res, 'get data success', { data })
+        return functions.success(res, 'get data success', {tongSoTrang,tongSoBanGhi: totalProvisionOfCompanys,data})
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)
@@ -180,7 +173,8 @@ exports.detailProvision = async (req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         let id = req.query.id;
-        let data = await ProvisionOfCompanys.find({ id, comId })
+        let data = await ProvisionOfCompanys.find({ id, comId,isDelete:0 })
+        data = await HR.getLinkFile(data,'policy',comId)
         return functions.success(res, 'get data success', { data })
     } catch (error) {
         console.error(error)
@@ -202,24 +196,18 @@ exports.updateProvision = async (req, res, next) => {
         let link = '';
         let id = Number (req.body.id);
         if (id && name && description && timeStart && supervisorName) {
-            if (await functions.checkDate(timeStart) === false || await functions.checkTime(timeStart) === false) {
-                return functions.setError(res, 'invalid date', 404)
-            }
-            let check = await ProvisionOfCompanys.findOne({ id, comId });
+           
+            let check = await ProvisionOfCompanys.findOne({ id, comId ,isDelete:0});
             if (!check) return functions.setError(res, 'data not found', 404)
-            if (File.provision) {
-                let checkUpload = await HR.HR_UploadFile('provision', comId, File.provision, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
+            if (File.policy) {
+                let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload faild', 404)
                 }
-                let checkFile = await ProvisionOfCompanys.findOne({ id, comId });
-                if (checkFile.file) {
-                    await HR.deleteFileHR('provision', comId, checkFile.file.split('/').reverse()[0])
-                }
-                link = HR.createLinkFileHR('provision', comId, File.provision.name)
-                await ProvisionOfCompanys.findOneAndUpdate({ id }, { name, description, timeStart, supervisorName, comId, createdAt, file: link })
+                link = checkUpload
+                await ProvisionOfCompanys.findOneAndUpdate({ id }, { name, description, timeStart, supervisorName, comId, file: link })
             } else {
-                await ProvisionOfCompanys.findOneAndUpdate({ id }, { name, description, timeStart, supervisorName, comId, createdAt })
+                await ProvisionOfCompanys.findOneAndUpdate({ id }, { name, description, timeStart, supervisorName, comId })
             }
 
         } else {
@@ -237,7 +225,7 @@ exports.deleteProvision = async (req, res, next) => {
     try {
         let id = Number (req.body.id);
         let comId = req.infoLogin.comId;
-        let check = await ProvisionOfCompanys.findOne({ id, comId });
+        let check = await ProvisionOfCompanys.findOne({ id, comId ,isDelete:0});
         if (!check) {
             return functions.setError(res, 'not found provision', 404)
         }
@@ -252,9 +240,12 @@ exports.deleteProvision = async (req, res, next) => {
 exports.listPolicy = async (req, res, next) => {
     try {
         let id = Number (req.query.id);
+        let comId = req.infoLogin.comId;
         let data = await Policys.find({ provisionId: id, isDelete: 0 })
+        data = await HR.getLinkFile(data,'policy',comId)
         return functions.success(res, 'get data provision success', { data })
     } catch (error) {
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -262,14 +253,16 @@ exports.listPolicy = async (req, res, next) => {
 // chi tiết quy định
 exports.detailPolicy = async (req, res, next) => {
     try {
-        let id = Number(req.query.id) || 1000;
+        let id = Number(req.query.id);
+        let comId = req.infoLogin.comId;
         let searchItem = {
             id: 1, provisionId: 1, timeStart: 1, supervisorName: 1, applyFor: 1
-            , content: 1, createdBy: 1, createdAt: 1, name: 1, file: 1, ProvisionOfCompanys: { name: 1 }
+            , content: 1, createdBy: 1, createdAt: 1, name: 1, file: 1, 
+            tenNhomQuyDinh :'$ProvisionOfCompanys.name'
         }
         let data = await Policys.aggregate([
             {
-                $match: { id }
+                $match: { id,isDelete:0 }
             }, 
             {
                 $lookup: {
@@ -282,8 +275,10 @@ exports.detailPolicy = async (req, res, next) => {
                 $project: searchItem
             }
         ])
+        data = await HR.getLinkFile(data,'policy',comId)
         return functions.success(res, 'get data provision success', { data })
     } catch (error) {
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -292,7 +287,7 @@ exports.detailPolicy = async (req, res, next) => {
 exports.deletePolicy = async (req, res, next) => {
     try {
         let id = Number(req.body.id);
-        let check = await Policys.findOne({ id });
+        let check = await Policys.findOne({ id ,isDelete:0});
         if (!check) {
             return functions.setError(res, 'not found provision', 404)
         }
@@ -315,15 +310,13 @@ exports.addEmployeePolicy = async (req, res, next) => {
         let link = '';
         let createdAt = new Date();
         if (name && description && timeStart && supervisorName) {
-            if (await !functions.checkDate(timeStart) || await !functions.checkTime(timeStart)) {
-                return functions.setError(res, 'invalid date')
-            }
-            if (File.employeePolicy) {
-                let checkUpload = await HR.HR_UploadFile('employeePolicy', comId, File.employeePolicy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
+           
+            if (File.policy) {
+                let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload faild', 404)
                 }
-                link = HR.createLinkFileHR('employeePolicy', comId, File.employeePolicy.name)
+                link = checkUpload
             } else {
                 link = null;
             }
@@ -350,22 +343,15 @@ exports.updateEmployeePolicy = async (req, res, next) => {
         let createdAt = new Date();
         let File = req.files;
         if (name && description && timeStart && supervisorName && id) {
-            if (await !functions.checkDate(timeStart) || await !functions.checkTime(timeStart)) {
-                return functions.setError(res, 'invalid date')
-            }
-            let check = await  EmployeePolicys.findOne({id});
+           
+            let check = await  EmployeePolicys.findOne({id,isDelete:0});
             if(!check) return functions.setError(res, 'not found employee policy',404)
-            if (File.employeePolicy) {
-                let checkUpload = await HR.HR_UploadFile('employeePolicy', comId, File.employeePolicy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
+            if (File.policy) {
+                let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload faild', 404)
                 }
-                let checkFile = await EmployeePolicys.findOne({ id, comId });
-                if (checkFile.file) {
-                    await HR.deleteFileHR('employeePolicy', comId, checkFile.file.split('/').reverse()[0])
-                }
-                
-                link = HR.createLinkFileHR('employeePolicy', comId, File.employeePolicy.name)
+                link = checkUpload
                 await EmployeePolicys.findOneAndUpdate({ id }, { name, description, timeStart, supervisorName, comId, createdAt, file: link })
             } else {
                 await EmployeePolicys.findOneAndUpdate({ id }, { name, description, timeStart, supervisorName, comId, createdAt })
@@ -374,7 +360,7 @@ exports.updateEmployeePolicy = async (req, res, next) => {
         } else {
             return functions.setError(res, 'missing data', 400)
         }
-        return functions.success(res, 'add success')
+        return functions.success(res, 'update data success')
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)
@@ -386,7 +372,7 @@ exports.deleteEmployeePolicy = async (req, res, next) => {
     try {
         let id = Number (req.body.id);
         let comId = req.infoLogin.comId;
-        let check = await EmployeePolicys.findOne({ id, comId });
+        let check = await EmployeePolicys.findOne({ id, comId,isDelete:0 });
         if (!check) {
             return functions.setError(res, 'not found provision', 404)
         }
@@ -401,7 +387,7 @@ exports.deleteEmployeePolicy = async (req, res, next) => {
 exports.addEmpoyePolicySpecific = async (req, res, next) => {
     try {
         // await HR.checkPermissions(req, res, next,'read',2);
-
+       
         let name = req.body.name;
         let employeePolicyId = req.body.employe_policy_id;
         let timeStart = req.body.time_start;
@@ -415,15 +401,13 @@ exports.addEmpoyePolicySpecific = async (req, res, next) => {
         let createdAt = new Date();
 
         if (name && employeePolicyId && timeStart && supervisorName && applyFor && content) {
-            if (await !functions.checkDate(timeStart) || await !functions.checkTime(timeStart)) {
-                return functions.setError(res, 'invalid date')
-            }
-            if (File.employeePolicy) {
-                let checkUpload = await HR.HR_UploadFile('employeePolicy', comId, File.employeePolicy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
+            
+            if (File.policy) {
+                 checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload faild', 404)
                 }
-                link = HR.createLinkFileHR('employeePolicy', comId, File.employeePolicy.name)
+                link = checkUpload
             } else {
                 link = null;
             }
@@ -461,8 +445,8 @@ exports.listEmpoyePolicy = async (req, res, next) => {
             totalEmpoyePolicy = await EmployeePolicys.find({ name: { $regex: `.*${keyWords}.*` }, comId, isDelete: 0 }).count();
         }
         let tongSoTrang = Math.ceil(totalEmpoyePolicy / pageSize)
-        data.push({ tongSoTrang: tongSoTrang, tongSoBanGhi: totalEmpoyePolicy })
-        return functions.success(res, 'get data success', { data })
+        data = await HR.getLinkFile(data,'policy',comId)
+        return functions.success(res, 'get data success', {tongSoTrang: tongSoTrang, tongSoBanGhi: totalEmpoyePolicy, data })
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)
@@ -474,7 +458,8 @@ exports.getDetailPolicy = async (req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         let id = req.query.id;
-        let data = await EmployeePolicys.find({ id, comId })
+        let data = await EmployeePolicys.find({ id, comId,isDelete:0 })
+        data = await HR.getLinkFile(data,'policy',comId)
         return functions.success(res, 'get data success', { data })
     } catch (error) {
         console.error(error)
@@ -486,7 +471,9 @@ exports.getDetailPolicy = async (req, res, next) => {
 exports.listEmployeePolicySpecific = async (req, res, next) => {
     try {
         let id = req.query.id;
-        let data = await EmployeePolicySpecifics.find({ employeePolicyId: id })
+        let comId = req.infoLogin.comId;
+        let data = await EmployeePolicySpecifics.find({ employeePolicyId: id,isDelete:0 })
+        data = await HR.getLinkFile(data,'policy',comId)
         return functions.success(res, 'get data  success', { data })
     } catch (error) {
         console.error(error)
@@ -498,6 +485,7 @@ exports.listEmployeePolicySpecific = async (req, res, next) => {
 exports.detailEmployeePolicySpecific = async (req, res, next) => {
     try {
         let id = Number(req.query.id);
+        let comId = req.infoLogin.comId;
         let data = await EmployeePolicySpecifics.aggregate([
             {
                 $lookup: {
@@ -507,7 +495,7 @@ exports.detailEmployeePolicySpecific = async (req, res, next) => {
                     as: "EmployeePolicys"
                 }
             }, {
-                $match: { id }
+                $match: { id,isDelete:0 }
             }, {
                 $project: {
                     id: 1, name: 1, employeePolicyId: 1, timeStart: 1, supervisorName: 1, description: 1, content: 1, applyFor: 1,
@@ -515,6 +503,7 @@ exports.detailEmployeePolicySpecific = async (req, res, next) => {
                 }
             }
         ])
+        data = await HR.getLinkFile(data,'policy',comId)
         return functions.success(res, 'get data  success', { data })
     } catch (error) {
         console.error(error)
@@ -556,22 +545,15 @@ exports.updateEmployeePolicySpecific = async (req, res, next) => {
         let updateAt = new Date();
 
         if (name && employeePolicyId && timeStart && supervisorName && applyFor && content && id) {
-            let check = await EmployeePolicySpecifics.findOne({ id })
+            let check = await EmployeePolicySpecifics.findOne({ id ,isDelete:0})
             if (!check) return functions.setError(res, 'not found', 404);
-            if (await !functions.checkDate(timeStart) || await !functions.checkTime(timeStart)) {
-                return functions.setError(res, 'invalid date', 400)
-            }
-            if (File.employeePolicy) {
-                let checkUpload = await HR.HR_UploadFile('employeePolicy', comId, File.employeePolicy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
+           
+            if (File.policy) {
+                let checkUpload = await HR.HR_UploadFile('policy', comId, File.policy, ['.gif', '.jpg', '.jpeg', '.png', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.ods', '.odt', '.odp', '.pdf', '.rtf', '.sxc', '.sxi', '.txt'])
                 if (checkUpload === false) {
                     return functions.setError(res, 'upload faild', 404)
                 }
-                let checkFile = await EmployeePolicySpecifics.findOne({ id, comId });
-                if (checkFile.file) {
-                    await HR.deleteFileHR('employeePolicy', comId, checkFile.file.split('/').reverse()[0])
-                }
-                link = HR.createLinkFileHR('employeePolicy', comId, File.employeePolicy.name);
-
+                link = checkUpload
                 await EmployeePolicySpecifics.findOneAndUpdate({ id }, {
                     name, employeePolicyId, timeStart, supervisorName, comId,
                     applyFor, content, updateAt, createdBy, file: link

@@ -3,29 +3,33 @@ const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const cate_de_xuat = require('../../../models/Vanthu/cate_de_xuat');
 const setting_dx = require('../../../models/Vanthu/setting_dx');
 const User = require('../../../models/Users');
+const functions = require('../../../services/functions')
 
 
 // trang tôi gửi đi 
 exports.deXuat_user_send = async (req, res) => {
   try {
     let { type, time_s, time_e, id_user_duyet,page } = req.body;
-    const id_user = req.user.idQLC
-    const com_id = req.user.data.inForPerson.employee.com_id;
+    let id_user = 0;
+    let com_id = 0;
+    if(req.user.data.type == 2) {
+       id_user = req.user.data.idQLC
+       com_id = req.user.data.com_id;
+    }else{
+      return functions.setError(res,'Bạn không có quyền truy cập.',400)
+    }
     const perPage = 10; // Giá trị mặc định nếu không được cung cấp
     const startIndex = (page - 1) * perPage;
     const sortOptions = { _id: -1 };
     if (typeof id_user === 'undefined') {
-      return res.status(400).json({ error: 'id_user không được bỏ trống.' });
+      return functions.setError(res,'id_user không được bỏ trống.',400)    
     }
-
     if (!com_id) {
-      return res.status(400).json({ error: 'com_id không được bỏ trống.' });
+      return functions.setError(res,'com_id không được bỏ trống.',400)
     }
-
     if (!type) {
-      return res.status(400).json({ error: 'type không được bỏ trống.' });
+      return functions.setError(res,'type không được bỏ trống.',400)
     }
-
     let query = {
       id_user: id_user,
       com_id: com_id,
@@ -43,69 +47,69 @@ exports.deXuat_user_send = async (req, res) => {
     }
 
     if (type == 1) { // Hiển thị tất cả
-      const showAll = await De_Xuat.find(query);
-      return res.status(200).json(showAll)
+      const showAll = await De_Xuat.find(query)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
+        return functions.success(res,'get data success',{showAll})  
     }
 
     if (type == 2) { // Hiển thị đang chờ duyệt
       query.active = 1;
       query.type_duyet = { $in: [0, 7] };
-      const showCD = await De_Xuat.find(query);
-      return res.status(200).json(showCD)
+      const showCD = await De_Xuat.find(query)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
+        return functions.success(res,'get data success',{showCD})
     }
 
     if (type == 4) { // Hiển thị đã phê duyệt
       query.active = 0;
       query.type_duyet = 5;
-      const showD = await De_Xuat.find(query);
-      return res.status(200).json(showD)
+      const showD = await De_Xuat.find(query)
         .sort(sortOptions)
         .skip(startIndex)
-        .limit(perPage);
+        .limit(perPage);;
+      return functions.success(res,'get data success',{showD})
     }
 
     if (type == 5) { // Hiển thị đã từ chối
       query.$or = [{ active: 2 }, { type_duyet: 3 }];
-      const showTC = await De_Xuat.find(query);
-      return res.status(200).json(showTC)
+      const showTC = await De_Xuat.find(query)  
         .sort(sortOptions)
         .skip(startIndex)
-        .limit(perPage);;
+        .limit(perPage);; 
+      return functions.success(res,'get data success',{showTC})
     }
     else{
-      return res.status(200).json({error : "type khong hop le"})
+      return functions.setError(res,'type khong hop le',400)
     }
-  } catch (error) {
-    console.error('Failed to show', error);
-    res.status(500).json({ error: 'Failed to show' });
+  }catch (error) {
+    console.log(error);
+    return functions.setError(res, error)
   }
 };
 
 //trang gửi đến tôi 
 exports.de_xuat_send_to_me = async (req, res) => {
   try {
-    let { type,id_user, name_dx, type_dx, time_s, time_e,page } = req.body;
-    const id_user_duyet = req.user.idQLC
-    const com_id = req.user.data.inForPerson.employee.com_id;
+    let { type,id_user, name_dx,
+          type_dx, time_s, time_e,page 
+         } = req.body;
+    let id_user_duyet = 0;
+    let com_id = 0;
+    if(req.user.data.type == 2) {
+       id_user_duyet  = req.user.data.idQLC
+       com_id = req.user.data.com_id;
+    }else{
+      return functions.setError(res,'Bạn không có quyền truy cập.',400)
+    }
     const perPage = 10; // Giá trị mặc định nếu không được cung cấp
     const startIndex = (page - 1) * perPage;
     const sortOptions = { _id: -1 };
-    if (!id_user_duyet) {
-      return res.status(400).json({ error: 'id_user_duyet không được bỏ trống.' });
-    }
-
-    if (!com_id) {
-      return res.status(400).json({ error: 'com_id không được bỏ trống.' });
-    }
-
     if (!type) {
-      return res.status(400).json({ error: 'type không được bỏ trống.' });
+      return functions.setError(res,'type không được bỏ trống.',400)
     }
     let query = {
       id_user_duyet:  { $in: [id_user_duyet] },
@@ -133,7 +137,7 @@ exports.de_xuat_send_to_me = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);;
-      return res.status(200).json(showAll);
+      return functions.success(res,'get data success',{showAll})
     }
     if (type == 2) { // Hiển thị đang chờ duyệt
       query.active = 1;
@@ -142,7 +146,7 @@ exports.de_xuat_send_to_me = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);;
-      return res.status(200).json(showCD);
+      return functions.success(res,'get data success',{showCD})
     }
     if (type == 4) { // Hiển thị đã phê duyệt
       query.active = 0;
@@ -158,15 +162,13 @@ exports.de_xuat_send_to_me = async (req, res) => {
       const showTC = await De_Xuat.find(query).sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      return res.status(200).json(showTC)
-       
-     
+      return functions.success(res,'get data success',{showTC})
     } else{
-      return res.status(200).json({error : "type khong hop le"})
+      return functions.setError(res,'type khong hop le',400)
       }
-  } catch (error) {
-    console.error('Failed to show ', error);
-    res.status(500).json({ error: 'Failed to show' });
+  }  catch (error) {
+    console.log(error);
+    return functions.setError(res, error)
   }
 }
 
@@ -174,17 +176,18 @@ exports.de_xuat_send_to_me = async (req, res) => {
 exports.de_xuat_theo_doi = async (req, res) => {
   try {
     let { type,page } = req.body;
-    const id_user_theo_doi = req.user.idQLC
-    const com_id = req.user.data.inForPerson.employee.com_id;
+    let id_user_theo_doi = 0;
+    let com_id = 0;
+    if(req.user.data.type == 2) {
+       id_user_theo_doi = req.user.data.idQLC
+       com_id = req.user.data.com_id;
+    }else{
+      return functions.setError(res,'Bạn không có quyền truy cập.',400)
+    }
+    
     const perPage = 10; // Giá trị mặc định nếu không được cung cấp
     const startIndex = (page - 1) * perPage;
     const sortOptions = { _id: -1 };
-    if (!id_user_theo_doi) {
-      return res.status(400).json({ error: 'id_user_theo_doi không được bỏ trống.' });
-    }
-    if (!com_id) {
-      return res.status(400).json({ error: 'com_id không được bỏ trống.' });
-    }
     if (!type) {
       return res.status(400).json({ error: 'type không được bỏ trống.' });
     }
@@ -197,7 +200,7 @@ exports.de_xuat_theo_doi = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      return res.status(200).json(showAll);
+      return functions.success(res,'get data success',{showAll})
     }
     if (type == 2) {
       const showCD = await De_Xuat.find({
@@ -209,7 +212,7 @@ exports.de_xuat_theo_doi = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      return res.status(200).json(showCD)
+      return functions.success(res,'get data success',{showCD})
     }
     if (type == 3) {
       const checkSetting = await setting_dx.findOne({ com_id: com_id })
@@ -226,7 +229,7 @@ exports.de_xuat_theo_doi = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);;
-      return res.status(200).json(exceedingDeXuat);
+      return functions.success(res,'get data success',{exceedingDeXuat})
     }
     if (type == 4) {
       const showD = await De_Xuat.find({
@@ -238,7 +241,7 @@ exports.de_xuat_theo_doi = async (req, res) => {
       }).sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      return res.status(200).json(showD);
+      return functions.success(res,'get data success',{showD})
     }
     if (type == 5) {
       const showTC = await De_Xuat.find({
@@ -249,11 +252,11 @@ exports.de_xuat_theo_doi = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      return res.status(200).json(showTC);
+      return functions.success(res,'get data success',{showTC})
     }
-  } catch (error) {
-    console.error('Failed to show ', error);
-    res.status(500).json({ error: 'Failed to show' });
+  }  catch (error) {
+    console.log(error);
+    return functions.setError(res, error)
   }
 }
 
@@ -262,18 +265,17 @@ exports.de_xuat_theo_doi = async (req, res) => {
 exports.admin_danh_sach_de_xuat = async (req, res) => {
   try {
     let { phong_ban,id_user, type_dx, type_duyet, time_s, time_e, page, perPage } = req.body;
-    let com_id = req.user.data.inForPerson.employee.com_id;
+
+    let com_id = '';
+    if(req.user.data.type == 1){
+      com_id = req.user.data.com_id
+    }else{
+      return functions.setError(res,'Bạn không có quyền truy cập.',400)
+    }
     if (!perPage) {
       perPage = 10; // Giá trị mặc định nếu không được cung cấp
     }
-    const startIndex = (page - 1) * perPage;
-
-    // Các điều kiện kiểm tra bỏ trống và khác
-   
-    if (!com_id) {
-      return res.status(400).json({ error: 'com_id không được bỏ trống.' });
-    }
-
+    const startIndex = (page - 1) * perPage; 
     // Tạo câu truy vấn dựa trên các điều kiện tìm kiếm
     let query = { com_id: com_id };
 
@@ -296,14 +298,10 @@ exports.admin_danh_sach_de_xuat = async (req, res) => {
     if (type_duyet) {
       query.type_duyet = type_duyet;
     }
-
     const sortOptions = { _id: -1 };
-
-
     if (time_s && time_e) {
       query.time_create = { $gte: new Date(time_s), $lte: new Date(time_e) };
     }
-
     const showDeXuat = await De_Xuat.find(query)
       .select('name_user name_dx time_create type_duyet')
       .sort(sortOptions)
@@ -312,9 +310,9 @@ exports.admin_danh_sach_de_xuat = async (req, res) => {
 
     const totalCount = await De_Xuat.countDocuments(query);
     const totalPages = Math.ceil(totalCount / perPage);
-    res.status(200).json({ data: showDeXuat, totalPages });
+    return functions.success(res,'get data success',{data: showDeXuat, totalPages })
   } catch (error) {
-    console.error('Failed to show ', error);
-    res.status(500).json({ error: 'Failed to show' });
+    console.log(error);
+    return functions.setError(res, error)
   }
 };

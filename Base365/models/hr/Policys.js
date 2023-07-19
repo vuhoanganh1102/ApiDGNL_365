@@ -7,6 +7,9 @@ const ModelNameSchema = new Schema({
         type: Number,
         required: true,
     },
+    provisionId:{
+        type: Number,
+    },
     // ngày bắt đầu
     timeStart: { 
         type: Date

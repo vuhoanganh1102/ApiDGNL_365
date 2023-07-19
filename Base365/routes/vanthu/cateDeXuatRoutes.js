@@ -29,4 +29,8 @@ router.post('/searchcate',functions.checkToken,formData.parse(),cateDeXuat.findN
 router.post('/thanhvien',functions.checkToken,formData.parse(),cateDeXuat.findthanhVien)
 
 
+
+//Api hiển thị trang đề xuất tạm ứng danh sách
+router.post('/tamung',functions.checkToken,formData.parse(),cateDeXuat.listtamung);
+
 module.exports = router

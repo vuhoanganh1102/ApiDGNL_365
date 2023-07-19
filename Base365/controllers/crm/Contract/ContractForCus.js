@@ -41,9 +41,16 @@ exports.showContract = async (req, res) => {
 }
 
 exports.showDetailContract = async (req, res) => {
-    const com_id = req.user.data.inForPerson.employee.com_id
-    const idQLC = req.user.data.idQLC
-
+    let com_id = '';
+    let id_user = '';
+    if(req.user.data.type == 1){
+       com_id = req.user.data.idQLC
+    }else if(req.user.data.type == 2) {
+        com_id = req.user.data.inForPerson.employee.com_id
+        id_user = req.user.data.idQLC
+    }else{
+        functions.setError(res, "khong co quyen truy cap",400)
+    }
     const { _id, id_customer, status, id_form_contract, path_dowload, is_delete } = req.body;
     let list = [];
     let ContractForCustumer = [];
@@ -81,11 +88,10 @@ exports.showDetailContract = async (req, res) => {
         maxID1 = 0
     };
     const _id1 = Number(maxID1) + 1;
-    console.log(_id1)
     ContractForCustumer = new crm_contract({
         _id: _id1 || 1,
         id_customer: id_customer,
-        user_created: idQLC,
+        user_created: id_user,
         id_form_contract: id_form_contract,
         status: status,
         path_dowload: path_dowload,

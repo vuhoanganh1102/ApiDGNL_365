@@ -8,32 +8,40 @@ const hr = require('../../services/hr/hrService');
 const Candidates = require('../../models/hr/Candidates');
 const GetJob = require('../../models/hr/GetJob');
 const QuitJob = require('../../models/hr/personalChange/QuitJob');
-const Salarys = require('../../models/hr/Salarys');
+const Salarys = require('../../models/Tinhluong/Tinhluong365SalaryBasic');
 const Deparment = require('../../models/qlc/Deparment');
+const Resign = require('../../models/hr/personalChange/Resign');
 exports.report = async (req, res, next) => {
     try {
-        // await Users.findByIdAndUpdate(20,{inForPerson:{account:{gender:2},employee:{com_id:20}}})
-        // return
-        // await Appoint.create({
-        //     id:2,com_id:20,ep_id:16
-        // })
-        //return
-        let comId = req.comId;
+        let comId = req.infoLogin.comId;
         let depId = req.body.depId || null;
         let from_date = req.body.from_date || null;
         let to_date = req.body.to_date || null;
         let chartNghiViec = req.body.nghiViec || null;
         let condition = {};
         if (depId) condition['inForPerson.employee.dep_id'] = depId;
+
+        // điều kiện tìm kiếm nhân viên với id công ty
         condition['inForPerson.employee.com_id'] = comId;
+
+        // tổng số nhân viên thuộc công ty
         let countEmployee = await Users.countDocuments(condition)
+
+        // tìm kiếm điều kiện là nhân viên nam
         condition['inForPerson.account.gender'] = 1;
         let countEmployeeNam = await Users.countDocuments(condition)
+
+        // tìm kiếm với điều kiện là nhân viên nữ
         condition['inForPerson.account.gender'] = 2;
         let countEmployeeNu = await Users.countDocuments(condition)
+
+
         if (from_date) condition.created_at = { $gte: new Date(from_date) }
         if (to_date) condition.created_at = { $lte: new Date(to_date) }
         if (from_date && to_date) condition.created_at = { $gte: new Date(from_date), $lte: new Date(to_date) }
+
+
+        // tìm kiếm nhân viên được bổ nhiệm là nam
         condition['inForPerson.account.gender'] = 1;
         let dataBoNhiemNam = await Users.aggregate([
             {
@@ -51,6 +59,8 @@ exports.report = async (req, res, next) => {
                 $count: 'SL'
             }
         ])
+
+        // tìm kiếm với nhân viên được bổ nhiệm là nữ
         condition['inForPerson.account.gender'] = 2;
         let dataBoNhiemNu = await Users.aggregate([
             {
@@ -68,6 +78,7 @@ exports.report = async (req, res, next) => {
                 $count: 'SL'
             }
         ])
+        // tìm kiếm nhân viên được bổ nhiệm
         delete condition['inForPerson.account.gender']
         let dataBoNhiem = await Users.aggregate([
             {
@@ -87,42 +98,42 @@ exports.report = async (req, res, next) => {
         ])
 
         // Tỷ lệ nhân viên nghỉ việc
-
         delete condition['inForPerson.employee.com_id']
         condition.com_id = comId
+
+        // tìm kiếm nhân viên nghỉ việc
         condition.type = 2
-        let nghiViec = await QuitJob.countDocuments(condition)
+        let nghiViec = await Resign.countDocuments(condition)
+
+        // tìm kiếm nhân viên giảm biên chế
         condition.type = 1
-        let giamBienChe = await QuitJob.countDocuments(condition)
+        let giamBienChe = await Resign.countDocuments(condition)
         let countDataNghiViec = giamBienChe + nghiViec;
 
 
 
-        //  tang giam luong
-        // await Salarys.create({
-        //     id:5,idUser:8,comId:20,salaryBasic:200000,timeUp:'2023/06/30'
-        // })
+        // tăng giảm lương
         delete condition.type
         delete condition.com_id
-       
-        let dataLuong = await Salarys.find({ comId }).sort({ timeUp: -1 });
+
+        let dataLuong = await Salarys.find({ sb_id_com: comId }).sort({ sb_time_up: -1 });
         let tangLuong = 0;
         let giamLuong = 0;
         let arr = [];
         if (dataLuong.length !== 0) {
             for (let i = 0; i < dataLuong.length; i++) {
-                condition.idUser = dataLuong[i].idUser;
-                condition.timeUp = { $lt: dataLuong[i].timeUp }
+                condition.sb_id_user = dataLuong[i].sb_id_user;
+                condition.sb_time_up = { $lt: dataLuong[i].sb_time_up }
 
                 checkTangGiam = await Salarys.findOne(condition)
 
-                if (checkTangGiam && dataLuong[i].salaryBasic - checkTangGiam.salaryBasic > 0) {
+                if (checkTangGiam && dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic > 0) {
                     tangLuong++;
-                } else if (checkTangGiam && dataLuong[i].salaryBasic - checkTangGiam.salaryBasic < 0) {
+                } else if (checkTangGiam && dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic < 0) {
                     giamLuong++;
                 }
                 if (checkTangGiam) {
-                    let tangGiam = dataLuong[i].salaryBasic - checkTangGiam.salaryBasic
+                    let tangGiam = dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic
                     checkTangGiam.tangGiam = tangGiam
                     arr.push(checkTangGiam)
                 }
@@ -133,9 +144,11 @@ exports.report = async (req, res, next) => {
         if (giamLuong !== 0) tangGiamLuong = giamLuong;
         if (tangLuong !== 0 && giamLuong !== 0) tangGiamLuong = tangLuong + giamLuong;
 
-        delete condition.idUser
-        delete condition.timeUp
+        delete condition.sb_id_user
+        delete condition.sb_time_up
+
         condition['inForPerson.employee.com_id'] = comId
+
         // Luân chuyển công tác
         let countDataLuanChuyen = await Users.aggregate([
             {
@@ -153,6 +166,7 @@ exports.report = async (req, res, next) => {
                 $count: 'SL'
             }
         ])
+        // nhân viên nam luân chuyển
         condition['inForPerson.account.gender'] = 1
         let countDataLuanChuyenNam = await Users.aggregate([
             {
@@ -170,6 +184,7 @@ exports.report = async (req, res, next) => {
                 $count: 'SL'
             }
         ])
+        // nhân viên nữ luân chuyển
         condition['inForPerson.account.gender'] = 2
         let countDataLuanChuyenNu = await Users.aggregate([
             {
@@ -208,6 +223,9 @@ exports.report = async (req, res, next) => {
         // Số ứng viên đến phỏng vấn
         let tongSoUngVienDenPhongVan = await Candidates.aggregate([
             {
+                $match: { comId }
+            },
+            {
                 $lookup: {
                     from: 'HR_ScheduleInterviews',
                     localField: 'id',
@@ -216,7 +234,7 @@ exports.report = async (req, res, next) => {
                 }
             },
             {
-                $match: { comId, 'lichPv.isSwitch': 0 }
+                $match: { 'lichPv.isSwitch': 0 }
             },
             {
                 $count: 'SL'
@@ -224,6 +242,9 @@ exports.report = async (req, res, next) => {
         ])
         // Số ứng viên qua phỏng vấn
         let tongSoUngVienQuaPhongVan = await Candidates.aggregate([
+            {
+                $match: { comId }
+            },
             {
                 $lookup: {
                     from: 'HR_GetJobs',
@@ -233,7 +254,7 @@ exports.report = async (req, res, next) => {
                 }
             },
             {
-                $match: { comId, 'getJob.isSwitch': 0 }
+                $match: { 'getJob.isSwitch': 0 }
             },
             {
                 $count: 'SL'
@@ -241,6 +262,9 @@ exports.report = async (req, res, next) => {
         ])
         // Số ứng viên nhận việc, thử việc
         let tongSoUngVienHuyNhanViec = await Candidates.aggregate([
+            {
+                $match: { comId, isDelete: 0 }
+            },
             {
                 $lookup: {
                     from: 'HR_CancelJobs',
@@ -250,7 +274,7 @@ exports.report = async (req, res, next) => {
                 }
             },
             {
-                $match: { comId, 'CancelJobs.isSwitch': 0, isDelete: 0 }
+                $match: { 'CancelJobs.isSwitch': 0 }
             },
             {
                 $count: 'SL'
@@ -264,6 +288,9 @@ exports.report = async (req, res, next) => {
                 let tongSoUngVien = await Candidates.countDocuments({ comId, recruitmentNewsId: query[i].id })
                 let tongSoUngVienDenPhongVan = await Candidates.aggregate([
                     {
+                        $match: { comId, 'lichPv.isSwitch': 0, recruitmentNewsId: query[i].id }
+                    },
+                    {
                         $lookup: {
                             from: 'HR_ScheduleInterviews',
                             localField: 'id',
@@ -272,13 +299,16 @@ exports.report = async (req, res, next) => {
                         }
                     },
                     {
-                        $match: { comId, 'lichPv.isSwitch': 0, recruitmentNewsId: query[i].id }
+                        $match: { 'lichPv.isSwitch': 0 }
                     },
                     {
                         $count: 'SL'
                     }
                 ])
                 let tongSoUngVienNhanViec = await Candidates.aggregate([
+                    {
+                        $match: { comId, recruitmentNewsId: query[i].id }
+                    },
                     {
                         $lookup: {
                             from: 'HR_GetJobs',
@@ -288,13 +318,16 @@ exports.report = async (req, res, next) => {
                         }
                     },
                     {
-                        $match: { comId, 'getJob.isSwitch': 0, recruitmentNewsId: query[i].id }
+                        $match: { 'getJob.isSwitch': 0 }
                     },
                     {
                         $count: 'SL'
                     }
                 ])
                 let tongSoUngVienHuy = await Candidates.aggregate([
+                    {
+                        $match: { comId, isDelete: 0, recruitmentNewsId: query[i].id }
+                    },
                     {
                         $lookup: {
                             from: 'HR_CancelJobs',
@@ -304,7 +337,7 @@ exports.report = async (req, res, next) => {
                         }
                     },
                     {
-                        $match: { comId, 'CancelJobs.isSwitch': 0, isDelete: 0, recruitmentNewsId: query[i].id }
+                        $match: { 'CancelJobs.isSwitch': 0 }
                     },
                     {
                         $count: 'SL'
@@ -371,7 +404,7 @@ exports.report = async (req, res, next) => {
 
             }
         }
-        let phongBan = await Deparment.find({ com_id: comId }, { _id: 1, deparmentName: 1 })
+        let phongBan = await Deparment.find({ com_id: comId }, { _id: 1, dep_name: 1 })
         condition['inForPerson.employee.com_id'] = comId;
         let searchItem = { idQLC: 1, userName: 1, 'inForPerson.account': 1, emailContact: 1, phone: 1, 'inForPerson.employee': 1, };
         let chartEmployee = await Users.find(condition, searchItem);
@@ -386,7 +419,7 @@ exports.report = async (req, res, next) => {
             },
             {
                 $lookup: {
-                    from: 'HR_QuitJobs',
+                    from: 'HR_Resigns',
                     localField: 'idQLC',
                     foreignField: 'ep_id',
                     as: 'quit'
@@ -399,7 +432,7 @@ exports.report = async (req, res, next) => {
                 $project: { 'quit.ep_id': 1, 'quit.current_position': 1, 'quit.created_at': 1, idQLC: 1, userName: 1, 'inForPerson.account': 1, emailContact: 1, phone: 1, 'inForPerson.employee': 1 }
             },
         ])
-     
+
         //Biểu đồ thống kê bổ nhiệm, quy hoạch
         let chartBoNhiem = await Users.aggregate([
             {
@@ -524,18 +557,18 @@ exports.report = async (req, res, next) => {
 }
 exports.reportChart = async (req, res, next) => {
     try {
-        let comId = req.comId;
+        let comId = req.infoLogin.comId;
         let depId = req.body.depId || null;
         let page = req.body.page || 1;
         let link = req.body.link;
-        let gender = Number (req.body.gender);
-        let positionId =Number (req.body.positionId);
+        let gender = Number(req.body.gender);
+        let positionId = Number(req.body.positionId);
         let groupId = Number(req.body.group_id);
         let teamId = Number(req.body.team_id);
         let birhday = req.body.birhday;
-        let married = Number (req.body.married);
-        let seniority = Number (req.body.seniority);
-        let old = Number (req.body.old);
+        let married = Number(req.body.married);
+        let seniority = Number(req.body.seniority);
+        let old = Number(req.body.old);
 
 
         let limit = 10;
@@ -557,22 +590,22 @@ exports.reportChart = async (req, res, next) => {
         if (seniority) condition['inForPerson.account.experience'] = seniority;
 
         //if(old === 1) condition['inForPerson.account.birthday'] = getYear() - inForPerson.account.birthday;
-        
 
+        console.log(condition);
         if (link === 'bieu-do-danh-sach-nhan-vien.html') {
             data = await Users.find(condition, searchItem, { skip }, { limit });
+            return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-nghi-viec.html') {
-
             data = await Users.aggregate([
                 {
                     $match: condition
                 },
                 {
                     $lookup: {
-                        from: 'HR_QuitJobs',
+                        from: 'HR_Resigns',
                         localField: 'idQLC',
                         foreignField: 'ep_id',
-                        as: 'HR_QuitJobs'
+                        as: 'HR_Resigns'
                     }
                 },
                 {
@@ -585,6 +618,7 @@ exports.reportChart = async (req, res, next) => {
                     $limit: limit
                 }
             ])
+            return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-bo-nhiem.html') {
             data = await Users.aggregate([
                 {
@@ -608,6 +642,7 @@ exports.reportChart = async (req, res, next) => {
                     $limit: limit
                 }
             ])
+            return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-chuyen-cong-tac.html') {
             data = await Users.aggregate([
                 {
@@ -631,6 +666,7 @@ exports.reportChart = async (req, res, next) => {
                     $limit: limit
                 }
             ])
+            return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-tang-giam-luong.html') {
             data = await Users.aggregate([
                 {
@@ -638,9 +674,9 @@ exports.reportChart = async (req, res, next) => {
                 },
                 {
                     $lookup: {
-                        from: 'HR_Salarys',
+                        from: 'Tinhluong365SalaryBasic',
                         localField: 'idQLC',
-                        foreignField: 'idUser',
+                        foreignField: 'sb_id_user',
                         as: 'HR_Salarys'
                     }
                 },
@@ -654,10 +690,9 @@ exports.reportChart = async (req, res, next) => {
                     $limit: limit
                 }
             ])
-        } 
-        else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
+        }else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
             let tuoi = 0;
-            let list =[];
+            let list = [];
 
             let check = await Users.aggregate([
                 {
@@ -673,26 +708,22 @@ exports.reportChart = async (req, res, next) => {
                     $limit: limit
                 }
             ])
-            // await Users.findByIdAndUpdate(20,{'inForPerson.account.birthday':'2008/06/22'})
             for (let i = 0; i < check.length; i++) {
-                let sinhnhat =  new Date(check[i].inForPerson.account.birthday).getFullYear()
+                let sinhnhat = new Date(check[i].inForPerson.account.birthday).getFullYear()
                 let namhientai = new Date().getFullYear();
                 tuoi = namhientai - sinhnhat;
-                if(old === 1 && tuoi < 30)
-                {
+                if (old === 1 && tuoi < 30) {
                     list.push(check[i])
-                }else if(old === 2 && tuoi > 30 && tuoi < 44)
-                {
+                } else if (old === 2 && tuoi > 30 && tuoi < 44) {
                     list.push(check[i])
-                }else if(old === 3 && tuoi > 45 && tuoi < 59)
-                {
+                } else if (old === 3 && tuoi > 45 && tuoi < 59) {
                     list.push(check[i])
-                }else if(old === 4 && tuoi > 60)
-                {
+                } else if (old === 4 && tuoi > 60) {
                     list.push(check[i])
                 }
             }
             data = list
+            return functions.success(res, 'get data success', { data })
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {

@@ -1,22 +1,39 @@
 const Deparment = require("../../models/qlc/Deparment")
 const functions = require("../../services/functions")
 const Users = require("../../models/Users")
+const fnc = require("../../services/qlc/functions")
 
 
-//API lấy tất cả dữ liệu phòng ban 
 exports.getListDeparment = async (req, res) => {
     try {
-        const com_id = req.user.data.com_id
-        const type = req.user.data.type
-        // let com_id = req.body.com_id
+        const pageNumber = req.body.pageNumber || 1;
+        let com_id = req.body.com_id
+        let childCompany = req.body.childCompany
         let dep_id = req.body.dep_id
         let condition = {};
         let data = []
         let total_emp = {}
-        if (type == 1) {
+            if (childCompany) condition["com_parent_id"] = childCompany
             if (com_id) condition.com_id = com_id
             if (dep_id) condition.dep_id = dep_id
-            data = await Deparment.find(condition);
+            console.log(condition)
+            data = await Deparment.aggregate([
+                {$lookup : {
+                    from : "Users",
+                    localField : "com_id",
+                    foreignField : "inForPerson.employee.com_id",
+                    as : "info"
+                }},
+                {$unwind: "info"},
+                {$project: {
+                    "dep_id" : "$dep_id",
+                    "com_id" : "$com_id",
+                    "dep_name" : "$dep_name",
+                    "dep_create_time" : "$dep_create_time",
+                    "com_parent_id" : "$info.inForCompany.cds.com_parent_id",
+                }}
+            ])
+            // data = await Deparment.find(condition).skip((pageNumber - 1) * 10).limit(10).sort({ _id: -1 });
             const depID = data.map(item => item.dep_id);
             for (let i = 0; i < depID.length; i++) {
                 const depId = depID[i];
@@ -27,11 +44,9 @@ exports.getListDeparment = async (req, res) => {
                 return functions.setError(res, 'Không có dữ liệu', 404);
             };
             return functions.success(res, 'Lấy thành công', {data});
-        }
-        return functions.setError(res, "Tài khoản không phải Công ty", 604);
     } catch (err) {
         return functions.setError(res, err.message)
-    }
+    } 
 };
 //API tạo mới một phòng ban
 exports.createDeparment = async (req, res) => {

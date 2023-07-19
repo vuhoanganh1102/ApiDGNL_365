@@ -4,7 +4,7 @@ const formData = require('express-form-data')
 const functions = require("../../services/functions")
 
 //Lấy toàn bộ dữ liệu tổ
-router.post("/list", formData.parse(),functions.checkToken, TeamController.getListTeam);
+router.post("/list", formData.parse(), TeamController.getListTeam);
 //Tạo mới dữ liệu của một tổ
 router.post("/create", formData.parse(),functions.checkToken, TeamController.createTeam);
 //Chỉnh sửa dự liệu của một tổ

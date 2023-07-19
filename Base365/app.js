@@ -70,13 +70,13 @@ errorApp(appRaonhanh)
 // Cấu hình appVanthu
 configureApp(appVanthu);
 var vanthuRouter = require('./routes/vanthu')
-appVanthu.use("/api", vanthuRouter);
+appVanthu.use("/api",vanthuRouter);
 errorApp(appVanthu)
 
 // Cấu hình appCRM
 configureApp(appCRM);
 var CRMroute = require('./routes/crm/CRMroutes');
-appCRM.use("/api", CRMroute);
+appCRM.use("/api/crm", CRMroute);
 errorApp(appCRM)
 
 // Cấu hình appQLC

@@ -2,7 +2,7 @@ const router = require('express').Router();
 const formData = require('express-form-data');
 const controllers = require('../../../controllers/qlts/SuaChua_BaoDuong/SuaChua');
 const functions = require('../../../services/functions');
-router.post('/Seach', functions.checkToken, formData.parse(), controllers.Seach);
+
 
 router.post('/deleteAll', functions.checkToken, formData.parse(), controllers.deleteAll);// xoa , khoi phuc , xoa vinh vien nhieu bien ban cung luc
 //bien ban dang sua chua

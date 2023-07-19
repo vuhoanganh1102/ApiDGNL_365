@@ -24,7 +24,7 @@ exports.getListPermisionUser= async(req, res, next) => {
         return functions.success(res, `Get list role user with id=${userId}`, {infoRoleTD, infoRoleTTNS, infoRoleTTVP, infoRoleHNNV, infoRoleBCNS, infoRoleDXGD, infoRoleTGL });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -91,7 +91,7 @@ exports.createPermisionUser = async(req, res, next) => {
         return functions.success(res, "Create permision for user success!");
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 

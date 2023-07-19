@@ -39,6 +39,28 @@ const positionNames = {
     1: 'Sinh viên thực tập'
 };
 
+let totalDD = async(res, condition) => {
+    try{
+        let empDD = await Users.aggregate([
+            {$match: condition},
+            {
+                $lookup: {
+                    from: "QLC_Time_sheets",
+                    localField: "idQLC",
+                    foreignField: "ep_id",
+                    as: "Time_sheets"
+                }
+            },
+            {$match: {Time_sheets: {$ne: []}}},
+            {$project: {Time_sheets: 1}},
+        ]);
+        return empDD.length;
+    }catch(e){
+        return functions.setError(res, e.message);
+    }
+    
+}
+
 //cơ cấu tổ chức công ty, công ty con và phòng ban
 exports.detailInfoCompany = async (req, res, next) => {
     try {
@@ -54,53 +76,63 @@ exports.detailInfoCompany = async (req, res, next) => {
             //thông tin công ty cha
             result.infoCompany = {}
             let infoCompany = await Users.findOne({ idQLC: com_id, type: 1 }, { userName: 1 })
-
             if (infoCompany) {
-                let infoGiamDoc = await Users.findOne({
-                    type: 2,
-                    "inForPerson.employee.com_id": com_id,
-                    "inForPerson.employee.position_id": 8
-                }, { userName: 1 })
-                let infoPhoGiamDoc = await Users.findOne({
-                    type: 2,
-                    "inForPerson.employee.com_id": com_id,
-                    "inForPerson.employee.position_id": 7
-                }, { userName: 1 })
-                let countEmp = await Users.countDocuments({
-                    type: 2,
-                    "inForPerson.employee.com_id": com_id
-                })
-
-                let countEmpDD = await Tracking.countDocuments({ companyId: com_id, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
                 result.infoCompany.parent_com_id = com_id
                 result.infoCompany.companyName = infoCompany.userName
-
-                if (infoGiamDoc) {
-                    result.infoCompany.parent_manager = infoGiamDoc.userName
-                } else result.infoCompany.parent_manager = "Chưa cập nhật"
-                if (infoPhoGiamDoc) {
-                    result.infoCompany.parent_deputy = infoPhoGiamDoc.userName
-                } else result.infoCompany.parent_deputy = "Chưa cập nhật"
-                result.infoCompany.tong_nv = countEmp
+                const listEmployee = await Users.find({type: 2, "inForPerson.employee.com_id": com_id}, {
+                    userName: 1,
+                    idQLC: 1,
+                    inForPerson: {
+                        employee: {
+                            com_id: 1,
+                            position_id: 1,
+                            dep_id: 1,
+                            group_id: 1,
+                            team_id: 1,
+                        }
+                    }
+                });
+                const listEmpDD = await Tracking.find({com_id: com_id});
+                let listGiamDoc = listEmployee.filter(employee=> {
+                    if(
+                        employee.inForPerson &&
+                        employee.inForPerson.employee &&
+                        employee.inForPerson.employee.position_id === 8
+                    ) return true;
+                    return false;
+                });
+                let listPhoGiamDoc = listEmployee.filter(employee=> {
+                    if(
+                        employee.inForPerson &&
+                        employee.inForPerson.employee &&
+                        employee.inForPerson.employee.position_id === 7
+                    ) return true;
+                    return false;
+                });
+                let countEmpDD = await Tracking.countDocuments({ com_id: com_id})
+                // let countEmpDD = await Tracking.countDocuments({ com_id: com_id, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
+                result.infoCompany.parent_manager = listGiamDoc;
+                result.infoCompany.parent_deputy = listPhoGiamDoc;
+                result.infoCompany.tong_nv = listEmployee.length;
                 result.infoCompany.tong_nv_da_diem_danh = countEmpDD
 
                 //thông tin phòng ban cha
-                let infoDepParent = await Deparment.find({ companyId: com_id })
+                let infoDepParent = await Deparment.find({ com_id: com_id })
 
                 if (infoDepParent) {
-                    result.infoCompany.infoDep = []
+                    result.infoCompany.infoDep = [];
 
                     for (let i = 0; i < infoDepParent.length; i++) {
-                        let infoDep = {}
-                        infoDep.dep_id = infoDepParent[i]._id
-                        infoDep.dep_name = infoDepParent[i].deparmentName
+                        let infoDep = {manager: []};
+                        infoDep.dep_id = infoDepParent[i].dep_id
+                        infoDep.dep_name = infoDepParent[i].dep_name
+                        let dep_id = infoDepParent[i].dep_id;
                         let infoTruongphong = await Users.findOne({
                             type: 2,
                             "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": infoDepParent[i]._id,
+                            "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
                             "inForPerson.employee.position_id": 6
-                        }, { userName: 1 })
-
+                        }, { userName: 1, idQLC: 1 })
                         if (infoTruongphong) {
                             infoDep.manager = infoTruongphong.userName
                         } else infoDep.manager = "chưa cập nhât"
@@ -108,15 +140,15 @@ exports.detailInfoCompany = async (req, res, next) => {
                         let infoPhophong = await Users.findOne({
                             type: 2,
                             "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": infoDepParent[i]._id,
+                            "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
                             "inForPerson.employee.position_id": 5
-                        }, { userName: 1 })
+                        }, { userName: 1, idQLC: 1 })
 
                         if (infoPhophong) {
                             infoDep.deputy = infoPhophong.userName
                         } else infoDep.deputy = "chưa cập nhât"
 
-                        let depInfo = await HR_DepartmentDetails.findOne({ comId: com_id, depId: infoDepParent[i]._id })
+                        let depInfo = await HR_DepartmentDetails.findOne({ comId: com_id, depId: infoDepParent[i].dep_id })
 
                         if (depInfo && depInfo.description != null) {
                             infoDep.description = depInfo.description
@@ -125,22 +157,43 @@ exports.detailInfoCompany = async (req, res, next) => {
                         let countEmpDep = await Users.countDocuments({
                             type: 2,
                             "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": infoDepParent[i]._id
+                            "inForPerson.employee.dep_id": infoDepParent[i].dep_id
                         })
                         infoDep.total_emp = countEmpDep
 
-                        let countEmpDepDD = await Tracking.countDocuments({ companyId: com_id, depID: infoDepParent[i]._id, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
-                        infoDep.tong_nv_da_diem_danh = countEmpDepDD
+                        let countEmpDepDD = await Tracking.countDocuments({ com_id: com_id })
+                        for(let m=0; m<listEmpDD.length; m++) {
+                            
+                        }
+                        const conditionDD = {
+                            type: 2,
+                            "inForPerson.employee.com_id": com_id,
+                        }
+                        let conditionDep = {...conditionDD, "inForPerson.employee.dep_id": infoDepParent[i].dep_id};
+                        let empDD = await Users.aggregate([
+                            {$match: conditionDep},
+                            {
+                                $lookup: {
+                                    from: "QLC_Time_sheets",
+                                    localField: "idQLC",
+                                    foreignField: "ep_id",
+                                    as: "Time_sheets"
+                                }
+                            },
+                            {$match: {Time_sheets: {$ne: []}}},
+                            {$project: {Time_sheets: 1}},
+                        ]);
+                        infoDep.tong_nv_da_diem_danh = await totalDD(res, conditionDep);
 
                         result.infoCompany.infoDep.push(infoDep)
 
                         //thông tin tổ công ty cha
-                        let infoTeamParent = await Team.find({ deparmentId: infoDepParent[i]._id }, { _id: 1, teamName: 1 })
+                        let infoTeamParent = await Team.find({ dep_id: infoDepParent[i].dep_id }, { team_id: 1, teamName: 1 })
                         result.infoCompany.infoDep[i].infoTeam = []
                         for (let j = 0; j < infoTeamParent.length; j++) {
-                            let infoTeamMota = await HR_NestDetails.findOne({ grId: infoTeamParent[j]._id, type: 0, comId: com_id }, { description: 1 })
+                            let infoTeamMota = await HR_NestDetails.findOne({ grId: infoTeamParent[j].team_id, type: 0, comId: com_id }, { description: 1 })
                             infoTeam = {}
-                            infoTeam.gr_id = infoTeamParent[j]._id
+                            infoTeam.gr_id = infoTeamParent[j].team_id
                             infoTeam.gr_name = infoTeamParent[j].teamName
                             if (infoTeamMota && infoTeamMota.description != null) {
                                 infoTeam.description = infoTeamMota.description
@@ -148,9 +201,9 @@ exports.detailInfoCompany = async (req, res, next) => {
                             let infoToTruong = await Users.findOne({
                                 type: 2,
                                 "inForPerson.employee.com_id": com_id,
-                                "inForPerson.employee.dep_id": infoDepParent[i]._id,
+                                "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
                                 "inForPerson.employee.position_id": 13,
-                                "inForPerson.employee.team_id": infoTeamParent[j]._id
+                                "inForPerson.employee.team_id": infoTeamParent[j].team_id
                             }, { userName: 1 })
                             if (infoToTruong) {
                                 infoTeam.to_truong = infoToTruong.userName
@@ -159,9 +212,9 @@ exports.detailInfoCompany = async (req, res, next) => {
                             let infoPhoToTruong = await Users.findOne({
                                 type: 2,
                                 "inForPerson.employee.com_id": com_id,
-                                "inForPerson.employee.dep_id": infoDepParent[i]._id,
+                                "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
                                 "inForPerson.employee.position_id": 12,
-                                "inForPerson.employee.team_id": infoTeamParent[j]._id
+                                "inForPerson.employee.team_id": infoTeamParent[j].team_id
                             }, { userName: 1 })
                             if (infoPhoToTruong) {
                                 infoTeam.pho_to_truong = infoPhoToTruong.userName
@@ -170,31 +223,33 @@ exports.detailInfoCompany = async (req, res, next) => {
                             let countEmpTeam = await Users.countDocuments({
                                 type: 2,
                                 "inForPerson.employee.com_id": com_id,
-                                "inForPerson.employee.dep_id": infoDepParent[i]._id,
-                                "inForPerson.employee.team_id": infoTeamParent[j]._id
+                                "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
+                                "inForPerson.employee.team_id": infoTeamParent[j].team_id
                             })
                             infoTeam.tong_nv = countEmpTeam
+                            let conditionTeam = {...conditionDep, "inForPerson.employee.team_id": infoTeamParent[j].team_id};
+                            infoTeam.tong_nv_da_diem_danh = await totalDD(res, conditionTeam);
                             result.infoCompany.infoDep[i].infoTeam.push(infoTeam)
 
                             //thông tin nhóm công ty cha
-                            let infoGroupParent = await Group.find({ teamId: infoTeamParent[j]._id, depId: infoDepParent[i]._id }, { _id: 1, groupName: 1 })
+                            let infoGroupParent = await Group.find({ team_id: infoTeamParent[j].team_id, dep_id: infoDepParent[i].dep_id }, { gr_id: 1, gr_name: 1 })
 
                             result.infoCompany.infoDep[i].infoTeam[j].infoGroup = []
                             for (let k = 0; k < infoGroupParent.length; k++) {
-                                let infoGroupMota = await HR_NestDetails.findOne({ grId: infoGroupParent[k]._id, type: 1, comId: com_id }, { description: 1 })
+                                let infoGroupMota = await HR_NestDetails.findOne({ grId: infoGroupParent[k].gr_id, type: 1, comId: com_id }, { description: 1 })
                                 infoGroup = {}
-                                infoGroup.gr_id = infoGroupParent[k]._id
-                                infoGroup.gr_name = infoGroupParent[k].groupName
+                                infoGroup.gr_id = infoGroupParent[k].gr_id
+                                infoGroup.gr_name = infoGroupParent[k].gr_name
                                 if (infoGroupMota && infoGroupMota.description != null) {
                                     infoGroup.description = infoGroupMota.description
                                 } else infoGroup.description = "chưa cập nhật"
                                 let infoNhomTruong = await Users.findOne({
                                     type: 2,
                                     "inForPerson.employee.com_id": com_id,
-                                    "inForPerson.employee.dep_id": infoDepParent[i]._id,
+                                    "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
                                     "inForPerson.employee.position_id": 4,
-                                    "inForPerson.employee.team_id": infoTeamParent[j]._id,
-                                    "inForPerson.employee.group_id": infoGroupParent[k]._id
+                                    "inForPerson.employee.team_id": infoTeamParent[j].team_id,
+                                    "inForPerson.employee.group_id": infoGroupParent[k].gr_id
                                 }, { userName: 1 })
                                 if (infoNhomTruong) {
                                     infoGroup.truong_nhom = infoNhomTruong.userName
@@ -203,10 +258,10 @@ exports.detailInfoCompany = async (req, res, next) => {
                                 let infoPhoNhomTruong = await Users.findOne({
                                     type: 2,
                                     "inForPerson.employee.com_id": com_id,
-                                    "inForPerson.employee.dep_id": infoDepParent[i]._id,
+                                    "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
                                     "inForPerson.employee.position_id": 20,
-                                    "inForPerson.employee.team_id": infoTeamParent[j]._id,
-                                    "inForPerson.employee.group_id": infoGroupParent[k]._id
+                                    "inForPerson.employee.team_id": infoTeamParent[j].team_id,
+                                    "inForPerson.employee.group_id": infoGroupParent[k].gr_id
                                 }, { userName: 1 })
                                 if (infoPhoNhomTruong) {
                                     infoGroup.pho_truong_nhom = infoPhoNhomTruong.userName
@@ -215,11 +270,13 @@ exports.detailInfoCompany = async (req, res, next) => {
                                 let countEmpGroup = await Users.countDocuments({
                                     type: 2,
                                     "inForPerson.employee.com_id": com_id,
-                                    "inForPerson.employee.dep_id": infoDepParent[i]._id,
-                                    "inForPerson.employee.team_id": infoTeamParent[j]._id,
-                                    "inForPerson.employee.group_id": infoGroupParent[k]._id
+                                    "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
+                                    "inForPerson.employee.team_id": infoTeamParent[j].team_id,
+                                    "inForPerson.employee.group_id": infoGroupParent[k].gr_id
                                 })
                                 infoGroup.group_tong_nv = countEmpGroup
+                                let conditionGroup = {...conditionTeam, "inForPerson.employee.group_id": infoGroupParent[k].gr_id};
+                                infoGroup.tong_nv_da_diem_danh = await totalDD(res, conditionGroup);
                                 result.infoCompany.infoDep[i].infoTeam[j].infoGroup.push(infoGroup)
 
                             }
@@ -244,8 +301,9 @@ exports.detailInfoCompany = async (req, res, next) => {
                         })
                         infochild.com_name = infoChildCompany[i].userName
                         infochild.tong_nv = countChildEmp
+                        let comId_child = infoChildCompany[i].idQLC;
 
-                        let countChildEmpDD = await Tracking.countDocuments({ companyId: infoChildCompany[i].idQLC, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
+                        let countChildEmpDD = await Tracking.countDocuments({ com_id: infoChildCompany[i].idQLC })
                         infochild.tong_nv_da_diem_danh = countChildEmpDD
 
                         let infoChildGiamDoc = await Users.findOne({
@@ -268,18 +326,18 @@ exports.detailInfoCompany = async (req, res, next) => {
                         result.infoCompany.infoChildCompany.push(infochild)
 
                         //thông tin phòng ban con
-                        let infoDepChild = await Deparment.find({ companyId: infoChildCompany[i].idQLC })
+                        let infoDepChild = await Deparment.find({ com_id: infoChildCompany[i].idQLC })
                         if (infoDepChild) {
                             result.infoCompany.infoChildCompany[i].infoDep = []
 
                             for (let j = 0; j < infoDepChild.length; j++) {
                                 let infoDep = {}
-                                infoDep.dep_id = infoDepChild[j]._id
-                                infoDep.dep_name = infoDepChild[j].deparmentName
+                                infoDep.dep_id = infoDepChild[j].dep_id
+                                infoDep.dep_name = infoDepChild[j].dep_name
                                 let infoTruongphong = await Users.findOne({
                                     type: 2,
                                     "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
-                                    "inForPerson.employee.dep_id": infoDepChild[j]._id,
+                                    "inForPerson.employee.dep_id": infoDepChild[j].dep_id,
                                     "inForPerson.employee.position_id": 6
                                 }, { userName: 1 })
 
@@ -290,7 +348,7 @@ exports.detailInfoCompany = async (req, res, next) => {
                                 let infoPhophong = await Users.findOne({
                                     type: 2,
                                     "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
-                                    "inForPerson.employee.dep_id": infoDepChild[j]._id,
+                                    "inForPerson.employee.dep_id": infoDepChild[j].dep_id,
                                     "inForPerson.employee.position_id": 5
                                 }, { userName: 1 })
 
@@ -298,7 +356,7 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     infoDep.deputy = infoPhophong.userName
                                 } else infoDep.deputy = "chưa cập nhât"
 
-                                let depInfo = await HR_DepartmentDetails.findOne({ comId: infoChildCompany[i].idQLC, depId: infoDepChild[i]._id })
+                                let depInfo = await HR_DepartmentDetails.findOne({ comId: infoChildCompany[i].idQLC, depId: infoDepChild[j].dep_id })
 
                                 if (depInfo && depInfo.description != null) {
                                     infoDep.description = depInfo.description
@@ -308,26 +366,28 @@ exports.detailInfoCompany = async (req, res, next) => {
                                 let countEmp = await Users.countDocuments({
                                     type: 2,
                                     "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
-                                    "inForPerson.employee.dep_id": infoDepChild[j]._id
+                                    "inForPerson.employee.dep_id": infoDepChild[j].dep_id
                                 })
-                                infoDep.tong_nv = countEmp
-
-                                let countEmpDepChildDD = await Tracking.countDocuments({ companyId: infoChildCompany[i].idQLC, depID: infoDepChild[j]._id, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
-
-                                infoDep.tong_nv_da_diem_danh = countEmpDepChildDD
+                                infoDep.tong_nv = countEmp 
+                                const conditionDD2 = {
+                                    type: 2,
+                                    "inForPerson.employee.com_id": comId_child,
+                                }
+                                let conditionDep_child = {...conditionDD2, "inForPerson.employee.dep_id": infoDepChild[j].dep_id};
+                                infoDep.tong_nv_da_diem_danh = await totalDD(res, conditionDep_child);
                                 result.infoCompany.infoChildCompany[i].infoDep.push(infoDep)
 
                                 //thông tin tổ công ty con
-                                let infoTeamChild = await Team.find({ deparmentId: infoDepChild[j]._id }, { _id: 1, teamName: 1 })
+                                let infoTeamChild = await Team.find({ dep_id: infoDepChild[j].dep_id });
                                 result.infoCompany.infoChildCompany[i].infoDep[j].infoTeam = []
                                 for (let k = 0; k < infoTeamChild.length; k++) {
                                     let infoTeamMota = await HR_NestDetails.findOne({
-                                        grId: infoTeamChild[k]._id,
+                                        grId: infoTeamChild[k].team_id,
                                         type: 0,
                                         comId: infoChildCompany[i].idQLC
                                     }, { description: 1 })
                                     infoTeam = {}
-                                    infoTeam.gr_id = infoTeamChild[k]._id
+                                    infoTeam.gr_id = infoTeamChild[k].team_id
                                     infoTeam.gr_name = infoTeamChild[k].teamName
                                     if (infoTeamMota && infoTeamMota.description != null) {
                                         infoTeam.description = infoTeamMota.description
@@ -336,9 +396,9 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     let infoToTruong = await Users.findOne({
                                         type: 2,
                                         "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
-                                        "inForPerson.employee.dep_id": infoDepChild[j]._id,
+                                        "inForPerson.employee.dep_id": infoDepChild[j].dep_id,
                                         "inForPerson.employee.position_id": 13,
-                                        "inForPerson.employee.team_id": infoTeamChild[k]._id
+                                        "inForPerson.employee.team_id": infoTeamChild[k].team_id
                                     }, { userName: 1 })
                                     if (infoToTruong) {
                                         infoTeam.to_truong = infoToTruong.userName
@@ -347,9 +407,9 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     let infoPhoToTruong = await Users.findOne({
                                         type: 2,
                                         "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
-                                        "inForPerson.employee.dep_id": infoDepChild[j]._id,
+                                        "inForPerson.employee.dep_id": infoDepChild[j].dep_id,
                                         "inForPerson.employee.position_id": 12,
-                                        "inForPerson.employee.team_id": infoTeamChild[k]._id
+                                        "inForPerson.employee.team_id": infoTeamChild[k].team_id
                                     }, { userName: 1 })
                                     if (infoPhoToTruong) {
                                         infoTeam.pho_to_truong = infoPhoToTruong.userName
@@ -358,30 +418,34 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     let countEmpTeam = await Users.countDocuments({
                                         type: 2,
                                         "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
-                                        "inForPerson.employee.dep_id": infoDepChild[j]._id,
-                                        "inForPerson.employee.team_id": infoTeamChild[k]._id
+                                        "inForPerson.employee.dep_id": infoDepChild[j].dep_id,
+                                        "inForPerson.employee.team_id": infoTeamChild[k].team_id
                                     })
                                     infoTeam.tong_nv = countEmpTeam
+
+                                    let conditionTeam_child = {...conditionDep_child, "inForPerson.employee.team_id": infoTeamChild[k].team_id};
+                                    infoTeam.tong_nv_da_diem_danh = await totalDD(res, conditionTeam_child);
+
                                     result.infoCompany.infoChildCompany[i].infoDep[j].infoTeam.push(infoTeam)
 
                                     //thông tin nhóm công ty con
-                                    let infoGroupChild = await Group.find({ teamId: infoTeamChild[k]._id, depId: infoDepChild[j]._id }, { _id: 1, groupName: 1 })
+                                    let infoGroupChild = await Group.find({ team_id: infoTeamChild[k].team_id, dep_id: infoDepChild[j].dep_id })
                                     result.infoCompany.infoChildCompany[i].infoDep[j].infoTeam[k].infoGroup = []
                                     for (let l = 0; l < infoGroupChild.length; l++) {
-                                        let infoGroupMota = await HR_NestDetails.findOne({ grId: infoGroupChild[k]._id, type: 1, comId: infoChildCompany[i].idQLC }, { description: 1 })
+                                        let infoGroupMota = await HR_NestDetails.findOne({ grId: infoGroupChild[k].gr_id, type: 1, comId: infoChildCompany[i].idQLC }, { description: 1 })
                                         infoGroup = {}
-                                        infoGroup.gr_id = infoGroupChild[l]._id
-                                        infoGroup.gr_name = infoGroupChild[l].groupName
+                                        infoGroup.gr_id = infoGroupChild[l].gr_id
+                                        infoGroup.gr_name = infoGroupChild[l].gr_name
                                         if (infoGroupMota && infoGroupMota.description != null) {
                                             infoGroup.description = infoGroupMota.description
                                         } else infoGroup.description = "chưa cập nhật"
                                         let infoNhomTruong = await Users.findOne({
                                             type: 2,
                                             "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
-                                            "inForPerson.employee.dep_id": infoDepChild[j]._id,
+                                            "inForPerson.employee.dep_id": infoDepChild[j].dep_id,
                                             "inForPerson.employee.position_id": 4,
-                                            "inForPerson.employee.team_id": infoTeamChild[k]._id,
-                                            "inForPerson.employee.group_id": infoGroupChild[l]._id
+                                            "inForPerson.employee.team_id": infoTeamChild[k].team_id,
+                                            "inForPerson.employee.group_id": infoGroupChild[l].gr_id
                                         }, { userName: 1 })
                                         if (infoNhomTruong) {
                                             infoGroup.truong_nhom = infoNhomTruong.userName
@@ -390,10 +454,10 @@ exports.detailInfoCompany = async (req, res, next) => {
                                         let infoPhoNhomTruong = await Users.findOne({
                                             type: 2,
                                             "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
-                                            "inForPerson.employee.dep_id": infoDepChild[j]._id,
+                                            "inForPerson.employee.dep_id": infoDepChild[j].dep_id,
                                             "inForPerson.employee.position_id": 20,
-                                            "inForPerson.employee.team_id": infoTeamChild[k]._id,
-                                            "inForPerson.employee.group_id": infoGroupChild[l]._id
+                                            "inForPerson.employee.team_id": infoTeamChild[k].team_id,
+                                            "inForPerson.employee.group_id": infoGroupChild[l].gr_id
                                         }, { userName: 1 })
                                         if (infoPhoNhomTruong) {
                                             infoGroup.pho_truong_nhom = infoPhoNhomTruong.userName
@@ -402,11 +466,15 @@ exports.detailInfoCompany = async (req, res, next) => {
                                         let countEmpGroup = await Users.countDocuments({
                                             type: 2,
                                             "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
-                                            "inForPerson.employee.dep_id": infoDepChild[j]._id,
-                                            "inForPerson.employee.team_id": infoTeamChild[k]._id,
-                                            "inForPerson.employee.group_id": infoGroupChild[l]._id
+                                            "inForPerson.employee.dep_id": infoDepChild[j].dep_id,
+                                            "inForPerson.employee.team_id": infoTeamChild[k].team_id,
+                                            "inForPerson.employee.group_id": infoGroupChild[l].gr_id
                                         })
                                         infoGroup.group_tong_nv = countEmpGroup
+
+                                        let conditionGroup_child = {...conditionTeam_child, "inForPerson.employee.group_id": infoGroupChild[l].gr_id};
+                                        infoGroup.tong_nv_da_diem_danh = await totalDD(res, conditionGroup_child);
+
                                         result.infoCompany.infoChildCompany[i].infoDep[j].infoTeam[k].infoGroup.push(infoGroup)
                                     }
                                 }
@@ -422,7 +490,7 @@ exports.detailInfoCompany = async (req, res, next) => {
 
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -430,34 +498,33 @@ exports.detailInfoCompany = async (req, res, next) => {
 exports.description = async (req, res, next) => {
     try {
         if (req.infoLogin) {
-            let comId = req.infoLogin.comId;
+            let comId = req.body.comId;
+            if(!comId) comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
-            let info
+            let info = {};
 
             if (groupId) {
-                info = await HR_NestDetails.findOne({ comId: comId, grId: groupId, type: 1 }, { description: 1, id: 1 })
+                info = await HR_NestDetails.findOne({ comId: comId, grId: groupId, type: 1 })
             }
             if (teamId && !groupId) {
-                info = await HR_NestDetails.findOne({ comId: comId, grId: teamId, type: 0 }, { description: 1, id: 1 })
+                info = await HR_NestDetails.findOne({ comId: comId, grId: teamId, type: 0 })
             }
             if (depId && !teamId && !groupId) {
 
-                info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId }, { description: 1, id: 1 })
+                info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId })
             }
-            if (info && info.description == null) {
-                info.description = "chưa cập nhật"
+            if (!info || info.description == null) {
+                info = {description: "chưa cập nhật"}
             }
-            if (info) {
-                return functions.success(res, 'Lấy chi tiết công ty thành công', { info });
-            } else return functions.setError(res, "không tìm thấy thông tin", 400);
+            return functions.success(res, 'Lấy chi tiết công ty thành công', { info });
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
 
 
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 
 }
@@ -465,7 +532,8 @@ exports.description = async (req, res, next) => {
 exports.updateDescription = async (req, res, next) => {
     try {
         if (req.infoLogin) {
-            let comId = req.infoLogin.comId;
+            let comId = req.body.comId;
+            if(!comId) comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
@@ -473,14 +541,22 @@ exports.updateDescription = async (req, res, next) => {
             let info
 
             if (groupId) {
-                info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: groupId, type: 1 }, { description: des }, { new: true })
+                let group = await HR_NestDetails.findOne({comId: comId, grId: groupId, type: 1});
+                let fields = { comId: comId, grId: groupId, type: 1 , description: des };
+                if(!group) fields.id = await functions.getMaxIdByField(HR_NestDetails, 'id');
+                info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: groupId, type: 1 }, fields, { new: true, upsert: true })
             }
             if (teamId && !groupId) {
-                info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: teamId, type: 0 }, { description: des }, { new: true })
+                let team = await HR_NestDetails.findOne({comId: comId, grId: teamId, type: 0});
+                let fields = { comId: comId, grId: teamId, type: 0 , description: des };
+                if(!team) fields.id = await functions.getMaxIdByField(HR_NestDetails, 'id');
+                info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: teamId, type: 0 }, fields, { new: true, upsert: true })
             }
             if (depId && !teamId && !groupId) {
-
-                info = await HR_DepartmentDetails.findOneAndUpdate({ comId: comId, depId: depId }, { description: des }, { new: true })
+                let dep = await HR_DepartmentDetails.findOne({comId: comId, depId: depId});
+                let fields = { comId: comId, depId: depId, description: des };
+                if(!dep) fields.id = await functions.getMaxIdByField(HR_DepartmentDetails, 'id');
+                info = await HR_DepartmentDetails.findOneAndUpdate({ comId: comId, depId: depId }, fields, { new: true, upsert: true })
             }
             if (info) {
                 return functions.success(res, 'Cập nhật mô tả chi tiết thành công', { info });
@@ -490,7 +566,7 @@ exports.updateDescription = async (req, res, next) => {
 
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 
 }
@@ -529,11 +605,14 @@ exports.listPosition = async (req, res, next) => {
             }
             listPosition[i].users = users;
         }
-        
-        return functions.success(res, 'Lấy chi tiết công ty thành công', { listPosition });
+        let index = listPosition.length-4;
+        let data = listPosition.slice(0, index);
+        let listPositionEmployee = listPosition.slice(index);
+        data.push(listPositionEmployee);
+        return functions.success(res, 'Lấy chi tiết công ty thành công', { data });
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -558,7 +637,7 @@ exports.missionDetail = async (req, res, next) => {
 
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 
 }
@@ -566,25 +645,36 @@ exports.missionDetail = async (req, res, next) => {
 //cập nhật chi tiết nhiệm vụ mỗi
 exports.updateMission = async (req, res, next) => {
     try {
-        if (req.infoLogin) {
-            let comId = req.infoLogin.comId;
+        let comId = req.infoLogin.comId;
 
-            let positionId = req.body.positionId
-            let description = req.body.description
-            if (!positionId || !description) {
-                return functions.setError(res, "Missing input value!", 404);
-            }
-            let maxId = await functions.getMaxIdByField(HR_DescPositions, 'id');
-            let mission = await HR_DescPositions.findOneAndUpdate({ comId: comId, positionId: positionId }, {id: maxId, description: description }, { new: true, upsert: true })
-            if (mission) {
+        let positionId = req.body.positionId
+        let description = req.body.description
+        if (!positionId || !description) {
+            return functions.setError(res, "Missing input value!", 404);
+        }
+        let mission = await HR_DescPositions.findOne({ comId: comId, positionId: positionId });
+        if(mission) {
+            mission = await  HR_DescPositions.updateOne({ comId: comId, positionId: positionId }, {description: description }, {new: true});
+            if(mission) {
                 return functions.success(res, 'cập nhật chi tiết nhiệm vụ thành công', { mission });
-
-            } else return functions.setError(res, "chưa cập nhật nhiệm vụ", 400);
-        } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
-
+            }
+        }else {
+            let maxId = await functions.getMaxIdByField(HR_DescPositions, 'id');
+            mission = new HR_DescPositions({
+                id: maxId,
+                comId: comId,
+                positionId: positionId,
+                description: description
+            });
+            mission = await mission.save();
+            if(mission) {
+                return functions.success(res, 'cập nhật chi tiết nhiệm vụ thành công', { mission });
+            }
+        }
+        return functions.setError(res, "Update mission fail!", 505);
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 
 }
@@ -626,7 +716,7 @@ exports.uploadSignature = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -646,7 +736,7 @@ exports.deleteSignature = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -685,7 +775,7 @@ exports.listInfoLeader = async (req, res, next) => {
 
                 if (infoLeader[i].inForPerson.employee.dep_id) {
                     let infoDep = await Deparment.findOne({ _id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
-                    info.dep_name = infoDep.deparmentName
+                    info.dep_name = infoDep.dep_name
 
                     if (infoLeader[i].inForPerson.employee.team_id) {
                         let infoTeam = await Team.findOne({
@@ -727,7 +817,7 @@ exports.listInfoLeader = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -781,7 +871,7 @@ exports.leaderDetail = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -806,7 +896,7 @@ exports.updateLeaderDetail = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -867,68 +957,33 @@ exports.updateEmpUseSignature = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
 //Danh sách nhân viên sử dụng con dấu (có tìm kiếm)
 exports.listEmpUseSignature = async (req, res, next) => {
     try {
-        if (req.infoLogin) {
-            let keyword = req.body.keyword
-
-            let comId = req.infoLogin.comId;
-            let infoUser
-            if (isNaN(keyword) == true) {
-                infoUser = await Users.findOne({
-                    userName: new RegExp(keyword, "i"),
-                    "inForPerson.employee.com_id": comId,
-                    "inForPerson.employee.ep_signature": 1
-                }, {
-                    idQLC: 1,
-                    avatarUser: 1,
-                    userName: 1,
-                    "inForPerson.employee.position_id": 1,
-                    "inForPerson.employee.dep_id": 1,
-                })
-            } else if (isNaN(keyword) == false) {
-
-                infoUser = await Users.findOne({
-                    idQLC: keyword,
-                    "inForPerson.employee.com_id": comId,
-                    "inForPerson.employee.ep_signature": 1
-                }, {
-                    idQLC: 1,
-                    avatarUser: 1,
-                    userName: 1,
-                    "inForPerson.employee.position_id": 1,
-                    "inForPerson.employee.dep_id": 1,
-                })
-            }
-
-            if (infoUser) {
-                let info = {}
-                info._id = infoUser.idQLC
-                info.userName = infoUser.userName
-                info.namePosition = positionNames[infoUser.inForPerson.employee.position_id];
-
-                if (infoUser.inForPerson.employee.dep_id) {
-                    let infoDep = await Deparment.findOne({ _id: infoUser.inForPerson.employee.dep_id, com_id: comId });
-                    if (infoDep && infoDep.deparmentName) {
-                        info.dep_name = infoDep.deparmentName
-                    }
-
-                } else {
-                    info.dep_name = "chưa cập nhật"
-                }
-                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { info });
-            } else return functions.setError(res, "không tim thấy user này", 400);
-        } else {
-            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        let comId = req.infoLogin.comId;
+        let {key, dep_id, page, pageSize} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 5;
+        const skip = (page-1)*pageSize;
+        let condition = {"inForPerson.employee.com_id": comId,"inForPerson.employee.ep_signature": 1};
+        if(key) {
+            if(!isNaN(parseFloat(key)) && isFinite(key)) condition.idQLC = Number(key);
+            else condition.userName = new RegExp(key, 'i');
         }
+        if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
+        let fields = {idQLC: 1, avatarUser: 1, userName: 1, "inForPerson.employee.position_id": 1, "inForPerson.employee.dep_id": 1};
+        let total = Users.countDocuments(condition);
+        let listEmployee = functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
+        total = await total;
+        listEmployee = await listEmployee;
+        return functions.success(res, "Get list employee signature success!", {total, listEmployee});
     } catch (e) {
-        console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        console.log("Err from server get list employee signature!", e);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -958,7 +1013,7 @@ exports.deleteEmpUseSignature = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
@@ -1008,7 +1063,7 @@ exports.listSignatureLeader = async (req, res, next) => {
 
                     if (infoLeader[i].inForPerson.employee.dep_id) {
                         let infoDep = await Deparment.findOne({ _id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
-                        info.dep_name = infoDep.deparmentName
+                        info.dep_name = infoDep.dep_name
                     } else {
                         info.dep_name = "chưa cập nhật"
                     }
@@ -1028,20 +1083,27 @@ exports.listSignatureLeader = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
-        return functions.setError(res, "Đã có lỗi xảy ra", 400);
+        return functions.setError(res, e.message);
     }
 }
 
 // danh sách nhân viên chưa chấm công hoặc đã chấm công
 exports.listEmUntimed = async (req, res, next) => {
     try {
-        let {com_id, dep_id, position_id, group_id, team_id, birthday, gender, married, page, pageSize} = req.body;
+        let {emp_id, com_id, dep_id, position_id, group_id, team_id, birthday, gender, married, page, pageSize} = req.body;
         if(!com_id) com_id = req.infoLogin.comId;
         if(!page) page = 1;
         if(!pageSize) pageSize = 10;
         const skip = (page-1)*pageSize;
+        let fields = {idQLC: 1, userName: 1, phone: 1, phoneTK: 1, email: 1, address: 1,
+            inForPerson: {
+                account: {birthday: 1, gender: 1, married: 1, experience: 1, education: 1},
+                employee: {com_id: 1, dep_id: 1,group_id: 1, team_id: 1,position_id: 1,start_working_time: 1}
+            }
+        };
 
         let condition = {type: 2, "inForPerson.employee.com_id": com_id};
+        if(emp_id) condition.idQLC = emp_id;
         if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
         if(group_id) condition["inForPerson.employee.group_id"] = group_id;
         if(team_id) condition["inForPerson.employee.team_id"] = team_id;
@@ -1051,12 +1113,6 @@ exports.listEmUntimed = async (req, res, next) => {
         if(married) condition["inForPerson.account.married"] = married;
         if(birthday) condition["inForPerson.account.birthday"] = new RegExp(birthday);
 
-        let fields = {idQLC: 1, userName: 1, phone: 1, phoneTK: 1, email: 1, address: 1,
-            inForPerson: {
-                account: {birthday: 1, gender: 1, married: 1, experience: 1, education: 1},
-                employee: {com_id: 1, dep_id: 1,group_id: 1, team_id: 1,position_id: 1,start_working_time: 1}
-            }
-        };
         let company = await Users.findOne({idQLC: com_id}, {userName: 1, idQLC: 1});
         let listEmployee = [];
         let total = 0;
@@ -1072,7 +1128,7 @@ exports.listEmUntimed = async (req, res, next) => {
                     $lookup: {
                         from: "QLC_Time_sheets",
                         localField: "idQLC",
-                        foreignField: "idQLC",
+                        foreignField: "ep_id",
                         as: "Time_sheets"
                     }
                 },
@@ -1089,6 +1145,6 @@ exports.listEmUntimed = async (req, res, next) => {
         return functions.success(res, 'get data success', {total, company ,listEmployee})
     } catch (error) {
         console.log(error)
-        return functions.setError(res, error.massage, 500);
+        return functions.setError(res, error.message, 500);
     }
 };

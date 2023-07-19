@@ -5,20 +5,29 @@ const News = require('../../models/Raonhanh365/New');
 exports.getListCartByUserId = async (req, res, next) => {
   try {
 
-    let userId = req.user.data.idRaoNhanh365,
-      page = Number(req.body.page),
-      pageSize = Number(req.body.pageSize);
+    let userId = req.user.data.idRaoNhanh365 ||43244;
+    let page = Number(req.body.page) || 1;
+    let pageSize = Number(req.body.pageSize) ||10;
     if (!page || !pageSize) {
       return functions.setError(res, "Missing input value", 403);
     }
     const skip = (page - 1) * pageSize;
-    const limit = pageSize;
+    const limit = pageSize ;
     let data = await Cart.aggregate([
       {
+        $match: { userId }
+      },
+      {
+        $limit: limit
+      },
+      {
+        $skip: skip
+      },
+      {
         $lookup: {
-          from: 'Users',
+          from: "Users",
           localField: 'userId',
-          foreignField: 'idRaoNhanh365',
+          foreignField: "idRaoNhanh365",
           as: 'user'
         }
       },
@@ -31,18 +40,14 @@ exports.getListCartByUserId = async (req, res, next) => {
         }
       },
       {
-        $match:{userId}
-      },
-      {
-        $skip:skip
-      },
-      {
-        $limit:limit
-      },
-      {
-        $project:{quantity:1,unit:1,status:1,new:{_id:1,title:1,linkTitle:1,img:1,timePromotionStart:1,timePromotionEnd:1,baohanh:1},user:{userName:1,type:1}}
+        $project: { quantity: 1, unit: 1, status: 1, new: { _id: 1, title: 1, linkTitle: 1, img: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1 }, user: { userName: 1, type: 1 } }
       }
     ])
+    // if(data && data.new && data.new.length > 0 && data.new.img.length) {
+    //   for(let i = 0; i < data.new.img.length; i++) {
+
+    //   }
+    // }
     return functions.success(res, "get list cart success", { data });
   } catch (e) {
     console.log("Err from server", e);
@@ -54,8 +59,8 @@ exports.getListCartByUserId = async (req, res, next) => {
 exports.addCart = async (req, res, next) => {
   try {
     let userId = req.user.data.idRaoNhanh365;
-    let { newsId, quantity,type } = req.body;
-    if ( !newsId || !quantity ) {
+    let { newsId, quantity, type } = req.body;
+    if (!newsId || !quantity) {
       return functions.setError(res, "Missing input value!", 404);
     }
 
@@ -64,7 +69,7 @@ exports.addCart = async (req, res, next) => {
     if (cart) {
       quantityUpdate = Number(cart.quantity) + Number(quantity);
       await Cart.findOneAndUpdate({ userId, newsId }, {
-        quantity: quantityUpdate,type,total
+        quantity: quantityUpdate, type, total
       });
       return functions.success(res, 'Add cart RN365 success!');
     }

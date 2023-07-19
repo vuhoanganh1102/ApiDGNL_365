@@ -40,24 +40,27 @@ const HR_Notifys = require('../../models/hr/Notify.js');
 const HR_Permisions = require('../../models/hr/Permision.js');
 const HR_Policys = require('../../models/hr/Policys.js');
 const HR_StageRecruitments = require('../../models/hr/StageRecruitment.js');
-
+const HR_Luong = require('../../models/hr/Salarys');
+const Appoint = require('../../models/hr/personalChange/Appoint');
+const QuitJob = require('../../models/hr/personalChange/QuitJob');
+const TranferJob = require('../../models/hr/personalChange/TranferJob');
+const Resign = require('../../models/hr/personalChange/Resign');
+const Salarys = require('../../models/hr/Salarys');
 // tool hr cường
 exports.AchievementFors = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
-        while(result)
-        {
+        while (result) {
             let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_achievements_for?page=${page}`);
-            let listUser = [];
-            if(data.length === 0)
-            {
+            if (data.length === 0) {
                 result = false
             }
-    
+
             for (let i = 0; i < data.length; i++) {
                 let id = Number(data[i].id);
                 let achievementId = data[i].achievement_id;
+                let listUser = [];
                 if (data[i].list_user) {
                     for (let j = 0; j < data[i].list_user.split(',').length; j++) {
                         listUser.push({ userId: data[i].list_user.split(',')[j], name: data[i].list_user_name.split(',')[j] });
@@ -89,8 +92,8 @@ exports.AchievementFors = async (req, res, next) => {
             page++;
             console.log(page)
         }
-        
-        return functions.success(res, 'pull data success'); 
+
+        return functions.success(res, 'pull data success');
     }
     catch (error) {
         return functions.setError(res, error.message);
@@ -101,10 +104,9 @@ exports.cancelJob = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
-        while(result){
+        while (result) {
             let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_cancel_job?page=${page}`);
-            if(data.length === 0)
-            {
+            if (data.length === 0) {
                 result = false
             }
             for (let i = 0; i < data.length; i++) {
@@ -127,7 +129,7 @@ exports.cancelJob = async (req, res, next) => {
             page++;
             console.log(page)
         }
-        
+
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -139,11 +141,10 @@ exports.failJob = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
-        while(result){
-           
+        while (result) {
+
             let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_failed_job?page=${page}`);
-            if(data.length === 0)
-            {
+            if (data.length === 0) {
                 result = false
             }
             for (let i = 0; i < data.length; i++) {
@@ -157,12 +158,12 @@ exports.failJob = async (req, res, next) => {
                 let contentsend = Buffer.from(data[i].contentsend, 'base64');
                 let isSwitch = data[i].is_switch;
                 let createdAt = data[i].created_at;
-                await HR_FailJob.findOneAndUpdate({id: id}, {canId, type, isDelete, deletedAt, note, email, contentsend, isSwitch, createdAt });
+                await HR_FailJob.findOneAndUpdate({ id: id }, { canId, type, isDelete, deletedAt, note, email, contentsend, isSwitch, createdAt });
             }
             page++;
             console.log(page)
         }
-        
+
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -172,16 +173,15 @@ exports.AddInfoLeads = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
-        while(result){
+        while (result) {
             let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_add_info_lead?page=${page}`);
-            if(data.length === 0)
-            {
+            if (data.length === 0) {
                 result = false
             }
             for (let i = 0; i < data.length; i++) {
                 let id = Number(data[i].id);
                 let epId = data[i].ep_id;
-                let nameDes = data[i].name_des; 
+                let nameDes = data[i].name_des;
                 let description = Buffer.from(data[i].description, 'base64');
                 let createdAt = data[i].created_at;
                 let updatedAt = data[i].updated_at;
@@ -193,8 +193,8 @@ exports.AddInfoLeads = async (req, res, next) => {
             page++;
             console.log(page)
         }
-        
-        return functions.success(res, 'pull data success'); 
+
+        return functions.success(res, 'pull data success');
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -206,10 +206,9 @@ exports.contactJob = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
-        while(result){
+        while (result) {
             let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_tbl_contact_job?page=${page}`);
-            if(data.length === 0)
-            {
+            if (data.length === 0) {
                 result = false
             }
             for (let i = 0; i < data.length; i++) {
@@ -233,7 +232,7 @@ exports.contactJob = async (req, res, next) => {
             page++;
             console.log(page)
         }
-        
+
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -243,10 +242,9 @@ exports.Blogs = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
-        while(result){
+        while (result) {
             let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_blog?page=${page}`);
-            if(data.length === 0)
-            {
+            if (data.length === 0) {
                 result = false
             }
             for (let i = 0; i < data.length; i++) {
@@ -259,7 +257,7 @@ exports.Blogs = async (req, res, next) => {
             page++;
             console.log(page)
         }
-       
+
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -269,10 +267,9 @@ exports.Categorys = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
-        while(result){
+        while (result) {
             let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_category?page=${page}`);
-            if(data.length === 0)
-            {
+            if (data.length === 0) {
                 result = false
             }
             for (let i = 0; i < data.length; i++) {
@@ -294,24 +291,24 @@ exports.Categorys = async (req, res, next) => {
                 let except = data[i].cat_except;
                 let tlq = data[i].cat_tlq;
                 let tlqUv = data[i].cat_tlq_uv;
-    
+
                 let Categorys = new HR_Categorys({
                     id, name, title, tags, description, keyword, parentId,
                     lq, count, countVl, order, active, hot, ut, only, except, tlq, tlqUv
                 });
-    
+
                 await Categorys.save();
             }
             page++;
             console.log(page)
         }
-       
+
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
     }
 };
-exports.CiSessions = async (req, res, next) => {    
+exports.CiSessions = async (req, res, next) => {
     try {
         let data1 = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_ci_sessions`);
         for (let i = 0; i < data1.length; i++) {
@@ -335,15 +332,14 @@ exports.Citys = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
-        while(result){
+        while (result) {
             let data = await functions.getDataAxios(`https://phanmemnhansu.timviec365.vn/api/Nodejs/get_city2?page=${page}`);
-            if(data.length === 0)
-            {
+            if (data.length === 0) {
                 result = false
             }
             for (let i = 0; i < data.length; i++) {
                 let id = Number(data[i].cit_id);
-    
+
                 let name = data[i].cit_name;
                 let order = data[i].cit_order;
                 let type = data[i].cit_type;
@@ -355,7 +351,7 @@ exports.Citys = async (req, res, next) => {
             page++;
             console.log(page)
         }
-        
+
         return functions.success(res, "Thành công");
     } catch (error) {
         return functions.setError(res, error.message);
@@ -451,7 +447,7 @@ exports.Devices = async (req, res, next) => {
             let Devices = new HR_Devices({ id, userId, infoBrower, tokenBrowser, lastLogin, deviceType, loginType, createdAt });
             await Devices.save();
         }
-        return functions.success(res, 'pull data success'); 
+        return functions.success(res, 'pull data success');
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -469,13 +465,13 @@ exports.EmployeePolicys = async (req, res, next) => {
             let isDelete = data[i].is_delete;
             let comId = data[i].com_id;
             let file = data[i].file;
-            if (await functions.checkDate(timeStart)  === false) continue
+            if (await functions.checkDate(timeStart) === false) continue
             let createdAt = data[i].created_at;
-            let deletedAt = data[i].deleted_at; 
-            let EmployeePolicys = new HR_EmployeePolicys({ id,name,timeStart,supervisorName,description,isDelete,comId,file,createdAt,deletedAt});
+            let deletedAt = data[i].deleted_at;
+            let EmployeePolicys = new HR_EmployeePolicys({ id, name, timeStart, supervisorName, description, isDelete, comId, file, createdAt, deletedAt });
             await EmployeePolicys.save();
         }
-        return functions.success(res, 'pull data success'); 
+        return functions.success(res, 'pull data success');
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -498,10 +494,10 @@ exports.EmployeePolicySpecifics = async (req, res, next) => {
             let createdBy = data[i].created_by;
             let file = data[i].file;
             let createdAt = data[i].created_at;
-            let updated_at = data[i].updated_at;  
-            let deletedAt = data[i].deleted_at; 
-            if (await functions.checkDate(timeStart)  === false) continue
-            let EmployeePolicySpecifics = new HR_EmployeePolicySpecifics({ id,name,applyFor,timeStart,employeePolicyId,supervisorName,description,content,applyFor,isDelete,createdBy,file,createdAt,updated_at,deletedAt });
+            let updated_at = data[i].updated_at;
+            let deletedAt = data[i].deleted_at;
+            if (await functions.checkDate(timeStart) === false) continue
+            let EmployeePolicySpecifics = new HR_EmployeePolicySpecifics({ id, name, applyFor, timeStart, employeePolicyId, supervisorName, description, content, applyFor, isDelete, createdBy, file, createdAt, updated_at, deletedAt });
             await EmployeePolicySpecifics.save();
         }
         return functions.success(res, 'pull data success');
@@ -557,7 +553,7 @@ exports.Candidates = async (req, res, next) => {
                     let hometown = data[i].hometown
                     let isSwitch = data[i].is_switch
                     let epIdCrm = data[i].ep_id_crm
-                    await HR_Candidates.findOneAndUpdate({ id: id }, {name,email,phone,cvFrom,userRecommend,recruitmentNewsId,timeSendCv,interviewTime,interviewResult,interviewVote,salaryAgree,status,cv,createdAt,updatedAt,isDelete,comId,isOfferJob,gender,birthday,education,exp,isMarried,address,userHiring,starVote,school,hometown,isSwitch,epIdCrm},{ upsert: true });
+                    await HR_Candidates.findOneAndUpdate({ id: id }, { name, email, phone, cvFrom, userRecommend, recruitmentNewsId, timeSendCv, interviewTime, interviewResult, interviewVote, salaryAgree, status, cv, createdAt, updatedAt, isDelete, comId, isOfferJob, gender, birthday, education, exp, isMarried, address, userHiring, starVote, school, hometown, isSwitch, epIdCrm }, { upsert: true });
                 }
                 page++;
                 console.log(page);
@@ -598,7 +594,7 @@ exports.notify = async (req, res, next) => {
 exports.InfoLeaders = async (req, res, next) => {
     try {
         let data = await functions.getDataAxios('https://phanmemnhansu.timviec365.vn/api/Nodejs/get_info_leader');
-        
+
         for (let i = 0; i < data.length; i++) {
             let id = Number(data[i].id);
             let epId = data[i].ep_id;
@@ -646,7 +642,7 @@ exports.InfringesFors = async (req, res, next) => {
             });
             await InfringesFors.save();
         }
-        return functions.success(res, 'pull data success'); 
+        return functions.success(res, 'pull data success');
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -716,7 +712,7 @@ exports.provisionOfCompany = async (req, res, next) => {
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     if (await functions.checkDate(data[i].time_start) === false) continue
-                    await HR_ProvisionOfCompanys.findOneAndUpdate({id: data[i].id}, 
+                    await HR_ProvisionOfCompanys.findOneAndUpdate({ id: data[i].id },
                         {
                             description: data[i].description,
                             isDelete: data[i].is_delete,
@@ -727,7 +723,7 @@ exports.provisionOfCompany = async (req, res, next) => {
                             file: data[i].file,
                             createdAt: data[i].created_at,
                             deletedAt: data[i].deleted_at,
-                        }, 
+                        },
                         { upsert: true });
                 }
                 page++;
@@ -752,7 +748,7 @@ exports.avatar = async (req, res, next) => {
                 await HR_InfoLeaders.findOneAndUpdate({ epId: data[i].ep_id }, { avatar: data[i].avatar })
             }
         }
-        return functions.success(res, 'pull data success'); 
+        return functions.success(res, 'pull data success');
     } catch (error) {
         return functions.setError(res, error)
     }
@@ -773,16 +769,16 @@ exports.stageRecruitment = async (req, res, next) => {
             let data = response.data;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    await HR_StageRecruitments.findOneAndUpdate({ id: Number(data[i].id) }, 
-                        { 
-                            recruitmentId: data[i].recruitment_id ,
+                    await HR_StageRecruitments.findOneAndUpdate({ id: Number(data[i].id) },
+                        {
+                            recruitmentId: data[i].recruitment_id,
                             name: data[i].name,
                             positionAssumed: data[i].position_assumed,
                             target: data[i].target,
-                            complete_time: data[i].complete_time, 
-                            defscription: Buffer.from(data[i].description,'base64'), 
+                            complete_time: data[i].complete_time,
+                            defscription: Buffer.from(data[i].description, 'base64'),
                             isDelete: data[i].is_delete
-                        },{ upsert: true });
+                        }, { upsert: true });
                 }
                 page++;
             } else {
@@ -797,7 +793,7 @@ exports.stageRecruitment = async (req, res, next) => {
 };
 exports.toolInfringe = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -845,7 +841,7 @@ exports.toolInfringe = async (req, res, next) => {
 
 exports.toolJobDes = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -888,7 +884,7 @@ exports.toolJobDes = async (req, res, next) => {
 
 exports.toolAnotherSkill = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -926,7 +922,7 @@ exports.toolAnotherSkill = async (req, res, next) => {
 
 exports.toolPermisionDetail = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -964,7 +960,7 @@ exports.toolPermisionDetail = async (req, res, next) => {
 
 exports.toolRemind = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -1006,7 +1002,7 @@ exports.toolRemind = async (req, res, next) => {
 
 exports.toolProcessInterview = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -1044,7 +1040,7 @@ exports.toolProcessInterview = async (req, res, next) => {
 
 exports.toolProcessTraining = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -1123,7 +1119,7 @@ exports.toolSignatureImage = async (req, res, next) => {
 
 exports.toolInviteInterview = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -1165,7 +1161,7 @@ exports.toolInviteInterview = async (req, res, next) => {
 
 exports.toolScheduleInterview = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -1211,7 +1207,7 @@ exports.toolScheduleInterview = async (req, res, next) => {
 
 exports.toolRecruitment = async (req, res, next) => {
     try {
-        
+
         let page = 1;
         let result = true;
         do {
@@ -1332,21 +1328,21 @@ exports.getJob = async (req, res, next) => {
                 for (let i = 0; i < data.length; i++) {
                     let interviewTime = data[i].interview_time;
                     if (await functions.checkDate(interviewTime) === false) continue
-                    await HR_GetJobs.findOneAndUpdate({ id: Number(data[i].id) }, 
-                        { 
-                            canId: data[i].can_id ,
-                            resiredSalary: data[i].resired_salary ,
-                            salary: data[i].salary ,
-                            interviewTime: data[i].interview_time ,
-                            empInterview: data[i].ep_interview ,
-                            note: data[i].note ,
-                            email: data[i].uv_email ,
+                    await HR_GetJobs.findOneAndUpdate({ id: Number(data[i].id) },
+                        {
+                            canId: data[i].can_id,
+                            resiredSalary: data[i].resired_salary,
+                            salary: data[i].salary,
+                            interviewTime: data[i].interview_time,
+                            empInterview: data[i].ep_interview,
+                            note: data[i].note,
+                            email: data[i].uv_email,
                             contentSend: Buffer.from(data[i].contentsend, 'base64'),
-                            isSwitch: data[i].is_switch ,
-                            isDelete: data[i].is_delete ,
-                            deletedAt: data[i].deleted_at ,
-                            createdAt: data[i].created_at 
-                        },{ upsert: true });
+                            isSwitch: data[i].is_switch,
+                            isDelete: data[i].is_delete,
+                            deletedAt: data[i].deleted_at,
+                            createdAt: data[i].created_at
+                        }, { upsert: true });
                 }
                 page++;
             } else {
@@ -1387,3 +1383,216 @@ exports.getJob = async (req, res, next) => {
 // };
 
 
+exports.toolSalary = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post(`https://tinhluong.timviec365.vn/api_web/list_luong.php`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data.data;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    
+                    await Salarys.create(
+                        {
+                            id: data[i].sb_id,
+                            sb_id_user: data[i].sb_id_user,
+                            sb_id_com: data[i].sb_id_com,
+                            sb_salary_basic: data[i].sb_salary_basic,
+                            sb_salary_bh: data[i].sb_salary_bh,
+                            sb_pc_bh: data[i].sb_pc_bh,
+                            sb_time_up: data[i].sb_time_up,
+                            sb_location: data[i].sb_location,
+                            sb_lydo: data[i].sb_lydo,
+                            sb_quyetdinh: data[i].sb_quyetdinh,
+                            sb_first: data[i].sb_first,
+                            sb_time_created: data[i].sb_time_created,
+                        });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.appoint = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            form.append('pb', 2);
+            const response = await axios.post(`https://chamcong.24hpay.vn/api_list_data/api_all.php`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    // if(functions.checkDate(data[i].created_at*1000) == false) continue;
+
+                    await Appoint.create(
+                        {
+                            id: data[i].id,
+                            ep_id: data[i].ep_id,
+                            current_position: data[i].old_position_id,
+                            current_dep_id: data[i].old_dep_id,
+                            created_at: new Date(data[i].created_at * 1000),
+                            decision_id: data[i].decision_id,
+                            note: data[i].note,
+                        });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.quitJob = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            form.append('pb', 25);
+            const response = await axios.post(`https://chamcong.24hpay.vn/api_list_data/api_all.php`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    // if(functions.checkDate(data[i].created_at*1000) == false) continue;
+
+                    await QuitJob.create(
+                        {
+                            id:data[i].id,
+                            ep_id:data[i].ep_id,
+                            created_at:new Date(data[i].created_at*1000),
+                            note:data[i].note,
+                        });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+
+exports.transferJob = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            form.append('pb', 33);
+            const response = await axios.post(`https://chamcong.24hpay.vn/api_list_data/api_all.php`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    // if(functions.checkDate(data[i].created_at*1000) == false) continue;
+
+                    await TranferJob.create(
+                        {
+                            _id: data[i].id,
+                            ep_id: data[i].ep_id,
+                            com_id: data[i].com_id,
+                            dep_id: data[i].dep_id,
+                            position_id: data[i].position_id,
+                            decision_id: data[i].decision_id,
+                            created_at: new Date(data[i].created_at*1000),
+                            decision_id: data[i].decision_id,
+                            note: data[i].note,
+                            mission: data[i].mission,
+                        });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};
+
+exports.toolResign = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            form.append('pb', 28);
+            const response = await axios.post(`https://chamcong.24hpay.vn/api_list_data/api_all.php`, form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    // if(functions.checkDate(data[i].created_at*1000) == false) continue;
+
+                    await Resign.create(
+                        {
+                            _id: data[i].id,
+                            ep_id: data[i].ep_id,
+                            com_id: data[i].com_id,
+                            decision_id: data[i].decision_id,
+                            created_at: new Date(data[i].created_at*1000),
+                            decision_id: data[i].decision_id,
+                            note: data[i].note,
+                            shift_id: data[i].shift_id,
+                            type: data[i].type,
+                        });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+
+        return functions.success(res, "Thành công");
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+};

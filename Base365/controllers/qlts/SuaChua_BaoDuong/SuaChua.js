@@ -81,21 +81,13 @@ exports.SuaChuaBB = async (req, res) => {
     let dv_sc = req.body.dv_sc || 0;
     let dia_chi_nha_cung_cap = req.body.dia_chi_nha_cung_cap || 0;
     let com_id = 0;
-
-
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
-
-
     } else if (req.user.data.type == 2) {
-        com_id = req.user.data.inForPerson.employee.com_id;
-
-
+        com_id = req.user.data.inForPerson.employee.com_id
     }
-
     try {
         let q_sua_chua = await SuaChua.findOne({ id_cty: com_id, sc_id: id_sc });
-
         let sc_quyen_sd = q_sua_chua.sc_quyen_sd;
         let sl_sc_cu = q_sua_chua.sl_sc;
         let ng_sd = q_sua_chua.sc_ng_sd;
@@ -148,26 +140,26 @@ exports.SuaChuaBB = async (req, res) => {
 
 }
 
-exports.Seach = async (req, res) => {
-    let id_bb = req.body.id_bb;
-    let trang_thai = req.body.trang_thai;
-    try {
-        if (isNaN(id_bb) || isNaN(trang_thai)) {
-            return res.status(404).json("id  và trang thaibien ban phai la 1 so");
-        } else {
-            let listdata = await SuaChua.findOne({ sc_id: id_bb });
-            if (listdata) {
-                return res.status(200).json({ data: listdata, message: " thanh cong " });
-            } else {
-                return res.status(202).json({ data: [], message: " khong co du lieu " });
-            }
-        }
+// exports.Seach = async (req, res) => {
+//     let id_bb = req.body.id_bb;
+//     let trang_thai = req.body.trang_thai;
+//     try {
+//         if (isNaN(id_bb) || isNaN(trang_thai)) {
+//             return res.status(404).json("id  và trang thaibien ban phai la 1 so");
+//         } else {
+//             let listdata = await SuaChua.findOne({ sc_id: id_bb });
+//             if (listdata) {
+//                 return res.status(200).json({ data: listdata, message: " thanh cong " });
+//             } else {
+//                 return res.status(202).json({ data: [], message: " khong co du lieu " });
+//             }
+//         }
 
-    } catch (error) {
+//     } catch (error) {
 
-        return res.status(500).json({ message: error.message });
-    }
-}
+//         return res.status(500).json({ message: error.message });
+//     }
+// }
 
 exports.listBBDangSuaChua = async (req, res) => {
 
@@ -190,15 +182,34 @@ exports.listBBDangSuaChua = async (req, res) => {
             sc_trangthai: 1,
             sc_da_xoa: 0,
         }
-
-
         if (key) {
             filter.sc_id = Number(key);
         }
+
+        let condition = {};
+        let filter2 = {};
+        let filter3 = {};
+        if (type_quyen == 2) {
+            // condition = ep_id;
+            filter2.sc_id_ng_tao = ep_id;
+            filter3.sc_ng_thuchien = ep_id;
+
+        }
+
         let tsda_suachua = await SuaChua.aggregate([
             {
                 $match:
-                    filter
+                {
+                    $and: [
+                        filter,
+                        {
+                            $or: [
+                                filter2,
+                                filter3
+                            ]
+                        }
+                    ]
+                }
             },
             {
                 $lookup: {
@@ -435,8 +446,9 @@ exports.deleteAll = async (req, res) => {
     }
 }
 
+
 exports.details = async (req, res) => {
-    let id_bb = req.body.id_bb;
+    let iddsc = req.body.iddsc;
     let com_id = 0;
 
     if (req.user.data.type == 1) {
@@ -444,12 +456,12 @@ exports.details = async (req, res) => {
 
 
     } else if (req.user.data.type == 2) {
-        com_id = req.user.data.inForPerson.employee.com_id;
+        com_id = req.user.data.com_id;
 
     }
     try {
-        if (isNaN(id_bb)) {
-            return res.status(404).json({ message: "id bien ban phai la 1 so " });
+        if (isNaN(iddsc)) {
+            fnc.setError(res, "iddsc phai la 1 Number")
         }
         else {
             let bb = await SuaChua.findOne({ sc_id: id_bb });
@@ -496,10 +508,11 @@ exports.details = async (req, res) => {
                 don_vi_sua_chua: bb.sc_donvi,
                 dia_diem_sua_chua: bb.sc_diachi
             };
-            return res.status(200).json({ data: info_bb, message: 'thanh cong' });
+            fnc.success(res, "ok", chitietdangsuachua);
+
         }
     } catch (error) {
-
+        console.log(error);
         return res.status(500).json({ message: error.message });
     }
 }
@@ -665,6 +678,8 @@ exports.details_bb_da_sua_chua = async (req, res) => {
 }
 exports.listBBDaSuaChua = async (req, res) => {
     try {
+        let token = req.user;
+
         let skip = req.body.page || 1;
         let limit = req.body.perPage || 10;
         let type_quyen = req.body.type_quyen;
@@ -696,7 +711,7 @@ exports.listBBDaSuaChua = async (req, res) => {
             filter3.sc_ng_thuchien = ep_id;
 
         }
-        console.log("condition: " + condition);
+
         let tsda_suachua = await SuaChua.aggregate([
             {
                 $match:
@@ -1220,15 +1235,34 @@ exports.listBBCanSuaChua = async (req, res) => {
             sc_trangthai: 1,
             sc_da_xoa: 0,
         }
-
-
         if (key) {
             filter.sc_id = Number(key);
         }
+
+        let condition = {};
+        let filter2 = {};
+        let filter3 = {};
+        if (type_quyen == 2) {
+            // condition = ep_id;
+            filter2.sc_id_ng_tao = ep_id;
+            filter3.sc_ng_thuchien = ep_id;
+
+        }
+
         let tsda_suachua = await SuaChua.aggregate([
             {
                 $match:
-                    filter
+                {
+                    $and: [
+                        filter,
+                        {
+                            $or: [
+                                filter2,
+                                filter3
+                            ]
+                        }
+                    ]
+                }
             },
             {
                 $lookup: {

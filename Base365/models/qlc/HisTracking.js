@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
-const HisOfTracking = new mongoose.Schema({
+const Time_sheets = new mongoose.Schema({
     //id nhaan vieen
     sheet_id: {
         type: Number,
         required: true
     },
-    idQLC: {
+    ep_id: {
         type: Number
     },
     ts_image: {
@@ -86,4 +86,4 @@ const HisOfTracking = new mongoose.Schema({
     timestamp: true
 })
 
-module.exports = mongoose.model("QLC_Time_sheets", HisOfTracking)
+module.exports = mongoose.model("QLC_Time_sheets", Time_sheets)

@@ -39,7 +39,6 @@ exports.supportSellNew = async (req, res, next) => {
         let cateId = Number(req.body.id);
         let parentId = req.body.parentId;
         let data = {};
-        if (!cateId) return functions.setError(res, 'missing data', 400)
         let search = req.body.search;
         let cateChild = await Category.find({ parentId: cateId })
         let CateDetail1 = [];
@@ -208,6 +207,7 @@ exports.supportSellNew = async (req, res, next) => {
         if (cateChild.length > 0) data.cateChild = cateChild
         if (CateDetail.length > 0) data.CateDetail = CateDetail1
         //  if (productLine.length > 0) data.productLine = productLine
+        dât.cateChild = cateChild;
         data.brand = brand;
         data.line = line;
         data.screen = screen;
