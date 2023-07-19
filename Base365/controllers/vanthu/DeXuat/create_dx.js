@@ -1016,7 +1016,6 @@ exports.lich_lam_viec = async (req, res) => {
                         ngay_bat_dau: ngay_bat_dau,
                         ca_la_viec: ca_lam_viec,
                         ngay_lam_viec: ngay_lam_viec,
-
                     },
                 },
                 name_user: name_user,
@@ -1043,7 +1042,6 @@ exports.lich_lam_viec = async (req, res) => {
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
                 const id_user_nhan = parseInt(id_user_nhan_arr[i]);
-
                 let createTB = new ThongBao({
                     _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
                     id_user: id_user,
