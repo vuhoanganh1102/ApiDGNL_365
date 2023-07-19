@@ -7,4 +7,6 @@ router.post('/getTopCache',formData.parse(), topCache.getTopCache);
 
 router.post('/supportSellNew',formData.parse(), topCache.supportSellNew);
 
+router.post('/ward',formData.parse(), topCache.ward);
+
 module.exports = router;
