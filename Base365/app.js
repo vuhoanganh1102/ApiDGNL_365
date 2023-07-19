@@ -70,7 +70,7 @@ errorApp(appRaonhanh)
 // Cấu hình appVanthu
 configureApp(appVanthu);
 var vanthuRouter = require('./routes/vanthu')
-appVanthu.use("/api",vanthuRouter);
+appVanthu.use("/api", vanthuRouter);
 errorApp(appVanthu)
 
 // Cấu hình appCRM
@@ -164,7 +164,7 @@ serverHR.on('error', (error) => {
 //qlts
 var serverQLTS = appQLTS.listen(3008, () => {
     console.log(`qlts app is running on port 3008`);
-});
+});  
 
 serverQLTS.on('error', (error) => {
     console.error('Error occurred while listening on QLTS port:', error);

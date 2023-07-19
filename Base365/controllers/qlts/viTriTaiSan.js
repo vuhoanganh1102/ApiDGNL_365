@@ -7,13 +7,10 @@ exports.addViTriTaiSan = async (req, res) => {
     try{
         let { ten_vitri,dv_quan_ly,ghi_chu_vitri,quyen_dv_qly } = req.body;
         let com_id = '';
-        if (req.user.data.type == 1) {
-          com_id = req.user.data.idQLC;
-        }
-        else if (req.user.data.type == 2) {
-            com_id = req.user.data.inForPerson.employee.com_id;
-          } else {
-          return functions.setError(res, 'không có quyền truy cập', 400);
+        if (req.user.data.type == 1 || req.user.data.type == 2) {
+        com_id = req.user.data.com_id;
+        } else {
+        return functions.setError(res, 'không có quyền truy cập', 400);
         }
         if (typeof ten_vitri === 'undefined') {
           return functions.setError(res, 'tên vị trí  không được bỏ trống', 400);
@@ -44,15 +41,10 @@ exports.addViTriTaiSan = async (req, res) => {
 exports.showaddViTri = async (req,res) => {
   try{
     let com_id = '';
-    if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC;
-      let showdpcom = await Depament.find({com_id : com_id }).select('_id deparmentName')
-      return  functions.success(res, 'get data success', { showdpcom })
-    } 
-    else if (req.user.data.type == 2) {
-      com_id = req.user.data.inForPerson.employee.com_id;
-      let showdpnv = await Depament.find({com_id : com_id}).select('_id deparmentName')
-      return  functions.success(res, 'get data success', { showdpnv })
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      let showdp = await Depament.find({com_id : com_id }).select('_id deparmentName')
+      return  functions.success(res, 'get data success', { showdp})
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -64,12 +56,10 @@ exports.showaddViTri = async (req,res) => {
 
 exports.show = async (req, res) => {
   try {
-    let com_id = '';
     let { id_vitri, page, perPage } = req.body;
-    if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC;
-    } else if (req.user.data.type == 2) {
-      com_id = req.user.data.inForPerson.employee.com_id;
+    let com_id = '';
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -122,20 +112,17 @@ exports.deleteVT = async(req,res) => {
     try {
       let { datatype, id_vitri, type_quyen } = req.body;
       let com_id = '';
-      console.log(req.user.data.type);
+      if (req.user.data.type == 1 || req.user.data.type == 2) {
+        com_id = req.user.data.com_id;
+      } else {
+        return functions.setError(res, 'không có quyền truy cập', 400);
+      }
+
       if (typeof id_vitri === 'undefined') {
         return functions.setError(res, 'id_vitri không được bỏ trống', 400);
       }
       if (isNaN(Number(id_vitri))) {
         return functions.setError(res, 'id nhóm phải là một số', 400);
-      }
-      if (req.user.data.type == 1) {
-        com_id = req.user.data.idQLC;
-      } 
-      else if (req.user.data.type == 2) {
-        com_id = req.user.data.inForPerson.employee.com_id;
-      } else {
-        return functions.setError(res, 'không có quyền truy cập');
       }     
       await ViTriTs.findOneAndDelete({ id_vitri: id_vitri, id_cty: com_id })
       return functions.success(res, 'thanh cong');

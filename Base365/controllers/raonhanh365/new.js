@@ -645,6 +645,7 @@ exports.getNew = async (req, res, next) => {
                     as: "user",
                 },
             },
+            {$unwind: { path: "$user", preserveNullAndEmptyArrays: true }},
             {
                 $project: searchItem,
             },
@@ -661,7 +662,7 @@ exports.getNew = async (req, res, next) => {
                     if (data[i]._id === dataLoveNew[j].id_new) {
                         data[i].islove = 1;
                     }
-                    if (data[i].islove !== 1) {
+                    if (!data[i].islove || data[i].islove !== 1) {
                         data[i].islove = 0;
                     }
                 }
@@ -680,8 +681,6 @@ exports.searchNew = async (req, res, next) => {
         let buySell = 1;
         let searchItem = {};
         let {
-            page,
-            pageSize,
             search_key,
             cateID,
             brand,
@@ -693,9 +692,9 @@ exports.searchNew = async (req, res, next) => {
             typeHardrive,
             screen,
             size,
-            brandMaterials,
-            vehicles,
-            spareParts,
+            Jobcity,
+            Jobdistrict,
+            Jobward,
             interior,
             device,
             color,
@@ -828,17 +827,10 @@ exports.searchNew = async (req, res, next) => {
             khoiluong,
             loai_chung,
         } = req.body;
-        if (!page && !pageSize) {
-            return functions.setError(res, "missing data", 400);
-        }
-        const skip = (page - 1) * pageSize;
-        const limit = Number(pageSize);
-        if (
-            (await functions.checkNumber(page)) === false ||
-            (await functions.checkNumber(pageSize)) === false
-        ) {
-            return functions.setError(res, "page not found", 404);
-        }
+        let page = req.body.page || 1;
+        let pageSize = Number(req.body.pageSize) || 50;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         if (link === "tat-ca-tin-dang-ban.html") {
             buySell = 2;
             searchItem = {
@@ -853,7 +845,7 @@ exports.searchNew = async (req, res, next) => {
                 userID: 1,
                 img: 1,
                 updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
+                user: { _id: 1, idRaoNhanh365: 1, lastActivedAt: 1, time_login: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
                 district: 1,
                 ward: 1,
                 city: 1,
@@ -880,7 +872,7 @@ exports.searchNew = async (req, res, next) => {
                 userID: 1,
                 img: 1,
                 updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
+                user: { _id: 1, idRaoNhanh365: 1, lastActivedAt: 1, time_login: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
                 district: 1,
                 ward: 1,
                 city: 1,
@@ -907,7 +899,7 @@ exports.searchNew = async (req, res, next) => {
                 userID: 1,
                 img: 1,
                 updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
+                user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
                 district: 1,
                 ward: 1,
                 city: 1,
@@ -1030,21 +1022,18 @@ exports.searchNew = async (req, res, next) => {
         if (level) condition["Job.level"] = level;
         if (degree) condition["Job.degree"] = degree;
         if (skill) condition["Job.skill"] = skill;
-        if (city) condition["Job.city"] = city;
-        if (district) condition["Job.district"] = district;
-        if (ward) condition["Job.ward"] = ward;
+        if (Jobcity) condition["Job.city"] = Jobcity;
+        if (Jobdistrict) condition["Job.district"] = Jobdistrict;
+        if (Jobward) condition["Job.ward"] = Jobward;
         if (payBy) condition["Job.payBy"] = payBy;
         if (benefit) condition["Job.benefit"] = benefit;
         if (startvalue) condition.money = { $gte: startvalue };
         if (endvalue) condition.money = { $lte: endvalue };
         if (startvalue && endvalue) condition.startvalue = { $gte: startvalue, $lte: endvalue };
         let data = await New.aggregate([
-            {
-                $match: condition,
-            },
-            {
-                $limit: limit,
-            },
+            { $match: condition },
+            { $skip: skip },
+            { $limit: limit },
             {
                 $lookup: {
                     from: "Users",
@@ -1053,14 +1042,8 @@ exports.searchNew = async (req, res, next) => {
                     as: "user",
                 },
             },
-            {
-                $skip: skip,
-            },
-            {
-                $project: searchItem,
-            },
-
-
+            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+            { $project: searchItem}
         ]);
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         for (let i = 0; i < data.length; i++) {
@@ -1076,11 +1059,10 @@ exports.searchNew = async (req, res, next) => {
                     if (data[i]._id === dataLoveNew[j].id_new) {
                         data[i].islove = 1;
                     }
-                    if (data[i].islove !== 1) {
+                    if (!data[i].islove || data[i].islove !== 1) {
                         data[i].islove = 0;
                     }
                 }
-
             } else {
                 data[i].islove = 0;
             }
@@ -1561,7 +1543,7 @@ exports.updateBuyNew = async (req, res, next) => {
 // chi tiết tin 
 exports.getDetailNew = async (req, res, next) => {
     try {
-        let cm_page = req.body.cm_page
+        let cm_page = req.body.cm_page;
         let cm_limit = 10;
         let cm_start = (cm_page - 1) * cm_limit;
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
@@ -1587,6 +1569,7 @@ exports.getDetailNew = async (req, res, next) => {
         }
         let danhmuc = await raoNhanh.getNameCate(check.cateID, 2)
         let cate_Special = await raoNhanh.getNameCate(check.cateID, 1)
+        cate_Special = await raoNhanh.checkNameCateRaoNhanh(cate_Special)
         if (buy === "ct") {
             buysell = 1;
             searchitem = {
@@ -1616,7 +1599,8 @@ exports.getDetailNew = async (req, res, next) => {
                 tgian_kt: 1,
                 tgian_bd: 1,
                 buySell: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
+                video: 1,
+                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, lastActivedAt: 1, time_login: 1 },
             };
         } else if (buy === "c") {
             buysell = 2;
@@ -1640,7 +1624,7 @@ exports.getDetailNew = async (req, res, next) => {
                 userID: 1,
                 img: 1,
                 updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
+                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
                 district: 1,
                 ward: 1,
                 description: 1,
@@ -1659,8 +1643,9 @@ exports.getDetailNew = async (req, res, next) => {
                 poster: 1,
                 sold: 1,
                 com_city: 1,
-                com_district: 1,
-                com_ward: 1,
+                video: 1,
+                district: 1,
+                ward: 1,
                 com_address_num: 1,
                 buySell: 1
             };
@@ -1724,7 +1709,7 @@ exports.getDetailNew = async (req, res, next) => {
                     as: 'user'
                 }
             },
-            { $unwind: '$user' },
+            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
             {
                 $project: {
                     _id: 1,
@@ -1739,7 +1724,7 @@ exports.getDetailNew = async (req, res, next) => {
                     userID: 1,
                     img: 1,
                     updateTime: 1,
-                    user: { _id: 1, avatarUser: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1, 'inforRN365.xacThucLienket': 1, email: 1, 'inforRN365.store_name': 1 },
+                    user: { _id: 1, avatarUser: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1, 'inforRN365.xacThucLienket': 1, email: 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
                     district: 1,
                     ward: 1,
                     city: 1,
@@ -1757,7 +1742,7 @@ exports.getDetailNew = async (req, res, next) => {
             }
         ]);
         for (let i = 0; i < tintuongtu.length; i++) {
-          
+
             if (tintuongtu[i].img) {
                 tintuongtu[i].img = await raoNhanh.getLinkFile(tintuongtu[i].img, tintuongtu[i].cateID, tintuongtu[i].buySell)
             }
@@ -1795,13 +1780,15 @@ exports.getDetailNew = async (req, res, next) => {
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
                     if (data[i]._id === dataLoveNew[j].id_new) {
-                        data[i].islove = 1;
+                        data[0].islove = 1;
                     }
-                    if (data[i].islove !== 1) {
-                        data[i].islove = 0;
+                    if (data[0].islove !== 1) {
+                        data[0].islove = 0;
                     }
                 }
 
+            } else {
+                data[0].islove = 0;
             }
         }
         let dataBidding = null;
@@ -1809,6 +1796,7 @@ exports.getDetailNew = async (req, res, next) => {
         data[0].ListLike = ListLike;
         data[0].tintuongtu = tintuongtu;
         data[0].danhmuc = danhmuc;
+        data = data[0]
         if (buysell === 1) {
             dataBidding = await Bidding.aggregate([
                 {

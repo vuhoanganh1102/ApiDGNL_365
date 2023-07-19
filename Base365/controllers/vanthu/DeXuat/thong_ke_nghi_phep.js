@@ -7,7 +7,6 @@ exports.thong_ke_nghi_phep = async (req, res) => {
             id_nhan_vien,
             nghi_nhieu_nhat //3-nghỉ nhiều nhất 2- nghỉ đột xuất nhiều nhất 1- nghỉ có kế hoạch nhiều nhất 
         } = req.body;
-      
         let time_seach_from = req.body.time_seach_from ? req.body.time_seach_from : new Date("1970-01-01").getTime();
         let time_seach_to = req.body.time_seach_to ? req.body.time_seach_to : new Date().getTime();
         let filter = {};
@@ -62,12 +61,13 @@ exports.thong_ke_nghi_phep = async (req, res) => {
                 danh_sach_nv_nghi = danh_sach_nghi_nhieu_nhat;
             }
 
-            return res.status(200).json({ data: danh_sach_nv_nghi, message: "thanh cong " });
+            return functions.success(res, 'thanh cong', { danh_sach_nv_nghi });
         } else {
-            return res.status(200).json({ data: [], message: " khong co de xuat nao  " });
+            return functions.success(res, 'khong co de xuat nao', { danh_sach_nv_nghi });
+            
         }
     } catch (error) {
-        console.error('Failed to show nghi phep ', error);
-        res.status(500).json({ error: ' Failed to show nghi phep ' });
+        console.error('Failed ', error);
+        return functions.setError(res, error);
     }
 }
