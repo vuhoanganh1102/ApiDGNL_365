@@ -60,7 +60,7 @@ exports.create = async(req,res)=>{
              }//cap nhat thong bao
              let updateThongBao = new thongBao({
                 id_tb : Number(maxThongBao.id_tb) +1 || 1,
-                id_ts : ts_daidien_nhan,
+                id_ts : updated_ds_ts[0].ts_id,
                 id_cty : id_cty,
                 id_ng_tao : idQLC,
                 type_quyen :1,
