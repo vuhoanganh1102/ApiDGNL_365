@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_TaiSanDangSuDung = new mongoose.Schema({
-    _id: {
-        type: Number
+    id_sd: {
+        type: Number,
+        required: true
     },
     com_id_sd: {
         type: Number
