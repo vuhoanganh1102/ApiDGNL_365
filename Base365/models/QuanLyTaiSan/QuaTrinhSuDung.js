@@ -1,43 +1,56 @@
 const mongoose = require("mongoose");
 const model_QuaTrinhSuDung = new mongoose.Schema({
     quatrinh_id: {
-        type: Number
+        type: Number,
+        require : true
     },
     id_ts: {
-        type: Number
+        type: Number,
+        default : null
     },
     id_bien_ban: {
-        type: Number
+        type: Number,
+        default :0
     },
     so_lg: {
-        type: Number
+        type: Number,
+        default :0
     },
     id_cty: {
-        type: Number
+        type: Number,
+        default :0
     },
     id_ng_sudung: {
-        type: Number
+        type: Number,
+        default :0
     },
     id_phong_sudung: {
-        type: Number
+        type: Number,
+        default :0
     },
     id_cty_sudung: {
-        type: Number
+        type: Number,
+        default :0
     },
     qt_ngay_thuchien: {
-        type: String
+        type: String,
+        default : 0
     },
     qt_nghiep_vu: {
-        type: Number
+        type: Number,
+        default : 0
     },
     vitri_ts: {
-        type: String
+        type: String,
+        default : ""
     },
     ghi_chu: {
-        type: String
+        type: String,
+        default : ""
     },
     time_created: {
-        type: Number
+        type: Number,
+        default : 0
     }
 },
     {

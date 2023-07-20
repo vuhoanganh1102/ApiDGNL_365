@@ -7,37 +7,40 @@ const user = require('../../models/Users')
 
 exports.create = async(req,res)=>{
     try{
-        const role = req.user.data.role
-        const com_id = req.user.data.com_id
-        
-
-        let max =  await capPhat.findOne({},{},{sort: {_id : -1}}).lean() || 0;
-        let maxThongBao = await thongBao.findOne({},{},{sort: {_id : -1}}).lean() || 0 ;
-
+        const id_cty = req.user.data.idQLC
+        const idQLC = req.user.data.idQLC
+        const pageNumber = req.body.pageNumber || 1;
+        const id_pb = req.body.id_pb;
+        const cp_lydo = req.body.cp_lydo;
+        const cp_trangthai = req.body.cp_trangthai;
+        const ts_daidien_nhan = req.body.ts_id;
+        const cap_phat_taisan = req.body.cap_phat_taisan;
+        const id_ng_thuchien = req.body.id_ng_thuchien;
+        const id_ng_daidien = req.body.id_ng_daidien;
+        let data = []
+        let listItemsType = []
+        let soluong_cp_bb = {}
+        let max =  await capPhat.findOne({},{},{sort: {cp_id : -1}}).lean() || 0;
+        let maxThongBao = await thongBao.findOne({},{},{sort: {id_tb : -1}}).lean() || 0 ;
         let now = new Date()
-        
         if((cp_lydo&&ts_daidien_nhan&&id_ng_daidien&&id_ng_thuchien)){
             listItemsType = await TaiSan.find({id_cty : idQLC}).select('ts_ten soluong_cp_bb').lean()
             console.log(listItemsType)
-
             if(listItemsType) data.listItemsType = listItemsType
-    
             let listDepartment = await dep.find({com_id: id_cty}).select('deparmentName').lean()
             let listEmp = await user.find({"inForPerson.employee.com_id" : id_cty , type : 2}).select('userName').lean()
-    
-            
-            
             if(listDepartment) data.listDepartment = listDepartment
             if(listEmp)  data.listEmp = listEmp 
-    
-            let capPhat_choNhan = await capPhat.find({cp_trangthai : 5 ,cp_da_xoa : 0 ,id_pb : id_pb ,com_id: id_cty }).skip((pageNumber - 1)*10).limit(10).sort({_id : -1}).lean()
-            let count = await capPhat.countDocuments({cp_trangthai : 5 ,cp_da_xoa : 0 ,id_pb : id_pb ,com_id: id_cty })
-    
-            if(capPhat_choNhan) data.capPhat_choNhan = capPhat_choNhan
-            if(count) data.count = count
-            let CapPhatPB = new capPhat({//tao cap phat neu la cap phat phong ban thi dien phong ban, neu la cap phat nhan vien thi khong dien id_pb
-                _id : Number(max._id) + 1 ,
+            const ds_ts = JSON.parse(cap_phat_taisan).ds_ts;
+                    const updated_ds_ts = ds_ts.map((item) => ({
+                        ts_id: item[0],
+                        sl_th: item[1]
+                    }));
+            let CapPhatPB = new capPhat({
+                //tao cap phat neu la cap phat phong ban thi dien phong ban, neu la cap phat nhan vien thi khong dien id_pb
+                cp_id : Number(max.cp_id) + 1 ,
                 id_phongban: id_pb,
+                cap_phat_taisan: {ds_ts: updated_ds_ts},
                 cp_id_ng_tao : idQLC,
                 id_cty : id_cty,
                 cp_trangthai : cp_trangthai||0,
@@ -48,18 +51,15 @@ exports.create = async(req,res)=>{
                 cp_lydo : cp_lydo,
             })
              await CapPhatPB.save()
-            
-             if(CapPhatPB) data.CapPhatPB = CapPhatPB
-             
+             data.CapPhatPB = CapPhatPB
              let updateQuantity = await TaiSan.findOne({ts_id :ts_daidien_nhan}).lean()
-
              if(!updateQuantity) {
                 return fnc.setError(res, " khong tim thay tai san ")
              }else{//cap nhat so luong tai san 
                 await TaiSan.findOneAndUpdate({ts_id :ts_daidien_nhan}, {soluong_cp_bb : Number(soluong_cp_bb) - 1 || 0})
              }//cap nhat thong bao
              let updateThongBao = new thongBao({
-                _id : Number(maxThongBao._id) +1,
+                id_tb : Number(maxThongBao.id_tb) +1 || 1,
                 id_ts : ts_daidien_nhan,
                 id_cty : id_cty,
                 id_ng_tao : idQLC,
@@ -76,11 +76,6 @@ exports.create = async(req,res)=>{
         }else{
             return fnc.setError(res, " cần nhập đủ thông tin ")
         }
-
-        
-
-
-
     }catch(e){
         return fnc.setError(res , e.message)
     }
@@ -101,7 +96,7 @@ exports.edit = async(req,res)=>{
         const cp_lydo = req.body.cp_lydo;
         const cap = await capPhat.findOne({ _id: _id });
             if (!cap) {
-                fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+                return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
                 await capPhat.findOneAndUpdate({ _id: _id }, {
                     id_cty: id_cty,
@@ -109,8 +104,7 @@ exports.edit = async(req,res)=>{
                     cp_lydo : cp_lydo,
                     cp_id_ng_tao :idQLC,
                     })
-                    .then((cap) => fnc.success(res, "cập nhật thành công", {cap}))
-                    .catch((err) => fnc.setError(res, err.message, 511));
+                    return fnc.success(res, "cập nhật thành công", {cap})
             }
 
 
@@ -222,7 +216,7 @@ exports.updateStatus = async (req , res) =>{
     }
     }
 
-    exports.getList = async (req , res) =>{
+exports.getList = async (req , res) =>{
         try{
             const type = req.user.data.type
             // const id_cty = ""

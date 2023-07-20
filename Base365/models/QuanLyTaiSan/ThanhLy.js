@@ -1,46 +1,60 @@
 const mongoose = require("mongoose");
 const model_ThanhLy = new mongoose.Schema({
-    _id: {
-        type: Number
+    tl_id: {
+        type: Number,
+        required: true
     },
     thanhly_taisan: {
-        type: String
+        type: Number,    
+        default: 0,
     },
     tl_id_bb_cp: {
-        type: Number
+        type: Number,
+        default: 0,
     },
     id_cty: {
-        type: Number
+        type: Number,
+        default: 0,
     },
     id_ngtao: {
-        type: Number
+        type: Number,
+        default: 0,
     },
     id_tl_phongban: {
-        type: Number
+        type: Number,
+        default: 0,
     },
     id_ngdexuat: {
-        type: Number
+        type: Number,
+        default: 0,
     },
     id_ng_duyet: {
-        type: Number
+        type: Number,
+        default: 0,
     },
     ngay_duyet: {
-        tpye: Number
+        type: Number,
+        default: 0,
     },
     type_quyen_duyet: {
-        type: Number
+        type: Number,
+         default: 0,
     },
     tl_ngay : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_soluong : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_giatri : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_sotien : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_lydo : {
         type : String
@@ -49,31 +63,40 @@ const model_ThanhLy = new mongoose.Schema({
         type : String
     },
     tl_trangthai : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_loai_gt : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_phantram : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_type_quyen : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_id_ng_xoa : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     xoa_dx_tl : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_date_create : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_date_delete : {
-        type : Number
+        type : Number,
+         default: 0,
     },
     tl_type_quyen_xoa : {
-        type : Number
+        type : Number,
+         default: 0,
     }
 },
     {

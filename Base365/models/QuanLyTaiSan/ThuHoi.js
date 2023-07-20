@@ -48,13 +48,16 @@ const model_ThuHoi = new mongoose.Schema({
     thuhoi_soluong: {
         type: Number
     },
-    thuhoi_trangthai: {
+    type_thuhoi: {//0: thu hồi 1 ts; 1: thu hồi nhiều tài sản',
+        type: Number
+    },
+    thuhoi_trangthai: {//1: đồng ý thu hồi, 2: từ chối thu hồi,3:nhận bàn giao;4: từ chối bàn giao, 5: đồng ý nhận thu hồi; 6 từ chối nhận ts thu hồi',
         type: Number
     },
     thuhoi__lydo: {
         type: String
     },
-    loai_thuhoi: {
+    loai_thuhoi: {//0: thu hồi nv; 1: thu hồi pb'
         type: Number
     },
     thuhoi_type_quyen: {

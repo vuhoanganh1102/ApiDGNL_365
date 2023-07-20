@@ -1,4 +1,5 @@
 
+const phanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen')
 
 
 exports.getMaxIDTSVT = async (model) => {
@@ -54,11 +55,44 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
   };
 
-<<<<<<< HEAD
+exports.checkRole = (page , role) =>{
+  return async (req ,res ,next)=>{
+    if(req.user.data.type !== 1){
+      if(req.user.data.idQLC&&req.user.data.com_id){
+        const data = await phanQuyen.findOne({id_cty: req.user.data.com_id, id_user:req.user.data.idQLC})
+        if(data){
+          if(page === "TS"){
+            let TS = data.ds_ts.split(",").map(Number)
+            if(TS.includes(role)) return next()
+          }else if(page === "CP_TH"){
+            let CP_TH = data.capphat_thuhoi.split(",").map(Number)
+            if(CP_TH.includes(role)) return next()
+          }else if(page === "DC_BG"){
+            let DC_BG = data.dieuchuyen_bangiao.split(",").map(Number)
+            if(DC_BG.includes(role)) return next()
+          }else if(page === "SC_BD"){
+          let SC_BD = data.suachua_baoduong.split(",").map(Number)
+            if(SC_BD.includes(role)) return next()
+          }else if(page === "M_H_TL"){
+            let M_H_TL = data.mat_huy_tl.split(",").map(Number)
+            if(M_H_TL.includes(role)) return next()
+          }else if(page === "PQ"){
+            let PQ = data.phan_quyen.split(",").map(Number)
+            if(PQ.includes(role)) return next()
+          }else{
+            return res.status(405).json({ message: "user need permision"})
+          }
+          }
+          return res.status(405).json({ message: "user need permision"})
+        }
+      return res.status(405).json({ message: "Missing info User"})
+    }
+    return next()
+}
+}
 exports.numberWithCommas = (number) => {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
-=======
 exports.getDataFromToken = async(req, res, next) => {
     let user = req.user;
     if (!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
@@ -82,7 +116,6 @@ exports.getDataFromToken = async(req, res, next) => {
     req.infoLogin = infoLogin;
     next();
 }
->>>>>>> 1349a59543276b30cf6c4ef4e5e9b495b63bf3f2
 
 exports.getLinkFile = (folder, time, fileName) => {
   let date = new Date(time * 1000);

@@ -54,7 +54,6 @@ const Time_sheets = new mongoose.Schema({
         //id công ty
         type: Number,
         default : 0
-
     },
     note: {
         //note
@@ -64,7 +63,6 @@ const Time_sheets = new mongoose.Schema({
         //địa chỉ bluetooth
         type: String
     },
-  
     status: {
         //trạng thái của công: 1 là công chấm mặt, 2 là công chấm QR, 3 là bù công',
         type: Number,
