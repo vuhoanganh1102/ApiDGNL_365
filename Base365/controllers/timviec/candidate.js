@@ -1860,6 +1860,8 @@ exports.infoCandidate = async(req, res, next) => {
     }
 }
 
+// Tăng lượt view cho ứng viên
+
 //ứng viên ứng tuyển 
 exports.candidateApply = async(req, res, next) => {
     try {
