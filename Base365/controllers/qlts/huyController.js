@@ -62,7 +62,7 @@ exports.createAssetProposeCancel = async (req, res, next) => {
             }
             return functions.setError(res, 'Invalid Number', 400)
         }
-        return functions.setError(res, 'Missing data', 400)
+        return functions.setError(res, 'Missing data input', 400)
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)
@@ -85,7 +85,6 @@ exports.getDataAssetProposeCancel = async (req, res, next) => {
 
         // declare variables conditions 
         let conditions = {};
-        let detailAsset = [];
 
         if (quyen === 2) {
             conditions = {
@@ -404,17 +403,17 @@ exports.detailAssetDisposal = async (req, res, next) => {
                 name_link = 'Danh sách tài sản đã hủy';
             }
             data.huy_date_create = new Date(data.huy_date_create * 1000)
-            let id_ng_tao = await Users.findOne({ idQLC: data.id_ng_tao }, { userName: 1,inForPerson:1,address:1 });
+            let id_ng_tao = await Users.findOne({ idQLC: data.id_ng_tao }, { userName: 1, inForPerson: 1, address: 1 });
             data.id_ng_tao = id_ng_tao.userName;
             data.id_ng_dexuat = id_ng_tao.userName;
             data.link_url = link_url;
             data.name_link = name_link;
             if (data.huy_type_quyen === 1) {
-              data.vitri = id_ng_tao.address;
-              data.doi_tuong_sd = id_ng_tao.userName;
-            }else{
+                data.vitri = id_ng_tao.address;
                 data.doi_tuong_sd = id_ng_tao.userName;
-                let dep = await Department.findOne({dep_id:id_ng_tao.inForPerson.employee.dep_id})
+            } else {
+                let dep = await Department.findOne({ dep_id: id_ng_tao.inForPerson.employee.dep_id })
+                data.doi_tuong_sd = id_ng_tao.userName;
                 data.phongban = dep.dep_name;
                 data.vitri = dep.dep_name;
             }
@@ -428,7 +427,7 @@ exports.detailAssetDisposal = async (req, res, next) => {
 }
 
 // chỉnh sửa đề xuất tài sản huỷ
-exports.updateAssetDisposal = async (req,res,next) => {
+exports.updateAssetDisposal = async (req, res, next) => {
     try {
         // khai báo biến lấy từ token
         let comId = req.comId || 1763;
@@ -436,17 +435,118 @@ exports.updateAssetDisposal = async (req,res,next) => {
         // khai báo biến người dùng nhập vào
         let id = Number(req.body.id);
         let resion = req.body.resion;
-        
+
         // logic xử lý
-        if(id){
-            let check = await Huy.findOneAndUpdate({huy_id:id,id_cty:comId},{huy_lydo:resion});
-            if(check) {
-                return functions.success(res,'Chỉnh sửa đề xuất thành công');
+        if (id) {
+            let check = await Huy.findOneAndUpdate({ huy_id: id, id_cty: comId }, { huy_lydo: resion });
+            if (check) {
+                return functions.success(res, 'Chỉnh sửa đề xuất thành công');
             }
-            return functions.setError(res,'Không tìm thấy đề xuất',404)
+            return functions.setError(res, 'Không tìm thấy đề xuất', 404)
         }
-        return functions.setError(res,'missing id',400)
+        return functions.setError(res, 'missing id', 400)
     } catch (error) {
+        return functions.setError(res, error)
+    }
+};
+
+// danh sách tài sản đã huỷ
+exports.listOfDestroyedAssets = async (req, res, next) => {
+    try {
+        let data = {};
+
+
+        // khai báo trường dữ liệu lấy từ token
+        let comId = req.comId || 1763;
+        let emId = req.emId;
+        let type_quyen = req.type || 1;
+
+        // khai báo biến người dùng nhập vào
+        let keywords = Number(req.body.keywords);
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+
+        // xử lý phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
+        // khai báo điều kiện tìm kiếm
+        let conditions = {};
+        if (type_quyen === 2) {
+            conditions = {
+                $or: [
+                    { id_ng_tao: emId },
+                    { huy_ng_sd: emId },
+                ]
+            }
+        }
+        if (keywords) {
+            conditions.huy_id = { $regex: keywords }
+        }
+        conditions.huy_trangthai = 1;
+        conditions.xoa_huy = 0;
+        conditions.id_cty = comId;
+
+        // logic xử lý
+
+        // đếm số lượng đã huỷ phân trang
+        let daHuy = await Huy.find(conditions).skip(skip).limit(limit).count();
+        // tổng số lượng đã huỷ
+        let tongDaHuy = await Huy.find(conditions).count();
+        // thêm điều kiện tìm kiếm
+        conditions.huy_trangthai = { $in: [0, 2] }
+        let count_dx_huy_vippro = await Huy.find(conditions).count();
+        // sửa điều kiện tìm kiếm
+        //conditions.huy_trangthai = 0;
+        let huy = await Huy.aggregate([
+            { $match: conditions },
+            {
+                $lookup: {
+                    from: 'QLTS_Tai_San',
+                    localField: 'huy_taisan',
+                    foreignField: 'ts_id',
+                    as: 'taiSan'
+                }
+            },
+            { $unwind: { path: "$taiSan", preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'QLTS_Loai_Tai_San',
+                    localField: 'taiSan.id_loai_ts',
+                    foreignField: 'id_loai',
+                    as: 'loaiTS'
+                }
+            },
+            { $unwind: { path: "$loaiTS", preserveNullAndEmptyArrays: true } },
+
+        ]);
+        let id_ng_dexuat_com = await Users.findOne({ idQLC: huy[0].id_ng_dexuat }, { userName: 1, inForPerson: 1, address: 1 });
+       
+        for (let i = 0; i < huy.length; i++) {
+            huy[i].huy_ngayduyet = new Date(huy[i].huy_ngayduyet * 1000)
+            let huy_type_quyen = huy[i].huy_type_quyen;
+            if (huy_type_quyen === 1) {
+                huy[i].nguoitao = id_ng_dexuat_com.userName
+                huy[i].ngdexuat = id_ng_dexuat_com.userName
+                huy[i].phongban = id_ng_dexuat_com.userName
+            } else {
+                let id_ng_dexuat_em = await Users.findOne({ idQLC: huy[i].id_ng_dexuat }, { userName: 1, inForPerson: 1, address: 1 });
+                let dep = await Department.findOne({ dep_id: id_ng_dexuat_em.inForPerson.employee.dep_id })
+                huy[i].nguoitao = id_ng_dexuat_em.userName
+                huy[i].ngdexuat = id_ng_dexuat_em.userName
+                huy[i].phongban = dep.dep_name
+            }
+            // lấy tên người duyệt
+            let ngduyet = await Users.findOne({ idQLC: huy[i].id_ng_duyet }, { userName: 1, inForPerson: 1, address: 1 });
+            huy[i].ngduyet = ngduyet.userName;
+        }
+        data.daHuy = daHuy;
+        data.tongDaHuy = tongDaHuy;
+        data.count_dx_huy_vippro = count_dx_huy_vippro;
+        data.huy = huy;
+        return functions.success(res, 'get data success', { data })
+    } catch (error) {
+        console.error(error)
         return functions.setError(res, error)
     }
 };

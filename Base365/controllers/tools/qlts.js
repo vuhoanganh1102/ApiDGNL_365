@@ -833,6 +833,8 @@ exports.toolHuy = async (req, res, next) => {
 
 exports.toolThanhLy = async (req, res, next) => {
     try {
+        let page = 1;
+        let result = true;
         do {
             let listItems = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 25 })
             let data = listItems.data.items;
@@ -840,13 +842,17 @@ exports.toolThanhLy = async (req, res, next) => {
                 for (let i = 0; i < data.length; i++) {
                     const element = data[i];
                     const html = JSON.stringify(element.html);
-                    // let updateAt = element.update_time;
-                    // if (updateAt == 0) {
-                    //     updateAt = null;
-                    // };
-                    const sell = new ThanhLy({
-                        _id: element.tl_id,
-                        thanhly_taisan: element.thanhly_taisan,
+                    let str = element.thanhly_taisan
+                    str = str.replaceAll('[[','')
+                    str = str.replaceAll(']]','')
+                    str = str.replaceAll('"','')
+                    str = str.replaceAll('ds_tl:','')
+                    str = str.replaceAll('{','')
+                    str = str.replaceAll('}','')
+                    let thanhly_taisan = str.split(',')[0];
+                    await ThanhLy.create({
+                        tl_id: element.tl_id,
+                        thanhly_taisan: thanhly_taisan,
                         tl_id_bb_cp: element.tl_id_bb_cp,
                         id_cty: element.id_cty,
                         id_ngtao: element.id_ngtao,
@@ -871,8 +877,6 @@ exports.toolThanhLy = async (req, res, next) => {
                         tl_date_delete: element.tl_date_delete,
                         tl_type_quyen_xoa: element.tl_type_quyen_xoa,
                     })
-                    await sell.save()
-
                 }
                 page++;
             } else {
