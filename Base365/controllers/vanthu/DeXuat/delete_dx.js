@@ -20,7 +20,6 @@ exports.delete_dx = async (req, res) => {
     }
     if (type == 1) { // gửi về kiểu mảng / xóa vĩnh viễn đề xuất
       let idArraya = id.map(idItem => parseInt(idItem));
-      console.log(idArraya);
       await De_Xuat.deleteMany({ _id: { $in: idArraya }, com_id: id_com });
       await delete_Dx.deleteMany({
         id_dx_del: { $in: idArraya },
@@ -85,13 +84,12 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
     if (req.user.data.type == 1) {
       com_id = req.user.data.com_id;
       if (time_start && time_end && time_start > time_end) {
-        return res.status(400).json({ error: 'time_start phải nhỏ hơn time_end' });
+        return functions.setError(res, 'time_start phải nhỏ hơn time_end', 400);
       }
       const query = {
         com_id,
         del_type: 2,
       };
-
       // Bổ sung điều kiện tìm kiếm
       if (id_user) {
         query.id_user = id_user;
@@ -112,14 +110,13 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
       const listDeXuatCom = await De_Xuat.find(query)
         .skip((page - 1) * pageSize)
         .limit(pageSize);
-      return res.status(200).json({ listDeXuatCom, totalPages });
+      return functions.success(res, 'get data success', { listDeXuatCom, totalPages });
     } else if (req.user.data.type == 2) {
       com_id = req.user.data.com_id;
       // Kiểm tra điều kiện time_start và time_end
       if (time_start && time_end && time_start > time_end) {
-        return res.status(400).json({ error: 'time_start phải nhỏ hơn time_end' });
+        return functions.setError(res, 'time_start phải nhỏ hơn time_end', 400);
       }
-
       const query = {
         user_del: req.user.data.idQLC,
         del_type: 2,
@@ -137,15 +134,13 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
           $lte: new Date(time_end),
         };
       }
-
       const totalCount = await De_Xuat.countDocuments(query);
       const totalPages = Math.ceil(totalCount / pageSize);
       const listDeXuatUser = await De_Xuat.find(query)
         .populate('delete_dx')
         .skip((page - 1) * pageSize)
         .limit(pageSize);
-
-      return res.status(200).json({ listDeXuatUser, totalPages });
+      return functions.success(res, 'get data success', { listDeXuatUser, totalPages  });
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }

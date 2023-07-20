@@ -86,9 +86,9 @@ exports.deXuat_user_send = async (req, res) => {
       return functions.setError(res,'type khong hop le',400)
     }
   }catch (error) {
-    console.log(error);
-    return functions.setError(res, error)
-  }
+    console.error('Failed ', error);
+    return functions.setError(res, error);
+}
 };
 
 //trang gửi đến tôi 
@@ -167,9 +167,9 @@ exports.de_xuat_send_to_me = async (req, res) => {
       return functions.setError(res,'type khong hop le',400)
       }
   }  catch (error) {
-    console.log(error);
-    return functions.setError(res, error)
-  }
+    console.error('Failed ', error);
+    return functions.setError(res, error);
+}
 }
 
 //trang người theo dõi 
@@ -255,9 +255,9 @@ exports.de_xuat_theo_doi = async (req, res) => {
       return functions.success(res,'get data success',{showTC})
     }
   }  catch (error) {
-    console.log(error);
-    return functions.setError(res, error)
-  }
+    console.error('Failed ', error);
+    return functions.setError(res, error);
+}
 }
 
 
@@ -312,7 +312,7 @@ exports.admin_danh_sach_de_xuat = async (req, res) => {
     const totalPages = Math.ceil(totalCount / perPage);
     return functions.success(res,'get data success',{data: showDeXuat, totalPages })
   } catch (error) {
-    console.log(error);
-    return functions.setError(res, error)
-  }
+    console.error('Failed ', error);
+    return functions.setError(res, error);
+}
 };

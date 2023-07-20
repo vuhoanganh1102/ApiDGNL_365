@@ -7,24 +7,9 @@ const user = require('../../models/Users')
 
 exports.create = async(req,res)=>{
     try{
-        const type = req.user.data.type
-        const id_cty = ""
-        if(type == 1){
-             id_cty = req.user.data.idQLC
-        }else{
-            id_cty = req.user.data.inForPerson.employee.com_id
-        }
-        const idQLC = req.user.data.idQLC
-        const pageNumber = req.body.pageNumber || 1;
-        const id_pb = req.body.id_pb;
-        const cp_lydo = req.body.cp_lydo;
-        const cp_trangthai = req.body.cp_trangthai;
-        const ts_daidien_nhan = req.body.ts_id;
-        const id_ng_thuchien = req.body.id_ng_thuchien;
-        const id_ng_daidien = req.body.id_ng_daidien;
-        let data = []
-        let listItemsType = []
-        let soluong_cp_bb = {}
+        const role = req.user.data.role
+        const com_id = req.user.data.com_id
+        
 
         let max =  await capPhat.findOne({},{},{sort: {_id : -1}}).lean() || 0;
         let maxThongBao = await thongBao.findOne({},{},{sort: {_id : -1}}).lean() || 0 ;
