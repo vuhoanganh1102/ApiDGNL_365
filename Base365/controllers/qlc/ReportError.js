@@ -12,11 +12,7 @@ exports.create = async(req, res) => {
         let type = req.body.type
         let { device_id, detail_error, gallery_image_error, from_source } = req.body;
         let File = req.files || null;
-<<<<<<< HEAD
         gallery_image_error = null;
-=======
-            gallery_image_error = null;
->>>>>>> aca7ebaa01acd2fb09c3b54e4bf157a3fd33182d
         let now = new Date()
         if (detail_error) {
             if (File && File.gallery_image_error) {
@@ -27,7 +23,6 @@ exports.create = async(req, res) => {
                 gallery_image_error = upload
             }
             gallery_image_error = upload
-<<<<<<< HEAD
         }
         let max = await report.findOne({}, {}, { sort: { id_report: -1 } }).lean() || 0
         let reports = new report({
@@ -47,27 +42,6 @@ exports.create = async(req, res) => {
 } catch (error) {
     console.log(error);
     return functions.setError(res, error)
-=======
-          }
-            let max = await report.findOne({},{},{sort : { id_report: -1 }}).lean() || 0 
-            let reports = new report({
-                id_report: Number(max.id_report) + 1 || 1,
-                user_id: idQLC,
-                type_user: type,
-                device_id: device_id,
-                detail_error: detail_error,
-                gallery_image_error: gallery_image_error,
-                time_create: Date.parse(now),
-                from_source: from_source
-            })
-            await reports.save()
-                return functions.success(res, "Đánh giá của bạn đã được gửi đi")
-        }
-        return functions.setError(res, "chua nhap chi tiet")
-    } catch (error) { 
-        console.log(error); 
-        return functions.setError(res, error)
-    }
- 
->>>>>>> aca7ebaa01acd2fb09c3b54e4bf157a3fd33182d
+}
+
 }
