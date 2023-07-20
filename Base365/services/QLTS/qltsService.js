@@ -55,8 +55,6 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
   };
 
-<<<<<<< HEAD
-=======
 exports.checkRole = (page , role) =>{
   return async (req ,res ,next)=>{
     if(req.user.data.type !== 1){
@@ -92,7 +90,6 @@ exports.checkRole = (page , role) =>{
     return next()
 }
 }
->>>>>>> ef472222c08ae026737977f3041429483284b4bb
 exports.numberWithCommas = (number) => {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
