@@ -737,9 +737,9 @@ exports.toolSettingDX = async (req, res, next) => {
                     if (data[i].update_time != 0) {
                         updateTime = new Date(data[i].update_time * 1000)
                     }
-                    let post = await fnc.getDatafindOne(settingDx, {_id: data[i].id_setting})
+                    let post = await fnc.getDatafindOne(setingDx, {_id: data[i].id_setting})
                     if (post == null) {
-                        let newSDX = new settingDx({
+                        let newSDX = new setingDx({
                             _id: data[i].id_setting,
                             com_id: data[i].com_id,
                             type_setting: data[i].type_setting,
