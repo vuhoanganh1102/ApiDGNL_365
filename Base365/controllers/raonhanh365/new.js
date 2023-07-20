@@ -645,7 +645,7 @@ exports.getNew = async (req, res, next) => {
                     as: "user",
                 },
             },
-            {$unwind: { path: "$user", preserveNullAndEmptyArrays: true }},
+            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
             {
                 $project: searchItem,
             },
@@ -1043,7 +1043,7 @@ exports.searchNew = async (req, res, next) => {
                 },
             },
             { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-            { $project: searchItem}
+            { $project: searchItem }
         ]);
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         for (let i = 0; i < data.length; i++) {
@@ -1656,9 +1656,7 @@ exports.getDetailNew = async (req, res, next) => {
             searchitem[`${cate_Special}`] = 1;
         }
         let data = await New.aggregate([
-            {
-                $match: { _id: id_new },
-            },
+            { $match: { _id: id_new } },
             {
                 $lookup: {
                     from: "Users",
@@ -1667,12 +1665,9 @@ exports.getDetailNew = async (req, res, next) => {
                     as: "user",
                 },
             },
-            {
-                $match: { buySell: buysell },
-            },
-            {
-                $project: searchitem,
-            },
+            { $unwind: "user" },
+            { $match: { buySell: buysell } },
+            { $project: searchitem },
 
         ]);
 
