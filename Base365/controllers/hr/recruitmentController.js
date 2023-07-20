@@ -418,6 +418,9 @@ exports.listSchedule = async(req, res, next) => {
         let {page, pageSize} = req.body;
         if(!page) page = 1;
         if(!pageSize) pageSize = 3;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
         let comId = req.infoLogin.comId;
         let totalSchedule = await Candidate.aggregate([
                 {$match: {comId: comId, isDelete: 0}},
@@ -457,6 +460,8 @@ exports.listSchedule = async(req, res, next) => {
                     }
                 },
                 { $unwind: { path: "$RecruitmentNews", preserveNullAndEmptyArrays: true } },
+                {$skip: skip},
+                {$limit: pageSize}
             ]);
         return functions.success(res, "Get listSchedule success", {totalSchedule, listSchedule})
     }catch(error) {
