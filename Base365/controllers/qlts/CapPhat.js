@@ -96,7 +96,7 @@ exports.edit = async(req,res)=>{
         const cp_lydo = req.body.cp_lydo;
         const cap = await capPhat.findOne({ _id: _id });
             if (!cap) {
-                fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+                return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
                 await capPhat.findOneAndUpdate({ _id: _id }, {
                     id_cty: id_cty,
@@ -104,8 +104,7 @@ exports.edit = async(req,res)=>{
                     cp_lydo : cp_lydo,
                     cp_id_ng_tao :idQLC,
                     })
-                    .then((cap) => fnc.success(res, "cập nhật thành công", {cap}))
-                    .catch((err) => fnc.setError(res, err.message, 511));
+                    return fnc.success(res, "cập nhật thành công", {cap})
             }
 
 
