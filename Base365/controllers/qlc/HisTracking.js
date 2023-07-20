@@ -4,53 +4,45 @@ const calEmp = require('../../models/qlc/CalendarWorkEmployee')
     //thêm chấm công 
 exports.CreateTracking = async(req, res) => {
 
+    try{
+        const { ep_id, com_id, role, ts_image, device, ts_lat, ts_long, ts_location_name, wifi_name, wifi_ip, wifi_mac, shift_id, bluetooth_address, note, at_time, status, ts_error, is_success, dep_id } = req.body;
 
-    const { ep_id, com_id, role, ts_image, device, ts_lat, ts_long, ts_location_name, wifi_name, wifi_ip, wifi_mac, shift_id, bluetooth_address, note, at_time, status, ts_error, is_success, dep_id } = req.body;
 
-
-    if ((ep_id && com_id && role && ts_image && device && ts_lat && ts_long && ts_location_name && wifi_name && wifi_ip && wifi_mac && shift_id && bluetooth_address && note && at_time && status && ts_error && is_success) == undefined) {
-        functions.setError(res, "some field required");
-    } else if (isNaN(com_id)) {
-        functions.setError(res, "Company id must be a number");
-    } else if (isNaN(ep_id)) {
-        functions.setError(res, "ep_id id must be a number");
-    } else {
-        let maxId = await functions.getMaxID(Tracking);
-        if (!maxId) {
-            maxId = 0;
+        if ((ep_id && com_id && role && ts_image && device && ts_lat && ts_long && ts_location_name && wifi_name && wifi_ip && wifi_mac && shift_id && bluetooth_address && note && at_time && status && ts_error && is_success) == undefined) {
+            
+            let maxId = await Tracking.findOne({},{},{sort: {sheet_id : -1}}).lean()||0;
+            const sheet_id = Number(maxId.sheet_id) + 1||1;
+            const tracking = new Tracking({
+                sheet_id: sheet_id,
+                ep_id: ep_id,
+                com_id: com_id,
+                dep_id: dep_id,
+                role: role,
+                ts_image: ts_image,
+                at_time: new Date(),
+                device: device,
+                ts_lat: ts_lat,
+                ts_long: ts_long,
+                ts_location_name: ts_location_name,
+                wifi_name: wifi_name,
+                wifi_ip: wifi_ip,
+                wifi_mac: wifi_mac,
+                shift_id: shift_id,
+                status: status,
+                bluetooth_address: bluetooth_address,
+                ts_error: ts_error,
+                is_success: is_success,
+                note: note
+            });
+            await tracking.save()
+                return functions.success(res, "Tracking successful", {tracking})
+            }
+            return functions.setError(res, "some field required");
+        }catch(e){
+            return functions.setError(res, err.message)
         }
-        const sheet_id = Number(maxId) + 1;
-        const tracking = new Tracking({
-            sheet_id: sheet_id,
-            ep_id: ep_id,
-            com_id: com_id,
-            dep_id: dep_id,
-            role: role,
-            ts_image: ts_image,
-            at_time: new Date(),
-            device: device,
-            ts_lat: ts_lat,
-            ts_long: ts_long,
-            ts_location_name: ts_location_name,
-            wifi_name: wifi_name,
-            wifi_ip: wifi_ip,
-            wifi_mac: wifi_mac,
-            shift_id: shift_id,
-            status: status,
-            bluetooth_address: bluetooth_address,
-            ts_error: ts_error,
-            is_success: is_success,
-            note: note
-        });
-        await tracking.save()
-            .then(() => {
-                functions.success(res, "Tracking successful", {tracking})
-            })
-            .catch(err => {
-                functions.setError(res, err.message)
-            })
-    }
 };
+
 // Set current date TimeStamp, eg: '1666512804163'
 // TimeStamp: new Date().getTime().toString()
 
@@ -65,33 +57,28 @@ exports.getListUserTrackingSuccess = async(req, res) => {
         const request = req.body;
         let com_id = request.com_id
         shift_id = request.shift_id
-        at_time = request.at_time || true
         inputNew = request.inputNew
         inputOld = request.inputOld
-        if ((com_id && shift_id) == undefined) {
-            functions.setError(res, "lack of input")
-        } else if (isNaN(com_id && shift_id)) {
-            functions.setError(res, "id must be a Number")
-        } else {
-            const data = await Tracking.find({ com_id: com_id, shift_id: shift_id, at_time: { $gte: inputOld, $lte: inputNew } }).select('_id ep_id ts_image ts_location_name at_time shift_id status is_success ').skip((pageNumber - 1) * 20).limit(20).sort({ sheet_id: -1 });
-            if (data) { //lấy thành công danh sách NV đã chấm công 
+        ep_id = request.ep_id
+        let conditions = {}
+        if(shift_id) conditions.shift_id = shift_id
+        if(inputNew&&inputOld) conditions["at_time"] =  { $gte: inputOld, $lte: inputNew }
+        if(ep_id) conditions.ep_id = ep_id
+   
+            const data = await Tracking.find(conditions).select('_id ep_id ts_image ts_location_name at_time shift_id status is_success ').skip((pageNumber - 1) * 20).limit(20).sort({ sheet_id: -1 });
+            if (data) {
+                 //lấy thành công danh sách NV đã chấm công 
                 //so sanh loại bỏ phan tu trung lap
                 function compare(personA, personB) {
                     return personA.ep_id === personB.ep_id && personA.shift_id === personB.shift_id;
                 }
-
                 let newData = functions.arrfil(data, compare);
-
-
                 return await functions.success(res, 'Lấy thành công', { newData });
             }
             return functions.setError(res, 'Không có dữ liệu', 404);
-        }
-
-
-    } catch (err) {
-        functions.setError(res, err.message);
-    };
+        } catch (err) {
+            functions.setError(res, err.message);
+        };
 
 
 };

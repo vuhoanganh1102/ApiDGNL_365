@@ -447,14 +447,16 @@ exports.toolCapPhat = async (req, res, next) => {
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const element = data[i];
-                    const html = JSON.stringify(element.html);
-                    // let updateAt = element.update_time;
-                    // if (updateAt == 0) {
-                    //     updateAt = null;
-                    // };
+                    const ds_ts = JSON.parse(data[i].cap_phat_taisan).ds_ts;
+                    const updated_ds_ts = ds_ts.map((item) => ({
+                        ts_id: item[0],
+                        sl_th: item[1]
+                    }));
                     const capPhat = new CapPhat({
-                        _id: element.cp_id,
-                        cap_phat_taisan: element.cap_phat_taisan,
+                        cp_id: element.cp_id,
+                        cap_phat_taisan: {
+                            ds_ts : updated_ds_ts
+                        },
                         id_cty: element.id_cty,
                         id_nhanvien: element.id_nhanvien,
                         id_phongban: element.id_phongban,
