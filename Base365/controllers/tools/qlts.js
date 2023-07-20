@@ -4,27 +4,27 @@ const TaiSan = require('../../models/QuanLyTaiSan/TaiSan');
 const ViTriTs = require('../../models/QuanLyTaiSan/ViTri_ts');
 const fnc = require('../../services/functions');
 const Nhomts = require('../../models/QuanLyTaiSan/NhomTaiSan');
-const TaiSanVT = require('../../models/QuanLyTaiSan/TaiSanVitri')
-const PhanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen')
+const TaiSanVT = require('../../models/QuanLyTaiSan/TaiSanVitri');
+const PhanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen');
 const axios = require('axios');
-const vi_tri_ts = require('../../models/QuanLyTaiSan/ViTri_ts')
-const ThuHoiTaiSan = require('../../models/QuanLyTaiSan/ThuHoi')
-const ThongTinTuyChinh = require('../../models/QuanLyTaiSan/ThongTinTuyChinh')
-const ThongBao = require('../../models/QuanLyTaiSan/ThongBao')
-const TheoDoiCongSuat = require('../../models/QuanLyTaiSan/TheoDoiCongSuat')
-const ThanhLy = require('../../models/QuanLyTaiSan/ThanhLy')
-const TaiSanDangSuDung = require('../../models/QuanLyTaiSan/TaiSanDangSuDung')
-const TaiSanDaiDienNhan = require('../../models/QuanLyTaiSan/TaiSanDaiDienNhan')
-const CapPhat = require('../../models/QuanLyTaiSan/CapPhat')
+const vi_tri_ts = require('../../models/QuanLyTaiSan/ViTri_ts');
+const ThuHoiTaiSan = require('../../models/QuanLyTaiSan/ThuHoi');
+const ThongTinTuyChinh = require('../../models/QuanLyTaiSan/ThongTinTuyChinh');
+const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
+const TheoDoiCongSuat = require('../../models/QuanLyTaiSan/TheoDoiCongSuat');
+const ThanhLy = require('../../models/QuanLyTaiSan/ThanhLy');
+const TaiSanDangSuDung = require('../../models/QuanLyTaiSan/TaiSanDangSuDung');
+const TaiSanDaiDienNhan = require('../../models/QuanLyTaiSan/TaiSanDaiDienNhan');
+const CapPhat = require('../../models/QuanLyTaiSan/CapPhat');
 const KiemKe = require('../../models/QuanLyTaiSan/KiemKe');
 const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
 const SuaChua = require('../../models/QuanLyTaiSan/Sua_chua')
 const KhauHao = require('../../models/QuanLyTaiSan/KhauHao');
 const Huy = require('../../models/QuanLyTaiSan/Huy');
 const Mat = require('../../models/QuanLyTaiSan/Mat')
-const tailieuDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem')
-const BaoHanh = require('../../models/QuanLyTaiSan/BaoHanh')
-
+const tailieuDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem');
+const BaoHanh = require('../../models/QuanLyTaiSan/BaoHanh');
+const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
 
 
 
@@ -1269,5 +1269,42 @@ exports.ToolDieuChuyen = async (req, res) => {
         } catch (error) {
             return res.status(500).json({ message: error.message });
         }
+    }
+}
+
+exports.toolPhanBo = async (req, res, next) => {
+    let page = 1;
+    let result = true;
+    try {
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 15 });
+            let listItem = data.data.items;
+            if (listItem.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new PhanBo({
+                        id_pb: listData[i].id_pb,
+                        id_cty: listData[i].id_cty,
+                        id_ts: listData[i].id_ts,
+                        gia_tri: listData[i].gia_tri,
+                        soky_pb: listData[i].soky_pb,
+                        loai_ky: listData[i].loai_ky,
+                        gt_da_pb: listData[i].gt_da_pb,
+                        gt_cho_pb: listData[i].gt_cho_pb,
+                        ngay_batdau: listData[i].ngay_batdau,
+                        date_create: listData[i].date_create
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, 'Thành công');
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
 }
