@@ -1,17 +1,29 @@
 const mongoose = require('mongoose');
 const model_CapPhat = new mongoose.Schema({
-    _id:{
+    cp_id:{
         type: Number,
         require : true
     },
     cap_phat_taisan:{
-        type :String,
+        ds_ts : {
+            type: [
+              {
+                ts_id: {
+                  type: Number
+                },
+                sl_th: {
+                  type: Number
+                }
+              }
+            ]
+          }
     },
     id_cty:{
         type: Number,
     },
     id_nhanvien:{
-        type: Number
+        type: Number,
+        default : 0 ,
     },
     id_phongban:{
         type: Number
@@ -31,6 +43,7 @@ const model_CapPhat = new mongoose.Schema({
     cp_hoanthanh:{
         type : Number
     },
+    //1:xác nhận bàn giao;2: từ chối bàn giao;4: từ chối tiếp nhận;5:hoàn thành;6 tieeps nhận
     cp_trangthai:{
         type : Number
     },

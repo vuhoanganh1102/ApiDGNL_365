@@ -4,26 +4,29 @@ const TaiSan = require('../../models/QuanLyTaiSan/TaiSan');
 const ViTriTs = require('../../models/QuanLyTaiSan/ViTri_ts');
 const fnc = require('../../services/functions');
 const Nhomts = require('../../models/QuanLyTaiSan/NhomTaiSan');
-const TaiSanVT = require('../../models/QuanLyTaiSan/TaiSanVitri')
-const PhanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen')
+const TaiSanVT = require('../../models/QuanLyTaiSan/TaiSanVitri');
+const PhanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen');
 const axios = require('axios');
-const vi_tri_ts = require('../../models/QuanLyTaiSan/ViTri_ts')
-const ThuHoiTaiSan = require('../../models/QuanLyTaiSan/ThuHoi')
-const ThongTinTuyChinh = require('../../models/QuanLyTaiSan/ThongTinTuyChinh')
-const ThongBao = require('../../models/QuanLyTaiSan/ThongBao')
-const TheoDoiCongSuat = require('../../models/QuanLyTaiSan/TheoDoiCongSuat')
-const ThanhLy = require('../../models/QuanLyTaiSan/ThanhLy')
-const TaiSanDangSuDung = require('../../models/QuanLyTaiSan/TaiSanDangSuDung')
-const TaiSanDaiDienNhan = require('../../models/QuanLyTaiSan/TaiSanDaiDienNhan')
-const CapPhat = require('../../models/QuanLyTaiSan/CapPhat')
+const vi_tri_ts = require('../../models/QuanLyTaiSan/ViTri_ts');
+const ThuHoiTaiSan = require('../../models/QuanLyTaiSan/ThuHoi');
+const ThongTinTuyChinh = require('../../models/QuanLyTaiSan/ThongTinTuyChinh');
+const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
+const TheoDoiCongSuat = require('../../models/QuanLyTaiSan/TheoDoiCongSuat');
+const ThanhLy = require('../../models/QuanLyTaiSan/ThanhLy');
+const TaiSanDangSuDung = require('../../models/QuanLyTaiSan/TaiSanDangSuDung');
+const TaiSanDaiDienNhan = require('../../models/QuanLyTaiSan/TaiSanDaiDienNhan');
+const CapPhat = require('../../models/QuanLyTaiSan/CapPhat');
 const KiemKe = require('../../models/QuanLyTaiSan/KiemKe');
 const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
-
-const Huy = require('../../models/QuanLyTaiSan/Huy')
+const SuaChua = require('../../models/QuanLyTaiSan/Sua_chua')
+const KhauHao = require('../../models/QuanLyTaiSan/KhauHao');
+const Huy = require('../../models/QuanLyTaiSan/Huy');
 const Mat = require('../../models/QuanLyTaiSan/Mat')
-const DieuChuyen = require("../../models/QuanLyTaiSan/DieuChuyen");
-const QuanTrinhSuDung = require("../../models/QuanLyTaiSan/QuaTrinhSuDung");
-const SuaChua = require("../../models/QuanLyTaiSan/Sua_chua");
+const tailieuDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem');
+const BaoHanh = require('../../models/QuanLyTaiSan/BaoHanh');
+const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
+
+
 
 
 
@@ -444,14 +447,16 @@ exports.toolCapPhat = async (req, res, next) => {
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const element = data[i];
-                    const html = JSON.stringify(element.html);
-                    // let updateAt = element.update_time;
-                    // if (updateAt == 0) {
-                    //     updateAt = null;
-                    // };
+                    const ds_ts = JSON.parse(data[i].cap_phat_taisan).ds_ts;
+                    const updated_ds_ts = ds_ts.map((item) => ({
+                        ts_id: item[0],
+                        sl_th: item[1]
+                    }));
                     const capPhat = new CapPhat({
-                        _id: element.cp_id,
-                        cap_phat_taisan: element.cap_phat_taisan,
+                        cp_id: element.cp_id,
+                        cap_phat_taisan: {
+                            ds_ts : updated_ds_ts
+                        },
                         id_cty: element.id_cty,
                         id_nhanvien: element.id_nhanvien,
                         id_phongban: element.id_phongban,
@@ -831,6 +836,8 @@ exports.toolHuy = async (req, res, next) => {
 
 exports.toolThanhLy = async (req, res, next) => {
     try {
+        let page = 1;
+        let result = true;
         do {
             let listItems = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 25 })
             let data = listItems.data.items;
@@ -838,13 +845,17 @@ exports.toolThanhLy = async (req, res, next) => {
                 for (let i = 0; i < data.length; i++) {
                     const element = data[i];
                     const html = JSON.stringify(element.html);
-                    // let updateAt = element.update_time;
-                    // if (updateAt == 0) {
-                    //     updateAt = null;
-                    // };
-                    const sell = new ThanhLy({
-                        _id: element.tl_id,
-                        thanhly_taisan: element.thanhly_taisan,
+                    let str = element.thanhly_taisan
+                    str = str.replaceAll('[[','')
+                    str = str.replaceAll(']]','')
+                    str = str.replaceAll('"','')
+                    str = str.replaceAll('ds_tl:','')
+                    str = str.replaceAll('{','')
+                    str = str.replaceAll('}','')
+                    let thanhly_taisan = str.split(',')[0];
+                    await ThanhLy.create({
+                        tl_id: element.tl_id,
+                        thanhly_taisan: thanhly_taisan,
                         tl_id_bb_cp: element.tl_id_bb_cp,
                         id_cty: element.id_cty,
                         id_ngtao: element.id_ngtao,
@@ -869,8 +880,6 @@ exports.toolThanhLy = async (req, res, next) => {
                         tl_date_delete: element.tl_date_delete,
                         tl_type_quyen_xoa: element.tl_type_quyen_xoa,
                     })
-                    await sell.save()
-
                 }
                 page++;
             } else {
@@ -1002,6 +1011,110 @@ exports.toolSuaChua = async (req, res, next) => {
     } catch (error) {
         console.log(error);
         return fnc.setError(res, error.message);
+    }
+}
+
+exports.toolKhauHao = async (req, res, next) => {
+    try {
+        let result = true;
+        page = 1;
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 9 });
+            let listData = data.data.items;
+            if (listData.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new KhauHao({
+                        id_khau_hao: listData[i].id_khau_hao,
+                        kh_id_cty: listData[i].kh_id_cty,
+                        kh_id_ts: listData[i].kh_id_ts,
+                        kh_gt: listData[i].kh_gt,
+                        kh_so_ky: listData[i].kh_so_ky,
+                        kh_type_ky: listData[i].kh_type_ky,
+                        kh_gt_da_kh: listData[i].kh_gt_da_kh,
+                        kh_gt_cho_kh: listData[i].kh_gt_cho_kh,
+                        kh_day_start: listData[i].kh_day_start,
+                        kh_day_create: listData[i].kh_day_create,
+                        kh_ng_tao: listData[i].kh_ng_tao,
+                        kh_quyen_tao: listData[i].kh_quyen_tao
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else { result = false; }
+
+        } while (result);
+        await fnc.success(res, "thanh cong ");
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+
+exports.tailieuDinhKem = async (req, res, next) => {
+    try {
+        let result = true;
+        page = 1;
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 24 });
+            let listData = data.data.items;
+            if (listData.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new tailieuDinhKem({
+                        tep_id: listData[i].tep_id,
+                        id_cty: listData[i].id_cty,
+                        id_ts: listData[i].id_ts,
+                        tep_ten: listData[i].tep_ten,
+                        tep_ngay_upload: listData[i].tep_ngay_upload, 
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else { result = false; }
+
+        } while (result);
+        await fnc.success(res, "thanh cong ");
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
+    }
+}
+exports.BaoHanh = async (req, res, next) => {
+    try {
+        let result = true;
+        page = 1;
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 2 });
+            let listData = data.data.items;
+            if (listData.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new BaoHanh({
+                        bh_id: listData[i].bh_id,
+                        baohanh_taisan: listData[i].baohanh_taisan,
+                        id_cty: listData[i].id_cty,
+                        bh_thoigian: listData[i].bh_thoigian,
+                        bh_loai_thoigian: listData[i].bh_loai_thoigian,
+                        bh_dieu_kien: listData[i].bh_dieu_kien,
+                        bh_han_bh: listData[i].bh_han_bh,
+                        xoa_baohanh: listData[i].xoa_baohanh,
+                        date_delete: listData[i].date_delete,
+                        date_create: listData[i].date_create
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else { result = false; }
+
+        } while (result);
+        await fnc.success(res, "thanh cong ");
+    } catch (error) {
+        console.log(error)
+        return fnc.setError(res, error)
     }
 }
 
@@ -1156,5 +1269,42 @@ exports.ToolDieuChuyen = async (req, res) => {
         } catch (error) {
             return res.status(500).json({ message: error.message });
         }
+    }
+}
+
+exports.toolPhanBo = async (req, res, next) => {
+    let page = 1;
+    let result = true;
+    try {
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 15 });
+            let listItem = data.data.items;
+            if (listItem.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new PhanBo({
+                        id_pb: listData[i].id_pb,
+                        id_cty: listData[i].id_cty,
+                        id_ts: listData[i].id_ts,
+                        gia_tri: listData[i].gia_tri,
+                        soky_pb: listData[i].soky_pb,
+                        loai_ky: listData[i].loai_ky,
+                        gt_da_pb: listData[i].gt_da_pb,
+                        gt_cho_pb: listData[i].gt_cho_pb,
+                        ngay_batdau: listData[i].ngay_batdau,
+                        date_create: listData[i].date_create
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, 'Thành công');
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
 }

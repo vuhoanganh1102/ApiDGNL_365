@@ -10,6 +10,9 @@ var capPhat = require('./qlts/CapPhat.js')
 var ThuHoi = require('./qlts/ThuHoi.js')
 var mat = require('./qlts/matRouter')
 var huy = require('./qlts/huyRouter')
+var phanQuyen = require('./qlts/phanQuyen')
+var thanhly = require('./qlts/thanhLyRouter')
+
 var SuaChua = require('./qlts/SuaChua_BaoDuong/SuaChua');
 var kiemKeRouter = require('./qlts/kiemKeRouter');
 var DieuChuyenBanGiao = require("./qlts/DieuChuyenBanGiao/DieuChuyenViTri");
@@ -30,11 +33,14 @@ router.use('/loaits', loaiTsRouter)
 // vị trí tài sản
 router.use('/vitrits', vitriTsRouter)
 //API mất huỷ thanh lý
-router.use('/mat', mat)
-router.use('/huy', huy)
+router.use('/mat',mat)
+router.use('/huy',huy)
+router.use('/thanhly',thanhly)
 //api kiem ke
 router.use('/kiemKe', [functions.checkToken, functions.dataFromToken], kiemKeRouter);
 
+//api Phân quyền
+router.use('/phanQuyen',phanQuyen)
 //suachua
 //Tinh
 router.use('/SuaChua', SuaChua);

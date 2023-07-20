@@ -24,4 +24,7 @@ router.get('/detailAssetDisposal',functions.checkToken,controller.detailAssetDis
 
 // chỉnh sửa đề xuất tài sản huỷ
 router.put('/updateAssetDisposal',functions.checkToken,formData.parse(),controller.updateAssetDisposal)
+
+// danh sách tài sản đã huỷ
+router.post('/listOfDestroyedAssets',functions.checkToken,formData.parse(),controller.listOfDestroyedAssets)
 module.exports = router
