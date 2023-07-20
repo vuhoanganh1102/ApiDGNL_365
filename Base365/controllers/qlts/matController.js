@@ -6,7 +6,7 @@ const QuaTrinhSD = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
 
 exports.getListDataLostAssets = async (req,res,next) => {
     try {
-        let {page, pageSize, key} = req.body;
+        let {page, pageSize, key, dataType} = req.body;
         if(!page) page = 1;
         if(!pageSize) pageSize = 10;
         page = Number(page);
@@ -14,9 +14,13 @@ exports.getListDataLostAssets = async (req,res,next) => {
         const skip = (page-1)*pageSize;
         let id_cty = req.com_id;
 
-        let condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}};
+        let condition = {id_cty: id_cty, xoa_dx_mat: 0};
         if(key) condition.mat_id = Number(key);
 
+        //dataType = 1, 2: bao cao mat, cho den bu
+        if(dataType !=1&& dataType !=2) return functions.setError(res, "Truyen datatype = 1, 2!", 405);
+        if(dataType == 1) condition.mat_trangthai = {$in: [0, 2]};
+        if(dataType == 2) condition.mat_trangthai = 3;
         let danhSachMat = await Mat.aggregate([
             {$match: condition},
             {
@@ -42,9 +46,9 @@ exports.getListDataLostAssets = async (req,res,next) => {
             {$limit: pageSize}
         ]);
         const total = await functions.findCount(Mat, condition);
-        return functions.success(res,'get data success',{total, danhSachMat})
+        return functions.success(res,'get data success',{page, pageSize, total, danhSachMat})
     } catch (error) {
-        return functions.setError(res,error);
+        return functions.setError(res,error.message);
     }
 };
 
@@ -230,7 +234,49 @@ exports.duyet = async(req, res, next) => {
 
 exports.tuChoi = async(req, res, next) => {
     try{
+        let com_id = req.com_id;
+        let {id_bb, content} = req.body.id_bb;
+        if(id_bb && content) {
+            let tuchoi_mat = await Mat.findOneAndUpdate({mat_id: id_bb, id_cty: com_id}, {mat_trangthai: 2, mat_lydo_tuchoi: content}, {new: true});
+            if(tuchoi_mat) {
+                return functions.success(res, "Tu choi mat thanh cong!");
+            }
+            return functions.setError(res, "Tu choi mat that bai!", 406); 
+        } 
+        return functions.setError(res, "Missing input id_bb or content!", 405);
+    }catch(e){
+        return functions.setError(res, e.message);
+    }
+}
 
+exports.deleteMat = async(req, res, next) => {
+    try{
+        let {id_bb, datatype} = req.body;
+        let type_quyen = req.type;
+        let id_ng_xoa = req.idQLC;
+        let com_id = req.com_id;
+        let date_delete = functions.convertTimestamp(Date.now());
+        if(!id_bb) return functions.setError(res, "Missing input id_bb!", 404);
+        if(datatype != 1 && datatype != 2 && datatype != 3) return functions.setError(res, "Truyen datatype = 1, 2, 3!", 405);
+        if(datatype == 1) {
+            let mat = await Mat.findOneAndUpdate({mat_id: id_bb, id_cty: com_id}, {
+                xoa_dx_mat: 1, mat_type_quyen_xoa: type_quyen, mat_id_ng_xoa: id_ng_xoa, mat_date_delete: date_delete
+            }, {new: true});
+            if(mat) return functions.success(res, "Xoa tam thoi thanh cong!");
+            return functions.setError(res, "Xoa tam thoi that bai!", 504);
+        }
+        if(datatype == 2) {
+            let mat = await Mat.findOneAndUpdate({mat_id: id_bb, id_cty: com_id}, {
+                xoa_dx_mat: 0, mat_type_quyen_xoa: 0, mat_id_ng_xoa: 0, mat_date_delete: ''
+            }, {new: true});
+            if(mat) return functions.success(res, "Khoi phuc thanh cong!");
+            return functions.setError(res, "Khoi phuc that bai!", 504);
+        }
+        if(datatype == 3) {
+            let mat = await Mat.findOneAndDelete({mat_id: id_bb, id_cty: com_id});
+            if(mat) return functions.success(res, "Xoa vinh vien thanh cong!");
+            return functions.setError(res, "Xoa vinh vien that bai!", 504);
+        }
     }catch(e){
         return functions.setError(res, e.message);
     }

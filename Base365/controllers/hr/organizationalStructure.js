@@ -784,16 +784,16 @@ exports.listInfoLeader = async (req, res, next) => {
             let comId = req.infoLogin.comId
             if(!page) page = 1;
             if(!pageSize) pageSize = 5;
-            page = Number(page)
-            pageSize = Number(pageSize)
+            page = Number(page);
+            pageSize = Number(pageSize);
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let listPositionId = [4, 20, 13, 12, 11, 10, 6, 5, 8, 7, 16, 14, 21, 22, 19, 18, 17]
-            let infoLeader = await Users.find({
-                userName: new RegExp(keyword, "i"),
-                "inForPerson.employee.com_id": comId,
-                "inForPerson.employee.position_id": { $in: listPositionId }
-            }, {
+            let condition = {"inForPerson.employee.com_id": comId, "inForPerson.employee.position_id": { $in: listPositionId }};
+            if(keyword) condition.userName = new RegExp(keyword, 'i');
+            let total = await Users.countDocuments(condition);
+
+            let infoLeader = await Users.find(condition, {
                 idQLC: 1,
                 avatarUser: 1,
                 userName: 1,
@@ -801,7 +801,7 @@ exports.listInfoLeader = async (req, res, next) => {
                 "inForPerson.employee.dep_id": 1,
                 "inForPerson.employee.team_id": 1,
                 "inForPerson.employee.group_id": 1,
-            }).skip(skip).limit(limit)
+            }).sort({idQLC: -1}).skip(skip).limit(limit)
 
             let infoLeaderAfter = []
             for (let i = 0; i < infoLeader.length; i++) {
@@ -853,7 +853,7 @@ exports.listInfoLeader = async (req, res, next) => {
             }
 
             if (infoLeader) {
-                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { infoLeaderAfter });
+                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', {total, page, pageSize, infoLeaderAfter });
             }
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
@@ -874,7 +874,7 @@ exports.leaderDetail = async (req, res, next) => {
             let infoUser = await Users.findOne({ idQLC: empId, type: 2 })
 
             if (infoUser) {
-                if(infoUser && infoUser.inForPerson && infoUser.inForPerson.employee) {
+                if(infoUser && infoUser.inForPerson && infoUser.inForPerson.employee && infoUser.inForPerson.account) {
                     let infoUserHr = await HR_InfoLeaders.findOne({ epId: empId })
                     if (infoUserHr) {
                         result.ep_name = infoUser.userName
@@ -900,9 +900,11 @@ exports.leaderDetail = async (req, res, next) => {
                             desPosition: desPosition,
                             created_at: new Date(Date.now())
                         })
-                        insertUser.save()
+                        insertUser = insertUser.save()
+                        
                         if (insertUser) {
-                            return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công');
+                            let detailLeader = {userName: infoUser.userName, birthday: infoUser.inForPerson.account.birthday};
+                            return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công', detailLeader);
                         } else {
                             return functions.setError(res, 'update info leader fail!');
                         }
@@ -1013,8 +1015,8 @@ exports.listEmpUseSignature = async (req, res, next) => {
         let {key, dep_id, page, pageSize} = req.body;
         if(!page) page = 1;
         if(!pageSize) pageSize = 5;
-        Number(page)
-        Number(pageSize)
+        page = Number(page)
+        pageSize = Number(pageSize)
         const skip = (page-1)*pageSize;
         let condition = {"inForPerson.employee.com_id": comId,"inForPerson.employee.ep_signature": 1};
         if(key) {
@@ -1032,6 +1034,7 @@ exports.listEmpUseSignature = async (req, res, next) => {
                 info._id = listEmployee[i].idQLC
                 info.userName = listEmployee[i].userName
                 info.namePosition = positionNames[listEmployee[i].inForPerson.employee.position_id];
+                info.depId = listEmployee[i].inForPerson.employee.dep_id;
 
                 if (listEmployee[i].inForPerson.employee.dep_id) {
                     let infoDep = await Deparment.findOne({ dep_id: listEmployee[i].inForPerson.employee.dep_id, com_id: comId })
@@ -1043,7 +1046,7 @@ exports.listEmpUseSignature = async (req, res, next) => {
                 listEmpUseSignature.push(info);
             }
         }
-        return functions.success(res, "Get list employee signature success!", {total, listEmpUseSignature});
+        return functions.success(res, "Get list employee signature success!", {total, page, pageSize, listEmpUseSignature});
     } catch (e) {
         console.log("Err from server get list employee signature!", e);
         return functions.setError(res, e.message);
@@ -1084,39 +1087,25 @@ exports.deleteEmpUseSignature = async (req, res, next) => {
 exports.listSignatureLeader = async (req, res, next) => {
     try {
         if (req.infoLogin) {
-            let {keyword, page, pageSize} = req.body;
+            let {key, dep_id, page, pageSize} = req.body;
             let comId = req.infoLogin.comId
             if(!page) page = 1;
             if(!pageSize) pageSize = 5;
-            Number(page)
-            Number(pageSize)
+            page = Number(page)
+            pageSize = Number(pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let listPositionId = [4, 20, 13, 12, 11, 10, 6, 5, 8, 7, 16, 14, 21, 22, 19, 18, 17]
-            let infoLeader
-            if (isNaN(keyword) == true) {
-                infoLeader = await Users.find({
-                    userName: new RegExp(keyword, "i"),
-                    "inForPerson.employee.com_id": comId,
-                    "inForPerson.employee.position_id": { $in: listPositionId }
-                }, {
-                    idQLC: 1,
-                    userName: 1,
-                    "inForPerson.employee.position_id": 1,
-                    "inForPerson.employee.dep_id": 1,
-                }).sort({idQLC: -1}).skip(skip).limit(limit)
-            } else if (isNaN(keyword) == false) {
-                infoLeader = await Users.find({
-                    idQLC: keyword,
-                    "inForPerson.employee.com_id": comId,
-                    "inForPerson.employee.position_id": { $in: listPositionId }
-                }, {
-                    idQLC: 1,
-                    userName: 1,
-                    "inForPerson.employee.position_id": 1,
-                    "inForPerson.employee.dep_id": 1,
-                }).sort({idQLC: -1}).skip(skip).limit(limit)
+
+            let condition = {"inForPerson.employee.com_id": comId,"inForPerson.employee.position_id": { $in: listPositionId }};
+            if(key) {
+                if(!isNaN(parseFloat(key)) && isFinite(key)) condition.idQLC = Number(key);
+                else condition.userName = new RegExp(key, 'i');
             }
+            if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
+            let fields = {idQLC: 1, avatarUser: 1, userName: 1, "inForPerson.employee.position_id": 1, "inForPerson.employee.dep_id": 1};
+            let total = await Users.countDocuments(condition);
+            let infoLeader = await functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
 
             if (infoLeader) {
                 let infoLeaderAfter = []
@@ -1142,7 +1131,7 @@ exports.listSignatureLeader = async (req, res, next) => {
                         infoLeaderAfter.push(info)
                     }
                 }
-                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { infoLeaderAfter });
+                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', {total, page, pageSize, infoLeaderAfter });
             }
             return functions.setError(res, "không tìm thấy lãnh đạo nào", 400);
         } else {
