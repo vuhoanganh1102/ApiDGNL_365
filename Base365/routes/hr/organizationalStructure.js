@@ -24,6 +24,9 @@ router.post('/missionDetail', formData.parse(), hrService.checkRoleUser, hrServi
 //cập nhật nhiệm vụ mỗi chức vụ
 router.post('/updateMission', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 3), organizationalStructure.updateMission)
 
+//an chuc vu
+router.post('/updatePosition', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 3), organizationalStructure.updatePosition)
+
 //tải lên chữ ký 
 router.post('/uploadSignature', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2), organizationalStructure.uploadSignature)
 
