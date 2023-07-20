@@ -10,6 +10,8 @@ router.post('/getListDataLostAssets', functions.checkToken, qltsService.getDataF
 
 router.post('/createMat', functions.checkToken, qltsService.getDataFromToken, formData.parse(), controller.createMat);
 
+router.post('/deleteMat', functions.checkToken, qltsService.getDataFromToken, formData.parse(), controller.deleteMat);
+
 router.post('/duyet', functions.checkToken, qltsService.getDataFromToken, formData.parse(), controller.duyet);
 
 router.post('/tuChoi', functions.checkToken, qltsService.getDataFromToken, formData.parse(), controller.tuChoi);
