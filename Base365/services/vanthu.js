@@ -32,8 +32,8 @@ exports.setError = async (res, message, code = 500) => {
 };
 
 exports.uploadFileVanThu = (id, file) => {
-    let path = `../Storage/base365/vanthu/tailieu/${id}/`;
-    let filePath = `../Storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
+    let path = `../storage/base365/vanthu/tailieu/${id}/`;
+    let filePath = `../storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
 
     if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
         fs.mkdirSync(path, { recursive: true });
@@ -52,8 +52,8 @@ exports.uploadFileVanThu = (id, file) => {
         });
     });
 }
-exports.createLinkFileVanthu = (id, name) => {
-    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/dexuat' + '/' + id + '/' + name;
+exports.createLinkFileVanthu = (id, file) => {
+    let link = process.env.port_picture_qlc + `/storage/base365/vanthu/tailieu/${id}/`  + file;
     return link;
 }
 

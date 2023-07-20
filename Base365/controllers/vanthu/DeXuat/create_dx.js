@@ -7,8 +7,7 @@ const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
 const DeXuat = require("../../../models/Vanthu/de_xuat");
 const User = require('../../../models/Users');
 const SettingD = require('../../../models/Vanthu/setting_dx');
-const Cycle = require('../../../models/qlc/Cycle')
-const Employee_cycle = require('../../../models/qlc/CalendarWorkEmployee')
+const fnc = require('../../../services/qlc/functions')
 const { log } = require('console');
 
 //đề xuất xin nghỉ 
@@ -41,7 +40,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         let link_download = '';
         if (file_kem) {
             functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -55,7 +54,6 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                 _id: (maxID + 1),
                 name_dx: name_dx,
                 type_dx: 1,
-                phong_ban: phong_ban,
                 noi_dung: {
                     nghi_phep: {
                         ly_do: ly_do,
@@ -145,7 +143,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -249,7 +247,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         let file_kem = req.files.fileKem;
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
 
 
@@ -352,7 +350,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -455,7 +453,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -555,7 +553,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -656,7 +654,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -757,7 +755,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download =  file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -860,7 +858,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
 
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
@@ -1052,7 +1050,7 @@ exports.dxCong = async (req, res) => {
         let linkDL = '';
         if (linkDL) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1149,7 +1147,7 @@ exports.dxCoSoVatChat = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1251,7 +1249,7 @@ exports.dxDangKiSuDungXe = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1355,7 +1353,7 @@ exports.dxHoaHong = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1455,7 +1453,7 @@ exports.dxKhieuNai = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1554,7 +1552,7 @@ exports.dxPhongHop = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1656,7 +1654,7 @@ exports.dxTangCa = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1758,7 +1756,7 @@ exports.dxThaiSan = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1858,7 +1856,7 @@ exports.dxThanhToan = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1968,7 +1966,7 @@ exports.dxThuongPhat = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -2060,13 +2058,28 @@ exports.showadd = async (req, res) => {
         let listUsersDuyet = await User.find({
             idQLC: { $in: idUserD },
             'inForPerson.employee.ep_status': 'Active'
-        }).select('idQLC userName avatarUser inForPerson.employee.dep_id inForPerson.employee.position_id');
+        }).select('idQLC userName avatarUser inForPerson.employee.dep_id inForPerson.employee.position_id').lean();
         let listUsersTheoDoi = await User.find({
             'inForPerson.employee.com_id': com_id,
             'inForPerson.employee.ep_status': 'Active'
-        }).select('idQLC userName avatarUser');
-
-        return functions.success(res, 'data success', { listUsersDuyet, listUsersTheoDoi });
+        }).select('idQLC userName avatarUser').lean();
+        
+        if (listUsersDuyet) {
+            let avatar = await fnc.createLinkFileEmpQLC(listUsersDuyet[0].idQLC , listUsersDuyet[0].avatarUser)
+            console.log(avatar)
+            if(avatar) 
+                listUsersDuyet[0].avatarUser = avatar
+            
+        };
+        if(listUsersTheoDoi) {
+            let avatar = await fnc.createLinkFileEmpQLC(listUsersTheoDoi[0].idQLC , listUsersTheoDoi[0].avatarUser)
+            if(avatar) 
+                listUsersTheoDoi[0].avatarUser = avatar
+            
+        }else{
+            return functions.setError(res, 'Không tìm thấy bản ghi', 400);
+        };
+        return await functions.success(res, 'Lấy thành công', { listUsersDuyet,listUsersTheoDoi});
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error.message);
