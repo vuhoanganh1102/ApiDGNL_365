@@ -54,11 +54,6 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
     return model.findOneAndUpdate(condition, projection);
   };
 
-<<<<<<< HEAD
-exports.numberWithCommas = (number) => {
-  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-};
-=======
 exports.getDataFromToken = async(req, res, next) => {
     let user = req.user;
     if (!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
@@ -82,7 +77,6 @@ exports.getDataFromToken = async(req, res, next) => {
     req.infoLogin = infoLogin;
     next();
 }
->>>>>>> 1349a59543276b30cf6c4ef4e5e9b495b63bf3f2
 
 exports.getLinkFile = (folder, time, fileName) => {
   let date = new Date(time * 1000);
