@@ -1217,53 +1217,54 @@ exports.ToolDieuChuyen = async (req, res) => {
                 let ListData = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 5 });
                 let data = ListData.data.items;
                 if (data.length > 0) {
-                    data.map(async (item, index) => {
-
+                    for (let i = 0; i < data.length; i++) {
+                        const ds_dc = JSON.parse(data[i].dieuchuyen_taisan).ds_dc;
+                        const updated_ds_dc = ds_dc.map((item) => ({
+                        ts_id: item[0],
+                        sl_ts: item[1]
+                        }));
                         let new_dc = new DieuChuyen({
-                            dc_id: item.dc_id,
-                            id_cty: item.id_cty,
-                            dieuchuyen_taisan: item.dieuchuyen_taisan,
-                            taisan_thucnhan: item.taisan_thucnhan,
-                            id_ng_thuchien: item.id_ng_thuchien,
-                            id_cty_dang_sd: item.id_cty_dang_sd,
-                            id_pb_dang_sd: item.id_pb_dang_sd,
-                            id_daidien_dangsd: item.id_daidien_dangsd,
-                            id_nv_dangsudung: item.id_nv_dangsudung,
-                            id_cty_nhan: item.id_cty_nhan,
-                            id_nv_nhan: item.id_nv_nhan,
-                            id_pb_nhan: item.id_pb_nhan,
-                            id_daidien_nhan: item.id_daidien_nhan,
-                            dc_ngay: item.dc_ngay,
-                            dc_hoan_thanh: item.dc_hoan_thanh,
-                            dc_trangthai: item.dc_trangthai,
-                            dc_tu: item.dc_tu,
-                            dc_den: item.dc_den,
-                            dc_lydo: item.dc_lydo,
-                            dc_lydo_tuchoi: item.dc_lydo_tuchoi,
-                            dc_lydo_tuchoi_tiepnhan: item.dc_lydo_tuchoi_tiepnhan,
-                            dc_ghichu_tiepnhan: item.dc_ghichu_tiepnhan,
-                            vi_tri_dc_tu: item.vi_tri_dc_tu,
-                            dc_vitri_tsnhan: item.dc_vitri_tsnhan,
-                            vitri_ts_daidien: item.vitri_ts_daidien,
-                            dc_type_quyen: item.dc_type_quyen,
-                            dc_type: item.dc_type,
-                            id_ng_xoa_dc: item.id_ng_xoa_dc,
-                            id_ng_tao_dc: item.id_ng_tao_dc,
-                            xoa_dieuchuyen: item.xoa_dieuchuyen,
-                            dc_date_delete: item.dc_date_delete,
-                            dc_date_create: item.dc_date_create,
-                            dc_type_quyen_xoa: item.dc_type_quyen_xoa
+                            dc_id: data[i].dc_id,
+                            id_cty: data[i].id_cty,
+                            dieuchuyen_taisan: {ds_dc : updated_ds_dc},
+                            taisan_thucnhan: data[i].taisan_thucnhan,
+                            id_ng_thuchien: data[i].id_ng_thuchien,
+                            id_cty_dang_sd: data[i].id_cty_dang_sd,
+                            id_pb_dang_sd: data[i].id_pb_dang_sd,
+                            id_daidien_dangsd: data[i].id_daidien_dangsd,
+                            id_nv_dangsudung: data[i].id_nv_dangsudung,
+                            id_cty_nhan: data[i].id_cty_nhan,
+                            id_nv_nhan: data[i].id_nv_nhan,
+                            id_pb_nhan: data[i].id_pb_nhan,
+                            id_daidien_nhan: data[i].id_daidien_nhan,
+                            dc_ngay: data[i].dc_ngay,
+                            dc_hoan_thanh: data[i].dc_hoan_thanh,
+                            dc_trangthai: data[i].dc_trangthai,
+                            dc_tu: data[i].dc_tu,
+                            dc_den: data[i].dc_den,
+                            dc_lydo: data[i].dc_lydo,
+                            dc_lydo_tuchoi: data[i].dc_lydo_tuchoi,
+                            dc_lydo_tuchoi_tiepnhan: data[i].dc_lydo_tuchoi_tiepnhan,
+                            dc_ghichu_tiepnhan: data[i].dc_ghichu_tiepnhan,
+                            vi_tri_dc_tu: data[i].vi_tri_dc_tu,
+                            dc_vitri_tsnhan: data[i].dc_vitri_tsnhan,
+                            vitri_ts_daidien: data[i].vitri_ts_daidien,
+                            dc_type_quyen: data[i].dc_type_quyen,
+                            dc_type: data[i].dc_type,
+                            id_ng_xoa_dc: data[i].id_ng_xoa_dc,
+                            id_ng_tao_dc: data[i].id_ng_tao_dc,
+                            xoa_dieuchuyen: data[i].xoa_dieuchuyen,
+                            dc_date_delete: data[i].dc_date_delete,
+                            dc_date_create: data[i].dc_date_create,
+                            dc_type_quyen_xoa: data[i].dc_type_quyen_xoa
                         })
                         await new_dc.save();
-
-                    });
+                    }
                     page++;
                     console.log(page);
-
                 } else {
                     result = false;
                 }
-
             } while (result);
             return fnc.success(res, 'Thành công');
         } catch (error) {
