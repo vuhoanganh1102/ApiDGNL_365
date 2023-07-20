@@ -447,14 +447,16 @@ exports.toolCapPhat = async (req, res, next) => {
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const element = data[i];
-                    const html = JSON.stringify(element.html);
-                    // let updateAt = element.update_time;
-                    // if (updateAt == 0) {
-                    //     updateAt = null;
-                    // };
+                    const ds_ts = JSON.parse(data[i].cap_phat_taisan).ds_ts;
+                    const updated_ds_ts = ds_ts.map((item) => ({
+                        ts_id: item[0],
+                        sl_th: item[1]
+                    }));
                     const capPhat = new CapPhat({
-                        _id: element.cp_id,
-                        cap_phat_taisan: element.cap_phat_taisan,
+                        cp_id: element.cp_id,
+                        cap_phat_taisan: {
+                            ds_ts : updated_ds_ts
+                        },
                         id_cty: element.id_cty,
                         id_nhanvien: element.id_nhanvien,
                         id_phongban: element.id_phongban,
@@ -834,6 +836,8 @@ exports.toolHuy = async (req, res, next) => {
 
 exports.toolThanhLy = async (req, res, next) => {
     try {
+        let page = 1;
+        let result = true;
         do {
             let listItems = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 25 })
             let data = listItems.data.items;
@@ -841,13 +845,17 @@ exports.toolThanhLy = async (req, res, next) => {
                 for (let i = 0; i < data.length; i++) {
                     const element = data[i];
                     const html = JSON.stringify(element.html);
-                    // let updateAt = element.update_time;
-                    // if (updateAt == 0) {
-                    //     updateAt = null;
-                    // };
-                    const sell = new ThanhLy({
-                        _id: element.tl_id,
-                        thanhly_taisan: element.thanhly_taisan,
+                    let str = element.thanhly_taisan
+                    str = str.replaceAll('[[','')
+                    str = str.replaceAll(']]','')
+                    str = str.replaceAll('"','')
+                    str = str.replaceAll('ds_tl:','')
+                    str = str.replaceAll('{','')
+                    str = str.replaceAll('}','')
+                    let thanhly_taisan = str.split(',')[0];
+                    await ThanhLy.create({
+                        tl_id: element.tl_id,
+                        thanhly_taisan: thanhly_taisan,
                         tl_id_bb_cp: element.tl_id_bb_cp,
                         id_cty: element.id_cty,
                         id_ngtao: element.id_ngtao,
@@ -872,8 +880,6 @@ exports.toolThanhLy = async (req, res, next) => {
                         tl_date_delete: element.tl_date_delete,
                         tl_type_quyen_xoa: element.tl_type_quyen_xoa,
                     })
-                    await sell.save()
-
                 }
                 page++;
             } else {
