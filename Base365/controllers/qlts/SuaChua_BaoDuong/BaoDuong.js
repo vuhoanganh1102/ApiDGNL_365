@@ -1,11 +1,12 @@
-// const fnc = require('../../../services/functions');
-// const ThongBao = require('../../../models/QuanLyTaiSan/ThongBao');
-// const BaoDuong = require('../../../models/QuanLyTaiSan/BaoDuong');
+const fnc = require('../../../services/functions');
+const ThongBao = require('../../../models/QuanLyTaiSan/ThongBao');
+const BaoDuong = require('../../../models/QuanLyTaiSan/BaoDuong');
 
 // exports.addBaoDuong = async (req, res) => {
 //     try {
 //         let { id_ts, sl_bd, trang_thai_bd, cs_bd, type_quyen, ngay_bd, ngay_dukien_ht, ngay_ht_bd, chiphi_dukien, chiphi_thucte,
 //             nd_bd, ng_thuc_hien, dia_diem_bd, quyen_ng_sd, ng_sd, vitri_ts, dv_bd, dia_chi_nha_cung_cap } = req.body;
+                       
 //         let com_id = 0;
 //         let id_ng_tao = 0;
 //         if (req.user.data.type == 1) {
@@ -64,3 +65,47 @@
 
 //     }
 // }
+
+//lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
+exports.danhSachBaoDuong = async (req, res, next) => {
+  try{
+    // $tsbd = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND ((xoa_bd = 0 AND bd_trang_thai = 0 ".$sql." ".$sql_nv.") OR (xoa_bd = 0 AND bd_trang_thai = 2 ".$sql." ".$sql_nv.")) ORDER BY id_bd DESC LIMIT $start, $limit");
+    // $tsbd2 = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND xoa_bd = 0 AND bd_trang_thai = 0 ".$sql." ".$sql_nv." OR xoa_bd = 0 AND bd_trang_thai = 2 ".$sql." ".$sql_nv." ORDER BY id_bd DESC");
+    // $dangbd = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND xoa_bd = 0 AND bd_trang_thai = 0 ".$sql_nv." ORDER BY id_bd DESC");
+    // $q_da_bd = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND xoa_bd = 0 AND bd_trang_thai = 1 ".$sql_nv." ORDER BY id_bd DESC");
+    // $quydinh = new db_query("SELECT * FROM quydinh_bd INNER JOIN loai_taisan ON quydinh_bd.id_loai = loai_taisan.id_loai INNER JOIN nhom_taisan ON loai_taisan.id_nhom_ts = nhom_taisan.id_nhom WHERE quydinh_bd.id_cty = '".$com_id."' AND qd_xoa = 0 ".$sql_nv1." ORDER BY qd_id DESC");
+    // $donvics = new db_query("SELECT * FROM theodoi_congsuat
+    // INNER JOIN loai_taisan ON theodoi_congsuat.id_loai = loai_taisan.id_loai 
+    // INNER JOIN donvi_cs ON theodoi_congsuat.id_donvi = donvi_cs.id_donvi 
+    // WHERE theodoi_congsuat.id_cty = '".$com_id."' AND tdcs_xoa = 0 ORDER BY theodoi_congsuat.id_cs DESC");
+    
+    let {page, pageSize, key, dataType} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
+    page = Number(page);
+    pageSize = Number(pageSize);
+    const skip = (page-1)*pageSize;
+
+    let com_id = req.com_id;
+    let condition = {id_cty: com_id, xoa_bd: 0};
+    if(key) condition.id_bd = key;
+    if(dataType != 1 && dataType != 2 && dataType != 3) return fnc.setError(res, "Truyen dataType = 1, 2, 3");
+    //can bao duong
+    if(dataType == 1) {
+      condition.bd_trang_thai = {$in: [0, 2]};
+    }
+    //dang bao duong
+    else if(dataType == 2) {
+      condition.bd_trang_thai = 0;
+    }
+    //da bao duong
+    else if(dataType == 3) {
+      condition.bd_trang_thai = 1;
+    }
+    let listBaoDuong = await fnc.pageFind(BaoDuong, condition, {id_bd: -1}, skip, pageSize);
+    const total = await fnc.findCount(BaoDuong, condition);
+    return fnc.success(res, "Lay ra danh sach bao duong thanh cong", {page, pageSize, total,listBaoDuong});
+  }catch(e){
+    return fnc.setError(res, e.message);
+  }
+}
