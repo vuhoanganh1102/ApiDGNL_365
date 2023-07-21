@@ -1,5 +1,5 @@
 const DieuChuyen = require("../../../models/QuanLyTaiSan/DieuChuyen")
-
+const functions = require('../../../services/functions')
 
 
 
@@ -26,7 +26,7 @@ exports.showDieuChuyenDoiTuong = async (req, res) => {
             .sort({ dc_id: -1 })
             .skip(startIndex)
             .limit(perPage);
-        const totalTsCount = await LoaiTaiSan.countDocuments({ id_cty: com_id, ...query });
+        const totalTsCount = await DieuChuyen.countDocuments({ id_cty: com_id, ...query });
 
         // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
         const totalPages = Math.ceil(totalTsCount / perPage);
