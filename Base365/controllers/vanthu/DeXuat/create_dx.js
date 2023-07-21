@@ -10,7 +10,7 @@ const SettingD = require('../../../models/Vanthu/setting_dx');
 const fnc = require('../../../services/qlc/functions')
 const { log } = require('console');
 
-//đề xuất xin nghỉ 
+//đề xuất xin nghỉ ok
 exports.de_xuat_xin_nghi = async (req, res) => {
     try {
         let {
@@ -24,7 +24,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             kt_nghi,
             loai_np,
             ca_nghi,
-            link
+            
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -75,6 +75,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                 time_create: new Date(),
             });
             let saveDX = await new_de_xuat.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
 
@@ -127,7 +128,6 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
             chucvu_dx_bn,
             phong_ban_moi,
             phong_ban,
-            link
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -181,6 +181,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
 
 
             let saveDX = await new_de_xuat.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "dề xuất bổ nhệm ", link, file_kem);
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             let idTB = 0;
@@ -230,7 +231,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             phong_ban,
             danh_sach_tai_san,
             so_luong_tai_san,
-            link
+            
 
         } = req.body;
         let id_user = "";
@@ -287,6 +288,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                 del_type: 1,//1-active , 2 --delete
             })
             let saveDX = await new_de_xuat.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -334,7 +336,6 @@ exports.de_xuat_doi_ca = async (req, res) => {
             ca_can_doi,
             ngay_muon_doi,
             ca_muon_doi,
-            link
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -388,6 +389,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
 
 
             let saveDX = await new_de_xuat.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -437,7 +439,6 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
             pb_nguoi_lc,
             noi_cong_tac,
             noi_chuyen_den,
-            link
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -488,6 +489,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
                 time_create: new Date(),
             })
             let saveDX = await new_de_xuat.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -533,11 +535,9 @@ exports.de_xuat_tang_luong = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
-            type_time,
             mucluong_ht,
             mucluong_tang,
             date_tang_luong,
-            link
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -590,6 +590,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
 
 
             let saveDX = await new_de_xuat.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -638,7 +639,6 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
             cv_nguoi_da,
             pb_nguoi_da,
             dx_da,
-            link
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -691,6 +691,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
                 time_create: new Date(),
             })
             let saveDX = await new_de_xuat.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -739,7 +740,6 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
             type_time,
             tien_tam_ung,
             ngay_tam_ung,
-            link
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -794,6 +794,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
 
 
             let saveDX = await new_de_xuat.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -842,7 +843,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
             ly_do,
             type_time,
             ngaybatdau_tv,
-            link
+            ca_bdnghi,
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -878,8 +879,10 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
                     thoi_viec: {
                         ly_do: ly_do,
                         ngaybatdau_tv: ngaybatdau_tv,
+                        ca_bdnghi : ca_bdnghi,
                     },
                 },
+                type_time : type_time,
                 name_user: name_user,
                 id_user: id_user,
                 com_id: com_id,
@@ -891,6 +894,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
                 time_create: new Date(),
             });
             let saveDX = await new_de_xuat.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'// đường dẫn chi tiết đề xuất
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -942,7 +946,7 @@ exports.lich_lam_viec = async (req, res) => {
             ngay_bat_dau,
             ca_lam_viec,
             ngay_lam_viec,
-            link } = req.body;
+             } = req.body;
         let id_user = "";
         let com_id = "";
         let name_user = "";
@@ -986,7 +990,8 @@ exports.lich_lam_viec = async (req, res) => {
             });
 
             let saveDX = await new_de_xuat.save();
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             let idTB = 0;
@@ -1033,7 +1038,7 @@ exports.dxCong = async (req, res) => {
             type_time,
             time_xnc,
             ly_do,
-            link
+            
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -1082,6 +1087,7 @@ exports.dxCong = async (req, res) => {
                 time_create: createDate,
             });
             let savedDXC = await createDXC.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao);
             let idTB = 0;
@@ -1130,7 +1136,7 @@ exports.dxCoSoVatChat = async (req, res) => {
             input_csv,
             ly_do,
             type_time,
-            link
+            
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -1179,6 +1185,7 @@ exports.dxCoSoVatChat = async (req, res) => {
 
             });
             let savedDXCSVC = await createDXCSVC.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1336,7 +1343,7 @@ exports.dxHoaHong = async (req, res) => {
             ly_do,
             name_dt,
             time_hh,
-            link
+            
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -1390,6 +1397,7 @@ exports.dxHoaHong = async (req, res) => {
             });
 
             let savedDXHH = await createDXHH.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1485,6 +1493,7 @@ exports.dxKhieuNai = async (req, res) => {
             });
 
             let savedDXKN = await createDXKN.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1535,7 +1544,6 @@ exports.dxPhongHop = async (req, res) => {
             type_time,
             end_hop,
             ly_do,
-            link
         } = req.body;
         let createDate = new Date()
         let id_user = "";
@@ -1587,6 +1595,7 @@ exports.dxPhongHop = async (req, res) => {
             });
 
             let savedDXPH = await createDXPH.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1637,7 +1646,6 @@ exports.dxTangCa = async (req, res) => {
             type_time,
             time_tc,
             shift_id,
-            link
         } = req.body;
         let createDate = new Date()
         let id_user = "";
@@ -1689,6 +1697,7 @@ exports.dxTangCa = async (req, res) => {
             });
 
             let savedDXTC = await createDXTC.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1739,7 +1748,7 @@ exports.dxThaiSan = async (req, res) => {
             ngaybatdau_nghi_ts,
             ngayketthuc_nghi_ts,
             ly_do,
-            link
+
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -1790,6 +1799,7 @@ exports.dxThaiSan = async (req, res) => {
             });
 
             let savedDXTS = await createDXTS.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1839,7 +1849,7 @@ exports.dxThanhToan = async (req, res) => {
             type_time,
             so_tien_tt,
             ly_do,
-            link
+            
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -1890,6 +1900,7 @@ exports.dxThanhToan = async (req, res) => {
             });
 
             let savedDXTT = await createDXTT.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1944,7 +1955,7 @@ exports.dxThuongPhat = async (req, res) => {
             id_nguoi_tp,
             time_tp,
             ly_do,
-            link
+            
         } = req.body;
         let createDate = new Date()
         let id_user = "";
@@ -2002,6 +2013,7 @@ exports.dxThuongPhat = async (req, res) => {
             });
 
             let savedDXTP = await createDXTP.save();
+            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
