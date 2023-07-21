@@ -43,7 +43,7 @@ exports.getlist = async(req, res) => {
             ]).skip((pageNumber - 1) * 10).limit(10).sort({ _id: -1 });
             if (data) {
                 const avatar = await fnc.createLinkFileEmpQLC(data[0].idQLC , data[0].avatarUser)
-                if(avatar) data[0].avatar = avatar
+                if(avatar) data[0].avatarUser = avatar
                 return await functions.success(res, 'Lấy thành công', { data, pageNumber });
             };
             return functions.setError(res, 'Không có dữ liệu');

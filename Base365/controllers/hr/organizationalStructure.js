@@ -12,6 +12,7 @@ const Tracking = require('../../models/qlc/HisTracking');
 const HR_DescPositions = require('../../models/hr/DescPositions');
 const HR_SignatureImages = require('../../models/hr/SignatureImage');
 const HR_InfoLeaders = require('../../models/hr/InfoLeaders');
+const PositionStruct = require('../../models/hr/PositionStructs');
 // const Team = require('../../models/qlc/Team');
 
 
@@ -576,7 +577,17 @@ exports.listPosition = async (req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         //tìm kiếm những chức vụ của công ty đó trong bảng hr
-        const arrPosition = [19, 18, 17, 21, 22, 16, 14, 8, 7, 6, 5, 13, 12, 4, 20, 11, 10, 3, 2, 9, 1];
+        let arrPosition = [19, 18, 17, 21, 22, 16, 14, 8, 7, 6, 5, 13, 12, 4, 20, 11, 10, 3, 2, 9, 1];
+
+        //nhung chuc vu bi an
+        let positionStruct = await PositionStruct.find({com_id: comId}).lean();
+        for(let i=0; i<positionStruct.length; i++) {
+            const index = arrPosition.indexOf(positionStruct[i].position_id);
+            if (index > -1) {
+                arrPosition.splice(index, 1);
+            }
+        }
+
         let listPosition = [];
         //21 chuc vu
         let findUser = await Users.find({
@@ -623,6 +634,29 @@ exports.listPosition = async (req, res, next) => {
     }
 }
 
+exports.updatePosition = async(req, res, next) => {
+    try{
+        let position_id = req.body.position_id;
+        let com_id = req.infoLogin.comId;
+        if(!position_id) return functions.setError(res, "Missing input position_id!", 404);
+        let fields = {com_id: com_id, position_id: position_id};
+        let position = await PositionStruct.findOne(fields);
+        if(!position) {
+            let id = await functions.getMaxIdByField(PositionStruct, 'id');
+            fields.id = id;
+            let insert_position = new PositionStruct(fields);
+            insert_position = await insert_position.save();
+            if(insert_position) {
+                return functions.success(res, "Them vi tri thanh cong!");
+            }
+            return functions.setError(res, "Them vi tri that bai!", 506);
+        }
+        return functions.setError(res, "Vi tri da duoc them!", 505);
+    }catch(e) {
+        return functions.setError(res, e.message);
+    }
+}
+
 //chi tiết nhiệm vụ mỗi chức vụ
 exports.missionDetail = async (req, res, next) => {
     try {
@@ -646,8 +680,8 @@ exports.missionDetail = async (req, res, next) => {
         console.log("Đã có lỗi xảy ra khi lấy chi tiết công ty", e);
         return functions.setError(res, e.message);
     }
-
 }
+
 
 //cập nhật chi tiết nhiệm vụ mỗi
 exports.updateMission = async (req, res, next) => {
@@ -691,13 +725,9 @@ exports.uploadSignature = async (req, res, next) => {
     try {
         if (req.infoLogin) {
             let empId = req.body.empId
-
-            const maxID = await HR_SignatureImages.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
-            if (maxID) {
-                newIDMax = Number(maxID.id) + 1;
-            } else newIDMax = 1
             let file = req.files.signature;
-            if (!file) {
+            if(!empId) return functions.setError(res, "Missing input empId!", 404);
+            if (!req.files || !file) {
                 return functions.setError(res, "Missing signature image!", 504);
             }
             if (!await functions.checkImage(file.path)) {
@@ -705,19 +735,18 @@ exports.uploadSignature = async (req, res, next) => {
             }
             let nameFile = await hrFunctions.uploadFileSignature(file);
             let checkSig = await HR_SignatureImages.findOne({ empId: empId })
+            let fields = {imgName: nameFile};
             if (!checkSig) {
-                let upload = new HR_SignatureImages({
-                    id: newIDMax,
-                    empId: empId,
-                    imgName: nameFile,
-                    createdAt: new Date(Date.now())
-                })
-                upload.save()
-                if (upload) {
-                    return functions.success(res, 'Tải chữ ký thành công');
-                }
-            } else return functions.setError(res, "Đã tồn tại chữ ký của người này", 400);
-
+                let idMax = await functions.getMaxIdByField(HR_SignatureImages, 'id');
+                fields.id = idMax;
+                fields.empId = empId;
+                fields.createdAt = new Date(Date.now());
+            }
+            let upload = await HR_SignatureImages.findOneAndUpdate({empId: empId}, fields, {new: true, upsert: true});
+            if (upload) {
+                return functions.success(res, 'Tải chữ ký thành công');
+            }
+            return functions.setError(res, "Tai chu ky that bai", 400);
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
         }
@@ -751,18 +780,20 @@ exports.deleteSignature = async (req, res, next) => {
 exports.listInfoLeader = async (req, res, next) => {
     try {
         if (req.infoLogin) {
-            let keyword = req.body.keyword
+            let {keyword, page, pageSize} = req.body;
             let comId = req.infoLogin.comId
-            let page = Number(req.body.page)
-            let pageSize = Number(req.body.pageSize)
+            if(!page) page = 1;
+            if(!pageSize) pageSize = 5;
+            page = Number(page);
+            pageSize = Number(pageSize);
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let listPositionId = [4, 20, 13, 12, 11, 10, 6, 5, 8, 7, 16, 14, 21, 22, 19, 18, 17]
-            let infoLeader = await Users.find({
-                userName: new RegExp(keyword, "i"),
-                "inForPerson.employee.com_id": comId,
-                "inForPerson.employee.position_id": { $in: listPositionId }
-            }, {
+            let condition = {"inForPerson.employee.com_id": comId, "inForPerson.employee.position_id": { $in: listPositionId }};
+            if(keyword) condition.userName = new RegExp(keyword, 'i');
+            let total = await Users.countDocuments(condition);
+
+            let infoLeader = await Users.find(condition, {
                 idQLC: 1,
                 avatarUser: 1,
                 userName: 1,
@@ -770,54 +801,59 @@ exports.listInfoLeader = async (req, res, next) => {
                 "inForPerson.employee.dep_id": 1,
                 "inForPerson.employee.team_id": 1,
                 "inForPerson.employee.group_id": 1,
-            }).skip(skip).limit(limit)
+            }).sort({idQLC: -1}).skip(skip).limit(limit)
 
             let infoLeaderAfter = []
             for (let i = 0; i < infoLeader.length; i++) {
                 let info = {}
-                info._id = infoLeader[i].idQLC
-                info.userName = infoLeader[i].userName
-                info.avatarUser = `${process.env.hostFile}${infoLeader[i].avatarUser}`
-                info.namePosition = positionNames[infoLeader[i].inForPerson.employee.position_id];
-
-                if (infoLeader[i].inForPerson.employee.dep_id) {
-                    let infoDep = await Deparment.findOne({ _id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
-                    info.dep_name = infoDep.dep_name
-
-                    if (infoLeader[i].inForPerson.employee.team_id) {
-                        let infoTeam = await Team.findOne({
-                            _id: infoLeader[i].inForPerson.employee.team_id,
-                            com_id: comId,
-                            dep_id: infoLeader[i].inForPerson.employee.dep_id,
-                        })
-                        info.team_name = infoTeam.teamName
-
-                        if (infoLeader[i].inForPerson.employee.group_id) {
-                            let infoGroup = await Group.findOne({
-                                _id: infoLeader[i].inForPerson.employee.group_id,
+                if(infoLeader[i].inForPerson && infoLeader[i].inForPerson.employee) {
+                    info._id = infoLeader[i].idQLC
+                    info.userName = infoLeader[i].userName
+                    if(infoLeader[i].avatarUser) info.avatarUser = `${process.env.hostFile}${infoLeader[i].avatarUser}`;
+                    else info.avatarUser = '';
+                    
+                    info.namePosition = positionNames[infoLeader[i].inForPerson.employee.position_id];
+                    if (infoLeader[i].inForPerson.employee.dep_id) {
+                        let infoDep = await Deparment.findOne({ dep_id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
+                        
+                        if(infoDep) info.dep_name = infoDep.dep_name;
+                        else info.dep_name = 'Chưa cập nhật';
+                        if (infoLeader[i].inForPerson.employee.team_id) {
+                            let infoTeam = await Team.findOne({
+                                team_id: infoLeader[i].inForPerson.employee.team_id,
                                 com_id: comId,
                                 dep_id: infoLeader[i].inForPerson.employee.dep_id,
-                                team_id: infoLeader[i].inForPerson.employee.team_id
                             })
-                            info.group_name = infoGroup.teamName
-                        } else info.group_name = "chưa cập nhật"
+                            if(infoTeam) info.team_name = infoTeam.teamName;
+                            else info.team_name = 'Chưa cập nhật';
 
+                            if (infoLeader[i].inForPerson.employee.group_id) {
+                                let infoGroup = await Group.findOne({
+                                    gr_id: infoLeader[i].inForPerson.employee.group_id,
+                                    com_id: comId,
+                                    dep_id: infoLeader[i].inForPerson.employee.dep_id,
+                                    team_id: infoLeader[i].inForPerson.employee.team_id
+                                })
+                                if(infoGroup) info.group_name = infoGroup.gr_name;
+                                else info.group_name = 'Chưa cập nhật';
+                            } else info.group_name = "Chưa cập nhật"
+
+                        } else {
+                            info.team_name = "Chưa cập nhật"
+                            info.group_name = "Chưa cập nhật"
+                        }
 
                     } else {
-                        info.team_name = "chưa cập nhật"
-                        info.group_name = "chưa cập nhật"
+                        info.dep_name = "Chưa cập nhật"
+                        info.team_name = "Chưa cập nhật"
+                        info.group_name = "Chưa cập nhật"
                     }
-
-                } else {
-                    info.dep_name = "chưa cập nhật"
-                    info.team_name = "chưa cập nhật"
-                    info.group_name = "chưa cập nhật"
+                    infoLeaderAfter.push(info)
                 }
-                infoLeaderAfter.push(info)
             }
 
             if (infoLeader) {
-                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { infoLeaderAfter });
+                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', {total, page, pageSize, infoLeaderAfter });
             }
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
@@ -838,39 +874,43 @@ exports.leaderDetail = async (req, res, next) => {
             let infoUser = await Users.findOne({ idQLC: empId, type: 2 })
 
             if (infoUser) {
-                let infoUserHr = await HR_InfoLeaders.findOne({ epId: empId })
-                if (infoUserHr) {
-                    result.ep_name = infoUser.userName
-                    result.namePosition = positionNames[infoUser.inForPerson.employee.position_id]
-                    result.avatarUser = `${process.env.hostFile}${infoUser.avatarUser}`
-                    result.description = infoUserHr.description
+                if(infoUser && infoUser.inForPerson && infoUser.inForPerson.employee && infoUser.inForPerson.account) {
+                    let infoUserHr = await HR_InfoLeaders.findOne({ epId: empId })
+                    if (infoUserHr) {
+                        result.ep_name = infoUser.userName
+                        result.namePosition = positionNames[infoUser.inForPerson.employee.position_id]
+                        if(infoUser.avatarUser) result.avatarUser = `${process.env.hostFile}${infoUser.avatarUser}`
+                        else result.avatarUser = '';
+                        result.description = infoUserHr.description
 
-                    if (result) {
-                        return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { result });
-                    }
-                } else {
-                    const maxID = await HR_InfoLeaders.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
-                    if (maxID) {
-                        newIDMax = Number(maxID.id) + 1;
-                    } else newIDMax = 1
-                    let desPosition = 0;
-                    if (infoUser && infoUser.inForPerson && infoUser.inForPerson.employee && infoUser.inForPerson.employee.position_id) desPosition = infoUser.inForPerson.employee.position_id
-                    let insertUser = new HR_InfoLeaders({
-                        id: newIDMax,
-                        epId: empId,
-                        avatar: (infoUser.avatarUser ? infoUser.avatarUse : null),
-                        description: description,
-                        desPosition: desPosition,
-                        created_at: new Date(Date.now())
-                    })
-                    insertUser.save()
-                    if (insertUser) {
-                        return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công');
+                        if (result) {
+                            return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { result });
+                        }
                     } else {
-                        return functions.setError(res, 'update info leader fail!');
+                        const maxID = await HR_InfoLeaders.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                        if (maxID) {
+                            newIDMax = Number(maxID.id) + 1;
+                        } else newIDMax = 1
+                        let desPosition = infoUser.inForPerson.employee.position_id; 
+                        let insertUser = new HR_InfoLeaders({
+                            id: newIDMax,
+                            epId: empId,
+                            avatar: (infoUser.avatarUser ? infoUser.avatarUse : null),
+                            description: description,
+                            desPosition: desPosition,
+                            created_at: new Date(Date.now())
+                        })
+                        insertUser = insertUser.save()
+                        
+                        if (insertUser) {
+                            let detailLeader = {userName: infoUser.userName, birthday: infoUser.inForPerson.account.birthday};
+                            return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công', detailLeader);
+                        } else {
+                            return functions.setError(res, 'update info leader fail!');
+                        }
                     }
                 }
-
+                return functions.setError(res, "Thong tin user khong day du", 404);
             } else functions.setError(res, "không tìm thấy thông tin user", 400);
 
         } else {
@@ -975,6 +1015,8 @@ exports.listEmpUseSignature = async (req, res, next) => {
         let {key, dep_id, page, pageSize} = req.body;
         if(!page) page = 1;
         if(!pageSize) pageSize = 5;
+        page = Number(page)
+        pageSize = Number(pageSize)
         const skip = (page-1)*pageSize;
         let condition = {"inForPerson.employee.com_id": comId,"inForPerson.employee.ep_signature": 1};
         if(key) {
@@ -983,11 +1025,28 @@ exports.listEmpUseSignature = async (req, res, next) => {
         }
         if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
         let fields = {idQLC: 1, avatarUser: 1, userName: 1, "inForPerson.employee.position_id": 1, "inForPerson.employee.dep_id": 1};
-        let total = Users.countDocuments(condition);
-        let listEmployee = functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
-        total = await total;
-        listEmployee = await listEmployee;
-        return functions.success(res, "Get list employee signature success!", {total, listEmployee});
+        let total = await Users.countDocuments(condition);
+        let listEmployee = await functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
+        let listEmpUseSignature = [];
+        for(let i=0; i<listEmployee.length; i++) {
+            let info = {};
+            if(listEmployee[i].inForPerson && listEmployee[i].inForPerson.employee) {
+                info._id = listEmployee[i].idQLC
+                info.userName = listEmployee[i].userName
+                info.namePosition = positionNames[listEmployee[i].inForPerson.employee.position_id];
+                info.depId = listEmployee[i].inForPerson.employee.dep_id;
+
+                if (listEmployee[i].inForPerson.employee.dep_id) {
+                    let infoDep = await Deparment.findOne({ dep_id: listEmployee[i].inForPerson.employee.dep_id, com_id: comId })
+                    if(infoDep) info.dep_name = infoDep.dep_name
+                    else info.dep_name = "Chưa cập nhật"
+                } else {
+                    info.dep_name = "Chưa cập nhật"
+                }
+                listEmpUseSignature.push(info);
+            }
+        }
+        return functions.success(res, "Get list employee signature success!", {total, page, pageSize, listEmpUseSignature});
     } catch (e) {
         console.log("Err from server get list employee signature!", e);
         return functions.setError(res, e.message);
@@ -1028,61 +1087,51 @@ exports.deleteEmpUseSignature = async (req, res, next) => {
 exports.listSignatureLeader = async (req, res, next) => {
     try {
         if (req.infoLogin) {
-            let keyword = req.body.keyword
+            let {key, dep_id, page, pageSize} = req.body;
             let comId = req.infoLogin.comId
-            let page = Number(req.body.page)
-            let pageSize = Number(req.body.pageSize)
+            if(!page) page = 1;
+            if(!pageSize) pageSize = 5;
+            page = Number(page)
+            pageSize = Number(pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let listPositionId = [4, 20, 13, 12, 11, 10, 6, 5, 8, 7, 16, 14, 21, 22, 19, 18, 17]
-            let infoLeader
-            if (isNaN(keyword) == true) {
-                infoLeader = await Users.find({
-                    userName: new RegExp(keyword, "i"),
-                    "inForPerson.employee.com_id": comId,
-                    "inForPerson.employee.position_id": { $in: listPositionId }
-                }, {
-                    idQLC: 1,
-                    userName: 1,
-                    "inForPerson.employee.position_id": 1,
-                    "inForPerson.employee.dep_id": 1,
-                }).skip(skip).limit(limit)
-            } else if (isNaN(keyword) == false) {
-                infoLeader = await Users.find({
-                    idQLC: keyword,
-                    "inForPerson.employee.com_id": comId,
-                    "inForPerson.employee.position_id": { $in: listPositionId }
-                }, {
-                    idQLC: 1,
-                    userName: 1,
-                    "inForPerson.employee.position_id": 1,
-                    "inForPerson.employee.dep_id": 1,
-                }).skip(skip).limit(limit)
+
+            let condition = {"inForPerson.employee.com_id": comId,"inForPerson.employee.position_id": { $in: listPositionId }};
+            if(key) {
+                if(!isNaN(parseFloat(key)) && isFinite(key)) condition.idQLC = Number(key);
+                else condition.userName = new RegExp(key, 'i');
             }
+            if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
+            let fields = {idQLC: 1, avatarUser: 1, userName: 1, "inForPerson.employee.position_id": 1, "inForPerson.employee.dep_id": 1};
+            let total = await Users.countDocuments(condition);
+            let infoLeader = await functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
 
             if (infoLeader) {
                 let infoLeaderAfter = []
                 for (let i = 0; i < infoLeader.length; i++) {
                     let info = {}
-                    info._id = infoLeader[i].idQLC
-                    info.userName = infoLeader[i].userName
-                    info.namePosition = positionNames[infoLeader[i].inForPerson.employee.position_id];
+                    if(infoLeader[i].inForPerson && infoLeader[i].inForPerson.employee) {
+                        info._id = infoLeader[i].idQLC
+                        info.userName = infoLeader[i].userName
+                        info.namePosition = positionNames[infoLeader[i].inForPerson.employee.position_id];
 
-                    if (infoLeader[i].inForPerson.employee.dep_id) {
-                        let infoDep = await Deparment.findOne({ _id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
-                        info.dep_name = infoDep.dep_name
-                    } else {
-                        info.dep_name = "chưa cập nhật"
+                        if (infoLeader[i].inForPerson.employee.dep_id) {
+                            let infoDep = await Deparment.findOne({ dep_id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
+                            if(infoDep) info.dep_name = infoDep.dep_name
+                            else info.dep_name = "Chưa cập nhật"
+                        } else {
+                            info.dep_name = "Chưa cập nhật"
+                        }
+
+                        let infoSig = await HR_SignatureImages.findOne({ empId: infoLeader[i].idQLC,isDelete: 0 }, { imgName: 1 })
+                        if (infoSig) {
+                            info.linkSignature = `${process.env.hostFile}base365/hr/upload/signature/${infoSig.imgName}`
+                        } else info.linkSignature = "Chưa cập nhật"
+                        infoLeaderAfter.push(info)
                     }
-
-                    let infoSig = await HR_SignatureImages.findOne({ empId: infoLeader[i].idQLC }, { imgName: 1 })
-                    if (infoSig) {
-                        info.linkSignature = `${process.env.hostFile}storage/hr/upload/signature/${infoSig.imgName}`
-                    } else info.linkSignature = "chưa cập nhật"
-
-                    infoLeaderAfter.push(info)
                 }
-                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { infoLeaderAfter });
+                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', {total, page, pageSize, infoLeaderAfter });
             }
             return functions.setError(res, "không tìm thấy lãnh đạo nào", 400);
         } else {

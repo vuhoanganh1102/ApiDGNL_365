@@ -87,7 +87,8 @@ const model_Mat = new mongoose.Schema({
         type: Number
     },
     xoa_dx_mat: {
-        type: Number
+        type: Number,
+        default: 0
     },
     mat_date_create: {
         type: Number
