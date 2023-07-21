@@ -372,7 +372,7 @@ exports.toolTaiSanDangSuDung = async (req, res, next) => {
                     //     updateAt = null;
                     // };
                     const capital = new TaiSanDangSuDung({
-                        _id: element.id_sd,
+                        id_sd: element.id_sd,
                         com_id_sd: element.com_id_sd,
                         id_nv_sd: element.id_nv_sd,
                         id_pb_sd: element.id_pb_sd,

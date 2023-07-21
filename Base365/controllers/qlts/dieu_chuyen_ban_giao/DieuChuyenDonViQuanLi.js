@@ -28,9 +28,11 @@ exports.create = async(req,res) =>{
         const id_ng_nhan = req.body.id_ng_nhan
 
         let maxThongBao = await thongBao.findOne({},{},{sort: {id_tb : -1}}).lean() || 0 ;
-        let maxDieuChuyen = await thongBao.findOne({},{},{sort: {dc_id : -1}}).lean() || 0 ;
+        let maxDieuChuyen = await DieuChuyen.findOne({},{},{sort: {dc_id : -1}}).lean() || 0 ;
         let now = new Date()
-        const ds_dc = ""
+        let ds_dc = ""
+        console.log(maxDieuChuyen.dc_id)
+
         if(dieuchuyen_taisan) ds_dc = JSON.parse(dieuchuyen_taisan).ds_dc;
                         const updated_ds_dc = ds_dc.map((item) => ({
                         ts_id: item[0],
@@ -341,6 +343,7 @@ exports.edit = async(req,res) =>{
         const vitri_dc_den = req.body.vitri_dc_den
         const dc_ngay = new Date(req.body.ngay_dc)
         const ly_do_dc = req.body.ly_do_dc
+        const dc_id = req.body.dc_id
         const khoi_chon_phong_ban_nv = req.body.khoi_chon_phong_ban_nv
         const khoi_chon_phong_ban_nv_den = req.body.khoi_chon_phong_ban_nv_den
         const khoi_dc_tu = req.body.khoi_dc_tu
@@ -483,16 +486,32 @@ exports.edit = async(req,res) =>{
 //code theo dieuchuyen_dvQL2.php
 exports.list = async(req,res) =>{
     try{//code theo PHP : add_dc_ts.php
+        let page = Number(req.body.page)|| 1;
+        let pageSize = Number(req.body.pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
         const id_cty = req.user.data.com_id
-        const id_dc = req.body.id_dc
+        const dc_id = req.body.dc_id
         let conditions = {}
         conditions.id_cty = id_cty
-        if(id_dc) conditions.id_dc = id_dc
-        const data = await DieuChuyen.find(conditions).lean()
+        if(dc_id) conditions.dc_id = dc_id
+    if (page && pageSize) {
+        const data = await DieuChuyen.find(conditions).skip(skip).limit(limit).lean()
+        let count = await DieuChuyen.count(conditions)
+        const totalCount = data.length > 0 ? data[0].totalCount : 0;
+        const totalPages = Math.ceil(totalCount / pageSize);
         if(data){
-            return fnc.success(res,"lấy thành công",{data})
+            return fnc.success(res,"lấy thành công",{data,totalPages,count})
         }
         return fnc.setError(res,"không tìm thấy dữ liệu")
+    }else{
+        const data = await DieuChuyen.find(conditions).lean()
+        let count = await DieuChuyen.count(conditions)
+        if(data){
+            return fnc.success(res,"lấy thành công",{data,count})
+        }
+        return fnc.setError(res,"không tìm thấy dữ liệu")
+    }
     }catch(e){
         return fnc.setError(res, e.message)
     }
