@@ -66,8 +66,8 @@ exports.getListVanBanMoi = async(req, res, next) => {
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     if(trang_thai_search == 1) trang_thai_search = 0;
 
-    let id = req.id;
-    let com_id = req.comId;
+    let id = req.user.data.idQLC;
+    let com_id = req.user.data.com_id;
     let minTime = vanThuService.convertTimestamp(Date.now())-2592000;
 
     let condition = {$and: [
@@ -126,8 +126,7 @@ exports.getListVanBanMoi = async(req, res, next) => {
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
     return functions.success(res, "Get list van ban moi success!", {totalCount, listVanBanMoi});
   }catch(err) {
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -146,8 +145,8 @@ exports.getListVanBanDaXuLy = async(req, res, next) => {
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     if(trang_thai_search == 1) trang_thai_search = 0;
 
-    let id = req.id;
-    let com_id = req.comId;
+    let id = req.user.data.idQLC;
+    let com_id = req.user.data.com_id;
 
     let condition = {$and: [
       {$or: [
@@ -202,8 +201,7 @@ exports.getListVanBanDaXuLy = async(req, res, next) => {
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
     return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, listVanBanDaXuLy});
   }catch(err) {
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -221,8 +219,8 @@ exports.getListVanBanCanDuyet = async(req, res, next) => {
     time_start = time_start? vanThuService.convertTimestamp(time_start): null;
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
 
-    let id = req.id ;
-    let com_id = req.comId ;
+    let id = req.user.data.idQLC ;
+    let com_id = req.user.data.com_id ;
 
 
     let condition = {type_duyet: 0, trang_thai_vb: 0};
@@ -237,8 +235,7 @@ exports.getListVanBanCanDuyet = async(req, res, next) => {
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
     return functions.success(res, "Get list van ban den can duyet success!", {totalCount, listVanBanDenCanDuyet});
   }catch(err) {
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -257,8 +254,8 @@ exports.getListVanBanThuHoi = async(req, res, next) => {
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
     let trang_thai_vb = 3;
 
-    let id = req.id ;
-    let com_id = req.comId ;
+    let id = req.user.data.idQLC ;
+    let com_id = req.user.data.com_id ;
 
     let condition = {$and: [
       {$or: [
@@ -302,8 +299,7 @@ exports.getListVanBanThuHoi = async(req, res, next) => {
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
     return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, listVanBanDaThuHoi});
   }catch(err) {
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -320,9 +316,8 @@ exports.getListVanBanCapNhat = async(req, res, next) => {
     const limit = pageSize;
     time_start = time_start? vanThuService.convertTimestamp(time_start): null;
     time_end = time_end? vanThuService.convertTimestamp(time_end): null;
-    let id = req.id ;
-    let com_id = req.comId ;
-    let type;
+    let id = req.user.data.idQLC ;
+    let com_id = req.user.data.com_id ;
 
     let condition = {
       $or: [
@@ -382,8 +377,7 @@ exports.getListVanBanCapNhat = async(req, res, next) => {
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
     return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, listVanBanCapNhat});
   }catch(err) {
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -393,8 +387,8 @@ exports.getListVanBanCapNhat = async(req, res, next) => {
 exports.sendFeedback = async(req, res, next) => {
   try{
     let {id_vb, feedback} = req.body;
-    let id_user = req.id;
-    let name_user = req.name_user;
+    let id_user = req.user.data.idQLC;
+    let name_user = req.user.data.userName;
     if(!id_vb || !feedback) {
       return functions.setError(res, "Missing input value!", 404);
     }
@@ -415,8 +409,7 @@ exports.sendFeedback = async(req, res, next) => {
     }
     return functions.success(res, "Tao feed back thanh cong!"); 
   }catch(err){
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -451,7 +444,6 @@ exports.sendLeader = async(req, res, next) => {
     }
     return functions.success(res, "Gui cho leader thanh cong!"); 
   }catch(err){
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }

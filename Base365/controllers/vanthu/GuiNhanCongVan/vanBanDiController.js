@@ -102,9 +102,9 @@ exports.getDataAndCheck = async(req, res, next) => {
     }
     req.NameFile = NameFile;
     req.InfoFile = InfoFile;
-    let id = req.id;
-    let comId = req.comId;
-    let userName = req.userName;
+    let id = req.user.data.idQLC ;
+    let comId = req.user.data.com_id ;
+    let userName = req.user.data.userName ;
     req.fields = {
       title_vb: ten_vanban, 
       so_vb: so_vanban, 
@@ -136,8 +136,7 @@ exports.getDataAndCheck = async(req, res, next) => {
     }
     return next();
   }catch(err){
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -147,6 +146,9 @@ exports.createVanBanOut = async(req, res, next) => {
 
     //user_cty, mail_cty, name_com, user_nhan, gui_ngoai_cty => cac truong thay doi so voi van ban trong cong ty
     let fields = req.fields;
+    let id = req.user.data.idQLC ;
+    let com_id = req.user.data.com_id ;
+    let type = req.user.data.type ;
     let {id_cong_ty, mail_congty, id_user_nhan, tk_mail_nhan, noidung_guimail, type_usn, name_cty_nhan} = req.body;
 
     if(!id_cong_ty || !mail_congty || !name_cty_nhan) {
@@ -156,7 +158,7 @@ exports.createVanBanOut = async(req, res, next) => {
       return functions.setError(res, "Vui lòng chọn tài khoản người nhận!", 408);
     }
     if(fields.duyet_vb != 2) {
-      if(!await checkBanHanh(req.type, req.comId, req.id, 2)) {
+      if(!await checkBanHanh(type, com_id, id, 2)) {
         return functions.setError(res, "Tai khoan chua duoc phan quyen de ban hanh ngoai cong ty!", 409);
       }
     }
@@ -180,7 +182,7 @@ exports.createVanBanOut = async(req, res, next) => {
     //
     let type_user = '';
     let type_sent = '';
-    if(req.role == 2){
+    if(type == 2){
       if(type_usn == 2) type_user = 1;
       else type_user = 2;
       type_sent = 3;
@@ -200,24 +202,24 @@ exports.createVanBanOut = async(req, res, next) => {
     const link = `https://vanthu.timviec365.vn/chi-tiet-vb/${vanThuService.replaceTitle(fields.title_vb)}-vb${maxIdVB}.html`;
     //gui thong bao qua chat
     let dataSend = {
-      EmployeeId: req.id,
+      EmployeeId: id,
       ListReceive: `[${ListReceive}]`,
-      CompanyId: req.comId,
+      CompanyId: com_id,
       ListFollower: `[${fields.nguoi_theo_doi}]`,
       Status: Status,
       Message: fields.nhom_vb,
       Type: type_user,
       Title: fields.title_vb,
       Link: link,
-      SenderId: req.id
+      SenderId: id
     }
     // gui email
     let dataSendChat = await functions.getDataAxios(vanThuService.arrAPI().NotificationReport, dataSend);
     //gui file qua chat
     dataSend = {
-      SenderId: req.id,
+      SenderId: id,
       ReceiveId: `[${ListReceive}]`,
-      CompanyId: req.comId,
+      CompanyId: com_id,
       Type: type_sent,
       InfoFile: req.InfoFile,
       NameFile: req.NameFile,
@@ -244,8 +246,7 @@ exports.createVanBanOut = async(req, res, next) => {
     }
     return functions.success(res, "Create van ban gui di ngoai cong ty thanh cong!");
   }catch(err){
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -253,8 +254,10 @@ exports.createVanBanIn = async(req, res, next) => {
   try{
     let fields = req.fields;
     let {vb_th, type_nhieu_nguoi_ky, nguoi_ky, chuc_vu_nguoi_ky, id_uv_nhan} = req.body;
-    let comId = req.comId;
-    let id_user_send = req.id;
+    let id = req.user.data.idQLC ;
+    let type = req.user.data.type ;
+    let comId = req.user.data.com_id ;
+    let id_user_send = id;
     let user_cty = '';
     let com_user = comId;
     let type_thu_hoi = 0, so_vb_th;
@@ -263,7 +266,7 @@ exports.createVanBanIn = async(req, res, next) => {
       return functions.setError(res, "Missing input value", 408);
     }
     if(fields.duyet_vb != 2) {
-      if(!await checkBanHanh(req.type, req.comId, req.id, 1)) {
+      if(!await checkBanHanh(type, comId, id, 1)) {
         return functions.setError(res, "Tai khoan chua duoc phan quyen de ban hanh ngoai cong ty!", 409);
       }
     }
@@ -275,17 +278,6 @@ exports.createVanBanIn = async(req, res, next) => {
     }
 
     let list_duyet = await UserVT.findOne({id_user: comId}, {duyet_pb: 1, type_cong_ty: 1});
-    // let data_banhanh = '';
-    // if(list_duyet) {
-    //   data_banhanh = list_duyet.type_cong_ty;
-    // }
-
-    // if(id_uv_nhan==0) {
-    //   user_cty = req.comId;
-    //   if(!data_banhanh.includes(String(id_user_send)) && !req.comRoleId) {
-    //     return functions.setError(res, "Bạn chưa được cấp quyền ban hành cho toàn bộ công ty!", 404);
-    //   }
-    // }
     id_uv_nhan = id_uv_nhan.join(", ");
 
     if(type_nhieu_nguoi_ky=='on'){
@@ -348,7 +340,7 @@ exports.createVanBanIn = async(req, res, next) => {
     }
     let type_user = '';
     let type_sent = '';
-    if(req.type == 2){
+    if(type == 2){
       type_user = 1;
       type_sent = 3;
     }else {
@@ -366,24 +358,24 @@ exports.createVanBanIn = async(req, res, next) => {
     const link = `https://vanthu.timviec365.vn/chi-tiet-vb/${vanThuService.replaceTitle(fields.title_vb)}-vb${maxIdVB}.html`;
     //gui thong bao qua chat
     let dataSend = {
-      EmployeeId: req.id,
+      EmployeeId: id,
       ListReceive: `[${ListReceive}]`,
-      CompanyId: req.comId,
+      CompanyId: comId,
       ListFollower: `[${fields.nguoi_theo_doi}]`,
       Status: Status,
       Message: fields.nhom_vb,
       Type: type_user,
       Title: fields.title_vb,
-      SenderId: req.id,
+      SenderId: id,
       Link: link
     }
     let dataSendchat = await functions.getDataAxios(vanThuService.arrAPI().NotificationReport, dataSend);
     //gui file qua chat
     
     dataSend = {
-      SenderId: req.id,
+      SenderId: id,
       ReceiveId: `[${ListReceive}]`,
-      CompanyId: req.comId,
+      CompanyId: comId,
       Type: type_sent,
       InfoFile: req.InfoFile,
       NameFile: req.NameFile,
@@ -394,8 +386,7 @@ exports.createVanBanIn = async(req, res, next) => {
     dataSendchat = await functions.getDataAxios(vanThuService.arrAPI().SendContractFile, dataSend);
     return functions.success(res, "Create van ban gui di trong cong ty thanh cong!");
   }catch(err){
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -412,7 +403,7 @@ exports.getListVanBanDiDaGui = async(req, res, next) => {
     if(fromDate) fromDate = fromDate? vanThuService.convertTimestamp(fromDate): null;
     if(toDate) toDate = toDate? vanThuService.convertTimestamp(toDate): null;
 
-    let id = req.id;
+    let id = req.user.data.idQLC ;
     let condition = {user_send: id};
     if(id_vb) condition._id = Number(id_vb);
     if(ten_vb_search) condition.title_vb = new RegExp(ten_vb_search, 'i');
@@ -431,16 +422,6 @@ exports.getListVanBanDiDaGui = async(req, res, next) => {
             as: "matchedDocuments"
             }
         },
-        // {
-        //     $unwind: "$matchedDocuments"
-        // },
-        // {
-        //     $replaceRoot: {
-        //     newRoot: {
-        //         $mergeObjects: ["$$ROOT", "$matchedDocuments"]
-        //     }
-        //     }
-        // },
         {$sort: {_id: 1}},
         {$skip: skip},
         {$limit: limit}
@@ -471,15 +452,14 @@ exports.getListVanBanDiDaGui = async(req, res, next) => {
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
     return functions.success(res, "Get list van ban gui di success!", {totalCount, listVanBanDi});
   }catch(err){
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
 exports.getDetailVanBan = async(req, res, next) => {
   try{
     let id_vb = req.body.id_vb;
-    let id = req.id;
+    let id = req.user.data.idQLC ;
     if(!id_vb) {
       return functions.setError(res, "Missing input value!", 404);
     }
@@ -507,12 +487,11 @@ exports.getDetailVanBan = async(req, res, next) => {
     vanBan.thayThe = thayThe;
 
     //neu la van ban den se chuyen du lieu da xem hay chua
-    let checkThongBao = await ThongBao.findOneAndUpdate({id_user_nhan: req.id, id_van_ban: id_vb, view: 0, type: 1}, {view: 1}, {new: true});
+    let checkThongBao = await ThongBao.findOneAndUpdate({id_user_nhan: id, id_van_ban: id_vb, view: 0, type: 1}, {view: 1}, {new: true});
     
     return functions.success(res, "Get detail van ban success!", {vanBan: vanBan});
   }catch(err) {
-    console.log(err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -537,8 +516,7 @@ exports.createChuyenTiep = async(req, res, next)=> {
     }
     return functions.success(res, "Chuyen tiep van ban thanh cong!");
   }catch(err){
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -554,8 +532,7 @@ exports.deleteVanBan = async(req, res, next)=> {
     }
     return functions.setError(res, "Van ban not found!", 504);
   }catch(err){
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -573,8 +550,7 @@ exports.checkLuuQLCV = async(req, res, next)=> {
     return functions.success(res, "Check luu van ban noi bo cong ty!", {checkLuu: checkLuu})
 
   }catch(err){
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -651,8 +627,7 @@ exports.luuVBCTY = async(req, res, next) => {
     }
     return functions.success(res, "Luu cong van thanh cong!");
   }catch(err) {
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -668,8 +643,7 @@ exports.setTrangThaiVanBan = async(req, res, next) => {
     }
     return functions.success(res, "Cap nhat trang thai thanh cong!");
   }catch(err) {
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -687,8 +661,7 @@ exports.checkQuyenBanHanh = async(req, res, next) => {
     banHanh = await checkBanHanh(req.type, req.comId, req.id, 2);
     return functions.success(res, "Check ban hanh ngoai", {banHanh: banHanh});
   }catch(err){
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -704,7 +677,6 @@ exports.getUserByEmail = async(req, res, next) => {
     }
     return functions.success(res, "Get user by email success!", {user: user});
   }catch(err){
-    console.log("Error from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
