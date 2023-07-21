@@ -116,7 +116,7 @@ exports.danhSachBaoDuong = async (req, res, next) => {
     }
     //quy dinh
     else if(dataType == 4) {
-      let condition2 = {id_cty: com_id, qd_xoa: 0, quydinh_bd: idQLC};
+      let condition2 = {id_cty: com_id, qd_xoa: 0, id_ng_tao_qd: idQLC};
       let quydinh = await fnc.pageFind(QuyDinh, condition2, {qd_id: -1}, skip, pageSize);
       let total = await fnc.findCount(QuyDinh, condition2);
       return fnc.success(res, "Lay ra danh sach bao duong thanh cong", {page, pageSize, total,quydinh});
