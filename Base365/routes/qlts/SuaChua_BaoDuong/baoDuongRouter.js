@@ -6,6 +6,6 @@ const functions = require('../../../services/functions');
 const qltsService = require('../../../services/QLTS/qltsService');
 
 //lay ra danh sach 
-router.post('/danhSachBaoDuong', functions.checkToken, qltsService.getDataFromToken ,formData.parse(), baoDuongController.danhSachBaoDuong)
+router.post('/danhSachBaoDuong', functions.checkToken, formData.parse(), baoDuongController.danhSachBaoDuong)
 
 module.exports = router
