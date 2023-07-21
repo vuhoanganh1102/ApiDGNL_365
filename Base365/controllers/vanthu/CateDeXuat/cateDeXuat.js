@@ -5,7 +5,8 @@ const functions = require("../../../services/functions");
 const DeXuat = require('../../../models/Vanthu/de_xuat')
 const HideCateDX = require('../../../models/Vanthu/hide_cate_dx')
 const UserDX = require("../../../models/Users")
-
+const fnc = require('../../../services/qlc/functions')
+const serviceVanthu = require('../../../services/vanthu')
 
 
 //Api hiển thị chi tiết đề xuất 
@@ -13,7 +14,7 @@ const UserDX = require("../../../models/Users")
 exports.ChitietDx = async (req, res) => {
   try {
     let {_id} = req.body;
-    let dexuat = await DeXuat.findOne({ _id });
+    let dexuat = await DeXuat.findOne({ _id }).select('');
     if (!dexuat) {
       return functions.setError(res, 'Không tìm thấy bản ghi dexuat', 400);
     } else {
@@ -32,8 +33,23 @@ exports.ChitietDx = async (req, res) => {
         userName: user.userName,
         avatarUser: user.avatarUser 
       }));
-      let data = { dexuat, namnUserDuyet, namnUsertd };
-      return functions.success(res, 'get data success', { data });
+      if(dexuat){
+        let avatar = await serviceVanthu.createLinkFileVanthu(dexuat.id_user,dexuat.file_kem)
+        if(avatar){
+          dexuat.file_kem = avatar
+        }
+      }
+      if (namnUserDuyet) {
+        let avatar = await fnc.createLinkFileEmpQLC(namnUserDuyet[0].idQLC ,namnUserDuyet[0].avatarUser)
+        if(avatar) 
+        namnUserDuyet[0].avatarUser = avatar
+      };
+      if(namnUsertd) {
+        let avatar = await fnc.createLinkFileEmpQLC(namnUsertd[0].idQLC,namnUsertd[0].avatarUser)
+        if(avatar) 
+        namnUsertd[0].avatarUser = avatar
+      }
+      return functions.success(res, 'get data success', { dexuat, namnUserDuyet, namnUsertd });
     }
   } catch (error) {
     console.error('Failed ', error);
@@ -177,11 +193,6 @@ exports.showNghi = async (req, res) => {
     return functions.setError(res, error);
   }
 };
-
-
-
-
-
 
 
 
@@ -356,3 +367,5 @@ exports.listtamung = async (req, res) => {
     return functions.setError(res, error);
   }
 };
+
+

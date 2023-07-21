@@ -7,6 +7,7 @@ const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
 const DeXuat = require("../../../models/Vanthu/de_xuat");
 const User = require('../../../models/Users');
 const SettingD = require('../../../models/Vanthu/setting_dx');
+const fnc = require('../../../services/qlc/functions')
 const { log } = require('console');
 
 //đề xuất xin nghỉ 
@@ -17,7 +18,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            phong_ban,
+            type_time,
             ly_do,
             bd_nghi,
             kt_nghi,
@@ -28,18 +29,18 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
         let link_download = '';
         if (file_kem) {
             functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -53,7 +54,6 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                 _id: (maxID + 1),
                 name_dx: name_dx,
                 type_dx: 1,
-                phong_ban: phong_ban,
                 noi_dung: {
                     nghi_phep: {
                         ly_do: ly_do,
@@ -63,6 +63,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                         ca_nghi: ca_nghi,
                     }
                 },
+                type_time : type_time,
                 name_user: name_user,
                 id_user: id_user,
                 com_id: com_id,
@@ -76,38 +77,40 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
-            const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
-            if (tb) {
-                maxID = Number(tb._id);
-            }
-            const id_user_nhan_arr = id_user_duyet.split(',');
 
-            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+            const tb = await ThongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+
+            let idTB = 0;
+            if (tb) {
+                idTB = Number(tb._id) + 1;
+            }
+            // Tiếp tục tạo các bản ghi mới với idTB mới tăng dần
+            const id_user_nhan_arr = id_user_duyet.split(',');
+            let createTBs = [];
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
                 const id_user_nhan = parseInt(id_user_nhan_arr[i]);
-
                 let createTB = new ThongBao({
-                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    _id: idTB + i,
                     id_user: id_user,
-                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_user_nhan: id_user_nhan,
                     id_van_ban: saveDX._id,
                     type: 2,
                     view: 0,
                     created_date: new Date()
                 });
+
                 createTBs.push(createTB);
             }
-            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
-            let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+
+            // Chèn các bản ghi mới vào collection ThongBao
+            let saveCreateTb = await ThongBao.insertMany(createTBs);
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 //đề xuất bổ nhiệm 
 exports.de_xuat_xin_bo_nhiem = async (req, res) => {
@@ -129,25 +132,24 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -181,9 +183,9 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "dề xuất bổ nhệm ", link, file_kem);
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
+            let idTB = 0;
             if (tb) {
-                maxID = Number(tb._id);
+                idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
 
@@ -207,12 +209,12 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 
@@ -221,14 +223,11 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            //  file_kem,
             ly_do,
             phong_ban,
-            //  type_time,
             danh_sach_tai_san,
             so_luong_tai_san,
             link
@@ -237,18 +236,18 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let link_download = '';
         let file_kem = req.files.fileKem;
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
 
 
@@ -258,7 +257,6 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -272,13 +270,11 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                         danh_sach_tai_san: danh_sach_tai_san,
                         so_luong_tai_san: (so_luong_tai_san),
                     }
-
                 },
                 name_user: name_user,
                 id_user: id_user,
                 com_id: com_id,
                 kieu_duyet: kieu_duyet,
-
                 phong_ban: phong_ban,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
@@ -293,19 +289,16 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
+            let idTB = 0;
             if (tb) {
-                maxID = Number(tb._id);
+                idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
-
             let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
                 const id_user_nhan = parseInt(id_user_nhan_arr[i]);
-
                 let createTB = new ThongBao({
                     _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
                     id_user: id_user,
@@ -315,17 +308,16 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                     view: 0,
                     created_date: new Date(),
                 });
-
                 createTBs.push(createTB);
             }
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 //đề xuất đổi ca 
@@ -333,11 +325,9 @@ exports.de_xuat_doi_ca = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            // file_kem,
             ly_do,
             phong_ban,
             ngay_can_doi,
@@ -349,30 +339,27 @@ exports.de_xuat_doi_ca = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
-
-            //console.log("mx : " + maxID);
             const new_de_xuat = new De_Xuat({
                 _id: (maxID + 1),
                 name_dx: name_dx,
@@ -396,23 +383,20 @@ exports.de_xuat_doi_ca = async (req, res) => {
                 file_kem: link_download,
                 kieu_duyet: kieu_duyet,
                 time_create: new Date(),
-             
+
             })
 
 
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
+            let idTB = 0;
             if (tb) {
-                maxID = Number(tb._id);
+                idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
-
             let createTBs = []; // Mảng chứa các đối tượng ThongBao
-
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
                 const id_user_nhan = parseInt(id_user_nhan_arr[i]);
 
@@ -431,12 +415,12 @@ exports.de_xuat_doi_ca = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 
@@ -445,13 +429,10 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
     try {
         let {
             name_dx,
-            // type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            // file_kem,
             ly_do,
-
             cv_nguoi_lc,
             pb_nguoi_lc,
             noi_cong_tac,
@@ -461,30 +442,27 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
-
-            //console.log("mx : " + maxID);
             const new_de_xuat = new De_Xuat({
                 _id: (maxID + 1),
                 name_dx: name_dx,
@@ -507,18 +485,15 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
                 id_user_theo_doi: id_user_theo_doi,
                 file_kem: link_download,
                 kieu_duyet: kieu_duyet,
-                time_create: new Date(),   
+                time_create: new Date(),
             })
-
-
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
+            let idTB = 0;
             if (tb) {
-                maxID = Number(tb._id);
+                idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
 
@@ -541,12 +516,12 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
             }
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 //đề xuất tăng lương 
@@ -554,12 +529,11 @@ exports.de_xuat_tang_luong = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            //  file_kem,
             ly_do,
+            type_time,
             mucluong_ht,
             mucluong_tang,
             date_tang_luong,
@@ -568,18 +542,18 @@ exports.de_xuat_tang_luong = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -587,7 +561,6 @@ exports.de_xuat_tang_luong = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -619,11 +592,10 @@ exports.de_xuat_tang_luong = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
+            let idTB = 0;
             if (tb) {
-                maxID = Number(tb._id);
+                idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
 
@@ -641,18 +613,17 @@ exports.de_xuat_tang_luong = async (req, res) => {
                     view: 0,
                     created_date: new Date()
                 });
-
                 createTBs.push(createTB);
             }
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 //đè xuất tham gia dự ấn 
@@ -660,7 +631,6 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
@@ -673,18 +643,18 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -692,7 +662,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
+           
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -723,11 +693,10 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
+            let idTB = 0;
             if (tb) {
-                maxID = Number(tb._id);
+                idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
 
@@ -735,7 +704,6 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
                 const id_user_nhan = parseInt(id_user_nhan_arr[i]);
-
                 let createTB = new ThongBao({
                     _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
                     id_user: id_user,
@@ -751,12 +719,12 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 //đề xuất xin tạm ứng lương
@@ -764,13 +732,11 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
     try {
         let {
             name_dx,
-            //  type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
-            //   file_kem,
-
             ly_do,
+            type_time,
             tien_tam_ung,
             ngay_tam_ung,
             link
@@ -778,25 +744,24 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download =  file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -822,7 +787,6 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
                 kieu_duyet: 0,
                 type_duyet: 0,
                 type_time: 0,
-                // time_start_out: " ",
                 time_create: new Date(),
                 active: 1,//1-bên 3 đã đồng ý , 2 - bên 3 không đồng ý 
                 del_type: 1,//1-active , 2 --delete
@@ -832,11 +796,10 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
+            let idTB = 0;
             if (tb) {
-                maxID = Number(tb._id);
+                idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
 
@@ -860,12 +823,12 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 //đề xuất thôi việc 
@@ -873,29 +836,29 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
     try {
         let {
             name_dx,
-            // type_dx,//int 
             kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
+            type_time,
             ngaybatdau_tv,
             link
         } = req.body;
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
         let link_download = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+            link_download = file_kem.name;
         }
 
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
@@ -904,7 +867,6 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(de_xuat);
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -931,11 +893,10 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
+            let idTB = 0;
             if (tb) {
-                maxID = Number(tb._id);
+                idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
 
@@ -959,12 +920,12 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 
@@ -982,26 +943,24 @@ exports.lich_lam_viec = async (req, res) => {
             ca_lam_viec,
             ngay_lam_viec,
             link } = req.body;
-            let id_user = "";
-            let com_id = "";
-            let name_user = "";
-            if(req.user.data.type == 2){
-                id_user = req.user.data.idQLC
-                com_id = req.user.data.com_id
-                name_user = req.user.data.userName  
-            }else{
-                return functions.setError(res, 'không có quyền truy cập', 400);
-            }
+        let id_user = "";
+        let com_id = "";
+        let name_user = "";
+        if (req.user.data.type == 2) {
+            id_user = req.user.data.idQLC
+            com_id = req.user.data.com_id
+            name_user = req.user.data.userName
+        } else {
+            return functions.setError(res, 'không có quyền truy cập', 400);
+        }
         if (isNaN(id_user) || isNaN(id_user_duyet) || isNaN(id_user_theo_doi)) {
             return functions.setError(res, 'không thể thực thi', 400);
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-         
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
-
             const new_de_xuat = new De_Xuat({
                 _id: (maxID + 1),
                 name_dx: name_dx,
@@ -1014,7 +973,6 @@ exports.lich_lam_viec = async (req, res) => {
                         ngay_bat_dau: ngay_bat_dau,
                         ca_la_viec: ca_lam_viec,
                         ngay_lam_viec: ngay_lam_viec,
-
                     },
                 },
                 name_user: name_user,
@@ -1030,19 +988,16 @@ exports.lich_lam_viec = async (req, res) => {
             let saveDX = await new_de_xuat.save();
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-            maxID = 0;
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            console.log(tb);
+            let idTB = 0;
             if (tb) {
-                maxID = Number(tb._id);
+                idTB = Number(tb._id) + 1;
             }
             const id_user_nhan_arr = id_user_duyet.split(',');
-
             let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
                 const id_user_nhan = parseInt(id_user_nhan_arr[i]);
-
                 let createTB = new ThongBao({
                     _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
                     id_user: id_user,
@@ -1058,12 +1013,12 @@ exports.lich_lam_viec = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {saveDX, saveCreateTb});
+            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxCong = async (req, res) => {
@@ -1075,6 +1030,7 @@ exports.dxCong = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             ca_xnc,
+            type_time,
             time_xnc,
             ly_do,
             link
@@ -1082,11 +1038,11 @@ exports.dxCong = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let createDate = new Date();
@@ -1094,10 +1050,10 @@ exports.dxCong = async (req, res) => {
         let linkDL = '';
         if (linkDL) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
-             return functions.setError(res, 'không thể thực thi', 400);
+            return functions.setError(res, 'không thể thực thi', 400);
         } else {
             let maxID = await functions.getMaxID(DeXuat);
             let _id = 0;
@@ -1154,13 +1110,12 @@ exports.dxCong = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            res.status(200).json({saveCreateTb, savedDXC})
-            return functions.success(res, 'get data success', {savedDXC, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXC, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxCoSoVatChat = async (req, res) => {
@@ -1174,16 +1129,17 @@ exports.dxCoSoVatChat = async (req, res) => {
             time_start_out,
             input_csv,
             ly_do,
+            type_time,
             link
         } = req.body;
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let createDate = new Date()
@@ -1191,7 +1147,7 @@ exports.dxCoSoVatChat = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1251,12 +1207,12 @@ exports.dxCoSoVatChat = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {savedDXCSVC, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXCSVC, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxDangKiSuDungXe = async (req, res) => {
@@ -1268,6 +1224,7 @@ exports.dxDangKiSuDungXe = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
+            type_time,
             bd_xe,
             end_xe,
             soluong_xe,
@@ -1280,11 +1237,11 @@ exports.dxDangKiSuDungXe = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let createDate = new Date()
@@ -1292,7 +1249,7 @@ exports.dxDangKiSuDungXe = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1355,12 +1312,12 @@ exports.dxDangKiSuDungXe = async (req, res) => {
             }
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {savedDXXe, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXXe, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxHoaHong = async (req, res) => {
@@ -1373,6 +1330,7 @@ exports.dxHoaHong = async (req, res) => {
             id_user_theo_doi,
             type_duyet,
             chu_ky,
+            type_time,
             item_mdt_date,
             dt_money,
             ly_do,
@@ -1383,11 +1341,11 @@ exports.dxHoaHong = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let createDate = new Date()
@@ -1395,7 +1353,7 @@ exports.dxHoaHong = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1415,7 +1373,7 @@ exports.dxHoaHong = async (req, res) => {
                         chu_ky: chu_ky,
                         time_hh: time_hh,
                         item_mdt_date: item_mdt_date,
-                        dt_money : dt_money,
+                        dt_money: dt_money,
                         name_dt: name_dt,
                         ly_do: ly_do,
                     },
@@ -1439,7 +1397,6 @@ exports.dxHoaHong = async (req, res) => {
                 idTB = Number(maxIDTB) + 1;
             }
             const id_user_nhan_arr = savedDXHH.id_user_duyet.split(',');
-
             let createTBs = []; // Mảng chứa các đối tượng ThongBao
 
             for (let i = 0; i < id_user_nhan_arr.length; i++) {
@@ -1460,12 +1417,12 @@ exports.dxHoaHong = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {savedDXHH, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXHH, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxKhieuNai = async (req, res) => {
@@ -1478,16 +1435,17 @@ exports.dxKhieuNai = async (req, res) => {
             id_user_theo_doi,
             type_duyet,
             ly_do,
+            type_time,
             link
         } = req.body;
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let createDate = new Date()
@@ -1495,7 +1453,7 @@ exports.dxKhieuNai = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1527,7 +1485,7 @@ exports.dxKhieuNai = async (req, res) => {
             });
 
             let savedDXKN = await createDXKN.save();
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi,"đề xuất lịch làm việc", link);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -1555,26 +1513,26 @@ exports.dxKhieuNai = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {savedDXKN, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXKN, saveCreateTb });
         };
 
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxPhongHop = async (req, res) => {
     try {
         let {
             name_dx,
-            type_dx,
             noi_dung,
             kieu_duyet,
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
             bd_hop,
+            type_time,
             end_hop,
             ly_do,
             link
@@ -1583,18 +1541,18 @@ exports.dxPhongHop = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.file_kem;
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1657,26 +1615,26 @@ exports.dxPhongHop = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {savedDXPH, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXPH, saveCreateTb });
         };
 
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxTangCa = async (req, res) => {
     try {
         let {
             name_dx,
-            type_dx,
             noi_dung,
             kieu_duyet,
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
             ly_do,
+            type_time,
             time_tc,
             shift_id,
             link
@@ -1685,18 +1643,18 @@ exports.dxTangCa = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.file_kem;
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1758,13 +1716,13 @@ exports.dxTangCa = async (req, res) => {
             }
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {savedDXTC, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXTC, saveCreateTb });
         };
 
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxThaiSan = async (req, res) => {
@@ -1777,6 +1735,7 @@ exports.dxThaiSan = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
+            type_time,
             ngaybatdau_nghi_ts,
             ngayketthuc_nghi_ts,
             ly_do,
@@ -1785,11 +1744,11 @@ exports.dxThaiSan = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let createDate = new Date();
@@ -1797,7 +1756,7 @@ exports.dxThaiSan = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1859,13 +1818,13 @@ exports.dxThaiSan = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {savedDXTS, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXTS, saveCreateTb });
         };
 
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxThanhToan = async (req, res) => {
@@ -1877,6 +1836,7 @@ exports.dxThanhToan = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
+            type_time,
             so_tien_tt,
             ly_do,
             link
@@ -1884,11 +1844,11 @@ exports.dxThanhToan = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let createDate = new Date()
@@ -1896,7 +1856,7 @@ exports.dxThanhToan = async (req, res) => {
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1958,13 +1918,13 @@ exports.dxThanhToan = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {savedDXTT, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXTT, saveCreateTb });
         };
 
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
 
 exports.dxThuongPhat = async (req, res) => {
@@ -1977,6 +1937,7 @@ exports.dxThuongPhat = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
+            type_time,
             type_tp,
             so_tien_tp,
             nguoi_phat_tp,
@@ -1989,23 +1950,23 @@ exports.dxThuongPhat = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        if(req.user.data.type == 2){
+        if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
-            name_user = req.user.data.userName  
-        }else{
+            name_user = req.user.data.userName
+        } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.file_kem;
-        if(type_tp == 1){
+        if (type_tp == 1) {
             nguoi_tp = id_nguoi_tp;
-        }else{
+        } else {
             nguoi_tp = nguoi_phat_tp;
         }
         let linkDL = '';
         if (file_kem) {
             await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+            linkDL = file_kem.name;
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -2069,44 +2030,62 @@ exports.dxThuongPhat = async (req, res) => {
 
             // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
             let saveCreateTb = await ThongBao.insertMany(createTBs)
-            return functions.success(res, 'get data success', {savedDXTP, saveCreateTb});
+            return functions.success(res, 'get data success', { savedDXTP, saveCreateTb });
         };
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error);
-      }
+    }
 }
-
 
 
 exports.showadd = async (req, res) => {
     try {
-        let com_id = '';
-        if (req.user.data.type == 2) {
-            const checkUserNv = await User.findOne({idQLC : req.user.data.idQLC}).select('inForPerson')
-            if (checkUserNv.inForPerson.employee.ep_status !== "Active") {
-                return functions.setError(res, 'nhân viên đã nghỉ việc', 400);
-            } else {
-                com_id = req.user.data.com_id
-                const showUserduyet = await SettingD.findOne({com_id : com_id}).select('list_user')
-                const idUserD = showUserduyet.list_user.split(',').map(Number);
-                const listUserDuyet = await User.find({
-                    idQLC :{ $in: idUserD },
-                    'inForPerson.employee.ep_status' : 'Active'
-                }).select('idQLC userName avatarUser inForPerson.employee.dep_id inForPerson.employee.position_id')
-                const listUserTheoDoi = await User.find({
-                    'inForPerson.employee.com_id': com_id,
-                    'inForPerson.employee.ep_status' : 'Active'
-                }).select('idQLC userName avatarUser ')
-                return functions.success(res, 'data success', { listUserDuyet,listUserTheoDoi});
-            }
-        } else {
+        if (req.user.data.type !== 2) {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
+        let checkUserNv = await User.findOne({ idQLC: req.user.data.idQLC }).select('inForPerson');
+        if (!checkUserNv || checkUserNv.inForPerson.employee.ep_status !== 'Active') {
+            return functions.setError(res, 'nhân viên đã nghỉ việc', 400);
+        }
+        let com_id = req.user.data.com_id;
+        let showUserduyet = await SettingD.findOne({ com_id: com_id }).select('list_user');
+
+        if (!showUserduyet) {
+            return functions.setError(res, 'Không có bản ghi cài đặt người duyệt', 400);
+        }
+        let idUserD = showUserduyet.list_user.split(',').map(Number);
+        let listUsersDuyet = await User.find({
+            idQLC: { $in: idUserD },
+            'inForPerson.employee.ep_status': 'Active'
+        }).select('idQLC userName avatarUser inForPerson.employee.dep_id inForPerson.employee.position_id').lean();
+        let listUsersTheoDoi = await User.find({
+            'inForPerson.employee.com_id': com_id,
+            'inForPerson.employee.ep_status': 'Active'
+        }).select('idQLC userName avatarUser').lean();
+        
+        if (listUsersDuyet) {
+            let avatar = await fnc.createLinkFileEmpQLC(listUsersDuyet[0].idQLC , listUsersDuyet[0].avatarUser)
+            console.log(avatar)
+            if(avatar) 
+                listUsersDuyet[0].avatarUser = avatar
+            
+        };
+        if(listUsersTheoDoi) {
+            let avatar = await fnc.createLinkFileEmpQLC(listUsersTheoDoi[0].idQLC , listUsersTheoDoi[0].avatarUser)
+            if(avatar) 
+                listUsersTheoDoi[0].avatarUser = avatar
+            
+        }else{
+            return functions.setError(res, 'Không tìm thấy bản ghi', 400);
+        };
+        return await functions.success(res, 'Lấy thành công', { listUsersDuyet,listUsersTheoDoi});
     } catch (error) {
-        console.log(error);
-        return functions.setError(res, error);
+        console.error('Failed ', error);
+        return functions.setError(res, error.message);
     }
-}
+};
+
+
 
 

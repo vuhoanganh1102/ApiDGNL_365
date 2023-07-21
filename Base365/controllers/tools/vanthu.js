@@ -737,9 +737,9 @@ exports.toolSettingDX = async (req, res, next) => {
                     if (data[i].update_time != 0) {
                         updateTime = new Date(data[i].update_time * 1000)
                     }
-                    let post = await fnc.getDatafindOne(settingDx, {_id: data[i].id_setting})
+                    let post = await fnc.getDatafindOne(setingDx, {_id: data[i].id_setting})
                     if (post == null) {
-                        let newSDX = new settingDx({
+                        let newSDX = new setingDx({
                             _id: data[i].id_setting,
                             com_id: data[i].com_id,
                             type_setting: data[i].type_setting,
@@ -882,14 +882,6 @@ exports.tool_qlcv_congVan = async (req, res, next) => {
             let listData = data.data.items;
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
-                    // let cv_file = [];
-                    // if(listData[i].cv_file){
-                    //     let file = listData[i].cv_file.split(',')
-                    //     for(let j = 0; j < file.length; j++) {
-                    //         cv_file.push({file:file[j]});
-                    //     }
-                    // }
-                   
                     const qlCongVan = new congVan({
                         _id: listData[i].cv_id,
                         cv_id_vb: listData[i].cv_id_vb,

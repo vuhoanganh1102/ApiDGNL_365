@@ -94,7 +94,7 @@ exports.getAndCheckData = async (req, res, next) =>{
         if(!ep_id || !created_at) {
             return functions.setError(res, "Missing input value!", 404);
         }
-        req.fields = {com_id, ep_id, current_position, current_dep_id, created_at, decision_id, note: Buffer.from(note, 'base64')};
+        req.fields = {com_id, ep_id, current_position, current_dep_id, created_at, decision_id, note: note};
         next();
     }catch(e){
         console.log("Err from server", e);
@@ -258,7 +258,7 @@ exports.updateTranferJob = async(req, res, next) => {
         }
 
         //them cac truong cho phan bo nhiem vao
-        fields = {...fields, update_position, update_dep_id, mission: Buffer.from(mission), new_com_id};
+        fields = {...fields, update_position, update_dep_id, mission: mission, new_com_id};
 
         //neu chua co thi them moi
         let tranferJob = await TranferJob.findOneAndUpdate({com_id: com_id, ep_id: ep_id},fields, {new: true, upsert: true});
@@ -495,7 +495,7 @@ exports.updateQuitJobNew = async(req, res, next) => {
             let employee = await Users.findOne({idQLC: ep_id});
             if(!employee) return functions.setError(res, "Employee not found!", 405);
 
-            if(note) note = Buffer.from(note, 'base64');
+            if(note) note = note;
             let fields = {ep_id: ep_id, note: note, created_at: created_at};
             let check = await QuitJob.findOne({ep_id: ep_id});
             if(!check) {

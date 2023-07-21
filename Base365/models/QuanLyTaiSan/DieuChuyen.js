@@ -6,8 +6,19 @@ const model_Dieuchuyen = new mongoose.Schema({
     id_cty: {
         type: Number
     },
-    dieuchuyen_taisan: {
-        type: String
+    dieuchuyen_taisan:{
+        ds_dc : {
+            type: [
+              {
+                ts_id: {
+                  type: Number
+                },
+                sl_ts: {
+                  type: Number
+                }
+              }
+            ]
+          }
     },
     taisan_thucnhan: {
         type: String

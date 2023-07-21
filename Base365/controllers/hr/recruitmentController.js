@@ -418,6 +418,9 @@ exports.listSchedule = async(req, res, next) => {
         let {page, pageSize} = req.body;
         if(!page) page = 1;
         if(!pageSize) pageSize = 3;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
         let comId = req.infoLogin.comId;
         let totalSchedule = await Candidate.aggregate([
                 {$match: {comId: comId, isDelete: 0}},
@@ -446,7 +449,19 @@ exports.listSchedule = async(req, res, next) => {
                         as: "Interview"
                     }
                 },
+                { $unwind: { path: "$Interview", preserveNullAndEmptyArrays: true } },
                 {$match: {"Interview.isSwitch": 0}},
+                {
+                    $lookup: {
+                        from: "HR_RecruitmentNews",
+                        localField: "recruitmentNewsId",
+                        foreignField: "id",
+                        as: "RecruitmentNews"
+                    }
+                },
+                { $unwind: { path: "$RecruitmentNews", preserveNullAndEmptyArrays: true } },
+                {$skip: skip},
+                {$limit: pageSize}
             ]);
         return functions.success(res, "Get listSchedule success", {totalSchedule, listSchedule})
     }catch(error) {
@@ -475,7 +490,7 @@ let getListInterview = async(type, recruitmentNewsId, )=> {
                 }
             },
             {$match: {result: type}},
-            {$project: {id: 1, name: 1, phone:1, email: 1}},
+            // {$project: {id: 1, name: 1, phone:1, email: 1}},
             {$sort: {id: 1}}
         ]);
         return listInterview;
@@ -496,7 +511,7 @@ exports.getDetailRecruitmentNews= async(req, res, next) => {
         
         let condition = {isDelete: 0, comId: comId, id: recruitmentNewsId};
         
-        var recruitmentNews = await RecruitmentNews.findOne(condition, {title: 1, number: 1,timeStart: 1, timeEnd: 1, createdBy: 1, hrName: 1}).lean();
+        var recruitmentNews = await RecruitmentNews.findOne(condition).lean();
         if(!recruitmentNews) {
             return functions.setError(res, "Khong ton tai tin tuyen dung!", 406);
         }
@@ -766,10 +781,12 @@ exports.createCandidate = async(req, res, next) => {
         fields.id = newIdCandi;
 
         // luu cv
-        let cv = req.files.cv;
-        if(cv && await hrService.checkFile(cv.path)){
-            let nameCv = await hrService.uploadFileNameRandom(folderCv,cv);
-            fields.cv = nameCv;
+        if(req.files) {
+            let cv = req.files.cv;
+            if(cv && await hrService.checkFile(cv.path)){
+                let nameCv = await hrService.uploadFileNameRandom(folderCv,cv);
+                fields.cv = nameCv;
+            }
         }
 
         // tao
@@ -957,7 +974,7 @@ exports.getListProcessInterview= async(req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         let {fromDate, toDate, name, recruitmentNewsId, userHiring, gender, status, canId} = req.body;
-        let condition = {"candidate.comId": comId};
+        let condition = {"candidate.comId": comId, "candidate.isDelete": 0};
         if(fromDate) condition["candidate.timeSendCv"]= {$gte: new Date(fromDate)};
         if(toDate) condition["candidate.timeSendCv"] = {$lte: new Date(toDate)};
         if(name) condition["candidate.name"] = new RegExp(name, 'i');
@@ -985,7 +1002,7 @@ exports.getListProcessInterview= async(req, res, next) => {
                 },
                 {$match: condition},
                 {
-                    $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
+                    $project: {name: 1, processBefore: 1, canId: 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
                 },
                 {
                     $lookup: {
@@ -996,7 +1013,7 @@ exports.getListProcessInterview= async(req, res, next) => {
                     }
                 },
                 {
-                    $project: {name: 1, processBefore: 1, "ScheduleInterviews.canId": 1, 
+                    $project: {name: 1, processBefore: 1, canId: 1, 
                     "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
                     "recruitmentNews.title": 1
                     }
@@ -1274,7 +1291,7 @@ exports.createFailJob = async(req, res, next) => {
             newIdFailJob = Number(maxIdFailJob.id) + 1;
         } else newIdFailJob = 1;
         infoFailJob.id = newIdFailJob;
-        infoFailJob.contentsend = Buffer.from(contentsend, 'base64');
+        infoFailJob.contentsend = contentsend;
         
         let failJob = await FailJob.findOneAndUpdate({canId: canId}, infoFailJob, {upsert: true, new: true});
         if(!failJob){
@@ -1339,7 +1356,7 @@ exports.addCandidateProcessInterview = async(req, res, next) => {
             processInterviewId, 
             empInterview, 
             interviewTime,
-            content: Buffer.from(contentsend, 'base64')
+            content: contentsend
         };
         //tao 
         let scheduleInterview = await ScheduleInterview.findOneAndUpdate({canId: canId}, infoInterview, {upsert: true, new: true});
@@ -1405,7 +1422,7 @@ exports.addCandidateGetJob = async(req, res, next) => {
         } else newIdScheduleInterview = 1;
         
         let infoGetJob = {id: newIdScheduleInterview, canId, resiredSalary, salary, note, email, contentsend, empInterview, interviewTime};
-        infoGetJob.contentSend = Buffer.from(contentsend, 'base64');
+        infoGetJob.contentSend = contentsend
         
         //tao 
         let getJob = await GetJob.findOneAndUpdate({canId: canId}, infoGetJob, {upsert: true, new: true});

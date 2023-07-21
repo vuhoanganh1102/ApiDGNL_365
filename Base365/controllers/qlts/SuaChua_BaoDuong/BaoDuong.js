@@ -170,25 +170,26 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
     }
 }
 
-
-
+//tu_choi
 exports.TuChoiBaoDuong = async (req, res) => {
     try {
-        let token = req.user;
-        console.log("comID: " + token.data.com_id);
-        return;
+
+
         let { id_bb, content } = req.body;
 
         let com_id = 0;
         let id_ng_tao = 0;
         if (req.user.data.type == 1) {
-            com_id = req.user.data.idQLC;
+            com_id = req.user.data.com_id;
             id_ng_tao = req.user.data.idQLC;
+
 
         } else if (req.user.data.type == 2) {
             com_id = req.user.data.com_id;
             id_ng_tao = req.user.data.idQLC;
+
         }
+
         let tuchoi_bao_duong = await BaoDuong.findOneAndUpdate({
             id_bd: id_bb,
             id_cty: com_id,
@@ -196,10 +197,15 @@ exports.TuChoiBaoDuong = async (req, res) => {
             bd_trang_thai: 2,
             lydo_tu_choi: content
         });
+
         let this_baoduong = await BaoDuong.findOne({
             id_cty: com_id,
             id_bd: id_bb
         });
+        if (!this_baoduong) {
+            return res.status(400).json({ message: "khong co thong tin cua bien ban nay" });
+        }
+
         let ng_sd = this_baoduong.bd_ng_sd;
         let bd_quyen_sd = this_baoduong.bd_type_quyen_sd;
         let sl_bd = this_baoduong.bd_sl;
@@ -256,6 +262,309 @@ exports.TuChoiBaoDuong = async (req, res) => {
 
 
         fnc.success(res, [tuchoi_bao_duong, update_taisan]);
+
+    } catch (error) {
+        console.log(error);
+        fnc.setError(res, error.message);
+    }
+}
+//xoa_bd2
+exports.delete1 = async (req, res) => {
+    try {
+
+        let { datatype, id, type_quyen, } = req.body;
+        let com_id = req.user.data.com_id;
+        let id_ng_xoa = req.user.data.idQLC;
+        let date_delete = new Date().getTime();
+        let this_baoduong = await BaoDuong.findOne({
+            id_cty: com_id,
+            id_bd: id
+        });
+        if (!this_baoduong) {
+            return res.status(400).json({ message: "khong co thong tin cua bien ban nay" });
+        }
+
+        let ng_sd = this_baoduong.bd_ng_sd;
+        let bd_quyen_sd = this_baoduong.bd_type_quyen_sd;
+        let sl_bd = this_baoduong.bd_sl;
+        let id_ts = this_baoduong.baoduong_taisan;
+        let trang_thai_bd = this_baoduong.bd_trang_thai;
+        let update_taisan = 0;
+        let taisan = 0;
+        if (datatype == 1) {
+            let baoduong = await BaoDuong.findOneAndUpdate({
+                id_bd: id,
+                id_cty: com_id
+            }, {
+                xoa_bd: 1,
+                bd_type_quyen_xoa: type_quyen,
+                bd_id_ng_xoa: id_ng_xoa,
+                bd_date_delete: date_delete
+            });
+            if (trang_thai_bd == 0) {
+                if (bd_quyen_sd == 1) {
+                    taisan = await TaiSan.findOne({
+                        ts_id: id_ts,
+                        id_cty: com_id
+                    });
+                    let sl_ts_cu = taisan.ts_so_luong;
+                    let update_sl = sl_ts_cu + sl_bd;
+                    update_taisan = await TaiSan.findOneAndUpdate({
+                        id_cty: com_id,
+                        ts_id: id_ts
+                    }, {
+                        ts_so_luong: update_sl,
+
+                    });
+                }
+                if (bd_quyen_sd == 2) {
+                    taisan = await TaiSanDangSuDung.findOne({
+                        com_id_sd: com_id,
+                        id_nv_sd: ng_sd,
+                        id_ts_sd: id_ts
+                    });
+                    let sl_ts_cu = taisan.sl_dang_sd;
+                    let update_sl = sl_ts_cu + sl_bd;
+                    update_taisan = await TaiSanDangSuDung.findOneAndUpdate({
+                        com_id_sd: com_id,
+                        id_nv_sd: ng_sd,
+                        id_ts_sd: id_ts
+                    }, {
+                        sl_dang_sd: update_sl,
+
+                    });
+                }
+                if (bd_quyen_sd == 3) {
+                    taisan = await TaiSanDangSuDung.findOne({
+                        com_id_sd: com_id,
+                        id_pb_sd: ng_sd,
+                        id_ts_sd: id_ts
+                    });
+                    let sl_ts_cu = taisan.sl_dang_sd;
+                    let update_sl = sl_ts_cu + sl_bd;
+                    update_taisan = await TaiSanDangSuDung.findOneAndUpdate({
+                        com_id_sd: com_id,
+                        id_pb_sd: ng_sd,
+                        id_ts_sd: id_ts
+                    }, {
+                        sl_dang_sd: update_sl,
+
+                    });
+                }
+            }
+            fnc.success(res, [baoduong, update_taisan]);
+        }
+        if (datatype == 2) {
+            let khoiphuc = await BaoDuong.findOneAndUpdate({
+                id_bd: id,
+                id_cty: com_id,
+            }, {
+                xoa_bd: 0,
+                bd_type_quyen_xoa: 0,
+                bd_id_ng_xoa: 0,
+                bd_date_delete: 0
+            });
+            if (trang_thai_bd == 0) {
+                if (bd_quyen_sd == 1) {
+                    taisan = await TaiSan.findOne({
+                        ts_id: id_ts,
+                        id_cty: com_id
+                    });
+                    let sl_ts_cu = taisan.ts_so_luong;
+                    let update_sl = sl_ts_cu - sl_bd;
+                    update_taisan = await TaiSan.findOneAndUpdate({
+                        id_cty: com_id,
+                        ts_id: id_ts
+                    }, {
+                        ts_so_luong: update_sl,
+
+                    });
+                }
+                if (bd_quyen_sd == 2) {
+                    taisan = await TaiSanDangSuDung.findOne({
+                        com_id_sd: com_id,
+                        id_nv_sd: ng_sd,
+                        id_ts_sd: id_ts
+                    });
+                    let sl_ts_cu = taisan.sl_dang_sd;
+                    let update_sl = sl_ts_cu - sl_bd;
+                    update_taisan = await TaiSanDangSuDung.findOneAndUpdate({
+                        com_id_sd: com_id,
+                        id_nv_sd: ng_sd,
+                        id_ts_sd: id_ts
+                    }, {
+                        sl_dang_sd: update_sl,
+
+                    });
+                }
+                if (bd_quyen_sd == 3) {
+                    taisan = await TaiSanDangSuDung.findOne({
+                        com_id_sd: com_id,
+                        id_pb_sd: ng_sd,
+                        id_ts_sd: id_ts
+                    });
+                    let sl_ts_cu = taisan.sl_dang_sd;
+                    let update_sl = sl_ts_cu - sl_bd;
+                    update_taisan = await TaiSanDangSuDung.findOneAndUpdate({
+                        com_id_sd: com_id,
+                        id_pb_sd: ng_sd,
+                        id_ts_sd: id_ts
+                    }, {
+                        sl_dang_sd: update_sl,
+
+                    });
+                }
+
+            }
+            fnc.success(res, [khoiphuc, update_taisan]);
+        }
+        if (datatype == 3) {
+            let xoa_loai = await BaoDuong.findOneAndRemove({
+                id_bd: id,
+                id_cty: com_id
+            });
+            fnc.success(res, [khoiphuc, xoa_loai]);
+        }
+    } catch (error) {
+        console.log(error);
+        fnc.setError(res, error.message);
+    }
+}
+//xoa_all2
+exports.deleteAll = async (req, res) => {
+    try {
+        let { xoa_vinh_vien, type_quyen, array_xoa } = req.body;
+        let com_id = req.user.data.com_id;
+        let id_ng_xoa = req.user.data.idQLC;
+        let xoa = array_xoa.split(',');
+        let dem = xoa.length;
+
+        if (xoa_vinh_vien == 0 || xoa_vinh_vien == 2) {
+            for (let i = 0; i < dem; i++) {
+                let this_bd = await BaoDuong.findOne({
+                    id_cty: com_id,
+                    id_bd: xoa[i]
+                })
+                let ng_sd = this_bd.bd_ng_sd;
+                let bd_quyen_sd = this_bd.bd_type_quyen_sd;
+                let sl_bd = this_bd.bd_sl;
+                let id_ts = this_bd.baoduong_taisan;
+                let trang_thai_bd = this_bd.bd_trang_thai;
+
+                let xoa_bao_duong = 0;
+                let taisan = 0;
+                let update_taisan = 0;
+                if (xoa_vinh_vien == 0) {
+                    xoa_bao_duong = await BaoDuong.findOneAndUpdate({
+                        id_bd: xoa[i],
+                        id_cty: com_id,
+                    }, {
+                        xoa_bd: 1,
+                        bd_type_quyen_xoa: type_quyen,
+                        bd_id_ng_xoa: id_ng_xoa
+                    });
+                }
+                if (xoa_vinh_vien == 2) {
+                    let xoa_bao_duong = await BaoDuong.findOneAndUpdate({
+                        id_bd: xoa[i],
+                        id_cty: com_id,
+                    }, {
+                        xoa_bd: 0,
+                        bd_type_quyen_xoa: 0,
+                        bd_id_ng_xoa: 0
+                    });
+                }
+
+
+
+                if (trang_thai_bd == 0) {
+                    if (bd_quyen_sd == 1) {
+                        taisan = await TaiSan.findOne({
+                            id_cty: com_id,
+                            ts_id: id_ts
+                        });
+                        let sl_ts_cu = taisan.ts_so_luong;
+                        let update_sl = 0;
+                        if (xoa_vinh_vien == 0) {
+                            update_sl = sl_ts_cu + sl_bd;
+                        }
+                        if (xoa_vinh_vien == 2) {
+                            update_sl = sl_ts_cu - sl_bd;
+                        }
+
+                        update_taisan = await TaiSan.findOneAndUpdate({
+                            id_cty: com_id,
+                            ts_id: id_ts
+                        }, {
+                            ts_so_luong: update_sl
+                        });
+                    }
+                    if (bd_quyen_sd == 2) {
+                        taisan = await TaiSanDangSuDung.findOne({
+                            com_id_sd: com_id,
+                            id_nv_sd: ng_sd,
+                            id_ts_sd: id_ts
+                        });
+                        let update_sl = 0;
+                        if (xoa_vinh_vien == 0) {
+                            update_sl = sl_ts_cu + sl_bd;
+                        }
+                        if (xoa_vinh_vien == 2) {
+                            update_sl = sl_ts_cu - sl_bd;
+                        }
+                        update_taisan = await TaiSanDangSuDung.findOneAndUpdate({
+                            com_id_sd: com_id,
+                            id_ts_sd: id_ts,
+                            id_nv_sd: ng_sd
+                        }, {
+                            sl_dang_sd: update_sl
+                        });
+                    }
+                    if (bd_quyen_sd == 3) {
+                        taisan = await TaiSanDangSuDung.findOne({
+                            com_id_sd: com_id,
+                            id_pb_sd: ng_sd,
+                            id_ts_sd: id_ts
+                        });
+                        let update_sl = 0;
+                        if (xoa_vinh_vien == 0) {
+                            update_sl = sl_ts_cu + sl_bd;
+                        }
+                        if (xoa_vinh_vien == 2) {
+                            update_sl = sl_ts_cu - sl_bd;
+                        }
+                        update_taisan = await TaiSanDangSuDung.findOneAndUpdate({
+                            com_id_sd: com_id,
+                            id_pb_sd: ng_sd,
+                            id_ts_sd: id_ts
+                        }, {
+                            sl_dang_sd: update_sl
+                        });
+                    }
+                }
+            }
+            fnc.success(res, [xoa_bao_duong, update_taisan])
+
+
+        } else {
+            let xoa_bao_duong = await BaoDuong.findOneAndRemove({
+                id_cty: com_id,
+                id_bd: { $in: xoa }
+            });
+            return fnc.success(res, [xoa_bao_duong]);
+        }
+
+
+    } catch (error) {
+        console.log(error);
+        fnc.setError(res, error.message);
+    }
+}
+//ts_can_baoduong_chitiet
+exports.detailTSCBD = async (req, res) => {
+    try {
+        let { id_bd } = req.body;
+
 
     } catch (error) {
         console.log(error);

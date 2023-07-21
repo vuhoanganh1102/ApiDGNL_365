@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_Mat = new mongoose.Schema({
     mat_id: {
-        type: Number
+        type: Number,
+        require : true
     },
     id_cty: {
         type: Number
@@ -86,7 +87,8 @@ const model_Mat = new mongoose.Schema({
         type: Number
     },
     xoa_dx_mat: {
-        type: Number
+        type: Number,
+        default: 0
     },
     mat_date_create: {
         type: Number

@@ -42,7 +42,9 @@ exports.HoanThanhSuaChua = async (req, res) => {
         let ng_sd = q_this_sc.sc_ng_sd;
         if (quyen_ng_sd == 1) {
             //sua chua tai san chua cap phat
+
             let q_taisan = await TaiSan.findOne({ id_cty: com_id, ts_id: id_ts });
+
             let sl_ts_cu = q_taisan.ts_so_luong;
             let update_sl = sl_ts_cu + sl_sc;
             let update_taisan = await TaiSan.findOneAndUpdate({ id_cty: com_id, ts_id: id_ts }, { ts_so_luong: update_sl, soluong_cp_bb: update_sl });
@@ -66,7 +68,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
 
         return res.status(200).json({ data: hoan_thanh_sua_chua, message: "thanhcong" });
     } catch (error) {
-
+        console.log(error);
         return res.status(500).json({ message: error.message });
 
     }
@@ -168,7 +170,7 @@ exports.listBBDangSuaChua = async (req, res) => {
         let skip = req.body.skip || 1;
         let limit = req.body.limit || 10;
         let key = req.body.key || null;
-
+        let type_quyen = req.body.type_quyen;
         let com_id = 0;
 
         if (req.user.data.type == 1) {
@@ -186,7 +188,7 @@ exports.listBBDangSuaChua = async (req, res) => {
             filter.sc_id = Number(key);
         }
 
-        let condition = {};
+
         let filter2 = {};
         let filter3 = {};
         if (type_quyen == 2) {
@@ -247,7 +249,7 @@ exports.listBBDangSuaChua = async (req, res) => {
 
 
     } catch (error) {
-
+        console.log(error);
         return res.status(500).json({ message: error.message });
     }
 }
@@ -430,14 +432,14 @@ exports.deleteAll = async (req, res) => {
             }
         } else {
             //xoa vinh vien
+
             for (let i = 0; i < dem; i++) {
+                console.log('heeloo')
                 xoa_sua_chua = await SuaChua.findOneAndRemove({ sc_id: xoa[i], id_cty: com_id });
             }
         }
         return res.status(200).json({ data: { xoa_sua_chua: xoa_sua_chua, update_taisan: update_taisan }, message: "thanh cong " });
-        // } else {
-        //     return res.status(404).json({ message: "loai_xoa khong dung" });
-        // }
+
     } catch (error) {
 
 
@@ -464,12 +466,13 @@ exports.details = async (req, res) => {
             fnc.setError(res, "iddsc phai la 1 Number")
         }
         else {
-            let bb = await SuaChua.findOne({ sc_id: id_bb });
+            let bb = await SuaChua.findOne({ sc_id: iddsc });
             let tenTaiSan = await TaiSan.findOne({ ts_id: Number(bb.suachua_taisan) });
             let nguoiSD = await Users.findOne({
                 'idQLC': bb.sc_ng_sd,
                 type: { $ne: 1 }
             });
+
             let nguoiThucHien = await Users.findOne({
                 idQLC: bb.sc_ng_thuchien,
                 type: { $ne: 1 }
@@ -695,7 +698,7 @@ exports.listBBDaSuaChua = async (req, res) => {
         }
         let filter = {
             id_cty: com_id,
-            sc_trangthai: 1,
+            sc_trangthai: 3,
             sc_da_xoa: 0,
         }
         if (key) {
@@ -1027,6 +1030,7 @@ exports.tuChoiSC = async (req, res) => {
             let update_taisan = await TaiSan.findOneAndUpdate({ id_cty: com_id, ts_id: id_ts }, { ts_so_luong: update_sl, soluong_cp_bb: update_sl });
             return res.status(200).json({ data: { tuchoi_sua_chua: tuchoi_sua_chua, update_taisan: update_taisan }, message: "success" });
         } else if (sc_quyen_sd == 2) {
+
             let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
             let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
             let update_sl = sl_ts_cu + sl_sc;
@@ -1044,7 +1048,7 @@ exports.tuChoiSC = async (req, res) => {
 
 
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -1223,8 +1227,11 @@ exports.listBBCanSuaChua = async (req, res) => {
     try {
         let skip = req.body.skip || 1;
         let limit = req.body.limit || 10;
+        let type_quyen = req.body.type_quyen;
+        let key = req.body.key;
         let com_id = 0;
         if (req.user.data.type == 1) {
+            ;
             com_id = req.user.data.idQLC;
 
         } else if (req.user.data.type == 2) {
@@ -1249,7 +1256,7 @@ exports.listBBCanSuaChua = async (req, res) => {
 
         }
 
-        let tsda_suachua = await SuaChua.aggregate([
+        let tscan_suachua = await SuaChua.aggregate([
             {
                 $match:
                 {
@@ -1258,8 +1265,12 @@ exports.listBBCanSuaChua = async (req, res) => {
                         {
                             $or: [
                                 filter2,
-                                filter3
+                                filter3,
+
                             ]
+                        },
+                        {
+                            sc_trangthai: { $in: [0, 2] }
                         }
                     ]
                 }
@@ -1307,7 +1318,7 @@ exports.listBBCanSuaChua = async (req, res) => {
         fnc.success(res, "thanh cong ", [tscan_suachua]);
     } catch (error) {
         console.log(error);
-        fnc.setError(res, "loi he thong");
+        fnc.setError(res, error.message);
     }
 
 }

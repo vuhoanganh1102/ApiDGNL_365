@@ -32,8 +32,8 @@ exports.setError = async (res, message, code = 500) => {
 };
 
 exports.uploadFileVanThu = (id, file) => {
-    let path = `../Storage/base365/vanthu/tailieu/${id}/`;
-    let filePath = `../Storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
+    let path = `../storage/base365/vanthu/tailieu/${id}/`;
+    let filePath = `../storage/base365/vanthu/tailieu/${id}/` + file.originalFilename;
 
     if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
         fs.mkdirSync(path, { recursive: true });
@@ -52,8 +52,8 @@ exports.uploadFileVanThu = (id, file) => {
         });
     });
 }
-exports.createLinkFileVanthu = (id, name) => {
-    let link = process.env.DOMAIN_VAN_THU + '/base365/vanthu/dexuat' + '/' + id + '/' + name;
+exports.createLinkFileVanthu = (id, file) => {
+    let link = process.env.port_picture_qlc + `/storage/base365/vanthu/tailieu/${id}/`  + file;
     return link;
 }
 
@@ -175,27 +175,15 @@ exports.checkToken = (req, res, next) => {
             if (err) {
                 return res.status(403).json({ message: "Invalid token" });
             }
-            if (!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
+            let infoUser = user.data;
+            if (!infoUser || !infoUser.type || !infoUser.idQLC || !infoUser.userName || !infoUser.com_id) {
                 return res.status(404).json({ message: "Token missing info!" });
             }
-            var infoLogin = { type: user.data.type, role: user.data.role, id: user.data.idQLC, name: user.data.userName };
-            if (user.data.type != 1) {
-                if (user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id) {
-                    infoLogin.comId = user.data.inForPerson.employee.com_id;
-                } else {
-                    return res.status(405).json({ message: "Missing info inForPerson!" });
-                }
-            } else {
-                infoLogin.comId = user.data.idQLC;
-            }
-            req.id = infoLogin.id;
-            req.comId = infoLogin.comId;
-            req.userName = infoLogin.name;
-            req.type = infoLogin.type;
-            req.role = infoLogin.role;
-            req.infoLogin = infoLogin;
+            req.id = infoUser.idQLC;
+            req.comId = infoUser.com_id;
+            req.userName = infoUser.userName;
+            req.type = infoUser.type;
             next();
-
         });
     } catch (err) {
         console.log(err);
