@@ -17,10 +17,11 @@ exports.getListDataLostAssets = async (req,res,next) => {
         let condition = {id_cty: id_cty, xoa_dx_mat: 0};
         if(key) condition.mat_id = Number(key);
 
-        //dataType = 1, 2: bao cao mat, cho den bu
-        if(dataType !=1&& dataType !=2) return functions.setError(res, "Truyen datatype = 1, 2!", 405);
+        //dataType = (1, 2, 3): bao cao mat, cho den bu, danh sach mat 
+        if(dataType !=1 && dataType !=2 && dataType !=3) return functions.setError(res, "Truyen datatype = 1, 2, 3!", 405);
         if(dataType == 1) condition.mat_trangthai = {$in: [0, 2]};
         if(dataType == 2) condition.mat_trangthai = 3;
+        if(dataType == 3) condition.mat_trangthai = 1;
         let danhSachMat = await Mat.aggregate([
             {$match: condition},
             {
@@ -147,8 +148,9 @@ exports.duyet = async(req, res, next) => {
             let id_ng_nhan = mat.id_ng_nhan_denbu;
             let id_ts_mat = mat.mat_taisan;
             if(duyet_yc == 1) {
-                let update_mat = findOneAndUpdate({mat_id: id_mat, id_cty: com_id}, {mat_trangthai: 1});
-                if(update_mat) return functions.success(res, "Duyet bien ban mat thanh cong!");
+                let update_mat = await Mat.findOneAndUpdate({mat_id: id_mat, id_cty: com_id}, {mat_trangthai: 1}, {new: true});
+                // console.log(update_mat)
+                if(update_mat) return functions.success(res, "Duyet bien ban mat thanh cong!", {update_mat});
             }else {
                 let q_doituong_sd_ts = await TaiSanDangSD.findOne({com_id_sd: com_id, id_ts_sd: id_ts_mat, id_nv_sd: id_ng_nhan}); 
                 if(q_doituong_sd_ts) {
@@ -195,7 +197,7 @@ exports.duyet = async(req, res, next) => {
                                 let insert_qtsd = new QuaTrinhSD(fieldsQTSD);
                                 insert_qtsd = await insert_qtsd.save();
                                 if(insert_qtsd) {
-                                    let id_tb = await functions.getMaxIdByField(QuaTrinhSD, 'id_tb');
+                                    let id_tb = await functions.getMaxIdByField(ThongBao, 'id_tb');
                                     let fieldsTB = {
                                         id_tb: id_tb,
                                         id_cty: com_id,
@@ -235,7 +237,7 @@ exports.duyet = async(req, res, next) => {
 exports.tuChoi = async(req, res, next) => {
     try{
         let com_id = req.com_id;
-        let {id_bb, content} = req.body.id_bb;
+        let {id_bb, content} = req.body;
         if(id_bb && content) {
             let tuchoi_mat = await Mat.findOneAndUpdate({mat_id: id_bb, id_cty: com_id}, {mat_trangthai: 2, mat_lydo_tuchoi: content}, {new: true});
             if(tuchoi_mat) {
@@ -249,6 +251,7 @@ exports.tuChoi = async(req, res, next) => {
     }
 }
 
+//xoa danh sach mat
 exports.deleteMat = async(req, res, next) => {
     try{
         let {id_bb, datatype} = req.body;
@@ -281,3 +284,44 @@ exports.deleteMat = async(req, res, next) => {
         return functions.setError(res, e.message);
     }
 }
+
+//hoan thanh den bu
+exports.hoanThanh = async(req, res, next) => {
+    try{
+        let com_id = req.com_id;
+        let {id_db, sotien_thanhtoan_nhap, ngay_ht} = req.body;
+        if(id_db && sotien_thanhtoan_nhap && ngay_ht) {
+            let mat = await Mat.findOne({mat_id: id_db, id_cty: com_id});
+            if(mat) {
+                let gt_db_conlai = mat.tien_denbu - sotien_thanhtoan_nhap;
+                let tien_danhan = mat.sotien_danhan + sotien_thanhtoan_nhap;
+                let hoan_thanh_mat = await Mat.findOneAndUpdate({mat_id: id_db, id_cty: com_id}, {
+                    mat_trangthai: 1,
+                    tien_denbu: gt_db_conlai,
+                    sotien_danhan: tien_danhan,
+                    ngay_thanhtoan: functions.convertTimestamp(ngay_ht)
+                }, {new: true});
+                if(hoan_thanh_mat) {
+                    return functions.success(res, "Hoan thanh den bu thanh cong!");
+                }
+                return functions.setError(res, "Den bu that bai!", 407);
+            }
+            return functions.setError(res, "Khong tim thay thong tin bao mat!", 406);
+        } 
+        return functions.setError(res, "Missing input id_bb or content!", 405);
+    }catch(e){
+        return functions.setError(res, e.message);
+    }
+}
+
+// $id = getValue('id','int','POST',0);
+//         $id_cty = getValue('id_cty','int','POST',0);
+//         $sotien_thanhtoan_nhap = getValue('sotien_thanhtoan_nhap','int','POST',0);
+//         $ngay_ht = getValue('ngay_ht','int','POST',0);
+
+//         $q_this_bb = new db_query("SELECT * FROM mat WHERE id_cty = '".$id_cty."' AND mat_id = '".$id."'");
+//         $this_bb = mysql_fetch_assoc($q_this_bb->result);
+//         $gt_db_conlai = ($this_bb['tien_denbu'] - $sotien_thanhtoan_nhap);
+//         $tien_danhan = ($this_bb['sotien_danhan'] + $sotien_thanhtoan_nhap);
+
+//         $hoan_thanh_mat = new db_query("UPDATE mat SET mat_trangthai = 1, tien_denbu =  '".$gt_db_conlai."', sotien_danhan =  '".$tien_danhan."', ngay_thanhtoan = '".$ngay_ht."' WHERE mat_id = '".$id."' AND id_cty = '".$id_cty."'");

@@ -16,5 +16,7 @@ router.post('/duyet', functions.checkToken, qltsService.getDataFromToken, formDa
 
 router.post('/tuChoi', functions.checkToken, qltsService.getDataFromToken, formData.parse(), controller.tuChoi);
 
+router.post('/hoanThanh', functions.checkToken, qltsService.getDataFromToken, formData.parse(), controller.hoanThanh);
+
 
 module.exports = router
