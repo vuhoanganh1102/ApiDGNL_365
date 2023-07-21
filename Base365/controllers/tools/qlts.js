@@ -25,6 +25,7 @@ const Mat = require('../../models/QuanLyTaiSan/Mat')
 const tailieuDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem');
 const BaoHanh = require('../../models/QuanLyTaiSan/BaoHanh');
 const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
+const DieuChuyen = require('../../models/QuanLyTaiSan/DieuChuyen');
 
 
 
@@ -1218,7 +1219,7 @@ exports.ToolDieuChuyen = async (req, res) => {
                 let data = ListData.data.items;
                 if (data.length > 0) {
                     for (let i = 0; i < data.length; i++) {
-                        const ds_dc = JSON.parse(data[i].dieuchuyen_taisan).ds_dc;
+                        const ds_dc = JSON.parse(data[i].dieuchuyen_taisan)?.ds_dc || [];
                         const updated_ds_dc = ds_dc.map((item) => ({
                         ts_id: item[0],
                         sl_ts: item[1]

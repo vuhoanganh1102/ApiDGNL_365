@@ -15,10 +15,6 @@ const Vanthu_de_xuat = new Schema({
         type: Number,
 
     },
-    phong_ban: {
-        type: Number,
-        default: 0
-    },
     noi_dung: {
         nghi_phep: {
             bd_nghi: {//ngày bắt đầu nghỉ
@@ -108,13 +104,15 @@ const Vanthu_de_xuat = new Schema({
             },
         },
 
-
-
         //Đơn xin thôi việc
         thoi_viec: {
             ngaybatdau_tv: {
                 type: Date,
                 default: null,
+            },
+            ca_bdnghi : {
+                type : Number,
+                default : null
             },
             ly_do: {
                 type: String,
@@ -122,8 +120,6 @@ const Vanthu_de_xuat = new Schema({
             },
 
         },
-
-
 
         //Đề xuất tăng lương
         tang_luong: {
@@ -144,9 +140,7 @@ const Vanthu_de_xuat = new Schema({
                 default: null,
             },
         },
-
-
-
+        
         //Đề xuất bổ nhiệm
         bo_nhiem: {
             thanhviendc_bn: {//thanhv vien duoc bo nhiẹm
