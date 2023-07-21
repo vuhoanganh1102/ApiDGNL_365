@@ -4,6 +4,8 @@ const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
 const TaiSanDangSD = require('../../models/QuanLyTaiSan/TaiSanDangSuDung');
 const QuaTrinhSD = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
 
+
+//lay ra danh sach bao mat/ ds cho den bu / ds tai san mat
 exports.getListDataLostAssets = async (req,res,next) => {
     try {
         let {page, pageSize, key, dataType} = req.body;
@@ -53,6 +55,7 @@ exports.getListDataLostAssets = async (req,res,next) => {
     }
 };
 
+//tao moi bien ban mat
 exports.createMat = async(req, res, next) => {
     try{
         let {ts_mat, giatri_ts, ycdenbu, ngay_mat, hinhthucdb, sl_mat, ngnhandb, nglammat, phantram_nhap, tiendb,
@@ -126,6 +129,8 @@ exports.createMat = async(req, res, next) => {
     }
 }
 
+
+//duyet bao cao mat
 exports.duyet = async(req, res, next) => {
     try{
         let {id_mat, id_ng_duyet, type_quyen_duyet, duyet_hinhthuc, duyet_yc, so_tien_nhap, phantram_nhap, day_htdenbu} = req.body;
@@ -234,6 +239,7 @@ exports.duyet = async(req, res, next) => {
     }
 }
 
+//tu choi bao cao mat
 exports.tuChoi = async(req, res, next) => {
     try{
         let com_id = req.com_id;
@@ -313,15 +319,3 @@ exports.hoanThanh = async(req, res, next) => {
         return functions.setError(res, e.message);
     }
 }
-
-// $id = getValue('id','int','POST',0);
-//         $id_cty = getValue('id_cty','int','POST',0);
-//         $sotien_thanhtoan_nhap = getValue('sotien_thanhtoan_nhap','int','POST',0);
-//         $ngay_ht = getValue('ngay_ht','int','POST',0);
-
-//         $q_this_bb = new db_query("SELECT * FROM mat WHERE id_cty = '".$id_cty."' AND mat_id = '".$id."'");
-//         $this_bb = mysql_fetch_assoc($q_this_bb->result);
-//         $gt_db_conlai = ($this_bb['tien_denbu'] - $sotien_thanhtoan_nhap);
-//         $tien_danhan = ($this_bb['sotien_danhan'] + $sotien_thanhtoan_nhap);
-
-//         $hoan_thanh_mat = new db_query("UPDATE mat SET mat_trangthai = 1, tien_denbu =  '".$gt_db_conlai."', sotien_danhan =  '".$tien_danhan."', ngay_thanhtoan = '".$ngay_ht."' WHERE mat_id = '".$id."' AND id_cty = '".$id_cty."'");
