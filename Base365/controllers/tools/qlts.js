@@ -324,7 +324,7 @@ exports.toolTheoDoiCongSuat = async (req, res, next) => {
                     //     updateAt = null;
                     // };
                     const theoDoi = new TheoDoiCongSuat({
-                        _id: element.id_cs,
+                        id_cs: element.id_cs,
                         id_cty: element.id_cty,
                         id_loai: element.id_loai,
                         id_donvi: element.id_donvi,
