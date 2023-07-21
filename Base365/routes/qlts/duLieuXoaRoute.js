@@ -9,5 +9,5 @@ const QLTS = require('../../services/QLTS/qltsService');
 router.get('/dataDeleteHome',functions.checkToken,QLTS.checkRole('none',1),formData.parse(),controller.dataDeleteHome)
 
 // danh sách tài sản đã xoá
-router.post('/dataDeleted',functions.checkToken,QLTS.checkRole('none',1),formData.parse(),controller.dataDeleted)
+router.post('/dataTaiSanDeleted',functions.checkToken,QLTS.checkRole('none',1),formData.parse(),controller.dataTaiSanDeleted)
 module.exports = router

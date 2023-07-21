@@ -57,7 +57,7 @@ exports.dataDeleteHome = async (req, res, next) => {
 };
 
 // danh sách tài sản đã xoá
-exports.dataDeleted = async (req, res, next) => {
+exports.dataTaiSanDeleted = async (req, res, next) => {
     try {
         // khai báo biến lấy dữ liệu từ token
         let comId = req.comId;
@@ -72,17 +72,18 @@ exports.dataDeleted = async (req, res, next) => {
         let limit = pageSize;
         // giải thích biến type  1: danh sách tài sản 2: loại tài sản 3: nhóm tài sản
         let type = Number(req.body.type)
-        let ts_ten = req.body.ts_ten;
         let so_bb = Number(req.body.so_bb);
-        // khai báo biến phụ
-        let conditions = { id_cty: comId };
-
+        let conditions = {}
         // logic
-        if (ts_ten) conditions.ts_ten = { $regex: ts_ten, $options: "i" };
-        if (so_bb && type === 1) conditions.ts_id = so_bb;
-        if (so_bb && type === 2) conditions.id_loai = so_bb;
-        if (so_bb && type === 3) conditions.id_nhom = so_bb;
-
+        if (so_bb && type === 1) {
+            conditions = { $or: [{ ts_ten: new RegExp(so_bb, 'i') }, { ts_id: { $regex: so_bb } }] }
+        }
+        if (so_bb && type === 2) {
+            conditions = { $or: [{ ten_loai: new RegExp(so_bb, 'i') }, { id_loai: { $regex: so_bb } }] }
+        }
+        if (so_bb && type === 3) {
+            conditions = { $or: [{ ten_nhom: new RegExp(so_bb, 'i') }, { id_nhom: { $regex: so_bb } }] }
+        }
         let dem = {};
         let demts = await TaiSan.find({ ts_da_xoa: 1, id_cty: comId }).count();
 
@@ -95,7 +96,7 @@ exports.dataDeleted = async (req, res, next) => {
 
         // 1: loại tài sản đã xoá
         if (type === 1) {
-            return qlts.taiSanXoa(res, TaiSan, dem, conditions, skip, limit,comId);
+            return qlts.taiSanXoa(res, TaiSan, dem, conditions, skip, limit, comId);
         }
         // 2: loại tài sản đã xoá
         if (type === 2) {
@@ -103,10 +104,13 @@ exports.dataDeleted = async (req, res, next) => {
         }
         // 3: nhóm tài sản đã xoá
         if (type === 3) {
-            return qlts.nhomTaiSanDaXoa(res, NhomTaiSan, dem, conditions, skip, limit ,LoaiTaiSan);
+            return qlts.nhomTaiSanDaXoa(res, NhomTaiSan, dem, conditions, skip, limit, LoaiTaiSan);
         }
-        return functions.setError(res,'invalid type input',400)
+        return functions.setError(res, 'invalid type input', 400)
     } catch (error) {
         return functions.setError(res, error)
     }
 };
+
+// danh sách tài sản cấp phát thu hồi đã xoá
+exports.dataThuHoi

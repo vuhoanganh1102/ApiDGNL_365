@@ -83,14 +83,14 @@ exports.showAll = async (req, res) => {
         $project: {
           "ts_id": "$ts_id",
           "ts_ten": "$ts_ten",
-          "ten_nguoi_cam": "$",
+          
           "ts_so_luong": "$ts_so_luong",
           "soluong_cp_bb": "$soluong_cp_bb",
           "loai_tai_san": "$ten_loai",
           "gia_tri": "$ts_gia_tri",
           "tinh_trang_su_dung": "$ts_trangthai",
           "vi_tri_tai_san": "$name_vitri.vi_tri",
-          // "Don_vi_quan_ly": "$"
+        
         }
       },
       {
