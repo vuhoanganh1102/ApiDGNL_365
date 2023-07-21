@@ -82,9 +82,8 @@ exports.getListSoVanBan = async(req, res, next) => {
       if(!so_vb) return functions.setError(res, "So van ban not found!", 504);
       return functions.success(res, "Get so van ban thanh cong!", {so_vb: so_vb});
     }
-    if(!page || !pageSize) {
-      return functions.setError(res, "Missing input page or pageSize!", 404);
-    }
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
     page = Number(page);
     pageSize = Number(pageSize);
     const skip = pageSize*(page-1);
@@ -93,7 +92,7 @@ exports.getListSoVanBan = async(req, res, next) => {
     let condition = {nguoi_tao: id};
     let listSoVanBan = await functions.pageFind(TextBook, condition, {_id: 1}, skip, limit);
     let total = await TextBook.countDocuments(condition);
-    return functions.success(res, {total, listSoVanBan});
+    return functions.success(res, {total, page, pageSize, listSoVanBan});
   }catch(err){
     return functions.setError(res, err.message);
   }

@@ -55,11 +55,10 @@ let totalVanBan = async(condition) => {
 exports.getListVanBanMoi = async(req, res, next) => {
   try{
     let {ten_vb_search, trang_thai_search, time_start, time_end, page, pageSize} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
     page = Number(page);
     pageSize = Number(pageSize);
-    if(!page || !pageSize) {
-      return functions.setError(res, "Missing input page or pageSize!", 404);
-    }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
     time_start = time_start? vanThuService.convertTimestamp(time_start): null;
@@ -124,7 +123,7 @@ exports.getListVanBanMoi = async(req, res, next) => {
     let listVanBanMoi = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
-    return functions.success(res, "Get list van ban moi success!", {totalCount, listVanBanMoi});
+    return functions.success(res, "Get list van ban moi success!", {totalCount, page, pageSize, listVanBanMoi});
   }catch(err) {
     return functions.setError(res, err.message);
   }
@@ -134,11 +133,10 @@ exports.getListVanBanMoi = async(req, res, next) => {
 exports.getListVanBanDaXuLy = async(req, res, next) => {
   try{
     let {ten_vb_search, trang_thai_search, time_start, time_end, page, pageSize} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
     page = Number(page);
     pageSize = Number(pageSize);
-    if(!page || !pageSize) {
-      return functions.setError(res, "Missing input page or pageSize!", 404);
-    }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
     time_start = time_start? vanThuService.convertTimestamp(time_start): null;
@@ -199,7 +197,7 @@ exports.getListVanBanDaXuLy = async(req, res, next) => {
     let listVanBanDaXuLy = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
-    return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, listVanBanDaXuLy});
+    return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, page, pageSize, listVanBanDaXuLy});
   }catch(err) {
     return functions.setError(res, err.message);
   }
@@ -209,11 +207,10 @@ exports.getListVanBanDaXuLy = async(req, res, next) => {
 exports.getListVanBanCanDuyet = async(req, res, next) => {
   try{
     let {ten_vb_search, time_start, time_end, page, pageSize} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
     page = Number(page);
     pageSize = Number(pageSize);
-    if(!page || !pageSize) {
-      return functions.setError(res, "Missing input page or pageSize!", 404);
-    }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
     time_start = time_start? vanThuService.convertTimestamp(time_start): null;
@@ -233,7 +230,7 @@ exports.getListVanBanCanDuyet = async(req, res, next) => {
     let listVanBanDenCanDuyet = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
-    return functions.success(res, "Get list van ban den can duyet success!", {totalCount, listVanBanDenCanDuyet});
+    return functions.success(res, "Get list van ban den can duyet success!", {totalCount, page, pageSize, listVanBanDenCanDuyet});
   }catch(err) {
     return functions.setError(res, err.message);
   }
@@ -243,11 +240,10 @@ exports.getListVanBanCanDuyet = async(req, res, next) => {
 exports.getListVanBanThuHoi = async(req, res, next) => {
   try{
     let {ten_vb_search, time_start, time_end, page, pageSize} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
     page = Number(page);
     pageSize = Number(pageSize);
-    if(!page || !pageSize) {
-      return functions.setError(res, "Missing input page or pageSize!", 404);
-    }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
     time_start = time_start? vanThuService.convertTimestamp(time_start): null;
@@ -297,7 +293,7 @@ exports.getListVanBanThuHoi = async(req, res, next) => {
     let listVanBanDaThuHoi = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
-    return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, listVanBanDaThuHoi});
+    return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, page, pageSize, listVanBanDaThuHoi});
   }catch(err) {
     return functions.setError(res, err.message);
   }
@@ -307,11 +303,10 @@ exports.getListVanBanThuHoi = async(req, res, next) => {
 exports.getListVanBanCapNhat = async(req, res, next) => {
   try{
     let {type_thay_the, type_thu_hoi, ten_vb_search, time_start, time_end, page, pageSize} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
     page = Number(page);
     pageSize = Number(pageSize);
-    if(!page || !pageSize) {
-      return functions.setError(res, "Missing input page or pageSize!", 404);
-    }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
     time_start = time_start? vanThuService.convertTimestamp(time_start): null;
@@ -375,7 +370,7 @@ exports.getListVanBanCapNhat = async(req, res, next) => {
     let listVanBanCapNhat = await listVanBan(condition,skip, limit);
     let totalCount = await totalVanBan(condition);
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
-    return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, listVanBanCapNhat});
+    return functions.success(res, "Get list van ban den da xu ly success!", {totalCount, page, pageSize, listVanBanCapNhat});
   }catch(err) {
     return functions.setError(res, err.message);
   }

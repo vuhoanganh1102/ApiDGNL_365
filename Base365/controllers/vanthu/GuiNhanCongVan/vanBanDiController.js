@@ -393,11 +393,10 @@ exports.createVanBanIn = async(req, res, next) => {
 exports.getListVanBanDiDaGui = async(req, res, next) => {
   try{
     let {id_vb, ten_vb_search, trang_thai_search, fromDate, toDate, page, pageSize} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
     page = Number(page);
     pageSize = Number(pageSize);
-    if(!page || !pageSize) {
-      return functions.setError(res, "Missing input page or pageSize!", 404);
-    }
     const skip = (page - 1) * pageSize;
     const limit = pageSize;
     if(fromDate) fromDate = fromDate? vanThuService.convertTimestamp(fromDate): null;
@@ -450,7 +449,7 @@ exports.getListVanBanDiDaGui = async(req, res, next) => {
       }
     }
     totalCount = totalCount.length > 0 ? totalCount[0].count : 0;
-    return functions.success(res, "Get list van ban gui di success!", {totalCount, listVanBanDi});
+    return functions.success(res, "Get list van ban gui di success!", {totalCount, page, pageSize, listVanBanDi});
   }catch(err){
     return functions.setError(res, err.message);
   }
