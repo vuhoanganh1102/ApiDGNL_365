@@ -119,7 +119,7 @@ exports.create = async (req , res) =>{
              return fnc.success(res, " tạo thành công ",{data,thuHoiPhongBan,updateThongBao})
 
             }else{
-            return fnc.setError(res, " cần nhập đủ thông tin ")
+            return fnc.setError(res, " cần nhập đủ thông tin loai_thuhoi")
             }
         }else{
             return fnc.setError(res, " cần nhập đủ thông tin ")
@@ -138,23 +138,21 @@ exports.updateStatus = async (req , res) =>{
     try{
         const type = req.user.data.type
         const id_cty = req.user.data.com_id
-        const id_nhanvien = req.body.id_nhanvien
-        const id_phongban = req.body.id_phongban
+        const id_ng_dc_thuhoi = req.body.id_ng_dc_thuhoi
+        const id_pb_thuhoi = req.body.id_pb_thuhoi
         let listConditions = {};
         if(id_cty) listConditions.id_cty = id_cty
-        if(id_nhanvien) listConditions.id_nhanvien = id_nhanvien
-        if(id_phongban) listConditions.id_phongban = id_phongban
+        if(id_ng_dc_thuhoi) listConditions.id_ng_dc_thuhoi = id_ng_dc_thuhoi
+        if(id_pb_thuhoi) listConditions.id_pb_thuhoi = id_pb_thuhoi
 
         const data = await ThuHoi.findOne(listConditions);
-            if (!data) {
-                return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
-            } else {
+            if (data) {
                 await ThuHoi.findOneAndUpdate(listConditions , {
                     thuhoi_trangthai:1,
                     })
-                    .then((data) => fnc.success(res, "cập nhật thành công", {data}))
-                    .catch((err) => fnc.setError(res, err.message, 511));
+                    return fnc.success(res, "cập nhật thành công", {data})    
             }
+            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
     }catch(e){
         return fnc.setError(res , e.message)
     }
@@ -164,40 +162,44 @@ exports.updateStatus = async (req , res) =>{
 exports.getListDetail = async (req , res) =>{
     try{
         const id_cty = req.user.data.com_id
-        const type_quyen = req.body.type_quyen
+        // const type_quyen = req.body.type_quyen
         let option = req.body.option
-        const id_nhanvien = req.body.id_nhanvien
-        const id_phongban = req.body.id_phongban
+        const thuhoi_id = req.body.thuhoi_id
+        // const id_pb_thuhoi = req.body.id_pb_thuhoi
+        let page = Number(req.body.page)|| 1;
+        let pageSize = Number(req.body.pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
         let data = {}
         let nameCapital = {}
         let listConditions = {};
-       if(type_quyen != 0){
-        if(id_cty) listConditions.id_cty = id_cty 
-        if(option == 1) listConditions.thuhoi_trangthai = 0, listConditions.id_nhanvien =  id_nhanvien  ////thu hôi chờ nhận NV
-        if(option == 2) listConditions.thuhoi_trangthai = 1, listConditions.id_nhanvien =  id_nhanvien // đồng ý thu hồi  NV
-        if(option == 3) listConditions.thuhoi_trangthai = 0 , listConditions.id_phongban =  id_phongban  // //thu hôi chờ nhận PB
-        if(option == 4) listConditions.thuhoi_trangthai = 1 , listConditions.id_phongban = id_phongban  // đồng ý thu hồi  PB
+    //    if(type_quyen != 0){
+        listConditions.id_cty = id_cty 
+        if(option == 1) listConditions.thuhoi_trangthai = 0, listConditions.id_ng_dc_thuhoi = { $exists: true }   ////DS thu hôi chờ nhận NV
+        if(option == 2) listConditions.thuhoi_trangthai = 0, listConditions.thuhoi_id =  thuhoi_id  ////query thu hôi chờ nhận NV
+        if(option == 3) listConditions.thuhoi_trangthai = 1, listConditions.id_ng_dc_thuhoi =  { $exists: true } //DS đồng ý thu hồi  NV
+        if(option == 4) listConditions.thuhoi_trangthai = 1, listConditions.thuhoi_id =  thuhoi_id // đồng ý thu hồi  NV
+        if(option == 5) listConditions.thuhoi_trangthai = 0 , listConditions.id_pb_thuhoi =  { $exists: true } // DS thu hôi chờ nhận PB
+        if(option == 6) listConditions.thuhoi_trangthai = 0 , listConditions.thuhoi_id =  thuhoi_id  // //thu hôi chờ nhận PB
+        if(option == 7) listConditions.thuhoi_trangthai = 1 , listConditions.id_pb_thuhoi = { $exists: true }  //DS đồng ý thu hồi  PB
+        if(option == 8) listConditions.thuhoi_trangthai = 1 , listConditions.thuhoi_id = thuhoi_id  // đồng ý thu hồi  PB
         
-        data = await ThuHoi.find(listConditions).select('thuhoi_taisan thuhoi_ngay thuhoi_hoanthanh thuhoi__lydo thuhoi_soluong thuhoi_trangthai').lean()
+        data = await ThuHoi.find(listConditions).select('thuhoi_id thuhoi_taisan thuhoi_ngay thuhoi_hoanthanh thuhoi__lydo thuhoi_soluong thuhoi_trangthai').skip(skip).limit(limit).lean()
+        let count = await ThuHoi.find(listConditions).count()
         if(data){
-            if(data.thuhoi_taisan) nameCapital = await TaiSan.find({_id : data.thuhoi_taisan}).select("ts_ten").lean()
-            if(nameCapital!=0) data.nameCapital = nameCapital
-            return fnc.success(res, " lấy thành công ",{data})
-
-        }else{
-            return fnc.setError(res, "không tìm thấy đối tượng", 510);
+            if(data[0].thuhoi_taisan.ds_thuhoi[0].ts_id) nameCapital = await TaiSan.find({ts_id : data[0].thuhoi_taisan.ds_thuhoi[0].ts_id}).select("ts_ten").lean()
+            if(nameCapital) data.nameCapital = nameCapital
+            return fnc.success(res, " lấy thành công ",{data,count})
         }
-       }else{
-             return fnc.setError(res, "bạn chưa có quyền", 510);
-       }
-    }catch(e){
-        console.log(e);
+        return fnc.setError(res, "không tìm thấy đối tượng", 510);
+    // }
+    // return fnc.setError(res, "bạn chưa có quyền", 510);
+}catch(e){
         return fnc.setError(res , e.message)
-    }
-    }
+}
+}
 
-
-    exports.edit = async(req,res)=>{
+exports.edit = async(req,res)=>{
         try{
             const id_cty = req.user.data.com_id
             const id_ng_thuhoi = req.user.data.idQLC//id nguoi tao
@@ -230,7 +232,6 @@ exports.getListDetail = async (req , res) =>{
                             })
                         return fnc.success(res, "cập nhật thành công", {data})
                     }
-                  
                 }
             // }else{
                 // return fnc.setError(res, "bạn chưa có quyền", 510);
@@ -242,13 +243,7 @@ exports.getListDetail = async (req , res) =>{
 
 exports.delete = async (req , res) =>{
     try{
-            const type = req.user.data.type
-            const id_cty = ""
-            if(type == 1){
-                 id_cty = req.user.data.idQLC
-            }else{
-                id_cty = req.user.data.inForPerson.employee.com_id
-            }
+            const id_cty = req.user.data.com_id
             const datatype = req.body.datatype
             const _id = req.body.id
             const type_quyen = req.body.type_quyen
@@ -265,18 +260,15 @@ exports.delete = async (req , res) =>{
                         cp_da_xoa : 1,
                         cp_type_quyen_xoa : type_quyen,
                         cp_id_ng_xoa :id_ng_xoa,
-                        cp_date_delete : Date.parse(date_delete),
+                        cp_date_delete : Date.parse(date_delete)/1000,
     
                         })
-                        .then((data) => fnc.success(res, "cập nhật thành công", {data}))
-                        .catch((err) => fnc.setError(res, err.message, 511));
+                        return fnc.success(res, "cập nhật thành công", {data})
                 }
             }
             if(datatype == 2){
                 const data = await ThuHoi.findOne({ _id: _id , id_cty : id_cty});
                 if (!data) {
-                    return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
-                } else {
                     await ThuHoi.findOneAndUpdate({ _id: _id, id_cty: id_cty }, {
                         id_cty: id_cty,
                         cp_da_xoa : 0,
@@ -285,9 +277,9 @@ exports.delete = async (req , res) =>{
                         cp_date_delete : 0,
     
                         })
-                        .then((data) => fnc.success(res, "cập nhật thành công", {data}))
-                        .catch((err) => fnc.setError(res, err.message, 511));
+                        return fnc.success(res, "cập nhật thành công", {data})    
                 }
+                return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật");
             }
             if(datatype == 3){
                 const deleteonce = await fnc.getDatafindOne(ThuHoi, { _id: _id , id_cty : id_cty});
@@ -295,8 +287,7 @@ exports.delete = async (req , res) =>{
                 return fnc.setError(res, "không tìm thấy bản ghi", 510);
             } else { //tồn tại thì xóa 
                 fnc.getDataDeleteOne(ThuHoi, { _id: _id })
-                    .then(() => fnc.success(res, "xóa thành công!", {deleteonce}))
-                    .catch(err => fnc.setError(res, err.message, 512));
+                    return fnc.success(res, "xóa thành công!", {deleteonce})
             }
             }
         }else{

@@ -17,6 +17,7 @@ exports.create = async(req,res)=>{
         const cap_phat_taisan = req.body.cap_phat_taisan;
         const id_ng_thuchien = req.body.id_ng_thuchien;
         const id_ng_daidien = req.body.id_ng_daidien;
+        const id_nhanvien = req.body.id_nhanvien;
         let data = []
         let listItemsType = []
         let soluong_cp_bb = {}
@@ -39,6 +40,7 @@ exports.create = async(req,res)=>{
             let CapPhatPB = new capPhat({
                 //tao cap phat neu la cap phat phong ban thi dien phong ban, neu la cap phat nhan vien thi khong dien id_pb
                 cp_id : Number(max.cp_id) + 1 ,
+                id_nhanvien: id_nhanvien,
                 id_phongban: id_pb,
                 cap_phat_taisan: {ds_ts: updated_ds_ts},
                 cp_id_ng_tao : idQLC,
@@ -234,8 +236,6 @@ exports.getList = async (req , res) =>{
             let depNameofUser = {}
             let countCapital = {}
             let countUser = {}
-    
-            
             let data = {}
             let listConditions = {};
              // lay danh sach chi tiet phong ban - nhan vien
@@ -297,39 +297,78 @@ exports.getList = async (req , res) =>{
         }
         }
 
-exports.getListDetail = async (req , res) =>{
-    try{
-        const type = req.user.data.type
-        // const id_cty = ""
-        // if(type == 1){
-        //      id_cty = req.user.data.idQLC
-        // }else{
-        //     id_cty = req.user.data.inForPerson.employee.com_id
-        // }
-        const id_cty = req.body.id_cty
-        let option = req.body.option
-        const id_nhanvien = req.body.id_nhanvien
-        const id_phongban = req.body.id_phongban
-        let data = {}
-        let listConditions = {};
-        if(id_cty) listConditions.id_cty = id_cty 
-        if(option == 1) listConditions.cp_trangthai = 0, listConditions.id_nhanvien =  id_nhanvien  //cấp phát chờ nhận NV
-        if(option == 2) listConditions.cp_trangthai = 6, listConditions.id_nhanvien =  id_nhanvien // tiếp nhận cấp phát NV
-        if(option == 3) listConditions.cp_trangthai = 0 , listConditions.id_nhanvien =  id_phongban  // cấp phát chờ nhận PB
-        if(option == 4) listConditions.cp_trangthai = 6 , listConditions.id_nhanvien =  id_phongban  // tiếp nhận cấp phát PB
+// exports.getListDetail = async (req , res) =>{
+//     try{
+//         const type = req.user.data.type
+//         // const id_cty = ""
+//         // if(type == 1){
+//         //      id_cty = req.user.data.idQLC
+//         // }else{
+//         //     id_cty = req.user.data.inForPerson.employee.com_id
+//         // }
+//         const id_cty = req.body.id_cty
+//         let option = req.body.option
+//         const id_nhanvien = req.body.id_nhanvien
+//         const id_phongban = req.body.id_phongban
+//         let data = {}
+//         let listConditions = {};
+//         if(id_cty) listConditions.id_cty = id_cty 
+//         if(option == 1) listConditions.cp_trangthai = 0, listConditions.id_nhanvien =  id_nhanvien  //cấp phát chờ nhận NV
+//         if(option == 2) listConditions.cp_trangthai = 6, listConditions.id_nhanvien =  id_nhanvien // tiếp nhận cấp phát NV
+//         if(option == 3) listConditions.cp_trangthai = 0 , listConditions.id_nhanvien =  id_phongban  // cấp phát chờ nhận PB
+//         if(option == 4) listConditions.cp_trangthai = 6 , listConditions.id_nhanvien =  id_phongban  // tiếp nhận cấp phát PB
         
-        data = await capPhat.find(listConditions).select('cp_trangthai cp_id_ng_tao cp_date_create cp_lydo').lean()
-        if(data){
-            return fnc.success(res, " lấy thành công ",{data})
+//         data = await capPhat.find(listConditions).select('cp_trangthai cp_id_ng_tao cp_date_create cp_lydo').lean()
+//         if(data){
+//             return fnc.success(res, " lấy thành công ",{data})
 
-        }else{
+//         }else{
+//             return fnc.setError(res, "không tìm thấy đối tượng", 510);
+
+//         }
+
+//     }catch(e){
+//         return fnc.setError(res , e.message)
+//     }
+//     }
+
+
+    exports.getListDetail = async (req , res) =>{
+        try{
+            const id_cty = req.user.data.com_id
+            // const type_quyen = req.body.type_quyen
+            let option = req.body.option
+            const cp_id = req.body.cp_id
+            let page = Number(req.body.page)|| 1;
+            let pageSize = Number(req.body.pageSize);
+            const skip = (page - 1) * pageSize;
+            const limit = pageSize;
+            let data = {}
+            let nameCapital = {}
+            let listConditions = {};
+        //    if(type_quyen != 0){
+            listConditions.id_cty = id_cty 
+            if(option == 1) listConditions.cp_trangthai = 0, listConditions.id_nhanvien = { $exists: true }   ////DS cấp phát chờ nhận NV
+            if(option == 2) listConditions.cp_trangthai = 0, listConditions.cp_id =  cp_id  ////query cấp phát chờ nhận NV
+            if(option == 3) listConditions.cp_trangthai = 6, listConditions.id_nhanvien =  { $exists: true } //DS đồng ý cấp phát  NV
+            if(option == 4) listConditions.cp_trangthai = 6, listConditions.cp_id =  cp_id // query đồng ý cấp phát  NV
+            if(option == 5) listConditions.cp_trangthai = 0 , listConditions.id_phongban =  { $exists: true } // DS cấp phát chờ nhận PB
+            if(option == 6) listConditions.cp_trangthai = 0 , listConditions.cp_id =  cp_id  // query cấp phát chờ nhận PB
+            if(option == 7) listConditions.cp_trangthai = 6 , listConditions.id_phongban = { $exists: true }  //DS đồng ý cấp phát PB
+            if(option == 8) listConditions.cp_trangthai = 6 , listConditions.cp_id = cp_id  // query đồng ý cấp phát  PB
+            console.log(listConditions)
+            data = await capPhat.find(listConditions).select('cp_id cap_phat_taisan cp_trangthai cp_id_ng_tao cp_date_create cp_lydo').skip(skip).limit(limit).lean()
+            let count = await capPhat.find(listConditions).count()
+            console.log(data[0].cap_phat_taisan.ds_ts[0].ts_id)
+            if(data){
+                if(data[0].cap_phat_taisan.ds_ts[0].ts_id) nameCapital = await TaiSan.find({ts_id : data[0].cap_phat_taisan.ds_ts[0].ts_id}).select("ts_ten").lean()
+                if(nameCapital) data.nameCapital = nameCapital
+                return fnc.success(res, " lấy thành công ",{data,count})
+            }
             return fnc.setError(res, "không tìm thấy đối tượng", 510);
-
-        }
-
+        // }
+        // return fnc.setError(res, "bạn chưa có quyền", 510);
     }catch(e){
-        return fnc.setError(res , e.message)
+            return fnc.setError(res , e.message)
     }
     }
-
-
