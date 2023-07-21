@@ -1,6 +1,8 @@
 const fnc = require('../../../services/functions');
 const ThongBao = require('../../../models/QuanLyTaiSan/ThongBao');
 const BaoDuong = require('../../../models/QuanLyTaiSan/BaoDuong');
+const QuyDinh = require('../../../models/QuanLyTaiSan/Quydinh_bd');
+const TheoDoiCongSuat = require('../../../models/QuanLyTaiSan/TheoDoiCongSuat');
 
 // exports.addBaoDuong = async (req, res) => {
 //     try {
@@ -69,6 +71,8 @@ const BaoDuong = require('../../../models/QuanLyTaiSan/BaoDuong');
 //lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
 exports.danhSachBaoDuong = async (req, res, next) => {
   try{
+    // $sql_nv .= " AND (bd_id_ng_tao = '".$id_ng_tao."' OR bd_ng_thuchien = '".$id_ng_tao."' OR bd_ng_sd = '".$id_ng_tao."' OR bd_vi_tri_dang_sd = '".$id_ng_tao."')";
+    //     $sql_nv1 .= "AND quydinh_bd.id_ng_tao_qd = '".$id_ng_tao."'";
     // $tsbd = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND ((xoa_bd = 0 AND bd_trang_thai = 0 ".$sql." ".$sql_nv.") OR (xoa_bd = 0 AND bd_trang_thai = 2 ".$sql." ".$sql_nv.")) ORDER BY id_bd DESC LIMIT $start, $limit");
     // $tsbd2 = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND xoa_bd = 0 AND bd_trang_thai = 0 ".$sql." ".$sql_nv." OR xoa_bd = 0 AND bd_trang_thai = 2 ".$sql." ".$sql_nv." ORDER BY id_bd DESC");
     // $dangbd = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND xoa_bd = 0 AND bd_trang_thai = 0 ".$sql_nv." ORDER BY id_bd DESC");
@@ -87,9 +91,17 @@ exports.danhSachBaoDuong = async (req, res, next) => {
     const skip = (page-1)*pageSize;
 
     let com_id = req.com_id;
-    let condition = {id_cty: com_id, xoa_bd: 0};
+    let idQLC = req.id;
+    let condition = {id_cty: com_id, xoa_bd: 0, 
+      $or: [
+        {bd_id_ng_tao: idQLC},
+        {bd_ng_thuchien: idQLC},
+        {bd_ng_sd: idQLC},
+        {bd_vi_tri_dang_sd: idQLC}
+      ]
+    };
     if(key) condition.id_bd = key;
-    if(dataType != 1 && dataType != 2 && dataType != 3) return fnc.setError(res, "Truyen dataType = 1, 2, 3");
+    if(dataType != 1 && dataType != 2 && dataType != 3 && dataType != 4 && dataType != 5) return fnc.setError(res, "Truyen dataType = 1, 2, 3, 4, 5");
     //can bao duong
     if(dataType == 1) {
       condition.bd_trang_thai = {$in: [0, 2]};
@@ -102,6 +114,21 @@ exports.danhSachBaoDuong = async (req, res, next) => {
     else if(dataType == 3) {
       condition.bd_trang_thai = 1;
     }
+    //quy dinh
+    else if(dataType == 4) {
+      let condition2 = {id_cty: com_id, qd_xoa: 0, id_ng_tao_qd: idQLC};
+      let quydinh = await fnc.pageFind(QuyDinh, condition2, {qd_id: -1}, skip, pageSize);
+      let total = await fnc.findCount(QuyDinh, condition2);
+      return fnc.success(res, "Lay ra danh sach bao duong thanh cong", {page, pageSize, total,quydinh});
+    }
+    //theo doi cong suat
+    else if(dataType == 5) {
+      let condition2 = {id_cty: com_id, tdcs_xoa: 0};
+      let theoDoiCongSuat = await fnc.pageFind(TheoDoiCongSuat, condition2, {id_cs: -1}, skip, pageSize);
+      let total = await fnc.findCount(TheoDoiCongSuat, condition2);
+      return fnc.success(res, "Lay ra danh sach bao duong thanh cong", {page, pageSize, total,theoDoiCongSuat});
+    }
+
     let listBaoDuong = await fnc.pageFind(BaoDuong, condition, {id_bd: -1}, skip, pageSize);
     const total = await fnc.findCount(BaoDuong, condition);
     return fnc.success(res, "Lay ra danh sach bao duong thanh cong", {page, pageSize, total,listBaoDuong});

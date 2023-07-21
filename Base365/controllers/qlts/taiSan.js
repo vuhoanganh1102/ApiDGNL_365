@@ -57,7 +57,7 @@ exports.showAll = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'QLTS_Loai_Tai_San',
+          from: 'QLTS_Loai_Tai_San',// bảng loại tài sản
           localField: 'id_loai_ts',
           foreignField: 'id_loai',
           as: 'name_loai',
@@ -65,7 +65,7 @@ exports.showAll = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'QLTS_ViTri_ts',
+          from: 'QLTS_ViTri_ts', // bảng vị trí
           localField: 'ts_vi_tri',
           foreignField: 'id_vitri',
           as: 'name_vitri',
@@ -73,24 +73,10 @@ exports.showAll = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'qlc_deparments', // Tên bảng khác bạn muốn tham gia
+          from: 'qlc_deparments', // bảng phòng ban 
           localField: 'dv_quan_ly',
           foreignField: 'dep_id',
           as: 'name_dep',
-        },
-      },
-      {
-        $lookup: {
-          from: 'QTLTS_ThuHoi',
-          let: { ts_id: '$ts_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $in: ['$ts_id', '$thuhoi_taisan.ds_thuhoi.ts_id'] },
-              },
-            },
-          ],
-          as: 'so_luongth',
         },
       },
       {
@@ -133,22 +119,24 @@ exports.showAll = async (req, res) => {
 
 exports.showDataSearch = async (req, res) => {
   try {
+    let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     let checktaisan = await TaiSan.distinct('id_ten_quanly', { id_cty: com_id })
+    let listTaiSan = await TaiSan.find({id_cty : com_id,ts_da_xoa: 0}).select('ts_id')
     let listUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan } }).select('idQLC userName');
     let listVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
-    let listloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id }).select('id_loai ten_loai')
-    let checkNhom = await NhomTs.find({ id_cty: com_id }).select('id_nhom')
+    let listloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id ,loai_da_xoa : 0}).select('id_loai ten_loai')
+    let listNhom = await NhomTs.find({ id_cty: com_id ,nhom_da_xoa : 0}).select('id_nhom ten_nhom')
     let item = {
-
-      totalUser: listUser.length,
+      totalTaiSan: listTaiSan.length,
       totalVitri: listVitri.length,
       totalloaiTaiSan: listloaiTaiSan.length,
-      totalNhom: checkNhom.length,
+      totalNhom: listNhom.length,
+      listNhom,
       listUser,
       listVitri,
       listloaiTaiSan,
@@ -160,14 +148,14 @@ exports.showDataSearch = async (req, res) => {
 }
 }
 
-
+// Đổ dữ liệu thêm mới tài sản
 exports.showadd = async (req, res) => {
   try {
     let com_id = '';
     if (req.user.data.type = 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id
       let checktaisan = await TaiSan.distinct('id_ten_quanly', { id_cty: com_id })
-      let listUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan } }).select('idQLC userName');;
+      let listUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan }}).select('idQLC userName');;
       let listVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
       let listloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id }).select('id_loai ten_loai')
       let item = {
@@ -258,7 +246,7 @@ exports.showCTts = async (req, res) => {
     let { ts_id } = req.body;
     let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
-      com_id = req.user.data.com_id;
+       com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -516,7 +504,7 @@ exports.addFile = async(req,res) => {
       if(!checkFile){
         return functions.setError(res, `File khong dung dinh dang hoac qua kich cho phep!`, 411);
       }
-      fileName = await quanlytaisanService.uploadFileNameRandom('file_tai_san', phieu_trinh);
+      fileName = tep_dinh_kem.name
     }
     let maxIdTep = await functions.getMaxIdByField( TepDinhKem,'tep_id');
       let createNew = new TepDinhKem({
@@ -559,7 +547,6 @@ exports.showFile = async(req,res) => {
       .limit(perPage);
       const totalTsCount = await TepDinhKem.countDocuments({ id_cty: com_id ,id_ts: ts_id});
 
-      // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
       const totalPages = Math.ceil(totalTsCount / perPage);
       const hasNextPage = endIndex < totalTsCount;
       return functions.success(res, 'get data success', { showtep, totalPages, hasNextPage });

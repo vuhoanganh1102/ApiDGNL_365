@@ -20,6 +20,7 @@ router.post('/PhanBo',toolQLTS.toolPhanBo)
 
 //dung
 router.post('/kiemke', toolQLTS.kiemKe);
+router.post('/quyDinhBD', toolQLTS.quyDinhBD);
 //router.post('/QuaTrinhSuDung',toolQLTS.QuaTrinhSuDung);
 
 
