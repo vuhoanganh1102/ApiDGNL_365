@@ -490,7 +490,7 @@ let getListInterview = async(type, recruitmentNewsId, )=> {
                 }
             },
             {$match: {result: type}},
-            {$project: {id: 1, name: 1, phone:1, email: 1}},
+            // {$project: {id: 1, name: 1, phone:1, email: 1}},
             {$sort: {id: 1}}
         ]);
         return listInterview;
@@ -511,7 +511,7 @@ exports.getDetailRecruitmentNews= async(req, res, next) => {
         
         let condition = {isDelete: 0, comId: comId, id: recruitmentNewsId};
         
-        var recruitmentNews = await RecruitmentNews.findOne(condition, {title: 1, number: 1,timeStart: 1, timeEnd: 1, createdBy: 1, hrName: 1}).lean();
+        var recruitmentNews = await RecruitmentNews.findOne(condition).lean();
         if(!recruitmentNews) {
             return functions.setError(res, "Khong ton tai tin tuyen dung!", 406);
         }
@@ -1291,7 +1291,7 @@ exports.createFailJob = async(req, res, next) => {
             newIdFailJob = Number(maxIdFailJob.id) + 1;
         } else newIdFailJob = 1;
         infoFailJob.id = newIdFailJob;
-        infoFailJob.contentsend = Buffer.from(contentsend, 'base64');
+        infoFailJob.contentsend = contentsend;
         
         let failJob = await FailJob.findOneAndUpdate({canId: canId}, infoFailJob, {upsert: true, new: true});
         if(!failJob){
@@ -1356,7 +1356,7 @@ exports.addCandidateProcessInterview = async(req, res, next) => {
             processInterviewId, 
             empInterview, 
             interviewTime,
-            content: Buffer.from(contentsend, 'base64')
+            content: contentsend
         };
         //tao 
         let scheduleInterview = await ScheduleInterview.findOneAndUpdate({canId: canId}, infoInterview, {upsert: true, new: true});
@@ -1422,7 +1422,7 @@ exports.addCandidateGetJob = async(req, res, next) => {
         } else newIdScheduleInterview = 1;
         
         let infoGetJob = {id: newIdScheduleInterview, canId, resiredSalary, salary, note, email, contentsend, empInterview, interviewTime};
-        infoGetJob.contentSend = Buffer.from(contentsend, 'base64');
+        infoGetJob.contentSend = contentsend
         
         //tao 
         let getJob = await GetJob.findOneAndUpdate({canId: canId}, infoGetJob, {upsert: true, new: true});
