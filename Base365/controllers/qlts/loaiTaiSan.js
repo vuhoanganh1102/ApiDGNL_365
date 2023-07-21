@@ -58,19 +58,36 @@ exports.showLoaiTs = async (req, res) => {
     }
     page = page || 1;
     perPage = perPage || 10;
-    let query = {
-      loai_da_xoa: 0,
+    let matchQuery = {
+      id_cty: com_id,// Lọc theo com_id
+      loai_da_xoa : 0
     };
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
     if (id_loai) {
-      query.id_loai = id_loai;
+      matchQuery.id_loai = parseInt(id_loai);;
     }
-    const showLoaiTs = await LoaiTaiSan.find({ id_cty: com_id, ...query })
-      .sort({ id_loai: -1 })
-      .skip(startIndex)
-      .limit(perPage);
-    const totalTsCount = await LoaiTaiSan.countDocuments({ id_cty: com_id, ...query });
+    const showLoaiTs = await LoaiTaiSan.aggregate([
+      {
+        match: matchQuery, 
+      },
+      {
+        $lookup : {
+          from: 'QLTS_Nhom_Tai_San',
+          localField : 'id_nhom_ts',
+          foreignField : 'id_loai',
+          as : 'listNhom'
+        }
+      }, 
+      {
+        $skip: startIndex,
+      },
+      {
+        $limit: perPage,
+      }
+      
+    ])
+    const totalTsCount = await LoaiTaiSan.countDocuments(matchQuery);
 
     // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
     const totalPages = Math.ceil(totalTsCount / perPage);

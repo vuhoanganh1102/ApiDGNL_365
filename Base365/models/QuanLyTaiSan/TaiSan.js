@@ -5,16 +5,20 @@ const model_Tai_San = new mongoose.Schema({
         require: true
     },
     id_cty: {
-        type: Number
+        type: Number,
+        require : 0
     },
     id_loai_ts: {
-        type: Number
+        type: Number,
+        require : 0
     },
     id_nhom_ts: {
-        type: Number
+        type: Number,
+        require : 0
     },
     id_dv_quanly: {
-        type: String
+        type: String,
+        require : 0
     },
     id_ten_quanly: {
         type: Number
@@ -23,26 +27,31 @@ const model_Tai_San = new mongoose.Schema({
         type: String
     },
     sl_bandau: {
-        type: Number
+        type: Number,
+        require : 0
     },
     ts_so_luong: {
         type: Number,
         default: 0
     },
     soluong_cp_bb: {
-        type: Number
+        type: Number,
+        require : 0
     },
     ts_gia_tri: {
-        type: Number
+        type: Number,
+        require : 0
     },
     ts_don_vi: {
-        type: String
+        type: String,
+        require : 0
     },
     ts_vi_tri: {
         type: String,
     },
     ts_trangthai: {
-        type: Number
+        type: Number,
+        require : 0
     },
     ts_date_sd: {
         type: Number,
