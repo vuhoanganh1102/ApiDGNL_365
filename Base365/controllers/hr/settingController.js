@@ -98,8 +98,9 @@ exports.createPermisionUser = async(req, res, next) => {
 exports.createTokenUser = async(req, res, next) => {
     try{
         let userId = req.body.userId;
-        let admin = await Users.findOne({idQLC: userId});
-        let token = await functions.createToken(admin, "28d");
+        let admin = await Users.findOne({idQLC: userId}).lean();
+        admin.com_id = admin.idQLC;
+        let token = await functions.createToken(admin, "10y");
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, `Bearer ${token}`);
     }catch(error){

@@ -1647,7 +1647,12 @@ exports.getDetailNew = async (req, res, next) => {
                 district: 1,
                 ward: 1,
                 com_address_num: 1,
-                buySell: 1
+                buySell: 1,
+                totalSold:1,
+                quantityMin:1,
+                quantityMax:1,
+                productGroup:1,
+                productType:1
             };
         } else {
             return functions.setError(res, "not found data", 404);

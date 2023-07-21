@@ -211,13 +211,14 @@ exports.approveAssetDisposal = async (req, res, next) => {
                             id_ts_sd: getData.huy_taisan,
                             id_nv_sd: huy_ng_sd
                         },
-                        {
-                            sl_dang_sd: { $inc: -getData.huy_soluong }
-                        });
+                        { $inc: { sl_dang_sd: -getData.huy_soluong } }
+
+                        );
                     if (checkUpdate) {
                         if (checkUpdate.sl_dang_sd > getData.huy_soluong) {
 
-                            await Huy.findOneAndUpdate({ huy_id: id, id_cty: comId },
+                            await Huy.findOneAndUpdate(
+                                { huy_id: id, id_cty: comId },
                                 {
                                     id_ng_duyet: ng_duyet,
                                     huy_type_quyen_duyet: type_quyen,
@@ -258,9 +259,8 @@ exports.approveAssetDisposal = async (req, res, next) => {
                                     id_ts_sd: getData.huy_taisan[0].ds_huy,
                                     id_pb_sd: huy_ng_sd
                                 },
-                                {
-                                    sl_dang_sd: { $inc: -getData.huy_soluong }
-                                });
+                                { $inc: { sl_dang_sd: -getData.huy_soluong } }
+                                );
 
                             await Huy.findOneAndUpdate({ huy_id: id, id_cty: comId },
                                 {
@@ -311,7 +311,7 @@ exports.rejectAssetDisposal = async (req, res, next) => {
         // logic xử lý
         let check_huy = await Huy.findOne({ huy_id: id_bb, id_cty: comId })
         if (check_huy) {
-            await Huy.findByIdAndUpdate(id_bb, {
+            await Huy.findOneAndUpdate({huy_id:id_bb}, {
                 huy_trangthai: 2,
                 huy_lydo_tuchoi: content
             })
@@ -332,7 +332,8 @@ exports.deleteAssetDisposal = async (req, res, next) => {
         let emId = Number(req.emId);
 
         // khai báo id người dùng muốn xoá
-        let id = Number(req.body.id);
+        let id = req.body.id;
+      
 
         // xử lý trường id người xoá
         let id_ng_xoa = comId;
@@ -341,17 +342,23 @@ exports.deleteAssetDisposal = async (req, res, next) => {
         }
 
         // logic xử lý
-        let check_huy = await Huy.findOne({ huy_id: id, id_cty: comId })
-        if (check_huy) {
-            await Huy.findByIdAndUpdate(id, {
-                xoa_huy: 1,
-                huy_type_quyen_xoa: type_quyen,
-                huy_id_ng_xoa: id_ng_xoa,
-                huy_date_delete: new Date().getTime() / 1000,
-            })
-            return functions.success(res, 'Xoá đề xuất huỷ tài sản thành công')
+        if (Array.isArray(id) === true) {
+            for (let i = 0; i < id.length; i++) {
+                let checkThanhLy = await Huy.findOne({ huy_id: id[i], id_cty: comId })
+                if (checkThanhLy) {
+                    await Huy.findOneAndUpdate({huy_id:id[i]}, {
+                        xoa_huy: 1,
+                        huy_type_quyen_xoa: type_quyen,
+                        huy_id_ng_xoa: id_ng_xoa,
+                        huy_date_delete: new Date().getTime() / 1000,
+                    })
+                }else{
+                    return functions.setError(res, 'Không tìm thấy đề xuất huỷ tài sản', 404)
+                }
+            }
+            return functions.success(res, 'Xoá đề xuất thanh huỷ sản thành công')
         }
-        return functions.setError(res, 'Không tìm thấy đề xuất huỷ tài sản', 400)
+        return functions.setError(res, 'Missing id', 400)
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)

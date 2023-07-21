@@ -16,6 +16,7 @@ var thanhly = require('./qlts/thanhLyRouter')
 var SuaChua = require('./qlts/SuaChua_BaoDuong/SuaChua');
 var kiemKeRouter = require('./qlts/kiemKeRouter');
 var DieuChuyenBanGiao = require("./qlts/DieuChuyenBanGiao/DieuChuyenViTri");
+var xoaGanDay = require('./qlts/duLieuXoaRoute')
 //Api tool quét data
 router.use('/tool', toolData)
 
@@ -46,4 +47,7 @@ router.use('/phanQuyen',phanQuyen)
 router.use('/SuaChua', SuaChua);
 
 router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
+
+// Dữ liệu xoá gần đây
+router.use('/xoa',xoaGanDay)
 module.exports = router

@@ -102,7 +102,7 @@ exports.showAll = async (req, res) => {
           "gia_tri": "$ts_gia_tri",
           "tinh_trang_su_dung": "$ts_trangthai",
           "vi_tri_tai_san": "$name_vitri.vi_tri",
-          "Don_vi_quan_ly": "$"
+          // "Don_vi_quan_ly": "$"
         }
       },
       {

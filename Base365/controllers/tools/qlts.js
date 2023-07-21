@@ -1176,7 +1176,7 @@ exports.toolQuaTrinhSuDung = async (req, res, next) => {
             let listItem = data.data.items;
             if (listItem.length > 0) {
                 listItem.map(async (item) => {
-                    let new_QuanTrinhSuDung = new QuanTrinhSuDung({
+                    let new_QuanTrinhSuDung = new QuaTrinhSuDung({
                         quatrinh_id: item.quatrinh_id,
                         id_ts: item.id_ts,
                         id_bien_ban: item.id_bien_ban,
@@ -1219,42 +1219,42 @@ exports.ToolDieuChuyen = async (req, res) => {
                 if (data.length > 0) {
                     data.map(async (item, index) => {
 
-                        let new_dc = new DieuChuyen({
-                            dc_id: item.dc_id,
-                            id_cty: item.id_cty,
-                            dieuchuyen_taisan: item.dieuchuyen_taisan,
-                            taisan_thucnhan: item.taisan_thucnhan,
-                            id_ng_thuchien: item.id_ng_thuchien,
-                            id_cty_dang_sd: item.id_cty_dang_sd,
-                            id_pb_dang_sd: item.id_pb_dang_sd,
-                            id_daidien_dangsd: item.id_daidien_dangsd,
-                            id_nv_dangsudung: item.id_nv_dangsudung,
-                            id_cty_nhan: item.id_cty_nhan,
-                            id_nv_nhan: item.id_nv_nhan,
-                            id_pb_nhan: item.id_pb_nhan,
-                            id_daidien_nhan: item.id_daidien_nhan,
-                            dc_ngay: item.dc_ngay,
-                            dc_hoan_thanh: item.dc_hoan_thanh,
-                            dc_trangthai: item.dc_trangthai,
-                            dc_tu: item.dc_tu,
-                            dc_den: item.dc_den,
-                            dc_lydo: item.dc_lydo,
-                            dc_lydo_tuchoi: item.dc_lydo_tuchoi,
-                            dc_lydo_tuchoi_tiepnhan: item.dc_lydo_tuchoi_tiepnhan,
-                            dc_ghichu_tiepnhan: item.dc_ghichu_tiepnhan,
-                            vi_tri_dc_tu: item.vi_tri_dc_tu,
-                            dc_vitri_tsnhan: item.dc_vitri_tsnhan,
-                            vitri_ts_daidien: item.vitri_ts_daidien,
-                            dc_type_quyen: item.dc_type_quyen,
-                            dc_type: item.dc_type,
-                            id_ng_xoa_dc: item.id_ng_xoa_dc,
-                            id_ng_tao_dc: item.id_ng_tao_dc,
-                            xoa_dieuchuyen: item.xoa_dieuchuyen,
-                            dc_date_delete: item.dc_date_delete,
-                            dc_date_create: item.dc_date_create,
-                            dc_type_quyen_xoa: item.dc_type_quyen_xoa
-                        })
-                        await new_dc.save();
+                        // let new_dc = new DieuChuyen({
+                        //     dc_id: item.dc_id,
+                        //     id_cty: item.id_cty,
+                        //     dieuchuyen_taisan: item.dieuchuyen_taisan,
+                        //     taisan_thucnhan: item.taisan_thucnhan,
+                        //     id_ng_thuchien: item.id_ng_thuchien,
+                        //     id_cty_dang_sd: item.id_cty_dang_sd,
+                        //     id_pb_dang_sd: item.id_pb_dang_sd,
+                        //     id_daidien_dangsd: item.id_daidien_dangsd,
+                        //     id_nv_dangsudung: item.id_nv_dangsudung,
+                        //     id_cty_nhan: item.id_cty_nhan,
+                        //     id_nv_nhan: item.id_nv_nhan,
+                        //     id_pb_nhan: item.id_pb_nhan,
+                        //     id_daidien_nhan: item.id_daidien_nhan,
+                        //     dc_ngay: item.dc_ngay,
+                        //     dc_hoan_thanh: item.dc_hoan_thanh,
+                        //     dc_trangthai: item.dc_trangthai,
+                        //     dc_tu: item.dc_tu,
+                        //     dc_den: item.dc_den,
+                        //     dc_lydo: item.dc_lydo,
+                        //     dc_lydo_tuchoi: item.dc_lydo_tuchoi,
+                        //     dc_lydo_tuchoi_tiepnhan: item.dc_lydo_tuchoi_tiepnhan,
+                        //     dc_ghichu_tiepnhan: item.dc_ghichu_tiepnhan,
+                        //     vi_tri_dc_tu: item.vi_tri_dc_tu,
+                        //     dc_vitri_tsnhan: item.dc_vitri_tsnhan,
+                        //     vitri_ts_daidien: item.vitri_ts_daidien,
+                        //     dc_type_quyen: item.dc_type_quyen,
+                        //     dc_type: item.dc_type,
+                        //     id_ng_xoa_dc: item.id_ng_xoa_dc,
+                        //     id_ng_tao_dc: item.id_ng_tao_dc,
+                        //     xoa_dieuchuyen: item.xoa_dieuchuyen,
+                        //     dc_date_delete: item.dc_date_delete,
+                        //     dc_date_create: item.dc_date_create,
+                        //     dc_type_quyen_xoa: item.dc_type_quyen_xoa
+                        // })
+                        // await new_dc.save();
 
                     });
                     page++;
