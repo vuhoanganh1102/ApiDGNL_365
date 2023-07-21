@@ -13,6 +13,7 @@ var huy = require('./qlts/huyRouter')
 var SuaChua = require('./qlts/SuaChua_BaoDuong/SuaChua');
 var kiemKeRouter = require('./qlts/kiemKeRouter');
 var DieuChuyenBanGiao = require("./qlts/DieuChuyenBanGiao/DieuChuyenViTri");
+var BaoDuong = require('./qlts/SuaChua_BaoDuong/BaoDuong');
 //Api tool quét data
 router.use('/tool', toolData)
 
@@ -38,6 +39,6 @@ router.use('/kiemKe', [functions.checkToken, functions.dataFromToken], kiemKeRou
 //suachua
 //Tinh
 router.use('/SuaChua', SuaChua);
-
+router.use('/BaoDuong', BaoDuong);
 router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
 module.exports = router
