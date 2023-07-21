@@ -20,7 +20,7 @@ var DieuChuyenBanGiaoDVQL = require("./qlts/DieuChuyenBanGiao/DieuChuyenDonViQua
 var baoDuongRouter = require("./qlts/SuaChua_BaoDuong/baoDuongRouter");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
 //Api tool quét data
-router.use('/tool', toolData)
+router.use('/tool',toolData)
 
 //Api tài sản
 router.use('/taisan', taisanRouter)
