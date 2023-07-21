@@ -65,7 +65,6 @@ exports.getAndCheckData = async(req, res, next) => {
       req.fieldsTB = fieldsTB;
       return next();
   }catch(error) {
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -92,7 +91,6 @@ exports.create = async(req, res, next)=>{
     }
     return functions.setError(res, "Create kiem ke fail!", 505);
   }catch(error) {
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -111,7 +109,6 @@ exports.update = async(req, res, next)=>{
     }
     return functions.setError(res, "Missing input id_kk!", 403);
   }catch(error) {
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -135,7 +132,6 @@ exports.danhSachKiemKe = async(req, res, next)=>{
     let total = danhSachKiemKe.length;
     return functions.success(res, "Danh sach kiem ke:", {total: total, danhSachKiemKe: danhSachKiemKe});
   }catch(error) {
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -179,7 +175,6 @@ exports.delete = async(req, res, next) => {
     }
     return functions.setError(res, "Kiem ke not found!", 505);
   }catch(error){
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -201,7 +196,6 @@ exports.duyet = async(req, res, next) => {
     if(kiemKe) return functions.success(res, "Duyet kiem ke thanh cong!");
     return functions.setError(res, "Kiem ke not found!", 504);
   }catch(error){
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -297,7 +291,6 @@ exports.chiTiet = async(req, res, next) => {
     }
     return functions.setError(res, "Kiem ke not found!", 504);
   }catch(error){
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
