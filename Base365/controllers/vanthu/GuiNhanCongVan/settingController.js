@@ -6,10 +6,11 @@ const TextBook = require('../../../models/Vanthu365/tbl_textBook');
 
 exports.thietLapQuyen = async(req, res, next) => {
   try{
-    if(req.type !=1) {
+    let infoUser = req.user.data;
+    if(infoUser.type !=1) {
       return functions.setError(res, "Tai khoan nhan vien khong co quyen cap quyen!", 408);
     }
-    let id = req.comId;
+    let id = infoUser.com_id;
     let {type_cong_ty, type_ngoai, duyet_pb, duyet_tung_pb} = req.body;
     if(!type_cong_ty || !type_ngoai) {
       return functions.setError(res, "Missing input value!", 404);
@@ -53,49 +54,47 @@ exports.thietLapQuyen = async(req, res, next) => {
     }
     return functions.success(res, "Thiet lap quyen thanh cong!");
   }catch(err){
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
 exports.getListQuyen = async(req, res) => {
   try{
-    let comId = req.comId;
+    let infoUser = req.user.data;
+    let comId = infoUser.com_id;
     let listQuyen = await UserModel.findOne({id_user: comId});
     if(!listQuyen) {
       return functions.setError(res, "Chua thiet lap quyen cho cong ty!", 404);
     }
     return functions.success(res, "Get quyen success!", {listQuyen: listQuyen});
   }catch(err) {
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 //-----------------------so van ban-----------------------
 exports.getListSoVanBan = async(req, res, next) => {
   try{
     let {page, pageSize, id_so_vb} = req.body;
-    
+    let infoUser = req.user.data;
+
     if(id_so_vb) {
       let so_vb = await TextBook.findOne({_id: id_so_vb}).lean();
       if(!so_vb) return functions.setError(res, "So van ban not found!", 504);
       return functions.success(res, "Get so van ban thanh cong!", {so_vb: so_vb});
     }
-    if(!page || !pageSize) {
-      return functions.setError(res, "Missing input page or pageSize!", 404);
-    }
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
     page = Number(page);
     pageSize = Number(pageSize);
     const skip = pageSize*(page-1);
     const limit = pageSize;
-    let id = req.id;
+    let id = infoUser.idQLC;
     let condition = {nguoi_tao: id};
     let listSoVanBan = await functions.pageFind(TextBook, condition, {_id: 1}, skip, limit);
     let total = await TextBook.countDocuments(condition);
-    return functions.success(res, {total, listSoVanBan});
+    return functions.success(res, {total, page, pageSize, listSoVanBan});
   }catch(err){
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -105,8 +104,9 @@ exports.createSoVanBan = async(req, res, next) => {
     if(!name_book) {
       return functions.setError(res, "Missing input name_book!", 404);
     }
-    let id = req.id;
-    let comId = req.comId;
+    let infoUser = req.user.data;
+    let id = infoUser.idQLC;
+    let comId = infoUser.com_id;
     let date = new Date(Date.now());
     let year = date.getFullYear();
     let timestamp = Math.round(date.getTime()/1000);
@@ -125,8 +125,7 @@ exports.createSoVanBan = async(req, res, next) => {
     }
     return functions.success(res, "Tao so van ban thanh cong!");
   }catch(err){
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -142,8 +141,7 @@ exports.updateSoVanBan = async(req, res, next) => {
     }
     return functions.success(res, "Chinh sua so van ban thanh cong!");
   }catch(err){
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }
 
@@ -159,7 +157,6 @@ exports.deleteSoVanBan = async(req, res, next) => {
     }
     return functions.success(res, "Xoa so van ban thanh cong!"); 
   }catch(err){
-    console.log("Err from server!", err);
-    return functions.setError(res, err, 500);
+    return functions.setError(res, err.message);
   }
 }

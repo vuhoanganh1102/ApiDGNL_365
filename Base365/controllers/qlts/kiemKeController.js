@@ -15,9 +15,9 @@ exports.getAndCheckData = async(req, res, next) => {
     if(!await functions.checkDate(denngay) || !await functions.checkDate(day_start) || !await functions.checkDate(day_end)){
       return functions.setError(res, "Ngay khong dung dinh dang!", 405);
     }
-    let comId = req.comId;
-    let id = req.userId;
-    let type = req.type;
+    let comId = req.user.data.com_id;
+    let id = req.user.data.idQLC;
+    let type = req.user.data.type;
 
     let ky_kk;
     if(ky_1<=12) ky_kk = `01-${ky_1}-${ky_2}`;
@@ -65,7 +65,6 @@ exports.getAndCheckData = async(req, res, next) => {
       req.fieldsTB = fieldsTB;
       return next();
   }catch(error) {
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -92,7 +91,6 @@ exports.create = async(req, res, next)=>{
     }
     return functions.setError(res, "Create kiem ke fail!", 505);
   }catch(error) {
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -102,7 +100,7 @@ exports.update = async(req, res, next)=>{
     let id_kk = req.body.id_kk;
     if(id_kk) {
       let fieldsKK = req.fieldsKK;
-      const comId = req.comId;
+      const comId = req.user.data.com_id;
       let kiemKe = await KiemKe.findOneAndUpdate({id_kiemke: id_kk, id_cty: comId}, fieldsKK, {new: true});
       if(kiemKe) {
         return functions.success(res, "Update kiem ke success!", {kiemKe: kiemKe});
@@ -111,7 +109,6 @@ exports.update = async(req, res, next)=>{
     }
     return functions.setError(res, "Missing input id_kk!", 403);
   }catch(error) {
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -123,7 +120,7 @@ exports.danhSachKiemKe = async(req, res, next)=>{
     if(!pageSize) pageSize = 20;
     const limit = pageSize;
     const skip = (page-1)*limit;
-    const comId = req.comId;
+    const comId = req.user.data.com_id;
 
     condition = {id_cty: comId, xoa_kiem_ke: 0};
     if(key) {
@@ -135,7 +132,6 @@ exports.danhSachKiemKe = async(req, res, next)=>{
     let total = danhSachKiemKe.length;
     return functions.success(res, "Danh sach kiem ke:", {total: total, danhSachKiemKe: danhSachKiemKe});
   }catch(error) {
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -143,9 +139,9 @@ exports.danhSachKiemKe = async(req, res, next)=>{
 exports.delete = async(req, res, next) => {
   try{
     const {id_kk, datatype} = req.body;
-    const userId = req.userId;
-    const comId = req.comId;
-    const type = req.type;
+    const userId = req.user.data.idQLC;
+    const comId = req.user.data.com_id;
+    const type = req.user.data.type;
     const time = functions.convertTimestamp(Date.now());
     
     if(!id_kk){
@@ -179,7 +175,6 @@ exports.delete = async(req, res, next) => {
     }
     return functions.setError(res, "Kiem ke not found!", 505);
   }catch(error){
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -187,9 +182,9 @@ exports.delete = async(req, res, next) => {
 exports.duyet = async(req, res, next) => {
   try{
     const id_kk = req.body.id_kk;
-    const ng_duyet = req.userId;
-    const type = req.type;
-    const comId = req.comId;
+    const ng_duyet = req.user.data.idQLC;
+    const type = req.user.data.type;
+    const comId = req.user.data.com_id;
     const time = functions.convertTimestamp(Date.now());
     let kiemKe = await KiemKe.findOneAndUpdate({id_kiemke: id_kk, id_cty: comId}, {
       id_ngduyet_kk: ng_duyet,
@@ -201,7 +196,6 @@ exports.duyet = async(req, res, next) => {
     if(kiemKe) return functions.success(res, "Duyet kiem ke thanh cong!");
     return functions.setError(res, "Kiem ke not found!", 504);
   }catch(error){
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }
@@ -209,7 +203,7 @@ exports.duyet = async(req, res, next) => {
 exports.chiTiet = async(req, res, next) => {
   try{
     const id_kk = req.body.id_kk;
-    const com_id = req.comId;
+    const com_id = req.user.data.com_id;
     if(!id_kk) return functions.setError(res, "Missing input id_kk!", 404);
     let kiemKe = await KiemKe.findOne({id_kiemke: id_kk}).lean();
     let danhSachTaiSan = [];
@@ -297,7 +291,6 @@ exports.chiTiet = async(req, res, next) => {
     }
     return functions.setError(res, "Kiem ke not found!", 504);
   }catch(error){
-    console.log(error);
     return functions.setError(res, error.message, 500);
   }
 }

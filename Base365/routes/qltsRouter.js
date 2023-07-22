@@ -40,7 +40,7 @@ router.use('/mat',mat)
 router.use('/huy',huy)
 router.use('/thanhly',thanhly)
 //api kiem ke
-router.use('/kiemKe', [functions.checkToken, functions.dataFromToken], kiemKeRouter);
+router.use('/kiemKe', functions.checkToken, kiemKeRouter);
 
 //api Phân quyền
 router.use('/phanQuyen',phanQuyen)

@@ -25,6 +25,7 @@ const Mat = require('../../models/QuanLyTaiSan/Mat')
 const tailieuDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem');
 const BaoHanh = require('../../models/QuanLyTaiSan/BaoHanh');
 const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
+const QuyDinhBD = require('../../models/QuanLyTaiSan/Quydinh_bd');
 const DieuChuyen = require('../../models/QuanLyTaiSan/DieuChuyen');
 
 
@@ -325,7 +326,7 @@ exports.toolTheoDoiCongSuat = async (req, res, next) => {
                     //     updateAt = null;
                     // };
                     const theoDoi = new TheoDoiCongSuat({
-                        _id: element.id_cs,
+                        id_cs: element.id_cs,
                         id_cty: element.id_cty,
                         id_loai: element.id_loai,
                         id_donvi: element.id_donvi,
@@ -1229,6 +1230,52 @@ exports.toolQuaTrinhSuDung = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
+
+exports.quyDinhBD = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const response = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 18 });
+            let data = response.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+
+                    await QuyDinhBD.findOneAndUpdate({ qd_id: data[i].qd_id, id_cty: data[i].id_cty},
+                        {
+                            qd_id: data[i].qd_id,
+                            id_cty: data[i].id_cty,
+                            id_loai: data[i].id_loai,
+                            tan_suat_bd: data[i].tan_suat_bd,
+                            bd_lap_lai_theo: data[i].bd_lap_lai_theo,
+                            sl_ngay_lap_lai: data[i].sl_ngay_lap_lai,
+                            bd_noidung: data[i].bd_noidung,
+                            xac_dinh_bd: data[i].xac_dinh_bd,
+                            thoidiem_bd: data[i].thoidiem_bd,
+                            sl_ngay_thoi_diem: data[i].sl_ngay_thoi_diem,
+                            ngay_tu_chon_td : data[i].ngay_tu_chon_td,
+                            chon_don_vi_do : data[i].chon_don_vi_do,
+                            cong_suat_bd : data[i].cong_suat_bd,
+                            qd_type_quyen : data[i].qd_type_quyen,
+                            id_ng_tao_qd : data[i].id_ng_tao_qd,
+                            qd_id_ng_xoa : data[i].qd_id_ng_xoa,
+                            qd_xoa : data[i].qd_xoa,
+                            qd_date_create : data[i].qd_date_create,
+                            qd_date_delete : data[i].qd_date_delete,
+                            qd_type_quyen_xoa : data[i].qd_type_quyen_xoa,
+                        },
+                        { upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
 
 exports.ToolDieuChuyen = async (req, res) => {
     {
