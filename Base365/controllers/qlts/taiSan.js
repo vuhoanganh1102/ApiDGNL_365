@@ -68,7 +68,7 @@ exports.showAll = async (req, res) => {
           from: 'QLTS_ViTri_ts',
           localField: 'ts_vi_tri',
           foreignField: 'id_vitri',
-          as:'name_vitri',
+          as: 'name_vitri',
         },
       },
       {
@@ -76,8 +76,22 @@ exports.showAll = async (req, res) => {
           from: 'QLTS_ThuHoi',
           localField: 'ts_id',
           foreignField: 'thuhoi_taisan.ds_thuhoi.ts_id',
-          as:  'thuhoi',
+          as: 'thuhoi',
         },
+      },
+      {
+        $lookup: {
+          from: 'QLTS_Cap_Phat',
+          localField: 'ts_id',
+          foreignField: 'cap_phat_taisan.ds_ts.ts_id',
+          as: 'cap_phat',
+        },
+      },
+      {
+        $match: {
+          "cap_phat.cp_da_xoa": 0 ,
+          "thuhoi.xoa_thuhoi" : 0
+        }
       },
       {
         $lookup: {
@@ -91,13 +105,16 @@ exports.showAll = async (req, res) => {
         $project: {
           "ts_id": "$ts_id",
           "ts_ten": "$ts_ten",
-          "ts_so_luong": "$ts_so_luong",
-          "soluong_cp_bb": "$soluong_cp_bb",
-          "loai_tai_san": "$ten_loai",
+          "nguoi_cam" : "$id_ten_quanly",
+          "tong_so_luong": "$sl_bandau",
+          "so_luong_cap_phat": { $size: "$cap_phat.cap_phat_taisan.ds_ts.ts_id" },
+          "so_luong_thu_hoi": { $size: "$thuhoi.thuhoi_taisan.ds_thuhoi.ts_id" },
+          "so_luong_con_lai": "$soluong_cp_bb",
+          "loai_ts": "$name_loai.ten_loai",
           "gia_tri": "$ts_gia_tri",
           "tinh_trang_su_dung": "$ts_trangthai",
-          "vi_tri_tai_san": "$name_vitri.vi_tri",
-          "so_luong_thu_hoi" : "$thuhoi.thuhoi_taisan.ds_thuhoi.sl_th"
+          "don_vi_quan_ly" : "$ts_don_vi",
+          "vi_tri_tai_san": "$name_vitri.vi_tri", 
         }
       },
       {
@@ -107,6 +124,7 @@ exports.showAll = async (req, res) => {
         $limit: perPage,
       },
     ]);
+    
 
 
     // Lấy tổng số lượng tài sản
