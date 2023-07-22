@@ -20,7 +20,7 @@ var DieuChuyenBanGiaoDVQL = require("./qlts/DieuChuyenBanGiao/DieuChuyenDonViQua
 var baoDuongRouter = require("./qlts/SuaChua_BaoDuong/baoDuongRouter");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
 //Api tool quét data
-router.use('/tool', toolData)
+router.use('/tool',toolData)
 
 //Api tài sản
 router.use('/taisan', taisanRouter)
@@ -40,7 +40,7 @@ router.use('/mat',mat)
 router.use('/huy',huy)
 router.use('/thanhly',thanhly)
 //api kiem ke
-router.use('/kiemKe', [functions.checkToken, functions.dataFromToken], kiemKeRouter);
+router.use('/kiemKe', functions.checkToken, kiemKeRouter);
 
 //api Phân quyền
 router.use('/phanQuyen',phanQuyen)
