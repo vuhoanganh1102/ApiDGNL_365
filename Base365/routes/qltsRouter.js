@@ -14,6 +14,9 @@ var SuaChua = require('./qlts/SuaChua_BaoDuong/SuaChua');
 var kiemKeRouter = require('./qlts/kiemKeRouter');
 var DieuChuyenBanGiao = require("./qlts/DieuChuyenBanGiao/DieuChuyenViTri");
 var BaoDuong = require('./qlts/SuaChua_BaoDuong/BaoDuong');
+var DieuChuyenBanGiaoDVQL = require("./qlts/DieuChuyenBanGiao/DieuChuyenDonViQuanLi");
+var baoDuongRouter = require("./qlts/SuaChua_BaoDuong/baoDuongRouter");
+var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
 //Api tool quét data
 router.use('/tool', toolData)
 
@@ -34,8 +37,14 @@ router.use('/vitrits', vitriTsRouter)
 router.use('/mat', mat)
 router.use('/huy', huy)
 //api kiem ke
-router.use('/kiemKe', [functions.checkToken, functions.dataFromToken], kiemKeRouter);
+router.use('/kiemKe', functions.checkToken, kiemKeRouter);
 
+//api Phân quyền
+//router.use('/phanQuyen', phanQuyen)
+
+
+router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
+router.use('/DieuChuyenBanGiaoDoiTuong', DieuChuyenBanGiaoDT)
 //suachua
 //Tinh
 router.use('/SuaChua', SuaChua);

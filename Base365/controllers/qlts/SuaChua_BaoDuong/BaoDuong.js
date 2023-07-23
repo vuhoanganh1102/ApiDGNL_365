@@ -4,7 +4,9 @@ const BaoDuong = require('../../../models/QuanLyTaiSan/BaoDuong');
 const QuaTrinhSuDung = require('../../../models/QuanLyTaiSan/QuaTrinhSuDung');
 const TaiSan = require('../../../models/QuanLyTaiSan/TaiSan');
 const TaiSanDangSuDung = require("../../../models/QuanLyTaiSan/TaiSanDangSuDung");
+const Users = require('../../../models/Users');
 const { errorMonitor } = require('nodemailer/lib/xoauth2');
+const Department = require('../../../models/qlc/Deparment');
 // Tĩnh
 //tai sản cần bảo dưỡng
 //add_baoduong
@@ -83,12 +85,12 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
                     soluong_cp_bb: update_sl,
                 });
             let maxIDQTSD = 0;
-            let QTSD = await BaoDuong.findOne({}, {}, { sort: { quatrinh_id: -1 } });
+            let QTSD = await QuaTrinhSuDung.findOne({}, {}, { sort: { quatrinh_id: -1 } });
             if (QTSD) {
-                maxIDBD = QTSD.quatrinh_id;
+                maxIDQTSD = QTSD.quatrinh_id;
             }
             let qr_qtr_sd = new QuaTrinhSuDung({
-                quatrinh_id: maxIDBD + 1,
+                quatrinh_id: maxIDQTSD + 1,
                 id_ts: id_ts,
                 id_bien_ban: last_id,
                 so_lg: sl_bd,
@@ -107,12 +109,12 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
             let sl_ts_cu = taisan.sl_dang_sd;
             let update_sl = sl_ts_cu - sl_bd;
             let maxIDQTSD = 0;
-            let QTSD = await BaoDuong.findOne({}, {}, { sort: { quatrinh_id: -1 } });
+            let QTSD = await QuaTrinhSuDung.findOne({}, {}, { sort: { quatrinh_id: -1 } });
             if (QTSD) {
-                maxIDBD = QTSD.quatrinh_id;
+                maxIDBD = maxIDQTSD.quatrinh_id;
             }
             let qr_qtr_sd = new QuaTrinhSuDung({
-                quatrinh_id: maxIDBD + 1,
+                quatrinh_id: maxIDQTSD + 1,
                 id_ts: id_ts,
                 id_bien_ban: last_id,
                 so_lg: sl_bd,
@@ -137,12 +139,12 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
             let sl_ts_cu = taisan.sl_dang_sd;
             let update_sl = sl_ts_cu - sl_bd;
             let maxIDQTSD = 0;
-            let QTSD = await BaoDuong.findOne({}, {}, { sort: { quatrinh_id: -1 } });
+            let QTSD = await QuaTrinhSuDung.findOne({}, {}, { sort: { quatrinh_id: -1 } });
             if (QTSD) {
-                maxIDBD = QTSD.quatrinh_id;
+                maxIDBD = maxIDQTSD.quatrinh_id;
             }
             let qr_qtr_sd = new QuaTrinhSuDung({
-                quatrinh_id: maxIDBD + 1,
+                quatrinh_id: maxIDQTSD + 1,
                 id_ts: id_ts,
                 id_bien_ban: last_id,
                 so_lg: sl_bd,
@@ -161,6 +163,7 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
                     sl_dang_sd: update_sl
                 });
         }
+        fnc.success(res, insert_taisan);
 
     } catch (error) {
         console.log(error);
@@ -261,10 +264,10 @@ exports.TuChoiBaoDuong = async (req, res) => {
         }
 
 
-        fnc.success(res, [tuchoi_bao_duong, update_taisan]);
+        fnc.success(res, 'sucess', [tuchoi_bao_duong, update_taisan]);
 
     } catch (error) {
-        console.log(error);
+
         fnc.setError(res, error.message);
     }
 }
@@ -352,7 +355,7 @@ exports.delete1 = async (req, res) => {
                     });
                 }
             }
-            fnc.success(res, [baoduong, update_taisan]);
+            fnc.success(res, 'xoa thanh cong ',);
         }
         if (datatype == 2) {
             let khoiphuc = await BaoDuong.findOneAndUpdate({
@@ -416,17 +419,17 @@ exports.delete1 = async (req, res) => {
                 }
 
             }
-            fnc.success(res, [khoiphuc, update_taisan]);
+            fnc.success(res, 'khoi phuc thanh cong',);
         }
         if (datatype == 3) {
             let xoa_loai = await BaoDuong.findOneAndRemove({
                 id_bd: id,
                 id_cty: com_id
             });
-            fnc.success(res, [khoiphuc, xoa_loai]);
+            fnc.success(res, 'xoa vinh vien thanh cong ');
         }
     } catch (error) {
-        console.log(error);
+
         fnc.setError(res, error.message);
     }
 }
@@ -441,10 +444,14 @@ exports.deleteAll = async (req, res) => {
 
         if (xoa_vinh_vien == 0 || xoa_vinh_vien == 2) {
             for (let i = 0; i < dem; i++) {
+                console.log("com_id " + com_id)
+                console.log("xoa[i] " + xoa[i])
+
                 let this_bd = await BaoDuong.findOne({
-                    id_cty: com_id,
+                    //   id_cty: com_id,
                     id_bd: xoa[i]
                 })
+                console.log("this_bd " + this_bd)
                 let ng_sd = this_bd.bd_ng_sd;
                 let bd_quyen_sd = this_bd.bd_type_quyen_sd;
                 let sl_bd = this_bd.bd_sl;
@@ -465,7 +472,7 @@ exports.deleteAll = async (req, res) => {
                     });
                 }
                 if (xoa_vinh_vien == 2) {
-                    let xoa_bao_duong = await BaoDuong.findOneAndUpdate({
+                    xoa_bao_duong = await BaoDuong.findOneAndUpdate({
                         id_bd: xoa[i],
                         id_cty: com_id,
                     }, {
@@ -543,7 +550,7 @@ exports.deleteAll = async (req, res) => {
                     }
                 }
             }
-            fnc.success(res, [xoa_bao_duong, update_taisan])
+            fnc.success(res, 'thanh cong ')
 
 
         } else {
@@ -564,6 +571,187 @@ exports.deleteAll = async (req, res) => {
 exports.detailTSCBD = async (req, res) => {
     try {
         let { id_bd } = req.body;
+        let com_id = req.user.data.com_id;
+        if (isNaN(id_bd)) {
+            return res.status(404).json({ message: 'id_bd phai la 1 Numnber' })
+        }
+
+        let chitiet_baoduong = await BaoDuong.findOne(
+            {
+
+                id_bd: id_bd,
+                id_cty: com_id
+            }
+        );
+
+        let nguoi_tao = await Users.findOne({
+            idQLC: chitiet_baoduong.bd_id_ng_tao
+        });
+        let taiSan = await TaiSan.findOne({
+            ts_id: chitiet_baoduong.baoduong_taisan
+        })
+        let nguoi_sd = 0;
+        let vi_tri = 0;
+        let nguoiSD = await Users.findOne({
+            idQLC: chitiet_baoduong.bd_ng_sd
+        });
+        if (chitiet_baoduong.bd_ngay_sudung == 1) {
+            nguoi_sd = nguoiSD.userName;
+            vi_tri = nguoiSD.address;
+        }
+        else if (chitiet_baoduong.bd_ngay_sudung == 2) {
+            nguoi_sd = nguoiSD.userName;
+            let phongban = await Department.findOne({ dep_id: nguoiSD.inForPerson.employee.dep_id });
+            vi_tri = phongban.dep_name;
+        }
+        else {
+            let phongban = await Department.findOne({ dep_id: nguoiSD.inForPerson.employee.dep_id });
+            nguoi_sd = vi_tri = phongban.dep_name;
+
+        }
+
+
+        let infobd = {
+            id_bd: chitiet_baoduong.id_bd,
+            nguoi_tao: nguoi_tao.userName,
+            ngay_tao: new Date(chitiet_baoduong.bd_date_create * 1000).toLocaleDateString(),
+            bd_trang_thai: chitiet_baoduong.bd_trang_thai,
+            ma_ts: chitiet_baoduong.baoduong_taisan,
+            ten_ts: taiSan.ts_ten,
+            so_luong: chitiet_baoduong.bd_sl,
+            doi_tuong_sd: nguoi_sd,
+            vi_tri_ts: vi_tri,
+            ngay_sd: chitiet_baoduong.bd_ngay_sudung,
+            ngay_bd_gan_nhat: new Date(chitiet_baoduong.bd_ngay_batdau * 1000).toLocaleDateString(),
+            ngay_bd_du_kien: new Date(chitiet_baoduong.bd_dukien_ht * 1000).toLocaleDateString(),
+            bd_tai_congsuat: chitiet_baoduong.bd_tai_congsuat,
+            bd_cs_dukien: chitiet_baoduong.bd_cs_dukien,
+            noi_dung: chitiet_baoduong.bd_noi_dung
+        }
+        fnc.success(res, infobd);
+
+
+
+    } catch (error) {
+
+        fnc.setError(res, error.message);
+    }
+}
+
+exports.listTSCSC = async (req, res) => {
+    try {
+        let { key, type_quyen } = req.body;
+        let page = req.body.page || 1;
+        let limit = req.bodylimit.limit || 10;
+        let com_id = 0;
+        let id_ng_tao = 0;
+
+
+        if (req.user.data.type == 1) {
+            com_id = req.user.data.idQLC;
+            id_ng_tao = req.user.data.idQLC;
+        } else if (req.user.data.type == 2) {
+            id_ng_tao = req.user.data.idQLC;
+            com_id = req.user.data.com_id;
+        }
+
+
+        let filter = {
+            id_cty: com_id,
+            xoa_bd: 0
+
+        }
+        if (key) {
+            filter.id_bd = Number(key);
+        }
+        let filter2 = {};
+        let filter3 = {};
+        let filter4 = {};
+        let filter5 = {};
+
+
+        if (type_quyen == 2) {
+
+            filter2.bd_id_ng_tao = id_ng_tao;
+            filter3.bd_ng_thuchien = id_ng_tao;
+            filter4.bd_ng_sd = id_ng_tao;
+            filter5.bd_vi_tri_dang_sd = id_ng_tao;
+        }
+
+        let list = await BaoDuong.aggregate([
+            {
+                $match: {
+                    $and: [
+                        filter,
+                        {
+                            $or: [
+                                filter2,
+                                filter3,
+                                filter4,
+                                filter5
+                            ]
+                        },
+                        {
+                            bd_trang_thai: { $in: [0, 2] }
+                        }
+                    ]
+                }
+
+            }, {
+                $skip: (skip++ - 1) * 10
+            },
+            {
+                $limit: limit
+            },
+            {
+                $sort: {
+                    sc_id: -1
+                }
+            }
+        ]);
+        let arr_bb = [];
+        let count = 0;
+        while (count < list.length) {
+            let bd_ng_sd = 0;
+            let bd_vitri = 0;
+
+
+            if (list[count].bd_type_quyen_sd == 1) {
+                let user = await Users.findOne({ idQLC: list[count].bd_ng_sd });
+                bd_ng_sd = user.userName;
+                bd_vitri = user.address;
+            } else if (list[count].bd_type_quyen_sd == 2) {
+                let user = await Users.findOne({ idQLC: list[count].bd_ng_sd });
+                bd_ng_sd = user.userName;
+                let vitri = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id, com_id: com_id });
+                bd_vitri = vitri.dep_name;
+            } else {
+                let vitri = await Department.findOne({ dep_id: list[count].bd_ng_sd, com_id: com_id });
+                bd_ng_sd = vitri.dep_name;
+                bd_vitri = vitri.dep_name;
+
+
+            }
+            let taiSan = await TaiSan.findOne({
+                ts_id: list[count].baoduong_taisan,
+                id_cty: com_id
+            })
+            let info = {
+                id_bd: list[count].id_bd,
+                trang_thai_bd: list[count].bd_tai_congsuat,
+                ngay_tao: new Date(list[count].bd_date_create * 1000).toLocaleDateString(),
+                ma_ts: list[count].baoduong_taisan,
+                ten_ts: taiSan.ts_ten,
+                so_lg: list[count].bd_sl,
+                doi_tg_sd: bd_ng_sd,
+                vi_tri_ts: bd_vitri,
+                noi_dung: list[count].bd_noi_dung,
+            };
+            arr_bb.push(info);
+            count++;
+        }
+        fnc.success(res, arr_bb);
+
 
 
     } catch (error) {

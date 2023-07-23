@@ -8,4 +8,5 @@ router.post('/add_ts_can_bao_duong', functions.checkToken, fnc.checkRole('SC_BD'
 router.post('/tu_choi_ts_can_bao_duong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.TuChoiBaoDuong);
 router.post('/delete1', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.delete1);
 router.post('/deleteAll', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.deleteAll);
+router.post('/deltails_ts_can_baoduong', functions.checkToken, formData.parse(), controllers.detailTSCBD);
 module.exports = router;

@@ -25,6 +25,8 @@ const Mat = require('../../models/QuanLyTaiSan/Mat')
 const tailieuDinhKem = require('../../models/QuanLyTaiSan/TepDinhKem');
 const BaoHanh = require('../../models/QuanLyTaiSan/BaoHanh');
 const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
+const QuyDinhBD = require('../../models/QuanLyTaiSan/Quydinh_bd');
+const DieuChuyen = require('../../models/QuanLyTaiSan/DieuChuyen');
 
 
 
@@ -221,7 +223,7 @@ exports.toolThuHoiTaiSan = async (req, res, next) => {
                         ts_id: item[0],
                         sl_th: item[1]
                     }));
-                    
+
                     const ThuHoi = new ThuHoiTaiSan({
                         thuhoi_id: data[i].thuhoi_id,
                         thuhoi_ng_tao: data[i].thuhoi_ng_tao,
@@ -324,7 +326,7 @@ exports.toolTheoDoiCongSuat = async (req, res, next) => {
                     //     updateAt = null;
                     // };
                     const theoDoi = new TheoDoiCongSuat({
-                        _id: element.id_cs,
+                        id_cs: element.id_cs,
                         id_cty: element.id_cty,
                         id_loai: element.id_loai,
                         id_donvi: element.id_donvi,
@@ -455,7 +457,7 @@ exports.toolCapPhat = async (req, res, next) => {
                     const capPhat = new CapPhat({
                         cp_id: element.cp_id,
                         cap_phat_taisan: {
-                            ds_ts : updated_ds_ts
+                            ds_ts: updated_ds_ts
                         },
                         id_cty: element.id_cty,
                         id_nhanvien: element.id_nhanvien,
@@ -788,12 +790,12 @@ exports.toolHuy = async (req, res, next) => {
             if (listData.length > 0) {
                 for (let i = 0; i < listData.length; i++) {
                     let str = listData[i].huy_taisan
-                    str = str.replaceAll('[[','')
-                    str = str.replaceAll(']]','')
-                    str = str.replaceAll('"','')
-                    str = str.replaceAll('ds_huy:','')
-                    str = str.replaceAll('{','')
-                    str = str.replaceAll('}','')
+                    str = str.replaceAll('[[', '')
+                    str = str.replaceAll(']]', '')
+                    str = str.replaceAll('"', '')
+                    str = str.replaceAll('ds_huy:', '')
+                    str = str.replaceAll('{', '')
+                    str = str.replaceAll('}', '')
                     let huy_taisan = str.split(',')[0];
                     console.log("🚀 ~ file: qlts.js:794 ~ exports.toolHuy= ~ str:", str)
                     const save = new Huy({
@@ -846,12 +848,12 @@ exports.toolThanhLy = async (req, res, next) => {
                     const element = data[i];
                     const html = JSON.stringify(element.html);
                     let str = element.thanhly_taisan
-                    str = str.replaceAll('[[','')
-                    str = str.replaceAll(']]','')
-                    str = str.replaceAll('"','')
-                    str = str.replaceAll('ds_tl:','')
-                    str = str.replaceAll('{','')
-                    str = str.replaceAll('}','')
+                    str = str.replaceAll('[[', '')
+                    str = str.replaceAll(']]', '')
+                    str = str.replaceAll('"', '')
+                    str = str.replaceAll('ds_tl:', '')
+                    str = str.replaceAll('{', '')
+                    str = str.replaceAll('}', '')
                     let thanhly_taisan = str.split(',')[0];
                     await ThanhLy.create({
                         tl_id: element.tl_id,
@@ -1066,7 +1068,7 @@ exports.tailieuDinhKem = async (req, res, next) => {
                         id_cty: listData[i].id_cty,
                         id_ts: listData[i].id_ts,
                         tep_ten: listData[i].tep_ten,
-                        tep_ngay_upload: listData[i].tep_ngay_upload, 
+                        tep_ngay_upload: listData[i].tep_ngay_upload,
                     });
                     await save.save();
                 }
@@ -1176,7 +1178,7 @@ exports.toolQuaTrinhSuDung = async (req, res, next) => {
             let listItem = data.data.items;
             if (listItem.length > 0) {
                 listItem.map(async (item) => {
-                    let new_QuanTrinhSuDung = new QuanTrinhSuDung({
+                    let new_QuanTrinhSuDung = new QuaTrinhSuDung({
                         quatrinh_id: item.quatrinh_id,
                         id_ts: item.id_ts,
                         id_bien_ban: item.id_bien_ban,
@@ -1208,6 +1210,52 @@ exports.toolQuaTrinhSuDung = async (req, res, next) => {
     }
 }
 
+exports.quyDinhBD = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            const response = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 18 });
+            let data = response.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+
+                    await QuyDinhBD.findOneAndUpdate({ qd_id: data[i].qd_id, id_cty: data[i].id_cty },
+                        {
+                            qd_id: data[i].qd_id,
+                            id_cty: data[i].id_cty,
+                            id_loai: data[i].id_loai,
+                            tan_suat_bd: data[i].tan_suat_bd,
+                            bd_lap_lai_theo: data[i].bd_lap_lai_theo,
+                            sl_ngay_lap_lai: data[i].sl_ngay_lap_lai,
+                            bd_noidung: data[i].bd_noidung,
+                            xac_dinh_bd: data[i].xac_dinh_bd,
+                            thoidiem_bd: data[i].thoidiem_bd,
+                            sl_ngay_thoi_diem: data[i].sl_ngay_thoi_diem,
+                            ngay_tu_chon_td: data[i].ngay_tu_chon_td,
+                            chon_don_vi_do: data[i].chon_don_vi_do,
+                            cong_suat_bd: data[i].cong_suat_bd,
+                            qd_type_quyen: data[i].qd_type_quyen,
+                            id_ng_tao_qd: data[i].id_ng_tao_qd,
+                            qd_id_ng_xoa: data[i].qd_id_ng_xoa,
+                            qd_xoa: data[i].qd_xoa,
+                            qd_date_create: data[i].qd_date_create,
+                            qd_date_delete: data[i].qd_date_delete,
+                            qd_type_quyen_xoa: data[i].qd_type_quyen_xoa,
+                        },
+                        { upsert: true });
+                }
+                page++;
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+};
+
 exports.ToolDieuChuyen = async (req, res) => {
     {
         let page = 1;
@@ -1218,15 +1266,15 @@ exports.ToolDieuChuyen = async (req, res) => {
                 let data = ListData.data.items;
                 if (data.length > 0) {
                     for (let i = 0; i < data.length; i++) {
-                        const ds_dc = JSON.parse(data[i].dieuchuyen_taisan).ds_dc;
+                        const ds_dc = JSON.parse(data[i].dieuchuyen_taisan)?.ds_dc || [];
                         const updated_ds_dc = ds_dc.map((item) => ({
-                        ts_id: item[0],
-                        sl_ts: item[1]
+                            ts_id: item[0],
+                            sl_ts: item[1]
                         }));
                         let new_dc = new DieuChuyen({
                             dc_id: data[i].dc_id,
                             id_cty: data[i].id_cty,
-                            dieuchuyen_taisan: {ds_dc : updated_ds_dc},
+                            dieuchuyen_taisan: { ds_dc: updated_ds_dc },
                             taisan_thucnhan: data[i].taisan_thucnhan,
                             id_ng_thuchien: data[i].id_ng_thuchien,
                             id_cty_dang_sd: data[i].id_cty_dang_sd,
