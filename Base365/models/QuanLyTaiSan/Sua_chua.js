@@ -79,7 +79,7 @@ const model_Sua_chua = new mongoose.Schema({
         type: Number
     },
     sc_ng_sd: {
-        type: String
+        type: Number
     },
     sc_quyen_sd: {
         type: Number

@@ -264,7 +264,7 @@ exports.loaiTaiSanXoa = async (res, LoaiTaiSan, dem, conditions, skip, limit) =>
 }
 
 // nhóm tài sản đã xoá
-exports.nhomTaiSanDaXoa = async (res, nhomTaiSan, dem, conditions, skip, limit,LoaiTaiSan) => {
+exports.nhomTaiSanDaXoa = async (res, nhomTaiSan, dem, conditions, skip, limit, LoaiTaiSan) => {
   try {
     conditions.nhom_da_xoa = 1;
     let data = await nhomTaiSan.aggregate([
@@ -297,14 +297,14 @@ exports.nhomTaiSanDaXoa = async (res, nhomTaiSan, dem, conditions, skip, limit,L
     ]);
     for (let i = 0; i < data.length; i++) {
       data[i].nhom_date_delete = new Date(data[i].nhom_date_delete * 1000);
-      let loaiTS = await LoaiTaiSan.find({id_nhom_ts: data[i].id_nhom,loai_da_xoa:1}).count();
+      let loaiTS = await LoaiTaiSan.find({ id_nhom_ts: data[i].id_nhom, loai_da_xoa: 1 }).count();
       data[i].soLuongLoaiTs = loaiTS
       let user = await Users.findOne({ idQLC: data[i].nhom_id_ng_xoa }, { userName: 1, idQLC: 1 })
       if (user) {
         data[i].ng_xoa = user.userName
       }
     }
-    return functions.success(res,'get data success',{dem,data})
+    return functions.success(res, 'get data success', { dem, data })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -312,35 +312,26 @@ exports.nhomTaiSanDaXoa = async (res, nhomTaiSan, dem, conditions, skip, limit,L
 }
 
 // tài sản đã xoá
-exports.taiSanXoa = async (res, TaiSan, dem, conditions, skip, limit,comId)=>{
+exports.taiSanXoa = async (res, TaiSan, dem, conditions, skip, limit, comId) => {
   try {
     conditions.ts_da_xoa = 1
+
     let data = await TaiSan.aggregate([
       { $match: conditions },
       { $skip: skip },
       { $limit: limit },
-      {
-        $lookup: {
-          from: 'QLTS_Loai_Tai_San',
-          localField: 'id_loai_ts',
-          foreignField: 'id_loai',
-          as: "taiSan"
-
-        }
-      },
       {
         $project: {
           tongSoLuongTaiSan: { $sum: '$taiSan.ts_so_luong' },
           ts_date_delete: 1,
           ts_ten: 1,
           ten_loai: 1,
-          nhomTaiSan: '$nhom_ts.ten_nhom',
           ts_id_ng_xoa: 1,
-          ts_gia_tri:1,
-          ts_trangthai:1,
-          id_dv_quanly:1,
-          ts_id:1,
-          id_ten_quanly:1
+          ts_gia_tri: 1,
+          ts_trangthai: 1,
+          id_dv_quanly: 1,
+          ts_id: 1,
+          id_ten_quanly: 1
         }
       },
 
@@ -349,16 +340,1442 @@ exports.taiSanXoa = async (res, TaiSan, dem, conditions, skip, limit,comId)=>{
       data[i].ts_date_delete = new Date(data[i].ts_date_delete * 1000);
       let user = await Users.findOne({ idQLC: data[i].ts_id_ng_xoa }, { userName: 1 })
       let id_ten_quanly = await Users.findOne({ idQLC: data[i].id_ten_quanly }, { userName: 1 })
-      let com_address = await Users.findOne({ idQLC: comId }, { userName: 1,address:1 })
+      let com_address = await Users.findOne({ idQLC: comId }, { userName: 1, address: 1 })
       if (user) {
         data[i].ng_xoa = user.userName
       }
-      if(id_ten_quanly){
+      if (id_ten_quanly) {
         data[i].id_ten_quanly = id_ten_quanly.userName
       }
-      if(com_address){
+      if (com_address) {
         data[i].com_address = com_address.address
       }
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản cấp phát đã xoá 
+exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
+  try {
+    conditions.cp_da_xoa = 1;
+    let data = await CapPhat.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'cap_phat_taisan.ds_ts.ts_id',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'cp_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          cp_id: 1,
+          'taisan.ts_id': 1,
+          'taisan.ts_ten': 1,
+          soluong: '$cap_phat_taisan.ds_ts.sl_th',
+          cp_lydo: 1,
+          cp_vitri_sudung: 1,
+          ng_xoa: '$user.userName'
+        }
+      }
+    ]);
+    for (let i = 0; i < data.length; i++) {
+      data[i].cp_ngay = new Date(data[i].cp_ngay * 1000);
+      data[i].cp_date_delete = new Date(data[i].cp_date_delete * 1000);
+    }
+
+    return functions.success(dem, data)
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản thu hồi đã xoá 
+exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => {
+  try {
+    conditions.cp_da_xoa = 1;
+    let data = await ThuHoi.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'thuhoi_taisan.ds_thuhoi.ts_id',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'thuhoi_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_dc_thuhoi',
+          foreignField: 'idQLC',
+          as: 'users'
+        }
+      },
+      { $unwind: '$users' },
+      {
+        $project: {
+          thuhoi_ngay: 1,
+          thuhoi_date_delete: 1,
+          thuhoi_id: 1,
+          ts_id: 'taisan.ts_id',
+          ts_ten: 'taisan.ts_ten',
+          soluong: '$thuhoi_taisan.ds_thuhoi.sl_th',
+          thuhoi_trangthai: 1,
+          thuhoi__lydo: 1,
+          id_ng_dc_thuhoi: 'users.userName',
+          ng_xoa: 'user.userName'
+        }
+      }
+    ]);
+    for (let i = 0; i < data.length; i++) {
+      data[i].thuhoi_ngay = new Date(data[i].thuhoi_ngay * 1000);
+      data[i].thuhoi_date_delete = new Date(data[i].thuhoi_date_delete * 1000);
+    }
+
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// điều chuyển vị trí tài sản
+exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, skip, limit, comId) => {
+  try {
+    conditions.xoa_dieuchuyen = 1;
+    conditions.dc_type = 0;
+    let data = await DieuChuyen.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { dc_id: -1 } },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_xoa_dc',
+          foreignField: 'idQLC',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_nv_dangsudung',
+          foreignField: 'idQLC',
+          as: 'users'
+        }
+      },
+      { $unwind: '$users' },
+      {
+        $lookup: {
+          from: 'QLC_Deparments',
+          localField: 'id_pb_dang_sd',
+          foreignField: 'dep_id',
+          as: 'dep'
+        }
+      },
+      { $unwind: '$dep' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_nv_nhan',
+          foreignField: 'idQLC',
+          as: 'users_id_nv_nhan'
+        }
+      },
+      { $unwind: '$users_id_nv_nhan' },
+      {
+        $lookup: {
+          from: 'QLC_Deparments',
+          localField: 'id_pb_nhan',
+          foreignField: 'dep_id',
+          as: 'depp'
+        }
+      },
+      { $unwind: '$depp' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_thuchien',
+          foreignField: 'idQLC',
+          as: 'users_id_ng_thuchien'
+        }
+      },
+      { $unwind: '$users_id_ng_thuchien' },
+      {
+        $project: {
+          dc_ngay: 1,
+          dc_date_delete: 1,
+          dc_id: 1,
+          dc_trangthai: 1,
+          id_nv_dangsudung: 'users.userName',
+          id_pb_dang_sd: 'dep.dep_name',
+          id_nv_nhan: 'users_id_nv_nhan.userName',
+          id_pb_nhan: 'depp.dep_name',
+          dc_lydo: 1,
+          id_ng_thuchien: 'users_id_ng_thuchien.userName',
+          ng_xoa: 'user.userName'
+        }
+      }
+    ]);
+    for (let i = 0; i < data.length; i++) {
+      data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+      data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
+    }
+
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// điều chuyển đối tượng sd
+exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, skip, limit, comId) => {
+  try {
+    conditions.xoa_dieuchuyen = 1;
+    conditions.dc_type = 1;
+    let data = await DieuChuyen.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { dc_id: -1 } },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_xoa_dc',
+          foreignField: 'idQLC',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_nv_dangsudung',
+          foreignField: 'idQLC',
+          as: 'users'
+        }
+      },
+      { $unwind: '$users' },
+      {
+        $lookup: {
+          from: 'QLC_Deparments',
+          localField: 'id_pb_dang_sd',
+          foreignField: 'dep_id',
+          as: 'dep'
+        }
+      },
+      { $unwind: '$dep' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_nv_nhan',
+          foreignField: 'idQLC',
+          as: 'users_id_nv_nhan'
+        }
+      },
+      { $unwind: '$users_id_nv_nhan' },
+      {
+        $lookup: {
+          from: 'QLC_Deparments',
+          localField: 'id_pb_nhan',
+          foreignField: 'dep_id',
+          as: 'depp'
+        }
+      },
+      { $unwind: '$depp' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_thuchien',
+          foreignField: 'idQLC',
+          as: 'users_id_ng_thuchien'
+        }
+      },
+      { $unwind: '$users_id_ng_thuchien' },
+      {
+        $project: {
+          dc_ngay: 1,
+          dc_date_delete: 1,
+          dc_id: 1,
+          dc_trangthai: 1,
+          id_nv_dangsudung: 'users.userName',
+          id_pb_dang_sd: 'dep.dep_name',
+          id_nv_nhan: 'users_id_nv_nhan.userName',
+          id_pb_nhan: 'depp.dep_name',
+          dc_lydo: 1,
+          id_ng_thuchien: 'users_id_ng_thuchien.userName',
+          ng_xoa: 'user.userName'
+        }
+      }
+    ]);
+    for (let i = 0; i < data.length; i++) {
+      data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+      data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
+    }
+
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// điều chuyển đơn vị quản lý
+exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, skip, limit, comId) => {
+  try {
+    conditions.xoa_dieuchuyen = 1;
+    conditions.dc_type = 2;
+    let data = await DieuChuyen.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { dc_id: -1 } },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_xoa_dc',
+          foreignField: 'idQLC',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_cty_dang_sd',
+          foreignField: 'idQLC',
+          as: 'users'
+        }
+      },
+      { $unwind: '$users' },
+
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_cty_nhan',
+          foreignField: 'idQLC',
+          as: 'users_id_nv_nhan'
+        }
+      },
+      { $unwind: '$users_id_nv_nhan' },
+
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_thuchien',
+          foreignField: 'idQLC',
+          as: 'users_id_ng_thuchien'
+        }
+      },
+      { $unwind: '$users_id_ng_thuchien' },
+      {
+        $project: {
+          dc_ngay: 1,
+          dc_id: 1,
+          dc_date_delete: 1,
+          dc_trangthai: 1,
+          id_cty_dang_sd: 'users.userName',
+          id_cty_nhan: 'users_id_nv_nhan.userName',
+          dc_lydo: 1,
+          id_ng_thuchien: 'users_id_ng_thuchien.userName',
+          ng_xoa: 'user.userName'
+        }
+      }
+    ]);
+    for (let i = 0; i < data.length; i++) {
+      data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+      data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
+    }
+
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản cần sửa chữa
+exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
+  try {
+    conditions.sc_trangthai = { $in: [0, 2] };
+    let data = await SuaChua.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { sc_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'suachua_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'sc_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'ng_xoa'
+        }
+      },
+      { $unwind: '$ng_xoa' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'sc_ng_sd',
+          foreignField: 'idQLC',
+          as: 'sc_ng_sd'
+        }
+      },
+      { $unwind: '$sc_ng_sd' },
+      {
+        $project: {
+          sc_id: 1,
+          sc_trangthai: 1,
+          sc_ngay: 1,
+          sc_ngay_hong: 1,
+          sc_date_delete: 1,
+          ts_id: '$taisan.ts_id',
+          ts_ten: '$taisan.ts_ten',
+          sl_sc: 1,
+          sc_donvi: 1,
+          sc_ngay_nhapkho: 1,
+          sc_noidung: 1,
+          ng_xoa: '$ng_xoa.userName',
+          sc_ng_sd: '$sc_ng_sd.userName',
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].sc_ngay = new Date(data[i].sc_ngay * 1000)
+      data[i].sc_ngay_hong = new Date(data[i].sc_ngay_hong * 1000)
+      data[i].sc_date_delete = new Date(data[i].sc_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản đang sửa chữa
+exports.dangSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
+  try {
+    conditions.sc_trangthai = 3;
+    let data = await SuaChua.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { sc_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'suachua_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'sc_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'ng_xoa'
+        }
+      },
+      { $unwind: '$ng_xoa' },
+      {
+        $project: {
+          sc_id: 1,
+          sc_trangthai: 1,
+          sc_chiphi_dukien: 1,
+          sc_ngay: 1,
+          sc_dukien: 1,
+          sc_date_delete: 1,
+          ts_id: '$taisan.ts_id',
+          ts_ten: '$taisan.ts_ten',
+          sl_sc: 1,
+          sc_donvi: 1,
+          sc_ngay_nhapkho: 1,
+          sc_noidung: 1,
+          ng_xoa: '$ng_xoa.userName',
+          sc_ng_sd: '$sc_ng_sd.userName',
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].sc_ngay = new Date(data[i].sc_ngay * 1000)
+      data[i].sc_ngay_hong = new Date(data[i].sc_dukien * 1000)
+      data[i].sc_date_delete = new Date(data[i].sc_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản đã sửa chữa
+exports.daSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
+  try {
+    conditions.sc_trangthai = 1;
+    let data = await SuaChua.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { sc_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'suachua_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'sc_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'ng_xoa'
+        }
+      },
+      { $unwind: '$ng_xoa' },
+      {
+        $project: {
+          sc_ngay: 1,
+          sc_dukien: 1,
+          sc_hoanthanh: 1,
+          sc_date_delete: 1,
+          sc_id: 1,
+          sc_chiphi_dukien: 1,
+          sc_chiphi_thucte: 1,
+          sc_noidung: 1,
+          ts_id: '$taisan.ts_id',
+          ts_ten: '$taisan.ts_ten',
+
+          ng_xoa: '$ng_xoa.userName',
+
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].sc_ngay = new Date(data[i].sc_ngay * 1000)
+      data[i].sc_ngay_hong = new Date(data[i].sc_dukien * 1000)
+      data[i].sc_date_delete = new Date(data[i].sc_date_delete * 1000)
+      data[i].sc_hoanthanh = new Date(data[i].sc_hoanthanh * 1000)
+
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản cần bảo dưỡng
+exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
+  try {
+    conditions.bd_trang_thai = { $in: [0, 2] }
+    let data = await BaoDuong.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { id_bd: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'baoduong_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'bd_id_ng_tao',
+          foreignField: 'idQLC',
+          as: 'bd_id_ng_tao'
+        }
+      },
+      { $unwind: '$bd_id_ng_tao' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'bd_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'bd_id_ng_xoa'
+        }
+      },
+      { $unwind: '$bd_id_ng_xoa' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'bd_ng_sd',
+          foreignField: 'idQLC',
+          as: 'bd_ng_sd'
+        }
+      },
+      { $unwind: '$bd_ng_sd' },
+      {
+        $project: {
+          id_bd: 1,
+          bd_trang_thai: 1,
+          ts_ten: '$taisan.ts_ten',
+          bd_sl: 1,
+          bd_ng_sd: '$bd_ng_sd.userName',
+          bd_vi_tri_dang_sd: 1,
+          bd_gannhat: 1,
+          bd_dukien_ht: 1,
+          bd_date_create: 1,
+          bd_date_delete: 1,
+          bd_tai_congsuat: 1,
+          bd_cs_dukien: 1,
+          bd_noi_dung: 1,
+          bd_id_ng_xoa: '$bd_id_ng_xoa.userName'
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].bd_gannhat = new Date(data[i].bd_gannhat * 1000)
+      data[i].bd_dukien_ht = new Date(data[i].bd_dukien_ht * 1000)
+      data[i].bd_date_create = new Date(data[i].bd_date_create * 1000)
+      data[i].bd_date_delete = new Date(data[i].bd_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản đang bảo dưỡng
+exports.dangBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
+  try {
+    conditions.bd_trang_thai = 0
+    let data = await BaoDuong.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { id_bd: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'baoduong_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'bd_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'bd_id_ng_xoa'
+        }
+      },
+      { $unwind: '$bd_id_ng_xoa' },
+      {
+        $project: {
+          id_bd: 1,
+          ts_id: '$taisan.ts_id',
+          ts_ten: '$taisan.ts_ten',
+          bd_sl: 1,
+          bd_tai_congsuat: 1,
+          bd_chiphi_dukien: 1,
+          bd_ngay_batdau: 1,
+          bd_dukien_ht: 1,
+          bd_noi_dung: 1,
+          bd_date_delete: 1,
+          bd_id_ng_xoa: '$bd_id_ng_xoa.userName'
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].bd_ngay_batdau = new Date(data[i].bd_ngay_batdau * 1000)
+      data[i].bd_dukien_ht = new Date(data[i].bd_dukien_ht * 1000)
+      data[i].bd_date_delete = new Date(data[i].bd_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản đã bảo dưỡng
+exports.daBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
+  try {
+    conditions.bd_trang_thai = 1
+    let data = await BaoDuong.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { id_bd: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'baoduong_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'bd_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'bd_id_ng_xoa'
+        }
+      },
+      { $unwind: '$bd_id_ng_xoa' },
+      {
+        $project: {
+          id_bd: 1,
+          ts_id: '$taisan.ts_id',
+          ts_ten: '$taisan.ts_ten',
+          bd_sl: 1,
+          bd_tai_congsuat: 1,
+          bd_chiphi_dukien: 1,
+          bd_chiphi_thucte: 1,
+          bd_ngay_batdau: 1,
+          bd_dukien_ht: 1,
+          bd_ngay_ht: 1,
+          bd_ngay_sudung: 1,
+          bd_noi_dung: 1,
+          bd_date_delete: 1,
+          bd_id_ng_xoa: '$bd_id_ng_xoa.userName'
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].bd_ngay_batdau = new Date(data[i].bd_ngay_batdau * 1000)
+      data[i].bd_dukien_ht = new Date(data[i].bd_dukien_ht * 1000)
+      data[i].bd_ngay_ht = new Date(data[i].bd_ngay_ht * 1000)
+      data[i].bd_ngay_sudung = new Date(data[i].bd_ngay_sudung * 1000)
+      data[i].bd_date_delete = new Date(data[i].bd_date_delete * 1000)
+
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// thiết lập lịch bảo dưỡng
+exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, limit) => {
+  try {
+
+    let data = await Quydinh_bd.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { id_bd: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'id_loai',
+          foreignField: 'id_loai',
+          as: 'loaitaisan'
+        }
+      },
+      { $unwind: '$loaitaisan' },
+      {
+        $lookup: {
+          from: 'QLTS_Nhom_Tai_San',
+          localField: 'id_nhom_ts',
+          foreignField: 'id_nhom',
+          as: 'tennhom'
+        }
+      },
+      { $unwind: '$tennhom' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'qd_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'qd_id_ng_xoa'
+        }
+      },
+      { $unwind: '$tennhom' },
+      {
+        $project: {
+          qd_id: 1,
+          ten_loai: '$loaitaisan.ten_loai',
+          tennhom: '$tennhom.ten_nhom',
+          bd_noidung: 1,
+          xac_dinh_bd: 1,
+          tan_suat_bd: 1,
+          qd_date_delete: 1,
+          qd_id_ng_xoa: '$qd_id_ng_xoa.userName',
+          thoidiem_bd: 1,
+          sl_ngay_thoi_diem: 1,
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].qd_date_delete = new Date(data[i].qd_date_delete * 1000)
+      if (data[i].thoidiem_bd === 0 && data[i].sl_ngay_thoi_diem !== 0) {
+        data[i].thoidiem_bd = "Sau ngày bắt đầu sử dụng " + data[i].sl_ngay_thoi_diem + " ngày"
+      } else if (data[i].thoidiem_bd === 1 && data[i].sl_ngay_thoi_diem !== 0) {
+        data[i].thoidiem_bd = "Sau ngày mua " + data[i].sl_ngay_thoi_diem + " ngày";
+      } else if (data[i].thoidiem_bd === 2 && data[i].ngay_tu_chon_td !== 0) {
+        data[i].thoidiem_bd = new Date(data[i].ngay_tu_chon_td * 1000)
+      } else if (data[i].sl_ngay_thoi_diem === 0 || data[i].sl_ngay_thoi_diem === "" || data[i].ngay_tu_chon_td === 0) {
+        data[i].thoidiem_bd = '---';
+      }
+      // if(data[i].tan_suat_bd === 1){
+
+      // }
+
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// Theo dõi công suất
+exports.theoDoiCongSuat = async (res, DonViCS, dem, conditions, skip, limit) => {
+  try {
+    let data = await DonViCS.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { id_donvi: -1 } },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'dvcs_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'dvcs_id_ng_xoa'
+        }
+      },
+      { $unwind: '$dvcs_id_ng_xoa' },
+      {
+        $project: {
+          id_donvi: 1,
+          ten_donvi: 1,
+          mota_donvi: 1,
+          dvcs_date_delete: 1,
+          dvcs_id_ng_xoa: '$dvcs_id_ng_xoa.userName',
+
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].dvcs_date_delete = new Date(data[i].dvcs_date_delete * 1000)
+
+
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản báo mất
+exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
+  try {
+    let data = await Mat.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { mat_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'mat_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'mat_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'mat_id_ng_xoa'
+        }
+      },
+      { $unwind: '$mat_id_ng_xoa' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_tao',
+          foreignField: 'idQLC',
+          as: 'id_ng_tao'
+        }
+      },
+      { $unwind: '$id_ng_tao' },
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'taisan.id_loai_ts',
+          foreignField: 'id_loai',
+          as: 'loaitaisan'
+        }
+      },
+      { $unwind: '$loaitaisan' },
+      {
+        $project: {
+          mat_id: 1,
+          mat_trangthai: 1,
+          mat_date_create: 1,
+          ts_id: '$taisan.ts_id',
+          ts_ten: '$taisan.ts_ten',
+          mat_soluong: 1,
+          id_loai_ts: '$loaitaisan.ten_loai',
+          id_ng_tao: '$id_ng_tao.userName',
+          phongban: '$dep.dep_name',
+          mat_ngay: 1,
+          mat_lydo: 1,
+          mat_date_delete: 1,
+          mat_id_ng_xoa: '$mat_id_ng_xoa.userName',
+          tenloai: '$loaitaisan.ten_loai'
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].mat_date_create = new Date(data[i].mat_date_create * 1000)
+      data[i].mat_ngay = new Date(data[i].mat_ngay * 1000)
+      data[i].mat_date_delete = new Date(data[i].mat_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản chờ đền bù
+exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
+  try {
+
+    let data = await Mat.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { mat_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'mat_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'mat_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'mat_id_ng_xoa'
+        }
+      },
+      
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_tao',
+          foreignField: 'idQLC',
+          as: 'id_ng_tao'
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_duyet',
+          foreignField: 'idQLC',
+          as: 'id_ng_duyet'
+        }
+      },
+      
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_nhan_denbu',
+          foreignField: 'idQLC',
+          as: 'id_ng_nhan_denbu'
+        }
+      },
+      
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'taisan.id_loai_ts',
+          foreignField: 'id_loai',
+          as: 'loaitaisan'
+        }
+      },
+      { $unwind: '$loaitaisan' },
+      {
+        $project: {
+          mat_id: 1,
+          ts_id: '$taisan.ts_id',
+          ts_ten: '$taisan.ts_ten',
+          mat_soluong: 1,
+          tenloai: '$loaitaisan.ten_loai',
+          id_ng_tao: '$id_ng_tao.userName',
+          mat_ngay: 1,
+          mat_lydo: 1,
+          id_ng_duyet: '$id_ng_duyet.userName',
+          hinhthuc_denbu: 1,
+          so_tien_da_duyet: 1,
+          id_ng_nhan_denbu: '$id_ng_nhan_denbu.userName',
+          mat_id_ng_xoa: '$mat_id_ng_xoa.userName',
+          mat_ngay: 1,
+          mat_han_ht: 1,
+          mat_date_delete: 1,
+          mat_type_quyen: 1,
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].mat_ngay = new Date(data[i].mat_ngay * 1000)
+      data[i].mat_han_ht = new Date(data[i].mat_han_ht * 1000)
+      data[i].mat_date_delete = new Date(data[i].mat_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// danh sách tài sản mất
+exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
+  try {
+    conditions.mat_trangthai = 1
+    let data = await Mat.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { mat_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'mat_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_tao',
+          foreignField: 'idQLC',
+          as: 'id_ng_tao'
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'mat_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'mat_id_ng_xoa'
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ngdexuat',
+          foreignField: 'idQLC',
+          as: 'id_ngdexuat'
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_duyet',
+          foreignField: 'idQLC',
+          as: 'id_ng_duyet'
+        }
+      },
+      
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_nhan_denbu',
+          foreignField: 'idQLC',
+          as: 'id_ng_nhan_denbu'
+        }
+      },
+      
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'taisan.id_loai_ts',
+          foreignField: 'id_loai',
+          as: 'loaitaisan'
+        }
+      },
+      { $unwind: '$loaitaisan' },
+      {
+        $project: {
+          mat_id:1,
+          ts_id:'$taisan.ts_id',
+          ts_ten:'$taisan.ts_ten',
+          mat_soluong:1,
+          id_loai_ts:'$id_loai_ts.ten_loai',
+          id_ng_tao:'$id_ng_tao.userName',
+          mat_ngay:1,
+          mat_lydo:1,
+          id_ng_duyet:1,
+          hinhthuc_denbu:1,
+          tien_denbu:1,
+          sotien_danhan:1,
+          id_ng_nhan_denbu:'$id_ng_nhan_denbu.userName',
+          mat_han_ht:1,
+          mat_date_delete:1,
+          ngay_thanhtoan:1,
+          mat_id_ng_xoa:'$mat_id_ng_xoa.userName',
+          id_ng_duyet:'$id_ng_duyet.userName',
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].mat_ngay = new Date(data[i].mat_ngay * 1000)
+      data[i].mat_han_ht = new Date(data[i].mat_han_ht * 1000)
+      data[i].mat_date_delete = new Date(data[i].mat_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản đề xuất huỷ
+exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
+  try {
+    conditions.huy_trangthai = { $in: [0, 2] }
+    let data = await Huy.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { huy_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'huy_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'huy_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'huy_id_ng_xoa'
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_dexuat',
+          foreignField: 'idQLC',
+          as: 'id_ng_dexuat'
+        }
+      },
+      
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'taisan.id_loai_ts',
+          foreignField: 'id_loai',
+          as: 'loaitaisan'
+        }
+      },
+      { $unwind: '$loaitaisan' },
+      {
+        $project: {
+          huy_id:1,
+          huy_date_create:1,
+          huy_trangthai:1,
+          ts_id:'$taisan.ts_id',
+          ts_ten:'$taisan.ts_ten',
+          huy_soluong:1,
+          ten_loai:'$loaitaisan.ten_loai',
+          id_ng_dexuat:'$id_ng_dexuat.userName',
+          huy_lydo:1,
+          huy_date_delete:1,
+          huy_id_ng_xoa:'$huy_id_ng_xoa.userName',
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].huy_date_create = new Date(data[i].huy_date_create * 1000)
+      data[i].huy_date_delete = new Date(data[i].huy_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// danh sách tài sản huỷ
+exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
+  try {
+    conditions.huy_trangthai = 1
+    let data = await Huy.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { huy_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'huy_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'huy_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'huy_id_ng_xoa'
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_tao',
+          foreignField: 'idQLC',
+          as: 'id_ng_tao'
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_duyet',
+          foreignField: 'idQLC',
+          as: 'id_ng_duyet'
+        }
+      },
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'taisan.id_loai_ts',
+          foreignField: 'id_loai',
+          as: 'loaitaisan'
+        }
+      },
+      { $unwind: '$loaitaisan' },
+      {
+        $project: {
+          huy_id:1,
+          ts_id:'$taisan.ts_id',
+          ts_ten:'$taisan.ts_ten',
+          huy_soluong:1,
+          ten_loai:'$loaitaisan.ten_loai',
+          id_ng_tao:'$id_ng_tao.userName',
+          id_ng_duyet:'$id_ng_duyet.userName',
+          huy_lydo:1,
+          huy_ngayduyet:1,
+          huy_date_delete:1,
+          huy_id_ng_xoa:'$huy_id_ng_xoa.userName',
+
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].huy_ngayduyet = new Date(data[i].huy_ngayduyet * 1000)
+      data[i].huy_date_delete = new Date(data[i].huy_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// tài sản đề xuất thanh lý
+exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => {
+  try {
+    conditions.tl_trangthai = { $in: [0, 2] }
+    let data = await ThanhLy.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { tl_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'thanhly_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'tl_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'tl_id_ng_xoa'
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ngdexuat',
+          foreignField: 'idQLC',
+          as: 'id_ngdexuat'
+        }
+      },
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'taisan.id_loai_ts',
+          foreignField: 'id_loai',
+          as: 'loaitaisan'
+        }
+      },
+      { $unwind: '$loaitaisan' },
+      {
+        $project: {
+          tl_id:1,
+          tl_date_create:1,
+          tl_date_delete:1,
+          tl_thanhly:1,
+          ts_id:'$taisan.ts_id',
+          ts_ten:'$taisan.ts_ten',
+          ten_loai:'$loaitaisan.ten_loai',
+          tl_soluong:1,
+          id_ngdexuat:'$id_ngdexuat.userName',
+          tl_lydo:1,
+          tl_id_ng_xoa:'$tl_id_ng_xoa.userName',
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].tl_date_create = new Date(data[i].tl_date_create * 1000)
+      data[i].tl_date_delete = new Date(data[i].tl_date_delete * 1000)
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// danh sách tài sản đã thanh lý
+exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => {
+  try {
+    conditions.tl_trangthai = 3
+    let data = await ThanhLy.aggregate([
+      { $match: conditions },
+      { $skip: skip },
+      { $limit: limit },
+      { $sort: { tl_id: -1 } },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'thanhly_taisan',
+          foreignField: 'ts_id',
+          as: 'taisan'
+        }
+      },
+      { $unwind: '$taisan' },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'tl_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'tl_id_ng_xoa'
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ngdexuat',
+          foreignField: 'idQLC',
+          as: 'id_ngdexuat'
+        }
+      },
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'taisan.id_loai_ts',
+          foreignField: 'id_loai',
+          as: 'loaitaisan'
+        }
+      },
+      { $unwind: '$loaitaisan' },
+      {
+        $project: {
+          tl_id:1,
+          ts_id:'$taisan.ts_id',
+          ts_ten:'$taisan.ts_ten',
+          tl_soluong:1,
+          ten_loai:'loaitaisan.ten_loai',
+          id_ngdexuat:'$id_ngdexuat.userName',
+          tl_lydo:1,
+          ngay_duyet:1,
+          tl_ngay:1,
+          tl_date_delete:1,
+          tl_sotien:1,
+          tl_id_ng_xoa:'$tl_id_ng_xoa.userName',
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].ngay_duyet = new Date(data[i].ngay_duyet * 1000)
+      data[i].tl_ngay = new Date(data[i].tl_ngay * 1000)
     }
     return functions.success(res, 'get data success', { dem, data })
   } catch (error) {

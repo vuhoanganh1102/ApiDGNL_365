@@ -13,7 +13,9 @@ const Mat = require('../../models/QuanLyTaiSan/Mat')
 const Huy = require('../../models/QuanLyTaiSan/Huy')
 const ThanhLy = require('../../models/QuanLyTaiSan/ThanhLy')
 const KiemKe = require('../../models/QuanLyTaiSan/KiemKe')
+const TheoDoiCongSuat = require('../../models/QuanLyTaiSan/TheoDoiCongSuat')
 const qlts = require('../../services/QLTS/qltsService')
+const Users = require('../../models/Users')
 // dữ liệu xoá trang chủ
 exports.dataDeleteHome = async (req, res, next) => {
     try {
@@ -67,12 +69,15 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
         // khai báo biến người dùng nhập vào
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
-        // logic phân trang
-        let skip = (page - 1) * pageSize;
-        let limit = pageSize;
+
         // giải thích biến type  1: danh sách tài sản 2: loại tài sản 3: nhóm tài sản
         let type = Number(req.body.type)
         let so_bb = Number(req.body.so_bb);
+
+        // logic phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
         let conditions = {}
         // logic
         if (so_bb && type === 1) {
@@ -84,6 +89,7 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
         if (so_bb && type === 3) {
             conditions = { $or: [{ ten_nhom: new RegExp(so_bb, 'i') }, { id_nhom: { $regex: so_bb } }] }
         }
+        conditions.id_cty = comId
         let dem = {};
         let demts = await TaiSan.find({ ts_da_xoa: 1, id_cty: comId }).count();
 
@@ -94,7 +100,7 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
         dem.demloai = demloai;
         dem.demnhom = demnhom;
 
-        // 1: loại tài sản đã xoá
+        // 1:  tài sản đã xoá
         if (type === 1) {
             return qlts.taiSanXoa(res, TaiSan, dem, conditions, skip, limit, comId);
         }
@@ -113,4 +119,519 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
 };
 
 // danh sách tài sản cấp phát thu hồi đã xoá
-exports.dataThuHoi
+exports.dataCapPhatThuHoiDeleted = async (req, res, next) => {
+    try {
+        // khai báo biến lấy dữ liệu từ token
+        let comId = req.comId;
+        let emId = req.emId;
+        let type_quyen = req.type;
+
+        // khai báo biến người dùng nhập vào
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        // logic phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
+        // giải thích biến type  1: cấp phát 2: thu hồi
+        let so_bb = Number(req.body.so_bb);
+
+        // khai báo biến phụ
+        let conditions = { id_cty: comId };
+        let data = {};
+        let dem = {};
+        // logic
+        if (so_bb && type === 1) conditions.cp_id = so_bb
+        if (so_bb && type === 2) conditions.thuhoi_id = so_bb
+
+        let demcp = await CapPhat.find({ cp_da_xoa: 1, id_cty: comId }).count();
+
+        let demthuhoi = await ThuHoi.find({ xoa_thuhoi: 1, id_cty: comId }).count();
+
+        dem.demcp = demcp;
+        dem.demthuhoi = demthuhoi;
+
+        // 1: cấp phát
+        if (type === 1) {
+            return qlts.capPhatXoa(res, CapPhat, dem, conditions, skip, limit);
+        }
+        // 2: thu hồi
+        if (type === 2) {
+            return qlts.thuHoiXoa(res, ThuHoi, dem, conditions, skip, limit);
+        }
+    } catch (error) {
+        console.error(error)
+        return functions.setError(res, error)
+    }
+};
+
+// danh sách tài sản điều chuyển bàn giao đã xoá
+exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
+    try {
+        // khai báo biến lấy dữ liệu từ token
+        let comId = req.comId;
+
+        // khai báo biến người dùng nhập vào
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        // logic phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
+        // giải thích biến type  1: điều chuyển vị trí tài sản 2: điều chuyển đối tượng sd 3: điều chuyển đơn vị quản lý
+        let so_bb = Number(req.body.so_bb);
+
+        // khai báo biến phụ
+        let conditions = { id_cty: comId };
+        let dem = {};
+        // logic
+        if (so_bb) conditions.dc_id = so_bb
+
+        let vitritaisan = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 0 }).count();
+
+        let donviquanly = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 2 }).count();
+
+        let doituongsudung = await DieuChuyen.find({ xoa_thuhoi: 1, id_cty: comId, dc_type: 1 }).count();
+
+        dem.vitritaisan = vitritaisan;
+        dem.donviquanly = donviquanly;
+        dem.doituongsudung = doituongsudung;
+
+        //1: điều chuyển vị trí tài sản
+        if (type === 0) {
+            return qlts.dieuChuyenViTriTaiSanDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
+        }
+        //2: điều chuyển đối tượng sd
+        if (type === 1) {
+            return qlts.dieuChuyenDoiTuongSdDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
+        }
+
+        //3: điều chuyển đơn vị quản lý
+        if (type === 2) {
+            return qlts.dieuChuyenDonViQuanLyDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
+        }
+    } catch (error) {
+        console.error(error)
+        return functions.setError(res, error)
+    }
+};
+
+// danh sách kiểm kê đã xoá
+exports.dataKiemKeDaXoa = async (req, res, next) => {
+    try {
+        // khai báo biến lấy dữ liệu từ token
+        let comId = req.comId;
+
+        // khai báo biến người dùng nhập vào
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let so_bb = Number(req.body.so_bb);
+        // logic phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
+        // khai báo biến phụ
+        let conditions = { id_cty: comId };
+
+        if (so_bb) conditions.id_kiemke = so_bb
+
+        let tongSoLuong = await KiemKe.find({ id_cty: comId, xoa_kiem_ke: 1 }).count();
+
+        let data = await KiemKe.aggregate([
+            { $match: conditions },
+            { $sort: { id_kiemke: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'id_ngtao_kk',
+                    foreignField: 'idQLC',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'kk_id_ng_xoa',
+                    foreignField: 'idQLC',
+                    as: 'users'
+                }
+            },
+            { $unwind: '$users' },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'id_ng_kiemke',
+                    foreignField: 'idQLC',
+                    as: 'usersid_ng_kiemke'
+                }
+            },
+            { $unwind: '$usersid_ng_kiemke' },
+            {
+                $project: {
+                    kk_date_create: 1,
+                    kk_date_delete: 1,
+                    kk_ky: 1,
+                    kk_denngay: 1,
+                    kk_batdau: 1,
+                    kk_ketthuc: 1,
+                    id_ngtao_kk: 'user.userName',
+                    kk_id_ng_xoa: 'users.userName',
+                    id_ng_kiemke: 'usersid_ng_kiemke.userName',
+                    id_kiemke: 1,
+                    kk_loai: 1,
+                    kk_noidung: 1,
+                    kk_tiendo: 1,
+                }
+            }
+        ])
+        let com = await Users.findOne({ idQLC: comId }, { userName: 1, address: 1 })
+        for (let i = 0; i < data.length; i++) {
+            data[i].ngaytao = new Date(data[i].kk_date_create * 1000)
+            data[i].ngayxoa = new Date(data[i].kk_date_delete * 1000)
+            data[i].kk_ky = new Date(data[i].kk_ky * 1000)
+            data[i].kk_denngay = new Date(data[i].kk_denngay * 1000)
+            data[i].kk_batdau = new Date(data[i].kk_batdau * 1000)
+            data[i].kk_ketthuc = new Date(data[i].kk_ketthuc * 1000)
+            if (com) {
+                data[i].donvi_kk = com.userName
+                data[i].vitri_kk = com.address
+            }
+        }
+        return functions.success(res, 'get data success', { tongSoLuong, data })
+    } catch (error) {
+        console.error(error)
+        return functions.setError(res, error)
+    }
+};
+
+// danh sách sửa chữa đã xoá
+exports.taiSanSuaChuaDaXoa = async (req, res, next) => {
+    try {
+        // khai báo biến lấy dữ liệu từ token
+        let comId = req.comId;
+        let type = req.type;
+        let emId = req.emId;
+
+        // khai báo biến người dùng nhập vào
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let so_bb = Number(req.body.so_bb);
+        let typebb = Number(req.body.type) || 1;
+        // logic phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
+        // khai báo biến phụ
+        let conditions = {};
+        let dem = {};
+
+
+        // logic
+        if (type === 2) {
+            conditions = { id_cty: comId, $or: [{ sc_id_ng_tao: emId }, { sc_ng_thuchien: emId }] };
+        }
+        if (so_bb) conditions.sc_id = so_bb
+        conditions.id_cty = comId;
+        conditions.sc_da_xoa = 1;
+        let cansuachua = await SuaChua.find({ sc_trangthai: { $in: [0, 2] }, id_cty: comId, sc_da_xoa: 1 }).count();
+
+        let dangsuachua = await SuaChua.find({ sc_trangthai: 1, id_cty: comId, sc_da_xoa: 1 }).count();
+
+        let dasuachua = await SuaChua.find({ sc_trangthai: 3, id_cty: comId, sc_da_xoa: 1 }).count();
+
+        dem.cansuachua = cansuachua;
+        dem.dangsuachua = dangsuachua;
+        dem.dasuachua = dasuachua;
+
+        //1: tài sản cần sửa chữa
+        if (typebb === 1) {
+            return qlts.canSuaChua(res, SuaChua, dem, conditions, skip, limit);
+        }
+        //2: tài sản đang sửa chữa
+        if (typebb === 2) {
+            return qlts.dangSuaChua(res, SuaChua, dem, conditions, skip, limit);
+        }
+
+        //3: tài sản đã sửa chữa
+        if (typebb === 3) {
+            return qlts.daSuaChua(res, SuaChua, dem, conditions, skip, limit);
+        }
+    } catch (error) {
+        console.error(error)
+        return functions.setError(res, error);
+    }
+};
+
+// danh sách bảo dưỡng đã xoá
+exports.baoDuongDaXoa = async (req, res, next) => {
+    try {
+        // khai báo biến lấy dữ liệu từ token
+        let comId = req.comId;
+        let type = req.type;
+        let emId = req.emId;
+
+        // khai báo biến người dùng nhập vào
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let so_bb = Number(req.body.so_bb);
+        let typebb = Number(req.body.type) || 1;
+        // logic phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
+        // khai báo biến phụ
+        let conditions = {};
+        let dem = {};
+
+
+        // logic
+        if (type === 2) {
+            conditions = {
+                id_cty: comId,
+                $or: [{ bd_id_ng_tao: emId }, { bd_ng_thuchien: emId }, { bd_ng_sd: emId }, { bd_vi_tri_dang_sd: emId }]
+            };
+        }
+        if (so_bb) conditions.id_bd = so_bb
+
+        conditions.id_cty = comId;
+
+        conditions.xoa_bd = 1;
+
+        let canbaoduong = await BaoDuong.find({ bd_trang_thai: { $in: [0, 2] }, id_cty: comId, xoa_bd: 1 }).count();
+
+        let dangbaoduong = await BaoDuong.find({ bd_trang_thai: 0, id_cty: comId, xoa_bd: 1 }).count();
+
+        let dabaoduong = await BaoDuong.find({ bd_trang_thai: 1, id_cty: comId, xoa_bd: 1 }).count();
+
+        let thietlaplichbd = 0;
+
+        if (type === 1) {
+            thietlaplichbd = await Quydinh_bd.find({ id_cty: comId, qd_xoa: 1 }).count();
+        } else {
+            thietlaplichbd = await Quydinh_bd.find({ id_cty: comId, qd_xoa: 1, id_ng_tao_qd: emId }).count();
+        }
+
+        let theodoics = await TheoDoiCongSuat.find({ id_cty: comId, tdcs_xoa: 1 }).count();
+
+
+        dem.canbaoduong = canbaoduong;
+        dem.dangbaoduong = dangbaoduong;
+        dem.dabaoduong = dabaoduong;
+        dem.thietlaplichbd = thietlaplichbd;
+        dem.theodoics = theodoics;
+
+        //1: tài sản cần bảo dưỡng
+        if (typebb === 1) {
+            return qlts.canBaoDuong(res, BaoDuong, dem, conditions, skip, limit);
+        }
+        //2: tài sản đang bảo dưỡng
+        if (typebb === 2) {
+            return qlts.dangBaoDuong(res, BaoDuong, dem, conditions, skip, limit);
+        }
+
+        //3: tài sản đã bảo dưỡng
+        if (typebb === 3) {
+            return qlts.daBaoDuong(res, BaoDuong, dem, conditions, skip, limit);
+        }
+
+        delete conditions.xoa_bd
+        //4: thiết lập lịch bảo dưỡng
+        if (typebb === 4) {
+            
+            conditions.qd_xoa = 1;
+            return qlts.thietLapLichBaoDuong(res, Quydinh_bd, dem, conditions, skip, limit);
+        }
+
+        //5: Theo dõi công suất
+        if(typebb === 5){
+            conditions.donvi_xoa = 1;
+            return qlts.theoDoiCongSuat(res, DonViCS, dem, conditions, skip, limit);
+        }
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+};
+
+// danh sách tài sản báo mất đã xoá
+exports.taiSanBaomatDaXoa = async (req, res, next) => {
+    try {
+        // khai báo biến lấy dữ liệu từ token
+        let comId = req.comId;
+        let type = req.type;
+        let emId = req.emId;
+
+        // khai báo biến người dùng nhập vào
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let so_bb = Number(req.body.so_bb);
+        let typebb = Number(req.body.type) || 1;
+        // logic phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
+        // khai báo biến phụ
+        let conditions = {};
+        let dem = {};
+
+
+        // logic
+        if (type === 2) {
+            conditions = {
+                id_ng_tao:emId
+            };
+        }
+        if (so_bb) conditions.mat_id = so_bb
+
+        conditions.id_cty = comId;
+
+        conditions.xoa_dx_mat = 1;
+
+        let taisanbaomat = await Mat.find({ mat_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_dx_mat: 1 }).count();
+
+        let taisanchodenbu = await Mat.find({ mat_trangthai: 1, id_cty: comId, xoa_dx_mat: 1 }).count();
+
+        let danhsachtaisanmat = await Mat.find({ mat_trangthai: 3, id_cty: comId, xoa_dx_mat: 1 }).count();
+
+
+        dem.taisanbaomat = taisanbaomat;
+        dem.taisanchodenbu = taisanchodenbu;
+        dem.danhsachtaisanmat = danhsachtaisanmat;
+
+        //1: tài sản báo mất
+        if (typebb === 1) {
+            return qlts.taiSanBaoMat(res, Mat, dem, conditions, skip, limit);
+        }
+        //2: tài sản chờ đền bù
+        if (typebb === 2) {
+            return qlts.taiSanChoDenBu(res, Mat, dem, conditions, skip, limit);
+        }
+
+        //3: danh sách tài sản mất
+        if (typebb === 3) {
+            return qlts.danhSachTaiSanMat(res, Mat, dem, conditions, skip, limit);
+        }
+
+    } catch (error) {
+        console.error(error)
+        return functions.setError(res, error)
+    }
+};
+
+// danh sách tài sản huỷ đã xoá
+exports.taiSanBaoHuyDaXoa = async (req, res, next) => {
+    try {
+        // khai báo biến lấy dữ liệu từ token
+        let comId = req.comId;
+        let type = req.type;
+        let emId = req.emId;
+
+        // khai báo biến người dùng nhập vào
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let so_bb = Number(req.body.so_bb);
+        let typebb = Number(req.body.type) || 1;
+        // logic phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
+        // khai báo biến phụ
+        let conditions = {};
+        let dem = {};
+
+
+        // logic
+        if (type === 2) {
+            conditions = {
+                id_ng_tao:emId
+            };
+        }
+        if (so_bb) conditions.huy_id = so_bb
+
+        conditions.id_cty = comId;
+
+        conditions.xoa_huy = 1;
+
+        let taisandexuathuy = await Huy.find({ huy_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_huy: 1 }).count();
+
+        let danhsachtaisanhuy = await Huy.find({ huy_trangthai: 1, id_cty: comId, xoa_huy: 1 }).count();
+
+        dem.taisandexuathuy = taisandexuathuy;
+        dem.danhsachtaisanhuy = danhsachtaisanhuy;
+       
+
+        //1: tài sản đề xuất huỷ
+        if (typebb === 1) {
+            return qlts.taiSanDeXuatHuy(res, Huy, dem, conditions, skip, limit);
+        }
+        //2: danh sách tài sản huỷ
+        if (typebb === 2) {
+            return qlts.danhSachTaiSanHuy(res, Huy, dem, conditions, skip, limit);
+        }
+
+
+    } catch (error) {
+        console.error(error)
+        return functions.setError(res, error)
+    }
+};
+
+// danh sách tài sản thanh lý đã xoá
+exports.taiSanThanhLyDaXoa = async (req, res, next) => {
+    try {
+        // khai báo biến lấy dữ liệu từ token
+        let comId = req.comId;
+        let type = req.type;
+        let emId = req.emId;
+
+        // khai báo biến người dùng nhập vào
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let so_bb = Number(req.body.so_bb);
+        let typebb = Number(req.body.type) || 1;
+        // logic phân trang
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+
+        // khai báo biến phụ
+        let conditions = {};
+        let dem = {};
+
+
+        // logic
+        if (type === 2) {
+            conditions = {
+                id_ng_tao:emId
+            };
+        }
+        if (so_bb) conditions.tl_id = so_bb
+
+        conditions.id_cty = comId;
+
+        conditions.xoa_dx_tl = 1;
+
+        let taisandexuatthanhly = await ThanhLy.find({ tl_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_dx_tl: 1 }).count();
+
+        let danhsachtaisandathanhly = await ThanhLy.find({ tl_trangthai: 3, id_cty: comId, xoa_dx_tl: 1 }).count();
+
+        dem.taisandexuatthanhly = taisandexuatthanhly;
+        dem.danhsachtaisandathanhly = danhsachtaisandathanhly;
+       
+
+        //1: tài sản đề xuất thanh lý
+        if (typebb === 1) {
+            return qlts.taiSanDeXuatThanhLy(res, ThanhLy, dem, conditions, skip, limit);
+        }
+        //2: danh sách tài sản đã thanh lý
+        if (typebb === 2) {
+            return qlts.taiSanDaThanhLy(res, ThanhLy, dem, conditions, skip, limit);
+        }
+
+
+    } catch (error) {
+        console.error(error)
+        return functions.setError(res, error)
+    }
+};

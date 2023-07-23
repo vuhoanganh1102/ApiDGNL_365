@@ -100,7 +100,7 @@ exports.createTokenUser = async(req, res, next) => {
         let userId = req.body.userId;
         let admin = await Users.findOne({idQLC: userId}).lean();
         admin.com_id = admin.idQLC;
-        let token = await functions.createToken(admin, "10y");
+        let token = await functions.createToken(admin, "28d");
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, `Bearer ${token}`);
     }catch(error){
