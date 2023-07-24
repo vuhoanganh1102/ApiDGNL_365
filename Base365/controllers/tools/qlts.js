@@ -450,7 +450,7 @@ exports.toolCapPhat = async (req, res, next) => {
                     const ds_ts = JSON.parse(data[i].cap_phat_taisan).ds_ts;
                     const updated_ds_ts = ds_ts.map((item) => ({
                         ts_id: item[0],
-                        sl_th: item[1]
+                        sl_cp: item[1]
                     }));
                     const capPhat = new CapPhat({
                         cp_id: element.cp_id,

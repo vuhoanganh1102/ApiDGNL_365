@@ -11,7 +11,7 @@ const model_CapPhat = new mongoose.Schema({
                 ts_id: {
                   type: Number
                 },
-                sl_th: {
+                sl_cp: {
                   type: Number
                 }
               }
@@ -66,7 +66,8 @@ const model_CapPhat = new mongoose.Schema({
         type: Number
     },
     cp_da_xoa:{
-        type: Number
+        type: Number,
+        default : 0 
     },
     cp_date_create:{
         type: Number
