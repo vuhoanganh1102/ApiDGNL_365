@@ -233,6 +233,10 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: null
     },
+    refresh_new_home:{
+        type: Number,
+        default: null
+    },
     timeHome: {
         // thời gian ghim trên trang chủ
         type: Number,

@@ -58,7 +58,7 @@ exports.addDieuchuyenTaiSan = async (req, res) => {
 
         let ID_dc = 0;
         let maxIDDc = await DieuChuyen.findOne({}, {}, { sort: { dc_id: -1 } });
-        if (maxID) {
+        if (maxIDDc) {
             ID_dc = maxIDDc.dc_id;
         }
         let insert_dc_vt = new DieuChuyen({

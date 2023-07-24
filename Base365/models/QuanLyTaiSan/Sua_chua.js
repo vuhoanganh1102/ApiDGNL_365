@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_Sua_chua = new mongoose.Schema({
     sc_id: {
-        type: Number
+        type: Number,
+        unique: true
     },
     suachua_taisan: {
         type: Number
@@ -79,7 +80,7 @@ const model_Sua_chua = new mongoose.Schema({
         type: Number
     },
     sc_ng_sd: {
-        type: String
+        type: Number
     },
     sc_quyen_sd: {
         type: Number

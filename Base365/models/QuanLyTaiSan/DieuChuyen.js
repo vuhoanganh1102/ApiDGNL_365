@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const model_Dieuchuyen = new mongoose.Schema({
     dc_id: {
         type: Number,
+        unique: true
     },
     id_cty: {
         type: Number

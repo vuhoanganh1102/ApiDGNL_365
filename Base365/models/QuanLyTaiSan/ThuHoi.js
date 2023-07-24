@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const model_ThuHoi = new mongoose.Schema({
     thuhoi_id: {
         type: Number,
-        require: true
+        require: true,
+        unique: true
     },
     thuhoi_ng_tao: {
         type: Number

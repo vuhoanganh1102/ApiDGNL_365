@@ -680,8 +680,9 @@ exports.listBBDaSuaChua = async (req, res) => {
     try {
         let token = req.user;
 
-        let skip = req.body.page || 1;
+        let page = req.body.page || 1;
         let limit = req.body.perPage || 10;
+    
         let type_quyen = req.body.type_quyen;
         let key = req.body.key;
         let com_id = 0;

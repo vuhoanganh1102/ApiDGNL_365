@@ -283,6 +283,7 @@ exports.getListNV = async (req , res) =>{
             }
             return fnc.setError(res, "không tìm thấy đối tượng", 510);
         }catch(e){
+            console.log(e)
             return fnc.setError(res , e.message)
         }
         }

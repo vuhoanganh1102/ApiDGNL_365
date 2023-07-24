@@ -3,6 +3,7 @@ const model_KiemKe = new mongoose.Schema({
     id_kiemke: {
         type: Number,
         required: true,
+        unique: true
     },
     id_cty: {
         type: Number

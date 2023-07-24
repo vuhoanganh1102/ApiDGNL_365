@@ -1199,7 +1199,7 @@ exports.toolQuaTrinhSuDung = async (req, res, next) => {
             let listItem = data.data.items;
             if (listItem.length > 0) {
                 listItem.map(async (item) => {
-                    let new_QuanTrinhSuDung = new QuanTrinhSuDung({
+                    let new_QuanTrinhSuDung = new QuaTrinhSuDung({
                         quatrinh_id: item.quatrinh_id,
                         id_ts: item.id_ts,
                         id_bien_ban: item.id_bien_ban,

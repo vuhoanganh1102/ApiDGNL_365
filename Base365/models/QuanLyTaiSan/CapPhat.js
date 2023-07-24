@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const QLTS_Cap_Phat = new mongoose.Schema({
     cp_id: {
         type: Number,
-        require: true
+        require: true,
+        unique: true
     },
     cap_phat_taisan: {
         ds_ts: {
