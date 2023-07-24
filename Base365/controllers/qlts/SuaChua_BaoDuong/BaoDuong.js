@@ -71,18 +71,6 @@ const TheoDoiCongSuat = require('../../../models/QuanLyTaiSan/TheoDoiCongSuat');
 //lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
 exports.danhSachBaoDuong = async (req, res, next) => {
   try{
-    // $sql_nv .= " AND (bd_id_ng_tao = '".$id_ng_tao."' OR bd_ng_thuchien = '".$id_ng_tao."' OR bd_ng_sd = '".$id_ng_tao."' OR bd_vi_tri_dang_sd = '".$id_ng_tao."')";
-    //     $sql_nv1 .= "AND quydinh_bd.id_ng_tao_qd = '".$id_ng_tao."'";
-    // $tsbd = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND ((xoa_bd = 0 AND bd_trang_thai = 0 ".$sql." ".$sql_nv.") OR (xoa_bd = 0 AND bd_trang_thai = 2 ".$sql." ".$sql_nv.")) ORDER BY id_bd DESC LIMIT $start, $limit");
-    // $tsbd2 = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND xoa_bd = 0 AND bd_trang_thai = 0 ".$sql." ".$sql_nv." OR xoa_bd = 0 AND bd_trang_thai = 2 ".$sql." ".$sql_nv." ORDER BY id_bd DESC");
-    // $dangbd = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND xoa_bd = 0 AND bd_trang_thai = 0 ".$sql_nv." ORDER BY id_bd DESC");
-    // $q_da_bd = new db_query("SELECT * FROM bao_duong WHERE id_cty = '".$com_id."' AND xoa_bd = 0 AND bd_trang_thai = 1 ".$sql_nv." ORDER BY id_bd DESC");
-    // $quydinh = new db_query("SELECT * FROM quydinh_bd INNER JOIN loai_taisan ON quydinh_bd.id_loai = loai_taisan.id_loai INNER JOIN nhom_taisan ON loai_taisan.id_nhom_ts = nhom_taisan.id_nhom WHERE quydinh_bd.id_cty = '".$com_id."' AND qd_xoa = 0 ".$sql_nv1." ORDER BY qd_id DESC");
-    // $donvics = new db_query("SELECT * FROM theodoi_congsuat
-    // INNER JOIN loai_taisan ON theodoi_congsuat.id_loai = loai_taisan.id_loai 
-    // INNER JOIN donvi_cs ON theodoi_congsuat.id_donvi = donvi_cs.id_donvi 
-    // WHERE theodoi_congsuat.id_cty = '".$com_id."' AND tdcs_xoa = 0 ORDER BY theodoi_congsuat.id_cs DESC");
-    
     let {page, pageSize, key, dataType} = req.body;
     if(!page) page = 1;
     if(!pageSize) pageSize = 10;
