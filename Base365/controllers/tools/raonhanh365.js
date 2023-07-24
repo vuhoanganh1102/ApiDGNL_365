@@ -168,6 +168,7 @@ exports.toolNewRN = async (req, res, next) => {
                             detailCategory: data[i].new_ctiet_dmuc,
                             createTime: new Date(data[i].new_create_time * 1000),
                             updateTime: new Date(data[i].new_update_time * 1000),
+                            refresh_new_home:data[i].refresh_new_home,
                             phone: data[i].new_phone,
                             email: data[i].new_email,
                             address: data[i].dia_chi,

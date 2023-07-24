@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const model_PhanBo = new mongoose.Schema({
     id_pb: {
         type: Number,
-        require : true
+        require : true,
+        unique: true
     },
     id_cty: {
         type: Number

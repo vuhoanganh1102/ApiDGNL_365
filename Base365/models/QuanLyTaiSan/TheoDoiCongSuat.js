@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 const model_TheoDoiCongSuat = new mongoose.Schema({
     id_cs: {
         type: Number,
-        require : true
+        unique: true
     },
     id_cty: {
         type: Number,
-        
+
     },
     id_loai: {
         type: Number

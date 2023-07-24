@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const model_GhiTangTS = new mongoose.Schema({
     id_ghitang: {
         type: Number,
+        unique: true
     },
     id_ts: {
         type: Number

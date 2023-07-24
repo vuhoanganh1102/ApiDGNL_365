@@ -2,19 +2,20 @@ const mongoose = require('mongoose');
 const QLTS_Cap_Phat = new mongoose.Schema({
     cp_id: {
         type: Number,
-        require: true
+        require: true,
+        unique: true
     },
     cap_phat_taisan: {
         ds_ts: {
             type: [
-                {
-                    ts_id: {
-                        type: Number
-                    },
-                    sl_cp: {
-                        type: Number
-                    }
+              {
+                ts_id: {
+                  type: Number
+                },
+                sl_cp: {
+                  type: Number
                 }
+            }
             ]
         }
     },
@@ -58,6 +59,10 @@ const QLTS_Cap_Phat = new mongoose.Schema({
     },
     cp_type_quyen: {
         type: Number
+    },
+    cp_da_xoa:{
+        type: Number,
+        default : 0 
     },
     cp_id_ng_tao: {
         type: Number

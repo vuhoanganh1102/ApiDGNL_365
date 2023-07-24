@@ -3,28 +3,29 @@ var router = express.Router();
 const controller = require("../../controllers/qlts/huyController")
 const formData = require("express-form-data")
 const functions = require('../../services/functions');
+const QLTS = require('../../services/QLTS/qltsService');
 
 // tạo đề xuất tài sản huỷ
-router.post('/createAssetProposeCancel',functions.checkToken,formData.parse(),controller.createAssetProposeCancel)
+router.post('/createAssetProposeCancel',functions.checkToken,QLTS.checkRole('M_H_TL',2),formData.parse(),controller.createAssetProposeCancel)
 
 // danh sách đề xuất tài sản huỷ
-router.post('/getDataAssetProposeCancel',functions.checkToken,formData.parse(),controller.getDataAssetProposeCancel)
+router.post('/getDataAssetProposeCancel',functions.checkToken,QLTS.checkRole('M_H_TL',1),formData.parse(),controller.getDataAssetProposeCancel)
 
 // duyệt đề xuất tài sản huỷ
-router.post('/approveAssetDisposal',functions.checkToken,formData.parse(),controller.approveAssetDisposal)
+router.post('/approveAssetDisposal',functions.checkToken,QLTS.checkRole('M_H_TL',4),formData.parse(),controller.approveAssetDisposal)
 
 // từ chối đề xuất tài sản huỷ
-router.post('/rejectAssetDisposal',functions.checkToken,formData.parse(),controller.rejectAssetDisposal)
+router.post('/rejectAssetDisposal',functions.checkToken,QLTS.checkRole('M_H_TL',4),formData.parse(),controller.rejectAssetDisposal)
 
 // xoá đề xuất tài sản huỷ
-router.post('/deleteAssetDisposal',functions.checkToken,formData.parse(),controller.deleteAssetDisposal)
+router.post('/deleteAssetDisposal',functions.checkToken,QLTS.checkRole('M_H_TL',3),formData.parse(),controller.deleteAssetDisposal)
 
 // chi tiết đề xuất tài sản huỷ
-router.get('/detailAssetDisposal',functions.checkToken,controller.detailAssetDisposal)
+router.get('/detailAssetDisposal',functions.checkToken,QLTS.checkRole('M_H_TL',1),controller.detailAssetDisposal)
 
 // chỉnh sửa đề xuất tài sản huỷ
-router.put('/updateAssetDisposal',functions.checkToken,formData.parse(),controller.updateAssetDisposal)
+router.put('/updateAssetDisposal',functions.checkToken,QLTS.checkRole('M_H_TL',2),formData.parse(),controller.updateAssetDisposal)
 
 // danh sách tài sản đã huỷ
-router.post('/listOfDestroyedAssets',functions.checkToken,formData.parse(),controller.listOfDestroyedAssets)
+router.post('/listOfDestroyedAssets',functions.checkToken,QLTS.checkRole('M_H_TL',1),formData.parse(),controller.listOfDestroyedAssets)
 module.exports = router

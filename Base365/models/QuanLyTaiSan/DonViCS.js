@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const model_DonViCS = new mongoose.Schema({
     id_donvi: {
         type: Number,
-        require : true
+        unique: true
     },
     id_cty: {
         type: Number

@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_PhanQuyen = new mongoose.Schema({
     id_phanquyen: {
-        type: Number
+        type: Number,
+        unique: true
     },
     id_user: {
         type: Number

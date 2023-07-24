@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const model_Quydinh_bd = new mongoose.Schema({
     qd_id: {
         type: Number,
-        requiere : true
+        unique: true
     },
     id_cty: {
         type: Number

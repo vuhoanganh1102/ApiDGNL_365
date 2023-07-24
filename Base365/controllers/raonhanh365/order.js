@@ -5,7 +5,7 @@ const Order = require('../../models/Raonhanh365/Order');
 const Bidding = require('../../models/Raonhanh365/Bidding');
 const raoNhanh = require('../../services/rao nhanh/raoNhanh');
 const Cart = require('../../models/Raonhanh365/Cart');
-const { CommaAndColonSeparatedRecord } = require('mongodb-connection-string-url');
+
 // đặt hàng
 exports.order = async (req, res, next) => {
     try {
@@ -190,6 +190,8 @@ exports.manageOrderBuy = async (req, res, next) => {
                 {
                     $match: { buyerId, status: 0 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -208,8 +210,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+               
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-mua.html') {
@@ -217,6 +218,8 @@ exports.manageOrderBuy = async (req, res, next) => {
                 {
                     $match: { buyerId, status: 1 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -236,17 +239,16 @@ exports.manageOrderBuy = async (req, res, next) => {
 
                 {
                     $project: searchItem
-                }, {
-                    $skip: skip
-                }, {
-                    $limit: pageSize
-                }
+                },
+
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-mua.html') {
             data = await Order.aggregate([
                 {
                     $match: { buyerId, status: 2 }
                 },
+                { $skip: skip },
+                { $limit: pageSize },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -266,17 +268,16 @@ exports.manageOrderBuy = async (req, res, next) => {
 
                 {
                     $project: searchItem
-                }, {
-                    $skip: skip
-                }, {
-                    $limit: pageSize
-                }
+                },
+
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-mua.html') {
             data = await Order.aggregate([
                 {
                     $match: { buyerId, status: 3 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -304,6 +305,8 @@ exports.manageOrderBuy = async (req, res, next) => {
                 {
                     $match: { buyerId, status: 4 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -322,8 +325,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-mua.html') {
@@ -331,6 +333,8 @@ exports.manageOrderBuy = async (req, res, next) => {
                 {
                     $match: { buyerId, status: 5 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -349,8 +353,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+
                 { $project: searchItem }
 
             ])
@@ -397,6 +400,8 @@ exports.manageOrderSell = async (req, res, next) => {
                 {
                     $match: { sellerId, status: 0, orderActive: 1 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -415,8 +420,7 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-ban.html') {
@@ -425,6 +429,8 @@ exports.manageOrderSell = async (req, res, next) => {
                 {
                     $match: { sellerId, status: 1, orderActive: 1 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -445,8 +451,7 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-ban.html') {
@@ -454,6 +459,8 @@ exports.manageOrderSell = async (req, res, next) => {
                 {
                     $match: { sellerId, status: 2, orderActive: 1 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -472,8 +479,7 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-ban.html') {
@@ -481,6 +487,8 @@ exports.manageOrderSell = async (req, res, next) => {
                 {
                     $match: { sellerId, status: 3, orderActive: 1 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -499,8 +507,7 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-ban.html') {
@@ -508,6 +515,8 @@ exports.manageOrderSell = async (req, res, next) => {
                 {
                     $match: { sellerId, status: 4, orderActive: 1 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -526,8 +535,7 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-ban.html') {
@@ -535,6 +543,8 @@ exports.manageOrderSell = async (req, res, next) => {
                 {
                     $match: { sellerId, status: 5, orderActive: 1 }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $lookup: {
                         from: "RN365_News",
@@ -553,8 +563,7 @@ exports.manageOrderSell = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+
                 { $project: searchItem }
             ])
 

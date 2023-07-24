@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const model_Tai_San = new mongoose.Schema({
     ts_id: {
         type: Number,
-        require: true
+        require: true,
+        unique: true
     },
     id_cty: {
         type: Number,
