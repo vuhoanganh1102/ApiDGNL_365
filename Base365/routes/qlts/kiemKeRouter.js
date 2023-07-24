@@ -4,11 +4,11 @@ const formData = require('express-form-data');
 const kiemKeController = require('../../controllers/qlts/kiemKeController');
 const functions = require('../../services/functions');
 
-router.post('/create', functions.checkToken, formData.parse(), [kiemKeController.getAndCheckData, kiemKeController.create]);
-router.post('/update', functions.checkToken,  formData.parse(), [kiemKeController.getAndCheckData, kiemKeController.update]);
-router.post('/danhSachKiemKe', functions.checkToken, formData.parse(), kiemKeController.danhSachKiemKe);
-router.post('/delete', functions.checkToken, formData.parse(), kiemKeController.delete);
-router.post('/duyet', functions.checkToken, formData.parse(), kiemKeController.duyet);
-router.post('/chitiet', functions.checkToken, formData.parse(), kiemKeController.chiTiet);
+router.post('/create', formData.parse(), [kiemKeController.getAndCheckData, kiemKeController.create]);
+router.post('/update', formData.parse(), [kiemKeController.getAndCheckData, kiemKeController.update]);
+router.post('/danhSachKiemKe', formData.parse(), kiemKeController.danhSachKiemKe);
+router.post('/delete', formData.parse(), kiemKeController.delete);
+router.post('/duyet', formData.parse(), kiemKeController.duyet);
+router.post('/chitiet', formData.parse(), kiemKeController.chiTiet);
 
 module.exports = router;
