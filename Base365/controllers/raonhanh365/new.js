@@ -1684,12 +1684,11 @@ exports.getDetailNew = async (req, res, next) => {
                     as: "user",
                 },
             },
-            { $unwind: "$user" },
+            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
             { $match: { buySell: buysell } },
             { $project: searchitem },
 
         ]);
-
         let cousao = await Evaluate.find({ blUser: 0, userId: data[0].userID }).count();
         let sumsao = await Evaluate.aggregate([
             {
