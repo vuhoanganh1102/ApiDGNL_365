@@ -64,59 +64,42 @@ exports.showNhomTs = async (req, res) => {
     perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
     let matchQuery = {
       id_cty: com_id, // Lọc theo com_id
-      nhom_da_xoa: 0,
+      ts_da_xoa : 0,
     };
     if (id_nhom_ts) {
       matchQuery.id_nhom_ts = parseInt(id_nhom_ts);
     }
 
-    let listNhom = await NhomTaiSan.aggregate([
+    let listNhom = await TaiSan.aggregate([
       {
         $match: matchQuery,
       },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
-          localField: 'id_nhom_ts',
-          foreignField: 'id_nhom',
+          localField: 'id_loai_ts',
+          foreignField: 'id_loai',
           as: 'tong_loai',
         },
       },
       {
         $lookup: {
-          from: 'QLTS_Tai_San',
+          from: 'QLTS_Nhom_Tai_San',
           localField: 'id_nhom_ts',
           foreignField: 'id_nhom',
-          as: 'tong_ts',
+          as: 'tong_nhom',
         },
       },
       {
         $match: {
           "tong_loai.loai_da_xoa": 0,
-          "tong_ts.ts_da_xoa": 0,
+          "tong_nhom.nhom_da_xoa": 0,
         },
       },
       {
-        $project: {
-          "id_nhom": "$id_nhom",
-          "ten_nhom": "$ten_nhom",
-          "so_loai_ts": { $size: {
-            $filter: {
-              input: "$tong_loai",
-              as: "ts",
-              cond: { $eq: ["$$ts.id_nhom", "$id_nhom_ts"] }
-            }
-          }},
-          "so_ts": {
-            $size: {
-              $filter: {
-                input: "$tong_ts",
-                as: "ts",
-                cond: { $eq: ["$$ts.id_nhom", "$id_nhom_ts"] }
-              }
-            }
-          },
-        },
+       $project : {
+        
+       }
       },
       {
         $skip: startIndex,
@@ -127,7 +110,7 @@ exports.showNhomTs = async (req, res) => {
     ]);
     
 
-    const totalTsCount = await NhomTaiSan.countDocuments(matchQuery);
+    const totalTsCount = await TaiSan.countDocuments(matchQuery);
     // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
     const totalPages = Math.ceil(totalTsCount / perPage);
     const hasNextPage = endIndex < totalTsCount;

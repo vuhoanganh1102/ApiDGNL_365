@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_Quydinh_bd = new mongoose.Schema({
     qd_id: {
-        type: Number
+        type: Number,
+        requiere : true
     },
     id_cty: {
         type: Number

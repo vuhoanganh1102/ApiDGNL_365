@@ -27,11 +27,13 @@ exports.ChitietDx = async (req, res) => {
       // Tiếp tục xử lý và trả về kết quả
       const namnUserDuyet = users.map(user => ({ 
         userName: user.userName, 
-        avatarUser: user.avatarUser 
+        avatarUser: user.avatarUser,
+        idQLC : user?.idQLC 
       }));
       const namnUsertd = usertd.map(user => ({ 
         userName: user.userName,
-        avatarUser: user.avatarUser 
+        avatarUser: user.avatarUser,
+        idQLC : user?.idQLC  
       }));
       if(dexuat){
         let avatar = await serviceVanthu.createLinkFileVanthu(dexuat.id_user,dexuat.file_kem)
@@ -39,16 +41,20 @@ exports.ChitietDx = async (req, res) => {
           dexuat.file_kem = avatar
         }
       }
-      if (namnUserDuyet) {
-        let avatar = await fnc.createLinkFileEmpQLC(namnUserDuyet[0].idQLC ,namnUserDuyet[0].avatarUser)
-        if(avatar) 
-        namnUserDuyet[0].avatarUser = avatar
-      };
-      if(namnUsertd) {
-        let avatar = await fnc.createLinkFileEmpQLC(namnUsertd[0].idQLC,namnUsertd[0].avatarUser)
-        if(avatar) 
-        namnUsertd[0].avatarUser = avatar
+      if (namnUserDuyet && namnUserDuyet[0] && namnUserDuyet[0].idQLC) {
+        let avatar = await fnc.createLinkFileEmpQLC(namnUserDuyet[0].idQLC, namnUserDuyet[0].avatarUser);
+        if (avatar) {
+          namnUserDuyet[0].avatarUser = avatar;
+        }
       }
+      
+      if (namnUsertd && namnUsertd[0] && namnUsertd[0].idQLC) {
+        let avatar = await fnc.createLinkFileEmpQLC(namnUsertd[0].idQLC, namnUsertd[0].avatarUser);
+        if (avatar) {
+          namnUsertd[0].avatarUser = avatar;
+        }
+      }
+      
       return functions.success(res, 'get data success', { dexuat, namnUserDuyet, namnUsertd });
     }
   } catch (error) {
@@ -233,7 +239,6 @@ exports.changeCate = async (req, res) => {
      }else{
       return functions.setError(res, 'không có quyền truy cập', 400);
      }
-    
   } catch (error) {
     console.error('Failed ', error);
     return functions.setError(res, error);
@@ -250,12 +255,12 @@ exports.changeCate = async (req, res) => {
 
 exports.findNameCate = async (req, res) => {
   try {
-    let { name_cate_dx, page } = req.body;
+    let { name_cate_dx, page,perPage } = req.body;
     
     let com_id ='';
     if(req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id
-      const perPage = 10;
+      perPage = parseInt(perPage) || 10;
       page = parseInt(page) || 1;
 
     const regex = new RegExp(name_cate_dx, 'i');

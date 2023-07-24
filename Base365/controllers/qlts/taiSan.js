@@ -43,7 +43,7 @@ exports.showAll = async (req, res) => {
       matchQuery.id_nhom_ts = parseInt(id_nhom_ts);
     }
     if (ts_vi_tri) {
-      matchQuery.ts_vi_tri = parseInt(ts_vi_tri);;
+      matchQuery.ts_vi_tri = parseInt(ts_vi_tri);
     }
     if (id_ten_quanly) {
       matchQuery.id_ten_quanly = parseInt(id_ten_quanly);
