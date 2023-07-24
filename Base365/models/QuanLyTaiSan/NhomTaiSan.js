@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const model_NhomTaiSan= new mongoose.Schema({
     id_nhom: {
         type: Number,
-        require : true
+        require : true,
+        unique: true
     },
     ten_nhom: {
         type: String

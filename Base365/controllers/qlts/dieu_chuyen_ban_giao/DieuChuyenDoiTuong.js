@@ -332,7 +332,7 @@ exports.add = async (req, res) => {
 
     } else {
         return res.status(400).json({ message: "khoi_chon_phong_ban_nv or khoi_chon_phong_ban_nv_den phai la 0 or 1 " })
-    } json({ data: { insert_dieuchuyen: insert_dieuchuyen, insert_thongbao1: insert_thongbao1, insert_thongbao2: insert_thongbao2 }, message: "thanh cong " });
+    } //json({ data: { insert_dieuchuyen: insert_dieuchuyen, insert_thongbao1: insert_thongbao1, insert_thongbao2: insert_thongbao2 }, message: "thanh cong " });
 
 
 

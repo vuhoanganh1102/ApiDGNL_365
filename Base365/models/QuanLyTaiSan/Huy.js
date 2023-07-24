@@ -1,38 +1,50 @@
 const mongoose = require("mongoose");
 const model_Huy = new mongoose.Schema({
     huy_id: {
-        type: Number
+        type: Number,
+        default:0,
+        unique: true
     },
     huy_taisan: {
-        type: Number
+        type: Number,
+        default:0
     }
     ,
     id_ng_dexuat: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_id_bb_cp: {
-        type: Number
+        type: Number,
+        default:0
     },
     id_cty: {
-        type: Number
+        type: Number,
+        default:0
     },
     id_ng_tao: {
-        type: Number
+        type: Number,
+        default:0
     },
     id_ng_duyet: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_type_quyen_duyet: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_ngayduyet: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_trangthai: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_soluong: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_lydo_tuchoi: {
         type: String
@@ -41,28 +53,36 @@ const model_Huy = new mongoose.Schema({
         type: String
     },
     huy_type_quyen: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_id_ng_xoa: {
-        type: Number
+        type: Number,
+        default:0
     },
     xoa_huy: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_date_create: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_date_delete: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_type_quyen_xoa: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_ng_sd: {
-        type: Number
+        type: Number,
+        default:0
     },
     huy_quyen_sd: {
-        type: Number
+        type: Number,
+        default:0
     }
 
 }, {
