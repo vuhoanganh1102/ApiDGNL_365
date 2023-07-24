@@ -632,22 +632,26 @@ exports.detailTSCBD = async (req, res) => {
         })
         let nguoi_sd = 0;
         let vi_tri = 0;
-        let nguoiSD = await Users.findOne({
-            idQLC: chitiet_baoduong.bd_ng_sd
-        });
+
         if (chitiet_baoduong.bd_ngay_sudung == 1) {
+            let nguoiSD = await Users.findOne({
+                idQLC: chitiet_baoduong.bd_ng_sd,
+            });
             nguoi_sd = nguoiSD.userName;
             vi_tri = nguoiSD.address;
         }
         else if (chitiet_baoduong.bd_ngay_sudung == 2) {
+            let nguoiSD = await Users.findOne({
+                idQLC: chitiet_baoduong.bd_ng_sd,
+                type: { $ne: 1 }
+            });
             nguoi_sd = nguoiSD.userName;
-            let phongban = await Department.findOne({ dep_id: nguoiSD.inForPerson.employee.dep_id });
+            let phongban = await Department.findOne({ dep_id: nguoiSD.inForPerson.employee.dep_id, com_id: com_id });
             vi_tri = phongban.dep_name;
         }
         else {
-            let phongban = await Department.findOne({ dep_id: nguoiSD.inForPerson.employee.dep_id });
+            let phongban = await Department.findOne({ dep_id: chitiet_baoduong.bd_ng_sd, com_id: com_id });
             nguoi_sd = vi_tri = phongban.dep_name;
-
         }
 
 
@@ -681,7 +685,7 @@ exports.detailTSCBD = async (req, res) => {
 exports.listTSCSC = async (req, res) => {
     try {
         let { key, type_quyen } = req.body;
-        let page = req.body.page || 1;
+        let skip = req.body.page || 1;
         let limit = req.bodylimit.limit || 10;
         let com_id = 0;
         let id_ng_tao = 0;
@@ -738,7 +742,7 @@ exports.listTSCSC = async (req, res) => {
                 }
 
             }, {
-                $skip: (skip++ - 1) * 10
+                $skip: (skip - 1) * 10
             },
             {
                 $limit: limit
@@ -761,7 +765,7 @@ exports.listTSCSC = async (req, res) => {
                 bd_ng_sd = user.userName;
                 bd_vitri = user.address;
             } else if (list[count].bd_type_quyen_sd == 2) {
-                let user = await Users.findOne({ idQLC: list[count].bd_ng_sd });
+                let user = await Users.findOne({ idQLC: list[count].bd_ng_sd, type: { $ne: 1 } });
                 bd_ng_sd = user.userName;
                 let vitri = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id, com_id: com_id });
                 bd_vitri = vitri.dep_name;
@@ -769,8 +773,6 @@ exports.listTSCSC = async (req, res) => {
                 let vitri = await Department.findOne({ dep_id: list[count].bd_ng_sd, com_id: com_id });
                 bd_ng_sd = vitri.dep_name;
                 bd_vitri = vitri.dep_name;
-
-
             }
             let taiSan = await TaiSan.findOne({
                 ts_id: list[count].baoduong_taisan,
