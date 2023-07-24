@@ -67,7 +67,8 @@ const model_ThuHoi = new mongoose.Schema({
         type: Number
     },
     xoa_thuhoi: {
-        type: Number
+        type: Number,
+        default : 0 
     },
     thuhoi_date_create: {
         type: Number

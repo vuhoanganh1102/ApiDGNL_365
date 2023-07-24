@@ -62,6 +62,7 @@ exports.create = async (req , res) =>{
                     thuhoi__lydo : thuhoi__lydo,
                     thuhoi_soluong:thuhoi_soluong,
                     thuhoi_date_create: Date.parse(now)/1000,
+                    xoa_thuhoi : 0,
                 })
                  await thuHoiNhanVien.save()
                  data.thuHoiNhanVien = thuHoiNhanVien
@@ -100,6 +101,7 @@ exports.create = async (req , res) =>{
                     thuhoi__lydo : thuhoi__lydo,
                     thuhoi_soluong:thuhoi_soluong,
                     thuhoi_date_create: Date.parse(now)/1000,
+                    xoa_thuhoi : 0,
                 })
                  await thuHoiPhongBan.save()
                  let updateThongBao = new thongBao({
@@ -165,30 +167,77 @@ exports.getListDetail = async (req , res) =>{
         // const type_quyen = req.body.type_quyen
         let option = req.body.option
         const thuhoi_id = req.body.thuhoi_id
-        // const id_pb_thuhoi = req.body.id_pb_thuhoi
+        const id_pb_thuhoi = req.body.id_pb_thuhoi
+        const id_ng_dc_thuhoi = req.body.id_ng_dc_thuhoi
         let page = Number(req.body.page)|| 1;
         let pageSize = Number(req.body.pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let data = {}
-        let nameCapital = {}
         let listConditions = {};
     //    if(type_quyen != 0){
         listConditions.id_cty = id_cty 
-        if(option == 1) listConditions.thuhoi_trangthai = 0, listConditions.id_ng_dc_thuhoi = { $exists: true }   ////DS thu hôi chờ nhận NV
-        if(option == 2) listConditions.thuhoi_trangthai = 0, listConditions.thuhoi_id =  thuhoi_id  ////query thu hôi chờ nhận NV
-        if(option == 3) listConditions.thuhoi_trangthai = 1, listConditions.id_ng_dc_thuhoi =  { $exists: true } //DS đồng ý thu hồi  NV
-        if(option == 4) listConditions.thuhoi_trangthai = 1, listConditions.thuhoi_id =  thuhoi_id // đồng ý thu hồi  NV
-        if(option == 5) listConditions.thuhoi_trangthai = 0 , listConditions.id_pb_thuhoi =  { $exists: true } // DS thu hôi chờ nhận PB
-        if(option == 6) listConditions.thuhoi_trangthai = 0 , listConditions.thuhoi_id =  thuhoi_id  // //thu hôi chờ nhận PB
-        if(option == 7) listConditions.thuhoi_trangthai = 1 , listConditions.id_pb_thuhoi = { $exists: true }  //DS đồng ý thu hồi  PB
-        if(option == 8) listConditions.thuhoi_trangthai = 1 , listConditions.thuhoi_id = thuhoi_id  // đồng ý thu hồi  PB
-        
-        data = await ThuHoi.find(listConditions).select('thuhoi_id thuhoi_taisan thuhoi_ngay thuhoi_hoanthanh thuhoi__lydo thuhoi_soluong thuhoi_trangthai').skip(skip).limit(limit).lean()
+        if(option == 1) listConditions.thuhoi_trangthai = 0, listConditions.id_ng_dc_thuhoi = Number(id_ng_dc_thuhoi)   ////DS thu hôi chờ nhận NV
+        if(option == 2) listConditions.thuhoi_trangthai = 0, listConditions.thuhoi_id =  Number(thuhoi_id)  ////query thu hôi chờ nhận NV
+        if(option == 3) listConditions.thuhoi_trangthai = 1, listConditions.id_ng_dc_thuhoi =  Number(id_ng_dc_thuhoi) //DS đồng ý thu hồi  NV
+        if(option == 4) listConditions.thuhoi_trangthai = 1, listConditions.thuhoi_id =  Number(thuhoi_id) // đồng ý thu hồi  NV
+        if(option == 5) listConditions.thuhoi_trangthai = 0 , listConditions.id_pb_thuhoi =  Number(id_pb_thuhoi) // DS thu hôi chờ nhận PB
+        if(option == 6) listConditions.thuhoi_trangthai = 0 , listConditions.thuhoi_id =  Number(thuhoi_id)  // //thu hôi chờ nhận PB
+        if(option == 7) listConditions.thuhoi_trangthai = 1 , listConditions.id_pb_thuhoi = Number(id_pb_thuhoi)  //DS đồng ý thu hồi  PB
+        if(option == 8) listConditions.thuhoi_trangthai = 1 , listConditions.thuhoi_id = Number(thuhoi_id)  // đồng ý thu hồi  PB
+        data = await ThuHoi.aggregate([
+            {$match: listConditions},
+            {$lookup: {
+                from: "QLTS_Tai_San",
+                localField: "thuhoi_taisan.ds_thuhoi.ts_id",
+                foreignField : "ts_id",
+                as : "infoTS"
+            }},
+            {$unwind: "$infoTS"},
+            {$lookup: {
+                from: "Users",
+                localField: "thuhoi_ng_tao",
+                foreignField : "idQLC",
+                as : "info"
+            }},
+            {$unwind: "$info"},
+            {$lookup: {
+                from: "Users",
+                localField: "id_ng_dc_thuhoi",
+                foreignField : "idQLC",
+                as : "infoNguoiDuocTH"
+            }},
+            {$unwind: "$infoNguoiDuocTH"},
+            // {$lookup: {
+            //     from: "QLC_Deparments",
+            //     localField: "id_pb_thuhoi",
+            //     foreignField : "_id",
+            //     as : "infoPhongBanTH"
+            // }},
+            // {$unwind: "$infoPhongBanTH"},
+            {$project : {
+                "thuhoi_id" : "$thuhoi_id",
+                "thuhoi_taisan" : "$thuhoi_taisan",
+                "thuhoi_ngay" : "$thuhoi_ngay",
+                "id_nhanvien" : "$id_ng_dc_thuhoi",
+                "id_phongban" : "$id_pb_thuhoi",
+                "thuhoi_hoanthanh" : "$thuhoi_hoanthanh",
+                "thuhoi_soluong" : "$thuhoi_soluong",
+                "thuhoi_ng_tao" : "$thuhoi_ng_tao",
+                "thuhoi_trangthai" : "$thuhoi_trangthai",
+                "thuhoi__lydo" : "$thuhoi__lydo",
+                "ten_nguoi_tao" : "$info.userName",
+                "ten_nguoi_TH" : "$infoNguoiDuocTH.userName",
+                "ten_tai_san" : "$infoTS.ts_ten",
+                "Ma_tai_san" : "$infoTS.ts_id",
+                "So_luong_cap_phat" : "$thuhoi_taisan.ds_thuhoi.sl_th",
+                // "ten_phong_ban" : "$infoPhongBanTH.dep_name",
+            }},
+            {$unwind: "$So_luong_cap_phat"},
+
+        ]).skip(skip).limit(limit)
         let count = await ThuHoi.find(listConditions).count()
         if(data){
-            if(data[0].thuhoi_taisan.ds_thuhoi[0].ts_id) nameCapital = await TaiSan.find({ts_id : data[0].thuhoi_taisan.ds_thuhoi[0].ts_id}).select("ts_ten").lean()
-            if(nameCapital) data.nameCapital = nameCapital
             return fnc.success(res, " lấy thành công ",{data,count})
         }
         return fnc.setError(res, "không tìm thấy đối tượng", 510);

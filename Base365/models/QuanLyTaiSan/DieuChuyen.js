@@ -103,7 +103,8 @@ const model_Dieuchuyen = new mongoose.Schema({
         type: Number
     },
     xoa_dieuchuyen: {
-        type: Number
+        type: Number,
+        default : 0
     },
     dc_date_delete: {
         type: Number
