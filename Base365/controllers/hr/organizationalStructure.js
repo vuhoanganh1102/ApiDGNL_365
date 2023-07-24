@@ -13,7 +13,7 @@ const HR_DescPositions = require('../../models/hr/DescPositions');
 const HR_SignatureImages = require('../../models/hr/SignatureImage');
 const HR_InfoLeaders = require('../../models/hr/InfoLeaders');
 const PositionStruct = require('../../models/hr/PositionStructs');
-// const Team = require('../../models/qlc/Team');
+const LeaderAvatar  = require('../../models/hr/LeaderAvatar');
 
 
 const positionNames = {
@@ -943,6 +943,23 @@ exports.updateLeaderDetail = async (req, res, next) => {
         }
     } catch (e) {
         console.log("Đã có lỗi xảy ra khi tải lên hồ sơ", e);
+        return functions.setError(res, e.message);
+    }
+}
+
+//cap nhat avatar lanh dao
+exports.updateAvatarLeader = async (req, res, next) => {
+    try {
+        if (req.infoLogin && req.body.empId) {
+            let empId = req.body.empId
+            if(req.files && req.files.logo) {
+                
+            }
+            return functions.setError(res, "Truyen thieu anh!", 405);
+        } else {
+            return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
+        }
+    } catch (e) {
         return functions.setError(res, e.message);
     }
 }
