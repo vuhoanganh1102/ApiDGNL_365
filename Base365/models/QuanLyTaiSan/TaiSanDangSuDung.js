@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const model_TaiSanDangSuDung = new mongoose.Schema({
     id_sd: {
         type: Number,
-        required: true
+        required: true,
+        unique: true
     },
     com_id_sd: {
         type: Number

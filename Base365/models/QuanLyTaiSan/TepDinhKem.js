@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_TepDinhKem = new mongoose.Schema({
     tep_id: {
-        type: Number
+        type: Number,
+        unique: true
     },
     id_cty: {
         type: Number

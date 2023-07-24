@@ -15,8 +15,9 @@ router.post('/edit',functions.checkToken, fnc.checkRole("CP_TH",2) ,formData.par
 router.post('/delete',functions.checkToken,fnc.checkRole("CP_TH",3) ,formData.parse(),controller.delete)
 
 
-router.post('/getList',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getList)
+router.post('/getListNV',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getListNV)
 
+router.post('/getListDep',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getListDep)
 
 router.post('/updateStatus',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.updateStatus)
 

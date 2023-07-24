@@ -18,6 +18,8 @@ const ApplyNews = require("../../models/Raonhanh365/ApplyNews");
 const AdminUser = require("../../models/Raonhanh365/Admin/AdminUser");
 const NetworkOperator = require("../../models/Raonhanh365/NetworkOperator");
 const History = require("../../models/Raonhanh365/History")
+const PriceList = require("../../models/Raonhanh365/PriceList")
+const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const { default: axios } = require("axios");
 const md5 = require("md5");
 dotenv.config();
@@ -25,6 +27,12 @@ dotenv.config();
 exports.postNewMain = async (req, res, next) => {
     try {
         let buySell = 2;
+        let type = req.user.data.type;
+        if (type === 1) {
+            type = 1
+        } else {
+            type = 0
+        }
         let img = req.files.img;
         let video = req.files.video;
         let CV = req.files.CV;
@@ -115,7 +123,8 @@ exports.postNewMain = async (req, res, next) => {
             CV,
             the_tich,
             warranty,
-            dc_unit
+            dc_unit,
+            type
         };
         return next();
     } catch (err) {
@@ -1030,6 +1039,7 @@ exports.searchNew = async (req, res, next) => {
         if (startvalue) condition.money = { $gte: startvalue };
         if (endvalue) condition.money = { $lte: endvalue };
         if (startvalue && endvalue) condition.startvalue = { $gte: startvalue, $lte: endvalue };
+        condition.userID = { $ne: 0 }
         let data = await New.aggregate([
             { $match: condition },
             { $skip: skip },
@@ -1084,6 +1094,9 @@ exports.createBuyNew = async (req, res) => {
         // lấy id user từ req
         let userID = req.user.data.idRaoNhanh365;
         let type = req.user.data.type;
+        if (type !== 1) {
+            type = 0
+        }
         // khởi tạo các biến có thể có
         let new_file_dthau = null;
 
@@ -1647,7 +1660,12 @@ exports.getDetailNew = async (req, res, next) => {
                 district: 1,
                 ward: 1,
                 com_address_num: 1,
-                buySell: 1
+                buySell: 1,
+                totalSold: 1,
+                quantityMin: 1,
+                quantityMax: 1,
+                productGroup: 1,
+                productType: 1
             };
         } else {
             return functions.setError(res, "not found data", 404);
@@ -1655,6 +1673,7 @@ exports.getDetailNew = async (req, res, next) => {
         if (cate_Special) {
             searchitem[`${cate_Special}`] = 1;
         }
+
         let data = await New.aggregate([
             { $match: { _id: id_new } },
             {
@@ -1665,7 +1684,7 @@ exports.getDetailNew = async (req, res, next) => {
                     as: "user",
                 },
             },
-            { $unwind: "user" },
+            { $unwind: "$user" },
             { $match: { buySell: buysell } },
             { $project: searchitem },
 
@@ -3005,3 +3024,137 @@ exports.getDataBidding = async (req, res, next) => {
         return functions.setError(res, error);
     }
 };
+
+// info ghim tin
+exports.ghimTin = async (req, res, next) => {
+    try {
+        let id = Number(req.body.id);
+        if (!id) return functions.setError(res, 'missing id', 400)
+        let userId = req.user.data.idRaoNhanh365;
+        let data = await New.findOne({ _id: id, userID: userId }, {
+            title: 1, money: 1, img: 1, address: 1,
+            createTime: 1, until: 1, cateID: 1, endvalue: 1, free: 1, buySell: 1
+        });
+        if (data.img) {
+            data.img = await raoNhanh.getLinkFile(data.img, data.cateID, data.buySell)
+        }
+        let trangchu = await PriceList.find({ type: 1 }).limit(5)
+        let trangdanhmuc = await PriceList.find({ type: 5 }).limit(5)
+
+        return functions.success(res, 'get data success', { data, trangchu, trangdanhmuc })
+    } catch (error) {
+        console.log("🚀 ~ file: new.js:3033 ~ exports.ghimTin= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// info day tin
+exports.dayTin = async (req, res, next) => {
+    try {
+        let id = Number(req.body.id);
+        if (!id) return functions.setError(res, 'missing id', 400)
+        let userId = req.user.data.idRaoNhanh365;
+        let data = await New.findOne({ _id: id, userID: userId }, {
+            title: 1, money: 1, img: 1, address: 1,
+            createTime: 1, until: 1, cateID: 1, endvalue: 1, free: 1, buySell: 1
+        });
+        if (data.img) {
+            data.img = await raoNhanh.getLinkFile(data.img, data.cateID, data.buySell)
+        }
+        let tien_daytin = await PriceList.find({ type: 2 }).limit(1)
+        let thoigian = await PushNewsTime.find()
+
+        return functions.success(res, 'get data success', { data, tien_daytin, thoigian })
+    } catch (error) {
+        console.log("🚀 ~ file: new.js:3033 ~ exports.ghimTin= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// cập nhật tin
+exports.capNhatTin = async (req, res, next) => {
+    try {
+        let id = Number(req.body.id);
+        if (!id) return functions.setError(res, 'missing id', 400)
+        let userId = req.user.data.idRaoNhanh365;
+        let data = await New.findOne({ _id: id, userID: userId });
+        if (!data) return functions.setError(res, 'not found new', 404)
+        let thoi_gian = new Date();
+        let year = new Date().getFullYear();
+        let month = new Date().getMonth() + 1;
+        let ngay1 = new Date().getDate();
+        let ngay2 = new Date().getDate() + 1;
+        let hom_nay = year + '/' + month + '/' + ngay1;
+
+        let ngay_mai = year + '/' + month + '/' + ngay2;
+
+
+        let check = await New.countDocuments({
+            userID: userId,
+            refreshTime: {
+                $gt: new Date(hom_nay).getTime() / 1000,
+                $lt: new Date(ngay_mai).getTime() / 1000
+            },
+            refresh_new_home: 1
+        })
+        if (check === 0) {
+            await New.findByIdAndUpdate(id, {
+                createTime: thoi_gian,
+                updateTime: thoi_gian,
+                refreshTime: thoi_gian.getTime() / 1000,
+                refresh_new_home: 1
+            })
+        } else {
+            return functions.setError(res, 'Bạn đã làm mới tin ngày hôm nay.', 400)
+        }
+        return functions.success(res, 'update new success')
+    } catch (error) {
+        console.log("🚀 ~ file: new.js:3033 ~ exports.ghimTin= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// đăng bán lại
+exports.dangBanLai = async (req, res, next) => {
+    try {
+        let id = Number(req.body.id);
+        let userID = req.user.data.idRaoNhanh365;
+        let type = Number(req.body.type);
+        if (!id) return functions.setError(res, 'missing id', 400)
+        let check = await New.findOne({ _id: id, userID: userID })
+        if (!check) return functions.setError(res, 'not found new', 404)
+
+        if (type === 1) {
+            await New.findByIdAndUpdate(id, {
+                sold: 1,
+                timeSell: new Date(),
+
+            })
+        }
+
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// xoá comment
+exports.deleteComment = async (req, res, next) => {
+    try {
+        let id = Number(req.body.id);
+        let userID = req.user.data.idRaoNhanh365;
+        if (!id) return functions.setError(res, 'missing id', 400)
+        let check = await Comments.findOne({
+            sender_idchat: userID,
+            _id: id
+        })
+        if (!check) return functions.setError(res, 'not found comment', 404)
+
+        await Comments.findOneAndDelete({
+            sender_idchat: userID,
+            _id: id
+        })
+        return functions.success(res, 'delete comment success')
+    } catch (error) {
+        return functions.setError(res, error);
+    }
+}
