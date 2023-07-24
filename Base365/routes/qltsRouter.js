@@ -18,6 +18,7 @@ var kiemKeRouter = require('./qlts/kiemKeRouter');
 var DieuChuyenBanGiao = require("./qlts/DieuChuyenBanGiao/DieuChuyenViTri");
 var DieuChuyenBanGiaoDVQL = require("./qlts/DieuChuyenBanGiao/DieuChuyenDonViQuanLi");
 var BanGiao = require("./qlts/DieuChuyenBanGiao/BanGiao");
+var TrangChu = require("./qlts/TrangChu");
 var baoDuongRouter = require("./qlts/SuaChua_BaoDuong/baoDuongRouter");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
 //Api tool quét data
@@ -60,4 +61,5 @@ router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
 
 router.use('/BanGiao', BanGiao);
 
+router.use('/TrangChu', TrangChu);
 module.exports = router
