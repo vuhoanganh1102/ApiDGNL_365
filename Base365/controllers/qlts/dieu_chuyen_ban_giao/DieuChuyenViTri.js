@@ -305,7 +305,6 @@ exports.detailsDCVTTS = async (req, res) => {
             dc_lydo: chitiet_dcvitri.dc_lydo,
             dieuchuyen_taisan: chitiet_dcvitri.dieuchuyen_taisan,
         };
-
         fnc.success(res, 'thanh cong ', [dc_vt])
     } catch (error) {
 

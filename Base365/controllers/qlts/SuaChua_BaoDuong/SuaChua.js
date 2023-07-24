@@ -724,7 +724,7 @@ exports.details_bb_da_sua_chua = async (req, res) => {
 exports.listBBDaSuaChua = async (req, res) => {
     try {
 
-        let page = req.body.page || 1;
+        let skip = req.body.page || 1;
         let limit = req.body.perPage || 10;
         let type_quyen = req.user.data.type;
         let key = req.body.key;
@@ -734,7 +734,7 @@ exports.listBBDaSuaChua = async (req, res) => {
             com_id = req.user.data.idQLC;
 
         } else if (req.user.data.type == 2) {
-            com_id = req.user.data.inForPerson.employee.com_id;
+            com_id = req.user.data.com_id;
             ep_id = req.user.data.idQLC;
         }
         let filter = {
@@ -1233,7 +1233,7 @@ exports.detailBBCanSuaChua = async (req, res) => {
             sc_vitri = nguoiSD.address;
         }
         if (bb.sc_quyen_sd == 2) {
-            let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, type: { $ne: 1 } });
+            let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd,c});
             sc_ng_sd = nguoiSD.userName;
             let vitri = await Department.findOne({
                 dep_id: nguoiSD.inForPerson.employee.dep_id,
@@ -1265,7 +1265,7 @@ exports.detailBBCanSuaChua = async (req, res) => {
             ten_tai_san: tenTaiSan.ts_ten,
             so_luong: bb.sl_sc,
             doi_tuong_su_dung: sc_ng_sd,
-            vi_tri_tai_san: bb.sc_vitri,
+            vi_tri_tai_san: sc_vitri,
             //thong tin sua chua 
             ngay_hong: new Date(bb.sc_ngay_hong * 1000),
             noi_dung_sua_chua: bb.sc_noidung,
@@ -1278,8 +1278,8 @@ exports.detailBBCanSuaChua = async (req, res) => {
             dia_diem_sua_chua: bb.sc_diachi
 
         }
-        return res.status(200).json({ data: info_bb, message: "success" });
-
+        // return res.status(200).json({ data: info_bb, message: "success" });
+        fncsuccess(res, info_bb);
     } catch (error) {
 
         return res.status(500).json({ message: error.message });
@@ -1356,13 +1356,14 @@ exports.listBBCanSuaChua = async (req, res) => {
                 sc_trangthai: tscan_suachua[count].sc_trangthai,
                 sl_sc: tscan_suachua[count].sl_sc,
                 sc_noidung: tscan_suachua[count].sc_noidung,
+                ten_ts: taiSan.ts_ten
             }
             list_bb.push(info);
             count++;
         };
         let total = list_bb.length;
 
-        fnc.success(res, "thanh cong ", [tscan_suachua]);
+        fnc.success(res, "thanh cong ", [tscan_suachua, total]);
     } catch (error) {
         fnc.setError(res, error.message);
     }
