@@ -55,6 +55,7 @@ exports.showAll = async (req, res) => {
       {
         $match: matchQuery,
       },
+      { $sort: { ts_id: -1 } },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -89,8 +90,8 @@ exports.showAll = async (req, res) => {
       },
       {
         $match: {
-          "cap_phat.cp_da_xoa": 0 ,
-          "thuhoi.xoa_thuhoi" : 0
+          "cap_phat.cp_da_xoa": 0,
+          "thuhoi.xoa_thuhoi": 0
         }
       },
       {
@@ -105,7 +106,7 @@ exports.showAll = async (req, res) => {
         $project: {
           "ts_id": "$ts_id",
           "ts_ten": "$ts_ten",
-          "nguoi_cam" : "$id_ten_quanly",
+          "nguoi_cam": "$id_ten_quanly",
           "tong_so_luong": "$sl_bandau",
           "so_luong_cap_phat": { $size: "$cap_phat.cap_phat_taisan.ds_ts.ts_id" },
           "so_luong_thu_hoi": { $size: "$thuhoi.thuhoi_taisan.ds_thuhoi.ts_id" },
@@ -113,8 +114,8 @@ exports.showAll = async (req, res) => {
           "loai_ts": "$name_loai.ten_loai",
           "gia_tri": "$ts_gia_tri",
           "tinh_trang_su_dung": "$ts_trangthai",
-          "don_vi_quan_ly" : "$ts_don_vi",
-          "vi_tri_tai_san": "$name_vitri.vi_tri", 
+          "don_vi_quan_ly": "$ts_don_vi",
+          "vi_tri_tai_san": "$name_vitri.vi_tri",
         }
       },
       {
@@ -124,7 +125,7 @@ exports.showAll = async (req, res) => {
         $limit: perPage,
       },
     ]);
-    
+
 
 
     // Lấy tổng số lượng tài sản
@@ -367,10 +368,10 @@ exports.deleteTs = async (req, res) => {
 
 exports.editTS = async (req, res) => {
   try {
-    let { ts_id,id_loai_ts_edit,
-      ts_gia_tri_edit,ts_trangthai_edit,
-      ts_ten_edit} = req.body;
-   
+    let { ts_id, id_loai_ts_edit,
+      ts_gia_tri_edit, ts_trangthai_edit,
+      ts_ten_edit } = req.body;
+
     let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;

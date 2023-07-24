@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_DanhSachCapPhat = new mongoose.Schema({
     id_ds_capphat: {
-        type: Number
+        type: Number,
+        unique: true
     },
     date_capphat: {
         type: Number

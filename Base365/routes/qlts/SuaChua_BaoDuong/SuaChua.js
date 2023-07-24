@@ -10,7 +10,7 @@ router.post('/deleteAll', functions.checkToken, formData.parse(), controllers.de
 router.post('/HoanThanhSuaChua', functions.checkToken, formData.parse(), controllers.HoanThanhSuaChua);
 router.post('/EditSuaChua', functions.checkToken, formData.parse(), controllers.SuaChuaBB);
 router.post('/deleteBBSuaChua', functions.checkToken, formData.parse(), controllers.XoabbSuaChua);
-router.post('/details_bien_ban_sua_chua', functions.checkToken, formData.parse(), controllers.details);
+router.post('/details_bien_ban_dang_sua_chua', functions.checkToken, formData.parse(), controllers.details);
 router.post('/list_bien_ban_dang_sua_chua', functions.checkToken, formData.parse(), controllers.listBBDangSuaChua);
 //bien ban da sua chua 
 router.post('/xoa_bien_ban_da_sua_chua', functions.checkToken, formData.parse(), controllers.xoa_bb_sua_chua);

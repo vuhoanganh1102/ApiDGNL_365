@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 const model_Baoduong = new mongoose.Schema({
     id_bd: {
-        type: Number
+        type: Number,
+        unique: true
     },
     baoduong_taisan: {
-        type: String,
+        type: Number,
     },
     bd_sl: {
         type: Number,
@@ -43,7 +44,7 @@ const model_Baoduong = new mongoose.Schema({
         type: Number,
     },
     bd_ng_thuchien: {
-        type: String,
+        type: Number,
     },
     donvi_bd: {
         type: String,
@@ -67,7 +68,7 @@ const model_Baoduong = new mongoose.Schema({
         type: Number,
     },
     bd_ng_sd: {
-        type: String,
+        type: Number,
     },
     bd_type_quyen_sd: {
         type: Number,

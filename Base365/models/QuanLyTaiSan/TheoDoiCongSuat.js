@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_TheoDoiCongSuat = new mongoose.Schema({
     id_cs: {
-        type: Number
+        type: Number,
+        unique: true
     },
     id_cty: {
         type: Number
