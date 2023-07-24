@@ -51,40 +51,94 @@ exports.addNhomTaiSan = async (req, res) => {
 
 exports.showNhomTs = async (req, res) => {
   try {
-    let { id_nhom, page, perPage } = req.body
+    let { id_nhom_ts, page, perPage } = req.body;
     let com_id = '';
-    if (req.user.data.type == 1|| req.user.data.type == 2) {
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    page = page || 1;
-    perPage = perPage || 10;
-    let query = {
-      nhom_da_xoa: 0,
-    };
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
-    if (id_nhom) {
-      query.id_nhom = id_nhom;
+    page = parseInt(page) || 1; // Trang hiện tại (mặc định là trang 1)
+    perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
+    let matchQuery = {
+      id_cty: com_id, // Lọc theo com_id
+      nhom_da_xoa: 0,
+    };
+    if (id_nhom_ts) {
+      matchQuery.id_nhom_ts = parseInt(id_nhom_ts);
     }
-    
-    const showNhom = await NhomTaiSan.find({ id_cty: com_id, ...query })
-      .sort({ id_nhom: -1 })
-      .skip(startIndex)
-      .limit(perPage);
-    const totalTsCount = await NhomTaiSan.countDocuments({ id_cty: com_id, ...query });
 
+    let listNhom = await NhomTaiSan.aggregate([
+      {
+        $match: matchQuery,
+      },
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'id_nhom_ts',
+          foreignField: 'id_nhom',
+          as: 'tong_loai',
+        },
+      },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'id_nhom_ts',
+          foreignField: 'id_nhom',
+          as: 'tong_ts',
+        },
+      },
+      {
+        $match: {
+          "tong_loai.loai_da_xoa": 0,
+          "tong_ts.ts_da_xoa": 0,
+        },
+      },
+      {
+        $project: {
+          "id_nhom": "$id_nhom",
+          "ten_nhom": "$ten_nhom",
+          "so_loai_ts": { $size: {
+            $filter: {
+              input: "$tong_loai",
+              as: "ts",
+              cond: { $eq: ["$$ts.id_nhom", "$id_nhom_ts"] }
+            }
+          }},
+          "so_ts": {
+            $size: {
+              $filter: {
+                input: "$tong_ts",
+                as: "ts",
+                cond: { $eq: ["$$ts.id_nhom", "$id_nhom_ts"] }
+              }
+            }
+          },
+        },
+      },
+      {
+        $skip: startIndex,
+      },
+      {
+        $limit: perPage,
+      },
+    ]);
+    
+
+    const totalTsCount = await NhomTaiSan.countDocuments(matchQuery);
     // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
     const totalPages = Math.ceil(totalTsCount / perPage);
     const hasNextPage = endIndex < totalTsCount;
 
-    return functions.success(res, 'get data success', { showNhom, totalPages, hasNextPage });
+    return functions.success(res, 'get data success', { listNhom, totalPages, hasNextPage });
   } catch (error) {
     console.log(error);
-    return functions.setError(res, error)
+    return functions.setError(res, error);
   }
-}
+};
+
 
 
 exports.showCTNhomTs = async (req, res) => {

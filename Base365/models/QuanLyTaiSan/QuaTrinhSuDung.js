@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const model_QuaTrinhSuDung = new mongoose.Schema({
     quatrinh_id: {
         type: Number,
-        require : true
+        require : true,
+        unique: true
     },
     id_ts: {
         type: Number,

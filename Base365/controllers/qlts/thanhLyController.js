@@ -11,9 +11,9 @@ const Department = require('../../models/qlc/Deparment');
 exports.createLiquidationAssetProposal = async (req, res, next) => {
     try {
         // khai báo biến lấy dữ liệu từ token
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let emId = req.emId;
-        let type_quyen = req.type || 1;
+        let type_quyen = req.type;
 
         // khai báo biến người dùng nhập vào
         let tentstl = Number(req.body.tentstl);
@@ -77,7 +77,7 @@ exports.createLiquidationAssetProposal = async (req, res, next) => {
 exports.getDataLiquidationAssetProposal = async (req, res, next) => {
     try {
         // khai báo biến lấy dữ liệu từ token
-        let comId = req.comId || 1763;
+        let comId = req.comId ;
         let emId = req.emId;
         let type_quyen = req.type;
 
@@ -92,32 +92,33 @@ exports.getDataLiquidationAssetProposal = async (req, res, next) => {
 
         // khai báo biến phụ
         let conditions = {};
-        let data = {};
-
         // logic xử lý
         // khai báo điều kiện tìm kiếm
+        if (type_quyen === 2) { conditions = { $or: [{ id_ng_tao: emId }, { id_ngdexuat: emId }] } }
+
         conditions.id_cty = comId;
 
         conditions.xoa_dx_tl = 0;
 
-        conditions.tl_trangthai = 3;
+        conditions.tl_trangthai = { $in: [0, 2] }
 
-        if (keywords) { conditions.tl_id = { $regex: keywords } }
 
-        if (type_quyen === 2) { conditions = { $or: [{ id_ng_tao: emId }, { id_ngdexuat: emId }] } }
+        if (keywords)  conditions.tl_id = keywords 
 
-        // số lượng tài sản đã thanh lý
-        let countTaiSanDaThanhLy = await ThanhLy.find(conditions).count();
+        
 
         // số lượng tài sản đề xuất thanh lý
-        conditions.tl_trangthai = { $in: [0, 2] }
         let countTaiSanDeXuatThanhLy = await ThanhLy.find(conditions).count();
 
+        // số lượng tài sản đã thanh lý
+        conditions.tl_trangthai = 3;
+        let countTaiSanDaThanhLy = await ThanhLy.find(conditions).count();
 
-
+        conditions.tl_trangthai = { $in: [0, 2] }
         // dữ liệu tài sản đề xuất thanh lý
         let taiSanDeXuatThanhLy = await ThanhLy.aggregate([
             { $match: conditions },
+            { $sort: { tl_id: -1 } },
             { $skip: skip },
             { $limit: limit },
             {
@@ -128,7 +129,7 @@ exports.getDataLiquidationAssetProposal = async (req, res, next) => {
                     as: 'taisan',
                 }
             },
-            { $unwind: { path: '$taisan', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$taisan' } },
             {
                 $lookup: {
                     from: 'QLTS_Loai_Tai_San',
@@ -137,42 +138,53 @@ exports.getDataLiquidationAssetProposal = async (req, res, next) => {
                     as: 'loaiTS',
                 }
             },
-            { $unwind: { path: "$loaiTS", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$loaiTS" } },
+            {
+                $project:{
+                    sobienban:'$tl_id',
+                    ngaytao:'$tl_date_create',
+                    tl_type_quyen:1,
+                    trangthai:'$tl_trangthai',
+                    mataisan:'$taisan.ts_id',
+                    tentaisan:'$taisan.ts_ten',
+                    soluong:'$tl_soluong',
+                    lydo:'$tl_lydo',
+                    ngdexuat:'$id_ngdexuat'
+                }
+            }
         ]);
         for (let i = 0; i < taiSanDeXuatThanhLy.length; i++) {
 
             // trả về định dạng ngày
-            taiSanDeXuatThanhLy[i].tl_date_create = new Date(taiSanDeXuatThanhLy[i].tl_date_create * 1000);
+            taiSanDeXuatThanhLy[i].ngaytao = new Date(taiSanDeXuatThanhLy[i].ngaytao * 1000);
+           
 
             // lấy quyền người dùng đã đề xuất
             let tl_type_quyen = taiSanDeXuatThanhLy[i].tl_type_quyen;
 
             // lấy thông tin user
-            let user = await Users.findOne({ idQLC: taiSanDeXuatThanhLy[i].id_ngdexuat }, { userName: 1, inForPerson: 1, address: 1 })
+            let user = await Users.findOne({ idQLC: taiSanDeXuatThanhLy[i].ngdexuat }, { userName: 1, inForPerson: 1, address: 1 })
+            if(user){
 
-            if (tl_type_quyen === 1) {
                 taiSanDeXuatThanhLy[i].ngdexuat = user.userName
-                taiSanDeXuatThanhLy[i].phongban = user.userName
+                if (tl_type_quyen === 1) {
+                    taiSanDeXuatThanhLy[i].phongban = user.userName
+                }
+    
+                if (tl_type_quyen === 2 && user.inForPerson && user.inForPerson.employee) {
+                    let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
+                    taiSanDeXuatThanhLy[i].phongban = dep.dep_name
+                }
+    
+                if (tl_type_quyen === 3 && user.inForPerson && user.inForPerson.employee) {
+                    let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
+                    taiSanDeXuatThanhLy[i].ngdexuat = dep.dep_name
+                    taiSanDeXuatThanhLy[i].phongban = dep.dep_name
+                }
             }
-
-            if (tl_type_quyen === 2) {
-                let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
-                taiSanDeXuatThanhLy[i].ngdexuat = user.userName
-                taiSanDeXuatThanhLy[i].phongban = dep.dep_name
-            }
-
-            if (tl_type_quyen === 3) {
-                let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
-                taiSanDeXuatThanhLy[i].ngdexuat = dep.dep_name
-                taiSanDeXuatThanhLy[i].phongban = dep.dep_name
-            }
+          
         }
-        // xử lý đầu ra
-        data.countTaiSanDeXuatThanhLy = countTaiSanDeXuatThanhLy;
-        data.countTaiSanDaThanhLy = countTaiSanDaThanhLy;
-        data.taiSanDeXuatThanhLy = taiSanDeXuatThanhLy;
-
-        return functions.success(res, 'get data success', { data })
+        return functions.success(res, 'get data success', {countTaiSanDeXuatThanhLy,countTaiSanDaThanhLy, data:taiSanDeXuatThanhLy })
     } catch (error) {
         console.error(error)
         return functions.setError(res, error);
@@ -224,7 +236,7 @@ exports.approveLiquidationAssetProposal = async (req, res, next) => {
                 let quyen_nhan = checkThanhLy.tl_type_quyen;
 
                 if (quyen_nhan === 1) {
-                    let doi_tuong_ds_ts = await TaiSan.findOne({ id_cty: comId, ts_id: checkThanhLy.tl_id });
+                    let doi_tuong_ds_ts = await TaiSan.findOne({ id_cty: comId, ts_id: checkThanhLy.thanhly_taisan });
 
                     if (doi_tuong_ds_ts) {
 
@@ -288,7 +300,7 @@ exports.approveLiquidationAssetProposal = async (req, res, next) => {
                     }
                     return functions.setError(res, 'Không tìm thấy tài sản', 404)
                 } else if (quyen_nhan === 2) {
-                    let doi_tuong_ds_ts = await TaiSanDangSuDung.findOne({ com_id_sd: comId, id_ts_sd: checkThanhLy.tl_id, id_nv_sd: id_ng_nhan });
+                    let doi_tuong_ds_ts = await TaiSanDangSuDung.findOne({ com_id_sd: comId, id_ts_sd: checkThanhLy.thanhly_taisan, id_nv_sd: id_ng_nhan });
 
                     if (doi_tuong_ds_ts) {
                         let sl_ts_dang_sd = doi_tuong_ds_ts.sl_dang_sd;
@@ -576,7 +588,7 @@ exports.detailLiquidationAssetProposal = async (req, res, next) => {
 exports.getDataDidLiquidationAssetProposal = async (req, res, next) => {
     try {
         // khai báo biến lấy dữ liệu từ token
-        let comId = req.comId || 1763;
+        let comId = req.comId ;
         let emId = req.emId;
         let type_quyen = req.type;
 
@@ -591,10 +603,11 @@ exports.getDataDidLiquidationAssetProposal = async (req, res, next) => {
 
         // khai báo biến phụ
         let conditions = {};
-        let data = {};
-
         // logic xử lý
         // khai báo điều kiện tìm kiếm
+
+        if (type_quyen === 2) { conditions = { $or: [{ id_ng_tao: emId }, { id_ngdexuat: emId }] } }
+
         conditions.id_cty = comId;
 
         conditions.xoa_dx_tl = 0;
@@ -604,7 +617,7 @@ exports.getDataDidLiquidationAssetProposal = async (req, res, next) => {
 
         if (keywords) { conditions.tl_id = { $regex: keywords } }
 
-        if (type_quyen === 2) { conditions = { $or: [{ id_ng_tao: emId }, { huy_ng_sd: emId }] } }
+        
 
         // số lượng tài sản đề xuất thanh lý
         let countTaiSanDeXuatThanhLy = await ThanhLy.find(conditions).count();
@@ -616,6 +629,7 @@ exports.getDataDidLiquidationAssetProposal = async (req, res, next) => {
         // dữ liệu tài sản đề xuất thanh lý
         let taiSanDeXuatThanhLy = await ThanhLy.aggregate([
             { $match: conditions },
+            { $sort: { tl_id: -1 } },
             { $skip: skip },
             { $limit: limit },
             {
@@ -626,7 +640,7 @@ exports.getDataDidLiquidationAssetProposal = async (req, res, next) => {
                     as: 'taisan',
                 }
             },
-            { $unwind: { path: '$taisan', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$taisan' } },
             {
                 $lookup: {
                     from: 'QLTS_Loai_Tai_San',
@@ -635,43 +649,55 @@ exports.getDataDidLiquidationAssetProposal = async (req, res, next) => {
                     as: 'loaiTS',
                 }
             },
-            { $unwind: { path: "$loaiTS", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$loaiTS" } },
+            {
+                $project:{
+                    sobienban:'$tl_id',
+                    mataisan:'$taisan.ts_id',
+                    tentaisan:'$taisan.ts_ten',
+                    soluong:'$tl_soluong',
+                    ngdexuat:'$id_ngdexuat',
+                    ngayduyet:'$ngay_duyet',
+                    tl_type_quyen:1,
+                    ngaythanhly:'$tl_ngay',
+                    lydo:'$tl_lydo',
+                    tienthanhly:'$tl_sotien'
+                  
+                }
+            }
         ]);
         for (let i = 0; i < taiSanDeXuatThanhLy.length; i++) {
 
             // trả về định dạng ngày
-            taiSanDeXuatThanhLy[i].ngay_duyet = new Date(taiSanDeXuatThanhLy[i].ngay_duyet * 1000);
-            taiSanDeXuatThanhLy[i].tl_ngay = new Date(taiSanDeXuatThanhLy[i].tl_ngay * 1000);
+            taiSanDeXuatThanhLy[i].ngayduyet = new Date(taiSanDeXuatThanhLy[i].ngayduyet * 1000);
+            taiSanDeXuatThanhLy[i].ngaythanhly = new Date(taiSanDeXuatThanhLy[i].ngaythanhly * 1000);
+           
 
             // lấy quyền người dùng đã đề xuất
             let tl_type_quyen = taiSanDeXuatThanhLy[i].tl_type_quyen;
 
             // lấy thông tin user
-            let user = await Users.findOne({ idQLC: taiSanDeXuatThanhLy[i].id_ngdexuat }, { userName: 1, inForPerson: 1, address: 1 })
-
-            if (tl_type_quyen === 1) {
+            let user = await Users.findOne({ idQLC: taiSanDeXuatThanhLy[i].ngdexuat }, { userName: 1, inForPerson: 1, address: 1 })
+            if(user){
+                if (tl_type_quyen === 1) {
+                    taiSanDeXuatThanhLy[i].phongban = user.userName
+                }
                 taiSanDeXuatThanhLy[i].ngdexuat = user.userName
-                taiSanDeXuatThanhLy[i].phongban = user.userName
-            }
 
-            if (tl_type_quyen === 2) {
-                let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
-                taiSanDeXuatThanhLy[i].ngdexuat = user.userName
-                taiSanDeXuatThanhLy[i].phongban = dep.dep_name
+                if (tl_type_quyen === 2 && user.inForPerson && user.inForPerson.employee) {
+                    let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
+                    taiSanDeXuatThanhLy[i].phongban = dep.dep_name
+                }
+    
+                if (tl_type_quyen === 3 && user.inForPerson && user.inForPerson.employee) {
+                    let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
+                    taiSanDeXuatThanhLy[i].ngdexuat = dep.dep_name
+                    taiSanDeXuatThanhLy[i].phongban = dep.dep_name
+                }
             }
-
-            if (tl_type_quyen === 3) {
-                let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
-                taiSanDeXuatThanhLy[i].ngdexuat = dep.dep_name
-                taiSanDeXuatThanhLy[i].phongban = dep.dep_name
-            }
+          
         }
-        // xử lý đầu ra
-        data.countTaiSanDeXuatThanhLy = countTaiSanDeXuatThanhLy;
-        data.countTaiSanDaThanhLy = countTaiSanDaThanhLy;
-        data.taiSanDeXuatDaThanhLy = taiSanDeXuatThanhLy;
-
-        return functions.success(res, 'get data success', { data })
+        return functions.success(res, 'get data success', {countTaiSanDeXuatThanhLy,countTaiSanDaThanhLy, data:taiSanDeXuatThanhLy })
     } catch (error) {
         console.error(error)
         return functions.setError(res, error);

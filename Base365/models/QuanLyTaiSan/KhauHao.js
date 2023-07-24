@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_KHauHao = new mongoose.Schema({
     id_khau_hao: {
-        type: Number
+        type: Number,
+        unique: true
     },
     kh_id_cty: {
         type: Number,

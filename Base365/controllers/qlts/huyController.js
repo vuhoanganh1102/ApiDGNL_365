@@ -11,8 +11,8 @@ const Department = require('../../models/qlc/Deparment');
 exports.createAssetProposeCancel = async (req, res, next) => {
     try {
         // khai báo data token
-        let comId = req.comId || 1763;
-        let type_quyen = Number(req.type) || 1;
+        let comId = req.comId;
+        let type_quyen = Number(req.type);
         let id_ng_tao = comId;
         let id_ng_dexuat = comId;
         let emId = req.emId;
@@ -72,7 +72,7 @@ exports.createAssetProposeCancel = async (req, res, next) => {
 // danh sách đề xuất tài sản huỷ
 exports.getDataAssetProposeCancel = async (req, res, next) => {
     try {
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let keywords = Number(req.body.keywords);
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
@@ -93,34 +93,22 @@ exports.getDataAssetProposeCancel = async (req, res, next) => {
                     { huy_ng_sd: emId },
                 ]
             }
-        } else if (quyen === 1) {
-            conditions = {
-                $or: [
-                    { id_ng_tao: comId },
-                    { huy_ng_sd: comId },
-                ]
-            }
         }
-        if (keywords) conditions.huy_id = { $regex: keywords };
+        if (keywords) conditions.huy_id = keywords;
 
         conditions.id_cty = comId;
         conditions.huy_trangthai = { $in: [0, 2] };
         conditions.xoa_huy = 0;
 
 
-        let countDxHuy = await Huy.find(conditions).sort({ huy_id: -1 }).skip(skip).limit(limit).count();
-
         let countTongDxHuy = await Huy.find(conditions).sort({ huy_id: -1 }).count();
 
-        let listAsset = await TaiSan.find({ id_cty: comId, ts_da_xoa: 0, ts_so_luong: { $gte: 0 } }, { ts_ten: 1 }).sort({ ts_id: -1 });
-
-        let listDxHuy = await Huy.find(conditions).sort({ huy_id: -1 }).skip(skip).limit(limit);
-
-        listDxHuy = await Huy.aggregate([
+        let data = await Huy.aggregate([
             { $match: conditions },
+            { $sort: { huy_id: -1 } },
             { $skip: skip },
             { $limit: limit },
-            { $sort: { huy_id: -1 } },
+           
             {
                 $lookup: {
                     from: 'QLTS_Tai_San',
@@ -139,16 +127,46 @@ exports.getDataAssetProposeCancel = async (req, res, next) => {
                 }
             },
             { $unwind: "$loaiTS" },
+            {
+                $project: {
+                    sobienban: '$huy_id',
+                    ngaytao: '$huy_date_create',
+                    trangthai: '$huy_trangthai',
+                    mataisan: '$taiSan.ts_id',
+                    tentaisan: '$taiSan.ts_ten',
+                    soluong: '$huy_soluong',
+                    loaitaisan: '$loaiTS.ten_loai',
+                    phongban: '$id_ng_dexuat',
+                    lydohuy: '$huy_lydo',
+                    nguoitao: '$huy_type_quyen'
+                }
+            }
         ]);
+        for (let i = 0; i < data.length; i++) {
+
+            let com = await Users.findOne({ idQLC: data[i].phongban })
+
+            data[i].ngaytao = new Date(data[i].ngaytao * 1000)
+
+            if (data[i].nguoitao === 1 && com) {
+
+                data[i].phongban = com.userName;
+                data[i].nguoitao = com.userName;
+                data[i].ngdexuat = com.userName;
+
+            } else if (com && com.inForPerson && com.inForPerson.employee) {
+                let dep = await Department.findOne({ dep_id: com.inForPerson.employee.dep_id })
+                if (dep) {
+                    data[i].nguoitao = com.userName;
+                    data[i].ngdexuat = com.userName;
+                    data[i].phongban = dep.dep_name;
+                }
+            }
+
+        }
         conditions.huy_trangthai = 1
-        let didCancel = await Huy.find(conditions).count();
-        let data = {};
-        data.countDxHuy = countDxHuy;
-        data.countTongDxHuy = countTongDxHuy;
-        data.didCancel = didCancel;
-        data.listDxHuy = listDxHuy;
-        data.listAsset = listAsset;
-        return functions.success(res, 'get data success', { data })
+        let countDaHuy = await Huy.find(conditions).count();
+        return functions.success(res, 'get data success', { countTongDxHuy, countDaHuy, data })
     }
     catch (error) {
         console.error(error)
@@ -160,18 +178,26 @@ exports.getDataAssetProposeCancel = async (req, res, next) => {
 exports.approveAssetDisposal = async (req, res, next) => {
     try {
         // khai báo biến lấy dữ liệu từ token
-        let comId = Number(req.comId) || 1763;
+        let comId = Number(req.comId);
         let type_quyen = Number(req.type);
+        let emId = req.emId;
 
         // khai báo biến lấy dữ liệu từ người dùng
         let id = Number(req.body.id);
-        let ng_duyet = Number(req.body.ng_duyet);
+
 
         // trường lưu thời gian
         let ngay_duyet = new Date().getTime() / 1000;
 
         // lấy thông tin đề xuất huỷ
         let getData = await Huy.findOne({ huy_id: id, id_cty: comId });
+        console.log("🚀 ~ file: huyController.js:193 ~ exports.approveAssetDisposal= ~ getData:", getData)
+
+        if (type_quyen === 1) {
+            var ng_duyet = comId;
+        } else {
+            var ng_duyet = emId;
+        }
 
         if (getData) {
             let id_ng_nhan = getData.id_ng_tao;
@@ -188,7 +214,7 @@ exports.approveAssetDisposal = async (req, res, next) => {
                 id_tb,
                 id_cty: comId,
                 id_ng_nhan: id_ng_nhan,
-                id_ng_tao: id_cty,
+                id_ng_tao: comId,
                 type_quyen: quyen_nhan,
                 type_quyen_tao: 2,
                 loai_tb: 7,
@@ -213,7 +239,7 @@ exports.approveAssetDisposal = async (req, res, next) => {
                         },
                         { $inc: { sl_dang_sd: -getData.huy_soluong } }
 
-                        );
+                    );
                     if (checkUpdate) {
                         if (checkUpdate.sl_dang_sd > getData.huy_soluong) {
 
@@ -248,7 +274,7 @@ exports.approveAssetDisposal = async (req, res, next) => {
                     let checkUpdate = await TaiSanDangSuDung.findOne(
                         {
                             com_id_sd: comId,
-                            id_ts_sd: getData.huy_taisan[0].ds_huy,
+                            id_ts_sd: getData.huy_taisan,
                             id_pb_sd: huy_ng_sd
                         })
                     if (checkUpdate) {
@@ -256,11 +282,11 @@ exports.approveAssetDisposal = async (req, res, next) => {
                             await TaiSanDangSuDung.findOneAndUpdate(
                                 {
                                     com_id_sd: comId,
-                                    id_ts_sd: getData.huy_taisan[0].ds_huy,
+                                    id_ts_sd: getData.huy_taisan,
                                     id_pb_sd: huy_ng_sd
                                 },
                                 { $inc: { sl_dang_sd: -getData.huy_soluong } }
-                                );
+                            );
 
                             await Huy.findOneAndUpdate({ huy_id: id, id_cty: comId },
                                 {
@@ -273,9 +299,9 @@ exports.approveAssetDisposal = async (req, res, next) => {
                             let quatrinh_id = await functions.getMaxIdByField(QuaTrinhSuDung, 'quatrinh_id');
                             await QuaTrinhSuDung.create({
                                 quatrinh_id,
-                                id_ts: getData.huy_taisan[0].ds_huy,
+                                id_ts: getData.huy_taisan,
                                 id_bien_ban: id,
-                                so_lg: getData.huy_taisan[1].ds_huy,
+                                so_lg: getData.huy_soluong,
                                 id_cty: comId,
                                 id_phong_sudung: huy_ng_sd,
                                 qt_ngay_thuchien: getData.huy_ngayduyet,
@@ -290,10 +316,11 @@ exports.approveAssetDisposal = async (req, res, next) => {
                     return functions.setError(res, 'Không tìm thấy tài sản đang sử dụng', 404)
                 }
             }
-            return functions.setError(res, 'Không tìm thấy tài sản', 404)
+            return functions.setError(res, 'Không tìm thấy tài sản ', 404)
         }
         return functions.setError(res, 'Không tìm thấy tài sản đề xuất huỷ', 404)
     } catch (error) {
+        console.error(error)
         return functions.setError(res, error)
     }
 }
@@ -311,7 +338,7 @@ exports.rejectAssetDisposal = async (req, res, next) => {
         // logic xử lý
         let check_huy = await Huy.findOne({ huy_id: id_bb, id_cty: comId })
         if (check_huy) {
-            await Huy.findOneAndUpdate({huy_id:id_bb}, {
+            await Huy.findOneAndUpdate({ huy_id: id_bb }, {
                 huy_trangthai: 2,
                 huy_lydo_tuchoi: content
             })
@@ -333,7 +360,7 @@ exports.deleteAssetDisposal = async (req, res, next) => {
 
         // khai báo id người dùng muốn xoá
         let id = req.body.id;
-      
+
 
         // xử lý trường id người xoá
         let id_ng_xoa = comId;
@@ -346,13 +373,13 @@ exports.deleteAssetDisposal = async (req, res, next) => {
             for (let i = 0; i < id.length; i++) {
                 let checkThanhLy = await Huy.findOne({ huy_id: id[i], id_cty: comId })
                 if (checkThanhLy) {
-                    await Huy.findOneAndUpdate({huy_id:id[i]}, {
+                    await Huy.findOneAndUpdate({ huy_id: id[i] }, {
                         xoa_huy: 1,
                         huy_type_quyen_xoa: type_quyen,
                         huy_id_ng_xoa: id_ng_xoa,
                         huy_date_delete: new Date().getTime() / 1000,
                     })
-                }else{
+                } else {
                     return functions.setError(res, 'Không tìm thấy đề xuất huỷ tài sản', 404)
                 }
             }
@@ -369,7 +396,7 @@ exports.deleteAssetDisposal = async (req, res, next) => {
 exports.detailAssetDisposal = async (req, res, next) => {
     try {
         // khai báo biến lấy dữ liệu từ token
-        let comId = req.comId || 1763;
+        let comId = req.comId;
 
         // khai báo biến id đề xuất huỷ
         let id = Number(req.query.id);
@@ -386,39 +413,55 @@ exports.detailAssetDisposal = async (req, res, next) => {
                         from: 'QLTS_Tai_San',
                         localField: 'huy_taisan',
                         foreignField: 'ts_id',
-                        as: 'taiSan'
+                        as: 'taisan'
                     }
                 },
-                { $unwind: "$taiSan" },
+                { $unwind: { path: "$taisan" } },
                 {
                     $lookup: {
                         from: 'QLTS_Loai_Tai_San',
-                        localField: 'taiSan.id_loai_ts',
+                        localField: 'taisan.id_loai_ts',
                         foreignField: 'id_loai',
                         as: 'loaiTS'
                     }
                 },
                 { $unwind: "$loaiTS" },
-
+                {
+                    $project:{
+                        sobienban: '$huy_id',
+                        nguoitao:'$id_ng_tao',
+                        ngaytao:'$huy_date_create',
+                        mataisan:'$taisan.ts_id',
+                        tentaisan:'$taisan.ts_ten',
+                        loaitaisan:'$loaiTS.ten_loai',
+                        giatritaisan:'$taisan.ts_gia_tri',
+                        soluongtaisan:'$taisan.ts_so_luong',
+                        ngdexuat:'$huy_trangthai',
+                        vitri:'$huy_type_quyen',
+                        trangthai:'$huy_trangthai',
+                        lydo:'$huy_lydo'
+                    }
+                }
             ]);
             data = data[0];
-            if (data.huy_trangthai == 0 || data.huy_trangthai == 2) {
+            if (data.ngdexuat == 0 || data.ngdexuat == 2) {
                 link_url = '/tai-san-dx-huy.html';
                 name_link = 'Tài sản đề xuất hủy';
-            } else if (data.huy_trangthai == 1 || data.huy_trangthai == 3) {
+            } else if (data.ngdexuat == 1 || data.ngdexuat == 3) {
                 link_url = '/dsts-da-huy.html';
                 name_link = 'Danh sách tài sản đã hủy';
             }
-            data.huy_date_create = new Date(data.huy_date_create * 1000)
-            let id_ng_tao = await Users.findOne({ idQLC: data.id_ng_tao }, { userName: 1, inForPerson: 1, address: 1 });
-            data.id_ng_tao = id_ng_tao.userName;
-            data.id_ng_dexuat = id_ng_tao.userName;
+            data.ngaytao = new Date(data.ngaytao * 1000)
+            let id_ng_tao = await Users.findOne({ idQLC: data.nguoitao }, { userName: 1, inForPerson: 1, address: 1 });
+            data.nguoitao = id_ng_tao.userName;
+            data.ngdexuat = id_ng_tao.userName;
             data.link_url = link_url;
             data.name_link = name_link;
-            if (data.huy_type_quyen === 1) {
+            if (data.vitri === 1 && id_ng_tao) {
                 data.vitri = id_ng_tao.address;
                 data.doi_tuong_sd = id_ng_tao.userName;
-            } else {
+                data.phongban = '---'
+            } else if(id_ng_tao && id_ng_tao.inForPerson && id_ng_tao.inForPerson.employee){
                 let dep = await Department.findOne({ dep_id: id_ng_tao.inForPerson.employee.dep_id })
                 data.doi_tuong_sd = id_ng_tao.userName;
                 data.phongban = dep.dep_name;
@@ -437,7 +480,7 @@ exports.detailAssetDisposal = async (req, res, next) => {
 exports.updateAssetDisposal = async (req, res, next) => {
     try {
         // khai báo biến lấy từ token
-        let comId = req.comId || 1763;
+        let comId = req.comId;
 
         // khai báo biến người dùng nhập vào
         let id = Number(req.body.id);
@@ -460,16 +503,13 @@ exports.updateAssetDisposal = async (req, res, next) => {
 // danh sách tài sản đã huỷ
 exports.listOfDestroyedAssets = async (req, res, next) => {
     try {
-        let data = {};
-
-
         // khai báo trường dữ liệu lấy từ token
-        let comId = req.comId || 1763;
+        let comId = req.comId;
         let emId = req.emId;
-        let type_quyen = req.type || 1;
+        let type_quyen = req.type;
 
         // khai báo biến người dùng nhập vào
-        let keywords = Number(req.body.keywords);
+        let so_bb = Number(req.body.so_bb);
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
 
@@ -487,8 +527,8 @@ exports.listOfDestroyedAssets = async (req, res, next) => {
                 ]
             }
         }
-        if (keywords) {
-            conditions.huy_id = { $regex: keywords }
+        if (so_bb) {
+            conditions.huy_id = so_bb
         }
         conditions.huy_trangthai = 1;
         conditions.xoa_huy = 0;
@@ -496,17 +536,18 @@ exports.listOfDestroyedAssets = async (req, res, next) => {
 
         // logic xử lý
 
-        // đếm số lượng đã huỷ phân trang
-        let daHuy = await Huy.find(conditions).skip(skip).limit(limit).count();
         // tổng số lượng đã huỷ
         let tongDaHuy = await Huy.find(conditions).count();
         // thêm điều kiện tìm kiếm
         conditions.huy_trangthai = { $in: [0, 2] }
         let count_dx_huy_vippro = await Huy.find(conditions).count();
         // sửa điều kiện tìm kiếm
-        //conditions.huy_trangthai = 0;
+        conditions.huy_trangthai = 1;
         let huy = await Huy.aggregate([
             { $match: conditions },
+            { $sort: { huy_id: -1 } },
+            { $skip: skip },
+            { $limit: limit },
             {
                 $lookup: {
                     from: 'QLTS_Tai_San',
@@ -515,7 +556,16 @@ exports.listOfDestroyedAssets = async (req, res, next) => {
                     as: 'taiSan'
                 }
             },
-            { $unwind: { path: "$taiSan", preserveNullAndEmptyArrays: true } },
+            { $unwind: "$taiSan" },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'id_ng_duyet',
+                    foreignField: 'idQLC',
+                    as: 'id_ng_duyet'
+                }
+            },
+            { $unwind: { path: "$id_ng_duyet", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: 'QLTS_Loai_Tai_San',
@@ -524,34 +574,27 @@ exports.listOfDestroyedAssets = async (req, res, next) => {
                     as: 'loaiTS'
                 }
             },
-            { $unwind: { path: "$loaiTS", preserveNullAndEmptyArrays: true } },
+            { $unwind: "$loaiTS" },
+            {
+                $project: {
+                    sobienban: '$huy_id',
+                    mataisan: '$taiSan.ts_id',
+                    tentaisan: '$taiSan.ts_ten',
+                    soluong: '$huy_soluong',
+                    loaitaisan: '$loaiTS.ten_loai',
+                    lydohuy: '$huy_lydo',
+                    nguoiduyet: '$id_ng_duyet.userName',
+                    ngayhuy: '$huy_ngayduyet',
+
+                }
+            }
 
         ]);
-        let id_ng_dexuat_com = await Users.findOne({ idQLC: huy[0].id_ng_dexuat }, { userName: 1, inForPerson: 1, address: 1 });
-       
         for (let i = 0; i < huy.length; i++) {
-            huy[i].huy_ngayduyet = new Date(huy[i].huy_ngayduyet * 1000)
-            let huy_type_quyen = huy[i].huy_type_quyen;
-            if (huy_type_quyen === 1) {
-                huy[i].nguoitao = id_ng_dexuat_com.userName
-                huy[i].ngdexuat = id_ng_dexuat_com.userName
-                huy[i].phongban = id_ng_dexuat_com.userName
-            } else {
-                let id_ng_dexuat_em = await Users.findOne({ idQLC: huy[i].id_ng_dexuat }, { userName: 1, inForPerson: 1, address: 1 });
-                let dep = await Department.findOne({ dep_id: id_ng_dexuat_em.inForPerson.employee.dep_id })
-                huy[i].nguoitao = id_ng_dexuat_em.userName
-                huy[i].ngdexuat = id_ng_dexuat_em.userName
-                huy[i].phongban = dep.dep_name
-            }
-            // lấy tên người duyệt
-            let ngduyet = await Users.findOne({ idQLC: huy[i].id_ng_duyet }, { userName: 1, inForPerson: 1, address: 1 });
-            huy[i].ngduyet = ngduyet.userName;
+            huy[i].ngayhuy = new Date(huy[i].ngayhuy * 1000)
         }
-        data.daHuy = daHuy;
-        data.tongDaHuy = tongDaHuy;
-        data.count_dx_huy_vippro = count_dx_huy_vippro;
-        data.huy = huy;
-        return functions.success(res, 'get data success', { data })
+
+        return functions.success(res, 'get data success', { tongDaHuy, tongDeXuatHuy: count_dx_huy_vippro, huy })
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)

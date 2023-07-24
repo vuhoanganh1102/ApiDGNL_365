@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const model_ThanhLy = new mongoose.Schema({
     tl_id: {
         type: Number,
-        required: true
+        required: true,
+        unique: true
     },
     thanhly_taisan: {
         type: Number,    

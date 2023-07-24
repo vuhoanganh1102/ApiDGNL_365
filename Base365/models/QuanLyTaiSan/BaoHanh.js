@@ -2,7 +2,8 @@ const mongoose = require("mongoose");;
 const model_Baohanh = new mongoose.Schema({
     bh_id: {
         type: Number,
-        require : true
+        require : true,
+        unique: true
     },
     baohanh_taisan: {
         type: String,

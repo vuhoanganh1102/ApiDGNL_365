@@ -24,6 +24,22 @@ router.post('/showadd',functions.checkToken,formData.parse(),controllerTs.showad
 router.post('/details',functions.checkToken,formData.parse(),controllerTs.showCTts)
 
 
+//Api hiển thị quá trình sử dụng
+
+
+//Api khấu hao
+
+
+//Api tài liệu đính kèm
+
+
+//Api Bảo duongx theo chi tiết
+
+
+//Api sửa chữa theo chi tiết
+router.post('/editTS',functions.checkToken,formData.parse(),controllerTs.editTS)
+
+
 //Api xóa tài sản
 router.post('/delete',functions.checkToken,formData.parse(),controllerTs.deleteTs)
 
