@@ -18,6 +18,7 @@ var kiemKeRouter = require('./qlts/kiemKeRouter');
 var DieuChuyenBanGiao = require("./qlts/DieuChuyenBanGiao/DieuChuyenViTri");
 var xoaGanDay = require('./qlts/duLieuXoaRoute')
 var DieuChuyenBanGiaoDVQL = require("./qlts/DieuChuyenBanGiao/DieuChuyenDonViQuanLi");
+var BanGiao = require("./qlts/DieuChuyenBanGiao/BanGiao");
 var baoDuongRouter = require("./qlts/SuaChua_BaoDuong/baoDuongRouter");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
 //Api tool quét data
@@ -50,14 +51,16 @@ router.use('/phanQuyen',phanQuyen)
 router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
 router.use('/DieuChuyenBanGiaoDoiTuong',DieuChuyenBanGiaoDT)
 //suachua
-//Tinh
 router.use('/SuaChua', SuaChua);
 
 router.use('/baoDuong', baoDuongRouter);
-
+// điều chuyển bàn giao 
 router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
 
 // Dữ liệu xoá gần đây
 router.use('/xoa',xoaGanDay)
+router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
+
+router.use('/BanGiao', BanGiao);
 
 module.exports = router
