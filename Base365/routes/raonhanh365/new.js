@@ -100,4 +100,19 @@ router.post('/napTien',formData.parse(),functions.checkToken,newRN.napTien)
 
 // lấy thông tin đấu thầu
 router.post('/getDataBidding',formData.parse(),functions.checkToken,newRN.getDataBidding)
+
+// ghim tin
+router.post('/ghimTin',formData.parse(),functions.checkToken,newRN.ghimTin)
+
+// đẩy tin
+router.post('/dayTin',formData.parse(),functions.checkToken,newRN.dayTin)
+
+// cập nhật tin
+router.post('/capNhatTin',formData.parse(),functions.checkToken,newRN.capNhatTin)
+
+// đăng bán lại
+router.post('/dangBanLai',formData.parse(),functions.checkToken,newRN.dangBanLai)
+
+// xoá comment
+router.delete('/deleteComment',formData.parse(),functions.checkToken,newRN.deleteComment)
 module.exports = router;

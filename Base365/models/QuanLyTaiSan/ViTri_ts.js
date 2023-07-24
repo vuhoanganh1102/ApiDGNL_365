@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_ViTri_ts = new mongoose.Schema({
     id_vitri: {
-        type: Number
+        type: Number,
+        unique: true
     },
     id_cty: {
         type: Number

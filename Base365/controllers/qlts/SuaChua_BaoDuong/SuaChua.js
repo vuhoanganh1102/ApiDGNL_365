@@ -724,7 +724,7 @@ exports.details_bb_da_sua_chua = async (req, res) => {
 exports.listBBDaSuaChua = async (req, res) => {
     try {
 
-        let skip = req.body.page || 1;
+        let page = req.body.page || 1;
         let limit = req.body.perPage || 10;
         let type_quyen = req.user.data.type;
         let key = req.body.key;

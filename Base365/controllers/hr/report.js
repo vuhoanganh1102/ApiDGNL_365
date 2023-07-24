@@ -68,7 +68,8 @@ exports.report = async (req, res, next) => {
                     foreignField: 'ep_id',
                     as: 'Appoints'
                 }
-            }, { $unwind: '$Appoints' },
+            }, 
+            { $unwind: '$Appoints' },
             { $count: 'SL' }
         ])
         // tìm kiếm nhân viên được bổ nhiệm
@@ -336,7 +337,6 @@ exports.report = async (req, res, next) => {
         if (thongKeNhanVienTuyenDung.length !== 0) {
             for (let i = 0; i < thongKeNhanVienTuyenDung.length; i++) {
                 let nameHr = await Users.findOne({ 'inForPerson.employee.com_id': comId, 'idQLC': thongKeNhanVienTuyenDung[i]._id }, { userName: 1 })
-                console.log(nameHr)
                 if (nameHr)
                     thongKeNhanVienTuyenDung[i].nameHr = nameHr.userName;
             }
@@ -539,9 +539,6 @@ exports.reportChart = async (req, res, next) => {
         if (depId) condition['inForPerson.employee.dep_id'] = depId;
         if (seniority) condition['inForPerson.account.experience'] = seniority;
 
-        //if(old === 1) condition['inForPerson.account.birthday'] = getYear() - inForPerson.account.birthday;
-
-        console.log(condition);
         if (link === 'bieu-do-danh-sach-nhan-vien.html') {
             data = await Users.find(condition, searchItem, { skip }, { limit });
             return functions.success(res, 'get data success', { data })

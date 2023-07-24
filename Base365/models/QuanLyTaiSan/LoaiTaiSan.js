@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const model_LoaiTanSan = new mongoose.Schema({
     id_loai: {
-        type: Number
+        type: Number,
+        unique: true
     },
     ten_loai: {
         type: String

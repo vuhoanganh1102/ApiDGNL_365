@@ -3,6 +3,7 @@ const model_ThongBao = new mongoose.Schema({
     id_tb: {
         type: Number,
         required: true,
+        unique: true
     },
     id_ts: {
         type: Number
