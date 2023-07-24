@@ -24,7 +24,6 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             kt_nghi,
             loai_np,
             ca_nghi,
-            
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -75,7 +74,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                 time_create: new Date(),
             });
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
 
@@ -181,7 +180,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
 
 
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "dề xuất bổ nhệm ", link, file_kem);
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             let idTB = 0;
@@ -288,7 +287,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                 del_type: 1,//1-active , 2 --delete
             })
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -389,7 +388,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
 
 
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -489,7 +488,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
                 time_create: new Date(),
             })
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -590,7 +589,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
 
 
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -691,7 +690,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
                 time_create: new Date(),
             })
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -794,7 +793,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
 
 
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -894,7 +893,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
                 time_create: new Date(),
             });
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'// đường dẫn chi tiết đề xuất
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'// đường dẫn chi tiết đề xuất
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -990,7 +989,7 @@ exports.lich_lam_viec = async (req, res) => {
             });
 
             let saveDX = await new_de_xuat.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -1087,7 +1086,7 @@ exports.dxCong = async (req, res) => {
                 time_create: createDate,
             });
             let savedDXC = await createDXC.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao);
             let idTB = 0;
@@ -1185,7 +1184,7 @@ exports.dxCoSoVatChat = async (req, res) => {
 
             });
             let savedDXCSVC = await createDXCSVC.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1231,7 +1230,6 @@ exports.dxDangKiSuDungXe = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
-            type_time,
             bd_xe,
             end_xe,
             soluong_xe,
@@ -1397,7 +1395,7 @@ exports.dxHoaHong = async (req, res) => {
             });
 
             let savedDXHH = await createDXHH.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1493,7 +1491,7 @@ exports.dxKhieuNai = async (req, res) => {
             });
 
             let savedDXKN = await createDXKN.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1595,7 +1593,7 @@ exports.dxPhongHop = async (req, res) => {
             });
 
             let savedDXPH = await createDXPH.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1697,7 +1695,7 @@ exports.dxTangCa = async (req, res) => {
             });
 
             let savedDXTC = await createDXTC.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1738,13 +1736,10 @@ exports.dxThaiSan = async (req, res) => {
     try {
         let {
             name_dx,
-            type_dx,
-            noi_dung,
             kieu_duyet,
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
-            type_time,
             ngaybatdau_nghi_ts,
             ngayketthuc_nghi_ts,
             ly_do,
@@ -1799,7 +1794,7 @@ exports.dxThaiSan = async (req, res) => {
             });
 
             let savedDXTS = await createDXTS.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -1900,7 +1895,7 @@ exports.dxThanhToan = async (req, res) => {
             });
 
             let savedDXTT = await createDXTT.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
@@ -2013,7 +2008,7 @@ exports.dxThuongPhat = async (req, res) => {
             });
 
             let savedDXTP = await createDXTP.save();
-            let link = 'http://localhost/phpmyadmin/index.php?route=/sql&pos=0&db=de_xuat%2Fvan_thu&table=de_xuat'
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;

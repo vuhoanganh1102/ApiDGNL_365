@@ -22,7 +22,7 @@ exports.showDieuChuyenDoiTuong = async (req, res) => {
         if (dc_id) {
             query.dc_id = dc_id;
         }
-        const showDieuChuyen = await DieuChuyen.find({ id_cty: com_id, ...query })
+        const showDieuChuyen = await DieuChuyen.find({ id_cty : com_id, ...query })
             .sort({ dc_id: -1 })
             .skip(startIndex)
             .limit(perPage);

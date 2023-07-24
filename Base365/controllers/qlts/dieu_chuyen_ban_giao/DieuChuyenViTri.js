@@ -127,7 +127,7 @@ exports.addDieuchuyenTaiSan = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -175,7 +175,6 @@ exports.editDCTS = async (req, res) => {
             },
             {
                 dieuchuyen_taisan: { ds_dc: updated_ds_dc },
-
                 id_ng_thuchien: ng_thuc_hien,
                 dc_ngay: ngay_dc,
                 dc_lydo: ly_do_dc,
@@ -187,7 +186,7 @@ exports.editDCTS = async (req, res) => {
         fnc.success(res, "success", qr_update_dc);
 
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -281,7 +280,7 @@ exports.detailsDCVTTS = async (req, res) => {
             id_vitri: chitiet_dcvitri.dc_vitri_tsnhan,
             id_cty: com_id
         })
-        console.log(com_id)
+
         let dep_nhan = await fnc.Department(Department, {
             idQLC: Number(chitiet_dcvitri.id_daidien_nhan),
             com_id: com_id
@@ -412,7 +411,7 @@ exports.TiepNhanDCVT = async (req, res) => {
                 if (maxId_crr) {
                     maxId = maxId_crr.tsvt_id;
                 }
-                console.log(maxId);
+
 
                 let add_sl_tu = new TaiSanViTri({
 
@@ -429,7 +428,7 @@ exports.TiepNhanDCVT = async (req, res) => {
         let xac_nhan_bg = await DieuChuyen.findOneAndUpdate({ dc_id: id_dc, id_cty: com_id }, { dc_trangthai: 1 });
         fnc.success(res, "tiep nhan thanh cong", xac_nhan_bg);
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 
@@ -486,7 +485,7 @@ exports.listBB = async (req, res) => {
                 return res.status(404).json({ message: " status phai la 0 hoac 1 " });
             }
         }
-       
+
         let dc_vitri = await DieuChuyen.aggregate([
             {
                 $match: filter
@@ -520,7 +519,7 @@ exports.listBB = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error);
+
         fnc.setError(res, error.message);
     }
 }

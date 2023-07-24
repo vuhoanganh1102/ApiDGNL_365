@@ -166,7 +166,7 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
         fnc.success(res, insert_taisan);
 
     } catch (error) {
-        console.log(error);
+
         fnc.setError(res, error.message);
 
 
@@ -444,14 +444,13 @@ exports.deleteAll = async (req, res) => {
 
         if (xoa_vinh_vien == 0 || xoa_vinh_vien == 2) {
             for (let i = 0; i < dem; i++) {
-                console.log("com_id " + com_id)
-                console.log("xoa[i] " + xoa[i])
+
 
                 let this_bd = await BaoDuong.findOne({
                     //   id_cty: com_id,
                     id_bd: xoa[i]
                 })
-                console.log("this_bd " + this_bd)
+
                 let ng_sd = this_bd.bd_ng_sd;
                 let bd_quyen_sd = this_bd.bd_type_quyen_sd;
                 let sl_bd = this_bd.bd_sl;
@@ -563,7 +562,7 @@ exports.deleteAll = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error);
+
         fnc.setError(res, error.message);
     }
 }
@@ -755,7 +754,7 @@ exports.listTSCSC = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error);
+
         fnc.setError(res, error.message);
     }
 }

@@ -439,7 +439,6 @@ exports.toolTaiSanDaiDienNhan = async (req, res, next) => {
 }
 
 exports.toolCapPhat = async (req, res, next) => {
-
     try {
         let page = 1;
         let result = true;
@@ -495,7 +494,7 @@ exports.toolCapPhat = async (req, res, next) => {
         console.log(error);
         return fnc.setError(res, error.message);
     }
-}
+};
 
 //Lâm
 exports.toolLoaits = async (req, res) => {

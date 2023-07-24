@@ -68,7 +68,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
 
         return res.status(200).json({ data: hoan_thanh_sua_chua, message: "thanhcong" });
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
 
     }
@@ -181,7 +181,7 @@ exports.listBBDangSuaChua = async (req, res) => {
             com_id = req.user.data.com_id;
             ep_id = req.user.data.idQLC;
         }
-        console.log("comid : " + com_id)
+
         let filter = {
             id_cty: com_id,
             sc_trangthai: 1,
@@ -240,7 +240,7 @@ exports.listBBDangSuaChua = async (req, res) => {
         let total = list_bb.length;
         fnc.success(res, 'OK', [list_bb, total]);
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -425,7 +425,7 @@ exports.deleteAll = async (req, res) => {
             //xoa vinh vien
 
             for (let i = 0; i < dem; i++) {
-                console.log('heeloo')
+
                 xoa_sua_chua = await SuaChua.findOneAndRemove({ sc_id: xoa[i], id_cty: com_id });
             }
         }
@@ -533,7 +533,7 @@ exports.details = async (req, res) => {
 
         }
     } catch (error) {
-        console.log(error);
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -807,7 +807,7 @@ exports.listBBDaSuaChua = async (req, res) => {
         ]);
         fnc.success(res, 'OK', [tsda_suachua]);
     } catch (error) {
-        console.log(error);
+
         fnc.setError(res, "loi he thong");
 
     }
@@ -1088,7 +1088,7 @@ exports.tuChoiSC = async (req, res) => {
 
 
     } catch (error) {
-        console.log(error)
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -1364,7 +1364,6 @@ exports.listBBCanSuaChua = async (req, res) => {
 
         fnc.success(res, "thanh cong ", [tscan_suachua]);
     } catch (error) {
-        console.log(error);
         fnc.setError(res, error.message);
     }
 
