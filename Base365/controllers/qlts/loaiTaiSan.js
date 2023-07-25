@@ -33,7 +33,7 @@ exports.addLoaiTaiSan = async (req, res) => {
           id_loai: id_loai,
           ten_loai: ten_loai,
           id_cty: com_id,
-          id_nhom: id_nhom,
+          id_nhom_ts: id_nhom,
           loai_date_create: createDate
         })
         let save = await createNew.save()
