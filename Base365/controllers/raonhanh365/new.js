@@ -1825,9 +1825,8 @@ exports.getDetailNew = async (req, res, next) => {
             }
         }
 
-        
-        let dataa = await raoNhanh.cateDetail(78,'allType')
-        console.log("🚀 ~ file: new.js:1848 ~ exports.getDetailNew= ~ alltype:", dataa)
+
+
         let dataBidding = null;
         data[0].ListComment = ListComment;
         data[0].ListLike = ListLike;
@@ -1875,7 +1874,9 @@ exports.getDetailNew = async (req, res, next) => {
 
             return functions.success(res, "get data success", { data, dataBidding });
         }
-
+        //data[`${cate_Special}`] = await raoNhanh.getDataNewDetail(data[`${cate_Special}`])
+    
+       
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.error(error)
@@ -2840,7 +2841,7 @@ exports.comment = async (req, res, next) => {
                     url,
                     parent_id,
                     content,
-                    img:`/pictures/comment/${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()}/`+img,
+                    img: `/pictures/comment/${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()}/` + img,
                     ip,
                     sender_idchat: userID,
                     tag,
