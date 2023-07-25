@@ -208,7 +208,7 @@ exports.getListTranferJob = async(req, res, next) => {
             }
         ]);
         const totalCount = total.length>0?total[0].total:0;
-        // const totalCount = await functions.findCount(TranferJob, listCondition);
+
         let dataTranferJob = [];
         //lay thong tin chi tiet
         for(let i=0; i<listTranferJob.length; i++) {
@@ -232,12 +232,14 @@ exports.getListTranferJob = async(req, res, next) => {
                 if(update_dep_id && new_dep != update_dep_id) continue; 
                 
                 //lay ra phong ban cu
-                let oldDep = await Department.findOne({com_id: infoTransfer.com_id, dep_id: infoTransfer.dep_id});
+                let oldDep = await Department.findOne({com_id: listTranferJob[i].com_id, dep_id: listTranferJob[i].dep_id});
                 if(oldDep) infoTransfer.old_dep_name = oldDep.dep_name;
                 else infoTransfer.old_dep_name = "Chưa cập nhật";
 
                 //lay ra vi tri cu
-                infoTransfer.old_position = position[infoTransfer.position_id];
+                let old_position = position[listTranferJob[i].position_id];
+                if(old_position) infoTransfer.old_position = old_position;
+                else infoTransfer.old_position = "Chưa cập nhật";
                 
                 //lay ra ten cong ty
                 let inForCompany = await Users.findOne({idQLC: new_com_id});
@@ -251,7 +253,12 @@ exports.getListTranferJob = async(req, res, next) => {
                 infoTransfer.new_dep_id = new_dep;
 
                 //lay ra vi tri moi
-                infoTransfer.new_position = position[new_position];
+                let name_position = position[new_position];
+                if(name_position) {
+                    infoTransfer.new_position = name_position
+                }else {
+                    infoTransfer.new_position = "Chưa cập nhật";
+                }
 
                 dataTranferJob.push(infoTransfer);
             }else {
@@ -266,7 +273,6 @@ exports.getListTranferJob = async(req, res, next) => {
 
 exports.updateTranferJob = async(req, res, next) => {
     try {
-        // com_id, ep_id, current_position, current_dep_id, created_at, decision_id, note: note
         let {com_id,ep_id, position_id, dep_id, created_at, decision_id, note, update_position, update_dep_id, mission, new_com_id, team_id, group_id} = req.body;
         if(!com_id || !ep_id || !update_position || !update_dep_id || !mission || !new_com_id) {
             return functions.setError(res, "Missing input value!", 405);
@@ -430,7 +436,7 @@ exports.getListQuitJob = async(req, res, next) => {
 exports.updateQuitJob = async(req, res, next) => {
     try {
         let infoLogin = req.infoLogin;
-        let {ep_id, com_id, new_com_id, current_position, current_dep_id, update_position, update_dep_id, created_at, decision_id, note, mission, type, shift_id} = req.body;
+        let {ep_id, com_id, current_position, current_dep_id, created_at, decision_id, note, type, shift_id} = req.body;
         if(ep_id && created_at && type && com_id) {
             let employee = await Users.findOne({idQLC: ep_id});
             if(employee) {
@@ -443,7 +449,7 @@ exports.updateQuitJob = async(req, res, next) => {
                             group_id: 0,
                             team_id: 0,
                             ep_status: "Deny",
-                            time_quit_job: new Date(created_at)
+                            time_quit_job: functions.convertTimestamp(created_at)
                         }
                     }});
                 
@@ -561,7 +567,11 @@ exports.getListQuitJobNew = async(req, res, next) => {
                 infoQuitJob.ep_name = employee.userName;
 
                 let infoDep = await Department.findOne({dep_id: listQuitJob[i].hs_dep_id});
-                infoQuitJob.dep_name = infoDep.dep_name;
+                if(infoDep) {
+                    infoQuitJob.dep_name = infoDep.dep_name;
+                }else {
+                    infoQuitJob.dep_name = "Chưa cập nhật";
+                }
                 
                 //lay ra chuc vu
                 if(employee && employee.inForPerson && employee.inForPerson.employee) {
@@ -629,7 +639,7 @@ exports.updateQuitJobNew = async(req, res, next) => {
                             position_id: current_position,
                             team_id: 0,
                             ep_status: "Deny",
-                            time_quit_job: created_at
+                            time_quit_job: functions.convertTimestamp(created_at)
                         }
                     }});
                 let employee_hs = await EmployeeHistory.findOne({hs_ep_id: ep_id, hs_com_id: com_id});

@@ -219,7 +219,7 @@ const UserSchema = new mongoose.Schema({
                     },
                     time_quit_job: {
                         // Thời gian nghỉ việc
-                        type: Date,
+                        type: Number,
                         default: null
                     },
                     ep_description: {
