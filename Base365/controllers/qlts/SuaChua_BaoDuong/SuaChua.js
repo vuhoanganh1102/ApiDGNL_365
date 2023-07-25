@@ -23,13 +23,16 @@ exports.HoanThanhSuaChua = async (req, res) => {
         //  id_ng_xoa = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = req.user.data.inForPerson.employee.com_id;
+        com_id = req.user.data.com_id;
         // id_ng_xoa = req.user.data.idQLC;
 
     }
     let ng_duyet = req.user.data.idQLC;
 
     try {
+        if (isNaN(id_bb) || id_bb <= 0) {
+            return res.status(404).json({ message: "id_bb phai la 1 Number lon hon 0" });
+        }
 
         let hoan_thanh_sua_chua = await SuaChua.findOneAndUpdate({ sc_id: id_bb, id_cty: com_id }, {
             sc_trangthai: 3, sc_chiphi_thucte: chiphi_thucte, sc_hoanthanh: date_done,
@@ -66,7 +69,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
             let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts }, { sl_dang_sd: update_sl });
         }
 
-        return res.status(200).json({ data: hoan_thanh_sua_chua, message: "thanhcong" });
+        return res.status(200).json({ message: "thanhcong" });
     } catch (error) {
 
         return res.status(500).json({ message: error.message });
@@ -86,9 +89,12 @@ exports.SuaChuaBB = async (req, res) => {
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
     } else if (req.user.data.type == 2) {
-        com_id = req.user.data.inForPerson.employee.com_id
+        com_id = req.user.data.com_id
     }
     try {
+        if (isNaN(id_sc) || id_sc <= 0) {
+            return res.status(404).json({ message: "id_sc phai la 1 Number lon hon 0" });
+        }
         let q_sua_chua = await SuaChua.findOne({ id_cty: com_id, sc_id: id_sc });
         let sc_quyen_sd = q_sua_chua.sc_quyen_sd;
         let sl_sc_cu = q_sua_chua.sl_sc;
@@ -134,7 +140,7 @@ exports.SuaChuaBB = async (req, res) => {
 
         })
 
-        return res.status(200).json({ data: { taisan: taisan, suachua: suachua }, message: "thanh cong" });
+        return res.status(200).json({ message: "thanh cong" });
     } catch (error) {
 
         return res.status(500).json({ message: error.message });
@@ -187,6 +193,7 @@ exports.listBBDangSuaChua = async (req, res) => {
             sc_trangthai: 1,
             sc_da_xoa: 0,
         }
+
         if (key) {
             filter.sc_id = Number(key);
         }
@@ -225,8 +232,8 @@ exports.listBBDangSuaChua = async (req, res) => {
                 ts_id: tsda_suachua[count].suachua_taisan,
             })
             let info = {
-                sc_ngay: tsda_suachua[count].sc_ngay,
-                sc_dukien: tsda_suachua[count].sc_dukien,
+                sc_ngay: new Date(tsda_suachua[count].sc_ngay * 1000),
+                sc_dukien: new Date(tsda_suachua[count].sc_dukien * 1000),
                 suachua_taisan: tsda_suachua[count].suachua_taisan,
                 sc_id: tsda_suachua[count].sc_id,
                 sc_chiphi_dukien: tsda_suachua[count].sc_chiphi_dukien,
@@ -251,21 +258,29 @@ exports.XoabbSuaChua = async (req, res) => {
 
     let { datatype,
         id, //id bien ban sua chua
-        type_quyen, } = req.body;
+    } = req.body;
     let com_id = 0;
     let id_ng_xoa = 0;
-
+    let type_quyen = req.user.data.type;
 
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
         id_ng_xoa = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = req.user.data.inForPerson.employee.com_id;
+        com_id = req.user.data.com_id;
         id_ng_xoa = req.user.data.idQLC;
 
     }
     try {
+        if (isNaN(datatype) || datatype <= 0) {
+            return res.status(404).json({ message: "datatype phai la 1 Number lon hon 0" });
+        }
+        if (isNaN(id) || id <= 0) {
+            return res.status(404).json({ message: "id phai la 1 Number lon hon 0" });
+        }
+
+
         let suachua = await SuaChua.findOne({ id_cty: com_id, sc_id: id });
         let ng_sd = suachua.sc_ng_sd;
         let sc_quyen_sd = suachua.sc_quyen_sd;
@@ -338,10 +353,10 @@ exports.deleteAll = async (req, res) => {
     //xoa cùng lúc nhiều biên bản , bao gồm cả khôi phục và xóa vĩnh viễn
     let { xoa_vinh_vien,
         array_xoa, // danh sach bien ban muon xoa
-        type_quyen } = req.body;
+    } = req.body;
     let com_id = 0;
     let id_ng_xoa = 0;
-
+    let type_quyen = req.user.data.type;
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
         id_ng_xoa = req.user.data.idQLC;
@@ -429,7 +444,7 @@ exports.deleteAll = async (req, res) => {
                 xoa_sua_chua = await SuaChua.findOneAndRemove({ sc_id: xoa[i], id_cty: com_id });
             }
         }
-        return res.status(200).json({ data: { xoa_sua_chua: xoa_sua_chua, update_taisan: update_taisan }, message: "thanh cong " });
+        return res.status(200).json({ message: "thanh cong " });
 
     } catch (error) {
 
@@ -453,8 +468,8 @@ exports.details = async (req, res) => {
 
     }
     try {
-        if (isNaN(iddsc)) {
-            fnc.setError(res, "iddsc phai la 1 Number")
+        if (isNaN(iddsc) || iddsc <= 0) {
+            fnc.setError(res, "iddsc phai la 1 Number lon hon 0")
         }
         else {
             let bb = await SuaChua.findOne({ sc_id: iddsc });
@@ -508,9 +523,9 @@ exports.details = async (req, res) => {
                 //thong tin chung 
                 so_bb: bb.sc_id,
                 nguoi_tao: nguoi_tao.userName,
-                ngay_tao: bb.sc_date_create,
-                nguoi_duyet: nguoi_duyet != null ? nguoi_duyet.userName : 'chua cap nhap',
-                ngay_duyet: bb.sc_date_duyet,
+                ngay_tao: new Date(bb.sc_date_create * 1000),
+                nguoi_duyet: nguoi_duyet,
+                ngay_duyet: new Date(bb.sc_date_duyet * 1000),
                 trang_thai: bb.sc_trangthai,
                 //thong tin tai san
                 ma_tai_san: bb.suachua_taisan,
@@ -519,12 +534,12 @@ exports.details = async (req, res) => {
                 doi_tuong_su_dung: sc_ng_sd,
                 vi_tri_tai_san: sc_vitri,
                 //thong tin sua chua 
-                ngay_hong: bb.sc_ngay_hong,
+                ngay_hong: new Date(bb.sc_ngay_hong * 1000),
                 noi_dung_sua_chua: bb.sc_noidung,
                 nguoi_thuc_hien: nguoiThucHien.userName,
                 phong_ban: phongban.dep_name,
-                ngay_sua_chua: bb.sc_ngay,
-                ngay_du_kien_hoan_thanh: bb.sc_dukien,
+                ngay_sua_chua: new Date(bb.sc_ngay * 1000),
+                ngay_du_kien_hoan_thanh: new Date(bb.sc_dukien * 1000),
                 chi_phi_du_kien: bb.sc_chiphi_dukien,
                 don_vi_sua_chua: bb.sc_donvi,
                 dia_diem_sua_chua: bb.sc_diachi
@@ -543,21 +558,22 @@ exports.details = async (req, res) => {
 exports.xoa_bb_sua_chua = async (req, res) => {
     //xóa riêng lẻ từng biên bản 
     //
-    let { datatype, id, type_quyen } = req.body;
+    let { datatype, id, } = req.body;
     let com_id = 0;
     let id_ng_xoa = 0;
+    let type_quyen = req.user.data.type;
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
         id_ng_xoa = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = req.user.data.inForPerson.employee.com_id;
+        com_id = req.user.dat.com_id;
         id_ng_xoa = req.user.data.idQLC;
 
     }
     try {
-        if (isNaN(datatype) || isNaN(id) || isNaN(type_quyen) || isNaN(id_ng_xoa)) {
-            return res.status(404).json({ message: "datatype, id, type_quyen, id_ng_xoa phai la 1 so" });
+        if (isNaN(datatype) || isNaN(id) || datatype <= 0 || id <= 0) {
+            return res.status(404).json({ message: "datatype, id, phai la 1 so lon hon 0" });
         } else {
             if (datatype == 1) {
                 let suachua = await SuaChua.findOneAndUpdate({ sc_id: id, id_cty: com_id }, { sc_da_xoa: 1, sc_type_quyen_xoa: type_quyen, sc_id_ng_xoa: id_ng_xoa, date_delete: new Date().getTime() });
@@ -581,10 +597,10 @@ exports.xoa_bb_sua_chua = async (req, res) => {
 }
 //xoa_all
 exports.xoa_all = async (req, res) => {
-    let { xoa_vinh_vien, array_xoa, type_quyen } = req.body;
+    let { xoa_vinh_vien, array_xoa } = req.body;
     let com_id = 0;
     let id_ng_xoa = 0;
-
+    let type_quyen = req.user.data.type;
     //let com_id  =req.comId || 1763;
 
     if (req.user.data.type == 1) {
@@ -592,7 +608,7 @@ exports.xoa_all = async (req, res) => {
         id_ng_xoa = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = user_xoa.inForPerson.employee.type.com_id;
+        com_id = req.user.data.com_id;
         id_ng_xoa = req.user.data.idQLC;
 
     }
@@ -644,8 +660,8 @@ exports.details_bb_da_sua_chua = async (req, res) => {
     }
     try {
 
-        if (isNaN(id_bb)) {
-            return res.status(404).json({ message: "id bien ban phai la 1 so " });
+        if (isNaN(id_bb) || id_bb <= 0) {
+            return res.status(404).json({ message: "id bien ban phai la 1 so lon hon 0 " });
         }
         else {
             let bb = await SuaChua.findOne({ sc_id: id_bb });
@@ -691,8 +707,8 @@ exports.details_bb_da_sua_chua = async (req, res) => {
                 //thong tin chung 
                 so_bb: bb.sc_id,
                 nguoi_tao: nguoi_tao.userName,
-                ngay_tao: bb.sc_date_create,
-                ngay_duyet: bb.sc_date_duyet,
+                ngay_tao: new Date(bb.sc_date_create * 1000),
+                ngay_duyet: new Date(bb.sc_date_duyet * 1000),
                 trang_thai: bb.sc_trangthai,
                 //thong tin tai san
                 ma_tai_san: bb.suachua_taisan,
@@ -700,7 +716,7 @@ exports.details_bb_da_sua_chua = async (req, res) => {
                 so_luong: bb.sl_sc,
                 doi_tuong_su_dung: sc_ng_sd,
                 vi_tri_tai_san: sc_vitri,
-                ngay_sd: tenTaiSan.ts_date_sd,
+                ngay_sd: new Date(tenTaiSan.ts_date_sd * 1000),
                 //thong tin sua chua 
                 ngay_hong: new Date(bb.sc_ngay_hong * 1000),
                 noi_dung_sua_chua: bb.sc_noidung,
@@ -781,9 +797,9 @@ exports.listBBDaSuaChua = async (req, res) => {
             },
             {
                 $project: {
-                    'sc_ngay': '$sc_ngay',
-                    'sc_dukien': '$sc_dukien',
-                    'sc_hoanthanh': '$sc_hoanthanh',
+                    'sc_ngay': new Date('$sc_ngay' * 1000),
+                    'sc_dukien': new Date('$sc_dukien' * 1000),
+                    'sc_hoanthanh': new Date('$sc_hoanthanh' * 1000),
                     'suachua_taisan': '$suachua_taisan',
                     'sc_id': '$sc_id',
                     'sc_chiphi_dukien': '$sc_chiphi_dukien',
@@ -805,7 +821,8 @@ exports.listBBDaSuaChua = async (req, res) => {
                 $limit: limit
             }
         ]);
-        fnc.success(res, 'OK', [tsda_suachua]);
+        let total = tsda_suachua.length;
+        fnc.success(res, 'OK', [tsda_suachua, total]);
     } catch (error) {
 
         fnc.setError(res, "loi he thong");
@@ -817,18 +834,18 @@ exports.listBBDaSuaChua = async (req, res) => {
 //add_suachua
 exports.addSuaChua = async (req, res) => {
 
-    let { id_ts, sl_sc, trangthai_sc, type_quyen, loai_bb, sc_quyen_sd, ng_sd, vitri_ts, dv_sc, dia_chi_nha_cung_cap,
+    let { id_ts, sl_sc, trangthai_sc, loai_bb, sc_quyen_sd, ng_sd, vitri_ts, dv_sc, dia_chi_nha_cung_cap,
         ngay_sc, ngay_dukien, hoanthanh_sc, chiphi_dukien, chiphi_thucte, nd_sc, ng_thuc_hien, dia_diem_sc, } = req.body;
     let com_id = 0;
     let id_ng_tao = 0;
     //let com_id  =req.comId || 1763;
-
+    let type_quyen = req.user.data.type;
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
         id_ng_tao = req.user.data.idQLC;
 
     } else if (req.user.data.type == 2) {
-        com_id = req.user.data.inForPerson.employee.com_id;
+        com_id = req.user.data.com_id;
         id_ng_tao = req.user.data.idQLC;
 
     }
@@ -1051,10 +1068,13 @@ exports.tuChoiSC = async (req, res) => {
     let { id_bb, content } = req.body;
     let com_id = 0;
     try {
+        if (isNaN(id_bb) || id_bb <= 0) {
+            return res.status(404).json({ message: "id_bb phai la 1 Number lon hon 0" });
+        }
         if (req.user.data.type == 1) {
             com_id = req.user.data.idQLC;
         } else if (req.user.data.type == 2) {
-            com_id = req.user.data.inForPerson.employee.com_id;
+            com_id = req.user.data.com_id;
         }
 
         let tuchoi_sua_chua = await SuaChua.findOneAndUpdate({ sc_id: id_bb, id_cty: com_id }, { sc_trangthai: 2, sc_lydo_tuchoi: content });
@@ -1098,10 +1118,17 @@ exports.xoaBBcanSC = async (req, res) => {
 
 
     //xóa riêng lẻ từng biên bản
-    let { datatype, id, type_quyen, } = req.body;
+    let { datatype, id, } = req.body;
     let com_id = 0;
     let id_ng_xoa = 0;
+    let type_quyen = req.user.data.type;
     try {
+        if (isNaN(datatype) || datatype <= 0) {
+            return res.status(404).json({ message: "datatype phai la 1 Number lon hon 0" });
+        }
+        if (isNaN(id) || id <= 0) {
+            return res.status(404).json({ message: "id phai la 1 Number lon hon 0" });
+        }
         if (req.user.data.type == 1) {
             com_id = req.user.data.idQLC;
             id_ng_xoa = req.user.data.idQLC;
@@ -1203,10 +1230,10 @@ exports.detailBBCanSuaChua = async (req, res) => {
             com_id = req.user.data.idQLC;
 
         } else if (req.user.data.type == 2) {
-            com_id = req.user.data.inForPerson.employee.com_id;
+            com_id = req.user.data.com_id;
         }
-        if (isNaN(id)) {
-            return res.status(404).json({ message: "id phai la 1 Number" });
+        if (isNaN(id) || id <= 0) {
+            return res.status(404).json({ message: "id phai la 1 Number lon hon 0" });
         }
 
         let bb = await SuaChua.findOne({ sc_id: id, id_cty: com_id });
@@ -1233,7 +1260,7 @@ exports.detailBBCanSuaChua = async (req, res) => {
             sc_vitri = nguoiSD.address;
         }
         if (bb.sc_quyen_sd == 2) {
-            let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd,c});
+            let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, c });
             sc_ng_sd = nguoiSD.userName;
             let vitri = await Department.findOne({
                 dep_id: nguoiSD.inForPerson.employee.dep_id,
@@ -1257,7 +1284,7 @@ exports.detailBBCanSuaChua = async (req, res) => {
             so_bb: bb.sc_id,
             nguoi_tao: nguoi_tao.userName,
             ngay_tao: new Date(bb.sc_date_create * 1000),
-            nguoi_duyet: nguoi_duyet != null ? nguoi_duyet.userName : " chua cap nhat",
+            nguoi_duyet: nguoi_duyet,
             ngay_duyet: new Date((bb.sc_date_duyet || 0) * 1000) == 0 ? 'chua cap nhat' : new Date((bb.sc_date_duyet || 0) * 1000),
             trang_thai: bb.sc_trangthai,
             //thong tin tai san

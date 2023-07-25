@@ -70,6 +70,7 @@ exports.showLoaiTs = async (req, res) => {
       {
         $match: matchQuery, // Sửa thành $match ở đây
       },
+      {$sort:{id_loai:-1}},
       {
         $lookup : {
           from: 'QLTS_Nhom_Tai_San',

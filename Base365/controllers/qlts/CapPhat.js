@@ -5,8 +5,8 @@ const thongBao = require('../../models/QuanLyTaiSan/ThongBao')
 const dep = require('../../models/qlc/Deparment')
 const user = require('../../models/Users')
 
-exports.create = async(req,res)=>{
-    try{
+exports.create = async (req, res) => {
+    try {
         const id_cty = req.user.data.idQLC
         const idQLC = req.user.data.idQLC
         const pageNumber = req.body.pageNumber || 1;
@@ -22,38 +22,39 @@ exports.create = async(req,res)=>{
         let data = []
         let listItemsType = []
         let soluong_cp_bb = {}
-        let max =  await capPhat.findOne({},{},{sort: {cp_id : -1}}).lean() || 0;
-        let maxThongBao = await thongBao.findOne({},{},{sort: {id_tb : -1}}).lean() || 0 ;
+        let max = await capPhat.findOne({}, {}, { sort: { cp_id: -1 } }).lean() || 0;
+        let maxThongBao = await thongBao.findOne({}, {}, { sort: { id_tb: -1 } }).lean() || 0;
         let now = new Date()
-        if((cp_lydo&&ts_daidien_nhan&&id_ng_daidien&&id_ng_thuchien)){
-            listItemsType = await TaiSan.find({id_cty : idQLC}).select('ts_ten soluong_cp_bb').lean()
-            if(listItemsType) data.listItemsType = listItemsType
-            let listDepartment = await dep.find({com_id: id_cty}).select('deparmentName').lean()
-            let listEmp = await user.find({"inForPerson.employee.com_id" : id_cty , type : 2}).select('userName').lean()
-            if(listDepartment) data.listDepartment = listDepartment
-            if(listEmp)  data.listEmp = listEmp 
+        if ((cp_lydo && ts_daidien_nhan && id_ng_daidien && id_ng_thuchien)) {
+            listItemsType = await TaiSan.find({ id_cty: idQLC }).select('ts_ten soluong_cp_bb').lean()
+            if (listItemsType) data.listItemsType = listItemsType
+            let listDepartment = await dep.find({ com_id: id_cty }).select('deparmentName').lean()
+            let listEmp = await user.find({ "inForPerson.employee.com_id": id_cty, type: 2 }).select('userName').lean()
+            if (listDepartment) data.listDepartment = listDepartment
+            if (listEmp) data.listEmp = listEmp
             const ds_ts = JSON.parse(cap_phat_taisan).ds_ts;
-                    const updated_ds_ts = ds_ts.map((item) => ({
-                        ts_id: item[0],
-                        sl_cp: item[1]
-                    }));
+            const updated_ds_ts = ds_ts.map((item) => ({
+                ts_id: item[0],
+                sl_cp: item[1]
+            }));
             let CapPhatPB = new capPhat({
                 //tao cap phat neu la cap phat phong ban thi dien phong ban, neu la cap phat nhan vien thi khong dien id_pb
-                cp_id : Number(max.cp_id) + 1 || 1,
+                cp_id: Number(max.cp_id) + 1 || 1,
                 id_nhanvien: id_nhanvien,
                 id_phongban: id_phongban,
-                cap_phat_taisan: {ds_ts: updated_ds_ts},
-                cp_id_ng_tao : idQLC,
-                id_cty : id_cty,
-                cp_ngay: Date.parse(cp_ngay)/1000,
-                cp_trangthai : cp_trangthai||0,
-                ts_daidien_nhan :ts_daidien_nhan,
-                cp_date_create :  Date.parse(now)/1000,
+                cap_phat_taisan: { ds_ts: updated_ds_ts },
+                cp_id_ng_tao: idQLC,
+                id_cty: id_cty,
+                cp_ngay: Date.parse(cp_ngay) / 1000,
+                cp_trangthai: cp_trangthai || 0,
+                ts_daidien_nhan: ts_daidien_nhan,
+                cp_date_create: Date.parse(now) / 1000,
                 id_ng_daidien: id_ng_daidien,
-                id_ng_thuchien :id_ng_thuchien,
-                cp_lydo : cp_lydo,
-                cp_da_xoa : 0,
+                id_ng_thuchien: id_ng_thuchien,
+                cp_lydo: cp_lydo,
+                cp_da_xoa: 0,
             })
+<<<<<<< HEAD
              await CapPhatPB.save()
              data.CapPhatPB = CapPhatPB
             //cap nhat thong bao
@@ -64,117 +65,146 @@ exports.create = async(req,res)=>{
                 id_ng_tao : idQLC,
                 type_quyen :1,
                 type_quyen_tao:1,
+=======
+            await CapPhatPB.save()
+            data.CapPhatPB = CapPhatPB
+            let updateQuantity = await TaiSan.findOne({ ts_id: ts_daidien_nhan }).lean()
+            if (!updateQuantity) {
+                return fnc.setError(res, " khong tim thay tai san ")
+            } else {//cap nhat so luong tai san 
+                await TaiSan.findOneAndUpdate({ ts_id: ts_daidien_nhan }, { soluong_cp_bb: Number(soluong_cp_bb) - 1 || 0 })
+            }//cap nhat thong bao
+            let updateThongBao = new thongBao({
+                id_tb: Number(maxThongBao.id_tb) + 1 || 1,
+                id_ts: updated_ds_ts[0].ts_id,
+                id_cty: id_cty,
+                id_ng_tao: idQLC,
+                type_quyen: 1,
+                type_quyen_tao: 1,
+>>>>>>> e794b9a022e259759bf1d1506cb5e8faf8f182f9
                 loai_tb: 1,
                 da_xem: 0,
-                date_create :  Date.parse(now)/1000,
-             })
-             await updateThongBao.save()
+                date_create: Date.parse(now) / 1000,
+            })
+            await updateThongBao.save()
 
-            return fnc.success(res, " tạo thành công ",{data,CapPhatPB, updateThongBao})
+            return fnc.success(res, " tạo thành công ", { data, CapPhatPB, updateThongBao })
 
-        }else{
+        } else {
             return fnc.setError(res, " cần nhập đủ thông tin ")
         }
-    }catch(e){
-        return fnc.setError(res , e.message)
+    } catch (e) {
+        return fnc.setError(res, e.message)
     }
 }
 
+<<<<<<< HEAD
 exports.edit = async(req,res)=>{
     try{
         const id_cty = req.user.data.com_id
         
+=======
+exports.edit = async (req, res) => {
+    try {
+        const type = req.user.data.type
+        const id_cty = ""
+        if (type == 1) {
+            id_cty = req.user.data.idQLC
+        } else {
+            id_cty = req.user.data.inForPerson.employee.com_id
+        }
+>>>>>>> e794b9a022e259759bf1d1506cb5e8faf8f182f9
         const idQLC = req.user.data.idQLC
         const _id = req.body.id;
         const cp_ngay = req.body.cp_ngay;
         const cp_lydo = req.body.cp_lydo;
         const cap = await capPhat.findOne({ _id: _id });
-            if (!cap) {
-                return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
-            } else {
-                await capPhat.findOneAndUpdate({ _id: _id }, {
-                    id_cty: id_cty,
-                    cp_ngay : cp_ngay,
-                    cp_lydo : cp_lydo,
-                    cp_id_ng_tao :idQLC,
-                    })
-                    return fnc.success(res, "cập nhật thành công", {cap})
-            }
-    }catch(e){
-        return fnc.setError(res , e.message)
+        if (!cap) {
+            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+        } else {
+            await capPhat.findOneAndUpdate({ _id: _id }, {
+                id_cty: id_cty,
+                cp_ngay: cp_ngay,
+                cp_lydo: cp_lydo,
+                cp_id_ng_tao: idQLC,
+            })
+            return fnc.success(res, "cập nhật thành công", { cap })
+        }
+    } catch (e) {
+        return fnc.setError(res, e.message)
     }
 }
 
-exports.delete = async (req , res) =>{
-    try{
+exports.delete = async (req, res) => {
+    try {
         const type = req.user.data.type
         const id_cty = ""
-        if(type == 1){
-             id_cty = req.user.data.idQLC
-        }else{
+        if (type == 1) {
+            id_cty = req.user.data.idQLC
+        } else {
             id_cty = req.user.data.inForPerson.employee.com_id
         }
         const datatype = req.body.datatype
         const _id = req.body.id
         const type_quyen = req.body.type_quyen
-        const id_ng_xoa = req.user.data.idQLC 
+        const id_ng_xoa = req.user.data.idQLC
         const date_delete = new Date()
 
-        if(datatype == 1){
-            const data = await capPhat.findOne({ _id: _id, id_cty : id_cty });
+        if (datatype == 1) {
+            const data = await capPhat.findOne({ _id: _id, id_cty: id_cty });
             if (!data) {
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
                 await capPhat.findOneAndUpdate({ _id: _id }, {
                     id_cty: id_cty,
-                    cp_da_xoa : 1,
-                    cp_type_quyen_xoa : type_quyen,
-                    cp_id_ng_xoa :id_ng_xoa,
-                    cp_date_delete : Date.parse(date_delete),
+                    cp_da_xoa: 1,
+                    cp_type_quyen_xoa: type_quyen,
+                    cp_id_ng_xoa: id_ng_xoa,
+                    cp_date_delete: Date.parse(date_delete),
 
-                    })
-                    .then((data) => fnc.success(res, "cập nhật thành công", {data}))
+                })
+                    .then((data) => fnc.success(res, "cập nhật thành công", { data }))
                     .catch((err) => fnc.setError(res, err.message, 511));
             }
         }
-        if(datatype == 2){
-            const data = await capPhat.findOne({ _id: _id , id_cty : id_cty});
+        if (datatype == 2) {
+            const data = await capPhat.findOne({ _id: _id, id_cty: id_cty });
             if (!data) {
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
                 await capPhat.findOneAndUpdate({ _id: _id, id_cty: id_cty }, {
                     id_cty: id_cty,
-                    cp_da_xoa : 0,
-                    cp_type_quyen_xoa : 0,
-                    cp_id_ng_xoa :0,
-                    cp_date_delete : 0,
+                    cp_da_xoa: 0,
+                    cp_type_quyen_xoa: 0,
+                    cp_id_ng_xoa: 0,
+                    cp_date_delete: 0,
 
-                    })
-                    .then((data) => fnc.success(res, "cập nhật thành công", {data}))
+                })
+                    .then((data) => fnc.success(res, "cập nhật thành công", { data }))
                     .catch((err) => fnc.setError(res, err.message, 511));
             }
         }
-        if(datatype == 3){
-            const deleteonce = await fnc.getDatafindOne(capPhat, { _id: _id , id_cty : id_cty});
-        if (!deleteonce) { 
-            return fnc.setError(res, "không tìm thấy bản ghi", 510);
-        } else { //tồn tại thì xóa 
-            fnc.getDataDeleteOne(capPhat, { _id: _id })
-                .then(() => fnc.success(res, "xóa thành công!", {deleteonce}))
-                .catch(err => fnc.setError(res, err.message, 512));
-        }
+        if (datatype == 3) {
+            const deleteonce = await fnc.getDatafindOne(capPhat, { _id: _id, id_cty: id_cty });
+            if (!deleteonce) {
+                return fnc.setError(res, "không tìm thấy bản ghi", 510);
+            } else { //tồn tại thì xóa 
+                fnc.getDataDeleteOne(capPhat, { _id: _id })
+                    .then(() => fnc.success(res, "xóa thành công!", { deleteonce }))
+                    .catch(err => fnc.setError(res, err.message, 512));
+            }
         }
 
 
-    
-}catch(e){
-    return fnc.setError(res , e.message)
-}
+
+    } catch (e) {
+        return fnc.setError(res, e.message)
+    }
 }
 
 // dong y tiep nhan cap phat
-exports.updateStatus = async (req , res) =>{
-    try{
+exports.updateStatus = async (req, res) => {
+    try {
         const type = req.user.data.type
         const id_cty = req.user.data.com_id
         const cp_id = req.body.cp_id
@@ -209,6 +239,7 @@ exports.updateStatus = async (req , res) =>{
         return fnc.setError(res , e.message)
     }
     }
+}
 
 exports.getListNV = async (req , res) =>{
         try{
@@ -233,7 +264,8 @@ exports.getListNV = async (req , res) =>{
              let data1 = await capPhat.aggregate([
                 {$match: {id_cty: id_cty}},
 
-                {$lookup: {
+            {
+                $lookup: {
                     from: "QLTS_Tai_San",
                     localField: "cap_phat_taisan.ds_ts.ts_id",
                     foreignField : "ts_id",
@@ -287,6 +319,31 @@ exports.getListNV = async (req , res) =>{
             console.log(e)
             return fnc.setError(res , e.message)
         }
+        return fnc.setError(res, "không tìm thấy đối tượng", 510);
+    } catch (e) {
+        console.log(e)
+        return fnc.setError(res, e.message)
+    }
+}
+
+exports.getListDep = async (req, res) => {
+    try {
+        const id_cty = req.user.data.com_id
+        const id_phongban = req.body.id_phongban
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize);
+        const skips = (page - 1) * pageSize;
+        const limit = pageSize;
+        let data = []
+        let numDep = await capPhat.distinct('id_phongban', { id_cty: id_cty, cp_da_xoa: 0 }).count()
+        if (numDep) data.push({ numDep: numDep })
+
+        let listConditions = {};
+        listConditions.id_cty = id_cty
+        if (id_phongban) {
+            listConditions.id_phongban = Number(id_phongban)
+        } else {
+            listConditions.id_phongban = { $exists: true }
         }
         exports.getListDep = async (req , res) =>{
             try{
@@ -400,11 +457,13 @@ exports.getListNV = async (req , res) =>{
                 {$lookup: {
                     from: "QLTS_Tai_San",
                     localField: "cap_phat_taisan.ds_ts.ts_id",
-                    foreignField : "ts_id",
-                    as : "infoTS"
-                }},
-                {$unwind: "$infoTS"},
-                {$lookup: {
+                    foreignField: "ts_id",
+                    as: "infoTS"
+                }
+            },
+            { $unwind: "$infoTS" },
+            {
+                $lookup: {
                     from: "Users",
                     localField: "cp_id_ng_tao",
                     foreignField : "idQLC",
@@ -435,7 +494,7 @@ exports.getListNV = async (req , res) =>{
             return fnc.setError(res, "không tìm thấy đối tượng", 510);
         // }
         // return fnc.setError(res, "bạn chưa có quyền", 510);
-    }catch(e){
-            return fnc.setError(res , e.message)
+    } catch (e) {
+        return fnc.setError(res, e.message)
     }
-    }
+}

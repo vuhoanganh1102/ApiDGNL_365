@@ -10,8 +10,8 @@ router.post('/addDieuChuyenViTri', functions.checkToken, fnc.checkRole('DC_BG'),
 
 router.post('/editDieuChuyenViTri', functions.checkToken, fnc.checkRole('DC_BG'), formData.parse(), controllers.editDCTS);
 router.post('/deleteDieuChuyenViTri', functions.checkToken, fnc.checkRole('DC_BG'), formData.parse(), controllers.deleteBBDieuChuyen);
-router.post('/detailsDCVT', functions.checkToken, formData.parse(), controllers.detailsDCVTTS);
+router.post('/detailsDCVT', functions.checkToken, fnc.checkRole('DC_BG'), formData.parse(), controllers.detailsDCVTTS);
 router.post('/TuChoiDCVT', functions.checkToken, fnc.checkRole('DC_BG'), formData.parse(), controllers.TuchoiDCVT);
-router.post('/TiepNhanDCVT', functions.checkToken, formData.parse(), controllers.TiepNhanDCVT);
-router.post('/list_dieuChuyen_vitri', functions.checkToken, formData.parse(), controllers.listBB);
+router.post('/TiepNhanDCVT', functions.checkToken, fnc.checkRole('DC_BG'), formData.parse(), controllers.TiepNhanDCVT);
+router.post('/list_dieuChuyen_vitri', functions.checkToken, fnc.checkRole('DC_BG'), formData.parse(), controllers.listBB);
 module.exports = router;

@@ -13,15 +13,18 @@ var huy = require('./qlts/huyRouter')
 var SuaChua = require('./qlts/SuaChua_BaoDuong/SuaChua');
 var kiemKeRouter = require('./qlts/kiemKeRouter');
 var DieuChuyenBanGiao = require("./qlts/DieuChuyenBanGiao/DieuChuyenViTri");
-var BaoDuong = require('./qlts/SuaChua_BaoDuong/BaoDuong');
+var BaoDuong = require('./qlts/SuaChua_BaoDuong/BaoDuong/TaiSanCanBaoDuong');
+var QuyDinhBaoDuong = require('./qlts/SuaChua_BaoDuong/BaoDuong/QuyDinhBaoDuong');
+var TheoDoiCongSuat = require('./qlts/SuaChua_BaoDuong/BaoDuong/TheoDoiCongSuat');
 var xoaGanDay = require('./qlts/duLieuXoaRoute')
 var DieuChuyenBanGiaoDVQL = require("./qlts/DieuChuyenBanGiao/DieuChuyenDonViQuanLi");
 var BanGiao = require("./qlts/DieuChuyenBanGiao/BanGiao");
 var TrangChu = require("./qlts/TrangChu");
 var baoDuongRouter = require("./qlts/SuaChua_BaoDuong/baoDuongRouter");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
+var DanhSach = require('./qlts/DanhSach');
 //Api tool quét data
-router.use('/tool',toolData)
+router.use('/tool', toolData)
 
 //Api tài sản
 router.use('/taisan', taisanRouter)
@@ -48,17 +51,19 @@ router.use('/kiemKe', functions.checkToken, kiemKeRouter);
 
 router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
 router.use('/DieuChuyenBanGiaoDoiTuong', DieuChuyenBanGiaoDT)
-//suachua
+//suachua-baoduong
 router.use('/SuaChua', SuaChua);
 router.use('/BaoDuong', BaoDuong);
+router.use('/QuyDinhBaoDuong', QuyDinhBaoDuong);
 router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
-
-router.use('/baoDuong', baoDuongRouter);
+router.use('/TheoDoiCongSuat', TheoDoiCongSuat);
+router.use('/DanhSach', DanhSach);
+//router.use('/baoDuong', baoDuongRouter);
 // điều chuyển bàn giao 
 router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
 
 // Dữ liệu xoá gần đây
-router.use('/xoa',xoaGanDay)
+router.use('/xoa', xoaGanDay)
 router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
 
 router.use('/BanGiao', BanGiao);

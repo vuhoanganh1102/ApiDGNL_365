@@ -3,7 +3,8 @@ const { isNullOrUndefined } = require("util");
 const model_Dieuchuyen = new mongoose.Schema({
     dc_id: {
         type: Number,
-        require: true
+        require: true,
+        unique: true
     },
     id_cty: {
         type: Number,
