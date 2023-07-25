@@ -743,6 +743,8 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
+        let chageDate = ngay_tam_ung
+        console.log(typeof chageDate);
         if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
@@ -1340,8 +1342,7 @@ exports.dxHoaHong = async (req, res) => {
             dt_money,
             ly_do,
             name_dt,
-            time_hh,
-            
+            time_hh, 
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -1937,13 +1938,10 @@ exports.dxThuongPhat = async (req, res) => {
     try {
         let {
             name_dx,
-            type_dx,
-            noi_dung,
             kieu_duyet,
             id_user_duyet,
             id_user_theo_doi,
             type_duyet,
-            type_time,
             type_tp,
             so_tien_tp,
             nguoi_phat_tp,
@@ -2071,27 +2069,29 @@ exports.showadd = async (req, res) => {
             'inForPerson.employee.ep_status': 'Active'
         }).select('idQLC userName avatarUser').lean();
         
-        if (listUsersDuyet) {
-            let avatar = await fnc.createLinkFileEmpQLC(listUsersDuyet[0].idQLC , listUsersDuyet[0].avatarUser)
-            console.log(avatar)
-            if(avatar) 
-                listUsersDuyet[0].avatarUser = avatar
-            
-        };
-        if(listUsersTheoDoi) {
-            let avatar = await fnc.createLinkFileEmpQLC(listUsersTheoDoi[0].idQLC , listUsersTheoDoi[0].avatarUser)
-            if(avatar) 
-                listUsersTheoDoi[0].avatarUser = avatar
-            
-        }else{
-            return functions.setError(res, 'Không tìm thấy bản ghi', 400);
-        };
-        return await functions.success(res, 'Lấy thành công', { listUsersDuyet,listUsersTheoDoi});
+        for (let i = 0; i < listUsersDuyet.length; i++) {
+            let userDuyet = listUsersDuyet[i];
+            let avatar = await fnc.createLinkFileEmpQLC(userDuyet.idQLC, userDuyet.avatarUser);
+            if (avatar) {
+              userDuyet.avatarUser = avatar;
+            }
+          }
+        for (let i = 0; i < listUsersTheoDoi.length; i++) {
+            let userTheoDoi = listUsersTheoDoi[i];
+            let avatar = await fnc.createLinkFileEmpQLC(userTheoDoi.idQLC, userTheoDoi.avatarUser);
+            if (avatar) {
+              userTheoDoi.avatarUser = avatar;
+            }
+          }
+          
+
+        return await functions.success(res, 'Lấy thành công', { listUsersDuyet, listUsersTheoDoi });
     } catch (error) {
         console.error('Failed ', error);
         return functions.setError(res, error.message);
     }
 };
+
 
 
 
