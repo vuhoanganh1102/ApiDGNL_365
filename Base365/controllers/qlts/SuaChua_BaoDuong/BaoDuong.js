@@ -169,8 +169,70 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
 
         fnc.setError(res, error.message);
 
-
     }
+}
+
+//lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
+exports.danhSachBaoDuong = async (req, res, next) => {
+  try{
+    let {page, pageSize, key, dataType} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
+    page = Number(page);
+    pageSize = Number(pageSize);
+    const skip = (page-1)*pageSize;
+    let com_id = req.user.data.com_id;
+    let idQLC = req.user.data.idQLC;
+    let type = req.user.data.type;
+    let condition = {};
+    if(type==2) {
+      condition = {id_cty: com_id, xoa_bd: 0};
+    }else {
+      condition = {id_cty: com_id, xoa_bd: 0, 
+        $or: [
+          {bd_id_ng_tao: idQLC},
+          {bd_ng_thuchien: idQLC},
+          {bd_ng_sd: idQLC},
+          {bd_vi_tri_dang_sd: idQLC}
+        ]
+      };
+    }
+    if(key) condition.id_bd = key;
+    if(dataType != 1 && dataType != 2 && dataType != 3 && dataType != 4 && dataType != 5) return fnc.setError(res, "Truyen dataType = 1, 2, 3, 4, 5");
+    //can bao duong
+    if(dataType == 1) {
+      condition.bd_trang_thai = {$in: [0, 2]};
+    }
+    //dang bao duong
+    else if(dataType == 2) {
+      condition.bd_trang_thai = 0;
+    }
+    //da bao duong
+    else if(dataType == 3) {
+      condition.bd_trang_thai = 1;
+    }
+    //quy dinh
+    else if(dataType == 4) {
+      let condition2 = {id_cty: com_id, qd_xoa: 0};
+      if(type==2) condition2 = {...condition2, id_ng_tao_qd: idQLC};
+      let quydinh = await fnc.pageFind(QuyDinh, condition2, {qd_id: -1}, skip, pageSize);
+      let total = await fnc.findCount(QuyDinh, condition2);
+      return fnc.success(res, "Lay ra danh sach quy dinh bao duong thanh cong", {page, pageSize, total,quydinh});
+    }
+    //theo doi cong suat
+    else if(dataType == 5) {
+      let condition2 = {id_cty: com_id, tdcs_xoa: 0};
+      let theoDoiCongSuat = await fnc.pageFind(TheoDoiCongSuat, condition2, {id_cs: -1}, skip, pageSize);
+      let total = await fnc.findCount(TheoDoiCongSuat, condition2);
+      return fnc.success(res, "Lay ra danh sach theo doi cong suat thanh cong", {page, pageSize, total,theoDoiCongSuat});
+    }
+
+    let listBaoDuong = await fnc.pageFind(BaoDuong, condition, {id_bd: -1}, skip, pageSize);
+    const total = await fnc.findCount(BaoDuong, condition);
+    return fnc.success(res, "Lay ra danh sach bao duong thanh cong", {page, pageSize, total,listBaoDuong});
+  }catch(e){
+    return fnc.setError(res, e.message);
+  }
 }
 
 //tu_choi
