@@ -291,14 +291,19 @@ exports.getLinkFile = async (file, cateId, buySell) => {
     return arr;
 }
 
-exports.getDataNewDetail = async(object) =>{
-    const array = Object.entries(object).map(([key, value]) => [key, value]);
-    for(let i = 0; i < array.length; i++) {
-        
+exports.getDataNewDetail = async (objectarr) => {
+    let array = Object.entries(objectarr).map(([key, value]) => [key, value]);
+    for (let i = 0; i < array.length; i++) {
+        let name = await exports.switchCase(array[i][0])
+        let value = await exports.cateDetail(2, name, array[i][1])
+        array[i][1] = value
     }
+    let objectt = Object.fromEntries(array);
+    return objectt
 }
 
-exports.cateDetail = async (cateID, item) => {
+exports.cateDetail = async (cateID, item, id) => {
+  
     let check = await CateDetail.aggregate([
         { $match: { _id: cateID } },
         {
@@ -308,9 +313,61 @@ exports.cateDetail = async (cateID, item) => {
         },
         { $unwind: `$${item}` }
     ]);
-    let data = check.filter((allType) => allType[`${item}`]._id == 1859)
-    if (data != null) {
+    
+    let data = check.filter((itemm) => itemm[`${item}`]._id == id)
+    if (data && data.length) {
         return data[0][`${item}`].name
     }
     return 0
+}
+
+exports.switchCase = (item) => {
+    switch (item) {
+        case 'microprocessor':
+            return 'brand'
+        case 'ram':
+            return 'capacity'
+        case 'hardDrive':
+            return 'capacity'
+        case 'typeHardrive':
+            return 'capacity'     // chưa rõ
+        case 'screen':
+            return 'screen'
+        case 'size':
+            return 'screen'
+        case 'brand':
+            return 'brand'
+        default:
+            return 'allType'
+        // case machineSeries:
+        //     return brand.line   // chưa chắc chắn
+        // case device:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+
+    }
+
 }

@@ -12,10 +12,10 @@ exports.addLoaiTaiSan = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    if (typeof ten_loai === 'undefined') {
+    if (typeof ten_loai === 'undefined'){
       return functions.setError(res, 'tên loại  không được bỏ trống', 400);
     }
-    if (typeof id_nhom === 'undefined') {
+    if (typeof id_nhom === 'undefined'){
       return functions.setError(res, 'id_nhom  không được bỏ trống', 400);
     }
     else {
@@ -33,7 +33,7 @@ exports.addLoaiTaiSan = async (req, res) => {
           id_loai: id_loai,
           ten_loai: ten_loai,
           id_cty: com_id,
-          id_nhom: id_nhom,
+          id_nhom_ts: id_nhom,
           loai_date_create: createDate
         })
         let save = await createNew.save()
@@ -41,14 +41,15 @@ exports.addLoaiTaiSan = async (req, res) => {
       }
     }
 
-  } catch (error) {
-    console.log(error);
-    return functions.setError(res, error)
-  }
+  }catch(e){
+    console.log(e);
+    return fnc.setError(res , e.message)
 }
+}
+
 exports.showLoaiTs = async (req, res) => {
   try {
-    let { id_loai, page, perPage } = req.body
+    let {id_loai, page,perPage } = req.body
     let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
@@ -63,7 +64,7 @@ exports.showLoaiTs = async (req, res) => {
     };
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
-    if (id_loai) {
+    if (id_loai){
       matchQuery.id_loai = parseInt(id_loai);
     }
     let showLoaiTs = await LoaiTaiSan.aggregate([
@@ -109,6 +110,11 @@ exports.showLoaiTs = async (req, res) => {
         }
       },
       {
+        $sort: {
+          id_loai: -1, // Sắp xếp theo id_loai lớn nhất đến nhỏ nhất (hoặc 1 nếu muốn ngược lại)
+        },
+      },
+      {
         $skip: startIndex,
       },
       {
@@ -122,10 +128,10 @@ exports.showLoaiTs = async (req, res) => {
     const hasNextPage = endIndex < totalTsCount;
 
     return functions.success(res, 'get data success', { showLoaiTs, totalPages, hasNextPage });
-  } catch (error) {
-    console.error(error);
-    return functions.setError(res, error)
-  }
+  } catch(e){
+    console.log(e);
+    return fnc.setError(res , e.message)
+}
 }
 
 
@@ -155,67 +161,62 @@ exports.editLoaiTs = async (req, res) => {
 
       return functions.success(res, 'edit data success', { chinhsualoai });
     }
-  } catch (error) {
-    console.log(error);
-    return functions.setError(res, error);
-  }
+  } catch(e){
+    console.log(e);
+    return fnc.setError(res , e.message)
+}
 }
 
 exports.deleteLoaiTs = async (req, res) => {
   try {
-    let { datatype, id, type_quyen } = req.body;
+    let { type, id_loai } = req.body;
     let com_id = '';
     let id_ng_xoa = '';
     
     const deleteDate = Math.floor(Date.now() / 1000);
-    if (typeof id === 'undefined') {
-      return functions.setError(res, 'id nhóm không được bỏ trống', 400);
-    }
-    if (isNaN(Number(id))) {
-      return functions.setError(res, 'id nhóm phải là một số', 400);
-    }
     if (req.user.data.type == 1|| req.user.data.type == 2) {
       com_id = req.user.data.com_id;
       id_ng_xoa = req.user.data.idQLC;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    if (datatype == 1) {
-      let chinhsualoai = await LoaiTaiSan.findOneAndUpdate({ id_loai: id, id_cty: com_id },
-        {
-          $set: {
-            loai_da_xoa: 1,
-            loai_type_quyen_xoa: type_quyen,
-            id_ng_xoa: id_ng_xoa,
-            loai_date_delete: deleteDate
-          }
-        }, { new: true }
-      )
-      return functions.success(res, 'get data success', { chinhsualoai });
+    if (type == 1) {
+      //Xóa vĩnh viễn
+      let idArraya = id_loai.map(idItem => parseInt(idItem));
+      await LoaiTaiSan.deleteMany({ id_loai: { $in: idArraya }, id_cty: com_id });
+      return functions.success(res, 'xóa thành công!');
     }
-    if (datatype == 2) {
-      let khoiphuc = await LoaiTaiSan.findOneAndUpdate({ id_loai: id, id_cty: com_id },
-        {
-          $set: {
-            loai_da_xoa: 0,
-            loai_type_quyen_xoa: 0,
-            id_ng_xoa: 0,
-            loai_date_delete: 0
-          }
-        }, { new: true }
-      )
-      return functions.success(res, 'get data success', { khoiphuc });
+    if (type == 2) {
+      // thay đổi trang thái thành 1
+      let idArray = ts_id.map(idItem => parseInt(idItem));
+      await LoaiTaiSan.updateMany(
+        { id_loai: { $in: idArray },loai_da_xoa: 0 },
+        { loai_da_xoa: 1,
+          loai_id_ng_xoa : id_ng_xoa,
+          loai_date_delete : deleteDate,
+
+        }
+      );
+      return functions.success(res, 'Bạn đã xóa thành công , thêm vào danh sách dã xóa !');
     }
-    if (datatype == 3) {
-      await LoaiTaiSan.findOneAndDelete({ id_loai: id, id_cty: com_id })
-      return functions.success(res, 'thanh cong');
+    if (type == 3) {
+      //khôi phục
+      let idArray = id_loai.map(idItem => parseInt(idItem));
+      await LoaiTaiSan.updateMany(
+        { id_loai: { $in: idArray }, 
+        loai_da_xoa: 1 },
+        { loai_id_ng_xoa: 0 ,
+          loai_da_xoa: 0 ,
+          loai_date_delete : 0,}
+      );
+      return functions.success(res, 'Bạn đã khôi phục loại tài sản thành công!');
     } else {
       return functions.setError(res, 'không có quyền xóa', 400)
     }
 
-  } catch (error) {
-    console.log(error);
-    return functions.setError(res, error);
-  }
+  } catch(e){
+    console.log(e);
+    return functions.setError(res , e.message)
+}
 }
 
