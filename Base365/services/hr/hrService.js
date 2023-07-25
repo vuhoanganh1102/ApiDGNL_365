@@ -552,3 +552,29 @@ exports.getLinkFile = async (data,folder,id)=>{
     }
     return data
 }
+
+const positionNames = {
+    19: 'Chủ tịch hội đồng quản trị',
+    18: 'Phó chủ tịch hội đồng quản trị',
+    17: 'Thành viên hội đồng quản trị',
+    21: 'Tổng giám đốc tập đoàn',
+    22: 'Phó tổng giám đốc tập đoàn',
+    16: 'Tổng giám đốc',
+    14: 'Phó tổng giám đốc',
+    8: 'Giám đốc',
+    7: 'Phó giám đốc',
+    6: 'Trưởng phòng',
+    5: 'Phó trưởng phòng',
+    13: 'Tổ trưởng',
+    12: 'Phó tổ trưởng',
+    4: 'Trưởng nhóm',
+    20: 'Nhóm Phó',
+    11: 'Trưởng ban dự án',
+    10: 'Phó ban dự án',
+    3: 'Nhân viên chính thức',
+    2: 'Nhân viên thử việc',
+    9: 'Nhân viên Part time',
+    1: 'Sinh viên thực tập'
+};
+
+exports.positionNames = positionNames;

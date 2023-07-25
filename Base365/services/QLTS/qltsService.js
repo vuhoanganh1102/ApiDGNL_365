@@ -1822,3 +1822,22 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
     return functions.setError(res, error)
   }
 }
+
+exports.maxIDNhacNho = async (model) => {
+  let maxId = await model.findOne({}, {}, { sort: { id_nhac_nho: -1 } });
+  if (maxId) {
+    return maxId.id_nhac_nho;
+  } else {
+    return 0;
+  }
+
+}
+
+exports.maxID_dvcs = async (model) => {
+  let dvcs = await model.findOne({}, {}, { sort: { id_donvi: -1 } });
+  if (dvcs) {
+    return dvcs.id_donvi;
+  } else {
+    return 0;
+  }
+}

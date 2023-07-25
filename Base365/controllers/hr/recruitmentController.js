@@ -14,8 +14,19 @@ const GetJob = require('../../models/hr/GetJob');
 const Remind = require('../../models/hr/Remind');
 const Notify = require('../../models/hr/Notify');
 const AnotherSkill = require('../../models/hr/AnotherSkill');
+const Category = require('../../models/hr/Categorys');
 const Users = require('../../models/Users');
 const folderCv = 'cv';
+
+//lay ra danh sach nganh nghe
+exports.getListCategory = async(req, res, next) => {
+    try{
+        let listCategory = await Category.find({}, {id: 1, name: 1, title: 1});
+        return functions.success(res, "Get list recruitment success", {data: listCategory });
+    }catch(e) {
+        return functions.setError(res, e.message);
+    }
+}
 
 // lay ra danh sach tat ca cac quy trinh tuyen dung cua cty
 exports.getListRecruitment= async(req, res, next) => {
@@ -279,7 +290,7 @@ exports.softDeleteStageRecruitment = async(req, res, next) => {
 
 exports.getListRecruitmentNews= async(req, res, next) => {
     try {
-        let {page, pageSize, title, fromDate, toDate} = req.body;
+        let {page, pageSize, title, fromDate, toDate, id} = req.body;
 
         //id company lay ra sau khi dang nhap
         let comId = req.infoLogin.comId;
@@ -291,9 +302,11 @@ exports.getListRecruitmentNews= async(req, res, next) => {
         const limit = pageSize;
         let listCondition = {isDelete: 0, comId: comId};
         // dua dieu kien vao ob listCondition
+        if(id) listCondition.id = Number(id);
         if(title) listCondition.title =  new RegExp(title, 'i');
         if(fromDate) listCondition.timeStart = {$gte: new Date(fromDate)};
         if(toDate) listCondition.timeEnd = {$lte: new Date(toDate)};
+    
         let listRecruitmentNews = await RecruitmentNews.aggregate([
             {$match: listCondition},
             {
@@ -304,7 +317,9 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     as: "nameHR"
                 }
             },
-            {$project: {id: 1, title: 1, posApply: 1,cityId: 1,address: 1,cateId: 1,salaryId: 1,number: 1,timeStart: 1,timeEnd: 1,recruitmentId: 1,hrName: 1,createdAt: 1,createdBy: 1, isDelete: 1,comId: 1, isSample: 1, "nameHR.userName": 1}},
+            {$project: {id: 1, title: 1, posApply: 1,cityId: 1,address: 1,cateId: 1,salaryId: 1,number: 1,timeStart: 1,timeEnd: 1,jobDetail: 1, 
+                wokingForm: 1, probationaryTime: 1,moneyTip:1, recruitmentId: 1,jobDes: 1,interest: 1, jobExp: 1, hrName: 1,degree:1, gender: 1, createdAt: 1,createdBy: 1, 
+                jobRequire: 1, isDelete: 1,comId: 1, memberFollow: 1, isSample: 1, isCom: 1, "nameHR.userName": 1}},
             {$sort: {id: -1}},
             {$skip: skip},
             {$limit: limit},
