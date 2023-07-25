@@ -26,27 +26,39 @@ exports.xoaBaoDuong = async (req, res) => {
     } else {
       return fnc.setError(res, 'không có quyền truy cập', 400);
     }
+    if (!id.every(num => !isNaN(parseInt(num)))) {
+        return fnc.setError(res, 'id bảo dưỡng không hợp lệ ', 400);
+      }
     if (type == 1) { // xóa vĩnh viễn
       let idArraya = id.map(idItem => parseInt(idItem));
-      await BaoDuong.deleteMany({ id_bd: { $in: idArraya }, id_cty: id_com });
+      let result = await BaoDuong.deleteMany({ id_bd: { $in: idArraya }, id_cty: id_com });
+      if (result.deletedCount === 0) {
+        return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
+      }
       return fnc.success(res, 'xóa thành công!');
     } else if (type == 0) {
       // thay đổi trạng thái là 1
       let idArray = id.map(idItem => parseInt(idItem));
-      await BaoDuong.updateMany(
+      let result = await BaoDuong.updateMany(
         { id_bd: { $in: idArray },
         
-         xoa_bd: 0 },
+         xoa_bd: 0,id_cty : id_com },
         { xoa_bd: 1 }
       );
+      if (result.nModified === 0) {
+        return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
       return fnc.success(res, 'Bạn đã xóa thành công vào danh sách dã xóa !');
     } else if (type == 2) {
       // Khôi phục bảo dưỡng
       let idArray = id.map(idItem => parseInt(idItem));
-      await BaoDuong.updateMany(
-        { id_bd: { $in: idArray }, xoa_bd: 1 },
+      let result = await BaoDuong.updateMany(
+        { id_bd: { $in: idArray }, xoa_bd: 1 ,id_cty : id_com},
         { xoa_bd: 0 }
       );
+      if (result.nModified === 0) {
+        return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
       return fnc.success(res, 'Bạn đã khôi phục bảo dưỡng thành công!');
     } else {
       return fnc.setError(res, 'không thể thực thi!', 400);
