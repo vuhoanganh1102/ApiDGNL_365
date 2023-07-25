@@ -1069,3 +1069,11 @@ exports.Department = async (model, condition) => {
     });
     return phongban.dep_name;
 }
+exports.NameUser = async (model, condition) => {
+    let user = await Users.findOne({ condition });
+    if (user) {
+        return user.userName;
+    } else {
+        return null;
+    }
+}
