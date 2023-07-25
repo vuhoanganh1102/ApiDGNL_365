@@ -193,60 +193,68 @@ exports.editNhom = async (req, res) => {
   }
 };
 
-
 exports.xoaNhom = async (req, res) => {
   try {
-    let { datatype, id_nhom, type_quyen } = req.body;
+    let { type, id_nhom } = req.body;
     let com_id = '';
     let nhom_id_ng_xoa = '';
+    
+    const deleteDate = Math.floor(Date.now() / 1000);
     if (req.user.data.type == 1|| req.user.data.type == 2) {
-    com_id = req.user.data.com_id;
-    nhom_id_ng_xoa = req.user.data.idQLC;
+      com_id = req.user.data.com_id;
+      nhom_id_ng_xoa = req.user.data.idQLC;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    const deleteDate = Math.floor(Date.now() / 1000);
-    if (typeof id_nhom === 'undefined') {
-      return functions.setError(res, 'id nhóm không được bỏ trống', 400);
+    if (!id_nhom.every(num => !isNaN(parseInt(num)))) {
+      return functions.setError(res, 'id_nhom không hợp lệ', 400);
     }
-    if (isNaN(Number(id_nhom))) {
-      return functions.setError(res, 'id nhóm phải là một số', 400);
+    if (type == 1) {
+      //Xóa vĩnh viễn
+      let idArraya = id_nhom.map(idItem => parseInt(idItem));
+      
+      let result = await NhomTaiSan.deleteMany({ id_nhom: { $in: idArraya }, id_cty: com_id });
+      if (result.deletedCount === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
+      }
+      return functions.success(res, 'xóa thành công!');
     }
-    if (datatype == 1) {
-      let chinhsuanhom = await NhomTaiSan.findOneAndUpdate({ id_nhom: id_nhom, id_cty: com_id },
-        {
-          $set: {
-            nhom_da_xoa: 1,
-            nhom_type_quyen_xoa: type_quyen,
-            nhom_id_ng_xoa: nhom_id_ng_xoa,
-            nhom_date_delete: deleteDate
-          }
-        }, { new: true }
-      )
-      return functions.success(res, 'get data success', { chinhsuanhom });
+    if (type == 2) {
+      // thay đổi trang thái thành 1
+      let idArray = id_nhom.map(idItem => parseInt(idItem));
+      let result = await NhomTaiSan.updateMany(
+        { id_nhom: { $in: idArray },nhom_da_xoa: 0 ,id_cty : com_id},
+        { nhom_da_xoa: 1,
+          nhom_id_ng_xoa : nhom_id_ng_xoa,
+          nhom_date_delete : deleteDate,
+
+        }
+      );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
+      return functions.success(res, 'Bạn đã xóa thành công , thêm vào danh sách dã xóa !');
     }
-    if (datatype == 2) {
-      let khoiphuc = await NhomTaiSan.findOneAndUpdate({ id_nhom: id_nhom, id_cty: com_id },
-        {
-          $set: {
-            nhom_da_xoa: 0,
-            nhom_type_quyen_xoa: 0,
-            nhom_id_ng_xoa: 0,
-            nhom_date_delete: 0
-          }
-        }, { new: true }
-      )
-      return functions.success(res, 'get data success', { khoiphuc });
-    }
-    if (datatype == 3) {
-      await NhomTaiSan.findOneAndDelete({ id_nhom: id_nhom, id_cty: com_id })
-      return functions.success(res, 'thanh cong');
+    if (type == 3) {
+      //khôi phục
+      let idArray = id_nhom.map(idItem => parseInt(idItem));
+      let result = await NhomTaiSan.updateMany(
+        { id_nhom: { $in: idArray }, 
+        nhom_da_xoa: 1,id_cty : com_id },
+        { nhom_id_ng_xoa: 0 ,
+          nhom_id_ng_xoa: 0 ,
+          nhom_date_delete : 0,}
+      );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
+      return functions.success(res, 'Bạn đã khôi phục nhóm tài sản thành công!');
     } else {
       return functions.setError(res, 'không có quyền xóa', 400)
     }
 
-  } catch (error) {
-    console.log(error);
-    return functions.setError(res, error);
-  }
+  } catch(e){
+    console.log(e);
+    return functions.setError(res , e.message)
+}
 }
