@@ -19,6 +19,7 @@ var TheoDoiCongSuat = require('./qlts/SuaChua_BaoDuong/BaoDuong/TheoDoiCongSuat'
 var xoaGanDay = require('./qlts/duLieuXoaRoute')
 var DieuChuyenBanGiaoDVQL = require("./qlts/DieuChuyenBanGiao/DieuChuyenDonViQuanLi");
 var BanGiao = require("./qlts/DieuChuyenBanGiao/BanGiao");
+var TrangChu = require("./qlts/TrangChu");
 var baoDuongRouter = require("./qlts/SuaChua_BaoDuong/baoDuongRouter");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
 var DanhSach = require('./qlts/DanhSach');
@@ -67,4 +68,5 @@ router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
 
 router.use('/BanGiao', BanGiao);
 
+router.use('/TrangChu', TrangChu);
 module.exports = router
