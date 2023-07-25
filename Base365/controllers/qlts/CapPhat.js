@@ -75,8 +75,9 @@ exports.create = async (req, res) => {
         } else {
             return fnc.setError(res, " cần nhập đủ thông tin ")
         }
-    } catch (e) {
-        return fnc.setError(res, e.message)
+    }catch(e){
+        console.log(e);
+        return fnc.setError(res , e.message)
     }
 }
 
@@ -196,13 +197,14 @@ exports.updateStatus = async (req, res) => {
                 await capPhat.findOneAndUpdate(listConditions , {
                     cp_trangthai: 1,
                     })
-                    .then((data) => fnc.success(res, "cập nhật thành công", {data}))
-                    .catch((err) => fnc.setError(res, err.message, 511));
+                  return fnc.success(res, "cập nhật thành công", {data})
+                
             }
         }
         return fnc.setError(res ,"khong tim thấy thông tin cấp phát")
         
     }catch(e){
+        console.log(e);
         return fnc.setError(res , e.message)
     }
     }
@@ -362,6 +364,7 @@ exports.getListNV = async (req , res) =>{
                 }
                 return fnc.setError(res, "không tìm thấy đối tượng", 510);
             }catch(e){
+                console.log(e);
                 return fnc.setError(res , e.message)
             }
             }

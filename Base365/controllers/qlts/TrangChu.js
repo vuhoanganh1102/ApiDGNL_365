@@ -136,35 +136,35 @@ exports.Home = async(req, res) =>{
                 });
             console.log("mat ::::::",sl_mat,gt_ts_mat)
 
-            // let q_ts_huy = await Huy.aggregate([
-            //     {$match:{id_cty : id_cty} },
-            //     {$lookup: {
-            //         from: "QLTS_Tai_San",
-            //         localField: "mat_taisan",
-            //         foreignField : "ts_id",
-            //         as : "info"
-            //     }},
-            //     {$unwind: "$info"},
-            //     {
-            //         $group: {
-            //             _id: "$mat_id",
-            //             ts_id: { $first: "$info.ts_id" },
-            //             id_cty: { $first: "$id_cty" },
-            //             ts_gia_tri: { $first: "$info.ts_gia_tri" },
-            //             ts_so_luong: { $first: "$mat_soluong" }
-            //         }
-            //     },
-            //     {$match:{id_cty : id_cty} },
-            // ])
-            //     let sl_mat = 0;
-            //     let gt_ts_mat = 0;
-            //     q_ts_mat.forEach(function(value_ts_dang_sd) {
-            //         gt_ts_mat += value_ts_dang_sd.ts_gia_tri * value_ts_dang_sd.ts_so_luong;
-            //         sl_mat += value_ts_dang_sd.ts_so_luong;
-            //     });
-            console.log("mat ::::::",sl_mat,gt_ts_mat)
+            let q_ts_huy = await Huy.aggregate([
+                {$match:{id_cty : id_cty} },
+                {$lookup: {
+                    from: "QLTS_Tai_San",
+                    localField: "huy_taisan",
+                    foreignField : "ts_id",
+                    as : "info"
+                }},
+                {$unwind: "$info"},
+                {
+                    $group: {
+                        _id: "$huy_id",
+                        ts_id: { $first: "$info.ts_id" },
+                        id_cty: { $first: "$id_cty" },
+                        ts_gia_tri: { $first: "$info.ts_gia_tri" },
+                        ts_so_luong: { $first: "$huy_soluong" }
+                    }
+                },
+                {$match:{id_cty : id_cty} },
+            ])
+                let sl_huy = 0;
+                let gt_ts_huy = 0;
+                q_ts_mat.forEach(function(value_ts_dang_sd) {
+                    gt_ts_huy += value_ts_dang_sd.ts_gia_tri * value_ts_dang_sd.ts_so_luong;
+                    sl_huy += value_ts_dang_sd.ts_so_luong;
+                });
+            console.log("huy ::::::",sl_huy,gt_ts_huy)
 
-        return fnc.success(res,"lay thanh cong",{q_ts_mat})
+        return fnc.success(res,"lay thanh cong",{q_ts_huy})
     }catch(e){
         return fnc.setError(res, e.message)
     }

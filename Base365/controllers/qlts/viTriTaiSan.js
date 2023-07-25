@@ -110,7 +110,7 @@ exports.show = async (req, res) => {
 
 exports.deleteVT = async(req,res) => {
     try {
-      let { datatype, id_vitri, type_quyen } = req.body;
+      let { datatype, id_vitri } = req.body;
       let com_id = '';
       if (req.user.data.type == 1 || req.user.data.type == 2) {
         com_id = req.user.data.com_id;
