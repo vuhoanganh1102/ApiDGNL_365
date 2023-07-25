@@ -72,7 +72,7 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
 
         // giải thích biến type  1: danh sách tài sản 2: loại tài sản 3: nhóm tài sản
         let type = Number(req.body.type)
-        let so_bb = Number(req.body.so_bb);
+        let so_bb = req.body.so_bb;
 
         // logic phân trang
         let skip = (page - 1) * pageSize;
@@ -81,13 +81,13 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
         let conditions = {}
         // logic
         if (so_bb && type === 1) {
-            conditions = { $or: [{ ts_ten: new RegExp(so_bb, 'i') }, { ts_id: { $regex: so_bb } }] }
+            conditions = { $or: [ { ts_id: Number(so_bb) },{ ts_ten: new RegExp(so_bb, 'i') }] }
         }
         if (so_bb && type === 2) {
-            conditions = { $or: [{ ten_loai: new RegExp(so_bb, 'i') }, { id_loai: { $regex: so_bb } }] }
+            conditions = { $or: [{ ten_loai: new RegExp(so_bb, 'i') }, { id_loai:  Number(so_bb)  }] }
         }
         if (so_bb && type === 3) {
-            conditions = { $or: [{ ten_nhom: new RegExp(so_bb, 'i') }, { id_nhom: { $regex: so_bb } }] }
+            conditions = { $or: [{ ten_nhom: new RegExp(so_bb, 'i') }, { id_nhom:  Number(so_bb) }] }
         }
         conditions.id_cty = comId
         let dem = {};
@@ -129,6 +129,7 @@ exports.dataCapPhatThuHoiDeleted = async (req, res, next) => {
         // khai báo biến người dùng nhập vào
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
+        let type = Number(req.body.type);
         // logic phân trang
         let skip = (page - 1) * pageSize;
         let limit = pageSize;
@@ -180,7 +181,7 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
 
         // giải thích biến type  1: điều chuyển vị trí tài sản 2: điều chuyển đối tượng sd 3: điều chuyển đơn vị quản lý
         let so_bb = Number(req.body.so_bb);
-
+        let type = Number(req.body.type);
         // khai báo biến phụ
         let conditions = { id_cty: comId };
         let dem = {};
@@ -198,16 +199,16 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
         dem.doituongsudung = doituongsudung;
 
         //1: điều chuyển vị trí tài sản
-        if (type === 0) {
+        if (type === 1) {
             return qlts.dieuChuyenViTriTaiSanDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
         }
         //2: điều chuyển đối tượng sd
-        if (type === 1) {
+        if (type === 2) {
             return qlts.dieuChuyenDoiTuongSdDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
         }
 
         //3: điều chuyển đơn vị quản lý
-        if (type === 2) {
+        if (type === 3) {
             return qlts.dieuChuyenDonViQuanLyDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
         }
     } catch (error) {

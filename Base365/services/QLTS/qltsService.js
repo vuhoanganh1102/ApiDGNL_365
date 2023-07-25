@@ -324,17 +324,28 @@ exports.taiSanXoa = async (res, TaiSan, dem, conditions, skip, limit, comId) => 
       { $skip: skip },
       { $limit: limit },
       {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'id_loai_ts',
+          foreignField: 'id_loai',
+          as: 'loaits'
+        }
+      },
+      { $unwind: '$loaits' },
+      {
         $project: {
           tongSoLuongTaiSan: { $sum: '$taiSan.ts_so_luong' },
           ts_date_delete: 1,
           ts_ten: 1,
-          ten_loai: 1,
+          loaitaisan: '$loaits.ten_loai',
           ts_id_ng_xoa: 1,
           ts_gia_tri: 1,
           ts_trangthai: 1,
           id_dv_quanly: 1,
           ts_id: 1,
-          id_ten_quanly: 1
+          id_ten_quanly: 1,
+          ts_so_luong: 1,
+
         }
       },
 
@@ -387,25 +398,29 @@ exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
           as: 'user'
         }
       },
-      { $unwind: '$user' },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           cp_id: 1,
-          'taisan.ts_id': 1,
-          'taisan.ts_ten': 1,
-          soluong: '$cap_phat_taisan.ds_ts.sl_th',
+          mataisan: '$taisan.ts_id',
+          tentaisan: '$taisan.ts_ten',
+          soluong: '$cap_phat_taisan.ds_ts.sl_cp',
           cp_lydo: 1,
           cp_vitri_sudung: 1,
-          ng_xoa: '$user.userName'
+          ng_xoa: '$user.userName',
+          cp_ngay: 1,
+          cp_date_delete: 1
         }
-      }
+      },
+      { $unwind:  "$soluong" }
     ]);
     for (let i = 0; i < data.length; i++) {
       data[i].cp_ngay = new Date(data[i].cp_ngay * 1000);
       data[i].cp_date_delete = new Date(data[i].cp_date_delete * 1000);
+
     }
 
-    return functions.success(dem, data)
+    return functions.success(res, 'get data success', { dem, data })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -415,7 +430,8 @@ exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
 // tài sản thu hồi đã xoá 
 exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => {
   try {
-    conditions.cp_da_xoa = 1;
+    console.log(conditions)
+    conditions.xoa_thuhoi = 1;
     let data = await ThuHoi.aggregate([
       { $match: conditions },
       { $sort: { thuhoi_id: -1 } },
@@ -438,7 +454,7 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
           as: 'user'
         }
       },
-      { $unwind: '$user' },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -447,19 +463,19 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
           as: 'users'
         }
       },
-      { $unwind: '$users' },
+      { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           thuhoi_ngay: 1,
           thuhoi_date_delete: 1,
           thuhoi_id: 1,
-          ts_id: 'taisan.ts_id',
-          ts_ten: 'taisan.ts_ten',
+          ts_id: '$taisan.ts_id',
+          ts_ten: '$taisan.ts_ten',
           soluong: '$thuhoi_taisan.ds_thuhoi.sl_th',
           thuhoi_trangthai: 1,
           thuhoi__lydo: 1,
-          id_ng_dc_thuhoi: 'users.userName',
-          ng_xoa: 'user.userName'
+          id_ng_dc_thuhoi: '$users.userName',
+          ng_xoa: '$user.userName'
         }
       }
     ]);
@@ -485,7 +501,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
       { $sort: { dc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'Users',
@@ -494,7 +510,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'user'
         }
       },
-      { $unwind: '$user' },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -503,7 +519,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'users'
         }
       },
-      { $unwind: '$users' },
+      { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'QLC_Deparments',
@@ -512,7 +528,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'dep'
         }
       },
-      { $unwind: '$dep' },
+      { $unwind: { path: "$dep", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -521,7 +537,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'users_id_nv_nhan'
         }
       },
-      { $unwind: '$users_id_nv_nhan' },
+      { $unwind: { path: "$users_id_nv_nhan", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'QLC_Deparments',
@@ -530,7 +546,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'depp'
         }
       },
-      { $unwind: '$depp' },
+      { $unwind: { path: "$depp", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -539,7 +555,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'users_id_ng_thuchien'
         }
       },
-      { $unwind: '$users_id_ng_thuchien' },
+      { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           dc_ngay: 1,
@@ -578,7 +594,7 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
       { $sort: { dc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'Users',
@@ -671,7 +687,7 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
       { $sort: { dc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'Users',
@@ -745,7 +761,7 @@ exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       { $sort: { sc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -808,11 +824,11 @@ exports.dangSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
   try {
     conditions.sc_trangthai = 3;
     let data = await SuaChua.aggregate([
-      { $match: conditions }, 
+      { $match: conditions },
       { $sort: { sc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -871,7 +887,7 @@ exports.daSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       { $sort: { sc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -931,7 +947,7 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       { $sort: { id_bd: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1009,7 +1025,7 @@ exports.dangBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       { $sort: { id_bd: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1065,7 +1081,7 @@ exports.daBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       { $sort: { id_bd: -1 } },
       { $skip: skip },
       { $limit: limit },
-    
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1127,7 +1143,7 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
       { $sort: { id_bd: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1201,7 +1217,7 @@ exports.theoDoiCongSuat = async (res, DonViCS, dem, conditions, skip, limit) => 
       { $sort: { id_donvi: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'Users',
@@ -1242,7 +1258,7 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
       { $sort: { mat_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1319,7 +1335,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
       { $sort: { mat_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1416,7 +1432,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
       { $sort: { mat_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1521,7 +1537,7 @@ exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
       { $sort: { huy_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-    
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1593,7 +1609,7 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
       { $sort: { huy_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1673,7 +1689,7 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
       { $sort: { tl_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1744,7 +1760,7 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
       { $sort: { tl_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
