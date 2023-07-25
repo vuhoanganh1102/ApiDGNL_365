@@ -42,6 +42,9 @@ router.post('/leaderDetail', formData.parse(), hrService.checkRoleUser, hrServic
 //cập nhật chi tiết lãnh đạo
 router.post('/updateLeaderDetail', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 3), organizationalStructure.updateLeaderDetail)
 
+//cap nhat avatar
+router.post('/updateLeaderAvatar', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 3), organizationalStructure.updateAvatarLeader)
+
 //cập nhật nhân viên sử dụng con dấu
 router.post('/updateEmpUseSignature', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 2), organizationalStructure.updateEmpUseSignature)
 
@@ -56,7 +59,5 @@ router.post('/listSignatureLeader', formData.parse(), hrService.checkRoleUser, h
 
 // danh sách nhân viên chưa chấm công hoặc đã chấm công
 router.post('/listEmUntimed', formData.parse(), hrService.checkRoleUser, hrService.checkRight(4, 1), organizationalStructure.listEmUntimed)
-
-
 
 module.exports = router;
