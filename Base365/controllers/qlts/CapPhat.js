@@ -54,7 +54,6 @@ exports.create = async (req, res) => {
                 cp_lydo: cp_lydo,
                 cp_da_xoa: 0,
             })
-<<<<<<< HEAD
              await CapPhatPB.save()
              data.CapPhatPB = CapPhatPB
             //cap nhat thong bao
@@ -65,23 +64,6 @@ exports.create = async (req, res) => {
                 id_ng_tao : idQLC,
                 type_quyen :1,
                 type_quyen_tao:1,
-=======
-            await CapPhatPB.save()
-            data.CapPhatPB = CapPhatPB
-            let updateQuantity = await TaiSan.findOne({ ts_id: ts_daidien_nhan }).lean()
-            if (!updateQuantity) {
-                return fnc.setError(res, " khong tim thay tai san ")
-            } else {//cap nhat so luong tai san 
-                await TaiSan.findOneAndUpdate({ ts_id: ts_daidien_nhan }, { soluong_cp_bb: Number(soluong_cp_bb) - 1 || 0 })
-            }//cap nhat thong bao
-            let updateThongBao = new thongBao({
-                id_tb: Number(maxThongBao.id_tb) + 1 || 1,
-                id_ts: updated_ds_ts[0].ts_id,
-                id_cty: id_cty,
-                id_ng_tao: idQLC,
-                type_quyen: 1,
-                type_quyen_tao: 1,
->>>>>>> e794b9a022e259759bf1d1506cb5e8faf8f182f9
                 loai_tb: 1,
                 da_xem: 0,
                 date_create: Date.parse(now) / 1000,
@@ -98,22 +80,10 @@ exports.create = async (req, res) => {
     }
 }
 
-<<<<<<< HEAD
 exports.edit = async(req,res)=>{
     try{
         const id_cty = req.user.data.com_id
         
-=======
-exports.edit = async (req, res) => {
-    try {
-        const type = req.user.data.type
-        const id_cty = ""
-        if (type == 1) {
-            id_cty = req.user.data.idQLC
-        } else {
-            id_cty = req.user.data.inForPerson.employee.com_id
-        }
->>>>>>> e794b9a022e259759bf1d1506cb5e8faf8f182f9
         const idQLC = req.user.data.idQLC
         const _id = req.body.id;
         const cp_ngay = req.body.cp_ngay;
@@ -212,15 +182,12 @@ exports.updateStatus = async (req, res) => {
         if(id_cty) listConditions.id_cty = id_cty
         if(cp_id) listConditions.cp_id = cp_id
         let infoCP = await capPhat.findOne(listConditions)
-        console.log(infoCP.cap_phat_taisan.ds_ts[0].ts_id)
         if(infoCP.cap_phat_taisan.ds_ts[0].ts_id){
             let updateQuantity = await TaiSan.findOne({ts_id :infoCP.cap_phat_taisan.ds_ts[0].ts_id}).lean()
-        console.log(updateQuantity)
-
         if(!updateQuantity) {
            return fnc.setError(res, " khong tim thay tai san ")
         }else{//cap nhat so luong tai san 
-           await TaiSan.findOneAndUpdate({ts_id :infoCP.cap_phat_taisan.ds_ts[0].ts_id}, {soluong_cp_bb :updateQuantity. infoCP.cap_phat_taisan.ds_ts[0].sl_cp})
+           await TaiSan.findOneAndUpdate({ts_id :infoCP.cap_phat_taisan.ds_ts[0].ts_id}, {soluong_cp_bb : (updateQuantity.soluong_cp_bb - infoCP.cap_phat_taisan.ds_ts[0].sl_cp)})
         }
         const data = await capPhat.findOne(listConditions);
             if (!data) {
@@ -239,7 +206,7 @@ exports.updateStatus = async (req, res) => {
         return fnc.setError(res , e.message)
     }
     }
-}
+
 
 exports.getListNV = async (req , res) =>{
         try{
@@ -316,35 +283,10 @@ exports.getListNV = async (req , res) =>{
             }
             return fnc.setError(res, "không tìm thấy đối tượng", 510);
         }catch(e){
-            console.log(e)
             return fnc.setError(res , e.message)
         }
-        return fnc.setError(res, "không tìm thấy đối tượng", 510);
-    } catch (e) {
-        console.log(e)
-        return fnc.setError(res, e.message)
-    }
+
 }
-
-exports.getListDep = async (req, res) => {
-    try {
-        const id_cty = req.user.data.com_id
-        const id_phongban = req.body.id_phongban
-        let page = Number(req.body.page) || 1;
-        let pageSize = Number(req.body.pageSize);
-        const skips = (page - 1) * pageSize;
-        const limit = pageSize;
-        let data = []
-        let numDep = await capPhat.distinct('id_phongban', { id_cty: id_cty, cp_da_xoa: 0 }).count()
-        if (numDep) data.push({ numDep: numDep })
-
-        let listConditions = {};
-        listConditions.id_cty = id_cty
-        if (id_phongban) {
-            listConditions.id_phongban = Number(id_phongban)
-        } else {
-            listConditions.id_phongban = { $exists: true }
-        }
         exports.getListDep = async (req , res) =>{
             try{
                 const id_cty = req.user.data.com_id
