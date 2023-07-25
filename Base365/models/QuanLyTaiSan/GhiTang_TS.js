@@ -5,52 +5,67 @@ const model_GhiTangTS = new mongoose.Schema({
         unique: true
     },
     id_ts: {
-        type: Number
+        type: Number,
+        default : 0
     },
-    id_ts: {
+    com_id : {
         type: Number
     },
     sl_tang: {
-        type: Number
+        type: Number,
+        default : 0
     },
     id_ng_tao: {
-        type: Number
+        type: Number,
+        default : 0
     },
     type_quyen_tao: {
-        type: Number
+        type: Number,
+        default : 0
     },
     id_ng_duyet: {
-        type: Number
+        type: Number,
+        default : 0
     },
     type_quyen_duyet: {
-        type: Number
+        type: Number,
+        default : 0
     },
     id_ng_xoa: {
-        type: Number
+        type: Number,
+        default : 0
     },
     type_ng_xoa: {
-        type: Number
+        type: Number,
+        default : 0
     },
     day_duyet: {
-        type: Number
+        type: Number,
+        default : 0
     },
     day_tao: {
-        type: Number
+        type: Number,
+        default : 0
     },
     day_xoa: {
-        type: Number
+        type: Number,
+        default : 0
     },
     xoa_ghi_tang: {
-        type: Number
+        type: Number,
+        default : 0
     },
     trang_thai_ghi_tang: {
-        type: Number
+        type: Number,
+        default : 0
     },
     gt_ghi_chu: {
-        type: String
+        type: String,
+        default : ""
     },
     lydo_tu_choi: {
-        type: String
+        type: String,
+        default : ""
     }
 
 },

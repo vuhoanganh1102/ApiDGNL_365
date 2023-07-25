@@ -27,8 +27,8 @@ const BaoHanh = require('../../models/QuanLyTaiSan/BaoHanh');
 const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
 const QuyDinhBD = require('../../models/QuanLyTaiSan/Quydinh_bd');
 const DieuChuyen = require('../../models/QuanLyTaiSan/DieuChuyen');
-
-
+const GhiTang = require('../../models/QuanLyTaiSan/GhiTang_TS');
+const DonviCS = require('../../models/QuanLyTaiSan/DonViCS');
 
 
 
@@ -1357,3 +1357,83 @@ exports.toolPhanBo = async (req, res, next) => {
     }
 }
 
+
+exports.toolGhitang = async (req, res, next) => {
+    let page = 1;
+    let result = true;
+    try {
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 7 });
+            let listData = data.data.items;
+            if (listData.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new GhiTang({
+                        id_ghitang: listData[i].id_ghitang,
+                        id_ts: listData[i].id_ts, 
+                        com_id: listData[i].com_id,
+                        sl_tang: listData[i].sl_tang,
+                        id_ng_tao: listData[i].id_ng_tao,
+                        type_quyen_tao: listData[i].type_quyen_tao,
+                        id_ng_duyet: listData[i].id_ng_duyet,
+                        type_quyen_duyet: listData[i].type_quyen_duyet,
+                        id_ng_xoa: listData[i].id_ng_xoa,
+                        day_duyet: listData[i].day_duyet,
+                        day_tao: listData[i].day_tao,
+                        day_xoa: listData[i].day_xoa,
+                        xoa_ghi_tang: listData[i].xoa_ghi_tang,
+                        trang_thai_ghi_tang: listData[i].trang_thai_ghi_tang,
+                        gt_ghi_chu: listData[i].gt_ghi_chu,
+                        lydo_tu_choi: listData[i].lydo_tu_choi
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, 'Thành công');
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
+    }
+}
+
+exports.toolDonviCS = async (req, res, next) => {
+    let page = 1;
+    let result = true;
+    try {
+        do {
+            let data = await fnc.getDataAxios('https://phanmemquanlytaisan.timviec365.vn/api_nodejs/list_all.php', { page: page, pb: 6 });
+            let listData = data.data.items;
+            if (listData.length > 0) {
+                for (let i = 0; i < listData.length; i++) {
+                    const save = new DonviCS({
+                        id_donvi: listData[i].id_donvi,
+                        id_cty: listData[i].id_cty, 
+                        ten_donvi: listData[i].ten_donvi,
+                        mota_donvi: listData[i].mota_donvi,
+                        dvcs_type_quyen: listData[i].dvcs_type_quyen,
+                        dvcs_id_ng_xoa: listData[i].dvcs_id_ng_xoa,
+                        donvi_xoa: listData[i].donvi_xoa,
+                        dvcs_date_create: listData[i].dvcs_date_create,
+                        dvcs_date_delete: listData[i].dvcs_date_delete,
+                        dvcs_type_quyen_xoa: listData[i].dvcs_type_quyen_xoa
+                    });
+                    await save.save();
+                }
+                page++;
+                console.log(page);
+
+            } else {
+                result = false;
+            }
+        } while (result);
+        return fnc.success(res, 'Thành công');
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
+    }
+}
