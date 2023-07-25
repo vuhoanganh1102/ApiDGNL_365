@@ -824,8 +824,9 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            money:{
+            inforRN365:{
                 type: Number,
+                default: 0
             }
         },
         default: null

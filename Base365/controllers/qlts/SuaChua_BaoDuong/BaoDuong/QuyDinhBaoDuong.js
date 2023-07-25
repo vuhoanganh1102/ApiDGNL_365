@@ -9,6 +9,7 @@ const { errorMonitor } = require('nodemailer/lib/xoauth2');
 const Department = require('../../../../models/qlc/Deparment');
 const QuyDinhBaoDuong = require('../../../../models/QuanLyTaiSan/Quydinh_bd');
 const NhacNho = require('../../../../models/QuanLyTaiSan/NhacNho');
+const LoaiTaiSan = require('../../../../models/QuanLyTaiSan/LoaiTaiSan');
 const func = require('../../../../services/QLTS/qltsService');
 // Tĩnh
 
@@ -219,4 +220,47 @@ exports.addRegulations = async (req, res) => {
         fnc.setError(res, error.message);
     }
 
+}
+
+
+exports.DetailRegulations = async (req, res) => {
+    try {
+
+        let com_id = req.user.data.com_id;
+        let id_qd = req.body.id_qd;
+        console.log(id_qd)
+
+        let info_qd = await QuyDinhBaoDuong.aggregate([
+            {
+                $match: {
+                    id_cty: com_id,
+                    qd_id: Number(id_qd),
+                    // qd_xoa: 0
+                }
+            },
+            {
+                $lookup: {
+                    from: 'QLTS_Loai_Tai_San',
+                    localField: 'id_loai',
+                    foreignField: 'id_loai',
+                    as: "LoaiTaiSan"
+                }
+            },
+            {
+                $project: {
+                    'loai_ts': '$LoaiTaiSan.ten_loai',
+                    'tansuat_bd': '$tan_suat_bd',
+                    'xd_bd': '$xac_dinh_bd',
+                    'nd_bd': '$bd_noidung'
+
+                }
+            }
+        ]);
+        fnc.success(res, 'OK', [info_qd]);
+
+
+    } catch (error) {
+        console.log(error);
+        fnc.setError(res, error);
+    }
 }

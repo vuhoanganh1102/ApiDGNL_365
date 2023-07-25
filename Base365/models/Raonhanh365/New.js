@@ -181,32 +181,32 @@ const newSchema = new mongoose.Schema({
     },
     new_day_tin:{
         type:String,
-        default: null
+        default: 0  
     },
     timeStartPinning: {
         // thời gian bắt đầu ghim
         type: Date,
-        default: null
+        default: 0
     },
     dayStartPinning: {
         // ngày bắt đầu ghim
         type: Date,
-        default: null
+        default: 0
     },
     dayEndPinning: {
         // ngày kết thúc ghim
         type: Date,
-        default: null
+        default: 0
     },
     numberDayPinning: {
         // số ngày ghim
         type: String,
-        default: null
+        default: 0
     },
     timePinning: {
         // thời gian ghim
         type: Date,
-        default: null
+        default: 0
     },
     moneyPinning: {
         // tiền ghim
