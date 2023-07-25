@@ -407,7 +407,7 @@ exports.baoDuongDaXoa = async (req, res, next) => {
         // khai báo biến người dùng nhập vào
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
-        let so_bb = Number(req.body.so_bb);
+        let so_bb = req.body.so_bb;
         let typebb = Number(req.body.type) || 1;
         // logic phân trang
         let skip = (page - 1) * pageSize;
@@ -425,17 +425,52 @@ exports.baoDuongDaXoa = async (req, res, next) => {
                 $or: [{ bd_id_ng_tao: emId }, { bd_ng_thuchien: emId }, { bd_ng_sd: emId }, { bd_vi_tri_dang_sd: emId }]
             };
         }
-        if (so_bb) conditions.id_bd = so_bb
+        if (so_bb) conditions.id_bd = Number(so_bb)
 
         conditions.id_cty = comId;
 
         conditions.xoa_bd = 1;
 
-        let canbaoduong = await BaoDuong.find({ bd_trang_thai: { $in: [0, 2] }, id_cty: comId, xoa_bd: 1 }).count();
+        let canbaoduong = 0;
+        let dangbaoduong = 0;
+        let dabaoduong = 0;
+        if (type === 2) {
+            canbaoduong = await BaoDuong.find({
+                bd_trang_thai: { $in: [0, 2] },
+                id_cty: comId, xoa_bd: 1,
+                $or: [{ bd_id_ng_tao: emId },
+                { bd_ng_thuchien: emId },
+                { bd_ng_sd: emId },
+                { bd_vi_tri_dang_sd: emId }]
+            }).count();
 
-        let dangbaoduong = await BaoDuong.find({ bd_trang_thai: 0, id_cty: comId, xoa_bd: 1 }).count();
+            dangbaoduong = await BaoDuong.find({
+                bd_trang_thai: 0,
+                id_cty: comId,
+                xoa_bd: 1,
+                $or: [{ bd_id_ng_tao: emId },
+                { bd_ng_thuchien: emId },
+                { bd_ng_sd: emId },
+                { bd_vi_tri_dang_sd: emId }]
+            }).count();
 
-        let dabaoduong = await BaoDuong.find({ bd_trang_thai: 1, id_cty: comId, xoa_bd: 1 }).count();
+            dabaoduong = await BaoDuong.find({
+                bd_trang_thai: 1,
+                id_cty: comId,
+                xoa_bd: 1,
+                $or: [{ bd_id_ng_tao: emId },
+                { bd_ng_thuchien: emId },
+                { bd_ng_sd: emId },
+                { bd_vi_tri_dang_sd: emId }]
+            }).count();
+        } else {
+            canbaoduong = await BaoDuong.find({ bd_trang_thai: { $in: [0, 2] }, id_cty: comId, xoa_bd: 1 }).count();
+
+            dangbaoduong = await BaoDuong.find({ bd_trang_thai: 0, id_cty: comId, xoa_bd: 1 }).count();
+
+            dabaoduong = await BaoDuong.find({ bd_trang_thai: 1, id_cty: comId, xoa_bd: 1 }).count();
+        }
+
 
         let thietlaplichbd = 0;
 
@@ -468,18 +503,32 @@ exports.baoDuongDaXoa = async (req, res, next) => {
             return qlts.daBaoDuong(res, BaoDuong, dem, conditions, skip, limit);
         }
 
-        delete conditions.xoa_bd
         //4: thiết lập lịch bảo dưỡng
         if (typebb === 4) {
-
-            conditions.qd_xoa = 1;
-            return qlts.thietLapLichBaoDuong(res, Quydinh_bd, dem, conditions, skip, limit);
+            let condition = {}
+            condition.qd_xoa = 1;
+            condition.id_cty = comId;
+            if (type === 2) condition.id_ng_tao_qd = emId;
+            let search = {}
+            if (so_bb) {
+                search = { $or: [{ 'loaitaisan.id_loai': Number(so_bb) }, { 'loaitaisan.ten_loai': { $regex: so_bb, $options: 'i' } }] }
+            }
+            return qlts.thietLapLichBaoDuong(res, Quydinh_bd, dem, condition, skip, limit, search);
         }
 
-        //5: Theo dõi công suất
+        //5: Quản lý đơn vị đo công suất
         if (typebb === 5) {
-            conditions.donvi_xoa = 1;
-            return qlts.theoDoiCongSuat(res, DonViCS, dem, conditions, skip, limit);
+            let condition = {}
+            condition.donvi_xoa = 1;
+            condition.id_cty = comId;
+            return qlts.quanLyDonViDoCongSuat(res, DonViCS, dem, condition, skip, limit);
+        }
+        //6: Theo dõi công suất
+        if (typebb === 6) {
+            let condition = {}
+            condition.tdcs_xoa = 1;
+            condition.id_cty = comId;
+            return qlts.theoDoiCongSuat(res, TheoDoiCongSuat, dem, condition, skip, limit);
         }
     } catch (error) {
         return functions.setError(res, error)

@@ -51,7 +51,7 @@ exports.validateTaiSanInput = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, i
   return true;
 };
 
-exports.validateinputEdit = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly,id_loai_ts,ts_vi_tri,ts_so_luong,ts_gia_tri,ts_trangthai) => {
+exports.validateinputEdit = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, id_loai_ts, ts_vi_tri, ts_so_luong, ts_gia_tri, ts_trangthai) => {
   if (!ts_ten) {
     throw { code: 400, message: 'Tên tài sản bắt buộc.' };
   }
@@ -462,7 +462,7 @@ exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
 // tài sản thu hồi đã xoá 
 exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => {
   try {
- 
+
     conditions.xoa_thuhoi = 1;
     conditions.thuhoi_id_ng_xoa = { $ne: 0 };
     conditions.id_ng_dc_thuhoi = { $ne: 0 };
@@ -512,7 +512,7 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
           ng_xoa: '$user.userName'
         }
       },
-     // {$unwind:'$soluong'}
+      // {$unwind:'$soluong'}
     ]);
     for (let i = 0; i < data.length; i++) {
       data[i].thuhoi_ngay = new Date(data[i].thuhoi_ngay * 1000);
@@ -534,7 +534,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
     //conditions.id_ng_xoa_dc = { $ne: 0 };
     //conditions.id_nv_dangsudung = { $ne: 0 };
     // conditions.id_pb_dang_sd = { $ne: 0 };
-     conditions.id_nv_nhan = { $ne: 0 };
+    conditions.id_nv_nhan = { $ne: 0 };
     // conditions.id_pb_nhan = { $ne: 0 };
     // conditions.id_ng_thuchien = { $ne: 0 };
     let data = await DieuChuyen.aggregate([
@@ -738,7 +738,7 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'user'
         }
       },
-      { $unwind: '$user' },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -747,7 +747,7 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'users'
         }
       },
-      { $unwind: '$users' },
+      { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
 
       {
         $lookup: {
@@ -757,7 +757,7 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'users_id_nv_nhan'
         }
       },
-      { $unwind: '$users_id_nv_nhan' },
+      { $unwind: { path: "$users_id_nv_nhan", preserveNullAndEmptyArrays: true } },
 
       {
         $lookup: {
@@ -767,7 +767,7 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
           as: 'users_id_ng_thuchien'
         }
       },
-      { $unwind: '$users_id_ng_thuchien' },
+      { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           dc_ngay: 1,
@@ -821,7 +821,7 @@ exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
           as: 'ng_xoa'
         }
       },
-      { $unwind: '$ng_xoa' },
+      { $unwind: { path: "$ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -830,7 +830,7 @@ exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
           as: 'sc_ng_sd'
         }
       },
-      { $unwind: '$sc_ng_sd' },
+      { $unwind: { path: "$sc_ng_sd", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           sc_id: 1,
@@ -888,7 +888,7 @@ exports.dangSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
           as: 'ng_xoa'
         }
       },
-      { $unwind: '$ng_xoa' },
+      { $unwind: { path: "$ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           sc_id: 1,
@@ -947,7 +947,7 @@ exports.daSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
           as: 'ng_xoa'
         }
       },
-      { $unwind: '$ng_xoa' },
+      { $unwind: { path: "$ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           sc_ngay: 1,
@@ -1007,7 +1007,7 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
           as: 'bd_id_ng_tao'
         }
       },
-      { $unwind: '$bd_id_ng_tao' },
+      { $unwind: { path: "$bd_id_ng_tao", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1016,7 +1016,7 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
           as: 'bd_id_ng_xoa'
         }
       },
-      { $unwind: '$bd_id_ng_xoa' },
+      { $unwind: { path: "$bd_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1025,7 +1025,7 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
           as: 'bd_ng_sd'
         }
       },
-      { $unwind: '$bd_ng_sd' },
+      { $unwind: { path: "$bd_ng_sd", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           id_bd: 1,
@@ -1085,7 +1085,7 @@ exports.dangBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
           as: 'bd_id_ng_xoa'
         }
       },
-      { $unwind: '$bd_id_ng_xoa' },
+      { $unwind: { path: "$bd_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           id_bd: 1,
@@ -1141,7 +1141,7 @@ exports.daBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
           as: 'bd_id_ng_xoa'
         }
       },
-      { $unwind: '$bd_id_ng_xoa' },
+      { $unwind: { path: "$bd_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           id_bd: 1,
@@ -1177,12 +1177,12 @@ exports.daBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
 }
 
 // thiết lập lịch bảo dưỡng
-exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, limit) => {
+exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, limit, search) => {
   try {
 
     let data = await Quydinh_bd.aggregate([
       { $match: conditions },
-      { $sort: { id_bd: -1 } },
+      { $sort: { qd_id: -1 } },
       { $skip: skip },
       { $limit: limit },
 
@@ -1194,16 +1194,17 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
           as: 'loaitaisan'
         }
       },
-      { $unwind: '$loaitaisan' },
+      { $unwind: { path: "$loaitaisan", preserveNullAndEmptyArrays: true } },
+      { $match: search },
       {
         $lookup: {
           from: 'QLTS_Nhom_Tai_San',
-          localField: 'id_nhom_ts',
+          localField: 'loaitaisan.id_nhom_ts',
           foreignField: 'id_nhom',
           as: 'tennhom'
         }
       },
-      { $unwind: '$tennhom' },
+      { $unwind: { path: "$tennhom", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1212,7 +1213,7 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
           as: 'qd_id_ng_xoa'
         }
       },
-      { $unwind: '$tennhom' },
+      { $unwind: { path: "$qd_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           qd_id: 1,
@@ -1225,6 +1226,7 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
           qd_id_ng_xoa: '$qd_id_ng_xoa.userName',
           thoidiem_bd: 1,
           sl_ngay_thoi_diem: 1,
+          cong_suat_bd: 1
         }
       }
     ])
@@ -1239,11 +1241,14 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
       } else if (data[i].sl_ngay_thoi_diem === 0 || data[i].sl_ngay_thoi_diem === "" || data[i].ngay_tu_chon_td === 0) {
         data[i].thoidiem_bd = '---';
       }
-      // if(data[i].tan_suat_bd === 1){
-
-      // }
-
+      if (data[i].xac_dinh_bd === 1) {
+        data[i].cs_bd_bd_vip = data[i].cong_suat_bd
+      } else {
+        data[i].cs_bd_bd_vip = '---';
+      }
     }
+
+
     return functions.success(res, 'get data success', { dem, data })
   } catch (error) {
     console.error(error)
@@ -1251,8 +1256,8 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
   }
 }
 
-// Theo dõi công suất
-exports.theoDoiCongSuat = async (res, DonViCS, dem, conditions, skip, limit) => {
+// Quản lý đơn vị đo công suất
+exports.quanLyDonViDoCongSuat = async (res, DonViCS, dem, conditions, skip, limit) => {
   try {
     let data = await DonViCS.aggregate([
       { $match: conditions },
@@ -1276,6 +1281,61 @@ exports.theoDoiCongSuat = async (res, DonViCS, dem, conditions, skip, limit) => 
           mota_donvi: 1,
           dvcs_date_delete: 1,
           dvcs_id_ng_xoa: '$dvcs_id_ng_xoa.userName',
+
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      data[i].dvcs_date_delete = new Date(data[i].dvcs_date_delete * 1000)
+
+
+    }
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
+
+// Theo dõi công suất
+exports.theoDoiCongSuat = async (res, TheoDoiCongSuat, dem, conditions, skip, limit) => {
+  try {
+    let data = await TheoDoiCongSuat.aggregate([
+      { $match: conditions },
+      { $sort: { id_cs: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+
+      {
+        $lookup: {
+          from: 'QLTS_Loai_Tai_San',
+          localField: 'id_loai',
+          foreignField: 'id_loai',
+          as: 'loaitaisan'
+        }
+      },
+      { $unwind: '$loaitaisan' },
+      {
+        $lookup: {
+          from: 'QLTS_Don_Vi_CS',
+          localField: 'id_donvi',
+          foreignField: 'id_donvi',
+          as: 'donvics'
+        }
+      },
+      { $unwind: '$donvics' },
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'loaitaisan.id_loai',
+          foreignField: 'id_loai_ts',
+          as: 'taisan'
+        }
+      },
+      { $unwind: { path: "$taisan", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          id_cs:1,
 
         }
       }
