@@ -536,7 +536,7 @@ exports.deleteQuitJob = async(req, res, next) => {
 //----------------------------------------------nghi sai quy dinh
 
 // lay ra danh nghi viec sai quy dinh
-exports.getListQuitJobNew = async(req, res, next) => {
+exports.getListIllegalQuitJob = async(req, res, next) => {
     try {
         let infoLogin = req.infoLogin;
         let com_id = infoLogin.comId;
@@ -613,7 +613,8 @@ exports.getListQuitJobNew = async(req, res, next) => {
     }
 }
 
-exports.updateQuitJobNew = async(req, res, next) => {
+//them moi nghi viec sai quy dinh
+exports.updateIllegalQuitJob = async(req, res, next) => {
     try {
         let {com_id, ep_id, current_position, current_dep_id, note, created_at} = req.body;
         if(!com_id) com_id = req.infoLogin.comId; 

@@ -23,8 +23,8 @@ router.post('/updateQuitJob', formData.parse(), hrService.checkRoleUser, hrServi
 router.post('/deleteQuitJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 4),  personalChangeController.deleteQuitJob);
 
 //----------nghi sai quy dinh
-router.post('/getListQuitJobNew', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 1),  personalChangeController.getListQuitJobNew);
-router.post('/updateQuitJobNew', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 3),  personalChangeController.getAndCheckData, personalChangeController.updateQuitJobNew);
+router.post('/getListQuitJobNew', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 1),  personalChangeController.getListIllegalQuitJob);
+router.post('/updateQuitJobNew', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 3),  personalChangeController.getAndCheckData, personalChangeController.updateIllegalQuitJob);
 router.post('/deleteQuitJobNew', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 4),  personalChangeController.deleteQuitJobNew);
 
 //khac
