@@ -81,6 +81,7 @@ exports.create = async(req,res)=>{
             return fnc.setError(res, " cần nhập đủ thông tin ")
         }
     }catch(e){
+        console.log(e);
         return fnc.setError(res , e.message)
     }
 }
@@ -111,6 +112,7 @@ exports.edit = async(req,res)=>{
                     return fnc.success(res, "cập nhật thành công", {cap})
             }
     }catch(e){
+        console.log(e);
         return fnc.setError(res , e.message)
     }
 }
@@ -178,6 +180,7 @@ exports.delete = async (req , res) =>{
 
     
 }catch(e){
+    console.log(e);
     return fnc.setError(res , e.message)
 }
 }
@@ -205,6 +208,7 @@ exports.updateStatus = async (req , res) =>{
                     .catch((err) => fnc.setError(res, err.message, 511));
             }
     }catch(e){
+        console.log(e);
         return fnc.setError(res , e.message)
     }
     }
@@ -341,6 +345,7 @@ exports.getListNV = async (req , res) =>{
                 }
                 return fnc.setError(res, "không tìm thấy đối tượng", 510);
             }catch(e){
+                console.log(e);
                 return fnc.setError(res , e.message)
             }
             }
@@ -431,6 +436,7 @@ exports.getListNV = async (req , res) =>{
         // }
         // return fnc.setError(res, "bạn chưa có quyền", 510);
     }catch(e){
-            return fnc.setError(res , e.message)
+        console.log(e);
+        return fnc.setError(res , e.message)
     }
     }

@@ -10,7 +10,7 @@ exports.addNhomTaiSan = async (req, res) => {
   try {
     let { ten_nhom } = req.body;
     let com_id = '';
-    if (req.user.data.type == 1|| req.user.data.type == 2) {
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
@@ -47,82 +47,97 @@ exports.addNhomTaiSan = async (req, res) => {
 
 }
 
-
-
 exports.showNhomTs = async (req, res) => {
   try {
-    let { id_nhom_ts, page, perPage } = req.body;
     let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    const startIndex = (page - 1) * perPage;
-    const endIndex = page * perPage;
+
+    // Trích xuất id_nhom, page và perPage từ req.body
+    let { id_nhom, page, perPage } = req.body;
     page = parseInt(page) || 1; // Trang hiện tại (mặc định là trang 1)
     perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
-    let matchQuery = {
-      id_cty: com_id, // Lọc theo com_id
-      ts_da_xoa : 0,
-    };
-    if (id_nhom_ts) {
-      matchQuery.id_nhom_ts = parseInt(id_nhom_ts);
-    }
 
-    let listNhom = await TaiSan.aggregate([
+    let matchQuery = {
+      id_cty: com_id 
+      
+    };
+    if (id_nhom) {
+      const parsedIdNhom = parseInt(id_nhom);
+      if (!isNaN(parsedIdNhom)) {
+        matchQuery.$or = [{ id_nhom_ts: parsedIdNhom }, { id_nhom: parsedIdNhom }];
+       
+    // Thêm điều kiện $nin để loại bỏ những id_nhom đã có
+   
+      } else {
+        // Xử lý trường hợp id_nhom không phải là số hợp lệ
+        return functions.setError(res, 'id_nhom không hợp lệ', 400);
+      }
+    }
+    // Đếm số lượng ts_id dựa trên giá trị id_nhom_ts và gom nhóm theo id_nhom_ts
+    const countTs = await TaiSan.aggregate([
       {
-        $match: matchQuery,
+        $match: { ...matchQuery, ts_da_xoa: 0 },
       },
       {
-        $lookup: {
-          from: 'QLTS_Loai_Tai_San',
-          localField: 'id_loai_ts',
-          foreignField: 'id_loai',
-          as: 'tong_loai',
+        $group: {
+          _id: '$id_nhom_ts',
+          totalTsId: { $sum: 1 },
         },
       },
       {
-        $lookup: {
-          from: 'QLTS_Nhom_Tai_San',
-          localField: 'id_nhom_ts',
-          foreignField: 'id_nhom',
-          as: 'tong_nhom',
+        $sort: {
+          totalTsId: -1,
         },
-      },
-      {
-        $match: {
-          "tong_loai.loai_da_xoa": 0,
-          "tong_nhom.nhom_da_xoa": 0,
-        },
-      },
-      {
-       $project : {
-        
-       }
-      },
-      {
-        $skip: startIndex,
-      },
-      {
-        $limit: perPage,
       },
     ]);
+    const countloai = await LoaiTaiSan.aggregate([
+      {
+        $match: { ...matchQuery, loai_da_xoa: 0 },
+      },
+      {
+        $group: {
+          _id: '$id_nhom_ts',
+          totalloaiId: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          totalloaiId: -1,
+        },
+      },
+    ]);
+   let nhomTsInfo = await NhomTaiSan.aggregate([
+      {
+        $match: { ...matchQuery,nhom_da_xoa : 0 },
+      },
+      {
+        $project: {
+          _id: 0,
+          id_nhom: 1,
+          ten_nhom: 1,
+        },
+      },
+    ]);
+    console.log(nhomTsInfo)
+    const totalItems = countTs.length;
+    const totalPages = Math.ceil(totalItems / perPage);
+    const startIndex = (page - 1) * perPage;
+    const endIndex = page * perPage;
+
+    // Lấy các kết quả phân trang
+    const pagedCountTs = countTs.slice(startIndex, endIndex);
+    const pagedCountLoai = countloai.slice(startIndex, endIndex);
     
-
-    const totalTsCount = await TaiSan.countDocuments(matchQuery);
-    // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
-    const totalPages = Math.ceil(totalTsCount / perPage);
-    const hasNextPage = endIndex < totalTsCount;
-
-    return functions.success(res, 'get data success', { listNhom, totalPages, hasNextPage });
+    return functions.success(res, 'get data success', { nhomTsInfo,countloai,countTs, totalPages });
   } catch (error) {
     console.log(error);
     return functions.setError(res, error);
   }
 };
-
-
 
 exports.showCTNhomTs = async (req, res) => {
   try {
@@ -168,7 +183,7 @@ exports.showCTNhomTs = async (req, res) => {
     // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
     const totalPages = Math.ceil(totalTsCount / perPage);
     const hasNextPage = endIndex < totalTsCount;
-
+ 
     return functions.success(res, 'get data success', { showdetails: showdetailsWithTaisan, totalPages, hasNextPage });
 
   } catch (error) {
@@ -176,7 +191,7 @@ exports.showCTNhomTs = async (req, res) => {
     return functions.setError(res, error);
   }
 };
-
+ 
 
 
 exports.editNhom = async (req, res) => {

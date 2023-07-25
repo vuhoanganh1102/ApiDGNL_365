@@ -28,7 +28,9 @@ exports.xoaBaoDuong = async (req, res) => {
       // thay đổi trạng thái là 1
       let idArray = id.map(idItem => parseInt(idItem));
       await BaoDuong.updateMany(
-        { id_bd: { $in: idArray }, xoa_bd: 0 },
+        { id_bd: { $in: idArray },
+        
+         xoa_bd: 0 },
         { xoa_bd: 1 }
       );
       return fnc.success(res, 'Bạn đã xóa thành công vào danh sách dã xóa !');

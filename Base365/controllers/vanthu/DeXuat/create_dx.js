@@ -743,6 +743,8 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
+        let chageDate = ngay_tam_ung
+        console.log(typeof chageDate);
         if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
