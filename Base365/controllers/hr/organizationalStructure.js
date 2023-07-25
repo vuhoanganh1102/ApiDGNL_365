@@ -875,11 +875,14 @@ exports.leaderDetail = async (req, res, next) => {
 
             if (infoUser) {
                 if(infoUser && infoUser.inForPerson && infoUser.inForPerson.employee && infoUser.inForPerson.account) {
-                    let infoUserHr = await HR_InfoLeaders.findOne({ epId: empId })
+                    let infoUserHr = await HR_InfoLeaders.findOne({ epId: empId });
+                    let infoAvatar = await LeaderAvatar.findOne({ep_id: empId});
+                    let nameAvatar = ""
+                    if(infoAvatar) nameAvatar = infoAvatar.avatar;
                     if (infoUserHr) {
-                        result.ep_name = infoUser.userName
-                        result.namePosition = positionNames[infoUser.inForPerson.employee.position_id]
-                        if(infoUser.avatarUser) result.avatarUser = `${process.env.hostFile}${infoUser.avatarUser}`
+                        result.ep_name = infoUser.userName;
+                        result.namePosition = positionNames[infoUser.inForPerson.employee.position_id];
+                        if(nameAvatar!="") result.avatarUser = `${ process.env.DOMAIN_HR}/base365/hr/ep_leader/${nameAvatar}`
                         else result.avatarUser = '';
                         result.description = infoUserHr.description
 
@@ -895,7 +898,7 @@ exports.leaderDetail = async (req, res, next) => {
                         let insertUser = new HR_InfoLeaders({
                             id: newIDMax,
                             epId: empId,
-                            avatar: (infoUser.avatarUser ? infoUser.avatarUse : null),
+                            avatar: nameAvatar,
                             description: description,
                             desPosition: desPosition,
                             created_at: new Date(Date.now())
@@ -903,7 +906,7 @@ exports.leaderDetail = async (req, res, next) => {
                         insertUser = insertUser.save()
                         
                         if (insertUser) {
-                            let detailLeader = {userName: infoUser.userName, birthday: infoUser.inForPerson.account.birthday};
+                            let detailLeader = {userName: infoUser.userName, avatarUser: nameAvatar, birthday: infoUser.inForPerson.account.birthday};
                             return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công', detailLeader);
                         } else {
                             return functions.setError(res, 'update info leader fail!');
@@ -953,7 +956,26 @@ exports.updateAvatarLeader = async (req, res, next) => {
         if (req.infoLogin && req.body.empId) {
             let empId = req.body.empId
             if(req.files && req.files.logo) {
-                
+                let logo = req.files.logo;
+                if(logo && await hrFunctions.checkFile(logo.path)){
+                    let nameAvatar = await hrFunctions.uploadFileNameRandom("ep_leader",logo);
+                    let id = await functions.getMaxIdByField(LeaderAvatar, 'id');
+                    let fields = {
+                        ep_id: empId,
+                        avatar: nameAvatar,
+                        created_at: Date.now()
+                    }
+                    let leaderAvatar = await LeaderAvatar.findOne({ep_id: empId});
+                    if(!leaderAvatar) {
+                        fields.id = id;
+                    }
+                    leaderAvatar = await LeaderAvatar.findOneAndUpdate({ep_id: empId}, fields, {new: true, upsert: true});
+                    if(leaderAvatar) {
+                        return functions.success(res, "Update avatar leader thanh cong!");
+                    }
+                    return functions.setError(res, "Update avatar leader that bai!", 407);
+                }
+                return functions.setError(res, "Anh sai dinh dang hoac qua kich thuoc!", 406);
             }
             return functions.setError(res, "Truyen thieu anh!", 405);
         } else {
