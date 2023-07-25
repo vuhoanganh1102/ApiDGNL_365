@@ -12,4 +12,7 @@ router.post('/chitiet_taisan', functions.checkToken, formData.parse(), controlle
 
 // page bao duong - sua chua
 router.post('/danhsach_taisan', functions.checkToken, formData.parse(), controller.listTS);
+//page quy đinh bảo dưỡng
+router.post('/list_danhsach_loaitaisan', functions.checkToken, formData.parse(), controller.listLoaiTaiSan);
+router.post('/list_donvi_csuat', functions.checkToken, formData.parse(), controller.list_dvi_csuat);
 module.exports = router;
