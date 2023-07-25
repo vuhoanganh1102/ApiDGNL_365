@@ -485,7 +485,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
       { $sort: { dc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'Users',
@@ -578,7 +578,7 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
       { $sort: { dc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'Users',
@@ -671,7 +671,7 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
       { $sort: { dc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'Users',
@@ -745,7 +745,7 @@ exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       { $sort: { sc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -808,11 +808,11 @@ exports.dangSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
   try {
     conditions.sc_trangthai = 3;
     let data = await SuaChua.aggregate([
-      { $match: conditions }, 
+      { $match: conditions },
       { $sort: { sc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -871,7 +871,7 @@ exports.daSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       { $sort: { sc_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -931,7 +931,7 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       { $sort: { id_bd: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1009,7 +1009,7 @@ exports.dangBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       { $sort: { id_bd: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1065,7 +1065,7 @@ exports.daBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       { $sort: { id_bd: -1 } },
       { $skip: skip },
       { $limit: limit },
-    
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1127,7 +1127,7 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
       { $sort: { id_bd: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1201,7 +1201,7 @@ exports.theoDoiCongSuat = async (res, DonViCS, dem, conditions, skip, limit) => 
       { $sort: { id_donvi: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'Users',
@@ -1242,7 +1242,7 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
       { $sort: { mat_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1319,7 +1319,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
       { $sort: { mat_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1416,7 +1416,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
       { $sort: { mat_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1521,7 +1521,7 @@ exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
       { $sort: { huy_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-    
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1593,7 +1593,7 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
       { $sort: { huy_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1673,7 +1673,7 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
       { $sort: { tl_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-      
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1744,7 +1744,7 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
       { $sort: { tl_id: -1 } },
       { $skip: skip },
       { $limit: limit },
-     
+
       {
         $lookup: {
           from: 'QLTS_Tai_San',
@@ -1804,5 +1804,24 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
+  }
+}
+
+exports.maxIDNhacNho = async (model) => {
+  let maxId = await model.findOne({}, {}, { sort: { id_nhac_nho: -1 } });
+  if (maxId) {
+    return maxId.id_nhac_nho;
+  } else {
+    return 0;
+  }
+
+}
+
+exports.maxID_dvcs = async (model) => {
+  let dvcs = await model.findOne({}, {}, { sort: { id_donvi: -1 } });
+  if (dvcs) {
+    return dvcs.id_donvi;
+  } else {
+    return 0;
   }
 }
