@@ -1,21 +1,24 @@
-const fnc = require('../../../services/functions');
-const ThongBao = require('../../../models/QuanLyTaiSan/ThongBao');
-const BaoDuong = require('../../../models/QuanLyTaiSan/BaoDuong');
-const QuaTrinhSuDung = require('../../../models/QuanLyTaiSan/QuaTrinhSuDung');
-const TaiSan = require('../../../models/QuanLyTaiSan/TaiSan');
-const TaiSanDangSuDung = require("../../../models/QuanLyTaiSan/TaiSanDangSuDung");
-const Users = require('../../../models/Users');
+const fnc = require('../../../../services/functions');
+const ThongBao = require('../../../../models/QuanLyTaiSan/ThongBao');
+const BaoDuong = require('../../../../models/QuanLyTaiSan/BaoDuong');
+const QuaTrinhSuDung = require('../../../../models/QuanLyTaiSan/QuaTrinhSuDung');
+const TaiSan = require('../../../../models/QuanLyTaiSan/TaiSan');
+const TaiSanDangSuDung = require("../../../../models/QuanLyTaiSan/TaiSanDangSuDung");
+const Users = require('../../../../models/Users');
 const { errorMonitor } = require('nodemailer/lib/xoauth2');
-const Department = require('../../../models/qlc/Deparment');
-// Tĩnh
-//tai sản cần bảo dưỡng
+const Department = require('../../../../models/qlc/Deparment');
+const QuyDinhBaoDuong = require('../../../../models/QuanLyTaiSan/Quydinh_bd');
+const NhacNho = require('../../../../models/QuanLyTaiSan/NhacNho');
+const func = require('../../../../services/QLTS/qltsService');
+
 //add_baoduong
 exports.add_Ts_can_bao_duong = async (req, res) => {
     try {
-        let { id_ts, sl_bd, trang_thai_bd, cs_bd, type_quyen, ngay_bd, ngay_dukien_ht, ngay_ht_bd, chiphi_dukien, chiphi_thucte,
+        let { id_ts, sl_bd, trang_thai_bd, cs_bd, ngay_bd, ngay_dukien_ht, ngay_ht_bd, chiphi_dukien, chiphi_thucte,
             nd_bd, ng_thuc_hien, dia_diem_bd, quyen_ng_sd, ng_sd, vitri_ts, dv_bd, dia_chi_nha_cung_cap } = req.body;
         let com_id = 0;
         let id_ng_tao = 0;
+        let type_quyen = req.user.data.type;
         if (req.user.data.type == 1) {
             com_id = req.user.data.idQLC;
             id_ng_tao = req.user.data.idQLC;
@@ -337,7 +340,7 @@ exports.TuChoiBaoDuong = async (req, res) => {
 exports.delete1 = async (req, res) => {
     try {
 
-        let { datatype, id, type_quyen, } = req.body;
+        let { datatype, id, } = req.body;
         let com_id = req.user.data.com_id;
         let id_ng_xoa = req.user.data.idQLC;
         let date_delete = new Date().getTime();
@@ -345,6 +348,7 @@ exports.delete1 = async (req, res) => {
             id_cty: com_id,
             id_bd: id
         });
+        let type_quyen = req.user.data.type;
         if (!this_baoduong) {
             return res.status(400).json({ message: "khong co thong tin cua bien ban nay" });
         }
@@ -498,12 +502,12 @@ exports.delete1 = async (req, res) => {
 //xoa_all2
 exports.deleteAll = async (req, res) => {
     try {
-        let { xoa_vinh_vien, type_quyen, array_xoa } = req.body;
+        let { xoa_vinh_vien, array_xoa } = req.body;
         let com_id = req.user.data.com_id;
         let id_ng_xoa = req.user.data.idQLC;
         let xoa = array_xoa.split(',');
         let dem = xoa.length;
-
+        let type_quyen = req.user.data.type;
         if (xoa_vinh_vien == 0 || xoa_vinh_vien == 2) {
             for (let i = 0; i < dem; i++) {
 
@@ -679,16 +683,16 @@ exports.detailTSCBD = async (req, res) => {
         let infobd = {
             id_bd: chitiet_baoduong.id_bd,
             nguoi_tao: nguoi_tao.userName,
-            ngay_tao: new Date(chitiet_baoduong.bd_date_create * 1000).toLocaleDateString(),
+            ngay_tao: new Date(chitiet_baoduong.bd_date_create * 1000),
             bd_trang_thai: chitiet_baoduong.bd_trang_thai,
             ma_ts: chitiet_baoduong.baoduong_taisan,
             ten_ts: taiSan.ts_ten,
             so_luong: chitiet_baoduong.bd_sl,
             doi_tuong_sd: nguoi_sd,
             vi_tri_ts: vi_tri,
-            ngay_sd: chitiet_baoduong.bd_ngay_sudung,
-            ngay_bd_gan_nhat: new Date(chitiet_baoduong.bd_ngay_batdau * 1000).toLocaleDateString(),
-            ngay_bd_du_kien: new Date(chitiet_baoduong.bd_dukien_ht * 1000).toLocaleDateString(),
+            ngay_sd: new Date(chitiet_baoduong.bd_ngay_sudung * 1000),
+            ngay_bd_gan_nhat: new Date(chitiet_baoduong.bd_ngay_batdau * 1000),
+            ngay_bd_du_kien: new Date(chitiet_baoduong.bd_dukien_ht * 1000),
             bd_tai_congsuat: chitiet_baoduong.bd_tai_congsuat,
             bd_cs_dukien: chitiet_baoduong.bd_cs_dukien,
             noi_dung: chitiet_baoduong.bd_noi_dung
@@ -705,12 +709,12 @@ exports.detailTSCBD = async (req, res) => {
 
 exports.listTSCSC = async (req, res) => {
     try {
-        let { key, type_quyen } = req.body;
+        let { key } = req.body;
         let skip = req.body.page || 1;
         let limit = req.bodylimit.limit || 10;
         let com_id = 0;
         let id_ng_tao = 0;
-
+        let type_quyen = req.user.data.type;
 
         if (req.user.data.type == 1) {
             com_id = req.user.data.idQLC;
@@ -814,8 +818,6 @@ exports.listTSCSC = async (req, res) => {
             count++;
         }
         fnc.success(res, arr_bb);
-
-
 
     } catch (error) {
 
