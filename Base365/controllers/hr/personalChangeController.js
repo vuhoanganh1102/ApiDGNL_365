@@ -436,7 +436,7 @@ exports.getListQuitJob = async(req, res, next) => {
 exports.updateQuitJob = async(req, res, next) => {
     try {
         let infoLogin = req.infoLogin;
-        let {ep_id, com_id, new_com_id, current_position, current_dep_id, update_position, update_dep_id, created_at, decision_id, note, mission, type, shift_id} = req.body;
+        let {ep_id, com_id, current_position, current_dep_id, created_at, decision_id, note, type, shift_id} = req.body;
         if(ep_id && created_at && type && com_id) {
             let employee = await Users.findOne({idQLC: ep_id});
             if(employee) {
@@ -449,7 +449,7 @@ exports.updateQuitJob = async(req, res, next) => {
                             group_id: 0,
                             team_id: 0,
                             ep_status: "Deny",
-                            time_quit_job: new Date(created_at)
+                            time_quit_job: functions.convertTimestamp(created_at)
                         }
                     }});
                 
