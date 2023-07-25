@@ -107,5 +107,7 @@ router.post('/detailCandidateFailJob', formData.parse(), hrService.checkRoleUser
 //chi tiet ung vien ky hop dong
 router.post('/detailCandidateContactJob', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.detailCandidateContactJob);
 
+router.post('/getListCategory', formData.parse(), hrService.checkRoleUser, hrService.checkRight(1, 1), recruitmentController.getListCategory);
+
 
 module.exports = router;

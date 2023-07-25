@@ -6,8 +6,6 @@ const HR_CategorySchema = new Schema({
     id: {
         type: Number,
         required: true,
-        unique: true,
-        autoIncrement: true
     },
     // tên
     name: {
