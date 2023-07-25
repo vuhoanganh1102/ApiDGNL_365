@@ -12,11 +12,11 @@ exports.addDieuchuyenTaiSan = async (req, res) => {
 
 
     try {
-        let { loai_dc, type_quyen, dieuchuyen_taisan1, ngay_dc, ng_thuc_hien, khoi_chon_phong_ban_nv,
+        let { loai_dc, dieuchuyen_taisan1, ngay_dc, ng_thuc_hien, khoi_chon_phong_ban_nv,
             khoi_chon_phong_ban_nv_den, khoi_dc_tu, khoi_dc_den, khoi_ng_dai_dien_dc_tu, khoi_ng_dai_dien_dc_den,
             id_dai_dien_nhan, vitri_dc, vitri_dc_tu, vitri_dc_den, ly_do_dc } = req.body;
         let id_cty, id_ng_tao = 0;
-
+        let type_quyen = req.user.data.type;
         if (req.user.data.type == 1) {
             id_cty = req.user.data.idQLC;
             id_ng_tao = req.user.data.idQLC;
@@ -138,12 +138,12 @@ exports.editDCTS = async (req, res) => {
 
 
 
-        let { id_dc, loai_dc, type_quyen, dieuchuyen_taisan1, ngay_dc, ng_thuc_hien, dai_dien_nhan, khoi_dc_tu, khoi_dc_den,
+        let { id_dc, loai_dc, dieuchuyen_taisan1, ngay_dc, ng_thuc_hien, dai_dien_nhan, khoi_dc_tu, khoi_dc_den,
             khoi_ng_dai_dien_dc_tu, khoi_ng_dai_dien_dc_den, khoi_chon_phong_ban_nv, khoi_chon_phong_ban_nv_den, vitri_dc, vitri_dc_tu,
             vitri_dc_den, ly_do_dc } = req.body;
         let dc_da_xoa = 0;
         let dc_trang_thai = 0;
-
+        let type_quyen = req.user.data.type;
         let date_create = new Date().getTime();
         let date_delete = 0;
         let id_cty = 0;
@@ -157,11 +157,9 @@ exports.editDCTS = async (req, res) => {
             id_ng_tao = req.user.data.idQLC;
         }
 
-        // let edit_dieuchuyen = await DieuChuyen.findOne({
-        //     dc_id: id_dc,
-        //     id_cty: id_cty
-
-        // });
+        if (isNaN(id_dc) || id_dc <= 0) {
+            return res.status(404).json({ message: "id_dc phai la 1 Number" });
+        }
         const ds_dc = JSON.parse(dieuchuyen_taisan1)?.ds_dc || [];
         const updated_ds_dc = ds_dc.map((item) => ({
             ts_id: item[0],
@@ -195,7 +193,7 @@ exports.deleteBBDieuChuyen = async (req, res) => {
     try {
 
 
-        let { datatype, id, type_quyen } = req.body;
+        let { datatype, id, } = req.body;
 
         let com_id, id_ng_xoa = 0;
         if (req.user.data.type == 1) {
@@ -207,7 +205,14 @@ exports.deleteBBDieuChuyen = async (req, res) => {
             id_ng_xoa = req.user.data.idQLC;
         }
         let date_delete = new Date().getTime();
+        let type_quyen = req.user.data.type;
 
+        if (isNaN(datatype) || datatype <= 0) {
+            return res.status(404).json({ message: "datatype phai la 1 Number" });
+        }
+        if (isNaN(id) || id <= 0) {
+            return res.status(404).json({ message: "id phai la 1 Number" });
+        }
         if (datatype == 1) {
             let dieuchuyen = await DieuChuyen.findOneAndUpdate(
                 {
@@ -264,10 +269,13 @@ exports.detailsDCVTTS = async (req, res) => {
             com_id = req.user.data.com_id;
         }
 
+        if (isNaN(id_dc) || id_dc <= 0) {
+            return res.status(404).json({ message: "id_dc phai la 1 Number" });
+        }
         let chitiet_dcvitri = await DieuChuyen.findOne({ id_cty: com_id, dc_id: id_dc });
 
-        let ngaytao = new Date(chitiet_dcvitri.dc_date_create * 1000).toLocaleDateString();
-        let ngaydc = new Date(chitiet_dcvitri.dc_ngay * 1000).toLocaleDateString();
+        let ngaytao = new Date(chitiet_dcvitri.dc_date_create * 1000);
+        let ngaydc = new Date(chitiet_dcvitri.dc_ngay * 1000);
 
         //let qr_vitri = await ViTriTaiSan.find({ id_cty: com_id });
 
@@ -289,18 +297,30 @@ exports.detailsDCVTTS = async (req, res) => {
             idQLC: Number(chitiet_dcvitri.id_ng_thuchien),
             com_id: com_id
         })
+        let nguoi_thien = await fnc.NameUser(Users, {
+            idQLC: chitiet_dcvitri.id_ng_thuchien,
+            type: { $ne: 1 }
+        })
+        let nguoi_nhan = await fnc.NameUser(Users, {
+            idQLC: chitiet_dcvitri.id_daidien_nhan,
+            type: { $ne: 1 }
+        })
+        let nguoi_tao = await fnc.NameUser(Users, {
+            idQLC: chitiet_dcvitri.id_ng_tao_dc,
+            type: { $ne: 1 }
+        })
         let dc_vt = {
             dc_id: chitiet_dcvitri.dc_id,
             dc_trangthai: chitiet_dcvitri.dc_trangthai,
-            id_ng_tao: chitiet_dcvitri.id_ng_tao_dc,
-            dc_ngay: ngaydc,
-            ngaytao: ngaytao,
-            dc_hoan_thanh: new Date(chitiet_dcvitri.dc_hoan_thanh * 1000).toLocaleDateString(),
+            ng_tao: nguoi_tao,
+            dc_ngay: new Date(ngaydc * 1000),
+            ngaytao: new Date(ngaytao * 1000),
+            dc_hoan_thanh: new Date(chitiet_dcvitri.dc_hoan_thanh * 1000),
             vi_tri_dc_tu: vi_tri_dc_tu,
             dc_vitri_den: dc_vitri_tsnhan,
-            id_daidien_nhan: chitiet_dcvitri.id_daidien_nhan,
+            daidien_nhan: nguoi_nhan,
             phong_ban_nhan: dep_nhan,
-            id_ng_thuchien: chitiet_dcvitri.id_ng_thuchien,
+            ng_thuchien: nguoi_thien,
             phong_ban_thuchien: dep_thuchien,
             dc_lydo: chitiet_dcvitri.dc_lydo,
             dieuchuyen_taisan: chitiet_dcvitri.dieuchuyen_taisan,
@@ -325,7 +345,7 @@ exports.TuchoiDCVT = async (req, res) => {
             com_id = req.user.data.com_id;
         }
 
-        if (isNaN(id_bb)) {
+        if (isNaN(id_bb) || id_bb <= 0) {
             return res.status(404).json({ message: "id_bb phai la 1 Number" });
         }
 
@@ -488,17 +508,40 @@ exports.listBB = async (req, res) => {
         let dc_vitri = await DieuChuyen.aggregate([
             {
                 $match: filter
-
+            },
+            {
+                $lookup: {
+                    from: 'QLTS_ViTri_ts',
+                    localField: 'vi_tri_dc_tu',
+                    foreignField: 'id_vitri',
+                    as: QLTS_ViTri_ts
+                }
+            },
+            {
+                $lookup: {
+                    from: 'QLTS_ViTri_ts_nhan',
+                    localField: 'dc_vitri_tsnhan',
+                    foreignField: 'id_vitri',
+                    as: QLTS_ViTri_tsan_nhan
+                }
+            },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'id_ng_thuchien',
+                    foreignField: 'idQLC',
+                    as: NguoiThucHien
+                }
             },
             {
                 $project: {
-                    'dc_ngay': '$dc_ngay',
-                    'dc_id': '$dc_id',
+                    'dc_ngay': new Date('$dc_ngay' * 1000),
+                    'dc_id': new Date('$dc_id' * 1000),
                     'dc_trangthai': '$dc_trangthai',
-                    ';vi_tri_dc_tu': '$vi_tri_dc_tu',
-                    'dc_vitri_tsnhan': '$dc_vitri_tsnhan',
+                    'vi_tri_dc_tu': '$QLTS_ViTri_ts.vi_tri',
+                    'dc_vitri_tsnhan': '$QLTS_ViTri_tsan_nhan.vi_tri',
                     'dc_lydo': '$dc_lydo',
-                    'id_ng_thuchien': '$id_ng_thuchien'
+                    'id_ng_thuchien': '$NguoiThucHien.useName'
                 }
             },
             {

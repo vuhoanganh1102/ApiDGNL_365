@@ -143,49 +143,20 @@ exports.showCTNhomTs = async (req, res) => {
   try {
     let { id, page, perPage } = req.body;
     let com_id = '';
-    if (req.user.data.type == 1|| req.user.data.type == 2) {
+    page = parseInt(page) || 1; // Trang hiện tại (mặc định là trang 1)
+    perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
+      console.log(com_id)
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
-    page = page || 1;
-    perPage = perPage || 10;
-    let query = {
-      loai_da_xoa: 0,
+    let matchQuery = {
+      id_cty : com_id,// Lọc theo com_id
+      loai_da_xoa: 0
     };
-    
-    const showdetails = await LoaiTaiSan.find({ id_nhom_ts: id, id_cty: com_id, ...query })
-      .sort({ id_loai: -1 })
-      .skip(startIndex)
-      .limit(perPage);
-
-    if (showdetails.length === 0) {
-      return functions.success(res, 'get data success', { showdetails: [], totalPages: 0, hasNextPage: false });
-    }
-
-    const idTaisan = showdetails.map(item => item.id_loai);
-
-    const showtaisan = await TaiSan.find({ id_loai_ts: { $in: idTaisan } }).select('ts_id ts_ten');
-
-    // Chứa giá trị tương ứng của showtaisan với showdetails
-    const showdetailsWithTaisan = showdetails.map(detail => {
-      const matchingTaisan = showtaisan.find(taisan => taisan.ts_id.toString() === detail.id_loai.toString());
-      return {
-        ...detail.toObject(),
-        taisan: matchingTaisan || null,
-      };
-    });
-
-
-    const totalTsCount = await LoaiTaiSan.countDocuments({ id_nhom_ts: id, id_cty: com_id, ...query });
-    // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
-    const totalPages = Math.ceil(totalTsCount / perPage);
-    const hasNextPage = endIndex < totalTsCount;
- 
-    return functions.success(res, 'get data success', { showdetails: showdetailsWithTaisan, totalPages, hasNextPage });
-
   } catch (error) {
     console.log(error);
     return functions.setError(res, error);

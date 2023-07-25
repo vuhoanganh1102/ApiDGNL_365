@@ -54,6 +54,7 @@ exports.showAll = async (req, res) => {
       {
         $match: matchQuery,
       },
+      { $sort: { ts_id: -1 } },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -141,7 +142,9 @@ exports.showAll = async (req, res) => {
         $limit: perPage,
       },
     ]);
-    
+
+
+
     // Lấy tổng số lượng tài sản
     const totalTsCount = await TaiSan.countDocuments(matchQuery);
 

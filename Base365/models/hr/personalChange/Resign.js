@@ -16,11 +16,6 @@ const HR_Resignschema = new Schema({
         required: true
     },
 
-    decision_id: {
-        type: Number,
-        require: true
-    },
-
     created_at: {
         type: Date,
         require: true,

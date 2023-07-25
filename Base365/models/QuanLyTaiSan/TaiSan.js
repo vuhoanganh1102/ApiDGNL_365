@@ -7,19 +7,19 @@ const model_Tai_San = new mongoose.Schema({
     },
     id_cty: {
         type: Number,
-        require : 0
+        default: 0
     },
     id_loai_ts: {
         type: Number,
-        require : 0
+        default: 0
     },
     id_nhom_ts: {
         type: Number,
-        require : 0
+        default: 0
     },
     id_dv_quanly: {
         type: String,
-        require : 0
+        default: 0
     },
     id_ten_quanly: {
         type: Number

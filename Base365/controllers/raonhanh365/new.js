@@ -22,6 +22,7 @@ const PriceList = require("../../models/Raonhanh365/PriceList")
 const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const { default: axios } = require("axios");
 const md5 = require("md5");
+const CateDetail = require("../../models/Raonhanh365/CateDetail");
 dotenv.config();
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
@@ -429,34 +430,54 @@ exports.hideNews = async (req, res, next) => {
 // ghim tin
 exports.pinNews = async (req, res, next) => {
     try {
-        console.log(req.body.news_id);
-        let idNews = req.body.news_id;
+        let idNews = req.body.id;
+        let userID = req.user.data.idRaoNhanh365;
         if (!idNews) return functions.setError(res, "Missing input news_id", 405);
         let {
-            timeStartPinning,
-            dayStartPinning,
-            numberDayPinning,
-            moneyPinning,
-            pinHome,
-            pinCate,
-            dayEndPinning
+            type,
+            tienthanhtoan,
+            so_ngay
         } = req.body;
-        let existsNews = await New.find({ _id: idNews });
+        let existsNews = await New.findOne({ _id: idNews, userID });
         if (existsNews) {
-            let now = new Date(Date.now());
-            if (!timeStartPinning) timeStartPinning = now;
-            if (!dayStartPinning) dayStartPinning = now;
-            let fields = {
-                timeStartPinning: timeStartPinning,
-                dayStartPinning: dayStartPinning,
-                dayEndPinning: dayEndPinning,
-                numberDayPinning: numberDayPinning,
-                moneyPinning: moneyPinning,
-                pinHome: pinHome,
-                pinCate: pinCate,
-                updateTime: now,
-            };
+            let now = new Date();
+            let so_ngayg = so_ngay * 7;
+            let ngay_kthuc = now.getTime() + 86400 * so_ngay;
+
+            if (type == 1) {
+                var fields = {
+                    pinHome: 1,
+                    numberDayPinning: so_ngayg,
+                    timeStartPinning: new Date(),
+                    dayStartPinning: new Date(),
+                    dayEndPinning: new Date(ngay_kthuc),
+                    moneyPinning: tienthanhtoan,
+                };
+            } else {
+                var fields = {
+                    pinCate: 5,
+                    numberDayPinning: so_ngay,
+                    timeStartPinning: new Date(),
+                    dayStartPinning: new Date(),
+                    dayEndPinning: new Date(ngay_kthuc),
+                    moneyPinning: tienthanhtoan,
+                };
+            }
             await New.findByIdAndUpdate(idNews, fields);
+            await Users.findOneAndUpdate({ idRaoNhanh365: userID }, {
+                $inc: { 'inforRN365.money': -tienthanhtoan }
+            })
+            let hisID = await functions.getMaxID(History) + 1;
+            await History.create({
+                _id: hisID,
+                userId: userID,
+                price: tienthanhtoan,
+                priceSuccess: tienthanhtoan,
+                time: new Date(),
+                type: req.user.data.type,
+                content: 'Ghim tin đăng ',
+                distinguish: 1
+            })
             return functions.success(res, "Pin news successfully");
         }
         return functions.setError(res, "News not found!", 505);
@@ -621,7 +642,7 @@ exports.getNew = async (req, res, next) => {
             userID: 1,
             img: 1,
             updateTime: 1,
-            user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
+            user: { _id: 1, idRaoNhanh365: 1, phone: 1, isOnline: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
             district: 1,
             ward: 1,
             city: 1,
@@ -854,7 +875,7 @@ exports.searchNew = async (req, res, next) => {
                 userID: 1,
                 img: 1,
                 updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, lastActivedAt: 1, time_login: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
+                user: { _id: 1, idRaoNhanh365: 1, isOnline: 1, lastActivedAt: 1, time_login: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
                 district: 1,
                 ward: 1,
                 city: 1,
@@ -881,7 +902,7 @@ exports.searchNew = async (req, res, next) => {
                 userID: 1,
                 img: 1,
                 updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, lastActivedAt: 1, time_login: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
+                user: { _id: 1, idRaoNhanh365: 1, isOnline: 1, lastActivedAt: 1, time_login: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1 },
                 district: 1,
                 ward: 1,
                 city: 1,
@@ -1549,7 +1570,6 @@ exports.updateBuyNew = async (req, res, next) => {
         }
         return functions.success(res, "update new success");
     } catch (error) {
-        console.log("🚀 ~ file: new.js:1300 ~ exports.createBuyNew= ~ error:", error)
         return functions.setError(res, error);
     }
 };
@@ -1613,7 +1633,7 @@ exports.getDetailNew = async (req, res, next) => {
                 tgian_bd: 1,
                 buySell: 1,
                 video: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, lastActivedAt: 1, time_login: 1 },
+                user: { _id: 1, idRaoNhanh365: 1, phone: 1, isOnline: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, lastActivedAt: 1, time_login: 1 },
             };
         } else if (buy === "c") {
             buysell = 2;
@@ -1637,7 +1657,7 @@ exports.getDetailNew = async (req, res, next) => {
                 userID: 1,
                 img: 1,
                 updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
+                user: { _id: 1, idRaoNhanh365: 1, isOnline: 1, phone: 1, avatarUser: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
                 district: 1,
                 ward: 1,
                 description: 1,
@@ -1684,12 +1704,11 @@ exports.getDetailNew = async (req, res, next) => {
                     as: "user",
                 },
             },
-            { $unwind: "$user" },
+            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
             { $match: { buySell: buysell } },
             { $project: searchitem },
 
         ]);
-
         let cousao = await Evaluate.find({ blUser: 0, userId: data[0].userID }).count();
         let sumsao = await Evaluate.aggregate([
             {
@@ -1805,6 +1824,9 @@ exports.getDetailNew = async (req, res, next) => {
                 data[0].islove = 0;
             }
         }
+
+
+
         let dataBidding = null;
         data[0].ListComment = ListComment;
         data[0].ListLike = ListLike;
@@ -1852,10 +1874,12 @@ exports.getDetailNew = async (req, res, next) => {
 
             return functions.success(res, "get data success", { data, dataBidding });
         }
-
+        //data[`${cate_Special}`] = await raoNhanh.getDataNewDetail(data[`${cate_Special}`])
+    
+       
         return functions.success(res, "get data success", { data });
     } catch (error) {
-        console.log("🚀 ~ file: new.js:1757 ~ exports.getDetailNew= ~ error:", error)
+        console.error(error)
         return functions.setError(res, error);
     }
 };
@@ -1868,7 +1892,6 @@ exports.loveNew = async (req, res, next) => {
         }
         let user = req.user.data.idRaoNhanh365;
         let checkLove = await LoveNews.findOne({ id_new: id, id_user: user });
-        console.log("🚀 ~ file: new.js:1811 ~ exports.loveNew= ~ checkLove:", checkLove)
         if (checkLove) {
             await LoveNews.findOneAndDelete({ id_new: id, id_user: user });
             return functions.success(res, "love new success", { status: 0 });
@@ -2342,10 +2365,6 @@ exports.manageNewBuySell = async (req, res, next) => {
             data,
         });
     } catch (error) {
-        console.log(
-            "🚀 ~ file: new.js:1315 ~ exports.manageNewBuySell= ~ error:",
-            error
-        );
         return functions.setError(res, error);
     }
 };
@@ -2805,7 +2824,7 @@ exports.comment = async (req, res, next) => {
         let time = new Date();
         let _id = (await functions.getMaxID(Comments)) + 1;
 
-        if (url && parent_id && ip) {
+        if (url) {
             if (File.Image) {
                 let img = await raoNhanh.uploadFileRaoNhanh(
                     "comment",
@@ -2822,7 +2841,7 @@ exports.comment = async (req, res, next) => {
                     url,
                     parent_id,
                     content,
-                    img,
+                    img: `/pictures/comment/${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()}/` + img,
                     ip,
                     sender_idchat: userID,
                     tag,
@@ -2846,10 +2865,6 @@ exports.comment = async (req, res, next) => {
 
         return functions.success(res, "comment success");
     } catch (error) {
-        console.log(
-            "🚀 ~ file: new.js:1647 ~ exports.comment=async ~ error:",
-            error
-        );
         return functions.setError(res, error);
     }
 };
@@ -2893,10 +2908,6 @@ exports.updateComment = async (req, res, next) => {
 
         return functions.success(res, "comment success");
     } catch (error) {
-        console.log(
-            "🚀 ~ file: new.js:1647 ~ exports.comment=async ~ error:",
-            error
-        );
         return functions.setError(res, error);
     }
 };
@@ -3043,7 +3054,6 @@ exports.ghimTin = async (req, res, next) => {
 
         return functions.success(res, 'get data success', { data, trangchu, trangdanhmuc })
     } catch (error) {
-        console.log("🚀 ~ file: new.js:3033 ~ exports.ghimTin= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -3066,7 +3076,6 @@ exports.dayTin = async (req, res, next) => {
 
         return functions.success(res, 'get data success', { data, tien_daytin, thoigian })
     } catch (error) {
-        console.log("🚀 ~ file: new.js:3033 ~ exports.ghimTin= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -3109,7 +3118,6 @@ exports.capNhatTin = async (req, res, next) => {
         }
         return functions.success(res, 'update new success')
     } catch (error) {
-        console.log("🚀 ~ file: new.js:3033 ~ exports.ghimTin= ~ error:", error)
         return functions.setError(res, error)
     }
 }
@@ -3121,18 +3129,81 @@ exports.dangBanLai = async (req, res, next) => {
         let userID = req.user.data.idRaoNhanh365;
         let type = Number(req.body.type);
         if (!id) return functions.setError(res, 'missing id', 400)
-        let check = await New.findOne({ _id: id, userID: userID })
-        if (!check) return functions.setError(res, 'not found new', 404)
+        let checkga = await New.findOne({ _id: id, userID: userID })
+        if (!checkga) return functions.setError(res, 'not found new', 404)
 
+        // đã bán
         if (type === 1) {
             await New.findByIdAndUpdate(id, {
                 sold: 1,
                 timeSell: new Date(),
-
             })
-        }
+            let check = await New.findOneAndUpdate({
+                _id: id,
+                userID: userID,
+                $or: [
+                    { pinHome: { $ne: 0 } },
+                    { pinCate: { $ne: 0 } },
+                    { new_day_tin: { $ne: 0 } }
+                ]
+            }, {
+                timeStartPinning: new Date()
+            })
+            await axios({
+                method: "post",
+                url: "http://43.239.223.10:5003/update_data_sanpham",
+                data: {
+                    new_id: id,
+                    da_ban: 1,
+                    site: 'spraonhanh365'
+                },
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } else if (type === 2) {
+            let check = await New.findOne({
+                _id: id,
+                userID: userID,
+                $or: [
+                    { pinHome: { $ne: 0 } },
+                    { pinCate: { $ne: 0 } },
+                    { new_day_tin: { $ne: 0 } }
+                ]
+            }, { timePinning: 1, dayEndPinning: 1 })
+            if (check) {
+                dayEndPinning = check.dayEndPinning;
+                timePinning = check.timePinning;
+                let tgian_clai = new Date(dayEndPinning).getTime() - new Date(timePinning).getTime();
+                let tgian_ktmoi = tgian_clai + new Date().getTime();
+                await New.findOneAndUpdate({
+                    _id: id,
+                    userID: userID,
+                }, {
+                    timePinning: 0,
+                    dayEndPinning: new Date(tgian_ktmoi)
+                })
+            }
+            await New.findOneAndUpdate({
+                _id: id,
+                userID: userID,
+            }, {
+                sold: 0,
+                createTime: new Date()
+            });
+            await axios({
+                method: "post",
+                url: "http://43.239.223.10:5003/update_data_sanpham",
+                data: {
+                    new_id: id,
+                    da_ban: 0,
+                    site: 'spraonhanh365'
+                },
+                headers: { 'Content-Type': 'application/json' }
+            });
 
+        }
+        return functions.success(res, 'success')
     } catch (error) {
+        console.error(error)
         return functions.setError(res, error)
     }
 }

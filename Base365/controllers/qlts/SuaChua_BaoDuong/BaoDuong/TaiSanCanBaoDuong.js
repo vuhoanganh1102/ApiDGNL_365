@@ -1,10 +1,16 @@
-const fnc = require('../../../services/functions');
-const ThongBao = require('../../../models/QuanLyTaiSan/ThongBao');
-const BaoDuong = require('../../../models/QuanLyTaiSan/BaoDuong');
-const QuyDinh = require('../../../models/QuanLyTaiSan/Quydinh_bd');
-const TheoDoiCongSuat = require('../../../models/QuanLyTaiSan/TheoDoiCongSuat');
-const LoaiTaiSan = require('../../../models/QuanLyTaiSan/LoaiTaiSan');
 
+const fnc = require('../../../../services/functions');
+const ThongBao = require('../../../../models/QuanLyTaiSan/ThongBao');
+const BaoDuong = require('../../../../models/QuanLyTaiSan/BaoDuong');
+const QuaTrinhSuDung = require('../../../../models/QuanLyTaiSan/QuaTrinhSuDung');
+const TaiSan = require('../../../../models/QuanLyTaiSan/TaiSan');
+const TaiSanDangSuDung = require("../../../../models/QuanLyTaiSan/TaiSanDangSuDung");
+const Users = require('../../../../models/Users');
+const { errorMonitor } = require('nodemailer/lib/xoauth2');
+const Department = require('../../../../models/qlc/Deparment');
+const QuyDinhBaoDuong = require('../../../../models/QuanLyTaiSan/Quydinh_bd');
+const NhacNho = require('../../../../models/QuanLyTaiSan/NhacNho');
+const func = require('../../../../services/QLTS/qltsService');
 
 //lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
 
@@ -55,10 +61,11 @@ exports.xoaBaoDuong = async (req, res) => {
 //add_baoduong
 exports.add_Ts_can_bao_duong = async (req, res) => {
     try {
-        let { id_ts, sl_bd, trang_thai_bd, cs_bd, type_quyen, ngay_bd, ngay_dukien_ht, ngay_ht_bd, chiphi_dukien, chiphi_thucte,
+        let { id_ts, sl_bd, trang_thai_bd, cs_bd, ngay_bd, ngay_dukien_ht, ngay_ht_bd, chiphi_dukien, chiphi_thucte,
             nd_bd, ng_thuc_hien, dia_diem_bd, quyen_ng_sd, ng_sd, vitri_ts, dv_bd, dia_chi_nha_cung_cap } = req.body;
         let com_id = 0;
         let id_ng_tao = 0;
+        let type_quyen = req.user.data.type;
         if (req.user.data.type == 1) {
             com_id = req.user.data.idQLC;
             id_ng_tao = req.user.data.idQLC;
@@ -212,8 +219,70 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
 
         fnc.setError(res, error.message);
 
-
     }
+}
+
+//lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
+exports.danhSachBaoDuong = async (req, res, next) => {
+  try{
+    let {page, pageSize, key, dataType} = req.body;
+    if(!page) page = 1;
+    if(!pageSize) pageSize = 10;
+    page = Number(page);
+    pageSize = Number(pageSize);
+    const skip = (page-1)*pageSize;
+    let com_id = req.user.data.com_id;
+    let idQLC = req.user.data.idQLC;
+    let type = req.user.data.type;
+    let condition = {};
+    if(type==2) {
+      condition = {id_cty: com_id, xoa_bd: 0};
+    }else {
+      condition = {id_cty: com_id, xoa_bd: 0, 
+        $or: [
+          {bd_id_ng_tao: idQLC},
+          {bd_ng_thuchien: idQLC},
+          {bd_ng_sd: idQLC},
+          {bd_vi_tri_dang_sd: idQLC}
+        ]
+      };
+    }
+    if(key) condition.id_bd = key;
+    if(dataType != 1 && dataType != 2 && dataType != 3 && dataType != 4 && dataType != 5) return fnc.setError(res, "Truyen dataType = 1, 2, 3, 4, 5");
+    //can bao duong
+    if(dataType == 1) {
+      condition.bd_trang_thai = {$in: [0, 2]};
+    }
+    //dang bao duong
+    else if(dataType == 2) {
+      condition.bd_trang_thai = 0;
+    }
+    //da bao duong
+    else if(dataType == 3) {
+      condition.bd_trang_thai = 1;
+    }
+    //quy dinh
+    else if(dataType == 4) {
+      let condition2 = {id_cty: com_id, qd_xoa: 0};
+      if(type==2) condition2 = {...condition2, id_ng_tao_qd: idQLC};
+      let quydinh = await fnc.pageFind(QuyDinh, condition2, {qd_id: -1}, skip, pageSize);
+      let total = await fnc.findCount(QuyDinh, condition2);
+      return fnc.success(res, "Lay ra danh sach quy dinh bao duong thanh cong", {page, pageSize, total,quydinh});
+    }
+    //theo doi cong suat
+    else if(dataType == 5) {
+      let condition2 = {id_cty: com_id, tdcs_xoa: 0};
+      let theoDoiCongSuat = await fnc.pageFind(TheoDoiCongSuat, condition2, {id_cs: -1}, skip, pageSize);
+      let total = await fnc.findCount(TheoDoiCongSuat, condition2);
+      return fnc.success(res, "Lay ra danh sach theo doi cong suat thanh cong", {page, pageSize, total,theoDoiCongSuat});
+    }
+
+    let listBaoDuong = await fnc.pageFind(BaoDuong, condition, {id_bd: -1}, skip, pageSize);
+    const total = await fnc.findCount(BaoDuong, condition);
+    return fnc.success(res, "Lay ra danh sach bao duong thanh cong", {page, pageSize, total,listBaoDuong});
+  }catch(e){
+    return fnc.setError(res, e.message);
+  }
 }
 
 //tu_choi
@@ -318,7 +387,7 @@ exports.TuChoiBaoDuong = async (req, res) => {
 exports.delete1 = async (req, res) => {
     try {
 
-        let { datatype, id, type_quyen, } = req.body;
+        let { datatype, id, } = req.body;
         let com_id = req.user.data.com_id;
         let id_ng_xoa = req.user.data.idQLC;
         let date_delete = new Date().getTime();
@@ -326,6 +395,7 @@ exports.delete1 = async (req, res) => {
             id_cty: com_id,
             id_bd: id
         });
+        let type_quyen = req.user.data.type;
         if (!this_baoduong) {
             return res.status(400).json({ message: "khong co thong tin cua bien ban nay" });
         }
@@ -479,12 +549,12 @@ exports.delete1 = async (req, res) => {
 //xoa_all2
 exports.deleteAll = async (req, res) => {
     try {
-        let { xoa_vinh_vien, type_quyen, array_xoa } = req.body;
+        let { xoa_vinh_vien, array_xoa } = req.body;
         let com_id = req.user.data.com_id;
         let id_ng_xoa = req.user.data.idQLC;
         let xoa = array_xoa.split(',');
         let dem = xoa.length;
-
+        let type_quyen = req.user.data.type;
         if (xoa_vinh_vien == 0 || xoa_vinh_vien == 2) {
             for (let i = 0; i < dem; i++) {
 
@@ -660,16 +730,16 @@ exports.detailTSCBD = async (req, res) => {
         let infobd = {
             id_bd: chitiet_baoduong.id_bd,
             nguoi_tao: nguoi_tao.userName,
-            ngay_tao: new Date(chitiet_baoduong.bd_date_create * 1000).toLocaleDateString(),
+            ngay_tao: new Date(chitiet_baoduong.bd_date_create * 1000),
             bd_trang_thai: chitiet_baoduong.bd_trang_thai,
             ma_ts: chitiet_baoduong.baoduong_taisan,
             ten_ts: taiSan.ts_ten,
             so_luong: chitiet_baoduong.bd_sl,
             doi_tuong_sd: nguoi_sd,
             vi_tri_ts: vi_tri,
-            ngay_sd: chitiet_baoduong.bd_ngay_sudung,
-            ngay_bd_gan_nhat: new Date(chitiet_baoduong.bd_ngay_batdau * 1000).toLocaleDateString(),
-            ngay_bd_du_kien: new Date(chitiet_baoduong.bd_dukien_ht * 1000).toLocaleDateString(),
+            ngay_sd: new Date(chitiet_baoduong.bd_ngay_sudung * 1000),
+            ngay_bd_gan_nhat: new Date(chitiet_baoduong.bd_ngay_batdau * 1000),
+            ngay_bd_du_kien: new Date(chitiet_baoduong.bd_dukien_ht * 1000),
             bd_tai_congsuat: chitiet_baoduong.bd_tai_congsuat,
             bd_cs_dukien: chitiet_baoduong.bd_cs_dukien,
             noi_dung: chitiet_baoduong.bd_noi_dung
@@ -686,12 +756,12 @@ exports.detailTSCBD = async (req, res) => {
 
 exports.listTSCSC = async (req, res) => {
     try {
-        let { key, type_quyen } = req.body;
+        let { key } = req.body;
         let skip = req.body.page || 1;
         let limit = req.bodylimit.limit || 10;
         let com_id = 0;
         let id_ng_tao = 0;
-
+        let type_quyen = req.user.data.type;
 
         if (req.user.data.type == 1) {
             com_id = req.user.data.idQLC;
@@ -795,8 +865,6 @@ exports.listTSCSC = async (req, res) => {
             count++;
         }
         fnc.success(res, arr_bb);
-
-
 
     } catch (error) {
 
