@@ -13,7 +13,7 @@ const SuaChua = require('../../models/QuanLyTaiSan/Sua_chua');
 const BaoDuong = require('../../models/QuanLyTaiSan/BaoDuong');
 const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
 const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
-
+const GhiTang = require('../../models/QuanLyTaiSan/GhiTang_TS');
 exports.showAll = async (req, res) => {
   try {
     let { page, perPage, ts_ten, id_loai_ts, ts_vi_tri, id_ten_quanly, ts_trangthai } = req.body;
@@ -97,12 +97,6 @@ exports.showAll = async (req, res) => {
         $unwind: {
           path: '$thuhoi',
           preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $sort: {
-          'cap_phat.cp_date_create': -1,
-          'thuhoi.thuhoi_date_create': -1,
         },
       },
       {
@@ -314,16 +308,20 @@ exports.showCTts = async (req, res) => {
       return functions.setError(res, 'Không tìm thấy tài sản', 404);
     }
 
-    let chekNhom = await NhomTs.findOne({ id_nhom: checkts.id_nhom_ts }).select('ten_nhom');
-    let checkloaiTaiSan = await LoaiTaiSan.findOne({ id_loai: checkts.id_loai_ts }).select('ten_loai');
-    let chekVitri = await ViTri_ts.findOne({ id_vitri: checkts.ts_vi_tri }).select('vi_tri dv_quan_ly');
-    let checkUser = await User.findOne({ idQLC: checkts.id_ten_quanly }).select('userName');
-
-    let data = [
-      checkts, chekNhom, checkloaiTaiSan, chekVitri, checkUser
+    let chekNhom = await NhomTs.findOne({ id_nhom: checkts.id_nhom_ts,id_cty :com_id }).select('ten_nhom');
+    let checkloaiTaiSan = await LoaiTaiSan.findOne({ id_loai: checkts.id_loai_ts,id_cty :com_id }).select('ten_loai');
+    let chekVitri = await ViTri_ts.findOne({ id_vitri: checkts.ts_vi_tri,id_cty :com_id }).select('vi_tri dv_quan_ly');
+    let checkUser = await User.findOne({ idQLC: checkts.id_ten_quanly,'inForPerson.employee.com_id' :com_id }).select('userName');
+    let checkGhiTang =  await GhiTang.findOne({ id_ts: checkts.ts_id }).select('sl_tang');
+    let item = [
+      {
+        ma_tai_san: checkts.ts_id,
+        ten_tai_san: checkts.ts_ten,
+        so_luong: checkts.sl_bandau
+      }
     ];
 
-    return functions.success(res, 'Lấy dữ liệu thành công', { data });
+    return functions.success(res, 'Lấy dữ liệu thành công', { item });
   }  catch(e){
     return functions.setError(res , e.message)
 }
