@@ -412,7 +412,7 @@ exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
           cp_date_delete: 1
         }
       },
-      { $unwind:  "$soluong" }
+      { $unwind: "$soluong" }
     ]);
     for (let i = 0; i < data.length; i++) {
       data[i].cp_ngay = new Date(data[i].cp_ngay * 1000);
@@ -430,8 +430,10 @@ exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
 // tài sản thu hồi đã xoá 
 exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => {
   try {
-    console.log(conditions)
+ 
     conditions.xoa_thuhoi = 1;
+    conditions.thuhoi_id_ng_xoa = { $ne: 0 };
+    conditions.id_ng_dc_thuhoi = { $ne: 0 };
     let data = await ThuHoi.aggregate([
       { $match: conditions },
       { $sort: { thuhoi_id: -1 } },
@@ -477,7 +479,8 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
           id_ng_dc_thuhoi: '$users.userName',
           ng_xoa: '$user.userName'
         }
-      }
+      },
+     // {$unwind:'$soluong'}
     ]);
     for (let i = 0; i < data.length; i++) {
       data[i].thuhoi_ngay = new Date(data[i].thuhoi_ngay * 1000);
@@ -496,6 +499,12 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
   try {
     conditions.xoa_dieuchuyen = 1;
     conditions.dc_type = 0;
+    //conditions.id_ng_xoa_dc = { $ne: 0 };
+    //conditions.id_nv_dangsudung = { $ne: 0 };
+    // conditions.id_pb_dang_sd = { $ne: 0 };
+     conditions.id_nv_nhan = { $ne: 0 };
+    // conditions.id_pb_nhan = { $ne: 0 };
+    // conditions.id_ng_thuchien = { $ne: 0 };
     let data = await DieuChuyen.aggregate([
       { $match: conditions },
       { $sort: { dc_id: -1 } },
@@ -562,16 +571,17 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
           dc_date_delete: 1,
           dc_id: 1,
           dc_trangthai: 1,
-          id_nv_dangsudung: 'users.userName',
-          id_pb_dang_sd: 'dep.dep_name',
-          id_nv_nhan: 'users_id_nv_nhan.userName',
-          id_pb_nhan: 'depp.dep_name',
+          id_nv_dangsudung: '$users.userName',
+          id_pb_dang_sd: '$dep.dep_name',
+          id_nv_nhan: '$users_id_nv_nhan.userName',
+          id_pb_nhan: '$depp.dep_name',
           dc_lydo: 1,
-          id_ng_thuchien: 'users_id_ng_thuchien.userName',
-          ng_xoa: 'user.userName'
+          id_ng_thuchien: '$users_id_ng_thuchien.userName',
+          ng_xoa: '$user.userName'
         }
       }
     ]);
+    console.log("🚀 ~ file: qltsService.js:584 ~ exports.dieuChuyenViTriTaiSanDaXoa= ~ data:", data)
     for (let i = 0; i < data.length; i++) {
       data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
@@ -732,11 +742,11 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
           dc_id: 1,
           dc_date_delete: 1,
           dc_trangthai: 1,
-          id_cty_dang_sd: 'users.userName',
-          id_cty_nhan: 'users_id_nv_nhan.userName',
+          id_cty_dang_sd: '$users.userName',
+          id_cty_nhan: '$users_id_nv_nhan.userName',
           dc_lydo: 1,
-          id_ng_thuchien: 'users_id_ng_thuchien.userName',
-          ng_xoa: 'user.userName'
+          id_ng_thuchien: '$users_id_ng_thuchien.userName',
+          ng_xoa: '$user.userName'
         }
       }
     ]);

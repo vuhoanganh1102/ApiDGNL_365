@@ -21,7 +21,7 @@ exports.addAchievement = async (req, res, next) => {
         let createdAt = new Date();
         let list_user1 = req.body.list_user;
         let list_user_name1 =  req.body.list_user_name;
-        //  await Users.findByIdAndUpdate(16,{'inForPerson.employee.com_id':3312})
+       // await Users.findByIdAndUpdate(19,{'inForPerson.employee.com_id':1761})
         if (list_user1.length > 0) {
             for (let j = 0; j < list_user1.length; j++) {
                 let check_user = await Users.findOne({'inForPerson.employee.com_id':comId,idQLC: list_user1[j] },{_id:1})
@@ -32,7 +32,7 @@ exports.addAchievement = async (req, res, next) => {
                     return functions.setError(res, 'not found user', 400)
                 }
             }
-            if (list_user1.length > 0) {
+            if (list_user1.length > 1) {
                 type = 2;
             }
         }
@@ -237,8 +237,7 @@ exports.listAchievement = async (req, res, next) => {
             totalAchievementFors = await AchievementFors.find({ comId }).count();
         }
         let tongSoTrang = Math.ceil(totalAchievementFors / pageSize)
-        data.push({ tongSoTrang: tongSoTrang, tongSoBanGhi: totalAchievementFors })
-        return functions.success(res, 'get data success', { data })
+        return functions.success(res, 'get data success', {tongSoTrang: tongSoTrang, tongSoBanGhi: totalAchievementFors, data })
     } catch (error) {
         console.log("🚀 ~ file: walfareController.js:168 ~ exports.listAchievement= ~ error:", error)
         return functions.setError(res, error)

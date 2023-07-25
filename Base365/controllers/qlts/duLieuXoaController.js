@@ -81,13 +81,13 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
         let conditions = {}
         // logic
         if (so_bb && type === 1) {
-            conditions = { $or: [ { ts_id: Number(so_bb) },{ ts_ten: new RegExp(so_bb, 'i') }] }
+            conditions = { $or: [{ ts_id: Number(so_bb) }, { ts_ten: new RegExp(so_bb, 'i') }] }
         }
         if (so_bb && type === 2) {
-            conditions = { $or: [{ ten_loai: new RegExp(so_bb, 'i') }, { id_loai:  Number(so_bb)  }] }
+            conditions = { $or: [{ ten_loai: new RegExp(so_bb, 'i') }, { id_loai: Number(so_bb) }] }
         }
         if (so_bb && type === 3) {
-            conditions = { $or: [{ ten_nhom: new RegExp(so_bb, 'i') }, { id_nhom:  Number(so_bb) }] }
+            conditions = { $or: [{ ten_nhom: new RegExp(so_bb, 'i') }, { id_nhom: Number(so_bb) }] }
         }
         conditions.id_cty = comId
         let dem = {};
@@ -171,7 +171,8 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
     try {
         // khai báo biến lấy dữ liệu từ token
         let comId = req.comId;
-
+        let type_quyen = req.type;
+        let emId = req.emId;
         // khai báo biến người dùng nhập vào
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
@@ -187,12 +188,24 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
         let dem = {};
         // logic
         if (so_bb) conditions.dc_id = so_bb
+        let vitritaisan = 0;
+        let donviquanly = 0;
+        let doituongsudung = 0;
+        if (type_quyen === 2) {
 
-        let vitritaisan = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 0 }).count();
+            vitritaisan = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 0, id_ng_tao_dc: emId }).count();
 
-        let donviquanly = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 2 }).count();
+            donviquanly = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 2, id_ng_tao_dc: emId }).count();
 
-        let doituongsudung = await DieuChuyen.find({ xoa_thuhoi: 1, id_cty: comId, dc_type: 1 }).count();
+            doituongsudung = await DieuChuyen.find({ xoa_thuhoi: 1, id_cty: comId, dc_type: 1, id_ng_tao_dc: emId }).count();
+        } else {
+            vitritaisan = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 0 }).count();
+
+            donviquanly = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 2 }).count();
+
+            doituongsudung = await DieuChuyen.find({ xoa_thuhoi: 1, id_cty: comId, dc_type: 1 }).count();
+        }
+
 
         dem.vitritaisan = vitritaisan;
         dem.donviquanly = donviquanly;
@@ -200,15 +213,18 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
 
         //1: điều chuyển vị trí tài sản
         if (type === 1) {
-            return qlts.dieuChuyenViTriTaiSanDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
+            if (type_quyen === 2) conditions.id_ng_tao_dc = emId
+            return qlts.dieuChuyenViTriTaiSanDaXoa(res, DieuChuyen, dem, conditions, skip, limit, comId);
         }
         //2: điều chuyển đối tượng sd
         if (type === 2) {
+            if (type_quyen === 2) conditions.id_ng_tao_dc = emId
             return qlts.dieuChuyenDoiTuongSdDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
         }
 
         //3: điều chuyển đơn vị quản lý
         if (type === 3) {
+            if (type_quyen === 2) conditions.id_ng_tao_dc = emId
             return qlts.dieuChuyenDonViQuanLyDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
         }
     } catch (error) {
@@ -238,6 +254,7 @@ exports.dataKiemKeDaXoa = async (req, res, next) => {
 
         let tongSoLuong = await KiemKe.find({ id_cty: comId, xoa_kiem_ke: 1 }).count();
 
+        conditions.xoa_kiem_ke = 1
         let data = await KiemKe.aggregate([
             { $match: conditions },
             { $sort: { id_kiemke: -1 } },
@@ -278,9 +295,9 @@ exports.dataKiemKeDaXoa = async (req, res, next) => {
                     kk_denngay: 1,
                     kk_batdau: 1,
                     kk_ketthuc: 1,
-                    id_ngtao_kk: 'user.userName',
-                    kk_id_ng_xoa: 'users.userName',
-                    id_ng_kiemke: 'usersid_ng_kiemke.userName',
+                    id_ngtao_kk: '$user.userName',
+                    kk_id_ng_xoa: '$users.userName',
+                    id_ng_kiemke: '$usersid_ng_kiemke.userName',
                     id_kiemke: 1,
                     kk_loai: 1,
                     kk_noidung: 1,
@@ -337,11 +354,24 @@ exports.taiSanSuaChuaDaXoa = async (req, res, next) => {
         if (so_bb) conditions.sc_id = so_bb
         conditions.id_cty = comId;
         conditions.sc_da_xoa = 1;
-        let cansuachua = await SuaChua.find({ sc_trangthai: { $in: [0, 2] }, id_cty: comId, sc_da_xoa: 1 }).count();
+        let cansuachua = 0;
+        let dangsuachua = 0;
+        let dasuachua = 0;
 
-        let dangsuachua = await SuaChua.find({ sc_trangthai: 1, id_cty: comId, sc_da_xoa: 1 }).count();
+        if (type === 2) {
+            cansuachua = await SuaChua.find({ sc_trangthai: { $in: [0, 2] }, id_cty: comId, sc_da_xoa: 1, $or: [{ sc_id_ng_tao: emId }, { sc_ng_thuchien: emId }] }).count();
 
-        let dasuachua = await SuaChua.find({ sc_trangthai: 3, id_cty: comId, sc_da_xoa: 1 }).count();
+            dangsuachua = await SuaChua.find({ sc_trangthai: 1, id_cty: comId, sc_da_xoa: 1, $or: [{ sc_id_ng_tao: emId }, { sc_ng_thuchien: emId }] }).count();
+
+            dasuachua = await SuaChua.find({ sc_trangthai: 3, id_cty: comId, sc_da_xoa: 1, $or: [{ sc_id_ng_tao: emId }, { sc_ng_thuchien: emId }] }).count();
+        } else {
+            cansuachua = await SuaChua.find({ sc_trangthai: { $in: [0, 2] }, id_cty: comId, sc_da_xoa: 1 }).count();
+
+            dangsuachua = await SuaChua.find({ sc_trangthai: 1, id_cty: comId, sc_da_xoa: 1 }).count();
+
+            dasuachua = await SuaChua.find({ sc_trangthai: 3, id_cty: comId, sc_da_xoa: 1 }).count();
+        }
+
 
         dem.cansuachua = cansuachua;
         dem.dangsuachua = dangsuachua;
@@ -441,13 +471,13 @@ exports.baoDuongDaXoa = async (req, res, next) => {
         delete conditions.xoa_bd
         //4: thiết lập lịch bảo dưỡng
         if (typebb === 4) {
-            
+
             conditions.qd_xoa = 1;
             return qlts.thietLapLichBaoDuong(res, Quydinh_bd, dem, conditions, skip, limit);
         }
 
         //5: Theo dõi công suất
-        if(typebb === 5){
+        if (typebb === 5) {
             conditions.donvi_xoa = 1;
             return qlts.theoDoiCongSuat(res, DonViCS, dem, conditions, skip, limit);
         }
@@ -481,7 +511,7 @@ exports.taiSanBaomatDaXoa = async (req, res, next) => {
         // logic
         if (type === 2) {
             conditions = {
-                id_ng_tao:emId
+                id_ng_tao: emId
             };
         }
         if (so_bb) conditions.mat_id = so_bb
@@ -546,7 +576,7 @@ exports.taiSanBaoHuyDaXoa = async (req, res, next) => {
         // logic
         if (type === 2) {
             conditions = {
-                id_ng_tao:emId
+                id_ng_tao: emId
             };
         }
         if (so_bb) conditions.huy_id = so_bb
@@ -561,7 +591,7 @@ exports.taiSanBaoHuyDaXoa = async (req, res, next) => {
 
         dem.taisandexuathuy = taisandexuathuy;
         dem.danhsachtaisanhuy = danhsachtaisanhuy;
-       
+
 
         //1: tài sản đề xuất huỷ
         if (typebb === 1) {
@@ -604,7 +634,7 @@ exports.taiSanThanhLyDaXoa = async (req, res, next) => {
         // logic
         if (type === 2) {
             conditions = {
-                id_ng_tao:emId
+                id_ng_tao: emId
             };
         }
         if (so_bb) conditions.tl_id = so_bb
@@ -619,7 +649,7 @@ exports.taiSanThanhLyDaXoa = async (req, res, next) => {
 
         dem.taisandexuatthanhly = taisandexuatthanhly;
         dem.danhsachtaisandathanhly = danhsachtaisandathanhly;
-       
+
 
         //1: tài sản đề xuất thanh lý
         if (typebb === 1) {
