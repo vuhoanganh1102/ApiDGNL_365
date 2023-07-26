@@ -18,10 +18,10 @@ exports.add_dvi_csuat = async (req, res) => {
             dvcs_date_create: date_create
         });
         await insert_dvcs.save();
-        fnc.success(res, 'add unit suceess', insert_dvcs);
+        fnc.success(res, 'add unit suceess', { insert_dvcs });
 
     } catch (error) {
-
+        console.log(error)
 
         fnc.setError(res, error.message);
 
@@ -38,7 +38,7 @@ exports.detail_dvi_csuat = async (req, res) => {
             id_donvi: id_dv,
             id_cty: com_id
         });
-        fnc.success(res, "OK", [info]);
+        fnc.success(res, "OK", { info });
     } catch (error) {
 
         fnc.setError(error.message);
@@ -58,7 +58,7 @@ exports.edit_dvi_csuat = async (req, res) => {
             mota_donvi: mota
         }
         );
-        fnc.success(res, "ok", edit);
+        fnc.success(res, "ok", { edit });
     } catch (error) {
         fnc.setError(res, error.message);
     }
@@ -91,7 +91,7 @@ exports.add_do_csuat = async (req, res) => {
             tdcs_date_create: new Date().getTime()
         })
         await insert.save();
-        fnc.success(res, 'OK', [insert]);
+        fnc.success(res, 'OK', { insert });
     } catch (error) {
         console.log(error)
         fnc.setError(res, error.message);
@@ -113,7 +113,7 @@ exports.detail_csuat_tsan = async (req, res) => {
             id_cs: id
         });
 
-        fnc.success(res, 'OK', tdcs);
+        fnc.success(res, 'OK', { tdcs });
 
     } catch (error) {
         fnc.setError(res, error.message);
@@ -136,7 +136,7 @@ exports.update_theodoi_cs = async (req, res) => {
             date_update: day_update,
             cs_gannhat: cs_thuc
         })
-        fnc.success(res, "OK", [update])
+        fnc.success(res, "OK", { update })
     } catch (error) {
         console.log(error);
         fnc.setError(res, error.message);
