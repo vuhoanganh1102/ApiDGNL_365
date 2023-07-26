@@ -1,5 +1,5 @@
 const DieuChuyen = require("../../../models/QuanLyTaiSan/DieuChuyen")
-const functions = require('../../../services/functions')
+const fnc = require('../../../services/functions')
 
 
 
