@@ -236,14 +236,19 @@ exports.getListDetail = async (req , res) =>{
         let listConditions = {};
     //    if(type_quyen != 0){
         listConditions.id_cty = id_cty 
+        if(id_ng_dc_thuhoi) listConditions.id_ng_dc_thuhoi = id_ng_dc_thuhoi
+        if(id_pb_thuhoi) listConditions.id_pb_thuhoi = id_pb_thuhoi
+        if(thuhoi_id) listConditions.thuhoi_id = thuhoi_id
         if(option == 1) listConditions.thuhoi_trangthai = 0, listConditions.id_ng_dc_thuhoi = Number(id_ng_dc_thuhoi)   ////DS thu hôi chờ nhận NV
-        if(option == 2) listConditions.thuhoi_trangthai = 0, listConditions.thuhoi_id =  Number(thuhoi_id)  ////query thu hôi chờ nhận NV
+        if(option == 2) listConditions.thuhoi_trangthai = 0, listConditions.thuhoi_id =  Number(thuhoi_id),listConditions.id_ng_dc_thuhoi = Number(id_ng_dc_thuhoi)   ////query thu hôi chờ nhận NV
         if(option == 3) listConditions.thuhoi_trangthai = 1, listConditions.id_ng_dc_thuhoi =  Number(id_ng_dc_thuhoi) //DS đồng ý thu hồi  NV
-        if(option == 4) listConditions.thuhoi_trangthai = 1, listConditions.thuhoi_id =  Number(thuhoi_id) // đồng ý thu hồi  NV
+        if(option == 4) listConditions.thuhoi_trangthai = 1, listConditions.thuhoi_id =  Number(thuhoi_id),listConditions.id_ng_dc_thuhoi = Number(id_ng_dc_thuhoi)  // đồng ý thu hồi  NV
         if(option == 5) listConditions.thuhoi_trangthai = 0 , listConditions.id_pb_thuhoi =  Number(id_pb_thuhoi) // DS thu hôi chờ nhận PB
-        if(option == 6) listConditions.thuhoi_trangthai = 0 , listConditions.thuhoi_id =  Number(thuhoi_id)  // //thu hôi chờ nhận PB
+        if(option == 6) listConditions.thuhoi_trangthai = 0 , listConditions.thuhoi_id =  Number(thuhoi_id),listConditions.id_pb_thuhoi =  Number(id_pb_thuhoi)  // //thu hôi chờ nhận PB
         if(option == 7) listConditions.thuhoi_trangthai = 1 , listConditions.id_pb_thuhoi = Number(id_pb_thuhoi)  //DS đồng ý thu hồi  PB
-        if(option == 8) listConditions.thuhoi_trangthai = 1 , listConditions.thuhoi_id = Number(thuhoi_id)  // đồng ý thu hồi  PB
+        if(option == 8) listConditions.thuhoi_trangthai = 1 , listConditions.thuhoi_id = Number(thuhoi_id),listConditions.id_pb_thuhoi =  Number(id_pb_thuhoi)  // đồng ý thu hồi  PB
+        console.log(listConditions)
+
         data = await ThuHoi.aggregate([
             {$match: listConditions},
             {$lookup: {

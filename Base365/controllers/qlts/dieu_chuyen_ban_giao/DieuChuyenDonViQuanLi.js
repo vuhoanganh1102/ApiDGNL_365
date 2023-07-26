@@ -31,8 +31,6 @@ exports.create = async(req,res) =>{
         let maxDieuChuyen = await DieuChuyen.findOne({},{},{sort: {dc_id : -1}}).lean() || 0 ;
         let now = new Date()
         let ds_dc = ""
-        console.log(maxDieuChuyen.dc_id)
-
         if(dieuchuyen_taisan) ds_dc = JSON.parse(dieuchuyen_taisan).ds_dc;
                         const updated_ds_dc = ds_dc.map((item) => ({
                         ts_id: item[0],
@@ -245,7 +243,7 @@ exports.create = async(req,res) =>{
                 await updateThongBaoDaidienNhan.save()
             return fnc.success(res, "tạo thành công",{insert_dc_vt,updateThongBaoNguoiNhan,updateThongBaoDaidienNhan})
 
-            }else if(khoi_chon_phong_ban_nv == 0 && khoi_chon_phong_ban_nv_den == 1){
+            }else if(khoi_chon_phong_ban_nv == 1 && khoi_chon_phong_ban_nv_den == 1){
                 let insert_dc_vt = new DieuChuyen({
                     dc_id: Number(maxDieuChuyen.dc_id) +1 || 1,
                     id_cty : id_cty,
@@ -495,8 +493,96 @@ exports.list = async(req,res) =>{
         let conditions = {}
         conditions.id_cty = id_cty
         if(dc_id) conditions.dc_id = dc_id
-    if (page && pageSize) {
-        const data = await DieuChuyen.find(conditions).skip(skip).limit(limit).lean()
+        const  data = await DieuChuyen.aggregate([
+            { $match: conditions },
+            {
+                $lookup: {
+                    from: "QLTS_Tai_San",
+                    localField: "dieuchuyen_taisan.ds_dc.ts_id",
+                    foreignField: "ts_id",
+                    as: "infoTS"
+                }
+            },
+            { $unwind: "$infoTS" },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_cty_dang_sd",
+                    foreignField: "idQLC",
+                    as: "infoCtyDangSD"
+                }
+            },
+            // { $unwind: "$infoCtyDangSD" },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_cty_nhan",
+                    foreignField: "idQLC",
+                    as: "infoCty"
+                }
+            },
+            // { $unwind: "$infoCty" },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_nv_nhan",
+                    foreignField: "idQLC",
+                    as: "infoNV"
+                }
+            },
+            // { $unwind: "$infoNV" },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_nv_dangsudung",
+                    foreignField: "idQLC",
+                    as: "infoNVdangSD"
+                }
+            },
+            // { $unwind: "$infoNVdangSD" },
+            {
+                $lookup: {
+                    from: "QLC_Deparments",
+                    localField: "id_pb_nhan",
+                    foreignField: "dep_id",
+                    as: "infoPhongBan"
+                }
+            },
+            // { $unwind: "$infoPhongBan" },
+            {
+                $lookup: {
+                    from: "QLC_Deparments",
+                    localField: "id_pb_dang_sd",
+                    foreignField: "dep_id",
+                    as: "infoPhongBanDangSD"
+                }
+            },
+            // { $unwind: "$infoPhongBanDangSD" },
+            {
+                $project: {
+                    "dc_id": "$dc_id",
+                    "dc_ngay": "$dc_ngay",
+                    "dc_trangthai": "$dc_trangthai",
+                    "dc_lydo": "$dc_lydo",
+                    "id_ng_thuchien": "$id_ng_thuchien",
+                    "id_pb_dang_sd": "$id_pb_dang_sd",
+                    "id_pb_nhan": "$id_pb_nhan",
+                    "id_nv_dangsudung": "$id_nv_dangsudung",
+                    "id_nv_nhan": "$id_nv_nhan",
+                    "id_cty_nhan": "$id_cty_nhan",
+                    "id_cty_dang_sd": "$id_cty_dang_sd",
+                    "ten_Cty": "$infoCty.userName",
+                    "ten_Cty_dang_su_dung": "$infoCtyDangSD.userName",
+                    "ten_nhanVien": "$infoNV.userName",
+                    "ten_nhanVien_dang_su_dung": "$infoNVdangSD.userName",
+                    "ten_phongBan": "$infoPhongBan.dep_name",
+                    "ten_phongBan_dang_su_dung": "$infoPhongBanDangSD.dep_name",
+                    "ten_tai_san": "$infoTS.ts_ten",
+                    "Ma_tai_san": "$infoTS.ts_id",
+                }
+            },
+
+        ]).skip(skip).limit(limit)
         let count = await DieuChuyen.count(conditions)
         const totalCount = data.length > 0 ? data[0].totalCount : 0;
         const totalPages = Math.ceil(totalCount / pageSize);
@@ -504,14 +590,6 @@ exports.list = async(req,res) =>{
             return fnc.success(res,"lấy thành công",{data,totalPages,count})
         }
         return fnc.setError(res,"không tìm thấy dữ liệu")
-    }else{
-        const data = await DieuChuyen.find(conditions).lean()
-        let count = await DieuChuyen.count(conditions)
-        if(data){
-            return fnc.success(res,"lấy thành công",{data,count})
-        }
-        return fnc.setError(res,"không tìm thấy dữ liệu")
-    }
     }catch(e){
         return fnc.setError(res, e.message)
     }
