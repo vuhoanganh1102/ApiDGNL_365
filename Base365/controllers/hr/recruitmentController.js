@@ -963,9 +963,6 @@ let getCandidateProcess = async(model, condition)=> {
         },
         {$match: condition},
         {
-            $project: {canId: 1, "candidate.id": 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
-        },
-        {
             $lookup: {
                 from: "HR_RecruitmentNews",
                 localField: "candidate.recruitmentNewsId",
@@ -973,13 +970,27 @@ let getCandidateProcess = async(model, condition)=> {
                 as: "recruitmentNews"
             }
         },
+        
         {$match: {"candidate.recruitmentNewsId": {$ne: 0}, "candidate.userHiring": {$ne: 0}} },
+        
         {
-            $project: {canId: 1,
-            "candidate.id": 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
-            "recruitmentNews.title": 1
+            $lookup: {
+                from: "Users",
+                localField: "candidate.userHiring",
+                foreignField: "idQLC",
+                as: "hrName"
             }
         },
+        
+        {
+            $project: {name: 1, processBefore: 1, canId: 1, 
+            "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
+            "recruitmentNews.title": 1,
+            "hrName.userName": 1
+            }
+        },
+        {$unwind: { path: "$recruitmentNews", preserveNullAndEmptyArrays: true }},
+        {$unwind: { path: "$hrName", preserveNullAndEmptyArrays: true }},
         ]);
 }
 
@@ -1033,6 +1044,23 @@ exports.getListProcessInterview= async(req, res, next) => {
                     "recruitmentNews.title": 1
                     }
                 },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "candidate.userHiring",
+                        foreignField: "idQLC",
+                        as: "hrName"
+                    }
+                },
+                {
+                    $project: {name: 1, processBefore: 1, canId: 1, 
+                    "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
+                    "recruitmentNews.title": 1,
+                    "hrName.userName": 1
+                    }
+                },
+                {$unwind: { path: "$recruitmentNews", preserveNullAndEmptyArrays: true }},
+                {$unwind: { path: "$hrName", preserveNullAndEmptyArrays: true }},
             ]);
             processInterview.totalCandidate = listCandidate.length;
             processInterview.listCandidate = listCandidate;
@@ -1046,7 +1074,6 @@ exports.getListProcessInterview= async(req, res, next) => {
 
         return functions.success(res, "Get list process interview success", {listProcess, listCandidateGetJob, listCandidateCancelJob, listCandidateFailJob, listCandidateContactJob});
     } catch (e) {
-        console.log("Err from server", e);
         return functions.setError(res, e.message);
     }
 }
