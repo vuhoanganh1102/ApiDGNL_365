@@ -314,7 +314,7 @@ exports.cateDetail = async (cateID, item, id) => {
         { $unwind: `$${item}` }
     ]);
     
-    let data = check.filter((itemm) => itemm[`${item}`]._id == id)
+    let data = check.find((itemm) => itemm[`${item}`]._id == id)
     if (data && data.length) {
         return data[0][`${item}`].name
     }

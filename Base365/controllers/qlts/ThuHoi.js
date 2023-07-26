@@ -1,6 +1,7 @@
 const fnc = require('../../services/functions')
 const ThuHoi = require('../../models/QuanLyTaiSan/ThuHoi')
 const TaiSan = require('../../models/QuanLyTaiSan/TaiSan')
+const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung')
 const thongBao = require('../../models/QuanLyTaiSan/ThongBao')
 const dep = require('../../models/qlc/Deparment')
 const user = require('../../models/Users')
@@ -140,21 +141,79 @@ exports.updateStatus = async (req , res) =>{
     try{
         const type = req.user.data.type
         const id_cty = req.user.data.com_id
-        const id_ng_dc_thuhoi = req.body.id_ng_dc_thuhoi
-        const id_pb_thuhoi = req.body.id_pb_thuhoi
+        const thuhoi_id = req.body.thuhoi_id
+        const vitri_ts = req.body.vitri_ts
+        const type_thuhoi = req.body.type_thuhoi
+        const id_bien_ban = req.body.id_bien_ban
         let listConditions = {};
+        let now = new Date()
         if(id_cty) listConditions.id_cty = id_cty
-        if(id_ng_dc_thuhoi) listConditions.id_ng_dc_thuhoi = id_ng_dc_thuhoi
-        if(id_pb_thuhoi) listConditions.id_pb_thuhoi = id_pb_thuhoi
+        if(thuhoi_id) listConditions.thuhoi_id = thuhoi_id
+        let max =  await QuaTrinhSuDung.findOne({},{},{sort: {quatrinh_id : -1}}).lean() || 0;
+        
+        let infoCP = await ThuHoi.findOne(listConditions)
 
-        const data = await ThuHoi.findOne(listConditions);
-            if (data) {
-                await ThuHoi.findOneAndUpdate(listConditions , {
-                    thuhoi_trangthai:1,
-                    })
-                    return fnc.success(res, "cập nhật thành công", {data})    
+        if(infoCP.thuhoi_taisan.ds_thuhoi[0].ts_id){
+            let updateQuantity = await TaiSan.findOne({ts_id :infoCP.thuhoi_taisan.ds_thuhoi[0].ts_id}).lean()
+            if(!updateQuantity) {
+                return fnc.setError(res, " khong tim thay tai san ")
+            }else{//cap nhat so luong tai san 
+            if(type_thuhoi == 0){
+
+                await TaiSan.findOneAndUpdate({ts_id :infoCP.thuhoi_taisan.ds_thuhoi[0].ts_id}, {
+                    ts_so_luong : (updateQuantity.ts_so_luong + infoCP.thuhoi_taisan.ds_thuhoi[0].sl_th),
+                    soluong_cp_bb : (updateQuantity.soluong_cp_bb + infoCP.thuhoi_taisan.ds_thuhoi[0].sl_th)
+                })
+                
+                let updateQTSD = new QuaTrinhSuDung({
+                    quatrinh_id : Number(max.quatrinh_id) +1 || 1,
+                    id_ts : infoCP.thuhoi_taisan.ds_thuhoi[0].ts_id,
+                    id_bien_ban: id_bien_ban,
+                    so_lg: infoCP.thuhoi_taisan.ds_thuhoi[0].sl_th,
+                    id_cty: id_cty,
+                    id_ng_sudung: infoCP.id_ng_dc_thuhoi,
+                    id_phong_sudung: infoCP.id_pb_thuhoi,
+                    qt_ngay_thuchien: Date.parse(now)/1000,
+                    qt_nghiep_vu: 2,
+                    vitri_ts: vitri_ts,
+                    ghi_chu: infoCP.thuhoi__lydo,
+                    time_created: Date.parse(now)/1000,
+        
+                })
+                await updateQTSD.save()
+            }else if (type_thuhoi == 1){
+                await TaiSan.findOneAndUpdate({ts_id :infoCP.thuhoi_taisan.ds_thuhoi[0].ts_id}, {
+                    ts_so_luong : (updateQuantity.ts_so_luong + infoCP.thuhoi_taisan.ds_thuhoi[0].sl_th),
+                    soluong_cp_bb : (updateQuantity.soluong_cp_bb + infoCP.thuhoi_taisan.ds_thuhoi[0].sl_th)
+                })
+                let updateQTSD = new QuaTrinhSuDung({
+                    quatrinh_id : Number(max.quatrinh_id) +1 || 1,
+                    id_ts : infoCP.thuhoi_taisan.ds_thuhoi[0].ts_id,
+                    id_bien_ban: id_bien_ban,
+                    so_lg: infoCP.thuhoi_taisan.ds_thuhoi[0].sl_th,
+                    id_cty: id_cty,
+                    id_ng_sudung: infoCP.id_ng_dc_thuhoi,
+                    id_phong_sudung: infoCP.id_pb_thuhoi,
+                    qt_ngay_thuchien: Date.parse(now)/1000,
+                    qt_nghiep_vu: 2,
+                    vitri_ts: vitri_ts,
+                    ghi_chu: infoCP.thuhoi__lydo,
+                    time_created: Date.parse(now)/1000,
+        
+                })
+                await updateQTSD.save()
+
             }
-            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+
+           
+        }
+    }
+            await ThuHoi.findOneAndUpdate(listConditions , {
+                thuhoi_trangthai:1,
+            })
+            return fnc.success(res, "cập nhật thành công")    
+            // }
+        // return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
     }catch(e){
         return fnc.setError(res , e.message)
     }
