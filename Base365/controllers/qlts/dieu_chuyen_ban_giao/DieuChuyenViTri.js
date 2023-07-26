@@ -6,6 +6,7 @@ const TaiSanViTri = require('../../../models/QuanLyTaiSan/TaiSanVitri');
 const TaiSan = require("../../../models/QuanLyTaiSan/TaiSan");
 const fnc = require("../../../services/functions");
 const Department = require('../../../models/qlc/Deparment');
+const BaoDuong = require("../../../models/QuanLyTaiSan/BaoDuong");
 //add_dc_ts
 
 exports.addDieuchuyenTaiSan = async (req, res) => {
@@ -282,33 +283,33 @@ exports.detailsDCVTTS = async (req, res) => {
         let vi_tri_dc_tu = await fnc.nameViTri(ViTriTaiSan, {
             id_vitri: chitiet_dcvitri.vi_tri_dc_tu,
             id_cty: com_id
-        })
+        }) || null;
 
         let dc_vitri_tsnhan = await fnc.nameViTri(ViTriTaiSan, {
             id_vitri: chitiet_dcvitri.dc_vitri_tsnhan,
             id_cty: com_id
-        })
+        }) || null;
 
         let dep_nhan = await fnc.Department(Department, {
             idQLC: Number(chitiet_dcvitri.id_daidien_nhan),
             com_id: com_id
-        })
+        }) || null;
         let dep_thuchien = await fnc.Department(Department, {
             idQLC: Number(chitiet_dcvitri.id_ng_thuchien),
             com_id: com_id
-        })
+        }) || null;
         let nguoi_thien = await fnc.NameUser(Users, {
             idQLC: chitiet_dcvitri.id_ng_thuchien,
             type: { $ne: 1 }
-        })
+        }) || null;
         let nguoi_nhan = await fnc.NameUser(Users, {
             idQLC: chitiet_dcvitri.id_daidien_nhan,
             type: { $ne: 1 }
-        })
+        }) || null;
         let nguoi_tao = await fnc.NameUser(Users, {
             idQLC: chitiet_dcvitri.id_ng_tao_dc,
             type: { $ne: 1 }
-        })
+        }) || null;
         let dc_vt = {
             dc_id: chitiet_dcvitri.dc_id,
             dc_trangthai: chitiet_dcvitri.dc_trangthai,
@@ -325,6 +326,9 @@ exports.detailsDCVTTS = async (req, res) => {
             dc_lydo: chitiet_dcvitri.dc_lydo,
             dieuchuyen_taisan: chitiet_dcvitri.dieuchuyen_taisan,
         };
+        let total = await DieuChuyen.countDocuments({
+            id_cty: com_id, dc_id: id_dc
+        })
         fnc.success(res, 'thanh cong ', [dc_vt])
     } catch (error) {
 

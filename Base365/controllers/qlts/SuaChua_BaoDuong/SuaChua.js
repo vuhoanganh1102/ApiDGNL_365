@@ -230,7 +230,7 @@ exports.listBBDangSuaChua = async (req, res) => {
         while (count < tsda_suachua.length) {
             let taiSan = await TaiSan.findOne({
                 ts_id: tsda_suachua[count].suachua_taisan,
-            })
+            }) || null;
             let info = {
                 sc_ngay: new Date(tsda_suachua[count].sc_ngay * 1000),
                 sc_dukien: new Date(tsda_suachua[count].sc_dukien * 1000),
@@ -239,8 +239,8 @@ exports.listBBDangSuaChua = async (req, res) => {
                 sc_chiphi_dukien: tsda_suachua[count].sc_chiphi_dukien,
                 sc_noidung: tsda_suachua[count].sc_noidung,
                 sl_sc: tsda_suachua[count].sl_sc,
-                ten_ts: taiSan.ts_ten
-            }
+                ten_ts: taiSan ? taiSan.ts_ten : null,
+            };
             list_bb.push(info);
             count++;
         };
@@ -477,23 +477,23 @@ exports.details = async (req, res) => {
         }
         else {
             let bb = await SuaChua.findOne({ sc_id: iddsc, id_cty: com_id });
-            console.log(bb)
+
             let tenTaiSan = await TaiSan.findOne({ ts_id: Number(bb.suachua_taisan) });
 
 
             let nguoiThucHien = await Users.findOne({
                 idQLC: bb.sc_ng_thuchien,
                 type: { $ne: 1 }
-            });
+            }) || null;
             let nguoi_tao = await Users.findOne({
                 idQLC: bb.sc_id_ng_tao,
                 type: { $ne: 1 }
-            });
+            }) || null;
             let nguoi_duyet = await Users.findOne({
                 idQLC: bb.sc_ng_duyet,
                 type: { $ne: 1 }
 
-            });
+            }) || null;
 
             let sc_vitri = 0;
             let sc_ng_sd = 0;
@@ -521,15 +521,15 @@ exports.details = async (req, res) => {
             let phongban = await Department.findOne({
                 dep_id: nguoiThucHien.inForPerson.employee.dep_id,
                 com_id: nguoiThucHien.inForPerson.employee.com_id
-            });
+            }) || null;
 
 
             let info_bb = {
                 //thong tin chung 
                 so_bb: bb.sc_id,
-                nguoi_tao: nguoi_tao.userName,
+                nguoi_tao: nguoi_tao ? nguoi_tao.userName : null,
                 ngay_tao: new Date(bb.sc_date_create * 1000),
-                nguoi_duyet: nguoi_duyet,
+                nguoi_duyet: nguoi_duyet ? nguoi_duyet.userName : null,
                 ngay_duyet: new Date(bb.sc_date_duyet * 1000),
                 trang_thai: bb.sc_trangthai,
                 //thong tin tai san
@@ -541,8 +541,8 @@ exports.details = async (req, res) => {
                 //thong tin sua chua 
                 ngay_hong: new Date(bb.sc_ngay_hong * 1000),
                 noi_dung_sua_chua: bb.sc_noidung,
-                nguoi_thuc_hien: nguoiThucHien.userName,
-                phong_ban: phongban.dep_name,
+                nguoi_thuc_hien: nguoiThucHien ? nguoiThucHien.userName : null,
+                phong_ban: phongban ? phongban.dep_name : null,
                 ngay_sua_chua: new Date(bb.sc_ngay * 1000),
                 ngay_du_kien_hoan_thanh: new Date(bb.sc_dukien * 1000),
                 chi_phi_du_kien: bb.sc_chiphi_dukien,
@@ -553,7 +553,7 @@ exports.details = async (req, res) => {
 
         }
     } catch (error) {
-        console.log(error)
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -672,15 +672,15 @@ exports.details_bb_da_sua_chua = async (req, res) => {
             let bb = await SuaChua.findOne({ sc_id: id_bb, id_cty: com_id });
 
             let tenTaiSan = await TaiSan.findOne({ ts_id: Number(bb.suachua_taisan), id_cty: com_id });
-            console.log(tenTaiSan)
+
             let nguoiThucHien = await Users.findOne({
                 idQLC: bb.sc_ng_thuchien,
                 type: { $ne: 1 }
-            });
+            }) || null;
             let nguoi_tao = await Users.findOne({
                 idQLC: bb.sc_id_ng_tao,
                 type: { $ne: 1 }
-            });
+            }) || null;
             let sc_vitri = 0;
             let sc_ng_sd = 0;
             if (bb.sc_quyen_sd == 1) {
@@ -707,18 +707,18 @@ exports.details_bb_da_sua_chua = async (req, res) => {
             let phongban = await Department.findOne({
                 dep_id: nguoiThucHien.inForPerson.employee.dep_id,
                 com_id: nguoiThucHien.inForPerson.employee.com_id
-            });
+            }) || null;
 
             let info_bb = {
                 //thong tin chung 
                 so_bb: bb.sc_id,
-                nguoi_tao: nguoi_tao.userName,
+                nguoi_tao: nguoi_tao ? nguoi_tao.userName : null,
                 ngay_tao: new Date(bb.sc_date_create * 1000),
                 ngay_duyet: new Date(bb.sc_date_duyet * 1000),
                 trang_thai: bb.sc_trangthai,
                 //thong tin tai san
                 ma_tai_san: bb.suachua_taisan,
-                ten_tai_san: tenTaiSan.ts_ten,
+                ten_tai_san: tenTaiSan ? tenTaiSan.ts_ten : null,
                 so_luong: bb.sl_sc,
                 doi_tuong_su_dung: sc_ng_sd,
                 vi_tri_tai_san: sc_vitri,
@@ -726,8 +726,8 @@ exports.details_bb_da_sua_chua = async (req, res) => {
                 //thong tin sua chua 
                 ngay_hong: new Date(bb.sc_ngay_hong * 1000),
                 noi_dung_sua_chua: bb.sc_noidung,
-                nguoi_thuc_hien: nguoiThucHien.userName,
-                phong_ban: phongban.dep_name,
+                nguoi_thuc_hien: nguoiThucHien ? nguoiThucHien.userName : null,
+                phong_ban: phongban ? phongban.dep_name : null,
                 chi_phi_du_kien: bb.sc_chiphi_dukien,
                 chi_phi_thuc_te: bb.sc_chiphi_thucte,
                 ngay_sua_chua: new Date(bb.sc_ngay * 1000),
@@ -739,7 +739,7 @@ exports.details_bb_da_sua_chua = async (req, res) => {
             return res.status(200).json({ data: info_bb, message: 'thanh cong' });
         }
     } catch (error) {
-        console.log(error)
+
         return res.status(500).json({ message: error.message });
     }
 }
@@ -827,7 +827,7 @@ exports.listBBDaSuaChua = async (req, res) => {
                 $limit: limit
             }
         ]);
-        console.log(tsda_suachua);
+
         let total = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_trangthai: 3,
@@ -1248,18 +1248,21 @@ exports.detailBBCanSuaChua = async (req, res) => {
         }
 
         let bb = await SuaChua.findOne({ sc_id: id, id_cty: com_id });
+        if (!bb) {
+            return res.status(204).json({ message: " bien ban khong co trong du lieu" });
+        }
 
-        let tenTaiSan = await TaiSan.findOne({ ts_id: Number(bb.suachua_taisan) });
+        let tenTaiSan = await TaiSan.findOne({ ts_id: Number(bb.suachua_taisan), id_cty: com_id }) || null;
 
 
         let nguoiThucHien = await Users.findOne({
             idQLC: bb.sc_ng_thuchien,
             type: { $ne: 1 }
-        });
+        }) || null;
         let nguoi_tao = await Users.findOne({
             idQLC: bb.sc_id_ng_tao,
             type: { $ne: 1 }
-        });
+        }) || null;
         let nguoi_duyet = await Users.findOne({
             idQLC: bb.sc_ng_duyet,
         }) || null;
@@ -1286,31 +1289,30 @@ exports.detailBBCanSuaChua = async (req, res) => {
             });
             sc_vitri = sc_ng_sd = dep.dep_name;
         }
-        console.log(nguoiThucHien.inForPerson.employee.dep_id)
-        console.log(nguoiThucHien.inForPerson.employee.com_id)
+
         let phongban = await Department.findOne({
             dep_id: nguoiThucHien.inForPerson.employee.dep_id,
             com_id: nguoiThucHien.inForPerson.employee.com_id
-        });
+        }) || null;
         let info_bb = {
             //thong tin chung 
             so_bb: bb.sc_id,
-            nguoi_tao: nguoi_tao.userName,
+            nguoi_tao: nguoi_tao ? nguoi_tao.userName : null,
             ngay_tao: new Date(bb.sc_date_create * 1000),
             nguoi_duyet: nguoi_duyet ? nguoi_duyet.userName : null,
-            ngay_duyet: new Date((bb.sc_date_duyet || 0) * 1000) == 0 ? 'chua cap nhat' : new Date((bb.sc_date_duyet || 0) * 1000),
+            ngay_duyet: ((bb.sc_date_duyet || 0) == 0) ? 'chua cap nhat' : new Date((bb.sc_date_duyet || 0) * 1000),
             trang_thai: bb.sc_trangthai,
             //thong tin tai san
             ma_tai_san: bb.suachua_taisan,
-            ten_tai_san: tenTaiSan.ts_ten,
+            ten_tai_san: tenTaiSan ? tenTaiSan.ts_ten : null,
             so_luong: bb.sl_sc,
             doi_tuong_su_dung: sc_ng_sd,
             vi_tri_tai_san: sc_vitri,
             //thong tin sua chua 
             ngay_hong: new Date(bb.sc_ngay_hong * 1000),
             noi_dung_sua_chua: bb.sc_noidung,
-            nguoi_thuc_hien: nguoiThucHien.userName,
-            phong_ban: phongban.dep_name,
+            nguoi_thuc_hien: nguoiThucHien ? nguoiThucHien.userName : null,
+            phong_ban: phongban ? phongban.dep_name : null,
             ngay_sua_chua: new Date(bb.sc_ngay * 1000),
             ngay_du_kien_hoan_thanh: new Date(bb.sc_dukien * 1000),
             chi_phi_du_kien: bb.sc_chiphi_dukien,
@@ -1321,7 +1323,7 @@ exports.detailBBCanSuaChua = async (req, res) => {
         // return res.status(200).json({ data: info_bb, message: "success" });
         fnc.success(res, info_bb);
     } catch (error) {
-        console.log(error)
+
         return res.status(500).json({ message: error.message });
     }
 
@@ -1387,15 +1389,15 @@ exports.listBBCanSuaChua = async (req, res) => {
 
             let taiSan = await TaiSan.findOne({
                 ts_id: tscan_suachua[count].suachua_taisan,
-            });
+            }) || null;
 
             let userSD = await Users.findOne({
                 idQLC: tscan_suachua[count].sc_ng_sd
-            })
+            }) || null;
             let vitri = await ViTriTaISan.findOne({
                 id_vitri: tscan_suachua[count].sc_ts_vitri,
                 id_cty: com_id
-            });
+            }) || null;
             let info = {
                 sc_date_create: new Date(tscan_suachua[count].sc_date_create * 1000),
                 sc_ngay_hong: new Date(tscan_suachua[count].sc_ngay_hong * 1000),
@@ -1404,8 +1406,8 @@ exports.listBBCanSuaChua = async (req, res) => {
                 sc_trangthai: tscan_suachua[count].sc_trangthai,
                 sl_sc: tscan_suachua[count].sl_sc,
                 sc_noidung: tscan_suachua[count].sc_noidung,
-                ten_ts: taiSan.ts_ten,
-                nguoi_sd: userSD.userName,
+                ten_ts: taiSan ? taiSan.ts_ten : null,
+                nguoi_sd: userSD ? userSD.userName : null,
                 // vi_Tri: vitri.vi_tri || null
 
             }
@@ -1414,7 +1416,6 @@ exports.listBBCanSuaChua = async (req, res) => {
         };
         let total = await SuaChua.countDocuments({
             id_cty: com_id,
-
             sc_da_xoa: 0,
             sc_trangthai: { $in: [0, 2] }
         });
