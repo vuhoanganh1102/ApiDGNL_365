@@ -40,52 +40,95 @@ exports.list = async (req, res) => {
 
         // end Query
         let listAllocation = await capPhat.distinct('id_ng_thuchien',listConditions )
-        let results1 = []
+        let dataAllocation = {}
         if(listAllocation) {
             for (let i = 0; i < listAllocation.length; i++) {
-                let UserAllocation = await capPhat.find({id_cty:id_cty,id_ng_thuchien: listAllocation[i]}).select("cp_id id_ng_thuchien -_id")
-                results1.push({UserAllocation: UserAllocation[0]})
+                let UserAllocation = await capPhat.aggregate([
+                    {$match: {id_cty: id_cty,id_ng_thuchien:listAllocation[i]}},
+                    {$lookup: {
+                        from: "Users",
+                        localField: "id_ng_thuchien",
+                        foreignField : "idQLC",
+                        as : "info"
+                    }},
+                    {$unwind: "$info"},
+                    {$project : {
+                        "cp_id" : "$cp_id",
+                        "cp_trangthai" : "$cp_trangthai",
+                        "id_ng_thuchien" : "$id_ng_thuchien",
+                        "ten_ng_thuchien" : "$info.userName",
+                    }},
+                    
+                ])
+                // results1.push({UserAllocation: UserAllocation[0]})
+                for (let j = 0; j < UserAllocation.length; j++) {
+                   
+                 let numSl_bb = await capPhat.find({id_cty:id_cty,id_ng_thuchien: UserAllocation[j].id_ng_thuchien}).count()
+                //  results1.push({numSl_bb: numSl_bb})
+                 UserAllocation[j].numSl_bb = numSl_bb
 
-                 let numSl_bb = await capPhat.find({id_cty:id_cty,id_ng_thuchien: listAllocation[i]}).count()
-                 results1.push({numSl_bb: numSl_bb})
-                // listAllocation[0].numSl_bb = numSl_bb
 
-                let numsl_dtn = await capPhat.find({id_cty:id_cty,id_ng_thuchien: listAllocation[i], cp_trangthai : 1}).count()
-                results1.push({numsl_dtn: numsl_dtn})
-                // listAllocation[0].numsl_dtn = numsl_dtn
+                let numsl_dtn = await capPhat.find({id_cty:id_cty,id_ng_thuchien: UserAllocation[j].id_ng_thuchien, cp_trangthai : 1}).count()
+                // results1.push({numsl_dtn: numsl_dtn})
+                 UserAllocation[j].numsl_dtn = numsl_dtn
 
-                let numsl_cn = await capPhat.find({id_cty:id_cty,id_ng_thuchien: listAllocation[i], cp_trangthai : 0}).count()
-                results1.push({numsl_cn: numsl_cn})
 
-                let numsl_tc  = await capPhat.find({id_cty:id_cty,id_ng_thuchien: listAllocation[i], cp_trangthai : 2}).count()
-                results1.push({numsl_tc: numsl_tc})
+                let numsl_cn = await capPhat.find({id_cty:id_cty,id_ng_thuchien: UserAllocation[j].id_ng_thuchien, cp_trangthai : 0}).count()
+                // results1.push({numsl_cn: numsl_cn})
+                 UserAllocation[j].numsl_cn = numsl_cn
+
+
+                let numsl_tc  = await capPhat.find({id_cty:id_cty,id_ng_thuchien: UserAllocation[j].id_ng_thuchien, cp_trangthai : 2}).count()
+                // results1.push({numsl_tc: numsl_tc})
+                 UserAllocation[j].numsl_tc = numsl_tc
+                }
+                dataAllocation.UserAllocation = UserAllocation
+
             }
         }
         let listRecall = await ThuHoi.distinct('id_ng_thuhoi',listConditions )
-        let results2 = []
+        let dataRecall ={}
         if(listRecall) {
             for (let i = 0; i < listRecall.length; i++) {
-                let UserAlloc = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: listRecall[i]}).select("thuhoi_id id_ng_thuhoi -_id")
-                results2.push({UserAlloc: UserAlloc[0]})
+                let UserRecall = await ThuHoi.aggregate([
+                    {$match: {id_cty: id_cty,id_ng_thuhoi:listRecall[i]}},
+                    {$lookup: {
+                        from: "Users",
+                        localField: "id_ng_thuhoi",
+                        foreignField : "idQLC",
+                        as : "info"
+                    }},
+                    {$unwind: "$info"},
+                    {$project : {
+                        "thuhoi_id" : "$thuhoi_id",
+                        "thuhoi_trangthai" : "$thuhoi_trangthai",
+                        "id_ng_thuhoi" : "$id_ng_thuhoi",
+                        "ten_nguoi_thuhoi" : "$info.userName",
+                    }},
+                    
+                ])
+                for (let j = 0; j < UserRecall.length; j++) {
                 
-                let numSl_bb = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: listRecall[i]}).count()
-                results2.push({numSl_bb: numSl_bb})
+                let numSl_bb = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[j].id_ng_thuhoi}).count()
+                UserRecall[j].numSl_bb = numSl_bb
                 // listRecall[0].numSl_bb = numSl_bb
                 
-                let numsl_dtn = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: listRecall[i], thuhoi_trangthai : 1}).count()
-                results2.push({numsl_dtn: numsl_dtn})
+                let numsl_dtn = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[j].id_ng_thuhoi, thuhoi_trangthai : 1}).count()
+                UserRecall[j].numsl_dtn = numsl_dtn
                 // listRecall[0].numsl_dtn = numsl_dtn
                 
-                let numsl_cn = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: listRecall[i], thuhoi_trangthai : 0}).count()
-                results2.push({numsl_cn: numsl_cn})
+                let numsl_cn = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[j].id_ng_thuhoi, thuhoi_trangthai : 0}).count()
+                UserRecall[j].numsl_cn = numsl_cn
                 
-                let numsl_tc  = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: listRecall[i], thuhoi_trangthai : 2}).count()
-                results2.push({numsl_tc: numsl_tc})
-          
+                let numsl_tc  = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[j].id_ng_thuhoi, thuhoi_trangthai : 2}).count()
+                UserRecall[j].numsl_tc = numsl_tc
+                }
+                dataRecall.UserRecall = UserRecall
+
             }
         }
-        if(results1) data.push({dataAllocation: results1})
-        if(results2) data.push({dataRecall: results2})
+        data.push({dataAllocation: dataAllocation})
+        data.push({dataRecall: dataRecall})
         // console.log(results1.length/5 )
         
         return fnc.success(res, "lấy thành công ",{data})
@@ -106,7 +149,7 @@ exports.listDetailAllocation = async (req, res) => {
             {$match: {id_cty: id_cty,id_ng_thuchien:id_ng_thuchien}},
             {$lookup: {
                 from: "Users",
-                localField: "cp_id_ng_tao",
+                localField: "id_ng_thuchien",
                 foreignField : "idQLC",
                 as : "info"
             }},
@@ -119,7 +162,7 @@ exports.listDetailAllocation = async (req, res) => {
                 "id_phongban" : "$id_phongban",
                 "cp_id_ng_tao" : "$cp_id_ng_tao",
                 "cp_date_create" : "$cp_date_create",
-                "ten_nguoi_tao" : "$info.userName",
+                "ten_ng_thuchien" : "$info.userName",
             }},
             
         ]).skip(skip).limit(limit)
@@ -143,7 +186,7 @@ exports.listDetailRecall = async (req, res) => {
             {$match: {id_cty: id_cty, id_ng_thuhoi:id_ng_thuhoi}},
             {$lookup: {
                 from: "Users",
-                localField: "thuhoi_ng_tao",
+                localField: "id_ng_thuhoi",
                 foreignField : "idQLC",
                 as : "info"
             }},
@@ -157,7 +200,7 @@ exports.listDetailRecall = async (req, res) => {
                 "thuhoi_soluong" : "$thuhoi_soluong",
                 "thuhoi_ng_tao" : "$thuhoi_ng_tao",
                 "thuhoi_trangthai" : "$thuhoi_trangthai",
-                "ten_nguoi_tao" : "$info.userName",
+                "ten_ng_thuhoi" : "$info.userName",
             }},
 
         ]).skip(skip).limit(limit)
