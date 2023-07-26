@@ -1221,7 +1221,7 @@ exports.xoaBBcanSC = async (req, res) => {
         }
         if (datatype == 3) {
             //xoavinhvien
-            let xoa = await Suachua.findOneAndRemove({ sc_id: id, id_cty: com_id });
+            let xoa = await SuaChua.findOneAndRemove({ sc_id: id, id_cty: com_id });
             return res.status(200).json({ data: xoa, message: "xoa vinh vien thanh cong " });
         }
 

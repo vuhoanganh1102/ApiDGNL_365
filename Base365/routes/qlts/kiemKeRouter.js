@@ -8,6 +8,7 @@ router.post('/create', formData.parse(), [kiemKeController.getAndCheckData, kiem
 router.post('/update', formData.parse(), [kiemKeController.getAndCheckData, kiemKeController.update]);
 router.post('/danhSachKiemKe', formData.parse(), kiemKeController.danhSachKiemKe);
 router.post('/delete', formData.parse(), kiemKeController.delete);
+router.post('/deleteMany', formData.parse(), kiemKeController.deleteMany);
 router.post('/duyet', formData.parse(), kiemKeController.duyet);
 router.post('/chitiet', formData.parse(), kiemKeController.chiTiet);
 

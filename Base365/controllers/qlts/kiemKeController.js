@@ -118,18 +118,34 @@ exports.danhSachKiemKe = async(req, res, next)=>{
     let {page, pageSize, key} = req.body;
     if(!page) page = 1;
     if(!pageSize) pageSize = 20;
+    page = Number(page);
+    pageSize = Number(pageSize);
     const limit = pageSize;
     const skip = (page-1)*limit;
     const comId = req.user.data.com_id;
 
-    condition = {id_cty: comId, xoa_kiem_ke: 0};
+    let condition = {id_cty: comId, xoa_kiem_ke: 0};
     if(key) {
       if(!isNaN(parseFloat(key)) && isFinite(key)) condition.id_kiemke = key;
       else condition.kk_noidung = new RegExp(key, 'i');
     }
     
-    let danhSachKiemKe = await functions.pageFind(KiemKe, condition, {id_kiemke: -1}, skip, limit);
-    let total = danhSachKiemKe.length;
+    // let danhSachKiemKe = await functions.pageFind(KiemKe, condition, {id_kiemke: -1}, skip, limit);
+    let danhSachKiemKe = await KiemKe.aggregate([
+      {$match: condition},
+      {
+          $lookup: {
+              from: 'Users',
+              localField: 'id_ng_kiemke',
+              foreignField: 'idQLC',
+              as: 'user',
+          }
+      },
+      {$sort: {id_kiemke: -1}},
+      {$skip: skip},
+      {$limit: limit}
+      ]);
+  let total = await functions.findCount(KiemKe, condition);
     return functions.success(res, "Danh sach kiem ke:", {total: total, danhSachKiemKe: danhSachKiemKe});
   }catch(error) {
     return functions.setError(res, error.message, 500);
@@ -174,6 +190,55 @@ exports.delete = async(req, res, next) => {
       if(kiemKe) return functions.success(res, "Xoa vinh vien kiem ke thanh cong!");
     }
     return functions.setError(res, "Kiem ke not found!", 505);
+  }catch(error){
+    return functions.setError(res, error.message, 500);
+  }
+}
+
+exports.deleteMany = async(req, res, next) => {
+  try{
+    const {array_xoa, datatype} = req.body;
+    const userId = req.user.data.idQLC;
+    const comId = req.user.data.com_id;
+    const type = req.user.data.type;
+    const time = functions.convertTimestamp(Date.now());
+    
+    if(!array_xoa){
+      return functions.setError(res, "Missing input array_xoa", 404);
+    }
+    if(datatype!=1 && datatype!=2 && datatype!=3) {
+      return functions.setError(res, "Vui long truyen datatype = 1/2/3", 404);
+    }
+    //
+    if(datatype==1) {
+      for(let i=0; i<array_xoa.length; i++) {
+        let kiemKe = await KiemKe.findOneAndUpdate({id_kiemke: array_xoa[i], id_cty: comId}, {
+          xoa_kiem_ke: 1,
+          kk_type_quyen: type,
+          kk_id_ng_xoa: userId,
+          kk_date_delete: time,
+        }, {new: true});
+      }
+      return functions.success(res, "Xoa tam thoi kiem ke thanh cong!");
+    }
+    else if(datatype==2) {
+      for(let i=0; i<array_xoa.length; i++) {
+        let kiemKe = await KiemKe.findOneAndUpdate({id_kiemke: array_xoa[i], id_cty: comId},{
+          xoa_kiem_ke: 0,
+          kk_type_quyen: 0,
+          kk_id_ng_xoa: 0,
+          kk_date_delete: 0,
+        }, {new: true});
+      }
+      return functions.success(res, "Khoi phuc kiem ke thanh cong!");
+    }
+    else if(datatype==3) {
+      for(let i=0; i<array_xoa.length; i++) {
+        let kiemKe = await KiemKe.findOneAndDelete({id_kiemke: array_xoa[i], id_cty: comId});
+      }
+      return functions.success(res, "Xoa vinh vien kiem ke thanh cong!");
+    }
+    return functions.setError(res, "Xoa nhieu that bai!", 505);
   }catch(error){
     return functions.setError(res, error.message, 500);
   }
