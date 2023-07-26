@@ -2385,11 +2385,13 @@ exports.listCanNew = async (req, res, next) => {
             userID,
             status: 1,
             cateID: 120,
+            sold:0
         }).count();
         let tinDaTimUngVien = await New.find({
             userID,
             status: 0,
             cateID: 120,
+            sold:1
         }).count();
         let searchItem = {
             title: 1,
@@ -2418,9 +2420,9 @@ exports.listCanNew = async (req, res, next) => {
         if (linkTitle === "quan-ly-tin-tim-ung-vien.html") {
             data = await New.find({ userID, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-tim.html") {
-            data = await New.find({ userID, status: 1, cateID: 120 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID,sold:0, status: 1, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-da-tim.html") {
-            data = await New.find({ userID, status: 0, cateID: 120 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID,sold:1, status: 0, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -2454,11 +2456,13 @@ exports.listJobNew = async (req, res, next) => {
             userID,
             status: 1,
             cateID: 121,
+            sold:0,
         }).count();
         let tinDaTimViec = await New.find({
             userID,
             status: 0,
             cateID: 121,
+            sold:1,
         }).count();
         let searchItem = {
             title: 1,
@@ -2487,9 +2491,9 @@ exports.listJobNew = async (req, res, next) => {
         if (linkTitle === "quan-ly-tin-tim-viec-lam.html") {
             data = await New.find({ userID, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-tim.html") {
-            data = await New.find({ userID, status: 1, cateID: 121 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID,sold:0, status: 1, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-da-tim.html") {
-            data = await New.find({ userID, status: 0, cateID: 121 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID,sold:1, status: 0, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -3233,4 +3237,12 @@ exports.deleteComment = async (req, res, next) => {
 }
 
 // support for update new 
-// exports
+exports.getDataNew = async (req,res,next) => {
+    try {
+        let id = Number(req.query.id);
+        let data = await New.findById(id);
+        return functions.success(res,'get data success',{data})
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
