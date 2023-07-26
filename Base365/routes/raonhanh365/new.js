@@ -117,5 +117,5 @@ router.post('/dangBanLai',formData.parse(),functions.checkToken,newRN.dangBanLai
 router.delete('/deleteComment',formData.parse(),functions.checkToken,newRN.deleteComment)
 
 // support for update new 
-router.get('/getDataNew',formData.parse(),functions.checkToken,newRN.getDataNew)
+router.get('/getDataNew',newRN.getDataNew)
 module.exports = router;

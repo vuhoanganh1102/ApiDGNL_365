@@ -696,6 +696,8 @@ exports.getNew = async (req, res, next) => {
                         data[i].islove = 0;
                     }
                 }
+            } else {
+                data[0].islove = 0;
             }
         }
         return functions.success(res, "get data success", { data });
@@ -1731,6 +1733,12 @@ exports.getDetailNew = async (req, res, next) => {
             thongTinSao.sumsao = sumsao[0].count;
         }
 
+        if (data[0].video) {
+            let nameCate = await raoNhanh.getNameCate(data[0].cateID, 1)
+            let folder = await raoNhanh.checkFolderCateRaoNhanh(nameCate)
+            data[0].video = process.env.DOMAIN_RAO_NHANH + `/pictures/${folder}/` + data[0].video
+        }
+
         data[0].thongTinSao = thongTinSao
         tintuongtu = await New.aggregate([
             { $match: { cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } } },
@@ -1782,7 +1790,11 @@ exports.getDetailNew = async (req, res, next) => {
             }
         }
         let url = linkTitle;
-        ListComment = await Comments.find({ url, parent_id: 0 }, {}, { time: -1 }, { cm_start }, { cm_limit }).lean();
+        if(typebl = 2){
+            ListComment = await Comments.find({ url, parent_id: 0 }, {}, { time: -1 }, { cm_start }, { cm_limit }).lean();
+        }else{
+            ListComment = await Comments.find({ url, parent_id: 0 }, {}, { time: 1 }, { cm_start }, { cm_limit }).lean();
+        }
         ListLike = await LikeRN.find({ forUrlNew: url, commentId: 0, type: { $lt: 8 } }, {}, { type: 1 })
         let ListReplyComment = [];
         let ListLikeComment = [];
@@ -1811,7 +1823,7 @@ exports.getDetailNew = async (req, res, next) => {
         for (let i = 0; i < data.length; i++) {
             data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, data[i].buySell)
             if (userIdRaoNhanh) {
-                console.log("🚀 ~ file: new.js:1813 ~ exports.getDetailNew= ~ userIdRaoNhanh:", userIdRaoNhanh)
+
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
                     if (data[i]._id === dataLoveNew[j].id_new) {
@@ -1826,9 +1838,6 @@ exports.getDetailNew = async (req, res, next) => {
                 data[0].islove = 0;
             }
         }
-
-
-
         let dataBidding = null;
         data[0].ListComment = ListComment;
         data[0].ListLike = ListLike;
@@ -1877,8 +1886,8 @@ exports.getDetailNew = async (req, res, next) => {
             return functions.success(res, "get data success", { data, dataBidding });
         }
         //data[`${cate_Special}`] = await raoNhanh.getDataNewDetail(data[`${cate_Special}`])
-    
-       
+
+
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.error(error)
@@ -2385,13 +2394,13 @@ exports.listCanNew = async (req, res, next) => {
             userID,
             status: 1,
             cateID: 120,
-            sold:0
+            sold: 0
         }).count();
         let tinDaTimUngVien = await New.find({
             userID,
             status: 0,
             cateID: 120,
-            sold:1
+            sold: 1
         }).count();
         let searchItem = {
             title: 1,
@@ -2420,9 +2429,9 @@ exports.listCanNew = async (req, res, next) => {
         if (linkTitle === "quan-ly-tin-tim-ung-vien.html") {
             data = await New.find({ userID, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-tim.html") {
-            data = await New.find({ userID,sold:0, status: 1, cateID: 120 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID, sold: 0, status: 1, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-da-tim.html") {
-            data = await New.find({ userID,sold:1, status: 0, cateID: 120 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID, sold: 1, status: 0, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -2456,13 +2465,13 @@ exports.listJobNew = async (req, res, next) => {
             userID,
             status: 1,
             cateID: 121,
-            sold:0,
+            sold: 0,
         }).count();
         let tinDaTimViec = await New.find({
             userID,
             status: 0,
             cateID: 121,
-            sold:1,
+            sold: 1,
         }).count();
         let searchItem = {
             title: 1,
@@ -2491,9 +2500,9 @@ exports.listJobNew = async (req, res, next) => {
         if (linkTitle === "quan-ly-tin-tim-viec-lam.html") {
             data = await New.find({ userID, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-tim.html") {
-            data = await New.find({ userID,sold:0, status: 1, cateID: 121 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID, sold: 0, status: 1, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-da-tim.html") {
-            data = await New.find({ userID,sold:1, status: 0, cateID: 121 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID, sold: 1, status: 0, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -3237,11 +3246,23 @@ exports.deleteComment = async (req, res, next) => {
 }
 
 // support for update new 
-exports.getDataNew = async (req,res,next) => {
+exports.getDataNew = async (req, res, next) => {
     try {
         let id = Number(req.query.id);
         let data = await New.findById(id);
-        return functions.success(res,'get data success',{data})
+        if(data){
+            let nameCate = await raoNhanh.getNameCate(data.cateID, 1)
+            let folder = await raoNhanh.checkFolderCateRaoNhanh(nameCate)
+            if (data.video) {
+                data.video = process.env.DOMAIN_RAO_NHANH + `/pictures/${folder}/` + data[0].video
+            }
+            if(data.img){
+                data.img = await raoNhanh.getLinkFile(data.img, data.cateID, data.buySell)
+            }
+            return functions.success(res, 'get data success', { data })
+        }else{
+            return functions.success(res, 'get data success', { data: [] })
+        }
     } catch (error) {
         return functions.setError(res, error)
     }
