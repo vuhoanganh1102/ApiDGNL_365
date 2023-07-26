@@ -51,6 +51,38 @@ exports.validateTaiSanInput = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, i
   return true;
 };
 
+exports.validateinputEdit = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly,id_loai_ts,ts_vi_tri,ts_so_luong,ts_gia_tri,ts_trangthai) => {
+  if (!ts_ten) {
+    throw { code: 400, message: 'Tên tài sản bắt buộc.' };
+  }
+  else if (!ts_don_vi) {
+    throw { code: 400, message: "đơn vị tính không không được bỏ trống" }
+  }
+  else if (!id_dv_quanly) {
+    throw { code: 400, message: "id_dv_quanly không không được bỏ trống" }
+  }
+  else if (!id_ten_quanly) {
+    throw { code: 400, message: "id_ten_quanly không không được bỏ trống" }
+  }
+  else if (!id_loai_ts) {
+    throw { code: 400, message: "id_loai_ts không không được bỏ trống" }
+  }
+  else if (!ts_vi_tri) {
+    throw { code: 400, message: "ts_vi_tri không không được bỏ trống" }
+  }
+  else if (!ts_so_luong) {
+    throw { code: 400, message: "số lượng không không được bỏ trống" }
+  }
+  else if (!ts_gia_tri) {
+    throw { code: 400, message: "giá trị không không được bỏ trống" }
+  }
+  else if (!ts_trangthai) {
+    throw { code: 400, message: "tình trạng không không được bỏ trống" }
+  }
+  return true;
+};
+
+
 
 
 exports.getDatafindOneAndUpdate = async (model, condition, projection) => {

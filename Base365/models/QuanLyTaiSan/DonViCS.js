@@ -5,32 +5,41 @@ const model_DonViCS = new mongoose.Schema({
         unique: true
     },
     id_cty: {
-        type: Number
+        type: Number,
+        default : 0
     },
     ten_donvi: {
-        type: String
+        type: String,
+        default : ''
     },
     mota_donvi: {
         type: String,
+        default : ''
 
     },
     dvcs_type_quyen: {
-        type: Number
+        type: Number,
+        default : 0
     },
     dvcs_id_ng_xoa: {
-        type: Number
+        type: Number,
+        default : 0
     },
     donvi_xoa: {
-        type: Number
+        type: Number,
+        default : 0
     },
     dvcs_date_create: {
-        type: Number
+        type: Number,
+        default : 0
     },
     dvcs_date_delete: {
-        type: Number
+        type: Number,
+        default : 0
     },
     dvcs_type_quyen_xoa: {
-        type: Number
+        type: Number,
+        default : 0
     },
 }, {
     collection: "QLTS_Don_Vi_CS",
