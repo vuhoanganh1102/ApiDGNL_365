@@ -71,7 +71,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
 
         return res.status(200).json({ message: "thanhcong" });
     } catch (error) {
-
+       
         return res.status(500).json({ message: error.message });
 
     }
@@ -1016,6 +1016,7 @@ exports.addSuaChua = async (req, res) => {
         }
         if (sc_quyen_sd == 2) {
             // sc tai san cp cho nv
+            console.log(com_id,ng_sd,id_ts)
             let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
             let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
             let update_sl = sl_ts_cu - sl_sc;
@@ -1070,7 +1071,7 @@ exports.addSuaChua = async (req, res) => {
         }
         return res.status(200).json({ data: bb_sc, message: "thanh cong" });
     } catch (error) {
-
+        console.error(error)
         return res.status(500).json({ message: error.message });
     }
 }
