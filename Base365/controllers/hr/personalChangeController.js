@@ -9,6 +9,8 @@ const Salary = require('../../models/Tinhluong/Tinhluong365SalaryBasic');
 const Resign = require('../../models/hr/personalChange/Resign');
 const EmployeeHistory = require('../../models/qlc/EmployeeHistory');
 const Department = require('../../models/qlc/Deparment');
+const Team = require('../../models/qlc/Team');
+const Group = require('../../models/qlc/Group');
 const Shifts = require('../../models/qlc/Shifts');
 
 
@@ -38,49 +40,103 @@ exports.getListAppoint = async(req, res, next) => {
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let listCondition = {com_id: com_id};
+        let listCondition = {};
 
         // dua dieu kien vao ob listCondition
-        if(appointId) listCondition.appointId = Number(appointId);
         if(ep_id) listCondition.ep_id = Number(ep_id);
-        if(update_dep_id) listCondition.update_dep_id = Number(update_dep_id);
-        if(fromDate) listCondition.created_at = {$gte: new Date(fromDate)};
-        if(toDate) listCondition.created_at = {$lte: new Date(toDate)};
+        if(fromDate && !toDate) listCondition.created_at = {$gte: new Date(fromDate)};
+        if(toDate && !fromDate) listCondition.created_at = {$lte: new Date(toDate)};
+        if(toDate && fromDate) listCondition.created_at = {$gte: new Date(fromDate), $lte: new Date(toDate)};
 
-        // const listAppoint = await functions.pageFind(Appoint, listCondition, { _id: 1 }, skip, limit); 
-        let fields = {com_id: 1, ep_id: 1, current_position: 1, current_dep_id: 1, update_position: 1, update_dep_id: 1, created_at: 1, decision_id: 1, note: 1, userName: 1}
-        let listAppoint = await Appoint.aggregate([
-        {$match: listCondition},
-        {
-            $lookup: {
-            from: "Users",
-            localField: "ep_id",
-            foreignField: "idQLC",
-            as: "matchedDocuments"
+        let listAppoint = await functions.pageFind(Appoint, listCondition, {id: -1}, skip, limit);
+
+        let condition2 = {"inForPerson.employee.com_id": com_id};
+        if(update_dep_id) condition2["inForPerson.employee.dep_id"] = Number(update_dep_id);
+        let listEmployee = await Users.find(condition2);
+        let data = [];
+        for(let i=0; i<listAppoint.length; i++) {
+            let infoAppoint = {};
+            
+            let employee = listEmployee.filter(employee=> {
+                    if(employee.idQLC == listAppoint[i].ep_id) return true;
+                    return false;
+                });
+            if(employee.length>0) {
+                employee = employee[0];
+                infoAppoint.ep_id = employee.idQLC;
+                infoAppoint.ep_name = employee.userName;
+            }else {
+                continue;
             }
-        },
-        {
-            $unwind: "$matchedDocuments"
-        },
-        {
-            $replaceRoot: {
-            newRoot: {
-                $mergeObjects: ["$$ROOT", "$matchedDocuments"]
+
+            infoAppoint.time = listAppoint[i].created_at;
+            infoAppoint.note = listAppoint[i].note;
+            infoAppoint.decision_id = listAppoint[i].decision_id
+
+            let infoOldDep = await Department.findOne({dep_id: listAppoint[i].current_dep_id});
+            if(infoOldDep) {
+                infoAppoint.old_dep_id = infoOldDep.dep_id;
+                infoAppoint.old_dep_name = infoOldDep.dep_name;
+            }else {
+                infoAppoint.old_dep_name = "Chưa cập nhật";
             }
+            let new_dep_id = null;
+            let new_position_id = null;
+            if(employee && employee.inForPerson && employee.inForPerson.employee) {
+                new_dep_id = employee.inForPerson.employee.dep_id;
+                new_position_id = employee.inForPerson.employee.position_id;
             }
-        },
-        {
-            $project: fields
-        },
-        // {$project: fields},
-        {$sort: {id: 1}},
-        {$skip: skip},
-        {$limit: limit}
+            if(new_dep_id) {
+                let infoNewDep = await Department.findOne({dep_id: new_dep_id})
+                if(infoNewDep) {
+                    infoAppoint.new_dep_id = infoNewDep.dep_id;
+                    infoAppoint.new_dep_name = infoNewDep.dep_name;
+                }else {
+                    infoAppoint.new_dep_name = "Chưa cập nhật";
+                }
+            }else infoAppoint.new_dep_name = "Chưa cập nhật";
+
+            if(new_position_id) {
+                let infoNewPosition = hrService.positionNames[new_position_id];
+                if(infoNewPosition) {
+                    infoAppoint.new_position_name = infoNewPosition;
+                    infoAppoint.new_position_id = new_position_id;
+                }else {
+                    infoAppoint.new_position_name = "Chưa cập nhật";
+                }
+            }else infoAppoint.new_position_name = "Chưa cập nhật";
+            
+            let infoOldPosition = hrService.positionNames[listAppoint[i].current_position];
+            if(infoOldPosition) {
+                infoAppoint.old_position_name = infoOldPosition;
+                infoAppoint.old_position_id = listAppoint[i].current_position;
+            }
+            data.push(infoAppoint);
+        }
+        condition2 = {"user.inForPerson.employee.com_id": com_id};
+        if(update_dep_id) condition2["user.inForPerson.employee.dep_id"] = Number(update_dep_id);
+        const total = await Appoint.aggregate([
+            {$match: listCondition},
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "ep_id",
+                    foreignField: "idQLC",
+                    as: "user"
+                }
+            },
+            {$unwind: "$user"},
+            {$match: condition2},
+            {
+                $group: {
+                _id: null,
+                total: { $sum: 1 }
+                }
+            }
         ]);
-        const totalCount = await functions.findCount(Appoint, listCondition);
-        return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: listAppoint });
+        const totalCount = total.length>0?total[0].total:0;
+        return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: data });
     } catch (e) {
-        console.log("Err from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -106,37 +162,37 @@ exports.getAndCheckData = async (req, res, next) =>{
 
 exports.updateAppoint = async(req, res, next) => {
     try {
-        let {update_position, update_dep_id} = req.body;
+        let {ep_id, current_position, current_dep_id, created_at, decision_id, note, update_position, update_dep_id} = req.body;
         if(!update_position || !update_dep_id) {
             return functions.setError(res, "Missing input value!", 405);
         }
-        let fields = req.fields;
-
         //lay ra id lon nhat
-        let ep_id = Number (req.body.ep_id);
         let com_id = req.infoLogin.comId;
-        let employee = await Users.findOne({idQLC: ep_id});
-        if(!employee) {
-            return functions.setError(res, "Employee not found!");
+        let employee = await Users.findOneAndUpdate({idQLC: ep_id}, {
+            "inForPerson.employee.dep_id": update_dep_id, "inForPerson.employee.position_id": update_position,
+        }, {new: true})
+        if(employee) {
+            let fields = {
+                ep_id: ep_id,
+                current_position: current_position,
+                current_dep_id: current_dep_id,
+                created_at: new Date(created_at),
+                decision_id: decision_id,
+                note: note
+            }
+            let check = await Appoint.findOne({ep_id: ep_id});
+            if(!check) {
+                let newIdAppoint = await functions.getMaxIdByField(Appoint, 'id');
+                fields.id = newIdAppoint;
+            }
+            //neu chua co thi them moi
+            let appoint = await Appoint.findOneAndUpdate({ep_id: ep_id},fields, {new: true, upsert: true});
+            if(appoint){
+                return functions.success(res, "Update Appoint success!");
+            }
+            return functions.setError(res, "Appoint not found!", 405);
         }
-        let check = await Appoint.findOne({com_id: com_id, ep_id: ep_id});
-        if(!check) {
-            let newIdAppoint = await Appoint.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
-            if (newIdAppoint) {
-                newIdAppoint = Number(newIdAppoint.id) + 1;
-            } else newIdAppoint = 1;
-            fields.id = newIdAppoint;
-        }
-
-        //them cac truong
-        fields = {...fields, update_position, update_dep_id};
-
-        //neu chua co thi them moi
-        let appoint = await Appoint.findOneAndUpdate({com_id: com_id, ep_id: ep_id},fields, {new: true, upsert: true});
-        if(appoint){
-            return functions.success(res, "Update Appoint success!");
-        }
-        return functions.setError(res, "Appoint not found!", 405);
+        return functions.setError(res, "Employee not found!");
     } catch (e) {
         return functions.setError(res, e.message);
     }
@@ -227,6 +283,8 @@ exports.getListTranferJob = async(req, res, next) => {
                 
                 let new_com_id = infoUser.inForPerson.employee.com_id;
                 let new_dep = infoUser.inForPerson.employee.dep_id;
+                let new_team = infoUser.inForPerson.employee.team_id;
+                let new_group = infoUser.inForPerson.employee.group_id;
                 let new_position = infoUser.inForPerson.employee.position_id;
                 //tim theo phong ban
                 if(update_dep_id && new_dep != update_dep_id) continue; 
@@ -244,7 +302,7 @@ exports.getListTranferJob = async(req, res, next) => {
                 //lay ra ten cong ty
                 let inForCompany = await Users.findOne({idQLC: new_com_id});
                 if(inForCompany) infoTransfer.new_com_name = inForCompany.userName;
-                else return functions.setError(res, "Khong tim thay cong ty moi!", 406);
+                else infoTransfer.new_com_name = "";
 
                 //lay ra ten phong ban cu
                 let infoDep = await Department.findOne({com_id: new_com_id, dep_id: new_dep});
@@ -258,6 +316,23 @@ exports.getListTranferJob = async(req, res, next) => {
                     infoTransfer.new_position = name_position
                 }else {
                     infoTransfer.new_position = "Chưa cập nhật";
+                }
+
+                //lay ra to nhom
+                let infoTeam = await Team.findOne({com_id: new_com_id, team_id: new_team});
+                if(infoTeam) {
+                    infoTransfer.team_name = infoTeam.teamName;
+                    infoTransfer.team_id = new_team;
+                }else {
+                    infoTransfer.team_name = "Chưa cập nhật";
+                }
+
+                let infoGroup = await Group.findOne({com_id: new_com_id, gr_id: new_group});
+                if(infoGroup) {
+                    infoTransfer.gr_name = infoGroup.gr_name;
+                    infoTransfer.gr_id = new_group;
+                }else {
+                    infoTransfer.gr_name = "Chưa cập nhật";
                 }
 
                 dataTranferJob.push(infoTransfer);
@@ -283,13 +358,20 @@ exports.updateTranferJob = async(req, res, next) => {
             com_id: com_id,
             dep_id: dep_id,
             position_id: position_id,
-            decision_id: decision_id,
             created_at: created_at,
             decision_id: decision_id,
             note: note,
             mission: mission,
         };
         //update nhan vien
+        let company = await Users.findOne({idQLC: new_com_id});
+        if(!company) {
+            return functions.setError(res, "New company not found!", 405);
+        }
+        let oldCompany = await Users.findOne({idQLC: com_id});
+        if(!oldCompany) {
+            return functions.setError(res, "Old company not found!", 406);
+        }
         let employee = await Users.findOneAndUpdate({idQLC: ep_id}, {
             inForPerson: {
                 employee: {
@@ -302,7 +384,7 @@ exports.updateTranferJob = async(req, res, next) => {
             }
         }, {new: true})
         if(!employee){
-            return functions.setError(res, "Employee not found!", 503);
+            return functions.setError(res, "Employee not found!", 403);
         }
 
         let check = await TranferJob.findOne({com_id: com_id, ep_id: ep_id});
@@ -337,7 +419,6 @@ exports.deleteTranferJob = async(req, res, next) => {
         }
         return functions.setError(res, "TranferJob not found", 505);
     } catch (e) {
-        console.log("Error from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -394,16 +475,18 @@ exports.getListQuitJob = async(req, res, next) => {
             }
 
             // lay ra ca nghi
-            let infoResign = await Resign.findOne({id: listQuitJob[i].hs_resign_id});
+            let infoResign = await Resign.findOne({ep_id: listQuitJob[i].hs_ep_id, com_id: listQuitJob[i].hs_com_id});
             if(infoResign) {
-                let infoShift = await Shifts.findOne({shift_id: shift_id});
+                let infoShift = await Shifts.findOne({shift_id: listQuitJob[i].shift_id});
                 if(infoShift) infoQuitJob.shift_name = infoShift.shift_name;
                 else infoQuitJob.shift_name = "Chưa cập nhật";
 
-                infoQuitJob.type = infoShift.type;
+                infoQuitJob.type = infoResign.type;
+                infoQuitJob.note = infoResign.note;
+                infoQuitJob.shift_id = infoResign.shift_id;
+                infoQuitJob.decision_id = infoResign.decision_id;
             }else {
-                infoQuitJob.shift_name = "Chưa cập nhật";
-                infoQuitJob.type = 0;
+                continue;
             }
             infoQuitJob.time = listQuitJob[i].hs_time_end;
             listResign.push(infoQuitJob);
@@ -563,6 +646,7 @@ exports.getListIllegalQuitJob = async(req, res, next) => {
             if(!quitJob) continue;
             const employee = await Users.findOne({idQLC: listQuitJob[i].hs_ep_id});
             if(employee) {
+                infoQuitJob.note = quitJob.note;
                 infoQuitJob.ep_id = employee.idQLC;
                 infoQuitJob.ep_name = employee.userName;
 

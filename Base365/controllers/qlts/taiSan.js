@@ -13,37 +13,36 @@ const SuaChua = require('../../models/QuanLyTaiSan/Sua_chua');
 const BaoDuong = require('../../models/QuanLyTaiSan/BaoDuong');
 const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
 const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
-
+const GhiTang = require('../../models/QuanLyTaiSan/GhiTang_TS');
 exports.showAll = async (req, res) => {
   try {
-    let { page, perPage, ts_ten, id_nhom_ts, ts_vi_tri, id_ten_quanly, ts_trangthai } = req.body;
+    let { page, perPage, ts_ten, id_loai_ts, ts_vi_tri, id_ten_quanly, ts_trangthai } = req.body;
     let com_id = '';
-
     page = parseInt(page) || 1; // Trang hiện tại (mặc định là trang 1)
     perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
-
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
+      console.log(com_id)
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
+    ;
     // Tính toán startIndex và endIndex
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
 
     let matchQuery = {
-      id_cty: com_id,// Lọc theo com_id
-      ts_da_xoa: 0,
+      id_cty : com_id,// Lọc theo com_id
+      ts_da_xoa : 0
     };
-
     if (ts_ten) {
       matchQuery.ts_ten = { $regex: ts_ten, $options: "i" };
     }
-    if (id_nhom_ts) {
-      matchQuery.id_nhom_ts = parseInt(id_nhom_ts);
+    if(id_loai_ts){
+      matchQuery.id_loai_ts = parseInt(id_loai_ts);
     }
     if (ts_vi_tri) {
-      matchQuery.ts_vi_tri = parseInt(ts_vi_tri);;
+      matchQuery.ts_vi_tri = parseInt(ts_vi_tri);
     }
     if (id_ten_quanly) {
       matchQuery.id_ten_quanly = parseInt(id_ten_quanly);
@@ -89,34 +88,46 @@ exports.showAll = async (req, res) => {
         },
       },
       {
-        $match: {
-          "cap_phat.cp_da_xoa": 0,
-          "thuhoi.xoa_thuhoi": 0
-        }
-      },
-      {
-        $lookup: {
-          from: 'qlc_deparments',
-          localField: 'dv_quan_ly',
-          foreignField: 'dep_id',
-          as: 'name_dep',
+        $unwind: {
+          path: '$cap_phat',
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
-        $project: {
-          "ts_id": "$ts_id",
-          "ts_ten": "$ts_ten",
-          "nguoi_cam": "$id_ten_quanly",
-          "tong_so_luong": "$sl_bandau",
-          "so_luong_cap_phat": { $size: "$cap_phat.cap_phat_taisan.ds_ts.ts_id" },
-          "so_luong_thu_hoi": { $size: "$thuhoi.thuhoi_taisan.ds_thuhoi.ts_id" },
-          "so_luong_con_lai": "$soluong_cp_bb",
-          "loai_ts": "$name_loai.ten_loai",
-          "gia_tri": "$ts_gia_tri",
-          "tinh_trang_su_dung": "$ts_trangthai",
-          "don_vi_quan_ly": "$ts_don_vi",
-          "vi_tri_tai_san": "$name_vitri.vi_tri",
-        }
+        $unwind: {
+          path: '$thuhoi',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: '$ts_id',
+          ts_id: { $first: '$ts_id' },
+          ts_ten: { $first: '$ts_ten' },
+          nguoi_cam: { $first: '$id_ten_quanly' },
+          tong_so_luong: { $addToSet: '$sl_bandau' },
+          so_luong_cap_phat: {
+            $sum: {
+              $cond: [{ $eq: ['$cap_phat.cp_da_xoa', 0] }, { $size: '$cap_phat.cap_phat_taisan.ds_ts.ts_id' }, 0],
+            },
+          },
+          so_luong_thu_hoi: {
+            $sum: {
+              $cond: [{ $eq: ['$thuhoi.xoa_thuhoi', 0] }, { $size: '$thuhoi.thuhoi_taisan.ds_thuhoi.ts_id' }, 0],
+            },
+          },
+          so_luong_con_lai: { $first: '$soluong_cp_bb' },
+          loai_ts: { $first: '$name_loai.ten_loai' },
+          gia_tri: { $first: '$ts_gia_tri' },
+          tinh_trang_su_dung: { $first: '$ts_trangthai' },
+          don_vi_quan_ly: { $first: '$ts_don_vi' },
+          vi_tri_tai_san: { $first: '$name_vitri.vi_tri' },
+        },
+      },
+      {
+        $sort: {
+          ts_id: -1, 
+        },
       },
       {
         $skip: startIndex,
@@ -136,10 +147,10 @@ exports.showAll = async (req, res) => {
     const hasNextPage = endIndex < totalTsCount;
 
     return functions.success(res, 'get data success', { searchTs, totalPages, hasNextPage });
-  } catch (error) {
-    console.error('Failed ', error);
-    return functions.setError(res, error);
-  }
+  } catch(e){
+    console.log(e);
+    return functions.setError(res , e.message)
+}
 };
 
 
@@ -152,7 +163,7 @@ exports.showDataSearch = async (req, res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     let checktaisan = await TaiSan.distinct('id_ten_quanly', { id_cty: com_id })
-    let listTaiSan = await TaiSan.find({ id_cty: com_id, ts_da_xoa: 0 }).select('ts_id')
+    let listTaiSan = await TaiSan.find({ id_cty: com_id, ts_da_xoa: 0 }).select('ts_id ts_ten')
     let listUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan } }).select('idQLC userName');
     let listVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
     let listloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id, loai_da_xoa: 0 }).select('id_loai ten_loai')
@@ -166,12 +177,12 @@ exports.showDataSearch = async (req, res) => {
       listUser,
       listVitri,
       listloaiTaiSan,
+      listTaiSan,
     }
     return functions.success(res, 'get data success', { item })
-  } catch (error) {
-    console.error('Failed ', error);
-    return functions.setError(res, error);
-  }
+  }  catch(e){
+    return functions.setError(res , e.message)
+}
 }
 
 // Đổ dữ liệu thêm mới tài sản
@@ -193,11 +204,12 @@ exports.showadd = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400)
     }
-  } catch (error) {
-    console.error('Failed ', error);
-    return functions.setError(res, error);
-  }
+  }  catch(e){
+    return functions.setError(res , e.message)
 }
+}
+
+
 
 
 exports.addTaiSan = async (req, res) => {
@@ -217,8 +229,17 @@ exports.addTaiSan = async (req, res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     const validationResult = quanlytaisanService.validateTaiSanInput(ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, id_loai_ts, ts_vi_tri);
+    const checkidNhom = await LoaiTaiSan.findOne({ id_loai: id_loai_ts, loai_da_xoa: 0 ,id_cty : com_id}).select('id_nhom_ts')
+    if (!checkidNhom) {
+      // Xử lý lỗi hoặc thông báo không tìm thấy nhóm tài sản tương ứng
+      return functions.setError(res, 'Không tìm thấy nhóm tài sản tương ứng với id_loai_ts để thêm mới', 400);
+    }
+    let checkidVitri = await ViTri_ts.findOne({id_vitri : ts_vi_tri ,id_cty : com_id}).select('id_vitri')
+    if(!checkidVitri){
+      return functions.setError(res, 'Không tìm thấy vị trí tài sản tương ứng để thêm mới ', 400);
+    }
     if (validationResult === true) {
-      const checkidNhom = await LoaiTaiSan.findOne({ id_loai: id_loai_ts, loai_da_xoa: 0 }).select('id_nhom_ts')
+      
       let maxID = await quanlytaisanService.getMaxID(TaiSan);
       let ts_id = 0;
       if (maxID) {
@@ -236,7 +257,7 @@ exports.addTaiSan = async (req, res) => {
         soluong_cp_bb: soluong_cp_bb,
         ts_gia_tri: ts_gia_tri,
         ts_don_vi: ts_don_vi,
-        ts_vi_tri: ts_vi_tri,
+        ts_vi_tri: checkidVitri.id_vitri,
         ts_trangthai: ts_trangthai,
         ts_da_xoa: ts_da_xoa,
         ts_date_create: createDate,
@@ -261,10 +282,10 @@ exports.addTaiSan = async (req, res) => {
       let saveTSVT = await createNewTSVT.save();
       return functions.success(res, 'save data success', { save, saveTSVT })
     }
-  } catch (error) {
-    console.error('Failed ', error);
-    return functions.setError(res, error);
-  }
+  }  catch(e){
+    console.log(e)
+    return functions.setError(res , e.message)
+}
 }
 
 exports.showCTts = async (req, res) => {
@@ -287,28 +308,28 @@ exports.showCTts = async (req, res) => {
       return functions.setError(res, 'Không tìm thấy tài sản', 404);
     }
 
-    let chekNhom = await NhomTs.findOne({ id_nhom: checkts.id_nhom_ts }).select('ten_nhom');
-    let checkloaiTaiSan = await LoaiTaiSan.findOne({ id_loai: checkts.id_loai_ts }).select('ten_loai');
-    let chekVitri = await ViTri_ts.findOne({ id_vitri: checkts.ts_vi_tri }).select('vi_tri dv_quan_ly');
-    let checkUser = await User.findOne({ idQLC: checkts.id_ten_quanly }).select('userName');
-
-    let data = [
-      checkts, chekNhom, checkloaiTaiSan, chekVitri, checkUser
+    let chekNhom = await NhomTs.findOne({ id_nhom: checkts.id_nhom_ts,id_cty :com_id }).select('ten_nhom');
+    let checkloaiTaiSan = await LoaiTaiSan.findOne({ id_loai: checkts.id_loai_ts,id_cty :com_id }).select('ten_loai');
+    let chekVitri = await ViTri_ts.findOne({ id_vitri: checkts.ts_vi_tri,id_cty :com_id }).select('vi_tri dv_quan_ly');
+    let checkUser = await User.findOne({ idQLC: checkts.id_ten_quanly,'inForPerson.employee.com_id' :com_id }).select('userName');
+    let checkGhiTang =  await GhiTang.findOne({ id_ts: checkts.ts_id }).select('sl_tang');
+    let item = [
+      {
+        ma_tai_san: checkts.ts_id,
+        ten_tai_san: checkts.ts_ten,
+        so_luong: checkts.sl_bandau
+      }
     ];
 
-    return functions.success(res, 'Lấy dữ liệu thành công', { data });
-  } catch (error) {
-    console.error('Failed ', error);
-    return functions.setError(res, error);
-  }
+    return functions.success(res, 'Lấy dữ liệu thành công', { item });
+  }  catch(e){
+    return functions.setError(res , e.message)
+}
 };
-
-
-
 
 exports.deleteTs = async (req, res) => {
   try {
-    let { datatype, ts_id, type_quyen } = req.body;
+    let { type, ts_id} = req.body;
     let com_id = '';
     let ts_id_ng_xoa = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
@@ -317,89 +338,101 @@ exports.deleteTs = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-
-
     const deleteDate = Math.floor(Date.now() / 1000);
-    if (typeof ts_id === 'undefined') {
-      return functions.setError(res, 'id tài sản không được bỏ trống', 400);
+    if (!ts_id.every(num => !isNaN(parseInt(num)))) {
+      return functions.setError(res, 'ts_id không hợp lệ', 400);
     }
-    if (isNaN(Number(ts_id))) {
-      return functions.setError(res, 'id tài sản phải là một số', 400);
-    }
-    if (datatype == 1) {
-      let chinhsua = await TaiSan.findOneAndUpdate({ ts_id: ts_id, id_cty: com_id },
-        {
-          $set: {
-            ts_da_xoa: 1,
-            ts_type_quyen_xoa: type_quyen,
-            ts_id_ng_xoa: ts_id_ng_xoa,
-            ts_date_delete: deleteDate
-          }
-        }, { new: true }
-      )
-      return functions.success(res, 'get data success', { chinhsua });
-    }
-    if (datatype == 2) {
-      let khoiphuc = await TaiSan.findOneAndUpdate({ ts_id: ts_id, id_cty: com_id },
-        {
-          $set: {
-            ts_da_xoa: 0,
-            ts_type_quyen_xoa: 0,
-            ts_id_ng_xoa: 0,
-            ts_date_delete: 0
-          }
-        }, { new: true }
-      )
-      return functions.success(res, 'get data success', { khoiphuc });
-    }
-    if (datatype == 3) {
-      await TaiSan.findOneAndDelete({ ts_id: ts_id, id_cty: com_id })
-      return functions.success(res, 'thanh cong');
-    } else {
-      return functions.setError(res, 'không có quyền xóa', 400)
-    }
+    if (type == 1) { // xóa vĩnh viễn
+      let idArraya = ts_id.map(idItem => parseInt(idItem));
+      let result = await TaiSan.deleteMany({ ts_id: { $in: idArraya }, id_cty: com_id });
+      if (result.deletedCount === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
+      }
+      return functions.success(res, 'xóa thành công!');
+    } else if (type == 0) {
+      // thay đổi trạng thái là 1
+      let idArray = ts_id.map(idItem => parseInt(idItem));
+      let result = await TaiSan.updateMany(
+        { ts_id: { $in: idArray },ts_da_xoa: 0,id_cty : com_id },
+        { ts_da_xoa: 1,
+         ts_id_ng_xoa : ts_id_ng_xoa,
+         ts_date_delete : deleteDate,
 
-  } catch (error) {
-    console.error('Failed ', error);
-    return functions.setError(res, error);
+        }
+      );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
+      return functions.success(res, 'Bạn đã xóa thành công , hiện vào danh sách dã xóa !');
+    } else if (type == 2) {
+      // Khôi phục tài sản
+      let idArray = ts_id.map(idItem => parseInt(idItem));
+      let result = await TaiSan.updateMany(
+        { ts_id: { $in: idArray }, 
+        ts_da_xoa: 1,id_cty : com_id  },
+        { ts_da_xoa: 0 ,
+          ts_id_ng_xoa : 0,
+          ts_date_delete : 0,}
+      );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
+      return functions.success(res, 'Bạn đã khôi phục tài sản thành công!');
+    } else {
+      return functions.setError(res, 'không thể thực thi!', 400);
+    }
+  } catch (e) {
+    return functions.setError(res, e.message);
   }
-}
+};
+
 
 
 exports.editTS = async (req, res) => {
   try {
-    let { ts_id, id_loai_ts_edit,
-      ts_gia_tri_edit, ts_trangthai_edit,
-      ts_ten_edit } = req.body;
-
+    let {ts_vi_tri,
+      ts_ten,ts_don_vi,ts_id,
+      id_loai_ts,ts_so_luong,
+      id_ten_quanly,id_dv_quanly,
+      ts_gia_tri,ts_trangthai,
+      } = req.body;
+   
     let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    let checkTs = await TaiSan.find({ id_cty: com_id })
-    if (checkTs.some(ts => ts.ts_ten === ts_ten_edit)) {
+    const validationResult = quanlytaisanService.validateinputEdit(ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly,id_loai_ts,ts_vi_tri,ts_so_luong,ts_gia_tri,ts_trangthai);
+    if(validationResult == true) {
+      let checkTs = await TaiSan.find({ id_cty: com_id })
+    if (checkTs.some(ts => ts.ts_ten === ts_ten)) {
       return functions.setError(res, 'tên tài sản  đã được sử dụng', 400);
     } else {
       let chinhsua = await TaiSan.findOneAndUpdate(
         { ts_id: ts_id, id_cty: com_id },
         {
           $set: {
-            ts_ten: ts_ten_edit,
-            id_loai_ts: id_loai_ts_edit,
-            ts_gia_tri: ts_gia_tri_edit,
-            ts_trangthai: ts_trangthai_edit,
+            ts_ten: ts_ten,
+            ts_don_vi: ts_don_vi,
+            id_dv_quanly: id_dv_quanly,
+            id_ten_quanly: id_ten_quanly,
+            id_loai_ts : id_loai_ts,
+            ts_vi_tri : ts_vi_tri,
+            ts_so_luong : ts_so_luong,
+            ts_gia_tri : ts_gia_tri,
+            ts_trangthai : ts_trangthai,
           }
         },
         { new: true }
       );
       return functions.success(res, 'get data success', { chinhsua });
     }
-  } catch (error) {
-    console.error('Failed ', error);
-    return functions.setError(res, error);
-  }
+    
+    }
+  }  catch(e){
+    return functions.setError(res , e.message)
+}
 };
 
 
@@ -433,10 +466,10 @@ exports.quatrinhsd = async (req, res) => {
     const totalPages = Math.ceil(totalTsCount / perPage);
     const hasNextPage = endIndex < totalTsCount;
     return functions.success(res, 'get data success', { listQTSD, totalPages, hasNextPage });
-  } catch (error) {
-    console.error('Failed ', error);
-    return functions.setError(res, error);
-  }
+  }  catch(e){
+    console.log(e)
+    return functions.setError(res , e.message)
+}
 };
 
 
