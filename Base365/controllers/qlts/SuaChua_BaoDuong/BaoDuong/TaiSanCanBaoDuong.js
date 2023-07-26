@@ -262,10 +262,10 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
                     sl_dang_sd: update_sl
                 });
         }
-        fnc.success(res, insert_taisan);
+        fnc.success(res, "ok", { insert_taisan });
 
     } catch (error) {
-
+        console.log(error)
         fnc.setError(res, error.message);
 
     }
@@ -426,10 +426,10 @@ exports.TuChoiBaoDuong = async (req, res) => {
         }
 
 
-        fnc.success(res, 'sucess', [tuchoi_bao_duong, update_taisan]);
+        fnc.success(res, 'sucess', { tuchoi_bao_duong, update_taisan });
 
     } catch (error) {
-
+        console.log(error)
         fnc.setError(res, error.message);
     }
 }
@@ -620,9 +620,9 @@ exports.deleteAll = async (req, res) => {
                 let id_ts = this_bd.baoduong_taisan;
                 let trang_thai_bd = this_bd.bd_trang_thai;
 
-                let xoa_bao_duong = 0;
-                let taisan = 0;
-                let update_taisan = 0;
+                let xoa_bao_duong = {};
+                let taisan = {};
+                let update_taisan = {};
                 if (xoa_vinh_vien == 0) {
                     xoa_bao_duong = await BaoDuong.findOneAndUpdate({
                         id_bd: xoa[i],
@@ -759,6 +759,7 @@ exports.detailTSCBD = async (req, res) => {
         if (chitiet_baoduong.bd_ngay_sudung == 1) {
             let nguoiSD = await Users.findOne({
                 idQLC: chitiet_baoduong.bd_ng_sd,
+                type: 1
             });
             nguoi_sd = nguoiSD.userName;
             vi_tri = nguoiSD.address;
@@ -795,12 +796,12 @@ exports.detailTSCBD = async (req, res) => {
             bd_cs_dukien: chitiet_baoduong.bd_cs_dukien,
             noi_dung: chitiet_baoduong.bd_noi_dung
         }
-        fnc.success(res, infobd);
+        fnc.success(res, 'OK', { infobd });
 
 
 
     } catch (error) {
-
+        console.log(error)
         fnc.setError(res, error.message);
     }
 }
@@ -884,7 +885,7 @@ exports.listTSCSC = async (req, res) => {
 
 
             if (list[count].bd_type_quyen_sd == 1) {
-                let user = await Users.findOne({ idQLC: list[count].bd_ng_sd });
+                let user = await Users.findOne({ idQLC: list[count].bd_ng_sd, type: 1 });
                 bd_ng_sd = user.userName;
                 bd_vitri = user.address;
             } else if (list[count].bd_type_quyen_sd == 2) {
@@ -915,10 +916,10 @@ exports.listTSCSC = async (req, res) => {
             arr_bb.push(info);
             count++;
         }
-        fnc.success(res, arr_bb);
+        fnc.success(res, 'OK', { arr_bb });
 
     } catch (error) {
-
+        console.log(error)
         fnc.setError(res, error.message);
     }
 }

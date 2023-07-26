@@ -42,7 +42,7 @@ exports.EditRegulations = async (req, res) => {
         });
         fnc.success(res, 'edit sucess');
     } catch (error) {
-        console.log(error);
+        console.log(error)
         fnc.setError(res, error.message);
     }
 }
@@ -93,6 +93,7 @@ exports.addRegulations = async (req, res) => {
                 qd_xoa: qd_xoa,
                 qd_date_create: date_create
             });
+
             await insert_qd.save();
             let taisan = await TaiSan.find({
                 id_cty: com_id,
@@ -210,8 +211,9 @@ exports.addRegulations = async (req, res) => {
                 }
 
             })
-            return fnc.success(res, 'add qd_bd success', [insert_qd, insert_nhacnho]);
+            return fnc.success(res, 'add qd_bd success', { insert_qd, insert_nhacnho });
         } else {
+
             fnc.success(res, 'quy dinh da ton tai');
         }
 
@@ -256,7 +258,7 @@ exports.DetailRegulations = async (req, res) => {
                 }
             }
         ]);
-        fnc.success(res, 'OK', [info_qd]);
+        fnc.success(res, 'OK', { info_qd });
 
 
     } catch (error) {
