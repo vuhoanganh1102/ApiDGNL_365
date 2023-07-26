@@ -12,10 +12,10 @@ exports.addLoaiTaiSan = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    if (typeof ten_loai === 'undefined'){
+    if (typeof ten_loai === 'undefined') {
       return functions.setError(res, 'tên loại  không được bỏ trống', 400);
     }
-    if (typeof id_nhom === 'undefined'){
+    if (typeof id_nhom === 'undefined') {
       return functions.setError(res, 'id_nhom  không được bỏ trống', 400);
     }
     else {
@@ -41,15 +41,15 @@ exports.addLoaiTaiSan = async (req, res) => {
       }
     }
 
-  }catch(e){
+  } catch (e) {
     console.log(e);
-    return fnc.setError(res , e.message)
-}
+    return fnc.setError(res, e.message)
+  }
 }
 
 exports.showLoaiTs = async (req, res) => {
   try {
-    let {id_loai, page,perPage } = req.body
+    let { id_loai, page, perPage } = req.body
     let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
@@ -64,49 +64,49 @@ exports.showLoaiTs = async (req, res) => {
     };
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
-    if (id_loai){
+    if (id_loai) {
       matchQuery.id_loai = parseInt(id_loai);
     }
     let showLoaiTs = await LoaiTaiSan.aggregate([
       {
         $match: matchQuery, // Sửa thành $match ở đây
       },
-      {$sort:{id_loai:-1}},
+      { $sort: { id_loai: -1 } },
       {
-        $lookup : {
+        $lookup: {
           from: 'QLTS_Nhom_Tai_San',
-          localField : 'id_nhom_ts',
-          foreignField : 'id_nhom',
-          as : 'listNhom'
+          localField: 'id_nhom_ts',
+          foreignField: 'id_nhom',
+          as: 'listNhom'
         }
       },
       {
-        $lookup : {
+        $lookup: {
           from: 'QLTS_Tai_San',
-          localField : 'id_loai',
-          foreignField : 'id_loai_ts',
-          as : 'listTaiSan'
+          localField: 'id_loai',
+          foreignField: 'id_loai_ts',
+          as: 'listTaiSan'
         }
       },
       {
         $project: {
           "id_loai": "$id_loai",
           "ten_loai": "$ten_loai",
-          "tong_so_tai_san" :{
+          "tong_so_tai_san": {
             $reduce: {
-              input: "$listTaiSan", 
-              initialValue: 0, 
-              in: { $add: ["$$value", "$$this.sl_bandau"] } 
+              input: "$listTaiSan",
+              initialValue: 0,
+              in: { $add: ["$$value", "$$this.sl_bandau"] }
             }
           },
           "so_ts_chua_phat": {
             $reduce: {
-              input: "$listTaiSan", 
-              initialValue: 0, 
-              in: { $add: ["$$value", "$$this.ts_so_luong"] } 
+              input: "$listTaiSan",
+              initialValue: 0,
+              in: { $add: ["$$value", "$$this.ts_so_luong"] }
             }
           },
-          "ten_nhom" : "$listNhom.ten_nhom"
+          "ten_nhom": "$listNhom.ten_nhom"
         }
       },
       {
@@ -128,10 +128,10 @@ exports.showLoaiTs = async (req, res) => {
     const hasNextPage = endIndex < totalTsCount;
 
     return functions.success(res, 'get data success', { showLoaiTs, totalPages, hasNextPage });
-  } catch(e){
+  } catch (e) {
     console.log(e);
-    return fnc.setError(res , e.message)
-}
+    return fnc.setError(res, e.message)
+  }
 }
 
 
@@ -161,10 +161,10 @@ exports.editLoaiTs = async (req, res) => {
 
       return functions.success(res, 'edit data success', { chinhsualoai });
     }
-  } catch(e){
+  } catch (e) {
     console.log(e);
-    return fnc.setError(res , e.message)
-}
+    return fnc.setError(res, e.message)
+  }
 }
 
 exports.deleteLoaiTs = async (req, res) => {
@@ -172,51 +172,69 @@ exports.deleteLoaiTs = async (req, res) => {
     let { type, id_loai } = req.body;
     let com_id = '';
     let id_ng_xoa = '';
-    
+
     const deleteDate = Math.floor(Date.now() / 1000);
-    if (req.user.data.type == 1|| req.user.data.type == 2) {
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
       id_ng_xoa = req.user.data.idQLC;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
+    if (!id_loai.every(num => !isNaN(parseInt(num)))) {
+      return functions.setError(res, 'id_loai không hợp lệ', 400);
+    }
     if (type == 1) {
       //Xóa vĩnh viễn
       let idArraya = id_loai.map(idItem => parseInt(idItem));
-      await LoaiTaiSan.deleteMany({ id_loai: { $in: idArraya }, id_cty: com_id });
+      let result = await LoaiTaiSan.deleteMany({ id_loai: { $in: idArraya }, id_cty: com_id });
+      if (result.deletedCount === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
+      }
       return functions.success(res, 'xóa thành công!');
     }
     if (type == 2) {
       // thay đổi trang thái thành 1
-      let idArray = ts_id.map(idItem => parseInt(idItem));
-      await LoaiTaiSan.updateMany(
-        { id_loai: { $in: idArray },loai_da_xoa: 0 },
-        { loai_da_xoa: 1,
-          loai_id_ng_xoa : id_ng_xoa,
-          loai_date_delete : deleteDate,
+      let idArray = id_loai.map(idItem => parseInt(idItem));
+      let result = await LoaiTaiSan.updateMany(
+        { id_loai: { $in: idArray }, loai_da_xoa: 0, id_cty: com_id },
+        {
+          loai_da_xoa: 1,
+          loai_id_ng_xoa: id_ng_xoa,
+          loai_date_delete: deleteDate,
 
         }
       );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
       return functions.success(res, 'Bạn đã xóa thành công , thêm vào danh sách dã xóa !');
     }
     if (type == 3) {
       //khôi phục
       let idArray = id_loai.map(idItem => parseInt(idItem));
-      await LoaiTaiSan.updateMany(
-        { id_loai: { $in: idArray }, 
-        loai_da_xoa: 1 },
-        { loai_id_ng_xoa: 0 ,
-          loai_da_xoa: 0 ,
-          loai_date_delete : 0,}
+      let result = await LoaiTaiSan.updateMany(
+        {
+          id_loai: { $in: idArray },
+          loai_da_xoa: 1,
+          id_cty: com_id
+        },
+        {
+          loai_id_ng_xoa: 0,
+          loai_da_xoa: 0,
+          loai_date_delete: 0,
+        }
       );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
       return functions.success(res, 'Bạn đã khôi phục loại tài sản thành công!');
     } else {
       return functions.setError(res, 'không có quyền xóa', 400)
     }
 
-  } catch(e){
+  } catch (e) {
     console.log(e);
-    return functions.setError(res , e.message)
-}
+    return functions.setError(res, e.message)
+  }
 }
 

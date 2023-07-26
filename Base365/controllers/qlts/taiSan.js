@@ -13,7 +13,7 @@ const SuaChua = require('../../models/QuanLyTaiSan/Sua_chua');
 const BaoDuong = require('../../models/QuanLyTaiSan/BaoDuong');
 const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
 const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
-
+const GhiTang = require('../../models/QuanLyTaiSan/GhiTang_TS');
 exports.showAll = async (req, res) => {
   try {
     let { page, perPage, ts_ten, id_loai_ts, ts_vi_tri, id_ten_quanly, ts_trangthai } = req.body;
@@ -100,34 +100,28 @@ exports.showAll = async (req, res) => {
         },
       },
       {
-        $sort: {
-          'cap_phat.cp_date_create': -1,
-          'thuhoi.thuhoi_date_create': -1,
-        },
-      },
-      {
         $group: {
           _id: '$ts_id',
           ts_id: { $first: '$ts_id' },
           ts_ten: { $first: '$ts_ten' },
           nguoi_cam: { $first: '$id_ten_quanly' },
-          tong_so_luong: { $first: '$sl_bandau' },
-          so_luong_cap_phat: { $sum: { $cond: [{ $ifNull: ['$cap_phat.cp_da_xoa', 0] }, 0, 1] } },
-          so_luong_thu_hoi: { $sum: { $cond: [{ $ifNull: ['$thuhoi.xoa_thuhoi', 0] }, 0, 1] } },
+          tong_so_luong: { $addToSet: '$sl_bandau' },
+          so_luong_cap_phat: {
+            $sum: {
+              $cond: [{ $eq: ['$cap_phat.cp_da_xoa', 0] }, { $size: '$cap_phat.cap_phat_taisan.ds_ts.ts_id' }, 0],
+            },
+          },
+          so_luong_thu_hoi: {
+            $sum: {
+              $cond: [{ $eq: ['$thuhoi.xoa_thuhoi', 0] }, { $size: '$thuhoi.thuhoi_taisan.ds_thuhoi.ts_id' }, 0],
+            },
+          },
           so_luong_con_lai: { $first: '$soluong_cp_bb' },
           loai_ts: { $first: '$name_loai.ten_loai' },
           gia_tri: { $first: '$ts_gia_tri' },
           tinh_trang_su_dung: { $first: '$ts_trangthai' },
           don_vi_quan_ly: { $first: '$ts_don_vi' },
           vi_tri_tai_san: { $first: '$name_vitri.vi_tri' },
-        },
-      },
-      {
-        $match: {
-          $or: [
-            { so_luong_cap_phat: { $gt: 0 } },
-            { so_luong_thu_hoi: { $gt: 0 } },
-          ],
         },
       },
       {
@@ -235,7 +229,15 @@ exports.addTaiSan = async (req, res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     const validationResult = quanlytaisanService.validateTaiSanInput(ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, id_loai_ts, ts_vi_tri);
-    const checkidNhom = await LoaiTaiSan.findOne({ id_loai: id_loai_ts, loai_da_xoa: 0 }).select('id_nhom_ts')
+    const checkidNhom = await LoaiTaiSan.findOne({ id_loai: id_loai_ts, loai_da_xoa: 0 ,id_cty : com_id}).select('id_nhom_ts')
+    if (!checkidNhom) {
+      // Xử lý lỗi hoặc thông báo không tìm thấy nhóm tài sản tương ứng
+      return functions.setError(res, 'Không tìm thấy nhóm tài sản tương ứng với id_loai_ts để thêm mới', 400);
+    }
+    let checkidVitri = await ViTri_ts.findOne({id_vitri : ts_vi_tri ,id_cty : com_id}).select('id_vitri')
+    if(!checkidVitri){
+      return functions.setError(res, 'Không tìm thấy vị trí tài sản tương ứng để thêm mới ', 400);
+    }
     if (validationResult === true) {
       
       let maxID = await quanlytaisanService.getMaxID(TaiSan);
@@ -255,7 +257,7 @@ exports.addTaiSan = async (req, res) => {
         soluong_cp_bb: soluong_cp_bb,
         ts_gia_tri: ts_gia_tri,
         ts_don_vi: ts_don_vi,
-        ts_vi_tri: ts_vi_tri,
+        ts_vi_tri: checkidVitri.id_vitri,
         ts_trangthai: ts_trangthai,
         ts_da_xoa: ts_da_xoa,
         ts_date_create: createDate,
@@ -306,16 +308,20 @@ exports.showCTts = async (req, res) => {
       return functions.setError(res, 'Không tìm thấy tài sản', 404);
     }
 
-    let chekNhom = await NhomTs.findOne({ id_nhom: checkts.id_nhom_ts }).select('ten_nhom');
-    let checkloaiTaiSan = await LoaiTaiSan.findOne({ id_loai: checkts.id_loai_ts }).select('ten_loai');
-    let chekVitri = await ViTri_ts.findOne({ id_vitri: checkts.ts_vi_tri }).select('vi_tri dv_quan_ly');
-    let checkUser = await User.findOne({ idQLC: checkts.id_ten_quanly }).select('userName');
-
-    let data = [
-      checkts, chekNhom, checkloaiTaiSan, chekVitri, checkUser
+    let chekNhom = await NhomTs.findOne({ id_nhom: checkts.id_nhom_ts,id_cty :com_id }).select('ten_nhom');
+    let checkloaiTaiSan = await LoaiTaiSan.findOne({ id_loai: checkts.id_loai_ts,id_cty :com_id }).select('ten_loai');
+    let chekVitri = await ViTri_ts.findOne({ id_vitri: checkts.ts_vi_tri,id_cty :com_id }).select('vi_tri dv_quan_ly');
+    let checkUser = await User.findOne({ idQLC: checkts.id_ten_quanly,'inForPerson.employee.com_id' :com_id }).select('userName');
+    let checkGhiTang =  await GhiTang.findOne({ id_ts: checkts.ts_id }).select('sl_tang');
+    let item = [
+      {
+        ma_tai_san: checkts.ts_id,
+        ten_tai_san: checkts.ts_ten,
+        so_luong: checkts.sl_bandau
+      }
     ];
 
-    return functions.success(res, 'Lấy dữ liệu thành công', { data });
+    return functions.success(res, 'Lấy dữ liệu thành công', { item });
   }  catch(e){
     return functions.setError(res , e.message)
 }
@@ -333,32 +339,44 @@ exports.deleteTs = async (req, res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     const deleteDate = Math.floor(Date.now() / 1000);
+    if (!ts_id.every(num => !isNaN(parseInt(num)))) {
+      return functions.setError(res, 'ts_id không hợp lệ', 400);
+    }
     if (type == 1) { // xóa vĩnh viễn
       let idArraya = ts_id.map(idItem => parseInt(idItem));
-      await TaiSan.deleteMany({ ts_id: { $in: idArraya }, id_cty: com_id });
+      let result = await TaiSan.deleteMany({ ts_id: { $in: idArraya }, id_cty: com_id });
+      if (result.deletedCount === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
+      }
       return functions.success(res, 'xóa thành công!');
     } else if (type == 0) {
       // thay đổi trạng thái là 1
       let idArray = ts_id.map(idItem => parseInt(idItem));
-      await TaiSan.updateMany(
-        { ts_id: { $in: idArray },ts_da_xoa: 0 },
+      let result = await TaiSan.updateMany(
+        { ts_id: { $in: idArray },ts_da_xoa: 0,id_cty : com_id },
         { ts_da_xoa: 1,
          ts_id_ng_xoa : ts_id_ng_xoa,
          ts_date_delete : deleteDate,
 
         }
       );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
       return functions.success(res, 'Bạn đã xóa thành công , hiện vào danh sách dã xóa !');
     } else if (type == 2) {
       // Khôi phục tài sản
       let idArray = ts_id.map(idItem => parseInt(idItem));
-      await TaiSan.updateMany(
+      let result = await TaiSan.updateMany(
         { ts_id: { $in: idArray }, 
-        ts_da_xoa: 1 },
+        ts_da_xoa: 1,id_cty : com_id  },
         { ts_da_xoa: 0 ,
           ts_id_ng_xoa : 0,
           ts_date_delete : 0,}
       );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
       return functions.success(res, 'Bạn đã khôi phục tài sản thành công!');
     } else {
       return functions.setError(res, 'không thể thực thi!', 400);
