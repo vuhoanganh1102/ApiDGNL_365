@@ -85,19 +85,46 @@ exports.edit = async(req,res)=>{
         const id_cty = req.user.data.com_id
         
         const idQLC = req.user.data.idQLC
-        const _id = req.body.id;
-        const cp_ngay = req.body.cp_ngay;
+        const cp_id = req.body.cp_id;
+        const id_phongban = req.body.id_phongban;
         const cp_lydo = req.body.cp_lydo;
-        const cap = await capPhat.findOne({ _id: _id });
+        const cap_phat_taisan = req.body.cap_phat_taisan;
+        const id_ng_thuchien = req.body.id_ng_thuchien;
+        const id_ng_daidien = req.body.id_ng_daidien;
+        const loai_edit = req.body.loai_edit;
+        const id_nhanvien = req.body.id_nhanvien;
+        const cp_vitri_sudung = req.body.cp_vitri_sudung;
+        const cp_ngay = new Date(req.body.cp_ngay);
+        const ds_ts = JSON.parse(cap_phat_taisan).ds_ts;
+        const updated_ds_ts = ds_ts.map((item) => ({
+            ts_id: item[0],
+            sl_cp: item[1]
+        }));
+        const cap = await capPhat.findOne({id_cty:id_cty, cp_id: cp_id });
+
         if (!cap) {
             return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
         } else {
-            await capPhat.findOneAndUpdate({ _id: _id }, {
-                id_cty: id_cty,
-                cp_ngay: cp_ngay,
-                cp_lydo: cp_lydo,
-                cp_id_ng_tao: idQLC,
-            })
+            if(loai_edit == 2 ){
+                await capPhat.findOneAndUpdate({id_cty:id_cty, cp_id: cp_id }, {
+                    id_cty: id_cty,
+                    cap_phat_taisan: { ds_ts: updated_ds_ts }, 
+                    cp_id_ng_tao : idQLC,
+                    id_nhanvien: id_nhanvien,
+                    id_phongban : id_phongban,
+                    id_ng_daidien:id_ng_daidien,
+                    id_ng_thuchien:id_ng_thuchien,
+                    cp_ngay:  Date.parse(cp_ngay) / 1000,
+                    cp_vitri_sudung:cp_vitri_sudung,
+                    cp_lydo: cp_lydo,
+                    cp_id_ng_tao: idQLC,
+                })
+            }else{
+                await capPhat.findOneAndUpdate({id_cty:id_cty, cp_id: cp_id }, {
+                    cp_ngay:  Date.parse(cp_ngay) / 1000,
+                    cp_lydo: cp_lydo,
+                })
+            }
             return fnc.success(res, "cập nhật thành công", { cap })
         }
     } catch (e) {
@@ -285,7 +312,6 @@ exports.getListNV = async (req , res) =>{
         }catch(e){
             return fnc.setError(res , e.message)
         }
-
 }
         exports.getListDep = async (req , res) =>{
             try{
@@ -296,10 +322,10 @@ exports.getListNV = async (req , res) =>{
                 const skips = (page - 1) * pageSize;
                 const limit = pageSize;
                 let data = []
-                let numEmp = await capPhat.distinct('id_nhanvien', { id_cty: id_cty,id_nhanvien : {$exists : true}, cp_da_xoa: 0 })
-                if(numEmp) data.push({numEmp: numEmp.length})
-                let numDep = await capPhat.distinct('id_phongban', {id_cty: id_cty, id_nhanvien : {$exists : true}, cp_da_xoa: 0})
-                if(numDep) data.push({numDep: numDep.length})
+                let numEmp = await capPhat.count('id_nhanvien', { id_cty: id_cty,id_nhanvien : {$exists : true}, cp_da_xoa: 0 })
+                if(numEmp) data.push({numEmp: numEmp})
+                let numDep = await capPhat.count('id_phongban', {id_cty: id_cty, id_nhanvien : {$exists : true}, cp_da_xoa: 0})
+                if(numDep) data.push({numDep: numDep})
                 let listConditions = {};
                 listConditions.id_cty = id_cty
                 if(id_phongban) {
@@ -307,7 +333,6 @@ exports.getListNV = async (req , res) =>{
                 }else{
                     listConditions.id_phongban = {$exists : true}}
                 // lay danh sach chi tiet phong ban - nhan vien
-                // console.log(Dep)
                 let results1 = []
                  let dataDep = await capPhat.aggregate([
                     {$match:listConditions },
@@ -319,44 +344,36 @@ exports.getListNV = async (req , res) =>{
                         as : "infoPhongBan"
                     }},
                     {$unwind: "$infoPhongBan"},
-                    {
-                        $group: {
-                          _id: {
-                            // cp_id:"$cp_id",
-                            id_phongban:"$id_phongban",
-                            cp_trangthai:"$cp_trangthai",
-                            dep_name : "$infoPhongBan.dep_name",
-                            manager_id : "$infoPhongBan.manager_id",
-                        //   count: {
-                        //     $sum: 1
-                        //   },
-                          count: {
-                            $sum: {
-                              $cond: [
-                                {$and: [
-                                    { $eq: ["$id_cty", id_cty] },
-                                    { $eq: ["$cp_trangthai", 1] }
-                                  ]},
-                                1,
-                                1
-                              ]
-                            }
-                          },
-                        }
-                      },
+                    {$project : {
+                        "cp_id" : "$cp_id",
+                        "id_cty" : "$id_cty",
+                        "cp_trangthai" : "$cp_trangthai",
+                        "id_phongban" : "$id_phongban",
+                        "dep_name" : "$infoPhongBan.dep_name",
+                        "manager_id" : "$infoPhongBan.manager_id",
+                        "count": {
+                                    $sum: {
+                                      $cond: [
+                                        {$and: [
+                                            { $eq: ["$id_cty", id_cty] },
+                                            { $eq: ["$cp_trangthai", 1] }
+                                          ]}, 1 , 0  ]
+                                    }
+                                  },
+                    }},
                     
-                    // {$project : {
-                    //     "cp_id" : "$cp_id",
-                    //     "id_cty" : "$id_cty",
-                    //     "cp_trangthai" : "$cp_trangthai",
-                    //     "id_phongban" : "$id_phongban",
-                    //     "dep_name" : "$infoPhongBan.dep_name",
-                    //     "manager_id" : "$infoPhongBan.manager_id",
-                    // }},
-                }])
+                ])
+                if(dataDep){
+                    // let numDep = await dataDep.map(item => item.id_phongban)
+                    // for(let i = 0 ; i<numDep.length ; i++){
+                    //     let depStatus = await capPhat.count({id_cty:id_cty ,id_phongban: numDep[i] ,cp_trangthai :1})
+                    //     console.log(depStatus)
+                    //     dataDep.push({countStatus : depStatus})
+                    // }
+            
+                 data.push({dataDep: dataDep})
+                }    
                 // .explain("executionStats")
-                if(dataDep) data.push({dataDep: dataDep})
-                 
                 if(data){
                     return fnc.success(res, " lấy thành công ",{data})
                 }
