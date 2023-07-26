@@ -242,17 +242,29 @@ exports.listBBDangSuaChua = async (req, res) => {
         let totalBBCSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_da_xoa: 0,
-            sc_trangthai: { $in: [0, 2] }
+            sc_trangthai: { $in: [0, 2] },
+            $or: [
+                filter2,
+                filter3
+            ]
         });
         let totalBBDSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_trangthai: 1,
             sc_da_xoa: 0,
+            $or: [
+                filter2,
+                filter3
+            ]
         });
         let totalBBDaSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_trangthai: 3,
             sc_da_xoa: 0,
+            $or: [
+                filter2,
+                filter3
+            ]
         })
         fnc.success(res, 'OK', { list_bb, totalBBCSC, totalBBDSC, totalBBDaSC });
     } catch (error) {
@@ -836,17 +848,29 @@ exports.listBBDaSuaChua = async (req, res) => {
         let totalBBCSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_da_xoa: 0,
-            sc_trangthai: { $in: [0, 2] }
+            sc_trangthai: { $in: [0, 2] },
+            $or: [
+                filter2,
+                filter3
+            ]
         });
         let totalBBDSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_trangthai: 1,
             sc_da_xoa: 0,
+            $or: [
+                filter2,
+                filter3
+            ]
         });
         let totalBBDaSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_trangthai: 3,
             sc_da_xoa: 0,
+            $or: [
+                filter2,
+                filter3
+            ]
         })
         fnc.success(res, 'OK', { tsda_suachua, totalBBCSC, totalBBDSC, totalBBDaSC });
     } catch (error) {
@@ -1028,7 +1052,7 @@ exports.addSuaChua = async (req, res) => {
         }
         if (sc_quyen_sd == 2) {
             // sc tai san cp cho nv
-            console.log(com_id,ng_sd,id_ts)
+            console.log(com_id, ng_sd, id_ts)
             let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
             let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
             let update_sl = sl_ts_cu - sl_sc;
@@ -1431,17 +1455,32 @@ exports.listBBCanSuaChua = async (req, res) => {
         let totalBBCSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_da_xoa: 0,
-            sc_trangthai: { $in: [0, 2] }
+            sc_trangthai: { $in: [0, 2] },
+            $or: [
+                filter2,
+                filter3,
+
+            ]
         });
         let totalBBDSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_trangthai: 1,
             sc_da_xoa: 0,
+            $or: [
+                filter2,
+                filter3,
+
+            ]
         });
         let totalBBDaSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_trangthai: 3,
             sc_da_xoa: 0,
+            $or: [
+                filter2,
+                filter3,
+
+            ]
         })
 
         fnc.success(res, "thanh cong ", { list_bb, totalBBCSC, totalBBDSC, totalBBDaSC });
