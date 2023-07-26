@@ -2531,7 +2531,7 @@ exports.likeNews = async (req, res, next) => {
         let type = req.body.type || null;
         let userId = req.user.data.idRaoNhanh365;
         let userAvatar = req.user.data.userAvatar;
-
+   
         let like = await LikeRN.findOne({
             userIdChat: userId,
             forUrlNew: forUrlNew,
@@ -2552,6 +2552,7 @@ exports.likeNews = async (req, res, next) => {
             return functions.success(res, "Like new/comment RN365 success!");
         }
         else {
+            console.log('2')
             const maxIdLike = await LikeRN.findOne({}, { _id: 1 })
                 .sort({ _id: -1 })
                 .limit(1)
