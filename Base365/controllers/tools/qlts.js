@@ -1031,6 +1031,7 @@ exports.toolKhauHao = async (req, res, next) => {
                         kh_gt: listData[i].kh_gt,
                         kh_so_ky: listData[i].kh_so_ky,
                         kh_type_ky: listData[i].kh_type_ky,
+                        kh_so_ky_con_lai: listData[i].kh_so_ky_con_lai,
                         kh_gt_da_kh: listData[i].kh_gt_da_kh,
                         kh_gt_cho_kh: listData[i].kh_gt_cho_kh,
                         kh_day_start: listData[i].kh_day_start,

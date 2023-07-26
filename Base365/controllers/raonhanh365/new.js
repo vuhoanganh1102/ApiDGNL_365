@@ -1579,6 +1579,7 @@ exports.getDetailNew = async (req, res, next) => {
         let cm_page = req.body.cm_page;
         let cm_limit = 10;
         let cm_start = (cm_page - 1) * cm_limit;
+        let typebl = Number(req.body.typebl)
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         let linkTitle = req.body.linkTitle;
         if (!linkTitle) {
@@ -1810,6 +1811,7 @@ exports.getDetailNew = async (req, res, next) => {
         for (let i = 0; i < data.length; i++) {
             data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, data[i].buySell)
             if (userIdRaoNhanh) {
+                console.log("🚀 ~ file: new.js:1813 ~ exports.getDetailNew= ~ userIdRaoNhanh:", userIdRaoNhanh)
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
                     if (data[i]._id === dataLoveNew[j].id_new) {
@@ -2383,11 +2385,13 @@ exports.listCanNew = async (req, res, next) => {
             userID,
             status: 1,
             cateID: 120,
+            sold:0
         }).count();
         let tinDaTimUngVien = await New.find({
             userID,
             status: 0,
             cateID: 120,
+            sold:1
         }).count();
         let searchItem = {
             title: 1,
@@ -2416,9 +2420,9 @@ exports.listCanNew = async (req, res, next) => {
         if (linkTitle === "quan-ly-tin-tim-ung-vien.html") {
             data = await New.find({ userID, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-tim.html") {
-            data = await New.find({ userID, status: 1, cateID: 120 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID,sold:0, status: 1, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-da-tim.html") {
-            data = await New.find({ userID, status: 0, cateID: 120 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID,sold:1, status: 0, cateID: 120 }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -2452,11 +2456,13 @@ exports.listJobNew = async (req, res, next) => {
             userID,
             status: 1,
             cateID: 121,
+            sold:0,
         }).count();
         let tinDaTimViec = await New.find({
             userID,
             status: 0,
             cateID: 121,
+            sold:1,
         }).count();
         let searchItem = {
             title: 1,
@@ -2485,9 +2491,9 @@ exports.listJobNew = async (req, res, next) => {
         if (linkTitle === "quan-ly-tin-tim-viec-lam.html") {
             data = await New.find({ userID, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-dang-tim.html") {
-            data = await New.find({ userID, status: 1, cateID: 121 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID,sold:0, status: 1, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else if (linkTitle === "tin-da-tim.html") {
-            data = await New.find({ userID, status: 0, cateID: 121 }, searchItem).skip(skip).limit(limit);
+            data = await New.find({ userID,sold:1, status: 0, cateID: 121 }, searchItem).skip(skip).limit(limit);
         } else {
             return functions.setError(res, "page not found ", 404);
         }
@@ -2511,7 +2517,7 @@ exports.likeNews = async (req, res, next) => {
     try {
         let { forUrlNew } = req.body;
         let ip = req.ip;
-        let commnetId = req.body.commnetId || 0;
+        let commentId = req.body.commentId || 0;
         let userName = req.user.data.userName;
         let type = req.body.type || null;
         let userId = req.user.data.idRaoNhanh365;
@@ -2550,7 +2556,7 @@ exports.likeNews = async (req, res, next) => {
                 _id: newIdLike,
                 forUrlNew: forUrlNew,
                 type: type,
-                commnetId: commnetId,
+                commentId: commentId,
                 userName: userName,
                 userAvatar: userAvatar,
                 userIdChat: userId,
@@ -3227,5 +3233,16 @@ exports.deleteComment = async (req, res, next) => {
         return functions.success(res, 'delete comment success')
     } catch (error) {
         return functions.setError(res, error);
+    }
+}
+
+// support for update new 
+exports.getDataNew = async (req,res,next) => {
+    try {
+        let id = Number(req.query.id);
+        let data = await New.findById(id);
+        return functions.success(res,'get data success',{data})
+    } catch (error) {
+        return functions.setError(res, error)
     }
 }
