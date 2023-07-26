@@ -42,7 +42,7 @@ const model_Dieuchuyen = new mongoose.Schema({
         default: 0
     },
     id_daidien_dangsd: {
-        type: String,
+        type: Number,
         default: 0,
     },
     id_nv_dangsudung: {
@@ -62,7 +62,7 @@ const model_Dieuchuyen = new mongoose.Schema({
         default: 0
     },
     id_daidien_nhan: {
-        type: String,
+        type: Number,
         default: 0,
     },
     dc_ngay: {
@@ -102,16 +102,16 @@ const model_Dieuchuyen = new mongoose.Schema({
         default: null
     },
     vi_tri_dc_tu: {
-        type: String,
+        type: Number,
         default: null
     },
     dc_vitri_tsnhan: {
-        type: String,
+        type: Number,
         default: null
     },
     vitri_ts_daidien: {
-        type: String,
-        default: isNullOrUndefined,
+        type: Number,
+        //  default: isNullOrUndefined,
         default: 0
     },
     dc_type_quyen: {
