@@ -17,10 +17,11 @@ const Vanthu_de_xuat = new Schema({
     },
     noi_dung: {
         nghi_phep: {
-            bd_nghi: {//ngày bắt đầu nghỉ
+            type :[
+                {       
+            bd_nghi : {//ngày bắt đầu nghỉ
                 type: Date,
                 default: null,
-
             },
             kt_nghi: { // Ngày kết thúc nghỉ
                 type: Date,
@@ -37,8 +38,11 @@ const Vanthu_de_xuat = new Schema({
             ly_do: {
                 type: String,// Lý do chung của mọi loại đề xuất
                 default: null,
-            },
+            },}  
+        ]
         },
+
+            
 
         doi_ca: {
 
@@ -326,9 +330,19 @@ const Vanthu_de_xuat = new Schema({
                 type: Date,
                 default: null,
             },
+            time_vao_ca : {
+                type : Number
+            },
+            time_het_ca : {
+                type : Number
+            },
             ca_xnc: {
                 type: String,
                 default: null,
+            },
+            id_ca_xnc : {
+                type : Number,
+                default: null
             },
             ly_do: {
                 type: String,
