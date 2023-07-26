@@ -1579,6 +1579,7 @@ exports.getDetailNew = async (req, res, next) => {
         let cm_page = req.body.cm_page;
         let cm_limit = 10;
         let cm_start = (cm_page - 1) * cm_limit;
+        let typebl = Number(req.body.typebl)
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         let linkTitle = req.body.linkTitle;
         if (!linkTitle) {
@@ -2512,7 +2513,7 @@ exports.likeNews = async (req, res, next) => {
     try {
         let { forUrlNew } = req.body;
         let ip = req.ip;
-        let commnetId = req.body.commnetId || 0;
+        let commentId = req.body.commentId || 0;
         let userName = req.user.data.userName;
         let type = req.body.type || null;
         let userId = req.user.data.idRaoNhanh365;
@@ -2551,7 +2552,7 @@ exports.likeNews = async (req, res, next) => {
                 _id: newIdLike,
                 forUrlNew: forUrlNew,
                 type: type,
-                commnetId: commnetId,
+                commentId: commentId,
                 userName: userName,
                 userAvatar: userAvatar,
                 userIdChat: userId,
@@ -3230,3 +3231,6 @@ exports.deleteComment = async (req, res, next) => {
         return functions.setError(res, error);
     }
 }
+
+// support for update new 
+// exports

@@ -613,7 +613,6 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
         }
       }
     ]);
-    console.log("🚀 ~ file: qltsService.js:584 ~ exports.dieuChuyenViTriTaiSanDaXoa= ~ data:", data)
     for (let i = 0; i < data.length; i++) {
       data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
