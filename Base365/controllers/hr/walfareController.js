@@ -21,7 +21,8 @@ exports.addAchievement = async (req, res, next) => {
         let createdAt = new Date();
         let list_user1 = req.body.list_user;
         let list_user_name1 =  req.body.list_user_name;
-        //  await Users.findByIdAndUpdate(16,{'inForPerson.employee.com_id':3312})
+        let resion = req.body.resion;
+       // await Users.findByIdAndUpdate(19,{'inForPerson.employee.com_id':1761})
         if (list_user1.length > 0) {
             for (let j = 0; j < list_user1.length; j++) {
                 let check_user = await Users.findOne({'inForPerson.employee.com_id':comId,idQLC: list_user1[j] },{_id:1})
@@ -32,7 +33,7 @@ exports.addAchievement = async (req, res, next) => {
                     return functions.setError(res, 'not found user', 400)
                 }
             }
-            if (list_user1.length > 0) {
+            if (list_user1.length > 1) {
                 type = 2;
             }
         }
@@ -67,6 +68,7 @@ exports.addAchievement = async (req, res, next) => {
                     pay_day:createdAt,
                     pay_month:createdAt.getMonth() + 1,
                     pay_year:createdAt.getFullYear(),
+                    pay_case:resion
                 })
             }
             
@@ -91,6 +93,7 @@ exports.addAchievementGroup = async (req, res, next) => {
         let depName = req.body.dep_name;
         let checkDep = await DepartmentDetails.find({ dep_id:depId,com_id: comId });
         let price = req.body.price;
+        let resion = req.body.resion;
         if (!checkDep || checkDep.length === 0) {
             return functions.setError(res, 'Không tìm thấy phòng ban', 404)
         }
@@ -130,7 +133,7 @@ exports.addAchievementGroup = async (req, res, next) => {
                     pay_day:createdAt,
                     pay_month:createdAt.getMonth() + 1,
                     pay_year:createdAt.getFullYear(),
-                    
+                    pay_case:resion
                 })
             }
             
@@ -237,8 +240,7 @@ exports.listAchievement = async (req, res, next) => {
             totalAchievementFors = await AchievementFors.find({ comId }).count();
         }
         let tongSoTrang = Math.ceil(totalAchievementFors / pageSize)
-        data.push({ tongSoTrang: tongSoTrang, tongSoBanGhi: totalAchievementFors })
-        return functions.success(res, 'get data success', { data })
+        return functions.success(res, 'get data success', {tongSoTrang: tongSoTrang, tongSoBanGhi: totalAchievementFors, data })
     } catch (error) {
         console.log("🚀 ~ file: walfareController.js:168 ~ exports.listAchievement= ~ error:", error)
         return functions.setError(res, error)

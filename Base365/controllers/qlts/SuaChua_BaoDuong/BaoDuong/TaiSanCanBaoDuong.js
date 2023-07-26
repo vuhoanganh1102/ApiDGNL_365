@@ -16,58 +16,95 @@ const TheoDoiCongSuat = require('../../../../models/QuanLyTaiSan/TheoDoiCongSuat
 //lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
 
 exports.xoaBaoDuong = async (req, res) => {
-  try {
-    let { id, type } = req.body;
-    if (!id) {
-      return fnc.setError(res, 'Thông tin truyền lên không đầy đủ', 400);
+    try {
+        let { id, type } = req.body;
+        if (!id) {
+            return fnc.setError(res, 'Thông tin truyền lên không đầy đủ', 400);
+        }
+        let id_com = 0;
+        if (req.user.data.type == 1 || req.user.data.type == 2) {
+            id_com = req.user.data.com_id;
+        } else {
+            return fnc.setError(res, 'không có quyền truy cập', 400);
+        }
+        if (type == 1) { // xóa vĩnh viễn
+            let idArraya = id.map(idItem => parseInt(idItem));
+            await BaoDuong.deleteMany({ id_bd: { $in: idArraya }, id_cty: id_com });
+            return fnc.success(res, 'xóa thành công!');
+        } else if (type == 0) {
+            // thay đổi trạng thái là 1
+            let idArray = id.map(idItem => parseInt(idItem));
+            await BaoDuong.updateMany(
+                {
+                    id_bd: { $in: idArray },
+
+                    xoa_bd: 0
+                },
+                { xoa_bd: 1 }
+            );
+            return fnc.success(res, 'Bạn đã xóa thành công vào danh sách dã xóa !');
+        } else if (type == 2) {
+            // Khôi phục bảo dưỡng
+            let idArray = id.map(idItem => parseInt(idItem));
+            await BaoDuong.updateMany(
+                { id_bd: { $in: idArray }, xoa_bd: 1 },
+                { xoa_bd: 0 }
+            );
+            return fnc.success(res, 'Bạn đã khôi phục bảo dưỡng thành công!');
+        } else {
+            return fnc.setError(res, 'không thể thực thi!', 400);
+        }
+    } catch (e) {
+        return fnc.setError(res, e.message);
     }
-    let id_com = 0;
-    if (req.user.data.type == 1 || req.user.data.type == 2) {
-      id_com = req.user.data.com_id;
-    } else {
-      return fnc.setError(res, 'không có quyền truy cập', 400);
-    }
-    if (!id.every(num => !isNaN(parseInt(num)))) {
-        return fnc.setError(res, 'id bảo dưỡng không hợp lệ ', 400);
-      }
-    if (type == 1) { // xóa vĩnh viễn
-      let idArraya = id.map(idItem => parseInt(idItem));
-      let result = await BaoDuong.deleteMany({ id_bd: { $in: idArraya }, id_cty: id_com });
-      if (result.deletedCount === 0) {
-        return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
-      }
-      return fnc.success(res, 'xóa thành công!');
-    } else if (type == 0) {
-      // thay đổi trạng thái là 1
-      let idArray = id.map(idItem => parseInt(idItem));
-      let result = await BaoDuong.updateMany(
-        { id_bd: { $in: idArray },
-        
-         xoa_bd: 0,id_cty : id_com },
-        { xoa_bd: 1 }
-      );
-      if (result.nModified === 0) {
-        return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
-      }
-      return fnc.success(res, 'Bạn đã xóa thành công vào danh sách dã xóa !');
-    } else if (type == 2) {
-      // Khôi phục bảo dưỡng
-      let idArray = id.map(idItem => parseInt(idItem));
-      let result = await BaoDuong.updateMany(
-        { id_bd: { $in: idArray }, xoa_bd: 1 ,id_cty : id_com},
-        { xoa_bd: 0 }
-      );
-      if (result.nModified === 0) {
-        return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
-      }
-      return fnc.success(res, 'Bạn đã khôi phục bảo dưỡng thành công!');
-    } else {
-      return fnc.setError(res, 'không thể thực thi!', 400);
-    }
-  } catch (e) {
-    return fnc.setError(res, e.message);
-  }
-};
+}
+//     let id_com = 0;
+//     if (req.user.data.type == 1 || req.user.data.type == 2) {
+//       id_com = req.user.data.com_id;
+//     } else {
+//       return fnc.setError(res, 'không có quyền truy cập', 400);
+//     }
+//     if (!id.every(num => !isNaN(parseInt(num)))) {
+//         return fnc.setError(res, 'id bảo dưỡng không hợp lệ ', 400);
+//       }
+//     if (type == 1) { // xóa vĩnh viễn
+//       let idArraya = id.map(idItem => parseInt(idItem));
+//       let result = await BaoDuong.deleteMany({ id_bd: { $in: idArraya }, id_cty: id_com });
+//       if (result.deletedCount === 0) {
+//         return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
+//       }
+//       return fnc.success(res, 'xóa thành công!');
+//     } else if (type == 0) {
+//       // thay đổi trạng thái là 1
+//       let idArray = id.map(idItem => parseInt(idItem));
+//       let result = await BaoDuong.updateMany(
+//         { id_bd: { $in: idArray },
+
+//          xoa_bd: 0,id_cty : id_com },
+//         { xoa_bd: 1 }
+//       );
+//       if (result.nModified === 0) {
+//         return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+//       }
+//       return fnc.success(res, 'Bạn đã xóa thành công vào danh sách dã xóa !');
+//     } else if (type == 2) {
+//       // Khôi phục bảo dưỡng
+//       let idArray = id.map(idItem => parseInt(idItem));
+//       let result = await BaoDuong.updateMany(
+//         { id_bd: { $in: idArray }, xoa_bd: 1 ,id_cty : id_com},
+//         { xoa_bd: 0 }
+//       );
+//       if (result.nModified === 0) {
+//         return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+//       }
+//       return fnc.success(res, 'Bạn đã khôi phục bảo dưỡng thành công!');
+//     } else {
+//       return fnc.setError(res, 'không thể thực thi!', 400);
+//     }
+//   } catch (e) {
+//     return fnc.setError(res, e.message);
+//   }
+//};
 
 // Tĩnh
 //tai sản cần bảo dưỡng
@@ -226,10 +263,10 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
                     sl_dang_sd: update_sl
                 });
         }
-        fnc.success(res, insert_taisan);
+        fnc.success(res, "ok", { insert_taisan });
 
     } catch (error) {
-
+        console.log(error)
         fnc.setError(res, error.message);
 
     }
@@ -500,10 +537,10 @@ exports.TuChoiBaoDuong = async (req, res) => {
         }
 
 
-        fnc.success(res, 'sucess', [tuchoi_bao_duong, update_taisan]);
+        fnc.success(res, 'sucess', { tuchoi_bao_duong, update_taisan });
 
     } catch (error) {
-
+        console.log(error)
         fnc.setError(res, error.message);
     }
 }
@@ -694,9 +731,9 @@ exports.deleteAll = async (req, res) => {
                 let id_ts = this_bd.baoduong_taisan;
                 let trang_thai_bd = this_bd.bd_trang_thai;
 
-                let xoa_bao_duong = 0;
-                let taisan = 0;
-                let update_taisan = 0;
+                let xoa_bao_duong = {};
+                let taisan = {};
+                let update_taisan = {};
                 if (xoa_vinh_vien == 0) {
                     xoa_bao_duong = await BaoDuong.findOneAndUpdate({
                         id_bd: xoa[i],
@@ -823,16 +860,17 @@ exports.detailTSCBD = async (req, res) => {
         let nguoi_tao = await Users.findOne({
             idQLC: chitiet_baoduong.bd_id_ng_tao,
             type: { $ne: 1 }
-        });
+        }) || null;
         let taiSan = await TaiSan.findOne({
             ts_id: chitiet_baoduong.baoduong_taisan
-        })
+        }) || null;
         let nguoi_sd = 0;
         let vi_tri = 0;
 
         if (chitiet_baoduong.bd_ngay_sudung == 1) {
             let nguoiSD = await Users.findOne({
                 idQLC: chitiet_baoduong.bd_ng_sd,
+                type: 1
             });
             nguoi_sd = nguoiSD.userName;
             vi_tri = nguoiSD.address;
@@ -854,11 +892,11 @@ exports.detailTSCBD = async (req, res) => {
 
         let infobd = {
             id_bd: chitiet_baoduong.id_bd,
-            nguoi_tao: nguoi_tao.userName,
+            nguoi_tao: nguoi_tao ? nguoi_tao.userName : null,
             ngay_tao: new Date(chitiet_baoduong.bd_date_create * 1000),
             bd_trang_thai: chitiet_baoduong.bd_trang_thai,
             ma_ts: chitiet_baoduong.baoduong_taisan,
-            ten_ts: taiSan.ts_ten,
+            ten_ts: taiSan ? taiSan.ts_ten : null,
             so_luong: chitiet_baoduong.bd_sl,
             doi_tuong_sd: nguoi_sd,
             vi_tri_ts: vi_tri,
@@ -869,7 +907,7 @@ exports.detailTSCBD = async (req, res) => {
             bd_cs_dukien: chitiet_baoduong.bd_cs_dukien,
             noi_dung: chitiet_baoduong.bd_noi_dung
         }
-        fnc.success(res, infobd);
+        fnc.success(res, 'OK', { infobd });
 
 
 
@@ -958,7 +996,7 @@ exports.listTSCSC = async (req, res) => {
 
 
             if (list[count].bd_type_quyen_sd == 1) {
-                let user = await Users.findOne({ idQLC: list[count].bd_ng_sd });
+                let user = await Users.findOne({ idQLC: list[count].bd_ng_sd, type: 1 });
                 bd_ng_sd = user.userName;
                 bd_vitri = user.address;
             } else if (list[count].bd_type_quyen_sd == 2) {
@@ -989,10 +1027,10 @@ exports.listTSCSC = async (req, res) => {
             arr_bb.push(info);
             count++;
         }
-        fnc.success(res, arr_bb);
+        fnc.success(res, 'OK', { arr_bb });
 
     } catch (error) {
-
+        console.log(error)
         fnc.setError(res, error.message);
     }
 }

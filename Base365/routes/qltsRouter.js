@@ -22,6 +22,8 @@ var BanGiao = require("./qlts/DieuChuyenBanGiao/BanGiao");
 var TrangChu = require("./qlts/TrangChu");
 var baoDuongRouter = require("./qlts/SuaChua_BaoDuong/baoDuongRouter");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
+var thanhly = require('./qlts/thanhLyRouter')
+
 var DanhSach = require('./qlts/DanhSach');
 //Api tool quét data
 router.use('/tool', toolData)
@@ -64,6 +66,7 @@ router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
 
 // Dữ liệu xoá gần đây
 router.use('/xoa', xoaGanDay)
+router.use('/thanhly',thanhly)
 router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
 
 router.use('/BanGiao', BanGiao);
