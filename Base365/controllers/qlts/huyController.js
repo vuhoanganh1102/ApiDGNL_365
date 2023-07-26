@@ -108,7 +108,7 @@ exports.getDataAssetProposeCancel = async (req, res, next) => {
             { $sort: { huy_id: -1 } },
             { $skip: skip },
             { $limit: limit },
-           
+
             {
                 $lookup: {
                     from: 'QLTS_Tai_San',
@@ -360,30 +360,54 @@ exports.deleteAssetDisposal = async (req, res, next) => {
 
         // khai báo id người dùng muốn xoá
         let id = req.body.id;
-
+        let type = Number(req.body.type);
 
         // xử lý trường id người xoá
         let id_ng_xoa = comId;
         if (type_quyen === 2) {
             id_ng_xoa = emId;
         }
-
-        // logic xử lý
-        if (Array.isArray(id) === true) {
-            for (let i = 0; i < id.length; i++) {
-                let checkThanhLy = await Huy.findOne({ huy_id: id[i], id_cty: comId })
-                if (checkThanhLy) {
-                    await Huy.findOneAndUpdate({ huy_id: id[i] }, {
-                        xoa_huy: 1,
-                        huy_type_quyen_xoa: type_quyen,
-                        huy_id_ng_xoa: id_ng_xoa,
-                        huy_date_delete: new Date().getTime() / 1000,
-                    })
-                } else {
+        if (type === 1) {
+            // logic xử lý
+            if (Array.isArray(id) === true) {
+                for (let i = 0; i < id.length; i++) {
+                    let checkThanhLy = await Huy.findOne({ huy_id: id[i], id_cty: comId })
+                    if (checkThanhLy) {
+                        await Huy.findOneAndUpdate({ huy_id: id[i] }, {
+                            xoa_huy: 1,
+                            huy_type_quyen_xoa: type_quyen,
+                            huy_id_ng_xoa: id_ng_xoa,
+                            huy_date_delete: new Date().getTime() / 1000,
+                        })
+                    } else {
+                        return functions.setError(res, 'Không tìm thấy đề xuất huỷ tài sản', 404)
+                    }
+                }
+                return functions.success(res, 'Xoá đề xuất thanh huỷ sản thành công')
+            }
+        } else if (type === 2) {
+            if (Array.isArray(id) === true) {
+                for (let i = 0; i < id.length; i++) {
+                    let checkThanhLy = await Huy.findOne({ huy_id: id[i], id_cty: comId })
+                    if (checkThanhLy) {
+                        await Huy.findOneAndUpdate({ huy_id: id[i] }, {
+                            xoa_huy: 0,
+                            huy_type_quyen_xoa: 0,
+                            huy_id_ng_xoa: 0,
+                            huy_date_delete: 0,
+                        })
+                    }
                     return functions.setError(res, 'Không tìm thấy đề xuất huỷ tài sản', 404)
                 }
+                return functions.success(res, 'Khôi phục đề xuất thanh huỷ sản thành công')
             }
-            return functions.success(res, 'Xoá đề xuất thanh huỷ sản thành công')
+        } else if (type === 3) {
+            let checkThanhLy = await Huy.findOne({ huy_id: id[i], id_cty: comId })
+            if (checkThanhLy) {
+                await Huy.findOneAndDelete({ huy_id: Number(id) })
+                return functions.success(res, 'Xoá vĩnh viễn đề xuất thanh huỷ sản thành công')
+            }
+            return functions.setError(res, 'Không tìm thấy đề xuất huỷ tài sản', 404)
         }
         return functions.setError(res, 'Missing id', 400)
     } catch (error) {
@@ -427,19 +451,19 @@ exports.detailAssetDisposal = async (req, res, next) => {
                 },
                 { $unwind: "$loaiTS" },
                 {
-                    $project:{
+                    $project: {
                         sobienban: '$huy_id',
-                        nguoitao:'$id_ng_tao',
-                        ngaytao:'$huy_date_create',
-                        mataisan:'$taisan.ts_id',
-                        tentaisan:'$taisan.ts_ten',
-                        loaitaisan:'$loaiTS.ten_loai',
-                        giatritaisan:'$taisan.ts_gia_tri',
-                        soluongtaisan:'$taisan.ts_so_luong',
-                        ngdexuat:'$huy_trangthai',
-                        vitri:'$huy_type_quyen',
-                        trangthai:'$huy_trangthai',
-                        lydo:'$huy_lydo'
+                        nguoitao: '$id_ng_tao',
+                        ngaytao: '$huy_date_create',
+                        mataisan: '$taisan.ts_id',
+                        tentaisan: '$taisan.ts_ten',
+                        loaitaisan: '$loaiTS.ten_loai',
+                        giatritaisan: '$taisan.ts_gia_tri',
+                        soluongtaisan: '$taisan.ts_so_luong',
+                        ngdexuat: '$huy_trangthai',
+                        vitri: '$huy_type_quyen',
+                        trangthai: '$huy_trangthai',
+                        lydo: '$huy_lydo'
                     }
                 }
             ]);
@@ -461,7 +485,7 @@ exports.detailAssetDisposal = async (req, res, next) => {
                 data.vitri = id_ng_tao.address;
                 data.doi_tuong_sd = id_ng_tao.userName;
                 data.phongban = '---'
-            } else if(id_ng_tao && id_ng_tao.inForPerson && id_ng_tao.inForPerson.employee){
+            } else if (id_ng_tao && id_ng_tao.inForPerson && id_ng_tao.inForPerson.employee) {
                 let dep = await Department.findOne({ dep_id: id_ng_tao.inForPerson.employee.dep_id })
                 data.doi_tuong_sd = id_ng_tao.userName;
                 data.phongban = dep.dep_name;

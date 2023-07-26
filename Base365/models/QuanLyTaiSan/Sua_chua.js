@@ -114,7 +114,7 @@ const model_Sua_chua = new mongoose.Schema({
     },
     sc_ts_vitri: {
         type: String,
-        default: null
+        default: 0
     },
     sc_type_quyen_xoa: {
         type: Number,

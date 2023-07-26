@@ -1810,6 +1810,7 @@ exports.getDetailNew = async (req, res, next) => {
         for (let i = 0; i < data.length; i++) {
             data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, data[i].buySell)
             if (userIdRaoNhanh) {
+                console.log("🚀 ~ file: new.js:1813 ~ exports.getDetailNew= ~ userIdRaoNhanh:", userIdRaoNhanh)
                 let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
                 for (let j = 0; j < dataLoveNew.length; j++) {
                     if (data[i]._id === dataLoveNew[j].id_new) {
