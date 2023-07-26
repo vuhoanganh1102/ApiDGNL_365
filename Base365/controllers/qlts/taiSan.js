@@ -14,6 +14,9 @@ const BaoDuong = require('../../models/QuanLyTaiSan/BaoDuong');
 const PhanBo = require('../../models/QuanLyTaiSan/PhanBo');
 const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
 const GhiTang = require('../../models/QuanLyTaiSan/GhiTang_TS');
+const CapPhat = require('../../models/QuanLyTaiSan/CapPhat');
+const ThuHoi = require('../../models/QuanLyTaiSan/ThuHoi');
+const { toolGhitang } = require('../tools/qlts');
 exports.showAll = async (req, res) => {
   try {
     let { page, perPage, ts_ten, id_loai_ts, ts_vi_tri, id_ten_quanly, ts_trangthai } = req.body;
@@ -303,25 +306,71 @@ exports.showCTts = async (req, res) => {
     if (isNaN(Number(ts_id))) {
       return functions.setError(res, 'id tài phải là một số', 400);
     }
-    let checkts = await TaiSan.findOne({ ts_id: ts_id });
+    let checkts = await TaiSan.findOne({ ts_id: ts_id ,id_cty : com_id});
     if (!checkts) {
       return functions.setError(res, 'Không tìm thấy tài sản', 404);
     }
 
-    let chekNhom = await NhomTs.findOne({ id_nhom: checkts.id_nhom_ts,id_cty :com_id }).select('ten_nhom');
-    let checkloaiTaiSan = await LoaiTaiSan.findOne({ id_loai: checkts.id_loai_ts,id_cty :com_id }).select('ten_loai');
-    let chekVitri = await ViTri_ts.findOne({ id_vitri: checkts.ts_vi_tri,id_cty :com_id }).select('vi_tri dv_quan_ly');
-    let checkUser = await User.findOne({ idQLC: checkts.id_ten_quanly,'inForPerson.employee.com_id' :com_id }).select('userName');
-    let checkGhiTang =  await GhiTang.findOne({ id_ts: checkts.ts_id }).select('sl_tang');
-    let item = [
+    let chekNhom = await NhomTs.findOne({ id_nhom: checkts.id_nhom_ts,id_cty :com_id,nhom_da_xoa : 0 }).select('ten_nhom');
+    if(!chekNhom){
+      chekNhom = "";
+    }
+    let checkloaiTaiSan = await LoaiTaiSan.findOne({ id_loai: checkts.id_loai_ts,id_cty :com_id ,loai_da_xoa :0}).select('ten_loai');
+    if(!checkloaiTaiSan){
+      checkloaiTaiSan = "";
+    }
+    let chekVitri = await ViTri_ts.findOne({ id_vitri: checkts.ts_vi_tri,id_cty :com_id }).select('vi_tri ');
+    if(!chekVitri){
+      chekVitri = "";
+    }
+    let checkUser = await User.findOne({ idQLC: checkts.id_ten_quanly, $or: [
+      { 'inForPerson.employee.com_id': com_id },
+      { idQLC: com_id }
+    ] }).select('userName');
+    if(!checkUser){
+      checkUser = "";
+    }
+    let checkGhiTang =  await GhiTang.findOne({ id_ts: checkts.ts_id}).select('sl_tang');
+    if (!checkGhiTang) {
+      checkGhiTang = 0;
+    }
+    let checkCapPhat = await CapPhat.findOne({
+      'cap_phat_taisan.ds_ts': { $elemMatch: { ts_id: checkts.ts_id } },
+      id_cty : com_id,
+      cp_da_xoa : 0
+    }).select('cap_phat_taisan');
+    if(!checkCapPhat){
+      checkCapPhat = { cap_phat_taisan: { ds_ts: [] } };
+    }
+    let checkThuHoi = await ThuHoi.findOne({
+      'thuhoi_taisan.ds_thuhoi': { $elemMatch: { ts_id: checkts.ts_id } },
+      id_cty : com_id,
+      xoa_thuhoi : 0
+    }).select('thuhoi_taisan');
+    if(!checkThuHoi){
+      checkThuHoi = { thuhoi_taisan: { ds_thuhoi: [] } };
+    }
+    let items = [
       {
         ma_tai_san: checkts.ts_id,
         ten_tai_san: checkts.ts_ten,
-        so_luong: checkts.sl_bandau
+        so_luong: checkts.sl_bandau,
+        so_luong_da_ghi_tang : checkGhiTang,
+        so_luong_cap_phat : checkCapPhat.cap_phat_taisan.ds_ts.length,
+        so_luong_thu_hoi : checkThuHoi.thuhoi_taisan.ds_thuhoi.length,
+        so_luong_con_lai : checkts.soluong_cp_bb,
+        don_vi_cung_cap : checkts.ts_don_vi,
+        loai_tai_san : checkloaiTaiSan.ten_loai,
+        nhom_tai_san : chekNhom,
+        tinh_trang : checkts.ts_trangthai,
+        don_vi_quan_ly : checkts.id_dv_quanly,
+        nguoi_quan_ly : checkUser,
+        vi_tri_tai_san : chekVitri.vi_tri,
+        ghi_chu : checkts.ghi_chu
       }
     ];
 
-    return functions.success(res, 'Lấy dữ liệu thành công', { item });
+    return functions.success(res, 'Lấy dữ liệu thành công', { items });
   }  catch(e){
     return functions.setError(res , e.message)
 }
@@ -406,11 +455,12 @@ exports.editTS = async (req, res) => {
     const validationResult = quanlytaisanService.validateinputEdit(ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly,id_loai_ts,ts_vi_tri,ts_so_luong,ts_gia_tri,ts_trangthai);
     if(validationResult == true) {
       let checkTs = await TaiSan.find({ id_cty: com_id })
+
     if (checkTs.some(ts => ts.ts_ten === ts_ten)) {
       return functions.setError(res, 'tên tài sản  đã được sử dụng', 400);
     } else {
       let chinhsua = await TaiSan.findOneAndUpdate(
-        { ts_id: ts_id, id_cty: com_id },
+        { ts_id: ts_id, id_cty: com_id ,ts_da_xoa : 0},
         {
           $set: {
             ts_ten: ts_ten,
@@ -426,6 +476,9 @@ exports.editTS = async (req, res) => {
         },
         { new: true }
       );
+      if (!chinhsua) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
       return functions.success(res, 'get data success', { chinhsua });
     }
     
@@ -458,7 +511,6 @@ exports.quatrinhsd = async (req, res) => {
       return functions.setError(res, 'id tài sản phải là một số', 400);
     }
     let listQTSD = await QuaTrinhSuDung.find({ id_ts: ts_id, id_cty: com_id })
-    let list
 
     const totalTsCount = await SuaChua.countDocuments({ id_cty: com_id, id_ts: ts_id });
 
@@ -543,6 +595,62 @@ exports.khauhaoCTTS = async (req, res) => {
   }
 };
 
+exports.addKhauHao = async(req,res) => {
+  try{
+    let {ts_id,kh_gt,kh_so_ky,kh_so_ky_con_lai,kh_day_start,kh_gt_cho_kh} = req.body
+    let com_id = '';
+    const createDate = Math.floor(Date.now() / 1000);
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    
+    if(!kh_gt || !kh_so_ky || !kh_so_ky_con_lai || !kh_day_start ||kh_gt_cho_kh) {
+       functions.setError(res, 'thiếu thông tin truyền lên', 400)
+    }
+    let checkkh = await KhauHao.findOne({kh_id_ts : ts_id, kh_id_cty : com_id})
+    if(checkkh) {
+      let chinhsua = await KhauHao.findOneAndUpdate(
+        { kh_id_ts : ts_id, id_kh_id_cty : com_id},
+        {
+          $set: {
+            kh_gt: kh_gt,
+            kh_so_ky: kh_so_ky,
+            kh_type_ky: kh_type_ky,
+            kh_so_ky_con_lai: kh_so_ky_con_lai,
+            kh_gt_cho_kh : kh_gt_cho_kh,
+            kh_day_start : kh_day_start,
+          }
+        },
+        { new: true }
+      );
+      if (!chinhsua) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
+      return functions.success(res, 'get data success', { chinhsua });
+    }
+    else {
+       let newKh = new KhauHao({
+        id_khau_hao : Number(max.id_khau_hao) + 1 || 1,
+        kh_id_cty : com_id,
+        kh_id_ts : ts_id,
+        kh_gt : kh_gt,
+        kh_so_ky : kh_so_ky,
+        kh_type_ky : kh_type_ky,
+        kh_so_ky_con_lai : kh_so_ky_con_lai,
+        kh_gt_cho_kh : kh_gt_cho_kh,
+        kh_day_start : kh_day_start,
+        kh_day_create : createDate
+      })
+      let save = await newKh.save();
+      return functions.success(res, 'thêm thành công tệp', { save });
+    }
+  }catch(e){
+    console.log(e)
+    return functions.setError(res , e.message)
+}
+}
 
 // Phần tài liệu đính kèm
 exports.addFile = async (req, res) => {
@@ -598,7 +706,7 @@ exports.showFile = async (req, res) => {
     if (isNaN(Number(ts_id))) {
       return functions.setError(res, 'id tài sản phải là một số', 400);
     }
-    let showtep = await TepDinhKem.find({ id_ts: ts_id })
+    let showtep = await TepDinhKem.find({ id_ts: ts_id,id_cty : com_id })
       .sort({ tep_id: -1 })
       .skip(startIndex)
       .limit(perPage);

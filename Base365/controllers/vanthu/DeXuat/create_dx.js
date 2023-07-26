@@ -1036,7 +1036,9 @@ exports.dxCong = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             ca_xnc,
-            type_time,
+            time_vao_ca,
+            time_het_ca,
+            id_ca_xnc,
             time_xnc,
             ly_do,
             
@@ -1073,6 +1075,9 @@ exports.dxCong = async (req, res) => {
                 type_dx: 17,
                 noi_dung: {
                     xac_nhan_cong: {
+                        time_vao_ca : time_vao_ca,
+                        time_het_ca : time_het_ca,
+                        id_ca_xnc : id_ca_xnc,
                         time_xnc: time_xnc,
                         ca_xnc: ca_xnc,
                         ly_do: ly_do,
