@@ -9,9 +9,6 @@ const Department = require('../../../models/qlc/Deparment');
 const ViTriTaISan = require('../../../models/QuanLyTaiSan/ViTri_ts');
 //Tài sản đang sửa chữa
 
-
-
-
 //hoanthanh
 exports.HoanThanhSuaChua = async (req, res) => {
     let { id_bb, chiphi_thucte, date_nhapkho, date_done, type_quyen_duyet } = req.body;
@@ -71,13 +68,11 @@ exports.HoanThanhSuaChua = async (req, res) => {
 
         return res.status(200).json({ message: "thanhcong" });
     } catch (error) {
-       
+        console.log(error);
         return res.status(500).json({ message: error.message });
 
     }
 }
-
-
 
 //edit_suachua
 exports.SuaChuaBB = async (req, res) => {
@@ -142,7 +137,7 @@ exports.SuaChuaBB = async (req, res) => {
 
         return res.status(200).json({ message: "thanh cong" });
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 
@@ -244,14 +239,24 @@ exports.listBBDangSuaChua = async (req, res) => {
             list_bb.push(info);
             count++;
         };
-        let total = await SuaChua.countDocuments({
+        let totalBBCSC = await SuaChua.countDocuments({
+            id_cty: com_id,
+            sc_da_xoa: 0,
+            sc_trangthai: { $in: [0, 2] }
+        });
+        let totalBBDSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_trangthai: 1,
             sc_da_xoa: 0,
         });
-        fnc.success(res, 'OK', [list_bb, total]);
+        let totalBBDaSC = await SuaChua.countDocuments({
+            id_cty: com_id,
+            sc_trangthai: 3,
+            sc_da_xoa: 0,
+        })
+        fnc.success(res, 'OK', { list_bb, totalBBCSC, totalBBDSC, totalBBDaSC });
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -347,7 +352,7 @@ exports.XoabbSuaChua = async (req, res) => {
         }
         return res.status(200).json({ data: { bb_crr: bb_crr, update_taisan: update_taisan }, message: "thanh cong" });
     } catch (error) {
-
+        console.log9(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -498,7 +503,7 @@ exports.details = async (req, res) => {
             let sc_vitri = 0;
             let sc_ng_sd = 0;
             if (bb.sc_quyen_sd == 1) {
-                let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, });
+                let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, type: 1 });
                 sc_ng_sd = nguoiSD.userName;
                 sc_vitri = nguoiSD.address;
             }
@@ -549,11 +554,11 @@ exports.details = async (req, res) => {
                 don_vi_sua_chua: bb.sc_donvi,
                 dia_diem_sua_chua: bb.sc_diachi
             };
-            fnc.success(res, "ok", info_bb);
+            fnc.success(res, "ok", { info_bb });
 
         }
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -596,7 +601,7 @@ exports.xoa_bb_sua_chua = async (req, res) => {
             }
         }
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -642,7 +647,7 @@ exports.xoa_all = async (req, res) => {
             }
         }
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 
@@ -684,7 +689,7 @@ exports.details_bb_da_sua_chua = async (req, res) => {
             let sc_vitri = 0;
             let sc_ng_sd = 0;
             if (bb.sc_quyen_sd == 1) {
-                let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, });
+                let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, type: 1 });
                 sc_ng_sd = nguoiSD.userName;
                 sc_vitri = nguoiSD.address;
             }
@@ -828,15 +833,25 @@ exports.listBBDaSuaChua = async (req, res) => {
             }
         ]);
 
-        let total = await SuaChua.countDocuments({
+        let totalBBCSC = await SuaChua.countDocuments({
+            id_cty: com_id,
+            sc_da_xoa: 0,
+            sc_trangthai: { $in: [0, 2] }
+        });
+        let totalBBDSC = await SuaChua.countDocuments({
+            id_cty: com_id,
+            sc_trangthai: 1,
+            sc_da_xoa: 0,
+        });
+        let totalBBDaSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_trangthai: 3,
             sc_da_xoa: 0,
         })
-        fnc.success(res, 'OK', [tsda_suachua, total]);
+        fnc.success(res, 'OK', { tsda_suachua, totalBBCSC, totalBBDSC, totalBBDaSC });
     } catch (error) {
-
-        fnc.setError(res, "loi he thong");
+        console.log(error)
+        fnc.setError(res, error.message);
 
     }
 }
@@ -1007,9 +1022,6 @@ exports.addSuaChua = async (req, res) => {
                     time_created: new Date().getTime()
                 });
                 await qr_qtr_sd.save();
-
-
-
             } else {
                 return res.status(404).json({ message: "so luong sua chua lon hon so tai san hien co" });
             }
@@ -1120,7 +1132,7 @@ exports.tuChoiSC = async (req, res) => {
 
 
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -1223,11 +1235,12 @@ exports.xoaBBcanSC = async (req, res) => {
         if (datatype == 3) {
             //xoavinhvien
             let xoa = await SuaChua.findOneAndRemove({ sc_id: id, id_cty: com_id });
-            return res.status(200).json({ data: xoa, message: "xoa vinh vien thanh cong " });
+            return res.status(200).json({ message: "xoa vinh vien thanh cong " });
         }
 
 
     } catch (error) {
+        console.log(error)
 
         return res.status(500).json({ message: error.message });
     }
@@ -1271,12 +1284,12 @@ exports.detailBBCanSuaChua = async (req, res) => {
         let sc_ng_sd = 0;
 
         if (bb.sc_quyen_sd == 1) {
-            let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, });
+            let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, type: 1 });
             sc_ng_sd = nguoiSD.userName;
             sc_vitri = nguoiSD.address;
         }
         else if (bb.sc_quyen_sd == 2) {
-            let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, c });
+            let nguoiSD = await Users.findOne({ idQLC: bb.sc_ng_sd, type: { $ne: 1 } });
             sc_ng_sd = nguoiSD.userName;
             let vitri = await Department.findOne({
                 dep_id: nguoiSD.inForPerson.employee.dep_id,
@@ -1322,9 +1335,9 @@ exports.detailBBCanSuaChua = async (req, res) => {
 
         }
         // return res.status(200).json({ data: info_bb, message: "success" });
-        fnc.success(res, info_bb);
+        fnc.success(res, 'OK', { info_bb });
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 
@@ -1415,15 +1428,35 @@ exports.listBBCanSuaChua = async (req, res) => {
             list_bb.push(info);
             count++;
         };
-        let total = await SuaChua.countDocuments({
+        let totalBBCSC = await SuaChua.countDocuments({
             id_cty: com_id,
             sc_da_xoa: 0,
             sc_trangthai: { $in: [0, 2] }
         });
+        let totalBBDSC = await SuaChua.countDocuments({
+            id_cty: com_id,
+            sc_trangthai: 1,
+            sc_da_xoa: 0,
+        });
+        let totalBBDaSC = await SuaChua.countDocuments({
+            id_cty: com_id,
+            sc_trangthai: 3,
+            sc_da_xoa: 0,
+        })
 
-        fnc.success(res, "thanh cong ", [list_bb, total]);
+        fnc.success(res, "thanh cong ", { list_bb, totalBBCSC, totalBBDSC, totalBBDaSC });
     } catch (error) {
         fnc.setError(res, error.message);
     }
 
 }
+// exports.EditBBCanSC = async (req, res) => {
+//     try {
+
+//         let{ id_sc, sl_sc,trangthai_sc,ngay_sc,ngay_dukien,hoanthanh_sc,chiphi_dukien,,chiphi_thucte}
+//     } catch (error) {
+//         console.log(error)
+//         fnc.setError(res, error.message);
+//     }
+
+// }
