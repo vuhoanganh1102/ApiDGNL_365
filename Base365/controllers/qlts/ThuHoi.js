@@ -236,9 +236,9 @@ exports.getListDetail = async (req , res) =>{
         let listConditions = {};
     //    if(type_quyen != 0){
         listConditions.id_cty = id_cty 
-        if(id_ng_dc_thuhoi) listConditions.id_ng_dc_thuhoi = id_ng_dc_thuhoi
-        if(id_pb_thuhoi) listConditions.id_pb_thuhoi = id_pb_thuhoi
-        if(thuhoi_id) listConditions.thuhoi_id = thuhoi_id
+        // if(id_ng_dc_thuhoi) listConditions.id_ng_dc_thuhoi = id_ng_dc_thuhoi
+        // if(id_pb_thuhoi) listConditions.id_pb_thuhoi = id_pb_thuhoi
+        // if(thuhoi_id) listConditions.thuhoi_id = thuhoi_id
         if(option == 1) listConditions.thuhoi_trangthai = 0, listConditions.id_ng_dc_thuhoi = Number(id_ng_dc_thuhoi)   ////DS thu hôi chờ nhận NV
         if(option == 2) listConditions.thuhoi_trangthai = 0, listConditions.thuhoi_id =  Number(thuhoi_id),listConditions.id_ng_dc_thuhoi = Number(id_ng_dc_thuhoi)   ////query thu hôi chờ nhận NV
         if(option == 3) listConditions.thuhoi_trangthai = 1, listConditions.id_ng_dc_thuhoi =  Number(id_ng_dc_thuhoi) //DS đồng ý thu hồi  NV
