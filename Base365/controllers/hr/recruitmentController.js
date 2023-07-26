@@ -695,24 +695,12 @@ exports.getListCandidate= async(req, res, next) => {
         let comId = req.infoLogin.comId;
         if(!page) page = 1;
         if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let listCondition = {isDelete: 0, comId: comId};
-        // dua dieu kien vao ob listCondition
-        if(canId) {
-            let candidate = await Candidate.aggregate([
-                {$match: {id: Number(canId)}},
-                {
-                    $lookup: {
-                        from: "HR_AnotherSkills",
-                        localField: "id",
-                        foreignField: "canId",
-                        as: "listSkill"
-                    }
-                },
-            ]);
-            return functions.success(res, "Get candidate success", {candidate});
-        }
+        if(canId) listCondition.id = Number(canId);
         if(name) listCondition.name =  new RegExp(name, 'i');
         if(recruitmentNewsId) listCondition.recruitmentNewsId =  Number(recruitmentNewsId);
         if(userHiring) listCondition.userHiring =  Number(userHiring);
@@ -721,7 +709,82 @@ exports.getListCandidate= async(req, res, next) => {
         if(fromDate) listCondition.timeSendCv = {$gte: new Date(fromDate)};
         if(toDate) listCondition.timeSendCv = {$lte: new Date(toDate)};
 
-        const listCandidate = await functions.pageFind(Candidate, listCondition, { _id: 1 }, skip, limit);
+        const listCandidate = await Candidate.aggregate([
+            {$match: listCondition},
+
+            //lay ra thong tin vi tri tuyen dung
+            {
+                $lookup: {
+                    from: "HR_AnotherSkills",
+                    localField: "id",
+                    foreignField: "canId",
+                    as: "listSkill"
+                }
+            },
+            { $unwind: { path: "$listSkill", preserveNullAndEmptyArrays: true } },
+
+            //lay ra thong tin skill
+            {
+                $lookup: {
+                    from: "HR_RecruitmentNews",
+                    localField: "recruitmentNewsId",
+                    foreignField: "id",
+                    as: "Recruitment"
+                }
+            },
+            { $unwind: { path: "$Recruitment", preserveNullAndEmptyArrays: true } },
+
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userHiring",
+                    foreignField: "idQLC",
+                    as: "NvTuyenDung"
+                }
+            },
+            { $unwind: { path: "$NvTuyenDung", preserveNullAndEmptyArrays: true } },
+
+            {
+                $project: {
+                    'id': '$id',
+                    'name': '$name',
+                    'email': '$email',
+                    'phone': '$phone',
+                    'cvFrom': '$cvFrom',
+                    'userRecommend': '$userRecommend',
+                    'recruitmentNewsId': '$recruitmentNewsId',
+                    'interviewTime': '$interviewTime',
+                    'interviewResult': '$interviewResult',
+                    'interviewVote': '$interviewVote',
+                    'salaryAgree': '$salaryAgree',
+                    'status': '$status',
+                    'cv': '$cv',
+                    'createdAt': '$createdAt',
+                    'updatedAt': '$updatedAt',
+                    'isDelete': '$isDelete',
+                    'comId': '$comId',
+                    'isOfferJob': '$isOfferJob',
+                    'gender': '$gender',
+                    'birthday': '$birthday',
+                    'education': '$education',
+                    'exp': '$exp',
+                    'isMarried': '$isMarried',
+                    'address': '$address',
+                    'userHiring': '$userHiring',
+                    'starVote': '$starVote',
+                    'school': '$school',
+                    'hometown': '$hometown',
+                    'isSwitch': '$isSwitch',
+                    'epIdCrm': '$epIdCrm',
+                    'Recruitment': '$Recruitment.title',
+                    'NvTuyenDung': '$NvTuyenDung.userName',
+                    'listSkill': '$listSkill',
+                }
+            },
+            {$skip: skip},
+            {$limit: limit},
+            {$sort: {id: -1}}
+        ]);
         for(let i=0; i<listCandidate.length; i++) {
             let candidate = listCandidate[i];
             if(candidate.cv) {

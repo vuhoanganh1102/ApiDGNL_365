@@ -2,8 +2,7 @@ const mongoose = require("mongoose");
 const model_KiemKe = new mongoose.Schema({
     id_kiemke: {
         type: Number,
-        required: true,
-        unique: true
+        required: true
     },
     id_cty: {
         type: Number
@@ -41,7 +40,7 @@ const model_KiemKe = new mongoose.Schema({
         type: Number
     },
     kk_donvi: {
-        type: String
+        type: Number
     },
     kk_batdau: {
         type: Number

@@ -11,5 +11,6 @@ router.post('/delete', formData.parse(), kiemKeController.delete);
 router.post('/deleteMany', formData.parse(), kiemKeController.deleteMany);
 router.post('/duyet', formData.parse(), kiemKeController.duyet);
 router.post('/chitiet', formData.parse(), kiemKeController.chiTiet);
+router.post('/danhSachNgayKiemKe', formData.parse(), kiemKeController.danhSachNgayKiemKe);
 
 module.exports = router;
