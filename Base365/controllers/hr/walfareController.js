@@ -21,6 +21,7 @@ exports.addAchievement = async (req, res, next) => {
         let createdAt = new Date();
         let list_user1 = req.body.list_user;
         let list_user_name1 =  req.body.list_user_name;
+        let resion = req.body.resion;
        // await Users.findByIdAndUpdate(19,{'inForPerson.employee.com_id':1761})
         if (list_user1.length > 0) {
             for (let j = 0; j < list_user1.length; j++) {
@@ -67,6 +68,7 @@ exports.addAchievement = async (req, res, next) => {
                     pay_day:createdAt,
                     pay_month:createdAt.getMonth() + 1,
                     pay_year:createdAt.getFullYear(),
+                    pay_case:resion
                 })
             }
             
@@ -91,6 +93,7 @@ exports.addAchievementGroup = async (req, res, next) => {
         let depName = req.body.dep_name;
         let checkDep = await DepartmentDetails.find({ dep_id:depId,com_id: comId });
         let price = req.body.price;
+        let resion = req.body.resion;
         if (!checkDep || checkDep.length === 0) {
             return functions.setError(res, 'Không tìm thấy phòng ban', 404)
         }
@@ -130,7 +133,7 @@ exports.addAchievementGroup = async (req, res, next) => {
                     pay_day:createdAt,
                     pay_month:createdAt.getMonth() + 1,
                     pay_year:createdAt.getFullYear(),
-                    
+                    pay_case:resion
                 })
             }
             

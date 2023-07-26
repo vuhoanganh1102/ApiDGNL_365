@@ -1,7 +1,7 @@
 
 const phanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen');
 const Users = require('../../models/Users');
-
+const department = require('../../models/qlc/Deparment')
 const functions = require('../../services/functions')
 
 exports.getMaxIDTSVT = async (model) => {
@@ -1300,6 +1300,7 @@ exports.quanLyDonViDoCongSuat = async (res, DonViCS, dem, conditions, skip, limi
 // Theo dõi công suất
 exports.theoDoiCongSuat = async (res, TheoDoiCongSuat, dem, conditions, skip, limit) => {
   try {
+
     let data = await TheoDoiCongSuat.aggregate([
       { $match: conditions },
       { $sort: { id_cs: -1 } },
@@ -1326,6 +1327,15 @@ exports.theoDoiCongSuat = async (res, TheoDoiCongSuat, dem, conditions, skip, li
       { $unwind: '$donvics' },
       {
         $lookup: {
+          from: 'Users',
+          localField: 'tdcs_id_ng_xoa',
+          foreignField: 'idQLC',
+          as: 'tdcs_id_ng_xoa'
+        }
+      },
+      { $unwind: { path: "$tdcs_id_ng_xoa", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
           from: 'QLTS_Tai_San',
           localField: 'loaitaisan.id_loai',
           foreignField: 'id_loai_ts',
@@ -1335,15 +1345,30 @@ exports.theoDoiCongSuat = async (res, TheoDoiCongSuat, dem, conditions, skip, li
       { $unwind: { path: "$taisan", preserveNullAndEmptyArrays: true } },
       {
         $project: {
-          id_cs:1,
-
+          id_cs: 1,
+          mataisan: '$taisan.ts_id',
+          tentaisan: '$taisan.ts_ten',
+          loaitaisan: '$loaitaisan.ten_loai',
+          trangthai: '$taisan.ts_trangthai',
+          congsuat: '$cs_gannhat',
+          donvido: '$ten_donvi',
+          ngaycapnhatgannhat: '$nhap_ngay',
+          ngaycapnhattieptheo: '$date_update',
+          ngayxoa: '$tdcs_date_delete',
+          ngxoa: '$tdcs_id_ng_xoa.userName'
         }
       }
     ])
     for (let i = 0; i < data.length; i++) {
-      data[i].dvcs_date_delete = new Date(data[i].dvcs_date_delete * 1000)
-
-
+      if (data[i].ngaycapnhatgannhat != 0) {
+        data[i].ngaycapnhatgannhat = new Date(data[i].ngaycapnhatgannhat * 1000)
+      }
+      if (data[i].ngaycapnhattieptheo != 0) {
+        data[i].ngaycapnhattieptheo = new Date(data[i].ngaycapnhattieptheo * 1000)
+      }
+      if (data[i].ngayxoa != 0) {
+        data[i].ngayxoa = new Date(data[i].ngayxoa * 1000)
+      }
     }
     return functions.success(res, 'get data success', { dem, data })
   } catch (error) {
@@ -1355,6 +1380,7 @@ exports.theoDoiCongSuat = async (res, TheoDoiCongSuat, dem, conditions, skip, li
 // tài sản báo mất
 exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
   try {
+    conditions.mat_trangthai = { $in: [0, 2] }
     let data = await Mat.aggregate([
       { $match: conditions },
       { $sort: { mat_id: -1 } },
@@ -1378,16 +1404,7 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
           as: 'mat_id_ng_xoa'
         }
       },
-      { $unwind: '$mat_id_ng_xoa' },
-      {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_ng_tao',
-          foreignField: 'idQLC',
-          as: 'id_ng_tao'
-        }
-      },
-      { $unwind: '$id_ng_tao' },
+      { $unwind: { path: "$mat_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1406,13 +1423,14 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
           ts_ten: '$taisan.ts_ten',
           mat_soluong: 1,
           id_loai_ts: '$loaitaisan.ten_loai',
-          id_ng_tao: '$id_ng_tao.userName',
-          phongban: '$dep.dep_name',
+          id_ng_tao: 1,
+          phongban: '---',
           mat_ngay: 1,
           mat_lydo: 1,
           mat_date_delete: 1,
           mat_id_ng_xoa: '$mat_id_ng_xoa.userName',
-          tenloai: '$loaitaisan.ten_loai'
+          tenloai: '$loaitaisan.ten_loai',
+          mat_type_quyen: 1,
         }
       }
     ])
@@ -1420,6 +1438,16 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
       data[i].mat_date_create = new Date(data[i].mat_date_create * 1000)
       data[i].mat_ngay = new Date(data[i].mat_ngay * 1000)
       data[i].mat_date_delete = new Date(data[i].mat_date_delete * 1000)
+      let check = await Users.findOne({ idQLC: data[i].id_ng_tao })
+      if (check) {
+        data[i].id_ng_tao = check.userName
+      }
+      if (data[i].mat_type_quyen == 2) {
+        if (check && check.inForPerson && check.inForPerson.employee) {
+          let dep = await department.findOne({ dep_id: check.inForPerson.employee.dep_id })
+          if (dep) data[i].phongban = dep.dep_name
+        }
+      }
     }
     return functions.success(res, 'get data success', { dem, data })
   } catch (error) {
@@ -1431,7 +1459,10 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
 // tài sản chờ đền bù
 exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
   try {
-
+    conditions.mat_id_ng_xoa = { $ne: 0 };
+    conditions.id_ng_duyet = { $ne: 0 };
+    conditions.id_ng_nhan_denbu = { $ne: 0 };
+    conditions.mat_trangthai = 3
     let data = await Mat.aggregate([
       { $match: conditions },
       { $sort: { mat_id: -1 } },
@@ -1455,15 +1486,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
           as: 'mat_id_ng_xoa'
         }
       },
-
-      {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_ng_tao',
-          foreignField: 'idQLC',
-          as: 'id_ng_tao'
-        }
-      },
+      { $unwind: { path: "$mat_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1472,7 +1495,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
           as: 'id_ng_duyet'
         }
       },
-
+      { $unwind: { path: "$id_ng_duyet", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1481,7 +1504,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
           as: 'id_ng_nhan_denbu'
         }
       },
-
+      { $unwind: { path: "$id_ng_nhan_denbu", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1498,7 +1521,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
           ts_ten: '$taisan.ts_ten',
           mat_soluong: 1,
           tenloai: '$loaitaisan.ten_loai',
-          id_ng_tao: '$id_ng_tao.userName',
+          id_ng_tao: 1,
           mat_ngay: 1,
           mat_lydo: 1,
           id_ng_duyet: '$id_ng_duyet.userName',
@@ -1517,6 +1540,16 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
       data[i].mat_ngay = new Date(data[i].mat_ngay * 1000)
       data[i].mat_han_ht = new Date(data[i].mat_han_ht * 1000)
       data[i].mat_date_delete = new Date(data[i].mat_date_delete * 1000)
+      let check = await Users.findOne({ idQLC: data[i].id_ng_tao })
+      if (check) {
+        data[i].id_ng_tao = check.userName
+      }
+      if (data[i].mat_type_quyen == 2) {
+        if (check && check.inForPerson && check.inForPerson.employee) {
+          let dep = await department.findOne({ dep_id: check.inForPerson.employee.dep_id })
+          if (dep) data[i].phongban = dep.dep_name
+        }
+      }
     }
     return functions.success(res, 'get data success', { dem, data })
   } catch (error) {
@@ -1552,6 +1585,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
           as: 'id_ng_tao'
         }
       },
+      { $unwind: { path: "$id_ng_tao", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1560,6 +1594,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
           as: 'mat_id_ng_xoa'
         }
       },
+      { $unwind: { path: "$mat_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1568,6 +1603,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
           as: 'id_ngdexuat'
         }
       },
+      { $unwind: { path: "$id_ngdexuat", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1576,7 +1612,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
           as: 'id_ng_duyet'
         }
       },
-
+      { $unwind: { path: "$id_ng_duyet", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1585,7 +1621,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
           as: 'id_ng_nhan_denbu'
         }
       },
-
+      { $unwind: { path: "$id_ng_nhan_denbu", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1634,6 +1670,8 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
 exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
   try {
     conditions.huy_trangthai = { $in: [0, 2] }
+    conditions.huy_id_ng_xoa = { $ne: 0 }
+    conditions.id_ng_dexuat = { $ne: 0 }
     let data = await Huy.aggregate([
       { $match: conditions },
       { $sort: { huy_id: -1 } },
@@ -1657,15 +1695,7 @@ exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
           as: 'huy_id_ng_xoa'
         }
       },
-      {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_ng_dexuat',
-          foreignField: 'idQLC',
-          as: 'id_ng_dexuat'
-        }
-      },
-
+      { $unwind: { path: "$huy_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1684,16 +1714,30 @@ exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
           ts_ten: '$taisan.ts_ten',
           huy_soluong: 1,
           ten_loai: '$loaitaisan.ten_loai',
-          id_ng_dexuat: '$id_ng_dexuat.userName',
           huy_lydo: 1,
           huy_date_delete: 1,
           huy_id_ng_xoa: '$huy_id_ng_xoa.userName',
+          id_ng_dexuat: 1,
+          huy_type_quyen: 1
         }
       }
     ])
     for (let i = 0; i < data.length; i++) {
       data[i].huy_date_create = new Date(data[i].huy_date_create * 1000)
       data[i].huy_date_delete = new Date(data[i].huy_date_delete * 1000)
+      let check = await Users.findOne({ idQLC: data[i].id_ng_dexuat })
+      if (check) {
+        data[i].id_ng_dexuat = check.userName
+      }
+      if (data[i].huy_type_quyen == 2) {
+        if (check && check.inForPerson && check.inForPerson.employee) {
+          let dep = await department.findOne({ dep_id: check.inForPerson.employee.dep_id })
+          if (dep) data[i].vi_tri_ts = dep.dep_name
+        }
+      }
+      if (data[i].huy_type_quyen === 1) {
+        data[i].vi_tri_ts = '---';
+      }
     }
     return functions.success(res, 'get data success', { dem, data })
   } catch (error) {
@@ -1729,14 +1773,7 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
           as: 'huy_id_ng_xoa'
         }
       },
-      {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_ng_tao',
-          foreignField: 'idQLC',
-          as: 'id_ng_tao'
-        }
-      },
+      { $unwind: { path: "$huy_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -1745,6 +1782,8 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
           as: 'id_ng_duyet'
         }
       },
+      { $unwind: { path: "$id_ng_duyet", preserveNullAndEmptyArrays: true } },
+
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1761,19 +1800,33 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
           ts_ten: '$taisan.ts_ten',
           huy_soluong: 1,
           ten_loai: '$loaitaisan.ten_loai',
-          id_ng_tao: '$id_ng_tao.userName',
           id_ng_duyet: '$id_ng_duyet.userName',
           huy_lydo: 1,
           huy_ngayduyet: 1,
           huy_date_delete: 1,
           huy_id_ng_xoa: '$huy_id_ng_xoa.userName',
-
+          huy_type_quyen: 1,
+          id_ng_tao: 1
         }
       }
     ])
     for (let i = 0; i < data.length; i++) {
       data[i].huy_ngayduyet = new Date(data[i].huy_ngayduyet * 1000)
       data[i].huy_date_delete = new Date(data[i].huy_date_delete * 1000)
+      let check = await Users.findOne({ idQLC: data[i].id_ng_tao })
+      if (check) {
+        data[i].id_ng_tao = check.userName
+      }
+      if (data[i].huy_type_quyen == 2) {
+        if (check && check.inForPerson && check.inForPerson.employee) {
+          let dep = await department.findOne({ dep_id: check.inForPerson.employee.dep_id })
+          if (dep) data[i].vi_tri_ts = dep.dep_name
+        }
+      }
+      if (data[i].huy_type_quyen === 1) {
+        data[i].vi_tri_ts = '---';
+      }
+
     }
     return functions.success(res, 'get data success', { dem, data })
   } catch (error) {
@@ -1809,14 +1862,7 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
           as: 'tl_id_ng_xoa'
         }
       },
-      {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_ngdexuat',
-          foreignField: 'idQLC',
-          as: 'id_ngdexuat'
-        }
-      },
+      { $unwind: { path: "$tl_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1836,15 +1882,31 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
           ts_ten: '$taisan.ts_ten',
           ten_loai: '$loaitaisan.ten_loai',
           tl_soluong: 1,
-          id_ngdexuat: '$id_ngdexuat.userName',
           tl_lydo: 1,
           tl_id_ng_xoa: '$tl_id_ng_xoa.userName',
+          id_ngdexuat: 1,
+          tl_type_quyen: 1,
+          vi_tri_ts:1
         }
       }
     ])
     for (let i = 0; i < data.length; i++) {
       data[i].tl_date_create = new Date(data[i].tl_date_create * 1000)
       data[i].tl_date_delete = new Date(data[i].tl_date_delete * 1000)
+      let check = await Users.findOne({ idQLC: data[i].id_ngdexuat })
+      if (check) {
+        data[i].id_ngdexuat = check.userName
+        if (data[i].tl_type_quyen == 2) {
+          if (check && check.inForPerson && check.inForPerson.employee) {
+            let dep = await department.findOne({ dep_id: check.inForPerson.employee.dep_id })
+            if (dep) data[i].vi_tri_ts = dep.dep_name
+          }
+        }
+        if (data[i].tl_type_quyen === 1) {
+          data[i].vi_tri_ts = check.address
+        }
+      }
+
     }
     return functions.success(res, 'get data success', { dem, data })
   } catch (error) {
@@ -1880,14 +1942,9 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
           as: 'tl_id_ng_xoa'
         }
       },
-      {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_ngdexuat',
-          foreignField: 'idQLC',
-          as: 'id_ngdexuat'
-        }
-      },
+      { $unwind: { path: "$tl_id_ng_xoa", preserveNullAndEmptyArrays: true } },
+      
+
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1903,20 +1960,34 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
           ts_id: '$taisan.ts_id',
           ts_ten: '$taisan.ts_ten',
           tl_soluong: 1,
-          ten_loai: 'loaitaisan.ten_loai',
-          id_ngdexuat: '$id_ngdexuat.userName',
+          ten_loai: '$loaitaisan.ten_loai',
           tl_lydo: 1,
           ngay_duyet: 1,
           tl_ngay: 1,
           tl_date_delete: 1,
           tl_sotien: 1,
           tl_id_ng_xoa: '$tl_id_ng_xoa.userName',
+          tl_type_quyen:1,
+          id_ngdexuat:1
         }
       }
     ])
     for (let i = 0; i < data.length; i++) {
       data[i].ngay_duyet = new Date(data[i].ngay_duyet * 1000)
       data[i].tl_ngay = new Date(data[i].tl_ngay * 1000)
+      let check = await Users.findOne({ idQLC: data[i].id_ngdexuat })
+      if (check) {
+        data[i].id_ngdexuat = check.userName
+        if (data[i].tl_type_quyen == 2) {
+          if (check && check.inForPerson && check.inForPerson.employee) {
+            let dep = await department.findOne({ dep_id: check.inForPerson.employee.dep_id })
+            if (dep) data[i].phongban = dep.dep_name
+          }
+        }
+        if (data[i].tl_type_quyen === 1) {
+          data[i].phongban = check.address
+        }
+      }
     }
     return functions.success(res, 'get data success', { dem, data })
   } catch (error) {

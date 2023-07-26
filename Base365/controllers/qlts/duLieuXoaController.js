@@ -528,6 +528,7 @@ exports.baoDuongDaXoa = async (req, res, next) => {
             let condition = {}
             condition.tdcs_xoa = 1;
             condition.id_cty = comId;
+
             return qlts.theoDoiCongSuat(res, TheoDoiCongSuat, dem, condition, skip, limit);
         }
     } catch (error) {
@@ -569,11 +570,23 @@ exports.taiSanBaomatDaXoa = async (req, res, next) => {
 
         conditions.xoa_dx_mat = 1;
 
-        let taisanbaomat = await Mat.find({ mat_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_dx_mat: 1 }).count();
+        let taisanbaomat = 0;
+        let taisanchodenbu = 0;
+        let danhsachtaisanmat = 0;
+        if (type === 2) {
+            taisanbaomat = await Mat.find({ mat_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_dx_mat: 1, id_ng_tao: emId }).count();
 
-        let taisanchodenbu = await Mat.find({ mat_trangthai: 1, id_cty: comId, xoa_dx_mat: 1 }).count();
+            taisanchodenbu = await Mat.find({ mat_trangthai: 3, id_cty: comId, xoa_dx_mat: 1, id_ng_tao: emId }).count();
 
-        let danhsachtaisanmat = await Mat.find({ mat_trangthai: 3, id_cty: comId, xoa_dx_mat: 1 }).count();
+            danhsachtaisanmat = await Mat.find({ mat_trangthai: 1, id_cty: comId, xoa_dx_mat: 1, id_ng_tao: emId }).count();
+        } else {
+            taisanbaomat = await Mat.find({ mat_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_dx_mat: 1 }).count();
+
+            taisanchodenbu = await Mat.find({ mat_trangthai: 3, id_cty: comId, xoa_dx_mat: 1 }).count();
+
+            danhsachtaisanmat = await Mat.find({ mat_trangthai: 1, id_cty: comId, xoa_dx_mat: 1 }).count();
+        }
+
 
 
         dem.taisanbaomat = taisanbaomat;
@@ -634,9 +647,20 @@ exports.taiSanBaoHuyDaXoa = async (req, res, next) => {
 
         conditions.xoa_huy = 1;
 
-        let taisandexuathuy = await Huy.find({ huy_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_huy: 1 }).count();
+        let taisandexuathuy = 0;
 
-        let danhsachtaisanhuy = await Huy.find({ huy_trangthai: 1, id_cty: comId, xoa_huy: 1 }).count();
+        let danhsachtaisanhuy = 0;
+
+        if (type === 2) {
+            taisandexuathuy = await Huy.find({ huy_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_huy: 1, id_ng_tao: emId }).count();
+
+            danhsachtaisanhuy = await Huy.find({ huy_trangthai: 1, id_cty: comId, xoa_huy: 1, id_ng_tao: emId }).count();
+        } else {
+            taisandexuathuy = await Huy.find({ huy_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_huy: 1 }).count();
+
+            danhsachtaisanhuy = await Huy.find({ huy_trangthai: 1, id_cty: comId, xoa_huy: 1 }).count();
+        }
+
 
         dem.taisandexuathuy = taisandexuathuy;
         dem.danhsachtaisanhuy = danhsachtaisanhuy;
@@ -692,9 +716,18 @@ exports.taiSanThanhLyDaXoa = async (req, res, next) => {
 
         conditions.xoa_dx_tl = 1;
 
-        let taisandexuatthanhly = await ThanhLy.find({ tl_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_dx_tl: 1 }).count();
+        let taisandexuatthanhly = 0;
+        let danhsachtaisandathanhly = 0;
+        if (type === 2) {
+            taisandexuatthanhly = await ThanhLy.find({ tl_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_dx_tl: 1, id_ngtao: emId }).count();
 
-        let danhsachtaisandathanhly = await ThanhLy.find({ tl_trangthai: 3, id_cty: comId, xoa_dx_tl: 1 }).count();
+            danhsachtaisandathanhly = await ThanhLy.find({ tl_trangthai: 3, id_cty: comId, xoa_dx_tl: 1, id_ngtao: emId }).count();
+        } else {
+            taisandexuatthanhly = await ThanhLy.find({ tl_trangthai: { $in: [0, 2] }, id_cty: comId, xoa_dx_tl: 1 }).count();
+
+            danhsachtaisandathanhly = await ThanhLy.find({ tl_trangthai: 3, id_cty: comId, xoa_dx_tl: 1 }).count();
+        }
+
 
         dem.taisandexuatthanhly = taisandexuatthanhly;
         dem.danhsachtaisandathanhly = danhsachtaisandathanhly;
