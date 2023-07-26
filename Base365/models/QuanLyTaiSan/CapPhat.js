@@ -71,7 +71,8 @@ const QLTS_Cap_Phat = new mongoose.Schema({
         type: Number
     },
     cp_da_xoa: {
-        type: Number
+        type: Number,
+        default : 0
     },
     cp_date_create: {
         type: Number

@@ -1,3 +1,4 @@
+
 const fnc = require('../../../../services/functions');
 const ThongBao = require('../../../../models/QuanLyTaiSan/ThongBao');
 const BaoDuong = require('../../../../models/QuanLyTaiSan/BaoDuong');
@@ -11,6 +12,101 @@ const QuyDinhBaoDuong = require('../../../../models/QuanLyTaiSan/Quydinh_bd');
 const NhacNho = require('../../../../models/QuanLyTaiSan/NhacNho');
 const func = require('../../../../services/QLTS/qltsService');
 
+//lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
+
+exports.xoaBaoDuong = async (req, res) => {
+    try {
+        let { id, type } = req.body;
+        if (!id) {
+            return fnc.setError(res, 'Thông tin truyền lên không đầy đủ', 400);
+        }
+        let id_com = 0;
+        if (req.user.data.type == 1 || req.user.data.type == 2) {
+            id_com = req.user.data.com_id;
+        } else {
+            return fnc.setError(res, 'không có quyền truy cập', 400);
+        }
+        if (type == 1) { // xóa vĩnh viễn
+            let idArraya = id.map(idItem => parseInt(idItem));
+            await BaoDuong.deleteMany({ id_bd: { $in: idArraya }, id_cty: id_com });
+            return fnc.success(res, 'xóa thành công!');
+        } else if (type == 0) {
+            // thay đổi trạng thái là 1
+            let idArray = id.map(idItem => parseInt(idItem));
+            await BaoDuong.updateMany(
+                {
+                    id_bd: { $in: idArray },
+
+                    xoa_bd: 0
+                },
+                { xoa_bd: 1 }
+            );
+            return fnc.success(res, 'Bạn đã xóa thành công vào danh sách dã xóa !');
+        } else if (type == 2) {
+            // Khôi phục bảo dưỡng
+            let idArray = id.map(idItem => parseInt(idItem));
+            await BaoDuong.updateMany(
+                { id_bd: { $in: idArray }, xoa_bd: 1 },
+                { xoa_bd: 0 }
+            );
+            return fnc.success(res, 'Bạn đã khôi phục bảo dưỡng thành công!');
+        } else {
+            return fnc.setError(res, 'không thể thực thi!', 400);
+        }
+    } catch (e) {
+        return fnc.setError(res, e.message);
+    }
+}
+//     let id_com = 0;
+//     if (req.user.data.type == 1 || req.user.data.type == 2) {
+//       id_com = req.user.data.com_id;
+//     } else {
+//       return fnc.setError(res, 'không có quyền truy cập', 400);
+//     }
+//     if (!id.every(num => !isNaN(parseInt(num)))) {
+//         return fnc.setError(res, 'id bảo dưỡng không hợp lệ ', 400);
+//       }
+//     if (type == 1) { // xóa vĩnh viễn
+//       let idArraya = id.map(idItem => parseInt(idItem));
+//       let result = await BaoDuong.deleteMany({ id_bd: { $in: idArraya }, id_cty: id_com });
+//       if (result.deletedCount === 0) {
+//         return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
+//       }
+//       return fnc.success(res, 'xóa thành công!');
+//     } else if (type == 0) {
+//       // thay đổi trạng thái là 1
+//       let idArray = id.map(idItem => parseInt(idItem));
+//       let result = await BaoDuong.updateMany(
+//         { id_bd: { $in: idArray },
+
+//          xoa_bd: 0,id_cty : id_com },
+//         { xoa_bd: 1 }
+//       );
+//       if (result.nModified === 0) {
+//         return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+//       }
+//       return fnc.success(res, 'Bạn đã xóa thành công vào danh sách dã xóa !');
+//     } else if (type == 2) {
+//       // Khôi phục bảo dưỡng
+//       let idArray = id.map(idItem => parseInt(idItem));
+//       let result = await BaoDuong.updateMany(
+//         { id_bd: { $in: idArray }, xoa_bd: 1 ,id_cty : id_com},
+//         { xoa_bd: 0 }
+//       );
+//       if (result.nModified === 0) {
+//         return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+//       }
+//       return fnc.success(res, 'Bạn đã khôi phục bảo dưỡng thành công!');
+//     } else {
+//       return fnc.setError(res, 'không thể thực thi!', 400);
+//     }
+//   } catch (e) {
+//     return fnc.setError(res, e.message);
+//   }
+//};
+
+// Tĩnh
+//tai sản cần bảo dưỡng
 //add_baoduong
 exports.add_Ts_can_bao_duong = async (req, res) => {
     try {
@@ -177,65 +273,66 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
 
 //lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
 exports.danhSachBaoDuong = async (req, res, next) => {
-  try{
-    let {page, pageSize, key, dataType} = req.body;
-    if(!page) page = 1;
-    if(!pageSize) pageSize = 10;
-    page = Number(page);
-    pageSize = Number(pageSize);
-    const skip = (page-1)*pageSize;
-    let com_id = req.user.data.com_id;
-    let idQLC = req.user.data.idQLC;
-    let type = req.user.data.type;
-    let condition = {};
-    if(type==2) {
-      condition = {id_cty: com_id, xoa_bd: 0};
-    }else {
-      condition = {id_cty: com_id, xoa_bd: 0, 
-        $or: [
-          {bd_id_ng_tao: idQLC},
-          {bd_ng_thuchien: idQLC},
-          {bd_ng_sd: idQLC},
-          {bd_vi_tri_dang_sd: idQLC}
-        ]
-      };
-    }
-    if(key) condition.id_bd = key;
-    if(dataType != 1 && dataType != 2 && dataType != 3 && dataType != 4 && dataType != 5) return fnc.setError(res, "Truyen dataType = 1, 2, 3, 4, 5");
-    //can bao duong
-    if(dataType == 1) {
-      condition.bd_trang_thai = {$in: [0, 2]};
-    }
-    //dang bao duong
-    else if(dataType == 2) {
-      condition.bd_trang_thai = 0;
-    }
-    //da bao duong
-    else if(dataType == 3) {
-      condition.bd_trang_thai = 1;
-    }
-    //quy dinh
-    else if(dataType == 4) {
-      let condition2 = {id_cty: com_id, qd_xoa: 0};
-      if(type==2) condition2 = {...condition2, id_ng_tao_qd: idQLC};
-      let quydinh = await fnc.pageFind(QuyDinh, condition2, {qd_id: -1}, skip, pageSize);
-      let total = await fnc.findCount(QuyDinh, condition2);
-      return fnc.success(res, "Lay ra danh sach quy dinh bao duong thanh cong", {page, pageSize, total,quydinh});
-    }
-    //theo doi cong suat
-    else if(dataType == 5) {
-      let condition2 = {id_cty: com_id, tdcs_xoa: 0};
-      let theoDoiCongSuat = await fnc.pageFind(TheoDoiCongSuat, condition2, {id_cs: -1}, skip, pageSize);
-      let total = await fnc.findCount(TheoDoiCongSuat, condition2);
-      return fnc.success(res, "Lay ra danh sach theo doi cong suat thanh cong", {page, pageSize, total,theoDoiCongSuat});
-    }
+    try {
+        let { page, pageSize, key, dataType } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        let com_id = req.user.data.com_id;
+        let idQLC = req.user.data.idQLC;
+        let type = req.user.data.type;
+        let condition = {};
+        if (type == 2) {
+            condition = { id_cty: com_id, xoa_bd: 0 };
+        } else {
+            condition = {
+                id_cty: com_id, xoa_bd: 0,
+                $or: [
+                    { bd_id_ng_tao: idQLC },
+                    { bd_ng_thuchien: idQLC },
+                    { bd_ng_sd: idQLC },
+                    { bd_vi_tri_dang_sd: idQLC }
+                ]
+            };
+        }
+        if (key) condition.id_bd = key;
+        if (dataType != 1 && dataType != 2 && dataType != 3 && dataType != 4 && dataType != 5) return fnc.setError(res, "Truyen dataType = 1, 2, 3, 4, 5");
+        //can bao duong
+        if (dataType == 1) {
+            condition.bd_trang_thai = { $in: [0, 2] };
+        }
+        //dang bao duong
+        else if (dataType == 2) {
+            condition.bd_trang_thai = 0;
+        }
+        //da bao duong
+        else if (dataType == 3) {
+            condition.bd_trang_thai = 1;
+        }
+        //quy dinh
+        else if (dataType == 4) {
+            let condition2 = { id_cty: com_id, qd_xoa: 0 };
+            if (type == 2) condition2 = { ...condition2, id_ng_tao_qd: idQLC };
+            let quydinh = await fnc.pageFind(QuyDinh, condition2, { qd_id: -1 }, skip, pageSize);
+            let total = await fnc.findCount(QuyDinh, condition2);
+            return fnc.success(res, "Lay ra danh sach quy dinh bao duong thanh cong", { page, pageSize, total, quydinh });
+        }
+        //theo doi cong suat
+        else if (dataType == 5) {
+            let condition2 = { id_cty: com_id, tdcs_xoa: 0 };
+            let theoDoiCongSuat = await fnc.pageFind(TheoDoiCongSuat, condition2, { id_cs: -1 }, skip, pageSize);
+            let total = await fnc.findCount(TheoDoiCongSuat, condition2);
+            return fnc.success(res, "Lay ra danh sach theo doi cong suat thanh cong", { page, pageSize, total, theoDoiCongSuat });
+        }
 
-    let listBaoDuong = await fnc.pageFind(BaoDuong, condition, {id_bd: -1}, skip, pageSize);
-    const total = await fnc.findCount(BaoDuong, condition);
-    return fnc.success(res, "Lay ra danh sach bao duong thanh cong", {page, pageSize, total,listBaoDuong});
-  }catch(e){
-    return fnc.setError(res, e.message);
-  }
+        let listBaoDuong = await fnc.pageFind(BaoDuong, condition, { id_bd: -1 }, skip, pageSize);
+        const total = await fnc.findCount(BaoDuong, condition);
+        return fnc.success(res, "Lay ra danh sach bao duong thanh cong", { page, pageSize, total, listBaoDuong });
+    } catch (e) {
+        return fnc.setError(res, e.message);
+    }
 }
 
 //tu_choi
@@ -650,11 +747,12 @@ exports.detailTSCBD = async (req, res) => {
         );
 
         let nguoi_tao = await Users.findOne({
-            idQLC: chitiet_baoduong.bd_id_ng_tao
-        });
+            idQLC: chitiet_baoduong.bd_id_ng_tao,
+            type: { $ne: 1 }
+        }) || null;
         let taiSan = await TaiSan.findOne({
             ts_id: chitiet_baoduong.baoduong_taisan
-        })
+        }) || null;
         let nguoi_sd = 0;
         let vi_tri = 0;
 
@@ -682,11 +780,11 @@ exports.detailTSCBD = async (req, res) => {
 
         let infobd = {
             id_bd: chitiet_baoduong.id_bd,
-            nguoi_tao: nguoi_tao.userName,
+            nguoi_tao: nguoi_tao ? nguoi_tao.userName : null,
             ngay_tao: new Date(chitiet_baoduong.bd_date_create * 1000),
             bd_trang_thai: chitiet_baoduong.bd_trang_thai,
             ma_ts: chitiet_baoduong.baoduong_taisan,
-            ten_ts: taiSan.ts_ten,
+            ten_ts: taiSan ? taiSan.ts_ten : null,
             so_luong: chitiet_baoduong.bd_sl,
             doi_tuong_sd: nguoi_sd,
             vi_tri_ts: vi_tri,

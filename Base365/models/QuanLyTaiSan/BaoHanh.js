@@ -6,7 +6,7 @@ const model_Baohanh = new mongoose.Schema({
         unique: true
     },
     baohanh_taisan: {
-        type: String,
+        type: Number,
     },
     id_cty: {
         type: Number,

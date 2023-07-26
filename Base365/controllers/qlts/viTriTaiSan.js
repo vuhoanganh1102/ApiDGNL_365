@@ -88,6 +88,19 @@ exports.show = async (req, res) => {
         },
       },
       {
+        $group: {
+          _id: '$id_vitri',
+          vi_tri_ts: { $first: '$vi_tri' },
+          don_vi_quan_ly : {$first : '$name_dep.deparmentName'},
+          ghi_chu : {$first: '$ghi_chu_vitri'}
+        },
+      },
+      {
+        $sort: {
+          _id: -1, 
+        },
+      },
+      {
         $skip: startIndex, // Bỏ qua các bản ghi từ startIndex
       },
       {
@@ -108,28 +121,32 @@ exports.show = async (req, res) => {
   }
 };
 
-exports.deleteVT = async(req,res) => {
-    try {
-      let { datatype, id_vitri, type_quyen } = req.body;
-      let com_id = '';
-      if (req.user.data.type == 1 || req.user.data.type == 2) {
-        com_id = req.user.data.com_id;
-      } else {
-        return functions.setError(res, 'không có quyền truy cập', 400);
-      }
 
-      if (typeof id_vitri === 'undefined') {
-        return functions.setError(res, 'id_vitri không được bỏ trống', 400);
-      }
-      if (isNaN(Number(id_vitri))) {
-        return functions.setError(res, 'id nhóm phải là một số', 400);
-      }     
-      await ViTriTs.findOneAndDelete({ id_vitri: id_vitri, id_cty: com_id })
-      return functions.success(res, 'thanh cong');
-      
-    } catch (error) {
-      console.log(error);
-      return functions.setError(res, error);
+
+exports.deleteVT = async (req, res) => {
+  try {
+    let { id_vitri } = req.body; 
+    let com_id = '';
+    let ts_id_ng_xoa = '';
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      ts_id_ng_xoa = req.user.data.idQLC; 
+     
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    } 
+    let idArraya = id_vitri.map(idItem => parseInt(idItem)); 
+    if (!idArraya.every(num => !isNaN(num))) {
+      return functions.setError(res, 'id_vitri không hợp lệ', 400);
     }
-}
+    let result = await ViTriTs.deleteMany({ id_vitri: { $in: idArraya }, id_cty: com_id });
+    if (result.deletedCount === 0) {
+      return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
+    }
+    return functions.success(res, 'xóa thành công!');
+  } catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message);
+  }
+};
 

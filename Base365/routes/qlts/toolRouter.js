@@ -16,8 +16,8 @@ router.post('/khauhao',toolQLTS.toolKhauHao)
 router.post('/tepdinhkem',toolQLTS.tailieuDinhKem)
 router.post('/BaoHanh',toolQLTS.BaoHanh)
 router.post('/PhanBo',toolQLTS.toolPhanBo)
-
-
+router.post('/Ghitang',toolQLTS.toolGhitang)
+router.post('/DonviCS',toolQLTS.toolDonviCS)
 //dung
 router.post('/kiemke', toolQLTS.kiemKe);
 router.post('/quyDinhBD', toolQLTS.quyDinhBD);
