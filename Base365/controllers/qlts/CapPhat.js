@@ -259,7 +259,7 @@ exports.getListNV = async (req, res) => {
         console.log(listConditions)
         // lay danh sach chi tiet phong ban - nhan vien
         let data1 = await capPhat.aggregate([
-            { $match: { id_cty: id_cty } },
+            { $match: { id_cty: id_cty ,id_nhanvien: {$ne: 0 }} },
 
             {
                 $lookup: {
