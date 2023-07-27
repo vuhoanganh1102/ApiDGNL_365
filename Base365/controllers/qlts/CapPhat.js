@@ -256,11 +256,10 @@ exports.getListNV = async (req, res) => {
         listConditions.id_cty = id_cty
         if (id_nhanvien) listConditions.id_nhanvien = Number(id_nhanvien)
         if (dep_id) listConditions.dep_id = Number(dep_id)
-        console.log(listConditions)
         // lay danh sach chi tiet phong ban - nhan vien
         let data1 = await capPhat.aggregate([
-            { $match: { id_cty: id_cty ,id_nhanvien: {$ne: 0 }} },
-            {$sort: {cp_id:-1}},
+            { $match: { id_cty: id_cty, id_nhanvien: { $ne: 0 } } },
+            { $sort: { cp_id: -1 } },
             {
                 $lookup: {
                     from: "QLTS_Tai_San",
@@ -301,14 +300,14 @@ exports.getListNV = async (req, res) => {
             { $unwind: "$So_luong_cap_phat" },
             { $match: listConditions },
         ])
-        for(let i = 0 ; i<data1.length ; i++){
-            let depName = await dep.findOne({com_id:id_cty ,dep_id: data1[i].dep_id})
+        for (let i = 0; i < data1.length; i++) {
+            let depName = await dep.findOne({ com_id: id_cty, dep_id: data1[i].dep_id })
             data1[i].depName = depName
-            let depStatus = await TaiSanDangSuDung.findOne({com_id_sd:id_cty ,id_nv_sd: data1[i].id_nhanvien})
+            let depStatus = await TaiSanDangSuDung.findOne({ com_id_sd: id_cty, id_nv_sd: data1[i].id_nhanvien })
             let total = 0
-             if(depStatus) total +=  depStatus.sl_dang_sd
-             data1[i].NumCapitalUsing = total 
-       }
+            if (depStatus) total += depStatus.sl_dang_sd
+            data1[i].NumCapitalUsing = total
+        }
         data.push({ infoEmp: data1 })
         let count = await capPhat.find(listConditions).count()
         data.push({ NumberEmp: count })
@@ -344,7 +343,7 @@ exports.getListDep = async (req, res) => {
         let results1 = []
         let dataDep = await capPhat.aggregate([
             { $match: listConditions },
-            {$sort: {cp_id:-1}},
+            { $sort: { cp_id: -1 } },
             {
                 $lookup: {
                     from: "QLC_Deparments",
@@ -367,12 +366,12 @@ exports.getListDep = async (req, res) => {
         ])
         // .explain("executionStats")
         if (dataDep) {
-            for(let i = 0 ; i<dataDep.length ; i++){
-                     let depStatus = await TaiSanDangSuDung.findOne({com_id_sd:id_cty ,id_pb_sd: dataDep[i].id_phongban})
-                    let total = 0
-                     if(depStatus) total +=  depStatus.sl_dang_sd
-                    dataDep[i].NumCapitalUsing = total 
-                }
+            for (let i = 0; i < dataDep.length; i++) {
+                let depStatus = await TaiSanDangSuDung.findOne({ com_id_sd: id_cty, id_pb_sd: dataDep[i].id_phongban })
+                let total = 0
+                if (depStatus) total += depStatus.sl_dang_sd
+                dataDep[i].NumCapitalUsing = total
+            }
             data.push({ dataDep: dataDep })
         }
         if (data) {
@@ -410,7 +409,7 @@ exports.getListDetail = async (req, res) => {
         if (option == 4) listConditions.cp_trangthai = 1, listConditions.cp_id = Number(cp_id),
             listConditions.id_nhanvien = Number(id_nhanvien)  // query đồng ý cấp phát  NV
         if (option == 5) listConditions.cp_trangthai = 0, listConditions.id_phongban = Number(id_phongban) // DS cấp phát chờ nhận PB
-        if (option == 6) listConditions.cp_trangthai = 0, listConditions.cp_id = Number(cp_id) ,listConditions.id_phongban = Number(id_phongban) // query cấp phát chờ nhận PB
+        if (option == 6) listConditions.cp_trangthai = 0, listConditions.cp_id = Number(cp_id), listConditions.id_phongban = Number(id_phongban) // query cấp phát chờ nhận PB
         if (option == 7) listConditions.cp_trangthai = 1, listConditions.id_phongban = Number(id_phongban)  //DS đồng ý cấp phát PB
         if (option == 8) listConditions.cp_trangthai = 1, listConditions.cp_id = Number(cp_id), listConditions.id_phongban = Number(id_phongban) // query đồng ý cấp phát  PB
         console.log(listConditions)

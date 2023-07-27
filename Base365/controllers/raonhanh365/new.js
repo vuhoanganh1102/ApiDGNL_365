@@ -76,6 +76,7 @@ exports.postNewMain = async (req, res, next) => {
         let order = request.order;
         let the_tich = request.the_tich;
         let warranty = request.warranty;
+        let loai_noithat =  request.loai_noithat;
         if (address && address.length > 0) {
             for (let i = 0; i < address.length; i++) {
                 diachi.push(address[i])
@@ -180,6 +181,7 @@ exports.postNewsGeneral = async (req, res, next) => {
                 trong_tai: request.trong_tai,
                 loai_linhphu_kien: request.loai_linhphu_kien,
                 so_km_da_di: request.so_km_da_di,
+                loai_noithat: request.loai_noithat
             };
 
             // cac truong khi dang tin bat dong san

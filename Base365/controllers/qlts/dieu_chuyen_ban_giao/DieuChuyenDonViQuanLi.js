@@ -38,7 +38,7 @@ exports.create = async(req,res) =>{
                         sl_ts: item[1]
                         }));
         let updateThongBao = new thongBao({
-            id_tb : Number(maxThongBao.id_tb) +1 || 1,
+            id_tb : Number(maxThongBao.id_tb) + 1 || 1,
             id_ts : updated_ds_dc[0].ts_id,
             id_cty : id_cty,
             id_ng_tao : idQLC,
