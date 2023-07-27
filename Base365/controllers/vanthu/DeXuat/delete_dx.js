@@ -18,7 +18,7 @@ exports.delete_dx = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    if (type == 1) { // gửi về kiểu mảng / xóa vĩnh viễn đề xuất
+    if (type == 1) { // gửi về kiểu mảng / xóa vĩnh viễn đề 
       let idArraya = id.map(idItem => parseInt(idItem));
       await De_Xuat.deleteMany({ _id: { $in: idArraya }, com_id: id_com });
       await delete_Dx.deleteMany({
