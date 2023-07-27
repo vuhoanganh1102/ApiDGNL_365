@@ -22,11 +22,11 @@ exports.list_vitri = async (req, res) => {
             }
         ]
         );
-        fnc.success(res, 'success ', [arr_vitri]);
+        fnc.success(res, 'success ', { arr_vitri });
 
     } catch (error) {
         console.log(error);
-        fnc.setError(res, error);
+        fnc.setError(res, error.message);
     }
 }
 
@@ -50,10 +50,10 @@ exports.listTaiSan = async (req, res) => {
                 }
             }
         ]);
-        fnc.success(res, 'sucess', [list_TS]);
+        fnc.success(res, 'sucess', { list_TS });
     } catch (error) {
         console.log(error);
-        fnc.setError(res, error);
+        fnc.setError(res, error.message);
     }
 }
 
@@ -78,8 +78,9 @@ exports.DetailTS = async (req, res) => {
                 }
             },
         ]);
-        fnc.success(res, 'sucess', [list_TS]);
+        fnc.success(res, 'sucess', { list_TS });
     } catch (error) {
+        console.log(error)
         fnc.setError(res, error.message);
 
     }
@@ -105,10 +106,11 @@ exports.listTS = async (req, res) => {
                 }
             }
         ]);
-        fnc.success(res, 'sucess', [list_TS]);
+        fnc.success(res, 'sucess', { list_TS });
 
     } catch (error) {
-        fnc.setError(res, error);
+        console.log(error)
+        fnc.setError(res, error.message);
     }
 }
 //page quy địnhbảo dưỡng
@@ -119,9 +121,10 @@ exports.listLoaiTaiSan = async (req, res) => {
             id_cty: com_id,
             loai_da_xoa: 0
         })
-        fnc.success(res, [danhsach_loai_ts]);
+        fnc.success(res, "ok", { danhsach_loai_ts });
     } catch (error) {
-        fnc.setError(res, error);
+        console.log(error);
+        fnc.setError(res, error.message);
     }
 }
 //page theo doi cong suat 
@@ -131,9 +134,10 @@ exports.list_dvi_csuat = async (req, res) => {
         let list_divi = await DonViCongSuat.find({
             id_cty: com_id
         });
-        fnc.success(res, "OK", [list_divi]);
+        fnc.success(res, "OK", { list_divi });
     } catch (error) {
-        fnc.setError(res, error);
+        console.log(error);
+        fnc.setError(res, error.message);
     }
 }
 

@@ -14,9 +14,20 @@ exports.getListDataLostAssets = async (req,res,next) => {
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page-1)*pageSize;
-        let id_cty = req.com_id;
+        let id_cty = req.user.data.com_id;
+        console.log(id_cty)
 
         let condition = {id_cty: id_cty, xoa_dx_mat: 0};
+
+        let baoCaoMat = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}});
+        let choDenBu = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 3});
+        let slMat = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 1});
+        let thongKe = {
+            baoCaoMat: baoCaoMat,
+            choDenBu: choDenBu,
+            slMat: slMat,
+        };
+
         if(key) condition.mat_id = Number(key);
 
         //dataType = (1, 2, 3): bao cao mat, cho den bu, danh sach mat 
@@ -24,32 +35,118 @@ exports.getListDataLostAssets = async (req,res,next) => {
         if(dataType == 1) condition.mat_trangthai = {$in: [0, 2]};
         if(dataType == 2) condition.mat_trangthai = 3;
         if(dataType == 3) condition.mat_trangthai = 1;
-        let danhSachMat = await Mat.aggregate([
-            {$match: condition},
-            {
-                $lookup: {
-                    from: "QLTS_Tai_San",
-                    localField: "mat_taisan",
-                    foreignField: "ts_id",
-                    as: "Tai_San"
-                }
-            },
-            { $unwind: { path: "$Tai_San", preserveNullAndEmptyArrays: true } },
-            {
-                $lookup: {
-                    from: "QLTS_Loai_Tai_San",
-                    localField: "Tai_San.id_loai_ts",
-                    foreignField: "id_loai",
-                    as: "Loai_Tai_San"
-                }
-            },
-            { $unwind: { path: "$Loai_Tai_San", preserveNullAndEmptyArrays: true } },
-            {$sort: {mat_id: -1}},
-            {$skip: skip},
-            {$limit: pageSize}
-        ]);
+
+        let danhSachMat = await functions.pageFind(Mat, condition, {mat_id: -1}, skip, pageSize);
+        // let danhSachMat = await Mat.aggregate([
+        //     {$match: condition},
+        //     {
+        //         $lookup: {
+        //             from: "QLTS_Tai_San",
+        //             localField: "mat_taisan",
+        //             foreignField: "ts_id",
+        //             as: "TaiSan"
+        //         }
+        //     },
+        //     { $unwind: { path: "$TaiSan", preserveNullAndEmptyArrays: true } },
+
+        //     {
+        //         $lookup: {
+        //             from: "QLTS_Loai_Tai_San",
+        //             localField: "TaiSan.id_loai_ts",
+        //             foreignField: "id_loai",
+        //             as: "LoaiTaiSan"
+        //         }
+        //     },
+        //     { $unwind: { path: "$LoaiTaiSan", preserveNullAndEmptyArrays: true } },
+
+        //     {
+        //         $lookup: {
+        //             from: "Users",
+        //             localField: "id_ng_tao",
+        //             foreignField: "idQLC",
+        //             as: "NguoiTao"
+        //         }
+        //     },
+        //     { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
+
+        //     {
+        //         $lookup: {
+        //             from: "Users",
+        //             localField: "id_ng_lam_mat",
+        //             foreignField: "idQLC",
+        //             as: "NguoiLamMat"
+        //         }
+        //     },
+        //     { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
+
+        //     {
+        //         $lookup: {
+        //             from: "Users",
+        //             localField: "id_ng_nhan_denbu",
+        //             foreignField: "idQLC",
+        //             as: "NguoiNhanDenBu"
+        //         }
+        //     },
+        //     { $unwind: { path: "$NguoiNhanDenBu", preserveNullAndEmptyArrays: true } },
+
+        //     {
+        //         $lookup: {
+        //             from: "Users",
+        //             localField: "id_ng_duyet",
+        //             foreignField: "idQLC",
+        //             as: "NguoiDuyet"
+        //         }
+        //     },
+        //     { $unwind: { path: "$NguoiDuyet", preserveNullAndEmptyArrays: true } },
+            
+        //     { $project: {
+        //         "mat_id": "$mat_id", 
+        //         "mat_trangthai": "$mat_trangthai",
+        //         "mat_date_create": "$mat_date_create", 
+        //         "id_taisan": "$mat_taisan",
+        //         "ten_taisan": "$TaiSan.ts_ten",
+        //         "mat_soluong": "$mat_soluong",
+        //         "loai_taisan": "$LoaiTaiSan.ten_loai",
+        //         "mat_ngay": "$mat_ngay",
+        //         "mat_lydo": "$mat_lydo",
+        //         "mat_giatri": "$mat_giatri",
+        //         "giatri_ts": "$giatri_ts",
+        //         "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
+        //         "tien_denbu": "$tien_denbu",
+        //         "mat_lydo_tuchoi": "$mat_lydo_tuchoi",
+        //         "yc_denbu": "$yc_denbu",
+        //         "hinhthuc_denbu": "$hinhthuc_denbu",
+        //         "mat_han_ht": "$mat_han_ht",
+        //         "loai_thanhtoan": "$loai_thanhtoan",
+        //         "ngay_thanhtoan": "$ngay_thanhtoan",
+        //         "so_tien_da_duyet": "$so_tien_da_duyet",
+        //         "sotien_danhan": "$sotien_danhan",
+        //         "ngay_duyet": "$ngay_duyet",
+        //         "mat_type_quyen": "$mat_type_quyen",
+        //         "type_quyen_nhan_db": "$type_quyen_nhan_db",
+                
+
+                
+
+        //         "id_ng_tao": "$id_ng_tao",
+        //         "ten_ng_tao": "$NguoiTao.userName",
+
+        //         "id_ng_lam_mat": "$id_ng_lam_mat",
+        //         "ten_ng_lam_mat": "$NguoiLamMat.userName",
+
+        //         "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
+        //         "ten_ng_nhan_denbu": "$NguoiNhanDenBu.userName",
+
+        //         "id_ng_duyet": "$id_ng_duyet",
+        //         "ten_ng_duyet": "$NguoiDuyet.userName",
+                
+        //     }},
+        //     {$skip: skip},
+        //     {$limit: pageSize},
+        //     {$sort: {mat_id: -1}},
+        // ]);
         const total = await functions.findCount(Mat, condition);
-        return functions.success(res,'get data success',{page, pageSize, total, danhSachMat})
+        return functions.success(res,'get data success',{page, pageSize, total, thongKe, danhSachMat})
     } catch (error) {
         return functions.setError(res,error.message);
     }
@@ -62,9 +159,9 @@ exports.createMat = async(req, res, next) => {
             day_htdenbu, lydo, giatrimat} = req.body;
         if(ts_mat && ngay_mat && nglammat && sl_mat && lydo && day_htdenbu) {
             let type_quyen_nhan_db = 2;
-            let id_cty = req.com_id;
-            let id_ng_tao = req.idQLC;
-            let type_quyen = req.type;
+            let id_cty = req.user.data.com_id;
+            let id_ng_tao = req.user.data.idQLC;
+            let type_quyen = req.user.data.type;
             ngay_mat = new Date(ngay_mat);
             day_htdenbu = new Date(day_htdenbu);
             let today = new Date(Date.now());
@@ -134,7 +231,7 @@ exports.createMat = async(req, res, next) => {
 exports.duyet = async(req, res, next) => {
     try{
         let {id_mat, id_ng_duyet, type_quyen_duyet, duyet_hinhthuc, duyet_yc, so_tien_nhap, phantram_nhap, day_htdenbu} = req.body;
-        let com_id = req.com_id;
+        let com_id = req.user.data.com_id;
         let phantram = 0;
         let so_tien_duyet = 0;
         let ngay_duyet = functions.convertTimestamp(Date.now());
@@ -242,7 +339,7 @@ exports.duyet = async(req, res, next) => {
 //tu choi bao cao mat
 exports.tuChoi = async(req, res, next) => {
     try{
-        let com_id = req.com_id;
+        let com_id = req.user.data.com_id;
         let {id_bb, content} = req.body;
         if(id_bb && content) {
             let tuchoi_mat = await Mat.findOneAndUpdate({mat_id: id_bb, id_cty: com_id}, {mat_trangthai: 2, mat_lydo_tuchoi: content}, {new: true});
@@ -261,9 +358,9 @@ exports.tuChoi = async(req, res, next) => {
 exports.deleteMat = async(req, res, next) => {
     try{
         let {id_bb, datatype} = req.body;
-        let type_quyen = req.type;
-        let id_ng_xoa = req.idQLC;
-        let com_id = req.com_id;
+        let type_quyen = req.user.data.type;
+        let id_ng_xoa = req.user.data.idQLC;
+        let com_id = req.user.data.com_id;
         let date_delete = functions.convertTimestamp(Date.now());
         if(!id_bb) return functions.setError(res, "Missing input id_bb!", 404);
         if(datatype != 1 && datatype != 2 && datatype != 3) return functions.setError(res, "Truyen datatype = 1, 2, 3!", 405);
@@ -291,10 +388,48 @@ exports.deleteMat = async(req, res, next) => {
     }
 }
 
+exports.deleteMany = async(req, res, next) => {
+    try{        
+        const {array_xoa, datatype} = req.body;
+        let type_quyen = req.user.data.type;
+        let id_ng_xoa = req.user.data.idQLC;
+        let com_id = req.user.data.com_id;
+        let date_delete = functions.convertTimestamp(Date.now());
+        if(!array_xoa) return functions.setError(res, "Missing input array_xoa!", 404);
+        if(datatype != 1 && datatype != 2 && datatype != 3) return functions.setError(res, "Truyen datatype = 1, 2, 3!", 405);
+
+        if(datatype == 1) {
+            for(let i=0; i<array_xoa.length; i++) {
+                let mat = await Mat.findOneAndUpdate({mat_id: array_xoa[i], id_cty: com_id}, {
+                    xoa_dx_mat: 1, mat_type_quyen_xoa: type_quyen, mat_id_ng_xoa: id_ng_xoa, mat_date_delete: date_delete
+                }, {new: true});
+            }
+            return functions.success(res, "Xoa tam thoi thanh cong!");
+        }
+        if(datatype == 2) {
+            for(let i=0; i<array_xoa.length; i++) {
+                let mat = await Mat.findOneAndUpdate({mat_id: array_xoa[i], id_cty: com_id}, {
+                    xoa_dx_mat: 0, mat_type_quyen_xoa: 0, mat_id_ng_xoa: 0, mat_date_delete: ''
+                }, {new: true});
+            }
+            return functions.success(res, "Khoi phuc thanh cong!");
+        }
+        if(datatype == 3) {
+            for(let i=0; i<array_xoa.length; i++) {
+                let mat = await Mat.findOneAndDelete({mat_id: array_xoa[i], id_cty: com_id});
+            }
+            return functions.success(res, "Xoa vinh vien thanh cong!");
+        }
+        return functions.setError(res, "Xoa nhieu that bai!", 505);
+    }catch(error){
+        return functions.setError(res, error.message, 500);
+    }
+}
+
 //hoan thanh den bu
 exports.hoanThanh = async(req, res, next) => {
     try{
-        let com_id = req.com_id;
+        let com_id = req.user.data.com_id;
         let {id_db, sotien_thanhtoan_nhap, ngay_ht} = req.body;
         if(id_db && sotien_thanhtoan_nhap && ngay_ht) {
             let mat = await Mat.findOne({mat_id: id_db, id_cty: com_id});

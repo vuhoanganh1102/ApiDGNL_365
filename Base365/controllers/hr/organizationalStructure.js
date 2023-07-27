@@ -14,7 +14,8 @@ const HR_SignatureImages = require('../../models/hr/SignatureImage');
 const HR_InfoLeaders = require('../../models/hr/InfoLeaders');
 const PositionStruct = require('../../models/hr/PositionStructs');
 const LeaderAvatar  = require('../../models/hr/LeaderAvatar');
-
+const DeXuat = require('../../models/Vanthu/de_xuat');
+const Shift = require('../../models/qlc/Shifts');
 
 const positionNames = {
     19: 'Chủ tịch hội đồng quản trị',
@@ -1189,14 +1190,9 @@ exports.listEmUntimed = async (req, res, next) => {
         if(!com_id) com_id = req.infoLogin.comId;
         if(!page) page = 1;
         if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
         const skip = (page-1)*pageSize;
-        let fields = {idQLC: 1, userName: 1, phone: 1, phoneTK: 1, email: 1, address: 1,
-            inForPerson: {
-                account: {birthday: 1, gender: 1, married: 1, experience: 1, education: 1},
-                employee: {com_id: 1, dep_id: 1,group_id: 1, team_id: 1,position_id: 1,start_working_time: 1}
-            }
-        };
-
         let condition = {type: 2, "inForPerson.employee.com_id": com_id};
         if(emp_id) condition.idQLC = emp_id;
         if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
@@ -1210,36 +1206,171 @@ exports.listEmUntimed = async (req, res, next) => {
 
         let company = await Users.findOne({idQLC: com_id}, {userName: 1, idQLC: 1});
         let listEmployee = [];
-        let total = 0;
         // chấm công hoặc chưa chấm công
         let type_timekeep = Number(req.body.type_timekeep);
-        if (type_timekeep === 1 || type_timekeep===2) {
-            let condition2;
-            if(type_timekeep===1) condition2 = {Time_sheets: {$ne: []}};
-            if(type_timekeep===2) condition2 = {Time_sheets: {$eq: []}};
-            listEmployee = await Users.aggregate([
-                {$match: condition},
-                {
-                    $lookup: {
-                        from: "QLC_Time_sheets",
-                        localField: "idQLC",
-                        foreignField: "ep_id",
-                        as: "Time_sheets"
+        let condition2 = {};
+        if(type_timekeep===1) condition2 = {Time_sheets: {$ne: []}};
+        if(type_timekeep===2) condition2 = {Time_sheets: {$eq: []}};
+        listEmployee = await Users.aggregate([
+            {$match: condition},
+            {$sort: {idQLC: -1}},
+            {$skip: skip},
+            {$limit: pageSize},
+            {
+                $lookup: {
+                    from: "QLC_Time_sheets",
+                    localField: "idQLC",
+                    foreignField: "ep_id",
+                    as: "Time_sheets"
+                }
+            },
+            {$match: condition2},
+            //phong ban
+            {
+                $lookup: {
+                    from: "QLC_Deparments",
+                    localField: "inForPerson.employee.dep_id",
+                    foreignField: "dep_id",
+                    as: "Department"
+                }
+            },
+            { $unwind: { path: "$Department", preserveNullAndEmptyArrays: true } },
+
+            //to
+            {
+                $lookup: {
+                    from: "QLC_Teams",
+                    localField: "inForPerson.employee.team_id",
+                    foreignField: "team_id",
+                    as: "Team"
+                }
+            },
+            { $unwind: { path: "$Team", preserveNullAndEmptyArrays: true } },
+
+            //nhom
+            {
+                $lookup: {
+                    from: "QLC_Groups",
+                    localField: "inForPerson.employee.group_id",
+                    foreignField: "gr_id",
+                    as: "Group"
+                }
+            },
+            { $unwind: { path: "$Group", preserveNullAndEmptyArrays: true } },
+
+            //ten cong ty
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "inForPerson.employee.com_id",
+                    foreignField: "idQLC",
+                    as: "Company"
+                }
+            },
+            { $unwind: { path: "$Company", preserveNullAndEmptyArrays: true } },
+            {$project: {
+                'idQLC': '$idQLC',
+                'userName': '$userName',
+                'phone': '$phone',
+                'phoneTK': '$phoneTK',
+                'email': '$email',
+                'address': '$address',
+                'birthday': '$inForPerson.account.birthday',
+                'gender': '$inForPerson.account.gender',
+                'married': '$inForPerson.account.married',
+                'experience': '$inForPerson.account.experience',
+                'education': '$inForPerson.account.education',
+                'com_id': '$inForPerson.employee.com_id',
+                'Company': '$Company.userName',
+                'dep_id': '$inForPerson.employee.dep_id',
+                'Department': '$Department.dep_name',
+                'group_id': '$inForPerson.employee.group_id',
+                'Group': '$Group.gr_name',
+                'team_id': '$inForPerson.employee.team_id',
+                'Team': '$Team.teamName',
+                'position_id': '$inForPerson.employee.position_id',
+                'start_working_time': '$inForPerson.employee.start_working_time',
+                'Time_sheets': '$Time_sheets'
+            }},
+        ]);
+        if(type_timekeep == 2) {
+            for(let i=0; i<listEmployee.length; i++) {
+                let ly_do_nghi = "";
+                let date = new Date(Date.now());
+                const y = date.getFullYear();
+                const m = ('0' + (date.getMonth() + 1)).slice(-2);
+                const d = ('0' + date.getDate()).slice(-2);
+                const today = y + '-' + m + '-' + d;
+
+                //check xem co lich lam viec kh
+                let clv = await DeXuat.find({id_user: listEmployee[i].idQLC, type_dx: 18, "noi_dung.lich_lam_viec.thang_ap_dung": m});
+                if(clv.length > 0) {
+                    //lay ra ca lam viec
+                    let shift_id_lv = "";
+                    for(let i=0; i<clv.length; i++) {
+                        if(clv[i].noi_dung && clv[i].lich_lam_viec && clv[i].lich_lam_viec.lich_lam_viec) {
+                            let cy_detail = JSON.parse(clv[i].lich_lam_viec.lich_lam_viec);
+                            for(let j=0; j<cy_detail.length; j++) {
+                                if(today == cy_detail[j].date) {
+                                    shift_id_lv = cy_detail[j].shift_id;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                },
-                {$match: condition2},
-                {$project: {...fields, Time_sheets: 1}},
-                {$sort: {idQLC: -1}},
-                {$skip: skip},
-                {$limit: pageSize},
-            ]);
-        }else {
-            listEmployee = await functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
+
+                    //neu co ca lam viec
+                    if(shift_id_lv!="") {
+                        var arr_shift = shift_id_lv.split(',');
+                        let check = 0;
+
+                        //check co de xuat nghi phep khong
+                        for(let i=0; i<arr_shift.length; i++) {
+                            let shift = await Shift.findOne({shift_id: arr_shift[i]});
+                            if(shift) {
+                                let nghiPhep = await DeXuat.find({id_user: listEmployee[i].idQLC, type_dx: 1, "noi_dung.nghi_phep.ca_nghi": arr_shift[i]});
+                                for(let j=0; j<nghiPhep.length; j++) {
+                                    if(bd_nghi <= date && date <= kt_nghi ) {
+                                        ly_do_nghi = nghiPhep[i].noi_dung.nghi_phep.ly_do;
+                                        check = 1;
+                                        break;
+                                    }
+                                }
+                                if(check = 1) break;
+                                ly_do_nghi = 'Nghỉ sai quy định';
+                            }
+                        }
+                        if(check == 0) ly_do_nghi = 'Nghỉ theo lịch làm việc';
+                    }else {
+                        ly_do_nghi = 'Nghỉ theo lịch làm việc';
+                    }
+                }else {
+                    ly_do_nghi = "Chưa thiết lập lịch làm việc"
+                }
+                listEmployee[i].ly_do_nghi = ly_do_nghi;
+            }
         }
-        total = listEmployee.length;
-        return functions.success(res, 'get data success', {total, company ,listEmployee})
+        let total = await Users.aggregate([
+            {$match: condition},
+            {
+                $lookup: {
+                    from: "QLC_Time_sheets",
+                    localField: "idQLC",
+                    foreignField: "ep_id",
+                    as: "Time_sheets"
+                }
+            },
+            {$match: condition2},
+            {
+                $group: {
+                _id: null,
+                total: { $sum: 1 }
+                }
+            }
+        ]);
+        const totalCount = total.length>0?total[0].total:0;
+        return functions.success(res, 'get data success', {totalCount, company ,listEmployee})
     } catch (error) {
-        console.log(error)
         return functions.setError(res, error.message, 500);
     }
 };

@@ -7,6 +7,9 @@ const TaiSan = require("../../../models/QuanLyTaiSan/TaiSan");
 const fnc = require("../../../services/functions");
 const Department = require('../../../models/qlc/Deparment');
 const BaoDuong = require("../../../models/QuanLyTaiSan/BaoDuong");
+const Users = require('../../../models/Users')
+const capPhat = require('../../../models/QuanLyTaiSan/CapPhat')
+const ThuHoi = require('../../../models/QuanLyTaiSan/ThuHoi')
 //add_dc_ts
 
 exports.addDieuchuyenTaiSan = async (req, res) => {
@@ -86,7 +89,7 @@ exports.addDieuchuyenTaiSan = async (req, res) => {
         await insert_dc_vt.save();
         let ID_tb_1 = 0;
         let maxID_1 = await ThongBao.findOne({}, {}, { sort: { id_tb: -1 } });
-        if (maxID) {
+        if (maxID_1) {
             ID_tb_1 = maxID_1.id_tb;
         }
         //thong bao den nguoi thuc hien
@@ -124,11 +127,11 @@ exports.addDieuchuyenTaiSan = async (req, res) => {
             date_create: new Date().getTime()
         });
         await insert_thongbao2.save();
-        fnc.success(res, "success", insert_dc_vt);
+        fnc.success(res, "success", { insert_dc_vt });
 
 
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -182,10 +185,10 @@ exports.editDCTS = async (req, res) => {
                 vitri_ts_daidien: dai_dien_nhan,
 
             });
-        fnc.success(res, "success", qr_update_dc);
+        fnc.success(res, "success");
 
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -329,9 +332,9 @@ exports.detailsDCVTTS = async (req, res) => {
         let total = await DieuChuyen.countDocuments({
             id_cty: com_id, dc_id: id_dc
         })
-        fnc.success(res, 'thanh cong ', [dc_vt])
+        fnc.success(res, 'thanh cong ', { dc_vt })
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -364,7 +367,7 @@ exports.TuchoiDCVT = async (req, res) => {
 
         fnc.success(res, "tu choi thanh cong")
     } catch (error) {
-
+        console.log(error)
         fnc.setError(res, error.message);
     }
 }
@@ -402,6 +405,7 @@ exports.TiepNhanDCVT = async (req, res) => {
 
             val_dc_1.push(item.sl_ts);
         })
+        console.log(val_dc)
         let check_ts_tu = '';
         for (let i = 0; i < val_dc.length; i++) {
             let check_tsvt_tu = await TaiSanViTri.findOne(// noi tai san co san
@@ -425,17 +429,12 @@ exports.TiepNhanDCVT = async (req, res) => {
 
                     });
             } else {
-
                 let sl_tu_moi = check_ts_tu.sl_bandau - val_dc_1[i];
-
-
                 let maxId = 0;
                 let maxId_crr = await TaiSanViTri.findOne({}, {}, { sort: { tsvt_id: -1 } });
                 if (maxId_crr) {
                     maxId = maxId_crr.tsvt_id;
                 }
-
-
                 let add_sl_tu = new TaiSanViTri({
 
                     tsvt_id: maxId + 1,
@@ -443,15 +442,14 @@ exports.TiepNhanDCVT = async (req, res) => {
                     tsvt_taisan: val_dc[i],
                     tsvt_vitri: vitri_dc_tu,
                     tsvt_soluong: sl_tu_moi
-
                 });
                 await add_sl_tu.save();
             }
         }
         let xac_nhan_bg = await DieuChuyen.findOneAndUpdate({ dc_id: id_dc, id_cty: com_id }, { dc_trangthai: 1 });
-        fnc.success(res, "tiep nhan thanh cong", xac_nhan_bg);
+        fnc.success(res, "tiep nhan thanh cong", { xac_nhan_bg });
     } catch (error) {
-
+        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 
@@ -459,113 +457,82 @@ exports.TiepNhanDCVT = async (req, res) => {
 }
 exports.listBB = async (req, res) => {
     try {
-        let key = req.body.key;
-        let skip = req.body.page || 1;
-        let limit = req.body.perPage || 10;
-        let type_quyen = req.user.data.type;
-        let status = req.body.status;
-        let com_id = 0;
-        let id_ng_tao = 0;
+        let page = Number(req.body.page)|| 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        const id_cty = req.user.data.com_id
+        const dc_id = req.body.dc_id
+        const dc_trangthai = req.body.dc_trangthai
+        let data = []
 
+        let Num_dc_vitri = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 0}).count()
+        let Num_dc_doituong = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 1}).count()
+        let Num_dcdvQL = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 2}).count()
+        let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
+        let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
+        let dem_bg = (numAllocaction.length + numRecall.length)
+        data.push({Num_dc_vitri : Num_dc_vitri})
+        data.push({Num_dc_doituong : Num_dc_doituong})
+        data.push({Num_dcdvQL : Num_dcdvQL})
+        data.push({dem_bg : dem_bg})
         let filter = {};
-
-
-        if (type_quyen == 1) {
-            com_id = req.user.data.com_id;
-            id_ng_tao = req.user.data.idQLC;
-
-        } else if (type_quyen == 2) {
-            com_id = req.user.data.com_id;
-            id_ng_tao = req.user.data.idQLC;
-            filter = {
-                id_cty: com_id,
-                xoa_dieuchuyen: 0,
-                dc_type: 0,
-                $or: [
-                    {
-                        id_ng_thuchien: id_ng_tao
-                    },
-                    {
-                        vitri_ts_daidien: id_ng_tao
-                    }
-                ]
-
-            }
-        }
-        filter = {
-            id_cty: com_id,
-            xoa_dieuchuyen: 0,
-            dc_type: 0,
-
-        };
-        if (key) {
-            filter.dc_id = Number(key);
-            if (status == 1) {
-                filter.dc_trangthai = 0;
-            } else if (status == 2) {
-                filter.dc_trangthai = 1;
-            } else {
-                return res.status(404).json({ message: " status phai la 0 hoac 1 " });
-            }
-        }
+        filter.id_cty = id_cty
+        filter.xoa_dieuchuyen = 0
+        filter.dc_type = 0
+        if(dc_id)  filter.dc_id = dc_id
+        if(dc_id)  filter.dc_trangthai = dc_trangthai
 
         let dc_vitri = await DieuChuyen.aggregate([
-            {
-                $match: filter
-            },
-            {
-                $lookup: {
-                    from: 'QLTS_ViTri_ts',
-                    localField: 'vi_tri_dc_tu',
-                    foreignField: 'id_vitri',
-                    as: QLTS_ViTri_ts
-                }
-            },
+            { $match: filter },
+            {$sort : {dc_id: -1}},
+            {$skip : skip },
+            {$limit : limit },
             {
                 $lookup: {
-                    from: 'QLTS_ViTri_ts_nhan',
-                    localField: 'dc_vitri_tsnhan',
-                    foreignField: 'id_vitri',
-                    as: QLTS_ViTri_tsan_nhan
+                    from: "QLTS_ViTri_ts",
+                    localField: "vi_tri_dc_tu",
+                    foreignField: "id_vitri",
+                    as: "infoVTtu"
                 }
             },
+            // { $unwind: "$infoVTtu" },
             {
                 $lookup: {
-                    from: 'Users',
-                    localField: 'id_ng_thuchien',
-                    foreignField: 'idQLC',
-                    as: NguoiThucHien
+                    from: "QLTS_ViTri_ts",
+                    localField: "dc_vitri_tsnhan",
+                    foreignField: "id_vitri",
+                    as: "infoVTden"
                 }
             },
+            // { $unwind: "$infoVTden" },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_ng_thuchien",
+                    foreignField: "idQLC",
+                    as: "infoUser"
+                }
+            },
+            { $unwind: "$infoUser" },
             {
                 $project: {
-                    'dc_ngay': new Date('$dc_ngay' * 1000),
-                    'dc_id': new Date('$dc_id' * 1000),
-                    'dc_trangthai': '$dc_trangthai',
-                    'vi_tri_dc_tu': '$QLTS_ViTri_ts.vi_tri',
-                    'dc_vitri_tsnhan': '$QLTS_ViTri_tsan_nhan.vi_tri',
-                    'dc_lydo': '$dc_lydo',
-                    'id_ng_thuchien': '$NguoiThucHien.useName'
+                    "dc_id": "$dc_id",
+                    "dc_ngay": "$new Date(dc_ngay)",
+                    "dc_trangthai": "$dc_trangthai",
+                    "dc_lydo": "$dc_lydo",
+                    "id_ng_thuchien": "$id_ng_thuchien",
+                    "dc_vi_tri_tu": "$infoVTtu.vi_tri",
+                    "dc_vi_tri_den": "$infoVTden.vi_tri",
+                    "ten_ng_thuchien": "$infoUser.userName",
                 }
             },
-            {
-                $sort: {
-                    dc_id: -1
-                }
-            },
-            {
-                $skip: (skip - 1) * limit
-            },
-            {
-                $limit: limit
-            }
-        ]);
-        fnc.success(res, dc_vitri);
 
-
-
+        ])
+        data.push({dc_vitri : dc_vitri})
+        let total = await DieuChuyen.countDocuments(filter)
+        fnc.success(res, 'lấy thành công ', { data, total });
     } catch (error) {
-
         fnc.setError(res, error.message);
     }
 }

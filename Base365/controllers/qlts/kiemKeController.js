@@ -4,6 +4,7 @@ const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
 const TaiSan = require('../../models/QuanLyTaiSan/TaiSan');
 const TaiSanDangSD= require('../../models/QuanLyTaiSan/TaiSanDangSuDung');
 const QuaTrinhSuDung= require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
+const Users = require('../../models/Users');
 
 exports.getAndCheckData = async(req, res, next) => {
   try{
@@ -113,9 +114,24 @@ exports.update = async(req, res, next)=>{
   }
 }
 
+exports.danhSachNgayKiemKe = async(req, res, next) => {
+  try{
+    const comId = req.user.data.com_id;
+    let danhSachNgay = await KiemKe.aggregate([
+      {$match: {id_cty: comId, xoa_kiem_ke: 0}},
+      {$group: { _id: "$kk_batdau" } },
+      {$sort: {_id: -1}}
+      
+    ]);
+    return functions.success(res, "Get list date success", {danhSachNgay});
+  }catch(error) {
+    return functions.setError(res, error.message, 500);
+  }
+}
+
 exports.danhSachKiemKe = async(req, res, next)=>{
   try{
-    let {page, pageSize, key} = req.body;
+    let {page, pageSize, key, date} = req.body;
     if(!page) page = 1;
     if(!pageSize) pageSize = 20;
     page = Number(page);
@@ -129,21 +145,76 @@ exports.danhSachKiemKe = async(req, res, next)=>{
       if(!isNaN(parseFloat(key)) && isFinite(key)) condition.id_kiemke = key;
       else condition.kk_noidung = new RegExp(key, 'i');
     }
+    if(date && functions.checkDate(date)) {
+      condition.kk_batdau = functions.convertTimestamp(date);
+    }
     
     // let danhSachKiemKe = await functions.pageFind(KiemKe, condition, {id_kiemke: -1}, skip, limit);
     let danhSachKiemKe = await KiemKe.aggregate([
       {$match: condition},
+      // {$sort: {id_kiemke: -1}},
+      // {$skip: skip},
+      {$limit: limit},
+      {
+          $lookup: {
+              from: 'Users',
+              localField: 'id_cty',
+              foreignField: 'idQLC',
+              as: 'company',
+          }
+      },
+      { $unwind: { path: '$company', preserveNullAndEmptyArrays: true } },
+
+      {
+          $lookup: {
+              from: 'Users',
+              localField: 'id_ngtao_kk',
+              foreignField: 'idQLC',
+              as: 'nguoi_tao',
+          }
+      },
+      { $unwind: { path: '$nguoi_tao', preserveNullAndEmptyArrays: true } },
+
+      {
+          $lookup: {
+              from: 'Users',
+              localField: 'kk_donvi',
+              foreignField: 'idQLC',
+              as: 'donvi',
+          }
+      },
+      { $unwind: { path: '$donvi', preserveNullAndEmptyArrays: true } },
+
       {
           $lookup: {
               from: 'Users',
               localField: 'id_ng_kiemke',
               foreignField: 'idQLC',
-              as: 'user',
+              as: 'ng_kiemke',
           }
       },
-      {$sort: {id_kiemke: -1}},
-      {$skip: skip},
-      {$limit: limit}
+      { $unwind: { path: '$ng_kiemke', preserveNullAndEmptyArrays: true } },
+
+      { $project: {
+        "id_kiemke": "$id_kiemke", 
+        "kk_trangthai": "$kk_trangthai", 
+        "kk_loai": "$kk_loai", 
+        "kk_date_create": "$kk_date_create", 
+        "id_ngtao_kk": "$id_ngtao_kk",
+        "ngtao_kk": "$nguoi_tao.userName",
+        "kk_noidung": "$kk_noidung",
+        "kk_ky": "$kk_ky",
+        "kk_denngay": "$kk_denngay",
+        "kk_donvi": "$kk_donvi",
+        "donvi": "$donvi.userName",
+        "vitri": "$company.address",
+        "id_ng_kiemke": "$id_ng_kiemke",
+        "ng_kiemke": "$ng_kiemke.userName",
+        "kk_batdau": "$kk_batdau",
+        "kk_ketthuc": "$kk_ketthuc",
+        "kk_tiendo": "$kk_tiendo",
+        
+      }},
       ]);
   let total = await functions.findCount(KiemKe, condition);
     return functions.success(res, "Danh sach kiem ke:", {total: total, danhSachKiemKe: danhSachKiemKe});
@@ -267,29 +338,113 @@ exports.duyet = async(req, res, next) => {
 
 exports.chiTiet = async(req, res, next) => {
   try{
-    const id_kk = req.body.id_kk;
+    let id_kk = req.body.id_kk;
     const com_id = req.user.data.com_id;
     if(!id_kk) return functions.setError(res, "Missing input id_kk!", 404);
-    let kiemKe = await KiemKe.findOne({id_kiemke: id_kk}).lean();
+    id_kk = Number(id_kk);
+    let danhSachKiemKe = await KiemKe.aggregate([
+      {$match: {id_kiemke: id_kk}},
+      {
+          $lookup: {
+              from: 'Users',
+              localField: 'id_cty',
+              foreignField: 'idQLC',
+              as: 'company',
+          }
+      },
+      { $unwind: { path: '$company', preserveNullAndEmptyArrays: true } },
+
+      {
+          $lookup: {
+              from: 'Users',
+              localField: 'id_ngtao_kk',
+              foreignField: 'idQLC',
+              as: 'nguoi_tao',
+          }
+      },
+      { $unwind: { path: '$nguoi_tao', preserveNullAndEmptyArrays: true } },
+
+      {
+          $lookup: {
+              from: 'Users',
+              localField: 'kk_donvi',
+              foreignField: 'idQLC',
+              as: 'donvi',
+          }
+      },
+      { $unwind: { path: '$donvi', preserveNullAndEmptyArrays: true } },
+
+      {
+          $lookup: {
+              from: 'Users',
+              localField: 'id_ng_kiemke',
+              foreignField: 'idQLC',
+              as: 'ng_kiemke',
+          }
+      },
+      { $unwind: { path: '$ng_kiemke', preserveNullAndEmptyArrays: true } },
+
+      { $project: {
+        "id_kiemke": "$id_kiemke", 
+        "kk_trangthai": "$kk_trangthai", 
+        "kk_loai": "$kk_loai", 
+        "kk_date_create": "$kk_date_create", 
+        "id_ngtao_kk": "$id_ngtao_kk",
+        "ngtao_kk": "$nguoi_tao.userName",
+        "kk_noidung": "$kk_noidung",
+        "kk_ky": "$kk_ky",
+        "kk_denngay": "$kk_denngay",
+        "kk_donvi": "$kk_donvi",
+        "donvi": "$donvi.userName",
+        "vitri": "$company.address",
+        "id_ng_kiemke": "$id_ng_kiemke",
+        "ng_kiemke": "$ng_kiemke.userName",
+        "kk_batdau": "$kk_batdau",
+        "kk_ketthuc": "$kk_ketthuc",
+        "kk_tiendo": "$kk_tiendo",
+        "id_ts": "$id_ts",
+      }},
+    ]);
+    // let kiemKe = await KiemKe.findOne({id_kiemke: id_kk}).lean();
     let danhSachTaiSan = [];
     
-    if(kiemKe) {
+    if(danhSachKiemKe && danhSachKiemKe.length>0) {
+      let kiemKe = danhSachKiemKe[0];
       let quaTrinhSD = await QuaTrinhSuDung.find( {id_cty: com_id});
       let tsDangSD  = await TaiSanDangSD.find({com_id_sd: com_id});
       if(kiemKe.id_ts && kiemKe.id_ts.ds_ts) {
         let id_ts = kiemKe.id_ts.ds_ts;
         for(let i=0; i<id_ts.length; i++) {
-          let id_tai_san = id_ts[i];
+          let id_tai_san = Number(id_ts[i]);
           let ts_detail = {
-            ts_so_luong: 0,
+            id_tai_san: id_tai_san,
+            name_tai_san: "",
+            vitri_ts: "",
+            donvi_ql: "",
+            ts_chua_sd: 0,
             ts_dang_sd: 0,
             ts_huy: 0,
+            ts_tong: 0,
+            ng_dai_dien: ""
           };
 
           //tong so luong
-          let taiSan = await TaiSan.findOne({ts_id: id_ts[i], id_cty: com_id});
-          if(taiSan) ts_detail["ts_so_luong"] = taiSan.ts_so_luong;
+          let taiSan = await TaiSan.findOne({ts_id: id_tai_san, id_cty: com_id});
+
+          if(taiSan) {
+            ts_detail["ts_chua_sd"] = taiSan.ts_so_luong;
+            ts_detail.name_tai_san = taiSan.ts_ten;
+            ts_detail.vitri_ts = taiSan.ts_vi_tri;
+            ts_detail.donvi_ql = taiSan.id_dv_quanly;
+            let ng_dai_dien = await Users.findOne({idQLC: taiSan.id_ten_quanly});
+            if(ng_dai_dien) {
+              ts_detail.ng_dai_dien = ng_dai_dien.userName;
+            }
+          }
           
+          // ts_detail.name_tai_san = taiSan.ts_ten;
+          // ts_detail.name_tai_san = taiSan.ts_ten;
+
           //loc ra tai san dang su dung
           const sl_dang_sd = tsDangSD.reduce((sum, item) => {
             if (item.id_ts_sd === id_tai_san) {
@@ -347,6 +502,8 @@ exports.chiTiet = async(req, res, next) => {
           }, 0);
           ts_detail["ts_suachua"] = sl_suachua;
 
+          //
+          ts_detail.ts_tong = ts_detail.ts_chua_sd+ts_detail.ts_dang_sd;
           danhSachTaiSan.push(ts_detail);
         }
         kiemKe.danhSachTaiSan = danhSachTaiSan;
@@ -354,7 +511,7 @@ exports.chiTiet = async(req, res, next) => {
 
       return functions.success(res, "Lay thong tin chi tiet kiem ke thanh cong!", {kiemKe: kiemKe});
     }
-    return functions.setError(res, "Kiem ke not found!", 504);
+    return functions.setError(res, "Kiem ke not found!", 404);
   }catch(error){
     return functions.setError(res, error.message, 500);
   }
