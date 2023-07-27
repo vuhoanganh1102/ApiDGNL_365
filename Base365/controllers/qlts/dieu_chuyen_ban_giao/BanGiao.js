@@ -45,9 +45,9 @@ exports.list = async (req, res) => {
             for (let i = 0; i < listAllocation.length; i++) {
                 let UserAllocation = await capPhat.aggregate([
                     {$match: {id_cty: id_cty,id_ng_thuchien:listAllocation[i],id_ng_thuchien : {$ne: 0}}},
-                    {$sort: {cp_id:-1}},
                     {$skip : skip/2 },
                     {$limit : limit/2 },
+                    {$sort: {cp_id:-1}},
                     {$lookup: {
                         from: "Users",
                         localField: "id_ng_thuchien",
@@ -95,9 +95,9 @@ exports.list = async (req, res) => {
             for (let i = 0; i < listRecall.length; i++) {
                 let UserRecall = await ThuHoi.aggregate([
                     {$match: {id_cty: id_cty,id_ng_thuhoi:listRecall[i],id_ng_thuhoi : {$ne: 0}}},
-                    {$sort: {thuhoi_id:-1}},
                     {$skip : skip/2 },
                     {$limit : limit/2 },
+                    {$sort: {thuhoi_id:-1}},
                     {$lookup: {
                         from: "Users",
                         localField: "id_ng_thuhoi",
@@ -153,6 +153,9 @@ exports.listDetailAllocation = async (req, res) => {
         const limit = pageSize;
         let data = await capPhat.aggregate([
             {$match: {id_cty: id_cty,id_ng_thuchien:id_ng_thuchien}},
+            {$skip : skip },
+            {$limit : limit },
+            {$sort: {cp_id:-1}},
             {$lookup: {
                 from: "Users",
                 localField: "id_ng_thuchien",
@@ -171,7 +174,7 @@ exports.listDetailAllocation = async (req, res) => {
                 "ten_ng_thuchien" : "$info.userName",
             }},
             
-        ]).skip(skip).limit(limit)
+        ])
         if(data){
             return fnc.success(res, " lấy thành công ",{data})
         }
@@ -190,6 +193,9 @@ exports.listDetailRecall = async (req, res) => {
         const limit = pageSize;
         let    data = await ThuHoi.aggregate([
             {$match: {id_cty: id_cty, id_ng_thuhoi:id_ng_thuhoi}},
+            {$skip : skip },
+            {$limit : limit },
+            {$sort: {thuhoi_id:-1}},
             {$lookup: {
                 from: "Users",
                 localField: "id_ng_thuhoi",
@@ -205,11 +211,12 @@ exports.listDetailRecall = async (req, res) => {
                 "thuhoi_hoanthanh" : "$thuhoi_hoanthanh",
                 "thuhoi_soluong" : "$thuhoi_soluong",
                 "thuhoi_ng_tao" : "$thuhoi_ng_tao",
+                "id_ng_thuhoi" : "$id_ng_thuhoi",
                 "thuhoi_trangthai" : "$thuhoi_trangthai",
                 "ten_ng_thuhoi" : "$info.userName",
             }},
 
-        ]).skip(skip).limit(limit)
+        ])
         if(data){
             return fnc.success(res, " lấy thành công ",{data})
         }
