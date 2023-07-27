@@ -7,17 +7,24 @@ const HideCateDX = require('../../../models/Vanthu/hide_cate_dx')
 const UserDX = require("../../../models/Users")
 const fnc = require('../../../services/qlc/functions')
 const serviceVanthu = require('../../../services/vanthu')
-
+const HistoryHandling = require('../../../models/Vanthu/history_handling_dx')
 
 //Api hiển thị chi tiết đề xuất 
 
 exports.ChitietDx = async (req, res) => {
   try {
     let {_id} = req.body;
-    let dexuat = await DeXuat.findOne({ _id }).select('');
+    let currentTime = new Date();
+    if(req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id
+    }else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    let dexuat = await DeXuat.findOne({ _id : _id, com_id : com_id});
     if (!dexuat) {
       return functions.setError(res, 'Không tìm thấy bản ghi dexuat', 400);
     } else {
+      let checkhandling = await HistoryHandling.find({id_dx : _id ,id_user : dexuat.id_user,type_handling : 1})
       const checkuserduyet = dexuat.id_user_duyet.split(',').map(Number);
       // Tìm bản ghi trong bảng User dựa trên checkuserduyet
       const users = await UserDX.find({ idQLC: { $in: checkuserduyet } });
@@ -33,29 +40,52 @@ exports.ChitietDx = async (req, res) => {
       const namnUsertd = usertd.map(user => ({ 
         userName: user.userName,
         avatarUser: user.avatarUser,
-        idQLC : user?.idQLC  
+        idQLC : user?.idQLC 
       }));
-      if(dexuat){
-        let avatar = await serviceVanthu.createLinkFileVanthu(dexuat.id_user,dexuat.file_kem)
-        if(avatar){
-          dexuat.file_kem = avatar
+      let avatar = [];
+      if (dexuat) {
+        for (let i = 0; i < dexuat.file_kem.length; i++) {
+          const fileLink = await serviceVanthu.createLinkFileVanthu(dexuat.id_user, dexuat.file_kem[i].file);
+          if (fileLink) {
+            avatar.push({ file: fileLink });
+          }
         }
       }
       if (namnUserDuyet && namnUserDuyet[0] && namnUserDuyet[0].idQLC) {
-        let avatar = await fnc.createLinkFileEmpQLC(namnUserDuyet[0].idQLC, namnUserDuyet[0].avatarUser);
+         avatar = await fnc.createLinkFileEmpQLC(namnUserDuyet[0].idQLC, namnUserDuyet[0].avatarUser);
         if (avatar) {
           namnUserDuyet[0].avatarUser = avatar;
         }
       }
       
       if (namnUsertd && namnUsertd[0] && namnUsertd[0].idQLC) {
-        let avatar = await fnc.createLinkFileEmpQLC(namnUsertd[0].idQLC, namnUsertd[0].avatarUser);
+         avatar = await fnc.createLinkFileEmpQLC(namnUsertd[0].idQLC, namnUsertd[0].avatarUser);
         if (avatar) {
           namnUsertd[0].avatarUser = avatar;
         }
       }
-      
-      return functions.success(res, 'get data success', { dexuat, namnUserDuyet, namnUsertd });
+      let timeCreateInMillis = dexuat.time_create * 1000;
+      let timeDifferenceInMillis = currentTime.getTime() - timeCreateInMillis;
+      let numberOfDays = Math.floor(timeDifferenceInMillis / (1000 * 60 * 60 * 24));
+      let detailDeXuat = [
+        {
+      ten_de_xuat : dexuat.name_dx,
+      nguoi_tao : dexuat.name_user,
+      nhom_de_xuat : dexuat.type_dx,
+      thoi_gian_tao : dexuat.time_create * 1000,
+      loai_de_xuat : dexuat.type_time,
+      cap_nhat : numberOfDays,
+      thong_tin_chung : dexuat.noi_dung,
+      kieu_phe_duyet : dexuat.kieu_duyet,
+      lanh_dao_duyet :namnUserDuyet,
+      nguoi_theo_doi :namnUsertd,
+      file_kem : avatar,
+      thoi_gian_tao : dexuat.time_create * 1000,
+      thoi_gian_duyet : dexuat.time_duyet,
+      thoi_gian_tiep_nhan : checkhandling.time ,
+        }
+      ]
+      return functions.success(res, 'get data success', { detailDeXuat });
     }
   } catch (error) {
     console.error('Failed ', error);
@@ -373,4 +403,13 @@ exports.listtamung = async (req, res) => {
   }
 };
 
-
+exports.showloaicate = async(req,res) => {
+  try{
+    let showcatedx = await CateDeXuat.find({com_id : 0})
+    .select('id_cate_dx name_cate_dx')
+    return functions.success(res, 'get data success', {showcatedx})
+  } catch(e){
+    console.log(e)
+    return functions.setError(res , e.message)
+}
+}

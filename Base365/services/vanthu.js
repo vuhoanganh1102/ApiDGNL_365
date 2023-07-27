@@ -21,6 +21,22 @@ exports.covert = async(checkConvert) => {
           let newdate = year + "-" + moth + "-" + date
           return newdate
 }
+exports.formatDate = (dateString) =>{
+    // Sử dụng phương thức `replace()` để thay thế dấu / bằng dấu -
+    return new Date(dateString).toLocaleDateString('en-GB').replace(/\//g, '-');
+  }
+
+exports.getDatesFromRange = (startDate, endDate) => {
+    const dates = [];
+    let currentDate = new Date(startDate);
+    const stopDate = new Date(endDate);
+    while (currentDate <= stopDate) {
+      dates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return dates;
+   
+  }
 
 // hàm khi thành công
 exports.success = async (res, messsage = "", data = []) => {
@@ -256,7 +272,6 @@ exports.convertDate = (timestamp) => {
 // duyệt đề xuất
 exports.browseProposals = async (res,His_Handle, De_Xuat, _id,check) => {
         try {
-            console.log(12);
             let timeNow = new Date();
             const maxID = await functions.getMaxID(His_Handle);
             let newID = 0;
