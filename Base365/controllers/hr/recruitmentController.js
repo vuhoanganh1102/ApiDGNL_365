@@ -723,8 +723,6 @@ exports.getListCandidate= async(req, res, next) => {
                     as: "listSkill"
                 }
             },
-            { $unwind: { path: "$listSkill", preserveNullAndEmptyArrays: true } },
-
             //lay ra thong tin skill
             {
                 $lookup: {
