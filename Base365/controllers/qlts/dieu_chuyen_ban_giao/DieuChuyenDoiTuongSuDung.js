@@ -1,7 +1,8 @@
 const DieuChuyen = require("../../../models/QuanLyTaiSan/DieuChuyen")
 const fnc = require('../../../services/functions')
 
-
+const capPhat = require('../../../models/QuanLyTaiSan/CapPhat')
+const ThuHoi = require('../../../models/QuanLyTaiSan/ThuHoi')
 
 // exports.showDieuChuyenDoiTuong = async (req, res) => {
 //     try {
@@ -48,8 +49,26 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
         const dc_id = req.body.dc_id
         let conditions = {}
         conditions.id_cty = id_cty
+        let data = []
+        let Num_dc_vitri = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 0}).count()
+        let Num_dc_doituong = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 1}).count()
+        let Num_dcdvQL = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 2}).count()
+        let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
+        let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
+        let dem_bg = (numAllocaction.length + numRecall.length)
+        data.push({Num_dc_vitri : Num_dc_vitri})
+        data.push({Num_dc_doituong : Num_dc_doituong})
+        data.push({Num_dcdvQL : Num_dcdvQL})
+        data.push({dem_bg : dem_bg})
+        // conditions.id_cty_dang_sd = {$ne : 0}
+        // conditions.id_cty_nhan = {$ne : 0}
+        // conditions.id_nv_nhan = {$ne : 0}
+        // conditions.id_nv_dangsudung = {$ne : 0}
+        // conditions.id_pb_nhan = {$ne : 0}
+        // conditions.id_pb_dang_sd = {$ne : 0}
         if(dc_id) conditions.dc_id = dc_id
-        const  data = await DieuChuyen.aggregate([
+        // console.log(conditions)
+         let data1 = await DieuChuyen.aggregate([
             { $match: conditions },
             {$sort : {dc_id: -1}},
             {$skip : skip },
@@ -142,6 +161,7 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
             },
 
         ])
+        data.push({list : data1})
         let count = await DieuChuyen.count(conditions)
         const totalCount = data.length > 0 ? data[0].totalCount : 0;
         const totalPages = Math.ceil(totalCount / pageSize);
