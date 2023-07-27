@@ -37,19 +37,19 @@ exports.create = async(req,res) =>{
                         ts_id: item[0],
                         sl_ts: item[1]
                         }));
-        let updateThongBao = new thongBao({
-            id_tb : Number(maxThongBao.id_tb) +1 || 1,
-            id_ts : updated_ds_dc[0].ts_id,
-            id_cty : id_cty,
-            id_ng_tao : idQLC,
-            type_quyen :1,
-            type_quyen_tao:1,
-            loai_tb: 3,
-            add_or_duyet: 1,
-            da_xem: 0,
-            date_create :  Date.parse(now)/1000,
-         })
-         await updateThongBao.save()
+        // let updateThongBao = new thongBao({
+        //     id_tb : Number(maxThongBao.id_tb) +1 || 1,
+        //     id_ts : updated_ds_dc[0].ts_id,
+        //     id_cty : id_cty,
+        //     id_ng_tao : idQLC,
+        //     type_quyen :1,
+        //     type_quyen_tao:1,
+        //     loai_tb: 3,
+        //     add_or_duyet: 1,
+        //     da_xem: 0,
+        //     date_create :  Date.parse(now)/1000,
+        //  })
+        //  await updateThongBao.save()
         if(loai_dc == 0){
             let insert_dc_vt = new DieuChuyen({
                 dc_id: Number(maxDieuChuyen.dc_id) +1 || 1,
@@ -518,7 +518,7 @@ exports.list = async(req,res) =>{
                     as: "infoTS"
                 }
             },
-            { $unwind: "$infoTS" },
+            { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "Users",
@@ -527,7 +527,8 @@ exports.list = async(req,res) =>{
                     as: "infoCtyDangSD"
                 }
             },
-            // { $unwind: "$infoCtyDangSD" },
+            { $unwind: { path: "$infoCtyDangSD", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "Users",
@@ -536,7 +537,8 @@ exports.list = async(req,res) =>{
                     as: "infoCty"
                 }
             },
-            // { $unwind: "$infoCty" },
+            { $unwind: { path: "$infoCty", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "Users",
@@ -545,7 +547,7 @@ exports.list = async(req,res) =>{
                     as: "infoNV"
                 }
             },
-            // { $unwind: "$infoNV" },
+            { $unwind: { path: "$infoNV", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
                     from: "Users",
@@ -554,7 +556,8 @@ exports.list = async(req,res) =>{
                     as: "infoNVdangSD"
                 }
             },
-            // { $unwind: "$infoNVdangSD" },
+            { $unwind: { path: "$infoNVdangSD", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "QLC_Deparments",
@@ -563,7 +566,8 @@ exports.list = async(req,res) =>{
                     as: "infoPhongBan"
                 }
             },
-            // { $unwind: "$infoPhongBan" },
+            { $unwind: { path: "$infoPhongBan", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "QLC_Deparments",
@@ -572,7 +576,8 @@ exports.list = async(req,res) =>{
                     as: "infoPhongBanDangSD"
                 }
             },
-            // { $unwind: "$infoPhongBanDangSD" },
+            { $unwind: { path: "$infoPhongBanDangSD", preserveNullAndEmptyArrays: true } },
+
             {
                 $project: {
                     "dc_id": "$dc_id",
