@@ -20,13 +20,13 @@ exports.list = async (req, res) => {
         listConditions.id_cty = id_cty
         if(id_ng_thuchien) listConditions.id_ng_thuchien = id_ng_thuchien
         if(id_ng_thuhoi) listConditions.id_ng_thuhoi = id_ng_thuhoi
-        let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 }).count()
-        let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 }).count()
+        let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
+        let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
+        let dem_bg = (numAllocaction.length + numRecall.length)
         let transferLocate = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0,dc_type :0}).count()
-        let transferObject = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0,dc_type :0}).count()
-        let transferManagerUnit = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0, dc_type :0}).count()
-        if(numAllocaction) data.push({numAllocaction: numAllocaction})
-        if(numRecall)  data.push({numRecall: numRecall})
+        let transferObject = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0,dc_type :1}).count()
+        let transferManagerUnit = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0, dc_type :2}).count()
+        if(dem_bg)  data.push({dem_bg: dem_bg})
         if(transferLocate)  data.push({transferLocate: transferLocate})
         if(transferObject) data.push({transferObject: transferObject})
         if(transferManagerUnit) data.push({transferManagerUnit: transferManagerUnit})
@@ -44,7 +44,10 @@ exports.list = async (req, res) => {
         if(listAllocation) {
             for (let i = 0; i < listAllocation.length; i++) {
                 let UserAllocation = await capPhat.aggregate([
-                    {$match: {id_cty: id_cty,id_ng_thuchien:listAllocation[i]}},
+                    {$match: {id_cty: id_cty,id_ng_thuchien:listAllocation[i],id_ng_thuchien : {$ne: 0}}},
+                    {$skip : skip/2 },
+                    {$limit : limit/2 },
+                    {$sort: {cp_id:-1}},
                     {$lookup: {
                         from: "Users",
                         localField: "id_ng_thuchien",
@@ -91,7 +94,10 @@ exports.list = async (req, res) => {
         if(listRecall) {
             for (let i = 0; i < listRecall.length; i++) {
                 let UserRecall = await ThuHoi.aggregate([
-                    {$match: {id_cty: id_cty,id_ng_thuhoi:listRecall[i]}},
+                    {$match: {id_cty: id_cty,id_ng_thuhoi:listRecall[i],id_ng_thuhoi : {$ne: 0}}},
+                    {$skip : skip/2 },
+                    {$limit : limit/2 },
+                    {$sort: {thuhoi_id:-1}},
                     {$lookup: {
                         from: "Users",
                         localField: "id_ng_thuhoi",
@@ -147,6 +153,9 @@ exports.listDetailAllocation = async (req, res) => {
         const limit = pageSize;
         let data = await capPhat.aggregate([
             {$match: {id_cty: id_cty,id_ng_thuchien:id_ng_thuchien}},
+            {$skip : skip },
+            {$limit : limit },
+            {$sort: {cp_id:-1}},
             {$lookup: {
                 from: "Users",
                 localField: "id_ng_thuchien",
@@ -165,7 +174,7 @@ exports.listDetailAllocation = async (req, res) => {
                 "ten_ng_thuchien" : "$info.userName",
             }},
             
-        ]).skip(skip).limit(limit)
+        ])
         if(data){
             return fnc.success(res, " lấy thành công ",{data})
         }
@@ -184,6 +193,9 @@ exports.listDetailRecall = async (req, res) => {
         const limit = pageSize;
         let    data = await ThuHoi.aggregate([
             {$match: {id_cty: id_cty, id_ng_thuhoi:id_ng_thuhoi}},
+            {$skip : skip },
+            {$limit : limit },
+            {$sort: {thuhoi_id:-1}},
             {$lookup: {
                 from: "Users",
                 localField: "id_ng_thuhoi",
@@ -199,11 +211,12 @@ exports.listDetailRecall = async (req, res) => {
                 "thuhoi_hoanthanh" : "$thuhoi_hoanthanh",
                 "thuhoi_soluong" : "$thuhoi_soluong",
                 "thuhoi_ng_tao" : "$thuhoi_ng_tao",
+                "id_ng_thuhoi" : "$id_ng_thuhoi",
                 "thuhoi_trangthai" : "$thuhoi_trangthai",
                 "ten_ng_thuhoi" : "$info.userName",
             }},
 
-        ]).skip(skip).limit(limit)
+        ])
         if(data){
             return fnc.success(res, " lấy thành công ",{data})
         }
