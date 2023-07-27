@@ -19,11 +19,9 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             id_user_duyet,
             id_user_theo_doi,
             type_time,
-            ly_do,
-            bd_nghi,
-            kt_nghi,
+            noi_dung,
             loai_np,
-            ca_nghi,
+            ly_do
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -36,14 +34,44 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
-        let link_download = '';
+        let link_download = [];
         if (file_kem) {
-            functions.uploadFileVanThu(id_user, file_kem);
-            link_download = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
         } else {
+            let listLyDo = JSON.parse(noi_dung).nghi_phep
+            const data = []; // Mảng chứa thông tin của từng ngày nghỉ
+
+            for (let i = 0; i < listLyDo.length; i++) {
+                let bd_nghi = listLyDo[i][0];
+                let kt_nghi = listLyDo[i][1];
+                let ca_nghi = listLyDo[i][2];
+                if (bd_nghi && kt_nghi) {
+                  let dates = await functions.getDatesFromRange(bd_nghi, kt_nghi);
+                  dates.forEach((date) => {
+                    let formattedDate = functions.formatDate(date);
+                    data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
+                  });
+                } else if (bd_nghi) {
+                
+                 let formattedDate = functions.formatDate(bd_nghi);
+                  data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
+                }
+              }
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             if (de_xuat) {
@@ -55,24 +83,22 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                 type_dx: 1,
                 noi_dung: {
                     nghi_phep: {
-                        ly_do: ly_do,
-                        bd_nghi: bd_nghi,
-                        kt_nghi: kt_nghi,
-                        loai_np: loai_np,
-                        ca_nghi: ca_nghi,
+                        nd : data,
+                        loai_np : loai_np,
+                        ly_do : ly_do
                     }
                 },
                 type_time : type_time,
                 name_user: name_user,
                 id_user: id_user,
                 com_id: com_id,
-                kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                file_kem: link_download.map(file => ({ file })),
                 kieu_duyet: 0,
-                time_create: new Date(),
+                time_create: Math.floor(Date.now() / 1000),
             });
+
             let saveDX = await new_de_xuat.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
@@ -107,9 +133,9 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             let saveCreateTb = await ThongBao.insertMany(createTBs);
             return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
-    } catch (error) {
-        console.error('Failed ', error);
-        return functions.setError(res, error);
+    } catch(e){
+        console.log(e)
+        return functions.setError(res , e.message)
     }
 }
 //đề xuất bổ nhiệm 
@@ -139,10 +165,21 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
-        let link_download = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile         
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -173,7 +210,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                file_kem: link_download.map(file => ({ file })) ,
                 kieu_duyet: 0,
                 time_create: new Date(),
             })
@@ -243,11 +280,24 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-        let link_download = '';
         let file_kem = req.files.fileKem;
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
 
 
@@ -278,7 +328,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                 phong_ban: phong_ban,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                file_kem: link_download.map(file => ({ file })) ,
                 kieu_duyet: kieu_duyet,
                 time_create: new Date(),
                 time_tiep_nhan: null,
@@ -347,10 +397,23 @@ exports.de_xuat_doi_ca = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
-        let link_download = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -380,7 +443,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                file_kem: link_download.map(file => ({ file })) ,
                 kieu_duyet: kieu_duyet,
                 time_create: new Date(),
 
@@ -450,10 +513,23 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
-        let link_download = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -483,7 +559,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                file_kem: link_download.map(file => ({ file })) ,
                 kieu_duyet: kieu_duyet,
                 time_create: new Date(),
             })
@@ -549,10 +625,23 @@ exports.de_xuat_tang_luong = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
-        let link_download = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -581,7 +670,7 @@ exports.de_xuat_tang_luong = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                file_kem: link_download.map(file => ({ file })) ,
                 kieu_duyet: kieu_duyet,
                 type_time: 0,
                 time_create: new Date(),
@@ -650,10 +739,23 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
-        let link_download = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -684,7 +786,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                file_kem: link_download.map(file => ({ file })) ,
                 kieu_duyet: 0,
                 type_duyet: 0,
                 time_create: new Date(),
@@ -743,8 +845,6 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
         let id_user = "";
         let com_id = "";
         let name_user = "";
-        let chageDate = ngay_tam_ung
-        console.log(typeof chageDate);
         if (req.user.data.type == 2) {
             id_user = req.user.data.idQLC
             com_id = req.user.data.com_id
@@ -753,10 +853,23 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
-        let link_download = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            link_download =  file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -784,7 +897,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                file_kem: link_download.map(file => ({ file })) ,
                 kieu_duyet: 0,
                 type_duyet: 0,
                 type_time: 0,
@@ -857,10 +970,23 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.fileKem;
-        let link_download = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            link_download = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
 
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
@@ -890,7 +1016,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                file_kem: link_download.map(file => ({ file })) ,
                 kieu_duyet: kieu_duyet,
                 time_create: new Date(),
             });
@@ -1055,10 +1181,23 @@ exports.dxCong = async (req, res) => {
         }
         let createDate = new Date();
         let file_kem = req.files.file_kem;
-        let linkDL = '';
-        if (linkDL) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+        let link_download = [];
+        if (file_kem) {
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1089,7 +1228,7 @@ exports.dxCong = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 time_create: createDate,
             });
             let savedDXC = await createDXC.save();
@@ -1156,10 +1295,23 @@ exports.dxCoSoVatChat = async (req, res) => {
         }
         let createDate = new Date()
         let file_kem = req.files.file_kem;
-        let linkDL = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1185,7 +1337,7 @@ exports.dxCoSoVatChat = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 time_start_out: time_start_out,
                 time_create: createDate,
 
@@ -1258,10 +1410,23 @@ exports.dxDangKiSuDungXe = async (req, res) => {
         }
         let createDate = new Date()
         let file_kem = req.files.file_kem;
-        let linkDL = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1291,7 +1456,7 @@ exports.dxDangKiSuDungXe = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
@@ -1361,10 +1526,23 @@ exports.dxHoaHong = async (req, res) => {
         }
         let createDate = new Date()
         let file_kem = req.files.file_kem;
-        let linkDL = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1395,7 +1573,7 @@ exports.dxHoaHong = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
@@ -1462,10 +1640,23 @@ exports.dxKhieuNai = async (req, res) => {
         }
         let createDate = new Date()
         let file_kem = req.files.file_kem;
-        let linkDL = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1491,7 +1682,7 @@ exports.dxKhieuNai = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
@@ -1561,10 +1752,23 @@ exports.dxPhongHop = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.file_kem;
-        let linkDL = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1592,7 +1796,7 @@ exports.dxPhongHop = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 type_duyet: type_duyet,
                 time_create: createDate,
 
@@ -1663,10 +1867,23 @@ exports.dxTangCa = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let file_kem = req.files.file_kem;
-        let linkDL = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1695,7 +1912,7 @@ exports.dxTangCa = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
@@ -1763,10 +1980,23 @@ exports.dxThaiSan = async (req, res) => {
         }
         let createDate = new Date();
         let file_kem = req.files.file_kem;
-        let linkDL = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1794,7 +2024,7 @@ exports.dxThaiSan = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
@@ -1864,10 +2094,23 @@ exports.dxThanhToan = async (req, res) => {
         }
         let createDate = new Date()
         let file_kem = req.files.file_kem;
-        let linkDL = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -1895,7 +2138,7 @@ exports.dxThanhToan = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
@@ -1972,10 +2215,23 @@ exports.dxThuongPhat = async (req, res) => {
         } else {
             nguoi_tp = nguoi_phat_tp;
         }
-        let linkDL = '';
+        let link_download = [];
         if (file_kem) {
-            await functions.uploadFileVanThu(id_user, file_kem);
-            linkDL = file_kem.name;
+            let listFile = [];
+            if (Array.isArray(file_kem)) {
+                // Người dùng gửi nhiều file hoặc một file duy nhất
+                file_kem.forEach(file => {
+                    functions.uploadFileVanThu(id_user, file);
+                    listFile.push(file.name);
+                });
+            } else {
+                // Người dùng chỉ gửi một file
+                functions.uploadFileVanThu(id_user, file_kem);
+                listFile.push(file_kem.name);
+            }
+            link_download = listFile
+           
+            
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -2005,7 +2261,7 @@ exports.dxThuongPhat = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: link_download.map(file => ({ file })) ,
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
