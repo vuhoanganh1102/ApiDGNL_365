@@ -43,7 +43,7 @@ exports.showaddViTri = async (req,res) => {
     let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      let showdp = await Depament.find({com_id : com_id }).select('_id deparmentName')
+      let showdp = await Depament.find({com_id : com_id }).select('dep_id deparment_Name')
       return  functions.success(res, 'get data success', { showdp})
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
