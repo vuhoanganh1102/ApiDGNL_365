@@ -20,13 +20,13 @@ exports.list = async (req, res) => {
         listConditions.id_cty = id_cty
         if(id_ng_thuchien) listConditions.id_ng_thuchien = id_ng_thuchien
         if(id_ng_thuhoi) listConditions.id_ng_thuhoi = id_ng_thuhoi
-        let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 }).count()
-        let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 }).count()
+        let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
+        let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
+        let dem_bg = (numAllocaction.length + numRecall.length)
         let transferLocate = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0,dc_type :0}).count()
-        let transferObject = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0,dc_type :0}).count()
-        let transferManagerUnit = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0, dc_type :0}).count()
-        if(numAllocaction) data.push({numAllocaction: numAllocaction})
-        if(numRecall)  data.push({numRecall: numRecall})
+        let transferObject = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0,dc_type :1}).count()
+        let transferManagerUnit = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0, dc_type :2}).count()
+        if(dem_bg)  data.push({dem_bg: dem_bg})
         if(transferLocate)  data.push({transferLocate: transferLocate})
         if(transferObject) data.push({transferObject: transferObject})
         if(transferManagerUnit) data.push({transferManagerUnit: transferManagerUnit})

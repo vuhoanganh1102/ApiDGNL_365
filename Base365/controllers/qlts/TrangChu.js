@@ -49,8 +49,12 @@ exports.Home = async (req, res) => {
             sl_dang_sd += value_ts_dang_sd.ts_so_luong;
             gt_ts_dang_sd += value_ts_dang_sd.ts_gia_tri * value_ts_dang_sd.ts_so_luong;
         });
+        let tong_gt_ts = (gt_ts_dang_sd + gt_ts_chua_sd)
+        let tong_sl_ts = (sl_chua_sd + sl_dang_sd)
         data.sl_dang_sd = sl_dang_sd
         data.gt_ts_dang_sd = gt_ts_dang_sd
+        data.tong_gt_ts = tong_gt_ts
+        data.tong_sl_ts = tong_sl_ts
         let q_ts_sua_chua = await suaChua.aggregate([
             { $match: { id_cty: id_cty } },
             {

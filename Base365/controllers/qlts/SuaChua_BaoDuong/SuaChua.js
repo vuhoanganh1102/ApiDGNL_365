@@ -268,7 +268,6 @@ exports.listBBDangSuaChua = async (req, res) => {
         })
         fnc.success(res, 'OK', { list_bb, totalBBCSC, totalBBDSC, totalBBDaSC });
     } catch (error) {
-        console.log(error)
         return res.status(500).json({ message: error.message });
     }
 }
