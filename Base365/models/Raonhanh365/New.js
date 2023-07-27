@@ -299,7 +299,8 @@ const newSchema = new mongoose.Schema({
         default: 0
     },
     han_su_dung:{
-        type:Date
+        type:Date,
+        default: 0
     },
     productGroup: {
         // nhóm sản phẩm
