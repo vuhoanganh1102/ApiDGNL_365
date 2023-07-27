@@ -949,121 +949,122 @@ exports.searchNew = async (req, res, next) => {
             let query = raoNhanh.createLinkTilte(search_key);
             condition.linkTitle = { $regex: `.*${query}.*` };
         }
-        if (cateID) condition.cateID = cateID;
-        if (brand) condition.brand = brand;
-        if (wattage) condition.wattage = wattage;
-        if (han_su_dung) condition.han_su_dung = han_su_dung;
-        if (city) condition.city = city;
-        if (district) condition.district = district;
-        if (ward) condition.ward = ward;
-        if (com_address_num) condition.com_address_num = com_address_num;
-        if (productType) condition.productType = productType;
-        if (productGroup) condition.productGroup = productGroup;
-        if (baohanh) condition.baohanh = baohanh;
+        if (cateID) condition.cateID = Number(cateID);
+        if (brand) condition.brand = Number(brand);
+        if (wattage) condition.wattage = Number(wattage);
+        if (han_su_dung) condition.han_su_dung = Number(han_su_dung);
+        if (city) condition.city = Number(city);
+        if (district) condition.district = Number(district);
+        if (ward) condition.ward = Number(ward);
+        if (com_address_num) condition.com_address_num = Number(com_address_num);
+        if (productType) condition.productType = Number(productType);
+        if (productGroup) condition.productGroup = Number(productGroup);
+        if (baohanh) condition.baohanh = Number(baohanh);
         if (microprocessor)
-            condition["electroniceDevice.microprocessor"] = microprocessor;
-        if (ram) condition["electroniceDevice.ram"] = ram;
-        if (hardDrive) condition["electroniceDevice.hardDrive"] = hardDrive;
+            condition["electroniceDevice.microprocessor"] = Number(microprocessor);
+        if (ram) condition["electroniceDevice.ram"] = Number(ram);
+        if (hardDrive) condition["electroniceDevice.hardDrive"] = Number(hardDrive);
         if (typeHardrive)
-            condition["electroniceDevice.typeHardrive"] = typeHardrive;
-        if (screen) condition["electroniceDevice.screen"] = screen;
-        if (size) condition["electroniceDevice.size"] = size;
-        if (brand) condition["electroniceDevice.brand"] = brand;
-        if (warranty) condition["electroniceDevice.warranty"] = warranty;
-        if (device) condition["electroniceDevice.device"] = device;
-        if (capacity) condition["electroniceDevice.capacity"] = capacity;
-        if (sdung_sim) condition["electroniceDevice.sdung_sim"] = sdung_sim;
-        if (phien_ban) condition["electroniceDevice.phien_ban"] = phien_ban;
+            condition["electroniceDevice.typeHardrive"] = Number(typeHardrive);
+        if (screen) condition["electroniceDevice.screen"] = Number(screen);
+        if (size) condition["electroniceDevice.size"] = Number(size);
+        if (brand) condition["electroniceDevice.brand"] = Number(brand);
+        if (warranty) condition["electroniceDevice.warranty"] = Number(warranty);
+        if (device) condition["electroniceDevice.device"] = Number(device);
+        if (capacity) condition["electroniceDevice.capacity"] = Number(capacity);
+        if (sdung_sim) condition["electroniceDevice.sdung_sim"] = Number(sdung_sim);
+        if (phien_ban) condition["electroniceDevice.phien_ban"] = Number(phien_ban);
         if (machineSeries)
-            condition["electroniceDevice.machineSeries"] = machineSeries;
-        if (hang) condition["vehicle.hang"] = hang;
-        if (loai_xe) condition["vehicle.loai_xe"] = loai_xe;
-        if (xuat_xu) condition["vehicle.xuat_xu"] = xuat_xu;
-        if (mau_sac) condition["vehicle.mau_sac"] = mau_sac;
-        if (kich_co) condition["vehicle.kich_co"] = kich_co;
-        if (chat_lieu_khung) condition["vehicle.chat_lieu_khung"] = chat_lieu_khung;
-        if (baohanh) condition["vehicle.baohanh"] = baohanh;
-        if (dong_xe) condition["vehicle.dong_xe"] = dong_xe;
-        if (nam_san_xuat) condition["vehicle.nam_san_xuat"] = nam_san_xuat;
-        if (dung_tich) condition["vehicle.dung_tich"] = dung_tich;
-        if (td_bien_soxe) condition["vehicle.td_bien_soxe"] = td_bien_soxe;
-        if (phien_ban) condition["vehicle.phien_ban"] = phien_ban;
-        if (hop_so) condition["vehicle.hop_so"] = hop_so;
-        if (nhien_lieu) condition["vehicle.nhien_lieu"] = nhien_lieu;
-        if (kieu_dang) condition["vehicle.kieu_dang"] = kieu_dang;
-        if (so_cho) condition["vehicle.so_cho"] = so_cho;
-        if (trong_tai) condition["vehicle.trong_tai"] = trong_tai;
+            condition["electroniceDevice.machineSeries"] = Number(machineSeries);
+        if (hang) condition["vehicle.hang"] = Number(hang);
+        if (loai_xe) condition["vehicle.loai_xe"] = Number(loai_xe);
+        if (xuat_xu) condition["vehicle.xuat_xu"] = Number(xuat_xu);
+        if (mau_sac) condition["vehicle.mau_sac"] = Number(mau_sac);
+        if (kich_co) condition["vehicle.kich_co"] = Number(kich_co);
+        if (chat_lieu_khung) condition["vehicle.chat_lieu_khung"] = Number(chat_lieu_khung);
+        if (baohanh) condition["vehicle.baohanh"] = Number(baohanh);
+        if (dong_xe) condition["vehicle.dong_xe"] = Number(dong_xe);
+        if (nam_san_xuat) condition["vehicle.nam_san_xuat"] = Number(nam_san_xuat);
+        if (dung_tich) condition["vehicle.dung_tich"] = Number(dung_tich);
+        if (td_bien_soxe) condition["vehicle.td_bien_soxe"] = Number(td_bien_soxe);
+        if (phien_ban) condition["vehicle.phien_ban"] = Number(phien_ban);
+        if (hop_so) condition["vehicle.hop_so"] = Number(hop_so);
+        if (nhien_lieu) condition["vehicle.nhien_lieu"] = Number(nhien_lieu);
+        if (kieu_dang) condition["vehicle.kieu_dang"] = Number(kieu_dang);
+        if (so_cho) condition["vehicle.so_cho"] = Number(so_cho);
+        if (trong_tai) condition["vehicle.trong_tai"] = Number(trong_tai);
         if (loai_linhphu_kien)
-            condition["vehicle.loai_linhphu_kien"] = loai_linhphu_kien;
-        if (so_km_da_di) condition["vehicle.so_km_da_di"] = so_km_da_di;
-        if (numberOfSeats) condition["vehicle.numberOfSeats"] = numberOfSeats;
-        if (ten_toa_nha) condition["realEstate.ten_toa_nha"] = ten_toa_nha;
-        if (td_macanho) condition["realEstate.td_macanho"] = td_macanho;
+            condition["vehicle.loai_linhphu_kien"] = Number(loai_linhphu_kien);
+        if (so_km_da_di) condition["vehicle.so_km_da_di"] = Number(so_km_da_di);
+        if (numberOfSeats) condition["vehicle.numberOfSeats"] = Number(numberOfSeats);
+        if (ten_toa_nha) condition["realEstate.ten_toa_nha"] = Number(ten_toa_nha);
+        if (td_macanho) condition["realEstate.td_macanho"] = Number(td_macanho);
         if (ten_phan_khu)
-            condition["realEstate.ten_phan_khu"] = ten_phan_khu;
-        if (td_htmch_rt) condition["realEstate.td_htmch_rt"] = td_htmch_rt;
-        if (so_pngu) condition["realEstate.so_pngu"] = so_pngu;
+            condition["realEstate.ten_phan_khu"] = Number(ten_phan_khu);
+        if (td_htmch_rt) condition["realEstate.td_htmch_rt"] = Number(td_htmch_rt);
+        if (so_pngu) condition["realEstate.so_pngu"] = Number(so_pngu);
         if (so_pve_sinh)
-            condition["realEstate.so_pve_sinh"] = so_pve_sinh;
-        if (tong_so_tang) condition["realEstate.tong_so_tang"] = tong_so_tang;
-        if (huong_chinh) condition["realEstate.huong_chinh"] = huong_chinh;
-        if (giay_to_phap_ly) condition["realEstate.giay_to_phap_ly"] = giay_to_phap_ly;
-        if (tinh_trang_noi_that) condition["realEstate.tinh_trang_noi_that"] = tinh_trang_noi_that;
-        if (dac_diem) condition["realEstate.dac_diem"] = dac_diem;
-        if (dien_tich) condition["realEstate.dien_tich"] = dien_tich;
-        if (dientichsd) condition["realEstate.dientichsd"] = dientichsd;
-        if (chieu_dai) condition["realEstate.chieu_dai"] = chieu_dai;
-        if (chieu_rong) condition["realEstate.chieu_rong"] = chieu_rong;
+            condition["realEstate.so_pve_sinh"] = Number(so_pve_sinh);
+        if (tong_so_tang) condition["realEstate.tong_so_tang"] = Number(tong_so_tang);
+        if (huong_chinh) condition["realEstate.huong_chinh"] = Number(huong_chinh);
+        if (giay_to_phap_ly) condition["realEstate.giay_to_phap_ly"] = Number(giay_to_phap_ly);
+        if (tinh_trang_noi_that) condition["realEstate.tinh_trang_noi_that"] = Number(tinh_trang_noi_that);
+        if (dac_diem) condition["realEstate.dac_diem"] = Number(dac_diem);
+        if (dien_tich) condition["realEstate.dien_tich"] = Number(dien_tich);
+        if (dientichsd) condition["realEstate.dientichsd"] = Number(dientichsd);
+        if (chieu_dai) condition["realEstate.chieu_dai"] = Number(chieu_dai);
+        if (chieu_rong) condition["realEstate.chieu_rong"] = Number(chieu_rong);
         if (tinh_trang_bds)
-            condition["realEstate.tinh_trang_bds"] = tinh_trang_bds;
-        if (td_block_thap) condition["realEstate.td_block_thap"] = td_block_thap;
+            condition["realEstate.tinh_trang_bds"] = Number(tinh_trang_bds);
+        if (td_block_thap) condition["realEstate.td_block_thap"] = Number(td_block_thap);
         if (tang_so)
-            condition["realEstate.tang_so"] = tang_so;
-        if (loai_hinh_canho) condition["realEstate.loai_hinh_canho"] = loai_hinh_canho;
-        if (loaihinh_vp) condition["realEstate.loaihinh_vp"] = loaihinh_vp;
-        if (loai_hinh_dat) condition["realEstate.loai_hinh_dat"] = loai_hinh_dat;
-        if (kv_thanhpho) condition["realEstate.kv_thanhpho"] = kv_thanhpho;
-        if (kv_quanhuyen) condition["realEstate.kv_quanhuyen"] = kv_quanhuyen;
-        if (kv_phuongxa) condition["realEstate.kv_phuongxa"] = kv_phuongxa;
-        if (product) condition["ship.product"] = product;
+            condition["realEstate.tang_so"] = Number(tang_so);
+        if (loai_hinh_canho) condition["realEstate.loai_hinh_canho"] = Number(loai_hinh_canho);
+        if (loaihinh_vp) condition["realEstate.loaihinh_vp"] = Number(loaihinh_vp);
+        if (loai_hinh_dat) condition["realEstate.loai_hinh_dat"] = Number(loai_hinh_dat);
+        if (kv_thanhpho) condition["realEstate.kv_thanhpho"] = Number(kv_thanhpho);
+        if (kv_quanhuyen) condition["realEstate.kv_quanhuyen"] = Number(kv_quanhuyen);
+        if (kv_phuongxa) condition["realEstate.kv_phuongxa"] = Number(kv_phuongxa);
+        if (product) condition["ship.product"] = Number(product);
         if (timeStart) condition["ship.timeStart"] = { $gte: { timeStart } };
         if (timeEnd) condition["ship.timeEnd"] = { $gte: { timeEnd } };
-        if (allDay) condition["ship.allDay"] = allDay;
-        if (loai_hinh_sp) condition["beautifull.loai_hinh_sp"] = loai_hinh_sp;
-        if (loai_sanpham) condition["beautifull.loai_sanpham"] = loai_sanpham;
+        if (allDay) condition["ship.allDay"] = Number(allDay);
+        if (loai_hinh_sp) condition["beautifull.loai_hinh_sp"] = Number(loai_hinh_sp);
+        if (loai_sanpham) condition["beautifull.loai_sanpham"] = Number(loai_sanpham);
         if (han_su_dung) condition["beautifull.han_su_dung"] = han_su_dung;
         if (hang_vattu) condition["beautifull.hang_vattu"] = hang_vattu;
         if (loai_thiet_bi) condition["wareHouse.loai_thiet_bi"] = loai_thiet_bi;
-        if (hang) condition["wareHouse.hang"] = hang;
-        if (cong_suat) condition["wareHouse.cong_suat"] = cong_suat;
-        if (hang_vattu) condition["wareHouse.hang_vattu"] = hang_vattu;
-        if (dung_tich) condition["wareHouse.dung_tich"] = dung_tich;
-        if (khoiluong) condition["wareHouse.khoiluong"] = khoiluong;
-        if (loai_chung) condition["wareHouse.loai_chung"] = loai_chung;
-        if (loai_sanpham) condition["wareHouse.loai_sanpham"] = loai_sanpham;
-        if (block) condition["pet.block"] = block;
-        if (kindOfPet) condition["pet.kindOfPet"] = kindOfPet;
-        if (age) condition["pet.age"] = age;
-        if (gender) condition["pet.gender"] = gender;
-        if (jobType) condition["Job.jobType"] = jobType;
-        if (jobDetail) condition["Job.jobDetail"] = jobDetail;
-        if (jobKind) condition["Job.jobKind"] = jobKind;
-        if (salary) condition["Job.salary"] = salary;
-        if (gender) condition["Job.gender"] = gender;
-        if (exp) condition["Job.exp"] = exp;
-        if (level) condition["Job.level"] = level;
-        if (degree) condition["Job.degree"] = degree;
-        if (skill) condition["Job.skill"] = skill;
-        if (Jobcity) condition["Job.city"] = Jobcity;
-        if (Jobdistrict) condition["Job.district"] = Jobdistrict;
-        if (Jobward) condition["Job.ward"] = Jobward;
-        if (payBy) condition["Job.payBy"] = payBy;
-        if (benefit) condition["Job.benefit"] = benefit;
-        if (startvalue) condition.money = { $gte: startvalue };
-        if (endvalue) condition.money = { $lte: endvalue };
-        if (startvalue && endvalue) condition.startvalue = { $gte: startvalue, $lte: endvalue };
+        if (hang) condition["wareHouse.hang"] = Number(hang);
+        if (cong_suat) condition["wareHouse.cong_suat"] = Number(cong_suat);
+        if (hang_vattu) condition["wareHouse.hang_vattu"] = Number(hang_vattu);
+        if (dung_tich) condition["wareHouse.dung_tich"] = Number(dung_tich);
+        if (khoiluong) condition["wareHouse.khoiluong"] = Number(khoiluong);
+        if (loai_chung) condition["wareHouse.loai_chung"] = Number(loai_chung);
+        if (loai_sanpham) condition["wareHouse.loai_sanpham"] = Number(loai_sanpham);
+        if (block) condition["pet.block"] = Number(block);
+        if (kindOfPet) condition["pet.kindOfPet"] = Number(kindOfPet);
+        if (age) condition["pet.age"] = Number(age);
+        if (gender) condition["pet.gender"] = Number(gender);
+        if (jobType) condition["Job.jobType"] = Number(jobType);
+        if (jobDetail) condition["Job.jobDetail"] = Number(jobDetail);
+        if (jobKind) condition["Job.jobKind"] = Number(jobKind);
+        if (salary) condition["Job.salary"] = Number(salary);
+        if (gender) condition["Job.gender"] = Number(gender);
+        if (exp) condition["Job.exp"] = Number(exp);
+        if (level) condition["Job.level"] = Number(level);
+        if (degree) condition["Job.degree"] = Number(degree);
+        if (skill) condition["Job.skill"] = Number(skill);
+        if (Jobcity) condition["Job.city"] = Number(Jobcity);
+        if (Jobdistrict) condition["Job.district"] = Number(Jobdistrict);
+        if (Jobward) condition["Job.ward"] = Number(Jobward);
+        if (payBy) condition["Job.payBy"] = Number(payBy);
+        if (benefit) condition["Job.benefit"] = Number(benefit);
+        if (startvalue) condition.money = { $gte: Number(startvalue) };
+        if (endvalue) condition.money = { $lte: Number(endvalue) };
+        if (startvalue && endvalue) condition.startvalue = { $gte: Number(startvalue), $lte: Number(endvalue) };
         condition.userID = { $ne: 0 }
         let data = await New.aggregate([
+            { $sort: { pinCate: -1 } },
             { $match: condition },
             { $skip: skip },
             { $limit: limit },
@@ -1921,6 +1922,7 @@ exports.createToken = async (req, res, next) => {
     }
 };
 // danh sách yêu thích tin
+// danh sách yêu thích tin
 exports.newfavorite = async (req, res, next) => {
     try {
         let userID = req.user.data.idRaoNhanh365;
@@ -1994,8 +1996,23 @@ exports.newfavorite = async (req, res, next) => {
                 }
             }
         }
-        let soluongtinyeuthich = await LoveNews.find({ id_user: userID })
-        return functions.success(res, "get data success", { soluongtinyeuthich, data });
+        let soluongtinyeuthich = await LoveNews.aggregate([
+            { $match: { id_user: userID } },
+            {
+                $lookup: {
+                    from: "RN365_News",
+                    localField: "id_new",
+                    foreignField: "_id",
+                    as: "new",
+                },
+            },
+
+            { $unwind: "$new" },
+            { $match: { 'new.buySell': buySell } },
+            { $count: 'sl' }
+
+        ])
+        return functions.success(res, "get data success", { soluongtinyeuthich: soluongtinyeuthich[0].sl, data });
     } catch (error) {
         console.error(error)
         return functions.setError(res, error);
