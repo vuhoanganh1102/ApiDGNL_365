@@ -51,6 +51,9 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
         if(dc_id) conditions.dc_id = dc_id
         const  data = await DieuChuyen.aggregate([
             { $match: conditions },
+            {$sort : {dc_id: -1}},
+            {$skip : skip },
+            {$limit : limit },
             {
                 $lookup: {
                     from: "QLTS_Tai_San",
@@ -138,7 +141,7 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
                 }
             },
 
-        ]).skip(skip).limit(limit)
+        ])
         let count = await DieuChuyen.count(conditions)
         const totalCount = data.length > 0 ? data[0].totalCount : 0;
         const totalPages = Math.ceil(totalCount / pageSize);
