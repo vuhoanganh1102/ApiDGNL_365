@@ -152,6 +152,9 @@ exports.danhSachKiemKe = async(req, res, next)=>{
     // let danhSachKiemKe = await functions.pageFind(KiemKe, condition, {id_kiemke: -1}, skip, limit);
     let danhSachKiemKe = await KiemKe.aggregate([
       {$match: condition},
+      // {$sort: {id_kiemke: -1}},
+      // {$skip: skip},
+      {$limit: limit},
       {
           $lookup: {
               from: 'Users',
@@ -212,9 +215,6 @@ exports.danhSachKiemKe = async(req, res, next)=>{
         "kk_tiendo": "$kk_tiendo",
         
       }},
-      {$sort: {id_kiemke: -1}},
-      {$skip: skip},
-      {$limit: limit}
       ]);
   let total = await functions.findCount(KiemKe, condition);
     return functions.success(res, "Danh sach kiem ke:", {total: total, danhSachKiemKe: danhSachKiemKe});

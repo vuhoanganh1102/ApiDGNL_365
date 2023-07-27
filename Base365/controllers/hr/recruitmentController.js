@@ -711,7 +711,9 @@ exports.getListCandidate= async(req, res, next) => {
 
         const listCandidate = await Candidate.aggregate([
             {$match: listCondition},
-
+            {$sort: {id: -1}},
+            {$skip: skip},
+            {$limit: limit},
             //lay ra thong tin vi tri tuyen dung
             {
                 $lookup: {
@@ -780,10 +782,7 @@ exports.getListCandidate= async(req, res, next) => {
                     'NvTuyenDung': '$NvTuyenDung.userName',
                     'listSkill': '$listSkill',
                 }
-            },
-            {$skip: skip},
-            {$limit: limit},
-            {$sort: {id: -1}}
+            }
         ]);
         for(let i=0; i<listCandidate.length; i++) {
             let candidate = listCandidate[i];

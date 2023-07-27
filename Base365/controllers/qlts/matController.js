@@ -15,6 +15,7 @@ exports.getListDataLostAssets = async (req,res,next) => {
         pageSize = Number(pageSize);
         const skip = (page-1)*pageSize;
         let id_cty = req.user.data.com_id;
+        console.log(id_cty)
 
         let condition = {id_cty: id_cty, xoa_dx_mat: 0};
 
@@ -35,114 +36,115 @@ exports.getListDataLostAssets = async (req,res,next) => {
         if(dataType == 2) condition.mat_trangthai = 3;
         if(dataType == 3) condition.mat_trangthai = 1;
 
-        let danhSachMat = await Mat.aggregate([
-            {$match: condition},
-            {$skip: skip},
-            {$limit: pageSize},
-            {
-                $lookup: {
-                    from: "QLTS_Tai_San",
-                    localField: "mat_taisan",
-                    foreignField: "ts_id",
-                    as: "TaiSan"
-                }
-            },
-            { $unwind: { path: "$TaiSan", preserveNullAndEmptyArrays: true } },
+        let danhSachMat = await functions.pageFind(Mat, condition, {mat_id: -1}, skip, pageSize);
+        // let danhSachMat = await Mat.aggregate([
+        //     {$match: condition},
+        //     {
+        //         $lookup: {
+        //             from: "QLTS_Tai_San",
+        //             localField: "mat_taisan",
+        //             foreignField: "ts_id",
+        //             as: "TaiSan"
+        //         }
+        //     },
+        //     { $unwind: { path: "$TaiSan", preserveNullAndEmptyArrays: true } },
 
-            {
-                $lookup: {
-                    from: "QLTS_Loai_Tai_San",
-                    localField: "TaiSan.id_loai_ts",
-                    foreignField: "id_loai",
-                    as: "LoaiTaiSan"
-                }
-            },
-            { $unwind: { path: "$LoaiTaiSan", preserveNullAndEmptyArrays: true } },
+        //     {
+        //         $lookup: {
+        //             from: "QLTS_Loai_Tai_San",
+        //             localField: "TaiSan.id_loai_ts",
+        //             foreignField: "id_loai",
+        //             as: "LoaiTaiSan"
+        //         }
+        //     },
+        //     { $unwind: { path: "$LoaiTaiSan", preserveNullAndEmptyArrays: true } },
 
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "id_ng_tao",
-                    foreignField: "idQLC",
-                    as: "NguoiTao"
-                }
-            },
-            { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
+        //     {
+        //         $lookup: {
+        //             from: "Users",
+        //             localField: "id_ng_tao",
+        //             foreignField: "idQLC",
+        //             as: "NguoiTao"
+        //         }
+        //     },
+        //     { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
 
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "id_ng_lam_mat",
-                    foreignField: "idQLC",
-                    as: "NguoiLamMat"
-                }
-            },
-            { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
+        //     {
+        //         $lookup: {
+        //             from: "Users",
+        //             localField: "id_ng_lam_mat",
+        //             foreignField: "idQLC",
+        //             as: "NguoiLamMat"
+        //         }
+        //     },
+        //     { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
 
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "id_ng_nhan_denbu",
-                    foreignField: "idQLC",
-                    as: "NguoiNhanDenBu"
-                }
-            },
-            { $unwind: { path: "$NguoiNhanDenBu", preserveNullAndEmptyArrays: true } },
+        //     {
+        //         $lookup: {
+        //             from: "Users",
+        //             localField: "id_ng_nhan_denbu",
+        //             foreignField: "idQLC",
+        //             as: "NguoiNhanDenBu"
+        //         }
+        //     },
+        //     { $unwind: { path: "$NguoiNhanDenBu", preserveNullAndEmptyArrays: true } },
 
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "id_ng_duyet",
-                    foreignField: "idQLC",
-                    as: "NguoiDuyet"
-                }
-            },
-            { $unwind: { path: "$NguoiDuyet", preserveNullAndEmptyArrays: true } },
+        //     {
+        //         $lookup: {
+        //             from: "Users",
+        //             localField: "id_ng_duyet",
+        //             foreignField: "idQLC",
+        //             as: "NguoiDuyet"
+        //         }
+        //     },
+        //     { $unwind: { path: "$NguoiDuyet", preserveNullAndEmptyArrays: true } },
             
-            { $project: {
-                "mat_id": "$mat_id", 
-                "mat_trangthai": "$mat_trangthai",
-                "mat_date_create": "$mat_date_create", 
-                "id_taisan": "$mat_taisan",
-                "ten_taisan": "$TaiSan.ts_ten",
-                "mat_soluong": "$mat_soluong",
-                "loai_taisan": "$LoaiTaiSan.ten_loai",
-                "mat_ngay": "$mat_ngay",
-                "mat_lydo": "$mat_lydo",
-                "mat_giatri": "$mat_giatri",
-                "giatri_ts": "$giatri_ts",
-                "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
-                "tien_denbu": "$tien_denbu",
-                "mat_lydo_tuchoi": "$mat_lydo_tuchoi",
-                "yc_denbu": "$yc_denbu",
-                "hinhthuc_denbu": "$hinhthuc_denbu",
-                "mat_han_ht": "$mat_han_ht",
-                "loai_thanhtoan": "$loai_thanhtoan",
-                "ngay_thanhtoan": "$ngay_thanhtoan",
-                "so_tien_da_duyet": "$so_tien_da_duyet",
-                "sotien_danhan": "$sotien_danhan",
-                "ngay_duyet": "$ngay_duyet",
-                "mat_type_quyen": "$mat_type_quyen",
-                "type_quyen_nhan_db": "$type_quyen_nhan_db",
+        //     { $project: {
+        //         "mat_id": "$mat_id", 
+        //         "mat_trangthai": "$mat_trangthai",
+        //         "mat_date_create": "$mat_date_create", 
+        //         "id_taisan": "$mat_taisan",
+        //         "ten_taisan": "$TaiSan.ts_ten",
+        //         "mat_soluong": "$mat_soluong",
+        //         "loai_taisan": "$LoaiTaiSan.ten_loai",
+        //         "mat_ngay": "$mat_ngay",
+        //         "mat_lydo": "$mat_lydo",
+        //         "mat_giatri": "$mat_giatri",
+        //         "giatri_ts": "$giatri_ts",
+        //         "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
+        //         "tien_denbu": "$tien_denbu",
+        //         "mat_lydo_tuchoi": "$mat_lydo_tuchoi",
+        //         "yc_denbu": "$yc_denbu",
+        //         "hinhthuc_denbu": "$hinhthuc_denbu",
+        //         "mat_han_ht": "$mat_han_ht",
+        //         "loai_thanhtoan": "$loai_thanhtoan",
+        //         "ngay_thanhtoan": "$ngay_thanhtoan",
+        //         "so_tien_da_duyet": "$so_tien_da_duyet",
+        //         "sotien_danhan": "$sotien_danhan",
+        //         "ngay_duyet": "$ngay_duyet",
+        //         "mat_type_quyen": "$mat_type_quyen",
+        //         "type_quyen_nhan_db": "$type_quyen_nhan_db",
                 
 
                 
 
-                "id_ng_tao": "$id_ng_tao",
-                "ten_ng_tao": "$NguoiTao.userName",
+        //         "id_ng_tao": "$id_ng_tao",
+        //         "ten_ng_tao": "$NguoiTao.userName",
 
-                "id_ng_lam_mat": "$id_ng_lam_mat",
-                "ten_ng_lam_mat": "$NguoiLamMat.userName",
+        //         "id_ng_lam_mat": "$id_ng_lam_mat",
+        //         "ten_ng_lam_mat": "$NguoiLamMat.userName",
 
-                "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
-                "ten_ng_nhan_denbu": "$NguoiNhanDenBu.userName",
+        //         "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
+        //         "ten_ng_nhan_denbu": "$NguoiNhanDenBu.userName",
 
-                "id_ng_duyet": "$id_ng_duyet",
-                "ten_ng_duyet": "$NguoiDuyet.userName",
+        //         "id_ng_duyet": "$id_ng_duyet",
+        //         "ten_ng_duyet": "$NguoiDuyet.userName",
                 
-            }},
-            {$sort: {mat_id: -1}},
-        ]);
+        //     }},
+        //     {$skip: skip},
+        //     {$limit: pageSize},
+        //     {$sort: {mat_id: -1}},
+        // ]);
         const total = await functions.findCount(Mat, condition);
         return functions.success(res,'get data success',{page, pageSize, total, thongKe, danhSachMat})
     } catch (error) {
