@@ -90,7 +90,8 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
                     as: "infoCtyDangSD"
                 }
             },
-            // { $unwind: "$infoCtyDangSD" },
+            { $unwind: { path: "$infoCtyDangSD", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "Users",
@@ -99,7 +100,8 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
                     as: "infoCty"
                 }
             },
-            // { $unwind: "$infoCty" },
+            { $unwind: { path: "$infoCty", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "Users",
@@ -108,7 +110,8 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
                     as: "infoNV"
                 }
             },
-            // { $unwind: "$infoNV" },
+            { $unwind: { path: "$infoNV", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "Users",
@@ -117,7 +120,8 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
                     as: "infoNVdangSD"
                 }
             },
-            // { $unwind: "$infoNVdangSD" },
+            { $unwind: { path: "$infoNVdangSD", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "QLC_Deparments",
@@ -126,7 +130,8 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
                     as: "infoPhongBan"
                 }
             },
-            // { $unwind: "$infoPhongBan" },
+            { $unwind: { path: "$infoPhongBan", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "QLC_Deparments",
@@ -135,7 +140,8 @@ exports.showDieuChuyenDoiTuong = async(req,res) =>{
                     as: "infoPhongBanDangSD"
                 }
             },
-            // { $unwind: "$infoPhongBanDangSD" },
+            { $unwind: { path: "$infoPhongBanDangSD", preserveNullAndEmptyArrays: true } },
+
             {
                 $project: {
                     "dc_id": "$dc_id",
