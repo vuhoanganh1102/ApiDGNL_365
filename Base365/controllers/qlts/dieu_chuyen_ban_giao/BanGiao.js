@@ -44,7 +44,10 @@ exports.list = async (req, res) => {
         if(listAllocation) {
             for (let i = 0; i < listAllocation.length; i++) {
                 let UserAllocation = await capPhat.aggregate([
-                    {$match: {id_cty: id_cty,id_ng_thuchien:listAllocation[i]}},
+                    {$match: {id_cty: id_cty,id_ng_thuchien:listAllocation[i],id_ng_thuchien : {$ne: 0}}},
+                    {$sort: {cp_id:-1}},
+                    {$skip : skip/2 },
+                    {$limit : limit/2 },
                     {$lookup: {
                         from: "Users",
                         localField: "id_ng_thuchien",
@@ -91,7 +94,10 @@ exports.list = async (req, res) => {
         if(listRecall) {
             for (let i = 0; i < listRecall.length; i++) {
                 let UserRecall = await ThuHoi.aggregate([
-                    {$match: {id_cty: id_cty,id_ng_thuhoi:listRecall[i]}},
+                    {$match: {id_cty: id_cty,id_ng_thuhoi:listRecall[i],id_ng_thuhoi : {$ne: 0}}},
+                    {$sort: {thuhoi_id:-1}},
+                    {$skip : skip/2 },
+                    {$limit : limit/2 },
                     {$lookup: {
                         from: "Users",
                         localField: "id_ng_thuhoi",
