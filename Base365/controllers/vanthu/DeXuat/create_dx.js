@@ -33,11 +33,11 @@ exports.de_xuat_xin_nghi = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-        
-       ;
+
+        ;
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -51,7 +51,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                 listFile.push(file_kem.name);
             }
             link_download = listFile
-        
+
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -64,17 +64,17 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                 let kt_nghi = listLyDo[i][1];
                 let ca_nghi = listLyDo[i][2];
                 if (bd_nghi && kt_nghi) {
-                  let dates = await functions.getDatesFromRange(bd_nghi, kt_nghi);
-                  dates.forEach((date) => {
-                    let formattedDate = functions.formatDate(date);
-                    data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
-                  });
+                    let dates = await functions.getDatesFromRange(bd_nghi, kt_nghi);
+                    dates.forEach((date) => {
+                        let formattedDate = functions.formatDate(date);
+                        data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
+                    });
                 } else if (bd_nghi) {
-                
-                 let formattedDate = functions.formatDate(bd_nghi);
-                  data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
+
+                    let formattedDate = functions.formatDate(bd_nghi);
+                    data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
                 }
-              }
+            }
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
             if (de_xuat) {
@@ -86,12 +86,12 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                 type_dx: 1,
                 noi_dung: {
                     nghi_phep: {
-                        nd : data,
-                        loai_np : loai_np,
-                        ly_do : ly_do
+                        nd: data,
+                        loai_np: loai_np,
+                        ly_do: ly_do
                     }
                 },
-                type_time : type_time,
+                type_time: type_time,
                 name_user: name_user,
                 id_user: id_user,
                 com_id: com_id,
@@ -126,7 +126,7 @@ exports.de_xuat_xin_nghi = async (req, res) => {
                     id_van_ban: saveDX._id,
                     type: 2,
                     view: 0,
-                    created_date:  Math.floor(Date.now() / 1000)
+                    created_date: Math.floor(Date.now() / 1000)
                 });
 
                 createTBs.push(createTB);
@@ -136,9 +136,9 @@ exports.de_xuat_xin_nghi = async (req, res) => {
             let saveCreateTb = await ThongBao.insertMany(createTBs);
             return functions.success(res, 'get data success', { saveDX, saveCreateTb });
         };
-    } catch(e){
+    } catch (e) {
         console.log(e)
-        return functions.setError(res , e.message)
+        return functions.setError(res, e.message)
     }
 }
 //đề xuất bổ nhiệm 
@@ -166,10 +166,10 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-    
+
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -183,7 +183,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
                 listFile.push(file_kem.name);
             }
             link_download = listFile
-        
+
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -212,9 +212,9 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
                 com_id: com_id,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 kieu_duyet: 0,
-                time_create:  Math.floor(Date.now() / 1000),
+                time_create: Math.floor(Date.now() / 1000),
             })
 
 
@@ -240,7 +240,7 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
                     id_van_ban: saveDX._id,
                     type: 2,
                     view: 0,
-                    created_date:  Math.floor(Date.now() / 1000),
+                    created_date: Math.floor(Date.now() / 1000),
                 });
 
                 createTBs.push(createTB);
@@ -268,7 +268,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
             ly_do,
             danh_sach_tai_san,
             so_luong_tai_san,
-            
+
 
         } = req.body;
         let id_user = "";
@@ -281,10 +281,10 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-     
+
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -298,7 +298,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                 listFile.push(file_kem.name);
             }
             link_download = listFile
-        
+
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -325,10 +325,10 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                 com_id: com_id,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 kieu_duyet: 0,
-                time_create:  Math.floor(Date.now() / 1000),
-               
+                time_create: Math.floor(Date.now() / 1000),
+
             })
             let saveDX = await new_de_xuat.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
@@ -351,7 +351,7 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
                     id_van_ban: saveDX._id,
                     type: 2,
                     view: 0,
-                    created_date:  Math.floor(Date.now() / 1000),
+                    created_date: Math.floor(Date.now() / 1000),
                 });
                 createTBs.push(createTB);
             }
@@ -389,10 +389,10 @@ exports.de_xuat_doi_ca = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-      
+
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -406,7 +406,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
                 listFile.push(file_kem.name);
             }
             link_download = listFile
-        
+
         }
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
@@ -434,9 +434,9 @@ exports.de_xuat_doi_ca = async (req, res) => {
                 com_id: com_id,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 kieu_duyet: 0,
-                time_create:  Math.floor(Date.now() / 1000),
+                time_create: Math.floor(Date.now() / 1000),
 
             })
 
@@ -462,7 +462,7 @@ exports.de_xuat_doi_ca = async (req, res) => {
                     id_van_ban: saveDX._id,
                     type: 2,
                     view: 0,
-                    created_date:  Math.floor(Date.now() / 1000),
+                    created_date: Math.floor(Date.now() / 1000),
                 });
 
                 createTBs.push(createTB);
@@ -504,8 +504,8 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -520,7 +520,7 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
             }
             link_download = listFile
         }
-        
+
         if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
             return functions.setError(res, 'không thể thực thi', 400);
         } else {
@@ -549,9 +549,9 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 kieu_duyet: kieu_duyet,
-                time_create:  Math.floor(Date.now() / 1000),
+                time_create: Math.floor(Date.now() / 1000),
             })
             let saveDX = await new_de_xuat.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
@@ -614,10 +614,10 @@ exports.de_xuat_tang_luong = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-        
+
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -659,10 +659,10 @@ exports.de_xuat_tang_luong = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 kieu_duyet: kieu_duyet,
                 type_time: 0,
-                time_create:  Math.floor(Date.now() / 1000),
+                time_create: Math.floor(Date.now() / 1000),
             })
 
 
@@ -728,8 +728,8 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -750,7 +750,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
         } else {
             let maxID = 0;
             const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-           
+
             if (de_xuat) {
                 maxID = de_xuat._id;
             }
@@ -773,10 +773,10 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 kieu_duyet: 0,
                 type_duyet: 0,
-                time_create:  Math.floor(Date.now() / 1000),
+                time_create: Math.floor(Date.now() / 1000),
             })
             let saveDX = await new_de_xuat.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
@@ -800,7 +800,7 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
                     id_van_ban: saveDX._id,
                     type: 2,
                     view: 0,
-                    created_date:  Math.floor(Date.now() / 1000)
+                    created_date: Math.floor(Date.now() / 1000)
                 });
 
                 createTBs.push(createTB);
@@ -840,8 +840,8 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -882,9 +882,9 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 kieu_duyet: 0,
-                time_create:  Math.floor(Date.now() / 1000)
+                time_create: Math.floor(Date.now() / 1000)
             })
 
 
@@ -911,7 +911,7 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
                     id_van_ban: saveDX._id,
                     type: 2,
                     view: 0,
-                    created_date:  Math.floor(Date.now() / 1000)
+                    created_date: Math.floor(Date.now() / 1000)
                 });
 
                 createTBs.push(createTB);
@@ -951,8 +951,8 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -985,19 +985,19 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
                     thoi_viec: {
                         ly_do: ly_do,
                         ngaybatdau_tv: ngaybatdau_tv,
-                        ca_bdnghi : ca_bdnghi,
+                        ca_bdnghi: ca_bdnghi,
                     },
                 },
-                type_time : type_time,
+                type_time: type_time,
                 name_user: name_user,
                 id_user: id_user,
                 com_id: com_id,
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 kieu_duyet: kieu_duyet,
-                time_create:  Math.floor(Date.now() / 1000)
+                time_create: Math.floor(Date.now() / 1000)
             });
             let saveDX = await new_de_xuat.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'// đường dẫn chi tiết đề xuất
@@ -1022,7 +1022,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
                     id_van_ban: saveDX._id,
                     type: 2,
                     view: 0,
-                    created_date:  Math.floor(Date.now() / 1000)
+                    created_date: Math.floor(Date.now() / 1000)
                 });
 
                 createTBs.push(createTB);
@@ -1052,7 +1052,7 @@ exports.lich_lam_viec = async (req, res) => {
             ngay_bat_dau,
             ca_lam_viec,
             ngay_lam_viec,
-             } = req.body;
+        } = req.body;
         let id_user = "";
         let com_id = "";
         let name_user = "";
@@ -1092,7 +1092,7 @@ exports.lich_lam_viec = async (req, res) => {
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
                 kieu_duyet: kieu_duyet,
-                time_create:  Math.floor(Date.now() / 1000)
+                time_create: Math.floor(Date.now() / 1000)
             });
 
             let saveDX = await new_de_xuat.save();
@@ -1116,7 +1116,7 @@ exports.lich_lam_viec = async (req, res) => {
                     id_van_ban: saveDX._id,
                     type: 2,
                     view: 0,
-                    created_date:  Math.floor(Date.now() / 1000)
+                    created_date: Math.floor(Date.now() / 1000)
                 });
 
                 createTBs.push(createTB);
@@ -1146,7 +1146,7 @@ exports.dxCong = async (req, res) => {
             id_ca_xnc,
             time_xnc,
             ly_do,
-            
+
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -1159,8 +1159,8 @@ exports.dxCong = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -1190,9 +1190,9 @@ exports.dxCong = async (req, res) => {
                 type_dx: 17,
                 noi_dung: {
                     xac_nhan_cong: {
-                        time_vao_ca : time_vao_ca,
-                        time_het_ca : time_het_ca,
-                        id_ca_xnc : id_ca_xnc,
+                        time_vao_ca: time_vao_ca,
+                        time_het_ca: time_het_ca,
+                        id_ca_xnc: id_ca_xnc,
                         time_xnc: time_xnc,
                         ca_xnc: ca_xnc,
                         ly_do: ly_do,
@@ -1204,12 +1204,12 @@ exports.dxCong = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
-                time_create:  Math.floor(Date.now() / 1000)
+                file_kem: link_download.map(file => ({ file })),
+                time_create: Math.floor(Date.now() / 1000)
             });
             let savedDXC = await createDXC.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", savedDXC.file_kem,link);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", savedDXC.file_kem, link);
             let maxIDTB = await functions.getMaxID(ThongBao);
             let idTB = 0;
             if (maxIDTB) {
@@ -1229,7 +1229,7 @@ exports.dxCong = async (req, res) => {
                     id_van_ban: savedDXC._id,
                     type: 2,
                     view: 0,
-                    created_date:  Math.floor(Date.now() / 1000)
+                    created_date: Math.floor(Date.now() / 1000)
                 });
 
                 createTBs.push(createTB);
@@ -1257,7 +1257,7 @@ exports.dxCoSoVatChat = async (req, res) => {
             input_csv,
             ly_do,
             type_time,
-            
+
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -1269,10 +1269,10 @@ exports.dxCoSoVatChat = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-        let createDate =  Math.floor(Date.now() / 1000)
+        let createDate = Math.floor(Date.now() / 1000)
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -1311,14 +1311,14 @@ exports.dxCoSoVatChat = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 time_start_out: time_start_out,
                 time_create: createDate,
 
             });
             let savedDXCSVC = await createDXCSVC.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link,savedDXCSVC.file_kem);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link, savedDXCSVC.file_kem);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -1382,10 +1382,10 @@ exports.dxDangKiSuDungXe = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-        let createDate =  Math.floor(Date.now() / 1000)
+        let createDate = Math.floor(Date.now() / 1000)
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -1428,13 +1428,13 @@ exports.dxDangKiSuDungXe = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
 
             let savedDXXe = await createDXXe.save();
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link,savedDXXe.file_kem);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link, savedDXXe.file_kem);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -1484,7 +1484,7 @@ exports.dxHoaHong = async (req, res) => {
             dt_money,
             ly_do,
             name_dt,
-            time_hh, 
+            time_hh,
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -1496,10 +1496,10 @@ exports.dxHoaHong = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-        let createDate =  Math.floor(Date.now() / 1000)
+        let createDate = Math.floor(Date.now() / 1000)
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -1543,14 +1543,14 @@ exports.dxHoaHong = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
 
             let savedDXHH = await createDXHH.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link,savedDXHH.file_kem);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link, savedDXHH.file_kem);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -1608,10 +1608,10 @@ exports.dxKhieuNai = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-        let createDate =  Math.floor(Date.now() / 1000)
+        let createDate = Math.floor(Date.now() / 1000)
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -1650,14 +1650,14 @@ exports.dxKhieuNai = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
 
             let savedDXKN = await createDXKN.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link,savedDXKN.file_kem);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link, savedDXKN.file_kem);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -1708,7 +1708,7 @@ exports.dxPhongHop = async (req, res) => {
             end_hop,
             ly_do,
         } = req.body;
-        let createDate =  Math.floor(Date.now() / 1000)
+        let createDate = Math.floor(Date.now() / 1000)
         let id_user = "";
         let com_id = "";
         let name_user = "";
@@ -1720,8 +1720,8 @@ exports.dxPhongHop = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -1762,7 +1762,7 @@ exports.dxPhongHop = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 type_duyet: type_duyet,
                 time_create: createDate,
 
@@ -1770,7 +1770,7 @@ exports.dxPhongHop = async (req, res) => {
 
             let savedDXPH = await createDXPH.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link,savedDXPH.file_kem);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link, savedDXPH.file_kem);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -1821,7 +1821,7 @@ exports.dxTangCa = async (req, res) => {
             time_tc,
             shift_id,
         } = req.body;
-        let createDate =  Math.floor(Date.now() / 1000)
+        let createDate = Math.floor(Date.now() / 1000)
         let id_user = "";
         let com_id = "";
         let name_user = "";
@@ -1833,8 +1833,8 @@ exports.dxTangCa = async (req, res) => {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -1876,14 +1876,14 @@ exports.dxTangCa = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
 
             let savedDXTC = await createDXTC.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link,savedDXTC.file_kem);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link, savedDXTC.file_kem);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -1942,10 +1942,10 @@ exports.dxThaiSan = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-        let createDate =  Math.floor(Date.now() / 1000)
+        let createDate = Math.floor(Date.now() / 1000)
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -1986,14 +1986,14 @@ exports.dxThaiSan = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
 
             let savedDXTS = await createDXTS.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc",savedDXTS.file_kem, link);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", savedDXTS.file_kem, link);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -2042,7 +2042,7 @@ exports.dxThanhToan = async (req, res) => {
             type_time,
             so_tien_tt,
             ly_do,
-            
+
         } = req.body;
         let id_user = "";
         let com_id = "";
@@ -2054,10 +2054,10 @@ exports.dxThanhToan = async (req, res) => {
         } else {
             return functions.setError(res, 'không có quyền truy cập', 400);
         }
-        let createDate =  Math.floor(Date.now() / 1000)
+        let createDate = Math.floor(Date.now() / 1000)
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -2098,14 +2098,14 @@ exports.dxThanhToan = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
 
             let savedDXTT = await createDXTT.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link,savedDXTT.file_kem);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link, savedDXTT.file_kem);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -2156,7 +2156,7 @@ exports.dxThuongPhat = async (req, res) => {
             id_nguoi_tp,
             time_tp,
             ly_do,
-            
+
         } = req.body;
         let createDate = Math.floor(Date.now() / 1000)
         let id_user = "";
@@ -2176,8 +2176,8 @@ exports.dxThuongPhat = async (req, res) => {
             nguoi_tp = nguoi_phat_tp;
         }
         let link_download = [];
-        if (req.files.fileKem ) {
-            let file_kem = req.files.fileKem 
+        if (req.files.fileKem) {
+            let file_kem = req.files.fileKem
             let listFile = [];
             if (Array.isArray(file_kem)) {
                 // Người dùng gửi nhiều file hoặc một file duy nhất
@@ -2220,14 +2220,14 @@ exports.dxThuongPhat = async (req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })) ,
+                file_kem: link_download.map(file => ({ file })),
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
 
             let savedDXTP = await createDXTP.save();
             let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link,savedDXTP.file_kem);
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "đề xuất lịch làm việc", link, savedDXTP.file_kem);
             let maxIDTB = await functions.getMaxID(ThongBao)
             let idTB = 0;
             if (maxIDTB) {
@@ -2288,22 +2288,22 @@ exports.showadd = async (req, res) => {
             'inForPerson.employee.com_id': com_id,
             'inForPerson.employee.ep_status': 'Active'
         }).select('idQLC userName avatarUser').lean();
-        
+
         for (let i = 0; i < listUsersDuyet.length; i++) {
             let userDuyet = listUsersDuyet[i];
             let avatar = await fnc.createLinkFileEmpQLC(userDuyet.idQLC, userDuyet.avatarUser);
             if (avatar) {
-              userDuyet.avatarUser = avatar;
+                userDuyet.avatarUser = avatar;
             }
-          }
+        }
         for (let i = 0; i < listUsersTheoDoi.length; i++) {
             let userTheoDoi = listUsersTheoDoi[i];
             let avatar = await fnc.createLinkFileEmpQLC(userTheoDoi.idQLC, userTheoDoi.avatarUser);
             if (avatar) {
-              userTheoDoi.avatarUser = avatar;
+                userTheoDoi.avatarUser = avatar;
             }
-          }
-          
+        }
+
 
         return await functions.success(res, 'Lấy thành công', { listUsersDuyet, listUsersTheoDoi });
     } catch (error) {
