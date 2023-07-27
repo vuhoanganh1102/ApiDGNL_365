@@ -3,20 +3,21 @@ const Mat = require('../../models/QuanLyTaiSan/Mat');
 const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
 const TaiSanDangSD = require('../../models/QuanLyTaiSan/TaiSanDangSuDung');
 const QuaTrinhSD = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
+const Department = require('../../models/qlc/Deparment');
 
-
-//lay ra danh sach bao mat/ ds cho den bu / ds tai san mat
-exports.getListDataLostAssets = async (req,res,next) => {
-    try {
+//danh sach bao mat
+exports.danhSachTaiBaoMat = async(req, res, next) => {
+    try{
         let {page, pageSize, key, dataType} = req.body;
         if(!page) page = 1;
         if(!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page-1)*pageSize;
-        let id_cty = req.user.data.com_id;
 
-        let condition = {id_cty: id_cty, xoa_dx_mat: 0};
+        let id_cty = req.user.data.com_id;
+        let condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}};
+        if(key) condition.mat_id = Number(key);
 
         let baoCaoMat = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}});
         let choDenBu = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 3});
@@ -27,16 +28,9 @@ exports.getListDataLostAssets = async (req,res,next) => {
             slMat: slMat,
         };
 
-        if(key) condition.mat_id = Number(key);
-
-        //dataType = (1, 2, 3): bao cao mat, cho den bu, danh sach mat 
-        if(dataType !=1 && dataType !=2 && dataType !=3) return functions.setError(res, "Truyen datatype = 1, 2, 3!", 405);
-        if(dataType == 1) condition.mat_trangthai = {$in: [0, 2]};
-        if(dataType == 2) condition.mat_trangthai = 3;
-        if(dataType == 3) condition.mat_trangthai = 1;
-
         let danhSachMat = await Mat.aggregate([
             {$match: condition},
+            {$sort: {mat_id: -1}},
             {$skip: skip},
             {$limit: pageSize},
             {
@@ -69,15 +63,129 @@ exports.getListDataLostAssets = async (req,res,next) => {
             },
             { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
 
+            { $project: {
+                "mat_id": "$mat_id", 
+                "mat_trangthai": "$mat_trangthai",
+                "mat_date_create": "$mat_date_create", 
+                "id_taisan": "$mat_taisan",
+                "ten_taisan": "$TaiSan.ts_ten",
+                "sl_taisan": "$TaiSan.ts_so_luong",
+                "mat_soluong": "$mat_soluong",
+                "loai_taisan": "$LoaiTaiSan.ten_loai",
+                "mat_ngay": "$mat_ngay",
+                "mat_lydo": "$mat_lydo",
+                "mat_giatri": "$mat_giatri",
+                "giatri_ts": "$giatri_ts",
+                "tien_denbu": "$tien_denbu",
+                "mat_lydo_tuchoi": "$mat_lydo_tuchoi",
+                "yc_denbu": "$yc_denbu",
+                "hinhthuc_denbu": "$hinhthuc_denbu",
+                "mat_han_ht": "$mat_han_ht",
+                "loai_thanhtoan": "$loai_thanhtoan",
+                "ngay_thanhtoan": "$ngay_thanhtoan",
+                "so_tien_da_duyet": "$so_tien_da_duyet",
+                "sotien_danhan": "$sotien_danhan",
+                "ngay_duyet": "$ngay_duyet",
+                "mat_type_quyen": "$mat_type_quyen",
+                "type_quyen_nhan_db": "$type_quyen_nhan_db",
+                
+                "id_ng_tao": "$id_ng_tao",
+                "ten_ng_tao": "$NguoiTao.userName",                
+            }},
+        ]);
+        for(let i=0; i<danhSachMat.length; i++) {
+            let mat = danhSachMat[i];
+            let dep_name = mat.ten_ng_tao;
+            if(mat.mat_type_quyen == 2) {
+                let department = await Department.findOne({dep_id: mat.id_ng_tao});
+                if(department) dep_name = department.dep_name;
+                else dep_name = "Chua cap nhat";
+            }
+            mat.dep_name = dep_name;
+            danhSachMat[i] = mat;
+        }
+        // let danhSachMat = await functions.pageFind(Mat, condition, {mat_id: -1}, skip, pageSize);
+        const total = await functions.findCount(Mat, condition);
+        return functions.success(res,'get data success',{page, pageSize, total, thongKe, danhSachMat})
+    }catch(error){
+        return functions.setError(res,error.message);
+    }
+}
+
+// danh sach bao cho den bu va mat
+exports.danhSachChoDenBuVaMat = async(req, res, next) => {
+    try{
+        let {page, pageSize, key, dataType} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
+
+        let id_cty = req.user.data.com_id;
+        let condition = {id_cty: id_cty, xoa_dx_mat: 0};
+        if(dataType !=2 && dataType !=3) return functions.setError(res, "Truyen datatype = 2, 3!", 405);
+        if(dataType == 2) {
+            condition.mat_trangthai = 3;
+        }
+        if(dataType == 3) {
+            condition.mat_trangthai = 1;
+        }
+        if(key) condition.mat_id = Number(key);
+
+        let baoCaoMat = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}});
+        let choDenBu = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 3});
+        let slMat = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 1});
+        let thongKe = {
+            baoCaoMat: baoCaoMat,
+            choDenBu: choDenBu,
+            slMat: slMat,
+        };
+
+        let danhSachChoDenBuVaMat = await Mat.aggregate([
+            {$match: condition},
+            {$sort: {mat_id: -1}},
+            {$skip: skip},
+            {$limit: pageSize},
+            {
+                $lookup: {
+                    from: "QLTS_Tai_San",
+                    localField: "mat_taisan",
+                    foreignField: "ts_id",
+                    as: "TaiSan"
+                }
+            },
+            { $unwind: { path: "$TaiSan", preserveNullAndEmptyArrays: true } },
+
+            {
+                $lookup: {
+                    from: "QLTS_Loai_Tai_San",
+                    localField: "TaiSan.id_loai_ts",
+                    foreignField: "id_loai",
+                    as: "LoaiTaiSan"
+                }
+            },
+            { $unwind: { path: "$LoaiTaiSan", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "Users",
-                    localField: "id_ng_lam_mat",
+                    localField: "id_ng_tao",
                     foreignField: "idQLC",
-                    as: "NguoiLamMat"
+                    as: "NguoiTao"
                 }
             },
-            { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
+
+            // {
+            //     $lookup: {
+            //         from: "Users",
+            //         localField: "id_ng_lam_mat",
+            //         foreignField: "idQLC",
+            //         as: "NguoiLamMat"
+            //     }
+            // },
+            // { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
 
             {
                 $lookup: {
@@ -105,13 +213,13 @@ exports.getListDataLostAssets = async (req,res,next) => {
                 "mat_date_create": "$mat_date_create", 
                 "id_taisan": "$mat_taisan",
                 "ten_taisan": "$TaiSan.ts_ten",
+                "sl_taisan": "$TaiSan.ts_so_luong",
                 "mat_soluong": "$mat_soluong",
                 "loai_taisan": "$LoaiTaiSan.ten_loai",
                 "mat_ngay": "$mat_ngay",
                 "mat_lydo": "$mat_lydo",
                 "mat_giatri": "$mat_giatri",
                 "giatri_ts": "$giatri_ts",
-                "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
                 "tien_denbu": "$tien_denbu",
                 "mat_lydo_tuchoi": "$mat_lydo_tuchoi",
                 "yc_denbu": "$yc_denbu",
@@ -125,14 +233,11 @@ exports.getListDataLostAssets = async (req,res,next) => {
                 "mat_type_quyen": "$mat_type_quyen",
                 "type_quyen_nhan_db": "$type_quyen_nhan_db",
                 
-
-                
-
                 "id_ng_tao": "$id_ng_tao",
                 "ten_ng_tao": "$NguoiTao.userName",
 
-                "id_ng_lam_mat": "$id_ng_lam_mat",
-                "ten_ng_lam_mat": "$NguoiLamMat.userName",
+                // "id_ng_lam_mat": "$id_ng_lam_mat",
+                // "ten_ng_lam_mat": "$NguoiLamMat.userName",
 
                 "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
                 "ten_ng_nhan_denbu": "$NguoiNhanDenBu.userName",
@@ -141,14 +246,148 @@ exports.getListDataLostAssets = async (req,res,next) => {
                 "ten_ng_duyet": "$NguoiDuyet.userName",
                 
             }},
-            {$sort: {mat_id: -1}},
         ]);
+        for(let i=0; i<danhSachChoDenBuVaMat.length; i++) {
+            let mat = danhSachChoDenBuVaMat[i];
+            let dep_name = mat.ten_ng_tao;
+            if(mat.mat_type_quyen == 2) {
+                let department = await Department.findOne({dep_id: mat.id_ng_tao});
+                if(department) dep_name = department.dep_name;
+                else dep_name = "Chua cap nhat";
+            }
+            mat.dep_name = dep_name;
+            danhSachChoDenBuVaMat[i] = mat;
+        }
         const total = await functions.findCount(Mat, condition);
-        return functions.success(res,'get data success',{page, pageSize, total, thongKe, danhSachMat})
-    } catch (error) {
+        return functions.success(res,'get data success',{page, pageSize, total, thongKe, danhSachChoDenBuVaMat})
+    }catch(error){
         return functions.setError(res,error.message);
     }
-};
+}
+
+exports.danhSachMat = async(req, res, next) => {
+    try{
+        let {page, pageSize, key, dataType} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
+        let id_cty = req.user.data.com_id;
+        let condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 3};
+        if(key) condition.mat_id = Number(key);
+
+        let danhSachMat = await Mat.aggregate([
+            {$match: condition},
+            {$sort: {mat_id: -1}},
+            {$skip: skip},
+            {$limit: pageSize},
+            {
+                $lookup: {
+                    from: "QLTS_Tai_San",
+                    localField: "mat_taisan",
+                    foreignField: "ts_id",
+                    as: "TaiSan"
+                }
+            },
+            { $unwind: { path: "$TaiSan", preserveNullAndEmptyArrays: true } },
+
+            {
+                $lookup: {
+                    from: "QLTS_Loai_Tai_San",
+                    localField: "TaiSan.id_loai_ts",
+                    foreignField: "id_loai",
+                    as: "LoaiTaiSan"
+                }
+            },
+            { $unwind: { path: "$LoaiTaiSan", preserveNullAndEmptyArrays: true } },
+
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_ng_tao",
+                    foreignField: "idQLC",
+                    as: "NguoiTao"
+                }
+            },
+            { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
+
+            // {
+            //     $lookup: {
+            //         from: "Users",
+            //         localField: "id_ng_lam_mat",
+            //         foreignField: "idQLC",
+            //         as: "NguoiLamMat"
+            //     }
+            // },
+            // { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
+
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_ng_nhan_denbu",
+                    foreignField: "idQLC",
+                    as: "NguoiNhanDenBu"
+                }
+            },
+            { $unwind: { path: "$NguoiNhanDenBu", preserveNullAndEmptyArrays: true } },
+
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_ng_duyet",
+                    foreignField: "idQLC",
+                    as: "NguoiDuyet"
+                }
+            },
+            { $unwind: { path: "$NguoiDuyet", preserveNullAndEmptyArrays: true } },
+            
+            { $project: {
+                "mat_id": "$mat_id", 
+                "mat_trangthai": "$mat_trangthai",
+                "mat_date_create": "$mat_date_create", 
+                "id_taisan": "$mat_taisan",
+                "ten_taisan": "$TaiSan.ts_ten",
+                "sl_taisan": "$TaiSan.ts_so_luong",
+                "mat_soluong": "$mat_soluong",
+                "loai_taisan": "$LoaiTaiSan.ten_loai",
+                "mat_ngay": "$mat_ngay",
+                "mat_lydo": "$mat_lydo",
+                "mat_giatri": "$mat_giatri",
+                "giatri_ts": "$giatri_ts",
+                "tien_denbu": "$tien_denbu",
+                "mat_lydo_tuchoi": "$mat_lydo_tuchoi",
+                "yc_denbu": "$yc_denbu",
+                "hinhthuc_denbu": "$hinhthuc_denbu",
+                "mat_han_ht": "$mat_han_ht",
+                "loai_thanhtoan": "$loai_thanhtoan",
+                "ngay_thanhtoan": "$ngay_thanhtoan",
+                "so_tien_da_duyet": "$so_tien_da_duyet",
+                "sotien_danhan": "$sotien_danhan",
+                "ngay_duyet": "$ngay_duyet",
+                "mat_type_quyen": "$mat_type_quyen",
+                "type_quyen_nhan_db": "$type_quyen_nhan_db",
+                
+                "id_ng_tao": "$id_ng_tao",
+                "ten_ng_tao": "$NguoiTao.userName",
+
+                // "id_ng_lam_mat": "$id_ng_lam_mat",
+                // "ten_ng_lam_mat": "$NguoiLamMat.userName",
+
+                "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
+                "ten_ng_nhan_denbu": "$NguoiNhanDenBu.userName",
+
+                "id_ng_duyet": "$id_ng_duyet",
+                "ten_ng_duyet": "$NguoiDuyet.userName",
+                
+            }},
+        ]);
+        const total = await functions.findCount(Mat, condition);
+        return functions.success(res,'get data success',{page, pageSize, total, danhSachMat})
+    }catch(error){
+        return functions.setError(res,error.message);
+    }
+}
 
 //tao moi bien ban mat
 exports.createMat = async(req, res, next) => {
