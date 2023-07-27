@@ -106,9 +106,9 @@ exports.uploadFileRaoNhanh = async (folder, id, file, allowedExtensions) => {
     let filePath = `../storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
 
     let fileCheck = path.extname(filePath);
-    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
-        return false
-    }
+    // if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
+    //     return false
+    // }
     // const { size } = await promisify(fs.stat)(filePath);
     // if (size > MAX_IMG_SIZE) {
     //     return false;
