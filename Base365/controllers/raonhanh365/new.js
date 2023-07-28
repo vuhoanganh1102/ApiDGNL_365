@@ -1083,7 +1083,7 @@ exports.searchNew = async (req, res, next) => {
         ]);
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         for (let i = 0; i < data.length; i++) {
-            if(data[i].img){
+            if (data[i].img) {
                 data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, data[i].buySell)
                 data[i].soluonganh = data[i].img.length
             }
@@ -1218,7 +1218,6 @@ exports.createBuyNew = async (req, res) => {
             description &&
             han_su_dung &&
             status &&
-            phi_duthau &&
             phone &&
             email &&
             tgian_kt && tgian_bd && noidung_nhs
@@ -1227,13 +1226,9 @@ exports.createBuyNew = async (req, res) => {
             let linkTitle = raoNhanh.createLinkTilte(title);
 
             //kiểm tra title đã được người dùng tạo chưa
-            let checktitle = await New.find({ userID, linkTitle });
-            if (checktitle && checktitle.length !== 0) {
-                return functions.setError(
-                    res,
-                    "The title already has a previous new word or does not have a keyword that is not allowed",
-                    400
-                );
+            let checktitle = await New.findOne({ userID, linkTitle });
+            if (checktitle) {
+                return functions.setError(res, "Vui lòng nhập title khác", 400);
             }
             // kiểm tra tiền nhập vào có phải số không
             else if (
@@ -2781,7 +2776,8 @@ exports.getListNewsApplied = async (req, res, next) => {
                 $project: {
                     'new._id': 1, 'new.title': 1, 'new.han_su_dung': 1, 'new.name': 1, 'new.linkTitle': 1, 'user.idRaoNhanh365': 1,
                     'user._id': 1, 'user.userName': 1, 'user.inforRN365.xacThucLienket': 1, 'user.inforRN365.store_name': 1, _id: 1, status: 1, time: 1,
-                    'new.cateID': 1, time: 1, 'new.han_su_dung': 1
+                    'new.cateID': 1, time: 1, 'new.han_su_dung': 1,
+                    newId: '$new._id'
                 }
             }
         ])

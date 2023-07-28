@@ -197,13 +197,13 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
 
             donviquanly = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 2, id_ng_tao_dc: emId }).count();
 
-            doituongsudung = await DieuChuyen.find({ xoa_thuhoi: 1, id_cty: comId, dc_type: 1, id_ng_tao_dc: emId }).count();
+            doituongsudung = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 1, id_ng_tao_dc: emId }).count();
         } else {
             vitritaisan = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 0 }).count();
 
             donviquanly = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 2 }).count();
 
-            doituongsudung = await DieuChuyen.find({ xoa_thuhoi: 1, id_cty: comId, dc_type: 1 }).count();
+            doituongsudung = await DieuChuyen.find({ xoa_dieuchuyen: 1, id_cty: comId, dc_type: 1 }).count();
         }
 
 
