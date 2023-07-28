@@ -43,11 +43,12 @@ exports.ChitietDx = async (req, res) => {
         idQLC : user?.idQLC 
       }));
       let avatar = [];
+      let fileX = [];
       if (dexuat) {
         for (let i = 0; i < dexuat.file_kem.length; i++) {
           const fileLink = await serviceVanthu.createLinkFileVanthu(dexuat.id_user, dexuat.file_kem[i].file);
           if (fileLink) {
-            avatar.push({ file: fileLink });
+            fileX.push({ file: fileLink });
           }
         }
       }
@@ -79,7 +80,7 @@ exports.ChitietDx = async (req, res) => {
       kieu_phe_duyet : dexuat.kieu_duyet,
       lanh_dao_duyet :namnUserDuyet,
       nguoi_theo_doi :namnUsertd,
-      file_kem : avatar,
+      file_kem : fileX,
       thoi_gian_tao : dexuat.time_create * 1000,
       thoi_gian_duyet : dexuat.time_duyet,
       thoi_gian_tiep_nhan : checkhandling.time ,
