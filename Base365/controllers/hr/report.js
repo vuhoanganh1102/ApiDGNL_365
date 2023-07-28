@@ -391,8 +391,8 @@ exports.report = async (req, res, next) => {
         let phongBan = await Deparment.find({ com_id: comId }, { _id: 1, dep_name: 1 })
         condition['inForPerson.employee.com_id'] = comId;
         let searchItem = { idQLC: 1, userName: 1, 'inForPerson.account': 1, emailContact: 1, phone: 1, 'inForPerson.employee': 1, };
+        delete condition['inForPerson.account.gender'] 
         let chartEmployee = await Users.find(condition, searchItem);
-        delete condition['inForPerson.account.gender']
         let conditionNghiViec = {}
         if (chartNghiViec) {
             conditionNghiViec['quit.type'] = chartNghiViec
@@ -434,7 +434,7 @@ exports.report = async (req, res, next) => {
                 $project: searchItem
             }
         ])
-        console.log(condition)
+
         let chartLuanChuyen = await Users.aggregate([
             {
                 $match: condition

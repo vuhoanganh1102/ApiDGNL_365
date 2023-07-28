@@ -122,7 +122,6 @@ exports.showNhomTs = async (req, res) => {
         },
       },
     ]);
-    console.log(nhomTsInfo)
     const totalItems = countTs.length;
     const totalPages = Math.ceil(totalItems / perPage);
     const startIndex = (page - 1) * perPage;

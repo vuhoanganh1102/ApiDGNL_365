@@ -405,7 +405,6 @@ exports.TiepNhanDCVT = async (req, res) => {
 
             val_dc_1.push(item.sl_ts);
         })
-        console.log(val_dc)
         let check_ts_tu = '';
         for (let i = 0; i < val_dc.length; i++) {
             let check_tsvt_tu = await TaiSanViTri.findOne(// noi tai san co san
@@ -550,7 +549,6 @@ exports.detailBB = async (req, res) => {
             filter.xoa_dieuchuyen = 0
             // filter.dc_type = 0
             filter.dc_id = Number(dc_id)
-        console.log(filter)
             let data1 = await DieuChuyen.aggregate([
                 { $match: filter },
                 {

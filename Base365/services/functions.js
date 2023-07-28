@@ -1024,3 +1024,7 @@ exports.renderAlias = (text) => {
         strict: true // Loại bỏ các ký tự không hợp lệ
     });
 }
+
+exports.fileType = (file) => {
+    return file.originalFilename.split('.').pop()
+}
