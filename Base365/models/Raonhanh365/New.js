@@ -181,32 +181,32 @@ const newSchema = new mongoose.Schema({
     },
     new_day_tin:{
         type:String,
-        default: 0  
+        default: null
     },
     timeStartPinning: {
         // thời gian bắt đầu ghim
         type: Date,
-        default: 0
+        default: null
     },
     dayStartPinning: {
         // ngày bắt đầu ghim
         type: Date,
-        default: 0
+        default: null
     },
     dayEndPinning: {
         // ngày kết thúc ghim
         type: Date,
-        default: 0
+        default: null
     },
     numberDayPinning: {
         // số ngày ghim
         type: String,
-        default: 0
+        default: null
     },
     timePinning: {
         // thời gian ghim
         type: Date,
-        default: 0
+        default: null
     },
     moneyPinning: {
         // tiền ghim
@@ -230,10 +230,6 @@ const newSchema = new mongoose.Schema({
     },
     refreshTime: {
         // thời gian làm mới
-        type: Number,
-        default: null
-    },
-    refresh_new_home:{
         type: Number,
         default: null
     },
@@ -296,10 +292,6 @@ const newSchema = new mongoose.Schema({
     productType: {
         // loại sản phẩm 
         type: Number,
-        default: 0
-    },
-    han_su_dung:{
-        type:Date,
         default: 0
     },
     productGroup: {
@@ -475,7 +467,11 @@ const newSchema = new mongoose.Schema({
         so_km_da_di:{
             type: String,
             default: 0
-        }
+        },
+        loai_noithat:{
+            type: String,
+            default: 0
+        },
 
     },
     // bất động sản
@@ -577,19 +573,19 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: 0
         },
-        can_ban_mua:{
+        can_ban_mua: {
             type: Number,
             default: 0
         },
-        dia_chi:{
+        dia_chi: {
             type: String,
             default: 0
         },
-        huong_ban_cong:{
+        huong_ban_cong: {
             type: String,
             default: 0
         },
-        cangoc:{
+        cangoc: {
             type: String,
             default: 0
         }
@@ -791,14 +787,6 @@ const newSchema = new mongoose.Schema({
         cv: {
             type: String,
             default: 0
-        },
-        salary_fr: {
-            type: Number,
-            default: 0
-        },
-        salary_to: {
-            type: Number,
-            default: 0
         }
     },
     noiThatNgoaiThat:{
@@ -941,6 +929,7 @@ const newSchema = new mongoose.Schema({
             default: null
         }
     }
+
 }, {
     collection: 'RN365_News',
     versionKey: false,

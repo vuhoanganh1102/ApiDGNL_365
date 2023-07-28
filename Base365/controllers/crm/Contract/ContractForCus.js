@@ -3,33 +3,32 @@ const crm_contract = require('../../../models/crm/Customer/contract')
 const FormContract = require('../../../models/crm/Contract/FormContract')
 const DetailFormContract = require('../../../models/crm/Contract/DetailFormContract')
 
-exports.showContract = async (req, res) => {
+exports.showContract = async(req, res) => {
     try {
-        const {  id_customer } = req.body;
+        const { id_customer } = req.body;
         let com_id = '';
         if ((id_customer) == undefined) {
             functions.setError(res, "thieu thong tin")
         } else {
             if (req.user.data.type == 1) {
-                 com_id = req.user.data.idQLC
+                com_id = req.user.data.idQLC
                 let data = await crm_contract.find({ id_customer: id_customer, com_id: com_id }, { id_form_contract: 1, user_created: 1, status: 1, created_at: 1 })
                 if (data == undefined) {
                     return functions.setError(res, "khong có hợp đồng nào từng được tạo cho khách hàng này")
-               
+
                 }
                 return functions.success(res, "lay thanh cong ", { data })
             }
-            if(req.user.data.type == 2) {
-                 com_id = req.user.data.inForPerson.employee.com_id
-                 let data = await crm_contract.find({ id_customer: id_customer, com_id: com_id }, { id_form_contract: 1, user_created: 1, status: 1, created_at: 1 })
-                 if (data == undefined) {
-                     return functions.setError(res, "khong có hợp đồng nào từng được tạo cho khách hàng này")
-                
-                 }
-                 return functions.success(res, "lay thanh cong ", { data })
-            }
-            else {
-                return res.status(400).json({error :'Bạn không đủ quyền'})
+            if (req.user.data.type == 2) {
+                com_id = req.user.data.inForPerson.employee.com_id
+                let data = await crm_contract.find({ id_customer: id_customer, com_id: com_id }, { id_form_contract: 1, user_created: 1, status: 1, created_at: 1 })
+                if (data == undefined) {
+                    return functions.setError(res, "khong có hợp đồng nào từng được tạo cho khách hàng này")
+
+                }
+                return functions.success(res, "lay thanh cong ", { data })
+            } else {
+                return res.status(400).json({ error: 'Bạn không đủ quyền' })
             }
 
         }
@@ -40,17 +39,10 @@ exports.showContract = async (req, res) => {
 
 }
 
-exports.showDetailContract = async (req, res) => {
-    let com_id = '';
-    let id_user = '';
-    if(req.user.data.type == 1){
-       com_id = req.user.data.idQLC
-    }else if(req.user.data.type == 2) {
-        com_id = req.user.data.inForPerson.employee.com_id
-        id_user = req.user.data.idQLC
-    }else{
-        functions.setError(res, "khong co quyen truy cap",400)
-    }
+exports.showDetailContract = async(req, res) => {
+    const com_id = req.user.data.inForPerson.employee.com_id
+    const idQLC = req.user.data.idQLC
+
     const { _id, id_customer, status, id_form_contract, path_dowload, is_delete } = req.body;
     let list = [];
     let ContractForCustumer = [];
@@ -63,19 +55,18 @@ exports.showDetailContract = async (req, res) => {
 
         } else {
 
-            list = await FormContract.aggregate([
-                {
-                    $match: { id_form_contract: _id }
-                },
-                {
-                    $lookup: {
-                        from: "detailformcontracts",
-                        localField: "_id",
-                        foreignField: "id_form_contract",
-                        as: "detailContracts"
+            list = await FormContract.aggregate([{
+                        $match: { id_form_contract: _id }
+                    },
+                    {
+                        $lookup: {
+                            from: "detailformcontracts",
+                            localField: "_id",
+                            foreignField: "id_form_contract",
+                            as: "detailContracts"
+                        }
                     }
-                }
-            ])//$match sẽ lọc các bản ghi có id_form_contract bằng _id. Sau đó, $lookup sẽ join với collection DetailFormContract để lấy các bản ghi có id_form_contract bằng _id. Kết quả sẽ được trả về dưới dạng một mảng các object, mỗi object tương ứng với một bản ghi trong collection FormContract, và có thêm một trường detailContracts chứa các bản ghi trong collection DetailFormContract tương ứng. 
+                ]) //$match sẽ lọc các bản ghi có id_form_contract bằng _id. Sau đó, $lookup sẽ join với collection DetailFormContract để lấy các bản ghi có id_form_contract bằng _id. Kết quả sẽ được trả về dưới dạng một mảng các object, mỗi object tương ứng với một bản ghi trong collection FormContract, và có thêm một trường detailContracts chứa các bản ghi trong collection DetailFormContract tương ứng. 
             if (!list) {
                 functions.setError(res, "khong có hợp đong")
 
@@ -91,7 +82,7 @@ exports.showDetailContract = async (req, res) => {
     ContractForCustumer = new crm_contract({
         _id: _id1 || 1,
         id_customer: id_customer,
-        user_created: id_user,
+        user_created: idQLC,
         id_form_contract: id_form_contract,
         status: status,
         path_dowload: path_dowload,
@@ -101,15 +92,15 @@ exports.showDetailContract = async (req, res) => {
     });
     await ContractForCustumer.save()
 
-        .then(() => functions.success(res, "tao thanh cong", { list, ContractForCustumer }))
+    .then(() => functions.success(res, "tao thanh cong", { list, ContractForCustumer }))
         .catch((err) => functions.setError(res, err.message))
 
 }
 
-exports.deleteContract = async (req, res) => {
+exports.deleteContract = async(req, res) => {
     try {
         const { _id, id_customer } = req.body;
-        
+
         const data = await crm_contract.findOne({ _id: _id, id_customer: id_customer })
         if (!data) {
             functions.setError(res, " hop dong k ton tai ")

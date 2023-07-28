@@ -8,15 +8,15 @@ const functions = require('../../services/functions');
 router.post('/getListBlog', formData.parse(), blog.listBlog);
 
 // api lấy chi tiết blog
-router.post('/getBlogDetail', formData.parse(), blog.getBlogDetail);
+router.post('/detail', formData.parse(), blog.detail);
 
 // api chi tiết tác giả
-router.post('/getAuthorDetail', formData.parse(), blog.getAuthorDetail);
+router.post('/author', formData.parse(), blog.getAuthorDetail);
 
 // api danh sách danh mục
 router.post('/getListCategoryBlog', formData.parse(), blog.getListCategoryBlog);
 
 // api danh sách blog theo danh mục
-router.post('/getCategoryBlog', formData.parse(), blog.getCategoryBlog);
+router.post('/getListBlogByCate', formData.parse(), blog.getListBlogByCate);
 
 module.exports = router;

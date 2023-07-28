@@ -34,10 +34,6 @@ const tbl_qly_congvan = new mongoose.Schema({
         default: null
     },
     cv_user_soan: {
-        type: String,
-        default: null
-    },
-    cv_time_created:{
         type: Number,
         default: null
     },
@@ -92,7 +88,9 @@ const tbl_qly_congvan = new mongoose.Schema({
         type: String
     },
     cv_file: {
-        type: String
+        type: String,
+        max: 255,
+        default: null
     },
     cv_type_xoa: {
         type: Number,
@@ -121,7 +119,7 @@ const tbl_qly_congvan = new mongoose.Schema({
         type: Number
     },
     cv_time_update: {
-        type: Number
+        type: Date
     },
     cv_type_kp: {
         type: Number,
@@ -160,4 +158,4 @@ const tbl_qly_congvan = new mongoose.Schema({
         default: null
     }
 });
-module.exports = mongoose.model("vanthu_quanLiCongVan", tbl_qly_congvan);
+module.exports = mongoose.model("Vanthu_quanLiCongVan", tbl_qly_congvan);

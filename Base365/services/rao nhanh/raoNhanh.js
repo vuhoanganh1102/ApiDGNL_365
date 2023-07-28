@@ -29,7 +29,7 @@ const MAX_IMG_SIZE = 10 * 1024 * 1024;
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
 const functions = require('../functions');
-const CateDetail = require("../../models/Raonhanh365/CateDetail");
+
 // import model
 const AdminUserRaoNhanh365 = require('../../models/Raonhanh365/Admin/AdminUser');
 const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
@@ -88,8 +88,8 @@ exports.checkNameCateRaoNhanh = async (data) => {
             return 'Thể thao'
         case 'Du lịch':
             return 'Du lịch'
-        case 'Nội thất - Ngoại thất':
-            return 'noiThatNgoaiThat'
+        case 'Đồ dùng văn phòng, công nông nghiệp':
+            return 'Đồ dùng văn phòng, công nông nghiệp'
     }
 }
 
@@ -106,9 +106,9 @@ exports.uploadFileRaoNhanh = async (folder, id, file, allowedExtensions) => {
     let filePath = `../storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
 
     let fileCheck = path.extname(filePath);
-    // if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
-    //     return false
-    // }
+    if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
+        return false
+    }
     // const { size } = await promisify(fs.stat)(filePath);
     // if (size > MAX_IMG_SIZE) {
     //     return false;
@@ -249,15 +249,14 @@ exports.checkFolderCateRaoNhanh = async (data) => {
         case 'Việc làm':
             return 'timviec'
         case 'Thực phẩm, Đồ uống':
-            return 'thuc_pham'
+            return 'thuc_pham' 
     }
 }
 // lấy tên danh mục
-exports.getNameCate = async (cateId, number) => {
+exports.getNameCate = async (cateId,number) =>{
     let danh_muc1 = null;
     let danh_muc2 = null;
     cate1 = await Category.findById(cateId);
-    if (!cate1) return null
     danh_muc1 = cate1.name;
     if (cate1.parentId !== 0) {
         cate2 = await Category.findById(cate1.parentId);
@@ -266,108 +265,25 @@ exports.getNameCate = async (cateId, number) => {
     let name = {};
     name.danh_muc1 = danh_muc1
     name.danh_muc2 = danh_muc2
-    if (number === 2) {
+    if(number === 2){
         return name
-    } else if (danh_muc2) {
+    }else if(danh_muc2){
         return danh_muc2
-    } else if (danh_muc1) {
+    }else if(danh_muc1){
         return danh_muc1
     }
 }
 // lấy link file
-exports.getLinkFile = async (file, cateId, buySell) => {
-    let nameCate = await exports.getNameCate(cateId, 1);
-    let folder = await exports.checkFolderCateRaoNhanh(nameCate);
-    if (buySell == 1) {
-        folder = 'avt_tindangmua'
-    }
-    let link = process.env.DOMAIN_RAO_NHANH + `/pictures/${folder}/`;
+exports.getLinkFile = async (file, cateId) => {
+    let nameCate = await exports.getNameCate(cateId,1);
+    let folder = await exports.checkFolderCateRaoNhanh(nameCate)
+    let link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/${folder}/`;
     let res = '';
     let arr = [];
     for (let i = 0; i < file.length; i++) {
         res = link + file[i].nameImg;
-        arr.push({ nameImg: res })
+        arr.push({nameImg:res})
     }
     return arr;
 }
 
-exports.getDataNewDetail = async (objectarr) => {
-    let array = Object.entries(objectarr).map(([key, value]) => [key, value]);
-    for (let i = 0; i < array.length; i++) {
-        let name = await exports.switchCase(array[i][0])
-        let value = await exports.cateDetail(2, name, array[i][1])
-        array[i][1] = value
-    }
-    let objectt = Object.fromEntries(array);
-    return objectt
-}
-
-exports.cateDetail = async (cateID, item, id) => {
-  
-    let check = await CateDetail.aggregate([
-        { $match: { _id: cateID } },
-        {
-            $project: {
-                [item]: 1
-            }
-        },
-        { $unwind: `$${item}` }
-    ]);
-    
-    let data = check.find((itemm) => itemm[`${item}`]._id == id)
-    if (data && data.length) {
-        return data[0][`${item}`].name
-    }
-    return 0
-}
-
-exports.switchCase = (item) => {
-    switch (item) {
-        case 'microprocessor':
-            return 'brand'
-        case 'ram':
-            return 'capacity'
-        case 'hardDrive':
-            return 'capacity'
-        case 'typeHardrive':
-            return 'capacity'     // chưa rõ
-        case 'screen':
-            return 'screen'
-        case 'size':
-            return 'screen'
-        case 'brand':
-            return 'brand'
-        default:
-            return 'allType'
-        // case machineSeries:
-        //     return brand.line   // chưa chắc chắn
-        // case device:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-
-    }
-
-}

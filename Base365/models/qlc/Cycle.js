@@ -1,39 +1,39 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const CalendarSchema = new Schema({
-    //Id lịch làm việc
-    
-    cy_id : {
+const CC365_CycleSchema = new Schema({
+    cy_id: {
         type: Number,
-
+        require: true
     },
-    com_id : {
+    com_id: {
         type: Number,
-
+        require: true
     },
-    cy_name : {
+    cy_name: {
         type: String,
-
+        default: ""
     },
-    apply_month : {
+    apply_month: {
         type: String,
-
+        default: ""
     },
-    cy_detail : {
+    cy_detail: {
         type: String,
-
+        default: ""
     },
-    status : {
+    status: {
         type: Number,
-        default :1
-
+        default: 1
     },
-    is_personal : {
+    is_personal: {
         type: Number,
-        default : 0
-    },
-
+        default: 0
+    }
+}, {
+    collection: 'CC365_Cycle',
+    versionKey: false,
+    timestamp: true
 });
 
-module.exports = mongoose.model("QLC_Cycle", CalendarSchema);
+module.exports = mongoose.model("CC365_Cycle", CC365_CycleSchema);

@@ -1,153 +1,162 @@
 const mongoose = require('mongoose');
 const PostsTV365Schema = new mongoose.Schema({
-    _id: {
+    new_id: {
         type: Number,
         required: true,
+        unique: true,
+        autoIncrement: true
     },
-    adminID: {
+    admin_id: {
         // ID của admin đăng bài
         type: Number,
         default: 0
     },
-    title: {
+    lang_id: {
+        type: Number,
+        default: 1
+    },
+    new_title: {
         // Tiêu đề của bài viết
         type: String,
         default: null
     },
-    titleRewrite: {
+    new_title_rewrite: {
         // Slug của bài viết (sinh ra theo tiêu đề)
         type: String,
         default: null
     },
-    redirect301: {
+    new_301: {
         // Link điều hướng 301
         type: String,
         default: null
     },
-    canonical: {
+    new_canonical: {
         // Link canonical tương ứng mà seo muốn đặt
         type: String,
         default: null
     },
-    picture: {
+    new_mail: {
+        type: Number,
+        default: 0
+    },
+    new_picture: {
         // Ảnh đại diện bài viết
         type: String,
         default: null
     },
-    sapo: {
+    new_teaser: {
         type: String,
         default: null
     },
-    content: {
+    new_description: {
         // Nội dung bài viết
         type: String,
         default: null
     },
-    seoTitle: {
+    new_tt: {
         // Nội dung tiêu đề thẻ meta title
         type: String,
         default: null
     },
-    seoDescription: {
+    new_des: {
         // Nội dung tiêu đề thẻ meta description
         type: String,
         default: null
     },
-    seoKeyword: {
+    new_keyword: {
         // Nội dung tiêu đề thẻ meta keyword
         type: String,
         default: null
     },
-    urlVideo: {
+    new_video: {
         // Đường dẫn video 
         type: String,
         default: null
     },
-    categoryID: {
+    new_category_id: {
         // ID của danh mục blog
         type: Number,
         default: 0
     },
-    categoryCB: {
+    new_category_cb: {
         // ID của ngành nghề liên quan
         type: Number,
         default: 0
     },
-    createdAt: {
+    new_date: {
         // Thời điểm tạo bài viết
-        type: Date,
-        default: Date()
-    },
-    updateAt: {
-        // Thời điểm chỉnh sửa bài viết
-        type: Date,
-        default: 0
-    },
-    adminEdit: {
-        // ID của admin chỉnh sửa lần cuối
         type: Number,
         default: 0
     },
-    order: {
+    new_admin_edit: {
+        // Thời điểm chỉnh sửa bài viết
+        type: Number,
+        default: 0
+    },
+    new_date_last_edit: {
+        type: Number,
+        default: 0
+    },
+    new_order: {
         // Mức độ ưu tiên
         type: Number,
         default: 0
     },
-    hits: {
+    new_hits: {
         // Có phải tin hot hay không
         type: Number,
         default: 0
     },
-    active: {
+    new_active: {
         // Tin có được kích hoạt hay không
         type: Number,
         default: 1
     },
-    cateUrl: [{
+    new_cate_url: [{
         // Đường dẫn ngành nghề liên quan
         type: String,
         default: null
     }],
-    isHot: {
+    new_hot: {
         // Có phải tin hot hay không
         type: Number,
         default: 0
     },
-    new: {
+    new_new: {
         type: Number,
         default: 0
     },
-    view: {
+    new_view: {
         // Lượt xem
         type: Number,
         default: 0
     },
-    listIDRelated: {
+    new_url_lq: {
         // Danh sách ID liên quan (có thể giờ ko dùng nữa)
         type: String,
         default: null
     },
-    tagCate: {
+    new_tag_cate: {
         // ID ngành nghề
         type: Number,
         default: 0,
     },
-    jobKeyword: {
+    new_vl: {
         // Từ khóa việc làm
         type: String,
         default: null
     },
-    suggestTitle: {
+    new_tdgy: {
         // Tiêu đề gợi ý
         type: String,
         default: null
     },
-    suggestContent: {
+    new_ndgy: {
         // Nội dung gợi ý
         type: String,
         default: null
     },
-    audio: {
+    new_audio: {
         // Đường dẫn audio
         type: String,
         default: null

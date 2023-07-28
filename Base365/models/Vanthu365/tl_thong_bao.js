@@ -9,8 +9,8 @@ const tl_ThongBao = new mongoose.Schema({
         default: 0
     },
     id_user_nhan: {
-        type: String,
-        default: ''
+        type: Number,
+        default: 0
     },
     id_van_ban: {
         type: Number,
