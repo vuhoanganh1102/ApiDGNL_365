@@ -12,7 +12,7 @@ const model_ThongBao = new mongoose.Schema({
         type: Number
     },
     id_ng_nhan: {
-        type: String
+        type: Number
     },
     id_ng_tao: {
         type: Number
@@ -21,7 +21,8 @@ const model_ThongBao = new mongoose.Schema({
         type: Number
     },
     type_quyen_tao: {
-        type: Number
+        type: Number,
+        default : 0
     },
     loai_tb: {
         type: Number

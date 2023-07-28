@@ -18,31 +18,11 @@ exports.add_dvi_csuat = async (req, res) => {
             dvcs_date_create: date_create
         });
         await insert_dvcs.save();
-        fnc.success(res, 'add unit suceess', { insert_dvcs });
+        return fnc.success(res, 'add unit suceess', { insert_dvcs });
 
     } catch (error) {
         console.log(error)
-
-        fnc.setError(res, error.message);
-
-    }
-}
-
-
-exports.detail_dvi_csuat = async (req, res) => {
-    try {
-        let id_dv = req.body.id_dv;
-        let com_id = req.user.data.com_id;
-
-        let info = await DonViCongSuat.findOne({
-            id_donvi: id_dv,
-            id_cty: com_id
-        });
-        fnc.success(res, "OK", { info });
-    } catch (error) {
-
-        fnc.setError(error.message);
-
+        return fnc.setError(res, error.message);
     }
 }
 
@@ -58,32 +38,49 @@ exports.edit_dvi_csuat = async (req, res) => {
             mota_donvi: mota
         }
         );
-        fnc.success(res, "ok", { edit });
+        return fnc.success(res, "ok", { edit });
     } catch (error) {
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
+    }
+}
+
+exports.danhSachDonViCongSuat = async (req, res) => {
+    try {
+        let {id_dv, page, pageSize} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
+        let com_id = req.user.data.com_id;
+        let condition = {id_cty: com_id, donvi_xoa: 0};
+        if(id_dv) condition.id_donvi = Number(id_dv);
+
+        let danhSachDonViCongSuat = await fnc.pageFind(DonViCongSuat, condition, {id_donvi: -1}, skip, pageSize);
+        let totalCount = await fnc.findCount(DonViCongSuat, condition);
+        return fnc.success(res, "Lay ra don vi cong suat thanh cong", {totalCount, danhSachDonViCongSuat });
+    } catch (error) {
+        return fnc.setError(res, error.message);
     }
 }
 //thoe dõi công suất 
 exports.add_do_csuat = async (req, res) => {
     try {
         let com_id = req.user.data.com_id;
-        let { loai_ts, capnhattu_theodoics, ten_dv, nhap_ngay } = req.body;
-        let ngay_bd_update = nhap_ngay;
+        let { loai_ts, capnhattu_theodoics, ten_dv, nhap_ngay, chon_ngay} = req.body;
+        if(chon_ngay && fnc.checkDate(chon_ngay)) chon_ngay = fnc.convertTimestamp(chon_ngay);
+        else chon_ngay = fnc.convertTimestamp(Date.now());
+        
         let type_quyen = req.user.data.type;
+        let maxid = await fnc.getMaxIdByField(TheoDoiCongSuat, 'id_cs');
 
-        let maxid = 0;
-
-        let theodoi_cs = await TheoDoiCongSuat.findOne({}, {}, { sort: { id_cs: -1 } });
-        if (theodoi_cs) {
-            maxid = theodoi_cs.id_cs;
-        }
         let insert = await TheoDoiCongSuat({
-            id_cs: maxid + 1,
+            id_cs: maxid,
             id_cty: com_id,
             id_loai: loai_ts,
             id_donvi: ten_dv,
             update_cs_theo: capnhattu_theodoics,
-            chon_ngay: ngay_bd_update,
+            chon_ngay: chon_ngay,
             nhap_ngay: nhap_ngay,
             cs_gannhat: 0,
             tdcs_type_quyen: type_quyen,
@@ -91,33 +88,12 @@ exports.add_do_csuat = async (req, res) => {
             tdcs_date_create: new Date().getTime()
         })
         await insert.save();
-        fnc.success(res, 'OK', { insert });
+        return fnc.success(res, 'OK', { insert });
     } catch (error) {
         console.log(error)
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 
-}
-
-exports.detail_csuat_tsan = async (req, res) => {
-    try {
-
-        let { id, } = req.body;
-        let com_id = req.user.data.com_id;
-
-        if (isNaN(id) || id <= 0) {
-            return res.statsus(404).json({ message: 'id phai la 1 so lon hon 0' })
-        }
-        let tdcs = await TheoDoiCongSuat.findOne({
-            id_cty: com_id,
-            id_cs: id
-        });
-
-        fnc.success(res, 'OK', { tdcs });
-
-    } catch (error) {
-        fnc.setError(res, error.message);
-    }
 }
 
 exports.update_theodoi_cs = async (req, res) => {
@@ -125,21 +101,118 @@ exports.update_theodoi_cs = async (req, res) => {
 
         let { id, day_update, cs_thuc } = req.body;
         let com_id = req.user.data.com_id;
-
-        if (isNaN(id) || id <= 0) {
-            return res.statsus(404).json({ message: 'id phai la 1 so lon hon 0' })
+        if(id && day_update && cs_thuc) {
+            if (isNaN(id) || id <= 0) {
+                return res.statsus(404).json({ message: 'id phai la 1 so lon hon 0' })
+            }
+            if(fnc.checkDate(day_update)) day_update = fnc.convertTimestamp(day_update);
+            else return fnc.setError(res, "Khong dung dinh dang date");
+            let update = await TheoDoiCongSuat.findOneAndUpdate({
+                id_cs: id,
+                id_cty: com_id
+            }, {
+                date_update: day_update,
+                cs_gannhat: cs_thuc
+            })
+            return fnc.success(res, "OK", { update })
         }
-        let update = await TheoDoiCongSuat.findOneAndUpdate({
-            id_cs: id,
-            id_cty: com_id
-        }, {
-            date_update: day_update,
-            cs_gannhat: cs_thuc
-        })
-        fnc.success(res, "OK", { update })
+        return fnc.setError(res, "Missing input value!");
     } catch (error) {
         console.log(error);
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
+    }
+}
 
+exports.xoaTheoDoiCongSuat = async (req, res) => {
+    try {
+        let { id, type } = req.body;
+        if (!id) {
+            return fnc.setError(res, 'Thông tin truyền lên không đầy đủ', 400);
+        }
+        let id_com = 0;
+        if (req.user.data.type == 1 || req.user.data.type == 2) {
+            id_com = req.user.data.com_id;
+        } else {
+            return fnc.setError(res, 'không có quyền truy cập', 400);
+        }
+        let type_quyen = req.user.data.type;
+        let idQLC = req.user.data.idQLC;
+        let date = fnc.convertTimestamp(Date.now());
+        if (type == 1) { // xóa vĩnh viễn
+            let idArraya = id.map(idItem => parseInt(idItem));
+            await TheoDoiCongSuat.deleteMany({ id_cs: { $in: idArraya }, id_cty: id_com });
+            return fnc.success(res, 'Xoa vinh vien thanh cong!');
+        } else if (type == 0) {
+            // thay đổi trạng thái là 1
+            let idArray = id.map(idItem => parseInt(idItem));
+            await TheoDoiCongSuat.updateMany(
+                {
+                    id_cs: { $in: idArray },
+                    tdcs_xoa: 0,
+                    id_cty: id_com
+                },
+                { tdcs_xoa: 1, tdcs_type_quyen_xoa: type_quyen, tdcs_id_ng_xoa: idQLC, tdcs_date_delete: date}
+            );
+            return fnc.success(res, 'Xoa tam thoi thanh cong!');
+        } else if (type == 2) {
+            // Khôi phục bảo dưỡng
+            let idArray = id.map(idItem => parseInt(idItem));
+            await TheoDoiCongSuat.updateMany(
+                { id_cs: { $in: idArray }, tdcs_xoa: 1, id_cty: id_com},
+                { tdcs_xoa: 0, tdcs_type_quyen_xoa: 0, tdcs_id_ng_xoa: 0, tdcs_date_delete: ""}
+            );
+            return fnc.success(res, 'Khoi phuc thanh cong!');
+        } else {
+            return fnc.setError(res, 'không thể thực thi!', 400);
+        }
+    } catch (e) {
+        return fnc.setError(res, e.message);
+    }
+}
+
+exports.xoaDonViCongSuat = async (req, res) => {
+    try {
+        let { id, type } = req.body;
+        if (!id) {
+            return fnc.setError(res, 'Thông tin truyền lên không đầy đủ', 400);
+        }
+        let id_com = 0;
+        if (req.user.data.type == 1 || req.user.data.type == 2) {
+            id_com = req.user.data.com_id;
+        } else {
+            return fnc.setError(res, 'không có quyền truy cập', 400);
+        }
+        let type_quyen = req.user.data.type;
+        let idQLC = req.user.data.idQLC;
+        let date = fnc.convertTimestamp(Date.now());
+        if (type == 1) { // xóa vĩnh viễn
+            let idArraya = id.map(idItem => parseInt(idItem));
+            await DonViCongSuat.deleteMany({ id_donvi: { $in: idArraya }, id_cty: id_com });
+            return fnc.success(res, 'Xoa vinh vien thanh cong!');
+        } else if (type == 0) {
+            // thay đổi trạng thái là 1
+            let idArray = id.map(idItem => parseInt(idItem));
+            await DonViCongSuat.updateMany(
+                {
+                    id_donvi: { $in: idArray },
+                    donvi_xoa: 0,
+                    id_cty: id_com
+                },
+                { donvi_xoa: 1, dvcs_type_quyen_xoa: type_quyen, dvcs_id_ng_xoa: idQLC, dvcs_date_delete: date}
+            );
+            return fnc.success(res, 'Xoa tam thoi thanh cong!');
+        } else if (type == 2) {
+            // Khôi phục bảo dưỡng
+            let idArray = id.map(idItem => parseInt(idItem));
+            await DonViCongSuat.updateMany(
+                { id_donvi: { $in: idArray }, donvi_xoa: 1, id_cty: id_com},
+                { donvi_xoa: 0, dvcs_type_quyen_xoa: 0, dvcs_id_ng_xoa: 0, dvcs_date_delete: ""}
+            );
+            return fnc.success(res, 'Khoi phuc thanh cong!');
+        } else {
+            return fnc.setError(res, 'không thể thực thi!', 400);
+        }
+    } catch (e) {
+        return fnc.setError(res, e.message);
     }
 }

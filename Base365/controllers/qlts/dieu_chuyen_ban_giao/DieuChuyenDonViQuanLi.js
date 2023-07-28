@@ -519,7 +519,9 @@ exports.list = async(req,res) =>{
                     as: "infoTS"
                 }
             },
-            { $unwind: "$infoTS" },
+            { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
+
+            // { $unwind: "$infoTS" },
             {
                 $lookup: {
                     from: "Users",
@@ -528,6 +530,7 @@ exports.list = async(req,res) =>{
                     as: "infoCtyDangSD"
                 }
             },
+            { $unwind: { path: "$infoCtyDangSD", preserveNullAndEmptyArrays: true } },
             // { $unwind: "$infoCtyDangSD" },
             {
                 $lookup: {
@@ -537,6 +540,8 @@ exports.list = async(req,res) =>{
                     as: "infoCty"
                 }
             },
+            { $unwind: { path: "$infoCty", preserveNullAndEmptyArrays: true } },
+
             // { $unwind: "$infoCty" },
             {
                 $lookup: {
@@ -546,6 +551,8 @@ exports.list = async(req,res) =>{
                     as: "infoNV"
                 }
             },
+            { $unwind: { path: "$infoNV", preserveNullAndEmptyArrays: true } },
+
             // { $unwind: "$infoNV" },
             {
                 $lookup: {
@@ -555,6 +562,8 @@ exports.list = async(req,res) =>{
                     as: "infoNVdangSD"
                 }
             },
+            { $unwind: { path: "$infoNVdangSD", preserveNullAndEmptyArrays: true } },
+
             // { $unwind: "$infoNVdangSD" },
             {
                 $lookup: {
@@ -564,6 +573,8 @@ exports.list = async(req,res) =>{
                     as: "infoPhongBan"
                 }
             },
+            { $unwind: { path: "$infoPhongBan", preserveNullAndEmptyArrays: true } },
+
             // { $unwind: "$infoPhongBan" },
             {
                 $lookup: {
@@ -573,6 +584,8 @@ exports.list = async(req,res) =>{
                     as: "infoPhongBanDangSD"
                 }
             },
+            { $unwind: { path: "$infoPhongBanDangSD", preserveNullAndEmptyArrays: true } },
+
             // { $unwind: "$infoPhongBanDangSD" },
             {
                 $project: {

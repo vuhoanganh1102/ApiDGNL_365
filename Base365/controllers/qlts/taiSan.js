@@ -16,7 +16,12 @@ const QuaTrinhSuDung = require('../../models/QuanLyTaiSan/QuaTrinhSuDung');
 const GhiTang = require('../../models/QuanLyTaiSan/GhiTang_TS');
 const CapPhat = require('../../models/QuanLyTaiSan/CapPhat');
 const ThuHoi = require('../../models/QuanLyTaiSan/ThuHoi');
-const { toolGhitang } = require('../tools/qlts');
+const ThongBao = require('../../models/QuanLyTaiSan/ThongBao');
+const DieuChuyen = require('../../models/QuanLyTaiSan/DieuChuyen');
+const Mat = require('../../models/QuanLyTaiSan/DieuChuyen');
+const Huy = require('../../models/QuanLyTaiSan/DieuChuyen');
+const ThanhLy = require('../../models/QuanLyTaiSan/DieuChuyen');
+
 exports.showAll = async (req, res) => {
   try {
     let { page, perPage, ts_ten, id_loai_ts, ts_vi_tri, id_ten_quanly, ts_trangthai } = req.body;
@@ -213,15 +218,13 @@ exports.showadd = async (req, res) => {
 }
 
 
-
-
 exports.addTaiSan = async (req, res) => {
   try {
     let {
       id_loai_ts, id_dv_quanly,
       id_ten_quanly, ts_ten, sl_bandau, ts_so_luong,
       soluong_cp_bb, ts_gia_tri, ts_don_vi, ts_vi_tri,
-      ts_trangthai, ts_da_xoa, ts_date_delete,
+      ts_trangthai, ts_da_xoa, day_xoa,
       don_vi_tinh, ghi_chu
     } = req.body
     const createDate = Math.floor(Date.now() / 1000);
@@ -435,8 +438,6 @@ exports.deleteTs = async (req, res) => {
   }
 };
 
-
-
 exports.editTS = async (req, res) => {
   try {
     let {ts_vi_tri,
@@ -454,11 +455,6 @@ exports.editTS = async (req, res) => {
     }
     const validationResult = quanlytaisanService.validateinputEdit(ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly,id_loai_ts,ts_vi_tri,ts_so_luong,ts_gia_tri,ts_trangthai);
     if(validationResult == true) {
-      let checkTs = await TaiSan.find({ id_cty: com_id })
-
-    if (checkTs.some(ts => ts.ts_ten === ts_ten)) {
-      return functions.setError(res, 'tên tài sản  đã được sử dụng', 400);
-    } else {
       let chinhsua = await TaiSan.findOneAndUpdate(
         { ts_id: ts_id, id_cty: com_id ,ts_da_xoa : 0},
         {
@@ -481,19 +477,345 @@ exports.editTS = async (req, res) => {
       }
       return functions.success(res, 'get data success', { chinhsua });
     }
-    
-    }
   }  catch(e){
     return functions.setError(res , e.message)
 }
 };
+//hiển thị ghi tang
+exports.showGhiTang = async(req,res) => {
+  try{
+   let {ts_id} = req.body;
+   let com_id = '';
+   if (req.user.data.type == 1 || req.user.data.type == 2) {
+    com_id = req.user.data.com_id;
+  } else {
+    return functions.setError(res, 'không có quyền truy cập', 400);
+  }
+  if (typeof ts_id === 'undefined') {
+    return functions.setError(res, 'id tài sản không được bỏ trống', 400);
+  }
+  if (isNaN(Number(ts_id))) {
+    return functions.setError(res, 'id tài sản phải là một số', 400);
+  }
+  let checkGhiTang = await GhiTang.findOne({
+    id_ts : ts_id, com_id : com_id
+  })
+  if (!checkGhiTang) {
+    return functions.setError(res, 'Biên bản ghi tăng không tồn tại', 400);
+  }
+  let checkNguoiTao = await User.findOne({ idQLC: checkGhiTang.id_ng_tao, $or: [
+    { 'inForPerson.employee.com_id': com_id },
+    { idQLC: com_id }
+  ] }).select('userName');
+  if(!checkNguoiTao){
+    checkNguoiTao = "";
+  }
+  let checkNguoiDuyet = await User.findOne({ idQLC: checkGhiTang.id_ng_duyet, $or: [
+    { 'inForPerson.employee.com_id': com_id },
+    { idQLC: com_id }
+  ] }).select('userName');
+  if(!checkNguoiDuyet){
+    checkNguoiDuyet = "";
+  }
+  let checkTaiSan = await TaiSan.findOne({ts_id : ts_id,id_cty : com_id }).select('ts_ten')
+  if (!checkTaiSan) {
+    checkTaiSan = 0;
+  }
+   let items = [
+    {
+      so_bien_ban : checkGhiTang.id_ghitang,
+      nguoi_tao : checkNguoiTao,
+      ngay_tao : checkGhiTang.day_tao,
+      nguoi_duyet : checkNguoiDuyet,
+      trang_thai : checkGhiTang.trang_thai_ghi_tang,
+      ngay_duyet : checkGhiTang.day_duyet,
+      ma_tai_san : ts_id,
+      ten_tai_san : checkTaiSan,
+      so_luong_tang : checkGhiTang.sl_tang,
+      ghi_chu : checkGhiTang.gt_ghi_chu
+    }
+   ]
+
+   return functions.success(res, 'get data success', { items });
+  } catch(e){
+    console.log(e)
+    return functions.setError(res , e.message)
+}
+}
+// duyệt ghi tăng
+exports.duyetHuyGhiTang = async(req,res) => {
+  try{
+    let {id_ghitang,type,lydo_tu_choi} = req.body;
+    let com_id = '';
+    let id_nguoi_duyet = '';
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      id_nguoi_duyet = req.user.data.idQLC
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    const createDate = Math.floor(Date.now() / 1000);
+    let maxIdThongBao = await functions.getMaxIdByField(ThongBao, 'id_tb');
+    let checkGhiTang = await GhiTang.findOne({id_ghitang : id_ghitang,com_id : com_id,xoa_ghi_tang : 0})
+    if (typeof id_ghitang === 'undefined') {
+      return functions.setError(res, 'id ghi tăng không được bỏ trống', 400);
+    }
+    if (isNaN(Number(id_ghitang))) {
+      return functions.setError(res, 'id ghi tăng phải là một số', 400);
+    }
+    if(type == 1){
+      //Duyệt ghi tăng
+      let duyetGhiTang = await GhiTang.findOneAndUpdate(
+        { id_ghitang : id_ghitang, com_id : com_id ,xoa_ghi_tang : 0},
+        {
+          $set: {
+            id_ng_duyet : id_nguoi_duyet,
+            trang_thai_ghi_tang : 3,
+            day_duyet: createDate,
+          }
+        },
+        { new: true }
+      );
+      if (!duyetGhiTang) {
+        return functions.setError(res, 'Không tìm thấy bản ghi để duyệt', 400);
+      }
+      let createThongBao = new ThongBao({
+        id_tb: maxIdThongBao,
+        id_cty: com_id,
+        id_ng_nhan : checkGhiTang.id_ng_tao,
+        id_ng_tao : id_nguoi_duyet,
+        loai_tb: 2,
+        date_create : createDate
+      
+      })
+      let saveTSVT = await createThongBao.save()
+      let checkTaiSan = await TaiSan.findOne({
+        ts_id : checkGhiTang.id_ts, id_cty : com_id
+      }).select('ts_so_luong')
+      let soluongmoi = checkTaiSan.ts_so_luong + checkGhiTang.sl_tang
+      let updateTaiSan = await TaiSan.findOneAndUpdate({
+        ts_id : checkGhiTang.id_ts,
+        id_cty : com_id},
+        {
+          $set: {
+            ts_so_luong : soluongmoi
+          }
+        },
+        { new: true }
+      )
+      if (!updateTaiSan) {
+        return functions.setError(res, 'Không tìm thấy bản ghi tài sản để cộng số lương', 400);
+      }
+  
+      return functions.success(res, 'duyệt thành công ', { duyetGhiTang,saveTSVT });
+    }
+    else if(type == 2){
+      //từ chối ghi tăng
+      let tuchoiGhiTang =  await GhiTang.findOneAndUpdate(
+        { id_ghitang : id_ghitang, com_id : com_id ,xoa_ghi_tang : 0},
+        {
+          $set: {
+            id_ng_duyet : id_nguoi_duyet,
+            trang_thai_ghi_tang : 2,
+            lydo_tu_choi : lydo_tu_choi,
+            day_duyet: createDate,
+          }
+        },
+        { new: true }
+      );
+      if (!tuchoiGhiTang) {
+        return functions.setError(res, 'Không tìm thấy bản ghi để từ chối', 400);
+      }
+      // let createThongBao = new ThongBao({
+      //   id_tb: maxIdThongBao,
+      //   id_cty: com_id,
+      //   id_ng_nhan : checkGhiTang.id_ng_tao,
+      //   id_ng_tao : id_nguoi_duyet,
+      //   loai_tb: 2,
+      //   date_create : createDate
+      
+      // })
+      // let saveTSVT = await createThongBao.save()
+      return functions.success(res, 'từ chối  thành công ', { tuchoiGhiTang });
+    }else {
+      return functions.setError(res, 'type xử lý không hợp lệ', 400);
+    }
+  }catch(e){
+    console.log(e)
+    return functions.setError(res , e.message)
+}
+}
+// xóa ghi tăng
+exports.XoaGhiTang = async(req,res) => {
+  try {
+    let { type, id_ghitang} = req.body;
+    let com_id = '';
+    let id_ng_xoa = '';
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      id_ghitang = req.user.data.idQLC;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    const deleteDate = Math.floor(Date.now() / 1000);
+    if (!id_ghitang.every(num => !isNaN(parseInt(num)))) {
+      return functions.setError(res, 'id_ghitang không hợp lệ', 400);
+    }
+    if (type == 1) { // xóa vĩnh viễn
+      let idArraya = id_ghitang.map(idItem => parseInt(idItem));
+      let result = await GhiTang.deleteMany({ id_ghitang: { $in: idArraya }, com_id: com_id });
+      if (result.deletedCount === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
+      }
+      return functions.success(res, 'xóa thành công!');
+    } else if (type == 0) {
+      // thay đổi trạng thái là 1
+      let idArray = id_ghitang.map(idItem => parseInt(idItem));
+      let result = await GhiTang.updateMany(
+        { id_ghitang: { $in: idArray },xoa_ghi_tang: 0,com_id : com_id },
+        { xoa_ghi_tang: 1,
+          id_ng_xoa : id_ng_xoa,
+         day_xoa : deleteDate,
+
+        }
+      );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
+      return functions.success(res, 'Bạn đã xóa thành công , hiện vào danh sách dã xóa !');
+    } else if (type == 2) {
+      // Khôi phục ghi tăng
+      let idArray = id_ghitang.map(idItem => parseInt(idItem));
+      let result = await GhiTang.updateMany(
+        { id_ghitang: { $in: idArray }, 
+        xoa_ghi_tang: 1,com_id : com_id  },
+        { xoa_ghi_tang: 0 ,
+          id_ng_xoa : 0,
+          day_xoa : 0,}
+      );
+      if (result.nModified === 0) {
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      }
+      return functions.success(res, 'Bạn đã khôi phục ghi tăng thành công!');
+    } else {
+      return functions.setError(res, 'không thể thực thi!', 400);
+    }
+  } catch (e) {
+    return functions.setError(res, e.message);
+  }
+}
+// thêm ghi tăng
+exports.addGhiTang  = async(req,res) => {
+  try{
+    let {ts_id,sl_tang,ghi_chu} = req.body
+    let com_id = '';
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      id_nguoi_tao = req.user.data.idQLC
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    let maxIdGhiTang = await functions.getMaxIdByField(GhiTang, 'id_ghitang');
+    let maxIdThongBao = await functions.getMaxIdByField(ThongBao, 'id_tb');
+    let maxIdQTSD = await functions.getMaxIdByField(QuaTrinhSuDung, 'quatrinh_id');
+    const createDate = Math.floor(Date.now() / 1000);
+    if (typeof ts_id === 'undefined') {
+      return functions.setError(res, 'id tài sản không được bỏ trống', 400);
+    }
+    if (isNaN(Number(ts_id))) {
+      return functions.setError(res, 'id tài sản phải là một số', 400);
+    }
+    if (typeof sl_tang === 'undefined') {
+      return functions.setError(res, 'số lương tăng không được bỏ trống', 400);
+    }
+    if (isNaN(Number(sl_tang))) {
+      return functions.setError(res, 'số lượng tăng phải là một số', 400);
+    }
+    let createGt = new GhiTang({
+      id_ghitang : maxIdGhiTang,
+      id_ts: ts_id,
+      sl_tang : sl_tang,
+      id_ng_tao : id_nguoi_tao,
+      ghi_chu: ghi_chu,
+      day_tao : createDate
+    
+    })
+    let saveGT = await createGt.save()
+    let createQTSD = new QuaTrinhSuDung({
+      quatrinh_id: quatrinh_id,
+      id_bien_ban: saveGT.id_ghitang,
+      so_lg : saveGT.sl_tang,
+      id_cty : com_id,
+      id_cty_sudung: com_id,
+      qt_ngay_thuchien : saveGT.day_tao,
+      qt_nghiep_vu : 9,
+      ghi_chu : ghi_chu,
+      time_created : createDate
+    })
+    let saveQTSD = await createQTSD.save()
+    let createThongBao = new ThongBao({
+      id_tb: maxIdThongBao,
+      id_cty: com_id,
+      id_ng_nhan : id_ng_tao,
+      id_ng_tao : com_id,
+      loai_tb: 2,
+      date_create : createDate
+    })
+    let saveTSVT = await createThongBao.save()
+    return functions.success(res, 'chỉnh sửa thành công ', { saveGT,saveQTSD,saveTSVT });
+  } catch (e) {
+    return functions.setError(res, e.message);
+  }
+}
+//sửa ghi tăng
+exports.chinhSuaGhitang = async(req,res) => {
+    try{
+      let {id_ghitang,sl_tang,gt_ghi_chu} = req.body;
+      if (req.user.data.type == 1 || req.user.data.type == 2) {
+        com_id = req.user.data.com_id;
+        id_nguoi_duyet = req.user.data.idQLC
+      } else {
+        return functions.setError(res, 'không có quyền truy cập', 400);
+      }
+      if (typeof id_ghitang === 'undefined') {
+        return functions.setError(res, 'id ghi tăng không được bỏ trống', 400);
+      }
+      if (isNaN(Number(id_ghitang))) {
+        return functions.setError(res, 'id ghi tăng phải là một số', 400);
+      }
+      if (typeof sl_tang === 'undefined') {
+        return functions.setError(res, 'số lương tăng không được bỏ trống', 400);
+      }
+      if (isNaN(Number(sl_tang))) {
+        return functions.setError(res, 'số lượng tăng phải là một số', 400);
+      }
+      let chinhsuaGhiTang = await GhiTang.findOneAndUpdate(
+        { id_ghitang : id_ghitang, com_id : com_id ,xoa_ghi_tang : 0},
+        {
+          $set: {
+            sl_tang : sl_tang,
+            gt_ghi_chu : gt_ghi_chu,
+          }
+        },
+        { new: true }
+      );
+      if (!chinhsuaGhiTang) {
+        return functions.setError(res, 'Không tìm thấy bản ghi để chỉnh sửa', 400);
+      }
+      return functions.success(res, 'chỉnh sửa thành công ', { chinhsuaGhiTang });
+
+    }catch(e){
+    console.log(e)
+    return functions.setError(res , e.message)
+}
+}
 
 
 
 exports.quatrinhsd = async (req, res) => {
   try {
 
-    let { ts_id, page, perPage } = req.body;
+    let { ts_id, page, perPage,qt_nghiep_vu } = req.body;
     let com_id = '';
     page = page || 1;
     perPage = perPage || 10;
@@ -510,14 +832,118 @@ exports.quatrinhsd = async (req, res) => {
     if (isNaN(Number(ts_id))) {
       return functions.setError(res, 'id tài sản phải là một số', 400);
     }
-    let listQTSD = await QuaTrinhSuDung.find({ id_ts: ts_id, id_cty: com_id })
+    const searchCondition = {};
+    if (qt_nghiep_vu) {
+      searchCondition.qt_nghiep_vu = qt_nghiep_vu;
+    }
+    let listQTSD = await QuaTrinhSuDung.find({id_ts : ts_id,id_cty : com_id,
+      ...searchCondition})
+    let items = [];
+    for (const qt of listQTSD) {
+      let listCP = [];
+      let listTH = [];
+      let listDC = [];
+      let listSC = [];
+      let listBD = [];
+      let listM = [];
+      let listH = [];
+      let listTL = [];
+      let listGT = [];
+      let trangThaiMap = {};
+      switch (qt.qt_nghiep_vu) {
+        case 1:
+          listCP = await CapPhat.find({ cp_id: qt.id_bien_ban, id_cty: com_id, cp_da_xoa: 0 });
+          for(let i = 0; i < listCP.length;i++){
+            trangThaiMap[qt.id_bien_ban] = listCP[i].cp_trangthai;
+          }
+          // Xử lý khi qt_nghiep_vu là 1
+          break;
+        case 2:
+          listTH = await ThuHoi.find({ thuhoi_id: qt.id_bien_ban, id_cty: com_id, xoa_thuhoi: 0 });
+          for(let i = 0; i < listTH.length;i++){
+            trangThaiMap[qt.id_bien_ban] = listTH[i].cp_trangthai;
+          }
+          // Xử lý khi qt_nghiep_vu là 2
+          break;
+        case 3:
+          listDC = await DieuChuyen.find({ dc_id: qt.id_bien_ban, id_cty: com_id, xoa_dieuchuyen: 0 });
+          for(let i = 0; i < listDC.length;i++){
+            trangThaiMap[qt.id_bien_ban] = listDC[i].cp_trangthai;
+          }
+          // Xử lý khi qt_nghiep_vu là 3
+          break;
+        case 4:
+          listSC = await SuaChua.find({ sc_id: qt.id_bien_ban, id_cty: com_id, sc_da_xoa: 0 });
+          for(let i = 0; i < listSC.length;i++){
+            trangThaiMap[qt.id_bien_ban] = listSC[i].cp_trangthai;
+          }
+          // Xử lý khi qt_nghiep_vu là 4
+          break;
+        case 5:
+          listBD = await BaoDuong.find({ id_bd: qt.id_bien_ban, id_cty: com_id, xoa_bd: 0 });
+          for(let i = 0; i < listBD.length;i++){
+            trangThaiMap[qt.id_bien_ban] = listBD[i].cp_trangthai;
+          }
+          // Xử lý khi qt_nghiep_vu là 5
+          break;
+        case 6:
+          listM = await Mat.find({ mat_id: qt.id_bien_ban, id_cty: com_id, xoa_dx_mat: 0 });
+          for(let i = 0; i < listM.length;i++){
+            trangThaiMap[qt.id_bien_ban] = listM[i].cp_trangthai;
+          }
+          // Xử lý khi qt_nghiep_vu là 6
+          break;
+        case 7:
+          listH = await Huy.find({ huy_id: qt.id_bien_ban, id_cty: com_id, xoa_huy: 0 });
+          for(let i = 0; i < listH.length;i++){
+            trangThaiMap[qt.id_bien_ban] = listH[i].cp_trangthai;
+          }
+          // Xử lý khi qt_nghiep_vu là 7
+          break;
+        case 8:
+          listTL = await ThanhLy.find({ tl_id: qt.id_bien_ban, id_cty: com_id, xoa_dx_tl: 0 });
+          for(let i = 0; i < listTL.length;i++){
+            trangThaiMap[qt.id_bien_ban] = listTL[i].cp_trangthai;
+          }
+          // Xử lý khi qt_nghiep_vu là 8
+          break;
+        case 9:
+          listGT = await CapPhat.find({ id_ghitang: qt.id_bien_ban, com_id: com_id, xoa_ghi_tang: 0 });
+          for(let i = 0; i < listGT.length;i++){
+            trangThaiMap[qt.id_bien_ban] = listGT[i].cp_trangthai;
+          }
+          // Xử lý khi qt_nghiep_vu là 9
+          break;
+        default:
+          // Xử lý khi qt_nghiep_vu không thuộc các case trên
+          break;
+      }
+      
+      items.push({
+        so_bien_ban: qt.id_bien_ban,
+        ngay_thuc_hien : qt.qt_ngay_thuchien,
+        nghiep_vu : qt.qt_nghiep_vu,
+        trang_thai :  trangThaiMap[qt.id_bien_ban],
+        vi_tri_tai_san : qt.vitri_ts,
+        nguoi_su_dung : qt.id_ng_sudung,
+        ghi_chu : qt.ghi_chu
+      });
+    }
+    const totalItems = await QuaTrinhSuDung.countDocuments({
+      id_ts: ts_id,
+      id_cty: com_id,
+      ...searchCondition // Áp dụng điều kiện tìm kiếm theo nghiệp vụ (nếu có) để tính tổng số bản ghi
+    });
+    const totalPages = Math.ceil(totalItems / perPage);
+    const hasNextPage = endIndex < totalItems;
 
-    const totalTsCount = await SuaChua.countDocuments({ id_cty: com_id, id_ts: ts_id });
-
+    return functions.success(res, 'get data success', {
+      items,
+      totalPages,
+      hasNextPage
+    });
     // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
-    const totalPages = Math.ceil(totalTsCount / perPage);
-    const hasNextPage = endIndex < totalTsCount;
-    return functions.success(res, 'get data success', { listQTSD, totalPages, hasNextPage });
+    return functions.success(res, 'get data success', { items});
   }  catch(e){
     console.log(e)
     return functions.setError(res , e.message)
@@ -594,7 +1020,7 @@ exports.khauhaoCTTS = async (req, res) => {
     return functions.setError(res, error);
   }
 };
-
+//thêm khấu hao
 exports.addKhauHao = async(req,res) => {
   try{
     let {ts_id,kh_gt,kh_so_ky,kh_so_ky_con_lai,kh_day_start,kh_gt_cho_kh} = req.body
@@ -608,6 +1034,10 @@ exports.addKhauHao = async(req,res) => {
     
     if(!kh_gt || !kh_so_ky || !kh_so_ky_con_lai || !kh_day_start ||kh_gt_cho_kh) {
        functions.setError(res, 'thiếu thông tin truyền lên', 400)
+    }
+    let checkts = await TaiSan.findOne({ts_id : ts_id,com_id : com_id}).select('ts_date_create')
+    if(checkts.ts_date_create > kh_day_start ) {
+      functions.setError(res, 'Ngày bắt đầu khấu hao không thể trước ngày thêm tài sản!', 400)
     }
     let checkkh = await KhauHao.findOne({kh_id_ts : ts_id, kh_id_cty : com_id})
     if(checkkh) {
@@ -631,8 +1061,9 @@ exports.addKhauHao = async(req,res) => {
       return functions.success(res, 'get data success', { chinhsua });
     }
     else {
+      let maxIdKhauhao = await functions.getMaxIdByField(KhauHao, 'id_khau_hao');
        let newKh = new KhauHao({
-        id_khau_hao : Number(max.id_khau_hao) + 1 || 1,
+        id_khau_hao : maxIdKhauhao,
         kh_id_cty : com_id,
         kh_id_ts : ts_id,
         kh_gt : kh_gt,
@@ -821,7 +1252,7 @@ exports.showBDCT = async (req, res) => {
 //Phần thông tin phân bổ
 exports.showTTPB = async (req, res) => {
   try {
-    let { ts_id } = req.body;
+    let { ts_id,type} = req.body;
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
     } else {

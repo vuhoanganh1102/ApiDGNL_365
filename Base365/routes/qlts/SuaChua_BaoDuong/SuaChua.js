@@ -8,7 +8,7 @@ router.post('/deleteAll', functions.checkToken, fnc.checkRole('SC_BD'), formData
 //bien ban dang sua chua
 
 router.post('/HoanThanhSuaChua', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.HoanThanhSuaChua);
-router.post('/EditSuaChua', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.SuaChuaBB);
+router.post('/EditSuaChua', functions.checkToken, fnc.checkRole('SC_BD',2), formData.parse(), controllers.SuaChuaBB);
 router.post('/deleteBBSuaChua', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.XoabbSuaChua);
 router.post('/details_bien_ban_dang_sua_chua', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.details);
 router.post('/list_bien_ban_dang_sua_chua', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.listBBDangSuaChua);
