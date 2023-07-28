@@ -173,3 +173,35 @@ exports.getUrlVideo = (createTime, video) => {
 exports.getUrlProfile = (createTime, profile) => {
     return `${process.env.cdn}/pictures/cv/${functions.convertDate(createTime,true)}/${profile}`;
 }
+
+exports.uploadProfile = (file_cv, createdAt) => {
+    const targetDirectory = `${process.env.storage_tv365}/pictures/cv/${functions.convertDate(createdAt,true)}`;
+    const typeFile = functions.fileType(file_cv);
+    // Đặt lại tên file
+    const originalname = file_cv.originalFilename;
+    const extension = originalname.split('.').pop();
+    const uniqueSuffix = Date.now();
+    const nameFile = `cv_${uniqueSuffix}.${extension}`;
+    if (typeFile == "mp4" || typeFile == "quicktime") {
+        if (typeFile == "mp4") {
+            nameFile = `video_uv_${data.idTimViec365}_${now}.mp4`;
+        } else {
+            nameFile = `video_uv_${data.idTimViec365}_${now}.mov`;
+        }
+
+    }
+    // Đường dẫn tới file cũ
+    const oldFilePath = file_cv.path;
+
+    // Đường dẫn tới file mới
+    const newFilePath = path.join(targetDirectory, nameFile);
+
+    // Di chuyển file và đổi tên file
+    fs.rename(oldFilePath, newFilePath, async function(err) {
+        if (err) {
+            console.error(err);
+            return false;
+        }
+    });
+    return { typeFile, nameFile };
+}
