@@ -11,7 +11,7 @@ const QuitJob = require('../../models/hr/personalChange/QuitJob');
 const Salarys = require('../../models/Tinhluong/Tinhluong365SalaryBasic');
 const Deparment = require('../../models/qlc/Deparment');
 const Resign = require('../../models/hr/personalChange/Resign');
-exports.report = async (req, res, next) => {
+exports.report = async(req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         let depId = req.body.depId || null;
@@ -43,8 +43,9 @@ exports.report = async (req, res, next) => {
 
         // tìm kiếm nhân viên được bổ nhiệm là nam
         condition['inForPerson.account.gender'] = 1;
-        let dataBoNhiemNam = await Users.aggregate([
-            { $match: condition },
+        let dataBoNhiemNam = await Users.aggregate([{
+                $match: condition
+            },
             {
                 $lookup: {
                     from: 'HR_Appoints',
@@ -53,29 +54,33 @@ exports.report = async (req, res, next) => {
                     as: 'Appoints'
                 }
             },
-            { $unwind: '$Appoints' },
-            { $count: 'SL' }
+            {
+                $count: 'SL'
+            }
         ])
 
         // tìm kiếm với nhân viên được bổ nhiệm là nữ
         condition['inForPerson.account.gender'] = 2;
-        let dataBoNhiemNu = await Users.aggregate([
-            { $match: condition },
-            {
-                $lookup: {
-                    from: 'HR_Appoints',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'Appoints'
+        let dataBoNhiemNu = await Users.aggregate([{
+                    $match: condition
+                },
+                {
+                    $lookup: {
+                        from: 'HR_Appoints',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'Appoints'
+                    }
+                },
+                {
+                    $count: 'SL'
                 }
-            }, 
-            { $unwind: '$Appoints' },
-            { $count: 'SL' }
-        ])
-        // tìm kiếm nhân viên được bổ nhiệm
+            ])
+            // tìm kiếm nhân viên được bổ nhiệm
         delete condition['inForPerson.account.gender']
-        let dataBoNhiem = await Users.aggregate([
-            { $match: condition },
+        let dataBoNhiem = await Users.aggregate([{
+                $match: condition
+            },
             {
                 $lookup: {
                     from: 'HR_Appoints',
@@ -84,8 +89,9 @@ exports.report = async (req, res, next) => {
                     as: 'Appoints'
                 }
             },
-            { $unwind: '$Appoints' },
-            { $count: 'SL' }
+            {
+                $count: 'SL'
+            }
         ])
 
         // Tỷ lệ nhân viên nghỉ việc
@@ -141,117 +147,138 @@ exports.report = async (req, res, next) => {
         condition['inForPerson.employee.com_id'] = comId
 
         // Luân chuyển công tác
-        let countDataLuanChuyen = await Users.aggregate([
-            { $match: condition },
-            {
-                $lookup: {
-                    from: 'HR_TranferJobs',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'TranferJobs'
+        let countDataLuanChuyen = await Users.aggregate([{
+                    $match: condition
+                },
+                {
+                    $lookup: {
+                        from: 'HR_TranferJobs',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'TranferJobs'
+                    }
+                },
+                {
+                    $count: 'SL'
                 }
-            },
-            { $unwind: '$TranferJobs' },
-            { $count: 'SL' }
-        ])
-        // nhân viên nam luân chuyển
+            ])
+            // nhân viên nam luân chuyển
         condition['inForPerson.account.gender'] = 1
-        let countDataLuanChuyenNam = await Users.aggregate([
-            { $match: condition },
-            {
-                $lookup: {
-                    from: 'HR_TranferJobs',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'TranferJobs'
+        let countDataLuanChuyenNam = await Users.aggregate([{
+                    $match: condition
+                },
+                {
+                    $lookup: {
+                        from: 'HR_TranferJobs',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'TranferJobs'
+                    }
+                },
+                {
+                    $count: 'SL'
                 }
-            },
-            { $unwind: '$TranferJobs' },
-            { $count: 'SL' }
-        ])
-        // nhân viên nữ luân chuyển
+            ])
+            // nhân viên nữ luân chuyển
         condition['inForPerson.account.gender'] = 2
-        let countDataLuanChuyenNu = await Users.aggregate([
-            { $match: condition },
-            {
-                $lookup: {
-                    from: 'HR_TranferJobs',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'TranferJobs'
+        let countDataLuanChuyenNu = await Users.aggregate([{
+                    $match: condition
+                },
+                {
+                    $lookup: {
+                        from: 'HR_TranferJobs',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'TranferJobs'
+                    }
+                },
+                {
+                    $count: 'SL'
                 }
-            },
-            { $unwind: '$TranferJobs' },
-            { $count: 'SL' }
-        ])
-        //  Tổng số tin
+            ])
+            //  Tổng số tin
         let tongSoTinTuyenDung = await RecruitmentNews.countDocuments({ isDelete: 0, comId })
 
         // // Tổng số hồ sơ
         let tongSoHoSo = await Candidates.countDocuments({ isDelete: 0, comId }, { id: 1 })
 
         // Tổng số ứng viên cần tuyển
-        let tongSoUngVienCanTuyen = await RecruitmentNews.aggregate([
-            {
-                $match: { isDelete: 0, comId }
-            },
-            {
-                $group: {
-                    _id: null,
-                    total: { $sum: "$number" }
+        let tongSoUngVienCanTuyen = await RecruitmentNews.aggregate([{
+                    $match: { isDelete: 0, comId }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: "$number" }
+                    }
                 }
-            }
-        ])
-        // Số ứng viên đến phỏng vấn
-        let tongSoUngVienDenPhongVan = await Candidates.aggregate([
-            { $match: { comId, isDelete: 0 } },
-            {
-                $lookup: {
-                    from: 'HR_ScheduleInterviews',
-                    localField: 'id',
-                    foreignField: 'canId',
-                    as: 'lichPv'
+            ])
+            // Số ứng viên đến phỏng vấn
+        let tongSoUngVienDenPhongVan = await Candidates.aggregate([{
+                    $match: { comId }
+                },
+                {
+                    $lookup: {
+                        from: 'HR_ScheduleInterviews',
+                        localField: 'id',
+                        foreignField: 'canId',
+                        as: 'lichPv'
+                    }
+                },
+                {
+                    $match: { 'lichPv.isSwitch': 0 }
+                },
+                {
+                    $count: 'SL'
                 }
-            },
-            { $match: { 'lichPv.isSwitch': 0 } },
-            { $count: 'SL' }
-        ])
-        // Số ứng viên qua phỏng vấn
-        let tongSoUngVienQuaPhongVan = await Candidates.aggregate([
-            { $match: { comId, isDelete: 0 } },
-            {
-                $lookup: {
-                    from: 'HR_GetJobs',
-                    localField: 'id',
-                    foreignField: 'canId',
-                    as: 'getJob'
+            ])
+            // Số ứng viên qua phỏng vấn
+        let tongSoUngVienQuaPhongVan = await Candidates.aggregate([{
+                    $match: { comId }
+                },
+                {
+                    $lookup: {
+                        from: 'HR_GetJobs',
+                        localField: 'id',
+                        foreignField: 'canId',
+                        as: 'getJob'
+                    }
+                },
+                {
+                    $match: { 'getJob.isSwitch': 0 }
+                },
+                {
+                    $count: 'SL'
                 }
-            },
-            { $match: { 'getJob.isSwitch': 0 } },
-            { $count: 'SL' }
-        ])
-        // Số ứng viên nhận việc, thử việc
-        let tongSoUngVienHuyNhanViec = await Candidates.aggregate([
-            { $match: { comId, isDelete: 0 } },
-            {
-                $lookup: {
-                    from: 'HR_CancelJobs',
-                    localField: 'id',
-                    foreignField: 'canId',
-                    as: 'CancelJobs'
+            ])
+            // Số ứng viên nhận việc, thử việc
+        let tongSoUngVienHuyNhanViec = await Candidates.aggregate([{
+                    $match: { comId, isDelete: 0 }
+                },
+                {
+                    $lookup: {
+                        from: 'HR_CancelJobs',
+                        localField: 'id',
+                        foreignField: 'canId',
+                        as: 'CancelJobs'
+                    }
+                },
+                {
+                    $match: { 'CancelJobs.isSwitch': 0 }
+                },
+                {
+                    $count: 'SL'
                 }
-            },
-            { $match: { 'CancelJobs.isSwitch': 0 } },
-            { $count: 'SL' }
-        ])
-        // Báo cáo chi tiết theo tin tuyển dụng
-        let query = await RecruitmentNews.find({ comId, isDelete: 0 });
+            ])
+            // Báo cáo chi tiết theo tin tuyển dụng
+        let query = await RecruitmentNews.find({ comId });
         let mangThongTin = [];
         if (query.length !== 0) {
             for (let i = 0; i < query.length; i++) {
-                let tongSoUngVien = await Candidates.countDocuments({ comId, recruitmentNewsId: query[i].id, isDelete: 0 })
-                let tongSoUngVienDenPhongVan = await Candidates.aggregate([
-                    { $match: { comId, recruitmentNewsId: query[i].id, isDelete: 0 } },
+                let tongSoUngVien = await Candidates.countDocuments({ comId, recruitmentNewsId: query[i].id })
+                let tongSoUngVienDenPhongVan = await Candidates.aggregate([{
+                        $match: { comId, 'lichPv.isSwitch': 0, recruitmentNewsId: query[i].id }
+                    },
                     {
                         $lookup: {
                             from: 'HR_ScheduleInterviews',
@@ -260,12 +287,15 @@ exports.report = async (req, res, next) => {
                             as: 'lichPv'
                         }
                     },
-                    { $match: { 'lichPv.isSwitch': 0 } },
-                    { $count: 'SL' }
-                ])
-                let tongSoUngVienNhanViec = await Candidates.aggregate([
                     {
-                        $match: { comId, recruitmentNewsId: query[i].id, isDelete: 0 }
+                        $match: { 'lichPv.isSwitch': 0 }
+                    },
+                    {
+                        $count: 'SL'
+                    }
+                ])
+                let tongSoUngVienNhanViec = await Candidates.aggregate([{
+                        $match: { comId, recruitmentNewsId: query[i].id }
                     },
                     {
                         $lookup: {
@@ -282,9 +312,8 @@ exports.report = async (req, res, next) => {
                         $count: 'SL'
                     }
                 ])
-                let tongSoUngVienHuy = await Candidates.aggregate([
-                    {
-                        $match: { comId, isDelete: 0, recruitmentNewsId: query[i].id, isDelete: 0 }
+                let tongSoUngVienHuy = await Candidates.aggregate([{
+                        $match: { comId, isDelete: 0, recruitmentNewsId: query[i].id }
                     },
                     {
                         $lookup: {
@@ -323,8 +352,7 @@ exports.report = async (req, res, next) => {
             }
         }
         // Thống kê xếp hạng nhân viên tuyển dụng
-        let thongKeNhanVienTuyenDung = await RecruitmentNews.aggregate([
-            {
+        let thongKeNhanVienTuyenDung = await RecruitmentNews.aggregate([{
                 $match: { comId }
             },
             {
@@ -343,9 +371,8 @@ exports.report = async (req, res, next) => {
         }
 
         //Báo cáo chi tiết theo nhân viên giới thiệu ứng viên và tiền thưởng trực tiếp
-        let gioiThieuUngVien = await Candidates.aggregate([
-            {
-                $match: { comId, isDelete: 0, userRecommend: { $gt: 0 } }
+        let gioiThieuUngVien = await Candidates.aggregate([{
+                $match: { comId }
             },
             {
                 $group: {
@@ -353,7 +380,6 @@ exports.report = async (req, res, next) => {
                     total: { $sum: 1 },
                 }
             },
-            { $sort: { _id: 1 } }
         ])
         if (gioiThieuUngVien.length !== 0) {
             for (let i = 0; i < gioiThieuUngVien.length; i++) {
@@ -372,8 +398,9 @@ exports.report = async (req, res, next) => {
         if (chartNghiViec) {
             conditionNghiViec['quit.type'] = chartNghiViec
         }
-        let chartNghiViecnon = await Users.aggregate([
-            { $match: condition },
+        let chartNghiViecnon = await Users.aggregate([{
+                $match: condition
+            },
             {
                 $lookup: {
                     from: 'HR_Resigns',
@@ -382,16 +409,18 @@ exports.report = async (req, res, next) => {
                     as: 'quit'
                 }
             },
-            { $unwind: '$quit' },
-            { $match: conditionNghiViec },
+            {
+                $match: conditionNghiViec
+            },
             {
                 $project: { 'quit.ep_id': 1, 'quit.current_position': 1, 'quit.created_at': 1, idQLC: 1, userName: 1, 'inForPerson.account': 1, emailContact: 1, phone: 1, 'inForPerson.employee': 1 }
             },
         ])
 
         //Biểu đồ thống kê bổ nhiệm, quy hoạch
-        let chartBoNhiem = await Users.aggregate([
-            { $match: condition },
+        let chartBoNhiem = await Users.aggregate([{
+                $match: condition
+            },
             {
                 $lookup: {
                     from: 'HR_Appoints',
@@ -400,13 +429,12 @@ exports.report = async (req, res, next) => {
                     as: 'Appoints'
                 }
             },
-            { $unwind: '$Appoints' },
-            { $project: searchItem }
+            {
+                $project: searchItem
+            }
         ])
 
-        let chartLuanChuyen = await Users.aggregate([
-            { $match: condition },
-            {
+        let chartLuanChuyen = await Users.aggregate([{
                 $lookup: {
                     from: 'HR_TranferJobs',
                     localField: 'inForPerson.employee.com_id',
@@ -414,8 +442,12 @@ exports.report = async (req, res, next) => {
                     as: 'TranferJobs'
                 }
             },
-            { $unwind: '$TranferJobs' },
-            { $project: searchItem }
+            {
+                $match: condition
+            },
+            {
+                $project: searchItem
+            }
         ])
         let data = {};
         data.phongBan = phongBan;
@@ -505,7 +537,7 @@ exports.report = async (req, res, next) => {
         return functions.setError(res, error)
     }
 }
-exports.reportChart = async (req, res, next) => {
+exports.reportChart = async(req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         let depId = req.body.depId || null;
@@ -539,12 +571,15 @@ exports.reportChart = async (req, res, next) => {
         if (depId) condition['inForPerson.employee.dep_id'] = depId;
         if (seniority) condition['inForPerson.account.experience'] = seniority;
 
+        //if(old === 1) condition['inForPerson.account.birthday'] = getYear() - inForPerson.account.birthday;
+
         if (link === 'bieu-do-danh-sach-nhan-vien.html') {
             data = await Users.find(condition, searchItem, { skip }, { limit });
             return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-nghi-viec.html') {
-            data = await Users.aggregate([
-                { $match: condition },
+            data = await Users.aggregate([{
+                    $match: condition
+                },
                 {
                     $lookup: {
                         from: 'HR_Resigns',
@@ -553,15 +588,21 @@ exports.reportChart = async (req, res, next) => {
                         as: 'HR_Resigns'
                     }
                 },
-                { $unwind: '$HR_Resigns' },
-                { $skip: skip },
-                { $limit: limit },
-                { $project: searchItem },
+                {
+                    $project: searchItem
+                },
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                }
             ])
             return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-bo-nhiem.html') {
-            data = await Users.aggregate([
-                { $match: condition },
+            data = await Users.aggregate([{
+                    $match: condition
+                },
                 {
                     $lookup: {
                         from: 'HR_Appoints',
@@ -570,16 +611,21 @@ exports.reportChart = async (req, res, next) => {
                         as: 'HR_Appoints'
                     }
                 },
-                { $unwind: '$HR_Appoints' },
-                { $skip: skip },
-                { $limit: limit },
-                { $project: searchItem }
-
+                {
+                    $project: searchItem
+                },
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                }
             ])
             return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-chuyen-cong-tac.html') {
-            data = await Users.aggregate([
-                { $match: condition },
+            data = await Users.aggregate([{
+                    $match: condition
+                },
                 {
                     $lookup: {
                         from: 'HR_TranferJobs',
@@ -588,16 +634,19 @@ exports.reportChart = async (req, res, next) => {
                         as: 'HR_TranferJobs'
                     }
                 },
-                { $unwind: '$HR_TranferJobs' },
-                { $skip: skip },
-                { $limit: limit },
-                { $project: searchItem },
-
+                {
+                    $project: searchItem
+                },
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                }
             ])
             return functions.success(res, 'get data success', { data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-tang-giam-luong.html') {
-            data = await Users.aggregate([
-                {
+            data = await Users.aggregate([{
                     $match: condition
                 },
                 {
@@ -608,22 +657,32 @@ exports.reportChart = async (req, res, next) => {
                         as: 'HR_Salarys'
                     }
                 },
-                { $unwind: '$HR_Salarys' },
-                { $skip: skip },
-                { $limit: limit },
-                { $project: searchItem },
-
+                {
+                    $project: searchItem
+                },
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                }
             ])
         } else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
             let tuoi = 0;
             let list = [];
 
-            let check = await Users.aggregate([
-                { $match: condition },
-                { $skip: skip },
-                { $limit: limit },
-                { $project: searchItem },
-
+            let check = await Users.aggregate([{
+                    $match: condition
+                },
+                {
+                    $project: searchItem
+                },
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit
+                }
             ])
             for (let i = 0; i < check.length; i++) {
                 let sinhnhat = new Date(check[i].inForPerson.account.birthday).getFullYear()

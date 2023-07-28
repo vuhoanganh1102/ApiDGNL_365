@@ -14,12 +14,12 @@ router.post('/raonhanh/toolPriceList', toolRaoNhanh.toolPriceList);
 router.post('/raonhanh/toolCity', toolRaoNhanh.toolCity);
 router.post('/raonhanh/toolLike', toolRaoNhanh.toolLike);
 router.post('/raonhanh/toolHistory', toolRaoNhanh.toolHistory);
-router.post('/raonhanh/toolBidding',toolRaoNhanh.toolBidding)
+router.post('/raonhanh/toolBidding', toolRaoNhanh.toolBidding)
 router.post('/raonhanh/toolApplyNew', toolRaoNhanh.toolApplyNew);
 router.post('/raonhanh/toolComment', toolRaoNhanh.toolComment);
 router.post('/raonhanh/toolOrder', toolRaoNhanh.toolOrder);
 router.post('/raonhanh/toolTagsIndex', toolRaoNhanh.toolTagsIndex);
-router.post('/raonhanh/updateNewDescription',toolRaoNhanh.updateNewDescription);
+router.post('/raonhanh/updateNewDescription', toolRaoNhanh.updateNewDescription);
 router.post('/raonhanh/toolEvaluate', toolRaoNhanh.toolEvaluate);
 router.post('/raonhanh/toolCart', toolRaoNhanh.toolCart);
 router.post('/raonhanh/toolTags', toolRaoNhanh.toolTags);
@@ -30,10 +30,10 @@ router.post('/raonhanh/toolTblTags', toolRaoNhanh.toolTblTags);
 router.post('/raonhanh/toolPushNewsTime', toolRaoNhanh.toolPushNewsTime);
 router.post('/raonhanh/toolAdminUser', toolRaoNhanh.toolAdminUser);
 router.post('/raonhanh/toolAdminTranslate', toolRaoNhanh.toolAdminTranslate);
-router.post('/raonhanh/toolBlog',toolRaoNhanh.toolBlog)
-router.post('/raonhanh/toolLoveNew',toolRaoNhanh.toolLoveNew)
-router.post('/raonhanh/toolCateVl',toolRaoNhanh.toolCateVl)
-router.post('/raonhanh/toolPhuongXa',toolRaoNhanh.toolPhuongXa)
-router.post('/raonhanh/toolbanggiacknt',toolRaoNhanh.toolbanggiacknt)
+router.post('/raonhanh/toolBlog', toolRaoNhanh.toolBlog)
+router.post('/raonhanh/toolLoveNew', toolRaoNhanh.toolLoveNew)
+    // router.post('/raonhanh/toolCateVl',toolRaoNhanh.toolCateVl)
+    // router.post('/raonhanh/toolPhuongXa', toolRaoNhanh.toolPhuongXa)
+    // router.post('/raonhanh/toolbanggiacknt', toolRaoNhanh.toolbanggiacknt)
 
 module.exports = router;

@@ -24,7 +24,7 @@ exports.getListPermisionUser= async(req, res, next) => {
         return functions.success(res, `Get list role user with id=${userId}`, {infoRoleTD, infoRoleTTNS, infoRoleTTVP, infoRoleHNNV, infoRoleBCNS, infoRoleDXGD, infoRoleTGL });
     } catch (e) {
         console.log("Err from server", e);
-        return functions.setError(res, e.message);
+        return functions.setError(res, "Err from server", 500);
     }
 }
 
@@ -91,15 +91,14 @@ exports.createPermisionUser = async(req, res, next) => {
         return functions.success(res, "Create permision for user success!");
     } catch (e) {
         console.log("Err from server!", e);
-        return functions.setError(res, e.message);
+        return functions.setError(res, "Err from server!", 500);
     }
 }
 
 exports.createTokenUser = async(req, res, next) => {
     try{
         let userId = req.body.userId;
-        let admin = await Users.findOne({idQLC: userId}).lean();
-        admin.com_id = admin.idQLC;
+        let admin = await Users.findOne({_id: userId});
         let token = await functions.createToken(admin, "28d");
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, `Bearer ${token}`);

@@ -3,44 +3,100 @@ const Group = require('../../models/qlc/Group');
 const Users = require("../../models/Users")
 
 //tìm kiếm danh sách nhom
-exports.getListGroupByFields = async (req, res) => {
+exports.getListGroupByFields = async(req, res) => {
     try {
-        let com_id = req.body.com_id
-        let gr_id = req.body.gr_id
-        let dep_id = req.body.dep_id
-        let team_id = req.body.team_id
-        let data = []
-        let condition = {}
-        let total_emp = {}
-            if (com_id) condition.com_id = com_id
-            if (gr_id) condition.gr_id = gr_id
-            if (dep_id) condition.dep_id = dep_id
-            if (team_id) condition.team_id = team_id
-            data = await Group.find(condition).select('gr_id team_id gr_name dep_id com_id')
-            const groupID = data.map(item => item.gr_id)
-            for (let i = 0; i < groupID.length; i++) {
-                const group = groupID[i];
-                total_emp = await Users.countDocuments({ "inForPerson.employee.com_id": com_id, "inForPerson.employee.gr_id": group, type: 2, "inForPerson.employee.ep_status": "Active" })
-                if (total_emp) data.total_emp = total_emp
+        let com_id = req.body.com_id;
+        let gr_id = req.body.gr_id;
+        let dep_id = req.body.dep_id;
+        let team_id = req.body.team_id;
+        if (com_id) {
+            const page = req.body.page || 1,
+                pageSize = req.body.pageSize || 10;
+            let condition = { com_id: Number(com_id) };
+
+            if (gr_id) condition.gr_id = Number(gr_id);
+            if (dep_id) condition.dep_id = Number(dep_id);
+            if (team_id) condition.team_id = Number(team_id);
+
+            const data = await Group.aggregate([
+                { $match: condition },
+                { $sort: { gr_id: -1 } },
+                { $skip: (page - 1) * pageSize },
+                { $limit: pageSize },
+                {
+                    $lookup: {
+                        from: "QLC_Deparments",
+                        foreignField: "dep_id",
+                        localField: "dep_id",
+                        as: "deparment",
+                    }
+                },
+                { $unwind: "$deparment" },
+                {
+                    $lookup: {
+                        from: "QLC_Teams",
+                        foreignField: "team_id",
+                        localField: "team_id",
+                        as: "team",
+                    }
+                },
+                { $unwind: "$team" },
+                {
+                    $project: {
+                        _id: 0,
+                        gr_id: 1,
+                        gr_name: 1,
+                        team_name: "$team.team_name",
+                        dep_id: "$deparment.dep_id",
+                        dep_name: "$deparment.dep_name",
+                    }
+                }
+            ]);
+
+            for (let index = 0; index < data.length; index++) {
+                const element = data[index];
+                element.total_emp = await Users.countDocuments({
+                    "inForPerson.employee.com_id": com_id,
+                    "inForPerson.employee.group_id": element.gr_id,
+                    type: 4,
+                    "inForPerson.employee.ep_status": "Active"
+                });
+
+                const manager = await Users.findOne({
+                    "inForPerson.employee.com_id": com_id,
+                    "inForPerson.employee.group_id": element.gr_id,
+                    type: 20,
+                    "inForPerson.employee.ep_status": "Active",
+                    "inForPerson.employee.position_id": 6,
+                }, { userName: 1 });
+                element.manager = (manager) ? manager.userName : "";
+
+                const deputy = await Users.findOne({
+                    "inForPerson.employee.com_id": com_id,
+                    "inForPerson.employee.dep_id": element.dep_id,
+                    type: 2,
+                    "inForPerson.employee.ep_status": "Active",
+                    "inForPerson.employee.position_id": 5,
+                }, { userName: 1 });
+                element.deputy = (deputy) ? deputy.userName : "";
             }
-            if (data) {
-                return functions.success(res, 'Lấy thành công', { data });
-            }
-            return functions.setError(res, 'Không có dữ liệu', 404);
+            return functions.success(res, 'Lấy thành công', { data });
+        }
+        return functions.setError(res, 'Chưa truyền id công ty');
     } catch (err) {
         return functions.setError(res, err.message)
     }
 };
 //Tạo mới dữ liệu của một nhom
-exports.createGroup = async (req, res) => {
+exports.createGroup = async(req, res) => {
     try {
         const type = req.user.data.type
         const com_id = req.user.data.com_id
-        // const com_id = req.body.com_id
+            // const com_id = req.body.com_id
         const { dep_id, team_id, gr_name } = req.body;
         if (type == 1) {
             if (dep_id && com_id && team_id && gr_name) {
-                let max = await Group.findOne({}, {}, { sort: { gr_id: -1 } }).lean() || 0
+                let max = await Group.findOne({}, { gr_id: 1 }, { sort: { gr_id: -1 } }).lean() || 0
                 const data = new Group({
                     gr_id: Number(max.gr_id) + 1 || 1,
                     dep_id: dep_id,
@@ -61,11 +117,11 @@ exports.createGroup = async (req, res) => {
     }
 };
 //API thay đổi thông tin của một nhóm
-exports.editGroup = async (req, res) => {
+exports.editGroup = async(req, res) => {
     try {
         const type = req.user.data.type
         const com_id = req.user.data.com_id
-        // const com_id = req.body.com_id
+            // const com_id = req.body.com_id
         const gr_id = req.body.gr_id
         if (type == 1) {
             const { dep_id, team_id, gr_name } = req.body;
@@ -86,12 +142,12 @@ exports.editGroup = async (req, res) => {
     }
 };
 //API Xóa một nhóm theo id
-exports.deleteGroup = async (req, res) => {
+exports.deleteGroup = async(req, res) => {
     try {
         const { gr_id } = req.body
         const type = req.user.data.type
         const com_id = req.user.data.com_id
-        // const com_id = req.body.com_id
+            // const com_id = req.body.com_id
         if (type == 1) {
             if (com_id && gr_id) {
                 await Users.updateOne({ "inForPerson.employee.com_id": com_id, "inForPerson.employee.gr_id": gr_id }, { $set: { "inForPerson.employee.gr_id": 0 } })

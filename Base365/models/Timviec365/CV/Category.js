@@ -4,39 +4,36 @@ const CategoryCVSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    catName: {
-        //tên cat cv
+    name: {
         type: String,
     },
-    catTags: {
-        //thẻ cate cv
+    alias: {
         type: String,
     },
-    catDescription: {
-        //chú thích cat cv
+    meta_h1: {
+        type: String,
+    },
+    content: {
         type: String
     },
-    catMota: {
-        //mô tả cat cv
+    cid: {
+        type: Number
+    },
+    meta_title: {
         type: String
     },
-    catParentId: {
-        //Id của cat cha(cat to)
-        type: Number
+    meta_key: {
+        type: String
     },
-    catCount: {
-        type: Number
+    meta_des: {
+        type: String
     },
-    catOrder: {
-        type: Number
+    meta_tt: {
+        type: String
     },
-    catActive: {
-        // cat cv này có kích hoạt hay không
-        type: Number
-    },
-    catHot: {
-        // cat này có hot hay không
-        type: Number
+    status: {
+        type: Number,
+        default: 0
     }
 }, {
     collection: 'CategoryCV',

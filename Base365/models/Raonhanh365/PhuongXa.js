@@ -14,7 +14,7 @@ const PhuongXaSchema = new mongoose.Schema({
     },
     province_id: {
         type: Number,
-      
+
     },
     district_id: {
         type: Number,
@@ -26,4 +26,4 @@ const PhuongXaSchema = new mongoose.Schema({
     timestamp: true
 })
 
-    module.exports = mongoose.model("RN365_PhuongXaSchemas", PhuongXaSchema);
+module.exports = mongoose.model("RN365_PhuongXaSchemas", PhuongXaSchema);

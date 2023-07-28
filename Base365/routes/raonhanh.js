@@ -20,6 +20,6 @@ router.use('/com', companyRaoNhanh365Router);
 router.use('/cart', cartRaoNhanh365Router);
 router.use('/priceList', priceListRaoNhanh365Router);
 router.use('/admin', adminRaonhanh365);
-router.use('/topCache',topCache)
+router.use('/topCache', topCache);
 
 module.exports = router;

@@ -1,27 +1,24 @@
-const mongoose = require('mongoose');
-const LikeSchema = new mongoose.Schema({
-    _id: {
-        type: Number
-    },
-    userId: {
+const mongoose = require("mongoose");
+const Cv365LikeSchema = new mongoose.Schema({
+    uid: {
         //id người like
-        type: Number
+        type: Number,
     },
-    idMau: {
-        //id của mẫu 
-        type: Number
+    id: {
+        //id của mẫu
+        type: Number,
     },
-    Status: {
+    status: {
         // trạng thái
-        type: Number
+        type: Number,
     },
     type: {
-        // 0:thư,1:cv,2:sơ yếu,3:đơn
-        type: Number
+        // 1:cv, 2: đơn, 3:thư, 4:syll
+        type: Number,
     },
 }, {
-    collection: 'Like',
-    versionKey: false
+    collection: "Cv365Like",
+    versionKey: false,
 });
 
-module.exports = mongoose.model("Like", LikeSchema);
+module.exports = mongoose.model("Cv365Like", Cv365LikeSchema);

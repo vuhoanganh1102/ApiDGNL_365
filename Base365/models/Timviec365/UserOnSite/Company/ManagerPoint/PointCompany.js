@@ -1,45 +1,36 @@
 const mongoose = require('mongoose');
-const pointCompanySchema = new mongoose.Schema({
-    _id: {
+const Tv365PointCompanySchema = new mongoose.Schema({
+    usc_id: {
         type: Number,
         required: true,
     },
-    uscID: Number,
     point: {
-        type: Number,
-        required: true,
-    },
-    pointCompany: {
-        // điểm công ty
-        type: Number,
-        required: true,
-    },
-    reservationPoint: {
-        // điểm bảo lưu
         type: Number,
         default: 0,
     },
-    note: {
-        // chú thích bảo lưu
+    point_usc: {
+        type: Number,
+        default: 0,
+    },
+    point_bao_luu: {
+        type: Number,
+        default: 0,
+    },
+    chu_thich_bao_luu: {
         type: String,
         default: null,
     },
-    dateResetPoint: {
-        // ngày reset point
-        type: Date,
-        default: null,
+    day_reset_point: {
+        type: Number,
+        default: 0,
     },
-    dateResetPointToZero: {
-        // ngày reset point về 0
-        type: Date,
-        default: null,
+    ngay_reset_diem_ve_0: {
+        type: Number,
+        default: 0,
     },
-    chuThichBaoLuu: String,
-    dayResetPoint: Date,
-    dayResetPoint0: Date,
 }, {
-    collection: 'PointCompany',
+    collection: 'Tv365PointCompany',
     versionKey: false,
     timestamp: true
-})
-module.exports = mongoose.model("PointCompany", pointCompanySchema);
+});
+module.exports = mongoose.model("Tv365PointCompany", Tv365PointCompanySchema);
