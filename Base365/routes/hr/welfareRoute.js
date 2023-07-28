@@ -23,7 +23,7 @@ router.post('/addInfinges',hrService.checkRoleUser, hrService.checkRight(3, 2),f
 router.post('/addInfingesGroup',hrService.checkRoleUser, hrService.checkRight(3, 2),formData.parse(),walfare.addInfingesGroup)
 
 // sửa  kỉ luật
-router.put('/updatec',hrService.checkRoleUser, hrService.checkRight(3, 3),formData.parse(),walfare.updateInfinges)
+router.put('/updateInfinges',hrService.checkRoleUser, hrService.checkRight(3, 3),formData.parse(),walfare.updateInfinges)
 
 // danh sách kỉ luật
 router.get('/listInfinges',hrService.checkRoleUser, hrService.checkRight(3, 1),walfare.listInfinges)
