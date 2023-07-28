@@ -933,7 +933,7 @@ exports.searchNew = async (req, res, next) => {
                 userID: 1,
                 img: 1,
                 updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
+                user: { _id: 1, idRaoNhanh365: 1, isOnline: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
                 district: 1,
                 ward: 1,
                 city: 1,
@@ -1201,7 +1201,7 @@ exports.createBuyNew = async (req, res) => {
         let img = [];
 
         //  lấy giá trị id lớn nhất rồi cộng thêm 1 tạo ra id mới
-        let _id = (await functions.getMaxID(New)) + 1;
+        var _id = (await functions.getMaxID(New)) + 1;
 
         // lấy thời gian hiện tại
         let createTime = new Date();
@@ -1223,7 +1223,7 @@ exports.createBuyNew = async (req, res) => {
             tgian_kt && tgian_bd && noidung_nhs
         ) {
             // tạolink title từ title người dùng nhập
-            let linkTitle = raoNhanh.createLinkTilte(title);
+            var linkTitle = raoNhanh.createLinkTilte(title);
 
             //kiểm tra title đã được người dùng tạo chưa
             let checktitle = await New.findOne({ userID, linkTitle });
@@ -1339,7 +1339,7 @@ exports.createBuyNew = async (req, res) => {
                 if (new_file_chidan === false) return functions.setError(res, 'upload file failed', 400)
             }
             //lưu dữ liệu vào DB
-            const postNew = new New({
+            var postNew = new New({
                 _id,
                 userID,
                 title, linkTitle, name, city, money, district, ward, apartmentNumber, description,
@@ -1359,7 +1359,7 @@ exports.createBuyNew = async (req, res) => {
         } else {
             return functions.setError(res, "missing data", 404);
         }
-        return functions.success(res, "post new success");
+        return functions.success(res, "post new success", { link:`https://raonhanh365.vn/${linkTitle}-ct${_id}.html` });
     } catch (error) {
         console.error(error);
         return functions.setError(res, error);
@@ -2817,16 +2817,15 @@ exports.listJobWithPin = async (req, res, next) => {
 exports.addDiscount = async (req, res, next) => {
     try {
         let request = req.body;
+        let user_id = req.user.data.idRaoNhanh365;
         if (request.new_id && request.new_id.length) {
             for (let i = 0; i < request.new_id.length; i++) {
-                let user_id = request.user_id;
                 let loai_khuyenmai = request.loai_khuyenmai;
                 let giatri_khuyenmai = request.giatri_khuyenmai;
                 let ngay_bat_dau = request.ngay_bat_dau;
                 let ngay_ket_thuc = request.ngay_ket_thuc;
                 let new_id = request.new_id[i];
                 if (
-                    user_id &&
                     loai_khuyenmai &&
                     ngay_bat_dau &&
                     ngay_ket_thuc &&
@@ -3329,5 +3328,14 @@ exports.getDataNew = async (req, res, next) => {
         }
     } catch (error) {
         return functions.setError(res, error)
+    }
+}
+
+// lấy tin theo danh mục
+exports.getNewForDiscount = async (req,res,next)=>{
+    try {
+        return functions.success(res,)
+    } catch (error) {
+        return functions.setError(res,error)
     }
 }

@@ -24,12 +24,24 @@ exports.createAssetProposeCancel = async (req, res, next) => {
         let tentshuy = Number(req.body.tentshuy);
         let slhuy = Number(req.body.slhuy);
         let lydohuy = req.body.lydohuy;
+        let huy_quyen_sd = 0;
+        let huy_ng_sd = 0;
         if (tentshuy && slhuy) {
             if (await functions.checkNumber(tentshuy) && await functions.checkNumber(slhuy)) {
                 let check = await TaiSan.findOne({ ts_id: tentshuy })
                 if (check) {
                     let date = new Date().getTime() / 1000;
                     let huy_id = await functions.getMaxIdByField(Huy, 'huy_id');
+                    let huyquensudung = await TaiSanDangSuDung.findOne({ id_ts_sd: tentshuy })
+                    if (huyquensudung) {
+                        if (huyquensudung.id_nv_sd != 0 && huyquensudung.id_pb_sd == 0) {
+                            huy_quyen_sd = 2;
+                            huy_ng_sd = huyquensudung.id_nv_sd;
+                        } else if (huyquensudung.id_nv_sd == 0 && huyquensudung.id_pb_sd != 0) {
+                            huy_quyen_sd = 3
+                            huy_ng_sd = huyquensudung.id_pb_sd;
+                        }
+                    }
                     await Huy.create({
                         huy_id,
                         huy_taisan: tentshuy,
@@ -40,8 +52,8 @@ exports.createAssetProposeCancel = async (req, res, next) => {
                         huy_lydo: lydohuy,
                         huy_type_quyen: type_quyen,
                         huy_date_create: date,
-                        huy_ng_sd: 0,
-                        huy_quyen_sd: 0,
+                        huy_ng_sd: huy_ng_sd,
+                        huy_quyen_sd: huy_quyen_sd,
                     })
                     let id_tb = await functions.getMaxIdByField(ThongBao, 'id_tb');
                     await ThongBao.create({
@@ -230,18 +242,18 @@ exports.approveAssetDisposal = async (req, res, next) => {
                             id_ts_sd: getData.huy_taisan,
                             id_nv_sd: huy_ng_sd
                         })
-                    await TaiSanDangSuDung.findOneAndUpdate(
-                        {
-                            com_id_sd: comId,
-                            id_ts_sd: getData.huy_taisan,
-                            id_nv_sd: huy_ng_sd
-                        },
-                        { $inc: { sl_dang_sd: -getData.huy_soluong } }
-
-                    );
+                    
                     if (checkUpdate) {
                         if (checkUpdate.sl_dang_sd > getData.huy_soluong) {
-
+                            await TaiSanDangSuDung.findOneAndUpdate(
+                                {
+                                    com_id_sd: comId,
+                                    id_ts_sd: getData.huy_taisan,
+                                    id_nv_sd: huy_ng_sd
+                                },
+                                { $inc: { sl_dang_sd: -getData.huy_soluong } }
+        
+                            );
                             await Huy.findOneAndUpdate(
                                 { huy_id: id, id_cty: comId },
                                 {
@@ -270,12 +282,14 @@ exports.approveAssetDisposal = async (req, res, next) => {
                     return functions.setError(res, 'Không tìm thấy tài sản đang sử dụng', 404)
                     // phòng ban sử dụng
                 } else if (huy_quyen_sd === 3) {
+
                     let checkUpdate = await TaiSanDangSuDung.findOne(
                         {
                             com_id_sd: comId,
                             id_ts_sd: getData.huy_taisan,
                             id_pb_sd: huy_ng_sd
                         })
+
                     if (checkUpdate) {
                         if (checkUpdate.sl_dang_sd > getData.huy_soluong) {
                             await TaiSanDangSuDung.findOneAndUpdate(
@@ -395,7 +409,7 @@ exports.deleteAssetDisposal = async (req, res, next) => {
                             huy_id_ng_xoa: 0,
                             huy_date_delete: 0,
                         })
-                    }else{
+                    } else {
                         return functions.setError(res, 'Không tìm thấy đề xuất huỷ tài sản', 404)
                     }
                 }
