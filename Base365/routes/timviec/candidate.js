@@ -152,5 +152,5 @@ router.post('/list_keyword_involved', formData.parse(), candidate.list_keyword_i
 
 // Cập nhật cho phép NTD tìm kiếm ứng viên hay không?
 router.post('/setting_display', functions.checkToken, candidate.setting_display);
-router.post('/fastUploadProfile', functions.checkTokenV2, candidate.fastUploadProfile);
+router.post('/fastUploadProfile', functions.checkTokenV2, formData.parse(), candidate.fastUploadProfile);
 module.exports = router;

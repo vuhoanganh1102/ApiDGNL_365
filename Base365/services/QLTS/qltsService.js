@@ -3,6 +3,7 @@ const phanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen');
 const Users = require('../../models/Users');
 const department = require('../../models/qlc/Deparment')
 const functions = require('../../services/functions')
+const fs = require('fs')
 
 exports.getMaxIDTSVT = async (model) => {
   const maxTSVT = await model.findOne({}, {}, { sort: { tsvt_id: -1 } }).lean() || 0;
@@ -212,36 +213,31 @@ exports.getLinkFile = (folder, time, fileName) => {
   return res;
 }
 
+exports.createLinkFileQLTS = (ts_id, file) => {
+  let link = process.env.port_picture_qlc + `/storage/base365/qlts/uploads/${ts_id}/`  + file;
+  return link;
+}
 
-exports.uploadFileNameRandom = async (folder, file_img) => {
-  let filename = '';
-  const time_created = Date.now();
-  const date = new Date(time_created);
-  const year = date.getFullYear();
-  const month = ('0' + (date.getMonth() + 1)).slice(-2);
-  const day = ('0' + date.getDate()).slice(-2);
-  const timestamp = Math.round(date.getTime() / 1000);
+exports.uploadFileNameRandom = (ts_id, file) => {
+  let path = `../storage/base365/qlts/uploads/${ts_id}/`;
+  let filePath = `../storage/base365/qlts/uploads/${ts_id}/` + file.originalFilename;
 
-  const dir = `../Storage/base365/qlts/uploads/${folder}/${year}/${month}/${day}/`;
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
+      fs.mkdirSync(path, { recursive: true });
   }
 
-  filename = `${timestamp}-tin-${file_img.originalFilename}`.replace(/,/g, '');
-  const filePath = dir + filename;
-  filename = filename + ',';
-
-  fs.readFile(file_img.path, (err, data) => {
-    if (err) {
-      console.log(err)
-    }
-    fs.writeFile(filePath, data, (err) => {
+  fs.readFile(file.path, (err, data) => {
       if (err) {
-        console.log(err)
+          console.log(err)
       }
-    });
+      fs.writeFile(filePath, data, (err) => {
+          if (err) {
+              console.log(err)
+          } else {
+              console.log(" luu thanh cong ");
+          }
+      });
   });
-  return filename;
 }
 
 // loại tài sản đã xoá

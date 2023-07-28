@@ -3019,6 +3019,133 @@ exports.setting_display = async(req, res) => {
 
 exports.fastUploadProfile = async(req, res) => {
     try {
+        const { phoneTK, password, name, emailContact, cv_title, cv_cate_id, cv_city_id, fromWeb, fromDevice } = req.body;
+        const file = req.files;
+        if (phoneTK && password && name && emailContact && cv_title && cv_cate_id && cv_city_id && file && file.profile) {
+            const user = await functions.getTokenUser(req, res);
+            const now = functions.getTimeNow();
+            const profile = file.profile;
+            // Nếu ứng viên chưa đăng nhập -> đăng ký tài khoản
+            if (!user) {
+                const findUser = await functions.getDatafindOne(Users, { phoneTK, type: { $ne: 1 } });
+                if (!findUser) {
+                    //Tải file lên
+                    const uploadFile = service.uploadProfile(profile, now);
+                    if (uploadFile) {
+                        // Lấy id mới nhất
+                        const getMaxUserID = await functions.getMaxUserID();
+                        const now = functions.getTimeNow();
+                        let data = {
+                            _id: getMaxUserID._id,
+                            phoneTK: phoneTK,
+                            password: password,
+                            userName: name,
+                            phone: phoneTK,
+                            type: 0,
+                            emailContact: emailContact,
+                            fromWeb: fromWeb,
+                            fromDevice: fromDevice,
+                            idTimViec365: getMaxUserID._idTV365,
+                            idRaoNhanh365: getMaxUserID._idRN365,
+                            idQLC: getMaxUserID._idQLC,
+                            chat365_secret: Buffer.from(getMaxUserID._id.toString()).toString('base64'),
+                            createdAt: now,
+                            updatedAt: now,
+                            inForPerson: {
+                                candidate: {
+                                    cv_city_id: cv_city_id,
+                                    cv_cate_id: cv_cate_id,
+                                    cv_title: cv_title
+                                }
+                            }
+                        };
+
+                        let dataUpload = {};
+                        // Nếu ứng viên hoàn thiện hồ sơ bằng cách tải video
+                        if (uploadFile.typeFile == "mp4" || uploadFile.typeFile == "quicktime") {
+                            data.inForPerson.candidate.cv_video = uploadFile.nameFile;
+                        }
+                        // Nếu ứng viên hoàn thiện hồ sơ bằng cách tải hồ sơ dạng ảnh pdf, png,..
+                        else {
+                            dataUpload = {
+                                hs_use_id: data.idTimViec365,
+                                hs_name: uploadFile.nameFile,
+                                hs_link: uploadFile.nameFile,
+                                hs_create_time: now
+                            };
+                        }
+                        // Lưu lại thông tin tải file
+                        if (dataUpload) {
+                            const getMaxIdProfile = await Profile.findOne({}, { hs_id: 1 }).sort({ hs_id: -1 }).limit(1).lean();
+                            dataUpload.hs_id = getMaxIdProfile.hs_id + 1;
+                            const profile = new Profile(dataUpload);
+                            await profile.save();
+                        }
+
+                        let User = new Users(data)
+
+                        // lưu ứng viên
+                        await User.save();
+
+                        // Tạo token
+                        const token = await functions.createToken({
+                            _id: getMaxUserID._id,
+                            idTimViec365: getMaxUserID._idTV365,
+                            idQLC: getMaxUserID._idQLC,
+                            idRaoNhanh365: getMaxUserID._idRN365,
+                            email: "",
+                            phoneTK: getMaxUserID.phoneTK,
+                            createdAt: now,
+                            type: 0,
+                            com_id: 0
+                        }, "1d");
+                        // Trả về kết quả cho client
+                        return functions.success(res, "Đăng kí thành công", { user_id: data.idTimViec365, access_token: token });
+                    }
+                    return functions.setError(res, "Có vấn đề trong khi tải file, vui lòng thử lại");
+                }
+                return functions.setError(res, "Tài khoản đã tồn tại");
+            }
+            // Nếu ứng viên đã đăng nhập
+            else {
+                // Kiểm tra ứng viên đã upload tối đa 3 hồ sơ hay chưa ?
+                const checkMaxProfile = await Profile.find({ hs_use_id: user.idTimViec365 }).lean();
+                if (checkMaxProfile.length < 3) {
+                    const uploadFile = service.uploadProfile(profile, user.createdAt);
+                    if (uploadFile) {
+                        await Profile.updateMany({ hs_use_id: user.idTimViec365 }, {
+                            $set: { hs_active: 0 }
+                        });
+
+                        // Nếu ứng viên hoàn thiện hồ sơ bằng cách tải video
+                        if (uploadFile.typeFile == "mp4" || uploadFile.typeFile == "quicktime") {
+                            // data.inForPerson.candidate.cv_video = uploadFile.nameFile;
+                            await Users.updateOne({ _id: user._id }, {
+                                $set: {
+                                    "inForPerson.candidate.cv_video": uploadFile.nameFile,
+                                    "inForPerson.candidate.cv_video_type": 1,
+                                    "inForPerson.candidate.cv_video_active": 0,
+                                }
+                            });
+                        }
+                        // Nếu ứng viên hoàn thiện hồ sơ bằng cách tải hồ sơ dạng ảnh pdf, png,..
+                        else {
+                            const getMaxIdProfile = await Profile.findOne({}, { hs_id: 1 }).sort({ hs_id: -1 }).limit(1).lean();
+                            const profile = new Profile({
+                                hs_id = getMaxIdProfile.hs_id + 1,
+                                hs_use_id: data.idTimViec365,
+                                hs_name: uploadFile.nameFile,
+                                hs_link: uploadFile.nameFile,
+                                hs_create_time: now
+                            });
+                            await profile.save();
+                        }
+                    }
+                }
+                return functions.setError(res, "Bạn chỉ được upload tối đa 3 hồ sơ");
+            }
+        }
+        return functions.setError(res, "Chưa truyền đầy đủ thông tin");
 
     } catch (error) {
         console.log(error);
