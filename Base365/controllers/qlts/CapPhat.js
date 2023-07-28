@@ -27,7 +27,7 @@ exports.create = async (req, res) => {
         let maxThongBao = await thongBao.findOne({}, {}, { sort: { id_tb: -1 } }).lean() || 0;
         let now = new Date()
         if ((cp_lydo && ts_daidien_nhan && id_ng_daidien && id_ng_thuchien)) {
-            listItemsType = await TaiSan.find({ id_cty: idQLC }).select('ts_ten soluong_cp_bb').lean()
+            listItemsType = await TaiSan.find({ id_cty: id_cty }).select('ts_ten soluong_cp_bb').lean()
             if (listItemsType) data.listItemsType = listItemsType
             let listDepartment = await dep.find({ com_id: id_cty }).select('deparmentName').lean()
             let listEmp = await user.find({ "inForPerson.employee.com_id": id_cty, type: 2 }).select('userName').lean()
@@ -555,6 +555,37 @@ exports.listDetailAllocation = async (req, res) => {
             return fnc.success(res, " lấy thành công ",{data})
         }
         return fnc.setError(res, "không tìm thấy đối tượng", 510);
+    }catch(e){
+        return fnc.setError(res, e.message)
+    }
+}
+//Từ chối tiếp nhận tài sản cấp phát"
+exports.refuserAll = async (req , res) =>{
+    try{
+        const id_cty = req.user.data.com_id
+        const cp_id = req.body.cp_id
+        const content = req.body.content
+        const data = await capPhat.findOne({ cp_id: cp_id,id_cty: id_cty });
+        if (!data) {
+           return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+        } else {
+            // console.log(data.cap_phat_taisan.ds_ts[0].ts_id)
+            let count = data.cap_phat_taisan.ds_ts[0].ts_id
+            for(let t = 0; t<count.length; t ++){
+                let listItemsType = await TaiSan.find({ id_cty: id_cty, ts_id : count(t) })
+                    let sl_taisan = listItemsType.ts_so_luong + data.cap_phat_taisan.ds_ts[0].sl_cp
+                    await TaiSan.updateOne({ ts_id : count(t),id_cty:id_cty }, {
+                        ts_so_luong : sl_taisan,
+                        soluong_cp_bb : sl_taisan,
+                        })
+            }
+            await capPhat.updateOne({ cp_id: cp_id,id_cty:id_cty }, {
+            cp_trangthai : 4,
+            cp_tu_choi_tiep_nhan : content,
+            })
+        }
+        return fnc.success(res, "cập nhật thành công")
+        
     }catch(e){
         return fnc.setError(res, e.message)
     }

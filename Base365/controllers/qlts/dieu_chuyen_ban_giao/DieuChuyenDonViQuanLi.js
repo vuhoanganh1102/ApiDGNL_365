@@ -615,3 +615,22 @@ exports.list = async(req,res) =>{
         return fnc.setError(res, e.message)
     }
 }
+exports.refuserTransfer = async (req , res) =>{
+    try{
+        const id_cty = req.user.data.com_id
+        const dc_id = req.body.dc_id
+        const content = req.body.content
+        const data = await DieuChuyen.findOne({ dc_id: dc_id,id_cty: id_cty });
+        if (!data) {
+           return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+        } else {
+        await DieuChuyen.updateOne({ dc_id: dc_id,id_cty:id_cty }, {
+            dc_trangthai : 4,
+            dc_lydo_tuchoi : content,
+            })
+        }
+        return fnc.success(res, "cập nhật thành công")
+    }catch(e){
+        return fnc.setError(res, e.message)
+    }
+}
