@@ -300,6 +300,7 @@ exports.approveLiquidationAssetProposal = async (req, res, next) => {
                     }
                     return functions.setError(res, 'Không tìm thấy tài sản', 404)
                 } else if (quyen_nhan === 2) {
+                    
                     let doi_tuong_ds_ts = await TaiSanDangSuDung.findOne({ com_id_sd: comId, id_ts_sd: checkThanhLy.thanhly_taisan, id_nv_sd: id_ng_nhan });
 
                     if (doi_tuong_ds_ts) {
@@ -357,7 +358,8 @@ exports.approveLiquidationAssetProposal = async (req, res, next) => {
                     }
                     return functions.setError(res, 'Không tìm thấy tài sản đang sử dụng', 404)
                 } else if (quyen_nhan === 3) {
-                    let doi_tuong_ds_ts = await TaiSanDangSuDung.findOne({ com_id_sd: comId, id_ts_sd: checkThanhLy.tl_id, id_pb_sd: id_ng_nhan });
+                    console.log({ com_id_sd: comId, id_ts_sd: checkThanhLy.tl_id, id_pb_sd: id_ng_nhan })
+                    let doi_tuong_ds_ts = await TaiSanDangSuDung.findOne({ com_id_sd: comId, id_ts_sd: checkThanhLy.thanhly_taisan, id_pb_sd: id_ng_nhan });
 
                     if (doi_tuong_ds_ts) {
                         let sl_ts_dang_sd = doi_tuong_ds_ts.sl_dang_sd;
@@ -504,14 +506,14 @@ exports.deleteLiquidationAssetProposal = async (req, res, next) => {
                 return functions.success(res, 'Khôi phục đề xuất thanh lý tài sản thành công')
             }
         } else if (type === 3) {
-            let checkThanhLy = await ThanhLy.findOne({ tl_id: id[i], id_cty: comId })
+            let checkThanhLy = await ThanhLy.findOne({ tl_id: id, id_cty: comId })
             if (checkThanhLy) {
                 await ThanhLy.findOneAndDelete({ tl_id: Number(id) })
                 return functions.success(res, 'Xoá vĩnh viễn đề xuất thanh lý tài sản thành công')
             }
             return functions.setError(res, 'Không tìm thấy đề xuất thanh lý tài sản', 404)
         }
-        return functions.setError(res, 'Missing id', 400)
+        return functions.setError(res, 'Missing type', 400)
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)

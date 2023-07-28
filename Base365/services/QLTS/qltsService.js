@@ -33,7 +33,7 @@ exports.validateTaiSanInput = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, i
   if (!ts_ten) {
     throw { code: 400, message: 'Tên tài sản bắt buộc.' };
   }
-  if(!ts_ten.trim()){
+  if (!ts_ten.trim()) {
     throw { code: 400, message: 'tên tài sản không được bỏ trống' };
   }
   else if (!ts_don_vi) {
@@ -58,7 +58,7 @@ exports.validateinputEdit = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, id_
   if (!ts_ten) {
     throw { code: 400, message: 'Tên tài sản bắt buộc.' };
   }
-  if(!ts_ten.trim()){
+  if (!ts_ten.trim()) {
     throw { code: 400, message: 'tên tài sản không được bỏ trống' };
   }
   else if (!ts_don_vi) {
@@ -537,12 +537,6 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
   try {
     conditions.xoa_dieuchuyen = 1;
     conditions.dc_type = 0;
-    //conditions.id_ng_xoa_dc = { $ne: 0 };
-    //conditions.id_nv_dangsudung = { $ne: 0 };
-    // conditions.id_pb_dang_sd = { $ne: 0 };
-    conditions.id_nv_nhan = { $ne: 0 };
-    // conditions.id_pb_nhan = { $ne: 0 };
-    // conditions.id_ng_thuchien = { $ne: 0 };
     let data = await DieuChuyen.aggregate([
       { $match: conditions },
       { $sort: { dc_id: -1 } },
@@ -561,42 +555,6 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
       {
         $lookup: {
           from: 'Users',
-          localField: 'id_nv_dangsudung',
-          foreignField: 'idQLC',
-          as: 'users'
-        }
-      },
-      { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: 'QLC_Deparments',
-          localField: 'id_pb_dang_sd',
-          foreignField: 'dep_id',
-          as: 'dep'
-        }
-      },
-      { $unwind: { path: "$dep", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_nv_nhan',
-          foreignField: 'idQLC',
-          as: 'users_id_nv_nhan'
-        }
-      },
-      { $unwind: { path: "$users_id_nv_nhan", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: 'QLC_Deparments',
-          localField: 'id_pb_nhan',
-          foreignField: 'dep_id',
-          as: 'depp'
-        }
-      },
-      { $unwind: { path: "$depp", preserveNullAndEmptyArrays: true } },
-      {
-        $lookup: {
-          from: 'Users',
           localField: 'id_ng_thuchien',
           foreignField: 'idQLC',
           as: 'users_id_ng_thuchien'
@@ -609,10 +567,10 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
           dc_date_delete: 1,
           dc_id: 1,
           dc_trangthai: 1,
-          id_nv_dangsudung: '$users.userName',
-          id_pb_dang_sd: '$dep.dep_name',
-          id_nv_nhan: '$users_id_nv_nhan.userName',
-          id_pb_nhan: '$depp.dep_name',
+          id_nv_dangsudung: '$id_nv_dangsudung',
+          id_pb_dang_sd: '$did_pb_dang_sd',
+          id_nv_nhan: '$id_nv_nhan',
+          id_pb_nhan: '$id_pb_nhan',
           dc_lydo: 1,
           id_ng_thuchien: '$users_id_ng_thuchien.userName',
           ng_xoa: '$user.userName'
@@ -620,6 +578,24 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
       }
     ]);
     for (let i = 0; i < data.length; i++) {
+      if (data[i].id_nv_dangsudung != 0) {
+        let id_nv_dangsudung = await Users.findOne({ idQLC: data[i].id_nv_dangsudung }, { userName: 1 })
+        if (id_nv_dangsudung) data[i].id_nv_dangsudung = id_nv_dangsudung.userName
+      }
+      if (data[i].id_pb_dang_sd != 0) {
+        let id_pb_dang_sd = await department.findOne({ dep_id: data[i].id_pb_dang_sd }, { dep_name: 1 })
+        if (id_pb_dang_sd) data[i].id_pb_dang_sd = id_pb_dang_sd.dep_name
+
+      }
+      if (data[i].id_nv_nhan != 0) {
+        let id_nv_nhan = await Users.findOne({ idQLC: data[i].id_nv_nhan }, { userName: 1 })
+        if (id_nv_nhan) data[i].id_nv_nhan = id_nv_nhan.userName
+
+      }
+      if (data[i].id_pb_nhan != 0) {
+        let id_pb_nhan = await department.findOne({ dep_id: data[i].id_pb_nhan }, { dep_name: 1 })
+        if (id_pb_nhan) data[i].id_pb_nhan = id_pb_nhan.dep_name
+      }
       data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
     }
@@ -650,43 +626,7 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
           as: 'user'
         }
       },
-      { $unwind: '$user' },
-      {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_nv_dangsudung',
-          foreignField: 'idQLC',
-          as: 'users'
-        }
-      },
-      { $unwind: '$users' },
-      {
-        $lookup: {
-          from: 'QLC_Deparments',
-          localField: 'id_pb_dang_sd',
-          foreignField: 'dep_id',
-          as: 'dep'
-        }
-      },
-      { $unwind: '$dep' },
-      {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_nv_nhan',
-          foreignField: 'idQLC',
-          as: 'users_id_nv_nhan'
-        }
-      },
-      { $unwind: '$users_id_nv_nhan' },
-      {
-        $lookup: {
-          from: 'QLC_Deparments',
-          localField: 'id_pb_nhan',
-          foreignField: 'dep_id',
-          as: 'depp'
-        }
-      },
-      { $unwind: '$depp' },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: 'Users',
@@ -695,24 +635,42 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
           as: 'users_id_ng_thuchien'
         }
       },
-      { $unwind: '$users_id_ng_thuchien' },
+      { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           dc_ngay: 1,
           dc_date_delete: 1,
           dc_id: 1,
           dc_trangthai: 1,
-          id_nv_dangsudung: 'users.userName',
-          id_pb_dang_sd: 'dep.dep_name',
-          id_nv_nhan: 'users_id_nv_nhan.userName',
-          id_pb_nhan: 'depp.dep_name',
+          id_nv_dangsudung: '$id_nv_dangsudung',
+          id_pb_dang_sd: '$id_pb_dang_sd',
+          id_nv_nhan: '$id_nv_nhan',
+          id_pb_nhan: '$id_pb_nhan',
           dc_lydo: 1,
-          id_ng_thuchien: 'users_id_ng_thuchien.userName',
-          ng_xoa: 'user.userName'
+          id_ng_thuchien: '$users_id_ng_thuchien.userName',
+          ng_xoa: '$user.userName'
         }
       }
     ]);
     for (let i = 0; i < data.length; i++) {
+      if (data[i].id_nv_dangsudung != 0) {
+        let id_nv_dangsudung = await Users.findOne({ idQLC: data[i].id_nv_dangsudung }, { userName: 1 })
+        if (id_nv_dangsudung) data[i].id_nv_dangsudung = id_nv_dangsudung.userName
+      }
+      if (data[i].id_pb_dang_sd != 0) {
+        let id_pb_dang_sd = await department.findOne({ dep_id: data[i].id_pb_dang_sd }, { dep_name: 1 })
+        if (id_pb_dang_sd) data[i].id_pb_dang_sd = id_pb_dang_sd.dep_name
+
+      }
+      if (data[i].id_nv_nhan != 0) {
+        let id_nv_nhan = await Users.findOne({ idQLC: data[i].id_nv_nhan }, { userName: 1 })
+        if (id_nv_nhan) data[i].id_nv_nhan = id_nv_nhan.userName
+
+      }
+      if (data[i].id_pb_nhan != 0) {
+        let id_pb_nhan = await department.findOne({ dep_id: data[i].id_pb_nhan }, { dep_name: 1 })
+        if (id_pb_nhan) data[i].id_pb_nhan = id_pb_nhan.dep_name
+      }
       data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
     }
@@ -1278,7 +1236,7 @@ exports.quanLyDonViDoCongSuat = async (res, DonViCS, dem, conditions, skip, limi
           as: 'dvcs_id_ng_xoa'
         }
       },
-      { $unwind: '$dvcs_id_ng_xoa' },
+      { $unwind: { path: "$dvcs_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           id_donvi: 1,
@@ -1891,7 +1849,7 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
           tl_id_ng_xoa: '$tl_id_ng_xoa.userName',
           id_ngdexuat: 1,
           tl_type_quyen: 1,
-          vi_tri_ts:1
+          vi_tri_ts: 1
         }
       }
     ])
@@ -1948,7 +1906,7 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
         }
       },
       { $unwind: { path: "$tl_id_ng_xoa", preserveNullAndEmptyArrays: true } },
-      
+
 
       {
         $lookup: {
@@ -1972,8 +1930,8 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
           tl_date_delete: 1,
           tl_sotien: 1,
           tl_id_ng_xoa: '$tl_id_ng_xoa.userName',
-          tl_type_quyen:1,
-          id_ngdexuat:1
+          tl_type_quyen: 1,
+          id_ngdexuat: 1
         }
       }
     ])
