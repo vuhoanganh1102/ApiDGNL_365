@@ -29,6 +29,7 @@ exports.create = async(req,res) =>{
         const id_ng_nhan = req.body.id_ng_nhan
 
         let maxThongBao = await thongBao.findOne({},{},{sort: {id_tb : -1}}).lean() || 0 ;
+        console.log("🚀 ~ file: DieuChuyenDonViQuanLi.js:32 ~ exports.create=async ~ maxThongBao:", maxThongBao)
         let maxDieuChuyen = await DieuChuyen.findOne({},{},{sort: {dc_id : -1}}).lean() || 0 ;
         let now = new Date()
         let ds_dc = ""
@@ -518,7 +519,7 @@ exports.list = async(req,res) =>{
                     as: "infoTS"
                 }
             },
-            { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
+            { $unwind: "$infoTS" },
             {
                 $lookup: {
                     from: "Users",
@@ -527,8 +528,7 @@ exports.list = async(req,res) =>{
                     as: "infoCtyDangSD"
                 }
             },
-            { $unwind: { path: "$infoCtyDangSD", preserveNullAndEmptyArrays: true } },
-
+            // { $unwind: "$infoCtyDangSD" },
             {
                 $lookup: {
                     from: "Users",
@@ -537,8 +537,7 @@ exports.list = async(req,res) =>{
                     as: "infoCty"
                 }
             },
-            { $unwind: { path: "$infoCty", preserveNullAndEmptyArrays: true } },
-
+            // { $unwind: "$infoCty" },
             {
                 $lookup: {
                     from: "Users",
@@ -547,7 +546,7 @@ exports.list = async(req,res) =>{
                     as: "infoNV"
                 }
             },
-            { $unwind: { path: "$infoNV", preserveNullAndEmptyArrays: true } },
+            // { $unwind: "$infoNV" },
             {
                 $lookup: {
                     from: "Users",
@@ -556,8 +555,7 @@ exports.list = async(req,res) =>{
                     as: "infoNVdangSD"
                 }
             },
-            { $unwind: { path: "$infoNVdangSD", preserveNullAndEmptyArrays: true } },
-
+            // { $unwind: "$infoNVdangSD" },
             {
                 $lookup: {
                     from: "QLC_Deparments",
@@ -566,8 +564,7 @@ exports.list = async(req,res) =>{
                     as: "infoPhongBan"
                 }
             },
-            { $unwind: { path: "$infoPhongBan", preserveNullAndEmptyArrays: true } },
-
+            // { $unwind: "$infoPhongBan" },
             {
                 $lookup: {
                     from: "QLC_Deparments",
@@ -576,8 +573,7 @@ exports.list = async(req,res) =>{
                     as: "infoPhongBanDangSD"
                 }
             },
-            { $unwind: { path: "$infoPhongBanDangSD", preserveNullAndEmptyArrays: true } },
-
+            // { $unwind: "$infoPhongBanDangSD" },
             {
                 $project: {
                     "dc_id": "$dc_id",
