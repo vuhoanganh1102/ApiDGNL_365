@@ -1,31 +1,37 @@
 //đơn xin việc ứng viên
 const mongoose = require('mongoose'); //đơn xin việc ứng viên
 const ApplicationUVSchema = new mongoose.Schema({
-    _id: {
+    id: {
         type: Number,
-        require: true
+        require: true,
+        unique: true
     },
-    userId: {
+    uid: {
         //id người tạo đơn
-        type: Number
+        type: Number,
+        default: 0
     },
-    donId: {
-
-        type: Number
-    },
-    status: {
-        // trạng thái
-        type: Number
+    tid: {
+        type: Number,
+        default: 0
     },
     lang: {
         //ngôn ngữ tạo đơn
-        type: Number
+        type: String,
+        default: null
     },
     html: {
-        type: String
+        type: String,
+        default: null
     },
-    nameImg: {
-        type: String
+    name_img: {
+        type: String,
+        default: null
+    },
+    status: {
+        // trạng thái
+        type: Number,
+        default: 0
     },
 }, {
     collection: 'ApplicationUV',

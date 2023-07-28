@@ -8,7 +8,6 @@ const Contract = require("./Contract/ContractForCus");
 const settingContract = require("./Setting/AccountAPI");
 const CustomerContact = require("./Customer/CustomerContact");
 const Nhap_lieu = require('./Nhap_lieu')
-const LienHe = require('./Customer/CustomerContact')
 
 
 
@@ -17,9 +16,6 @@ router.use('/customer',CustomerRouter)
 
 //chi tiết khách hàng
 router.use('/customerdetails',CustomerDetailsRoutes)
-
-//liên hê chăm sóc khách hàng
-router.use('/contact',LienHe)
 
 //nhóm khách hàng
 router.use('/group', GroupCustomerRoutes);

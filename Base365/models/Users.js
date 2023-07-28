@@ -4,7 +4,7 @@ const UserSchema = new mongoose.Schema({
     _id: {
         type: Number,
         required: true,
-        // autoIncrement: true
+        autoIncrement: true
     },
     email: {
         // Email đăng nhập (nếu đối tượng đăng ký bằng email)
@@ -93,12 +93,12 @@ const UserSchema = new mongoose.Schema({
     createdAt: {
         // Thời gian đăng ký
         type: Number,
-        default: null
+        default: 0
     },
     updatedAt: {
         // Thời gian cập nhật
         type: Number,
-        default: null
+        default: 0
     },
     lastActivedAt: {
         // Thời gian hoạt động gần nhất
@@ -107,8 +107,8 @@ const UserSchema = new mongoose.Schema({
     },
     time_login: {
         // Thời gian đăng nhập
-        type: Date,
-        default: null
+        type: Number,
+        default: 0
     },
     role: {
         // Quyền thực hiện bên quản lý chung
@@ -158,7 +158,7 @@ const UserSchema = new mongoose.Schema({
                 type: {
                     birthday: {
                         // Ngày sinh
-                        type: String,
+                        type: Number,
                         default: null
                     },
                     gender: {
@@ -182,7 +182,13 @@ const UserSchema = new mongoose.Schema({
                         default: 0
                     },
                 },
-                default: null
+                default: {
+                    birthday: null,
+                    gender: 0,
+                    married: 0,
+                    experience: 0,
+                    education: 0
+                }
             },
             // Thông tin dành cho luồng chuyển đổi số
             employee: {
@@ -199,28 +205,28 @@ const UserSchema = new mongoose.Schema({
                     },
                     start_working_time: {
                         // Thời gian bắt đầu làm việc
-                        type: Date,
-                        default: null
+                        type: Number,
+                        default: 0
                     },
                     position_id: {
                         // Cấp bậc của nhân viên trong công ty
                         type: Number,
                         default: 0
                     },
-                    group_id: {
-                        // ID của nhóm nếu là nhân viên (giá trị = 0 là cá nhân)
+                    team_id: {
+                        // ID của tổ nếu là nhân viên
                         type: Number,
                         default: 0
                     },
-                    team_id: {
-                        // ID của tôt nếu là nhân viên (giá trị = 0 là cá nhân)
+                    group_id: {
+                        // ID của nhóm nếu là nhân viên 
                         type: Number,
                         default: 0
                     },
                     time_quit_job: {
                         // Thời gian nghỉ việc
                         type: Number,
-                        default: null
+                        default: 0
                     },
                     ep_description: {
                         // Mô tả chi tiết
@@ -272,13 +278,17 @@ const UserSchema = new mongoose.Schema({
                     },
                     use_noti: {
                         type: Number,
-                        default: 0
+                        default: 2
                     },
                     use_show: {
                         type: Number,
-                        default: 0
+                        default: 1
                     },
                     use_show_cv: {
+                        type: Number,
+                        default: 0
+                    },
+                    use_active: {
                         type: Number,
                         default: 0
                     },
@@ -288,7 +298,7 @@ const UserSchema = new mongoose.Schema({
                     },
                     use_check: {
                         type: Number,
-                        default: 0
+                        default: 1
                     },
                     use_test: {
                         type: Number,
@@ -301,7 +311,7 @@ const UserSchema = new mongoose.Schema({
                     cv_title: {
                         // Công việc mong muốn
                         type: String,
-                        default: 0
+                        default: ""
                     },
                     cv_muctieu: {
                         // Mục tiêu làm việc
@@ -352,12 +362,10 @@ const UserSchema = new mongoose.Schema({
                         default: 0
                     },
                     um_min_value: {
-                        // Mức lương mong muốn
                         type: Number,
                         default: null
                     },
                     um_max_value: {
-                        // Mức lương mong muốn
                         type: Number,
                         default: null
                     },
@@ -417,9 +425,15 @@ const UserSchema = new mongoose.Schema({
                             autoIncrement: true
                         },
                         hs_name: {
+                            // Tên của file được lưu lại
                             type: String,
                         },
+                        hs_name_cv: {
+                            // Đường dẫn cv không che thông tin
+                            type: String
+                        },
                         hs_link: {
+                            // Đường dẫn cv và đường dẫn cv che thông tin email,sđt khi tạo cv
                             type: String,
                         },
                         hs_cvid: {
@@ -429,6 +443,13 @@ const UserSchema = new mongoose.Schema({
                         hs_create_time: {
                             type: Number,
                             default: 0
+                        },
+                        hs_html_cv: {
+                            type: String,
+                            default: null
+                        },
+                        hs_lang_cv: {
+                            type: String,
                         },
                         hs_active: {
                             type: Number,
@@ -451,81 +472,103 @@ const UserSchema = new mongoose.Schema({
                         mdtd_state: {
                             type: Number,
                             default: 0
+                        },
+                        hs_update_time: {
+                            type: Number,
+                            default: 0
                         }
                     }],
                     profileDegree: [{
                         type: {
-                            id: {
+                            th_id: {
                                 type: Number,
                                 autoIncrement: true
                             },
-                            school: {
+                            th_name: {
                                 type: String,
+                                default: null
                             },
-                            degree: {
+                            th_bc: {
                                 type: String,
+                                default: null
                             },
-                            start: {
-                                // Thời gian bắt đầu học
+                            th_cn: {
+                                // Chuyên ngành
                                 type: String,
+                                default: null
                             },
-                            end: {
-                                // Thời gian kết thúc học
-                                type: String,
-                            },
-                            major: {
-                                type: String,
-                            },
-                            rate: {
+                            th_xl: {
                                 type: Number,
+                                default: 0
                             },
-                            more_information: {
+                            th_bs: {
                                 type: String,
+                                default: null
+                            },
+                            th_one_time: {
+                                type: Number,
+                                default: 0
+                            },
+                            th_two_time: {
+                                type: Number,
+                                default: 0
                             },
                         },
                         default: null
                     }],
                     profileNgoaiNgu: [{
                         type: {
-                            id: {
+                            nn_id: {
                                 type: Number,
                                 autoIncrement: true
                             },
-                            language: {
+                            nn_id_pick: {
                                 // Ngôn ngữ học
                                 type: Number,
+                                default: 0
                             },
-                            certificate: {
+                            nn_cc: {
                                 // Chứng chỉ đạt được
                                 type: String,
+                                default: null
                             },
-                            point: {
+                            nn_sd: {
                                 // Số điểm đạt được
                                 type: String,
+                                default: null
                             }
                         },
                         default: null
                     }],
                     profileExperience: [{
                         type: {
-                            id: {
+                            kn_id: {
                                 type: Number,
                                 autoIncrement: true
                             },
-                            jobTitle: {
+                            kn_name: {
                                 type: String,
+                                default: null
                             },
-                            company: {
+                            kn_cv: {
                                 type: String,
+                                default: null
                             },
-                            start: {
+                            kn_mota: {
                                 type: String,
+                                default: null
                             },
-                            end: {
-                                type: String,
+                            kn_one_time: {
+                                type: Number,
+                                default: 0
                             },
-                            description: {
-                                type: String
+                            kn_two_time: {
+                                type: Number,
+                                default: 0
+                            },
+                            kn_hien_tai: {
+                                type: Number,
+                                default: 0
                             }
                         },
                         default: null
@@ -582,6 +625,10 @@ const UserSchema = new mongoose.Schema({
                     // Email người liên hệ
                     type: String,
                     default: null
+                },
+                usc_update_new: {
+                    type: Number,
+                    default: 0
                 },
                 usc_canonical: {
                     // Mã sinh ra url phục vụ seo (canonical)
@@ -644,7 +691,6 @@ const UserSchema = new mongoose.Schema({
                     default: null
                 },
                 usc_security: {
-                    // Mã số thuế
                     type: String,
                     default: null
                 },
@@ -658,6 +704,18 @@ const UserSchema = new mongoose.Schema({
                     default: 0
                 },
                 usc_mail_app: {
+                    type: Number,
+                    default: 0
+                },
+                usc_video: {
+                    type: String,
+                    default: null
+                },
+                usc_video_type: {
+                    type: Number,
+                    default: 1
+                },
+                usc_video_active: {
                     type: Number,
                     default: 0
                 },
@@ -824,7 +882,7 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            inforRN365:{
+            money: {
                 type: Number,
                 default: 0
             }
@@ -913,9 +971,24 @@ const UserSchema = new mongoose.Schema({
         doubleVerify: {
             type: Number,
             default: 0,
+        },
+        active: {
+            type: Number,
+            default: 0
+        },
+        status: {
+            type: String,
+            default: ''
+        },
+        acceptMessStranger: {
+            type: Number,
+            default: 0
         }
     },
-    
+    scan: {
+        type: Number,
+        default: 0
+    }
 }, {
     collection: 'Users',
     versionKey: false,

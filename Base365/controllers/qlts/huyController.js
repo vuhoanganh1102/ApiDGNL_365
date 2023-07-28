@@ -191,7 +191,6 @@ exports.approveAssetDisposal = async (req, res, next) => {
 
         // lấy thông tin đề xuất huỷ
         let getData = await Huy.findOne({ huy_id: id, id_cty: comId });
-        console.log("🚀 ~ file: huyController.js:193 ~ exports.approveAssetDisposal= ~ getData:", getData)
 
         if (type_quyen === 1) {
             var ng_duyet = comId;
@@ -396,13 +395,14 @@ exports.deleteAssetDisposal = async (req, res, next) => {
                             huy_id_ng_xoa: 0,
                             huy_date_delete: 0,
                         })
+                    }else{
+                        return functions.setError(res, 'Không tìm thấy đề xuất huỷ tài sản', 404)
                     }
-                    return functions.setError(res, 'Không tìm thấy đề xuất huỷ tài sản', 404)
                 }
                 return functions.success(res, 'Khôi phục đề xuất thanh huỷ sản thành công')
             }
         } else if (type === 3) {
-            let checkThanhLy = await Huy.findOne({ huy_id: id[i], id_cty: comId })
+            let checkThanhLy = await Huy.findOne({ huy_id: id, id_cty: comId })
             if (checkThanhLy) {
                 await Huy.findOneAndDelete({ huy_id: Number(id) })
                 return functions.success(res, 'Xoá vĩnh viễn đề xuất thanh huỷ sản thành công')

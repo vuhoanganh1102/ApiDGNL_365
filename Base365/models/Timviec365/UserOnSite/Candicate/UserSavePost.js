@@ -1,20 +1,21 @@
 const mongoose = require('mongoose');
 const userSavePostSchema = new mongoose.Schema({
-    _id: {
+    id: {
         type: Number,
         required: true,
+        unique: true
     },
-    userID: {
+    use_id: {
         type: Number,
         required: true
     },
-    newID: {
+    new_id: {
         type: Number,
         default: 0
     },
-    saveTime: {
-        type: Date,
-        required: true
+    save_time: {
+        type: Number,
+        default: 0
     }
 }, {
     collection: 'UserSavePost',

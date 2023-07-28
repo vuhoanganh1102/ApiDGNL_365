@@ -1,14 +1,18 @@
 var express = require('express');
 var router = express.Router();
 var company = require('../../controllers/timviec/company');
-var formData = require('express-form-data')
-const functions = require('../../services/functions')
+var service = require('../../services/timviec365/company');
+var formData = require('express-form-data');
+const functions = require('../../services/functions');
+
+// api check email đã được đăng ký hay chưa
+router.post('/checkExistEmail', formData.parse(), company.checkExistEmail);
+
+// api check tên công ty đã được đăng ký hay chưa
+router.post('/checkExistName', formData.parse(), company.checkExistName);
 
 // api đăng ký
-router.post('/register', functions.uploadVideoAndIMGRegister.fields([
-    { name: 'logo' },
-    { name: 'videoType' }
-]), company.register);
+router.post('/register', formData.parse(), company.register);
 
 // api đăng nhập
 router.post('/login', formData.parse(), company.login)
@@ -20,25 +24,25 @@ router.post('/registerfall', formData.parse(), company.registerFall);
 router.post('/sendOTP', formData.parse(), company.sendOTP);
 
 // api xác nhận OTP để xác minh tìa khoản
-router.post('/verify', formData.parse(), company.verify);
+router.post('/verify', formData.parse(), functions.checkToken, company.verify);
 
 // api api gửi mã OTP qua appChat (quên mật khẩu) 
 router.post('/forgotPasswordCheckMail', formData.parse(), company.forgotPasswordCheckMail);
 
 // api check mã OTP đẻ (quên mật khẩu)
-router.post('/forgotPasswordCheckOTP', formData.parse(), functions.checkToken, company.forgotPasswordCheckOTP);
+router.post('/forgotPasswordCheckOTP', formData.parse(), company.forgotPasswordCheckOTP);
 
 // api đổi mật khẩu (quên mật khẩu)
 router.post('/updatePassword', formData.parse(), functions.checkToken, company.updatePassword);
 
 // api cập nhập thông tin nhà tuyển dụng
-router.post('/updateInfor', formData.parse(), functions.checkToken, company.updateInfoCompany);
+router.post('/updateInfor', formData.parse(), functions.checkToken, company.updateInfor);
 
 // api cập nhập thông tin liên hệ nhà tuyển dụng
 router.post('/updateContactInfor', formData.parse(), functions.checkToken, company.updateContactInfo);
 
 // api cập nhập video hoặc link video nhà tuyển dụng
-router.post('/updateVideoOrLink', functions.checkToken, functions.uploadVideo.single('videoType'), company.updateVideoOrLink);
+router.post('/updateVideoOrLink', functions.checkToken, formData.parse(), company.updateVideoOrLink);
 
 // api gửi mã OTP qua appChat (dổi mật khẩu)
 router.get('/changePasswordSendOTP', functions.checkToken, company.changePasswordSendOTP);
@@ -107,7 +111,7 @@ router.post('/saveUV', functions.checkToken, formData.parse(), company.luuUV)
 router.post('/deleteUV', functions.checkToken, formData.parse(), company.deleteUV)
 
 //api danh sách điểm xem uv
-router.post('/listUVPoin', functions.checkToken, formData.parse(), company.listUVPoin)
+router.post('/listUVPoint', functions.checkToken, formData.parse(), company.listUVPoint)
 
 //api xóa ứng viên trong danh sách đùng điểm
 router.post('/listUVPoin', functions.checkToken, formData.parse(), company.deleteUVUsePoin)
@@ -127,5 +131,15 @@ router.post('/assessmentUV', functions.checkToken, formData.parse(), company.ass
 //api cập nhập uv trong danh sách điểm lọc
 router.post('/updateUvWithPoint', functions.checkToken, formData.parse(), company.updateUvWithPoint)
 
+// api lấy danh sách bài post
+router.post('/listNews', formData.parse(), functions.checkToken, company.listNews)
 
+// api lấy danh sách tin tuyển dụng
+router.post('/listJobByToken', functions.checkToken, company.listJobByToken);
+
+// Cập nhật ứng viên ứng tuyển
+router.post('/update_uvut', formData.parse(), functions.checkToken, company.update_uvut);
+
+// api xóa ứng viên ứng tuyển
+router.post('/delete_hsut', formData.parse(), functions.checkToken, company.delete_hsut);
 module.exports = router;

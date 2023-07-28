@@ -8,14 +8,15 @@ const Deparment = require("../../models/qlc/Deparment")
 const Group = require('../../models/qlc/Group');
 const Team = require('../../models/qlc/Team');
 const HR_NestDetails = require('../../models/hr/NestDetail');
-const Tracking = require('../../models/qlc/HisTracking');
+const Tracking = require('../../models/qlc/TimeSheets');
 const HR_DescPositions = require('../../models/hr/DescPositions');
 const HR_SignatureImages = require('../../models/hr/SignatureImage');
 const HR_InfoLeaders = require('../../models/hr/InfoLeaders');
 const PositionStruct = require('../../models/hr/PositionStructs');
-const LeaderAvatar  = require('../../models/hr/LeaderAvatar');
+const LeaderAvatar = require('../../models/hr/LeaderAvatar');
 const DeXuat = require('../../models/Vanthu/de_xuat');
 const Shift = require('../../models/qlc/Shifts');
+
 
 const positionNames = {
     19: 'Chủ tịch hội đồng quản trị',
@@ -42,9 +43,9 @@ const positionNames = {
 };
 
 let totalDD = async(res, condition) => {
-    try{
+    try {
         let empDD = await Users.aggregate([
-            {$match: condition},
+            { $match: condition },
             {
                 $lookup: {
                     from: "QLC_Time_sheets",
@@ -53,18 +54,18 @@ let totalDD = async(res, condition) => {
                     as: "Time_sheets"
                 }
             },
-            {$match: {Time_sheets: {$ne: []}}},
-            {$project: {Time_sheets: 1}},
+            { $match: { Time_sheets: { $ne: [] } } },
+            { $project: { Time_sheets: 1 } },
         ]);
         return empDD.length;
-    }catch(e){
+    } catch (e) {
         return functions.setError(res, e.message);
     }
-    
+
 }
 
 //cơ cấu tổ chức công ty, công ty con và phòng ban
-exports.detailInfoCompany = async (req, res, next) => {
+exports.detailInfoCompany = async(req, res, next) => {
     try {
         if (req.infoLogin) {
             // let com_id = req.infoLogin.comId
@@ -75,13 +76,13 @@ exports.detailInfoCompany = async (req, res, next) => {
             let inputNew = req.body.inputNew
             let inputOld = req.body.inputOld
             let result = {}
-            //thông tin công ty cha
+                //thông tin công ty cha
             result.infoCompany = {}
             let infoCompany = await Users.findOne({ idQLC: com_id, type: 1 }, { userName: 1 })
             if (infoCompany) {
                 result.infoCompany.parent_com_id = com_id
                 result.infoCompany.companyName = infoCompany.userName
-                const listEmployee = await Users.find({type: 2, "inForPerson.employee.com_id": com_id}, {
+                const listEmployee = await Users.find({ type: 2, "inForPerson.employee.com_id": com_id }, {
                     userName: 1,
                     idQLC: 1,
                     inForPerson: {
@@ -94,25 +95,25 @@ exports.detailInfoCompany = async (req, res, next) => {
                         }
                     }
                 });
-                const listEmpDD = await Tracking.find({com_id: com_id});
-                let listGiamDoc = listEmployee.filter(employee=> {
-                    if(
+                const listEmpDD = await Tracking.find({ com_id: com_id });
+                let listGiamDoc = listEmployee.filter(employee => {
+                    if (
                         employee.inForPerson &&
                         employee.inForPerson.employee &&
                         employee.inForPerson.employee.position_id === 8
                     ) return true;
                     return false;
                 });
-                let listPhoGiamDoc = listEmployee.filter(employee=> {
-                    if(
+                let listPhoGiamDoc = listEmployee.filter(employee => {
+                    if (
                         employee.inForPerson &&
                         employee.inForPerson.employee &&
                         employee.inForPerson.employee.position_id === 7
                     ) return true;
                     return false;
                 });
-                let countEmpDD = await Tracking.countDocuments({ com_id: com_id})
-                // let countEmpDD = await Tracking.countDocuments({ com_id: com_id, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
+                let countEmpDD = await Tracking.countDocuments({ com_id: com_id })
+                    // let countEmpDD = await Tracking.countDocuments({ com_id: com_id, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
                 result.infoCompany.parent_manager = listGiamDoc;
                 result.infoCompany.parent_deputy = listPhoGiamDoc;
                 result.infoCompany.tong_nv = listEmployee.length;
@@ -125,7 +126,7 @@ exports.detailInfoCompany = async (req, res, next) => {
                     result.infoCompany.infoDep = [];
 
                     for (let i = 0; i < infoDepParent.length; i++) {
-                        let infoDep = {manager: []};
+                        let infoDep = { manager: [] };
                         infoDep.dep_id = infoDepParent[i].dep_id
                         infoDep.dep_name = infoDepParent[i].dep_name
                         let dep_id = infoDepParent[i].dep_id;
@@ -164,16 +165,16 @@ exports.detailInfoCompany = async (req, res, next) => {
                         infoDep.total_emp = countEmpDep
 
                         let countEmpDepDD = await Tracking.countDocuments({ com_id: com_id })
-                        for(let m=0; m<listEmpDD.length; m++) {
-                            
+                        for (let m = 0; m < listEmpDD.length; m++) {
+
                         }
                         const conditionDD = {
                             type: 2,
                             "inForPerson.employee.com_id": com_id,
                         }
-                        let conditionDep = {...conditionDD, "inForPerson.employee.dep_id": infoDepParent[i].dep_id};
+                        let conditionDep = {...conditionDD, "inForPerson.employee.dep_id": infoDepParent[i].dep_id };
                         let empDD = await Users.aggregate([
-                            {$match: conditionDep},
+                            { $match: conditionDep },
                             {
                                 $lookup: {
                                     from: "QLC_Time_sheets",
@@ -182,8 +183,8 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     as: "Time_sheets"
                                 }
                             },
-                            {$match: {Time_sheets: {$ne: []}}},
-                            {$project: {Time_sheets: 1}},
+                            { $match: { Time_sheets: { $ne: [] } } },
+                            { $project: { Time_sheets: 1 } },
                         ]);
                         infoDep.tong_nv_da_diem_danh = await totalDD(res, conditionDep);
 
@@ -229,7 +230,7 @@ exports.detailInfoCompany = async (req, res, next) => {
                                 "inForPerson.employee.team_id": infoTeamParent[j].team_id
                             })
                             infoTeam.tong_nv = countEmpTeam
-                            let conditionTeam = {...conditionDep, "inForPerson.employee.team_id": infoTeamParent[j].team_id};
+                            let conditionTeam = {...conditionDep, "inForPerson.employee.team_id": infoTeamParent[j].team_id };
                             infoTeam.tong_nv_da_diem_danh = await totalDD(res, conditionTeam);
                             result.infoCompany.infoDep[i].infoTeam.push(infoTeam)
 
@@ -277,7 +278,7 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     "inForPerson.employee.group_id": infoGroupParent[k].gr_id
                                 })
                                 infoGroup.group_tong_nv = countEmpGroup
-                                let conditionGroup = {...conditionTeam, "inForPerson.employee.group_id": infoGroupParent[k].gr_id};
+                                let conditionGroup = {...conditionTeam, "inForPerson.employee.group_id": infoGroupParent[k].gr_id };
                                 infoGroup.tong_nv_da_diem_danh = await totalDD(res, conditionGroup);
                                 result.infoCompany.infoDep[i].infoTeam[j].infoGroup.push(infoGroup)
 
@@ -370,12 +371,12 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     "inForPerson.employee.com_id": infoChildCompany[i].idQLC,
                                     "inForPerson.employee.dep_id": infoDepChild[j].dep_id
                                 })
-                                infoDep.tong_nv = countEmp 
+                                infoDep.tong_nv = countEmp
                                 const conditionDD2 = {
                                     type: 2,
                                     "inForPerson.employee.com_id": comId_child,
                                 }
-                                let conditionDep_child = {...conditionDD2, "inForPerson.employee.dep_id": infoDepChild[j].dep_id};
+                                let conditionDep_child = {...conditionDD2, "inForPerson.employee.dep_id": infoDepChild[j].dep_id };
                                 infoDep.tong_nv_da_diem_danh = await totalDD(res, conditionDep_child);
                                 result.infoCompany.infoChildCompany[i].infoDep.push(infoDep)
 
@@ -425,7 +426,7 @@ exports.detailInfoCompany = async (req, res, next) => {
                                     })
                                     infoTeam.tong_nv = countEmpTeam
 
-                                    let conditionTeam_child = {...conditionDep_child, "inForPerson.employee.team_id": infoTeamChild[k].team_id};
+                                    let conditionTeam_child = {...conditionDep_child, "inForPerson.employee.team_id": infoTeamChild[k].team_id };
                                     infoTeam.tong_nv_da_diem_danh = await totalDD(res, conditionTeam_child);
 
                                     result.infoCompany.infoChildCompany[i].infoDep[j].infoTeam.push(infoTeam)
@@ -474,7 +475,7 @@ exports.detailInfoCompany = async (req, res, next) => {
                                         })
                                         infoGroup.group_tong_nv = countEmpGroup
 
-                                        let conditionGroup_child = {...conditionTeam_child, "inForPerson.employee.group_id": infoGroupChild[l].gr_id};
+                                        let conditionGroup_child = {...conditionTeam_child, "inForPerson.employee.group_id": infoGroupChild[l].gr_id };
                                         infoGroup.tong_nv_da_diem_danh = await totalDD(res, conditionGroup_child);
 
                                         result.infoCompany.infoChildCompany[i].infoDep[j].infoTeam[k].infoGroup.push(infoGroup)
@@ -497,11 +498,11 @@ exports.detailInfoCompany = async (req, res, next) => {
 }
 
 //hiển thị mô tả chi tiết của phòng ban, tổ trong công ty
-exports.description = async (req, res, next) => {
+exports.description = async(req, res, next) => {
     try {
         if (req.infoLogin) {
             let comId = req.body.comId;
-            if(!comId) comId = req.infoLogin.comId;
+            if (!comId) comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
@@ -518,7 +519,7 @@ exports.description = async (req, res, next) => {
                 info = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId })
             }
             if (!info || info.description == null) {
-                info = {description: "chưa cập nhật"}
+                info = { description: "chưa cập nhật" }
             }
             return functions.success(res, 'Lấy chi tiết công ty thành công', { info });
         } else return functions.setError(res, "Thông tin truyền lên không đầy đủ", 400);
@@ -531,11 +532,11 @@ exports.description = async (req, res, next) => {
 
 }
 
-exports.updateDescription = async (req, res, next) => {
+exports.updateDescription = async(req, res, next) => {
     try {
         if (req.infoLogin) {
             let comId = req.body.comId;
-            if(!comId) comId = req.infoLogin.comId;
+            if (!comId) comId = req.infoLogin.comId;
             let depId = Number(req.body.depId)
             let teamId = Number(req.body.teamId)
             let groupId = Number(req.body.groupId)
@@ -543,21 +544,21 @@ exports.updateDescription = async (req, res, next) => {
             let info
 
             if (groupId) {
-                let group = await HR_NestDetails.findOne({comId: comId, grId: groupId, type: 1});
-                let fields = { comId: comId, grId: groupId, type: 1 , description: des };
-                if(!group) fields.id = await functions.getMaxIdByField(HR_NestDetails, 'id');
+                let group = await HR_NestDetails.findOne({ comId: comId, grId: groupId, type: 1 });
+                let fields = { comId: comId, grId: groupId, type: 1, description: des };
+                if (!group) fields.id = await functions.getMaxIdByField(HR_NestDetails, 'id');
                 info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: groupId, type: 1 }, fields, { new: true, upsert: true })
             }
             if (teamId && !groupId) {
-                let team = await HR_NestDetails.findOne({comId: comId, grId: teamId, type: 0});
-                let fields = { comId: comId, grId: teamId, type: 0 , description: des };
-                if(!team) fields.id = await functions.getMaxIdByField(HR_NestDetails, 'id');
+                let team = await HR_NestDetails.findOne({ comId: comId, grId: teamId, type: 0 });
+                let fields = { comId: comId, grId: teamId, type: 0, description: des };
+                if (!team) fields.id = await functions.getMaxIdByField(HR_NestDetails, 'id');
                 info = await HR_NestDetails.findOneAndUpdate({ comId: comId, grId: teamId, type: 0 }, fields, { new: true, upsert: true })
             }
             if (depId && !teamId && !groupId) {
-                let dep = await HR_DepartmentDetails.findOne({comId: comId, depId: depId});
+                let dep = await HR_DepartmentDetails.findOne({ comId: comId, depId: depId });
                 let fields = { comId: comId, depId: depId, description: des };
-                if(!dep) fields.id = await functions.getMaxIdByField(HR_DepartmentDetails, 'id');
+                if (!dep) fields.id = await functions.getMaxIdByField(HR_DepartmentDetails, 'id');
                 info = await HR_DepartmentDetails.findOneAndUpdate({ comId: comId, depId: depId }, fields, { new: true, upsert: true })
             }
             if (info) {
@@ -574,15 +575,16 @@ exports.updateDescription = async (req, res, next) => {
 }
 
 //danh sách chức vụ
-exports.listPosition = async (req, res, next) => {
+//danh sách chức vụ
+exports.listPosition = async(req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         //tìm kiếm những chức vụ của công ty đó trong bảng hr
         let arrPosition = [19, 18, 17, 21, 22, 16, 14, 8, 7, 6, 5, 13, 12, 4, 20, 11, 10, 3, 2, 9, 1];
 
         //nhung chuc vu bi an
-        let positionStruct = await PositionStruct.find({com_id: comId}).lean();
-        for(let i=0; i<positionStruct.length; i++) {
+        let positionStruct = await PositionStruct.find({ com_id: comId }).lean();
+        for (let i = 0; i < positionStruct.length; i++) {
             const index = arrPosition.indexOf(positionStruct[i].position_id);
             if (index > -1) {
                 arrPosition.splice(index, 1);
@@ -593,38 +595,37 @@ exports.listPosition = async (req, res, next) => {
         //21 chuc vu
         let findUser = await Users.find({
             "inForPerson.employee.com_id": comId
-        }, { idQLC: 1, userName: 1, inForPerson: {employee: {position_id: 1}}});
-        // console.log(findUser)
-        let position = await HR_DescPositions.find({comId: comId});
-        const conditionNV = {type: 2,"inForPerson.employee.com_id": comId};
-        for(let i=0; i<arrPosition.length; i++) {
+        }, { idQLC: 1, userName: 1, inForPerson: { employee: { position_id: 1 } } });
+        let position = await HR_DescPositions.find({ comId: comId });
+        const conditionNV = { type: 2, "inForPerson.employee.com_id": comId };
+        for (let i = 0; i < arrPosition.length; i++) {
             listPosition.push({
                 positionId: arrPosition[i],
                 positionName: positionNames[arrPosition[i]],
                 mission: 'Chưa cập nhật',
                 users: [],
             });
-            for(let j=0; j<position.length; j++) {
-                if(position[j] && position[j].positionId == arrPosition[i]) {
-                    listPosition[i].mission =  position[j].description;
+            for (let j = 0; j < position.length; j++) {
+                if (position[j] && position[j].positionId == arrPosition[i]) {
+                    listPosition[i].mission = position[j].description;
                 }
             }
-            
+
             let users = [];
-            for(let j=0; j<findUser.length; j++) {
-                if(findUser[j] && findUser[j].inForPerson && findUser[j].inForPerson.employee && findUser[j].inForPerson.employee.position_id == arrPosition[i]) {
+            for (let j = 0; j < findUser.length; j++) {
+                if (findUser[j] && findUser[j].inForPerson && findUser[j].inForPerson.employee && findUser[j].inForPerson.employee.position_id == arrPosition[i]) {
                     users.push(findUser[j].userName);
                 }
             }
-            
-            if(i>=arrPosition.length-4) {
-                let conditionDNV = {...conditionNV, "inForPerson.employee.position_id": arrPosition[i]};
+
+            if (i >= arrPosition.length - 4) {
+                let conditionDNV = {...conditionNV, "inForPerson.employee.position_id": arrPosition[i] };
                 let tong_nv = await functions.findCount(Users, conditionDNV);
                 listPosition[i].tong_nv = tong_nv;
             }
             listPosition[i].users = users;
         }
-        let index = listPosition.length-4;
+        let index = listPosition.length - 4;
         let data = listPosition.slice(0, index);
         let listPositionEmployee = listPosition.slice(index);
         data.push(listPositionEmployee);
@@ -636,30 +637,30 @@ exports.listPosition = async (req, res, next) => {
 }
 
 exports.updatePosition = async(req, res, next) => {
-    try{
+    try {
         let position_id = req.body.position_id;
         let com_id = req.infoLogin.comId;
-        if(!position_id) return functions.setError(res, "Missing input position_id!", 404);
-        let fields = {com_id: com_id, position_id: position_id};
+        if (!position_id) return functions.setError(res, "Missing input position_id!", 404);
+        let fields = { com_id: com_id, position_id: position_id };
         let position = await PositionStruct.findOne(fields);
-        if(!position) {
+        if (!position) {
             let id = await functions.getMaxIdByField(PositionStruct, 'id');
             fields.id = id;
             let insert_position = new PositionStruct(fields);
             insert_position = await insert_position.save();
-            if(insert_position) {
+            if (insert_position) {
                 return functions.success(res, "Them vi tri thanh cong!");
             }
             return functions.setError(res, "Them vi tri that bai!", 506);
         }
         return functions.setError(res, "Vi tri da duoc them!", 505);
-    }catch(e) {
+    } catch (e) {
         return functions.setError(res, e.message);
     }
 }
 
 //chi tiết nhiệm vụ mỗi chức vụ
-exports.missionDetail = async (req, res, next) => {
+exports.missionDetail = async(req, res, next) => {
     try {
         if (req.infoLogin) {
             let comId = req.infoLogin.comId;
@@ -685,7 +686,7 @@ exports.missionDetail = async (req, res, next) => {
 
 
 //cập nhật chi tiết nhiệm vụ mỗi
-exports.updateMission = async (req, res, next) => {
+exports.updateMission = async(req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
 
@@ -695,12 +696,12 @@ exports.updateMission = async (req, res, next) => {
             return functions.setError(res, "Missing input value!", 404);
         }
         let mission = await HR_DescPositions.findOne({ comId: comId, positionId: positionId });
-        if(mission) {
-            mission = await  HR_DescPositions.updateOne({ comId: comId, positionId: positionId }, {description: description }, {new: true});
-            if(mission) {
+        if (mission) {
+            mission = await HR_DescPositions.updateOne({ comId: comId, positionId: positionId }, { description: description }, { new: true });
+            if (mission) {
                 return functions.success(res, 'cập nhật chi tiết nhiệm vụ thành công', { mission });
             }
-        }else {
+        } else {
             let maxId = await functions.getMaxIdByField(HR_DescPositions, 'id');
             mission = new HR_DescPositions({
                 id: maxId,
@@ -709,7 +710,7 @@ exports.updateMission = async (req, res, next) => {
                 description: description
             });
             mission = await mission.save();
-            if(mission) {
+            if (mission) {
                 return functions.success(res, 'cập nhật chi tiết nhiệm vụ thành công', { mission });
             }
         }
@@ -722,12 +723,12 @@ exports.updateMission = async (req, res, next) => {
 }
 
 //tải lên chữ ký
-exports.uploadSignature = async (req, res, next) => {
+exports.uploadSignature = async(req, res, next) => {
     try {
         if (req.infoLogin) {
             let empId = req.body.empId
             let file = req.files.signature;
-            if(!empId) return functions.setError(res, "Missing input empId!", 404);
+            if (!empId) return functions.setError(res, "Missing input empId!", 404);
             if (!req.files || !file) {
                 return functions.setError(res, "Missing signature image!", 504);
             }
@@ -736,14 +737,14 @@ exports.uploadSignature = async (req, res, next) => {
             }
             let nameFile = await hrFunctions.uploadFileSignature(file);
             let checkSig = await HR_SignatureImages.findOne({ empId: empId })
-            let fields = {imgName: nameFile};
+            let fields = { imgName: nameFile };
             if (!checkSig) {
                 let idMax = await functions.getMaxIdByField(HR_SignatureImages, 'id');
                 fields.id = idMax;
                 fields.empId = empId;
                 fields.createdAt = new Date(Date.now());
             }
-            let upload = await HR_SignatureImages.findOneAndUpdate({empId: empId}, fields, {new: true, upsert: true});
+            let upload = await HR_SignatureImages.findOneAndUpdate({ empId: empId }, fields, { new: true, upsert: true });
             if (upload) {
                 return functions.success(res, 'Tải chữ ký thành công');
             }
@@ -758,7 +759,7 @@ exports.uploadSignature = async (req, res, next) => {
 }
 
 //xóa chữ kí đã tải lên
-exports.deleteSignature = async (req, res, next) => {
+exports.deleteSignature = async(req, res, next) => {
     try {
         if (req.infoLogin) {
             let empId = req.body.empId
@@ -778,20 +779,20 @@ exports.deleteSignature = async (req, res, next) => {
 }
 
 //danh sách, tìm kiếm lãnh đạo
-exports.listInfoLeader = async (req, res, next) => {
+exports.listInfoLeader = async(req, res, next) => {
     try {
         if (req.infoLogin) {
-            let {keyword, page, pageSize} = req.body;
+            let { keyword, page, pageSize } = req.body;
             let comId = req.infoLogin.comId
-            if(!page) page = 1;
-            if(!pageSize) pageSize = 5;
+            if (!page) page = 1;
+            if (!pageSize) pageSize = 5;
             page = Number(page);
             pageSize = Number(pageSize);
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let listPositionId = [4, 20, 13, 12, 11, 10, 6, 5, 8, 7, 16, 14, 21, 22, 19, 18, 17]
-            let condition = {"inForPerson.employee.com_id": comId, "inForPerson.employee.position_id": { $in: listPositionId }};
-            if(keyword) condition.userName = new RegExp(keyword, 'i');
+            let condition = { "inForPerson.employee.com_id": comId, "inForPerson.employee.position_id": { $in: listPositionId } };
+            if (keyword) condition.userName = new RegExp(keyword, 'i');
             let total = await Users.countDocuments(condition);
 
             let infoLeader = await Users.find(condition, {
@@ -802,22 +803,22 @@ exports.listInfoLeader = async (req, res, next) => {
                 "inForPerson.employee.dep_id": 1,
                 "inForPerson.employee.team_id": 1,
                 "inForPerson.employee.group_id": 1,
-            }).sort({idQLC: -1}).skip(skip).limit(limit)
+            }).sort({ idQLC: -1 }).skip(skip).limit(limit)
 
             let infoLeaderAfter = []
             for (let i = 0; i < infoLeader.length; i++) {
                 let info = {}
-                if(infoLeader[i].inForPerson && infoLeader[i].inForPerson.employee) {
+                if (infoLeader[i].inForPerson && infoLeader[i].inForPerson.employee) {
                     info._id = infoLeader[i].idQLC
                     info.userName = infoLeader[i].userName
-                    if(infoLeader[i].avatarUser) info.avatarUser = `${process.env.hostFile}${infoLeader[i].avatarUser}`;
+                    if (infoLeader[i].avatarUser) info.avatarUser = `${process.env.hostFile}${infoLeader[i].avatarUser}`;
                     else info.avatarUser = '';
-                    
+
                     info.namePosition = positionNames[infoLeader[i].inForPerson.employee.position_id];
                     if (infoLeader[i].inForPerson.employee.dep_id) {
                         let infoDep = await Deparment.findOne({ dep_id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
-                        
-                        if(infoDep) info.dep_name = infoDep.dep_name;
+
+                        if (infoDep) info.dep_name = infoDep.dep_name;
                         else info.dep_name = 'Chưa cập nhật';
                         if (infoLeader[i].inForPerson.employee.team_id) {
                             let infoTeam = await Team.findOne({
@@ -825,7 +826,7 @@ exports.listInfoLeader = async (req, res, next) => {
                                 com_id: comId,
                                 dep_id: infoLeader[i].inForPerson.employee.dep_id,
                             })
-                            if(infoTeam) info.team_name = infoTeam.teamName;
+                            if (infoTeam) info.team_name = infoTeam.teamName;
                             else info.team_name = 'Chưa cập nhật';
 
                             if (infoLeader[i].inForPerson.employee.group_id) {
@@ -835,7 +836,7 @@ exports.listInfoLeader = async (req, res, next) => {
                                     dep_id: infoLeader[i].inForPerson.employee.dep_id,
                                     team_id: infoLeader[i].inForPerson.employee.team_id
                                 })
-                                if(infoGroup) info.group_name = infoGroup.gr_name;
+                                if (infoGroup) info.group_name = infoGroup.gr_name;
                                 else info.group_name = 'Chưa cập nhật';
                             } else info.group_name = "Chưa cập nhật"
 
@@ -854,7 +855,7 @@ exports.listInfoLeader = async (req, res, next) => {
             }
 
             if (infoLeader) {
-                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', {total, page, pageSize, infoLeaderAfter });
+                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { total, page, pageSize, infoLeaderAfter });
             }
         } else {
             return functions.setError(res, "Token không hợp lệ hoặc thông tin truyền lên không đầy đủ", 400);
@@ -866,7 +867,7 @@ exports.listInfoLeader = async (req, res, next) => {
 }
 
 //chi tiết lãnh đạo
-exports.leaderDetail = async (req, res, next) => {
+exports.leaderDetail = async(req, res, next) => {
     try {
         if (req.infoLogin && req.body.empId) {
             let empId = req.body.empId
@@ -875,15 +876,15 @@ exports.leaderDetail = async (req, res, next) => {
             let infoUser = await Users.findOne({ idQLC: empId, type: 2 })
 
             if (infoUser) {
-                if(infoUser && infoUser.inForPerson && infoUser.inForPerson.employee && infoUser.inForPerson.account) {
+                if (infoUser && infoUser.inForPerson && infoUser.inForPerson.employee && infoUser.inForPerson.account) {
                     let infoUserHr = await HR_InfoLeaders.findOne({ epId: empId });
-                    let infoAvatar = await LeaderAvatar.findOne({ep_id: empId});
+                    let infoAvatar = await LeaderAvatar.findOne({ ep_id: empId });
                     let nameAvatar = ""
-                    if(infoAvatar) nameAvatar = infoAvatar.avatar;
+                    if (infoAvatar) nameAvatar = infoAvatar.avatar;
                     if (infoUserHr) {
                         result.ep_name = infoUser.userName;
                         result.namePosition = positionNames[infoUser.inForPerson.employee.position_id];
-                        if(nameAvatar!="") result.avatarUser = `${ process.env.DOMAIN_HR}/base365/hr/ep_leader/${nameAvatar}`
+                        if (nameAvatar != "") result.avatarUser = `${ process.env.DOMAIN_HR}/base365/hr/ep_leader/${nameAvatar}`
                         else result.avatarUser = '';
                         result.description = infoUserHr.description
 
@@ -895,7 +896,7 @@ exports.leaderDetail = async (req, res, next) => {
                         if (maxID) {
                             newIDMax = Number(maxID.id) + 1;
                         } else newIDMax = 1
-                        let desPosition = infoUser.inForPerson.employee.position_id; 
+                        let desPosition = infoUser.inForPerson.employee.position_id;
                         let insertUser = new HR_InfoLeaders({
                             id: newIDMax,
                             epId: empId,
@@ -905,9 +906,9 @@ exports.leaderDetail = async (req, res, next) => {
                             created_at: new Date(Date.now())
                         })
                         insertUser = insertUser.save()
-                        
+
                         if (insertUser) {
-                            let detailLeader = {userName: infoUser.userName, avatarUser: nameAvatar, birthday: infoUser.inForPerson.account.birthday};
+                            let detailLeader = { userName: infoUser.userName, avatarUser: nameAvatar, birthday: infoUser.inForPerson.account.birthday };
                             return functions.success(res, 'cập nhật chi tiết lãnh đạo thành công', detailLeader);
                         } else {
                             return functions.setError(res, 'update info leader fail!');
@@ -927,7 +928,7 @@ exports.leaderDetail = async (req, res, next) => {
 }
 
 //cập nhật chi tiết lãnh đạo
-exports.updateLeaderDetail = async (req, res, next) => {
+exports.updateLeaderDetail = async(req, res, next) => {
     try {
         if (req.infoLogin && req.body.empId) {
             let empId = req.body.empId
@@ -952,26 +953,26 @@ exports.updateLeaderDetail = async (req, res, next) => {
 }
 
 //cap nhat avatar lanh dao
-exports.updateAvatarLeader = async (req, res, next) => {
+exports.updateAvatarLeader = async(req, res, next) => {
     try {
         if (req.infoLogin && req.body.empId) {
             let empId = req.body.empId
-            if(req.files && req.files.logo) {
+            if (req.files && req.files.logo) {
                 let logo = req.files.logo;
-                if(logo && await hrFunctions.checkFile(logo.path)){
-                    let nameAvatar = await hrFunctions.uploadFileNameRandom("ep_leader",logo);
+                if (logo && await hrFunctions.checkFile(logo.path)) {
+                    let nameAvatar = await hrFunctions.uploadFileNameRandom("ep_leader", logo);
                     let id = await functions.getMaxIdByField(LeaderAvatar, 'id');
                     let fields = {
                         ep_id: empId,
                         avatar: nameAvatar,
                         created_at: Date.now()
                     }
-                    let leaderAvatar = await LeaderAvatar.findOne({ep_id: empId});
-                    if(!leaderAvatar) {
+                    let leaderAvatar = await LeaderAvatar.findOne({ ep_id: empId });
+                    if (!leaderAvatar) {
                         fields.id = id;
                     }
-                    leaderAvatar = await LeaderAvatar.findOneAndUpdate({ep_id: empId}, fields, {new: true, upsert: true});
-                    if(leaderAvatar) {
+                    leaderAvatar = await LeaderAvatar.findOneAndUpdate({ ep_id: empId }, fields, { new: true, upsert: true });
+                    if (leaderAvatar) {
                         return functions.success(res, "Update avatar leader thanh cong!");
                     }
                     return functions.setError(res, "Update avatar leader that bai!", 407);
@@ -988,7 +989,7 @@ exports.updateAvatarLeader = async (req, res, next) => {
 }
 
 //Thêm mới nhân viên sử dụng con dấu
-exports.updateEmpUseSignature = async (req, res, next) => {
+exports.updateEmpUseSignature = async(req, res, next) => {
     try {
         if (req.infoLogin && req.body.empId) {
             let comId = req.infoLogin.comId;
@@ -1049,28 +1050,28 @@ exports.updateEmpUseSignature = async (req, res, next) => {
 }
 
 //Danh sách nhân viên sử dụng con dấu (có tìm kiếm)
-exports.listEmpUseSignature = async (req, res, next) => {
+exports.listEmpUseSignature = async(req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
-        let {key, dep_id, page, pageSize} = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 5;
+        let { key, dep_id, page, pageSize } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 5;
         page = Number(page)
         pageSize = Number(pageSize)
-        const skip = (page-1)*pageSize;
-        let condition = {"inForPerson.employee.com_id": comId,"inForPerson.employee.ep_signature": 1};
-        if(key) {
-            if(!isNaN(parseFloat(key)) && isFinite(key)) condition.idQLC = Number(key);
+        const skip = (page - 1) * pageSize;
+        let condition = { "inForPerson.employee.com_id": comId, "inForPerson.employee.ep_signature": 1 };
+        if (key) {
+            if (!isNaN(parseFloat(key)) && isFinite(key)) condition.idQLC = Number(key);
             else condition.userName = new RegExp(key, 'i');
         }
-        if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
-        let fields = {idQLC: 1, avatarUser: 1, userName: 1, "inForPerson.employee.position_id": 1, "inForPerson.employee.dep_id": 1};
+        if (dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
+        let fields = { idQLC: 1, avatarUser: 1, userName: 1, "inForPerson.employee.position_id": 1, "inForPerson.employee.dep_id": 1 };
         let total = await Users.countDocuments(condition);
-        let listEmployee = await functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
+        let listEmployee = await functions.pageFindWithFields(Users, condition, fields, { idQLC: -1 }, skip, pageSize);
         let listEmpUseSignature = [];
-        for(let i=0; i<listEmployee.length; i++) {
+        for (let i = 0; i < listEmployee.length; i++) {
             let info = {};
-            if(listEmployee[i].inForPerson && listEmployee[i].inForPerson.employee) {
+            if (listEmployee[i].inForPerson && listEmployee[i].inForPerson.employee) {
                 info._id = listEmployee[i].idQLC
                 info.userName = listEmployee[i].userName
                 info.namePosition = positionNames[listEmployee[i].inForPerson.employee.position_id];
@@ -1078,7 +1079,7 @@ exports.listEmpUseSignature = async (req, res, next) => {
 
                 if (listEmployee[i].inForPerson.employee.dep_id) {
                     let infoDep = await Deparment.findOne({ dep_id: listEmployee[i].inForPerson.employee.dep_id, com_id: comId })
-                    if(infoDep) info.dep_name = infoDep.dep_name
+                    if (infoDep) info.dep_name = infoDep.dep_name
                     else info.dep_name = "Chưa cập nhật"
                 } else {
                     info.dep_name = "Chưa cập nhật"
@@ -1086,7 +1087,7 @@ exports.listEmpUseSignature = async (req, res, next) => {
                 listEmpUseSignature.push(info);
             }
         }
-        return functions.success(res, "Get list employee signature success!", {total, page, pageSize, listEmpUseSignature});
+        return functions.success(res, "Get list employee signature success!", { total, page, pageSize, listEmpUseSignature });
     } catch (e) {
         console.log("Err from server get list employee signature!", e);
         return functions.setError(res, e.message);
@@ -1094,7 +1095,7 @@ exports.listEmpUseSignature = async (req, res, next) => {
 }
 
 //Xóa nhân viên sử dụng con dấu
-exports.deleteEmpUseSignature = async (req, res, next) => {
+exports.deleteEmpUseSignature = async(req, res, next) => {
     try {
         if (req.infoLogin && req.body.empId) {
             let comId = req.infoLogin.comId;
@@ -1124,54 +1125,54 @@ exports.deleteEmpUseSignature = async (req, res, next) => {
 }
 
 //danh sách, tìm kiếm chữ ký lãnh đạo
-exports.listSignatureLeader = async (req, res, next) => {
+exports.listSignatureLeader = async(req, res, next) => {
     try {
         if (req.infoLogin) {
-            let {key, dep_id, page, pageSize} = req.body;
+            let { key, dep_id, page, pageSize } = req.body;
             let comId = req.infoLogin.comId
-            if(!page) page = 1;
-            if(!pageSize) pageSize = 5;
+            if (!page) page = 1;
+            if (!pageSize) pageSize = 5;
             page = Number(page)
             pageSize = Number(pageSize)
             const skip = (page - 1) * pageSize;
             const limit = pageSize;
             let listPositionId = [4, 20, 13, 12, 11, 10, 6, 5, 8, 7, 16, 14, 21, 22, 19, 18, 17]
 
-            let condition = {"inForPerson.employee.com_id": comId,"inForPerson.employee.position_id": { $in: listPositionId }};
-            if(key) {
-                if(!isNaN(parseFloat(key)) && isFinite(key)) condition.idQLC = Number(key);
+            let condition = { "inForPerson.employee.com_id": comId, "inForPerson.employee.position_id": { $in: listPositionId } };
+            if (key) {
+                if (!isNaN(parseFloat(key)) && isFinite(key)) condition.idQLC = Number(key);
                 else condition.userName = new RegExp(key, 'i');
             }
-            if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
-            let fields = {idQLC: 1, avatarUser: 1, userName: 1, "inForPerson.employee.position_id": 1, "inForPerson.employee.dep_id": 1};
+            if (dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
+            let fields = { idQLC: 1, avatarUser: 1, userName: 1, "inForPerson.employee.position_id": 1, "inForPerson.employee.dep_id": 1 };
             let total = await Users.countDocuments(condition);
-            let infoLeader = await functions.pageFindWithFields(Users, condition, fields, {idQLC: -1}, skip, pageSize);
+            let infoLeader = await functions.pageFindWithFields(Users, condition, fields, { idQLC: -1 }, skip, pageSize);
 
             if (infoLeader) {
                 let infoLeaderAfter = []
                 for (let i = 0; i < infoLeader.length; i++) {
                     let info = {}
-                    if(infoLeader[i].inForPerson && infoLeader[i].inForPerson.employee) {
+                    if (infoLeader[i].inForPerson && infoLeader[i].inForPerson.employee) {
                         info._id = infoLeader[i].idQLC
                         info.userName = infoLeader[i].userName
                         info.namePosition = positionNames[infoLeader[i].inForPerson.employee.position_id];
 
                         if (infoLeader[i].inForPerson.employee.dep_id) {
                             let infoDep = await Deparment.findOne({ dep_id: infoLeader[i].inForPerson.employee.dep_id, com_id: comId })
-                            if(infoDep) info.dep_name = infoDep.dep_name
+                            if (infoDep) info.dep_name = infoDep.dep_name
                             else info.dep_name = "Chưa cập nhật"
                         } else {
                             info.dep_name = "Chưa cập nhật"
                         }
 
-                        let infoSig = await HR_SignatureImages.findOne({ empId: infoLeader[i].idQLC,isDelete: 0 }, { imgName: 1 })
+                        let infoSig = await HR_SignatureImages.findOne({ empId: infoLeader[i].idQLC, isDelete: 0 }, { imgName: 1 })
                         if (infoSig) {
                             info.linkSignature = `${process.env.hostFile}base365/hr/upload/signature/${infoSig.imgName}`
                         } else info.linkSignature = "Chưa cập nhật"
                         infoLeaderAfter.push(info)
                     }
                 }
-                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', {total, page, pageSize, infoLeaderAfter });
+                return functions.success(res, 'hiển thị danh sách lãnh đạo thành công', { total, page, pageSize, infoLeaderAfter });
             }
             return functions.setError(res, "không tìm thấy lãnh đạo nào", 400);
         } else {
@@ -1184,38 +1185,38 @@ exports.listSignatureLeader = async (req, res, next) => {
 }
 
 // danh sách nhân viên chưa chấm công hoặc đã chấm công
-exports.listEmUntimed = async (req, res, next) => {
+exports.listEmUntimed = async(req, res, next) => {
     try {
-        let {emp_id, com_id, dep_id, position_id, group_id, team_id, birthday, gender, married, page, pageSize} = req.body;
-        if(!com_id) com_id = req.infoLogin.comId;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 10;
+        let { emp_id, com_id, dep_id, position_id, group_id, team_id, birthday, gender, married, page, pageSize } = req.body;
+        if (!com_id) com_id = req.infoLogin.comId;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
-        const skip = (page-1)*pageSize;
-        let condition = {type: 2, "inForPerson.employee.com_id": com_id};
-        if(emp_id) condition.idQLC = emp_id;
-        if(dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
-        if(group_id) condition["inForPerson.employee.group_id"] = group_id;
-        if(team_id) condition["inForPerson.employee.team_id"] = team_id;
-        if(position_id) condition["inForPerson.employee.position_id"] = position_id;
+        const skip = (page - 1) * pageSize;
+        let condition = { type: 2, "inForPerson.employee.com_id": com_id };
+        if (emp_id) condition.idQLC = emp_id;
+        if (dep_id) condition["inForPerson.employee.dep_id"] = dep_id;
+        if (group_id) condition["inForPerson.employee.group_id"] = group_id;
+        if (team_id) condition["inForPerson.employee.team_id"] = team_id;
+        if (position_id) condition["inForPerson.employee.position_id"] = position_id;
 
-        if(gender) condition["inForPerson.account.gender"] = gender;
-        if(married) condition["inForPerson.account.married"] = married;
-        if(birthday) condition["inForPerson.account.birthday"] = new RegExp(birthday);
+        if (gender) condition["inForPerson.account.gender"] = gender;
+        if (married) condition["inForPerson.account.married"] = married;
+        if (birthday) condition["inForPerson.account.birthday"] = new RegExp(birthday);
 
-        let company = await Users.findOne({idQLC: com_id}, {userName: 1, idQLC: 1});
+        let company = await Users.findOne({ idQLC: com_id }, { userName: 1, idQLC: 1 });
         let listEmployee = [];
         // chấm công hoặc chưa chấm công
         let type_timekeep = Number(req.body.type_timekeep);
         let condition2 = {};
-        if(type_timekeep===1) condition2 = {Time_sheets: {$ne: []}};
-        if(type_timekeep===2) condition2 = {Time_sheets: {$eq: []}};
+        if (type_timekeep === 1) condition2 = { Time_sheets: { $ne: [] } };
+        if (type_timekeep === 2) condition2 = { Time_sheets: { $eq: [] } };
         listEmployee = await Users.aggregate([
-            {$match: condition},
-            {$sort: {idQLC: -1}},
-            {$skip: skip},
-            {$limit: pageSize},
+            { $match: condition },
+            { $sort: { idQLC: -1 } },
+            { $skip: skip },
+            { $limit: pageSize },
             {
                 $lookup: {
                     from: "QLC_Time_sheets",
@@ -1224,7 +1225,7 @@ exports.listEmUntimed = async (req, res, next) => {
                     as: "Time_sheets"
                 }
             },
-            {$match: condition2},
+            { $match: condition2 },
             //phong ban
             {
                 $lookup: {
@@ -1268,33 +1269,35 @@ exports.listEmUntimed = async (req, res, next) => {
                 }
             },
             { $unwind: { path: "$Company", preserveNullAndEmptyArrays: true } },
-            {$project: {
-                'idQLC': '$idQLC',
-                'userName': '$userName',
-                'phone': '$phone',
-                'phoneTK': '$phoneTK',
-                'email': '$email',
-                'address': '$address',
-                'birthday': '$inForPerson.account.birthday',
-                'gender': '$inForPerson.account.gender',
-                'married': '$inForPerson.account.married',
-                'experience': '$inForPerson.account.experience',
-                'education': '$inForPerson.account.education',
-                'com_id': '$inForPerson.employee.com_id',
-                'Company': '$Company.userName',
-                'dep_id': '$inForPerson.employee.dep_id',
-                'Department': '$Department.dep_name',
-                'group_id': '$inForPerson.employee.group_id',
-                'Group': '$Group.gr_name',
-                'team_id': '$inForPerson.employee.team_id',
-                'Team': '$Team.teamName',
-                'position_id': '$inForPerson.employee.position_id',
-                'start_working_time': '$inForPerson.employee.start_working_time',
-                'Time_sheets': '$Time_sheets'
-            }},
+            {
+                $project: {
+                    'idQLC': '$idQLC',
+                    'userName': '$userName',
+                    'phone': '$phone',
+                    'phoneTK': '$phoneTK',
+                    'email': '$email',
+                    'address': '$address',
+                    'birthday': '$inForPerson.account.birthday',
+                    'gender': '$inForPerson.account.gender',
+                    'married': '$inForPerson.account.married',
+                    'experience': '$inForPerson.account.experience',
+                    'education': '$inForPerson.account.education',
+                    'com_id': '$inForPerson.employee.com_id',
+                    'Company': '$Company.userName',
+                    'dep_id': '$inForPerson.employee.dep_id',
+                    'Department': '$Department.dep_name',
+                    'group_id': '$inForPerson.employee.group_id',
+                    'Group': '$Group.gr_name',
+                    'team_id': '$inForPerson.employee.team_id',
+                    'Team': '$Team.teamName',
+                    'position_id': '$inForPerson.employee.position_id',
+                    'start_working_time': '$inForPerson.employee.start_working_time',
+                    'Time_sheets': '$Time_sheets'
+                }
+            },
         ]);
-        if(type_timekeep == 2) {
-            for(let i=0; i<listEmployee.length; i++) {
+        if (type_timekeep == 2) {
+            for (let i = 0; i < listEmployee.length; i++) {
                 let ly_do_nghi = "";
                 let date = new Date(Date.now());
                 const y = date.getFullYear();
@@ -1303,15 +1306,15 @@ exports.listEmUntimed = async (req, res, next) => {
                 const today = y + '-' + m + '-' + d;
 
                 //check xem co lich lam viec kh
-                let clv = await DeXuat.find({id_user: listEmployee[i].idQLC, type_dx: 18, "noi_dung.lich_lam_viec.thang_ap_dung": m});
-                if(clv.length > 0) {
+                let clv = await DeXuat.find({ id_user: listEmployee[i].idQLC, type_dx: 18, "noi_dung.lich_lam_viec.thang_ap_dung": m });
+                if (clv.length > 0) {
                     //lay ra ca lam viec
                     let shift_id_lv = "";
-                    for(let i=0; i<clv.length; i++) {
-                        if(clv[i].noi_dung && clv[i].lich_lam_viec && clv[i].lich_lam_viec.lich_lam_viec) {
+                    for (let i = 0; i < clv.length; i++) {
+                        if (clv[i].noi_dung && clv[i].lich_lam_viec && clv[i].lich_lam_viec.lich_lam_viec) {
                             let cy_detail = JSON.parse(clv[i].lich_lam_viec.lich_lam_viec);
-                            for(let j=0; j<cy_detail.length; j++) {
-                                if(today == cy_detail[j].date) {
+                            for (let j = 0; j < cy_detail.length; j++) {
+                                if (today == cy_detail[j].date) {
                                     shift_id_lv = cy_detail[j].shift_id;
                                     break;
                                 }
@@ -1320,38 +1323,38 @@ exports.listEmUntimed = async (req, res, next) => {
                     }
 
                     //neu co ca lam viec
-                    if(shift_id_lv!="") {
+                    if (shift_id_lv != "") {
                         var arr_shift = shift_id_lv.split(',');
                         let check = 0;
 
                         //check co de xuat nghi phep khong
-                        for(let i=0; i<arr_shift.length; i++) {
-                            let shift = await Shift.findOne({shift_id: arr_shift[i]});
-                            if(shift) {
-                                let nghiPhep = await DeXuat.find({id_user: listEmployee[i].idQLC, type_dx: 1, "noi_dung.nghi_phep.ca_nghi": arr_shift[i]});
-                                for(let j=0; j<nghiPhep.length; j++) {
-                                    if(bd_nghi <= date && date <= kt_nghi ) {
+                        for (let i = 0; i < arr_shift.length; i++) {
+                            let shift = await Shift.findOne({ shift_id: arr_shift[i] });
+                            if (shift) {
+                                let nghiPhep = await DeXuat.find({ id_user: listEmployee[i].idQLC, type_dx: 1, "noi_dung.nghi_phep.ca_nghi": arr_shift[i] });
+                                for (let j = 0; j < nghiPhep.length; j++) {
+                                    if (bd_nghi <= date && date <= kt_nghi) {
                                         ly_do_nghi = nghiPhep[i].noi_dung.nghi_phep.ly_do;
                                         check = 1;
                                         break;
                                     }
                                 }
-                                if(check = 1) break;
+                                if (check = 1) break;
                                 ly_do_nghi = 'Nghỉ sai quy định';
                             }
                         }
-                        if(check == 0) ly_do_nghi = 'Nghỉ theo lịch làm việc';
-                    }else {
+                        if (check == 0) ly_do_nghi = 'Nghỉ theo lịch làm việc';
+                    } else {
                         ly_do_nghi = 'Nghỉ theo lịch làm việc';
                     }
-                }else {
+                } else {
                     ly_do_nghi = "Chưa thiết lập lịch làm việc"
                 }
                 listEmployee[i].ly_do_nghi = ly_do_nghi;
             }
         }
         let total = await Users.aggregate([
-            {$match: condition},
+            { $match: condition },
             {
                 $lookup: {
                     from: "QLC_Time_sheets",
@@ -1360,16 +1363,16 @@ exports.listEmUntimed = async (req, res, next) => {
                     as: "Time_sheets"
                 }
             },
-            {$match: condition2},
+            { $match: condition2 },
             {
                 $group: {
-                _id: null,
-                total: { $sum: 1 }
+                    _id: null,
+                    total: { $sum: 1 }
                 }
             }
         ]);
-        const totalCount = total.length>0?total[0].total:0;
-        return functions.success(res, 'get data success', {totalCount, company ,listEmployee})
+        const totalCount = total.length > 0 ? total[0].total : 0;
+        return functions.success(res, 'get data success', { totalCount, company, listEmployee })
     } catch (error) {
         return functions.setError(res, error.message, 500);
     }

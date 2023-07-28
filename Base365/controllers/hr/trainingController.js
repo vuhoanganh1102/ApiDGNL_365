@@ -50,10 +50,9 @@ exports.createJobDescription = async(req, res, next) => {
             newIdJob = Number(maxIdJob.id) + 1;
         } else newIdJob = 1;
 
-        let roadMap = req.files.roadMap;
         let nameFile = '';
-        let linkFil = '';
-        if(roadMap) {
+        if(req.files && req.files.roadMap) {
+            let roadMap = req.files.roadMap;
             if(!await hrService.checkFile(roadMap.path)){
                 return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 20MB', 405);
             }

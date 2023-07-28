@@ -14,7 +14,7 @@ const CatVlSchema = new mongoose.Schema({
     },
     ut: {
         type: String,
-      
+
     },
     active: {
         type: Number,
@@ -27,4 +27,4 @@ const CatVlSchema = new mongoose.Schema({
     timestamp: true
 })
 
-    module.exports = mongoose.model("RN365_CatVls", CatVlSchema);
+module.exports = mongoose.model("RN365_CatVls", CatVlSchema);

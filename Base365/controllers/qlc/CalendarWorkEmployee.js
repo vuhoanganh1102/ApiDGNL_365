@@ -1,9 +1,16 @@
-const calEmp = require("../../models/qlc/CalendarWorkEmployee")
+const CalendarWorkEmployee = require("../../models/qlc/CalendarWorkEmployee")
 const functions = require("../../services/functions")
 
 //lấy tất cả lịch làm việc nhân viên
 exports.getAllCalendarEmp = async(req, res) => {
-    await functions.getDatafind(calEmp, {})
+    try {
+        const company = req.user.data;
+
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error);
+    }
+    await functions.getDatafind(CalendarWorkEmployee, {})
         .then((calendars) => functions.success(res, "Get data successfully", calendars))
         .catch((err) => functions.setError(res, err.message));
 };
@@ -13,7 +20,7 @@ exports.getCalendarById = async(req, res) => {
     try {
         const _id = req.params.id;
         // const companyID = req.user.data.companyID
-        const data = await functions.getDatafindOne(calEmp, { _id: _id });
+        const data = await functions.getDatafindOne(CalendarWorkEmployee, { _id: _id });
         if (data) {
             return await functions.success(res, 'Lấy lich thành công', data);
         };
@@ -32,7 +39,7 @@ exports.getAllCalendarEmpByCom = async(req, res) => {
         await functions.setError(res, 'thiếu dữ liệu công ty')
     } else {
 
-        const data = await calEmp.find({ companyID: companyID }).select("calendarID ")
+        const data = await CalendarWorkEmployee.find({ companyID: companyID }).select("calendarID ")
         if (!data) {
             return functions.setError(res, "không tìm thấy lịch làm việc cuẩ công ty")
         } else {
@@ -42,7 +49,7 @@ exports.getAllCalendarEmpByCom = async(req, res) => {
 }
 
 //tạo danh sách cho nhân viên cho lịch làm việc
-exports.createCalEmp = async(req, res) => {
+exports.createCalendarWorkEmployee = async(req, res) => {
     // const email = req.user.data.email;
     const { idQLC, companyID, calendarID, timeApply, Detail, shiftID } = req.body;
     if (!idQLC) {
@@ -60,14 +67,14 @@ exports.createCalEmp = async(req, res) => {
     } else if (!timeApply) {
         functions.setError(res, "timeApply required")
     } else {
-        let maxID = await functions.getMaxID(calEmp);
+        let maxID = await functions.getMaxID(CalendarWorkEmployee);
         if (!maxID) {
             maxID = 0
         }
 
 
         const tApply = timeApply != 0 ? new Date(timeApply * 1000) : null
-        const empCal = new calEmp({
+        const empCal = new CalendarWorkEmployee({
             _id: Number(maxID) + 1,
             idQLC: idQLC,
             companyID: companyID,
@@ -108,11 +115,11 @@ exports.editCalendar = async(req, res) => {
 
                 const tApply = timeApply != 0 ? new Date(timeApply * 1000) : null
 
-                const calendar = await functions.getDatafindOne(calEmp, { _id: _id });
+                const calendar = await functions.getDatafindOne(CalendarWorkEmployee, { _id: _id });
                 if (!calendar) {
                     functions.setError(res, "Calendar does not exist");
                 } else {
-                    await functions.getDatafindOneAndUpdate(calEmp, { _id: _id }, {
+                    await functions.getDatafindOneAndUpdate(CalendarWorkEmployee, { _id: _id }, {
                             idQLC: idQLC,
                             companyID: companyID,
                             calendarID: calendarID,
@@ -133,11 +140,11 @@ exports.deleteCalendar = async(req, res) => {
         if (isNaN(_id)) {
             functions.setError(res, "Id must be a number");
         } else {
-            const calendar = await functions.getDatafindOne(calEmp, { _id: _id });
+            const calendar = await functions.getDatafindOne(CalendarWorkEmployee, { _id: _id });
             if (!calendar) {
                 functions.setError(res, "Calendar does not exist");
             } else {
-                await functions.getDataDeleteOne(calEmp, { _id: _id })
+                await functions.getDataDeleteOne(CalendarWorkEmployee, { _id: _id })
                     .then(() => functions.success(res, "Delete calendar successfully", calendar))
                     .catch((err) => functions.setError(res, err.message));
             }
@@ -152,11 +159,11 @@ exports.deleteCompanyCalendar = async(req, res) => {
         } else if (typeof companyID == "number") {
             functions.setError(res, "Company id must be a number");
         } else {
-            const calendars = await functions.getDatafind(calEmp, { companyID: companyID });
+            const calendars = await functions.getDatafind(CalendarWorkEmployee, { companyID: companyID });
             if (!calendars) {
                 await functions.setError(res, "No calendars found in this company");
             } else {
-                await calEmp.deleteMany({ companyID: companyID })
+                await CalendarWorkEmployee.deleteMany({ companyID: companyID })
                     .then(() => functions.success(res, "Calendars deleted successfully", calendars))
                     .catch((err) => functions.setError(res, err.message))
             }
@@ -165,10 +172,10 @@ exports.deleteCompanyCalendar = async(req, res) => {
     //Xóa toàn bộ lịch làm việc của hệ thống
 
 exports.deleteAllCalendars = async(req, res) => {
-    if (!await functions.getMaxID(calEmp)) {
+    if (!await functions.getMaxID(CalendarWorkEmployee)) {
         functions.setError(res, "No Calendar existed")
     } else {
-        calEmp.deleteMany()
+        CalendarWorkEmployee.deleteMany()
             .then(() => functions.success(res, "Delete all calendars successfully"))
             .catch(err => functions.setError(res, err.message))
     }

@@ -2,38 +2,32 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const Feedback = new Schema({
-    id: {//ID danh sách feedback
-        type: Number,
-    },
-    id_user: {
+    id_user: { // ID chat của người phản hồi
         type: Number
     },
-    type_user: {// kieu user
-        type: Number,
-        default : 1
-    },
-    feed_back: {//chi tiet
+    feed_back: {
         type: String
     },
-    rating: {// so sao
+    rating: { // so sao
         type: Number,
+        default: 0
     },
-    create_date: {//thời điểm tao
-        type: String,
-    },
-    app_name: {//
-        type: String,
-        default : "Chamcong365"
-    },
-
-    from_source: { //nguon  'From 1 là từ app, 2 là từ web'
+    create_date: { //thời điểm tao
         type: Number,
-        default : 1
+        default: 0
+    },
+    app_name: { //
+        type: String,
+        default: null
+    },
+    from_source: { //nguon
+        type: Number,
+        default: 1
     },
 }, {
-    collection: 'QLC_Feedback',
+    collection: 'QLC_Feedbacks',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model('QLC_Feedback_customer', Feedback);
+module.exports = mongoose.model('QLC_Feedbacks', Feedback);

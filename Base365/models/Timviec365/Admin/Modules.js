@@ -1,44 +1,26 @@
 const mongoose = require('mongoose');
 const moduleSchema = new mongoose.Schema({
-    _id: {
+    mod_id: {
         type: Number,
         required: true,
     },
-    name: {
-        type: String,
-        default: null
-    },
-    path: {
-        type: String,
-        default: null
-    },
-    listName: {
-        type: String,
-        default: null
-    },
-    listFile: {
-        type: String,
-        default: null
-    },
-    order: {
-        type: String,
-        default: null
-    },
-    help: {
-        type: String,
-        default: null
-    },
-    langID: {
+    mod_name: String,
+    mod_path: String,
+    mod_listname: String,
+    mod_listfile: String,
+    mod_order: String,
+    mod_help: String,
+    lang_id: {
         type: Number,
         default: 1
     },
-    checkLoca: {
+    mod_checkloca: {
         type: Number,
         default: 0
     }
 }, {
-    collection: 'Modules',
+    collection: 'Tv365Modules',
     versionKey: false,
     timestamp: true
 })
-module.exports = mongoose.model("Modules", moduleSchema);
+module.exports = mongoose.model("Tv365Modules", moduleSchema);

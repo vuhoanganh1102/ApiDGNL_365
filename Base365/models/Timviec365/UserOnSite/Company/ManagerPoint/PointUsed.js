@@ -1,45 +1,48 @@
 const mongoose = require('mongoose');
-const pointUsedSchema = new mongoose.Schema({
-    _id: {
+const Tv365PointUsedSchema = new mongoose.Schema({
+    usc_id: {
         type: Number,
+        default: 0
     },
-    uscID: {
+    use_id: {
         type: Number,
-    },
-    useID: {
-        type: Number,
+        default: 0
     },
     point: {
         type: Number,
+        default: 0
     },
     type: {
         type: Number,
+        default: 0
     },
-    typeErr: {
+    type_err: {
         type: Number,
         default: 0
     },
-    noteUV: {
+    note_uv: {
         type: String,
         default: null
     },
-    usedDay: {
-        type: Date,
-        default: Date()
-    },
-    returnPoint: {
-        type: Number,
-    },
-    adminID: {
+    used_day: {
         type: Number,
         default: 0
     },
-    ipUser: {
+    return_point: {
+        type: Number,
+        default: 0
+    },
+    admin_id: {
+        type: Number,
+        default: 0
+    },
+    ip_user: {
         type: String,
+        default: null
     },
 }, {
-    collection: 'PointUsed',
+    collection: 'Tv365PointUsed',
     versionKey: false,
     timestamp: true
 })
-module.exports = mongoose.model("PointUsed", pointUsedSchema);
+module.exports = mongoose.model("Tv365PointUsed", Tv365PointUsedSchema);

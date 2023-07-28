@@ -1,6 +1,6 @@
 //ngành đơn xin việc
 const mongoose = require('mongoose');
-const ApplicationCategorySchema = new mongoose.Schema({
+const CategoryApplicationSchema = new mongoose.Schema({
     _id: {
         type: Number,
         require: true
@@ -11,33 +11,33 @@ const ApplicationCategorySchema = new mongoose.Schema({
     alias: {
         type: String
     },
-    metaH1: {
+    meta_h1: {
         type: String
     },
     content: {
         type: String
     },
-    cId: {
+    cid: {
         type: Number
     },
-    metaTitle: {
+    meta_title: {
         type: String
     },
-    metaKey: {
+    meta_key: {
         type: String
     },
-    metaDes: {
+    meta_des: {
         type: String
     },
-    metaTt: {
+    meta_tt: {
         type: String
     },
     status: {
         type: Number
     }
 }, {
-    collection: 'ApplicationCategory',
+    collection: 'CategoryApplication',
     versionKey: false
 });
 
-module.exports = mongoose.model('ApplicationCategory', ApplicationCategorySchema);
+module.exports = mongoose.model('CategoryApplication', CategoryApplicationSchema);

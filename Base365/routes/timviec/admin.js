@@ -4,8 +4,26 @@ var admin = require('../../controllers/timviec/admin');
 var formData = require('express-form-data');
 const functions = require('../../services/functions');
 
+// api đăng nhập
+router.post('/check/login', formData.parse(), admin.login);
+
 // api lấy dữ liệu modules
-router.post('/getDataModules', admin.getModules);
+router.post('/getModules', formData.parse(), admin.getModules);
+
+// api check quyền truy cập 
+router.post('/check/accessmodule', formData.parse(), admin.accessmodule);
+// api lấy dữ liệu admin qua adm_bophan
+router.post('/getInfoAdminUser', formData.parse(), admin.getInfoAdminUser);
+
+router.post('/translate', admin.translate);
+
+// api lấy dữ liệu admin
+router.post('/infor', formData.parse(), admin.infor);
+router.post('/bophan/list', formData.parse(), admin.bophan_list);
+
+// Công ty
+router.post('/company/listing', formData.parse(), admin.listingCompany);
+
 
 // api đăng ký admin
 router.post('/postNewAdmin', formData.parse(), admin.postAdmin);
@@ -28,26 +46,7 @@ router.post('/updateActive', functions.checkToken, formData.parse(), admin.updat
 // api cập nhập password    
 router.post('/updatePassword', functions.checkToken, formData.parse(), admin.updatePassword);
 
-//login admin
-router.post('/loginAdmin', formData.parse(), admin.loginAdmin);
-
-//thêm mới danh mục
-router.post('/addCategory', functions.checkToken, formData.parse(), admin.addCategory);
-
-//hiển thị danh mục
-router.post('/listCategory', functions.checkToken, formData.parse(), admin.listCategory);
-
-//thêm mới danh mục blog
-router.post('/addCategoryBlog', functions.checkToken, formData.parse(), admin.addCategoryBlog);
-
-//danh sách danh mục blog
-router.post('/listCategoryBlog', functions.checkToken, formData.parse(), admin.listCategoryBlog);
-
-//cập nhật blog
-router.post('/updateCategoryBlog', functions.checkToken, formData.parse(), admin.updateCategoryBlog);
-
-//cập nhật active blog
-router.post('/updateActiveCategoryBlog', functions.checkToken, formData.parse(), admin.updateActiveCategoryBlog);
-
+// luồng ứng viên
+router.post('/uv/list/regis', formData.parse(), admin.candi_register);
 
 module.exports = router;

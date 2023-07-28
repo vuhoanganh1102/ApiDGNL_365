@@ -4,7 +4,7 @@ const vanthu = require('../../../services/vanthu.js');
 const tbl_qlcv_edit = require('../../../models/Vanthu365/tbl_qlcv_edit');
 const folder = 'file_van_ban';
 // danh sách văn bản 
-exports.getListVanBan = async (req, res, next) => {
+exports.getListVanBan = async(req, res, next) => {
     try {
         // khai báo biến
         let key = req.body.key;
@@ -38,10 +38,9 @@ exports.getListVanBan = async (req, res, next) => {
         conditions.cv_type_hd = 0;
         if (type === 1) {
             conditions.cv_type_loai = 1;
-        } else if(type === 2) {
+        } else if (type === 2) {
             conditions.cv_type_loai = 2;
         }
-        console.log(conditions)
         let db_qr = await tbl_qly_congvan.find(conditions).sort({ cv_date: -1 }).skip(skip).limit(limit);
         let count = await tbl_qly_congvan.countDocuments(conditions)
         data.count = count;
@@ -54,7 +53,7 @@ exports.getListVanBan = async (req, res, next) => {
 };
 
 // tạo mới văn bản đến
-exports.createIncomingText = async (req, res, next) => {
+exports.createIncomingText = async(req, res, next) => {
     try {
         let comId = req.comId;
         let name_vbden = req.body.name_vbden;
@@ -90,8 +89,8 @@ exports.createIncomingText = async (req, res, next) => {
         }
 
         if (await !functions.checkNumber(type_gui_vbden) || await !functions.checkNumber(noi_gui_vbden) ||
-            await !functions.checkNumber(use_nhan_vbden) || await !functions.checkNumber(use_luu_vbden)
-            || await !functions.checkNumber(book_vb)) {
+            await !functions.checkNumber(use_nhan_vbden) || await !functions.checkNumber(use_luu_vbden) ||
+            await !functions.checkNumber(book_vb)) {
             return functions.setError(res, 'invalid number', 400)
         }
 
@@ -101,8 +100,8 @@ exports.createIncomingText = async (req, res, next) => {
 
         let _id = await vanthu.getMaxID(tbl_qly_congvan)
 
-        if (name_vbden && so_vbden && type_gui_vbden && text_gui_vbden
-            && date_nhan && text_user_gui_vbden && use_luu_vbden && use_nhan_vbden && trich_yeu_vbden) {
+        if (name_vbden && so_vbden && type_gui_vbden && text_gui_vbden &&
+            date_nhan && text_user_gui_vbden && use_luu_vbden && use_nhan_vbden && trich_yeu_vbden) {
             await tbl_qly_congvan.create({
                 _id,
                 cv_name: name_vbden,
@@ -136,7 +135,7 @@ exports.createIncomingText = async (req, res, next) => {
 };
 
 // sửa văn bản đến
-exports.updateIncomingText = async (req, res, next) => {
+exports.updateIncomingText = async(req, res, next) => {
     try {
         let comId = req.comId;
         let name_vbden = req.body.name_vbden;
@@ -177,8 +176,8 @@ exports.updateIncomingText = async (req, res, next) => {
             await tbl_qly_congvan.findByIdAndUpdate(id, { cv_file })
         }
         if (await !functions.checkNumber(type_gui_vbden) || await !functions.checkNumber(noi_gui_vbden) ||
-            await !functions.checkNumber(use_nhan_vbden) || await !functions.checkNumber(use_luu_vbden)
-            || await !functions.checkNumber(book_vb)) {
+            await !functions.checkNumber(use_nhan_vbden) || await !functions.checkNumber(use_luu_vbden) ||
+            await !functions.checkNumber(book_vb)) {
             return functions.setError(res, 'invalid number', 400)
         }
         if (type_vbden && type_vbden.length !== 0) {
@@ -191,8 +190,8 @@ exports.updateIncomingText = async (req, res, next) => {
             return functions.setError(res, 'invalid date', 400)
         }
 
-        if (name_vbden && so_vbden && type_gui_vbden && text_gui_vbden
-            && date_nhan && text_user_gui_vbden && use_luu_vbden && use_nhan_vbden && trich_yeu_vbden) {
+        if (name_vbden && so_vbden && type_gui_vbden && text_gui_vbden &&
+            date_nhan && text_user_gui_vbden && use_luu_vbden && use_nhan_vbden && trich_yeu_vbden) {
             if (name_vbden != check.cv_name) noi_dung += 'Tên văn bản,'
             if (type_vbden != check.cv_kieu) noi_dung += 'Kiểu văn bản,'
             if (so_vbden != check.cv_so) noi_dung += 'Số văn bản,'
@@ -201,7 +200,7 @@ exports.updateIncomingText = async (req, res, next) => {
             if (text_gui_vbden != check.cv_soan_ngoai) noi_dung += 'Nơi gửi ngoài,'
             if (user_gui_vbden != check.cv_user_soan) noi_dung += 'Người gửi nội bộ,'
             if (text_user_gui_vbden != check.cv_name_soan) noi_dung += 'Người gửi ngoài,'
-            if (date_nhan.getTime() /1000 != check.cv_date) noi_dung += 'Ngày nhận,'
+            if (date_nhan.getTime() / 1000 != check.cv_date) noi_dung += 'Ngày nhận,'
             if (use_nhan_vbden != check.cv_nhan_noibo) noi_dung += 'Nơi nhận văn bản,'
             if (use_luu_vbden != check.cv_user_save) noi_dung += 'Người lưu trữ,'
             if (trich_yeu_vbden != check.cv_trich_yeu) noi_dung += 'Trích yếu,'
@@ -214,8 +213,7 @@ exports.updateIncomingText = async (req, res, next) => {
                 if (useId == 0) {
                     type_user = 1;
                     users = comId;
-                }
-                else {
+                } else {
                     type_user = 2;
                     users = useId;
                 }
@@ -263,7 +261,7 @@ exports.updateIncomingText = async (req, res, next) => {
 };
 
 //chức năng xoá, khôi phục văn bản, active hợp đồng
-exports.synthesisFunction = async (req, res, next) => {
+exports.synthesisFunction = async(req, res, next) => {
     try {
         let id = Number(req.body.id);
         let action = req.body.action;
@@ -283,8 +281,7 @@ exports.synthesisFunction = async (req, res, next) => {
             if (useId == 0) {
                 type_user_xoa = 1;
                 user_xoa = comId;
-            }
-            else {
+            } else {
                 type_user_xoa = 2;
                 user_xoa = useId;
             }
@@ -315,8 +312,7 @@ exports.synthesisFunction = async (req, res, next) => {
             if (useId == 0) {
                 type_user_kp = 1;
                 user_kp = comId;
-            }
-            else {
+            } else {
                 type_user_kp = 2;
                 user_kp = useId;
             }
@@ -325,8 +321,11 @@ exports.synthesisFunction = async (req, res, next) => {
 
                 if (!check) return functions.setError(res, 'Không tìm thấy văn bản', 400)
                 await tbl_qly_congvan.findByIdAndUpdate(listId[i], {
-                    cv_type_xoa: 0, cv_type_kp: 1, cv_type_user_kp: type_user_kp,
-                    cv_user_kp: user_kp, cv_time_kp: new Date().getTime() / 1000,
+                    cv_type_xoa: 0,
+                    cv_type_kp: 1,
+                    cv_type_user_kp: type_user_kp,
+                    cv_user_kp: user_kp,
+                    cv_time_kp: new Date().getTime() / 1000,
                 })
             }
             return functions.success(res, 'recovery success')
@@ -350,7 +349,7 @@ exports.synthesisFunction = async (req, res, next) => {
 };
 
 // xem chi tiết (chung)
-exports.getDetail = async (req, res, next) => {
+exports.getDetail = async(req, res, next) => {
     try {
         let data = [];
         let id = Number(req.body.id);
@@ -359,8 +358,8 @@ exports.getDetail = async (req, res, next) => {
             return functions.setError(res, 'missing data input', 400)
         }
         data = await tbl_qly_congvan.findOne({ _id: id, cv_usc_id: comId, cv_type_xoa: 0 })
-        if (data.cv_file && data.cv_file !=="") {
-            data.cv_file = await vanthu.getLinkFile('file_van_ban',data.cv_time_created,data.cv_file)
+        if (data.cv_file && data.cv_file !== "") {
+            data.cv_file = await vanthu.getLinkFile('file_van_ban', data.cv_time_created, data.cv_file)
         }
         return functions.success(res, 'delete success', { data })
     } catch (error) {
@@ -370,7 +369,7 @@ exports.getDetail = async (req, res, next) => {
 };
 
 // tạo mới văn bản đi
-exports.createSendText = async (req, res, next) => {
+exports.createSendText = async(req, res, next) => {
     try {
         let comId = req.comId;
         let name_vbdi = req.body.name_vbdi;
@@ -404,8 +403,8 @@ exports.createSendText = async (req, res, next) => {
         let cv_file = '';
         if (name_vbdi && so_vbdi && date_guidi && use_luu_vbdi && use_ky_vbdi && trich_yeu_vbdi) {
             if (await !functions.checkNumber(dvst_vbdi) || await !functions.checkNumber(nst_vbdi) ||
-                await !functions.checkNumber(use_luu_vbdi) || await !functions.checkNumber(use_ky_vbdi)
-                || await !functions.checkNumber(book_vb)) {
+                await !functions.checkNumber(use_luu_vbdi) || await !functions.checkNumber(use_ky_vbdi) ||
+                await !functions.checkNumber(book_vb)) {
                 return functions.setError(res, 'invalid number', 400)
             }
             if (file && file.length > 0) {
@@ -416,7 +415,7 @@ exports.createSendText = async (req, res, next) => {
                     if (!checkFile) {
                         return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
                     }
-                    let fileName = await vanthu.uploadfile(folder, file[i],cv_time_created);
+                    let fileName = await vanthu.uploadfile(folder, file[i], cv_time_created);
                     if (fileName) {
                         cv_file += fileName;
                     }
@@ -459,7 +458,7 @@ exports.createSendText = async (req, res, next) => {
 };
 
 // sửa văn bản đi
-exports.updateSendText = async (req, res, next) => {
+exports.updateSendText = async(req, res, next) => {
     try {
         let comId = req.comId;
         let name_vbdi = req.body.name_vbdi;
@@ -498,8 +497,8 @@ exports.updateSendText = async (req, res, next) => {
         let cv_file = '';
         if (name_vbdi && so_vbdi && date_guidi && use_luu_vbdi && use_ky_vbdi && trich_yeu_vbdi) {
             if (await !functions.checkNumber(dvst_vbdi) || await !functions.checkNumber(nst_vbdi) ||
-                await !functions.checkNumber(use_luu_vbdi) || await !functions.checkNumber(use_ky_vbdi)
-                || await !functions.checkNumber(book_vb)) {
+                await !functions.checkNumber(use_luu_vbdi) || await !functions.checkNumber(use_ky_vbdi) ||
+                await !functions.checkNumber(book_vb)) {
                 return functions.setError(res, 'invalid number', 400)
             }
             if (functions.checkDate(date_guidi) === false) {
@@ -545,8 +544,7 @@ exports.updateSendText = async (req, res, next) => {
                 if (useId == 0) {
                     type_user = 1;
                     users = comId;
-                }
-                else {
+                } else {
                     type_user = 2;
                     users = useId;
                 }
@@ -570,7 +568,7 @@ exports.updateSendText = async (req, res, next) => {
                 cv_phong_soan: dvst_vbdi,
                 cv_user_soan: nst_vbdi,
                 cv_id_book: book_vb,
-                cv_date: date_guidi.getTime() / 1000 ,
+                cv_date: date_guidi.getTime() / 1000,
                 cv_user_save: use_luu_vbdi,
                 cv_user_ky: use_ky_vbdi,
                 cv_type_nhan: nhanvb_dep,

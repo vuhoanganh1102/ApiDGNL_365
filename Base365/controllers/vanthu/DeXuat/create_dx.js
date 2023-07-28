@@ -1,6 +1,6 @@
 const De_Xuat = require('../../../models/Vanthu/de_xuat');
 const functions = require('../../../services/vanthu');
-const multer = require('multer');
+// const multer = require('multer');
 const path = require('path');
 const thongBao = require('../../../models/Vanthu365/tl_thong_bao');
 const ThongBao = require("../../../models/Vanthu365/tl_thong_bao")
@@ -11,142 +11,142 @@ const fnc = require('../../../services/qlc/functions')
 const { log } = require('console');
 
 //đề xuất xin nghỉ ok
-exports.de_xuat_xin_nghi = async (req, res) => {
-    try {
-        let {
-            name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
-            id_user_duyet,
-            id_user_theo_doi,
-            type_time,
-            noi_dung,
-            loai_np,
-            ly_do
-        } = req.body;
-        let id_user = "";
-        let com_id = "";
-        let name_user = "";
-        if (req.user.data.type == 2) {
-            id_user = req.user.data.idQLC
-            com_id = req.user.data.com_id
-            name_user = req.user.data.userName
-        } else {
-            return functions.setError(res, 'không có quyền truy cập', 400);
-        }
-
-        ;
-        let link_download = [];
-        if (req.files.fileKem) {
-            let file_kem = req.files.fileKem
-            let listFile = [];
-            if (Array.isArray(file_kem)) {
-                // Người dùng gửi nhiều file hoặc một file duy nhất
-                file_kem.forEach(file => {
-                    functions.uploadFileVanThu(id_user, file);
-                    listFile.push(file.name);
-                });
+exports.de_xuat_xin_nghi = async(req, res) => {
+        try {
+            let {
+                name_dx,
+                kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
+                id_user_duyet,
+                id_user_theo_doi,
+                type_time,
+                noi_dung,
+                loai_np,
+                ly_do
+            } = req.body;
+            let id_user = "";
+            let com_id = "";
+            let name_user = "";
+            if (req.user.data.type == 2) {
+                id_user = req.user.data.idQLC
+                com_id = req.user.data.com_id
+                name_user = req.user.data.userName
             } else {
-                // Người dùng chỉ gửi một file
-                functions.uploadFileVanThu(id_user, file_kem);
-                listFile.push(file_kem.name);
+                return functions.setError(res, 'không có quyền truy cập', 400);
             }
-            link_download = listFile
 
-        }
-        if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
-            return functions.setError(res, 'không thể thực thi', 400);
-        } else {
-            let listLyDo = JSON.parse(noi_dung).nghi_phep
-            const data = []; // Mảng chứa thông tin của từng ngày nghỉ
-
-            for (let i = 0; i < listLyDo.length; i++) {
-                let bd_nghi = listLyDo[i][0];
-                let kt_nghi = listLyDo[i][1];
-                let ca_nghi = listLyDo[i][2];
-                if (bd_nghi && kt_nghi) {
-                    let dates = await functions.getDatesFromRange(bd_nghi, kt_nghi);
-                    dates.forEach((date) => {
-                        let formattedDate = functions.formatDate(date);
-                        data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
+            ;
+            let link_download = [];
+            if (req.files.fileKem) {
+                let file_kem = req.files.fileKem
+                let listFile = [];
+                if (Array.isArray(file_kem)) {
+                    // Người dùng gửi nhiều file hoặc một file duy nhất
+                    file_kem.forEach(file => {
+                        functions.uploadFileVanThu(id_user, file);
+                        listFile.push(file.name);
                     });
-                } else if (bd_nghi) {
-
-                    let formattedDate = functions.formatDate(bd_nghi);
-                    data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
+                } else {
+                    // Người dùng chỉ gửi một file
+                    functions.uploadFileVanThu(id_user, file_kem);
+                    listFile.push(file_kem.name);
                 }
+                link_download = listFile
+
             }
-            let maxID = 0;
-            const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-            if (de_xuat) {
-                maxID = de_xuat._id;
-            }
-            const new_de_xuat = new De_Xuat({
-                _id: (maxID + 1),
-                name_dx: name_dx,
-                type_dx: 1,
-                noi_dung: {
-                    nghi_phep: {
-                        nd: data,
-                        loai_np: loai_np,
-                        ly_do: ly_do
+            if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+                return functions.setError(res, 'không thể thực thi', 400);
+            } else {
+                let listLyDo = JSON.parse(noi_dung).nghi_phep
+                const data = []; // Mảng chứa thông tin của từng ngày nghỉ
+
+                for (let i = 0; i < listLyDo.length; i++) {
+                    let bd_nghi = listLyDo[i][0];
+                    let kt_nghi = listLyDo[i][1];
+                    let ca_nghi = listLyDo[i][2];
+                    if (bd_nghi && kt_nghi) {
+                        let dates = await functions.getDatesFromRange(bd_nghi, kt_nghi);
+                        dates.forEach((date) => {
+                            let formattedDate = functions.formatDate(date);
+                            data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
+                        });
+                    } else if (bd_nghi) {
+
+                        let formattedDate = functions.formatDate(bd_nghi);
+                        data.push({ ca_nghi, bd_nghi: formattedDate, kt_nghi: formattedDate });
                     }
-                },
-                type_time: type_time,
-                name_user: name_user,
-                id_user: id_user,
-                com_id: com_id,
-                id_user_duyet: id_user_duyet,
-                id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download.map(file => ({ file })),
-                kieu_duyet: 0,
-                time_create: Math.floor(Date.now() / 1000),
-            });
-
-            let saveDX = await new_de_xuat.save();
-            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
-            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, saveDX.file_kem);
-            // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
-
-            const tb = await ThongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
-
-            let idTB = 0;
-            if (tb) {
-                idTB = Number(tb._id) + 1;
-            }
-            // Tiếp tục tạo các bản ghi mới với idTB mới tăng dần
-            const id_user_nhan_arr = id_user_duyet.split(',');
-            let createTBs = [];
-
-            for (let i = 0; i < id_user_nhan_arr.length; i++) {
-                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
-                let createTB = new ThongBao({
-                    _id: idTB + i,
+                }
+                let maxID = 0;
+                const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+                if (de_xuat) {
+                    maxID = de_xuat._id;
+                }
+                const new_de_xuat = new De_Xuat({
+                    _id: (maxID + 1),
+                    name_dx: name_dx,
+                    type_dx: 1,
+                    noi_dung: {
+                        nghi_phep: {
+                            nd: data,
+                            loai_np: loai_np,
+                            ly_do: ly_do
+                        }
+                    },
+                    type_time: type_time,
+                    name_user: name_user,
                     id_user: id_user,
-                    id_user_nhan: id_user_nhan,
-                    id_van_ban: saveDX._id,
-                    type: 2,
-                    view: 0,
-                    created_date: Math.floor(Date.now() / 1000)
+                    com_id: com_id,
+                    id_user_duyet: id_user_duyet,
+                    id_user_theo_doi: id_user_theo_doi,
+                    file_kem: link_download.map(file => ({ file })),
+                    kieu_duyet: 0,
+                    time_create: Math.floor(Date.now() / 1000),
                 });
 
-                createTBs.push(createTB);
-            }
+                let saveDX = await new_de_xuat.save();
+                let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'
+                functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, saveDX.file_kem);
+                // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
 
-            // Chèn các bản ghi mới vào collection ThongBao
-            let saveCreateTb = await ThongBao.insertMany(createTBs);
-            return functions.success(res, 'get data success', { saveDX, saveCreateTb });
-        };
-    } catch (e) {
-        console.log(e)
-        return functions.setError(res, e.message)
+                const tb = await ThongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+
+                let idTB = 0;
+                if (tb) {
+                    idTB = Number(tb._id) + 1;
+                }
+                // Tiếp tục tạo các bản ghi mới với idTB mới tăng dần
+                const id_user_nhan_arr = id_user_duyet.split(',');
+                let createTBs = [];
+
+                for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                    const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+                    let createTB = new ThongBao({
+                        _id: idTB + i,
+                        id_user: id_user,
+                        id_user_nhan: id_user_nhan,
+                        id_van_ban: saveDX._id,
+                        type: 2,
+                        view: 0,
+                        created_date: Math.floor(Date.now() / 1000)
+                    });
+
+                    createTBs.push(createTB);
+                }
+
+                // Chèn các bản ghi mới vào collection ThongBao
+                let saveCreateTb = await ThongBao.insertMany(createTBs);
+                return functions.success(res, 'get data success', { saveDX, saveCreateTb });
+            };
+        } catch (e) {
+            console.log(e)
+            return functions.setError(res, e.message)
+        }
     }
-}
-//đề xuất bổ nhiệm 
-exports.de_xuat_xin_bo_nhiem = async (req, res) => {
+    //đề xuất bổ nhiệm 
+exports.de_xuat_xin_bo_nhiem = async(req, res) => {
     try {
         let {
             name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
@@ -258,11 +258,11 @@ exports.de_xuat_xin_bo_nhiem = async (req, res) => {
 
 
 //đề xuất cấp phát tài sản
-exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
+exports.de_xuat_xin_cap_phat_tai_san = async(req, res) => {
     try {
         let {
             name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
@@ -366,11 +366,11 @@ exports.de_xuat_xin_cap_phat_tai_san = async (req, res) => {
 }
 
 //đề xuất đổi ca 
-exports.de_xuat_doi_ca = async (req, res) => {
+exports.de_xuat_doi_ca = async(req, res) => {
     try {
         let {
             name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
@@ -480,11 +480,11 @@ exports.de_xuat_doi_ca = async (req, res) => {
 
 
 //đề xuất luân chuyển công tác 
-exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
+exports.de_xuat_luan_chuyen_cong_tac = async(req, res) => {
     try {
         let {
             name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
@@ -592,11 +592,11 @@ exports.de_xuat_luan_chuyen_cong_tac = async (req, res) => {
 }
 
 //đề xuất tăng lương 
-exports.de_xuat_tang_luong = async (req, res) => {
+exports.de_xuat_tang_luong = async(req, res) => {
     try {
         let {
             name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
@@ -705,11 +705,11 @@ exports.de_xuat_tang_luong = async (req, res) => {
 }
 
 //đè xuất tham gia dự ấn 
-exports.de_xuat_tham_gia_du_an = async (req, res) => {
+exports.de_xuat_tham_gia_du_an = async(req, res) => {
     try {
         let {
             name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
@@ -817,11 +817,11 @@ exports.de_xuat_tham_gia_du_an = async (req, res) => {
 }
 
 //đề xuất xin tạm ứng lương
-exports.de_xuat_xin_tam_ung = async (req, res) => {
+exports.de_xuat_xin_tam_ung = async(req, res) => {
     try {
         let {
             name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
@@ -928,11 +928,11 @@ exports.de_xuat_xin_tam_ung = async (req, res) => {
 }
 
 //đề xuất thôi việc 
-exports.de_xuat_xin_thoi_Viec = async (req, res) => {
+exports.de_xuat_xin_thoi_Viec = async(req, res) => {
     try {
         let {
             name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
@@ -1000,7 +1000,7 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
                 time_create: Math.floor(Date.now() / 1000)
             });
             let saveDX = await new_de_xuat.save();
-            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx'// đường dẫn chi tiết đề xuất
+            let link = 'https://cdn.timviec365.vn/vanthu/chi_tietdx' // đường dẫn chi tiết đề xuất
             functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, saveDX.file_kem);
             // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
             const tb = await thongBao.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
@@ -1039,11 +1039,11 @@ exports.de_xuat_xin_thoi_Viec = async (req, res) => {
 }
 
 
-exports.lich_lam_viec = async (req, res) => {
+exports.lich_lam_viec = async(req, res) => {
     try {
         let {
             name_dx,
-            kieu_duyet,// 0-kiểm duyệt lần lượt hay đồng thời 
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
             id_user_duyet,
             id_user_theo_doi,
             ly_do,
@@ -1132,7 +1132,7 @@ exports.lich_lam_viec = async (req, res) => {
     }
 }
 
-exports.dxCong = async (req, res) => {
+exports.dxCong = async(req, res) => {
     try {
         let {
             name_dx,
@@ -1245,7 +1245,7 @@ exports.dxCong = async (req, res) => {
     }
 }
 
-exports.dxCoSoVatChat = async (req, res) => {
+exports.dxCoSoVatChat = async(req, res) => {
     try {
         let {
             name_dx,
@@ -1354,7 +1354,7 @@ exports.dxCoSoVatChat = async (req, res) => {
     }
 }
 
-exports.dxDangKiSuDungXe = async (req, res) => {
+exports.dxDangKiSuDungXe = async(req, res) => {
     try {
         let {
             name_dx,
@@ -1469,7 +1469,7 @@ exports.dxDangKiSuDungXe = async (req, res) => {
     }
 }
 
-exports.dxHoaHong = async (req, res) => {
+exports.dxHoaHong = async(req, res) => {
     try {
         let {
             name_dx,
@@ -1585,7 +1585,7 @@ exports.dxHoaHong = async (req, res) => {
     }
 }
 
-exports.dxKhieuNai = async (req, res) => {
+exports.dxKhieuNai = async(req, res) => {
     try {
         let {
             name_dx,
@@ -1694,7 +1694,7 @@ exports.dxKhieuNai = async (req, res) => {
     }
 }
 
-exports.dxPhongHop = async (req, res) => {
+exports.dxPhongHop = async(req, res) => {
     try {
         let {
             name_dx,
@@ -1807,7 +1807,7 @@ exports.dxPhongHop = async (req, res) => {
     }
 }
 
-exports.dxTangCa = async (req, res) => {
+exports.dxTangCa = async(req, res) => {
     try {
         let {
             name_dx,
@@ -1919,7 +1919,7 @@ exports.dxTangCa = async (req, res) => {
     }
 }
 
-exports.dxThaiSan = async (req, res) => {
+exports.dxThaiSan = async(req, res) => {
     try {
         let {
             name_dx,
@@ -2030,7 +2030,7 @@ exports.dxThaiSan = async (req, res) => {
     }
 }
 
-exports.dxThanhToan = async (req, res) => {
+exports.dxThanhToan = async(req, res) => {
     try {
         let {
             name_dx,
@@ -2142,7 +2142,7 @@ exports.dxThanhToan = async (req, res) => {
     }
 }
 
-exports.dxThuongPhat = async (req, res) => {
+exports.dxThuongPhat = async(req, res) => {
     try {
         let {
             name_dx,
@@ -2264,7 +2264,7 @@ exports.dxThuongPhat = async (req, res) => {
 }
 
 
-exports.showadd = async (req, res) => {
+exports.showadd = async(req, res) => {
     try {
         if (req.user.data.type !== 2) {
             return functions.setError(res, 'không có quyền truy cập', 400);
@@ -2311,8 +2311,3 @@ exports.showadd = async (req, res) => {
         return functions.setError(res, error.message);
     }
 };
-
-
-
-
-

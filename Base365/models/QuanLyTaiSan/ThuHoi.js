@@ -50,7 +50,8 @@ const model_ThuHoi = new mongoose.Schema({
         type: Number
     },
     type_thuhoi: {//0: thu hồi 1 ts; 1: thu hồi nhiều tài sản',
-        type: Number
+        type: Number,
+        default : 0
     },
     thuhoi_trangthai: {//1: đồng ý thu hồi, 2: từ chối thu hồi,3:nhận bàn giao;4: từ chối bàn giao, 5: đồng ý nhận thu hồi; 6 từ chối nhận ts thu hồi',
         type: Number

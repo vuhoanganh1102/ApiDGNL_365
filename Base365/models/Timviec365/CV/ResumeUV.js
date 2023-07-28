@@ -1,31 +1,35 @@
-// sơ yếu lý lịch ứng viên
+//Thư ứng viên
 const mongoose = require('mongoose');
 const ResumeUVSchema = new mongoose.Schema({
-    _id: {
-        type: Number,
-        require: true
-    },
-    userId: {
+    id: {
         type: Number
     },
-    hoSoId: {
+    uid: {
+        //id người tạo thư
+        type: Number
+    },
+    tid: {
         type: Number
     },
     lang: {
+        // ngôn ngữ thư
         type: String
     },
     html: {
+        //nội dung thư
         type: String
     },
-    nameImg: {
+    name_img: {
+        //tên ảnh
         type: String
     },
     status: {
+        //trang thái
         type: Number
     }
 }, {
     collection: 'ResumeUV',
     versionKey: false
-});
+})
 
-module.exports = mongoose.model('ResumeUV', ResumeUVSchema);
+module.exports = mongoose.model("ResumeUV", ResumeUVSchema);

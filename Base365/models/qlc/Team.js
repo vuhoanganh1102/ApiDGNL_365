@@ -10,25 +10,20 @@ const TeamSchema = new Schema({
     //ID phòng ban của tổ
     dep_id: {
         type: Number,
+        required: true
     },
-
     com_id: {
-        type : Number,
+        type: Number,
+        required: true
     },
     //Tên của tổ
-    teamName: {
+    team_name: {
         type: String,
-    },
-    //Ngày thành lập tổ
-    createdAt: {
-        type: Date,
-        default: Date.now()
-    },
-    //Sắp xếp theo thứ tự
-    teamOrder: {
-        type: Number
-    },
-
+    }
+}, {
+    collection: 'QLC_Teams',
+    versionKey: false,
+    timestamp: true
 })
 
 module.exports = mongoose.model('QLC_Teams', TeamSchema)

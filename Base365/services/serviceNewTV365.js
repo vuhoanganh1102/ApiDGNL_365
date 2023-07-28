@@ -29,18 +29,24 @@ exports.foundKeywordHot = async(title) => {
 }
 
 exports.recognition_tag_tin = async(cateID, title, description, require) => {
-    let takeData = await axios({
-        method: "post",
-        url: "http://43.239.223.10:5001/recognition_tag_tin",
-        data: {
-            key_cat_lq: cateID,
-            new_title: title,
-            new_mota: description,
-            new_yeucau: require
-        },
-        headers: { "Content-Type": "multipart/form-data" }
-    });
-    return takeData.data.data.items;
+    let result;
+    try {
+        let takeData = await axios({
+            method: "post",
+            url: "http://43.239.223.10:5001/recognition_tag_tin",
+            data: {
+                key_cat_lq: cateID,
+                new_title: title,
+                new_mota: description,
+                new_yeucau: require
+            },
+            headers: { "Content-Type": "multipart/form-data" }
+        });
+        result = takeData.data.data.items;
+    } catch (error) {
+        result = "";
+    }
+    return result;
 }
 
 exports.getMoney = async(typeNewMoney, money, minValue, maxValue) => {
