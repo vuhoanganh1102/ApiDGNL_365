@@ -9,6 +9,7 @@ const functions = require("../../../services/functions");
 
 router.post('/list',functions.checkToken,formData.parse(),CustomerRoutes.showKH)
 
+
 // Api tìm kiếm trùng
 
 router.post('/searchSame',functions.checkToken,formData.parse(),CustomerRoutes.searchSame)
@@ -18,16 +19,14 @@ router.post('/searchSame',functions.checkToken,formData.parse(),CustomerRoutes.s
 router.post('/addCustomer',functions.checkToken,formData.parse(),CustomerRoutes.addCustomer);
 
 //Api xoa khach hang
-router.post('/deleteKH',functions.checkToken,formData.parse(),CustomerRoutes.DeleteKH)
 
+router.post('/deleteKH',functions.checkToken,formData.parse(),CustomerRoutes.DeleteKH)
 
 //Api thêm mới kết nối Api
 router.post("/addApiKH",functions.checkToken,formData.parse(),CustomerRoutes.addConnectCs) 
 
-
 //Api sửa kết nối Api
 router.post('/editApi',functions.checkToken,formData.parse(),CustomerRoutes.editConnectCs)
-
 
 //Api hiển thị Api
 router.post('/showApi',functions.checkToken,formData.parse(),CustomerRoutes.ShowConnectCs)

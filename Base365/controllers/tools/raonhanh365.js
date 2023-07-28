@@ -30,12 +30,10 @@ const TblTags = require('../../models/Raonhanh365/TblTag');
 const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
 const loveNew = require('../../models/Raonhanh365/LoveNews');
-const CateVl = require('../../models/Raonhanh365/CateVl.js');
-const PhuongXa = require('../../models/Raonhanh365/PhuongXa');
-const NetworkOperator = require('../../models/Raonhanh365/NetworkOperator');
+
 
 // danh mục sản phẩm
-exports.toolCategory = async (req, res, next) => {
+exports.toolCategory = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -81,7 +79,7 @@ exports.toolCategory = async (req, res, next) => {
     }
 };
 
-exports.toolNewRN = async (req, res, next) => {
+exports.toolNewRN = async(req, res, next) => {
     try {
         let result = true;
         let page = 1;
@@ -139,7 +137,7 @@ exports.toolNewRN = async (req, res, next) => {
                     const images = data[i].new_image.split(";").map((image, index) => {
                         const parts = image.split("/");
 
-                        const filename = parts[parts.length - 1];
+                        const filename = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/' + parts[parts.length - 2] + '/' + data[i].new_id + '/' + parts[parts.length - 1];
 
                         return {
                             nameImg: filename
@@ -156,7 +154,6 @@ exports.toolNewRN = async (req, res, next) => {
                             money: data[i].new_money,
                             endvalue: data[i].gia_kt,
                             downPayment: data[i].datcoc,
-                            dc_unit:data[i].dc_unit,
                             until: data[i].new_unit,
                             cateID: data[i].new_cate_id,
                             type: data[i].new_type,
@@ -168,7 +165,6 @@ exports.toolNewRN = async (req, res, next) => {
                             detailCategory: data[i].new_ctiet_dmuc,
                             createTime: new Date(data[i].new_create_time * 1000),
                             updateTime: new Date(data[i].new_update_time * 1000),
-                            refresh_new_home:data[i].refresh_new_home,
                             phone: data[i].new_phone,
                             email: data[i].new_email,
                             address: data[i].dia_chi,
@@ -179,7 +175,6 @@ exports.toolNewRN = async (req, res, next) => {
                             electroniceDevice: {
                                 warranty: data[i].new_baohanh
                             },
-                            warranty:data[i].new_baohanh,
                             free: data[i].chotang_mphi,
                             sold: data[i].da_ban,
                             timeSell: timeSell,
@@ -225,7 +220,7 @@ exports.toolNewRN = async (req, res, next) => {
     }
 }
 
-exports.updateNewDescription = async (req, res, next) => {
+exports.updateNewDescription = async(req, res, next) => {
     try {
         let result = true;
         let page = 1;
@@ -245,11 +240,25 @@ exports.updateNewDescription = async (req, res, next) => {
                     if (await fnc.checkNumber(data[i].dien_tich) === false) {
                         continue
                     }
+
+                    let new_file_dthau = null;
+                    let new_file_nophs = null;
+                    let new_file_chidan = null;
+                    if (data[i].new_file_dthau && data[i].new_file_dthau != 0) {
+                        new_file_dthau = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_dthau.split('/')[1];
+                    }
+                    if (data[i].new_file_nophs && data[i].new_file_nophs != 0) {
+                        new_file_nophs = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_nophs.split('/')[1];
+
+                    }
+                    if (data[i].new_file_chidan && data[i].new_file_chidan != 0) {
+                        new_file_chidan = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_chidan.split('/')[1];
+
+                    }
+
                     if (post != null) {
                         await New.updateOne({ _id: idnew }, {
                             $set: {
-                                'chat_lieu':data[i].chat_lieu,
-                                'the_tich': data[i].the_tich,
                                 'han_su_dung': data[i].han_su_dung,
                                 'poster': data[i].canhan_moigioi,
                                 'description': data[i].new_description,
@@ -286,7 +295,7 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'vehicle.so_cho': data[i].so_cho,
                                 'vehicle.trong_tai': data[i].trong_tai,
                                 'vehicle.loai_linhphu_kien': data[i].loai_linhphu_kien,
-                                'vehicle.so_km_da_di': data[i].so_km_da_di,
+                                'vehicle.km': data[i].so_km_da_di,
                                 'realEstate.ten_toa_nha': data[i].ten_toa_nha,
                                 'realEstate.td_macanho': data[i].td_macanho,
                                 'realEstate.ten_phan_khu': data[i].ten_phan_khu,
@@ -311,11 +320,6 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'realEstate.kv_thanhpho': data[i].kv_thanhpho,
                                 'realEstate.kv_quanhuyen': data[i].kv_quanhuyen,
                                 'realEstate.kv_phuongxa': data[i].kv_phuongxa,
-                                'realEstate.can_ban_mua': data[i].can_ban_mua,
-                                'realEstate.dia_chi': data[i].dia_chi,
-                                'realEstate.huong_ban_cong': data[i].huong_ban_cong,
-                                'realEstate.cangoc': data[i].cangoc,
-
                                 'ship.product': data[i].loai_hinh_sp,
                                 'ship.timeStart': data[i].tgian_bd,
                                 'ship.timeEnd': data[i].tgian_kt,
@@ -365,11 +369,11 @@ exports.updateNewDescription = async (req, res, next) => {
                                 tgian_bd: data[i].tgian_bd,
                                 tgian_kt: data[i].tgian_kt,
                                 'bidding.new_job_kind': data[i].new_job_kind,
-                                'bidding.new_file_dthau': data[i].new_file_dthau,
+                                'bidding.new_file_dthau': new_file_dthau,
                                 'bidding.noidung_nhs': data[i].noidung_nhs,
-                                'bidding.new_file_nophs': data[i].new_file_nophs,
+                                'bidding.new_file_nophs': new_file_nophs,
                                 'bidding.noidung_chidan': data[i].noidung_chidan,
-                                'bidding.new_file_chidan': data[i].new_file_chidan,
+                                'bidding.new_file_chidan': new_file_chidan,
                                 'bidding.donvi_thau': data[i].donvi_thau,
                                 'bidding.phi_duthau': data[i].phi_duthau,
                                 'bidding.file_mota': data[i].file_mota,
@@ -392,14 +396,14 @@ exports.updateNewDescription = async (req, res, next) => {
 }
 
 
-exports.toolCateDetail = async (req, res, next) => {
+exports.toolCateDetail = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
         do {
             const form = new FormData();
             form.append('page', page);
-            let cate = await Category.find({ parentId: 0 })
+
             //1. nhóm sp
             // const response = await axios.post('https://raonhanh365.vn/api/select_ds_nhomsp.php', form, {
             //     headers: {
@@ -408,7 +412,7 @@ exports.toolCateDetail = async (req, res, next) => {
             // });
 
             // let data = response.data.data.items;
-            // if (data.length !== 0) {
+            // if (data.length) {
 
             //     for (let i = 0; i < data.length; i++) {
             //         const newItem = {
@@ -527,10 +531,7 @@ exports.toolCateDetail = async (req, res, next) => {
             //             name: data[i].noi_xuatxu,
             //             parent: data[i].id_parents,
             //         };
-
-            //             await CateDetail.findOneAndUpdate({ _id: cate[i].id_danhmuc }, { $addToSet: { origin: newItem } }, { upsert: true }, )
-
-
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { origin: newItem } }, { upsert: true }, )
             //     }
             //     page++;
             // } else {
@@ -649,7 +650,7 @@ exports.toolCateDetail = async (req, res, next) => {
             // }
 
             // 12. mau sac
-            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_mausac.php', form, {
+            // const response = await axios.post(' https://raonhanh365.vn/api/select_tbl_mausac.php', form, {
             //     headers: {
             //         'Content-Type': 'multipart/form-data',
             //     },
@@ -663,9 +664,7 @@ exports.toolCateDetail = async (req, res, next) => {
             //             name: data[i].mau_sac,
             //             parent: data[i].id_parents,
             //         };
-            //         for(let j = 0; j < cate.length; j++) {
-            //             await CateDetail.findOneAndUpdate({ _id: cate[j]._id }, { $addToSet: { colors: newItem } }, { upsert: true }, )
-            //         }      
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_dm }, { $addToSet: { colors: newItem } }, { upsert: true }, )
             //     }
             //     page++;
             // } else {
@@ -673,31 +672,26 @@ exports.toolCateDetail = async (req, res, next) => {
             // }
 
             // 13.hãng
-            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_hang.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            let data = response.data.data.items;
-            if (data.length) {
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_hang.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
 
-                for (let i = 0; i < data.length; i++) {
-                    const newItem = {
-                        _id: data[i].id,
-                        name: data[i].ten_hang,
-                        parent: data[i].id_parent,
-                    };
-                    if (data[i].id_danhmuc == 0) {
-                        await CateDetail.findOneAndUpdate({ _id: 22 }, { $addToSet: { brand: newItem } }, { upsert: true },)
-                    } else {
-                        await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true },)
-                    }
-
-                }
-                page++;
-            } else {
-                result = false;
-            }
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].ten_hang,
+            //             parent: data[i].id_parent,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true }, )
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
 
             //14. dòng ( dòng của hãng)
             // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
@@ -767,70 +761,64 @@ exports.toolCateDetail = async (req, res, next) => {
 
 
             //17. loại chung
-            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data',
-            //     },
-            // });
-            // let data = response.data.data.items;
-            // if (data.length) {
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            let data = response.data.data.items;
+            if (data.length) {
 
-            //     for (let i = 0; i < data.length; i++) {
-            //         const newItem = {
-            //             _id: data[i].id,
-            //             name: data[i].ten_loai,
-            //             parent: data[i].id_cha,
-            //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true }, )
-            //     }
-            //     page++;
-            // } else {
-            //     result = false;
-            // }
+                for (let i = 0; i < data.length; i++) {
+                    const newItem = {
+                        _id: data[i].id,
+                        name: data[i].ten_loai,
+                        parent: data[i].id_cha,
+                    };
+                    await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true }, )
+                }
+                page++;
+            } else {
+                result = false;
+            }
 
             console.log(page);
         } while (result);
 
         return fnc.success(res, "Thành công");
     } catch (error) {
-        console.error(error);
-        return fnc.setError(res, error.message,)
+        return fnc.setError(res, error.message, )
     }
 };
 
-exports.updateInfoSell = async (req, res, next) => {
+exports.updateInfoSell = async(req, res, next) => {
     try {
         let result = true;
         let page = 1;
         do {
-            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/select_thongtinbanhang.php', { page: page, pb: 2 })
+            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 2 })
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    console.log("🚀 ~ file: raonhanh365.js:807 ~ exports.updateInfoSell=async ~ data:", data)
 
-
-                    // if(data[i].giatri_khuyenmai === 'undefined') continue;
-                    // console.log("🚀 ~ file: raonhanh365.js:808 ~ exports.updateInfoSell=async ~ giatri_khuyenmai:", data[i].giatri_khuyenmai)
-                    // let post = await fnc.getDatafindOne(New, { _id: data[i].id_new });
-                    // if (post != null) {
-                    //     await New.updateOne({ _id: data[i].id_new }, {
-                    //         $set: {
-                    //             'infoSell.groupType': data[i].nhom_phan_loai,
-                    //             'infoSell.classify': data[i].phan_loai,
-                    //             'infoSell.numberWarehouses': data[i].so_luong_kho,
-                    //             'infoSell.promotionType': data[i].loai_khuyenmai,
-                    //             'infoSell.promotionValue': data[i].giatri_khuyenmai,
-                    //             'infoSell.loai': data[i].loai,
-                    //             'infoSell.transport': data[i].van_chuyen,
-                    //             'infoSell.transportFee': data[i].phi_van_chuyen,
-                    //             'infoSell.productValue': data[i].gia_sanpham_xt,
-                    //             'infoSell.untilMoney': data[i].donvi_tien_xt,
-                    //             'infoSell.untilTranpost': data[i].donvi_tien_vc,
-                    //         }
-                    //     });
-                    //     console.log(data[i].id_new)
-                    // }
+                    let post = await fnc.getDatafindOne(New, { _id: data[i].id_new });
+                    if (post != null) {
+                        await New.updateOne({ _id: data[i].id_new }, {
+                            $set: {
+                                'infoSell.groupType': data[i].nhom_phan_loai,
+                                'infoSell.classify': data[i].phan_loai,
+                                'infoSell.numberWarehouses': data[i].so_luong_kho,
+                                'infoSell.promotionType': data[i].loai_khuyenmai,
+                                'infoSell.promotionValue': data[i].giatri_khuyenmai,
+                                'infoSell.transport': data[i].van_chuyen,
+                                'infoSell.transportFee': data[i].phi_van_chuyen,
+                                'infoSell.productValue': data[i].gia_sanpham_xt,
+                                'infoSell.untilMoney': data[i].donvi_tien_xt,
+                                'infoSell.untilTranpost': data[i].donvi_tien_vc,
+                            }
+                        });
+                        console.log(data[i].id_new)
+                    }
                 }
                 page += 1;
             } else result = false;
@@ -844,7 +832,7 @@ exports.updateInfoSell = async (req, res, next) => {
 }
 
 // bang gia
-exports.toolPriceList = async (req, res, next) => {
+exports.toolPriceList = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -889,9 +877,8 @@ exports.toolPriceList = async (req, res, next) => {
 };
 
 // city
-exports.toolCity = async (req, res, next) => {
+exports.toolCity = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         do {
@@ -929,9 +916,8 @@ exports.toolCity = async (req, res, next) => {
 };
 
 
-exports.toolLike = async (req, res, next) => {
+exports.toolLike = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         do {
@@ -974,9 +960,8 @@ exports.toolLike = async (req, res, next) => {
     }
 };
 //lich su nap the
-exports.toolHistory = async (req, res, next) => {
+exports.toolHistory = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         do {
@@ -1026,9 +1011,8 @@ exports.toolHistory = async (req, res, next) => {
     }
 };
 //tin ung tuyen
-exports.toolApplyNew = async (req, res, next) => {
+exports.toolApplyNew = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         do {
@@ -1066,7 +1050,7 @@ exports.toolApplyNew = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
-exports.toolComment = async (req, res, next) => {
+exports.toolComment = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1082,7 +1066,6 @@ exports.toolComment = async (req, res, next) => {
             let data = response.data.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    console.log(new Date(data[i].cm_time * 1000))
                     const cmt = new Comments({
                         _id: data[i].cm_id,
                         url: data[i].cm_url,
@@ -1105,6 +1088,7 @@ exports.toolComment = async (req, res, next) => {
             } else {
                 result = false;
             }
+            console.log(page);
         } while (result);
 
         return fnc.success(res, "Thành công");
@@ -1114,7 +1098,7 @@ exports.toolComment = async (req, res, next) => {
 };
 
 //tag index
-exports.toolTagsIndex = async (req, res, next) => {
+exports.toolTagsIndex = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1164,9 +1148,8 @@ exports.toolTagsIndex = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
-exports.toolApplyNew = async (req, res, next) => {
+exports.toolApplyNew = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         do {
@@ -1204,7 +1187,7 @@ exports.toolApplyNew = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
-exports.toolComment = async (req, res, next) => {
+exports.toolComment = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1251,48 +1234,47 @@ exports.toolComment = async (req, res, next) => {
     }
 };
 
-// exports.updateInfoSell = async (req, res, next) => {
-//     try {
-//         let result = true;
-//         let page = 1;
-//         do {
-//             let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 2 })
-//             let data = listItems.data.items;
-//             if (data.length > 0) {
-//                 for (let i = 0; i < data.length; i++) {
+exports.updateInfoSell = async(req, res, next) => {
+    try {
+        let result = true;
+        let page = 1;
+        do {
+            let listItems = await fnc.getDataAxios('https://raonhanh365.vn/api/list_new.php', { page: page, pb: 2 })
+            let data = listItems.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
 
-//                     let post = await fnc.getDatafindOne(New, { _id: data[i].id_new });
-//                     if (post != null) {
-//                         await New.updateOne({ _id: data[i].id_new }, {
-//                             $set: {
-//                                 'infoSell.groupType': data[i].nhom_phan_loai,
-//                                 'infoSell.classify': data[i].phan_loai,
-//                                 'infoSell.numberWarehouses': data[i].so_luong_kho,
-//                                 'infoSell.promotionType': data[i].loai_khuyenmai,
-//                                 'infoSell.promotionValue': data[i].giatri_khuyenmai,
-//                                 'infoSell.transport': data[i].van_chuyen,
-//                                 'infoSell.transportFee': data[i].phi_van_chuyen,
-//                                 'infoSell.productValue': data[i].gia_sanpham_xt,
-//                                 'infoSell.untilMoney': data[i].donvi_tien_xt,
-//                                 'infoSell.untilTranpost': data[i].donvi_tien_vc,
-//                             }
-//                         });
-//                         console.log(data[i].id_new)
-//                     }
-//                 }
-//                 page += 1;
-//             } else result = false;
-//         } while (result)
-//         await fnc.success(res, 'thành công');
+                    let post = await fnc.getDatafindOne(New, { _id: data[i].id_new });
+                    if (post != null) {
+                        await New.updateOne({ _id: data[i].id_new }, {
+                            $set: {
+                                'infoSell.groupType': data[i].nhom_phan_loai,
+                                'infoSell.classify': data[i].phan_loai,
+                                'infoSell.numberWarehouses': data[i].so_luong_kho,
+                                'infoSell.promotionType': data[i].loai_khuyenmai,
+                                'infoSell.promotionValue': data[i].giatri_khuyenmai,
+                                'infoSell.transport': data[i].van_chuyen,
+                                'infoSell.transportFee': data[i].phi_van_chuyen,
+                                'infoSell.productValue': data[i].gia_sanpham_xt,
+                                'infoSell.untilMoney': data[i].donvi_tien_xt,
+                                'infoSell.untilTranpost': data[i].donvi_tien_vc,
+                            }
+                        });
+                    }
+                }
+                page += 1;
+            } else result = false;
+        } while (result)
+        await fnc.success(res, 'thành công');
 
-//     } catch (err) {
-//         console.log(err);
-//         return fnc.setError(res, err)
-//     }
-// }
+    } catch (err) {
+        console.log(err);
+        return fnc.setError(res, err)
+    }
+}
 
 // danh mục sản phẩm
-exports.toolPriceList = async (req, res, next) => {
+exports.toolPriceList = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1336,9 +1318,8 @@ exports.toolPriceList = async (req, res, next) => {
     }
 };
 
-exports.toolTagsIndex = async (req, res, next) => {
+exports.toolTagsIndex = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         do {
@@ -1382,9 +1363,8 @@ exports.toolTagsIndex = async (req, res, next) => {
 };
 
 
-exports.toolAdminUserRight = async (req, res, next) => {
+exports.toolAdminUserRight = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1424,9 +1404,8 @@ exports.toolAdminUserRight = async (req, res, next) => {
 };
 
 
-exports.toolBidding = async (req, res, next) => {
+exports.toolBidding = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1476,9 +1455,8 @@ exports.toolBidding = async (req, res, next) => {
 };
 
 
-exports.toolAdminMenuOrder = async (req, res, next) => {
+exports.toolAdminMenuOrder = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1515,9 +1493,8 @@ exports.toolAdminMenuOrder = async (req, res, next) => {
     }
 };
 
-exports.toolModule = async (req, res, next) => {
+exports.toolModule = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1559,9 +1536,8 @@ exports.toolModule = async (req, res, next) => {
     }
 };
 
-exports.toolOrder = async (req, res, next) => {
+exports.toolOrder = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1632,9 +1608,8 @@ exports.toolOrder = async (req, res, next) => {
     }
 };
 
-exports.toolEvaluate = async (req, res, next) => {
+exports.toolEvaluate = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1680,9 +1655,8 @@ exports.toolEvaluate = async (req, res, next) => {
     }
 };
 
-exports.toolCart = async (req, res, next) => {
+exports.toolCart = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1725,9 +1699,8 @@ exports.toolCart = async (req, res, next) => {
     }
 };
 
-exports.toolTags = async (req, res, next) => {
+exports.toolTags = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1746,7 +1719,7 @@ exports.toolTags = async (req, res, next) => {
                     const tags = new Tags({
                         _id: data[i].tags_id,
                         name: data[i].ten_tags,
-                        parent: data[i].id_parent,
+                        parentId: data[i].id_parent,
                         typeTags: data[i].type_tags,
                         cateId: data[i].id_danhmuc,
                         type: data[i].type
@@ -1766,9 +1739,8 @@ exports.toolTags = async (req, res, next) => {
     }
 };
 
-exports.toolContact = async (req, res, next) => {
+exports.toolContact = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1809,9 +1781,8 @@ exports.toolContact = async (req, res, next) => {
     }
 };
 
-exports.toolRegisterFail = async (req, res, next) => {
+exports.toolRegisterFail = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1853,9 +1824,8 @@ exports.toolRegisterFail = async (req, res, next) => {
     }
 };
 
-exports.toolSearch = async (req, res, next) => {
+exports.toolSearch = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1894,9 +1864,8 @@ exports.toolSearch = async (req, res, next) => {
     }
 };
 
-exports.toolTblTags = async (req, res, next) => {
+exports.toolTblTags = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1932,9 +1901,8 @@ exports.toolTblTags = async (req, res, next) => {
     }
 };
 
-exports.toolPushNewsTime = async (req, res, next) => {
+exports.toolPushNewsTime = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -1970,9 +1938,8 @@ exports.toolPushNewsTime = async (req, res, next) => {
 };
 
 
-exports.toolBlog = async (req, res, next) => {
+exports.toolBlog = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -2040,7 +2007,7 @@ exports.toolBlog = async (req, res, next) => {
     }
 }
 
-exports.toolAdminUser = async (req, res, next) => {
+exports.toolAdminUser = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2095,9 +2062,8 @@ exports.toolAdminUser = async (req, res, next) => {
     }
 };
 
-exports.toolAdminTranslate = async (req, res, next) => {
+exports.toolAdminTranslate = async(req, res, next) => {
     try {
-        console.log(".....")
         let page = 1;
         let result = true;
         let id = 1;
@@ -2135,7 +2101,7 @@ exports.toolAdminTranslate = async (req, res, next) => {
     }
 };
 
-exports.toolBaoHanh = async (req, res, next) => {
+exports.toolBaoHanh = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2174,7 +2140,7 @@ exports.toolBaoHanh = async (req, res, next) => {
     }
 }
 
-exports.toolLoveNew = async (req, res, next) => {
+exports.toolLoveNew = async(req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2207,106 +2173,6 @@ exports.toolLoveNew = async (req, res, next) => {
             console.log(page);
         } while (result);
 
-        return fnc.success(res, "Thành công");
-    } catch (error) {
-        return fnc.setError(res, error.message);
-    }
-}
-
-exports.toolCateVl = async (req, res, next) => {
-    try {
-        let page = 1;
-        let result = true;
-        let id = 1;
-        do {
-            const form = new FormData();
-            form.append('page', page);
-            const response = await axios.get('https://raonhanh365.vn/api/select_category_vl.php', {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            let data = response.data.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-                    const loveNew1 = new CateVl({
-                        _id: data[i].cat_id,
-                        name: data[i].cat_name,
-                        lq: data[i].cat_lq,
-                        ut: data[i].cat_ut,
-                        active: data[i].cat_active,
-                    });
-                    await loveNew1.save();
-                }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page);
-        } while (result);
-
-        return fnc.success(res, "Thành công");
-    } catch (error) {
-        return fnc.setError(res, error.message);
-    }
-}
-exports.toolPhuongXa = async (req, res, next) => {
-    try {
-        let page = 1;
-        let result = true;
-        let id = 1;
-        do {
-            const form = new FormData();
-            form.append('page', page);
-            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_phuong_xa.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            let data = response.data.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-                    const loveNew1 = new PhuongXa({
-                        _id: data[i].id,
-                        name: data[i].name,
-                        prefix: data[i].prefix,
-                        province_id: data[i].province_id,
-                        district_id: data[i].district_id,
-                    });
-                    await loveNew1.save();
-                }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page);
-        } while (result);
-
-        return fnc.success(res, "Thành công");
-    } catch (error) {
-        return fnc.setError(res, error.message);
-    }
-}
-
-exports.toolbanggiacknt  =async (req, res, next) => {
-    try {
-        
-            const response = await axios.get('https://raonhanh365.vn/api/select_ds_banggiacknt.php');
-            let data = response.data.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-                    const loveNew1 = new NetworkOperator({
-                        _id: data[i].id,
-                        nameBefore: data[i].nha_mang,
-                        nameAfter: data[i].ten_nhmang,
-                        discount: data[i].chiet_khau,
-                        active: data[i].bg_active,
-                    });
-                    await loveNew1.save();
-                }
-            }
         return fnc.success(res, "Thành công");
     } catch (error) {
         return fnc.setError(res, error.message);

@@ -6,26 +6,26 @@ const multer = require('multer')
 
 const cv = require('../../controllers/timviec/cv');
 
-
-// CV & hồ sơ
-// router.post('/insertDataCV', formData.parse(), cv.insertDataCV);
 // tìm tất cả mẫu CV
-router.post('/getListCV', formData.parse(), cv.getListCV);
+router.post('/getList', formData.parse(), functions.checkTokenV2, cv.getList);
 
 // danh sách ngành cv
 router.post('/getNganhCV', formData.parse(), cv.getNganhCV);
 
-// tìm theo điều kiện
-router.post('/getListCVByCondition', formData.parse(), cv.getListCVByCondition);
+// danh sách ngành cv
+router.post('/list/cate', formData.parse(), cv.listCvByCate);
 
 // xem trước cv
-router.post('/previewCV/:_id', formData.parse(), cv.previewCV);
+router.post('/preview', formData.parse(), cv.previewCV);
 
 // chi tiết cv 
-router.post('/detailCV', formData.parse(), cv.detailCV);
+router.post('/detail', functions.checkTokenV2, formData.parse(), cv.detail);
+
+// chi tiết cv 
+router.post('/like', functions.checkToken, formData.parse(), cv.like);
 
 // lưu và tải cv
-// router.post('/saveCV', functions.checkToken, formData.parse(), functions.decrypt, cv.saveCV);
+router.post('/saveCV', functions.checkToken, formData.parse(), cv.saveCV);
 
 // xem mẫu cv viết sẵn
 router.post('/viewAvailableCV/:cateId', formData.parse(), cv.viewAvailable);
@@ -52,5 +52,9 @@ router.post('/updateNganhCV/:_id', functions.checkToken, formData.parse(), cv.up
 
 // xóa ngành cv vào danh sách NganhCV
 router.post('/deleteNganhCV/:_id', functions.checkToken, formData.parse(), cv.deleteNganhCV);
+router.post('/uploadAvatarCV', formData.parse(), cv.uploadAvatarCV);
 
+router.post('/module', formData.parse(), cv.module);
+
+router.post('/cv365', cv.cv365);
 module.exports = router;

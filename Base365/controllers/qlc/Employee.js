@@ -1,18 +1,20 @@
 const { isNull } = require('util');
-const Users = require('../../models/Users')
-const fnc = require('../../services/qlc/functions')
-const md5 = require('md5');
-const functions = require("../../services/functions")
-
-const Deparment = require("../../models/qlc/Deparment");
 const { deflateSync } = require('zlib');
-const { log } = require('console');
+
+const fnc = require('../../services/qlc/functions')
+const functions = require("../../services/functions")
+const md5 = require('md5');
+
+const Users = require('../../models/Users');
+const Deparment = require("../../models/qlc/Deparment");
+const TimeSheet = require("../../models/qlc/TimeSheets");
 
 //đăng kí tài khoản nhân viên 
 exports.register = async(req, res) => {
     try {
         const { userName, emailContact, phoneTK, password, com_id, address, position_id, dep_id, phone, avatarUser, role, group_id, birthday, gender, married, experience, startWorkingTime, education, otp, team_id } = req.body;
-        const createdAt = new Date()
+        const createdAt = new Date();
+
         if ((userName && password && com_id && address && phoneTK) !== undefined) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
@@ -30,7 +32,7 @@ exports.register = async(req, res) => {
                         type: 2,
                         password: md5(password),
                         address: address,
-                        createdAt: Date.parse(createdAt) / 1000,
+                        createdAt: functions.getTimeNow(),
                         fromWeb: "quanlychung",
                         chat365_secret: Buffer.from(_id.toString()).toString('base64'),
                         role: 0,
@@ -47,10 +49,11 @@ exports.register = async(req, res) => {
                         "inForPerson.account.gender": gender,
                         "inForPerson.account.married": married,
                         "inForPerson.account.experience": experience,
-                        "inForPerson.employee.startWorkingTime": startWorkingTime,
+                        // "inForPerson.employee.start_working_time": Date.parse(startWorkingTime) / 1000,
                         "inForPerson.account.education": education,
                     })
-                    await user.save()
+                    await user.save();
+
                     const token = await functions.createToken({
                         _id: user._id,
                         idTimViec365: user.idTimViec365,
@@ -66,7 +69,7 @@ exports.register = async(req, res) => {
                         dep_id: user.inForPerson.employee.dep_id,
                         group_id: user.inForPerson.employee.group_id,
                         team_id: user.inForPerson.employee.team_id,
-                        startWorkingTime: user.inForPerson.employee.startWorkingTime,
+                        // startWorkingTime: user.inForPerson.employee.startWorkingTime,
                         married: user.inForPerson.account.married,
                         experience: user.inForPerson.account.experience,
                         education: user.inForPerson.account.education,
@@ -76,7 +79,7 @@ exports.register = async(req, res) => {
                         access_token: token,
                         refresh_token: refreshToken,
                     }
-                    functions.success(res, "tạo tài khoản thành công", { user, data })
+                    return functions.success(res, "tạo tài khoản thành công", { user, data })
                 } else {
                     return functions.setError(res, 'SDT đã tồn tại');
                 }
@@ -176,8 +179,12 @@ exports.login = async(req, res, next) => {
             }
 
             if (user) {
-                let com = ""
-                let com_id = user.type === 1 ? com = user.idQLC : com = user.inForPerson.employee.com_id
+                let com_id = 0;
+                if (user.type === 1) {
+                    com_id = user.idQLC;
+                } else if (user.type == 2 && user.inForPerson != null) {
+                    com_id = user.inForPerson.employee.com_id;
+                }
                 const token = await functions.createToken({
                     _id: user._id,
                     idTimViec365: user.idTimViec365,
@@ -187,8 +194,8 @@ exports.login = async(req, res, next) => {
                     phoneTK: user.phoneTK,
                     createdAt: user.createdAt,
                     type: user.type,
+                    com_id: com_id,
                     userName: user.userName,
-                    com_id: com_id
                 }, "1d")
                 const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                 let data = {
@@ -197,7 +204,8 @@ exports.login = async(req, res, next) => {
                     com_info: {
                         com_id: user._id,
                         com_email: user.email,
-                    }
+                    },
+                    authentic: user.authentic
                 }
                 data.type = type;
                 return functions.success(res, 'Đăng nhập thành công', { data });
@@ -235,8 +243,12 @@ exports.login = async(req, res, next) => {
                     }
                 }
                 if (user) {
-                    let com = ""
-                    let com_id = user.type === 1 ? com = user.idQLC : com = user.inForPerson.employee.com_id
+                    let com_id = 0;
+                    if (user.type === 1) {
+                        com_id = user.idQLC;
+                    } else if (user.inForPerson && user.type == 2) {
+                        com_id = user.inForPerson.employee.com_id;
+                    }
                     const token = await functions.createToken({
                         _id: user._id,
                         idTimViec365: user.idTimViec365,
@@ -246,17 +258,14 @@ exports.login = async(req, res, next) => {
                         phoneTK: user.phoneTK,
                         createdAt: user.createdAt,
                         type: user.type,
-                        userName: user.userName,
                         com_id: com_id,
+                        userName: user.userName,
                     }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {
                         access_token: token,
                         refresh_token: refreshToken,
-                        // com_info: {
-                        //     com_id: user._id,
-                        //     com_email: user.email,
-                        // }
+                        authentic: user.authentic,
                     }
                     data.type = user.type;
                     return functions.success(res, 'Đăng nhập thành công', { data });
@@ -301,48 +310,49 @@ exports.updatePasswordbyToken = async(req, res, next) => {
     }
 }
 exports.updatePasswordbyInput = async(req, res, next) => {
-        try {
-            let phoneTK = req.body.phoneTK
-            let email = req.body.email
-            let password = req.body.password;
-            if (phoneTK && password) {
-                if (password.length < 6) {
-                    return functions.setError(res, 'Password quá ngắn')
-                }
-                let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 2 })
-                if (!checkPass) {
-                    await Users.updateOne({ phoneTK: phoneTK, type: 2 }, {
-                        $set: {
-                            password: md5(password),
-                        }
-                    });
-                    return functions.success(res, 'cập nhập thành công')
-                }
-                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ');
-            } else if (email && password) {
-                if (password.length < 6) {
-                    return functions.setError(res, 'Password quá ngắn')
-                }
-                let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 2 })
-                if (!checkPass) {
-                    await Users.updateOne({ email: email, type: 2 }, {
-                        $set: {
-                            password: md5(password),
-                        }
-                    });
-                    return functions.success(res, 'cập nhập thành công')
-                }
-                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ');
-            } else {
-                return functions.setError(res, ' điền thiếu trường ')
-            };
+    try {
+        let phoneTK = req.body.phoneTK
+        let email = req.body.email
+        let password = req.body.password;
+        if (phoneTK && password) {
+            if (password.length < 6) {
+                return functions.setError(res, 'Password quá ngắn')
+            }
+            let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 2 })
+            if (!checkPass) {
+                await Users.updateOne({ phoneTK: phoneTK, type: 2 }, {
+                    $set: {
+                        password: md5(password),
+                    }
+                });
+                return functions.success(res, 'cập nhập thành công')
+            }
+            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ');
+        } else if (email && password) {
+            if (password.length < 6) {
+                return functions.setError(res, 'Password quá ngắn')
+            }
+            let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 2 })
+            if (!checkPass) {
+                await Users.updateOne({ email: email, type: 2 }, {
+                    $set: {
+                        password: md5(password),
+                    }
+                });
+                return functions.success(res, 'cập nhập thành công')
+            }
+            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ');
+        } else {
+            return functions.setError(res, ' điền thiếu trường ')
+        };
 
-        } catch (error) {
-            return functions.setError(res, error.message)
-        }
+    } catch (error) {
+        return functions.setError(res, error.message)
     }
-    // hàm cập nhập thông tin nhan vien
+}
 
+
+// hàm cập nhập thông tin nhan vien
 exports.updateInfoEmployee = async(req, res, next) => {
     try {
         let idQLC = req.user.data.idQLC;
@@ -372,15 +382,14 @@ exports.updateInfoEmployee = async(req, res, next) => {
                         "inForPerson.employee.dep_id": dep_id,
                         address: address,
                         otp: otp,
-                        authentic: null || 0,
                         avatarUser: avatarUser,
-                        updatedAt: Date.parse(updatedAt) / 1000,
+                        updatedAt: functions.getTimeNow(),
                         "inForPerson.employee.group_id": group_id,
                         "inForPerson.account.birthday": Date.parse(birthday) / 1000,
                         "inForPerson.account.gender": gender,
                         "inForPerson.account.married": married,
                         "inForPerson.account.experience": experience,
-                        "inForPerson.employee.startWorkingTime": startWorkingTime,
+                        "inForPerson.employee.start_working_time": startWorkingTime,
                         "inForPerson.account.education": education,
                     }
                 })
@@ -473,8 +482,14 @@ exports.updateInfoEmployee = async(req, res, next) => {
 // show info
 exports.info = async(req, res) => {
     try {
-        const idQLC = req.user.data.idQLC
-            // const com_id = req.user.data.com_id
+        const user = req.user.data;
+        let idQLC = user.idQLC;
+        const com_id = user.com_id;
+
+        if (req.body.idQLC && user.type == 1) {
+            idQLC = Number(req.body.idQLC);
+        }
+
         const data = await Users.aggregate([{
                 $match: { idQLC: idQLC, type: 2 }
             },
@@ -483,11 +498,9 @@ exports.info = async(req, res) => {
                     from: "QLC_Deparments",
                     localField: "inForPerson.employee.dep_id",
                     foreignField: "dep_id",
-                    as: "nameDeparment"
+                    as: "deparment"
                 }
             },
-            { $unwind: "$nameDeparment" },
-
             {
                 $project: {
                     "userName": "$userName",
@@ -508,23 +521,32 @@ exports.info = async(req, res) => {
                     "education": "$inForPerson.account.education",
                     "emailContact": "$emailContact",
                     "idQLC": "$idQLC",
-                    "nameDeparment": "$nameDeparment.dep_name",
+                    "nameDeparment": "$deparment.dep_name",
                 }
-            },
-
-        ])
-        if (data) {
+            }
+        ]);
+        if (data.length > 0) {
             const user = data[0];
-            const avatar = await fnc.createLinkFileEmpQLC(data[0].idQLC, data[0].avatarUser)
-            let companyName = await Users.findOne({ idQLC: data[0].com_id, type: 1 }).select('userName').lean();
-            if (companyName) data[0].companyName = companyName
-            if (avatar) data[0].avatar = avatar
+            let companyName = await Users.findOne({ idQLC: user.com_id, type: 1 }).select('userName').lean();
+            if (companyName) user.companyName = companyName;
 
-            return functions.success(res, "lấy thành công", { data })
+            user.avatarUser = await fnc.createLinkFileEmpQLC(user.idQLC, user.avatarUser);
+            user.nameDeparment = user.nameDeparment.toString();
+
+            return functions.success(res, "lấy thành công", { data: user })
         }
         return functions.setError(res, " không tìm thấy nhân viên ")
 
     } catch (e) {
         return functions.setError(res, e.message)
+    }
+}
+
+exports.home = async(req, res) => {
+    try {
+        const user = req.user.data;
+
+    } catch (error) {
+        return functions.setError(res, err.message);
     }
 }

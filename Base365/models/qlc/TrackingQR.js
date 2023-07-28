@@ -53,4 +53,4 @@ const TrackingQR = new Schema({
     },
 })
 
-module.exports = mongoose.model('QLC_TrackingQR', TrackingQR)
+module.exports = mongoose.model('TrackingQR', TrackingQR)

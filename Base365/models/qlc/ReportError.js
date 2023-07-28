@@ -2,33 +2,34 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ReportError = new Schema({
-    id_report: {//ID danh sách bao loi
+    user_id: { // kieu user
         type: Number,
+        default: 0
     },
-    user_id: {
-        type: Number
-    },
-    device_id: {//ID thiet bi
-        type: String
-    },
-    type_user: {// kieu user
-        type: Number
-    },
-    detail_error: {//chi tiet loi
-        type: String
-    },
-    gallery_image_error: {//anh
+    device_id: {
         type: String,
+        default: null
     },
-
-    time_create: {//thời điểm tao
-        type: Date,
-        default : new Date()
+    detail_error: {
+        type: String,
+        default: null
     },
-    from_source: { //nguon
+    gallery_image_error: {
+        type: String,
+        default: null
+    },
+    time_create: {
         type: Number,
-        default : 'quanlichung'
+        default: 0
     },
+    from_source: {
+        type: Number,
+        default: 1
+    },
+}, {
+    collection: 'QLC_ReportError',
+    versionKey: false,
+    timestamp: true
 })
 
 module.exports = mongoose.model('QLC_ReportError', ReportError);

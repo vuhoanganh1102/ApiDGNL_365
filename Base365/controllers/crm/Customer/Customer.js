@@ -618,7 +618,7 @@ exports.addConnectCs = async (req, res) => {
           created_at: createDate
         })
         let saveApi = await createApi.save();
-        return res.status(200).json(saveApi);
+        res.status(200).json(saveApi);
       }
       else if (req.user.data.type == 1) {
         let createApi = await new ConnectApi({
@@ -633,7 +633,7 @@ exports.addConnectCs = async (req, res) => {
           created_at: createDate
         })
         let saveApi = await createApi.save();
-        return res.status(200).json(saveApi);
+        res.status(200).json(saveApi);
       }
     }
 
@@ -698,20 +698,9 @@ exports.editConnectCs = async (req, res) => {
 // hiển thị Api kết nối
 exports.ShowConnectCs = async (req, res) => {
   try {
-    let comId ='';
-    if(req.user.data.type == 1){
-      comId = req.user.data.idQLC
-      const check = await ConnectApi.findOne({ company_id: comId })
-   return res.status(200).json(check)
-    }
-    if(req.user.data.type == 2){
-      comId = req.user.data.inForPerson.employee.com_id
+    let comId = req.user.data.inForPerson.employee.com_id
     const check = await ConnectApi.findOne({ company_id: comId })
-   return res.status(200).json(check)
-    }
-     else{
-      return res.status(400).json({error : " bạn không đủ quyền"})
-     }
+    res.status(200).json(check)
   } catch (error) {
     return functions.setError(res, error)
   }

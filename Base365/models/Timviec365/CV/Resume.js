@@ -19,40 +19,25 @@ const ResumeSchema = new mongoose.Schema({
     view: {
         type: Number
     },
-    favourite: {
+    love: {
         type: Number
     },
-    downLoad: {
+    download: {
         type: Number
     },
-    htmlVi: {
+    html: {
         type: String
     },
-    htmlEn: {
+    colors: {
         type: String
-    },
-    htmlJp: {
-        type: String
-    },
-    htmlCn: {
-        type: String
-    },
-    htmlKr: {
-        type: String
-    },
-    color: {
-        type: String
-    },
-    cateId: {
-        type: Number
     },
     status: {
         type: Number
     },
-    vip: {
+    cate_id: {
         type: Number
     },
-    langId: {
+    vip: {
         type: Number
     },
 }, {

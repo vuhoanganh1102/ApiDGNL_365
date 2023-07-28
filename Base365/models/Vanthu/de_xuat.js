@@ -17,63 +17,62 @@ const Vanthu_de_xuat = new Schema({
     },
     noi_dung: {
         nghi_phep: {
-            nd: [
-                {
-                bd_nghi: {//ngày bắt đầu nghỉ
-                        type: String,
-                        default: null,
-                       
-                    },
+            nd: [{
+                bd_nghi: { //ngày bắt đầu nghỉ
+                    type: String,
+                    default: null,
+
+                },
                 kt_nghi: { // Ngày kết thúc nghỉ
-                        type: String,
-                        default: null,
-                       
-                    },
+                    type: String,
+                    default: null,
+
+                },
                 ca_nghi: {
-                        type: Number,
-                        default: null,
-                       
+                    type: Number,
+                    default: null,
+
                 }
-        }],
+            }],
             loai_np: { // loại nghỉ phép
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
-                type: String,// Lý do chung của mọi loại đề xuất
+                type: String, // Lý do chung của mọi loại đề xuất
                 default: null,
-               
+
             },
         },
 
         doi_ca: {
-            ngay_can_doi: {//chọn ngày ca cần đổi
+            ngay_can_doi: { //chọn ngày ca cần đổi
                 type: Number,
                 default: null,
-               
+
             },
             ca_can_doi: {
                 type: Number,
                 default: null,
-               
+
             },
 
-            ngay_muon_doi: {//chọn ngày ca được đỏi
+            ngay_muon_doi: { //chọn ngày ca được đỏi
                 type: Number,
                 default: null,
-               
+
 
             },
             ca_muon_doi: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String, // Lý do chung của mọi loại đề xuất
                 default: null,
-               
+
 
             },
 
@@ -85,17 +84,17 @@ const Vanthu_de_xuat = new Schema({
             ngay_tam_ung: { //Ngày tạm ứng
                 type: Number,
                 default: null,
-               
+
             },
             sotien_tam_ung: { //Số tiền tạm ứng
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               // Lý do chung của mọi loại đề xuất
+                // Lý do chung của mọi loại đề xuất
             },
         },
 
@@ -104,17 +103,17 @@ const Vanthu_de_xuat = new Schema({
             danh_sach_tai_san: {
                 type: String,
                 default: null,
-               
+
             },
             so_luong_tai_san: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               // Lý do chung của mọi loại đề xuất
+                // Lý do chung của mọi loại đề xuất
             },
         },
 
@@ -123,12 +122,12 @@ const Vanthu_de_xuat = new Schema({
             ngaybatdau_tv: {
                 type: Date,
                 default: null,
-               
+
             },
             ca_bdnghi: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
@@ -140,59 +139,59 @@ const Vanthu_de_xuat = new Schema({
 
         //Đề xuất tăng lương
         tang_luong: {
-            mucluong_ht: {//mức lương hiện tại
+            mucluong_ht: { //mức lương hiện tại
                 type: Number,
                 default: null,
-               
+
             },
             mucluong_tang: {
                 type: Number,
                 default: null,
-               
+
             },
             date_tang_luong: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String, // Lý do chung của mọi loại đề xuất
                 default: null,
-               
+
             },
         },
 
         //Đề xuất bổ nhiệm
         bo_nhiem: {
-            thanhviendc_bn: {//thanhv vien duoc bo nhiẹm
+            thanhviendc_bn: { //thanhv vien duoc bo nhiẹm
                 type: Number,
                 default: null,
-               
+
             },
-            name_ph_bn: {// ten phong ban 
+            name_ph_bn: { // ten phong ban 
                 type: String,
                 default: null,
-               
+
             },
             chucvu_hientai: {
                 type: Number,
                 default: null,
-               
+
             },
-            chucvu_dx_bn: {//chức vụ đề xuất bổ nhiệm 
+            chucvu_dx_bn: { //chức vụ đề xuất bổ nhiệm 
                 type: String,
                 default: null,
-               
+
             },
             phong_ban_moi: {
                 type: String,
                 default: null,
-               
+
             },
             ly_do: {
-                type: String,// Lý do chung của mọi loại đề xuất
+                type: String, // Lý do chung của mọi loại đề xuất
                 default: null,
-               
+
             },
         },
 
@@ -202,27 +201,27 @@ const Vanthu_de_xuat = new Schema({
             cv_nguoi_lc: {
                 type: String,
                 default: null,
-               
+
             },
             pb_nguoi_lc: {
                 type: String,
                 default: null,
-               
+
             },
             noi_cong_tac: {
                 type: String,
                 default: null,
-               
+
             },
             noi_chuyen_den: {
                 type: String,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               // Lý do chung của mọi loại đề xuất
+                // Lý do chung của mọi loại đề xuất
             },
 
         },
@@ -232,22 +231,22 @@ const Vanthu_de_xuat = new Schema({
             cv_nguoi_da: {
                 type: String,
                 default: null,
-               
+
             },
             pb_nguoi_da: {
                 type: String,
                 default: null,
-               
+
             },
             dx_da: {
                 type: String,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               // Lý do chung của mọi loại đề xuất
+                // Lý do chung của mọi loại đề xuất
             },
         },
 
@@ -258,7 +257,7 @@ const Vanthu_de_xuat = new Schema({
             time_tc: {
                 type: Number,
                 default: null,
-               
+
             },
             shift_id: {
                 type: Number
@@ -266,7 +265,7 @@ const Vanthu_de_xuat = new Schema({
             ly_do: {
                 type: String,
                 default: null,
-               // Lý do chung của mọi loại đề xuất
+                // Lý do chung của mọi loại đề xuất
             },
         },
 
@@ -277,17 +276,17 @@ const Vanthu_de_xuat = new Schema({
             ngaybatdau_nghi_ts: {
                 type: Number,
                 default: null,
-               
+
             },
             ngayketthuc_nghi_ts: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               // Lý do chung của mọi loại đề xuất
+                // Lý do chung của mọi loại đề xuất
             },
         },
 
@@ -297,17 +296,17 @@ const Vanthu_de_xuat = new Schema({
             bd_hop: {
                 type: Number,
                 default: null,
-               
+
             },
             end_hop: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               // Lý do chung của mọi loại đề xuất
+                // Lý do chung của mọi loại đề xuất
             },
         },
 
@@ -318,27 +317,27 @@ const Vanthu_de_xuat = new Schema({
             bd_xe: {
                 type: Number,
                 default: null,
-               
+
             },
             end_xe: {
                 type: Number,
                 default: null,
-               
+
             },
             soluong_xe: {
                 type: Number,
                 default: null,
-               
+
             },
-            local_di: {//địa điểm di chuyển 
+            local_di: { //địa điểm di chuyển 
                 type: Number,
                 default: null,
-               
+
             },
             local_den: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String // Lý do chung của mọi loại đề xuất
@@ -353,19 +352,19 @@ const Vanthu_de_xuat = new Schema({
             input_csv: {
                 type: String,
                 default: null,
-               
+
             },
 
             //Đề xuất thanh toán
             so_tien_tt: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               // Lý do chung của mọi loại đề xuất
+                // Lý do chung của mọi loại đề xuất
             },
         },
 
@@ -376,7 +375,7 @@ const Vanthu_de_xuat = new Schema({
             time_xnc: {
                 type: Date,
                 default: null,
-               
+
             },
             time_vao_ca: {
                 type: String
@@ -387,45 +386,45 @@ const Vanthu_de_xuat = new Schema({
             ca_xnc: {
                 type: String,
                 default: null,
-               
+
             },
             id_ca_xnc: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               // Lý do chung của mọi loại đề xuất
+                // Lý do chung của mọi loại đề xuất
             },
 
         },
         lich_lam_viec: {
-            lich_lam_viec: {//1-t2->t6 2.t2->t7 3.t2->CN
+            lich_lam_viec: { //1-t2->t6 2.t2->t7 3.t2->CN
                 type: Number,
                 default: null,
-               
+
             },
             thang_ap_dung: {
                 type: Number,
                 default: null,
-               
+
             },
-            ngay_bat_dau: {//ngay bat dau lam viec
+            ngay_bat_dau: { //ngay bat dau lam viec
                 type: Number,
                 default: null,
-               
+
             },
-            ca_la_viec: {//1-ca hanh chinh 2-ca sang 3-ca chieu
+            ca_la_viec: { //1-ca hanh chinh 2-ca sang 3-ca chieu
                 type: Number,
                 default: null,
-               
+
             },
-            ngay_lam_viec: {//llich lamm viec hang ngay
+            ngay_lam_viec: { //llich lamm viec hang ngay
                 type: String,
                 default: null,
-               
+
             },
         },
 
@@ -434,32 +433,32 @@ const Vanthu_de_xuat = new Schema({
             chu_ky: {
                 type: String,
                 default: null,
-               
+
             },
             time_hh: {
                 type: String,
                 default: null,
-               
+
             },
             item_mdt_date: {
                 type: String,
                 default: null,
-               
+
             },
             dt_money: { //tong doanh thu
                 type: String,
                 default: null,
-               
+
             },
             name_dt: { //muc doanh thu
                 type: String,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               
+
             }
         },
 
@@ -475,12 +474,12 @@ const Vanthu_de_xuat = new Schema({
             so_tien_tt: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               
+
             }
         },
 
@@ -489,27 +488,27 @@ const Vanthu_de_xuat = new Schema({
             so_tien_tp: {
                 type: Number,
                 default: null,
-               
+
             },
             time_tp: {
                 type: Date,
                 default: null,
-               
+
             },
             nguoi_tp: {
                 type: String,
                 default: null,
-               
+
             },
             type_tp: {
                 type: Number,
                 default: null,
-               
+
             },
             ly_do: {
                 type: String,
                 default: null,
-               
+
             }
         }
     },
@@ -538,20 +537,18 @@ const Vanthu_de_xuat = new Schema({
 
     },
     file_kem: {
-        type: [
-            {
-            file :{
-            type: String,
-        }
-    }
-    ]
+        type: [{
+            file: {
+                type: String,
+            }
+        }]
     },
     type_duyet: {
         type: Number,
         default: 0
 
     },
-    type_time: {//đề xuất nghỉ đột xuất or có kế hoạch
+    type_time: { //đề xuất nghỉ đột xuất or có kế hoạch
         type: Number,
         default: 0
 
@@ -574,11 +571,11 @@ const Vanthu_de_xuat = new Schema({
 
     },
     active: { // trạng thái duyệt
-        type: Number,//'1: đã api bên 3 đồng ý; 2: bên 3 không đồng ý',
+        type: Number, //'1: đã api bên 3 đồng ý; 2: bên 3 không đồng ý',
         default: 0
     },
-    del_type: {// trạng thái xoa
-        type: Number,//'1:active; 2 delete'
+    del_type: { // trạng thái xoa
+        type: Number, //'1:active; 2 delete'
         default: 1
     }
 })

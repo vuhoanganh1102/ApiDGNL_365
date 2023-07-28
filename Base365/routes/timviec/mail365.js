@@ -4,9 +4,15 @@ const formData = require('express-form-data');
 const functions = require('../../services/functions');
 const mail365 = require('../../controllers/timviec/mail365');
 
+// api trang chủ
+router.post('/home', formData.parse(), mail365.home);
 
-// ds danh mục email trang chủ
-router.post('', formData.parse(), mail365.getCategories);
+// api lấy nội dung seo
+router.post('/seo', formData.parse(), mail365.seo);
+router.post('/seo_category', formData.parse(), mail365.seo_category);
+
+// ds danh mục
+router.post('/list', formData.parse(), mail365.getCategories);
 
 // ds email theo danh mục
 
@@ -17,7 +23,14 @@ router.post('/findByCategory', formData.parse(), mail365.findByCategory);
 router.post('/preview', formData.parse(), mail365.preview);
 
 // chi tiết email
+router.post('/detail', functions.checkToken, formData.parse(), mail365.detail);
 
-router.post('/viewDetail', functions.checkToken, formData.parse(), mail365.viewDetail);
+// Lưu email
+router.post('/save', functions.checkToken, formData.parse(), mail365.save);
 
+// Lưu thành viên
+router.post('/save/member', functions.checkToken, formData.parse(), mail365.save_member);
+
+// Lấy danh sách thành viên đã lưu
+router.post('/list/save_member', functions.checkToken, formData.parse(), mail365.list_save_member);
 module.exports = router;

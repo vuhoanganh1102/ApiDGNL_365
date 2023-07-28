@@ -1,13 +1,30 @@
 const functions = require('../../services/functions');
-const HoSo = require('../../models/Timviec365/CV/Resume');
-const HoSoUV = require('../../models/Timviec365/CV/ResumeUV');
+const Resume = require('../../models/Timviec365/CV/Resume');
+const ResumeUV = require('../../models/Timviec365/CV/ResumeUV');
+const TblModules = require("../../models/Timviec365/CV/TblModules");
+const TblFooter = require("../../models/Timviec365/CV/TblFooter");
 
 // lấy danh sách mẫu syll
-exports.getSYLL = async(req, res, next) => {
+exports.list = async(req, res, next) => {
     try {
-        const data = await HoSo.find({}).sort('-_id').select('price image name');
+        const data = await Resume.find({}).sort('-_id').select('price image name alias').lean();
 
-        if (data) return await functions.success(res, 'Lấy mẫu SYLL thành công', data);
+        // Cập nhật thông tin theo vòng lặp
+        for (let i = 0; i < data.length; i++) {
+            const element = data[i];
+            element.image = await functions.getPictureResume(element.image)
+        }
+
+        // Lấy thông tin seo
+        const seo = await TblModules.findOne({
+            module: "mau-so-yeu-ly-lich"
+        }).lean();
+
+
+        // Lấy thông tin bài viết chân trang
+        const footerNew = await TblFooter.findOne({}).select("content_soyeu");
+
+        if (data) return await functions.success(res, 'Lấy mẫu SYLL thành công', { data, seo, footerNew });
 
         return functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -16,35 +33,33 @@ exports.getSYLL = async(req, res, next) => {
 };
 
 // xem trước
-exports.previewSYLL = async(req, res, next) => {
+exports.preview = async(req, res, next) => {
     try {
-        const _id = req.params._id;
-        const data = await HoSo.findOne({ _id: _id }).select('_id image view');
+        const _id = req.body._id;
+        const data = await Resume.findOne({ _id: _id }).lean();
 
         if (!data) return await functions.setError(res, 'Không có dữ liệu', 404);
         // cập nhật số lượng xem 
-        await HoSo.updateOne({ _id: _id }, { $set: { view: data.view + 1 } }, );
-        return await functions.success(res, 'Lấy mâũ SYLL thanh công', data);
+        await Resume.updateOne({ _id: _id }, { $set: { view: data.view + 1 } }, );
+        return await functions.success(res, 'Lấy mẫu SYLL thành công', { data });
     } catch (err) {
         return functions.setError(res, err.message);
     };
 };
 
-// xem chi tiết ( tạo)
-exports.detailSYLL = async(req, res, next) => {
+// xem chi tiết
+exports.detail = async(req, res, next) => {
     try {
-        const _id = req.params._id;
-        const user = req.user.data;
-        const data = await HoSo.findOne({ _id: _id }).select('_id name htmlVi htmlCn htmlJp htmlKr htmlEn view color langId');
+        const _id = Number(req.body._id);
+        if (_id) {
+            const user = req.user.data;
+            const data = await Resume.findOne({ _id: _id }).lean();
+            if (data) {
+                // cập nhật số lượng xem 
+                await Resume.updateOne({ _id: _id }, { $set: { view: data.view + 1 } }, );
 
-        if (data) {
-            // cập nhật số lượng xem 
-            await HoSo.updateOne({ _id: _id }, { $set: { view: data.view + 1 } }, );
-
-            const token = await functions.createToken(user, '24h');
-            res.setHeader('authorization', `Bearer ${token}`);
-
-            return await functions.success(res, 'Lấy SYLL thành công', data);
+                return await functions.success(res, 'Lấy SYLL thành công', { data });
+            }
         };
         return await functions.setError(res, 'Không có dữ liệu', 404);
     } catch (err) {
@@ -53,78 +68,105 @@ exports.detailSYLL = async(req, res, next) => {
 };
 
 //lưu và tải syll
-exports.saveSYLL = async(req, res, next) => {
+exports.save = async(req, res, next) => {
     try {
-        // 0 : ko, 1 có 
-        const upload = req.query.upload || 1;
-        const download = req.query.download || 0;
-        const imageFile = req.file;
-        const userId = req.user.data._id;
-        const data = req.body;
-        if (upload == 0 && download == 1) {
-            if (fs.existsSync(`../Storage/TimViec365/${userId}/resume/${data.nameImage.slice(0,-4)}.pdf`) &&
-                fs.existsSync(`../Storage/TimViec365/${userId}/resume/${data.nameImage}`)) {
-                //pdf img tồn tại
-                const host = '';
-                const linkPdf = `${host}/TimViec365/${userId}/resume/${data.nameImage}`;
-                const linkImg = `${host}/TimViec365/${userId}/resume/${data.nameImage.slice(0,-4)}.pdf`;
-                const senderId = 1191;
-                const text = '';
-                const data = {
-                    userId: userId,
-                    senderId: senderId,
-                    linkImg: linkImg,
-                    linkPdf: linkPdf,
-                    Title: text,
-                };
-                await axios.post('http://43.239.223.142:9000/api/message/SendMessageCv', data);
-                return await functions.success(res, `Tải thành công`, );
+        const pmKey = req.user.data._id,
+            userId = req.user.data.idTimViec365,
+            id = req.body.id,
+            name_img = req.body.name_img,
+            html = req.body.html,
+            lang = req.body.lang;
 
-            }
-            return functions.setError(res, 'Chưa upload ảnh', 404);
-        };
+        let base64String = req.body.base64;
+        if (id && base64String) {
 
-        let message = 'Lưu';
-        const checkImage = await functions.checkImage(imageFile.path);
+            // Kiểm tra đã tạo hay chưa
+            const checkSave = await ResumeUV.findOne({
+                uid: userId,
+                tid: id
+            }).lean();
 
-        if (checkImage == false) return functions.setError(res, 'Lỗi ảnh', 404);
+            // Đường dẫn ảnh
+            const dir = `../storage/base365/timviec365/cv365/upload/ungvien/uv_${userId}`;
 
-        const uploadImage = await functions.uploadAndCheckPathIMG(userId, imageFile, 'resume');
-        if (uploadImage.status != 'EXIT') return await functions.setError(res, 'Upload ảnh thất bại', 404);
-
-        const hoSoUV = {
-            userId: userId,
-            hoSoId: data._id,
-            html: data.html,
-            nameImage: nameImage.filename,
-            lang: data.lang,
-        };
-
-        if (checkImage == true) {
-            const hoSo = await HoSo.findOne({ _id: data._id }).select('download');
-            if (!hoSo) return await functions.setError(res, 'Lưu thất bại 1', 404);
-            let _id = 1;
-            await functions.getMaxID(HoSoUV)
-                .then(res => {
-                    if (res) {
-                        _id = res + 1;
-                    }
-                });
-
-            hoSoUV._id = _id;
-            const newHoSoUV = await HoSoUV.create(hoSoUV);
-
-            if (newHoSoUV) {
-                // cập nhật số lượt download 
-                await HoSo.updateOne({ _id: cv._id }, { $set: { download: cv.download + 1 } });
-                return await functions.success(res, 'Lưu thành công', newHoSoUV);
+            const data = {
+                uid: userId,
+                tid: id,
+                html: html,
+                lang: lang,
             };
-            return await functions.setError(res, 'Lưu thất bại 2', 404);
-        };
-        return functions.setError(res, 'Lỗi ảnh', 404);
 
+            // Nếu chưa tạo thì lưu vào
+            if (!checkSave) {
+                let _id = 1;
+                await ResumeUV.findOne({}, { id: 1 }).sort({ id: -1 }).then((res) => {
+                    _id = res.id + 1;
+                })
+                data.id = _id;
+                await ResumeUV.create(data);
+            }
+            // Nếu tạo rồi thì cập nhật đồng thời xóa cv cũ
+            else {
+                if (name_img && checkSave.name_img != null) {
+                    const filePath = `${dir}/${checkSave.name_img}.png`;
+                    await fs.access(filePath, fs.constants.F_OK, (error) => {
+                        if (error) {} else {
+                            // Tệp tin tồn tại
+                            fs.unlink(filePath, (err) => {
+                                if (err) throw err;
+                            });
+                        }
+                    });
+                }
+
+                await ResumeUV.updateOne({
+                    _id: checkSave._id
+                }, {
+                    $set: data
+                });
+            }
+
+            // Kiểm tra xem đã tạo thư mục lưu ảnh chưa
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir);
+            }
+
+            // Đường dẫn tới nơi bạn muốn lưu ảnh
+            outputPath = `${dir}/${name_img}.png`;
+
+            // Xóa đầu mục của chuỗi Base64 (ví dụ: "data:image/png;base64,")
+            const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
+
+            // Giải mã chuỗi Base64 thành dữ liệu nhị phân
+            const imageBuffer = Buffer.from(base64Data, "base64");
+
+            // Ghi dữ liệu nhị phân vào tệp ảnh
+
+            await fs.writeFile(outputPath, imageBuffer, (error) => {
+                if (error) {
+                    return functions.setError(res, "Lỗi khi ghi tệp ảnh", 404);
+                }
+            });
+            let message = "Lưu";
+            const checkImage = await functions.checkImage(outputPath);
+            if (checkImage) {
+                if (name_img) {
+                    await ResumeUV.updateOne({
+                        uid: userId,
+                        tid: id
+                    }, {
+                        $set: {
+                            name_img: name_img
+                        }
+                    });
+                }
+            }
+            return await functions.success(res, `${message} thành công`);
+        }
+        return functions.setError(res, "Thông tin truyền lên không đầy đủ", 404);
     } catch (e) {
-        functions.setError(res, e.message, );
+        console.log(e);
+        return functions.setError(res, "Đã có lỗi xảy ra", 404);
     }
 };
 
@@ -143,7 +185,7 @@ exports.createSYLL = async(req, res, next) => {
                 }
             });
         data._id = _id;
-        await HoSo.create(data);
+        await Resume.create(data);
         return await functions.success(res, 'Tạo mới SYLL thành công', );
     } catch (err) {
         return functions.setError(res, err.message);
@@ -157,7 +199,7 @@ exports.findSYLL = async(req, res, next) => {
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
 
         const _id = req.params._id;
-        const data = await HoSo.findOne({ _id: _id });
+        const data = await Resume.findOne({ _id: _id });
 
         if (data) return functions.success(res, 'Thành công', data);
 
@@ -173,7 +215,7 @@ exports.updateSYLL = async(req, res, next) => {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.params._id;
-        const data = await HoSo.findOneAndUpdate({ _id: _id }, req.body);
+        const data = await Resume.findOneAndUpdate({ _id: _id }, req.body);
 
         if (data) return functions.success(res, 'Cập nhật thành công', );
 
@@ -189,7 +231,7 @@ exports.deleteSYLL = async(req, res, next) => {
         const user = req.user.data;
         if (user.role != 1) return await functions.setError(res, 'Chưa có quyền truy cập');
         const _id = req.params._id;
-        const data = await HoSo.findOneAndDelete({ _id: _id });
+        const data = await Resume.findOneAndDelete({ _id: _id });
 
         if (data) return functions.success(res, 'Đã xóa thành công', );
 
