@@ -39,7 +39,8 @@ exports.EditRegulations = async (req, res) => {
             ngay_tu_chon_td: chon_ngay_tu_chon,
             chon_don_vi_do: chon_don_vi_do,
             cong_suat_bd: cong_suat_bd,
-        });
+        }, {new: true});
+        if(!insert_qd) return fnc.setError(res, "Quy dinh not found!");
         fnc.success(res, 'edit sucess');
     } catch (error) {
         console.log(error)
@@ -52,12 +53,18 @@ exports.addRegulations = async (req, res) => {
     try {
         let { loai_ts, tan_suat_bd, xac_dinh_bd, bd_noidung, chon_don_vi_do, cong_suat_bd, thoi_diem_bd, nhap_so_ngay,
             chon_ngay_tu_chon, bd_lap_lai_theo, sl_ngay_lap_lai, } = req.body;
+        if(!loai_ts || !bd_noidung || !chon_don_vi_do) {
+            return fnc.setError(res, "Missing input value!");
+        }
         let type_quyen = req.user.data.type;
         let com_id = req.user.data.com_id;
         let id_ng_tao = req.user.data.idQLC;
 
-        let date_create = new Date().getTime();
+        if(chon_ngay_tu_chon && fnc.checkDate(chon_ngay_tu_chon)) {
+            chon_ngay_tu_chon = fnc.convertTimestamp(chon_ngay_tu_chon);
+        }else chon_ngay_tu_chon = fnc.convertTimestamp(Date.now());
 
+        let date_create = new Date().getTime();
 
         let qd_xoa = 0;
 
@@ -230,7 +237,6 @@ exports.DetailRegulations = async (req, res) => {
 
         let com_id = req.user.data.com_id;
         let id_qd = req.body.id_qd;
-        console.log(id_qd)
 
         let info_qd = await QuyDinhBaoDuong.aggregate([
             {
@@ -264,5 +270,51 @@ exports.DetailRegulations = async (req, res) => {
     } catch (error) {
         console.log(error);
         fnc.setError(res, error);
+    }
+}
+
+exports.xoaQuyDinhBaoDuong = async (req, res) => {
+    try {
+        let { id, type } = req.body;
+        if (!id) {
+            return fnc.setError(res, 'Thông tin truyền lên không đầy đủ', 400);
+        }
+        let id_com = 0;
+        if (req.user.data.type == 1 || req.user.data.type == 2) {
+            id_com = req.user.data.com_id;
+        } else {
+            return fnc.setError(res, 'không có quyền truy cập', 400);
+        }
+        let type_quyen = req.user.data.type;
+        let idQLC = req.user.data.idQLC;
+        let date = fnc.convertTimestamp(Date.now());
+        if (type == 1) { // xóa vĩnh viễn
+            let idArraya = id.map(idItem => parseInt(idItem));
+            await QuyDinhBaoDuong.deleteMany({ qd_id: { $in: idArraya }, id_cty: id_com });
+            return fnc.success(res, 'Xoa vinh vien thanh cong!');
+        } else if (type == 0) {
+            // thay đổi trạng thái là 1
+            let idArray = id.map(idItem => parseInt(idItem));
+            await QuyDinhBaoDuong.updateMany(
+                {
+                    qd_id: { $in: idArray },
+                    qd_xoa: 0
+                },
+                { qd_xoa: 1, qd_type_quyen_xoa: type_quyen, qd_id_ng_xoa: idQLC, qd_date_delete: date}
+            );
+            return fnc.success(res, 'Xoa tam thoi thanh cong!');
+        } else if (type == 2) {
+            // Khôi phục bảo dưỡng
+            let idArray = id.map(idItem => parseInt(idItem));
+            await QuyDinhBaoDuong.updateMany(
+                { qd_id: { $in: idArray }, qd_xoa: 1 },
+                { qd_xoa: 0, qd_type_quyen_xoa: 0, qd_id_ng_xoa: 0, qd_date_delete: ""}
+            );
+            return fnc.success(res, 'Khoi phuc thanh cong!');
+        } else {
+            return fnc.setError(res, 'không thể thực thi!', 400);
+        }
+    } catch (e) {
+        return fnc.setError(res, e.message);
     }
 }

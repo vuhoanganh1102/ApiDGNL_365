@@ -817,6 +817,8 @@ exports.listBBDaSuaChua = async (req, res) => {
                     as: 'infoTS'
                 }
             },
+            { $unwind: { path: '$infoTS', preserveNullAndEmptyArrays: true } },
+
             {
                 $project: {
                     'sc_ngay': new Date('$sc_ngay' * 1000),
@@ -829,6 +831,7 @@ exports.listBBDaSuaChua = async (req, res) => {
                     'sc_noidung': '$sc_noidung',
                     'sl_sc': '$sl_sc',
                     'ten_ts': '$infoTS.ts_ten',
+                    'soluong': '$infoTS.ts_so_luong',
                 }
             },
             {

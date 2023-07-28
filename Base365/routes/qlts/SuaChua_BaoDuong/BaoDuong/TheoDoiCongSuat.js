@@ -6,11 +6,14 @@ const controllers = require('../../../../controllers/qlts/SuaChua_BaoDuong/BaoDu
 
 //don vi do cong suat 
 router.post('/add_donvi_csuat', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.add_dvi_csuat);
-router.post('/detail_donvi_csuat', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.detail_dvi_csuat);
 router.post('/edit_donvi_csuat', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.edit_dvi_csuat);
 
 // theo doi cong suat
 router.post('/add_theodoi_csuat', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.add_do_csuat);
-router.post('/detail_theodoi_csuat', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.detail_csuat_tsan);
 router.post('/update_theodoi_csuat', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.update_theodoi_cs);
+
+router.post('/xoaTheoDoiCongSuat', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.xoaTheoDoiCongSuat);
+router.post('/xoaDonViCongSuat', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.xoaDonViCongSuat);
+router.post('/danhSachDonViCongSuat', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.danhSachDonViCongSuat);
+
 module.exports = router;

@@ -13,8 +13,7 @@ const NhacNho = require('../../../../models/QuanLyTaiSan/NhacNho');
 const func = require('../../../../services/QLTS/qltsService');
 const TheoDoiCongSuat = require('../../../../models/QuanLyTaiSan/TheoDoiCongSuat');
 
-//lay ra danh sach can bao duong/ dang bao duong/ da bao duong/ quy dinh bao duong/ theo doi cong suat
-
+//xoa tai san can/dang/da bao duong (xoa/khoi phuc/xoa vinh vien)
 exports.xoaBaoDuong = async (req, res) => {
     try {
         let { id, type } = req.body;
@@ -58,53 +57,6 @@ exports.xoaBaoDuong = async (req, res) => {
         return fnc.setError(res, e.message);
     }
 }
-//     let id_com = 0;
-//     if (req.user.data.type == 1 || req.user.data.type == 2) {
-//       id_com = req.user.data.com_id;
-//     } else {
-//       return fnc.setError(res, 'không có quyền truy cập', 400);
-//     }
-//     if (!id.every(num => !isNaN(parseInt(num)))) {
-//         return fnc.setError(res, 'id bảo dưỡng không hợp lệ ', 400);
-//       }
-//     if (type == 1) { // xóa vĩnh viễn
-//       let idArraya = id.map(idItem => parseInt(idItem));
-//       let result = await BaoDuong.deleteMany({ id_bd: { $in: idArraya }, id_cty: id_com });
-//       if (result.deletedCount === 0) {
-//         return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để xóa', 400);
-//       }
-//       return fnc.success(res, 'xóa thành công!');
-//     } else if (type == 0) {
-//       // thay đổi trạng thái là 1
-//       let idArray = id.map(idItem => parseInt(idItem));
-//       let result = await BaoDuong.updateMany(
-//         { id_bd: { $in: idArray },
-
-//          xoa_bd: 0,id_cty : id_com },
-//         { xoa_bd: 1 }
-//       );
-//       if (result.nModified === 0) {
-//         return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
-//       }
-//       return fnc.success(res, 'Bạn đã xóa thành công vào danh sách dã xóa !');
-//     } else if (type == 2) {
-//       // Khôi phục bảo dưỡng
-//       let idArray = id.map(idItem => parseInt(idItem));
-//       let result = await BaoDuong.updateMany(
-//         { id_bd: { $in: idArray }, xoa_bd: 1 ,id_cty : id_com},
-//         { xoa_bd: 0 }
-//       );
-//       if (result.nModified === 0) {
-//         return fnc.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
-//       }
-//       return fnc.success(res, 'Bạn đã khôi phục bảo dưỡng thành công!');
-//     } else {
-//       return fnc.setError(res, 'không thể thực thi!', 400);
-//     }
-//   } catch (e) {
-//     return fnc.setError(res, e.message);
-//   }
-//};
 
 // Tĩnh
 //tai sản cần bảo dưỡng
@@ -113,17 +65,21 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
     try {
         let { id_ts, sl_bd, trang_thai_bd, cs_bd, ngay_bd, ngay_dukien_ht, ngay_ht_bd, chiphi_dukien, chiphi_thucte,
             nd_bd, ng_thuc_hien, dia_diem_bd, quyen_ng_sd, ng_sd, vitri_ts, dv_bd, dia_chi_nha_cung_cap } = req.body;
-        let com_id = 0;
-        let id_ng_tao = 0;
-        let type_quyen = req.user.data.type;
-        if (req.user.data.type == 1) {
-            com_id = req.user.data.idQLC;
-            id_ng_tao = req.user.data.idQLC;
-
-        } else if (req.user.data.type == 2) {
-            com_id = req.user.data.com_id;
-            id_ng_tao = req.user.data.idQLC;
+        if(!trang_thai_bd || !id_ts || !sl_bd || !ng_sd || !ngay_bd || !ngay_dukien_ht || !ngay_ht_bd || !ng_thuc_hien || !chiphi_dukien || !chiphi_thucte) {
+            return fnc.setError(res, "Missing input value!", 404);
         }
+        if(fnc.checkDate(ngay_bd)) {
+            ngay_bd = fnc.convertTimestamp(ngay_bd);
+        }
+        if(fnc.checkDate(ngay_dukien_ht)) {
+            ngay_dukien_ht = fnc.convertTimestamp(ngay_dukien_ht);
+        }
+        if(fnc.checkDate(ngay_ht_bd)) {
+            ngay_ht_bd = fnc.convertTimestamp(ngay_ht_bd);
+        }
+        let type_quyen = req.user.data.type;
+        let com_id = req.user.data.com_id;
+        let id_ng_tao = req.user.data.idQLC;
 
         let date_create = new Date().getTime();
         let maxIDTb = 0;
@@ -143,14 +99,9 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
             da_xem: 0,
             date_create: date_create
         });
-        let maxIDBD = 0;
-        let BD = await BaoDuong.findOne({}, {}, { sort: { id_tb: -1 } });
-        if (BD) {
-            maxIDBD = BD.id_bd;
-        }
-        let last_id = maxIDBD + 1;
+        let maxIDBD = await fnc.getMaxIdByField(BaoDuong, 'id_bd');
         let insert_taisan = new BaoDuong({
-            id_bd: maxIDBD + 1,
+            id_bd: maxIDBD,
             baoduong_taisan: id_ts,
             bd_sl: sl_bd,
             id_cty: com_id,
@@ -192,7 +143,7 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
             let qr_qtr_sd = new QuaTrinhSuDung({
                 quatrinh_id: maxIDQTSD + 1,
                 id_ts: id_ts,
-                id_bien_ban: last_id,
+                id_bien_ban: maxIDBD,
                 so_lg: sl_bd,
                 id_cty: com_id,
                 id_cty_sudung: com_id,
@@ -320,7 +271,7 @@ exports.danhSachBaoDuong = async (req, res, next) => {
         };
 
 
-        if (key) condition.id_bd = key;
+        if (key) condition.id_bd = Number(key);
         if (dataType != 1 && dataType != 2 && dataType != 3 && dataType != 4 && dataType != 5) return fnc.setError(res, "Truyen dataType = 1, 2, 3, 4, 5");
         //can bao duong
         if (dataType == 1) {
@@ -337,17 +288,146 @@ exports.danhSachBaoDuong = async (req, res, next) => {
         //quy dinh
         else if (dataType == 4) {
             let condition2 = { id_cty: com_id, qd_xoa: 0 };
+            if (key) condition2.qd_id = Number(key);
             if (type == 2) condition2 = { ...condition2, id_ng_tao_qd: idQLC };
-            let quydinh = await fnc.pageFind(QuyDinhBaoDuong, condition2, { qd_id: -1 }, skip, pageSize);
+
+            let quydinh = await QuyDinhBaoDuong.aggregate([
+                {$match: condition2},
+                {$sort: { qd_id: -1 }},
+                {$skip: skip},
+                {$limit: pageSize},
+
+                //loai tai san
+                {
+                    $lookup: {
+                        from: 'QLTS_Loai_Tai_San',
+                        localField: 'id_loai',
+                        foreignField: 'id_loai',
+                        as: 'LoaiTaiSan',
+                    }
+                },
+                { $unwind: { path: '$LoaiTaiSan', preserveNullAndEmptyArrays: true } },
+
+                //nhom tai san
+                {
+                    $lookup: {
+                        from: 'QLTS_Nhom_Tai_San',
+                        localField: 'LoaiTaiSan.id_nhom_ts',
+                        foreignField: 'id_nhom',
+                        as: 'NhomTaiSan',
+                    }
+                },
+                { $unwind: { path: '$NhomTaiSan', preserveNullAndEmptyArrays: true } },
+
+                //ten don vi do
+                {
+                    $lookup: {
+                        from: 'QLTS_Don_Vi_CS',
+                        localField: 'chon_don_vi_do',
+                        foreignField: 'id_donvi',
+                        as: 'DonVi',
+                    }
+                },
+                { $unwind: { path: '$DonVi', preserveNullAndEmptyArrays: true } },
+
+                //
+                { $project: {
+                    "qd_id": "$qd_id", 
+                    "id_cty": "$id_cty", 
+                    "id_loai": "$id_loai", 
+                    "LoaiTaiSan": "$LoaiTaiSan.ten_loai", 
+                    "id_nhom": "$NhomTaiSan.id_nhom",
+                    "NhomTaiSan": "$NhomTaiSan.ten_nhom",
+                    "bd_noidung": "$bd_noidung", 
+                    "bd_lap_lai_theo": "$bd_lap_lai_theo", 
+                    "sl_ngay_lap_lai": "$sl_ngay_lap_lai", 
+                    "tan_suat_bd": "$tan_suat_bd", 
+                    "xac_dinh_bd": "$xac_dinh_bd", 
+                    "thoidiem_bd": "$thoidiem_bd", 
+                    "sl_ngay_thoi_diem": "$sl_ngay_thoi_diem", 
+                    "ngay_tu_chon_td": "$ngay_tu_chon_td", 
+                    "chon_don_vi_do": "$chon_don_vi_do", 
+                    "DonVi": "$DonVi.ten_donvi", 
+                    "cong_suat_bd": "$cong_suat_bd", 
+                    "qd_type_quyen": "$qd_type_quyen", 
+                    "id_ng_tao_qd": "$id_ng_tao_qd", 
+                    "qd_date_create": "$qd_date_create", 
+                }},
+            ]);
+            // let quydinh = await fnc.pageFind(QuyDinhBaoDuong, condition2, { qd_id: -1 }, skip, pageSize);
             let total = await fnc.findCount(QuyDinhBaoDuong, condition2);
-            return fnc.success(res, "Lay ra danh sach quy dinh bao duong thanh cong", { page, pageSize, total, quydinh });
+            return fnc.success(res, "Lay ra danh sach quy dinh bao duong thanh cong", { page, pageSize, total, thongKe, quydinh });
         }
         //theo doi cong suat
         else if (dataType == 5) {
             let condition2 = { id_cty: com_id, tdcs_xoa: 0 };
-            let theoDoiCongSuat = await fnc.pageFind(TheoDoiCongSuat, condition2, { id_cs: -1 }, skip, pageSize);
+            if (key) condition2.id_cs = Number(key);
+            // let theoDoiCongSuat = await fnc.pageFind(TheoDoiCongSuat, condition2, { id_cs: -1 }, skip, pageSize);
+            let theoDoiCongSuat = await TheoDoiCongSuat.aggregate([
+                {$match: condition2},
+                {$sort: { id_cs: -1 }},
+                {$skip: skip},
+                {$limit: pageSize},
+
+                //loai tai san
+                {
+                    $lookup: {
+                        from: 'QLTS_Loai_Tai_San',
+                        localField: 'id_loai',
+                        foreignField: 'id_loai',
+                        as: 'LoaiTaiSan',
+                    }
+                },
+                { $unwind: { path: '$LoaiTaiSan', preserveNullAndEmptyArrays: true } },
+
+                //tai san
+                {
+                    $lookup: {
+                        from: 'QLTS_Tai_San',
+                        localField: 'id_loai',
+                        foreignField: 'id_loai_ts',
+                        as: 'TaiSan',
+                    }
+                },
+                { $unwind: { path: '$TaiSan', preserveNullAndEmptyArrays: true } },
+
+                //don vi cong suat
+                {
+                    $lookup: {
+                        from: 'QLTS_Don_Vi_CS',
+                        localField: 'id_donvi',
+                        foreignField: 'id_donvi',
+                        as: 'DonViCS',
+                    }
+                },
+                { $unwind: { path: '$DonViCS', preserveNullAndEmptyArrays: true } },
+
+                //
+                { $project: {
+                    "id_cs": "$id_cs", 
+                    "id_cty": "$id_cty", 
+                    "id_taisan": "$TaiSan.ts_id", 
+                    "ten_taisan": "$TaiSan.ts_ten", 
+                    "trangthai_taisan": "$TaiSan.ts_trangthai", 
+                    "id_loai": "$id_loai", 
+                    "LoaiTaiSan": "$LoaiTaiSan.ten_loai", 
+                    "id_donvi": "$id_donvi", 
+                    "DonViCS": "$DonViCS.ten_donvi",
+                    "update_cs_theo": "$update_cs_theo", 
+                    "nhap_ngay": "$nhap_ngay",
+                    "chon_ngay": "$chon_ngay",
+                    "cs_gannhat": "$cs_gannhat", 
+                    "tdcs_type_quyen": "$tdcs_type_quyen", 
+                    "tdcs_id_ng_xoa": "$tdcs_id_ng_xoa", 
+                    "tdcs_xoa": "$tdcs_xoa", 
+                    "tdcs_date_create": "$tdcs_date_create", 
+                    "tdcs_date_delete": "$tdcs_date_delete", 
+                    "date_update": "$date_update", 
+                    "tdcs_type_quyen_xoa": "$tdcs_type_quyen_xoa", 
+                }},
+            ]);
             let total = await fnc.findCount(TheoDoiCongSuat, condition2);
-            return fnc.success(res, "Lay ra danh sach theo doi cong suat thanh cong", { page, pageSize, total, theoDoiCongSuat });
+            return fnc.success(res, "Lay ra danh sach theo doi cong suat thanh cong", { page, pageSize, total, thongKe, theoDoiCongSuat });
         }
 
         // let listBaoDuong = await fnc.pageFind(BaoDuong, condition, { id_bd: -1 }, skip, pageSize);
@@ -371,22 +451,23 @@ exports.danhSachBaoDuong = async (req, res, next) => {
                     as: "NguoiTao"
                 }
             },
-            { $unwind: { path: "$TaiSan", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
             {$project: {
                 'id_bd': '$id_bd',
+                'bd_trang_thai': '$bd_trang_thai',
+                'bd_date_create': '$bd_date_create',
                 'baoduong_taisan': '$baoduong_taisan',
                 'ten_taisan': '$TaiSan.ts_ten',
                 'bd_sl': '$bd_sl',
+                'bd_noi_dung': '$bd_noi_dung',
+                'bd_chiphi_dukien': '$bd_chiphi_dukien',
+                'bd_ngay_batdau': '$bd_ngay_batdau',
+                'bd_dukien_ht': '$bd_dukien_ht',
+                'bd_ngay_ht': '$bd_ngay_ht',
                 'id_cty': '$id_cty',
                 'bd_tai_congsuat': '$bd_tai_congsuat',
                 'bd_cs_dukien': '$bd_cs_dukien',
                 'bd_gannhat': '$bd_gannhat',
-                'bd_trang_thai': '$bd_trang_thai',
-                'bd_ngay_batdau': '$bd_ngay_batdau',
-                'bd_dukien_ht': '$bd_dukien_ht',
-                'bd_ngay_ht': '$bd_ngay_ht',
-                'bd_noi_dung': '$bd_noi_dung',
-                'bd_chiphi_dukien': '$bd_chiphi_dukien',
                 'bd_chiphi_thucte': '$bd_chiphi_thucte',
                 'bd_ng_thuchien': '$bd_ng_thuchien',
                 'donvi_bd': '$donvi_bd',
@@ -396,15 +477,15 @@ exports.danhSachBaoDuong = async (req, res, next) => {
                 'bd_type_quyen': '$bd_type_quyen',
                 'bd_id_ng_xoa': '$bd_id_ng_xoa',
                 'bd_id_ng_tao': '$bd_id_ng_tao',
-                'nguoi_tao': '$NguoiTao.userName',
+                'NguoiTao': '$NguoiTao.userName',
                 'bd_ng_sd': '$bd_ng_sd',
                 'bd_type_quyen_sd': '$bd_type_quyen_sd',
                 'bd_vi_tri_dang_sd': '$bd_vi_tri_dang_sd',
                 'xoa_bd': '$xoa_bd',
-                'bd_date_create': '$bd_date_create',
                 'bd_date_delete': '$bd_date_delete',
                 'lydo_tu_choi': '$lydo_tu_choi',
                 'bd_type_quyen_xoa': '$bd_type_quyen_xoa',
+                'ViTri': '$NguoiTao.address',
             }},
             {$skip: skip},
             {$limit: pageSize},
@@ -437,8 +518,6 @@ exports.danhSachBaoDuong = async (req, res, next) => {
             listBaoDuong[i].ten_ng_sd = ten_ng_sd
             listBaoDuong[i].ten_vi_tri = ten_vi_tri
         }
-        console.log(listBaoDuong.length, com_id)
-
         const total = await fnc.findCount(BaoDuong, condition);
         return fnc.success(res, "Lay ra danh sach bao duong thanh cong", { page, pageSize, total, thongKe, listBaoDuong });
     } catch (e) {
@@ -449,22 +528,9 @@ exports.danhSachBaoDuong = async (req, res, next) => {
 //tu_choi
 exports.TuChoiBaoDuong = async (req, res) => {
     try {
-
-
         let { id_bb, content } = req.body;
-
-        let com_id = 0;
-        let id_ng_tao = 0;
-        if (req.user.data.type == 1) {
-            com_id = req.user.data.com_id;
-            id_ng_tao = req.user.data.idQLC;
-
-
-        } else if (req.user.data.type == 2) {
-            com_id = req.user.data.com_id;
-            id_ng_tao = req.user.data.idQLC;
-
-        }
+        let com_id = req.user.data.com_id;
+        let id_ng_tao = req.user.data.idQLC;
 
         let tuchoi_bao_duong = await BaoDuong.findOneAndUpdate({
             id_bd: id_bb,
