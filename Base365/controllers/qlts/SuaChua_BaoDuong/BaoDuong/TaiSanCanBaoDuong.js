@@ -218,8 +218,92 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
 
+    }
+}
+
+//chinh sua
+exports.updateBaoDuong = async(req, res, next) => {
+    try{
+        let {id_ts, id_bd, sl_bd, trang_thai_bd, nd_bd, ng_thuc_hien, dia_diem_bd, dv_bd, chiphi_dukien, 
+            chiphi_thucte, dia_chi_nha_cung_cap, ngay_bd, ngay_dukien_ht, ngay_ht_bd} = req.body;
+        let com_id = req.user.data.com_id;
+        if(!id_ts || !sl_bd || !nd_bd || !ng_thuc_hien || !chiphi_dukien || !ngay_bd || !ngay_dukien_ht) {
+            return fnc.setError(res, "Missing input value!", 404);
+        }
+        if(!fnc.checkDate(ngay_bd) || !fnc.checkDate(ngay_dukien_ht) || !fnc.checkDate(ngay_ht_bd)) {
+            return fnc.setError(res, "Ngay khong dung dinh dang!", 405);
+        }
+        ngay_bd = fnc.convertTimestamp(ngay_bd);
+        ngay_dukien_ht = fnc.convertTimestamp(ngay_dukien_ht);
+        ngay_ht_bd = fnc.convertTimestamp(ngay_ht_bd);
+        let baoduong = await BaoDuong.findOne({id_cty: com_id, id_bd: id_bd});
+        if(baoduong) {
+            let quyen_ng_sd = baoduong.bd_type_quyen_sd;
+            let sl_bd_cu = baoduong.bd_sl;
+            let ng_sd = baoduong.bd_ng_sd;
+            if(quyen_ng_sd == 1) {
+                let taisan = await TaiSan.findOne({ts_id: id_ts, id_cty: com_id});
+                if(taisan) {
+                    let sl_ts_cu = taisan.ts_so_luong;
+                    let sl_ts_ban_dau = sl_ts_cu + sl_bd_cu;
+                    let update_sl = sl_ts_ban_dau - sl_bd;
+                    let update_taisan = await TaiSan.findOneAndUpdate({ts_id: id_ts, id_cty: com_id}, {
+                        ts_so_luong: update_sl,
+                        soluong_cp_bb: update_sl
+                    }, {new: true});
+                }else {
+                    return fnc.setError(res, "Cap nhat so luong tai san that bai!", 406);
+                }
+            }
+            if(quyen_ng_sd == 2) {
+                let taisan = await TaiSanDangSuDung.findOne({com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts});
+                if(taisan) {
+                    let sl_ts_cu =taisan.sl_dang_sd;
+                    let sl_ts_ban_dau = sl_ts_cu +sl_bd_cu;
+                    let update_sl = sl_ts_ban_dau -sl_bd;
+                    let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts}, {
+                        sl_dang_sd: update_sl,
+                    }, {new: true});
+                }else {
+                    return fnc.setError(res, "Cap nhat so luong tai san that bai!", 406);
+                }
+            }
+            if(quyen_ng_sd == 3) {
+                let taisan = await TaiSanDangSuDung.findOne({com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts});
+                if(taisan) {
+                    let sl_ts_cu =taisan.sl_dang_sd;
+                    let sl_ts_ban_dau = sl_ts_cu +sl_bd_cu;
+                    let update_sl = sl_ts_ban_dau -sl_bd;
+                    let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts}, {
+                        sl_dang_sd: update_sl,
+                    }, {new: true});
+                }else {
+                    return fnc.setError(res, "Cap nhat so luong tai san that bai!", 406);
+                }
+            }
+            baoduong = await BaoDuong.findOneAndUpdate({id_bd: id_bd, id_cty: com_id}, {
+                baoduong_taisan: id_ts, 
+                bd_sl: sl_bd, 
+                bd_trang_thai: trang_thai_bd, 
+                bd_ngay_batdau: ngay_bd, 
+                bd_dukien_ht: ngay_dukien_ht, 
+                bd_ngay_ht: ngay_ht_bd, 
+                bd_noi_dung: nd_bd, 
+                bd_chiphi_dukien: chiphi_dukien, 
+                bd_chiphi_thucte: chiphi_thucte, 
+                bd_ng_thuchien: ng_thuc_hien, 
+                donvi_bd: dv_bd, 
+                dia_diem_bd: dia_diem_bd, 
+                diachi_nha_cc: dia_chi_nha_cung_cap
+            }, {new: true});
+            if(baoduong) return fnc.success(res, "Update bao duong thanh cong!");
+            return fnc.setError(res, "Update bao duong that bai!");
+        }
+        return fnc.setError(res, "Bao duong not found!");
+    }catch(error) {
+        return fnc.setError(res, error.message);
     }
 }
 
@@ -607,7 +691,73 @@ exports.TuChoiBaoDuong = async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
+    }
+}
+
+exports.hoanThanh = async(req, res) => {
+    try{
+        let {id_bb, chiphi_thucte, day_taisd, ngay_bd_done} = req.body;
+        if(id_bb && chiphi_thucte && day_taisd && ngay_bd_done) {
+            let com_id = req.user.data.com_id;
+            id_bb = Number(id_bb);
+            if(fnc.checkDate(day_taisd) && fnc.checkDate(ngay_bd_done)) {
+                day_taisd = fnc.convertTimestamp(day_taisd);
+                ngay_bd_done = fnc.convertTimestamp(ngay_bd_done);
+            }else {
+                return fnc.setError(res, "Truyen ngay khong dung dinh dang!", 405);
+            }
+            let hoan_thanh_bao_duong = await BaoDuong.findOneAndUpdate({id_bd: id_bb, id_cty: com_id}, {
+                bd_trang_thai: 1,
+                bd_chiphi_thucte: chiphi_thucte,
+                bd_ngay_ht: ngay_bd_done,
+                bd_ngay_sudung: day_taisd
+            }, {new: true});
+            if(hoan_thanh_bao_duong) {
+                let quyen_ng_sd = hoan_thanh_bao_duong.bd_type_quyen_sd;
+                let id_ts = hoan_thanh_bao_duong.baoduong_taisan;
+                let sl_bd = hoan_thanh_bao_duong.bd_sl;
+                let ng_sd = hoan_thanh_bao_duong.bd_ng_sd;
+                if(quyen_ng_sd == 1) {
+                    let taisan = await TaiSan.findOne({ts_id: id_ts, id_cty: com_id});
+                    if(taisan) {
+                        let update_sl = sl_bd + taisan.ts_so_luong;
+                        let update_taisan = await TaiSan.findOneAndUpdate({ts_id: id_ts, id_cty: com_id}, {
+                            ts_so_luong: update_sl,
+                            soluong_cp_bb: update_sl
+                        }, {new: true});
+                        return fnc.success(res, "Bao duong thanh cong, da cap nhat so luong tai san!")
+                    }
+                    return fnc.setError(res, "Cap nhat so luong tai san that bai!", 406);
+                }
+                if(quyen_ng_sd == 2) {
+                    let taisan = await TaiSanDangSuDung.findOne({com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts});
+                    if(taisan) {
+                        let update_sl = sl_bd + taisan.sl_dang_sd;
+                        let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts}, {
+                            sl_dang_sd: update_sl,
+                        }, {new: true});
+                        return fnc.success(res, "Bao duong thanh cong, da cap nhat so luong tai san!")
+                    }
+                    return fnc.setError(res, "Cap nhat so luong tai san that bai!", 406);
+                }
+                if(quyen_ng_sd == 3) {
+                    let taisan = await TaiSanDangSuDung.findOne({com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts});
+                    if(taisan) {
+                        let update_sl = sl_bd + taisan.sl_dang_sd;
+                        let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts}, {
+                            sl_dang_sd: update_sl,
+                        }, {new: true});
+                        return fnc.success(res, "Bao duong thanh cong, da cap nhat so luong tai san!")
+                    }
+                    return fnc.setError(res, "Cap nhat so luong tai san that bai!", 406);
+                }
+            }
+            return fnc.setError(res, "Bao duong not found!!", 404);
+        }
+        return fnc.setError(res, "Missing input value!", 404);
+    }catch(error) {
+        return fnc.setError(res, error.message);
     }
 }
 //xoa_bd2
@@ -770,7 +920,7 @@ exports.delete1 = async (req, res) => {
         }
     } catch (error) {
 
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 }
 //xoa_all2
@@ -903,7 +1053,7 @@ exports.deleteAll = async (req, res) => {
 
     } catch (error) {
 
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 }
 //ts_can_baoduong_chitiet
@@ -979,7 +1129,7 @@ exports.detailTSCBD = async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 }
 
@@ -1097,6 +1247,6 @@ exports.listTSCSC = async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 }
