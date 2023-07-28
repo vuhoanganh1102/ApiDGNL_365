@@ -475,7 +475,11 @@ const newSchema = new mongoose.Schema({
         so_km_da_di:{
             type: String,
             default: 0
-        }
+        },
+        loai_noithat:{
+            type: String,
+            default: 0
+        },
 
     },
     // bất động sản
@@ -577,19 +581,19 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: 0
         },
-        can_ban_mua:{
+        can_ban_mua: {
             type: Number,
             default: 0
         },
-        dia_chi:{
+        dia_chi: {
             type: String,
             default: 0
         },
-        huong_ban_cong:{
+        huong_ban_cong: {
             type: String,
             default: 0
         },
-        cangoc:{
+        cangoc: {
             type: String,
             default: 0
         }
