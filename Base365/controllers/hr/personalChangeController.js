@@ -458,7 +458,6 @@ exports.getListQuitJob = async(req, res, next) => {
             //lay ra ten
             let infoUser = await Users.findOne({idQLC: listQuitJob[i].hs_ep_id});
             if(infoUser) infoQuitJob.ep_name = infoUser.userName;
-            else return functions.setError(res, "Employee not found!");
 
             //lay ra ten phong ban
             let infoDep = await Department.findOne({dep_id: listQuitJob[i].hs_dep_id});

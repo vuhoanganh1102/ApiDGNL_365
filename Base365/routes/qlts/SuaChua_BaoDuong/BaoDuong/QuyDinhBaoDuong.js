@@ -4,10 +4,9 @@ const controllers = require('../../../../controllers/qlts/SuaChua_BaoDuong/BaoDu
 const functions = require('../../../../services/functions');
 const fnc = require('../../../../services/QLTS/qltsService');
 
-
-
 //quy dinh bao duong 
 router.post('/edit_qdinh_baoduong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.EditRegulations);
 router.post('/add_qdinh_baoduong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.addRegulations);
-router.post('/details_qdinh_baoduong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.DetailRegulations); // dang loi
+router.post('/xoaQuyDinhBaoDuong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.xoaQuyDinhBaoDuong);
+
 module.exports = router;
