@@ -3019,6 +3019,83 @@ exports.setting_display = async(req, res) => {
 
 exports.fastUploadProfile = async(req, res) => {
     try {
+        const { phoneTK, password, name, emailContact, cv_title, cv_cate_id, cv_city_id, fromWeb, fromDevice } = req.body;
+        const file = req.files;
+        if (phoneTK && password && name && emailContact && cv_title && cv_cate_id && cv_city_id && file) {
+            const user = await functions.getTokenUser();
+            const now = functions.getTimeNow();
+
+            // Nếu ứng viên chưa đăng nhập -> đăng ký tài khoản
+            if (!user) {
+                const findUser = await functions.getDatafindOne(Users, { phoneTK, type: { $ne: 1 } });
+                if (!findUser) {
+
+                    // Lấy id mới nhất
+                    const getMaxUserID = await functions.getMaxUserID();
+                    const now = functions.getTimeNow();
+                    let data = {
+                        _id: getMaxUserID._id,
+                        phoneTK: phoneTK,
+                        password: password,
+                        userName: name,
+                        phone: phoneTK,
+                        type: 0,
+                        emailContact: emailContact,
+                        fromWeb: fromWeb,
+                        fromDevice: fromDevice,
+                        idTimViec365: getMaxUserID._idTV365,
+                        idRaoNhanh365: getMaxUserID._idRN365,
+                        idQLC: getMaxUserID._idQLC,
+                        chat365_secret: Buffer.from(getMaxUserID._id.toString()).toString('base64'),
+                        createdAt: now,
+                        updatedAt: now,
+                        inForPerson: {
+                            candidate: {
+                                cv_city_id: cv_city_id,
+                                cv_cate_id: cv_cate_id,
+                                cv_title: cv_title
+                            }
+                        }
+                    };
+
+                    // Nếu ứng viên hoàn thiện hồ sơ bằng cách tải video
+                    // if (videoUpload && !videoLink && !cvUpload) {
+                    //     data.inForPerson.candidate.cv_video = videoUpload[0].filename;
+                    // }
+                    // // Nếu ứng viên hoàn thiện hồ sơ bằng cách tải hồ sơ dạng ảnh pdf, png,..
+                    // if (!videoUpload && !videoLink && cvUpload) {
+                    //     dataUpload = {
+                    //         hs_use_id: getMaxUserID._idTV365,
+                    //         hs_name: cvUpload[0].originalname,
+                    //         hs_link: cvUpload[0].filename,
+                    //         hs_create_time: now
+                    //     };
+                    // }
+
+                    let User = new Users(data)
+
+                    // lưu ứng viên
+                    await User.save();
+
+                    // Tạo token
+                    const token = await functions.createToken({
+                        _id: getMaxUserID._id,
+                        idTimViec365: getMaxUserID._idTV365,
+                        idQLC: getMaxUserID._idQLC,
+                        idRaoNhanh365: getMaxUserID._idRN365,
+                        email: phone,
+                        phoneTK: getMaxUserID.phoneTK,
+                        createdAt: now,
+                        type: 0,
+                        com_id: 0
+                    }, "1d");
+                    // Trả về kết quả cho client
+                    return functions.success(res, "Đăng kí thành công", { user_id: data.idTimViec365, access_token: token });
+                }
+                return functions.setError(res, "Tài khoản đã tồn tại");
+            }
+        }
+        return functions.setError(res, "Chưa truyền đầy đủ thông tin");
 
     } catch (error) {
         console.log(error);
