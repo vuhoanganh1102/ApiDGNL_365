@@ -6,16 +6,16 @@ const functions = require('../../services/functions');
 const syll = require('../../controllers/timviec/syll');
 
 //lấy danh sách các mẫu syll
-router.post('/getSYLL', formData.parse(), syll.getSYLL);
+router.post('/list', formData.parse(), syll.list);
 
 // xem trước syll
-router.post('/previewSYLL', formData.parse(), syll.previewSYLL);
+router.post('/preview', formData.parse(), syll.preview);
 
 //xem chi tiết syll
-router.post('/detailSYLL', formData.parse(), functions.checkToken, syll.detailSYLL);
+router.post('/detail', formData.parse(), functions.checkToken, syll.detail);
 
 //lưu syll
-router.post('/saveSYLL', functions.checkToken, formData.parse(), functions.decrypt, syll.saveSYLL);
+router.post('/save', functions.checkToken, formData.parse(), functions.decrypt, syll.save);
 
 // tạo mới mẫu SYLL
 router.post('/createSYLL', functions.checkToken, functions.uploadImgKhoAnh.single('image'), syll.createSYLL);

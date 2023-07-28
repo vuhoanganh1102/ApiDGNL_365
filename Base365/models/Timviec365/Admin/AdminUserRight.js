@@ -1,30 +1,28 @@
 const mongoose = require('mongoose');
-const adminUserRightSchema = new mongoose.Schema({
-    _id: {
+const AdminUserRightSchema = new mongoose.Schema({
+    adu_admin_id: {
         type: Number,
         required: true,
     },
-    adminID: {
-        type: Number,
-    },
-    adminModule: {
-        type: Number,
-    },
-    add: {
+    adu_admin_module_id: {
         type: Number,
         default: 0,
     },
-    edit: {
+    adu_add: {
         type: Number,
         default: 0,
     },
-    delete: {
+    adu_edit: {
+        type: Number,
+        default: 0,
+    },
+    adu_delete: {
         type: Number,
         default: 0,
     }
 }, {
-    collection: 'AdminUserRight',
+    collection: 'Tv365AdminUserRight',
     versionKey: false,
     timestamp: true
 })
-module.exports = mongoose.model("AdminUserRight", adminUserRightSchema);
+module.exports = mongoose.model("Tv365AdminUserRight", AdminUserRightSchema);

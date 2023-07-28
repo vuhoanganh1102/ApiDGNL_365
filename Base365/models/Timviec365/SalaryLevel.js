@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 const SalaryLevelSchema = new mongoose.Schema({
-    _id: {
+    salarylevelid: {
         type: Number,
         required: true,
     },
-    title: String,
-    order: Number,
-    createDate: Date,
+    Tile: String,
+    Order: Number,
+    CreateDate: Date,
 
 }, {
-    collection: 'SalaryLevel',
+    collection: 'Tv365SalaryLevel',
     versionKey: false,
     timestamp: true
 })
-module.exports = mongoose.model("SalaryLevel", SalaryLevelSchema);
+module.exports = mongoose.model("Tv365SalaryLevel", SalaryLevelSchema);

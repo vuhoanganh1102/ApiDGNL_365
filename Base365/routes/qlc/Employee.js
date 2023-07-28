@@ -19,8 +19,9 @@ router.post('/updateInfoEmployee', functions.checkToken, formData.parse(), emplo
 // api api gửi mã OTP qua mail (quên mật khẩu) 
 // router.post('/forgotPassword', formData.parse(), employee.forgotPassword);
 
-router.post('/info', formData.parse(), functions.checkToken, employee.info);
+router.post('/info', functions.checkToken, formData.parse(), employee.info);
 
+router.post('/home', functions.checkToken, formData.parse(), employee.home);
 
 
 

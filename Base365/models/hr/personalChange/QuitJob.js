@@ -5,6 +5,8 @@ const QuitJobSchema = new Schema({
     id: {
         type: Number,
         required: true,
+        unique: true,
+        autoIncrement: true
     },
 
     ep_id: {

@@ -1,21 +1,20 @@
 const functions = require('../../services/functions');
 const PriceList = require('../../models/Raonhanh365/PriceList');
 
-exports.getPriceListRN= async(req, res, next) => {
+exports.getPriceListRN = async(req, res, next) => {
     try {
         let priceListId = req.body.priceListId,
-        type = req.body.type;
+            type = req.body.type;
         let condition = {};
 
         // lay bang gia theo id
-        if(priceListId) condition._id = Number(priceListId);
+        if (priceListId) condition._id = Number(priceListId);
 
         //lay bang theo loai(gim tin noi bat, ghim tin hap dan)
-        if(type) condition.type = Number(type);
-        console.log(condition);
+        if (type) condition.type = Number(type);
 
-        let priceList = await PriceList.find(condition);      
-        return functions.success(res, "Get priceList success", {data: priceList });
+        let priceList = await PriceList.find(condition);
+        return functions.success(res, "Get priceList success", { data: priceList });
     } catch (e) {
         console.log("Err from server", e);
         return functions.setError(res, "Err from server", 500);
@@ -26,7 +25,6 @@ exports.getPriceListRN= async(req, res, next) => {
 exports.toolPriceList = async(req, res, next) => {
     try {
         let data = await functions.getDataAxios('https://raonhanh365.vn/api/select_ds_banggia.php');
-        console.log(data.data);
         if (data.data.items.length > 0) {
             data.forEach(async element => {
                 const priceList = new PriceList({

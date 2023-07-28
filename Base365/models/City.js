@@ -11,10 +11,9 @@ const citySchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    // 1 miền bắc , 2 miền trung , 3 miền nam
     type: Number,
-    // số lượng
     count: {
+        // số lượng
         type: Number,
         default: 0
     },
@@ -47,7 +46,7 @@ const citySchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    m: {
+    area: {
         // 1 miền bắc , 2 miền trung , 3 miền nam
         type: Number,
         required: true

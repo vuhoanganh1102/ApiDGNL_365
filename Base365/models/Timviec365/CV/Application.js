@@ -7,7 +7,7 @@ const ApplicationSchema = new mongoose.Schema({
     name: {
         type: String
     },
-    nameSub: {
+    name_sub: {
         type: String
     },
     alias: {
@@ -22,28 +22,40 @@ const ApplicationSchema = new mongoose.Schema({
     view: {
         type: Number
     },
-    favourite: {
+    love: {
         type: Number
     },
-    downLoad: {
+    download: {
         type: Number
     },
-    color: {
+    colors: {
         type: String
     },
-    htmlVi: {
+    html_vi: {
         type: String
     },
-    cateId: {
+    html_en: {
+        type: String
+    },
+    html_cn: {
+        type: String
+    },
+    html_jp: {
+        type: String
+    },
+    html_kr: {
+        type: String
+    },
+    cate_id: {
         type: Number
     },
     exp: {
         type: Number
     },
-    nhuCau: {
+    nhucau: {
         type: Number
     },
-    tId: {
+    tid: {
         type: Number
     },
     status: {
@@ -51,22 +63,7 @@ const ApplicationSchema = new mongoose.Schema({
     },
     vip: {
         type: Number
-    },
-    htmlEn: {
-        type: String
-    },
-    htmlCn: {
-        type: String
-    },
-    htmlJp: {
-        type: String
-    },
-    htmlKr: {
-        type: String
-    },
-    langId: {
-        type: Number
-    },
+    }
 }, {
     collection: 'Application',
     versionKey: false

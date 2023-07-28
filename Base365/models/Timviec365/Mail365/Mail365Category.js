@@ -1,9 +1,8 @@
 // danh mục mail365
 const mongoose = require('mongoose');
 const Mail365CategorySchema = new mongoose.Schema({
-    _id: {
-        type: Number,
-        require: true
+    id: {
+        type: Number
     },
     name: {
         type: String
@@ -11,28 +10,28 @@ const Mail365CategorySchema = new mongoose.Schema({
     alias: {
         type: String
     },
+    // gồm 1.thư mời ứng viên || 2. thư mời hợp tác || 3. thư mời hội họp 
     parent: {
         type: Number
     },
-    metaTitle: {
-        type: String
-    },
-    metaKey: {
-        type: String
-    },
-    metaDes: {
-        type: String
-    },
     sort: {
         type: Number
+    },
+    meta_title: {
+        type: String
+    },
+    meta_key: {
+        type: String
+    },
+    meta_des: {
+        type: String
     },
     content: {
         type: String
     },
     status: {
         type: Number
-    },
-
+    }
 
 }, {
     collection: 'Mail365Category',
