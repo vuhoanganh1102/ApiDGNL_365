@@ -78,6 +78,7 @@ const model_Baoduong = new mongoose.Schema({
     },
     xoa_bd: {
         type: Number,
+        default: 0
     },
     bd_date_create: {
         type: Number,

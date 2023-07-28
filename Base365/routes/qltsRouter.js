@@ -20,7 +20,6 @@ var xoaGanDay = require('./qlts/duLieuXoaRoute')
 var DieuChuyenBanGiaoDVQL = require("./qlts/DieuChuyenBanGiao/DieuChuyenDonViQuanLi");
 var BanGiao = require("./qlts/DieuChuyenBanGiao/BanGiao");
 var TrangChu = require("./qlts/TrangChu");
-var baoDuongRouter = require("./qlts/SuaChua_BaoDuong/baoDuongRouter");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
 var thanhly = require('./qlts/thanhLyRouter')
 
@@ -60,7 +59,6 @@ router.use('/QuyDinhBaoDuong', QuyDinhBaoDuong);
 router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
 router.use('/TheoDoiCongSuat', TheoDoiCongSuat);
 router.use('/DanhSach', DanhSach);
-//router.use('/baoDuong', baoDuongRouter);
 // điều chuyển bàn giao 
 router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
 

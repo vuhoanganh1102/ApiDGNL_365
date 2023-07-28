@@ -14,5 +14,6 @@ router.post('/deltails_ts_can_baoduong', functions.checkToken, fnc.checkRole('SC
 
 //lay ra danh sach cho ca 5 tap
 router.post('/danhSachBaoDuong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.danhSachBaoDuong);
+router.post('/deleteBd', functions.checkToken, formData.parse(), controllers.xoaBaoDuong)
 
 module.exports = router;
