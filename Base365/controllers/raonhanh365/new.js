@@ -1218,7 +1218,6 @@ exports.createBuyNew = async (req, res) => {
             description &&
             han_su_dung &&
             status &&
-            phi_duthau &&
             phone &&
             email &&
             tgian_kt && tgian_bd && noidung_nhs
