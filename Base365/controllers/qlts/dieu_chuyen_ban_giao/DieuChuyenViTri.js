@@ -480,8 +480,8 @@ exports.listBB = async (req, res) => {
         filter.id_cty = id_cty
         filter.xoa_dieuchuyen = 0
         filter.dc_type = 0
-        if(dc_id)  filter.dc_id = dc_id
-        if(dc_id)  filter.dc_trangthai = dc_trangthai
+        if(dc_id)  filter.dc_id = Number(dc_id)
+        if(dc_trangthai)  filter.dc_trangthai = Number(dc_trangthai)
 
         let dc_vitri = await DieuChuyen.aggregate([
             { $match: filter },
@@ -492,8 +492,8 @@ exports.listBB = async (req, res) => {
                 $lookup: {
                     from: "QLTS_ViTri_ts",
                     localField: "vi_tri_dc_tu",
-                    foreignField: "id_vitri",
-                    as: "infoVTtu"
+                    foreignField: "id_vitri", 
+                    as: "infoVTtu" 
                 }
             },
             { $unwind: { path: "$infoVTtu", preserveNullAndEmptyArrays: true } },
@@ -537,5 +537,259 @@ exports.listBB = async (req, res) => {
         fnc.success(res, 'lấy thành công ', { data, total });
     } catch (error) {
         fnc.setError(res, error.message);
+    }
+}
+exports.detailBB = async (req, res) => {
+    try {
+        const id_cty = req.user.data.com_id
+        const dc_id = req.body.dc_id
+        let data = []
+        if(dc_id){
+            let filter = {};
+            filter.id_cty = id_cty
+            filter.xoa_dieuchuyen = 0
+            filter.dc_type = 0
+            filter.dc_id = Number(dc_id)
+        console.log(filter)
+            let data1 = await DieuChuyen.aggregate([
+                { $match: filter },
+                {
+                    $lookup: {
+                        from: "QLTS_Tai_San",
+                        localField: "dieuchuyen_taisan.ds_dc.ts_id",
+                        foreignField: "ts_id",
+                        as: "infoTS"
+                    }
+                },
+                { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "vi_tri_dc_tu",
+                        foreignField: "id_vitri",
+                        as: "infoVTtu"
+                    }
+                },
+                { $unwind: { path: "$infoVTtu", preserveNullAndEmptyArrays: true } },
+    
+                {
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "data1_tsnhan",
+                        foreignField: "id_vitri",
+                        as: "infoVTden"
+                    } 
+                },
+                { $unwind: { path: "$infoVTden", preserveNullAndEmptyArrays: true } },
+    
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "id_ng_thuchien",
+                        foreignField: "idQLC",
+                        as: "infoUser"
+                    }
+                },
+                { $unwind: { path: "$infoUser", preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "id_cty_dang_sd",
+                        foreignField: "idQLC",
+                        as: "infoCtyDangSD"
+                    }
+                },
+                { $unwind: { path: "$infoCtyDangSD", preserveNullAndEmptyArrays: true } },
+                // { $unwind: "$infoCtyDangSD" },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "id_cty_nhan",
+                        foreignField: "idQLC",
+                        as: "infoCty"
+                    }
+                },
+                { $unwind: { path: "$infoCty", preserveNullAndEmptyArrays: true } },
+    
+                // { $unwind: "$infoCty" },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "id_nv_nhan",
+                        foreignField: "idQLC",
+                        as: "infoNV"
+                    }
+                },
+                { $unwind: { path: "$infoNV", preserveNullAndEmptyArrays: true } },
+    
+                // { $unwind: "$infoNV" },
+                {
+                    $lookup: {
+                        from: "Users",
+                        localField: "id_nv_dangsudung",
+                        foreignField: "idQLC",
+                        as: "infoNVdangSD"
+                    }
+                },
+                { $unwind: { path: "$infoNVdangSD", preserveNullAndEmptyArrays: true } },
+    
+                // { $unwind: "$infoNVdangSD" },
+                {
+                    $lookup: {
+                        from: "QLC_Deparments",
+                        localField: "id_pb_nhan",
+                        foreignField: "dep_id",
+                        as: "infoPhongBan"
+                    }
+                },
+                { $unwind: { path: "$infoPhongBan", preserveNullAndEmptyArrays: true } },
+    
+                // { $unwind: "$infoPhongBan" },
+                {
+                    $lookup: {
+                        from: "QLC_Deparments",
+                        localField: "id_pb_dang_sd",
+                        foreignField: "dep_id",
+                        as: "infoPhongBanDangSD"
+                    }
+                },
+                { $unwind: { path: "$infoPhongBanDangSD", preserveNullAndEmptyArrays: true } },
+    
+                {
+                    $project: {
+                        "dc_id": "$dc_id",
+                        "dc_ngay": "$dc_ngay",
+                        "dc_trangthai": "$dc_trangthai",
+                        "dc_lydo": "$dc_lydo",
+                        "id_ng_thuchien": "$id_ng_thuchien",
+                        "dc_vi_tri_tu": "$infoVTtu.vi_tri",
+                        "dc_vi_tri_den": "$infoVTden.vi_tri",
+                        "id_pb_dang_sd": "$id_pb_dang_sd",
+                        "id_pb_nhan": "$id_pb_nhan",
+                        "id_nv_dangsudung": "$id_nv_dangsudung",
+                        "id_nv_nhan": "$id_nv_nhan",
+                        "id_cty_nhan": "$id_cty_nhan",
+                        "id_cty_dang_sd": "$id_cty_dang_sd",
+                        "ten_Cty": "$infoCty.userName",
+                        "ten_Cty_dang_su_dung": "$infoCtyDangSD.userName",
+                        "ten_nhanVien": "$infoNV.userName",
+                        "pb_id_cua_nhan_vien": "$infoNV.inForPerson.employee.dep_id",
+                        "ten_nhanVien_dang_su_dung": "$infoNVdangSD.userName", 
+                        "pb_id_cua_nhan_vien_dang_sd": "$infoNVdangSD.inForPerson.employee.dep_id",
+                        "ten_phongBan": "$infoPhongBan.dep_name",
+                        "ten_phongBan_dang_su_dung": "$infoPhongBanDangSD.dep_name",
+                        "ten_nguoi_thuchien": "$infoUser.userName",
+                        "pb_id_nguoi_thuc_hien": "$infoUser.inForPerson.employee.dep_id",
+                        "position_id": "$infoUser.inForPerson.employee.position_id",
+                        "ten_tai_san": "$infoTS.ts_ten",
+                        "Ma_tai_san": "$infoTS.ts_id",
+                        "So_luong_tai_san": "$dieuchuyen_taisan.ds_dc.sl_ts",
+                    }
+                },  
+                { $unwind: { path: "$So_luong_tai_san", preserveNullAndEmptyArrays: true } },
+                {
+                    "$group": {
+                    "_id": "$_id",
+                    "dc_ngay": {
+                        "$first": "$dc_ngay"
+                    },
+                    "dc_trangthai": {
+                        "$first": "$dc_trangthai"
+                    },
+                    "dc_lydo": {
+                        "$first": "$dc_lydo"
+                    },
+                    "id_ng_thuchien": {
+                        "$first": "$id_ng_thuchien"
+                    },
+                    "id_pb_dang_sd": {
+                        "$first": "$id_pb_dang_sd"
+                    },
+                    "id_pb_nhan": {
+                        "$first": "$id_pb_nhan"
+                    },
+                    "id_nv_dangsudung": {
+                        "$first": "$id_nv_dangsudung"
+                    },
+                    "id_cty_nhan": {
+                        "$first": "$id_cty_nhan"
+                    },
+                    "id_cty_dang_sd": {
+                        "$first": "$id_cty_dang_sd"
+                    },
+                    "dc_id": {
+                        "$first": "$dc_id"
+                    },
+                    "ten_Cty": {
+                        "$first": "$ten_Cty"
+                    },
+                    "ten_Cty_dang_su_dung": {
+                        "$first": "$ten_Cty_dang_su_dung"
+                    },
+                    "ten_nhanVien": {
+                        "$first": "$ten_nhanVien"
+                    },
+                    "pb_id_cua_nhan_vien": {
+                        "$first": "$pb_id_cua_nhan_vien"
+                    },
+                    "ten_nhanVien_dang_su_dung": {
+                        "$first": "$ten_nhanVien_dang_su_dung"
+                    },
+                    "pb_id_cua_nhan_vien_dang_sd": {
+                        "$first": "$pb_id_cua_nhan_vien_dang_sd"
+                    },
+                    "ten_phongBan": {
+                        "$first": "$ten_phongBan"
+                    },
+                    "ten_phongBan_dang_su_dung": {
+                        "$first": "$ten_phongBan_dang_su_dung"
+                    },
+                    "ten_tai_san": {
+                        "$first": "$ten_tai_san"
+                    },
+                    "Ma_tai_san": {
+                        "$first": "$Ma_tai_san"
+                    },
+                    "So_luong_tai_san": {
+                        "$first": "$So_luong_tai_san"
+                    },
+                    "ten_nguoi_thuchien": {
+                        "$first": "$ten_nguoi_thuchien"
+                    },
+                    "pb_id_nguoi_thuc_hien": {
+                        "$first": "$pb_id_nguoi_thuc_hien"
+                    },
+                    "dc_vi_tri_tu": {
+                        "$first": "$dc_vi_tri_tu"
+                    },
+                    "dc_vi_tri_den": { 
+                        "$first": "$dc_vi_tri_den"
+                    },
+                    // "recipients_details": {
+                    //     "$first": {
+                    //         "user_id": "$filter.user_id",
+                    //         "last_message": "$filter.last_message"
+                    //     }
+                    // }
+                    }    
+                }
+      
+            ])
+            for (let i = 0; i < data1.length; i++) {
+                let depName_ng_thuc_hien = await Department.findOne({ com_id: id_cty, dep_id: data1[i].pb_id_nguoi_thuc_hien })
+                data1[i].depName_ng_thuc_hien = depName_ng_thuc_hien
+                let depName_cua_nhan_vien = await Department.findOne({ com_id: id_cty, dep_id: data1[i].dep_id })
+                data1[i].depName_cua_nhan_vien = depName_cua_nhan_vien
+                let depName_cua_nhan_vien_dang_sd = await Department.findOne({ com_id: id_cty, dep_id: data1[i].pb_id_cua_nhan_vien_dang_sd })
+                data1[i].depName_cua_nhan_vien_dang_sd = depName_cua_nhan_vien_dang_sd
+            }
+            data.push(data1)
+            let total = await DieuChuyen.countDocuments(filter)
+            return fnc.success(res, 'lấy thành công ', { data, total });
+        }
+        return fnc.setError(res, "vui lòng nhập dc_id");
+
+    } catch (error) {
+        return fnc.setError(res, error.message);
     }
 }
