@@ -742,7 +742,7 @@ exports.addGhiTang  = async(req,res) => {
     })
     let saveGT = await createGt.save()
     let createQTSD = new QuaTrinhSuDung({
-      quatrinh_id: quatrinh_id,
+      quatrinh_id: maxIdQTSD,
       id_bien_ban: saveGT.id_ghitang,
       so_lg : saveGT.sl_tang,
       id_cty : com_id,
@@ -1094,13 +1094,11 @@ exports.addFile = async (req, res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     let createDate = Math.floor(Date.now() / 1000);
-    let tep_dinh_kem = req.files.tep_ten;
-    if (tep_dinh_kem) {
-      let checkFile = await functions.checkFile(tep_dinh_kem.path);
-      if (!checkFile) {
-        return functions.setError(res, `File khong dung dinh dang hoac qua kich cho phep!`, 411);
-      }
-      fileName = tep_dinh_kem.name
+    let tep_kem = req.files.tep_ten;
+    let fileName = '';
+    if (tep_kem) {
+      await quanlytaisanService.uploadFileNameRandom(ts_id,tep_kem);
+      fileName = tep_kem.name
     }
     let maxIdTep = await functions.getMaxIdByField(TepDinhKem, 'tep_id');
     let createNew = new TepDinhKem({
@@ -1141,6 +1139,12 @@ exports.showFile = async (req, res) => {
       .sort({ tep_id: -1 })
       .skip(startIndex)
       .limit(perPage);
+      let fileX = '';
+      for(let i = 0 ; i < showtep.length; i++){
+       fileX = await quanlytaisanService.createLinkFileQLTS(showtep[i].id_ts ,showtep[i].tep_ten);
+        
+      }
+      console.log(fileX);
     const totalTsCount = await TepDinhKem.countDocuments({ id_cty: com_id, id_ts: ts_id });
 
     const totalPages = Math.ceil(totalTsCount / perPage);
