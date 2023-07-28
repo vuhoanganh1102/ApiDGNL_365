@@ -214,7 +214,7 @@ exports.getLinkFile = (folder, time, fileName) => {
 }
 
 exports.createLinkFileQLTS = (ts_id, file) => {
-  let link = process.env.port_picture_qlc + `/storage/base365/qlts/uploads/${ts_id}/`  + file;
+  let link = process.env.port_picture_qlc + `/storage/base365/qlts/uploads/${ts_id}/` + file;
   return link;
 }
 
@@ -223,20 +223,20 @@ exports.uploadFileNameRandom = (ts_id, file) => {
   let filePath = `../storage/base365/qlts/uploads/${ts_id}/` + file.originalFilename;
 
   if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
-      fs.mkdirSync(path, { recursive: true });
+    fs.mkdirSync(path, { recursive: true });
   }
 
   fs.readFile(file.path, (err, data) => {
+    if (err) {
+      console.log(err)
+    }
+    fs.writeFile(filePath, data, (err) => {
       if (err) {
-          console.log(err)
+        console.log(err)
+      } else {
+        console.log(" luu thanh cong ");
       }
-      fs.writeFile(filePath, data, (err) => {
-          if (err) {
-              console.log(err)
-          } else {
-              console.log(" luu thanh cong ");
-          }
-      });
+    });
   });
 }
 
@@ -504,15 +504,15 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
           ng_xoa: '$user.userName'
         }
       },
-      // {$unwind:'$soluong'}
+      { $unwind: '$soluong' }
     ]);
     for (let i = 0; i < data.length; i++) {
       data[i].thuhoi_ngay = new Date(data[i].thuhoi_ngay * 1000);
       data[i].thuhoi_date_delete = new Date(data[i].thuhoi_date_delete * 1000);
-      let user = await Users.findOne({idQLC: data[i].id_ng_dc_thuhoi})
-      if(user && user.inForPerson && user.inForPerson.employee){
-        let dep = await department.findOne({dep_id:user.inForPerson.employee.dep_id})
-        if(dep){
+      let user = await Users.findOne({ idQLC: data[i].id_ng_dc_thuhoi })
+      if (user && user.inForPerson && user.inForPerson.employee) {
+        let dep = await department.findOne({ dep_id: user.inForPerson.employee.dep_id })
+        if (dep) {
           data[i].id_ng_dc_thuhoi = dep.dep_name
         }
       }

@@ -3132,7 +3132,7 @@ exports.fastUploadProfile = async(req, res) => {
                         else {
                             const getMaxIdProfile = await Profile.findOne({}, { hs_id: 1 }).sort({ hs_id: -1 }).limit(1).lean();
                             const profile = new Profile({
-                                hs_id = getMaxIdProfile.hs_id + 1,
+                                hs_id : getMaxIdProfile.hs_id + 1,
                                 hs_use_id: data.idTimViec365,
                                 hs_name: uploadFile.nameFile,
                                 hs_link: uploadFile.nameFile,
