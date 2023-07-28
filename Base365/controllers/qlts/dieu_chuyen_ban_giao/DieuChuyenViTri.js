@@ -496,7 +496,8 @@ exports.listBB = async (req, res) => {
                     as: "infoVTtu"
                 }
             },
-            // { $unwind: "$infoVTtu" },
+            { $unwind: { path: "$infoVTtu", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "QLTS_ViTri_ts",
@@ -505,7 +506,8 @@ exports.listBB = async (req, res) => {
                     as: "infoVTden"
                 }
             },
-            // { $unwind: "$infoVTden" },
+            { $unwind: { path: "$infoVTden", preserveNullAndEmptyArrays: true } },
+
             {
                 $lookup: {
                     from: "Users",
@@ -514,11 +516,12 @@ exports.listBB = async (req, res) => {
                     as: "infoUser"
                 }
             },
-            { $unwind: "$infoUser" },
+            { $unwind: { path: "$infoUser", preserveNullAndEmptyArrays: true } },
+
             {
                 $project: {
                     "dc_id": "$dc_id",
-                    "dc_ngay": "$new Date(dc_ngay)",
+                    "dc_ngay": "$dc_ngay",
                     "dc_trangthai": "$dc_trangthai",
                     "dc_lydo": "$dc_lydo",
                     "id_ng_thuchien": "$id_ng_thuchien",

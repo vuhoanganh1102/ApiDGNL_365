@@ -1368,123 +1368,67 @@ exports.detailBBCanSuaChua = async (req, res) => {
 
 exports.listBBCanSuaChua = async (req, res) => {
     try {
-        let skip = req.body.skip || 1;
-        let limit = req.body.limit || 10;
-        let type_quyen = req.user.data.type;
-        let key = req.body.key;
-        let com_id = 0;
-        let ep_id = 0;
-        if (req.user.data.type == 1) {
 
-            com_id = req.user.data.idQLC;
-
-        } else if (req.user.data.type == 2) {
-            ep_id = req.user.data.idQLC;
-            com_id = req.user.data.com_id;
-        }
-        let filter = {
-            id_cty: com_id,
-            // sc_trangthai: 1,
-            sc_da_xoa: 0,
-        }
-        if (key) {
-            filter.sc_id = Number(key);
-        }
-
-
-        let filter2 = {};
-        let filter3 = {};
-        if (type_quyen == 2) {
-            // condition = ep_id;
-            filter2.sc_id_ng_tao = ep_id;
-            filter3.sc_ng_thuchien = ep_id;
-        }
-
-        let tscan_suachua = await SuaChua.find(
-
-            {
-                $and: [
-                    filter,
-                    {
-                        $or: [
-                            filter2,
-                            filter3,
-
-                        ]
-                    },
-                    {
-                        sc_trangthai: { $in: [0, 2] }
-                    }
-                ]
-            })
-            .sort({ sc_id: -1 })
-            .skip((skip - 1) * limit)
-            .limit(limit);
-        let list_bb = [];
-        let count = 0;
-        while (count < tscan_suachua.length) {
-
-            let taiSan = await TaiSan.findOne({
-                ts_id: tscan_suachua[count].suachua_taisan,
-            }) || null;
-
-            let userSD = await Users.findOne({
-                idQLC: tscan_suachua[count].sc_ng_sd
-            }) || null;
-            let vitri = await ViTriTaISan.findOne({
-                id_vitri: tscan_suachua[count].sc_ts_vitri,
-                id_cty: com_id
-            }) || null;
-            let info = {
-                sc_date_create: new Date(tscan_suachua[count].sc_date_create * 1000),
-                sc_ngay_hong: new Date(tscan_suachua[count].sc_ngay_hong * 1000),
-                sc_hoanthanh: new Date(tscan_suachua[count].sc_hoanthanh * 1000),
-                sc_id: tscan_suachua[count].sc_id,
-                sc_trangthai: tscan_suachua[count].sc_trangthai,
-                sl_sc: tscan_suachua[count].sl_sc,
-                sc_noidung: tscan_suachua[count].sc_noidung,
-                ten_ts: taiSan ? taiSan.ts_ten : null,
-                nguoi_sd: userSD ? userSD.userName : null,
-                // vi_Tri: vitri.vi_tri || null
-
+        const id_cty = req.user.data.com_id
+        const sc_id = req.body.sc_id
+        const page = Number(req.body.page)||1
+        const pageSize = Number(req.body.pageSize)||10
+        const skip = (page-1)*pageSize
+        const limit = pageSize
+        const data = []
+        let tscan_suachua = await SuaChua.find({id_cty : id_cty , sc_da_xoa: 0 ,sc_trangthai :{$in : [0,2]}}).count()
+        let tsdang_suachua = await SuaChua.find({id_cty : id_cty , sc_da_xoa: 0 ,sc_trangthai :1}).count()
+        let tsda_suachua = await SuaChua.find({id_cty : id_cty , sc_da_xoa: 0 ,sc_trangthai : 3}).count()
+        data.push({tscan_suachua : tscan_suachua})
+        data.push({tsdang_suachua : tsdang_suachua})
+        data.push({tsda_suachua : tsda_suachua})
+        let conditions = {}
+        conditions.sc_da_xoa = 0
+        conditions.sc_trangthai = {$in : [0,2]}
+        conditions.id_cty = id_cty
+        if(sc_id) conditions.sc_id = sc_id 
+        console.log(conditions)
+        const data1 = await SuaChua.aggregate([
+            {$match : conditions},
+            {$skip : skip},
+            {$limit : limit},
+            {sort : {sc_id : -1}},
+            {$lookup: {
+                from: "QLTS_Tai_San",
+                localField: "suachua_taisan",
+                foreignField: "ts_id",
+                as: "infoTS"
             }
-            list_bb.push(info);
-            count++;
-        };
-        let totalBBCSC = await SuaChua.countDocuments({
-            id_cty: com_id,
-            sc_da_xoa: 0,
-            sc_trangthai: { $in: [0, 2] },
-            $or: [
-                filter2,
-                filter3,
-
-            ]
-        });
-        let totalBBDSC = await SuaChua.countDocuments({
-            id_cty: com_id,
-            sc_trangthai: 1,
-            sc_da_xoa: 0,
-            $or: [
-                filter2,
-                filter3,
-
-            ]
-        });
-        let totalBBDaSC = await SuaChua.countDocuments({
-            id_cty: com_id,
-            sc_trangthai: 3,
-            sc_da_xoa: 0,
-            $or: [
-                filter2,
-                filter3,
-
-            ]
-        })
-
-        fnc.success(res, "thanh cong ", { list_bb, totalBBCSC, totalBBDSC, totalBBDaSC });
+            },
+            { $unwind: "$infoTS" },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_cty",
+                    foreignField: "idQLC",
+                    as: "infoCtyDangSD"
+                }
+            },
+            { $unwind: "$infoCtyDangSD" },
+            {$project : {
+                "sc_id" : "$sc_id",
+                "sc_trangthai" : "$sc_trangthai",
+                "sc_ngay" : "$sc_ngay",
+                "ma_tai_san" : "$suachua_taisan",
+                "ten_tai_san" : "$infoTS.ts_ten",
+                "sl_sc" : "$sl_sc",
+                "doi_tuong_sd" : "$infoCtyDangSD.userName",
+                "sc_ngay_hong" : "$sc_ngay_hong",
+                // "Vi_tri" : "$Vi_tri",
+                "sc_ngay_nhapkho" : "$sc_ngay_nhapkho",
+                "sc_noidung" : "$sc_noidung",
+            }}
+            ])
+            data.push({list : data1})
+            // return res.status(200).json({data : {data} , message : "lấy thành công"})
+            return fnc.success(res,"lấy thành công",{data})
     } catch (error) {
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 
 }

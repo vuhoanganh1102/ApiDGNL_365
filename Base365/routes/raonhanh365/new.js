@@ -81,7 +81,7 @@ router.post('/addDiscount', formData.parse(),functions.checkToken, newRN.addDisc
 router.post('/comment', formData.parse(),functions.checkToken, newRN.comment);
 
 // sửa bình luận
-router.put('/updateComment', formData.parse(),functions.checkToken, newRN.updateComment);
+router.post('/updateComment', formData.parse(),functions.checkToken, newRN.updateComment);
 
 //api xoa tin da ung tuyen
 router.post('/deleteCandiApply',formData.parse(),functions.checkToken, newRN.deleteUv);
