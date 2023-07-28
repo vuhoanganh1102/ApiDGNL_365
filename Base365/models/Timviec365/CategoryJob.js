@@ -1,65 +1,70 @@
 const mongoose = require('mongoose');
 const jobSchema = new mongoose.Schema({
-    _id: {
+    cat_id: {
         type: Number,
         required: true,
     },
-    name: {
+    cat_name: {
         // tên ngành nghề
         type: String,
         required: true
     },
-    title: {
+    cat_title: {
         // tiêu đề
         type: String,
         default: null
     },
-    tags: {
+    cat_tags: {
         // name tag
         type: String,
         default: null
     },
-    seoDescription: {
+    cat_description: {
         // chi tiết 
         type: String,
         default: null
     },
-    seoKeyword: {
+    cat_keyword: {
         // từ khóa
         type: String,
         default: null
     },
-    description: {
-        // mô tả
+    cat_mota: {
+        // từ khóa
         type: String,
         default: null
     },
-    parentID: {
+    cat_parent_id: {
         // id cha
         type: Number,
         default: 0
     },
-    countCandi: {
+    cat_lq: {
+        // chi tiết 
+        type: String,
+        default: null
+    },
+    cat_count: {
         // tổng ứng viên của ngành nghề
         type: Number,
         default: 0
     },
-    countJob: {
+    cat_count_vl: {
         // tổng việc làm của ngành nghề
         type: Number,
         default: 0
     },
-    order: {
+    cat_order: {
         // ưu tiên
         type: Number,
         default: 0
     },
-    active: {
+    cat_active: {
         // kích hoạt
         type: Number,
         default: 0
     },
-    hot: {
+    cat_hot: {
         // 
         type: Number,
         default: 0
@@ -80,6 +85,11 @@ const jobSchema = new mongoose.Schema({
         default: null
     },
     cat_tlq: {
+        // 
+        type: String,
+        default: null
+    },
+    cat_tlq_uv: {
         // 
         type: String,
         default: null

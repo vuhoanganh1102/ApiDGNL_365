@@ -1,289 +1,364 @@
 const md5 = require('md5');
 
+// Load models
 const Users = require('../../models/Users');
 const functions = require('../../services/functions');
-const nopHoSo = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
+const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
 const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
 const SaveCandidate = require('../../models/Timviec365/UserOnSite/Company/SaveCandidate');
 const PointCompany = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany');
 const PointUsed = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointUsed');
 const CompanyUnset = require('../../models/Timviec365/UserOnSite/Company/UserCompanyUnset');
-const AdminUser = require('../../models/AdminUser');
+const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
 const CategoryCompany = require('../../models/Timviec365/UserOnSite/Company/CategoryCompany')
-const CV = require('../../models/Timviec365/CV/CV')
+const CV = require('../../models/Timviec365/CV/Cv365')
+const TagBlog = require('../../models/Timviec365/Blog/TagBlog');
+const CompanyStorage = require('../../models/Timviec365/UserOnSite/Company/Storage');
+const PermissionNotify = require('../../models/Timviec365/PermissionNotify');
+
+
+// Load service
+const service = require('../../services/timviec365/company');
+const servicePermissionNotify = require('../../services/timviec365/PermissionNotify');
+const sendMail = require('../../services/timviec365/sendMail');
+const multer = require('multer');
+const fs = require('fs');
+
+
+// Check email tồn tại
+exports.checkExistEmail = async(req, res) => {
+    try {
+        const email = req.body.email;
+        if (email) {
+            const checkEmail = await Users.findOne({
+                email: email,
+                "inForCompany.timviec365.usc_md5": "",
+                type: 1
+            }).lean();
+            if (!checkEmail) {
+                return functions.success(res, "email có thể sử dụng để đăng ký");
+            }
+            return functions.setError(res, "Email đã tồn tại.")
+        }
+        return functions.setError(res, "Chưa truyền email");
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error)
+    }
+}
+
+// Check tên công ty
+exports.checkExistName = async(req, res) => {
+    try {
+        const nameCompany = req.body.nameCompany;
+        if (nameCompany) {
+            const company = await Users.findOne({
+                userName: { $regex: new RegExp('^' + nameCompany + '$', 'i') }
+            }, {
+                email: 1,
+                phoneTK: 1
+            }).lean();
+            if (!company) {
+                return functions.success(res, "Tên công ty có thể sử dụng để đăng ký", {
+                    account: ""
+                });
+            }
+            return functions.success(res, "Tên công ty đã được sử dụng", {
+                account: company.email != null ? company.email : company.phoneTK
+            });
+        }
+        return functions.setError(res, "Chưa truyền tên công ty");
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error)
+    }
+}
 
 // hàm đăng ký
 exports.register = async(req, res, next) => {
     try {
         let request = req.body,
             email = request.email,
-            phone = request.phone,
-            username = request.usc_name,
             password = request.password,
+            username = request.usc_name,
             city = request.usc_city,
             district = request.usc_qh,
             address = request.usc_address,
-            mst = request.thue,
+            phone = request.phone,
+            description = request.usc_mota || null,
             linkVideo = request.linkVideo,
-            description = request.usc_mota,
             fromDevice = request.fromDevice,
-            fromWeb = request.fromWeb,
-            avatarUser = req.files.logo,
-            ipAddressRegister = request.ipAddressRegister,
-            videoType = req.files.videoType,
-            lv = request.usc_lv,
-            video = '',
-            link = '',
-            avatar = "",
-            lvID = 0,
-            listIDKD = [],
-            idKD = 0,
-            empID = 0;
-        console.log(req.files)
-            // check dữ liệu không bị undefined
-        if ((username && password && city && district &&
-                address && email && phone) !== undefined) {
+            fromWeb = request.fromWeb;
+
+        // check dữ liệu không bị undefined
+        if (username && password && city && district && address && email && phone) {
             // validate email,phone
             let CheckEmail = await functions.checkEmail(email),
                 CheckPhoneNumber = await functions.checkPhoneNumber(phone);
-            if ((CheckPhoneNumber && CheckEmail) == true) {
+
+            if (CheckPhoneNumber && CheckEmail) {
                 //  check email co trong trong database hay khong
-                let user = await functions.getDatafindOne(Users, { email })
+                let user = await functions.getDatafindOne(Users, { email, type: 1 });
                 if (user == null) {
-                    //check video
-                    if (videoType) {
-                        if (videoType.length == 1) {
-                            let checkVideo = await functions.checkVideo(videoType[0]);
-                            if (checkVideo) {
-                                video = videoType[0].filename
-                            } else {
-                                await functions.deleteImg(videoType[0])
-                                if (avatarUser) {
-                                    await functions.deleteImg(avatarUser[0])
-                                }
-                                return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
-                            }
-                        } else if (videoType.length > 1) {
-                            return functions.setError(res, 'chỉ được đăng 1 video', 404)
+                    if (JSON.stringify(req.files) !== '{}') {
+                        let totalSize = 0;
+                        const files = req.files.storage;
+
+                        // Chuyển đối tượng thành mảng
+                        const storage = Object.keys(files).map((key) => files[key]);
+
+                        // Tính tổng dung lượng file tải lên
+                        storage.forEach(file => {
+                            totalSize += file.size;
+                        });
+
+                        if (totalSize > functions.MAX_STORAGE) {
+                            return functions.setError(res, 'Dung lượng file tải lên vượt quá 300MB');
                         }
                     }
 
-                    //check ảnh
-                    if (avatarUser) {
-                        if (avatarUser.length == 1) {
-                            let checkImg = await functions.checkImage(avatarUser[0].path);
-                            if (checkImg) {
-                                avatar = avatarUser[0].filename
-                            } else {
-                                if (videoType) {
-                                    await functions.deleteImg(videoType[0])
-                                }
-                                await functions.deleteImg(avatarUser[0]);
-                                return functions.setError(res, `sai định dạng ảnh hoặc ảnh lớn hơn 2MB :${avatarUser[0].originalname}`, 404);
-                            }
-                        } else if (avatarUser.length > 1) {
-                            return functions.setError(res, 'chỉ được đăng 1 ảnh', 404)
-                        }
-                    }
+                    // Lấy ID lĩnh vực
+                    const lvID = await service.recognition_tag_company(username, description);
 
-                    // check link video
-                    if (linkVideo) {
-                        let checkLink = await functions.checkLink(linkVideo);
-                        if (checkLink) {
-                            link = linkVideo;
-                        } else {
-                            if (videoType) {
-                                await functions.deleteImg(videoType[0])
-                            }
-                            if (avatarUser) {
-                                await functions.deleteImg(avatarUser[0])
-                            }
-                            return functions.setError(res, 'link không đúng định dạng ', 404)
-                        }
-                    }
-                    if (lv == undefined) {
-                        let data = {
-                            title_company: username,
-                            description_company: description,
-                            number: 1
-                        }
-                        let dataLV = await functions.getDataAxios('http://43.239.223.10:5001/recognition_tag_company', data);
-                        lvID = dataLV.data.items[0].id_tag;
-                    }
-                    // lấy danh sách id bộ phận
-                    let listKD = await functions.getDatafind(AdminUser, { bophan: 1 });
-                    let listUser = await Users.find({ 'inForCompany.idKD': { $ne: 0 } }).sort({ _id: -1 }).limit(1);
-                    if (listUser.length > 0) {
-                        let idKDUser = listUser[0].inForCompany.idKD;
-                        for (let i = 0; i < listKD.length; i++) {
-                            listIDKD.push(listKD[i].stt)
-                        }
-                        // tìm vị trí của idKd của người đăng ký mới nhất
-                        let index = listIDKD.findIndex(id => id == idKDUser);
-                        if (index !== -1) {
-                            if (index === listIDKD.length - 1) {
-                                idKD = listIDKD[0];
-                            } else {
-                                idKD = listIDKD[index + 1];
-                            }
-                        }
-                    }
-                    // tìm Id max trong DB
-                    let maxID = await functions.getMaxID(Users) || 0;
-                    let maxIDTimviec = await (Users.findOne({ type: 1 }).sort({ idTimViec365: -1 }).lean()) || 0;
-                    let newIDTimViec = maxIDTimviec.idTimViec365 || 0;
-                    let adminKD = await functions.getDatafindOne(AdminUser, { bophan: idKD });
-                    if (adminKD) {
-                        empID = adminKD.empID;
-                    }
+                    // Lấy ID kinh doanh sau khi được chia
+                    const kd = await service.shareCompanyToAdmin();
+
+                    // Lấy id mới nhất
+                    const getMaxUserID = await functions.getMaxUserID("company");
                     // data gửi đến bộ phận nhân sự qua app chat
-                    let dataSendChatApp = {
-                        ContactId: empID,
-                        SenderID: 1191,
-                        MessageType: 'text',
-                        Message: `${username} vừa đăng ký tài khoản nhà tuyển dụng trên timviec365.vn`,
-                        LiveChat: { "ClientId": "200504_liveChatV2", "ClientName": username, "FromWeb": "timviec365.vn", "FromConversation": "506685" },
-                        InfoSupport: { "Title": "Hỗ trợ", "Status": 1 },
-                        MessageInforSupport: `Xin chào, tôi tên là ${username},SĐT: ${phone} `,
-                        Email: `${email},tôi vừa đăng ký tài khoản NTD trên timviec365.vn,tôi cần bạn hỗ trợ !`
-                    }
-                    const company = new Users({
-                        _id: (Number(maxID) + 1),
+                    // let dataSendChatApp = {
+                    //     ContactId: kd.emp_id,
+                    //     SenderID: 1191,
+                    //     MessageType: 'text',
+                    //     Message: `${username} vừa đăng ký tài khoản nhà tuyển dụng trên timviec365.vn`,
+                    //     LiveChat: { "ClientId": "200504_liveChatV2", "ClientName": username, "FromWeb": "timviec365.vn", "FromConversation": "506685" },
+                    //     InfoSupport: { "Title": "Hỗ trợ", "Status": 1 },
+                    //     MessageInforSupport: `Xin chào, tôi tên là ${username},SĐT: ${phone} `,
+                    //     Email: `${email},tôi vừa đăng ký tài khoản NTD trên timviec365.vn,tôi cần bạn hỗ trợ !`
+                    // }
+
+                    const otp = Math.floor(Math.random() * 900000) + 100000;
+
+                    const data = {
+                        _id: getMaxUserID._id,
                         email: email,
                         password: md5(password),
                         phone: phone,
                         userName: username,
+                        alias: functions.renderAlias(username),
                         type: 1,
                         city: city,
                         district: district,
                         address: address,
-                        avatarUser: avatar,
-                        createdAt: new Date().getTime(),
+                        otp: otp,
+                        isOnline: 1,
+                        createdAt: functions.getTimeNow(),
+                        updatedAt: functions.getTimeNow(),
                         role: 1,
                         authentic: 0,
                         fromWeb: fromWeb || null,
                         fromDevice: fromDevice || null,
-                        idTimViec365: (Number(newIDTimViec) + 1),
+                        idTimViec365: getMaxUserID._idTV365,
+                        idRaoNhanh365: getMaxUserID._idRN365,
+                        idQLC: getMaxUserID._idQLC,
+                        chat365_secret: Buffer.from(getMaxUserID._id.toString()).toString('base64'),
                         inForCompany: {
-                            idKD: idKD,
-                            mst: mst,
-                            videoType: video || null,
-                            linkVideo: link || null,
-                            description: description || null,
-                            userContactName: username,
-                            userContactPhone: phone,
-                            userContactAddress: address,
-                            userContactEmail: email,
-                            ipAddressRegister: ipAddressRegister,
-                            lv: lvID
+                            scan: 1,
+                            usc_kd: kd.usc_kd,
+                            usc_kd_first: kd.usc_kd,
+                            description: description,
+                            timviec365: { usc_lv: lvID }
                         }
-                    });
+                    };
+
+                    if (linkVideo) {
+                        data.usc_video = linkVideo;
+                        data.usc_video_type = 2;
+                    }
+
+                    const company = new Users(data);
                     await company.save();
+
+                    // Gửi mail kích hoạt
+                    sendMail.SendRegisterNTDAPP(email, username, otp);
+
+                    // Xử lý upload hình ảnh vào kho nếu có
+                    if (JSON.stringify(req.files) !== '{}') {
+                        // Cập nhật ảnh đại diện
+                        const avatarUser = req.files.avatarUser;
+                        const uploadLogo = service.uploadLogo(avatarUser);
+                        await Users.updateOne({ _id: getMaxUserID._id }, {
+                            $set: { avatarUser: uploadLogo.file_name }
+                        });
+
+                        // Xử lý hình ảnh vào kho
+                        const files = req.files.storage;
+
+                        // Chuyển đối tượng thành mảng
+                        const storage = Object.keys(files).map((key) => files[key]);
+
+                        let uploadStorage, isUploadLogo = 0;
+                        for (let index = 0; index < storage.length; index++) {
+                            file = storage[index];
+
+                            if (service.checkItemStorage(file.type)) {
+                                if (service.isImage(file.type)) {
+                                    uploadStorage = service.uploadStorage(getMaxUserID._idTV365, file, 'image');
+                                    await service.addStorage(getMaxUserID._idTV365, 'image', uploadStorage.file_name);
+                                } else {
+                                    uploadStorage = service.uploadStorage(getMaxUserID._idTV365, file, 'video');
+                                    await service.addStorage(getMaxUserID._idTV365, 'video', uploadStorage.file_name);
+                                }
+                            }
+                        }
+                    }
+
                     // gửi cho bộ phận nhân sự qua appchat
                     // await functions.getDataAxios('http://43.239.223.142:9000/api/message/SendMessage_v2', dataSendChatApp)
                     let companyUnset = await functions.getDatafindOne(CompanyUnset, { email })
                     if (companyUnset != null) {
                         await functions.getDataDeleteOne(CompanyUnset, { email })
                     }
-                    await sendMail.SendRegisterNTD(`${email}`, `${username}`, "link")
-                    return functions.success(res, 'đăng ký thành công')
 
+                    // Lưu lại thông tin phân quyền
+                    const listPermissions = request.listPermissions;
+                    servicePermissionNotify.HandlePermissionNotify(getMaxUserID._idTV365, listPermissions, 'company');
+
+                    const token = await functions.createToken(data, "1d");
+                    return functions.success(res, 'đăng ký thành công', {
+                        access_token: token,
+                        user_id: getMaxUserID._idTV365,
+                        chat365_id: getMaxUserID._id
+                    })
                 } else {
-                    if (videoType) {
-                        await functions.deleteImg(videoType[0])
-                    }
-                    if (avatarUser) {
-                        await functions.deleteImg(avatarUser[0])
-                    }
                     return functions.setError(res, 'email đã tồn tại', 404)
                 }
             } else {
-                if (videoType) {
-                    await functions.deleteImg(videoType[0])
-                }
-                if (avatarUser) {
-                    await functions.deleteImg(avatarUser[0])
-                }
                 return functions.setError(res, 'email hoặc số điện thoại định dạng không hợp lệ', 404)
             }
-
         } else {
-            if (videoType) {
-                await functions.deleteImg(videoType[0])
-            }
-            if (avatarUser) {
-                await functions.deleteImg(avatarUser[0])
-            }
-
             return functions.setError(res, 'Thiếu dữ liệu', 404)
         }
     } catch (error) {
-        console.log(error)
-        if (videoType) {
-            await functions.deleteImg(videoType[0])
-        }
-        if (avatarUser) {
-            await functions.deleteImg(avatarUser[0])
-        }
+        console.log(error);
         return functions.setError(res, error)
     }
 }
 
 // hàm dăng nhập
 exports.login = async(req, res, next) => {
+    try {
+        if (req.body.email && req.body.password) {
+            const type = 1;
+            const id_chat = req.body.id_chat;
+            let email = req.body.email;
+            let password = req.body.password;
+            let password_type = req.body.password_type || 0;
 
-    if (req.body.email && req.body.password) {
-        const type = 1;
-        const email = req.body.email
-        const password = req.body.password
-
-        let checkPhoneNumber = await functions.checkEmail(email);
-        if (checkPhoneNumber) {
-            let findUser = await functions.getDatafindOne(Users, { email })
-            if (!findUser) {
-                return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 404)
-            }
-            let checkPassword = await functions.verifyPassword(password, findUser.password)
-            if (!checkPassword) {
-                return functions.setError(res, "Mật khẩu sai", 404)
-            }
-            if (findUser.type == type) {
-                const token = await functions.createToken(findUser, "1d")
-                const refreshToken = await functions.createToken({ userId: findUser._id }, "1y")
-                let data = {
-                    access_token: token,
-                    refresh_token: refreshToken,
-                    user_info: {
-                        usc_id: findUser._id,
-                        usc_email: findUser.email,
-                        usc_phone_tk: findUser.phoneTK,
-                        usc_pass: findUser.password,
-                        usc_company: findUser.userName,
-                        usc_logo: findUser.avatarUser,
-                        usc_phone: findUser.phone,
-                        usc_city: findUser.city,
-                        usc_qh: findUser.district,
-                        usc_address: findUser.address,
-                        usc_create_time: findUser.createdAt,
-                        usc_update_time: findUser.updatedAt,
-                        usc_active: findUser.lastActivedAt,
-                        usc_authentic: findUser.authentic,
-                        usc_lat: findUser.latitude,
-                        usc_long: findUser.longtitude,
-                        usc_name: findUser.inForCompany.userContactName,
-                        usc_name_add: findUser.inForCompany.userContactAddress,
-                        usc_name_phone: findUser.inForCompany.userContactPhone,
-                        usc_name_email: findUser.inForCompany.userContactEmail,
+            if (id_chat && id_chat != 0) {
+                const permission = await PermissionNotify.aggregate([{
+                        $match: {
+                            pn_type_noti: { $all: [1] },
+                            pn_id_chat: id_chat
+                        }
+                    },
+                    { $limit: 1 },
+                    {
+                        $lookup: {
+                            from: "Users",
+                            foreignField: "idTimViec365",
+                            localField: "pn_usc_id",
+                            as: "user",
+                        }
+                    },
+                    { $unwind: "$user" },
+                    { $match: { "$user.type": 1 } },
+                    {
+                        $project: {
+                            usc_email: "$user.email",
+                            usc_phone_tk: "$user.phoneTK",
+                            usc_pass: "$user.password",
+                        }
                     }
+                ]);
+                if (permission.length > 0) {
+                    const rs_permission = permission[0];
+                    email = rs_permission.usc_email != "" ? rs_permission.usc_email : rs_permission.usc_phone_tk;
+                    password = rs_permission.usc_pass;
+                    password_type = 1;
                 }
-                return functions.success(res, 'Đăng nhập thành công', data)
-            } else return functions.setError(res, "tài khoản này không phải tài khoản công ty", 404)
+            }
+
+            password = (password_type == 0) ? md5(password) : password;
+
+            let checkPhoneNumber = await functions.checkEmail(email);
+            if (checkPhoneNumber) {
+                let findUser = await functions.getDatafindOne(Users, { email, type: 1 });
+                if (findUser) {
+                    if (findUser.type == type) {
+                        const token = await functions.createToken({
+                            _id: findUser._id,
+                            idTimViec365: findUser.idTimViec365,
+                            idQLC: findUser.idQLC,
+                            idRaoNhanh365: findUser.idRaoNhanh365,
+                            email: findUser.email,
+                            phoneTK: findUser.phoneTK,
+                            createdAt: findUser.createdAt,
+                            type: 1
+                        }, "1d");
+                        const refreshToken = await functions.createToken({ userId: findUser._id }, "1d")
+                        let data = {
+                            access_token: token,
+                            refresh_token: refreshToken,
+                            chat365_id: findUser._id,
+                            user_info: {
+                                usc_id: findUser.idTimViec365,
+                                usc_email: findUser.email,
+                                usc_phone_tk: findUser.phoneTK,
+                                usc_pass: findUser.password,
+                                usc_company: findUser.userName,
+                                usc_logo: findUser.avatarUser,
+                                usc_phone: findUser.phone,
+                                usc_city: findUser.city,
+                                usc_qh: findUser.district,
+                                usc_address: findUser.address,
+                                usc_create_time: findUser.createdAt,
+                                usc_update_time: findUser.updatedAt,
+                                usc_active: findUser.lastActivedAt,
+                                usc_authentic: findUser.authentic,
+                                usc_lat: findUser.latitude,
+                                usc_long: findUser.longtitude,
+                                // usc_name: findUser.inForCompany.userContactName,
+                                // usc_name_add: findUser.inForCompany.userContactAddress,
+                                // usc_name_phone: findUser.inForCompany.userContactPhone,
+                                // usc_name_email: findUser.inForCompany.userContactEmail,
+                            }
+                        }
+                        if (findUser.inForCompany) {
+                            data.user_info.usc_name = findUser.inForCompany.userContactName;
+                            data.user_info.usc_name_add = findUser.inForCompany.userContactAddress;
+                            data.user_info.usc_name_phone = findUser.inForCompany.userContactPhone;
+                            data.user_info.usc_name_email = findUser.inForCompany.userContactEmail;
+                        }
+                        return functions.success(res, 'Đăng nhập thành công', data);
+                    } else return functions.setError(res, "tài khoản này không phải tài khoản công ty", 404);
+                }
+                return functions.setError(res, "Tài khoản hoặc mật khẩu không đúng");
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (!checkPassword) {
+                    return functions.setError(res, "Mật khẩu sai", 404)
+                }
 
 
-        } else {
-            return functions.setError(res, "không đúng định dạng email", 404)
+
+            } else {
+                return functions.setError(res, "không đúng định dạng email", 404)
+            }
         }
+    } catch (error) {
+        return functions.setError(res, error, 404)
     }
+
 };
 
 // hàm lấy user khi đăng ký sai
@@ -355,18 +430,18 @@ exports.sendOTP = async(req, res, next) => {
     try {
         let email = req.body.email;
         if (email != undefined) {
-            let checkEmail = await functions.checkEmail(email)
+            let checkEmail = await functions.checkEmail(email);
             if (checkEmail) {
-                let user = await functions.getDatafindOne(Users, { email })
+                let user = await functions.getDatafindOne(Users, { email, type: 1 })
                 if (user) {
                     let otp = await functions.randomNumber
-                    await Users.updateOne({ email: email }, {
+                    await Users.updateOne({ _id: user._id }, {
                         $set: {
                             otp: otp
                         }
                     });
-                    await functions.sendEmailVerificationRequest(otp, email, user.userName)
-                    return functions.success(res, 'Gửi mã OTP thành công', )
+                    await functions.sendEmailVerificationRequest(otp, email, user.userName);
+                    return functions.success(res, 'Gửi mã OTP thành công');
                 }
                 return functions.setError(res, 'tài khoản không tồn tại', 404)
             } else {
@@ -385,17 +460,17 @@ exports.sendOTP = async(req, res, next) => {
 // hàm xác nhận otp để kích hoạt tài khoản
 exports.verify = async(req, res, next) => {
     try {
-        let otp = req.body.ma_xt,
-            email = req.body.email;
-        if (otp && email) {
-            let verify = await Users.findOne({ email, otp });
-            if (verify != null) {
-                await Users.updateOne({ email: email }, {
+        let otp = req.body.otp,
+            user = req.user.data;
+        if (otp) {
+            let User = await Users.findOne({ _id: user._id, otp });
+            if (User != null) {
+                await Users.updateOne({ _id: User._id }, {
                     $set: {
                         authentic: 1
                     }
                 });
-                return functions.success(res, 'xác thực thành công')
+                return functions.success(res, 'xác thực thành công', { user_id: User.idTimViec365 })
             }
             return functions.setError(res, 'xác thực thất bại', 404)
         }
@@ -410,25 +485,17 @@ exports.verify = async(req, res, next) => {
 // hàm bước 1 của quên mật khẩu
 exports.forgotPasswordCheckMail = async(req, res, next) => {
     try {
-        let email = req.body.email; //user nhập email
+        let email = req.body.email,
+            otp = req.body.otp;
         let checkEmail = await functions.checkEmail(email);
         if (checkEmail) {
-            let verify = await Users.findOne({ email: email, type: 1 });
-            if (verify != null) { //nếu tìm được 
-                // api lẫy mã OTP qua app Chat
-                let data = await functions.getDataAxios('http://43.239.223.142:9000/api/users/RegisterMailOtp', { email });
-                let otp = data.data.otp
-                if (otp) {
-                    await Users.updateOne({ email: email }, {
-                        $set: {
-                            otp: otp
-                        }
-                    });
-                    const token = await functions.createToken(verify, '30m')
-                    return functions.success(res, 'xác thực thành công', token)
-                }
-                return functions.setError(res, 'chưa lấy được mã otp', 404)
-
+            let user = await Users.findOne({ email: email, type: 1 });
+            if (user) {
+                await Users.updateOne({ _id: user._id }, {
+                    $set: { otp: otp }
+                });
+                await sendMail.SendqmkNTDAPP(email, user.userName, otp);
+                return functions.success(res, 'xác thực thành công', { IdTv365: user.idTimViec365 })
             }
             return functions.setError(res, 'email không đúng', 404)
         }
@@ -444,12 +511,14 @@ exports.forgotPasswordCheckMail = async(req, res, next) => {
 // hàm bước 2 của quên mật khẩu
 exports.forgotPasswordCheckOTP = async(req, res, next) => {
     try {
-        let email = req.user.data.email;
-        let otp = req.body.ma_xt;
+        let idTv365 = req.body.id,
+            otp = req.body.otp;
         if (otp) {
-            let verify = await Users.findOne({ email: email, otp: otp, type: 1 });
-            if (verify != null) {
-                return functions.success(res, 'xác thực thành công')
+            let user = await Users.findOne({ idTimViec365: idTv365, otp: otp, type: 1 });
+            if (user) {
+                const obj = { otp: user.otp, idTv365: idTv365, type: user.type };
+                const base64 = Buffer.from(JSON.stringify(obj)).toString('base64');
+                return functions.success(res, 'xác thực thành công', { base64 })
             }
             return functions.setError(res, 'mã otp không đúng', 404)
         }
@@ -485,41 +554,110 @@ exports.updatePassword = async(req, res, next) => {
 }
 
 // hàm cập nhập thông tin công ty
-exports.updateInfoCompany = async(req, res, next) => {
+exports.updateInfor = async(req, res, next) => {
     try {
-        let email = req.user.data.email
-        let request = req.body,
+        const user = req.user.data;
+        let companyID = user._id,
+            idTimViec365 = user.idTimViec365,
+            request = req.body,
             phone = request.phone,
             userCompany = request.name,
             city = request.city,
+            district = request.usc_qh,
             address = request.address,
-            site = request.quymo,
-            website = request.web,
             description = request.gt,
-            mst = request.thue;
-
-        if (phone && userCompany && city && address && description && site) {
-            let checkPhone = await functions.checkPhoneNumber(phone)
+            mst = request.thue,
+            tagLinhVuc = request.tagLinhVuc,
+            usc_video_link = request.usc_video_link;
+        if (phone && userCompany && city && district && address) {
+            let checkPhone = await functions.checkPhoneNumber(phone);
+            const now = functions.getTimeNow();
             if (checkPhone) {
-                await Users.updateOne({ email: email, type: 1 }, {
-                    $set: {
-                        'inForCompany.description': description,
-                        'userName': userCompany,
-                        'phone': phone,
-                        'city': city,
-                        'website': website || null,
-                        'address': address,
-                        'inForCompany.mst': mst || null,
-                        'inForCompany.website': website || null,
-                        'inForCompany.com_size': site,
+                let dataUpdate = {
+                    'inForCompany.description': description,
+                    'userName': userCompany,
+                    'phone': phone,
+                    'city': city,
+                    'district': district,
+                    'address': address,
+                    'inForCompany.timviec365.usc_mst': mst || null,
+                    "inForCompany.timviec365.usc_lv": tagLinhVuc
+                };
 
-                    }
+                if (usc_video_link) {
+                    dataUpdate["inForCompany.timviec365.usc_video"] = usc_video_link;
+                    dataUpdate["inForCompany.timviec365.usc_video_type"] = 2;
+                }
+                await Users.updateOne({ _id: companyID }, {
+                    $set: dataUpdate
                 });
-                return functions.success(res, 'update thành công', 404)
+
+
+                // Cập nhật quyền
+                const list_permission = req.body.list_permission;
+                if (list_permission != '' && list_permission.length > 0) {
+                    const array_list_permission = JSON.parse(list_permission);
+                    for (let i = 0; i < array_list_permission.length; i++) {
+                        const element = array_list_permission[i];
+                        const id_chat_pq = element.arr_id_chat;
+
+                        const id_thongbao = element.arr_id_ltbao.toString();
+                        for (let j = 0; j < id_chat_pq.length; j++) {
+                            const id_chat = id_chat_pq[j];
+
+                            const checkNotify = await PermissionNotify.findOne({
+                                pn_usc_id: idTimViec365,
+                                pn_id_chat: id_chat,
+                                pn_id_new: 0
+                            });
+
+                            if (checkNotify) {
+                                await PermissionNotify.updateOne({
+                                    pn_usc_id: idTimViec365,
+                                    pn_id_chat: id_chat,
+                                    pn_id_new: 0
+                                }, {
+                                    $set: {
+                                        pn_type_noti: id_thongbao,
+                                        pn_created_at: now
+                                    }
+                                });
+                            } else {
+                                if (id_thongbao) {
+                                    const maxID = await PermissionNotify.findOne({}, { pn_id: 1 }).sort({ pn_id: -1 }).lean();
+                                    const item = new PermissionNotify({
+                                        pn_id: Number(maxID.pn_id) + 1,
+                                        pn_usc_id: idTimViec365,
+                                        pn_id_chat: id_chat,
+                                        pn_type_noti: id_thongbao,
+                                        pn_created_at: now
+                                    });
+                                    await item.save();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Xóa các quyền bị loại bỏ
+                const list_permission_rm = req.body.list_permission_rm;
+                if (list_permission_rm != '') {
+                    const array_list_permission_rm = list_permission_rm.split(',').map(Number);
+                    for (let k = 0; k < array_list_permission_rm.length; k++) {
+                        const pn_id_chat = array_list_permission_rm[k];
+                        await PermissionNotify.deleteOne({
+                            pn_usc_id: idCompany,
+                            pn_id_chat: pn_id_chat,
+                            pn_id_new: 0
+                        });
+                    }
+                }
+
+                return functions.success(res, 'update thành công')
             }
-            return functions.setError(res, 'sai định dạng số điện thoại', 404)
+            return functions.setError(res, 'sai định dạng số điện thoại')
         }
-        return functions.setError(res, 'thiếu dữ liệu', 404)
+        return functions.setError(res, 'thiếu dữ liệu')
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -567,44 +705,32 @@ exports.updateContactInfo = async(req, res, next) => {
 // hàm cập nhập video hoặc link 
 exports.updateVideoOrLink = async(req, res, next) => {
     try {
-        let email = req.user.data.email,
-            videoType = req.file,
-            linkVideo = req.body.linkVideo,
-            video = '',
-            link = '';
-        if (videoType) {
-            let checkVideo = await functions.checkVideo(videoType);
-            if (checkVideo) {
-                video = videoType.filename
-            } else {
-                await functions.deleteImg(videoType)
-                return functions.setError(res, 'video không đúng định dạng hoặc lớn hơn 100MB ', 404)
-            }
+        let com_id = req.user.data.idTimViec365;
 
-        }
-        if (linkVideo) {
-            let checkLink = await functions.checkLink(linkVideo);
-            if (checkLink) {
-                link = linkVideo;
-            } else {
-                return functions.setError(res, 'link không đúng định dạng ', 404)
+        // Xử lý upload hình ảnh vào kho nếu có
+        if (JSON.stringify(req.files) !== '{}') {
+            // Xử lý hình ảnh vào kho
+            const storage = req.files.storage;
+
+            let uploadStorage, isUploadLogo = 0;
+            for (let index = 0; index < storage.length; index++) {
+                file = storage[index];
+
+                if (service.checkItemStorage(file.type)) {
+                    if (service.isImage(file.type)) {
+                        uploadStorage = service.uploadStorage(com_id, file, 'image');
+                        await service.addStorage(com_id, 'image', uploadStorage.file_name);
+                    } else {
+                        uploadStorage = service.uploadStorage(com_id, file, 'video');
+                        await service.addStorage(com_id, 'video', uploadStorage.file_name);
+                    }
+                }
             }
         }
-        let user = await functions.getDatafindOne(Users, { email, type: 1 })
-        if (user != null) {
-            await Users.updateOne({ email: email, type: 1 }, {
-                $set: {
-                    'inForCompany.videoType': video,
-                    'inForCompany.linkVideo': link
-                }
-            });
-            return functions.success(res, 'update thành công')
-        }
-        await functions.deleteImg(videoType)
-        return functions.setError(res, 'email không tồn tại')
+
+        return functions.setError(res, "Chưa truyền file để tải")
     } catch (error) {
         console.log(error)
-        await functions.deleteImg(req.file)
         return functions.setError(res, error)
     }
 }
@@ -723,29 +849,162 @@ exports.getDataCompany = async(req, res, next) => {
 // hàm lấy dữ liệu danh sách ứng tuyển UV
 exports.listUVApplyJob = async(req, res, next) => {
     try {
-        let idCompany = req.user.data.idTimViec365;
-        let page = Number(req.body.start);
-        let pageSize = Number(req.body.curent);
-        if (page && pageSize) {
-
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let findUV = await functions.pageFind(ApplyForJob, { userID: idCompany, type: 1 }, { _id: -1 }, skip, limit);
-            const totalCount = await functions.findCount(ApplyForJob, { userID: idCompany, type: 1 });
-            const totalPages = Math.ceil(totalCount / pageSize);
-            if (findUV) {
-                return functions.success(res, "Lấy danh sách uv thành công", { totalCount, totalPages, listUv: findUV });
-            }
-        } else {
-            let findUV = await functions.getDatafind(ApplyForJob, { userID: idCompany, type: 1 });
-            return functions.success(res, "Lấy danh sách uv thành công", findUV);
+        const idCompany = req.user.data.idTimViec365,
+            page = Number(req.body.page) || 1,
+            pageSize = Number(req.body.pageSize) || 10,
+            nhs_new_id = req.body.ft_new,
+            nhs_kq = req.body.ft_box,
+            skip = (page - 1) * pageSize,
+            limit = pageSize,
+            type = req.body.type || "tuungtuyen";
+        let match = {
+                nhs_com_id: idCompany,
+                nhs_kq: { $in: [0, 2, 13] }
+            },
+            lookUpUser = {
+                from: "Users",
+                localField: "nhs_use_id",
+                foreignField: "idTimViec365",
+                as: "user"
+            },
+            matchUser = {
+                "user.type": 0
+            },
+            lookUpNewTv365 = {
+                from: "NewTV365",
+                localField: "nhs_new_id",
+                foreignField: "new_id",
+                as: "new"
+            };
+        if (type != 'tuungtuyen') {
+            match.nhs_kq = { $in: [10, 11, 12, 14] }
         }
-        return functions.setError(res, 'không lấy được danh sách', 404)
+        if (nhs_new_id && nhs_new_id != 0) {
+            match.nhs_new_id = Number(nhs_new_id);
+        }
+        if (nhs_kq && nhs_kq != 0) {
+            match.nhs_kq = Number(nhs_kq);
+        }
+
+        let total = 0;
+        const list = await ApplyForJob.aggregate([{
+                $match: match
+            },
+            { $lookup: lookUpUser },
+            { $unwind: "$user" },
+            { $match: matchUser },
+            { $lookup: lookUpNewTv365 },
+            { $unwind: "$new" },
+            { $sort: { nhs_id: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $project: {
+                    use_id: "$user.idTimViec365",
+                    use_first_name: "$user.userName",
+                    use_email: "$user.email",
+                    new_id: "$new.new_id",
+                    new_title: "$new.new_title",
+                    new_alias: "$new.new_alias",
+                    nhs_time: 1,
+                    nhs_kq: 1,
+                    nhs_id: 1,
+                    nhs_time_pv: 1,
+                    nhs_text: 1,
+                    nhs_thuungtuyen: 1
+                }
+            }
+        ]);
+        if (list.length > 0) {
+            let countUv = await ApplyForJob.aggregate([{
+                    $match: match
+                },
+                {
+                    $lookup: lookUpUser
+                },
+                {
+                    $unwind: "$user"
+                },
+                {
+                    $match: matchUser
+                },
+                {
+                    $lookup: lookUpNewTv365
+                },
+                {
+                    $unwind: "$new"
+                },
+                {
+                    $count: "total"
+                }
+            ]);
+            if (countUv.length > 0) {
+                total = countUv[0].total;
+            }
+        }
+        return functions.success(res, "Lấy danh sách uv thành công", { items: list, total: total });
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
     }
+}
 
+exports.listJobByToken = async(req, res) => {
+    try {
+        const userID = req.user.data.idTimViec365;
+        const list = await NewTV365.find({ new_user_id: userID, new_md5: null }).select('new_id new_title');
+        return functions.success(res, "Lấy danh sách uv thành công", { items: list });
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+exports.update_uvut = async(req, res) => {
+    try {
+        let { nhs_id, nhs_kq, nhs_time_pv, nhs_time_tvs, nhs_time_tve, nhs_text } = req.body;
+        if (nhs_id) {
+            let data = {};
+            if (nhs_kq) {
+                data.nhs_kq = nhs_kq;
+            }
+            if (nhs_time_pv) {
+                data.nhs_time_pv = nhs_time_pv;
+            }
+            if (nhs_time_tvs) {
+                data.nhs_time_tvs = nhs_time_tvs;
+            }
+            if (nhs_time_tve) {
+                data.nhs_time_tve = nhs_time_tve;
+            }
+            if (nhs_text) {
+                data.nhs_text = nhs_text;
+            }
+            await ApplyForJob.updateOne({ nhs_id: nhs_id }, {
+                $set: data
+            });
+            return functions.success(res, "Cập nhật thành công");
+        }
+        return functions.setError(res, "Chưa truyền id");
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+exports.delete_hsut = async(req, res) => {
+    try {
+        let nhs_id = req.body.nhs_id;
+        if (nhs_id) {
+            const list = nhs_id.split(',').map(Number);
+            await ApplyForJob.deleteMany({ nhs_id: { $in: list } });
+            return functions.success(res, "Cập nhật thành công");
+        }
+        return functions.setError(res, "Chưa truyền id");
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
 }
 
 // hàm lấy dữ liệu danh sách ứng tuyển của chuyên viên gửi
@@ -817,22 +1076,44 @@ exports.postStatistics = async(req, res, next) => {
 exports.listSaveUV = async(req, res, next) => {
     try {
         let idCompany = req.user.data.idTimViec365;
-        let page = Number(req.body.start);
-        let pageSize = Number(req.body.curent);
-        if (page && pageSize) {
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let findUV = await functions.pageFind(SaveCandidate, { uscID: idCompany }, { _id: -1 }, skip, limit);
-            const totalCount = await functions.findCount(SaveCandidate, { uscID: idCompany });
-            const totalPages = Math.ceil(totalCount / pageSize);
-            if (findUV) {
-                return functions.success(res, "Lấy danh sách uv thành công", { totalCount, totalPages, listUv: findUV });
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+
+        const list = await SaveCandidate.aggregate([{
+                $match: {
+                    usc_id: Number(idCompany)
+                }
+            },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "use_id",
+                    foreignField: "idTimViec365",
+                    as: "user"
+                }
+            },
+            { $unwind: "$user" },
+            { $match: { "user.type": 0 } },
+            { $sort: { id: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $project: {
+                    use_id: "$user.idTimViec365",
+                    use_first_name: "$user.userName",
+                    use_email: "$user.email",
+                    cv_title: "$user.inForPerson.candidate.cv_title",
+                    save_time: 1
+                }
             }
-            return functions.setError(res, 'không lấy được danh sách', 404)
-        } else {
-            let findUV = await functions.getDatafind(SaveCandidate, { uscID: idCompany });
-            return functions.success(res, "Lấy danh sách tất cả uv thành công", findUV);
-        }
+        ]);
+
+
+        // let findUV = await functions.pageFind(SaveCandidate, { uscID: idCompany }, { _id: -1 }, skip, limit);
+        // const totalCount = await functions.findCount(SaveCandidate, { uscID: idCompany });
+        return functions.success(res, "Lấy danh sách uv thành công", { total: 0, items: list });
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -846,18 +1127,16 @@ exports.manageFilterPoint = async(req, res, next) => {
         let point = await functions.getDatafindOne(PointCompany, { uscID: idCompany, type: 1 });
         let now = new Date();
         let pointUSC = 0;
-        if (point) {
-            let checkReset0 = await functions.getDatafindOne(PointCompany, { uscID: idCompany, type: 1, dayResetPoint0: { $lt: now } });
-            if (checkReset0 == null) {
-                pointUSC = point.pointUSC
-            }
-            return functions.success(res, "lấy số lượng thành công", {
-                pointFree: 0,
-                pointUSC: pointUSC,
-                totalPoint: pointUSC,
-            })
-        }
-        return functions.setError(res, 'không có dữ liệu', 404)
+        // console.log(point);
+        // let checkReset0 = await functions.getDatafindOne(PointCompany, { uscID: idCompany, type: 1, dayResetPoint0: { $lt: now } });
+        // if (checkReset0 == null) {
+        //     pointUSC = point.pointCompany
+        // }
+        return functions.success(res, "lấy số lượng thành công", {
+            pointFree: 0,
+            pointUSC: pointUSC,
+            totalPoint: pointUSC,
+        })
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -869,42 +1148,46 @@ exports.seenUVWithPoint = async(req, res, next) => {
     try {
         let idCompany = req.user.data.idTimViec365;
         let idUser = req.body.useID;
-        let noteUV = req.body.noteUV;
-        let ipUser = req.body.ipUser;
-        let returnPoint = req.body.returnPoint;
         let point = 0;
-        if (idUser && ipUser) {
-            let companyPoint = await functions.getDatafindOne(PointCompany, { uscID: idCompany });
-            if (companyPoint) {
-                point = companyPoint.pointUSC - 1;
-                if (point >= 0 && companyPoint.pointUSC > 0) {
-                    await PointCompany.updateOne({ uscID: idCompany }, {
-                        $set: {
-                            pointUSC: point,
-                        }
-                    });
-                    let maxID = await functions.getMaxID(PointUsed) || 0;
-                    const pointUsed = new PointUsed({
-                        _id: Number(maxID) + 1,
-                        uscID: idCompany,
-                        useID: idUser,
-                        point: 1,
-                        type: 1,
-                        noteUV: noteUV || " ",
-                        usedDay: new Date().getTime(),
-                        returnPoint: returnPoint || 0,
-                        ipUser: ipUser
-                    })
-                    await pointUsed.save();
-                    return functions.success(res, "Xem thành công")
+        if (idUser) {
+            // Kiểm tra xem đã mất điểm hay chưa
+            const checkUsePoint = await functions.getDatafindOne(PointUsed, {
+                usc_id: idCompany,
+                use_id: idUser
+            });
+
+            // Nếu chưa mất điểm thì xử lý
+            if (!checkUsePoint) {
+                // Lấy điểm hiện tại của ntd xem còn điểm không
+                let companyPoint = await functions.getDatafindOne(PointCompany, { usc_id: idCompany });
+                if (companyPoint) {
+                    let pointUSC = companyPoint.point_usc;
+                    if (pointUSC > 0) {
+                        pointUSC = pointUSC - 1;
+                        await PointCompany.updateOne({ usc_id: idCompany }, {
+                            $set: {
+                                pointUSC: pointUSC,
+                            }
+                        });
+                        const pointUsed = new PointUsed({
+                            usc_id: idCompany,
+                            use_id: idUser,
+                            point: 1,
+                            type: 1,
+                            used_day: functions.getTimeNow(),
+                            check_from: 1
+                        })
+                        await pointUsed.save();
+
+                        return functions.success(res, "Mở điểm ứng viên thành công");
+                    }
+                    return functions.setError(res, "Bạn đã hết điểm để sử dụng", 200)
                 }
-                return functions.success(res, "Điểm còn lại là 0", {
-                    point: 0
-                })
+                return functions.setError(res, 'nhà tuyển dụng không có điểm', 200);
             }
-            return functions.setError(res, 'nhà tuyển dụng không có điểm', 404)
+            return functions.setError(res, 'Ứng viên này đã được xem thông tin');
         }
-        return functions.setError(res, 'không có dữ liệu', 404)
+        return functions.setError(res, 'không có dữ liệu')
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -1033,9 +1316,7 @@ exports.uploadImg = async(req, res, next) => {
                                 listImg.push({
                                     _id: Number(newID) + 1,
                                     name: img[i].filename,
-                                    size: img[i].size,
-                                    active: 0,
-                                    type: 1
+                                    size: img[i].size
                                 })
                             } else {
                                 if (img) {
@@ -1104,7 +1385,6 @@ exports.uploadVideo = async(req, res, next) => {
             let listImg = user.inForCompany.comImages;
             let listVideo = user.inForCompany.comVideos;
             const listMedia = [...listImg, ...listVideo];
-            console.log(listMedia)
             for (let i = 0; i < listMedia.length; i++) {
                 imageMoment += listMedia[i].size;
             }
@@ -1124,8 +1404,6 @@ exports.uploadVideo = async(req, res, next) => {
                                     _id: Number(newID) + 1,
                                     name: video[i].filename,
                                     size: video[i].size,
-                                    active: 0,
-                                    type: 1
                                 })
 
                             } else {
@@ -1242,8 +1520,16 @@ exports.deleteVideo = async(req, res, next) => {
 // hàm gọi data lĩnh vực
 exports.getDataLV = async(req, res, next) => {
     try {
-        let lists = await CategoryCompany.find({}, { _id: 1, nameTag: 1 });
-        return functions.success(res, 'lấy thành công', { lists })
+        let lists = await CategoryCompany.find({ nameTag: { $ne: "" }, cityTag: 0 }, { _id: 1, nameTag: 1 }),
+            data = [];
+        for (let index = 0; index < lists.length; index++) {
+            const element = lists[index];
+            data.push({
+                "id": element._id,
+                "name_tag": element.nameTag
+            });
+        }
+        return functions.success(res, 'lấy thành công', { data })
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -1271,16 +1557,38 @@ exports.luuUV = async(req, res, next) => {
         let idCompany = req.user.data.idTimViec365;
         let idUser = req.body.user_id;
         if (idUser) {
-            let maxID = await functions.getMaxID(SaveCandidate) || 0;
-            let newID = maxID._id || 0;
-            const uv = new SaveCandidate({
-                _id: Number(newID) + 1,
-                uscID: idCompany,
-                userID: idUser,
-                saveTime: new Date().getTime()
-            })
-            await uv.save();
-            return functions.success(res, 'lưu thành công', )
+            // Kiểm tra ứng viên có tồn tại không
+            const candidate = await functions.getDatafindOne(Users, {
+                idTimViec365: idUser,
+                type: 0
+            });
+            if (candidate != undefined) {
+                // Kiểm tra đã lưu hay chưa
+                const checkSaveCandi = await functions.getDatafindOne(SaveCandidate, {
+                    usc_id: idCompany,
+                    use_id: idUser,
+                });
+                if (checkSaveCandi == undefined) {
+                    let maxID = await SaveCandidate.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                    let newID = maxID.id || 0;
+                    const uv = new SaveCandidate({
+                        id: Number(newID) + 1,
+                        usc_id: idCompany,
+                        use_id: idUser,
+                        save_time: functions.getTimeNow()
+                    })
+                    await uv.save();
+                    return functions.success(res, 'lưu thành công')
+                } else {
+                    let deleteUv = await functions.getDataDeleteOne(SaveCandidate, {
+                        usc_id: idCompany,
+                        use_id: idUser,
+                    })
+                    if (deleteUv) {
+                        return functions.success(res, 'bỏ lưu thành công')
+                    }
+                }
+            }
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)
     } catch (error) {
@@ -1307,25 +1615,73 @@ exports.deleteUV = async(req, res, next) => {
 }
 
 // danh sách sử dụng điểm của nhà tuyển dụng cho Uv
-exports.listUVPoin = async(req, res, next) => {
+exports.listUVPoint = async(req, res, next) => {
     try {
-        let idCompany = req.user.data.idTimViec365;
-        let page = Number(req.body.start);
-        let pageSize = Number(req.body.curent);
-        if (page && pageSize) {
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let findUV = await functions.pageFind(PointUsed, { uscID: idCompany }, { _id: -1 }, skip, limit);
-            const totalCount = await functions.findCount(PointUsed, { uscID: idCompany });
-            const totalPages = Math.ceil(totalCount / pageSize);
-            if (findUV) {
-                return functions.success(res, "Lấy danh sách uv thành công", { total: totalCount, items: findUV });
-            }
-            return functions.setError(res, 'không lấy được danh sách', 404)
-        } else {
-            let findUV = await functions.getDatafind(SaveCandidate, { uscID: idCompany });
-            return functions.success(res, "Lấy danh sách tất cả uv thành công", findUV);
+        const idCompany = req.user.data.idTimViec365,
+            page = Number(req.body.page) || 1,
+            pageSize = Number(req.body.pageSize) || 10,
+            skip = (page - 1) * pageSize,
+            limit = pageSize,
+            ft_box = req.body.ft_box,
+            ft_box2 = req.body.ft_box2;
+
+        let match = {
+                usc_id: Number(idCompany),
+                use_id: { $ne: 0 },
+                type: 1
+            },
+            lookUpUser = {
+                from: "Users",
+                localField: "use_id",
+                foreignField: "idTimViec365",
+                as: "user"
+            },
+            matchUser = {
+                "user.type": 0
+            };
+        if (ft_box != 'tc') {
+            match.type = Number(ft_box);
         }
+        if (ft_box2 != 'tc') {
+            match.type_err = Number(ft_box2);
+        }
+
+        const list = await PointUsed.aggregate([
+            { $match: match },
+            { $lookup: lookUpUser },
+            { $unwind: "$user" },
+            { $match: matchUser },
+            { $sort: { used_day: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $project: {
+                    use_id: "$user.idTimViec365",
+                    use_first_name: "$user.userName",
+                    use_email: "$user.email",
+                    cv_title: "$user.inForPerson.candidate.cv_title",
+                    used_day: 1,
+                    type: 1,
+                    note_uv: 1,
+                    return_point: 1,
+                    type_err: 1,
+                }
+            }
+        ]);
+        let total = 0;
+        if (list.length > 0) {
+            let countUv = await PointUsed.aggregate([
+                { $match: match },
+                { $lookup: lookUpUser },
+                { $unwind: "$user" },
+                { $match: matchUser },
+                { $count: "total" }
+            ]);
+            if (countUv.length > 0) {
+                total = countUv[0].total;
+            }
+        }
+        return functions.success(res, "Lấy danh sách uv thành công", { items: list, total: total });
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
@@ -1403,12 +1759,122 @@ exports.updateUvWithPoint = async(req, res, next) => {
 // hàm chi tiết công ty trước đăng nhập
 exports.getDetailInfoCompany = async(req, res, next) => {
     try {
-        let idCompany = req.body.user_id;
+        let idCompany = Number(req.body.user_id);
         if (idCompany) {
-            let company = await functions.getDatafindOne(Users, { idTimViec365: idCompany, type: 1 });
-            if (company) {
-                let listNew = await functions.getDatafind(NewTV365, { userID: idCompany })
-                return functions.success(res, 'xem chi tiết thành công', { inForCompany: company, listNew })
+            let getData = await Users.aggregate([{
+                $match: {
+                    idTimViec365: idCompany,
+                    type: 1
+                }
+            }, {
+                $project: {
+                    "usc_id": "$idTimViec365",
+                    "usc_email": "$email",
+                    "usc_company": "$userName",
+                    "usc_alias": "$alias",
+                    "usc_pass": "$password",
+                    "chat365_id": "$_id",
+                    "chat365_secret": "$chat365_secret",
+                    "usc_name": "$inForCompany.timviec365.usc_name",
+                    "usc_name_add": "$inForCompany.timviec365.usc_name_add",
+                    "usc_name_phone": "$inForCompany.timviec365.usc_name_phone",
+                    "usc_name_email": "$inForCompany.timviec365.usc_name_email",
+                    "usc_redirect": "$inForCompany.timviec365.usc_redirect",
+                    "usc_type": "$inForCompany.timviec365.usc_type",
+                    "usc_mst": "$inForCompany.timviec365.usc_mst",
+                    "usc_address": "$address",
+                    "usc_phone": "$phone",
+                    "usc_logo": "$avatarUser" || null,
+                    "usc_size": "$inForCompany.timviec365.usc_size",
+                    "usc_website": "$inForCompany.timviec365.usc_website",
+                    "usc_city": "$city",
+                    "usc_qh": "$district",
+                    "usc_create_time": "$createdAt",
+                    "usc_update_time": "$updatedAt",
+                    "usc_view_count": "$inForCompany.timviec365.usc_view_count",
+                    "usc_authentic": "$authentic",
+                    "usc_company_info": "$inForCompany.description",
+                    "usc_lv": "$inForCompany.timviec365.usc_lv",
+                    "usc_badge": "$inForCompany.timviec365.usc_badge",
+                    "usc_video": "$inForCompany.timviec365.usc_video_type",
+                    "usc_video_type": "$inForCompany.timviec365.usc_video_type",
+                    "usc_xac_thuc": "$otp",
+                    "usc_kd": "$inForCompany.usc_kd",
+                    "idQLC": "$idQLC",
+                }
+            }]);
+            if (getData.length > 0) {
+                const company = getData[0];
+
+                // Xử lý ảnh đại diện
+                company.usc_logo = functions.getUrlLogoCompany(company.usc_create_time, company.usc_logo);
+                // Lấy danh sách tin tuyển dụng của cty
+                const listNew = await NewTV365.find({
+                        $or: [
+                            { new_user_id: company.usc_id },
+                            { new_user_redirect: company.usc_id }
+                        ],
+                        new_active: 1,
+                        new_301: '',
+                        new_md5: { $ne: 1 },
+                    }).lean(),
+                    // Số lượng tin tuyển dụng
+                    count = await functions.findCount(NewTV365, {
+                        $or: [
+                            { new_user_id: company.usc_id },
+                            { new_user_redirect: company.usc_id }
+                        ],
+                        new_active: 1,
+                        new_301: '',
+                        new_md5: { $ne: 1 },
+                    }),
+                    // Lấy từ khóa liên quan
+                    tagBlog = await TagBlog.find({
+                        $text: { $search: company.usc_company }
+                    })
+                    .limit(20)
+                    .lean(),
+                    // Lấy kho ảnh
+                    storageImage = await CompanyStorage.find({
+                        usc_id: idCompany,
+                        image: { $ne: null }
+                    }).lean(),
+                    // Lấy kho video
+                    storageVideo = await CompanyStorage.find({
+                        usc_id: idCompany,
+                        video: { $ne: null }
+                    }).lean();
+
+                // Xử lý chuyển về text cho tỉnh thành, ngành nghề của tin
+                for (let k = 0; k < listNew.length; k++) {
+                    const element = listNew[k];
+                    element.new_city = element.new_city.toString();
+                    element.new_cat_id = element.new_cat_id.toString();
+                }
+                // Xử lý đường dẫn đầy đủ của ảnh và video
+                for (let i = 0; i < storageImage.length; i++) {
+                    const element = storageImage[i];
+                    element.url = service.urlStorageImage(company.usc_create_time, element.image);
+                }
+                for (let j = 0; j < storageVideo.length; j++) {
+                    const element = storageVideo[j];
+                    element.url = service.urlStorageVideo(company.usc_create_time, element.video);
+                }
+                // Trả ra view
+                company.storageImage = storageImage;
+                company.storageVideo = storageVideo;
+
+                // Lấy điểm còn lại của công ty
+                company.point_usc = 0;
+                let companyPoint = await PointCompany.findOne({ usc_id: idCompany }, { point_usc: 1 }).lean();
+                if (companyPoint) {
+                    company.point_usc = companyPoint.point_usc;
+                }
+                return functions.success(res, 'Lấy thông tin công ty thành công', {
+                    detail_company: company,
+                    items: listNew,
+                    tu_khoa: tagBlog
+                })
             }
             return functions.setError(res, 'công ty không tồn tại', 404)
         }
@@ -1423,7 +1889,7 @@ exports.getDetailInfoCompany = async(req, res, next) => {
 // hàm box mẫu cv
 exports.formCV = async(req, res, next) => {
     try {
-        let formCV = await CV.find().sort({ _id: -1 }).limit(10);
+        let formCV = await CV.find().sort({ vip: -1, _id: -1 }).limit(10);
         return functions.success(res, 'lấy thành công', { formCV })
 
     } catch (error) {
@@ -1440,9 +1906,9 @@ exports.assessmentUV = async(req, res, next) => {
         let type = req.body.type;
         let note = req.body.note;
         if (idCompany) {
-            let poin = await functions.getDatafindOne(PointUsed, { uscID: 425711, useID: idUV });
+            let poin = await functions.getDatafindOne(PointUsed, { uscID: idCompany, useID: idUV });
             if (poin) {
-                await PointUsed.updateOne({ uscID: 425711, useID: idUV }, {
+                await PointUsed.updateOne({ uscID: idCompany, useID: idUV }, {
                     $set: {
                         type: type,
                         noteUV: note,
@@ -1453,6 +1919,45 @@ exports.assessmentUV = async(req, res, next) => {
             return functions.setError(res, 'chưa xem chi tiết ứng viên', 404)
         }
         return functions.setError(res, 'không đủ dữ liệu', 404)
+
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+// Lấy danh sách tin tuyển dụng đã đăng
+exports.listNews = async(req, res, next) => {
+    try {
+        let idCompany = req.user.data.idTimViec365;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 20;
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        const condition = { new_user_id: idCompany, new_md5: null };
+        const listPost = await NewTV365.find(condition)
+            .select("new_id new_title new_alias new_update_time new_city new_cat_id new_view_count new_bao_luu new_han_nop new_hot new_gap new_cao new_nganh new_create_time time_bao_luu")
+            .limit(limit)
+            .skip(skip)
+            .sort({ new_id: -1 })
+            .lean();
+
+        for (let i = 0; i < listPost.length; i++) {
+            const element = listPost[i];
+            const cate = element.new_cat_id[0];
+            const city = element.new_city[0];
+            element.new_cat_id = element.new_cat_id.toString();
+            element.new_city = element.new_city.toString();
+
+            element.applied = await functions.findCount(ApplyForJob, { nhs_new_id: element.new_id, nhs_kq: 0 });
+            element.count_uv = await functions.findCount(Users, {
+                // "inForPerson.candidate.cv_cate_id": { $all: [cate] },
+                "inForPerson.candidate.cv_city_id": { $all: [city] },
+            });
+        }
+
+        const total = await functions.findCount(NewTV365, condition);
+        return functions.success(res, "Lấy danh sách tin đăng thành công", { total, items: listPost });
 
     } catch (error) {
         console.log(error)

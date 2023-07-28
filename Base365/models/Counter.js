@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-let connection = mongoose.createConnection('mongodb://127.0.0.1/api-base365');
+let connection = mongoose.createConnection('mongodb://localhost:27017/api-base365');
 const CounterSchema = new mongoose.Schema({
     TableId: {
         type: String,

@@ -2,18 +2,18 @@ const fnc = require("../../services/functions")
 const settingIP = require("../../models/qlc/SettingIP")
 const Deparment = require("../../models/qlc/Deparment")
 const Group = require("../../models/qlc/Group")
-const CheckDevice = require("../../models/qlc/CheckDevice")
-const HisTracking = require("../../models/qlc/HisTracking")
+const EmployeeDevice = require("../../models/qlc/EmployeeDevice")
+const HisTracking = require("../../models/qlc/TimeSheets")
 const Shifts = require("../../models/qlc/Shifts")
 const ReportError = require("../../models/qlc/ReportError")
 const Feedback = require("../../models/qlc/Feedback")
 const CalendarWorkEmployee = require("../../models/qlc/CalendarWorkEmployee")
-const Calendar = require("../../models/qlc/Cycle")
-const workDay = require("../../models/qlc/CC365_CompanyWorkday")
+const Calendar = require("../../models/qlc/Calendar")
 const Company = require("../../models/Users")
 
 const axios = require('axios');
 const FormData = require('form-data');
+const moment = require('moment-timezone');
 //pb: // 0: access_ip; 1: advisory; 2: appoint; 3: authentication; 4: check_qmk; 5: company;
 // 6: company_coordinate; 7: company_web_ip; 8: company_wifi; 9: company_workday; 10: cycle; 11: delete_data_history; 12: department;
 // 13: employee; 14: employee_cycle; 15: employee_device; 16: employee_history; 17: feedback_customer; 18: firebase_token; 19: groups;
@@ -24,131 +24,124 @@ const FormData = require('form-data');
 //cài đặt IP
 exports.toolsettingIP = async(req, res, next) => {
 
-            try {
-                let page = 1;
-                let result = true;
-                do {
-                    let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 0 })
-                    let data = listItems.data.items;
-                    if (data.length > 0) {
-                        for (let i = 0; i < data.length; i++) {
-                    const element = data[i];
-                    const html = JSON.stringify(element.html);
-                    let updateAt = element.update_time;
-                    if (updateAt == 0) {
-                        updateAt = null;
-                    };
-                    const setIP = new settingIP({
-                        _id: element.id_acc,
-                        companyID: element.id_com,
-                        accessIP: element.ip_access,
-                        fromSite: element.from_site,
-                        createAt: element.created_time,
-                        updateAt ,
-                    })
-                    await setIP.save().then().error(err => {
-                        console.log(err);
-                    });
+        try {
+            let page = 1;
+            let result = true;
+            do {
+                let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 0 })
+                let data = listItems.data.items;
+                if (data.length > 0) {
+                    for (let i = 0; i < data.length; i++) {
+                        const element = data[i];
+                        const setIP = new settingIP({
+                            id_acc: element.id_acc,
+                            id_com: element.id_com,
+                            ip_access: element.ip_access,
+                            from_site: element.from_site,
+                            created_time: element.created_time,
+                            update_time: element.update_time,
+                        });
+                        await setIP.save();
+                    }
+                    page++;
+                } else {
+                    result = false;
                 }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page)
-        } while (result);
-        return fnc.success(res, 'Thành công')
-    } catch (error) {
-        console.log(error);
-        return fnc.setError(res, error.message);
+                console.log(page)
+            } while (result);
+            return fnc.success(res, 'Thành công')
+        } catch (error) {
+            console.log(error);
+            return fnc.setError(res, error.message);
+        }
     }
-}
-//phòng ban
+    //phòng ban
 exports.toolDeparment = async(req, res, next) => {
 
-            try {
-                let page = 1;
-                let result = true;
-                do {
-                    let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 12 })
-                    let data = listItems.data.items;
-                    if (data.length > 0) {
-                        for (let i = 0; i < data.length; i++) {
-                    const element = data[i];
-                    // const html = JSON.stringify(element.html);
-                    // let deparmentOrder = element.dep_order;
-                    // if (deparmentOrder == 0) {
-                    //     deparmentOrder = null;
-                    // };
-                    const department = new Deparment({
-                        dep_id: element.dep_id,
-                        com_id: element.com_id,
-                        dep_name: element.dep_name,
-                        manager_id: element.manager_id,
-                        dep_create_time: element.dep_create_time,
-                        dep_order:element.dep_order,
-                    })
-                    await department.save();
+        try {
+            let page = 1;
+            let result = true;
+            do {
+                let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 12 })
+                let data = listItems.data.items;
+                if (data.length > 0) {
+                    for (let i = 0; i < data.length; i++) {
+                        const element = data[i];
+                        // const html = JSON.stringify(element.html);
+                        let deparmentOrder = element.dep_order;
+                        if (deparmentOrder == 0) {
+                            deparmentOrder = null;
+                        };
+                        const department = new Deparment({
+                            dep_id: element.dep_id,
+                            com_id: element.com_id,
+                            dep_name: element.dep_name,
+                            manager_id: element.manager_id,
+                            dep_create_time: element.dep_create_time,
+                            dep_order: element.dep_order
+                        })
+                        await department.save();
+                    }
+                    page++;
+                } else {
+                    result = false;
                 }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page)
-        } while (result);
-        return fnc.success(res, 'Thành công')
-    } catch (error) {
-        console.log(error);
-        return fnc.setError(res, error.message);
+                console.log(page)
+            } while (result);
+            return fnc.success(res, 'Thành công')
+        } catch (error) {
+            console.log(error);
+            return fnc.setError(res, error.message);
+        }
     }
-}
-//nhóm
+    //nhóm
 exports.toolGroup = async(req, res, next) => {
 
-            try {
-                let page = 1;
-                let result = true;
-                do {
-                    let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 19 })
-                    let data = listItems.data.items;
-                    if (data.length > 0) {
-                        for (let i = 0; i < data.length; i++) {
-                    const element = data[i];
-                    // const html = JSON.stringify(element.html);
-                    // let deparmentOrder = element.dep_order;
-                    // if (deparmentOrder == 0) {
-                    //     deparmentOrder = null;
-                    // };
-                    const Groups = new Group({
-                        _id: element.gr_id,
-                        companyID: element.dep_id,
-                        groupName: element.gr_name,
-                        parentGroup: element.parent_gr,
-                    })
-                    await Groups.save();
+        try {
+            let page = 1;
+            let result = true;
+            do {
+                let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 19 })
+                let data = listItems.data.items;
+                if (data.length > 0) {
+                    for (let i = 0; i < data.length; i++) {
+                        const element = data[i];
+                        // const html = JSON.stringify(element.html);
+                        // let deparmentOrder = element.dep_order;
+                        // if (deparmentOrder == 0) {
+                        //     deparmentOrder = null;
+                        // };
+                        const Groups = new Group({
+                            _id: element.gr_id,
+                            companyID: element.dep_id,
+                            groupName: element.gr_name,
+                            parentGroup: element.parent_gr,
+                        })
+                        await Groups.save();
+                    }
+                    page++;
+                } else {
+                    result = false;
                 }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page)
-        } while (result);
-        return fnc.success(res, 'Thành công')
-    } catch (error) {
-        console.log(error);
-        return fnc.setError(res, error.message);
+                console.log(page)
+            } while (result);
+            return fnc.success(res, 'Thành công')
+        } catch (error) {
+            console.log(error);
+            return fnc.setError(res, error.message);
+        }
     }
-}
-//tài khoản cty
+    //tài khoản cty
 exports.toolCompany = async(req, res, next) => {
 
-            try {
-                let page = 1;
-                let result = true;
-                do {
-                    let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 5 })
-                    let data = listItems.data.items;
-                    if (data.length > 0) {
-                        for (let i = 0; i < data.length; i++) {
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 5 })
+            let data = listItems.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
                     const element = data[i];
                     // const html = JSON.stringify(element.html);
                     // let com_id_tv365 = element.com_id_tv365;
@@ -186,16 +179,15 @@ exports.toolCompany = async(req, res, next) => {
                         "inForCompany.com_qr_logo": element.com_qr_logo,
                         "inForCompany.enable_scan_qr": element.enable_scan_qr,
                         fromWeb: element.from_source,
-                        "inForCompany.com_vip":element.com_vip,
+                        "inForCompany.com_vip": element.com_vip,
                         "inForCompany.com_ep_vip": element.com_ep_vip,
-                        "inForCompany.com_id_tv365":element.com_id_tv365 ,
-                        "inForCompany.com_quantity_time":element.com_quantity_time,
+                        "inForCompany.com_id_tv365": element.com_id_tv365,
+                        "inForCompany.com_quantity_time": element.com_quantity_time,
                         "inForCompany.ep_crm": element.ep_crm,
                         "inForCompany.idKD": element.com_kd,
-                        
-                        
+
+
                     })
-                    console.log(company)
                     await company.save()
                 }
                 page++;
@@ -212,9 +204,8 @@ exports.toolCompany = async(req, res, next) => {
 }
 
 
-
-//lịch làm việc của nhân viên
-exports.toolCalendarWorkEmployee = async(req, res, next) => {
+//lịch làm việc chi tiết của nhân viên
+exports.toolCTCalendarWorkEmployee = async(req, res, next) => {
 
     try {
         let page = 1;
@@ -224,27 +215,66 @@ exports.toolCalendarWorkEmployee = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];         
-            const calendar = new CalendarWorkEmployee({
-                epcy_id: element.epcy_id,
-                idQLC: element.ep_id,
-                cy_id: element.cy_id,
-                update_time: element.update_time,
-            })
-            await calendar.save();
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+
+                    const calendar = new CalendarWorkEmployee({
+                        epcy_id: element.epcy_id,
+                        ep_id: element.ep_id,
+                        cy_id: element.cy_id,
+                        update_time: element.update_time
+                    })
+                    await calendar.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
 }
+
+//lịch làm việc của nhân viên
+exports.toolCalendarWorkEmployee = async(req, res, next) => {
+
+    try {
+        let page = 1;
+        let result = true;
+        do {
+            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 10 })
+            let data = listItems.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const element = data[i];
+
+                    const calendar = new Calendar({
+                        cy_id: element.cy_id,
+                        com_id: element.com_id,
+                        cy_name: element.cy_name,
+                        apply_month: element.apply_month,
+                        cy_detail: element.cy_detail,
+                        status: element.status,
+                        is_personal: element.is_personal,
+                    })
+                    await calendar.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
+    }
 }
+
 //duyệt thiết bị 
 exports.toolCheckDevice = async(req, res, next) => {
 
@@ -256,36 +286,30 @@ exports.toolCheckDevice = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            // const html = JSON.stringify(element.html);
-            // let deparmentOrder = element.dep_order;
-            // if (deparmentOrder == 0) {
-            //     deparmentOrder = null;
-            // };
-            const device = new CheckDevice({
-                _id: element.ed_id,
-                idQLC: element.ep_id,
-                curDeviceId: element.current_device,
-                curDeviceName: element.current_device_name,
-                newDeviceId: element.new_device,
-                newDeviceName: element.new_device_name,
-                createdAt: element.create_time,
-                typeDevice: element.type_device,
-                // deparmentOrder,
-            })
-            await device.save();
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const device = new EmployeeDevice({
+                        ed_id: element.ed_id,
+                        ep_id: element.ep_id,
+                        current_device: element.current_device,
+                        current_device_name: element.current_device_name,
+                        new_device: element.new_device,
+                        new_device_name: element.new_device_name,
+                        create_time: element.create_time,
+                        type_device: element.type_device,
+                    })
+                    await device.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
 }
 
 //bao cao loi
@@ -299,81 +323,81 @@ exports.toolReportError = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            // const html = JSON.stringify(element.html);
-            // let deparmentOrder = element.dep_order;
-            // if (deparmentOrder == 0) {
-            //     deparmentOrder = null;
-            // };
-            const Report = new ReportError({
-                _id: element.ed_id,
-                idQLC: element.ep_id,
-                curDeviceId: element.current_device,
-                curDeviceName: element.current_device_name,
-                newDeviceId: element.new_device,
-                newDeviceName: element.new_device_name,
-                createdAt: element.create_time,
-                typeDevice: element.type_device,
-                // deparmentOrder,
-            })
-            await Report.save();
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    // const html = JSON.stringify(element.html);
+                    // let deparmentOrder = element.dep_order;
+                    // if (deparmentOrder == 0) {
+                    //     deparmentOrder = null;
+                    // };
+                    const Report = new ReportError({
+                        _id: element.ed_id,
+                        idQLC: element.ep_id,
+                        curDeviceId: element.current_device,
+                        curDeviceName: element.current_device_name,
+                        newDeviceId: element.new_device,
+                        newDeviceName: element.new_device_name,
+                        createdAt: element.create_time,
+                        typeDevice: element.type_device,
+                        // deparmentOrder,
+                    })
+                    await Report.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
 }
 
 // danh gia
 exports.toolFeedback = async(req, res, next) => {
 
-    try {
-        let page = 1;
-        let result = true;
-        do {
-            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 17 })
-            let data = listItems.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            // const html = JSON.stringify(element.html);
-            // let deparmentOrder = element.dep_order;
-            // if (deparmentOrder == 0) {
-            //     deparmentOrder = null;
-            // };
-            const Feedbacks = new Feedback({
-                _id: element.id,
-                idQLC: element.id_user,
-                type: element.type_user,
-                feed_back: element.feed_back,
-                rating: element.rating,
-                app_name: element.app_name,
-                createdAt: element.create_date,
-                from_source: element.from_source,
-                // deparmentOrder,
-            })
-            await Feedbacks.save();
+        try {
+            let page = 1;
+            let result = true;
+            do {
+                let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 17 })
+                let data = listItems.data.items;
+                if (data.length > 0) {
+                    for (let i = 0; i < data.length; i++) {
+                        const element = data[i];
+                        // const html = JSON.stringify(element.html);
+                        // let deparmentOrder = element.dep_order;
+                        // if (deparmentOrder == 0) {
+                        //     deparmentOrder = null;
+                        // };
+                        const Feedbacks = new Feedback({
+                            _id: element.id,
+                            idQLC: element.id_user,
+                            type: element.type_user,
+                            feed_back: element.feed_back,
+                            rating: element.rating,
+                            app_name: element.app_name,
+                            createdAt: element.create_date,
+                            from_source: element.from_source,
+                            // deparmentOrder,
+                        })
+                        await Feedbacks.save();
+                    }
+                    page++;
+                } else {
+                    result = false;
+                }
+                console.log(page)
+            } while (result);
+            return fnc.success(res, 'Thành công')
+        } catch (error) {
+            console.log(error);
+            return fnc.setError(res, error.message);
         }
-        page++;
-    } else {
-        result = false;
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
-}
-//ca làm việc
+    //ca làm việc
 exports.toolShifts = async(req, res, next) => {
 
     try {
@@ -384,49 +408,50 @@ exports.toolShifts = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            // const html = JSON.stringify(element.html);
-            // let deparmentOrder = element.dep_order;
-            // if (deparmentOrder == 0) {
-            //     deparmentOrder = null;
-            // };
-            const Shift = new Shifts({
-                _id: element.shift_id,
-                companyID: element.com_id,
-                createdAt: element.create_time,
-                shiftName: element.shift_name,
-                timeCheckIn: element.start_time,
-                timeCheckOut: element.end_time,
-                timeCheckInEarliest: element.end_time_earliest,
-                timeCheckOutLastest: element.start_time_latest,
-                idTypeCalculateWork: element.shift_type,
-                numOfWorkPerShift: element.num_to_calculate,
-                money: element.num_to_money,
-                over_night: element.over_night,
-                is_overtime: element.is_overtime,
-                status: element.status,
-                // deparmentOrder,
-            })
-            await Shift.save();
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    // const html = JSON.stringify(element.html);
+                    // let deparmentOrder = element.dep_order;
+                    // if (deparmentOrder == 0) {
+                    //     deparmentOrder = null;
+                    // };
+                    const Shift = new Shifts({
+                        shift_id: element.shift_id,
+                        com_id: element.com_id,
+                        create_time: element.create_time,
+                        shift_name: element.shift_name,
+                        start_time: element.start_time,
+                        end_time: element.end_time,
+                        end_time_earliest: element.end_time_earliest,
+                        start_time_latest: element.start_time_latest,
+                        shift_type: element.shift_type,
+                        num_to_calculate: element.num_to_calculate,
+                        num_to_money: element.num_to_money,
+                        over_night: element.over_night,
+                        is_overtime: element.is_overtime,
+                        status: element.status,
+                        // deparmentOrder,
+                    })
+                    await Shift.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
 }
 
 
 //lịch sử chấm công
 exports.toolHisTracking = async(req, res, next) => {
-
     try {
+        // await HisTracking.deleteMany();
+        // return fnc.success(res, 'Thành công');
         let page = 1;
         let result = true;
         do {
@@ -434,111 +459,38 @@ exports.toolHisTracking = async(req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            // const html = JSON.stringify(element.html);
-            // let deparmentOrder = element.dep_order;
-            // if (deparmentOrder == 0) {
-            //     deparmentOrder = null;
-            // };
-            const tracking = new HisTracking({
-                _id: element.sheet_id,
-                idQLC: element.ep_id,
-                imageTrack: element.ts_image,
-                CreateAt: element.at_time,
-                curDeviceName: element.device,
-                latitude: element.ts_lat,
-                longtitude: element.ts_long,
-                Location: element.ts_location_name,
-                NameWifi: element.wifi_name,
-                IpWifi: element.wifi_ip,
-                MacWifi: element.wifi_mac,
-                shiftID: element.shift_id,
-                companyID: element.ts_com_id,
-                Note: element.note,
-                BluetoothAdrr: element.bluetooth_address,
-                status: element.status,
-                Err: element.ts_error,
-                Success: element.is_success,
-                // deparmentOrder,
-            })
-            await tracking.save();
-        }
-        page++;
-    } else {
-        result = false;
+                    const element = data[i];
+                    const tracking = new HisTracking({
+                        sheet_id: element.sheet_id,
+                        ep_id: element.ep_id,
+                        ts_image: element.ts_image,
+                        at_time: element.at_time,
+                        device: element.device,
+                        ts_lat: element.ts_lat,
+                        ts_long: element.ts_long,
+                        ts_location_name: element.ts_location_name,
+                        wifi_name: element.wifi_name,
+                        wifi_ip: element.wifi_ip,
+                        wifi_mac: element.wifi_mac,
+                        shift_id: element.shift_id,
+                        ts_com_id: element.ts_com_id,
+                        note: element.note,
+                        bluetooth_address: element.bluetooth_address,
+                        status: element.status,
+                        ts_error: element.ts_error,
+                        is_success: element.is_success
+                    })
+                    await tracking.save().then().catch();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page)
+        } while (result);
+        return fnc.success(res, 'Thành công')
+    } catch (error) {
+        console.log(error);
+        return fnc.setError(res, error.message);
     }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
-}
-
-
-// lịch làm việc
-exports.toolCalendar = async(req, res, next) => {
-
-    try {
-        let page = 1;
-        let result = true;
-        do {
-            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 10 })
-            let data = listItems.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-            const element = data[i];
-            const department = new Calendar({
-                cy_id : data[i].cy_id , 
-                com_id : data[i].com_id , 
-                cy_name : data[i].cy_name , 
-                apply_month : data[i].apply_month , 
-            })
-            await department.save();
-        }
-        page++;
-    } else {
-        result = false;
-    }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
-}
-exports.toolCompanyWorkday = async(req, res, next) => {
-
-    try {
-        let page = 1;
-        let result = true;
-        do {
-            let listItems = await fnc.getDataAxios('https://chamcong.24hpay.vn/api_list_data/api_all.php', { page: page, pb: 9 })
-            let data = listItems.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-            const workDays = new workDay({
-                
-                
-                cw_id : data[i].cw_id , 
-                num_days : data[i].num_days , 
-                // apply_month : data[i].apply_month.split("-"),
-                apply_month : data[i].apply_month , 
-                com_id : data[i].com_id , 
-            })
-            await workDays.save();
-        }
-        page++;
-    } else {
-        result = false;
-    }
-    console.log(page)
-} while (result);
-return fnc.success(res, 'Thành công')
-} catch (error) {
-console.log(error);
-return fnc.setError(res, error.message);
-}
 }

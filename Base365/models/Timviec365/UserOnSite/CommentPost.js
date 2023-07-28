@@ -1,43 +1,48 @@
 const mongoose = require('mongoose');
 const CommentPostSchema = new mongoose.Schema({
-    _id: {
+    cm_id: {
         type: Number,
         required: true,
+        unique: true
     },
-    idPost: {
+    cm_url: {
+        type: String,
+        default: null
+    },
+    cm_new_id: {
         type: Number,
+        default: 0
     },
-    parentCmId: {
+    cm_sender_idchat: {
         type: Number
     },
-    commentPersonId: {
-        type: String
+    cm_parent_id: {
+        type: Number
     },
-    comment: {
+    cm_comment: {
         type: String,
+        default: null
     },
-    commentName: {
+    cm_img: {
         type: String,
+        default: null
     },
-    commentAvatar: {
+    cm_ip: {
         type: String,
+        default: null
     },
-    image: {
+    cm_tag: {
         type: String,
+        default: null
     },
-    ipComment: {
-        type: String,
-    },
-    tag: {
-        type: String,
-    },
-    timeComment: {
-        type: Date,
+    cm_time: {
+        type: Number,
+        default: 0
     },
 }, {
-    collection: 'CommentPost',
+    collection: 'Tv365CommentPost',
     versionKey: false,
     timestamp: true
 })
 
-module.exports = mongoose.model("CommentPost", CommentPostSchema);
+module.exports = mongoose.model("Tv365CommentPost", CommentPostSchema);

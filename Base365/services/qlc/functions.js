@@ -36,12 +36,13 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 dotenv.config();
 
+const functions = require('../../services/functions');
 
 //QLC
-exports.uploadAvaComQLC = async( file, allowedExtensions) => {
+exports.uploadAvaComQLC = async(file, allowedExtensions) => {
     // const namefiles = req.files.name
     let date = new Date();
-    let namefile = 'app' + Math.round(date.getTime()/1000) + "_" + file.name;
+    let namefile = 'app' + Math.round(date.getTime() / 1000) + "_" + file.name;
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
@@ -68,7 +69,7 @@ exports.uploadAvaComQLC = async( file, allowedExtensions) => {
 }
 exports.uploadAvaEmpQLC = async(id, file, allowedExtensions) => {
     let namefile = "app_" + file.name;
-    let path1 = `../storage/base365/qlc/upload/employee/ep${id}/` ;
+    let path1 = `../storage/base365/qlc/upload/employee/ep${id}/`;
     let filePath = `../storage/base365/qlc/upload/employee/ep${id}/` + namefile;
     let fileCheck = path.extname(filePath);
     if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
@@ -91,59 +92,62 @@ exports.uploadAvaEmpQLC = async(id, file, allowedExtensions) => {
     return namefile
 }
 exports.uploadErrQLC = async(token, id, file, allowedExtensions) => {
-  const paths = (token !== 1 ? "ep_" + id : "com_" + id)
-  let namefile = file.name;
-  let path1 = `../storage/base365/qlc/upload/error/` + paths + '/';
-  let filePath = `../storage/base365/qlc/upload/error/` + paths + '/'+ namefile;
-  let fileCheck = path.extname(filePath);
-  if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
-      return false
-  }
-  if (!fs.existsSync(path1)) {
-      fs.mkdirSync(path1, { recursive: true });
-  }
-  fs.readFile(file.path, (err, data) => {
-      if (err) {
-          console.log(err)
-      }
+        const paths = (token !== 1 ? "ep_" + id : "com_" + id)
+        let namefile = file.name;
+        let path1 = `../storage/base365/qlc/upload/error/` + paths + '/';
+        let filePath = `../storage/base365/qlc/upload/error/` + paths + '/' + namefile;
+        let fileCheck = path.extname(filePath);
+        if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
+            return false
+        }
+        if (!fs.existsSync(path1)) {
+            fs.mkdirSync(path1, { recursive: true });
+        }
+        fs.readFile(file.path, (err, data) => {
+            if (err) {
+                console.log(err)
+            }
 
-      fs.writeFile(filePath, data, (err) => {
-          if (err) {
-              console.log(err)
-          }
-      });
-  });
-  return namefile 
-}
-// hàm tạo link file QLC
+            fs.writeFile(filePath, data, (err) => {
+                if (err) {
+                    console.log(err)
+                }
+            });
+        });
+        return namefile
+    }
+    // hàm tạo link file QLC
 exports.createAvatarQLC = (namefiles) => {
     let link = namefiles;
     return link;
 }
-exports.createLinkFileErrQLC = (token,id, file) => {
-    const paths = (token !== 1 ? "ep_" + id : "com_" + id)
-    let link = process.env.port_picture_qlc + '/storage/base365/QLC/upload/error/' + paths + '/' + file;
-    return link;
+exports.createLinkFileErrQLC = (token, id, file) => {
+    if (file != null && file != '') {
+        const paths = (token !== 1 ? "ep_" + id : "com_" + id)
+        let link = `${process.env.cdn}/upload/error/${paths}/${file}`;
+        return link;
+    }
+    return "";
+
 }
 exports.createLinkFileComQLC = (createAt, file) => {
-    const dates = new Date(createAt)
-    const year = dates.getFullYear();
-    const month = dates.getMonth() + 1;
-    const day = dates.getDate();
-    // const paths = `${year}/${month}/${day}/`
-    let link = process.env.port_picture_qlc + `/storage/base365/QLC/upload/company/logo/${year}/${month}/${day}/` + file;
-    return link;
+    if (file != null && file != '') {
+        return `${process.env.cdn}/upload/company/logo/${functions.convertDate(createAt,true)}/${file}`;
+    } else {
+        return "";
+    }
 }
 exports.createLinkFileEmpQLC = (id, file) => {
-    let link = process.env.port_picture_qlc + `/storage/base365/qlc/upload/employee/ep${id}/` + file;
-    return link;
+    if (file != null && file != '') {
+        return `${process.env.cdn}/upload/employee/ep${id}/${file}`;
+    } else {
+        return "";
+    }
 }
 
-exports.deleteFileQLC = (folder,timestamp, file) => {
-        let filePath = `../storage/base365/QLC/upload/${folder}/${timestamp}/` + file;
-        fs.unlink(filePath, (err) => {
-            if (err) console.log(err);
-        });
-    }
-
- 
+exports.deleteFileQLC = (folder, timestamp, file) => {
+    let filePath = `../storage/base365/QLC/upload/${folder}/${timestamp}/` + file;
+    fs.unlink(filePath, (err) => {
+        if (err) console.log(err);
+    });
+}

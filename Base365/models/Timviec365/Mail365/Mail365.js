@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 const Mail365Schema = new mongoose.Schema({
-    _id: {
-        type: Number,
-        require: true
+    id: {
+        type: Number
     },
-    name: {
+    title: {
         type: String
     },
     alias: {
@@ -13,28 +12,27 @@ const Mail365Schema = new mongoose.Schema({
     image: {
         type: String
     },
-    view: {
-        type: Number
+    colors: {
+        type: String
     },
-    favourite: {
-        type: Number
-    },
-    downLoad: {
+    cid: {
         type: Number
     },
     html: {
         type: String
     },
-    color: {
-        type: String
+    view: {
+        type: Number
     },
-    cateId: {
+    love: {
+        type: Number
+    },
+    download: {
         type: Number
     },
     status: {
         type: Number
-    },
-
+    }
 }, {
     collection: 'Mail365',
     versionKey: false

@@ -21,7 +21,7 @@ const NetworkOperatorSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    active: {
+    priceListActive: {
         //bảng giá hoạt động
         type: Number,
         default: 0

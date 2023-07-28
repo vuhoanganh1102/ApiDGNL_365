@@ -1,70 +1,70 @@
 const mongoose = require('mongoose');
 const keywordSchema = new mongoose.Schema({
-    _id: {
+    key_id: {
         type: Number,
+        unique: true
     },
-    name: {
+    key_name: {
         type: String,
     },
-    lq: {
-        type: Date,
-    },
-    cateID: {
-        type: Number,
-    },
-    cityID: {
-        type: Number,
-        ref: 'City'
-    },
-    qhID: {
-        type: Number,
-    },
-    cbID: {
-        type: Number,
-    },
-    teaser: {
+    key_lq: {
         type: String,
     },
-    type: {
+    key_cate_id: {
         type: Number,
     },
-    err: {
+    key_city_id: {
         type: Number,
     },
-    qhKcn: {
+    key_qh_id: {
         type: Number,
     },
-    cateLq: {
+    key_cb_id: {
         type: Number,
     },
-    title: {
+    key_teaser: {
         type: String,
     },
-    description: {
-        type: String,
-    },
-    keyword: {
-        type: String,
-    },
-    h1: {
-        type: String,
-    },
-    createTime: {
-        type: Date,
-    },
-    redirect301: {
-        type: String,
-    },
-    index: {
+    key_type: {
         type: Number,
     },
-    baoHam: {
+    key_err: {
         type: Number,
     },
-    tdgy: {
+    key_qh_kcn: {
+        type: Number,
+    },
+    key_cate_lq: {
+        type: Number,
+    },
+    key_tit: {
         type: String,
     },
-    ndgy: {
+    key_desc: {
+        type: String,
+    },
+    key_key: {
+        type: String,
+    },
+    key_h1: {
+        type: String,
+    },
+    key_time: {
+        type: Number,
+    },
+    key_301: {
+        type: String,
+    },
+    key_index: {
+        type: Number,
+    },
+    key_bao_ham: {
+        type: Number,
+    },
+    key_tdgy: {
+        type: String,
+    },
+    key_ndgy: {
         type: String,
     },
 }, {

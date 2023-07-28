@@ -11,7 +11,7 @@ exports.register = async(req, res) => {
         if (userName && password && phoneTK && address) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
             if (checkPhone) {
-                let user = await Users.findOne({ phoneTK: phoneTK, type:{ $ne : 1}}).lean()
+                let user = await Users.findOne({ phoneTK: phoneTK, type: { $ne: 1 } }).lean()
                 let MaxId = await functions.getMaxUserID("user")
                 let _id = MaxId._id
                 if (!user) {
@@ -22,9 +22,9 @@ exports.register = async(req, res) => {
                         phone: phone,
                         password: md5(password),
                         address: address,
-                        createdAt: Date.parse(createdAt)/1000,
+                        createdAt: Date.parse(createdAt) / 1000,
                         type: 0,
-                        chat365_secret : Buffer.from(_id.toString()).toString('base64'),
+                        chat365_secret: Buffer.from(_id.toString()).toString('base64'),
                         fromWeb: "quanlychung",
                         idQLC: MaxId._idQLC,
                         idTimViec365: MaxId._idTV365,
@@ -62,19 +62,19 @@ exports.verify = async(req, res) => {
         let phoneTK = req.user.data.phoneTK;
         let data = []
         if (otp) {
-                data = await Users.updateOne({ phoneTK: phoneTK, type: 0 }, {
-                    $set: {
-                        otp: otp
-                    }
-                });
-                return functions.success(res, "lưu OTP thành công", { data })
+            data = await Users.updateOne({ phoneTK: phoneTK, type: 0 }, {
+                $set: {
+                    otp: otp
+                }
+            });
+            return functions.success(res, "lưu OTP thành công", { data })
         } else if (!otp) {
-                await Users.updateOne({ phoneTK: phoneTK, type: 0 }, {
-                    $set: {
-                        authentic: 1
-                    }
-                });
-                return functions.success(res, "xác thực thành công");
+            await Users.updateOne({ phoneTK: phoneTK, type: 0 }, {
+                $set: {
+                    authentic: 1
+                }
+            });
+            return functions.success(res, "xác thực thành công");
         } else {
             return functions.setError(res, "thiếu dữ liệu sdt")
         };
@@ -238,45 +238,45 @@ exports.updatePassword = async(req, res, next) => {
 }
 
 exports.updatePasswordbyInput = async(req, res, next) => {
-    try {
-        let phoneTK = req.body.phoneTK
-        let email = req.body.email
-        let password = req.body.password;
-        if (phoneTK && password) {
-            if (password.length < 6) {
-                return functions.setError(res, 'Password quá ngắn')
-            }
-            let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 0 })
-            if (!checkPass) {
-                await Users.updateOne({ phoneTK: phoneTK, type: 0 }, {
-                    $set: {
-                        password: md5(password),
-                    }
-                });
-                return functions.success(res, 'cập nhập thành công')
-            }
-            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ');
-        } else if (email && password) {
-            if (password.length < 6) {
-                return functions.setError(res, 'Password quá ngắn')
-            }
-            let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 0 })
-            if (!checkPass) {
-                await Users.updateOne({ email: email, type: 0 }, {
-                    $set: {
-                        password: md5(password),
-                    }
-                });
-                return functions.success(res, 'cập nhập thành công')
-            }
-            return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ');
-        } else {
-            return functions.setError(res, ' điền thiếu trường ')
-        };
+        try {
+            let phoneTK = req.body.phoneTK
+            let email = req.body.email
+            let password = req.body.password;
+            if (phoneTK && password) {
+                if (password.length < 6) {
+                    return functions.setError(res, 'Password quá ngắn')
+                }
+                let checkPass = await functions.getDatafindOne(Users, { phoneTK, password: md5(password), type: 0 })
+                if (!checkPass) {
+                    await Users.updateOne({ phoneTK: phoneTK, type: 0 }, {
+                        $set: {
+                            password: md5(password),
+                        }
+                    });
+                    return functions.success(res, 'cập nhập thành công')
+                }
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ');
+            } else if (email && password) {
+                if (password.length < 6) {
+                    return functions.setError(res, 'Password quá ngắn')
+                }
+                let checkPass = await functions.getDatafindOne(Users, { email, password: md5(password), type: 0 })
+                if (!checkPass) {
+                    await Users.updateOne({ email: email, type: 0 }, {
+                        $set: {
+                            password: md5(password),
+                        }
+                    });
+                    return functions.success(res, 'cập nhập thành công')
+                }
+                return functions.setError(res, 'mật khẩu đã tồn tại, xin nhập mật khẩu khác ');
+            } else {
+                return functions.setError(res, ' điền thiếu trường ')
+            };
 
-    } catch (error) {
-        return functions.setError(res, error.message)
-    }
+        } catch (error) {
+            return functions.setError(res, error.message)
+        }
     }
     // hàm cập nhập thông tin cá nhân
 exports.updateInfoindividual = async(req, res, next) => {
@@ -284,49 +284,34 @@ exports.updateInfoindividual = async(req, res, next) => {
         let idQLC = req.user.data.idQLC;
         let data = [];
         const { userName, emailContact, phoneTK, com_id, address, position_id, dep_id, phone, group_id, birthday, gender, married, experience, startWorkingTime, education, otp } = req.body;
-        let updatedAt = new Date()
         let File = req.files || null;
         let avatarUser = null;
-        if ((idQLC) !== undefined) {
-            let findUser = Users.findOne({ idQLC: idQLC, type: 0 })
-            if (findUser) {
-                if (File && File.avatarUser) {
-                    let upload = await fnc.uploadAvaEmpQLC( idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
-                    if (!upload) {
-                        return functions.setError(res, 'Định dạng ảnh không hợp lệ')
-                    }
-                    avatarUser = upload
-                }
-                 data = await Users.updateOne({ idQLC: idQLC, type: 0 }, {
-                        $set: {
-                            userName: userName,
-                            emailContact: emailContact,
-                            phone: phone,
-                            avatarUser: avatarUser,
-                            address: address,
-                            otp: otp,
-                            authentic: null || 0,
-                            avatarUser: avatarUser,
-                            updatedAt: Date.parse(updatedAt)/1000,
-                            "inForPerson.employee.group_id": group_id,
-                            "inForPerson.account.birthday": Date.parse(birthday)/1000,
-                            "inForPerson.account.gender": gender,
-                            "inForPerson.account.married": married,
-                            "inForPerson.account.experience": experience,
-                            "inForPerson.employee.startWorkingTime": startWorkingTime,
-                            "inForPerson.account.education": education,
-                        }
-                    })
-                    return functions.success(res, 'update info user success', { data })
-                
-            } else {
-                return functions.setError(res, "không tìm thấy user")
 
+        if (File && File.avatarUser) {
+            let upload = await fnc.uploadAvaEmpQLC(idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
+            if (!upload) {
+                return functions.setError(res, 'Định dạng ảnh không hợp lệ')
             }
-
-        } else {
-            return functions.setError(res, "không tìm thấy token")
+            avatarUser = upload
         }
+
+        data = await Users.updateOne({ idQLC: idQLC, type: 0 }, {
+            $set: {
+                userName: userName,
+                emailContact: emailContact,
+                phone: phone,
+                avatarUser: avatarUser,
+                address: address,
+                avatarUser: avatarUser,
+                updatedAt: functions.getTimeNow(),
+                "inForPerson.account.birthday": Date.parse(birthday) / 1000,
+                "inForPerson.account.gender": gender,
+                "inForPerson.account.married": married,
+                "inForPerson.account.experience": experience,
+                "inForPerson.account.education": education,
+            }
+        })
+        return functions.success(res, 'update info user success', { data })
     } catch (error) {
         return functions.setError(res, error.message)
     }
@@ -406,17 +391,17 @@ exports.updateInfoindividual = async(req, res, next) => {
 //     }
 // }
 
-exports.info = async (req, res) => {
+exports.info = async(req, res) => {
     try {
         const idQLC = req.user.data.idQLC
-        // const com_id = req.user.data.com_id
+            // const com_id = req.user.data.com_id
         const data = await Users.aggregate([
             { $match: { idQLC: idQLC, type: 0 } },
             {
-                $project:
-                {
+                $project: {
                     "ep_name": "$userName",
                     "ep_email": "$email",
+                    "ep_email_lh": "$emailContact",
                     "ep_phone": "$phone",
                     "ep_phone_tk": "$phoneTK",
                     "ep_address": "$address",
@@ -431,15 +416,14 @@ exports.info = async (req, res) => {
                 }
             }
         ]);
-        if (data) {
+        if (data.length > 0) {
+            const user = data[0];
+            user.avatarUser = await fnc.createLinkFileEmpQLC(user.idQLC, user.avatarUser);
 
-            const avatar = await fnc.createLinkFileEmpQLC(data[0].idQLC , data[0].avatarUser)
-            if(avatar) data[0].avatar = avatar
-
-            return functions.success(res, 'Lấy thành công', { data });
+            return functions.success(res, 'Lấy thành công', { data: user });
         };
         return functions.setError(res, 'Không có dữ liệu');
     } catch (e) {
         return functions.setError(res, e.message)
     }
-} 
+}

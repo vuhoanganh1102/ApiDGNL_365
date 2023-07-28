@@ -1,14 +1,14 @@
 //Thư ứng viên
 const mongoose = require('mongoose');
 const LetterUVSchema = new mongoose.Schema({
-    _id: {
+    id: {
         type: Number
     },
-    userId: {
+    uid: {
         //id người tạo thư
         type: Number
     },
-    tId: {
+    tid: {
         type: Number
     },
     lang: {
@@ -19,7 +19,7 @@ const LetterUVSchema = new mongoose.Schema({
         //nội dung thư
         type: String
     },
-    nameImg: {
+    name_img: {
         //tên ảnh
         type: String
     },

@@ -18,6 +18,7 @@ router.post('/updateStatus',functions.checkToken,fnc.checkRole("CP_TH",4) ,formD
 
 
 router.post('/getListDetail',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getListDetail)
-router.post('/listDetailRecall',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.listDetailRecall)
+router.post('/listDetailRecall',functions.checkToken,fnc.checkRole("CP_TH",2) ,formData.parse(),controller.listDetailRecall)
+router.post('/refuserRecallCapital',functions.checkToken,fnc.checkRole("CP_TH",2) ,formData.parse(),controller.refuserRecallCapital)
 
 module.exports = router

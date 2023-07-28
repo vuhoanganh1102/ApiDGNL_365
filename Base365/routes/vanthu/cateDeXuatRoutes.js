@@ -28,8 +28,7 @@ router.post('/searchcate',functions.checkToken,formData.parse(),cateDeXuat.findN
 //Api hiển thị trang thành viên công ty
 router.post('/thanhvien',functions.checkToken,formData.parse(),cateDeXuat.findthanhVien)
 
-//Api đổ danh sách các loại để xuất 
-router.post('/showlistcate',functions.checkToken,formData.parse(),cateDeXuat.showloaicate)
+
 
 //Api hiển thị trang đề xuất tạm ứng danh sách
 router.post('/tamung',functions.checkToken,formData.parse(),cateDeXuat.listtamung);

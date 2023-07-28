@@ -8,6 +8,9 @@ const LetterSchema = new mongoose.Schema({
     name: {
         type: String,
     },
+    name_sub: {
+        type: String
+    },
     alias: {
         type: String,
     },
@@ -17,13 +20,13 @@ const LetterSchema = new mongoose.Schema({
     price: {
         type: Number,
     },
-    color: {
+    colors: {
         type: String
     },
     view: {
         type: Number
     },
-    favorite: {
+    love: {
         type: Number
     },
     download: {
@@ -32,36 +35,33 @@ const LetterSchema = new mongoose.Schema({
     vip: {
         type: Number
     },
-    htmlVi: {
+    html_vi: {
         type: String
     },
-    htmlEn: {
+    html_en: {
         type: String
     },
-    htmlJp: {
+    html_jp: {
         type: String
     },
-    htmlCn: {
+    html_cn: {
         type: String
     },
-    htmlKr: {
+    html_kr: {
         type: String
     },
-    cateId: {
+    cate_id: {
         type: Number
     },
     exp: {
         type: Number
     },
-    nhuCau: {
+    nhucau: {
         type: Number
     },
     status: {
-        Type: Number
-    },
-    langId: {
         type: Number
-    },
+    }
 
 }, {
     collection: 'Letter',
