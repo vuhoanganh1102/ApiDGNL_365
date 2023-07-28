@@ -526,8 +526,79 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
 }
 
 // điều chuyển vị trí tài sản
+exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, skip, limit, comId) => {
+  try {
+    conditions.xoa_dieuchuyen = 1;
+    conditions.dc_type = 0;
+    let data = await DieuChuyen.aggregate([
+      { $match: conditions },
+      { $sort: { dc_id: -1 } },
+      { $skip: skip },
+      { $limit: limit },
 
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_xoa_dc',
+          foreignField: 'idQLC',
+          as: 'user'
+        }
+      },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ng_thuchien',
+          foreignField: 'idQLC',
+          as: 'users_id_ng_thuchien'
+        }
+      },
+      { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          dc_ngay: 1,
+          dc_date_delete: 1,
+          dc_id: 1,
+          dc_trangthai: 1,
+          id_nv_dangsudung: '$id_nv_dangsudung',
+          id_pb_dang_sd: '$did_pb_dang_sd',
+          id_nv_nhan: '$id_nv_nhan',
+          id_pb_nhan: '$id_pb_nhan',
+          dc_lydo: 1,
+          id_ng_thuchien: '$users_id_ng_thuchien.userName',
+          ng_xoa: '$user.userName'
+        }
+      }
+    ]);
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].id_nv_dangsudung != 0) {
+        let id_nv_dangsudung = await Users.findOne({ idQLC: data[i].id_nv_dangsudung }, { userName: 1 })
+        if (id_nv_dangsudung) data[i].id_nv_dangsudung = id_nv_dangsudung.userName
+      }
+      if (data[i].id_pb_dang_sd != 0) {
+        let id_pb_dang_sd = await department.findOne({ dep_id: data[i].id_pb_dang_sd }, { dep_name: 1 })
+        if (id_pb_dang_sd) data[i].id_pb_dang_sd = id_pb_dang_sd.dep_name
 
+      }
+      if (data[i].id_nv_nhan != 0) {
+        let id_nv_nhan = await Users.findOne({ idQLC: data[i].id_nv_nhan }, { userName: 1 })
+        if (id_nv_nhan) data[i].id_nv_nhan = id_nv_nhan.userName
+
+      }
+      if (data[i].id_pb_nhan != 0) {
+        let id_pb_nhan = await department.findOne({ dep_id: data[i].id_pb_nhan }, { dep_name: 1 })
+        if (id_pb_nhan) data[i].id_pb_nhan = id_pb_nhan.dep_name
+      }
+      data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+      data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
+    }
+
+    return functions.success(res, 'get data success', { dem, data })
+  } catch (error) {
+    console.error(error)
+    return functions.setError(res, error)
+  }
+}
 // điều chuyển đối tượng sd
 exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, skip, limit, comId) => {
   try {

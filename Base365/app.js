@@ -12,6 +12,7 @@ var AppVanthu = express();
 var AppCRM = express();
 var AppQLC = express();
 var AppHR = express();
+var AppQLTS = express();
 var AppTinhluong = express();
 
 function configureApp(app) {
@@ -98,6 +99,12 @@ var CrmRouter = require('./routes/crm');
 AppCRM.use("/api/crm", CrmRouter);
 errorApp(AppCRM);
 
+// Cấu hình appQLTS
+configureApp(AppQLTS);
+var qltsRouter = require('./routes/qltsRouter');
+AppQLTS.use("/api/qlts", qltsRouter);
+errorApp(AppQLTS) 
+
 // Cấu hình AppTinhluongs
 configureApp(AppTinhluong);
 var tinhluongRouter = require('./routes/tinhluong');
@@ -137,6 +144,12 @@ AppHR.listen(3006, () => {
 AppCRM.listen(3007, () => {
     console.log(`CRM app is running on port 3007`);
 });
+
+//qlts
+AppQLTS.listen(3008, () => {
+    console.log(`QLTS app is running on port 3008`);
+});  
+
 
 // Tính lương 
 AppTinhluong.listen(3010, () => {

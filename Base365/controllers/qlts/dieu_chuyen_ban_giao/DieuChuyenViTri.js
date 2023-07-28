@@ -823,22 +823,97 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
 
         //1: điều chuyển vị trí tài sản
         if (type === 1) {
-            if (type_quyen === 2) filter.id_ng_tao_dc = idQLC
+            // if (type_quyen === 2) filter.id_ng_tao_dc = idQLC
+            let data = await DieuChuyen.aggregate([
+                { $match: filter },
+                { $sort: { dc_id: -1 } },
+                { $skip: skip },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "vi_tri_dc_tu",
+                        foreignField: "id_vitri", 
+                        as: "infoVTtu" 
+                    }
+                },
+                { $unwind: { path: "$infoVTtu", preserveNullAndEmptyArrays: true } },
+    
+                {
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "dc_vitri_tsnhan",
+                        foreignField: "id_vitri",
+                        as: "infoVTden"
+                    }
+                },
+                { $unwind: { path: "$infoVTden", preserveNullAndEmptyArrays: true } },
+                {
+                  $lookup: {
+                    from: 'Users',
+                    localField: 'id_ng_thuchien',
+                    foreignField: 'idQLC',
+                    as: 'users_id_ng_thuchien'
+                  }
+                },
+                { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
+                {
+                  $project: {
+                    dc_ngay: 1,
+                    dc_date_delete: 1,
+                    dc_id: 1,
+                    dc_trangthai: 1,
+                    id_nv_dangsudung: '$id_nv_dangsudung',
+                    id_pb_dang_sd: '$did_pb_dang_sd',
+                    id_nv_nhan: '$id_nv_nhan',
+                    id_pb_nhan: '$id_pb_nhan',
+                    dc_lydo: 1,
+                    id_ng_thuchien: '$users_id_ng_thuchien.userName',
+                    dep_id: "$users_id_ng_thuchien.inForPerson.employee.dep_id",
+                    dc_vi_tri_tu: "$infoVTtu.vi_tri",
+                    dc_vi_tri_den: "$infoVTden.vi_tri",
+                  }
+                }
+              ]);
+              for (let i = 0; i < data.length; i++) {
+                if (data[i].id_nv_dangsudung != 0) {
+                  let id_nv_dangsudung = await Users.findOne({ idQLC: data[i].id_nv_dangsudung }, { userName: 1 })
+                  if (id_nv_dangsudung) data[i].id_nv_dangsudung = id_nv_dangsudung.userName
+                }
+                if (data[i].id_pb_dang_sd != 0) {
+                  let id_pb_dang_sd = await department.findOne({ dep_id: data[i].id_pb_dang_sd }, { dep_name: 1 })
+                  if (id_pb_dang_sd) data[i].id_pb_dang_sd = id_pb_dang_sd.dep_name
+          
+                }
+                if (data[i].id_nv_nhan != 0) {
+                  let id_nv_nhan = await Users.findOne({ idQLC: data[i].id_nv_nhan }, { userName: 1 })
+                  if (id_nv_nhan) data[i].id_nv_nhan = id_nv_nhan.userName
+          
+                }
+                if (data[i].dep_id != 0) {
+                    let depName = await dep.findOne({ com_id: id_cty, dep_id: data[i].dep_id })
+                  if (depName) data[i].depName = depName.dep_name
+          
+                }
+                if (data[i].id_pb_nhan != 0) {
+                  let id_pb_nhan = await department.findOne({ dep_id: data[i].id_pb_nhan }, { dep_name: 1 })
+                  if (id_pb_nhan) data[i].id_pb_nhan = id_pb_nhan.dep_name
+                }
+                data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+                data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
+              }
+          
+              return functions.success(res, 'get data success', { dem, data })
+        }
+        //2: điều chuyển đối tượng sd
+        if (type === 2) {
+            // if (type_quyen === 2) filter.id_ng_tao_dc = idQLC
             let data = await DieuChuyen.aggregate([
                 { $match: filter },
                 { $sort: { dc_id: -1 } },
                 { $skip: skip },
                 { $limit: limit },
           
-                {
-                  $lookup: {
-                    from: 'Users',
-                    localField: 'id_ng_xoa_dc',
-                    foreignField: 'idQLC',
-                    as: 'user'
-                  }
-                },
-                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
                 {
                   $lookup: {
                     from: 'Users',
@@ -860,7 +935,6 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
                     id_pb_nhan: '$id_pb_nhan',
                     dc_lydo: 1,
                     id_ng_thuchien: '$users_id_ng_thuchien.userName',
-                    ng_xoa: '$user.userName'
                   }
                 }
               ]);
@@ -889,24 +963,34 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
           
               return functions.success(res, 'get data success', { dem, data })
         }
-        //2: điều chuyển đối tượng sd
-        if (type === 2) {
-            if (type_quyen === 2) conditions.id_ng_tao_dc = idQLC
+
+        //3: điều chuyển đơn vị quản lý
+        if (type === 3) {
+            // if (type_quyen === 2) filter.id_ng_tao_dc = idQLC
             let data = await DieuChuyen.aggregate([
-                { $match: conditions },
+                { $match: filter },
                 { $sort: { dc_id: -1 } },
                 { $skip: skip },
                 { $limit: limit },
-          
                 {
-                  $lookup: {
-                    from: 'Users',
-                    localField: 'id_ng_xoa_dc',
-                    foreignField: 'idQLC',
-                    as: 'user'
-                  }
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "vi_tri_dc_tu",
+                        foreignField: "id_vitri", 
+                        as: "infoVTtu" 
+                    }
                 },
-                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: "$infoVTtu", preserveNullAndEmptyArrays: true } },
+    
+                {
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "dc_vitri_tsnhan",
+                        foreignField: "id_vitri",
+                        as: "infoVTden"
+                    }
+                },
+                { $unwind: { path: "$infoVTden", preserveNullAndEmptyArrays: true } },
                 {
                   $lookup: {
                     from: 'Users',
@@ -946,7 +1030,8 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
                     id_cty_nhan: '$users_id_nv_nhan.userName',
                     dc_lydo: 1,
                     id_ng_thuchien: '$users_id_ng_thuchien.userName',
-                    ng_xoa: '$user.userName'
+                    dc_vi_tri_tu: "$infoVTtu.vi_tri",
+                    dc_vi_tri_den: "$infoVTden.vi_tri",
                   }
                 }
               ]);
@@ -956,12 +1041,6 @@ exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
               }
           
               return functions.success(res, 'get data success', { dem, data })
-        }
-
-        //3: điều chuyển đơn vị quản lý
-        if (type === 3) {
-            if (type_quyen === 2) conditions.id_ng_tao_dc = idQLC
-            return qlts.dieuChuyenDonViQuanLyDaXoa(res, DieuChuyen, dem, conditions, skip, limit);
         }
     } catch (error) {
         console.error(error)
