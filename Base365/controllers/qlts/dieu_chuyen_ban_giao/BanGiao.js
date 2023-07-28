@@ -54,7 +54,9 @@ exports.list = async (req, res) => {
                         foreignField : "idQLC",
                         as : "info"
                     }},
-                    {$unwind: "$info"},
+                    { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
+
+                    // {$unwind: "$info"},
                     {$project : {
                         "cp_id" : "$cp_id",
                         "cp_trangthai" : "$cp_trangthai",
@@ -104,7 +106,8 @@ exports.list = async (req, res) => {
                         foreignField : "idQLC",
                         as : "info"
                     }},
-                    {$unwind: "$info"},
+                    { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
+
                     {$project : {
                         "thuhoi_id" : "$thuhoi_id",
                         "thuhoi_trangthai" : "$thuhoi_trangthai",
@@ -162,7 +165,8 @@ exports.listDetailAllocation = async (req, res) => {
                 foreignField : "idQLC",
                 as : "info"
             }},
-            {$unwind: "$info"},
+            { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
+
             {$project : {
                 "cp_id" : "$cp_id",
                 "cp_trangthai" : "$cp_trangthai",
@@ -202,7 +206,9 @@ exports.listDetailRecall = async (req, res) => {
                 foreignField : "idQLC",
                 as : "info"
             }},
-            {$unwind: "$info"},
+            { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
+
+            // {$unwind: "$info"},
             {$project : {
                 "thuhoi_id" : "$thuhoi_id",
                 "thuhoi_ngay" : "$thuhoi_ngay",
@@ -221,6 +227,56 @@ exports.listDetailRecall = async (req, res) => {
             return fnc.success(res, " lấy thành công ",{data})
         }
         return fnc.setError(res, "không tìm thấy đối tượng", 510);
+    }catch(e){
+        return fnc.setError(res, e.message)
+    }
+}
+//Từ chối thực hiện bàn giao tài sản
+exports.refuserHandOver = async (req , res) =>{
+    try{
+        const id_cty = req.user.data.com_id
+        const dc_id = req.body.dc_id
+        const content = req.body.content
+        const data = await DieuChuyen.findOne({ dc_id: dc_id,id_cty: id_cty });
+        if (!data) {
+           return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+        } else {
+        await DieuChuyen.updateOne({ dc_id: dc_id,id_cty:id_cty }, {
+            dc_trangthai : 2,
+            dc_lydo_tuchoi : content,
+            })
+        }
+        return fnc.success(res, "cập nhật thành công")
+    }catch(e){
+        return fnc.setError(res, e.message)
+    }
+}
+//Từ chối bàn giao tài sản cấp phát
+exports.refuserHandOverAllocation = async (req , res) =>{
+    try{
+        const id_cty = req.user.data.com_id
+        const cp_id = req.body.cp_id
+        const content = req.body.content
+        const data = await capPhat.findOne({ cp_id: cp_id,id_cty: id_cty });
+        if (!data) {
+            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+         } else {
+             // console.log(data.cap_phat_taisan.ds_ts[0].ts_id)
+             let count = data.cap_phat_taisan.ds_ts[0].ts_id
+             for(let t = 0; t<count.length; t ++){
+                 let listItemsType = await TaiSan.find({ id_cty: id_cty, ts_id : count(t) })
+                     let sl_taisan = listItemsType.soluong_cp_bb + data.cap_phat_taisan.ds_ts[0].sl_cp
+                     await TaiSan.updateOne({ ts_id : count(t),id_cty:id_cty }, {
+                         soluong_cp_bb : sl_taisan,
+                         })
+             }
+            //  await capPhat.updateOne({ cp_id: cp_id,id_cty:id_cty }, {
+            //  cp_trangthai : 2,
+            //  cp_tu_choi_tiep_nhan : content,
+            //  })
+         }
+         return fnc.success(res, "cập nhật thành công")
+
     }catch(e){
         return fnc.setError(res, e.message)
     }

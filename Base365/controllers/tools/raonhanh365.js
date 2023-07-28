@@ -154,7 +154,7 @@ exports.toolNewRN = async(req, res, next) => {
                             money: data[i].new_money,
                             endvalue: data[i].gia_kt,
                             downPayment: data[i].datcoc,
-                            until: data[i].new_unit,
+until: data[i].new_unit,
                             cateID: data[i].new_cate_id,
                             type: data[i].new_type,
                             city: data[i].new_city,
@@ -165,7 +165,8 @@ exports.toolNewRN = async(req, res, next) => {
                             detailCategory: data[i].new_ctiet_dmuc,
                             createTime: new Date(data[i].new_create_time * 1000),
                             updateTime: new Date(data[i].new_update_time * 1000),
-                            phone: data[i].new_phone,
+                            
+ phone: data[i].new_phone,
                             email: data[i].new_email,
                             address: data[i].dia_chi,
                             district: data[i].quan_huyen,
@@ -175,7 +176,8 @@ exports.toolNewRN = async(req, res, next) => {
                             electroniceDevice: {
                                 warranty: data[i].new_baohanh
                             },
-                            free: data[i].chotang_mphi,
+                           
+free: data[i].chotang_mphi,
                             sold: data[i].da_ban,
                             timeSell: timeSell,
                             pinHome: data[i].new_pin_home,
@@ -259,7 +261,8 @@ exports.updateNewDescription = async(req, res, next) => {
                     if (post != null) {
                         await New.updateOne({ _id: idnew }, {
                             $set: {
-                                'han_su_dung': data[i].han_su_dung,
+                            
+'han_su_dung': data[i].han_su_dung,
                                 'poster': data[i].canhan_moigioi,
                                 'description': data[i].new_description,
                                 'productType': data[i].loai_sanpham,
@@ -419,7 +422,10 @@ exports.toolCateDetail = async(req, res, next) => {
             //             _id: data[i].id,
             //             name: data[i].name,
             //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productGroup: newItem } }, { upsert: true }, )
+
+
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productGroup: newItem } }, { upsert: true },)
+
             //     }
             //     page++;
             // } else {
@@ -442,7 +448,11 @@ exports.toolCateDetail = async(req, res, next) => {
             //             name: data[i].name,
             //             parent: data[i].id_cha,
             //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productMaterial: newItem } }, { upsert: true }, )
+            //         if (data[i].id_danhmuc == 0) {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { productMaterial: newItem } }, { upsert: true },)
+            //         } else {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productMaterial: newItem } }, { upsert: true },)
+            //         }
             //     }
             //     page++;
             // } else {
@@ -465,7 +475,11 @@ exports.toolCateDetail = async(req, res, next) => {
             //             name: data[i].name,
             //             parent: data[i].id_cha,
             //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productShape: newItem } }, { upsert: true }, )
+            //         if (data[i].id_danhmuc == 0) {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { productShape: newItem } }, { upsert: true },)
+            //         } else {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productShape: newItem } }, { upsert: true },)
+            //         }
             //     }
             //     page++;
             // } else {
@@ -487,7 +501,11 @@ exports.toolCateDetail = async(req, res, next) => {
             //             name: data[i].giong_thucung,
             //             parent: data[i].id_cha,
             //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { petPurebred: newItem } }, { upsert: true }, )
+            //         if (data[i].id_danhmuc == 0) {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { petPurebred: newItem } }, { upsert: true },)
+            //         } else {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { petPurebred: newItem } }, { upsert: true },)
+            //         }
             //     }
             //     page++;
             // } else {
@@ -509,7 +527,9 @@ exports.toolCateDetail = async(req, res, next) => {
             //             name: data[i].contents_name,
             //             type: data[i].type,
             //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { petInfo: newItem } }, { upsert: true }, )
+
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { petInfo: newItem } }, { upsert: true },)
+
             //     }
             //     page++;
             // } else {
@@ -531,8 +551,8 @@ exports.toolCateDetail = async(req, res, next) => {
             //             name: data[i].noi_xuatxu,
             //             parent: data[i].id_parents,
             //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { origin: newItem } }, { upsert: true }, )
-            //     }
+                                
+ //     }
             //     page++;
             // } else {
             //     result = false;
@@ -554,7 +574,11 @@ exports.toolCateDetail = async(req, res, next) => {
             //             type: data[i].phan_loai,
             //             parent: data[i].id_cha,
             //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { capacity: newItem } }, { upsert: true }, )
+            //         if (data[i].id_danhmuc == 0) {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { capacity: newItem } }, { upsert: true },)
+            //         } else {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { capacity: newItem } }, { upsert: true },)
+            //         }
             //     }
             //     page++;
             // } else {
@@ -577,7 +601,11 @@ exports.toolCateDetail = async(req, res, next) => {
             //             type: data[i].phan_loai,
             //             parent: data[i].id_cha,
             //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { screen: newItem } }, { upsert: true }, )
+            //         if (data[i].id_danhmuc == 0) {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { screen: newItem } }, { upsert: true },)
+            //         } else {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { screen: newItem } }, { upsert: true },)
+            //         }
             //     }
             //     page++;
             // } else {
@@ -621,6 +649,7 @@ exports.toolCateDetail = async(req, res, next) => {
             //             name: data[i].bovi_ten,
             //         };
             //         await CateDetail.findOneAndUpdate({ _id: data[i].bovi_id_danhmuc }, { $addToSet: { processor: newItem } }, { upsert: true }, )
+
             //     }
             //     page++;
             // } else {
@@ -628,7 +657,7 @@ exports.toolCateDetail = async(req, res, next) => {
             // }
 
             // 11. năm sản xuất
-            // const response = await axios.post(' https://raonhanh365.vn/api/select_tbl_namsanxuat.php', form, {
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_namsanxuat.php', form, {
             //     headers: {
             //         'Content-Type': 'multipart/form-data',
             //     },
@@ -679,14 +708,18 @@ exports.toolCateDetail = async(req, res, next) => {
             // });
             // let data = response.data.data.items;
             // if (data.length) {
-
-            //     for (let i = 0; i < data.length; i++) {
+           
+//     for (let i = 0; i < data.length; i++) {
             //         const newItem = {
             //             _id: data[i].id,
             //             name: data[i].ten_hang,
             //             parent: data[i].id_parent,
             //         };
-            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true }, )
+            //         if (data[i].id_danhmuc == 0) {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_parent }, { $addToSet: { brand: newItem } }, { upsert: true },)
+            //         } else {
+            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true },)
+            //         }
             //     }
             //     page++;
             // } else {
@@ -775,7 +808,11 @@ exports.toolCateDetail = async(req, res, next) => {
                         name: data[i].ten_loai,
                         parent: data[i].id_cha,
                     };
-                    await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true }, )
+ if (data[i].id_danhmuc == 0) {
+                        await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { allType: newItem } }, { upsert: true },)
+                    } else {
+                        await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true },)
+                    }
                 }
                 page++;
             } else {
@@ -2173,6 +2210,106 @@ exports.toolLoveNew = async(req, res, next) => {
             console.log(page);
         } while (result);
 
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
+
+exports.toolCateVl = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.get('https://raonhanh365.vn/api/select_category_vl.php', {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const loveNew1 = new CateVl({
+                        _id: data[i].cat_id,
+                        name: data[i].cat_name,
+                        lq: data[i].cat_lq,
+                        ut: data[i].cat_ut,
+                        active: data[i].cat_active,
+                    });
+                    await loveNew1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
+exports.toolPhuongXa = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_phuong_xa.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const loveNew1 = new PhuongXa({
+                        _id: data[i].id,
+                        name: data[i].name,
+                        prefix: data[i].prefix,
+                        province_id: data[i].province_id,
+                        district_id: data[i].district_id,
+                    });
+                    await loveNew1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
+
+exports.toolbanggiacknt = async (req, res, next) => {
+    try {
+
+        const response = await axios.get('https://raonhanh365.vn/api/select_ds_banggiacknt.php');
+        let data = response.data.data.items;
+        if (data.length > 0) {
+            for (let i = 0; i < data.length; i++) {
+                const loveNew1 = new NetworkOperator({
+                    _id: data[i].id,
+                    nameBefore: data[i].nha_mang,
+                    nameAfter: data[i].ten_nhmang,
+                    discount: data[i].chiet_khau,
+                    active: data[i].bg_active,
+                });
+                await loveNew1.save();
+            }
+        }
         return fnc.success(res, "Thành công");
     } catch (error) {
         return fnc.setError(res, error.message);

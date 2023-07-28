@@ -24,5 +24,8 @@ router.post('/updateStatus',functions.checkToken,fnc.checkRole("CP_TH",4) ,formD
 
 router.post('/getListDetail',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getListDetail)
 
+router.post('/listDetailAllocation',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.listDetailAllocation)
+
+router.post('/refuserAll',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.refuserAll)
 
 module.exports = router
