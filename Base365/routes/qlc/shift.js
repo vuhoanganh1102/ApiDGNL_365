@@ -16,7 +16,7 @@ router.get("/list", functions.checkToken, formData.parse(), ShiftController.getL
 router.post("/detail", functions.checkToken, formData.parse(), ShiftController.getShiftById);
 
 //API lấy danh sách ca làm việc theo Id công ty
-router.get("/all/company", formData.parse(), ShiftController.getShiftByComId)
+// router.get("/all/company", formData.parse(), ShiftController.getShiftByComId)
 
 router.get('/toolShifts', tool.toolShifts);
 
@@ -24,7 +24,7 @@ router.get('/toolShifts', tool.toolShifts);
 router.post("/edit", functions.checkToken, formData.parse(), ShiftController.editShift)
 
 //API xóa một ca làm việc theo Id
-router.post("/delete", functions.checkToken, formData.parse(), ShiftController.delete)
+// router.post("/delete", functions.checkToken, formData.parse(), ShiftController.delete)
 
 //API xóa toàn bộ ca làm việc của một công ty
 // router.delete("/all/company", formData.parse(), ShiftController.deleteShiftCompany)
