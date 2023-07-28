@@ -23,9 +23,10 @@ exports.addAchievement = async (req, res, next) => {
         let list_user_name1 = req.body.list_user_name;
         let resion = req.body.resion;
         // await Users.findByIdAndUpdate(19,{'inForPerson.employee.com_id':1761})
-        if (list_user1.length > 0) {
+
+        if (Array.isArray(list_user1) && Array.isArray(list_user_name1)) {
             for (let j = 0; j < list_user1.length; j++) {
-                let check_user = await Users.findOne({ 'inForPerson.employee.com_id': comId, idQLC: list_user1[j] }, { _id: 1 })
+                let check_user = await Users.findOne({ 'inForPerson.employee.com_id': comId, idQLC: Number(list_user1[j]) }, { _id: 1 })
 
                 if (check_user) {
                     listUser.push({ userId: list_user1[j], name: list_user_name1[j] });
@@ -36,42 +37,43 @@ exports.addAchievement = async (req, res, next) => {
             if (list_user1.length > 1) {
                 type = 2;
             }
-        }
-        let achievementAt = req.body.achievement_at;
+            let achievementAt = req.body.achievement_at;
 
-        let maxId = await AchievementFors.findOne({}, {}, { sort: { id: -1 } }).lean() || 0;
-        let id = Number(maxId.id) + 1;
-        if (achievementId && content && createdBy && achievementAt && achievementType && appellation && achievementLevel) {
-            await AchievementFors.create({
-                id,
-                comId, achievementId, content, createdBy, achievementType, appellation, achievementLevel
-                , createdAt, type, listUser
-            })
-        } else {
-            return functions.setError(res, 'missing data', 400)
-        }
-        if (achievementType === 6) {
-            if (!price || await functions.checkNumber(price) === false) {
-                return functions.setError(res, 'invalid price', 400)
-            }
-            for (let i = 0; i < listUser.length; i++) {
-                let maxIdThuongPhat = await functions.getMaxIdByField(thuongPhat, 'pay_id');
-
-                await thuongPhat.create({
-                    pay_id: maxIdThuongPhat,
-                    pay_id_user: listUser[i].userId,
-                    pay_id_com: comId,
-                    pay_price: price,
-                    pay_status: 1,
-                    pay_day: createdAt,
-                    pay_month: createdAt.getMonth() + 1,
-                    pay_year: createdAt.getFullYear(),
-                    pay_case: resion
+            let maxId = await AchievementFors.findOne({}, {}, { sort: { id: -1 } }).lean() || 0;
+            let id = Number(maxId.id) + 1;
+            if (achievementId && content && createdBy && achievementAt && achievementType && appellation && achievementLevel) {
+                await AchievementFors.create({
+                    id,
+                    comId, achievementId, content, createdBy, achievementType, appellation, achievementLevel
+                    , createdAt, type, listUser
                 })
+            } else {
+                return functions.setError(res, 'missing data', 400)
             }
+            if (achievementType === 6) {
+                if (!price || await functions.checkNumber(price) === false) {
+                    return functions.setError(res, 'invalid price', 400)
+                }
+                for (let i = 0; i < listUser.length; i++) {
+                    let maxIdThuongPhat = await functions.getMaxIdByField(thuongPhat, 'pay_id');
 
+                    await thuongPhat.create({
+                        pay_id: maxIdThuongPhat,
+                        pay_id_user: listUser[i].userId,
+                        pay_id_com: comId,
+                        pay_price: price,
+                        pay_status: 1,
+                        pay_day: createdAt,
+                        pay_month: createdAt.getMonth() + 1,
+                        pay_year: createdAt.getFullYear(),
+                        pay_case: resion
+                    })
+                }
+
+            }
+            return functions.success(res, 'Thành công')
         }
-        return functions.success(res, 'success')
+        return functions.setError(res, 'nhập đúng kiểu dữ liệu của id user hoặc tên', 400)
     } catch (error) {
         console.log("🚀 ~ file: walfareController.js:72 ~ exports.addAchievement= ~ error:", error)
         return functions.setError(res, error)
@@ -87,12 +89,12 @@ exports.addAchievementGroup = async (req, res, next) => {
         let type = 2;
         let createdBy = req.infoLogin.name;
         let achievementAt = req.body.achievement_at;
-        let depId = req.body.dep_id;
-        let depName = req.body.dep_name;
-        let checkDep = await DepartmentDetails.find({ dep_id: depId, com_id: comId });
+        let depId = Number(req.body.depId);
+        let depName = req.body.depName;
+        let checkDep = await DepartmentDetails.findOne({ dep_id: depId, com_id: comId });
         let price = req.body.price;
         let resion = req.body.resion;
-        if (!checkDep || checkDep.length === 0) {
+        if (!checkDep) {
             return functions.setError(res, 'Không tìm thấy phòng ban', 404)
         }
 
@@ -116,7 +118,7 @@ exports.addAchievementGroup = async (req, res, next) => {
             }
             let listEmployee = await Users.find({ 'inForPerson.employee.com_id': comId, 'inForPerson.employee.dep_id': depId }, { idQLC: 1 })
             if (listEmployee.length === 0) {
-                return functions.setError(res, 'NoEmployees', 400)
+                return functions.setError(res, 'Không tìm thấy nhân viên', 400)
             }
             for (let i = 0; i < listEmployee.length; i++) {
                 let maxIdThuongPhat = await functions.getMaxIdByField(thuongPhat, 'pay_id');
@@ -147,49 +149,58 @@ exports.updateAchievement = async (req, res, next) => {
         let comId = Number(req.infoLogin.comId);
         let achievementId = req.body.achievement_id;
         let content = req.body.content;
-        let listUser = [];
         let id = Number(req.body.id);
-        if (!id) return functions.setError(res, 'Invalid id', 400)
-        let check = await AchievementFors.find({ id, comId });
+        let listUser = [];
         let listUpdate = [];
-        if (!check || check.length === 0) {
-            return functions.setError(res, 'không tìm thấy khen thưởng', 404)
-        }
+        if (!id) return functions.setError(res, 'Invalid id', 400)
         let list_user = req.body.list_user;
         let list_user_name = req.body.list_user_name;
-        if (list_user) {
+        let createdBy = req.infoLogin.name;
+        let achievementAt = req.body.achievement_at;
+        let achievementType = req.body.achievement_type;
+        let appellation = req.body.appellation;
+        let achievementLevel = req.body.achievement_level;
+        let depId = Number(req.body.depId);
+        let depName = req.body.depName;
+
+        let updatedAt = new Date();
+        let check = await AchievementFors.findOne({ id, comId });
+        if (!check) {
+            return functions.setError(res, 'không tìm thấy khen thưởng', 404)
+        }
+        if (depId) {
+            listUpdate = {
+                achievementId, content, createdBy, achievementType, appellation, achievementLevel
+                , updatedAt, depId, depName
+            }
+            if (achievementId && content && createdBy && achievementAt && achievementType && appellation && achievementLevel) {
+                await AchievementFors.findOneAndUpdate({ id: id }, listUpdate)
+                return functions.success(res, 'success')
+            }
+            return functions.setError(res, 'missing data', 400)
+
+        }
+        if (Array.isArray(list_user) && Array.isArray(list_user_name)) {
+
             for (let j = 0; j < list_user.length; j++) {
-                let check_user = await Users.findOne({ 'inForPerson.employee.com_id': comId, idQLC: list_user[j] }, { _id: 1 })
+                let check_user = await Users.findOne({ 'inForPerson.employee.com_id': comId, idQLC: Number(list_user[j]) }, { _id: 1 })
                 if (check_user) {
                     listUser.push({ userId: list_user[j], name: list_user_name[j] });
                 } else {
                     return functions.setError(res, 'not found user', 400)
                 }
             }
-        }
-        let createdBy = req.infoLogin.name;
-        let achievementAt = req.body.achievement_at;
-        let achievementType = req.body.achievement_type;
-        let appellation = req.body.appellation;
-        let achievementLevel = req.body.achievement_level;
-        let updatedAt = new Date();
-        if (check[0].depId === 0) {
-            listUpdate = {
-                comId, achievementId, content, createdBy, achievementType, appellation, achievementLevel
+            let listUpdate = {
+                achievementId, content, createdBy, achievementType, appellation, achievementLevel
                 , updatedAt, listUser
             }
-        } else {
-            listUpdate = {
-                comId, achievementId, content, createdBy, achievementType, appellation, achievementLevel
-                , updatedAt, depId: check[0].depId
+            if (achievementId && content && createdBy && achievementAt && achievementType && appellation && achievementLevel) {
+                await AchievementFors.findOneAndUpdate({ id: id }, listUpdate)
+                return functions.success(res, 'success')
             }
-        }
-        if (achievementId && content && createdBy && achievementAt && achievementType && appellation && achievementLevel) {
-            await AchievementFors.findOneAndUpdate({ id: id }, listUpdate)
-        } else {
             return functions.setError(res, 'missing data', 400)
         }
-        return functions.success(res, 'success')
+        return functions.setError(res, 'nhập đúng kiểu dữ liệu của id user hoặc tên', 400)
     } catch (error) {
         return functions.setError(res, error)
     }
@@ -227,6 +238,10 @@ exports.listAchievement = async (req, res, next) => {
         } else if (keyWords && type === 3) {
             data = await AchievementFors.find({ "listUser.name": { $regex: `.*${keyWords}.*` }, comId }).sort({ id: -1 }).skip(skip).limit(pageSize);
             totalAchievementFors = await AchievementFors.find({ "listUser.name": { $regex: `.*${keyWords}.*` }, comId }).count();
+            if (!data || data.length === 0) {
+                data = await AchievementFors.find({ content: { $regex: `.*${keyWords}.*` }, comId }).sort({ id: -1 }).skip(skip).limit(pageSize);
+                totalAchievementFors = await AchievementFors.find({ content: { $regex: `.*${keyWords}.*` }, comId }).count();
+            }
         }
         else if (!keyWords && type === 1) {
             data = await AchievementFors.find({ type: 1, comId }).sort({ id: -1 }).skip(skip).limit(pageSize);
@@ -264,9 +279,9 @@ exports.addInfinges = async (req, res, next) => {
         let list_user_name = req.body.list_user_name;
         let price = req.body.price;
         let resion = req.body.resion;
-        if (list_user.length !== 0) {
+        if (Array.isArray(list_user) && Array.isArray(list_user_name)) {
             for (let j = 0; j < list_user.length; j++) {
-                let check_user = await Users.findOne({ 'inForPerson.employee.com_id': comId, idQLC: list_user[j] }, { _id: 1 })
+                let check_user = await Users.findOne({ 'inForPerson.employee.com_id': comId, idQLC: Number(list_user[j]) }, { _id: 1 })
 
                 if (check_user) {
                     listUser.push({ userId: list_user[j], name: list_user_name[j] });
@@ -296,10 +311,9 @@ exports.addInfinges = async (req, res, next) => {
                     pay_case: resion
                 })
             }
-        } else {
-            return functions.setError(res, 'missing data', 400)
+            return functions.success(res, 'add data success')
         }
-        return functions.success(res, 'add data success')
+        return functions.setError(res, 'missing data', 400)
     } catch (error) {
         console.log("🚀 ~ file: walfareController.js:168 ~ exports.listAchievement= ~ error:", error)
         return functions.setError(res, error)
@@ -322,8 +336,8 @@ exports.addInfingesGroup = async (req, res, next) => {
         let depName = req.body.dep_name;
         let price = req.body.price;
         let resion = req.body.resion;
-        let checkDep = await DepartmentDetails.find({ dep_id: depId, com_id: comId });
-        if (!checkDep || checkDep.length === 0) {
+        let checkDep = await DepartmentDetails.findOne({ dep_id: depId, com_id: comId });
+        if (!checkDep) {
             return functions.setError(res, 'Không tìm thấy phòng ban', 404)
         }
         let id = await hr.getMaxId(InfringesFors)
@@ -368,49 +382,53 @@ exports.updateInfinges = async (req, res, next) => {
         let regulatoryBasis = req.body.regulatory_basis;
         let listUser = [];
         let id = Number(req.body.id);
-        let check = await InfringesFors.find({ id, comId });
+        let check = await InfringesFors.findOne({ id, comId });
         let listUpdate = [];
-        if (!check || check.length === 0) {
-            return functions.setError(res, 'không tìm thấy data', 404)
-        }
-        if (req.body.list_user) {
-            for (let j = 0; j < req.body.list_user.split(',').length; j++) {
-                let check_user = await Users.find({ idQLC: req.body.list_user.split(',')[j] })
-                if (check_user && check_user.length) {
-                    listUser.push({ userId: req.body.list_user.split(',')[j], name: req.body.list_user_name.split(',')[j] });
-                } else {
-                    return functions.setError(res, 'not found user', 400)
-                }
-            }
-        }
+        let depId = Number(req.body.depId);
+        let depName = req.body.depName;
         let createdBy = req.infoLogin.name;
         let infringeAt = req.body.infringe_at;
         if (await functions.checkDate(infringeAt) === false || await functions.checkTime(infringeAt) === false) {
             return functions.setError(res, 'invalid infringe_at', 400)
-
         }
         let infringeType = req.body.infringe_type;
         let numberViolation = req.body.number_violation;
+        let list_user = req.body.list_user;
+        let list_user_name = req.body.list_user_name;
         let updatedAt = new Date();
-        let depId = req.body.depId;
-        let depName = req.body.depName;
-        if (check[0].depId === 0) {
-            listUpdate = {
-                comId, regulatoryBasis, infringeAt, createdBy, infringeType, numberViolation
-                , updatedAt, listUser
-            }
-        } else {
+        if (!check) {
+            return functions.setError(res, 'không tìm thấy data', 404)
+        }
+        if (depId) {
             listUpdate = {
                 comId, regulatoryBasis, infringeAt, createdBy, infringeType, numberViolation
                 , updatedAt, depId, depName
             }
-        }
-        if (regulatoryBasis && createdBy && createdBy && infringeType && numberViolation) {
-            await InfringesFors.findOneAndUpdate({ id: id }, listUpdate)
-        } else {
+            if (regulatoryBasis && createdBy && createdBy && infringeType && numberViolation) {
+                await InfringesFors.findOneAndUpdate({ id: id }, listUpdate)
+                return functions.success(res, 'success')
+            }
             return functions.setError(res, 'missing data', 400)
         }
-        return functions.success(res, 'success')
+        if (Array.isArray(list_user) && Array.isArray(list_user_name)) {
+            for (let j = 0; j < req.body.list_user.split(',').length; j++) {
+                let check_user = await Users.find({ idQLC: req.body.list_user[j] })
+                if (check_user && check_user.length) {
+                    listUser.push({ userId: req.body.list_user[j], name: req.body.list_user_name[j] });
+                } else {
+                    return functions.setError(res, 'not found user', 400)
+                }
+            }
+            listUpdate = {
+                comId, regulatoryBasis, infringeAt, createdBy, infringeType, numberViolation
+                , updatedAt, listUser
+            }
+            if (regulatoryBasis && createdBy && createdBy && infringeType && numberViolation) {
+                await InfringesFors.findOneAndUpdate({ id: id }, listUpdate)
+                return functions.success(res, 'success')
+            }
+            return functions.setError(res, 'missing data', 400)
+        }
     } catch (error) {
         console.log("🚀 ~ file: walfareController.js:42 ~ exports.addAchievement= ~ error:", error)
         return functions.setError(res, error)
@@ -449,6 +467,10 @@ exports.listInfinges = async (req, res, next) => {
         } else if (keyWords && type === 3) {
             data = await InfringesFors.find({ infringeName: { $regex: `.*${keyWords}.*` }, comId }).sort({ id: -1 }).skip(skip).limit(pageSize);
             totalInfinges = await InfringesFors.find({ infringeName: { $regex: `.*${keyWords}.*` }, comId }).count();
+            if (!data || data.length === 0) {
+                data = await InfringesFors.find({ infringeName: { $regex: `.*${keyWords}.*` }, comId, }).sort({ id: -1 }).skip(skip).limit(pageSize);
+                totalInfinges = await InfringesFors.find({ infringeName: { $regex: `.*${keyWords}.*` }, comId }).count();
+            }
         }
         else if (!keyWords && type === 1) {
             data = await InfringesFors.find({ type: 1, comId }).sort({ id: -1 }).skip(skip).limit(pageSize);

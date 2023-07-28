@@ -29,6 +29,7 @@ exports.create = async(req,res) =>{
         const id_ng_nhan = req.body.id_ng_nhan
 
         let maxThongBao = await thongBao.findOne({},{},{sort: {id_tb : -1}}).lean() || 0 ;
+        console.log("🚀 ~ file: DieuChuyenDonViQuanLi.js:32 ~ exports.create=async ~ maxThongBao:", maxThongBao)
         let maxDieuChuyen = await DieuChuyen.findOne({},{},{sort: {dc_id : -1}}).lean() || 0 ;
         let now = new Date()
         let ds_dc = ""
@@ -37,19 +38,19 @@ exports.create = async(req,res) =>{
                         ts_id: item[0],
                         sl_ts: item[1]
                         }));
-        let updateThongBao = new thongBao({
-            id_tb : Number(maxThongBao.id_tb) + 1 || 1,
-            id_ts : updated_ds_dc[0].ts_id,
-            id_cty : id_cty,
-            id_ng_tao : idQLC,
-            type_quyen :1,
-            type_quyen_tao:1,
-            loai_tb: 3,
-            add_or_duyet: 1,
-            da_xem: 0,
-            date_create :  Date.parse(now)/1000,
-         })
-         await updateThongBao.save()
+        // let updateThongBao = new thongBao({
+        //     id_tb : Number(maxThongBao.id_tb) +1 || 1,
+        //     id_ts : updated_ds_dc[0].ts_id,
+        //     id_cty : id_cty,
+        //     id_ng_tao : idQLC,
+        //     type_quyen :1,
+        //     type_quyen_tao:1,
+        //     loai_tb: 3,
+        //     add_or_duyet: 1,
+        //     da_xem: 0,
+        //     date_create :  Date.parse(now)/1000,
+        //  })
+        //  await updateThongBao.save()
         if(loai_dc == 0){
             let insert_dc_vt = new DieuChuyen({
                 dc_id: Number(maxDieuChuyen.dc_id) +1 || 1,

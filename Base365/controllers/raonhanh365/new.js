@@ -76,7 +76,7 @@ exports.postNewMain = async (req, res, next) => {
         let order = request.order;
         let the_tich = request.the_tich;
         let warranty = request.warranty;
-        let loai_noithat =  request.loai_noithat;
+        let loai_noithat = request.loai_noithat;
         if (address && address.length > 0) {
             for (let i = 0; i < address.length; i++) {
                 diachi.push(address[i])
@@ -1083,7 +1083,10 @@ exports.searchNew = async (req, res, next) => {
         ]);
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         for (let i = 0; i < data.length; i++) {
-            data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, data[i].buySell)
+            if(data[i].img){
+                data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, data[i].buySell)
+                data[i].soluonganh = data[i].img.length
+            }
             data[i].islove = 0;
             if (buySell === 1) {
                 data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-ct${data[i]._id}.html`;
@@ -1101,7 +1104,41 @@ exports.searchNew = async (req, res, next) => {
                     }
                 }
             }
+            let url = data[i].link;
+            let ListComment = await Comments.find({ url, parent_id: 0 }, {}, { time: -1 }).lean();
+            let ListLike = await LikeRN.find({ forUrlNew: url, commentId: 0, type: { $lt: 8 } }, {}, { type: 1 })
+            let ListReplyComment = [];
+            let ListLikeComment = [];
+            let ListLikeCommentChild = [];
+            if (ListComment.length !== 0) {
+                for (let i = 0; i < ListComment.length; i++) {
+                    ListLikeComment = await LikeRN.find({ forUrlNew: url, type: { $lt: 8 }, commentId: ListComment[i]._id }, {}, { type: 1 })
+                    ListReplyComment = await Comments.find({ url, parent_id: ListComment[i]._id }, {}, { time: -1 }).lean();
+                    // lấy lượt like của từng trả lời
+                    if (ListReplyComment && ListReplyComment.length > 0) {
+                        for (let j = 0; j < ListReplyComment.length; j++) {
+                            ListLikeCommentChild = await LikeRN.find({ forUrlNew: url, type: { $lt: 8 }, commentId: ListReplyComment[j]._id }, {}, { type: 1 })
+                            ListReplyComment[j].ListLikeCommentChild = ListLikeCommentChild
+                            ListReplyComment[i].img = process.env.DOMAIN_RAO_NHANH + '/' + ListReplyComment[i].img
+                        }
+                    }
+                    ListComment[i].ListLikeComment = ListLikeComment
+                    ListComment[i].ListReplyComment = ListReplyComment
+                    if (ListComment[i].img) {
+                        ListComment[i].img = process.env.DOMAIN_RAO_NHANH + '/' + ListComment[i].img
+                    }
+                }
+            }
+            let soluonglike = await LikeRN.find({ forUrlNew: url, commentId: 0, type: { $lt: 8 } }).count();
+            let soluongcomment = await Comments.find({ url }).count();
+            data[i].ListLike = ListLike
+            data[i].ListComment = ListComment
+            data[i].soluonglike = soluonglike
+            data[i].soluongcomment = soluongcomment
+
         }
+
+
         const totalCount = await New.countDocuments(condition);
 
         return functions.success(res, "get data success", {
@@ -1789,6 +1826,7 @@ exports.getDetailNew = async (req, res, next) => {
 
             if (tintuongtu[i].img) {
                 tintuongtu[i].img = await raoNhanh.getLinkFile(tintuongtu[i].img, tintuongtu[i].cateID, tintuongtu[i].buySell)
+                tintuongtu[i].soluonganh = tintuongtu[i].img.length;
             }
         }
         let url = linkTitle;
@@ -2158,7 +2196,7 @@ exports.newisbidding = async (req, res, next) => {
             status: 1,
             createTime: 1,
             note: 1,
-            user: { _id: 1, idRaoNhanh365: 1, phone: 1, isOnline: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
+            user: { _id: 1, address: 1, idRaoNhanh365: 1, phone: 1, isOnline: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
 
         };
         let tinConHan = await Bidding.aggregate([
