@@ -25,22 +25,54 @@ router.post('/details',functions.checkToken,formData.parse(),controllerTs.showCT
 
 
 //Api hiển thị quá trình sử dụng
+router.post('/quatrinhSd',functions.checkToken,formData.parse(),controllerTs.quatrinhsd)
 
 
-//Api khấu hao
+//Api hiển thị khấu hao
+router.post('/showkh',functions.checkToken,formData.parse(),controllerTs.khauhaoCTTS)
+
+//Apo thêm khấu hao
+router.post('/addkhauhao',functions.checkToken,formData.parse(),controllerTs.addKhauHao)
 
 
 //Api tài liệu đính kèm
+router.post('/listFile',functions.checkToken,formData.parse(),controllerTs.showFile)
 
+router.post('/addFile',functions.checkToken,formData.parse(),controllerTs.addFile)
 
+router.post('/deleteFile',functions.checkToken,formData.parse(),controllerTs.deleteFile)
 //Api Bảo duongx theo chi tiết
+router.post('/showBDCT',functions.checkToken,formData.parse(),controllerTs.showBDCT)
 
+//Api sửa chữa theo chi tiết 
+router.post('/showSCCT',functions.checkToken,formData.parse(),controllerTs.showScCT)
 
 //Api sửa chữa theo chi tiết
 router.post('/editTS',functions.checkToken,formData.parse(),controllerTs.editTS)
 
-
 //Api xóa tài sản
 router.post('/delete',functions.checkToken,formData.parse(),controllerTs.deleteTs)
+
+
+
+
+//Api hiển thị ghi tăng
+router.post('/DTghitang',functions.checkToken,formData.parse(),controllerTs.showGhiTang)
+
+//thêm mới ghi tăng
+router.post('/addghitang',functions.checkToken,formData.parse(),controllerTs.addGhiTang)
+
+
+//duyệt ghi tăng
+router.post('/duyetGT',functions.checkToken,formData.parse(),controllerTs.duyetHuyGhiTang)
+
+//xóa ghi tăng
+router.post('/Deleteghitang',functions.checkToken,formData.parse(),controllerTs.XoaGhiTang)
+
+//sửa ghi tăng
+router.post('/Editghitang',functions.checkToken,formData.parse(),controllerTs.chinhSuaGhitang)
+
+//Thông tin phân bổ
+router.post('/ShowTTPB',functions.checkToken,formData.parse(),controllerTs.showTTPB)
 
 module.exports = router

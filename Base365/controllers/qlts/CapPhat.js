@@ -131,13 +131,7 @@ exports.edit = async (req, res) => {
 
 exports.delete = async (req, res) => {
     try {
-        const type = req.user.data.type
-        const id_cty = ""
-        if (type == 1) {
-            id_cty = req.user.data.idQLC
-        } else {
-            id_cty = req.user.data.inForPerson.employee.com_id
-        }
+        const id_cty = req.user.data.com_id
         const datatype = req.body.datatype
         const _id = req.body.id
         const type_quyen = req.body.type_quyen
@@ -584,7 +578,7 @@ exports.refuserAll = async (req , res) =>{
             })
         }
         return fnc.success(res, "cập nhật thành công")
-        
+
     }catch(e){
         return fnc.setError(res, e.message)
     }
