@@ -24,9 +24,11 @@ exports.xoaBaoDuong = async (req, res) => {
         let id_com = 0;
         if (req.user.data.type == 1 || req.user.data.type == 2) {
             id_com = req.user.data.com_id;
+            bd_id_ng_xoa = req.user.data.idQLC
         } else {
             return fnc.setError(res, 'không có quyền truy cập', 400);
         }
+        const deleteDate = Math.floor(Date.now() / 1000);
         if (type == 1) { // xóa vĩnh viễn
             let idArraya = id.map(idItem => parseInt(idItem));
             await BaoDuong.deleteMany({ id_bd: { $in: idArraya }, id_cty: id_com });
@@ -40,7 +42,11 @@ exports.xoaBaoDuong = async (req, res) => {
 
                     xoa_bd: 0
                 },
-                { xoa_bd: 1 }
+                { 
+                xoa_bd: 1 ,
+                bd_id_ng_xoa : bd_id_ng_xoa,
+                bd_date_delete : deleteDate
+                }
             );
             return fnc.success(res, 'Bạn đã xóa thành công vào danh sách dã xóa !');
         } else if (type == 2) {
@@ -48,7 +54,11 @@ exports.xoaBaoDuong = async (req, res) => {
             let idArray = id.map(idItem => parseInt(idItem));
             await BaoDuong.updateMany(
                 { id_bd: { $in: idArray }, xoa_bd: 1 },
-                { xoa_bd: 0 }
+                { 
+                xoa_bd: 0,
+                bd_id_ng_xoa : 0,
+                bd_date_delete : 0
+                }
             );
             return fnc.success(res, 'Bạn đã khôi phục bảo dưỡng thành công!');
         } else {
