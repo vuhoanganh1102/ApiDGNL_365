@@ -127,7 +127,6 @@ exports.deleteVT = async (req, res) => {
   try {
     let { id_vitri } = req.body; 
     let com_id = '';
-    let ts_id_ng_xoa = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
       ts_id_ng_xoa = req.user.data.idQLC; 
