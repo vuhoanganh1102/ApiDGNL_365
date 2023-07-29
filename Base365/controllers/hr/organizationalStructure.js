@@ -78,7 +78,7 @@ exports.detailInfoCompany = async(req, res, next) => {
             let result = {}
                 //thông tin công ty cha
             result.infoCompany = {}
-            let infoCompany = await Users.findOne({ idQLC: com_id, type: 1 }, { userName: 1 })
+            let infoCompany = await Users.findOne({ idQLC: com_id, type: 1 }, { userName: 1 }).lean();
             if (infoCompany) {
                 result.infoCompany.parent_com_id = com_id
                 result.infoCompany.companyName = infoCompany.userName
@@ -94,8 +94,8 @@ exports.detailInfoCompany = async(req, res, next) => {
                             team_id: 1,
                         }
                     }
-                });
-                const listEmpDD = await Tracking.find({ com_id: com_id });
+                }).lean();
+                const listEmpDD = await Tracking.find({ com_id: com_id }).lean();
                 let listGiamDoc = listEmployee.filter(employee => {
                     if (
                         employee.inForPerson &&
@@ -112,7 +112,7 @@ exports.detailInfoCompany = async(req, res, next) => {
                     ) return true;
                     return false;
                 });
-                let countEmpDD = await Tracking.countDocuments({ com_id: com_id })
+                let countEmpDD = await Tracking.countDocuments({ com_id: com_id }).lean();
                     // let countEmpDD = await Tracking.countDocuments({ com_id: com_id, shiftID: shiftID, CreateAt: { $gte: inputOld, $lte: inputNew } })
                 result.infoCompany.parent_manager = listGiamDoc;
                 result.infoCompany.parent_deputy = listPhoGiamDoc;
@@ -120,7 +120,53 @@ exports.detailInfoCompany = async(req, res, next) => {
                 result.infoCompany.tong_nv_da_diem_danh = countEmpDD
 
                 //thông tin phòng ban cha
-                let infoDepParent = await Deparment.find({ com_id: com_id })
+                let infoDepParent = await Deparment.find({ com_id: com_id }).lean();
+                
+                let listIdDepartment = [];
+                for(let i=0; i<infoDepParent.length; i++){
+                    listIdDepartment.push(infoDepParent[i].dep_id)
+                };
+
+                let list_infoTruongphong = await Users.find({
+                    type: 2,
+                    "inForPerson.employee.position_id": {$in:[5,6]},
+                    "inForPerson.employee.com_id": com_id,
+                    "inForPerson.employee.dep_id": {$in:listIdDepartment},
+                },{ inForPerson:1,userName: 1, idQLC: 1 }).lean();
+                
+                let list_depInfo = await HR_DepartmentDetails.find({
+                    comId: com_id, depId: {$in:listIdDepartment}
+                }).lean();
+
+                // danh sách nhân viên trong công ty 
+                let listUserInCom = await Users.find({
+                    type: 2,
+                    "inForPerson.employee.com_id": com_id,
+                },{type:1,inForPerson:1}).lean();
+                
+                // dữ liệu chấm công của nhân viên trong công ty 
+                let data_track_com = await Users.aggregate([
+                    { $match: {
+                        type: 2,
+                        "inForPerson.employee.com_id": com_id,
+                    } },
+                    {
+                        $lookup: {
+                            from: "QLC_Time_sheets",
+                            localField: "idQLC",
+                            foreignField: "ep_id",
+                            as: "Time_sheets"
+                        }
+                    },
+                    { $match: { Time_sheets: { $ne: [] } } },
+                    { $project: { Time_sheets: 1 ,inForPerson:1} },
+                ]);
+                
+                // dữ liệu team 
+                let list_infoTeamParent = await Team.find({ com_id: com_id }).lean();
+
+                // dữ liệu team mo ta 
+                let list_infoTeamMota = await HR_NestDetails.find({ type: 0, comId: com_id }).lean()
 
                 if (infoDepParent) {
                     result.infoCompany.infoDep = [];
@@ -130,71 +176,83 @@ exports.detailInfoCompany = async(req, res, next) => {
                         infoDep.dep_id = infoDepParent[i].dep_id
                         infoDep.dep_name = infoDepParent[i].dep_name
                         let dep_id = infoDepParent[i].dep_id;
-                        let infoTruongphong = await Users.findOne({
-                            type: 2,
-                            "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
-                            "inForPerson.employee.position_id": 6
-                        }, { userName: 1, idQLC: 1 })
+                        // let infoTruongphong = await Users.findOne({
+                        //     type: 2,
+                        //     "inForPerson.employee.com_id": com_id,
+                        //     "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
+                        //     "inForPerson.employee.position_id": 6
+                        // }, { userName: 1, idQLC: 1 })
+                        let infoTruongphong = list_infoTruongphong.find((e)=> 
+                             (e.dep_id == infoDepParent[i].dep_id)
+                             &&(e.inForPerson.employee.position_id == 6)
+                        )
                         if (infoTruongphong) {
                             infoDep.manager = infoTruongphong.userName
                         } else infoDep.manager = "chưa cập nhât"
 
-                        let infoPhophong = await Users.findOne({
-                            type: 2,
-                            "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
-                            "inForPerson.employee.position_id": 5
-                        }, { userName: 1, idQLC: 1 })
-
+                        // let infoPhophong = await Users.findOne({
+                        //     type: 2,
+                        //     "inForPerson.employee.com_id": com_id,
+                        //     "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
+                        //     "inForPerson.employee.position_id": 5
+                        // }, { userName: 1, idQLC: 1 })
+                        let infoPhophong = list_infoTruongphong.find((e)=> 
+                                (e.dep_id == infoDepParent[i].dep_id)
+                                &&(e.inForPerson.employee.position_id == 5)
+                        )
                         if (infoPhophong) {
                             infoDep.deputy = infoPhophong.userName
                         } else infoDep.deputy = "chưa cập nhât"
 
-                        let depInfo = await HR_DepartmentDetails.findOne({ comId: com_id, depId: infoDepParent[i].dep_id })
+                        //let depInfo = await HR_DepartmentDetails.findOne({ comId: com_id, depId: infoDepParent[i].dep_id }).lean()
+                        let depInfo = list_depInfo.find((e)=> e.depId == infoDepParent[i].dep_id);
 
                         if (depInfo && depInfo.description != null) {
                             infoDep.description = depInfo.description
                         } else infoDep.description = "chưa cập nhật"
 
-                        let countEmpDep = await Users.countDocuments({
-                            type: 2,
-                            "inForPerson.employee.com_id": com_id,
-                            "inForPerson.employee.dep_id": infoDepParent[i].dep_id
-                        })
-                        infoDep.total_emp = countEmpDep
+                        // let countEmpDep = await Users.countDocuments({
+                        //     type: 2,
+                        //     "inForPerson.employee.com_id": com_id,
+                        //     "inForPerson.employee.dep_id": infoDepParent[i].dep_id
+                        // })
+                        let countEmpDep = listUserInCom.filter((e)=> e.inForPerson.employee.dep_id == infoDepParent[i].dep_id).length;
+                        infoDep.total_emp = countEmpDep;
 
-                        let countEmpDepDD = await Tracking.countDocuments({ com_id: com_id })
-                        for (let m = 0; m < listEmpDD.length; m++) {
+                        //let countEmpDepDD = await Tracking.countDocuments({ com_id: com_id })
 
-                        }
+                        // for (let m = 0; m < listEmpDD.length; m++) {
+
+                        // }
                         const conditionDD = {
                             type: 2,
                             "inForPerson.employee.com_id": com_id,
                         }
                         let conditionDep = {...conditionDD, "inForPerson.employee.dep_id": infoDepParent[i].dep_id };
-                        let empDD = await Users.aggregate([
-                            { $match: conditionDep },
-                            {
-                                $lookup: {
-                                    from: "QLC_Time_sheets",
-                                    localField: "idQLC",
-                                    foreignField: "ep_id",
-                                    as: "Time_sheets"
-                                }
-                            },
-                            { $match: { Time_sheets: { $ne: [] } } },
-                            { $project: { Time_sheets: 1 } },
-                        ]);
-                        infoDep.tong_nv_da_diem_danh = await totalDD(res, conditionDep);
-
+                        // let empDD = await Users.aggregate([
+                        //     { $match: conditionDep },
+                        //     {
+                        //         $lookup: {
+                        //             from: "QLC_Time_sheets",
+                        //             localField: "idQLC",
+                        //             foreignField: "ep_id",
+                        //             as: "Time_sheets"
+                        //         }
+                        //     },
+                        //     { $match: { Time_sheets: { $ne: [] } } },
+                        //     { $project: { Time_sheets: 1 } },
+                        // ]);
+                        //infoDep.tong_nv_da_diem_danh = await totalDD(res, conditionDep); // data_track_com
+                        infoDep.tong_nv_da_diem_danh = data_track_com.filter((e)=> e.inForPerson.employee.dep_id == infoDepParent[i].dep_id).length;
                         result.infoCompany.infoDep.push(infoDep)
 
                         //thông tin tổ công ty cha
-                        let infoTeamParent = await Team.find({ dep_id: infoDepParent[i].dep_id }, { team_id: 1, teamName: 1 })
-                        result.infoCompany.infoDep[i].infoTeam = []
+                        //let infoTeamParent = await Team.find({ dep_id: infoDepParent[i].dep_id }, { team_id: 1, teamName: 1 }).lean();
+                        let infoTeamParent = list_infoTeamParent.filter((e)=> e.dep_id == infoDepParent[i].dep_id);
+                        result.infoCompany.infoDep[i].infoTeam = [];
                         for (let j = 0; j < infoTeamParent.length; j++) {
-                            let infoTeamMota = await HR_NestDetails.findOne({ grId: infoTeamParent[j].team_id, type: 0, comId: com_id }, { description: 1 })
+                            //let infoTeamMota = await HR_NestDetails.findOne({ grId: infoTeamParent[j].team_id, type: 0, comId: com_id }, { description: 1 }).lean()
+                            let infoTeamMota = list_infoTeamMota.find((e)=> e.grId == infoTeamParent[j].team_id);
                             infoTeam = {}
                             infoTeam.gr_id = infoTeamParent[j].team_id
                             infoTeam.gr_name = infoTeamParent[j].teamName
@@ -207,7 +265,7 @@ exports.detailInfoCompany = async(req, res, next) => {
                                 "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
                                 "inForPerson.employee.position_id": 13,
                                 "inForPerson.employee.team_id": infoTeamParent[j].team_id
-                            }, { userName: 1 })
+                            }, { userName: 1 }).lean()
                             if (infoToTruong) {
                                 infoTeam.to_truong = infoToTruong.userName
                             } else infoTeam.to_truong = "chưa cập nhật"
@@ -218,7 +276,7 @@ exports.detailInfoCompany = async(req, res, next) => {
                                 "inForPerson.employee.dep_id": infoDepParent[i].dep_id,
                                 "inForPerson.employee.position_id": 12,
                                 "inForPerson.employee.team_id": infoTeamParent[j].team_id
-                            }, { userName: 1 })
+                            }, { userName: 1 }).lean()
                             if (infoPhoToTruong) {
                                 infoTeam.pho_to_truong = infoPhoToTruong.userName
                             } else infoTeam.pho_to_truong = "chưa cập nhật"
@@ -235,11 +293,11 @@ exports.detailInfoCompany = async(req, res, next) => {
                             result.infoCompany.infoDep[i].infoTeam.push(infoTeam)
 
                             //thông tin nhóm công ty cha
-                            let infoGroupParent = await Group.find({ team_id: infoTeamParent[j].team_id, dep_id: infoDepParent[i].dep_id }, { gr_id: 1, gr_name: 1 })
+                            let infoGroupParent = await Group.find({ team_id: infoTeamParent[j].team_id, dep_id: infoDepParent[i].dep_id }, { gr_id: 1, gr_name: 1 }).lean()
 
                             result.infoCompany.infoDep[i].infoTeam[j].infoGroup = []
                             for (let k = 0; k < infoGroupParent.length; k++) {
-                                let infoGroupMota = await HR_NestDetails.findOne({ grId: infoGroupParent[k].gr_id, type: 1, comId: com_id }, { description: 1 })
+                                let infoGroupMota = await HR_NestDetails.findOne({ grId: infoGroupParent[k].gr_id, type: 1, comId: com_id }, { description: 1 }).lean();
                                 infoGroup = {}
                                 infoGroup.gr_id = infoGroupParent[k].gr_id
                                 infoGroup.gr_name = infoGroupParent[k].gr_name
@@ -253,7 +311,7 @@ exports.detailInfoCompany = async(req, res, next) => {
                                     "inForPerson.employee.position_id": 4,
                                     "inForPerson.employee.team_id": infoTeamParent[j].team_id,
                                     "inForPerson.employee.group_id": infoGroupParent[k].gr_id
-                                }, { userName: 1 })
+                                }, { userName: 1 }).lean();
                                 if (infoNhomTruong) {
                                     infoGroup.truong_nhom = infoNhomTruong.userName
                                 } else infoGroup.truong_nhom = "chưa cập nhật"
