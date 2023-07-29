@@ -419,7 +419,7 @@ exports.getListDetail = async (req, res) => {
                 }
             },
             { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
-            
+
             // { $unwind: "$infoTS" },
             {
                 $lookup: {
@@ -446,7 +446,7 @@ exports.getListDetail = async (req, res) => {
                     "ten_tai_san": "$infoTS.ts_ten",
                     "Ma_tai_san": "$infoTS.ts_id",
                     "So_luong_cap_phat": "$cap_phat_taisan.ds_ts.sl_cp",
-                    
+
                 }
             },
             { $unwind: "$So_luong_cap_phat" },
@@ -465,24 +465,26 @@ exports.getListDetail = async (req, res) => {
 }
 
 exports.listDetailAllocation = async (req, res) => {
-    try{
+    try {
         const id_cty = req.user.data.com_id
         const cp_id = Number(req.body.cp_id)
         const id_nhanvien = Number(req.body.id_nhanvien)
         const id_phongban = Number(req.body.id_phongban)
-        let filter ={}
-        if(cp_id) filter.cp_id= cp_id
-        if(id_nhanvien) filter.id_nhanvien= id_nhanvien
-        if(id_phongban) filter.id_phongban= id_phongban
+        let filter = {}
+        if (cp_id) filter.cp_id = cp_id
+        if (id_nhanvien) filter.id_nhanvien = id_nhanvien
+        if (id_phongban) filter.id_phongban = id_phongban
         let data = await capPhat.aggregate([
-            {$match: filter},
-            {$sort: {cp_id:-1}},
-            {$lookup: {
-                from: "Users",
-                localField: "id_ng_thuchien",
-                foreignField : "idQLC",
-                as : "info"
-            }},
+            { $match: filter },
+            { $sort: { cp_id: -1 } },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_ng_thuchien",
+                    foreignField: "idQLC",
+                    as: "info"
+                }
+            },
             { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
@@ -513,73 +515,75 @@ exports.listDetailAllocation = async (req, res) => {
             },
             { $unwind: { path: "$infoPhongBan", preserveNullAndEmptyArrays: true } },
 
-            {$project : {
-                "cp_id": "$cp_id",
-                "id_cty": "$id_cty",
-                "cap_phat_taisan": "$cap_phat_taisan",
-                "cp_trangthai": "$cp_trangthai",
-                "ts_daidien_nhan": "$ts_daidien_nhan",
-                "id_nhanvien": "$id_nhanvien",
-                "cp_id_ng_tao": "$cp_id_ng_tao",
-                "cp_date_create": "$cp_date_create",
-                "cp_hoanthanh": "$cp_hoanthanh",
-                "cp_lydo": "$cp_lydo",
-                "ten_nguoi_thuc_hien": "$info.userName",
-                "ten_nguoi_duoc_cap_phat": "$infoNguoiDuocCP.userName",
-                "dep_id": "$infoNguoiDuocCP.inForPerson.employee.dep_id",
-                "position_id": "$infoNguoiDuocCP.inForPerson.employee.position_id",
-                "ten_tai_san": "$infoTS.ts_ten",
-                "Ma_tai_san": "$infoTS.ts_id",
-                "So_luong_cap_phat": "$cap_phat_taisan.ds_ts.sl_cp",
-                "id_phongban": "$id_phongban",
-                "dep_name": "$infoPhongBan.dep_name",
-                "manager_id": "$infoPhongBan.manager_id",
-            }},
+            {
+                $project: {
+                    "cp_id": "$cp_id",
+                    "id_cty": "$id_cty",
+                    "cap_phat_taisan": "$cap_phat_taisan",
+                    "cp_trangthai": "$cp_trangthai",
+                    "ts_daidien_nhan": "$ts_daidien_nhan",
+                    "id_nhanvien": "$id_nhanvien",
+                    "cp_id_ng_tao": "$cp_id_ng_tao",
+                    "cp_date_create": "$cp_date_create",
+                    "cp_hoanthanh": "$cp_hoanthanh",
+                    "cp_lydo": "$cp_lydo",
+                    "ten_nguoi_thuc_hien": "$info.userName",
+                    "ten_nguoi_duoc_cap_phat": "$infoNguoiDuocCP.userName",
+                    "dep_id": "$infoNguoiDuocCP.inForPerson.employee.dep_id",
+                    "position_id": "$infoNguoiDuocCP.inForPerson.employee.position_id",
+                    "ten_tai_san": "$infoTS.ts_ten",
+                    "Ma_tai_san": "$infoTS.ts_id",
+                    "So_luong_cap_phat": "$cap_phat_taisan.ds_ts.sl_cp",
+                    "id_phongban": "$id_phongban",
+                    "dep_name": "$infoPhongBan.dep_name",
+                    "manager_id": "$infoPhongBan.manager_id",
+                }
+            },
             { $unwind: { path: "$So_luong_cap_phat", preserveNullAndEmptyArrays: true } },
 
-            
+
         ])
-  
-        if(data){
-            for(let i = 0 ; i<data.length ; i++){
-                let depName = await dep.findOne({com_id:id_cty ,dep_id: data[i].dep_id})
+
+        if (data) {
+            for (let i = 0; i < data.length; i++) {
+                let depName = await dep.findOne({ com_id: id_cty, dep_id: data[i].dep_id })
                 data[i].depName = depName
             }
-            return fnc.success(res, " lấy thành công ",{data})
+            return fnc.success(res, " lấy thành công ", { data })
         }
         return fnc.setError(res, "không tìm thấy đối tượng", 510);
-    }catch(e){
+    } catch (e) {
         return fnc.setError(res, e.message)
     }
 }
 //Từ chối tiếp nhận tài sản cấp phát"
-exports.refuserAll = async (req , res) =>{
-    try{
+exports.refuserAll = async (req, res) => {
+    try {
         const id_cty = req.user.data.com_id
         const cp_id = req.body.cp_id
         const content = req.body.content
-        const data = await capPhat.findOne({ cp_id: cp_id,id_cty: id_cty });
+        const data = await capPhat.findOne({ cp_id: cp_id, id_cty: id_cty });
         if (!data) {
-           return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
         } else {
             // console.log(data.cap_phat_taisan.ds_ts[0].ts_id)
             let count = data.cap_phat_taisan.ds_ts[0].ts_id
-            for(let t = 0; t<count.length; t ++){
-                let listItemsType = await TaiSan.find({ id_cty: id_cty, ts_id : count(t) })
-                    let sl_taisan = listItemsType.ts_so_luong + data.cap_phat_taisan.ds_ts[0].sl_cp
-                    await TaiSan.updateOne({ ts_id : count(t),id_cty:id_cty }, {
-                        ts_so_luong : sl_taisan,
-                        soluong_cp_bb : sl_taisan,
-                        })
+            for (let t = 0; t < count.length; t++) {
+                let listItemsType = await TaiSan.find({ id_cty: id_cty, ts_id: count(t) })
+                let sl_taisan = listItemsType.ts_so_luong + data.cap_phat_taisan.ds_ts[0].sl_cp
+                await TaiSan.updateOne({ ts_id: count(t), id_cty: id_cty }, {
+                    ts_so_luong: sl_taisan,
+                    soluong_cp_bb: sl_taisan,
+                })
             }
-            await capPhat.updateOne({ cp_id: cp_id,id_cty:id_cty }, {
-            cp_trangthai : 4,
-            cp_tu_choi_tiep_nhan : content,
+            await capPhat.updateOne({ cp_id: cp_id, id_cty: id_cty }, {
+                cp_trangthai: 4,
+                cp_tu_choi_tiep_nhan: content,
             })
         }
         return fnc.success(res, "cập nhật thành công")
 
-    }catch(e){
+    } catch (e) {
         return fnc.setError(res, e.message)
     }
 }

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Counter = require('../Counter');
-let connection = mongoose.createConnection('mongodb://localhost:27017/api-base365');
+let connection = mongoose.createConnection('mongodb://127.0.0.1:27017/api-base365');
 
 
 const TinhluongPaymentSchema = new Schema({

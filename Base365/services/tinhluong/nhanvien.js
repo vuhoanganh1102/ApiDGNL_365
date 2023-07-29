@@ -1,10 +1,10 @@
-const CC365_CompanyWorkday = require('../../models/Tinhluong/CC365_CompanyWorkday');
-const User = require('../../models/Users');
-const CC365_Cycle = require('../../models/Chamcong/CC365_Cycle');
-const CC365_Resign = require('../../models/Chamcong/Resign');
-const CC365_TimeSheet = require('../../models/Chamcong/CC365_TimeSheet');
-const Vanthu_de_xuat = require('../../models/Vanthu/de_xuat')
-const Department = require('../../models/qlc/Deparment')
+// const CC365_CompanyWorkday = require('../../models/Tinhluong/CC365_CompanyWorkday');
+// const User = require('../../models/Users');
+// // const CC365_Cycle = require('../../models/Chamcong/CC365_Cycle');
+// const CC365_Resign = require('../../models/Chamcong/Resign');
+// const CC365_TimeSheet = require('../../models/Chamcong/CC365_TimeSheet');
+// const Vanthu_de_xuat = require('../../models/Vanthu/de_xuat')
+// const Department = require('../../models/qlc/Deparment')
 // lấy só công chuẩn 1 tháng của 1 công ty 
 exports.take_count_standard_works= async (id,year,month) => {
     try{

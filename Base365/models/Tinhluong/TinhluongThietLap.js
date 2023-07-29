@@ -1,11 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Counter = require('../Counter');
-<<<<<<< HEAD
 let connection = mongoose.createConnection('mongodb://127.0.0.1/api-base365');
-=======
-let connection = mongoose.createConnection('mongodb://localhost:27017/api-base365');
->>>>>>> 93b2358e97ed4d1db1444e660f4cbd347d3e847d
 
 
 const TinhluongThietLapSchema = new Schema({

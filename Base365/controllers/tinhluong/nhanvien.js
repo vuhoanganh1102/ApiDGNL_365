@@ -1,19 +1,19 @@
-const NhanVienService = require('../../services/tinhluong/nhanvien');
-const Tinhluong365EmpStart = require('../../models/Tinhluong/Tinhluong365EmpStart')
-const Tinhluong365Contract = require('../../models/Tinhluong/Tinhluong365Contract')
-const TinhluongDonate = require('../../models/Tinhluong/TinhluongDonate')
-const TinhluongListClass = require('../../models/Tinhluong/TinhluongListClass')
-const Tinhluong365SalaryBasic = require('../../models/Tinhluong/Tinhluong365SalaryBasic')
-const Tinhluong365ThuongPhat = require('../../models/Tinhluong/Tinhluong365ThuongPhat')
-const Tinhluong365Family = require('../../models/Tinhluong/TinhluongFamily');
-const TinhluongPhatCa = require('../../models/Tinhluong/TinhluongPhatCa');
-const CC365_TimeSheet = require('../../models/Chamcong/CC365_TimeSheet');
-const TinhluongPhatMuon = require('../../models/Tinhluong/TinhluongPhatMuon');
-const TinhluongClass = require('../../models/Tinhluong/TinhluongClass');
-const TinhluongRose = require('../../models/Tinhluong/TinhluongRose');
-const TinhluongThietLap = require('../../models/Tinhluong/TinhluongThietLap');
-const Shift = require('../../models/Chamcong/Shifts');
-const TinhluongPercentGr = require('../../models/Tinhluong/TinhluongPercentGr');
+// const NhanVienService = require('../../services/tinhluong/nhanvien');
+// const Tinhluong365EmpStart = require('../../models/Tinhluong/Tinhluong365EmpStart')
+// const Tinhluong365Contract = require('../../models/Tinhluong/Tinhluong365Contract')
+// const TinhluongDonate = require('../../models/Tinhluong/TinhluongDonate')
+// const TinhluongListClass = require('../../models/Tinhluong/TinhluongListClass')
+// const Tinhluong365SalaryBasic = require('../../models/Tinhluong/Tinhluong365SalaryBasic')
+// const Tinhluong365ThuongPhat = require('../../models/Tinhluong/Tinhluong365ThuongPhat')
+// const Tinhluong365Family = require('../../models/Tinhluong/TinhluongFamily');
+// const TinhluongPhatCa = require('../../models/Tinhluong/TinhluongPhatCa');
+// const CC365_TimeSheet = require('../../models/Chamcong/CC365_TimeSheet');
+// const TinhluongPhatMuon = require('../../models/Tinhluong/TinhluongPhatMuon');
+// const TinhluongClass = require('../../models/Tinhluong/TinhluongClass');
+// const TinhluongRose = require('../../models/Tinhluong/TinhluongRose');
+// const TinhluongThietLap = require('../../models/Tinhluong/TinhluongThietLap');
+// const Shift = require('../../models/Chamcong/Shifts');
+// const TinhluongPercentGr = require('../../models/Tinhluong/TinhluongPercentGr');
 const User = require('../../models/Users');
 
 exports.qly_ttnv= async (req, res) => {

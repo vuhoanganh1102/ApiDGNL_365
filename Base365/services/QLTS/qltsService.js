@@ -599,7 +599,6 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
     return functions.setError(res, error)
   }
 }
-
 // điều chuyển đối tượng sd
 exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, skip, limit, comId) => {
   try {
