@@ -1359,7 +1359,7 @@ exports.createBuyNew = async (req, res) => {
         } else {
             return functions.setError(res, "missing data", 404);
         }
-        return functions.success(res, "post new success", { link:`https://raonhanh365.vn/${linkTitle}-ct${_id}.html` });
+        return functions.success(res, "post new success", { link: `https://raonhanh365.vn/${linkTitle}-ct${_id}.html` });
     } catch (error) {
         console.error(error);
         return functions.setError(res, error);
@@ -3332,10 +3332,91 @@ exports.getDataNew = async (req, res, next) => {
 }
 
 // lấy tin theo danh mục
-exports.getNewForDiscount = async (req,res,next)=>{
+exports.getNewForDiscount = async (req, res, next) => {
     try {
-        return functions.success(res,)
+        let userID = req.user.data.idRaoNhanh365;
+        let cateID = req.query.cateID;
+        let data = await New.find({ cateID, userID }, {
+            electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
+            noiThatNgoaiThat: 0, bidding: 0
+        })
+        if (data.length !== 0) {
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].img) {
+                    data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, 2)
+                }
+            }
+        }
+        return functions.success(res, 'get data success', { data })
     } catch (error) {
-        return functions.setError(res,error)
+        console.log("🚀 ~ file: new.js:3342 ~ exports.getNewForDiscount= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// lấy tin đã áp dụng khuyến mãi
+exports.tinApDungKhuyenMai = async (req, res, next) => {
+    try {
+        let userID = req.user.data.idRaoNhanh365;
+        let cateID = req.body.cateID;
+        let type = Number(req.body.type);
+        let ten = req.body.ten;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+        let conditions = {};
+        if (cateID) conditions.cateID = Number(cateID);
+        if (type) conditions.type = Number(type);
+        if (ten) {
+            conditions.title = new RegExp(ten, 'i')
+        }
+        conditions.userID = userID;
+        conditions.buySell = 2;
+        let data = await New.find(conditions, {
+            electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
+            noiThatNgoaiThat: 0, bidding: 0
+        }).skip(skip).limit(limit)
+        if (data.length !== 0) {
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].img) {
+                    data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, 2)
+                }
+            }
+        }
+        return functions.success(res, 'get data success', { data })
+    } catch (err) {
+        return functions.setError(res, err)
+    }
+}
+
+// chỉnh sửa tin khuyến mãi
+exports.updateNewPromotion = async (req, res, next) => {
+    try {
+        let id = req.body.id;
+        let loaikhuyenmai = req.body.loaikhuyenmai;
+        let giatri = req.body.giatri;
+        let ngay_bat_dau = req.body.ngay_bat_dau;
+        let ngay_ket_thuc = req.body.ngay_ket_thuc;
+        if (Array.isArray(loaikhuyenmai) && Array.isArray(giatri) && Array.isArray(id)
+            && loaikhuyenmai.length === giatri.length && giatri.length === id.length) {
+            for (let i = 0; i < id.length; i++) {
+                let checkNew = await New.findById(id[i]);
+                    if (checkNew) {
+                        await New.findByIdAndUpdate(id[i], {
+                            timePromotionStart: ngay_bat_dau[i],
+                            timePromotionEnd: ngay_ket_thuc[i],
+                            "infoSell.promotionType": loaikhuyenmai[i],
+                            "infoSell.promotionValue": giatri[i],
+                        });
+                    } else {
+                        return functions.setError(res, "Không tìm thấy tin", 400);
+                    }
+            }
+            return functions.success(res,'Cập nhật khuyến mãi thành công')
+        }
+        return functions.setError(res, 'Nhập đúng kiểu dữ liệu')
+    } catch (error) {
+        return functions.setError(res, error)
     }
 }
