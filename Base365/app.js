@@ -12,6 +12,7 @@ var AppVanthu = express();
 var AppCRM = express();
 var AppQLC = express();
 var AppHR = express();
+var appQLTS = express();
 var AppTinhluong = express();
 
 function configureApp(app) {
@@ -98,6 +99,12 @@ var CrmRouter = require('./routes/crm');
 AppCRM.use("/api/crm", CrmRouter);
 errorApp(AppCRM);
 
+// Cấu hình appQLTS
+configureApp(appQLTS);
+var qltsRouter = require('./routes/qltsRouter');
+appQLTS.use("/api/qlts", qltsRouter);
+errorApp(appQLTS)
+
 // Cấu hình AppTinhluongs
 configureApp(AppTinhluong);
 var tinhluongRouter = require('./routes/tinhluong');
@@ -114,13 +121,23 @@ AppQLC.listen(3000, () => {
     console.log(`QLC app is running on port 3000`);
 });
 
+AppQLC.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
+});
+
 AppTimviec.listen(3001, () => {
     console.log("Timviec365 app is running on port 3001")
 });
-
+AppTimviec.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
+});
 // Raonhanh
 AppRaonhanh.listen(3004, () => {
     console.log(`Raonhanh app is running on port 3004`);
+});
+
+AppRaonhanh.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
 });
 
 // Van thu
@@ -128,9 +145,17 @@ AppVanthu.listen(3005, () => {
     console.log(`Vanthu app is running on port 3005`);
 });
 
+AppVanthu.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
+});
+
 // Quản trị nhân sự
 AppHR.listen(3006, () => {
     console.log(`HR app is running on port 3006`);
+});
+
+AppHR.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
 });
 
 // Quản trị crm
@@ -138,7 +163,24 @@ AppCRM.listen(3007, () => {
     console.log(`CRM app is running on port 3007`);
 });
 
+AppCRM.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
+});
+
+//qlts
+var serverQLTS = appQLTS.listen(3008, () => {
+    console.log(`qlts app is running on port 3008`);
+});  
+
+serverQLTS.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
+});
+
 // Tính lương 
 AppTinhluong.listen(3010, () => {
     console.log(`Tinh luong app is running on port 3010`);
+});
+
+AppTinhluong.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
 });
