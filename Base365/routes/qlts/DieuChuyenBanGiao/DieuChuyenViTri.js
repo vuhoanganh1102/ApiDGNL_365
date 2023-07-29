@@ -15,4 +15,5 @@ router.post('/TuChoiDCVT', functions.checkToken, fnc.checkRole('DC_BG'), formDat
 router.post('/TiepNhanDCVT', functions.checkToken, fnc.checkRole('DC_BG'), formData.parse(), controllers.TiepNhanDCVT);
 router.post('/list_dieuChuyen_vitri', functions.checkToken, fnc.checkRole('DC_BG',1), formData.parse(), controllers.listBB);
 router.post('/detail', functions.checkToken, fnc.checkRole('DC_BG',1), formData.parse(), controllers.detailBB);
+router.post('/listAndDetail', functions.checkToken, fnc.checkRole('DC_BG',1), formData.parse(), controllers.listAndDetail);
 module.exports = router;

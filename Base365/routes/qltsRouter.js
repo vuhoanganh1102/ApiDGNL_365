@@ -22,7 +22,7 @@ var BanGiao = require("./qlts/DieuChuyenBanGiao/BanGiao");
 var TrangChu = require("./qlts/TrangChu");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
 var thanhly = require('./qlts/thanhLyRouter')
-
+var phanQuyen = require('./qlts/phanQuyen')
 var DanhSach = require('./qlts/DanhSach');
 //Api tool quét data
 router.use('/tool', toolData)
@@ -47,7 +47,7 @@ router.use('/huy', huy)
 router.use('/kiemKe', functions.checkToken, kiemKeRouter);
 
 //api Phân quyền
-//router.use('/phanQuyen', phanQuyen)
+router.use('/phanQuyen', phanQuyen)
 
 
 router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
