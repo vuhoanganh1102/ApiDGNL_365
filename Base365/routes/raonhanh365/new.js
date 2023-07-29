@@ -8,7 +8,7 @@ const newRN = require('../../controllers/raonhanh365/new');
 router.post('/searchNew',formData.parse(), newRN.searchNew);
 //------------------------api lien quan den tin ban---------------------------
 router.post('/createSellNews', formData.parse(),[functions.checkToken], newRN.postNewMain, newRN.postNewsGeneral, newRN.createNews);
-router.put('/updateSellNews', formData.parse(),[functions.checkToken], newRN.postNewMain, newRN.postNewsGeneral, newRN.updateNews);
+router.post('/updateSellNews', formData.parse(),[functions.checkToken], newRN.postNewMain, newRN.postNewsGeneral, newRN.updateNews);
 router.delete('/deleteNews',[functions.checkToken, functions.isAdminRN365], newRN.deleteNews);
 router.post('/searchSellNews', formData.parse(), newRN.searchSellNews);
 router.post('/hideNews', formData.parse(), [functions.checkToken], newRN.hideNews);
@@ -23,7 +23,7 @@ router.get('/getNew', newRN.getNew);
 router.post('/createBuyNew',formData.parse(), functions.checkToken, newRN.createBuyNew)
 
 // update tin mua
-router.put('/updateBuyNew',formData.parse(), functions.checkToken, newRN.updateBuyNew)
+router.post('/updateBuyNew',formData.parse(), functions.checkToken, newRN.updateBuyNew)
 
 
 // chi tiết tin 
@@ -118,4 +118,13 @@ router.delete('/deleteComment',formData.parse(),functions.checkToken,newRN.delet
 
 // support for update new 
 router.get('/getDataNew',newRN.getDataNew)
+
+// lấy tin theo danh mục
+router.get('/getNewForDiscount',functions.checkToken,newRN.getNewForDiscount)
+
+// lấy tin đã áp dụng khuyến mãi
+router.post('/tinApDungKhuyenMai',formData.parse(),functions.checkToken,newRN.tinApDungKhuyenMai)
+
+// chỉnh sửa tin khuyến mãi
+router.post('/updateNewPromotion',formData.parse(),functions.checkToken,newRN.updateNewPromotion)
 module.exports = router;
