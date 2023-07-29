@@ -175,25 +175,25 @@ exports.danhSachKiemKe = async(req, res, next)=>{
       },
       { $unwind: { path: '$nguoi_tao', preserveNullAndEmptyArrays: true } },
 
-      {
-          $lookup: {
-              from: 'Users',
-              localField: 'kk_donvi',
-              foreignField: 'idQLC',
-              as: 'donvi',
-          }
-      },
-      { $unwind: { path: '$donvi', preserveNullAndEmptyArrays: true } },
+      // {
+      //     $lookup: {
+      //         from: 'Users',
+      //         localField: 'kk_donvi',
+      //         foreignField: 'idQLC',
+      //         as: 'donvi',
+      //     }
+      // },
+      // { $unwind: { path: '$donvi', preserveNullAndEmptyArrays: true } },
 
-      {
-          $lookup: {
-              from: 'Users',
-              localField: 'id_ng_kiemke',
-              foreignField: 'idQLC',
-              as: 'ng_kiemke',
-          }
-      },
-      { $unwind: { path: '$ng_kiemke', preserveNullAndEmptyArrays: true } },
+      // {
+      //     $lookup: {
+      //         from: 'Users',
+      //         localField: 'id_ng_kiemke',
+      //         foreignField: 'idQLC',
+      //         as: 'ng_kiemke',
+      //     }
+      // },
+      // { $unwind: { path: '$ng_kiemke', preserveNullAndEmptyArrays: true } },
 
       { $project: {
         "id_kiemke": "$id_kiemke", 
