@@ -5,7 +5,7 @@ const ViTriTaiSan = require('../../../models/QuanLyTaiSan/ViTri_ts');
 const TaiSanViTri = require('../../../models/QuanLyTaiSan/TaiSanVitri');
 const TaiSan = require("../../../models/QuanLyTaiSan/TaiSan");
 const fnc = require("../../../services/functions");
-const Department = require('../../../models/qlc/Deparment');
+const department = require('../../../models/qlc/Deparment');
 const BaoDuong = require("../../../models/QuanLyTaiSan/BaoDuong");
 const Users = require('../../../models/Users')
 const capPhat = require('../../../models/QuanLyTaiSan/CapPhat')
@@ -802,7 +802,8 @@ exports.listAndDetail = async (req, res, next) => {
         const idQLC = req.user.data.idQLC
         const dc_id = req.body.dc_id
         const dc_trangthai = req.body.dc_trangthai
-        let data = []
+        const type = req.body.type
+        // let data = []
 
         let Num_dc_vitri = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 0}).count()
         let Num_dc_doituong = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 1}).count()
@@ -810,20 +811,21 @@ exports.listAndDetail = async (req, res, next) => {
         let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
         let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
         let dem_bg = (numAllocaction.length + numRecall.length)
-        data.push({Num_dc_vitri : Num_dc_vitri})
-        data.push({Num_dc_doituong : Num_dc_doituong})
-        data.push({Num_dcdvQL : Num_dcdvQL})
-        data.push({dem_bg : dem_bg})
+        // data.push({Num_dc_vitri : Num_dc_vitri})
+        // data.push({Num_dc_doituong : Num_dc_doituong})
+        // data.push({Num_dcdvQL : Num_dcdvQL})
+        // data.push({dem_bg : dem_bg})
         let filter = {};
         filter.id_cty = id_cty
-        filter.xoa_dieuchuyen = 0
-        filter.dc_type = 0
+        // filter.xoa_dieuchuyen = 0
+        // filter.dc_type = 0
         if(dc_id)  filter.dc_id = Number(dc_id)
+        // if(type)  filter.type = Number(type)
         if(dc_trangthai)  filter.dc_trangthai = Number(dc_trangthai)
-
+console.log(filter)
         //1: điều chuyển vị trí tài sản
-        if (type === 1) {
-            // if (type_quyen === 2) filter.id_ng_tao_dc = idQLC
+        if (type == 1) {
+            // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
             let data = await DieuChuyen.aggregate([
                 { $match: filter },
                 { $sort: { dc_id: -1 } },
@@ -891,7 +893,7 @@ exports.listAndDetail = async (req, res, next) => {
           
                 }
                 if (data[i].dep_id != 0) {
-                    let depName = await dep.findOne({ com_id: id_cty, dep_id: data[i].dep_id })
+                    let depName = await department.findOne({ com_id: id_cty, dep_id: data[i].dep_id })
                   if (depName) data[i].depName = depName.dep_name
           
                 }
@@ -902,12 +904,11 @@ exports.listAndDetail = async (req, res, next) => {
                 data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
                 data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
               }
-          
-              return functions.success(res, 'get data success', { dem, data })
+              return fnc.success(res, 'get data success', { data })
         }
         //2: điều chuyển đối tượng sd
-        if (type === 2) {
-            // if (type_quyen === 2) filter.id_ng_tao_dc = idQLC
+        if (type == 2) {
+            // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
             let data = await DieuChuyen.aggregate([
                 { $match: filter },
                 { $sort: { dc_id: -1 } },
@@ -961,12 +962,12 @@ exports.listAndDetail = async (req, res, next) => {
                 data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
               }
           
-              return functions.success(res, 'get data success', { dem, data })
+              return fnc.success(res, 'get data success', { data })
         }
 
         //3: điều chuyển đơn vị quản lý
-        if (type === 3) {
-            // if (type_quyen === 2) filter.id_ng_tao_dc = idQLC
+        if (type == 3) {
+            // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
             let data = await DieuChuyen.aggregate([
                 { $match: filter },
                 { $sort: { dc_id: -1 } },
@@ -991,25 +992,25 @@ exports.listAndDetail = async (req, res, next) => {
                     }
                 },
                 { $unwind: { path: "$infoVTden", preserveNullAndEmptyArrays: true } },
-                {
-                  $lookup: {
-                    from: 'Users',
-                    localField: 'id_cty_dang_sd',
-                    foreignField: 'idQLC',
-                    as: 'users'
-                  }
-                },
-                { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
+                // {
+                //   $lookup: {
+                //     from: 'Users',
+                //     localField: 'id_cty_dang_sd',
+                //     foreignField: 'idQLC',
+                //     as: 'users'
+                //   }
+                // },
+                // { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
           
-                {
-                  $lookup: {
-                    from: 'Users',
-                    localField: 'id_cty_nhan',
-                    foreignField: 'idQLC',
-                    as: 'users_id_nv_nhan'
-                  }
-                },
-                { $unwind: { path: "$users_id_nv_nhan", preserveNullAndEmptyArrays: true } },
+                // {
+                //   $lookup: {
+                //     from: 'Users',
+                //     localField: 'id_cty_nhan',
+                //     foreignField: 'idQLC',
+                //     as: 'users_id_nv_nhan'
+                //   }
+                // },
+                // { $unwind: { path: "$users_id_nv_nhan", preserveNullAndEmptyArrays: true } },
           
                 {
                   $lookup: {
@@ -1040,10 +1041,10 @@ exports.listAndDetail = async (req, res, next) => {
                 data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
               }
           
-              return functions.success(res, 'get data success', { dem, data })
+              return fnc.success(res, 'get data success', { data })
         }
     } catch (error) {
-        console.error(error)
-        return functions.setError(res, error)
+         console.error(error)
+        return fnc.setError(res, error)
     }
 };
