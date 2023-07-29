@@ -125,21 +125,20 @@ exports.listCom = async(req, res) => {
             find = request.find,
             findConditions = request.findConditions,
             com_id = request.com_id;
-
+        console.log(req.body)
         let type = 1;
         let data = [];
         let listCondition = { fromWeb: "quanlychung" };
-        let checkNew1 = new Date(inputNew);
-        checkNew1.setDate(checkNew1.getDate() + 1); // + 1 ngay
-        let checkNew = Date.parse(checkNew1);
-        let checkOld1 = new Date(inputOld)
-        let checkOld = Date.parse(checkOld1)
-        const currentDate = new Date();
-        const previousDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000)
-        const inDay1 = new Date(previousDate)
-        const inDay = Date.parse(inDay1)
 
-        if (checkOld > checkNew) {
+        let _dateStart = new Date(inputOld)
+        _dateStart.setUTCHours(0, 0, 0, 0);
+        let dateStart = _dateStart.getTime()/1000
+
+        let _dateEnd = new Date(inputNew);
+        _dateEnd.setUTCHours(23, 59, 59, 999);
+        let dateEnd = _dateEnd.getTime()/1000
+
+        if (dateStart > dateEnd) {
             await functions.setError(res, "thời gian nhập không đúng quy định")
         }
 
@@ -150,7 +149,8 @@ exports.listCom = async(req, res) => {
             listCondition.idQLC = com_id;
         }
 
-        if (inputNew || inputOld) listCondition['createdAt'] = { $gte: checkOld, $lte: checkNew };
+        if (inputNew || inputOld) listCondition['createdAt'] = { $gte: dateStart, $lte: dateEnd };
+        console.log({ $gte: dateStart, $lte: dateEnd });
         if (find) listCondition["$or"] = [
             { "userName": { $regex: find } },
             { "email": { $regex: find } },
@@ -187,8 +187,15 @@ exports.listCom = async(req, res) => {
         if (findConditions == 4)
             listCondition["authentic"] = 0;
         //danah sach cong ty ddang ki trong ngay
-        if (findConditions == 5)
-            listCondition['createdAt'] = { $gte: inDay }
+        if (findConditions == 5) {
+            const date = new Date();
+            date.setUTCHours(0, 0, 0, 0);
+            let timeStart = date.getTime()/1000;
+            date.setUTCHours(23, 59, 59, 999);
+            let timeEnd = date.getTime()/1000;
+            listCondition['createdAt'] = { $gte: timeStart, $lte: timeEnd }
+        }
+
             //danh sach cong ty su dung cham cong trong ngay
         if (findConditions == 6) {
             listCondition['inForCompany.cds.type_timekeeping'] = { $ne: 0 };
@@ -323,16 +330,34 @@ exports.getListReportErr = async(req, res) => {
                     "email": "$user.email",
                 }
             },
-        ]).skip((pageNumber - 1) * 25).limit(25).sort({ _id: -1 });
-        for (let i = 0; i < data.length; i++) {
-            data[i].gallery_image_error = await fnc.createLinkFileErrQLC(data[i].type, data[i].user_id, data[i].gallery_image_error)
+            /**
+             * Setup two pipelines, one to count all documents, the other to do pagination
+             */
+            { $facet: {
+                counter: [{$count: "count"}],
+                data: [
+                    { $sort: { _id: -1 } },
+                    { $skip: (pageNumber - 1) * 25 },
+                    { $limit: 25 },
+                ]
+            }},
+        ]);
+        /**
+         * Made changes to the aggregate due to mismatched count of documents when using the aggregated data
+         * with the count all document method. This happens because of the user $lookup stage, if there is no 
+         * user affiliated with said document, it will not return the document, hence the mismatch
+         */
+        let count = data[0].counter[0].count;
+        let docs = data[0].data
+        // .sort({ _id: -1 }).skip((pageNumber - 1) * 25).limit(25);
+        for (let i = 0; i < docs.length; i++) {
+            docs[i].gallery_image_error = await fnc.createLinkFileErrQLC(docs[i].type, docs[i].user_id, docs[i].gallery_image_error)
 
         }
-        if (data === []) {
+        if (!docs||!docs.length) {
             await functions.setError(res, 'Không có dữ liệu', 404);
         } else {
-            let count = await report.countDocuments({})
-            return functions.success(res, 'Lấy thành công', { data, count });
+            return functions.success(res, 'Lấy thành công', { data: docs, count });
         }
 
     } catch (e) {
