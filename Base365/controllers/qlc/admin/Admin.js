@@ -125,7 +125,6 @@ exports.listCom = async(req, res) => {
             find = request.find,
             findConditions = request.findConditions,
             com_id = request.com_id;
-        console.log(req.body)
         let type = 1;
         let data = [];
         let listCondition = { fromWeb: "quanlychung" };
@@ -150,7 +149,6 @@ exports.listCom = async(req, res) => {
         }
 
         if (inputNew || inputOld) listCondition['createdAt'] = { $gte: dateStart, $lte: dateEnd };
-        console.log({ $gte: dateStart, $lte: dateEnd });
         if (find) listCondition["$or"] = [
             { "userName": { $regex: find } },
             { "email": { $regex: find } },
