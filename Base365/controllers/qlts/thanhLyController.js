@@ -358,7 +358,6 @@ exports.approveLiquidationAssetProposal = async (req, res, next) => {
                     }
                     return functions.setError(res, 'Không tìm thấy tài sản đang sử dụng', 404)
                 } else if (quyen_nhan === 3) {
-                    console.log({ com_id_sd: comId, id_ts_sd: checkThanhLy.tl_id, id_pb_sd: id_ng_nhan })
                     let doi_tuong_ds_ts = await TaiSanDangSuDung.findOne({ com_id_sd: comId, id_ts_sd: checkThanhLy.thanhly_taisan, id_pb_sd: id_ng_nhan });
 
                     if (doi_tuong_ds_ts) {

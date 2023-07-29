@@ -1,26 +1,29 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var cookieParser = require('cookie-parser')
+var cors = require('cors');
+// var logger = require('morgan');
 var mongoose = require('mongoose')
 
-var appTimviec = express();
-var appRaonhanh = express();
-var appVanthu = express();
-var appCRM = express();
-var appQLC = express();
-var appHR = express();
+var AppTimviec = express();
+var AppRaonhanh = express();
+var AppVanthu = express();
+var AppCRM = express();
+var AppQLC = express();
+var AppHR = express();
 var appQLTS = express();
+var AppTinhluong = express();
 
 function configureApp(app) {
     app.set('views', path.join(__dirname, 'views'));
     app.set('view engine', 'jade');
-    app.use(logger('dev'));
+    // app.use(logger('dev'));
     app.use(express.json());
     app.use(express.urlencoded({ extended: false }));
     app.use(cookieParser());
-    app.use(express.static(path.join(__dirname, '../Storage')));
+    app.use(express.static("../storage"));
+    app.use(cors());
 
     app.use(function(err, req, res, next) {
         // set locals, only providing error in development
@@ -52,47 +55,49 @@ function errorApp(app) {
 }
 
 // Cấu hình appTimviec
-configureApp(appTimviec);
+configureApp(AppTimviec);
 var timviecRouter = require('./routes/timviec');
 var toolAddDataRouter = require('./routes/tools');
-appTimviec.use("/api/timviec", timviecRouter);
-appTimviec.use('/api/tool', toolAddDataRouter);
-errorApp(appTimviec)
+var dataRouter = require('./routes/data');
 
-// Cấu hình appRaonhanh
-configureApp(appRaonhanh);
+AppTimviec.use("/api/timviec", timviecRouter);
+AppTimviec.use('/api/tool', toolAddDataRouter);
+AppTimviec.use('/api/getData', dataRouter);
+errorApp(AppTimviec)
+
+// Cấu hình AppRaonhanh
+configureApp(AppRaonhanh);
 var raonhanhRouter = require('./routes/raonhanh');
 var raonhanhtool = require('./routes/raonhanh365/tools');
-appRaonhanh.use("/api/raonhanh", raonhanhRouter);
-appRaonhanh.use("/api/tool", raonhanhtool)
-errorApp(appRaonhanh)
+AppRaonhanh.use("/api/raonhanh", raonhanhRouter);
+AppRaonhanh.use("/api/tool", raonhanhtool);
+errorApp(AppRaonhanh);
 
 // Cấu hình appVanthu
-configureApp(appVanthu);
+configureApp(AppVanthu);
 var vanthuRouter = require('./routes/vanthu')
-appVanthu.use("/api", vanthuRouter);
-errorApp(appVanthu)
+AppVanthu.use("/api", vanthuRouter);
+errorApp(AppVanthu);
 
-// Cấu hình appCRM
-configureApp(appCRM);
-var CRMroute = require('./routes/crm/CRMroutes');
-appCRM.use("/api/crm", CRMroute);
-errorApp(appCRM)
-
-// Cấu hình appQLC
-configureApp(appQLC);
+// Cấu hình AppQLC
+configureApp(AppQLC);
 var qlcRouter = require('./routes/qlc');
 var ToolQLC = require('./routes/qlc/Tools');
-appQLC.use("/api", qlcRouter);
-appQLC.use("/api/tool", ToolQLC)
+AppQLC.use("/api/qlc", qlcRouter);
+AppQLC.use("/api/tool", ToolQLC);
+errorApp(AppQLC)
 
-errorApp(appQLC)
-
-// Cấu hình appHR
-configureApp(appHR);
+// Cấu hình AppHR
+configureApp(AppHR);
 var hrRouter = require('./routes/hr');
-appHR.use("/api/hr", hrRouter);
-errorApp(appHR)
+AppHR.use("/api/hr", hrRouter);
+errorApp(AppHR);
+
+// Cấu hình AppCRM
+configureApp(AppCRM);
+var CrmRouter = require('./routes/crm');
+AppCRM.use("/api/crm", CrmRouter);
+errorApp(AppCRM);
 
 // Cấu hình appQLTS
 configureApp(appQLTS);
@@ -100,65 +105,66 @@ var qltsRouter = require('./routes/qltsRouter');
 appQLTS.use("/api/qlts", qltsRouter);
 errorApp(appQLTS)
 
-// timviec365 -> api-base365
-const DB_URL = 'mongodb://127.0.0.1/api-base365'; // timviec365 -> api-base365
+// Cấu hình AppTinhluongs
+configureApp(AppTinhluong);
+var tinhluongRouter = require('./routes/tinhluong');
+AppTinhluong.use("/api/tinhluong", tinhluongRouter);
+errorApp(AppTinhluong)
+
+const DB_URL = 'mongodb://127.0.0.1:27017/api-base365';
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
     .catch(error => console.log('DB connection error:', error.message));
 
-// Chạy server trên các cổng riêng biệt
-//chạy server Timviec
-var serverTimviec = appTimviec.listen(3000, () => {
-    console.log(`Timviec app is running on port 3000`);
+// Quản lý chung
+AppQLC.listen(3000, () => {
+    console.log(`QLC app is running on port 3000`);
 });
 
-serverTimviec.on('error', (error) => {
-    console.error('Error occurred while listening on Timviec port:', error);
+AppQLC.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
 });
 
-//Raonhanh
-var serverRaonhanh = appRaonhanh.listen(3004, () => {
+AppTimviec.listen(3001, () => {
+    console.log("Timviec365 app is running on port 3001")
+});
+AppTimviec.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
+});
+// Raonhanh
+AppRaonhanh.listen(3004, () => {
     console.log(`Raonhanh app is running on port 3004`);
 });
 
-serverRaonhanh.on('error', (error) => {
-    console.error('Error occurred while listening on Raonhanh port:', error);
+AppRaonhanh.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
 });
 
-//Van thu
-var serverVanthu = appVanthu.listen(3005, () => {
+// Van thu
+AppVanthu.listen(3005, () => {
     console.log(`Vanthu app is running on port 3005`);
 });
 
-serverVanthu.on('error', (error) => {
-    console.error('Error occurred while listening on Vanthu port:', error);
+AppVanthu.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
 });
 
-//CRM
-var serverCRM = appCRM.listen(3006, () => {
-    console.log(`CRM app is running on port 3006`);
+// Quản trị nhân sự
+AppHR.listen(3006, () => {
+    console.log(`HR app is running on port 3006`);
 });
 
-serverCRM.on('error', (error) => {
-    console.error('Error occurred while listening on CRM port:', error);
+AppHR.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
 });
 
-//qlc
-var serverQlc = appQLC.listen(3003, () => {
-    console.log(`QLC app is running on port 3003`);
+// Quản trị crm
+AppCRM.listen(3007, () => {
+    console.log(`CRM app is running on port 3007`);
 });
 
-serverQlc.on('error', (error) => {
-    console.error('Error occurred while listening on Qlc port:', error);
-});
-
-//hr
-var serverHR = appHR.listen(3007, () => {
-    console.log(`Hr app is running on port 3007`);
-});
-
-serverHR.on('error', (error) => {
-    console.error('Error occurred while listening on HR port:', error);
+AppCRM.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
 });
 
 //qlts
@@ -167,5 +173,14 @@ var serverQLTS = appQLTS.listen(3008, () => {
 });  
 
 serverQLTS.on('error', (error) => {
+    console.error('Error occurred while listening on QLTS port:', error);
+});
+
+// Tính lương 
+AppTinhluong.listen(3010, () => {
+    console.log(`Tinh luong app is running on port 3010`);
+});
+
+AppTinhluong.on('error', (error) => {
     console.error('Error occurred while listening on QLTS port:', error);
 });

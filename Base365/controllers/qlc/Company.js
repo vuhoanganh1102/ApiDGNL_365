@@ -505,4 +505,4 @@ exports.info = async(req, res) => {
     } catch (e) {
         return functions.setError(res, e.message)
     }
-}
+} 

@@ -25,11 +25,10 @@ exports.create = async(req,res) =>{
         const dc_da_xoa = req.body.dc_da_xoa
         const date_delete = req.body.date_delete
         //thongbao
-        const type_quyen = req.body.type_quyen
+        const type_quyen = req.type
         const id_ng_nhan = req.body.id_ng_nhan
 
         let maxThongBao = await thongBao.findOne({},{},{sort: {id_tb : -1}}).lean() || 0 ;
-        console.log("🚀 ~ file: DieuChuyenDonViQuanLi.js:32 ~ exports.create=async ~ maxThongBao:", maxThongBao)
         let maxDieuChuyen = await DieuChuyen.findOne({},{},{sort: {dc_id : -1}}).lean() || 0 ;
         let now = new Date()
         let ds_dc = ""
@@ -82,7 +81,7 @@ exports.create = async(req,res) =>{
             })
             await updateThongBaoNguoiNhan.save()
              let updateThongBaoDaidienNhan = new thongBao({
-                id_tb : Number(maxThongBao.id_tb) +1 || 1,
+                id_tb : Number(maxThongBao.id_tb) +2 || 2,
                 id_ng_nhan: id_dai_dien_nhan,
                 id_cty : id_cty,
                 id_ng_tao : idQLC,
@@ -131,7 +130,7 @@ exports.create = async(req,res) =>{
                 })
                 await updateThongBaoNguoiNhan.save()
                  let updateThongBaoDaidienNhan = new thongBao({
-                    id_tb : Number(maxThongBao.id_tb) +1 || 1,
+                    id_tb : Number(maxThongBao.id_tb) +2 || 2,
                     id_cty : id_cty,
                     id_ng_nhan: khoi_dc_den,
                     id_ng_tao : idQLC,
@@ -181,7 +180,7 @@ exports.create = async(req,res) =>{
                 })
                 await updateThongBaoNguoiNhan.save()
                  let updateThongBaoDaidienNhan = new thongBao({
-                    id_tb : Number(maxThongBao.id_tb) +1 || 1,
+                    id_tb : Number(maxThongBao.id_tb) +2 || 2,
                     id_cty : id_cty,
                     id_ng_nhan: khoi_dc_den,
                     id_ng_tao : idQLC,
@@ -231,7 +230,7 @@ exports.create = async(req,res) =>{
                 })
                 await updateThongBaoNguoiNhan.save()
                  let updateThongBaoDaidienNhan = new thongBao({
-                    id_tb : Number(maxThongBao.id_tb) +1 || 1,
+                    id_tb : Number(maxThongBao.id_tb) +2 || 2,
                     id_cty : id_cty,
                     id_ng_nhan: khoi_ng_dai_dien_dc_den,
                     id_ng_tao : idQLC,
@@ -282,7 +281,7 @@ exports.create = async(req,res) =>{
                 })
                 await updateThongBaoNguoiNhan.save()
                  let updateThongBaoDaidienNhan = new thongBao({
-                    id_tb : Number(maxThongBao.id_tb) +1 || 1,
+                    id_tb : Number(maxThongBao.id_tb) +2 || 2,
                     id_cty : id_cty,
                     id_ng_nhan: id_dai_dien_nhan,
                     id_ng_tao : idQLC,
