@@ -792,7 +792,7 @@ exports.detailBB = async (req, res) => {
     }
 }
 
-exports.dataDieuChuyenBanGiaoDeleted = async (req, res, next) => {
+exports.listAndDetail = async (req, res, next) => {
     try {
         let page = Number(req.body.page)|| 1;
         let pageSize = Number(req.body.pageSize) || 10;
