@@ -1,9 +1,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Counter = require('../Counter');
+<<<<<<< HEAD
 let connection = mongoose.createConnection('mongodb://127.0.0.1/api-base365');
 
+=======
+let connection = mongoose.createConnection('mongodb://localhost:27017/api-base365');
+>>>>>>> 93b2358e97ed4d1db1444e660f4cbd347d3e847d
 
+// lưu các loại phụ cấp 
 const TinhluongListClassSchema = new Schema({
     cl_id: {
         type: Number,
@@ -26,8 +31,8 @@ const TinhluongListClassSchema = new Schema({
         default:new Date('1970-01-01T00:00:00.000+00:00')
     },
     cl_active:{
-        type: Date,
-        default:new Date('1970-01-01T00:00:00.000+00:00')
+        type: Number,
+        default:0
     },
     cl_note:{
         type: String,
