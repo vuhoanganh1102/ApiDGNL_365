@@ -123,3 +123,37 @@ exports.add = async(req, res) => {
         return functions.setError(res, err.message)
     }
 };
+
+// cập nhật khuôn mặt 
+exports.update_ep_featured_recognition = async(req, res) => {
+    try {
+        const user = req.user.data;
+        const ep_featured_recognition = String(req.body.ep_featured_recognition);
+        if (user.type == 2) {
+            const infor = await Users.findOne(
+                { _id: user._id ,"inForPerson.employee.allow_update_face": 1 }, 
+                { password:0}).lean();
+            if (infor.inForPerson && infor.inForPerson.employee) {
+                await Users.updateOne({ _id: user._id }, {
+                    $set: {
+                        "inForPerson.employee.ep_featured_recognition": ep_featured_recognition,
+                    }
+                });
+                return functions.success(res, "Cập nhật thành công",
+                   { data: await Users.findOne(
+                    { _id: user._id}, 
+                    { password:0}).lean()}
+                );
+            }
+            else{
+                return functions.setError(res, "Tài khoản chưa được cấp quyền");
+            }
+        }
+        else{
+            return functions.setError(res, "Tài khoản không phải tài khoản nhân viên");
+        }
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error.message)
+    }
+}
