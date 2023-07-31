@@ -105,7 +105,7 @@ exports.toolNewRN = async(req, res, next) => {
                         timeSell = new Date(data[i].tgian_ban * 1000)
                     }
                     if (data[i].thoigian_bdghim != 0) {
-                        timeStartPinning = new Date(data[i].thoigian_bdghim * 1000)
+                        timeStartPinning = data[i].thoigian_bdghim
                     }
                     if (data[i].ngay_bdghim != 0) {
                         dayStartPinning = new Date(data[i].ngay_bdghim * 1000)
@@ -114,25 +114,25 @@ exports.toolNewRN = async(req, res, next) => {
                         dayEndPinning = new Date(data[i].ngay_ktghim * 1000)
                     }
                     if (data[i].tgian_tghim != 0) {
-                        timePinning = new Date(data[i].tgian_ban * 1000)
+                        timePinning = data[i].tgian_ban
                     }
                     if (data[i].refresh_time != 0) {
                         refreshTime = new Date(data[i].refresh_time * 1000)
                     }
                     if (data[i].new_time_home != 0) {
-                        timeHome = new Date(data[i].new_time_home * 1000)
+                        timeHome = data[i].new_time_home 
                     }
                     if (data[i].new_time_cate != 0) {
-                        timeCate = new Date(data[i].new_time_cate * 1000)
+                        timeCate = data[i].new_time_cate
                     }
                     if (data[i].tgian_hethan_thau != 0) {
                         timeEndReceivebidding = new Date(data[i].tgian_hethan_thau * 1000)
                     }
                     if (data[i].thoigian_kmbd != 0) {
-                        timePromotionStart = new Date(data[i].thoigian_kmbd * 1000)
+                        timePromotionStart = data[i].thoigian_kmbd
                     }
                     if (data[i].thoigian_kmkt != 0) {
-                        timePromotionEnd = new Date(data[i].thoigian_kmkt * 1000)
+                        timePromotionEnd = data[i].thoigian_kmkt 
                     }
                     const images = data[i].new_image.split(";").map((image, index) => {
                         const parts = image.split("/");
@@ -184,8 +184,8 @@ free: data[i].chotang_mphi,
                             pinCate: data[i].new_pin_cate,
                             timePushNew: data[i].new_gap,
                             timeStartPinning: timeStartPinning,
-                            dayStartPinning: dayStartPinning,
-                            dayEndPinning: dayEndPinning,
+                            dayStartPinning: data[i].ngay_bdghim,
+                            dayEndPinning: data[i].ngay_ktghim,
                             timePinning: timePinning,
                             numberDayPinning: data[i].so_ngay_ghim,
                             moneyPinning: data[i].tien_ghim,
@@ -727,26 +727,26 @@ exports.toolCateDetail = async(req, res, next) => {
             // }
 
             //14. dòng ( dòng của hãng)
-            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data',
-            //     },
-            // });
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
 
-            // let data = response.data.data.items;
-            // if (data.length) {
-            //     for (let i = 0; i < data.length; i++) {
-            //         const newItem = {
-            //             _id: data[i].id,
-            //             name: data[i].ten_dong,
-            //         };
-            //         await CateDetail.findOneAndUpdate({ "brand": { $elemMatch: { "_id": data[i].id_hang } } }, { $push: { "brand.$.line": newItem } }, { new: true });
+            let data = response.data.data.items;
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+                    const newItem = {
+                        _id: data[i].id,
+                        name: data[i].ten_dong,
+                    };
+                    await CateDetail.findOneAndUpdate({ "brand": { $elemMatch: { "_id": data[i].id_hang } } }, { $push: { "brand.$.line": newItem } }, { new: true });
 
-            //     }
-            //     page++;
-            // } else {
-            //     result = false;
-            // }
+                }
+                page++;
+            } else {
+                result = false;
+            }
 
             // 15. tầng phòng
             // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_tangphong.php', form, {
@@ -794,30 +794,30 @@ exports.toolCateDetail = async(req, res, next) => {
 
 
             //17. loại chung
-            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            let data = response.data.data.items;
-            if (data.length) {
+//             const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
+//                 headers: {
+//                     'Content-Type': 'multipart/form-data',
+//                 },
+//             });
+//             let data = response.data.data.items;
+//             if (data.length) {
 
-                for (let i = 0; i < data.length; i++) {
-                    const newItem = {
-                        _id: data[i].id,
-                        name: data[i].ten_loai,
-                        parent: data[i].id_cha,
-                    };
- if (data[i].id_danhmuc == 0) {
-                        await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { allType: newItem } }, { upsert: true },)
-                    } else {
-                        await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true },)
-                    }
-                }
-                page++;
-            } else {
-                result = false;
-            }
+//                 for (let i = 0; i < data.length; i++) {
+//                     const newItem = {
+//                         _id: data[i].id,
+//                         name: data[i].ten_loai,
+//                         parent: data[i].id_cha,
+//                     };
+//  if (data[i].id_danhmuc == 0) {
+//                         await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { allType: newItem } }, { upsert: true },)
+//                     } else {
+//                         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true },)
+//                     }
+//                 }
+//                 page++;
+//             } else {
+//                 result = false;
+//             }
 
             console.log(page);
         } while (result);
