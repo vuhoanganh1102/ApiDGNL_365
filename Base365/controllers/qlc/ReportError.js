@@ -27,6 +27,7 @@ exports.create = async(req, res) => {
             let reports = new report({
                 id_report: Number(max.id_report) + 1 || 1,
                 user_id: user_id,
+                idQLC: idQLC,
                 device_id: device_id,
                 detail_error: detail_error,
                 gallery_image_error: gallery_image_error,

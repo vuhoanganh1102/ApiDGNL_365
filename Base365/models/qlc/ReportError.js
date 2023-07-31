@@ -6,6 +6,10 @@ const ReportError = new Schema({
         type: Number,
         default: 0
     },
+    idQLC: {
+        type: Number,
+        default: 0
+    },
     device_id: {
         type: String,
         default: null
