@@ -316,6 +316,7 @@ exports.getListReportErr = async(req, res) => {
                 $project: {
                     "id_report": "$id_report",
                     "user_id": "$user_id",
+                    "idQLC": "$idQLC",
                     "detail_error": "$detail_error",
                     "gallery_image_error": "$gallery_image_error",
                     "time_create": "$time_create",
@@ -349,7 +350,7 @@ exports.getListReportErr = async(req, res) => {
         let docs = data[0].data
         // .sort({ _id: -1 }).skip((pageNumber - 1) * 25).limit(25);
         for (let i = 0; i < docs.length; i++) {
-            docs[i].gallery_image_error = await fnc.createLinkFileErrQLC(docs[i].type, docs[i].user_id, docs[i].gallery_image_error)
+            docs[i].gallery_image_error = await fnc.createLinkFileErrQLC(docs[i].type, docs[i].idQLC, docs[i].gallery_image_error)
 
         }
         if (!docs||!docs.length) {
