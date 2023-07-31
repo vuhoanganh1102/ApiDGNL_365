@@ -30,21 +30,20 @@ exports.loginAdminUser = async(req, res, next) => {
             if (findUser) {
                 let checkPassword = await functions.verifyPassword(password, findUser.password)
                 if (checkPassword) {
-                    let updateUser = await functions.getDatafindOneAndUpdate(Users, { loginName }, {
+                    let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
                         date: new Date(Date.now())
                     })
-                    const token = await functions.createToken(findUser, "1d")
+                    const token = await functions.createToken(updateUser, "1d")
                     return functions.success(res, 'Đăng nhập thành công', { token: token })
                 }
                 return functions.setError(res, "Mật khẩu sai", 406);
             }
-            return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 405)
+            return functions.setError(res, "không tìm thấy tài khoản trong bảng admin user", 405)
         }
         return functions.setError(res, "Missing input value!", 404)
     } catch (error) {
         return functions.setError(res, error.message)
     }
-
 }
 
 exports.getListAdminUser = async(req, res, next) => {
