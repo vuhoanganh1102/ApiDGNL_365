@@ -528,7 +528,8 @@ exports.updateQuitJob = async(req, res, next) => {
     try {
         let infoLogin = req.infoLogin;
         let {ep_id, com_id, current_position, current_dep_id, created_at, decision_id, note, type, shift_id} = req.body;
-        if(ep_id && created_at && type && com_id) {
+        if(ep_id && created_at && type && com_id && shift_id) {
+            
             let employee = await Users.findOne({idQLC: ep_id});
             if(employee) {
                 await Users.findOneAndUpdate({idQLC: ep_id}, {role: 3, type: 0, 
@@ -676,8 +677,6 @@ exports.getListIllegalQuitJob = async(req, res, next) => {
                 infoQuitJob.time = listQuitJob[i].hs_time_end;
 
                 data.push(infoQuitJob);
-            }else {
-                return functions.setError(res, "Employee not found!", 405);
             }
         }
         const total = await EmployeeHistory.aggregate([

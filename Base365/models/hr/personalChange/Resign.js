@@ -33,7 +33,7 @@ const HR_Resignschema = new Schema({
     },
 
     shift_id: {
-        type: String,
+        type: Number,
         default: null,
     },
     type: {
