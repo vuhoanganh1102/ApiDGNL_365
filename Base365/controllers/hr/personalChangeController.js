@@ -122,6 +122,9 @@ exports.getListAppoint = async(req, res, next) => {
                     from: "Users",
                     localField: "ep_id",
                     foreignField: "idQLC",
+                    pipeline: [
+                        { $match: { type: 2 } },
+                    ],
                     as: "user"
                 }
             },
@@ -251,6 +254,9 @@ exports.getListTranferJob = async(req, res, next) => {
                     from: "Users",
                     localField: "ep_id",
                     foreignField: "idQLC",
+                    pipeline: [
+                        { $match: { type: 2 } },
+                    ],
                     as: "user"
                 }
             },
@@ -497,6 +503,9 @@ exports.getListQuitJob = async(req, res, next) => {
                     from: "HR_QuitJobs",
                     localField: "hs_ep_id",
                     foreignField: "ep_id",
+                    pipeline: [
+                        { $match: { type: 2 } },
+                    ],
                     as: "quitJob"
                 }
             },
@@ -678,6 +687,9 @@ exports.getListIllegalQuitJob = async(req, res, next) => {
                     from: "HR_QuitJobs",
                     localField: "hs_ep_id",
                     foreignField: "ep_id",
+                    pipeline: [
+                        { $match: { type: 2 } },
+                    ],
                     as: "quitJob"
                 }
             },
