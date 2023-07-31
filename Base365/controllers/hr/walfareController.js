@@ -33,7 +33,7 @@ exports.addAchievement = async (req, res, next) => {
                     return functions.setError(res, 'not found user', 400)
                 }
             }
-            if (list_user1.length > 0) {
+            if (list_user1.length > 1) {
                 type = 2;
             }
             let achievementAt = req.body.achievement_at;

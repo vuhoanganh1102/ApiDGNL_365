@@ -105,7 +105,7 @@ exports.toolNewRN = async(req, res, next) => {
                         timeSell = new Date(data[i].tgian_ban * 1000)
                     }
                     if (data[i].thoigian_bdghim != 0) {
-                        timeStartPinning = new Date(data[i].thoigian_bdghim * 1000)
+                        timeStartPinning = data[i].thoigian_bdghim
                     }
                     if (data[i].ngay_bdghim != 0) {
                         dayStartPinning = new Date(data[i].ngay_bdghim * 1000)
@@ -114,25 +114,25 @@ exports.toolNewRN = async(req, res, next) => {
                         dayEndPinning = new Date(data[i].ngay_ktghim * 1000)
                     }
                     if (data[i].tgian_tghim != 0) {
-                        timePinning = new Date(data[i].tgian_ban * 1000)
+                        timePinning = data[i].tgian_ban
                     }
                     if (data[i].refresh_time != 0) {
                         refreshTime = new Date(data[i].refresh_time * 1000)
                     }
                     if (data[i].new_time_home != 0) {
-                        timeHome = new Date(data[i].new_time_home * 1000)
+                        timeHome = data[i].new_time_home 
                     }
                     if (data[i].new_time_cate != 0) {
-                        timeCate = new Date(data[i].new_time_cate * 1000)
+                        timeCate = data[i].new_time_cate
                     }
                     if (data[i].tgian_hethan_thau != 0) {
                         timeEndReceivebidding = new Date(data[i].tgian_hethan_thau * 1000)
                     }
                     if (data[i].thoigian_kmbd != 0) {
-                        timePromotionStart = new Date(data[i].thoigian_kmbd * 1000)
+                        timePromotionStart = data[i].thoigian_kmbd
                     }
                     if (data[i].thoigian_kmkt != 0) {
-                        timePromotionEnd = new Date(data[i].thoigian_kmkt * 1000)
+                        timePromotionEnd = data[i].thoigian_kmkt 
                     }
                     const images = data[i].new_image.split(";").map((image, index) => {
                         const parts = image.split("/");
@@ -184,8 +184,8 @@ free: data[i].chotang_mphi,
                             pinCate: data[i].new_pin_cate,
                             timePushNew: data[i].new_gap,
                             timeStartPinning: timeStartPinning,
-                            dayStartPinning: dayStartPinning,
-                            dayEndPinning: dayEndPinning,
+                            dayStartPinning: data[i].ngay_bdghim,
+                            dayEndPinning: data[i].ngay_ktghim,
                             timePinning: timePinning,
                             numberDayPinning: data[i].so_ngay_ghim,
                             moneyPinning: data[i].tien_ghim,
