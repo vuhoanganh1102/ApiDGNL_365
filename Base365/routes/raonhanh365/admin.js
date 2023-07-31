@@ -10,20 +10,21 @@ var news = require('../../controllers/raonhanh365/new');
 var blog = require('../../controllers/raonhanh365/blog');
 
 //------------------------------------------------api quan ly tai khoan admin
-router.post('/account/createAcc', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.loginAdminUser);
+router.post('/account/loginAdmin', formData.parse(), admin.loginAdminUser);
 router.post('/account/getListAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListAdminUser);
 router.post('/account/createAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(27, 2)], admin.getAndCheckDataAdminUser, admin.createAdminUser);
-router.put('/account/updateAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(27, 3)], admin.getAndCheckDataAdminUser, admin.updateAdminUser);
+router.post('/account/updateAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(27, 3)], admin.getAndCheckDataAdminUser, admin.updateAdminUser);
+router.post('/account/listModule', formData.parse(), functions.checkToken, admin.listModule);
 
 //------------------------------------------------api quan ly danh muc
 router.post('/category/getListCate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListCategory);
 router.post('/category/createCate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(15, 2)], admin.getAndCheckDataCategory, admin.createCategory);
-router.put('/category/updateCate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(15, 3)], admin.getAndCheckDataCategory, admin.updateCategory);
+router.post('/category/updateCate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(15, 3)], admin.getAndCheckDataCategory, admin.updateCategory);
 
 //------------------------------------------------api quan ly tin(tin rao vat, tin mua)
 router.post('/news/getListNews', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListNews);
-router.put('/news/updateNews', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(14, 3)], admin.getAndCheckDataNews, admin.updateNews);
-router.delete('/news/deleteNews', [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(14, 4)], admin.deleteNews);
+router.post('/news/updateNews', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(14, 3)], admin.getAndCheckDataNews, admin.updateNews);
+router.post('/news/deleteNews', [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(14, 4)], admin.deleteNews);
 router.post('/news/pinNews', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(14, 3)], news.pinNews);
 router.post('/news/pushNews', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(14, 3)], news.pushNews);
 
@@ -38,22 +39,22 @@ router.post('/history/getListHistory', formData.parse(), [functions.checkToken, 
 
 //------------------------------------------------api quan ly tai khoan(tai khoan chua xac thuc va da xac thuc)
 router.post('/user/getListUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListUser);
-router.put('/user/updateUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(23, 3)], admin.getAndCheckDataUser, admin.updateUser);
-router.delete('/user/deleteUser', [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(23, 4)], admin.deleteUser);
+router.post('/user/updateUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(23, 3)], admin.getAndCheckDataUser, admin.updateUser);
+router.post('/user/deleteUser', [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(23, 4)], admin.deleteUser);
 
 //------------------------------------------------api blog
 router.post('/blog/getListBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListBlog);
 router.post('/blog/createBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getAndCheckDataBlog, admin.createBlog);
-router.put('/blog/updateBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getAndCheckDataBlog, admin.updateBlog);
+router.post('/blog/updateBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getAndCheckDataBlog, admin.updateBlog);
 // router.post('/blog/hotBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.hotBlog);
 
 //------------------------------------------------api xac thuc thanh toan dam bao
 router.post('/getUserVerifyPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.getListUserVerifyPayment);
-router.put('/payment/verifyPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.adminVerifyPayment);
+router.post('/payment/verifyPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.adminVerifyPayment);
 
 //-----------------------------------------------api nguoi mua xac nhan thanh toan
 router.post('/getListOrderPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.getListOrderPayment);
-router.put('/order/verifyOrder', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.adminVerifyOrder);
+router.post('/order/verifyOrder', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.adminVerifyOrder);
 
 //----------------------------------------------api tags index
 router.post('/tagsIndex', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminTagsIndex.getListTagsIndex);

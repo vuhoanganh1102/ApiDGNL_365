@@ -12,4 +12,7 @@ router.post("/list", functions.checkToken, formData.parse(), controller.getlist)
 router.post("/add", functions.checkToken, formData.parse(), controller.add);
 // Gửi yêu cầu cập nhật khuôn mặt
 router.post("/request", functions.checkToken, formData.parse(), controller.request);
+// Cập nhật khuôn mặt
+router.post("/update_ep_featured_recognition", functions.checkToken, formData.parse(), controller.update_ep_featured_recognition);
+
 module.exports = router

@@ -50,6 +50,8 @@ exports.getlistAdmin = async(req, res) => {
                             married: "$inForPerson.employee.married",
                             address: "$address",
                             position_id: "$inForPerson.employee.position_id",
+                            ep_status:"$inForPerson.employee.ep_status",
+                            avatarUser:"$avatarUser"
                         }
                     },
                 ]);
