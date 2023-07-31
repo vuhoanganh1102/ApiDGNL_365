@@ -90,7 +90,7 @@ const BiddingSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    updatedAt:{
+    updatedAt: {
         type: Date,
         default: null
     }

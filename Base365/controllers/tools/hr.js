@@ -45,7 +45,7 @@ const Appoint = require('../../models/hr/personalChange/Appoint');
 const QuitJob = require('../../models/hr/personalChange/QuitJob');
 const TranferJob = require('../../models/hr/personalChange/TranferJob');
 const Resign = require('../../models/hr/personalChange/Resign');
-const Salarys = require('../../models/hr/Salarys');
+const Salarys = require('../../models/Tinhluong/Tinhluong365SalaryBasic');
 // tool hr cường
 exports.AchievementFors = async(req, res, next) => {
         try {

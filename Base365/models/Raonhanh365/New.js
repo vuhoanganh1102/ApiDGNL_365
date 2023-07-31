@@ -174,6 +174,10 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    refresh_new_home:{
+        type: Number,
+        default: 0
+    },
     timePushNew: {
         // thời gian đẩy tin 
         type: Date,
