@@ -362,7 +362,7 @@ exports.updateInfoEmployee = async(req, res, next) => {
         let File = req.files || null;
         let avatarUser = null;
         if ((idQLC) !== undefined) {
-            let findUser = Users.findOne({ idQLC: idQLC, type: 2 })
+            let findUser = await Users.findOne({ idQLC: idQLC, type: 2 })
             if (findUser) {
                 if (File && File.avatarUser) {
                     let upload = await fnc.uploadAvaEmpQLC(idQLC, File.avatarUser, ['.jpeg', '.jpg', '.png']);
@@ -385,7 +385,7 @@ exports.updateInfoEmployee = async(req, res, next) => {
                         avatarUser: avatarUser,
                         updatedAt: functions.getTimeNow(),
                         "inForPerson.employee.group_id": group_id,
-                        "inForPerson.account.birthday": Date.parse(birthday) / 1000,
+                        "inForPerson.account.birthday": birthday?Date.parse(birthday) / 1000:undefined,
                         "inForPerson.account.gender": gender,
                         "inForPerson.account.married": married,
                         "inForPerson.account.experience": experience,
