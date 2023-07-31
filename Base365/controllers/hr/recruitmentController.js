@@ -309,7 +309,7 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     localField: "hrName",
                     foreignField: "idQLC",
                     pipeline: [
-                        { $match: { type: 2 } },
+                        { $match: { type: {$ne: 1} } },
                     ],
                     as: "nameHR"
                 }
@@ -758,7 +758,7 @@ exports.getListCandidate= async(req, res, next) => {
                     localField: "userHiring",
                     foreignField: "idQLC",
                     pipeline: [
-                        { $match: { type: 2 } },
+                        { $match: { type: {$ne: 1} } },
                     ],
                     as: "NvTuyenDung"
                 }
@@ -770,7 +770,7 @@ exports.getListCandidate= async(req, res, next) => {
                     localField: "userRecommend",
                     foreignField: "idQLC",
                     pipeline: [
-                        { $match: { type: 2 } },
+                        { $match: { type: {$ne: 1} } },
                     ],
                     as: "NguoiGioiThieu"
                 }
@@ -1069,7 +1069,7 @@ let getCandidateProcess = async(model, condition)=> {
                 localField: "candidate.userHiring",
                 foreignField: "idQLC",
                 pipeline: [
-                        { $match: { type: 2 } },
+                        { $match: { type: {$ne: 1} } },
                     ],
                 as: "hrName"
             }
@@ -1171,7 +1171,7 @@ exports.getListProcessInterview= async(req, res, next) => {
                         localField: "candidate.userHiring",
                         foreignField: "idQLC",
                         pipeline: [
-                            { $match: { type: 2 } },
+                            { $match: { type: {$ne: 1} } },
                         ],
                         as: "hrName"
                     }
@@ -1215,7 +1215,7 @@ exports.getListProcessInterview= async(req, res, next) => {
                     localField: "userHiring",
                     foreignField: "idQLC",
                     pipeline: [
-                        { $match: { type: 2 } },
+                        { $match: { type: {$ne: 1} } },
                     ],
                     as: "hrName"
                 }
