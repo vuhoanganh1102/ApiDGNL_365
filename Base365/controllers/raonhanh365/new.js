@@ -451,18 +451,18 @@ exports.pinNews = async (req, res, next) => {
                 var fields = {
                     pinHome: 1,
                     numberDayPinning: so_ngayg,
-                    timeStartPinning: new Date(),
-                    dayStartPinning: new Date(),
-                    dayEndPinning: new Date(ngay_kthuc),
+                    timeStartPinning: new Date().getTime() / 1000,
+                    dayStartPinning: new Date().getTime() / 1000,
+                    dayEndPinning: new Date(ngay_kthuc).getTime() / 1000,
                     moneyPinning: tienthanhtoan,
                 };
             } else {
                 var fields = {
                     pinCate: 5,
                     numberDayPinning: so_ngay,
-                    timeStartPinning: new Date(),
-                    dayStartPinning: new Date(),
-                    dayEndPinning: new Date(ngay_kthuc),
+                    timeStartPinning: new Date().getTime() / 1000,
+                    dayStartPinning: new Date().getTime() / 1000,
+                    dayEndPinning: new Date(ngay_kthuc).getTime() / 1000,
                     moneyPinning: tienthanhtoan,
                 };
             }
@@ -505,7 +505,7 @@ exports.pushNews = async (req, res, next) => {
         } = req.body;
         let existsNews = await New.find({ _id: idNews });
         if (existsNews) {
-            let now = new Date(Date.now());
+            let now = new Date();
             if (!timeStartPinning) timeStartPinning = now;
             if (!dayStartPinning) dayStartPinning = now;
             let fields = {
@@ -2566,9 +2566,9 @@ exports.likeNews = async (req, res, next) => {
     try {
         let { forUrlNew } = req.body;
         let ip = req.ip;
-        let commentId = req.body.commentId || 0;
+        let commentId = Number(req.body.commentId) || 0;
         let userName = req.user.data.userName;
-        let type = req.body.type || null;
+        let type = Number(req.body.type) || null;
         let userId = req.user.data.idRaoNhanh365;
         let userAvatar = req.user.data.userAvatar;
 
@@ -2576,7 +2576,7 @@ exports.likeNews = async (req, res, next) => {
         if (!forUrlNew) {
             return functions.setError(res, "Missing input value", 404);
         }
-        if (commentId === 0) {
+        if (commentId == 0) {
             let like = await LikeRN.findOne({
                 userIdChat: userId,
                 forUrlNew: forUrlNew,
@@ -2590,7 +2590,7 @@ exports.likeNews = async (req, res, next) => {
                     }
                 );
                 return functions.success(res, "Like thành công");
-            } else if (like && type === 0) {
+            } else if (like && type == 0) {
                 await LikeRN.findOneAndDelete({ _id: like._id });
                 return functions.success(res, "Xoá like thành công");
             } else {
@@ -3104,9 +3104,61 @@ exports.napTien = async (req, res, next) => {
 exports.getDataBidding = async (req, res, next) => {
     try {
         let id = Number(req.body.id);
-        let data = await Bidding.find({
-            newId: id,
-        })
+        let data = await Bidding.aggregate([
+            { $match: { newId: id } },
+            // { $sort:},
+            {
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'newId',
+                    foreignField: '_id',
+                    as: 'new'
+                }
+            },
+            { $unwind: '$new' },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'userID',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'nguoidauthau'
+                }
+            },
+            { $unwind: '$nguoidauthau' },
+            {
+                $project: {
+                    _id: 1,
+                    newId: 1,
+                    userName: 1,
+                    userIntro: 1,
+                    userFile: 1,
+                    userProfile: 1,
+                    userProfileFile: 1,
+                    productName: 1,
+                    productDesc: 1,
+                    productLink: 1,
+                    price: 1,
+                    priceUnit: 1,
+                    promotion: 1,
+                    promotionFile: 1,
+                    status: 1,
+                    createTime: 1,
+                    note: 1,
+                    updatedAt: 1,
+                    nguoidauthau: {
+                        userName: 1,
+                        avatarUser: 1,
+                        phone: 1,
+                        isOnline: 1,
+                        phoneTK: 1,
+                        address: 1,
+                    },
+                    thongtinthau: '$new.bidding'
+                }
+            }
+
+        ])
+
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.error(error)
@@ -3168,18 +3220,15 @@ exports.capNhatTin = async (req, res, next) => {
         if (!data) return functions.setError(res, 'not found new', 404)
         let thoi_gian = new Date();
         let year = new Date().getFullYear();
-        let month = new Date().getMonth() + 1;
-        let ngay1 = new Date().getDate();
-        let ngay2 = new Date().getDate() + 1;
-        let hom_nay = year + '/' + month + '/' + ngay1;
-
-        let ngay_mai = year + '/' + month + '/' + ngay2;
-        console.log(typeof (new Date(hom_nay).getTime() / 1000))
+        let month = new Date().getMonth();
+        let ngay = new Date().getDate();
+        let hom_nay = new Date(year, month, ngay).getTime() / 1000;
+        let ngay_mai = hom_nay + 86400;
         let check = await New.countDocuments({
             userID: userId,
             refreshTime: {
-                $gt: Number(new Date(hom_nay).getTime() / 1000),
-                $lt: Number(new Date(ngay_mai).getTime() / 1000)
+                $gt: hom_nay,
+                $lt: ngay_mai
             },
             refresh_new_home: 1
         })
