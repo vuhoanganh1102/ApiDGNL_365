@@ -810,6 +810,7 @@ exports.getListCandidate= async(req, res, next) => {
                     'isSwitch': '$isSwitch',
                     'epIdCrm': '$epIdCrm',
                     'Recruitment': '$Recruitment.title',
+                    'Position': '$Recruitment.posApply',
                     'recruitmentId': '$Recruitment.recruitmentId',
                     'NvTuyenDung': '$NvTuyenDung.userName',
                     'NguoiGioiThieu': '$NguoiGioiThieu.userName',
@@ -820,9 +821,9 @@ exports.getListCandidate= async(req, res, next) => {
         for(let i=0; i<listCandidate.length; i++) {
             let candidate = listCandidate[i];
             if(candidate.cv) {
-                candidate.linkFileCv = hrService.createLinkFile(folderCv, candidate.cv);
-                listCandidate[i] = candidate;
+                listCandidate[i].linkFileCv = hrService.createLinkFile(folderCv, candidate.cv);
             }
+            listCandidate[i].positionName = hrService.positionNames[listCandidate[i].Position];
         }
         const totalCount = await functions.findCount(Candidate, listCondition);
         return functions.success(res, "Get list candidate success", {totalCount: totalCount, data: listCandidate });
