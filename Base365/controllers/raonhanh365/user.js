@@ -133,7 +133,7 @@ exports.listUserOnline = async (req, res, next) => {
         let data = [];
         data = await User.aggregate([
             {
-                $match: { isOnline: 1 }
+                $match: { isOnline: 1, idRaoNhanh365: { $ne: 0 } }
             },
             {
                 $limit: 20
@@ -144,6 +144,7 @@ exports.listUserOnline = async (req, res, next) => {
 
         ]);
         for (let i = 0; i < data.length; i++) {
+            data
             let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1, _id: 1, linkTitle: 1, type: 1, buySell: 1 })
             if (tin) data[i].tin = tin
         }

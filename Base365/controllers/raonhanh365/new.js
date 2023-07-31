@@ -1063,7 +1063,7 @@ exports.searchNew = async (req, res, next) => {
         if (benefit) condition["Job.benefit"] = Number(benefit);
         if (startvalue) condition.money = { $gte: Number(startvalue) };
         if (endvalue) condition.money = { $lte: Number(endvalue) };
-        if (startvalue && endvalue) condition.startvalue = { $gte: Number(startvalue), $lte: Number(endvalue) };
+        if (startvalue && endvalue) condition.money = { $gte: Number(startvalue), $lte: Number(endvalue) };
         condition.userID = { $ne: 0 }
         let data = await New.aggregate([
             { $sort: { pinCate: -1 } },
@@ -3174,13 +3174,12 @@ exports.capNhatTin = async (req, res, next) => {
         let hom_nay = year + '/' + month + '/' + ngay1;
 
         let ngay_mai = year + '/' + month + '/' + ngay2;
-
-
+        console.log(typeof (new Date(hom_nay).getTime() / 1000))
         let check = await New.countDocuments({
             userID: userId,
             refreshTime: {
-                $gt: new Date(hom_nay).getTime() / 1000,
-                $lt: new Date(ngay_mai).getTime() / 1000
+                $gt: Number(new Date(hom_nay).getTime() / 1000),
+                $lt: Number(new Date(ngay_mai).getTime() / 1000)
             },
             refresh_new_home: 1
         })
@@ -3225,7 +3224,7 @@ exports.dangBanLai = async (req, res, next) => {
                     { new_day_tin: { $ne: 0 } }
                 ]
             }, {
-                timeStartPinning: new Date()
+                timeStartPinning: new Date().getTime() / 1000,
             })
             await axios({
                 method: "post",
@@ -3250,14 +3249,14 @@ exports.dangBanLai = async (req, res, next) => {
             if (check) {
                 dayEndPinning = check.dayEndPinning;
                 timePinning = check.timePinning;
-                let tgian_clai = new Date(dayEndPinning).getTime() - new Date(timePinning).getTime();
-                let tgian_ktmoi = tgian_clai + new Date().getTime();
+                let tgian_clai = dayEndPinning - timePinning;
+                let tgian_ktmoi = tgian_clai + new Date().getTime() / 1000;
                 await New.findOneAndUpdate({
                     _id: id,
                     userID: userID,
                 }, {
                     timePinning: 0,
-                    dayEndPinning: new Date(tgian_ktmoi)
+                    dayEndPinning: tgian_ktmoi
                 })
             }
             await New.findOneAndUpdate({
@@ -3402,18 +3401,18 @@ exports.updateNewPromotion = async (req, res, next) => {
             && loaikhuyenmai.length === giatri.length && giatri.length === id.length) {
             for (let i = 0; i < id.length; i++) {
                 let checkNew = await New.findById(id[i]);
-                    if (checkNew) {
-                        await New.findByIdAndUpdate(id[i], {
-                            timePromotionStart: ngay_bat_dau[i],
-                            timePromotionEnd: ngay_ket_thuc[i],
-                            "infoSell.promotionType": loaikhuyenmai[i],
-                            "infoSell.promotionValue": giatri[i],
-                        });
-                    } else {
-                        return functions.setError(res, "Không tìm thấy tin", 400);
-                    }
+                if (checkNew) {
+                    await New.findByIdAndUpdate(id[i], {
+                        timePromotionStart: new Date(ngay_bat_dau[i]).getTime() / 1000,
+                        timePromotionEnd: new Date(ngay_ket_thuc[i]).getTime() / 1000,
+                        "infoSell.promotionType": loaikhuyenmai[i],
+                        "infoSell.promotionValue": giatri[i],
+                    });
+                } else {
+                    return functions.setError(res, "Không tìm thấy tin", 400);
+                }
             }
-            return functions.success(res,'Cập nhật khuyến mãi thành công')
+            return functions.success(res, 'Cập nhật khuyến mãi thành công')
         }
         return functions.setError(res, 'Nhập đúng kiểu dữ liệu')
     } catch (error) {
