@@ -46,7 +46,6 @@ exports.getListRecruitment= async(req, res, next) => {
         const totalCount = await functions.findCount(Recruitment, listCondition);
         return functions.success(res, "Get list recruitment success", {totalCount: totalCount, data: listRecruit });
     } catch (e) {
-        console.log("Err from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -120,7 +119,6 @@ exports.createRecruitment = async(req, res, next) => {
         
         return functions.success(res, 'Create recruitment success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -140,7 +138,6 @@ exports.updateRecruitment = async(req, res, next) => {
         }
         return functions.success(res, "update recruitment success!");
     }catch(err){
-        console.log("Err from server!", err);
         return functions.setError(res, err.message);
     }
 }
@@ -157,7 +154,6 @@ exports.softDeleteRecruitment = async(req, res, next) => {
         }
         return functions.success(res, "Soft delete stage recruitment success!");
     } catch (e) {
-        console.log("Error from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -174,7 +170,6 @@ exports.deleteRecruitment = async(req, res, next) => {
         }
         return functions.success(res, "Recruitment not found");
     } catch (e) {
-        console.log("Error from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -207,7 +202,6 @@ exports.getStageRecruitment = async(req, res, next) => {
         }
         return functions.success(res, "get stage recruitment success!", {data: data});
     }catch(e){
-        console.log("Error from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -238,7 +232,6 @@ exports.createStageRecruitment = async(req, res, next) => {
         await StageRecruitment.create(stageRecruit);
         return functions.success(res, 'Create stage recruitment success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -263,7 +256,6 @@ exports.updateStageRecruitment = async(req, res, next) => {
         }
         return functions.success(res, "update state recruitment success!");
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -280,7 +272,6 @@ exports.softDeleteStageRecruitment = async(req, res, next) => {
         }
         return functions.success(res, "Soft delete recruitment success!");
     } catch (e) {
-        console.log("Error from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -309,6 +300,9 @@ exports.getListRecruitmentNews= async(req, res, next) => {
     
         let listRecruitmentNews = await RecruitmentNews.aggregate([
             {$match: listCondition},
+            {$sort: {id: -1}},
+            {$skip: skip},
+            {$limit: limit},
             {
                 $lookup: {
                     from: "Users",
@@ -317,17 +311,44 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     as: "nameHR"
                 }
             },
-            {$project: {id: 1, title: 1, posApply: 1,cityId: 1,address: 1,cateId: 1,salaryId: 1,number: 1,timeStart: 1,timeEnd: 1,jobDetail: 1, 
-                wokingForm: 1, probationaryTime: 1,moneyTip:1, recruitmentId: 1,jobDes: 1,interest: 1, jobExp: 1, hrName: 1,degree:1, gender: 1, createdAt: 1,createdBy: 1, 
-                jobRequire: 1, isDelete: 1,comId: 1, memberFollow: 1, isSample: 1, isCom: 1, "nameHR.userName": 1}},
-            {$sort: {id: -1}},
-            {$skip: skip},
-            {$limit: limit},
+            {
+                $project: {
+                    "id": "$id",
+                    "title": "$title",
+                    "posApply": "$posApply",
+                    "cityId": "$cityId",
+                    "address": "$address",
+                    "cateId": "$cateId",
+                    "salaryId": "$salaryId",
+                    "number": "$number",
+                    "timeStart": "$timeStart",
+                    "timeEnd": "$timeEnd",
+                    "jobDetail": "$jobDetail",
+                    "wokingForm": "$wokingForm",
+                    "probationaryTime": "$probationaryTime",
+                    "moneyTip": "$moneyTip",
+                    "recruitmentId": "$recruitmentId",
+                    "jobDes": "$jobDes",
+                    "interest": "$interest",
+                    "jobExp": "$jobExp",
+                    "hrName": "$hrName",
+                    "degree": "$degree",
+                    "gender": "$gender",
+                    "createdAt": "$createdAt",
+                    "createdBy": "$createdBy",
+                    "jobRequire": "$jobRequire",
+                    "isDelete": "$isDelete",
+                    "comId": "$comId",
+                    "memberFollow": "$memberFollow",
+                    "isSample": "$isSample",
+                    "isCom": "$isCom",
+                    "nameHR": "$nameHR.userName",
+                }
+            }
         ]);
         const totalCount = await functions.findCount(RecruitmentNews, listCondition);
         return functions.success(res, "Get list recruitment news success", {totalCount: totalCount, data: listRecruitmentNews });
     } catch (e) {
-        console.log("Err from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -353,7 +374,7 @@ let getTotal = async(model, condition)=>{
         ]);
         return total.length!=0 ? total[0].count: 0;
     }catch(err){
-        console.log(err);
+        console.log(err.message);
     }
 }
 exports.listNewActive = async(req, res)=>{
@@ -386,7 +407,6 @@ exports.listNewActive = async(req, res)=>{
         }
         return functions.success(res, "Get listNewActive success!", {countAllActiveNew, recruitmentNew});
     }catch(err) {
-        console.log("Err from server!", err);
         return functions.setError(res, err.message);
     }
 }
@@ -423,7 +443,6 @@ exports.getTotalCandidateFollowDayMonth = async(req, res, next) => {
         
         return functions.success(res, "Get list candidate success",{totalCandidateDay, totalCandidateWeek, totalCandidateMonth} );
     } catch (e) {
-        console.log("Err from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -510,7 +529,7 @@ let getListInterview = async(type, recruitmentNewsId, )=> {
         ]);
         return listInterview;
     }catch(err){
-        console.log(err);
+        console.log(err.message);
     }
 }
 
@@ -546,7 +565,6 @@ exports.getDetailRecruitmentNews= async(req, res, next) => {
         let listInterviewFail = await getListInterview(recruitmentNewsId, 3);
         return functions.success(res, "Get list recruitment news success", {recruitmentNews, listCandidate, listOfferJob,listInterview, listInterviewPass, listInterviewFail});
     } catch (e) {
-        console.log("Err from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -592,7 +610,6 @@ exports.checkDataRecruitmentNews = async(req, res, next) => {
         }
         return next();
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.massage);
     }
 }
@@ -625,7 +642,6 @@ exports.createRecruitmentNews = async(req, res, next) => {
         await recruitmentNews.save();
         return functions.success(res, 'Create recruitmentNews success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -660,7 +676,6 @@ exports.softDeleteRecuitmentNews = async(req, res, next) =>{
         }
         return functions.success(res, "Soft delete news success!");
     }catch(err){
-        console.log("Err from server!", err);
         return functions.setError(res, err.message);
     }
 }
@@ -681,7 +696,6 @@ exports.createSampleNews = async(req, res, next) =>{
         }
         return functions.success(res, "Create sample news success!");
     }catch(err){
-        console.log("Err from server!", err);
         return functions.setError(res, err.message);
     }
 }
@@ -723,8 +737,6 @@ exports.getListCandidate= async(req, res, next) => {
                     as: "listSkill"
                 }
             },
-            { $unwind: { path: "$listSkill", preserveNullAndEmptyArrays: true } },
-
             //lay ra thong tin skill
             {
                 $lookup: {
@@ -745,6 +757,16 @@ exports.getListCandidate= async(req, res, next) => {
                 }
             },
             { $unwind: { path: "$NvTuyenDung", preserveNullAndEmptyArrays: true } },
+
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userRecommend",
+                    foreignField: "idQLC",
+                    as: "NguoiGioiThieu"
+                }
+            },
+            { $unwind: { path: "$NguoiGioiThieu", preserveNullAndEmptyArrays: true } },
 
             {
                 $project: {
@@ -779,7 +801,9 @@ exports.getListCandidate= async(req, res, next) => {
                     'isSwitch': '$isSwitch',
                     'epIdCrm': '$epIdCrm',
                     'Recruitment': '$Recruitment.title',
+                    'recruitmentId': '$Recruitment.recruitmentId',
                     'NvTuyenDung': '$NvTuyenDung.userName',
+                    'NguoiGioiThieu': '$NguoiGioiThieu.userName',
                     'listSkill': '$listSkill',
                 }
             }
@@ -794,7 +818,6 @@ exports.getListCandidate= async(req, res, next) => {
         const totalCount = await functions.findCount(Candidate, listCondition);
         return functions.success(res, "Get list candidate success", {totalCount: totalCount, data: listCandidate });
     } catch (error) {
-        console.log("Err from server", error);
         return functions.setError(res, error.message);
     }
 }
@@ -836,7 +859,6 @@ exports.checkDataCandidate = async(req, res, next) => {
         
         return next();
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -934,7 +956,6 @@ exports.createCandidate = async(req, res, next) => {
         }
         return functions.success(res, 'Create candidate success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -987,7 +1008,6 @@ exports.updateCandidate = async(req, res, next) => {
         
         return functions.success(res, "Update info candidate success!");
     }catch(err){
-        console.log("Err from server!", err);
         return functions.setError(res, err.message);
     }
 }
@@ -1007,7 +1027,6 @@ exports.softDeleteCandidate = async(req, res, next) =>{
         }
         return functions.success(res, "Soft delete candidate success!");
     }catch(err){
-        console.log("Err from server!", err);
         return functions.setError(res, err.message);
     }
 }
@@ -1043,16 +1062,22 @@ let getCandidateProcess = async(model, condition)=> {
                 as: "hrName"
             }
         },
-        
-        {
-            $project: {name: 1, processBefore: 1, canId: 1, 
-            "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
-            "recruitmentNews.title": 1,
-            "hrName.userName": 1
-            }
-        },
+        {$unwind: { path: "$candidate", preserveNullAndEmptyArrays: true }},
         {$unwind: { path: "$recruitmentNews", preserveNullAndEmptyArrays: true }},
         {$unwind: { path: "$hrName", preserveNullAndEmptyArrays: true }},
+        {
+            $project: {
+                "canId": "$candidate.id",
+                "canName": "$candidate.name",
+                "email": "$candidate.email",
+                "phone": "$candidate.phone",
+                "starVote": "$candidate.starVote",
+                "recruitmentNewsId": "$candidate.recruitmentNewsId",
+                "title": "$recruitmentNews.title",
+                "userHiring": "$candidate.userHiring",
+                "hrName": "$hrName.userName"
+            }
+        }
         ]);
 }
 
@@ -1062,17 +1087,46 @@ exports.getListProcessInterview= async(req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
         let {fromDate, toDate, name, recruitmentNewsId, userHiring, gender, status, canId} = req.body;
-        let condition = {"candidate.comId": comId, "candidate.isDelete": 0};
-        if(fromDate) condition["candidate.timeSendCv"]= {$gte: new Date(fromDate)};
-        if(toDate) condition["candidate.timeSendCv"] = {$lte: new Date(toDate)};
-        if(name) condition["candidate.name"] = new RegExp(name, 'i');
-        if(recruitmentNewsId) condition["candidate.recruitmentNewsId"] = Number(recruitmentNewsId);
-        if(userHiring) condition["candidate.userHiring"] = Number(userHiring);
-        if(gender) condition["candidate.gender"] = Number(gender);
-        if(status) condition["candidate.status"] = Number(status);
+        let condition = {"candidate.comId": comId, "candidate.isDelete": 0, "candidate.isSwitch": 1};
+        let condition2 = {comId: comId, isDelete: 0, isSwitch: 0};
+        if(fromDate && !toDate) {
+            condition["candidate.timeSendCv"]= {$gte: new Date(fromDate)};
+            condition2.timeSendCv= {$gte: new Date(fromDate)};
+        }
+        if(toDate && !fromDate) {
+            condition["candidate.timeSendCv"] = {$lte: new Date(toDate)};
+            condition2.timeSendCv = {$lte: new Date(toDate)};
+        }
+        if(toDate && fromDate) {
+            condition["candidate.timeSendCv"] = {$gte: new Date(fromDate), $lte: new Date(toDate)};
+            condition2.timeSendCv = {$gte: new Date(fromDate), $lte: new Date(toDate)};
+        }
+        if(name) {
+            condition["candidate.name"] = new RegExp(name, 'i');
+            condition2.name = new RegExp(name, 'i');
+        }
+        if(recruitmentNewsId) {
+            condition["candidate.recruitmentNewsId"] = Number(recruitmentNewsId);
+            condition2.recruitmentNewsId = Number(recruitmentNewsId);
+        }
+        if(userHiring) {
+            condition["candidate.userHiring"] = Number(userHiring);
+            condition2.userHiring = Number(userHiring);
+        }
+        if(gender) {
+            condition["candidate.gender"] = Number(gender);
+            condition2.gender = Number(gender);
+        }
+        if(status) {
+            condition["candidate.status"] = Number(status);
+            condition2.status = Number(status);
+        }
 
         //truyen canId de lay thong tin chi tiet ve ung vien
-        if(canId) condition["candidate.id"] = Number(canId);
+        if(canId) {
+            condition["candidate.id"] = Number(canId);
+            condition2.id = Number(canId);
+        }
 
         //danh sach ung vien nhan viec
         let listProcess = await ProcessInterview.find({comId: comId}).lean();
@@ -1088,10 +1142,8 @@ exports.getListProcessInterview= async(req, res, next) => {
                         as: "candidate"
                     }
                 },
+                {$unwind: { path: "$candidate", preserveNullAndEmptyArrays: true }},
                 {$match: condition},
-                {
-                    $project: {name: 1, processBefore: 1, canId: 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
-                },
                 {
                     $lookup: {
                         from: "HR_RecruitmentNews",
@@ -1100,12 +1152,7 @@ exports.getListProcessInterview= async(req, res, next) => {
                         as: "recruitmentNews"
                     }
                 },
-                {
-                    $project: {name: 1, processBefore: 1, canId: 1, 
-                    "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
-                    "recruitmentNews.title": 1
-                    }
-                },
+                {$unwind: { path: "$recruitmentNews", preserveNullAndEmptyArrays: true }},
                 {
                     $lookup: {
                         from: "Users",
@@ -1114,27 +1161,70 @@ exports.getListProcessInterview= async(req, res, next) => {
                         as: "hrName"
                     }
                 },
-                {
-                    $project: {name: 1, processBefore: 1, canId: 1, 
-                    "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
-                    "recruitmentNews.title": 1,
-                    "hrName.userName": 1
-                    }
-                },
-                {$unwind: { path: "$recruitmentNews", preserveNullAndEmptyArrays: true }},
                 {$unwind: { path: "$hrName", preserveNullAndEmptyArrays: true }},
+                {
+                    $project: {
+                        "id": "$id",
+                        "name": "$name",
+                        "processBefore": "$processBefore",
+                        "canId": "$canId",
+                        "canName": "$candidate.name",
+                        "email": "$candidate.email",
+                        "phone": "$candidate.phone",
+                        "starVote": "$candidate.starVote",
+                        "recruitmentNewsId": "$recruitmentNews.id",
+                        "title": "$recruitmentNews.title",
+                        "userHiring": "$candidate.userHiring",
+                        "nameHr": "$hrName.userName",
+                    }
+                }
             ]);
             processInterview.totalCandidate = listCandidate.length;
             processInterview.listCandidate = listCandidate;
             listProcess[i] = processInterview;
         }
+        let listCandidate = await Candidate.aggregate([
+            {$match: condition2},
+            {
+                $lookup: {
+                    from: "HR_RecruitmentNews",
+                    localField: "recruitmentNewsId",
+                    foreignField: "id",
+                    as: "RecruitmentNew"
+                }
+            },
 
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userHiring",
+                    foreignField: "idQLC",
+                    as: "hrName"
+                }
+            },
+            { $unwind: { path: "$RecruitmentNew", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$hrName", preserveNullAndEmptyArrays: true } },
+
+            {
+                $project: {
+                    'id': '$id',
+                    'name': '$name',
+                    'email': '$email',
+                    'phone': '$phone',
+                    'starVote': '$starVote',
+                    'recruitmentNewsId': '$recruitmentNewsId',
+                    'title': '$RecruitmentNew.title',
+                    'userHiring': '$userHiring',
+                    'hrName': '$hrName.userName',
+                }
+            }
+        ]);
         let listCandidateGetJob = await getCandidateProcess(GetJob, condition);
         let listCandidateCancelJob = await getCandidateProcess(CancelJob, condition);
         let listCandidateFailJob = await getCandidateProcess(FailJob, condition);
         let listCandidateContactJob = await getCandidateProcess(ContactJob, condition);
 
-        return functions.success(res, "Get list process interview success", {listProcess, listCandidateGetJob, listCandidateCancelJob, listCandidateFailJob, listCandidateContactJob});
+        return functions.success(res, "Get list process interview success", {listProcess, listCandidate,listCandidateGetJob, listCandidateCancelJob, listCandidateFailJob, listCandidateContactJob});
     } catch (e) {
         return functions.setError(res, e.message);
     }
@@ -1167,7 +1257,6 @@ exports.checkDataProcess = async(req, res, next) => {
         }
         return next();
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1194,7 +1283,6 @@ exports.createProcessInterview = async(req, res, next) => {
         processInterview =  await processInterview.save();
         return functions.success(res, 'Create process interview success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1212,8 +1300,7 @@ exports.updateProcessInterview = async(req, res, next) => {
         }
         return functions.success(res, "Update info Process Interview success!");
     }catch(err){
-        console.log("Err from server!", err);
-        return functions.setError(res, e.message);
+        return functions.setError(res, err.message);
     }
 }
 
@@ -1230,7 +1317,6 @@ exports.deleteProcessInterview = async(req, res, next) => {
         }
         return functions.success(res, "Process Interview not found");
     } catch (e) {
-        console.log("Error from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1270,7 +1356,6 @@ exports.checkDataJob = async(req, res, next) => {
         }
         return next();
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1320,7 +1405,6 @@ exports.createContactJob = async(req, res, next) => {
 
         return functions.success(res, 'Create contactJob success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1370,7 +1454,6 @@ exports.createCancelJob = async(req, res, next) => {
 
         return functions.success(res, 'Create cancelJob success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1425,7 +1508,6 @@ exports.createFailJob = async(req, res, next) => {
 
         return functions.success(res, 'Create failJob success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1503,7 +1585,6 @@ exports.addCandidateProcessInterview = async(req, res, next) => {
         }
         return functions.success(res, 'Create scheduleInterview success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1577,7 +1658,6 @@ exports.addCandidateGetJob = async(req, res, next) => {
         
         return functions.success(res, 'Create getJob success!');
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1600,7 +1680,6 @@ exports.detailCandidateGetJob = async(req, res, next) => {
         
         return functions.success(res, 'Get detailCandidateGetJob success!', {list_process_interview, list_new, detail, another_skill, detail_get_job, list_schedule});
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1634,7 +1713,6 @@ exports.detailCandidateGetJob = async(req, res, next) => {
         
         return functions.success(res, 'Get detailCandidateGetJob success!', data);
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1653,7 +1731,6 @@ exports.detailCandidateFailJob = async(req, res, next) => {
         
         return functions.success(res, 'Get detailCandidateFailJob success!', data);
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1672,7 +1749,6 @@ exports.detailCandidateCancelJob = async(req, res, next) => {
         
         return functions.success(res, 'Get detailCandidateCancelJob success!', data);
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }
@@ -1691,7 +1767,6 @@ exports.detailCandidateContactJob = async(req, res, next) => {
         
         return functions.success(res, 'Get detailCandidateContactJob success!', data);
     } catch (e) {
-        console.log("Err from server!", e);
         return functions.setError(res, e.message);
     }
 }

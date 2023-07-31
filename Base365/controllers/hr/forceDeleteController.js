@@ -50,8 +50,8 @@ exports.listDetailDelete = async(req, res, next) => {
     let comId = req.infoLogin.comId;
     let condition = {comId: comId, isDelete: 1};
     let condition2 = {comId: comId, isDelete: 1};
-    let fields = {id: 1, name: 1, deleteAt: 1};
-    let fields2 = {id: 1, title: 1, deleteAt: 1};
+    let fields = {id: 1, name: 1, deletedAt: 1};
+    let fields2 = {id: 1, title: 1, deletedAt: 1};
     
     if(keyword) {
       condition.name = new RegExp(keyword, 'i');
@@ -64,9 +64,8 @@ exports.listDetailDelete = async(req, res, next) => {
     let list_provision = await getDelete(ProvisionOfCompanys, condition, fields);
     let list_employe_policy = await getDelete(EmployeePolicys, condition, fields);
     return functions.success(res, "Get list detail delete success", {list_recuitment, list_recuitment_new, list_job_desc, list_training_process, list_provision, list_employe_policy});
-  }catch(err){
-    console.log(err);
-    return functions.setError(res, err);
+  }catch(e){
+    return functions.setError(res, e.message);
   }
 }
 
@@ -107,7 +106,6 @@ exports.delete= async(req, res, next) => {
         }
         return functions.success(res, "Delete success");
     } catch (e) {
-        console.log("Err from server", e);
         return functions.setError(res, e.message);
     }
 }
@@ -151,7 +149,6 @@ exports.restoreDelete= async(req, res, next) => {
         
         return functions.success(res, "Restore delete success");
     } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, e.message, 500);
+        return functions.setError(res, e.message);
     }
 }
