@@ -308,6 +308,9 @@ exports.getListRecruitmentNews= async(req, res, next) => {
                     from: "Users",
                     localField: "hrName",
                     foreignField: "idQLC",
+                    pipeline: [
+                        { $match: { type: 2 } },
+                    ],
                     as: "nameHR"
                 }
             },
@@ -754,16 +757,21 @@ exports.getListCandidate= async(req, res, next) => {
                     from: "Users",
                     localField: "userHiring",
                     foreignField: "idQLC",
+                    pipeline: [
+                        { $match: { type: 2 } },
+                    ],
                     as: "NvTuyenDung"
                 }
             },
             { $unwind: { path: "$NvTuyenDung", preserveNullAndEmptyArrays: true } },
-
             {
                 $lookup: {
                     from: "Users",
                     localField: "userRecommend",
                     foreignField: "idQLC",
+                    pipeline: [
+                        { $match: { type: 2 } },
+                    ],
                     as: "NguoiGioiThieu"
                 }
             },
@@ -1060,6 +1068,9 @@ let getCandidateProcess = async(model, condition)=> {
                 from: "Users",
                 localField: "candidate.userHiring",
                 foreignField: "idQLC",
+                pipeline: [
+                        { $match: { type: 2 } },
+                    ],
                 as: "hrName"
             }
         },
@@ -1159,6 +1170,9 @@ exports.getListProcessInterview= async(req, res, next) => {
                         from: "Users",
                         localField: "candidate.userHiring",
                         foreignField: "idQLC",
+                        pipeline: [
+                            { $match: { type: 2 } },
+                        ],
                         as: "hrName"
                     }
                 },
@@ -1200,12 +1214,14 @@ exports.getListProcessInterview= async(req, res, next) => {
                     from: "Users",
                     localField: "userHiring",
                     foreignField: "idQLC",
+                    pipeline: [
+                        { $match: { type: 2 } },
+                    ],
                     as: "hrName"
                 }
             },
             { $unwind: { path: "$RecruitmentNew", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$hrName", preserveNullAndEmptyArrays: true } },
-
             {
                 $project: {
                     'id': '$id',
