@@ -3174,13 +3174,12 @@ exports.capNhatTin = async (req, res, next) => {
         let hom_nay = year + '/' + month + '/' + ngay1;
 
         let ngay_mai = year + '/' + month + '/' + ngay2;
-
-
+        console.log(typeof (new Date(hom_nay).getTime() / 1000))
         let check = await New.countDocuments({
             userID: userId,
             refreshTime: {
-                $gt: new Date(hom_nay).getTime() / 1000,
-                $lt: new Date(ngay_mai).getTime() / 1000
+                $gt: Number(new Date(hom_nay).getTime() / 1000),
+                $lt: Number(new Date(ngay_mai).getTime() / 1000)
             },
             refresh_new_home: 1
         })
