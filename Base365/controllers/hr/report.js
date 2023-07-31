@@ -52,7 +52,7 @@ exports.report = async (req, res, next) => {
 
         conditions['inForPerson.employee.com_id'] = comId;
         conditions['inForPerson.employee.ep_status'] = "Active";
-
+        conditions.type = 2;
         // tổng số nhân viên thuộc công ty
         let countEmployee = await Users.aggregate([
             { $match: conditions },
@@ -107,7 +107,8 @@ exports.report = async (req, res, next) => {
 
         conditions['inForPerson.account.gender'] = 1;
         conditions['inForPerson.employee.com_id'] = comId;
-
+        conditions['inForPerson.employee.ep_status'] = "Active";
+        conditions.type = 2;
         // tìm kiếm nhân viên được bổ nhiệm là nam
         let dataBoNhiemNam = await Users.aggregate([
             { $match: conditions },
@@ -195,7 +196,9 @@ exports.report = async (req, res, next) => {
             subConditions['resign.created_at'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
 
         conditions['inForPerson.employee.com_id'] = comId;
+        conditions['inForPerson.employee.ep_status'] = "Active";
         subConditions['resign.type'] = 1;
+        conditions.type = { $ne: 2 };
         // số lượng nhân viên giảm biên chế
         let giamBienChe = await Users.aggregate([
             { $match: conditions },
@@ -273,42 +276,41 @@ exports.report = async (req, res, next) => {
             { $project: searchItem }
         ])
 
+
+        // xoá điều kiện 
+        conditions = {};
+        subConditions = {};
         // tăng giảm lương
-        // delete conditions.type
-        // delete conditions.com_id
+        if (from_date) conditions.sb_time_up = { $gte: new Date(from_date).getTime() / 1000 }
+        if (to_date) conditions.sb_time_up = { $lte: new Date(to_date).getTime() / 1000 }
+        if (from_date && to_date)
+            conditions.sb_time_up = { $gte: new Date(from_date).getTime() / 1000, $lte: new Date(to_date).getTime() / 1000 }
+        let dataLuong = await Salarys.find({ sb_id_com: comId, sb_first: { $ne: 1 } }).sort({ sb_time_up: -1 });
+        let tangLuong = 0;
+        let giamLuong = 0;
+        let arr = [];
+        if (dataLuong.length !== 0) {
+            for (let i = 0; i < dataLuong.length; i++) {
+                conditions.sb_id_user = dataLuong[i].sb_id_user;
+                conditions.sb_time_up = { $lt: dataLuong[i].sb_time_up }
+                checkTangGiam = await Salarys.findOne(conditions).lean()
 
-        // let dataLuong = await Salarys.find({ sb_id_com: comId }).sort({ sb_time_up: -1 });
-        // let tangLuong = 0;
-        // let giamLuong = 0;
-        // let arr = [];
-        // if (dataLuong.length !== 0) {
-        //     for (let i = 0; i < dataLuong.length; i++) {
-        //         conditions.sb_id_user = dataLuong[i].sb_id_user;
-        //         conditions.sb_time_up = { $lt: dataLuong[i].sb_time_up }
-
-        //         checkTangGiam = await Salarys.findOne(conditions)
-
-        //         if (checkTangGiam && dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic > 0) {
-        //             tangLuong++;
-        //         } else if (checkTangGiam && dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic < 0) {
-        //             giamLuong++;
-        //         }
-        //         if (checkTangGiam) {
-        //             let tangGiam = dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic
-        //             checkTangGiam.tangGiam = tangGiam
-        //             arr.push(checkTangGiam)
-        //         }
-        //     }
-        // }
-        // let tangGiamLuong = 0;
-        // if (tangLuong !== 0) tangGiamLuong = tangLuong;
-        // if (giamLuong !== 0) tangGiamLuong = giamLuong;
-        // if (tangLuong !== 0 && giamLuong !== 0) tangGiamLuong = tangLuong + giamLuong;
-
-        // delete conditions.sb_id_user
-        // delete conditions.sb_time_up
-
-        // conditions['inForPerson.employee.com_id'] = comId
+                if (checkTangGiam && dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic > 0) {
+                    tangLuong++;
+                } else if (checkTangGiam && dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic < 0) {
+                    giamLuong++;
+                }
+                if (checkTangGiam) {
+                    let tangGiam = dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic
+                    checkTangGiam.tangGiam = tangGiam
+                    arr.push(checkTangGiam)
+                }
+            }
+        }
+        let tangGiamLuong = 0;
+        if (tangLuong !== 0) tangGiamLuong = tangLuong;
+        if (giamLuong !== 0) tangGiamLuong = giamLuong;
+        if (tangLuong !== 0 && giamLuong !== 0) tangGiamLuong = tangLuong + giamLuong;
 
         // xoá điều kiện 
         conditions = {};
@@ -322,6 +324,8 @@ exports.report = async (req, res, next) => {
             subConditions['TranferJobs.created_at'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
 
         conditions['inForPerson.employee.com_id'] = comId;
+        conditions['inForPerson.employee.ep_status'] = "Active";
+        conditions.type = 2;
         // Luân chuyển công tác
         let countDataLuanChuyen = await Users.aggregate([
             { $match: conditions },
@@ -608,9 +612,9 @@ exports.report = async (req, res, next) => {
         data.boNhiemNam = dataBoNhiemNam.length
         data.boNhiemNu = dataBoNhiemNu.length
 
-        // data.tangGiamLuong = tangGiamLuong;
-        // data.tangLuong = tangLuong;
-        // data.giamLuong = giamLuong;
+        data.tangGiamLuong = tangGiamLuong;
+        data.tangLuong = tangLuong;
+        data.giamLuong = giamLuong;
 
         data.luanChuyen = countDataLuanChuyen.length
         data.luanChuyenNam = countDataLuanChuyenNam.length
@@ -633,7 +637,7 @@ exports.report = async (req, res, next) => {
         data.chartNghiViec = countDataNghiViec;
         data.chartBoNhiem = dataBoNhiem;
         data.chartLuanChuyen = countDataLuanChuyen;
-        //data.chartTangGiamLuong = arr;
+        data.chartTangGiamLuong = arr;
 
         return functions.success(res, 'get data success', { data })
     } catch (error) {
@@ -644,7 +648,7 @@ exports.reportChart = async (req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
 
-        let page = req.body.page || 1;
+        let page = Number(req.body.page) || 1;
         let link = req.body.link;
         let depId = Number(req.body.depId);
         let gender = Number(req.body.gender);
@@ -674,7 +678,11 @@ exports.reportChart = async (req, res, next) => {
             start_working_time: '$inForPerson.employee.start_working_time',
             'quit.ep_id': 1,
             'quit.current_position': 1,
-            'quit.created_at': 1
+            'quit.created_at': 1,
+            luongmoi:'$HR_Salarys.sb_salary_basic',
+            luongcu:'non',
+            sb_id_user:'$HR_Salarys.sb_id_user',
+            sb_time_up:'$HR_Salarys.sb_time_up'
         };
         let conditions = {};
         let data = {};
@@ -690,9 +698,7 @@ exports.reportChart = async (req, res, next) => {
         if (married) conditions['inForPerson.account.married'] = married;
         if (depId) conditions['inForPerson.employee.dep_id'] = depId;
         if (seniority) conditions['inForPerson.account.experience'] = seniority;
-
-        //if(old === 1) conditions['inForPerson.account.birthday'] = getYear() - inForPerson.account.birthday;
-        console.log(conditions)
+        conditions.type = 2
         if (link === 'bieu-do-danh-sach-nhan-vien.html') {
             data = await Users.aggregate([
                 { $match: conditions },
@@ -727,8 +733,10 @@ exports.reportChart = async (req, res, next) => {
                 { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
             ])
-            return functions.success(res, 'get data success', { data })
+            let soluong = data.length
+            return functions.success(res, 'get data success', { soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-nghi-viec.html') {
+            conditions.type = { $ne: 2 }
             data = await Users.aggregate([
                 { $match: conditions },
                 { $skip: skip },
@@ -771,8 +779,8 @@ exports.reportChart = async (req, res, next) => {
                 { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
             ])
-
-            return functions.success(res, 'get data success', { data })
+            let soluong = data.length
+            return functions.success(res, 'get data success', { soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-bo-nhiem.html') {
             data = await Users.aggregate([
                 { $match: conditions },
@@ -817,7 +825,8 @@ exports.reportChart = async (req, res, next) => {
                 { $project: searchItem }
 
             ])
-            return functions.success(res, 'get data success', { data })
+            let soluong = data.length
+            return functions.success(res, 'get data success', { soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-chuyen-cong-tac.html') {
             data = await Users.aggregate([
                 { $match: conditions },
@@ -862,10 +871,12 @@ exports.reportChart = async (req, res, next) => {
                 { $project: searchItem }
 
             ])
-            return functions.success(res, 'get data success', { data })
+            let soluong = data.length
+            return functions.success(res, 'get data success', { soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-tang-giam-luong.html') {
             data = await Users.aggregate([
                 { $match: conditions },
+                { $sort: { sb_time_up: -1 } },
                 { $skip: skip },
                 { $limit: limit },
                 {
@@ -906,7 +917,19 @@ exports.reportChart = async (req, res, next) => {
                 { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
             ])
-            return functions.success(res, 'get data success', { data })
+            for(let i = 0; i < data.length; i++) {
+                conditions = {};
+                conditions.sb_id_user = data[i].sb_id_user;
+                conditions.sb_time_up = { $lt: data[i].sb_time_up }
+                let luongcu = await Salarys.findOne(conditions);
+                if(luongcu){
+                    data[i].luongcu = luongcu.sb_salary_basic
+                }else{
+                    data[i].luongcu = ''
+                }
+            }
+            let soluong = data.length
+            return functions.success(res, 'get data success', { soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
             let tuoi = 0;
             let list = [];
@@ -944,7 +967,7 @@ exports.reportChart = async (req, res, next) => {
                 { $project: searchItem }
 
             ])
-            await Users.findByIdAndUpdate(16,{'inForPerson.account.birthday':new Date('2001/6/10').getTime() / 1000})
+            await Users.findByIdAndUpdate(16, { 'inForPerson.account.birthday': new Date('2001/6/10').getTime() / 1000 })
             for (let i = 0; i < check.length; i++) {
                 let sinhnhat = new Date(check[i].birthday * 1000).getFullYear()
                 let namhientai = new Date().getFullYear();
@@ -959,11 +982,11 @@ exports.reportChart = async (req, res, next) => {
                     list.push(check[i])
                 }
             }
-            
-            return functions.success(res, 'get data success', { data:list })
+            let soluong = data.length
+            return functions.success(res, 'get data success', { soluong, data })
         }
     } catch (error) {
-        console.log("🚀 ~ file: report.js:965 ~ exports.reportChart= ~ error:", error)
-        return functions.setError(res,error)
+        console.log("🚀 ~ file: report.js:985 ~ exports.reportChart= ~ error:", error)
+        return functions.setError(res, error)
     }
 }
