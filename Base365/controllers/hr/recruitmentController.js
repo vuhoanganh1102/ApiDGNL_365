@@ -720,70 +720,9 @@ exports.getListCandidate= async(req, res, next) => {
         if(userHiring) listCondition.userHiring =  Number(userHiring);
         if(gender) listCondition.gender =  Number(gender);
         if(status) listCondition.status =  Number(status);
-        if(fromDate) listCondition.timeSendCv = {$gte: new Date(fromDate)};
-        if(toDate) listCondition.timeSendCv = {$lte: new Date(toDate)};
-
-        //danh sach ung vien nhan viec
-        // let listProcess = await ProcessInterview.find({comId: comId}).lean();
-        // let listProcessId = [];
-        // for(let i = 0; i < listProcess.length; i++) {
-        //     listProcessId.push(listProcess[i].id)
-        // };
-        // let listCandidateScheduleInterview = await ScheduleInterview.aggregate([
-        //     {$match: {processInterviewId: {$in:listProcessId}}},
-        //     {
-        //         $lookup: {
-        //             from: "HR_Candidates",
-        //             localField: "canId",
-        //             foreignField: "id",
-        //             as: "candidate"
-        //         }
-        //     },
-        //     {$match: condition},
-        //     {
-        //         $project: {name: 1, processBefore: 1, canId: 1, "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1}
-        //     },
-        //     {
-        //         $lookup: {
-        //             from: "HR_RecruitmentNews",
-        //             localField: "candidate.recruitmentNewsId",
-        //             foreignField: "id",
-        //             as: "recruitmentNews"
-        //         }
-        //     },
-        //     {
-        //         $project: {name: 1, processBefore: 1, canId: 1, 
-        //         "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
-        //         "recruitmentNews.title": 1
-        //         }
-        //     },
-        //     {
-        //         $lookup: {
-        //             from: "Users",
-        //             localField: "candidate.userHiring",
-        //             foreignField: "idQLC",
-        //             as: "hrName"
-        //         }
-        //     },
-        //     {
-        //         $project: {name: 1, processBefore: 1, canId: 1, 
-        //         "candidate.name": 1, "candidate.email": 1, "candidate.phone": 1, "candidate.starVote": 1, "candidate.recruitmentNewsId": 1, "candidate.userHiring": 1,
-        //         "recruitmentNews.title": 1,
-        //         "hrName.userName": 1
-        //         }
-        //     },
-        //     {$unwind: { path: "$recruitmentNews", preserveNullAndEmptyArrays: true }},
-        //     {$unwind: { path: "$hrName", preserveNullAndEmptyArrays: true }},
-        // ]); 
-        // for(let i=0; i<listProcess.length; i++ ){
-        //     let processInterview = listProcess[i];
-        //     let listCandidate_ele = listCandidateScheduleInterview.filter((e)=>
-        //       e.processInterviewId == processInterview.id
-        //     );
-        //     processInterview.totalCandidate = listCandidate_ele.length;
-        //     processInterview.listCandidate = listCandidate_ele;
-        //     listProcess[i] = processInterview;
-        // };
+        if(fromDate && !toDate) listCondition.timeSendCv = {$gte: new Date(fromDate)};
+        if(toDate && !fromDate) listCondition.timeSendCv = {$lte: new Date(toDate)};
+        if(fromDate && toDate) listCondition.timeSendCv = {$gte: new Date(fromDate), $lte: new Date(toDate)};
 
         const listCandidate = await Candidate.aggregate([
             {$match: listCondition},
