@@ -27,19 +27,18 @@ exports.loginAdminUser = async(req, res, next) => {
             const loginName = req.body.loginName
             const password = req.body.password
             let findUser = await functions.getDatafindOne(AdminUser, { loginName })
-            if (!findUser) {
-                return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 405)
+            if (findUser) {
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (checkPassword) {
+                    let updateUser = await functions.getDatafindOneAndUpdate(Users, { loginName }, {
+                        date: new Date(Date.now())
+                    })
+                    const token = await functions.createToken(findUser, "1d")
+                    return functions.success(res, 'Đăng nhập thành công', { token: token })
+                }
+                return functions.setError(res, "Mật khẩu sai", 406);
             }
-            let checkPassword = await functions.verifyPassword(password, findUser.password)
-            if (!checkPassword) {
-                return functions.setError(res, "Mật khẩu sai", 406)
-            }
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { loginName }, {
-                date: new Date(Date.now())
-            })
-            const token = await functions.createToken(findUser, "2d")
-            return functions.success(res, 'Đăng nhập thành công', { token: token })
-
+            return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 405)
         }
         return functions.setError(res, "Missing input value!", 404)
     } catch (error) {
@@ -95,52 +94,51 @@ exports.listModule = async(req, res, next) => {
 exports.getAndCheckDataAdminUser = async(req, res, next) => {
     try {
         let { loginName, name, phone, email, editAll, langId, active, accessModule, adminId } = req.body;
-        if (!loginName || !phone || !email) {
-            return functions.setError(res, "Missing input value", 404)
-        }
-
-        // xoa cac quyen hien tai cua admin neu chon muc sua
-        if (adminId) {
-            let adminUserRight = await AdminUserRight.deleteMany({ adminId: adminId });
-        } else {
-            adminId = await functions.getMaxIdByField(AdminUser, '_id');
-        }
-        //cap quyen cho admin ca them moi+sua
-        let { arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete } = req.body;
-        arrIdModule = arrIdModule.split(",");
-        arrRightAdd = arrRightAdd.split(",");
-        arrRightEdit = arrRightEdit.split(",");
-        arrRightDelete = arrRightDelete.split(",");
-
-        //
-        for (let i = 0; i < arrIdModule.length; i++) {
-            //tao id cho bang phan quyen
-            let newIdAdminUserRight = await functions.getMaxIdByField(AdminUserRight, '_id');
-            let fieldsRight = {
-                _id: newIdAdminUserRight,
-                adminId: adminId,
-                moduleId: arrIdModule[i],
-                add: arrRightAdd[i],
-                edit: arrRightEdit[i],
-                deletelet: arrRightDelete[i]
+        if (loginName && phone && email) {
+            // xoa cac quyen hien tai cua admin neu chon muc sua
+            if (adminId) {
+                let adminUserRight = await AdminUserRight.deleteMany({ adminId: adminId });
+            } else {
+                adminId = await functions.getMaxIdByField(AdminUser, '_id');
             }
-            let adminUserRight = new AdminUserRight(fieldsRight);
-            await adminUserRight.save();
+            //cap quyen cho admin ca them moi+sua
+            let { arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete } = req.body;
+            arrIdModule = arrIdModule.split(",");
+            arrRightAdd = arrRightAdd.split(",");
+            arrRightEdit = arrRightEdit.split(",");
+            arrRightDelete = arrRightDelete.split(",");
+
+            //
+            for (let i = 0; i < arrIdModule.length; i++) {
+                //tao id cho bang phan quyen
+                let newIdAdminUserRight = await functions.getMaxIdByField(AdminUserRight, '_id');
+                let fieldsRight = {
+                    _id: newIdAdminUserRight,
+                    adminId: adminId,
+                    moduleId: arrIdModule[i],
+                    add: arrRightAdd[i],
+                    edit: arrRightEdit[i],
+                    deletelet: arrRightDelete[i]
+                }
+                let adminUserRight = new AdminUserRight(fieldsRight);
+                await adminUserRight.save();
+            }
+            
+            // them cac truong muon them hoac sua
+            req.info = {
+                _id: adminId,
+                loginName: loginName,
+                name: name,
+                phone: phone,
+                email: email,
+                langId: langId,
+                editAll: editAll,
+                active: active,
+                accessModule: accessModule,
+            }
+            return next();
         }
-        
-        // them cac truong muon them hoac sua
-        req.info = {
-            _id: adminId,
-            loginName: loginName,
-            name: name,
-            phone: phone,
-            email: email,
-            langId: langId,
-            editAll: editAll,
-            active: active,
-            accessModule: accessModule,
-        }
-        return next();
+        return functions.setError(res, "Missing input value", 404)
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -150,13 +148,15 @@ exports.createAdminUser = async(req, res, next) => {
     try {
         // luu thong tin admin
         let password = req.body.password;
-        if(!password)  return functions.setError(res, "Missing input password!");
-        let fields = req.info;
-        fields.password = md5(password);
+        if(password) {
+            let fields = req.info;
+            fields.password = md5(password);
 
-        let adminUser = new AdminUser(fields);
-        await adminUser.save();
-        return functions.success(res, 'Create AdminUser and AdminUserRight RN365 success!');
+            let adminUser = new AdminUser(fields);
+            await adminUser.save();
+            return functions.success(res, 'Create AdminUser and AdminUserRight RN365 success!');
+        }
+        return functions.setError(res, "Missing input password!");
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -164,18 +164,19 @@ exports.createAdminUser = async(req, res, next) => {
 
 exports.updateAdminUser = async(req, res, next) => {
     try {
-        if (!req.body.adminId)
-            return functions.setError(res, "Missing input value id admin!", 404);
-        let fields = req.info;
         let adminId = req.body.adminId;
-        fields.password = md5(password);
-        delete fields._id;
-        let existsAdminUser = await AdminUser.findOne({ _id: adminId });
-        if (existsAdminUser) {
-            await AdminUser.findOneAndUpdate({ _id: adminId }, fields);
-            return functions.success(res, "AdminUser edited successfully");
+        if (adminId) {
+            let fields = req.info;
+            fields.password = md5(password);
+            delete fields._id;
+            let existsAdminUser = await AdminUser.findOne({ _id: adminId });
+            if (existsAdminUser) {
+                await AdminUser.findOneAndUpdate({ _id: adminId }, fields);
+                return functions.success(res, "AdminUser edited successfully");
+            }
+            return functions.setError(res, "AdminUser not found!", 505);
         }
-        return functions.setError(res, "AdminUser not found!", 505);
+        return functions.setError(res, "Missing input value id admin!", 404);
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -227,18 +228,18 @@ exports.getListCategory = async(req, res, next) => {
 exports.getAndCheckDataCategory = async(req, res, next) => {
     try {
         let { parentId, adminId, name, order, description } = req.body;
-        if (!name || !order) {
-            return functions.setError(res, "Missing input value", 404)
+        if (name && order) {
+            // them cac truong muon them hoac sua
+            req.info = {
+                parentId: parentId,
+                adminId: adminId,
+                name: name,
+                order: order,
+                description: description
+            }
+            return next();
         }
-        // them cac truong muon them hoac sua
-        req.info = {
-            parentId: parentId,
-            adminId: adminId,
-            name: name,
-            order: order,
-            description: description
-        }
-        return next();
+        return functions.setError(res, "Missing input value", 404)
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -260,16 +261,18 @@ exports.createCategory = async(req, res, next) => {
 exports.updateCategory = async(req, res, next) => {
     try {
         let cateID = req.body.cateID; 
-        if (!cateID) return functions.setError(res, "Missing input value id cate!", 404);
-        let fields = req.info;
+        if (cateID) {
+            let fields = req.info;
 
-        let existsCategory = await Category.findOne({ _id: cateID });
-        if (existsCategory) {
+            let existsCategory = await Category.findOne({ _id: cateID });
+            if (existsCategory) {
 
-            await Category.findOneAndUpdate({ _id: cateID }, fields);
-            return functions.success(res, "Category edited successfully");
+                await Category.findOneAndUpdate({ _id: cateID }, fields);
+                return functions.success(res, "Category edited successfully");
+            }
+            return functions.setError(res, "Category not found!", 505);
         }
-        return functions.setError(res, "Category not found!", 505);
+        return functions.setError(res, "Missing input value id cate!", 404);
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -328,16 +331,16 @@ exports.getListNews = async(req, res, next) => {
 exports.getAndCheckDataNews = async(req, res, next) => {
     try {
         let { title, description, money } = req.body;
-        if (!title || !description) {
-            return functions.setError(res, "Missing input value", 404)
+        if (title && description) {
+             // them cac truong muon them hoac sua
+            req.info = {
+                title: title,
+                description: description,
+                money: money
+            }
+            return next();
         }
-        // them cac truong muon them hoac sua
-        req.info = {
-            title: title,
-            description: description,
-            money: money
-        }
-        return next();
+        return functions.setError(res, "Missing input value", 404)
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -361,15 +364,17 @@ exports.createNews = async(req, res, next) => {
 exports.updateNews = async(req, res, next) => {
     try {
         let newsID = req.body.newsID;
-        if (!newsID) return functions.setError(res, "Missing input value id news!", 404);
-        let fields = req.info;
-        fields.updateTime = Date(Date.now());
-        let existsNews = await News.findOne({ _id: newsID });
-        if (existsNews) {
-            await News.findOneAndUpdate({ _id: newsID }, fields);
-            return functions.success(res, "News edited successfully");
+        if (newsID) {
+            let fields = req.info;
+            fields.updateTime = Date(Date.now());
+            let existsNews = await News.findOne({ _id: newsID });
+            if (existsNews) {
+                await News.findOneAndUpdate({ _id: newsID }, fields);
+                return functions.success(res, "News edited successfully");
+            }
+            return functions.setError(res, "News not found!", 505);
         }
-        return functions.setError(res, "News not found!", 505);
+        return functions.setError(res, "Missing input value id news!", 404);
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -417,17 +422,19 @@ exports.getListPriceList = async(req, res, next) => {
 exports.update = async(req, res, next) => {
     try {
         let newsID = req.body.newsID;
-        if (!newsID) return functions.setError(res, "Missing input value id news!", 404);
-        newsID = Number(newsID);
-        let fields = req.info;
-        fields.updateTime = Date(Date.now());
-        let existsNews = await News.findOne({ _id: newsID });
-        if (existsNews) {
+        if (newsID) {
+            newsID = Number(newsID);
+            let fields = req.info;
+            fields.updateTime = Date(Date.now());
+            let existsNews = await News.findOne({ _id: newsID });
+            if (existsNews) {
 
-            await News.findOneAndUpdate({ _id: newsID }, fields);
-            return functions.success(res, "News edited successfully");
+                await News.findOneAndUpdate({ _id: newsID }, fields);
+                return functions.success(res, "News edited successfully");
+            }
+            return functions.setError(res, "News not found!", 505);
         }
-        return functions.setError(res, "News not found!", 505);
+        return functions.setError(res, "Missing input value id news!", 404);
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -474,18 +481,18 @@ exports.getAndCheckDataUser = async(req, res, next) => {
     try {
         let { userName, email, phoneTK, phone, money, cong, tru } = req.body;
 
-        if (!userName || !phoneTK) {
-            return functions.setError(res, "Missing input value", 404)
+        if (userName && phoneTK) {
+            // them cac truong muon them hoac sua
+            req.info = {
+                userName: userName,
+                phoneTK: phoneTK,
+                email: email,
+                phone: phone,
+                money: Number(money) + Number(cong) - Number(tru)
+            }
+            return next();
         }
-        // them cac truong muon them hoac sua
-        req.info = {
-            userName: userName,
-            phoneTK: phoneTK,
-            email: email,
-            phone: phone,
-            money: Number(money) + Number(cong) - Number(tru)
-        }
-        return next();
+        return functions.setError(res, "Missing input value", 404)
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -509,15 +516,17 @@ exports.createUser = async(req, res, next) => {
 exports.updateUser = async(req, res, next) => {
     try {
         let userID = req.body.userID;
-        if (!userID) return functions.setError(res, "Missing input value id user!", 404);
-        let fields = req.info;
-        fields.updateAt = Date(Date.now());
-        let existsUser = await Users.findOne({ idRaoNhanh365: userID });
-        if (existsUser) {
-            await Users.findOneAndUpdate({ idRaoNhanh365: userID }, fields);
-            return functions.success(res, "User edited successfully");
+        if (userID) {
+            let fields = req.info;
+            fields.updateAt = Date(Date.now());
+            let existsUser = await Users.findOne({ idRaoNhanh365: userID });
+            if (existsUser) {
+                await Users.findOneAndUpdate({ idRaoNhanh365: userID }, fields);
+                return functions.success(res, "User edited successfully");
+            }
+            return functions.setError(res, "User not found!", 505);
         }
-        return functions.setError(res, "User not found!", 505);
+        return functions.setError(res, "Missing input value id user!", 404);
     } catch (error) {
         return functions.setError(res, error.message);
     }
