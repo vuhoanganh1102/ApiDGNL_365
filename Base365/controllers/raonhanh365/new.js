@@ -3104,9 +3104,10 @@ exports.napTien = async (req, res, next) => {
 exports.getDataBidding = async (req, res, next) => {
     try {
         let id = Number(req.body.id);
+        let sapxep = Number(req.body.type);
         let data = await Bidding.aggregate([
             { $match: { newId: id } },
-            // { $sort:},
+            { $sort:{}},
             {
                 $lookup: {
                     from: 'RN365_News',
