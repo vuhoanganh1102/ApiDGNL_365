@@ -444,10 +444,10 @@ exports.updateInfoCompany = async(req, res, next) => {
         let File = req.files || null;
         let avatarUser = null;
         if ((idQLC) !== undefined) {
-            let findUser = Users.findOne({ idQLC: idQLC, type: 1 })
+            let findUser = await Users.findOne({ idQLC: idQLC, type: 1 })
             if (findUser) {
                 if (File && File.avatarUser) {
-                    let upload = await fnc.uploadAvaComQLC(File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                    let upload = await fnc.uploadAvaComQLC(File.avatarUser, ['.jpeg', '.jpg', '.png'], findUser.createdAt);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ')
                     }

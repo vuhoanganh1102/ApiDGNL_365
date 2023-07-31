@@ -66,7 +66,7 @@ exports.createCompany = async(req, res) => {
 
                 if (File && File.avatarUser) {
                     //  const namefiles = req.files.avatarUser.originalFilename;
-                    let upload = await fnc.uploadAvaComQLC(File.avatarUser, ['.jpeg', '.jpg', '.png']);
+                    let upload = await fnc.uploadAvaComQLC(File.avatarUser, ['.jpeg', '.jpg', '.png'], now);
                     if (!upload) {
                         return functions.setError(res, 'Định dạng ảnh không hợp lệ', 400)
                     }

@@ -39,15 +39,16 @@ dotenv.config();
 const functions = require('../../services/functions');
 
 //QLC
-exports.uploadAvaComQLC = async(file, allowedExtensions) => {
+exports.uploadAvaComQLC = async(file, allowedExtensions, createdAt = null) => {
     // const namefiles = req.files.name
+    console.log("uploadAvatar");
     let date = new Date();
+    if (createdAt) {
+        date = new Date(createdAt*1000);
+    }
     let namefile = 'app' + Math.round(date.getTime() / 1000) + "_" + file.name;
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    let path1 = `../storage/base365/qlc/upload/company/logo/${year}/${month}/${day}/`;
-    let filePath = `../storage/base365/qlc/upload/company/logo/${year}/${month}/${day}/` + namefile;
+    let path1 = `../storage/base365/qlc/upload/company/logo/${functions.convertDate(date.getTime()/1000, true)}/`;
+    let filePath = `../storage/base365/qlc/upload/company/logo/${functions.convertDate(date.getTime()/1000, true)}/` + namefile;
     let fileCheck = path.extname(filePath);
     if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
         return false
