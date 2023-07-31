@@ -742,7 +742,7 @@ exports.addGhiTang  = async(req,res) => {
     })
     let saveGT = await createGt.save()
     let createQTSD = new QuaTrinhSuDung({
-      quatrinh_id: quatrinh_id,
+      quatrinh_id: maxIdQTSD,
       id_bien_ban: saveGT.id_ghitang,
       so_lg : saveGT.sl_tang,
       id_cty : com_id,
@@ -817,133 +817,156 @@ exports.quatrinhsd = async (req, res) => {
 
     let { ts_id, page, perPage,qt_nghiep_vu } = req.body;
     let com_id = '';
-    page = page || 1;
-    perPage = perPage || 10;
-    const startIndex = (page - 1) * perPage;
-    const endIndex = page * perPage;
+    page = parseInt(page) || 1;
+    perPage = parseInt(perPage) || 10;
+    
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
+    const startIndex = (page - 1) * perPage;
+    const endIndex = page * perPage;
+    
     if (typeof ts_id === 'undefined') {
       return functions.setError(res, 'id tài sản không được bỏ trống', 400);
     }
     if (isNaN(Number(ts_id))) {
       return functions.setError(res, 'id tài sản phải là một số', 400);
     }
-    const searchCondition = {};
     if (qt_nghiep_vu) {
-      searchCondition.qt_nghiep_vu = qt_nghiep_vu;
+      const parsedNghiepVu = parseInt(qt_nghiep_vu);
+      if (!isNaN(parsedNghiepVu)) {
+        matchQuery.qt_nghiep_vu = parsedNghiepVu;
+      } else {
+        return functions.setError(res, 'qt_nghiep_vu phải là một số hợp lệ', 400);
+      }
     }
-    let listQTSD = await QuaTrinhSuDung.find({id_ts : ts_id,id_cty : com_id,
-      ...searchCondition})
-    let items = [];
-    for (const qt of listQTSD) {
-      let listCP = [];
-      let listTH = [];
-      let listDC = [];
-      let listSC = [];
-      let listBD = [];
-      let listM = [];
-      let listH = [];
-      let listTL = [];
-      let listGT = [];
-      let trangThaiMap = {};
-      switch (qt.qt_nghiep_vu) {
-        case 1:
-          listCP = await CapPhat.find({ cp_id: qt.id_bien_ban, id_cty: com_id, cp_da_xoa: 0 });
-          for(let i = 0; i < listCP.length;i++){
-            trangThaiMap[qt.id_bien_ban] = listCP[i].cp_trangthai;
-          }
-          // Xử lý khi qt_nghiep_vu là 1
-          break;
-        case 2:
-          listTH = await ThuHoi.find({ thuhoi_id: qt.id_bien_ban, id_cty: com_id, xoa_thuhoi: 0 });
-          for(let i = 0; i < listTH.length;i++){
-            trangThaiMap[qt.id_bien_ban] = listTH[i].cp_trangthai;
-          }
-          // Xử lý khi qt_nghiep_vu là 2
-          break;
-        case 3:
-          listDC = await DieuChuyen.find({ dc_id: qt.id_bien_ban, id_cty: com_id, xoa_dieuchuyen: 0 });
-          for(let i = 0; i < listDC.length;i++){
-            trangThaiMap[qt.id_bien_ban] = listDC[i].cp_trangthai;
-          }
-          // Xử lý khi qt_nghiep_vu là 3
-          break;
-        case 4:
-          listSC = await SuaChua.find({ sc_id: qt.id_bien_ban, id_cty: com_id, sc_da_xoa: 0 });
-          for(let i = 0; i < listSC.length;i++){
-            trangThaiMap[qt.id_bien_ban] = listSC[i].cp_trangthai;
-          }
-          // Xử lý khi qt_nghiep_vu là 4
-          break;
-        case 5:
-          listBD = await BaoDuong.find({ id_bd: qt.id_bien_ban, id_cty: com_id, xoa_bd: 0 });
-          for(let i = 0; i < listBD.length;i++){
-            trangThaiMap[qt.id_bien_ban] = listBD[i].cp_trangthai;
-          }
-          // Xử lý khi qt_nghiep_vu là 5
-          break;
-        case 6:
-          listM = await Mat.find({ mat_id: qt.id_bien_ban, id_cty: com_id, xoa_dx_mat: 0 });
-          for(let i = 0; i < listM.length;i++){
-            trangThaiMap[qt.id_bien_ban] = listM[i].cp_trangthai;
-          }
-          // Xử lý khi qt_nghiep_vu là 6
-          break;
-        case 7:
-          listH = await Huy.find({ huy_id: qt.id_bien_ban, id_cty: com_id, xoa_huy: 0 });
-          for(let i = 0; i < listH.length;i++){
-            trangThaiMap[qt.id_bien_ban] = listH[i].cp_trangthai;
-          }
-          // Xử lý khi qt_nghiep_vu là 7
-          break;
-        case 8:
-          listTL = await ThanhLy.find({ tl_id: qt.id_bien_ban, id_cty: com_id, xoa_dx_tl: 0 });
-          for(let i = 0; i < listTL.length;i++){
-            trangThaiMap[qt.id_bien_ban] = listTL[i].cp_trangthai;
-          }
-          // Xử lý khi qt_nghiep_vu là 8
-          break;
-        case 9:
-          listGT = await CapPhat.find({ id_ghitang: qt.id_bien_ban, com_id: com_id, xoa_ghi_tang: 0 });
-          for(let i = 0; i < listGT.length;i++){
-            trangThaiMap[qt.id_bien_ban] = listGT[i].cp_trangthai;
-          }
-          // Xử lý khi qt_nghiep_vu là 9
-          break;
-        default:
-          // Xử lý khi qt_nghiep_vu không thuộc các case trên
-          break;
+    let matchQuery = {
+      id_cty : com_id,// Lọc theo com_id
+      id_ts : ts_id
+    };
+    let lookupTableName = "";
+    let localField = "";
+    let foreignField = "";
+    let asField = "";
+    let checkTs = await QuaTrinhSuDung.find({id_ts : ts_id, id_cty : com_id}).select('qt_nghiep_vu')
+    for( let i = 0; i < checkTs.length; i++) {
+      if(checkTs[i].qt_nghiep_vu == 1){
+        lookupTableName = 'QLTS_Cap_Phat';
+        localField = "id_bien_ban";
+        foreignField = "cp_id";
+        asField = "cap_phat";
+        tinh_trang_sd = "$cap_phat.cp_trangthai"
+      }
+      else if(checkTs[i].qt_nghiep_vu == 2){
+        lookupTableName = 'QLTS_ThuHoi';
+        localField = "id_bien_ban";
+        foreignField = "thuhoi_id";
+        asField = "thu_hoi";
+        tinh_trang_sd = "$thu_hoi.thuhoi_trangthai"
+      }
+      else if(checkTs[i].qt_nghiep_vu == 3){
+        lookupTableName = 'QLTS_Dieu_Chuyen';
+        localField = "id_bien_ban";
+        foreignField = "dc_id";
+        asField = "dieu_chuyen";
+        tinh_trang_sd = "$dieu_chuyen.dc_trangthai"
+      }
+      else if(checkTs[i].qt_nghiep_vu == 4){
+        lookupTableName = 'QLTS_Sua_chua';
+        localField = "id_bien_ban";
+        foreignField = "sc_id";
+        asField = "sua_chua";
+        tinh_trang_sd = "$sua_chua.sc_trangthai"
+      }
+      else if(checkTs[i].qt_nghiep_vu == 5){
+        lookupTableName = 'QLTS_Bao_Duong';
+        localField = "id_bien_ban";
+        foreignField = "id_bd";
+        asField = "bao_duong";
+        tinh_trang_sd = "$bao_duong.bd_trang_thai"
+      }
+      else if(checkTs[i].qt_nghiep_vu == 6){
+        lookupTableName = 'QLTS_Mat';
+        localField = "id_bien_ban";
+        foreignField = "mat_id";
+        asField = "mat";
+        tinh_trang_sd = "$mat.mat_trangthai"
+      }
+      else if(checkTs[i].qt_nghiep_vu == 7){
+        lookupTableName = 'QLTS_Huy';
+        localField = "id_bien_ban";
+        foreignField = "huy_id";
+        asField = "huy";
+        tinh_trang_sd = "$huy.huy_trangthai"
+      }
+      else if(checkTs[i].qt_nghiep_vu == 8){
+        lookupTableName = 'QLTS_ThanhLy';
+        localField = "id_bien_ban";
+        foreignField = "tl_id";
+        asField = "thanh_ly";
+        tinh_trang_sd = "$thanh_ly.tl_trangthai"
+      }
+      else if(checkTs[i].qt_nghiep_vu == 9){
+        lookupTableName = 'QLTS_Ghi_Tang_TS';
+        localField = 'id_ts';
+        foreignField = 'id_ts';
+        asField = 'ghi_tang';
+        tinh_trang_sd = "$ghi_tang.trang_thai_ghi_tang"
       }
       
-      items.push({
-        so_bien_ban: qt.id_bien_ban,
-        ngay_thuc_hien : qt.qt_ngay_thuchien,
-        nghiep_vu : qt.qt_nghiep_vu,
-        trang_thai :  trangThaiMap[qt.id_bien_ban],
-        vi_tri_tai_san : qt.vitri_ts,
-        nguoi_su_dung : qt.id_ng_sudung,
-        ghi_chu : qt.ghi_chu
-      });
     }
-    const totalItems = await QuaTrinhSuDung.countDocuments({
-      id_ts: ts_id,
-      id_cty: com_id,
-      ...searchCondition // Áp dụng điều kiện tìm kiếm theo nghiệp vụ (nếu có) để tính tổng số bản ghi
-    });
-    const totalPages = Math.ceil(totalItems / perPage);
-    const hasNextPage = endIndex < totalItems;
+    let listQuaTrinh = await QuaTrinhSuDung.aggregate([
+      {
+        $match: matchQuery,
+      },
+      { $sort: { id_ts: -1 } },
+      {
+        $lookup: {
+          from: lookupTableName,
+          localField: localField, 
+          foreignField: foreignField, 
+          as: asField 
+        }
+      },
+      {
+        $addFields: {
+          [asField]: {
+            $cond: {
+              if: { $eq: ["$" + asField, null] },
+              then: { field_default: "default_value" }, // Giá trị mặc định nếu không tìm thấy kết quả
+              else: "$" + asField, // Giữ nguyên kết quả lookup nếu tìm thấy
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$id_ts',
+          so_bien_ban: { $first: '$id_ts' },
+          ngay_thuc_hien: { $first: '$qt_ngay_thuchien' },
+          ngiep_vu: { $first: '$qt_nghiep_vu' },
+          tinh_trang: { $first: tinh_trang_sd },
+          vitri_taisan : { $first: '$vitri_ts' },
+          id_ng_sudung : {$first: '$id_ng_sudung'},
+          id_phong_su_dung :{$first: '$id_phong_sudung'},
+          ghi_chu : {$first: '$ghi_chu'}
+        },
+      },
+      {
+        $skip: startIndex,
+      },
+      {
+        $limit: perPage,
+      },
+    ])
+    const totalTsCount = await QuaTrinhSuDung.countDocuments(matchQuery);
 
-    return functions.success(res, 'get data success', {
-      items,
-      totalPages,
-      hasNextPage
-    });
     // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
-    return functions.success(res, 'get data success', { items});
+    const totalPages = Math.ceil(totalTsCount / perPage);
+    const hasNextPage = endIndex < totalTsCount;
+    return functions.success(res, 'get data success', { listQuaTrinh, totalPages, hasNextPage });
   }  catch(e){
     console.log(e)
     return functions.setError(res , e.message)
@@ -954,7 +977,7 @@ exports.quatrinhsd = async (req, res) => {
 //Phần Khấu hao
 exports.khauhaoCTTS = async (req, res) => {
   try {
-    let { id_ts } = req.body;
+    let { ts_id } = req.body;
     let com_id = '';
 
     if (req.user.data.type == 1 || req.user.data.type == 2) {
@@ -963,19 +986,17 @@ exports.khauhaoCTTS = async (req, res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
 
-    let checkTaisan = await TaiSan.findOne({ id_ts, id_cty: com_id });
-    let ngay_co_ts = checkTaisan.ts_date_create - 86400;
-
-    let checkKhauHao = await KhauHao.findOne({ kh_id_cty: com_id, kh_id_ts: id_ts });
-
-    if (checkKhauHao) {
+    let checkTaisan = await TaiSan.findOne({ ts_id, id_cty: com_id });
+    
+    let checkKhauHao = await KhauHao.findOne({ kh_id_cty : com_id, kh_id_ts: ts_id });
+    if (checkKhauHao){
       let type_kh = '';
-      let gt_kh = serviceQLTS.numberWithCommas(checkKhauHao.gt_kh) + " VNĐ";
+      let gt_kh =checkKhauHao.gt_kh;
       let kh_so_ky = checkKhauHao.kh_so_ky;
       let kh_day_start = checkKhauHao.kh_day_start;
-      let kh_so_ky_con_lai = checkKhauHao.$kh_so_ky_con_lai;
-      let kh_gt_da_kh = serviceQLTS.numberWithCommas(checkKhauHao.kh_gt_da_kh) + " VNĐ";
-      let kh_gt_cho_kh = serviceQLTS.numberWithCommas(checkKhauHao.kh_gt_cho_kh) + " VNĐ";
+      let kh_so_ky_con_lai = checkKhauHao.kh_so_ky_con_lai;
+      let kh_gt_da_kh = checkKhauHao.kh_gt_da_kh;
+      let kh_gt_cho_kh = checkKhauHao.kh_gt_cho_kh ;
 
       if (checkKhauHao.kh_type_ky == 0) {
         type_kh = 'Ngày';
@@ -1033,7 +1054,7 @@ exports.addKhauHao = async(req,res) => {
     }
     
     if(!kh_gt || !kh_so_ky || !kh_so_ky_con_lai || !kh_day_start ||kh_gt_cho_kh) {
-       functions.setError(res, 'thiếu thông tin truyền lên', 400)
+      return functions.setError(res, 'thiếu thông tin truyền lên', 400)
     }
     let checkts = await TaiSan.findOne({ts_id : ts_id,com_id : com_id}).select('ts_date_create')
     if(checkts.ts_date_create > kh_day_start ) {
@@ -1094,13 +1115,11 @@ exports.addFile = async (req, res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     let createDate = Math.floor(Date.now() / 1000);
-    let tep_dinh_kem = req.files.tep_ten;
-    if (tep_dinh_kem) {
-      let checkFile = await functions.checkFile(tep_dinh_kem.path);
-      if (!checkFile) {
-        return functions.setError(res, `File khong dung dinh dang hoac qua kich cho phep!`, 411);
-      }
-      fileName = tep_dinh_kem.name
+    let tep_kem = req.files.tep_ten;
+    let fileName = '';
+    if (tep_kem) {
+      await quanlytaisanService.uploadFileNameRandom(ts_id,tep_kem);
+      fileName = tep_kem.name
     }
     let maxIdTep = await functions.getMaxIdByField(TepDinhKem, 'tep_id');
     let createNew = new TepDinhKem({
@@ -1141,6 +1160,12 @@ exports.showFile = async (req, res) => {
       .sort({ tep_id: -1 })
       .skip(startIndex)
       .limit(perPage);
+      let fileX = '';
+      for(let i = 0 ; i < showtep.length; i++){
+       fileX = await quanlytaisanService.createLinkFileQLTS(showtep[i].id_ts ,showtep[i].tep_ten);
+        
+      }
+      console.log(fileX);
     const totalTsCount = await TepDinhKem.countDocuments({ id_cty: com_id, id_ts: ts_id });
 
     const totalPages = Math.ceil(totalTsCount / perPage);

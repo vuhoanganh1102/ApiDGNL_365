@@ -3,6 +3,7 @@ const phanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen');
 const Users = require('../../models/Users');
 const department = require('../../models/qlc/Deparment')
 const functions = require('../../services/functions')
+const fs = require('fs')
 
 exports.getMaxIDTSVT = async (model) => {
   const maxTSVT = await model.findOne({}, {}, { sort: { tsvt_id: -1 } }).lean() || 0;
@@ -97,6 +98,7 @@ exports.getDatafindOneAndUpdate = async (model, condition, projection) => {
 
 exports.checkRole = (page, role) => {
   return async (req, res, next) => {
+    console.log(req.user.data.type)
     if (req.user.data.type !== 1) {
       if (req.user.data.idQLC && req.user.data.com_id) {
         const data = await phanQuyen.findOne({ id_cty: req.user.data.com_id, id_user: req.user.data.idQLC })
@@ -211,36 +213,31 @@ exports.getLinkFile = (folder, time, fileName) => {
   return res;
 }
 
+exports.createLinkFileQLTS = (ts_id, file) => {
+  let link = process.env.port_picture_qlc + `/storage/base365/qlts/uploads/${ts_id}/` + file;
+  return link;
+}
 
-exports.uploadFileNameRandom = async (folder, file_img) => {
-  let filename = '';
-  const time_created = Date.now();
-  const date = new Date(time_created);
-  const year = date.getFullYear();
-  const month = ('0' + (date.getMonth() + 1)).slice(-2);
-  const day = ('0' + date.getDate()).slice(-2);
-  const timestamp = Math.round(date.getTime() / 1000);
+exports.uploadFileNameRandom = (ts_id, file) => {
+  let path = `../storage/base365/qlts/uploads/${ts_id}/`;
+  let filePath = `../storage/base365/qlts/uploads/${ts_id}/` + file.originalFilename;
 
-  const dir = `../Storage/base365/qlts/uploads/${folder}/${year}/${month}/${day}/`;
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(path)) { // Nếu thư mục chưa tồn tại thì tạo mới
+    fs.mkdirSync(path, { recursive: true });
   }
 
-  filename = `${timestamp}-tin-${file_img.originalFilename}`.replace(/,/g, '');
-  const filePath = dir + filename;
-  filename = filename + ',';
-
-  fs.readFile(file_img.path, (err, data) => {
+  fs.readFile(file.path, (err, data) => {
     if (err) {
       console.log(err)
     }
     fs.writeFile(filePath, data, (err) => {
       if (err) {
         console.log(err)
+      } else {
+        console.log(" luu thanh cong ");
       }
     });
   });
-  return filename;
 }
 
 // loại tài sản đã xoá
@@ -470,8 +467,6 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
   try {
 
     conditions.xoa_thuhoi = 1;
-    conditions.thuhoi_id_ng_xoa = { $ne: 0 };
-    conditions.id_ng_dc_thuhoi = { $ne: 0 };
     let data = await ThuHoi.aggregate([
       { $match: conditions },
       { $sort: { thuhoi_id: -1 } },
@@ -496,15 +491,6 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
       },
       { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
-        $lookup: {
-          from: 'Users',
-          localField: 'id_ng_dc_thuhoi',
-          foreignField: 'idQLC',
-          as: 'users'
-        }
-      },
-      { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
-      {
         $project: {
           thuhoi_ngay: 1,
           thuhoi_date_delete: 1,
@@ -514,15 +500,22 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
           soluong: '$thuhoi_taisan.ds_thuhoi.sl_th',
           thuhoi_trangthai: 1,
           thuhoi__lydo: 1,
-          id_ng_dc_thuhoi: '$users.userName',
+          id_ng_dc_thuhoi: '$id_ng_dc_thuhoi',
           ng_xoa: '$user.userName'
         }
       },
-      // {$unwind:'$soluong'}
+      { $unwind: '$soluong' }
     ]);
     for (let i = 0; i < data.length; i++) {
       data[i].thuhoi_ngay = new Date(data[i].thuhoi_ngay * 1000);
       data[i].thuhoi_date_delete = new Date(data[i].thuhoi_date_delete * 1000);
+      let user = await Users.findOne({ idQLC: data[i].id_ng_dc_thuhoi })
+      if (user && user.inForPerson && user.inForPerson.employee) {
+        let dep = await department.findOne({ dep_id: user.inForPerson.employee.dep_id })
+        if (dep) {
+          data[i].id_ng_dc_thuhoi = dep.dep_name
+        }
+      }
     }
 
     return functions.success(res, 'get data success', { dem, data })
@@ -606,7 +599,6 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
     return functions.setError(res, error)
   }
 }
-
 // điều chuyển đối tượng sd
 exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, skip, limit, comId) => {
   try {

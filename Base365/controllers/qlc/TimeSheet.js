@@ -4,6 +4,7 @@ const calEmp = require('../../models/qlc/CalendarWorkEmployee');
 const Users = require('../../models/Users');
 const EmployeeDevice = require('../../models/qlc/EmployeeDevice');
 const CompanyWebIP = require('../../models/qlc/CompanyWebIP');
+const Tracking = TimeSheets;
 const moment = require('moment-timezone');
 
 //thêm chấm công 
@@ -416,15 +417,17 @@ exports.getListUserTrackingSuccess = async(req, res) => {
         } else if (isNaN(com_id && shift_id)) {
             functions.setError(res, "id must be a Number")
         } else {
-            const data = await Tracking.find({ ts_com_id: com_id, shift_id: shift_id, at_time: { $gte: inputOld, $lte: inputNew } }).select('_id idQLC ts_image ts_location_name at_time shift_id status is_success ').skip((pageNumber - 1) * 20).limit(20).sort({ sheet_id: -1 });
+            const data = await Tracking.find(
+                { ts_com_id: com_id, shift_id: shift_id, at_time: { $gte: inputOld, $lte: inputNew } }
+                ).limit(20).sort({ sheet_id: -1 }).lean();
             if (data) { //lấy thành công danh sách NV đã chấm công 
                 //so sanh loại bỏ phan tu trung lap
-                function compare(personA, personB) {
-                    return personA.idQLC === personB.idQLC && personA.shift_id === personB.shift_id;
-                }
+                // function compare(personA, personB) {
+                //     return personA.idQLC === personB.idQLC && personA.shift_id === personB.shift_id;
+                // }
 
-                let newData = functions.arrfil(data, compare);
-                return await functions.success(res, 'Lấy thành công', { newData });
+                //let newData = functions.arrfil(data, compare);
+                return await functions.success(res, 'Lấy thành công', { data });
             }
             return functions.setError(res, 'Không có dữ liệu', 404);
         }

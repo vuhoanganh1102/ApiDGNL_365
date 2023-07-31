@@ -522,6 +522,7 @@ exports.info = async(req, res) => {
                     "emailContact": "$emailContact",
                     "idQLC": "$idQLC",
                     "nameDeparment": "$deparment.dep_name",
+                    "inForPerson":1
                 }
             }
         ]);
@@ -550,3 +551,5 @@ exports.home = async(req, res) => {
         return functions.setError(res, err.message);
     }
 }
+
+

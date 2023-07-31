@@ -4,6 +4,7 @@ const Counter = require('../Counter');
 let connection = mongoose.createConnection('mongodb://127.0.0.1/api-base365');
 
 
+// hoa hồng cá nhân, nhóm ứng với từng đối tượng 
 const TinhluongClassSchema = new Schema({
     cls_id: {
         type: Number,
@@ -43,7 +44,7 @@ const TinhluongClassSchema = new Schema({
     },
     cls_time_created:{
         type: Date,
-        default:new Date('1970-01-01T00:00:00.000+00:00')
+        default:new Date()
     },
 }, {
     collection: 'TinhluongClass',
@@ -53,7 +54,7 @@ const TinhluongClassSchema = new Schema({
 // lúc insert lấy dữ liệu ở bảng Counter ra => tăng lên 1 rồi save 
 TinhluongClassSchema.pre('save', async function(next) {
     try{
-        await Counter.findOneAndUpdate({TableId: 'TinhluongClassSchemaId'}, {$inc: { Count: 1} });
+        await Counter.findOneAndUpdate({TableId: 'TinhluongClassId'}, {$inc: { Count: 1} });
         next();
     }
     catch(e){

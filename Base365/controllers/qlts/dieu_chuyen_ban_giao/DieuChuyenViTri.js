@@ -5,7 +5,7 @@ const ViTriTaiSan = require('../../../models/QuanLyTaiSan/ViTri_ts');
 const TaiSanViTri = require('../../../models/QuanLyTaiSan/TaiSanVitri');
 const TaiSan = require("../../../models/QuanLyTaiSan/TaiSan");
 const fnc = require("../../../services/functions");
-const Department = require('../../../models/qlc/Deparment');
+const department = require('../../../models/qlc/Deparment');
 const BaoDuong = require("../../../models/QuanLyTaiSan/BaoDuong");
 const Users = require('../../../models/Users')
 const capPhat = require('../../../models/QuanLyTaiSan/CapPhat')
@@ -405,7 +405,6 @@ exports.TiepNhanDCVT = async (req, res) => {
 
             val_dc_1.push(item.sl_ts);
         })
-        console.log(val_dc)
         let check_ts_tu = '';
         for (let i = 0; i < val_dc.length; i++) {
             let check_tsvt_tu = await TaiSanViTri.findOne(// noi tai san co san
@@ -548,9 +547,8 @@ exports.detailBB = async (req, res) => {
             let filter = {};
             filter.id_cty = id_cty
             filter.xoa_dieuchuyen = 0
-            filter.dc_type = 0
+            // filter.dc_type = 0
             filter.dc_id = Number(dc_id)
-        console.log(filter)
             let data1 = await DieuChuyen.aggregate([
                 { $match: filter },
                 {
@@ -793,3 +791,260 @@ exports.detailBB = async (req, res) => {
         return fnc.setError(res, error.message);
     }
 }
+
+exports.listAndDetail = async (req, res, next) => {
+    try {
+        let page = Number(req.body.page)|| 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        const id_cty = req.user.data.com_id
+        const idQLC = req.user.data.idQLC
+        const dc_id = req.body.dc_id
+        const dc_trangthai = req.body.dc_trangthai
+        const type = req.body.type
+        // let data = []
+
+        let Num_dc_vitri = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 0}).count()
+        let Num_dc_doituong = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 1}).count()
+        let Num_dcdvQL = await DieuChuyen.find({id_cty: id_cty,xoa_dieuchuyen: 0, dc_type : 2}).count()
+        let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
+        let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
+        let dem_bg = (numAllocaction.length + numRecall.length)
+        // data.push({Num_dc_vitri : Num_dc_vitri})
+        // data.push({Num_dc_doituong : Num_dc_doituong})
+        // data.push({Num_dcdvQL : Num_dcdvQL})
+        // data.push({dem_bg : dem_bg})
+        let filter = {};
+        filter.id_cty = id_cty
+        // filter.xoa_dieuchuyen = 0
+        // filter.dc_type = 0
+        if(dc_id)  filter.dc_id = Number(dc_id)
+        // if(type)  filter.type = Number(type)
+        if(dc_trangthai)  filter.dc_trangthai = Number(dc_trangthai)
+console.log(filter)
+        //1: điều chuyển vị trí tài sản
+        if (type == 1) {
+            // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
+            let data = await DieuChuyen.aggregate([
+                { $match: filter },
+                { $sort: { dc_id: -1 } },
+                { $skip: skip },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "vi_tri_dc_tu",
+                        foreignField: "id_vitri", 
+                        as: "infoVTtu" 
+                    }
+                },
+                { $unwind: { path: "$infoVTtu", preserveNullAndEmptyArrays: true } },
+    
+                {
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "dc_vitri_tsnhan",
+                        foreignField: "id_vitri",
+                        as: "infoVTden"
+                    }
+                },
+                { $unwind: { path: "$infoVTden", preserveNullAndEmptyArrays: true } },
+                {
+                  $lookup: {
+                    from: 'Users',
+                    localField: 'id_ng_thuchien',
+                    foreignField: 'idQLC',
+                    as: 'users_id_ng_thuchien'
+                  }
+                },
+                { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
+                {
+                  $project: {
+                    dc_ngay: 1,
+                    dc_date_delete: 1,
+                    dc_id: 1,
+                    dc_trangthai: 1,
+                    id_nv_dangsudung: '$id_nv_dangsudung',
+                    id_pb_dang_sd: '$did_pb_dang_sd',
+                    id_nv_nhan: '$id_nv_nhan',
+                    id_pb_nhan: '$id_pb_nhan',
+                    dc_lydo: 1,
+                    id_ng_thuchien: '$users_id_ng_thuchien.userName',
+                    dep_id: "$users_id_ng_thuchien.inForPerson.employee.dep_id",
+                    dc_vi_tri_tu: "$infoVTtu.vi_tri",
+                    dc_vi_tri_den: "$infoVTden.vi_tri",
+                  }
+                }
+              ]);
+              for (let i = 0; i < data.length; i++) {
+                if (data[i].id_nv_dangsudung != 0) {
+                  let id_nv_dangsudung = await Users.findOne({ idQLC: data[i].id_nv_dangsudung }, { userName: 1 })
+                  if (id_nv_dangsudung) data[i].id_nv_dangsudung = id_nv_dangsudung.userName
+                }
+                if (data[i].id_pb_dang_sd != 0) {
+                  let id_pb_dang_sd = await department.findOne({ dep_id: data[i].id_pb_dang_sd }, { dep_name: 1 })
+                  if (id_pb_dang_sd) data[i].id_pb_dang_sd = id_pb_dang_sd.dep_name
+          
+                }
+                if (data[i].id_nv_nhan != 0) {
+                  let id_nv_nhan = await Users.findOne({ idQLC: data[i].id_nv_nhan }, { userName: 1 })
+                  if (id_nv_nhan) data[i].id_nv_nhan = id_nv_nhan.userName
+          
+                }
+                if (data[i].dep_id != 0) {
+                    let depName = await department.findOne({ com_id: id_cty, dep_id: data[i].dep_id })
+                  if (depName) data[i].depName = depName.dep_name
+          
+                }
+                if (data[i].id_pb_nhan != 0) {
+                  let id_pb_nhan = await department.findOne({ dep_id: data[i].id_pb_nhan }, { dep_name: 1 })
+                  if (id_pb_nhan) data[i].id_pb_nhan = id_pb_nhan.dep_name
+                }
+                data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+                data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
+              }
+              return fnc.success(res, 'get data success', { data })
+        }
+        //2: điều chuyển đối tượng sd
+        if (type == 2) {
+            // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
+            let data = await DieuChuyen.aggregate([
+                { $match: filter },
+                { $sort: { dc_id: -1 } },
+                { $skip: skip },
+                { $limit: limit },
+          
+                {
+                  $lookup: {
+                    from: 'Users',
+                    localField: 'id_ng_thuchien',
+                    foreignField: 'idQLC',
+                    as: 'users_id_ng_thuchien'
+                  }
+                },
+                { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
+                {
+                  $project: {
+                    dc_ngay: 1,
+                    dc_date_delete: 1,
+                    dc_id: 1,
+                    dc_trangthai: 1,
+                    id_nv_dangsudung: '$id_nv_dangsudung',
+                    id_pb_dang_sd: '$id_pb_dang_sd',
+                    id_nv_nhan: '$id_nv_nhan',
+                    id_pb_nhan: '$id_pb_nhan',
+                    dc_lydo: 1,
+                    id_ng_thuchien: '$users_id_ng_thuchien.userName',
+                  }
+                }
+              ]);
+              for (let i = 0; i < data.length; i++) {
+                if (data[i].id_nv_dangsudung != 0) {
+                  let id_nv_dangsudung = await Users.findOne({ idQLC: data[i].id_nv_dangsudung }, { userName: 1 })
+                  if (id_nv_dangsudung) data[i].id_nv_dangsudung = id_nv_dangsudung.userName
+                }
+                if (data[i].id_pb_dang_sd != 0) {
+                  let id_pb_dang_sd = await department.findOne({ dep_id: data[i].id_pb_dang_sd }, { dep_name: 1 })
+                  if (id_pb_dang_sd) data[i].id_pb_dang_sd = id_pb_dang_sd.dep_name
+          
+                }
+                if (data[i].id_nv_nhan != 0) {
+                  let id_nv_nhan = await Users.findOne({ idQLC: data[i].id_nv_nhan }, { userName: 1 })
+                  if (id_nv_nhan) data[i].id_nv_nhan = id_nv_nhan.userName
+          
+                }
+                if (data[i].id_pb_nhan != 0) {
+                  let id_pb_nhan = await department.findOne({ dep_id: data[i].id_pb_nhan }, { dep_name: 1 })
+                  if (id_pb_nhan) data[i].id_pb_nhan = id_pb_nhan.dep_name
+                }
+                data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+                data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
+              }
+          
+              return fnc.success(res, 'get data success', { data })
+        }
+
+        //3: điều chuyển đơn vị quản lý
+        if (type == 3) {
+            // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
+            let data = await DieuChuyen.aggregate([
+                { $match: filter },
+                { $sort: { dc_id: -1 } },
+                { $skip: skip },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "vi_tri_dc_tu",
+                        foreignField: "id_vitri", 
+                        as: "infoVTtu" 
+                    }
+                },
+                { $unwind: { path: "$infoVTtu", preserveNullAndEmptyArrays: true } },
+    
+                {
+                    $lookup: {
+                        from: "QLTS_ViTri_ts",
+                        localField: "dc_vitri_tsnhan",
+                        foreignField: "id_vitri",
+                        as: "infoVTden"
+                    }
+                },
+                { $unwind: { path: "$infoVTden", preserveNullAndEmptyArrays: true } },
+                // {
+                //   $lookup: {
+                //     from: 'Users',
+                //     localField: 'id_cty_dang_sd',
+                //     foreignField: 'idQLC',
+                //     as: 'users'
+                //   }
+                // },
+                // { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
+          
+                // {
+                //   $lookup: {
+                //     from: 'Users',
+                //     localField: 'id_cty_nhan',
+                //     foreignField: 'idQLC',
+                //     as: 'users_id_nv_nhan'
+                //   }
+                // },
+                // { $unwind: { path: "$users_id_nv_nhan", preserveNullAndEmptyArrays: true } },
+          
+                {
+                  $lookup: {
+                    from: 'Users',
+                    localField: 'id_ng_thuchien',
+                    foreignField: 'idQLC',
+                    as: 'users_id_ng_thuchien'
+                  }
+                },
+                { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
+                {
+                  $project: {
+                    dc_ngay: 1,
+                    dc_id: 1,
+                    dc_date_delete: 1,
+                    dc_trangthai: 1,
+                    id_cty_dang_sd: '$users.userName',
+                    id_cty_nhan: '$users_id_nv_nhan.userName',
+                    dc_lydo: 1,
+                    id_ng_thuchien: '$users_id_ng_thuchien.userName',
+                    dc_vi_tri_tu: "$infoVTtu.vi_tri",
+                    dc_vi_tri_den: "$infoVTden.vi_tri",
+                  }
+                }
+              ]);
+              for (let i = 0; i < data.length; i++) {
+                data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+                data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
+              }
+          
+              return fnc.success(res, 'get data success', { data })
+        }
+    } catch (error) {
+         console.error(error)
+        return fnc.setError(res, error)
+    }
+};

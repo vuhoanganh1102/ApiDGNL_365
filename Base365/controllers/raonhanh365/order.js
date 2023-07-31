@@ -112,7 +112,7 @@ exports.bidding = async (req, res, next) => {
         let _id = await functions.getMaxID(Bidding) + 1;
         let status = 0;
         let userIntro = req.body.userIntro || null;
-        let userName = req.user.data.userName;
+        let userName = req.body.userName;
         if (await functions.checkNumber(price) === false) {
             return functions.setError(res, 'invalid price', 400)
         }

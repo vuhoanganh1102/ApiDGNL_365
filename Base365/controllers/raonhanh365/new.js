@@ -933,7 +933,7 @@ exports.searchNew = async (req, res, next) => {
                 userID: 1,
                 img: 1,
                 updateTime: 1,
-                user: { _id: 1, idRaoNhanh365: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
+                user: { _id: 1, idRaoNhanh365: 1, isOnline: 1, phone: 1, userName: 1, avatarUser: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
                 district: 1,
                 ward: 1,
                 city: 1,
@@ -1201,7 +1201,7 @@ exports.createBuyNew = async (req, res) => {
         let img = [];
 
         //  lấy giá trị id lớn nhất rồi cộng thêm 1 tạo ra id mới
-        let _id = (await functions.getMaxID(New)) + 1;
+        var _id = (await functions.getMaxID(New)) + 1;
 
         // lấy thời gian hiện tại
         let createTime = new Date();
@@ -1223,7 +1223,7 @@ exports.createBuyNew = async (req, res) => {
             tgian_kt && tgian_bd && noidung_nhs
         ) {
             // tạolink title từ title người dùng nhập
-            let linkTitle = raoNhanh.createLinkTilte(title);
+            var linkTitle = raoNhanh.createLinkTilte(title);
 
             //kiểm tra title đã được người dùng tạo chưa
             let checktitle = await New.findOne({ userID, linkTitle });
@@ -1339,7 +1339,7 @@ exports.createBuyNew = async (req, res) => {
                 if (new_file_chidan === false) return functions.setError(res, 'upload file failed', 400)
             }
             //lưu dữ liệu vào DB
-            const postNew = new New({
+            var postNew = new New({
                 _id,
                 userID,
                 title, linkTitle, name, city, money, district, ward, apartmentNumber, description,
@@ -1359,7 +1359,7 @@ exports.createBuyNew = async (req, res) => {
         } else {
             return functions.setError(res, "missing data", 404);
         }
-        return functions.success(res, "post new success");
+        return functions.success(res, "post new success", { link: `https://raonhanh365.vn/${linkTitle}-ct${_id}.html` });
     } catch (error) {
         console.error(error);
         return functions.setError(res, error);
@@ -2817,16 +2817,15 @@ exports.listJobWithPin = async (req, res, next) => {
 exports.addDiscount = async (req, res, next) => {
     try {
         let request = req.body;
+        let user_id = req.user.data.idRaoNhanh365;
         if (request.new_id && request.new_id.length) {
             for (let i = 0; i < request.new_id.length; i++) {
-                let user_id = request.user_id;
                 let loai_khuyenmai = request.loai_khuyenmai;
                 let giatri_khuyenmai = request.giatri_khuyenmai;
                 let ngay_bat_dau = request.ngay_bat_dau;
                 let ngay_ket_thuc = request.ngay_ket_thuc;
                 let new_id = request.new_id[i];
                 if (
-                    user_id &&
                     loai_khuyenmai &&
                     ngay_bat_dau &&
                     ngay_ket_thuc &&
@@ -3327,6 +3326,96 @@ exports.getDataNew = async (req, res, next) => {
         } else {
             return functions.success(res, 'get data success', { data: [] })
         }
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// lấy tin theo danh mục
+exports.getNewForDiscount = async (req, res, next) => {
+    try {
+        let userID = req.user.data.idRaoNhanh365;
+        let cateID = req.query.cateID;
+        let data = await New.find({ cateID, userID }, {
+            electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
+            noiThatNgoaiThat: 0, bidding: 0
+        })
+        if (data.length !== 0) {
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].img) {
+                    data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, 2)
+                }
+            }
+        }
+        return functions.success(res, 'get data success', { data })
+    } catch (error) {
+        console.log("🚀 ~ file: new.js:3342 ~ exports.getNewForDiscount= ~ error:", error)
+        return functions.setError(res, error)
+    }
+}
+
+// lấy tin đã áp dụng khuyến mãi
+exports.tinApDungKhuyenMai = async (req, res, next) => {
+    try {
+        let userID = req.user.data.idRaoNhanh365;
+        let cateID = req.body.cateID;
+        let type = Number(req.body.type);
+        let ten = req.body.ten;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+        let conditions = {};
+        if (cateID) conditions.cateID = Number(cateID);
+        if (type) conditions.type = Number(type);
+        if (ten) {
+            conditions.title = new RegExp(ten, 'i')
+        }
+        conditions.userID = userID;
+        conditions.buySell = 2;
+        let data = await New.find(conditions, {
+            electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
+            noiThatNgoaiThat: 0, bidding: 0
+        }).skip(skip).limit(limit)
+        if (data.length !== 0) {
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].img) {
+                    data[i].img = await raoNhanh.getLinkFile(data[i].img, data[i].cateID, 2)
+                }
+            }
+        }
+        return functions.success(res, 'get data success', { data })
+    } catch (err) {
+        return functions.setError(res, err)
+    }
+}
+
+// chỉnh sửa tin khuyến mãi
+exports.updateNewPromotion = async (req, res, next) => {
+    try {
+        let id = req.body.id;
+        let loaikhuyenmai = req.body.loaikhuyenmai;
+        let giatri = req.body.giatri;
+        let ngay_bat_dau = req.body.ngay_bat_dau;
+        let ngay_ket_thuc = req.body.ngay_ket_thuc;
+        if (Array.isArray(loaikhuyenmai) && Array.isArray(giatri) && Array.isArray(id)
+            && loaikhuyenmai.length === giatri.length && giatri.length === id.length) {
+            for (let i = 0; i < id.length; i++) {
+                let checkNew = await New.findById(id[i]);
+                    if (checkNew) {
+                        await New.findByIdAndUpdate(id[i], {
+                            timePromotionStart: ngay_bat_dau[i],
+                            timePromotionEnd: ngay_ket_thuc[i],
+                            "infoSell.promotionType": loaikhuyenmai[i],
+                            "infoSell.promotionValue": giatri[i],
+                        });
+                    } else {
+                        return functions.setError(res, "Không tìm thấy tin", 400);
+                    }
+            }
+            return functions.success(res,'Cập nhật khuyến mãi thành công')
+        }
+        return functions.setError(res, 'Nhập đúng kiểu dữ liệu')
     } catch (error) {
         return functions.setError(res, error)
     }
