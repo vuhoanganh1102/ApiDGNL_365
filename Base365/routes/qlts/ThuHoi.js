@@ -7,18 +7,19 @@ const fnc = require('../../services/QLTS/qltsService')
 
 router.post('/create',functions.checkToken,fnc.checkRole("CP_TH",2) ,formData.parse(),controller.create)
 
-
 router.post('/edit',functions.checkToken,fnc.checkRole("CP_TH",2) ,formData.parse(),controller.edit)
-
 
 router.post('/delete',functions.checkToken,fnc.checkRole("CP_TH",3) ,formData.parse(),controller.delete)
 
-
 router.post('/updateStatus',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.updateStatus)
 
+router.post('/acceptRecallCapital',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.acceptRecallCapital)
 
 router.post('/getListDetail',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getListDetail)
-router.post('/listDetailRecall',functions.checkToken,fnc.checkRole("CP_TH",2) ,formData.parse(),controller.listDetailRecall)
-router.post('/refuserRecallCapital',functions.checkToken,fnc.checkRole("CP_TH",2) ,formData.parse(),controller.refuserRecallCapital)
+
+router.post('/refuserRecall',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.refuserRecall)
+
+router.post('/refuserRecallCapital',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.refuserRecallCapital)
+
 
 module.exports = router
