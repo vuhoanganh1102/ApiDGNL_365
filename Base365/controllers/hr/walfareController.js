@@ -43,7 +43,7 @@ exports.addAchievement = async (req, res, next) => {
             if (achievementId && content && createdBy && achievementAt && achievementType && appellation && achievementLevel) {
                 await AchievementFors.create({
                     id,
-                    comId, achievementId, content, createdBy, achievementType, appellation, achievementLevel
+                    comId, achievementId, content, createdBy, achievementType, appellation, achievementLevel,achievementAt
                     , createdAt, type, listUser
                 })
             } else {
@@ -106,7 +106,7 @@ exports.addAchievementGroup = async (req, res, next) => {
             await AchievementFors.create({
                 id, comId, achievementId, content, createdBy,
                 achievementType, appellation, achievementLevel
-                , createdAt, type, depId, depName
+                , createdAt, type, depId, depName,achievementAt
             })
         } else {
             return functions.setError(res, 'missing data', 400)
@@ -173,7 +173,7 @@ exports.updateAchievement = async (req, res, next) => {
                 return functions.setError(res, 'Không tìm thấy phòng ban', 404)
             }
             listUpdate = {
-                achievementId, content, createdBy, achievementType, appellation, achievementLevel
+                achievementId, content, createdBy, achievementType, appellation, achievementLevel,achievementAt
                 , updatedAt, depId, depName, listUser: []
             }
             if (achievementId && content && createdBy && achievementAt && achievementType && appellation && achievementLevel) {
@@ -194,7 +194,7 @@ exports.updateAchievement = async (req, res, next) => {
                 }
             }
             let listUpdate = {
-                achievementId, content, createdBy, achievementType, appellation, achievementLevel
+                achievementId, content, createdBy, achievementType, appellation, achievementLevel,achievementAt
                 , updatedAt, listUser
             }
             if (achievementId && content && createdBy && achievementAt && achievementType && appellation && achievementLevel) {

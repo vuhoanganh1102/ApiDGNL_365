@@ -3104,19 +3104,10 @@ exports.napTien = async (req, res, next) => {
 exports.getDataBidding = async (req, res, next) => {
     try {
         let id = Number(req.body.id);
-        let sapxep = Number(req.body.type);
+        let type = Number(req.body.type) || 1;
         let data = await Bidding.aggregate([
             { $match: { newId: id } },
-            { $sort:{}},
-            {
-                $lookup: {
-                    from: 'RN365_News',
-                    localField: 'newId',
-                    foreignField: '_id',
-                    as: 'new'
-                }
-            },
-            { $unwind: '$new' },
+            { $sort: { price: type } },
             {
                 $lookup: {
                     from: 'Users',
@@ -3157,9 +3148,12 @@ exports.getDataBidding = async (req, res, next) => {
                     thongtinthau: '$new.bidding'
                 }
             }
-
         ])
-
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].nguoidauthau.avatarUser) {
+                data[i].nguoidauthau.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].nguoidauthau.avatarUser)
+            }
+        }
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.error(error)
@@ -3422,6 +3416,11 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
         }
         conditions.userID = userID;
         conditions.buySell = 2;
+        conditions.cateID = {
+                 $ne: 120 ,  $ne: 121 ,  $ne: 119 ,
+                 $ne: 11 ,  $ne: 12 ,  $ne: 26 ,
+                 $ne: 27 ,  $ne: 29 ,  $ne: 33 ,  $ne: 34 
+        }
         let data = await New.find(conditions, {
             electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
             noiThatNgoaiThat: 0, bidding: 0
