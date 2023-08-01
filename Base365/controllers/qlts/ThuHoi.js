@@ -10,7 +10,7 @@ const dangSd = require('../../models/QuanLyTaiSan/TaiSanDangSuDung')
 
 exports.create = async (req, res) => {
     try {
-        const thuhoi_id = req.user.data.com_id
+        const id_cty = req.user.data.com_id
         const thuhoi_ng_tao = req.user.data.idQLC
         const type_quyen = req.body.type_quyen
         const id_ng_thuhoi = req.body.id_ng_thuhoi
@@ -67,7 +67,7 @@ exports.create = async (req, res) => {
                         xoa_thuhoi: 0,
                     })
                     await thuHoiNhanVien.save()
-                    data.thuHoiNhanVien = thuHoiNhanVien
+                    data.thuHoiNhanVien = thuHoiNhanVien 
                     let updateThongBao = new thongBao({
                         id_tb: Number(maxThongBao.id_tb) + 1 || 1,
                         id_ts: updated_ds_thuhoi[0].ts_id,
@@ -154,7 +154,7 @@ exports.updateStatus = async (req, res) => {
 
         let infoCP = await ThuHoi.findOne(listConditions)
 
-        if (infoCP.thuhoi_taisan.ds_thuhoi[0].ts_id) {
+        if (infoCP) {
             let updateQuantity = await TaiSan.findOne({ ts_id: infoCP.thuhoi_taisan.ds_thuhoi[0].ts_id }).lean()
             if (!updateQuantity) {
                 return fnc.setError(res, " khong tim thay tai san ")
@@ -208,13 +208,14 @@ exports.updateStatus = async (req, res) => {
 
 
             }
+            await ThuHoi.findOneAndUpdate(listConditions, {
+                thuhoi_trangthai: 1,
+            })
+            return fnc.success(res, "cập nhật thành công")
         }
-        await ThuHoi.findOneAndUpdate(listConditions, {
-            thuhoi_trangthai: 1,
-        })
-        return fnc.success(res, "cập nhật thành công")
-        // }
-        // return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+  
+        
+        return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
     } catch (e) {
         return fnc.setError(res, e.message)
     }
@@ -237,6 +238,7 @@ exports.getListDetail = async (req, res) => {
         let listConditions = {};
         //    if(type_quyen != 0){
         listConditions.id_cty = id_cty
+        listConditions.xoa_thuhoi = 0
         // if(id_ng_dc_thuhoi) listConditions.id_ng_dc_thuhoi = id_ng_dc_thuhoi
         // if(id_pb_thuhoi) listConditions.id_pb_thuhoi = id_pb_thuhoi
         // if(thuhoi_id) listConditions.thuhoi_id = thuhoi_id
@@ -252,6 +254,9 @@ exports.getListDetail = async (req, res) => {
 
         data = await ThuHoi.aggregate([
             { $match: listConditions },
+            { $skip : skip},
+            { $limit : limit},
+            { $sort: { thuhoi_id: -1 } }, 
             {
                 $lookup: {
                     from: "QLTS_Tai_San",
@@ -268,35 +273,67 @@ exports.getListDetail = async (req, res) => {
                     from: "Users",
                     localField: "thuhoi_ng_tao",
                     foreignField: "idQLC",
-                    as: "info"
+                    pipeline: [
+                        { $match: {$and : [
+                        { "type" : {$ne : 1 }},
+                        {"idQLC":{$ne : 0}},
+                        {"idQLC":{$ne : 1}}
+                        ]},
+                        }
+                    ],
+                     as : "info"
                 }
             },
             { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
 
-            // {$unwind: "$info"},
             {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_dc_thuhoi",
                     foreignField: "idQLC",
-                    as: "infoNguoiDuocTH"
+                    pipeline: [
+                        { $match: {$and : [
+                        { "type" : {$ne : 1 }},
+                        {"idQLC":{$ne : 0}},
+                        {"idQLC":{$ne : 1}}
+                        ]},
+                        }
+                    ],
+                     as : "infoNguoiDuocTH"
                 }
             },
             { $unwind: { path: "$infoNguoiDuocTH", preserveNullAndEmptyArrays: true } },
-
-            // {$unwind: "$infoNguoiDuocTH"},
-            // {$lookup: {
-            //     from: "QLC_Deparments",
-            //     localField: "id_pb_thuhoi",
-            //     foreignField : "_id",
-            //     as : "infoPhongBanTH"
-            // }},
-            // {$unwind: "$infoPhongBanTH"},
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_ng_thuhoi",
+                    foreignField: "idQLC",
+                    pipeline: [
+                        { $match: {$and : [
+                        { "type" : {$ne : 1 }},
+                        {"idQLC":{$ne : 0}},
+                        {"idQLC":{$ne : 1}}
+                        ]},
+                        }
+                    ],
+                     as : "infoNguoiTH"
+                }
+            },
+            { $unwind: { path: "$infoNguoiTH", preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: "QLC_Deparments",
+                    localField: "id_pb_thuhoi",
+                    foreignField: "dep_id",
+                    as: "infoPhongBanTH"
+                }
+            },
+            { $unwind: { path: "$infoPhongBanTH", preserveNullAndEmptyArrays: true } },
             {
                 $project: {
                     "thuhoi_id": "$thuhoi_id",
-                    "thuhoi_taisan": "$thuhoi_taisan",
                     "thuhoi_ngay": "$thuhoi_ngay",
+                    "thuhoi_date_create": "$thuhoi_date_create",
                     "id_ng_dc_thuhoi": "$id_ng_dc_thuhoi",
                     "id_pb_thuhoi": "$id_pb_thuhoi",
                     "thuhoi_hoanthanh": "$thuhoi_hoanthanh",
@@ -305,20 +342,25 @@ exports.getListDetail = async (req, res) => {
                     "thuhoi_trangthai": "$thuhoi_trangthai",
                     "thuhoi__lydo": "$thuhoi__lydo",
                     "ten_nguoi_tao": "$info.userName",
-                    "ten_nguoi_TH": "$infoNguoiDuocTH.userName",
+                    "ten_nguoi_duoc_TH": "$infoNguoiDuocTH.userName",
+                    "ten_nguoi_TH": "$infoNguoiTH.userName",
                     "ten_tai_san": "$infoTS.ts_ten",
                     "Ma_tai_san": "$infoTS.ts_id",
                     "So_luong_cap_phat": "$thuhoi_taisan.ds_thuhoi.sl_th",
-                    // "ten_phong_ban" : "$infoPhongBanTH.dep_name",
+                    "ten_phong_ban" : "$infoPhongBanTH.dep_name",
                 }
             },
             { $unwind: { path: "$So_luong_cap_phat", preserveNullAndEmptyArrays: true } },
 
             // {$unwind: "$So_luong_cap_phat"},
 
-        ]).skip(skip).limit(limit)
+        ])
         let count = await ThuHoi.find(listConditions).count()
         if (data) {
+            for (let i = 0; i < data.length; i++) {
+                data[i].thuhoi_ngay = new Date(data[i].thuhoi_ngay * 1000);
+                data[i].thuhoi_date_create = new Date(data[i].thuhoi_date_create * 1000);
+              } 
             return fnc.success(res, " lấy thành công ", { data, count })
         }
         return fnc.setError(res, "không tìm thấy đối tượng", 510);
@@ -428,99 +470,99 @@ exports.delete = async (req, res) => {
     }
 }
 
-exports.listDetailRecall = async (req, res) => {
-    try {
-        const id_cty = req.user.data.com_id
-        const thuhoi_id = Number(req.body.thuhoi_id)
-        const id_ng_dc_thuhoi = Number(req.body.id_ng_dc_thuhoi)
-        const id_pb_thuhoi = Number(req.body.id_pb_thuhoi)
-        let filter = {}
-        if (thuhoi_id) filter.thuhoi_id = thuhoi_id
-        if (id_ng_dc_thuhoi) filter.id_ng_dc_thuhoi = id_ng_dc_thuhoi
-        if (id_pb_thuhoi) filter.id_pb_thuhoi = id_pb_thuhoi
-        let data = await ThuHoi.aggregate([
-            { $match: filter },
-            { $sort: { thuhoi_id: -1 } },
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "id_ng_thuhoi",
-                    foreignField: "idQLC",
-                    as: "info"
-                }
-            },
-            { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
-            {
-                $lookup: {
-                    from: "QLTS_Tai_San",
-                    localField: "thuhoi_taisan.ds_thuhoi.ts_id",
-                    foreignField: "ts_id",
-                    as: "infoTS"
-                }
-            },
-            { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
+// exports.listDetailRecall = async (req, res) => {
+//     try {
+//         const id_cty = req.user.data.com_id
+//         const thuhoi_id = Number(req.body.thuhoi_id)
+//         const id_ng_dc_thuhoi = Number(req.body.id_ng_dc_thuhoi)
+//         const id_pb_thuhoi = Number(req.body.id_pb_thuhoi)
+//         let filter = {}
+//         if (thuhoi_id) filter.thuhoi_id = thuhoi_id
+//         if (id_ng_dc_thuhoi) filter.id_ng_dc_thuhoi = id_ng_dc_thuhoi
+//         if (id_pb_thuhoi) filter.id_pb_thuhoi = id_pb_thuhoi
+//         let data = await ThuHoi.aggregate([
+//             { $match: filter },
+//             { $sort: { thuhoi_id: -1 } },
+//             {
+//                 $lookup: {
+//                     from: "Users",
+//                     localField: "id_ng_thuhoi",
+//                     foreignField: "idQLC",
+//                     as: "info"
+//                 }
+//             },
+//             { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
+//             {
+//                 $lookup: {
+//                     from: "QLTS_Tai_San",
+//                     localField: "thuhoi_taisan.ds_thuhoi.ts_id",
+//                     foreignField: "ts_id",
+//                     as: "infoTS"
+//                 }
+//             },
+//             { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
 
-            {
-                $lookup: {
-                    from: "Users",
-                    localField: "id_ng_dc_thuhoi",
-                    foreignField: "idQLC",
-                    as: "infoNguoiDuocCP"
-                }
-            },
-            { $unwind: { path: "$infoNguoiDuocCP", preserveNullAndEmptyArrays: true } },
-            {
-                $lookup: {
-                    from: "QLC_Deparments",
-                    localField: "id_pb_thuhoi",
-                    foreignField: "dep_id",
-                    as: "infoPhongBan"
-                }
-            },
-            { $unwind: { path: "$infoPhongBan", preserveNullAndEmptyArrays: true } },
+//             {
+//                 $lookup: {
+//                     from: "Users",
+//                     localField: "id_ng_dc_thuhoi",
+//                     foreignField: "idQLC",
+//                     as: "infoNguoiDuocCP"
+//                 }
+//             },
+//             { $unwind: { path: "$infoNguoiDuocCP", preserveNullAndEmptyArrays: true } },
+//             {
+//                 $lookup: {
+//                     from: "QLC_Deparments",
+//                     localField: "id_pb_thuhoi",
+//                     foreignField: "dep_id",
+//                     as: "infoPhongBan"
+//                 }
+//             },
+//             { $unwind: { path: "$infoPhongBan", preserveNullAndEmptyArrays: true } },
 
-            {
-                $project: {
-                    "thuhoi_id": "$thuhoi_id",
-                    "id_cty": "$id_cty",
-                    "thuhoi_taisan": "$thuhoi_taisan",
-                    "thuhoi_trangthai": "$thuhoi_trangthai",
-                    "id_ng_thuhoi": "$id_ng_thuhoi",
-                    "th_dai_dien_pb": "$th_dai_dien_pb",
-                    "id_ng_dc_thuhoi": "$id_ng_dc_thuhoi",
-                    "thuhoi_id_ng_tao": "$thuhoi_id_ng_tao",
-                    "thuhoi_ngay": "$thuhoi_ngay",
-                    "thuhoi_hoanthanh": "$thuhoi_hoanthanh",
-                    "thuhoi__lydo": "$thuhoi__lydo",
-                    "ten_ng_thuhoi": "$info.userName",
-                    "ten_nguoi_duoc_th": "$infoNguoiDuocCP.userName",
-                    "dep_id": "$infoNguoiDuocCP.inForPerson.employee.dep_id",
-                    "position_id": "$infoNguoiDuocCP.inForPerson.employee.position_id",
-                    "ten_tai_san": "$infoTS.ts_ten",
-                    "Ma_tai_san": "$infoTS.ts_id",
-                    "So_luong_th": "$thuhoi_taisan.ds_thuhoi.sl_th",
-                    "id_pb_thuhoi": "$id_pb_thuhoi",
-                    "dep_name": "$infoPhongBan.dep_name",
-                    "manager_id": "$infoPhongBan.manager_id",
-                }
-            },
-            { $unwind: { path: "$So_luong_th", preserveNullAndEmptyArrays: true } },
+//             {
+//                 $project: {
+//                     "thuhoi_id": "$thuhoi_id",
+//                     "id_cty": "$id_cty",
+//                     "thuhoi_taisan": "$thuhoi_taisan",
+//                     "thuhoi_trangthai": "$thuhoi_trangthai",
+//                     "id_ng_thuhoi": "$id_ng_thuhoi",
+//                     "th_dai_dien_pb": "$th_dai_dien_pb",
+//                     "id_ng_dc_thuhoi": "$id_ng_dc_thuhoi",
+//                     "thuhoi_id_ng_tao": "$thuhoi_id_ng_tao",
+//                     "thuhoi_ngay": "$thuhoi_ngay",
+//                     "thuhoi_hoanthanh": "$thuhoi_hoanthanh",
+//                     "thuhoi__lydo": "$thuhoi__lydo",
+//                     "ten_ng_thuhoi": "$info.userName",
+//                     "ten_nguoi_duoc_th": "$infoNguoiDuocCP.userName",
+//                     "dep_id": "$infoNguoiDuocCP.inForPerson.employee.dep_id",
+//                     "position_id": "$infoNguoiDuocCP.inForPerson.employee.position_id",
+//                     "ten_tai_san": "$infoTS.ts_ten",
+//                     "Ma_tai_san": "$infoTS.ts_id",
+//                     "So_luong_th": "$thuhoi_taisan.ds_thuhoi.sl_th",
+//                     "id_pb_thuhoi": "$id_pb_thuhoi",
+//                     "dep_name": "$infoPhongBan.dep_name",
+//                     "manager_id": "$infoPhongBan.manager_id",
+//                 }
+//             },
+//             { $unwind: { path: "$So_luong_th", preserveNullAndEmptyArrays: true } },
 
 
-        ])
+//         ])
 
-        if (data) {
-            for (let i = 0; i < data.length; i++) {
-                let depName = await dep.findOne({ com_id: id_cty, dep_id: data[i].dep_id })
-                data[i].depName = depName
-            }
-            return fnc.success(res, " lấy thành công ", { data })
-        }
-        return fnc.setError(res, "không tìm thấy đối tượng", 510);
-    } catch (e) {
-        return fnc.setError(res, e.message)
-    }
-}
+//         if (data) {
+//             for (let i = 0; i < data.length; i++) {
+//                 let depName = await dep.findOne({ com_id: id_cty, dep_id: data[i].dep_id })
+//                 data[i].depName = depName
+//             }
+//             return fnc.success(res, " lấy thành công ", { data })
+//         }
+//         return fnc.setError(res, "không tìm thấy đối tượng", 510);
+//     } catch (e) {
+//         return fnc.setError(res, e.message)
+//     }
+// }
 //Từ chối bàn giao tài sản thu hồi
 exports.refuserHandOver = async (req, res) => {
     try {
@@ -547,16 +589,20 @@ exports.refuserRecall = async (req, res) => {
         const id_cty = req.user.data.com_id
         const thuhoi_id = req.body.thuhoi_id
         const content = req.body.content
-        const data = await ThuHoi.findOne({ thuhoi_id: thuhoi_id, id_cty: id_cty });
-        if (!data) {
-            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
-        } else {
-            await ThuHoi.updateOne({ thuhoi_id: thuhoi_id, id_cty: id_cty }, {
-                thuhoi_trangthai: 2,
-                th_ly_do_tu_choi_ban_giao: content,
-            })
+        if(thuhoi_id){
+            const data = await ThuHoi.findOne({ thuhoi_id: thuhoi_id, id_cty: id_cty });
+            if (!data) {
+                return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+            } else {
+                await ThuHoi.updateOne({ thuhoi_id: thuhoi_id, id_cty: id_cty }, {
+                    thuhoi_trangthai: 2,
+                    th_ly_do_tu_choi_ban_giao: content,
+                })
+            }
+            return fnc.success(res, "cập nhật thành công")
         }
-        return fnc.success(res, "cập nhật thành công")
+        return fnc.setError(res, "khong tim thay doi tuong")
+        
     } catch (e) {
         return fnc.setError(res, e.message)
     }
@@ -571,6 +617,7 @@ exports.refuserRecallCapital = async (req, res) => {
         if (!data) {
             return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
         } else {
+            console.log(data)
             let id_nv = data.id_ng_dc_thuhoi
             let id_pb = data.id_pb_thuhoi
             let sl_th = data.thuhoi_taisan.ds_thuhoi[0].sl_th
@@ -597,6 +644,80 @@ exports.refuserRecallCapital = async (req, res) => {
             })
         }
         return fnc.success(res, "cập nhật thành công")
+
+    } catch (e) {
+        return fnc.setError(res, e.message)
+    }
+}
+//tiep nhan ban giao thu hoi tai san
+exports.acceptRecallCapital = async (req, res) => {
+    try {
+        const id_cty = req.user.data.com_id
+        const thuhoi_id = req.body.thuhoi_id
+        const type_thuhoi = req.body.type_thuhoi
+       if(thuhoi_id){
+        const data = await ThuHoi.findOne({ thuhoi_id: thuhoi_id, id_cty: id_cty });
+        if (!data) {
+            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+        } else {
+            if(type_thuhoi == 0){
+                let id_nv = data.id_ng_dc_thuhoi
+                let id_pb = data.id_pb_thuhoi
+                let sl_th = data.thuhoi_taisan.ds_thuhoi[0].sl_th
+                let count = data.thuhoi_taisan.ds_thuhoi[0].ts_id
+                
+                for (let t = 0; t < count.length; t++) {
+                    if (id_nv != 0) {
+                        let sl_dang_sd = await dangSd.findOne({com_id_sd : id_cty, id_nv_sd : id_nv, id_ts_sd: count })
+                        let sl_da_tru = sl_dang_sd.sl_dang_sd - sl_th
+                        await dangSd.updateOne({ id_ts_sd: count, com_id_sd: id_cty ,id_nv_sd : id_nv}, {
+                            sl_dang_sd: sl_da_tru,
+                        })
+                    }
+                    if (id_pb != 0) {
+                        let sl_dang_sd = await dangSd.findOne({com_id_sd : id_cty, id_pb_sd : id_pb, id_ts_sd: count })
+                        let sl_da_tru = sl_dang_sd.sl_dang_sd - sl_th
+                        await dangSd.updateOne({ id_ts_sd: count, com_id_sd: id_cty ,id_pb_sd : id_pb}, {
+                            sl_dang_sd: sl_da_tru,
+                        })
+                    }
+                }
+                await ThuHoi.updateOne({ thuhoi_id: thuhoi_id, id_cty: id_cty }, {
+                    thuhoi_trangthai: 3,
+                })
+                return fnc.success(res, "cập nhật thành công")
+            }
+            if(type_thuhoi == 1){
+                let id_nv = data.id_ng_dc_thuhoi
+                let id_pb = data.id_pb_thuhoi
+                let sl_th = data.thuhoi_taisan.ds_thuhoi[0].sl_th
+                let count = data.thuhoi_taisan.ds_thuhoi[0].ts_id
+                
+                for (let t = 0; t < count.length; t++) {
+                    if (id_nv != 0) {
+                        let sl_dang_sd = await dangSd.findOne({com_id_sd : id_cty, id_nv_sd : id_nv, id_ts_sd: count(t) })
+                        let sl_da_tru = sl_dang_sd.sl_dang_sd - sl_th
+                        await dangSd.updateOne({ id_ts_sd: count(t), com_id_sd: id_cty ,id_nv_sd : id_nv}, {
+                            sl_dang_sd: sl_da_tru,
+                        })
+                    }
+                    if (id_pb != 0) {
+                        let sl_dang_sd = await dangSd.findOne({com_id_sd : id_cty, id_pb_sd : id_pb, id_ts_sd: count(t) })
+                        let sl_da_tru = sl_dang_sd.sl_dang_sd - sl_th
+                        await dangSd.updateOne({ id_ts_sd: count(t), com_id_sd: id_cty ,id_pb_sd : id_pb}, {
+                            sl_dang_sd: sl_da_tru,
+                        })
+                    }
+                }
+                await ThuHoi.updateOne({ thuhoi_id: thuhoi_id, id_cty: id_cty }, {
+                    thuhoi_trangthai: 3,
+                })
+                return fnc.success(res, "cập nhật thành công")
+            }
+        }
+        // return fnc.success(res, "cập nhật thành công")
+       }
+       return fnc.setError(res, "vui lòng nhập thuhoi_id")
 
     } catch (e) {
         return fnc.setError(res, e.message)
