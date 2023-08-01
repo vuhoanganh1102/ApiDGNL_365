@@ -899,16 +899,18 @@ exports.createCandidate = async(req, res, next) => {
 
         // tao
         let candidate = new Candidate(fields);
-        await candidate.save();
+        let newcandidate = await candidate.save();
         if(!candidate){
             return functions.setError(res, "Create candidate fail!", 506);
         }
 
         //them ky nang moi
-        let listSkill = req.body.listSkill;
+        
+        let listSkill = JSON.parse(req.body.listSkill);
+        let listSkillInsert = [];
         if(listSkill){
             for(let i=0; i<listSkill.length; i++){
-                const obj = JSON.parse(listSkill[i]);
+                const obj = listSkill[i];
                 let dataSkill = {
                     canId: newIdCandi,
                     skillName: obj.skillName,
@@ -921,7 +923,8 @@ exports.createCandidate = async(req, res, next) => {
                 } else newIdSkill = 1;
                 dataSkill.id = newIdSkill;
                 let skill = new AnotherSkill(dataSkill);
-                await skill.save();
+                let newskill = await skill.save();
+                listSkillInsert.push(skill);
                 if(!skill){
                     return functions.setError(res, "Create skill fail!", 506);
                 }
@@ -930,6 +933,7 @@ exports.createCandidate = async(req, res, next) => {
         
 
         //them thong baos
+        let listNotify = []
         let dataNotify = null;
         if(infoLogin.type==1){
             if(candidate.userHiring) {
@@ -958,12 +962,14 @@ exports.createCandidate = async(req, res, next) => {
             } else newIdNotify = 1;
             dataNotify.id = newIdNotify;
             let notify = new Notify(dataNotify);
-            await notify.save();
+            let newnotify = await notify.save();
+            listNotify.push(notify);
             if(!notify){
                 return functions.setError(res, "Create notify fail!", 506);
             }
         }
-        return functions.success(res, 'Create candidate success!');
+        return functions.success(res, 'Create candidate success!',
+            {candidate:candidate,listSkillInsert:listSkillInsert,listNotify:listNotify});
     } catch (e) {
         return functions.setError(res, e.message);
     }
@@ -1419,7 +1425,34 @@ exports.createContactJob = async(req, res, next) => {
         await CancelJob.deleteOne({canId: canId});
         await ScheduleInterview.deleteOne({canId: canId});
 
-
+        // cập nhật skill 
+        if(req.body.listSkill){
+            let listSkill = JSON.parse(req.body.listSkill);
+            for(let i=0; i<listSkill.length; i++) {
+                if(listSkill[i].id){
+                    await AnotherSkill.updateOne({canId:canId,id:listSkill[i].id},{$set:{
+                        skillName:listSkill[i].skillName,
+                        skillVote:listSkill[i].skillVote
+                    }});
+                }
+                else{
+                    const obj = listSkill[i];
+                    let dataSkill = {
+                        canId: canId,
+                        skillName: obj.skillName,
+                        skillVote: obj.skillVote
+                    };
+                    const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                    let newIdSkill;
+                    if (maxIdSkill) {
+                        newIdSkill = Number(maxIdSkill.id) + 1;
+                    } else newIdSkill = 1;
+                    dataSkill.id = newIdSkill;
+                    let skill = new AnotherSkill(dataSkill);
+                    await skill.save();
+                }
+            };
+        }
         return functions.success(res, 'Create contactJob success!');
     } catch (e) {
         return functions.setError(res, e.message);
@@ -1460,6 +1493,34 @@ exports.createCancelJob = async(req, res, next) => {
             functions.setError(res, `Update info candidate fail`, 506); 
         }
 
+        // cập nhật skill 
+        if(req.body.listSkill){
+            let listSkill = JSON.parse(req.body.listSkill);
+            for(let i=0; i<listSkill.length; i++) {
+                if(listSkill[i].id){
+                    await AnotherSkill.updateOne({canId:canId,id:listSkill[i].id},{$set:{
+                        skillName:listSkill[i].skillName,
+                        skillVote:listSkill[i].skillVote
+                    }});
+                }
+                else{
+                    const obj = listSkill[i];
+                    let dataSkill = {
+                        canId: canId,
+                        skillName: obj.skillName,
+                        skillVote: obj.skillVote
+                    };
+                    const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                    let newIdSkill;
+                    if (maxIdSkill) {
+                        newIdSkill = Number(maxIdSkill.id) + 1;
+                    } else newIdSkill = 1;
+                    dataSkill.id = newIdSkill;
+                    let skill = new AnotherSkill(dataSkill);
+                    await skill.save();
+                }
+            };
+        }
         //  Cập nhật giai đoạn
         await ScheduleInterview.findOneAndUpdate({canId: canId}, {isSwitch: 1});
 
@@ -1522,6 +1583,35 @@ exports.createFailJob = async(req, res, next) => {
 
         //  Cập nhật giai đoạn
         await ScheduleInterview.findOneAndUpdate({canId: canId}, {isSwitch: 1});
+
+        // cập nhật skill 
+        if(req.body.listSkill){
+            let listSkill = JSON.parse(req.body.listSkill);
+            for(let i=0; i<listSkill.length; i++) {
+                if(listSkill[i].id){
+                    await AnotherSkill.updateOne({canId:canId,id:listSkill[i].id},{$set:{
+                        skillName:listSkill[i].skillName,
+                        skillVote:listSkill[i].skillVote
+                    }});
+                }
+                else{
+                    const obj = listSkill[i];
+                    let dataSkill = {
+                        canId: canId,
+                        skillName: obj.skillName,
+                        skillVote: obj.skillVote
+                    };
+                    const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                    let newIdSkill;
+                    if (maxIdSkill) {
+                        newIdSkill = Number(maxIdSkill.id) + 1;
+                    } else newIdSkill = 1;
+                    dataSkill.id = newIdSkill;
+                    let skill = new AnotherSkill(dataSkill);
+                    await skill.save();
+                }
+            };
+        }
 
         return functions.success(res, 'Create failJob success!');
     } catch (e) {
@@ -1597,6 +1687,36 @@ exports.addCandidateProcessInterview = async(req, res, next) => {
         let infoRemind = {id: newIdRemind, type: 0, canId: canId, canName: can.name, comId: comId, userId: empInterview, time: interviewTime};
         let remind = new Remind(infoRemind);
         remind = await Remind.create(remind);
+
+         // cập nhật skill 
+        if(req.body.listSkill){
+            let listSkill = JSON.parse(req.body.listSkill);
+            for(let i=0; i<listSkill.length; i++) {
+                if(listSkill[i].id){
+                    await AnotherSkill.updateOne({canId:canId,id:listSkill[i].id},{$set:{
+                        skillName:listSkill[i].skillName,
+                        skillVote:listSkill[i].skillVote
+                    }});
+                }
+                else{
+                    const obj = listSkill[i];
+                    let dataSkill = {
+                        canId: canId,
+                        skillName: obj.skillName,
+                        skillVote: obj.skillVote
+                    };
+                    const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                    let newIdSkill;
+                    if (maxIdSkill) {
+                        newIdSkill = Number(maxIdSkill.id) + 1;
+                    } else newIdSkill = 1;
+                    dataSkill.id = newIdSkill;
+                    let skill = new AnotherSkill(dataSkill);
+                    await skill.save();
+                }
+            };
+        }
+
         if(!remind){
             functions.setError(res, `Create remind fail`, 505);    
         }
@@ -1673,6 +1793,35 @@ exports.addCandidateGetJob = async(req, res, next) => {
             functions.setError(res, `Create getJob fail!`, 507);
         }
         
+        // cập nhật skill 
+        if(req.body.listSkill){
+            let listSkill = JSON.parse(req.body.listSkill);
+            for(let i=0; i<listSkill.length; i++) {
+                if(listSkill[i].id){
+                    await AnotherSkill.updateOne({canId:canId,id:listSkill[i].id},{$set:{
+                        skillName:listSkill[i].skillName,
+                        skillVote:listSkill[i].skillVote
+                    }});
+                }
+                else{
+                    const obj = listSkill[i];
+                    let dataSkill = {
+                        canId: canId,
+                        skillName: obj.skillName,
+                        skillVote: obj.skillVote
+                    };
+                    const maxIdSkill = await AnotherSkill.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
+                    let newIdSkill;
+                    if (maxIdSkill) {
+                        newIdSkill = Number(maxIdSkill.id) + 1;
+                    } else newIdSkill = 1;
+                    dataSkill.id = newIdSkill;
+                    let skill = new AnotherSkill(dataSkill);
+                    await skill.save();
+                }
+            };
+        }
+
         return functions.success(res, 'Create getJob success!');
     } catch (e) {
         return functions.setError(res, e.message);
