@@ -403,10 +403,6 @@ exports.updateInfinges = async (req, res, next) => {
         let depName = req.body.depName;
 
 
-        if (await functions.checkDate(infringeAt) === false || await functions.checkTime(infringeAt) === false) {
-            return functions.setError(res, 'invalid infringe_at', 400)
-        }
-
         let updatedAt = new Date();
         if (!check) {
             return functions.setError(res, 'không tìm thấy data', 404)
