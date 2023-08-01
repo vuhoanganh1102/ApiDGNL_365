@@ -72,7 +72,7 @@ exports.add_do_csuat = async (req, res) => {
         else chon_ngay = fnc.convertTimestamp(Date.now());
         
         let type_quyen = req.user.data.type;
-        let maxid = await fnc.getMaxIdByField(TheoDoiCongSuat, 'id_cs');
+        let maxid = await fnc.getMaxIdByField(TheoDoiCongSuat, 'id_cs') || 1;
 
         let insert = await TheoDoiCongSuat({
             id_cs: maxid,
