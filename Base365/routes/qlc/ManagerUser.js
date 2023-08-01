@@ -17,4 +17,8 @@ router.post("/edit", formData.parse(), functions.checkToken, managerUserControll
 // API lấy toàn bộ nhân viên không phân trang
 router.post("/listAll", functions.checkToken, managerUserController.listAll);
 
+// API xóa nhân viên ra khỏi công ty 
+router.post("/del",formData.parse(), functions.checkToken, managerUserController.deleteUser);
+
+
 module.exports = router
