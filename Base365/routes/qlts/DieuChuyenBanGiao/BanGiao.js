@@ -12,4 +12,6 @@ router.post('/listDetailAllocation', functions.checkToken,fnc.checkRole("DC_BG",
 
 router.post('/listDetailRecall', functions.checkToken,fnc.checkRole("DC_BG",1), formData.parse(), controllers.listDetailRecall);
 
+// router.post('/AcceptHandOverAllocation', functions.checkToken,fnc.checkRole("DC_BG",4), formData.parse(), controllers.AcceptHandOverAllocation);
+
 module.exports = router;
