@@ -3,7 +3,8 @@ const fnc = require("../../../services/functions");
 // const thongBao = require('../../../models/QuanLyTaiSan/ThongBao')
 const capPhat = require('../../../models/QuanLyTaiSan/CapPhat')
 const ThuHoi = require('../../../models/QuanLyTaiSan/ThuHoi')
-
+const department = require('../../../models/qlc/Deparment');
+ 
 
 exports.list = async (req, res) => {
     try{
@@ -11,15 +12,17 @@ exports.list = async (req, res) => {
         const id_ng_thuchien = req.body.id_ng_thuchien
         const id_ng_thuhoi = req.body.id_ng_thuhoi
         let page = Number(req.body.page)|| 1;
-        let pageSize = Number(req.body.pageSize);
+        let pageSize = Number(req.body.pageSize)/2;
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
 
         let data = []
         let listConditions = {};
         listConditions.id_cty = id_cty
-        if(id_ng_thuchien) listConditions.id_ng_thuchien = id_ng_thuchien
-        if(id_ng_thuhoi) listConditions.id_ng_thuhoi = id_ng_thuhoi
+        if(id_ng_thuchien) {listConditions.id_ng_thuchien = Number(id_ng_thuchien)
+        }else{listConditions.id_ng_thuchien = {$ne : 0}}
+        if(id_ng_thuhoi) {listConditions.id_ng_thuhoi = Number(id_ng_thuhoi)
+        }else{listConditions.id_ng_thuhoi = {$ne : 0}}
         let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
         let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
         let dem_bg = (numAllocaction.length + numRecall.length)
@@ -30,23 +33,19 @@ exports.list = async (req, res) => {
         if(transferLocate)  data.push({transferLocate: transferLocate})
         if(transferObject) data.push({transferObject: transferObject})
         if(transferManagerUnit) data.push({transferManagerUnit: transferManagerUnit})
-
+        console.log(listConditions)
         //query find user hand over 
 
-        let allocation = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
-        let recall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
-        if(allocation) data.push({queryAllocation: allocation})
-        if(recall) data.push({queryRecall: recall})
+        // let allocation = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
+        // let recall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
+        // if(allocation) data.push({queryAllocation: allocation}) 
+        // if(recall) data.push({queryRecall: recall})
 
         // end Query
-        let listAllocation = await capPhat.distinct('id_ng_thuchien',listConditions )
-        let dataAllocation = {}
-        if(listAllocation) {
-            for (let i = 0; i < listAllocation.length; i++) {
-                let UserAllocation = await capPhat.aggregate([
-                    {$match: {id_cty: id_cty,id_ng_thuchien:listAllocation[i],id_ng_thuchien : {$ne: 0}}},
-                    {$skip : skip/2 },
-                    {$limit : limit/2 },
+                let UserAllocation = await capPhat.aggregate([ 
+                    {$match: listConditions},
+                    {$skip : skip },
+                    {$limit : limit },
                     {$sort: {cp_id:-1}},
                     {$lookup: {
                         from: "Users",
@@ -56,106 +55,134 @@ exports.list = async (req, res) => {
                     }},
                     { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
 
-                    // {$unwind: "$info"},
-                    {$project : {
-                        "cp_id" : "$cp_id",
-                        "cp_trangthai" : "$cp_trangthai",
-                        "id_ng_thuchien" : "$id_ng_thuchien",
-                        "ten_ng_thuchien" : "$info.userName",
-                    }},
+                    {$project : {  
+                        cp_id : 1,
+                        cp_trangthai : 1,
+                        id_ng_thuchien : 1,
+                        ten_ng_thuchien : "$info.userName",
+                        dep_id : "$info.inForPerson.employee.dep_id",
+                    }}, 
+                    // {
+                    //     "$group": {
+                    //     "_id": "$_id",
+                    //     "id_ng_thuchien": {
+                    //         "$first": "$id_ng_thuchien"
+                    //     }, 
+                    //     "ten_ng_thuchien": {
+                    //         "$first": "$ten_ng_thuchien"
+                    //     }, 
+                    //     "dep_id": { 
+                    //         "$first": "$dep_id"
+                    //     }, 
+                    // }}
                     
-                ])
-                // results1.push({UserAllocation: UserAllocation[0]})
+                ]) 
                 for (let j = 0; j < UserAllocation.length; j++) {
-                   
+                if(UserAllocation[j].dep_id != 0 ){
+                    let depName_cua_nhan_vien = await department.findOne({ com_id: id_cty, dep_id: UserAllocation[j].dep_id })
+                    if(depName_cua_nhan_vien) UserAllocation[j].depName_cua_nhan_vien = depName_cua_nhan_vien.dep_name 
+                }
+
+                    
                  let numSl_bb = await capPhat.find({id_cty:id_cty,id_ng_thuchien: UserAllocation[j].id_ng_thuchien}).count()
-                //  results1.push({numSl_bb: numSl_bb})
                  UserAllocation[j].numSl_bb = numSl_bb
 
 
                 let numsl_dtn = await capPhat.find({id_cty:id_cty,id_ng_thuchien: UserAllocation[j].id_ng_thuchien, cp_trangthai : 1}).count()
-                // results1.push({numsl_dtn: numsl_dtn})
                  UserAllocation[j].numsl_dtn = numsl_dtn
 
 
                 let numsl_cn = await capPhat.find({id_cty:id_cty,id_ng_thuchien: UserAllocation[j].id_ng_thuchien, cp_trangthai : 0}).count()
-                // results1.push({numsl_cn: numsl_cn})
                  UserAllocation[j].numsl_cn = numsl_cn
 
 
                 let numsl_tc  = await capPhat.find({id_cty:id_cty,id_ng_thuchien: UserAllocation[j].id_ng_thuchien, cp_trangthai : 2}).count()
-                // results1.push({numsl_tc: numsl_tc})
                  UserAllocation[j].numsl_tc = numsl_tc
                 }
-                dataAllocation.UserAllocation = UserAllocation
 
-            }
-        }
-        let listRecall = await ThuHoi.distinct('id_ng_thuhoi',listConditions )
-        let dataRecall ={}
-        if(listRecall) {
-            for (let i = 0; i < listRecall.length; i++) {
+
                 let UserRecall = await ThuHoi.aggregate([
-                    {$match: {id_cty: id_cty,id_ng_thuhoi:listRecall[i],id_ng_thuhoi : {$ne: 0}}},
-                    {$skip : skip/2 },
-                    {$limit : limit/2 },
+                    {$match: listConditions},
+                    {$skip : skip },
+                    {$limit : limit },
                     {$sort: {thuhoi_id:-1}},
                     {$lookup: {
                         from: "Users",
                         localField: "id_ng_thuhoi",
                         foreignField : "idQLC",
-                        as : "info"
+                        as : "info" 
                     }},
                     { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
 
-                    {$project : {
-                        "thuhoi_id" : "$thuhoi_id",
-                        "thuhoi_trangthai" : "$thuhoi_trangthai",
-                        "id_ng_thuhoi" : "$id_ng_thuhoi",
-                        "ten_nguoi_thuhoi" : "$info.userName",
+                    {$project : { 
+                        thuhoi_id : 1,
+                        thuhoi_trangthai : 1, 
+                        id_ng_thuhoi : 1,
+                        ten_nguoi_thuhoi : "$info.userName",
+                        dep_id : "$info.inForPerson.employee.dep_id",
+
                     }},
+                    // {
+                    //     "$group": {
+                    //     "_id": "$_id",
+                    //     "id_ng_thuhoi": {
+                    //         "$first": "$id_ng_thuhoi"
+                    //     }, 
+                    //     "ten_nguoi_thuhoi": {
+                    //         "$first": "$ten_nguoi_thuhoi"
+                    //     }, 
+                    //     "dep_id": { 
+                    //         "$first": "$dep_id"
+                    //     }, 
+                    // }}
                     
                 ])
-                for (let j = 0; j < UserRecall.length; j++) {
-                
-                let numSl_bb = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[j].id_ng_thuhoi}).count()
-                UserRecall[j].numSl_bb = numSl_bb
+                for (let t = 0; t < UserRecall.length; t++) { 
+                if(UserRecall[t].dep_id != 0 ){
+                let depName_cua_nhan_vien = await department.findOne({ com_id: id_cty, dep_id: UserRecall[t].dep_id }) 
+                if(depName_cua_nhan_vien) UserRecall[t].depName_cua_nhan_vien = depName_cua_nhan_vien.dep_name
+                }
+                let numSl_bb = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[t].id_ng_thuhoi}).count()
+                UserRecall[t].numSl_bb = numSl_bb
                 // listRecall[0].numSl_bb = numSl_bb
                 
-                let numsl_dtn = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[j].id_ng_thuhoi, thuhoi_trangthai : 1}).count()
-                UserRecall[j].numsl_dtn = numsl_dtn
+                let numsl_dtn = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[t].id_ng_thuhoi, thuhoi_trangthai : 1}).count()
+                UserRecall[t].numsl_dtn = numsl_dtn
                 // listRecall[0].numsl_dtn = numsl_dtn
                 
-                let numsl_cn = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[j].id_ng_thuhoi, thuhoi_trangthai : 0}).count()
-                UserRecall[j].numsl_cn = numsl_cn
+                let numsl_cn = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[t].id_ng_thuhoi, thuhoi_trangthai : 0}).count()
+                UserRecall[t].numsl_cn = numsl_cn
                 
-                let numsl_tc  = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[j].id_ng_thuhoi, thuhoi_trangthai : 2}).count()
-                UserRecall[j].numsl_tc = numsl_tc
+                let numsl_tc  = await ThuHoi.find({id_cty:id_cty,id_ng_thuhoi: UserRecall[t].id_ng_thuhoi, thuhoi_trangthai : 2}).count()
+                UserRecall[t].numsl_tc = numsl_tc
                 }
-                dataRecall.UserRecall = UserRecall
-
-            }
-        }
-        data.push({dataAllocation: dataAllocation})
-        data.push({dataRecall: dataRecall})
-        // console.log(results1.length/5 )
-        
-        return fnc.success(res, "lấy thành công ",{data})
-    }catch(e){
-        return fnc.setError(res, e.message)
-    }
+        let num_Allocation = await capPhat.count(listConditions)
+        let num_Recall = await ThuHoi.count(listConditions)
+        let totalCount = num_Allocation + num_Recall
+        return fnc.success(res, "lấy thành công ",{data,UserAllocation,UserRecall,totalCount})
+    }catch(e){ 
+        console.error(e)
+        return fnc.setError(res, e.message) 
+    } 
 }
 
 exports.listDetailAllocation = async (req, res) => {
     try{
         const id_cty = req.user.data.com_id
         const id_ng_thuchien = Number(req.body.id_ng_thuchien)
-        let page = Number(req.body.page)|| 1;
-        let pageSize = Number(req.body.pageSize);
+        const cp_id = Number(req.body.cp_id)
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
+        if(id_ng_thuchien){
+        let cond = {}
+        cond.id_cty = id_cty
+        cond.id_ng_thuchien = id_ng_thuchien
+        if(cp_id)cond.cp_id = cp_id
+        console.log(cond)
         let data = await capPhat.aggregate([
-            {$match: {id_cty: id_cty,id_ng_thuchien:id_ng_thuchien}},
+            {$match: cond},
             {$skip : skip },
             {$limit : limit },
             {$sort: {cp_id:-1}},
@@ -166,6 +193,13 @@ exports.listDetailAllocation = async (req, res) => {
                 as : "info"
             }},
             { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
+            {$lookup: {
+                from: "Users",
+                localField: "cp_id_ng_tao",
+                foreignField : "idQLC",
+                as : "info_nguoi_tao"
+            }},
+            { $unwind: { path: "$info_nguoi_tao", preserveNullAndEmptyArrays: true } },
 
             {$project : {
                 "cp_id" : "$cp_id",
@@ -176,6 +210,7 @@ exports.listDetailAllocation = async (req, res) => {
                 "cp_id_ng_tao" : "$cp_id_ng_tao",
                 "cp_date_create" : "$cp_date_create",
                 "ten_ng_thuchien" : "$info.userName",
+                "ten_ng_tao" : "$info_nguoi_tao.userName",
             }},
             
         ])
@@ -183,6 +218,9 @@ exports.listDetailAllocation = async (req, res) => {
             return fnc.success(res, " lấy thành công ",{data})
         }
         return fnc.setError(res, "không tìm thấy đối tượng", 510);
+    }
+    return fnc.setError(res, "vui lòng nhập id_ng_thuchien ");
+
     }catch(e){
         return fnc.setError(res, e.message)
     }
@@ -191,12 +229,19 @@ exports.listDetailRecall = async (req, res) => {
     try{
         const id_cty = req.user.data.com_id
         const id_ng_thuhoi = Number(req.body.id_ng_thuhoi)
+        const thuhoi_id = Number(req.body.thuhoi_id)
         let page = Number(req.body.page)|| 1;
-        let pageSize = Number(req.body.pageSize);
+        let pageSize = Number(req.body.pageSize)|| 10;
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
+        if(id_ng_thuhoi){
+        let cond = {}
+        cond.id_cty = id_cty
+        cond.id_ng_thuhoi = id_ng_thuhoi
+        if(thuhoi_id)cond.thuhoi_id = thuhoi_id
+        console.log(cond)
         let    data = await ThuHoi.aggregate([
-            {$match: {id_cty: id_cty, id_ng_thuhoi:id_ng_thuhoi}},
+            {$match: cond},
             {$skip : skip },
             {$limit : limit },
             {$sort: {thuhoi_id:-1}},
@@ -207,6 +252,13 @@ exports.listDetailRecall = async (req, res) => {
                 as : "info"
             }},
             { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
+            {$lookup: {
+                from: "Users",
+                localField: "thuhoi_ng_tao",
+                foreignField : "idQLC",
+                as : "info_ng_tao"
+            }},
+            { $unwind: { path: "$info_ng_tao", preserveNullAndEmptyArrays: true } },
 
             // {$unwind: "$info"},
             {$project : {
@@ -220,13 +272,17 @@ exports.listDetailRecall = async (req, res) => {
                 "id_ng_thuhoi" : "$id_ng_thuhoi",
                 "thuhoi_trangthai" : "$thuhoi_trangthai",
                 "ten_ng_thuhoi" : "$info.userName",
+                "ten_ng_tao" : "$info_ng_tao.userName",
             }},
 
         ])
         if(data){
             return fnc.success(res, " lấy thành công ",{data})
         }
-        return fnc.setError(res, "không tìm thấy đối tượng", 510);
+        return fnc.setError(res, "không tìm thấy đối tượng");
+    }
+    return fnc.setError(res, "vui lòng nhập id_ng_thuhoi ");
+
     }catch(e){
         return fnc.setError(res, e.message)
     }
@@ -237,6 +293,7 @@ exports.refuserHandOver = async (req , res) =>{
         const id_cty = req.user.data.com_id
         const dc_id = req.body.dc_id
         const content = req.body.content
+     if(dc_id){
         const data = await DieuChuyen.findOne({ dc_id: dc_id,id_cty: id_cty });
         if (!data) {
            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
@@ -247,6 +304,9 @@ exports.refuserHandOver = async (req , res) =>{
             })
         }
         return fnc.success(res, "cập nhật thành công")
+     }
+     return fnc.setError(res, "vui lòng nhập dc_id ")
+
     }catch(e){
         return fnc.setError(res, e.message)
     }
@@ -281,3 +341,38 @@ exports.refuserHandOverAllocation = async (req , res) =>{
         return fnc.setError(res, e.message)
     }
 }
+// //Từ chối tiếp nhận tài sản cấp phát"
+// exports.AcceptHandOverAllocation = async (req, res) => {
+//     try {
+//         const id_cty = req.user.data.com_id
+//         const cp_id = req.body.cp_id
+//         const content = req.body.content
+//         if(cp_id){
+//             const data = await capPhat.findOne({ cp_id: cp_id, id_cty: id_cty });
+
+//             if (!data) {
+//                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật");
+//             } else {
+//                 let count = data.cap_phat_taisan.ds_ts[0].ts_id
+//                 for (let t = 0; t < count.length; t++) {
+//                     let listItemsType = await TaiSan.find({ id_cty: id_cty, ts_id: count(t) })
+//                     let sl_taisan = listItemsType.ts_so_luong + data.cap_phat_taisan.ds_ts[0].sl_cp
+//                     await TaiSan.updateOne({ ts_id: count(t), id_cty: id_cty }, {
+//                         ts_so_luong: sl_taisan,
+//                         soluong_cp_bb: sl_taisan,
+//                     })
+//                 }
+//                 await capPhat.updateOne({ cp_id: cp_id, id_cty: id_cty }, {
+//                     cp_trangthai: 4,
+//                     cp_tu_choi_tiep_nhan: content,
+//                 })
+//                 return fnc.success(res, "cập nhật thành công")
+//             }
+//         }
+//         return fnc.setError(res, "vui lòng nhập cp_id")
+        
+
+//     } catch (e) {
+//         return fnc.setError(res, e.message)
+//     }
+// }
