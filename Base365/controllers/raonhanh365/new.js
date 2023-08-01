@@ -3379,7 +3379,7 @@ exports.getNewForDiscount = async (req, res, next) => {
     try {
         let userID = req.user.data.idRaoNhanh365;
         let cateID = req.query.cateID;
-        let data = await New.find({ cateID, userID }, {
+        let data = await New.find({ cateID, userID,'infoSell.promotionType': { $nin: [1, 2] } }, {
             electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
             noiThatNgoaiThat: 0, bidding: 0
         })
@@ -3406,20 +3406,25 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
         let ten = req.body.ten;
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
+        let typeSold = Number(req.body.typeSold);
         let skip = (page - 1) * pageSize;
         let limit = pageSize;
         let conditions = {};
+        if (typeSold) {
+            conditions = {
+                'infoSell.promotionType': { $nin: [1, 2] }
+            }
+        }
         if (cateID) conditions.cateID = Number(cateID);
-        if (type) conditions.type = Number(type);
+        if (type) conditions.promotionType = Number(type);
         if (ten) {
             conditions.title = new RegExp(ten, 'i')
         }
+
         conditions.userID = userID;
         conditions.buySell = 2;
         conditions.cateID = {
-                 $ne: 120 ,  $ne: 121 ,  $ne: 119 ,
-                 $ne: 11 ,  $ne: 12 ,  $ne: 26 ,
-                 $ne: 27 ,  $ne: 29 ,  $ne: 33 ,  $ne: 34 
+            $nin: [120, 121, 119, 11, 12, 26, 27, 29, 33, 34]
         }
         let data = await New.find(conditions, {
             electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
@@ -3432,7 +3437,8 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
                 }
             }
         }
-        return functions.success(res, 'get data success', { data })
+        let soluong = data.length
+        return functions.success(res, 'get data success', { soluong, data })
     } catch (err) {
         return functions.setError(res, err)
     }

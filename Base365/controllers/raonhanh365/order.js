@@ -192,9 +192,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-mua.html') {
             data = await Order.aggregate([
-                {
-                    $match: { buyerId, status: 1 }
-                },
+                { $match: { buyerId, status: 1 } },
                 { $skip: skip },
                 { $limit: limit },
                 {
@@ -214,16 +212,12 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
 
-                {
-                    $project: searchItem
-                },
+                { $project: searchItem },
 
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-mua.html') {
             data = await Order.aggregate([
-                {
-                    $match: { buyerId, status: 2 }
-                },
+                { $match: { buyerId, status: 2 } },
                 { $skip: skip },
                 { $limit: pageSize },
                 {
@@ -243,9 +237,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
 
-                {
-                    $project: searchItem
-                },
+                { $project: searchItem },
 
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-mua.html') {
