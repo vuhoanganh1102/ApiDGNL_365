@@ -18,13 +18,15 @@ router.post('/delete',functions.checkToken,fnc.checkRole("CP_TH",3) ,formData.pa
 router.post('/getListNV',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getListNV)
 
 router.post('/getListDep',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getListDep)
-
+//xác nhận bàn giao cấp phát
 router.post('/updateStatus',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.updateStatus)
+//đồng ý cấp phát
+router.post('/acceptAllocation',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.acceptAllocation)
 
-
+router.post('/DetailEmp',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.DetailEmp)
 router.post('/getListDetail',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getListDetail)
 
-router.post('/listDetailAllocation',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.listDetailAllocation)
+router.post('/DetailDep',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.DetailDep)
 
 router.post('/refuserAll',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.refuserAll)
 

@@ -139,30 +139,7 @@ exports.bidding = async (req, res, next) => {
     }
 }
 
-// api thông báo kết quả đấu thầu
-exports.announceResult = async (req, res, next) => {
-    try {
-        let { status, id_dauthau } = req.body;
-        if (!status || !id_dauthau) {
-            return functions.setError(res, 'missing data', 400);
-        }
-        if (await functions.checkNumber(status) === false || await functions.checkNumber(id_dauthau) === false) {
-            return functions.setError(res, 'invalid number', 400);
-        }
-        let data = await Bidding.findById(id_dauthau);
-        if (!data) {
-            return functions.setError(res, 'not exits', 400);
-        }
-        if (data.updatedAt) {
-            return functions.setError(res, 'Chỉ được cập nhật 1 lần', 400);
-        }
-        let updatedAt = new Date(Date.now())
-        await Bidding.findByIdAndUpdate(id_dauthau, { status, updatedAt })
-        return functions.success(res, 'Thông báo thành công')
-    } catch (error) {
-        return functions.setError(res, error)
-    }
-}
+
 
 // quản lý đơn hàng mua
 exports.manageOrderBuy = async (req, res, next) => {
@@ -210,14 +187,12 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$user" },
-               
+
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-mua.html') {
             data = await Order.aggregate([
-                {
-                    $match: { buyerId, status: 1 }
-                },
+                { $match: { buyerId, status: 1 } },
                 { $skip: skip },
                 { $limit: limit },
                 {
@@ -237,16 +212,12 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
 
-                {
-                    $project: searchItem
-                },
+                { $project: searchItem },
 
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-mua.html') {
             data = await Order.aggregate([
-                {
-                    $match: { buyerId, status: 2 }
-                },
+                { $match: { buyerId, status: 2 } },
                 { $skip: skip },
                 { $limit: pageSize },
                 {
@@ -266,9 +237,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                     }
                 },
 
-                {
-                    $project: searchItem
-                },
+                { $project: searchItem },
 
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-mua.html') {

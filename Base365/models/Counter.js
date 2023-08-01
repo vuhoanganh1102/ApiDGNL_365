@@ -1,14 +1,15 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-let connection = mongoose.createConnection('mongodb://127.0.0.1/api-base365');
+let connection = mongoose.createConnection('mongodb://127.0.0.1:27017/api-base365');
+
 const CounterSchema = new mongoose.Schema({
-    TableId: {
+    TableId:{
         type: String,
-        default: ""
+        default:""
     },
-    Count: {
+    Count:{
         type: Number,
-        default: 0
+        default:0
     }
 }, {
     collection: 'Counter',

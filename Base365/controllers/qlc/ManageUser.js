@@ -50,6 +50,8 @@ exports.getlistAdmin = async(req, res) => {
                             married: "$inForPerson.employee.married",
                             address: "$address",
                             position_id: "$inForPerson.employee.position_id",
+                            ep_status:"$inForPerson.employee.ep_status",
+                            avatarUser:"$avatarUser"
                         }
                     },
                 ]);
@@ -178,13 +180,18 @@ exports.deleteUser = async(req, res) => {
     try {
         //tạo biến đọc idQLC
         const type = req.user.data.type
-        let com_id = req.user.data.com_id
-            // let com_id = req.body.com_id
+        let com_id = Number(req.user.data.idQLC);
+        // console.log(req.user);
+        // let com_id = req.body.com_id
         const idQLC = req.body.idQLC;
         if (type == 1) {
-            const manager = await functions.getDatafindOne(Users, { "inForPerson.employee.com_id": com_id, idQLC: idQLC, type: 2 });
+            const manager = await Users.findOne({ "inForPerson.employee.com_id": com_id, idQLC: idQLC, type: 2 }).lean();
+            console.log(com_id,idQLC);
             if (manager) { //nếu biến manager không tìm thấy  trả ra fnc lỗi 
-                functions.getDataDeleteOne(manageUser, { idQLC: idQLC })
+                await Users.updateOne({"inForPerson.employee.com_id": com_id, idQLC: idQLC, type: 2},{$set:{
+                    type:0,
+                    "inForPerson.employee.com_id": 0
+                }})
                 return functions.success(res, "xóa thành công!", { manager })
             }
             return functions.setError(res, "người dùng không tồn tại!", 510);

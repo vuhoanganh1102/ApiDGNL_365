@@ -26,7 +26,6 @@ const HR_CrontabQuitJobSchema = new mongoose.Schema({
         default: null   ,
     },
     createdAt: {
-       
         type: Date,
         required: true,
     },

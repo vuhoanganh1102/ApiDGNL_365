@@ -11,11 +11,10 @@ router.post('/updateBaoDuong', functions.checkToken, fnc.checkRole('SC_BD'), for
 router.post('/tu_choi_ts_can_bao_duong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.TuChoiBaoDuong);
 router.post('/delete1', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.delete1);
 router.post('/deleteAll', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.deleteAll);
-router.post('/deltails_ts_can_baoduong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.detailTSCBD);
 
 //lay ra danh sach cho ca 5 tap
 router.post('/danhSachBaoDuong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.danhSachBaoDuong);
 router.post('/hoanThanh', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.hoanThanh);
-router.post('/deleteBd', functions.checkToken, formData.parse(), controllers.xoaBaoDuong);
+router.post('/deleteBd', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.xoaBaoDuong);
 
 module.exports = router;

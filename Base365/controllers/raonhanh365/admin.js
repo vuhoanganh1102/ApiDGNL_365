@@ -18,6 +18,7 @@ const RegisterFail = require('../../models/Raonhanh365/RegisterFail');
 const NewReport = require('../../models/Raonhanh365/NewReport');
 const New = require('../../models/Raonhanh365/New');
 const Order = require('../../models/Raonhanh365/Order');
+const Module = require('../../models/Raonhanh365/Admin/Module');
 
 //đăng nhập admin
 exports.loginAdminUser = async(req, res, next) => {
@@ -26,45 +27,53 @@ exports.loginAdminUser = async(req, res, next) => {
             const loginName = req.body.loginName
             const password = req.body.password
             let findUser = await functions.getDatafindOne(AdminUser, { loginName })
-            if (!findUser) {
-                return functions.setError(res, "không tìm thấy tài khoản trong bảng user", 200)
+            if (findUser) {
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (checkPassword) {
+                    let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
+                        date: new Date(Date.now())
+                    }, {new: true});
+                    const token = await functions.createToken(updateUser, "1d")
+                    return functions.success(res, 'Đăng nhập thành công', { token: token })
+                }
+                return functions.setError(res, "Mật khẩu sai", 406);
             }
-            let checkPassword = await functions.verifyPassword(password, findUser.password)
-            if (!checkPassword) {
-                return functions.setError(res, "Mật khẩu sai", 200)
-            }
-            let updateUser = await functions.getDatafindOneAndUpdate(Users, { loginName }, {
-                date: new Date(Date.now())
-            })
-            const token = await functions.createToken(findUser, "2d")
-            return functions.success(res, 'Đăng nhập thành công', { token: token })
-
+            return functions.setError(res, "không tìm thấy tài khoản trong bảng admin user", 405)
         }
+        return functions.setError(res, "Missing input value!", 404)
     } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
-
 }
 
 exports.getListAdminUser = async(req, res, next) => {
     try {
-        //lay cac tham so dieu kien tim kiem tin
-        if (!req.body.page) {
-            return functions.setError(res, "Missing input page", 401);
-        }
-        if (!req.body.pageSize) {
-            return functions.setError(res, "Missing input pageSize", 402);
-        }
-        let page = Number(req.body.page);
-        let pageSize = Number(req.body.pageSize);
+        let {idAdmin, page, pageSize} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let idAdmin = req.body.idAdmin;
-        let condition = {};
+        let condition = {delete: 0};
         if (idAdmin) condition._id = Number(idAdmin);
-        let fields = { loginName: 1, name: 1, email: 1, phone: 1, editAll: 1, langId: 1, active: 1 };
-        let listAdminUser = await functions.pageFindWithFields(AdminUser, condition, fields, { _id: 1 }, skip, limit);
+        // let listAdminUser = await AdminUser.aggregate([
+        //     {$match: condition},
+        //     {$sort: { loginName: 1, active: -1 }},
+        //     {$skip: skip},
+        //     {$limit: limit},
+        //     {
+        //         $lookup: {
+        //             from: "RN365_AdminUserRight",
+        //             localField: "_id",
+        //             foreignField: "adminId",
+        //             as: "AdminUserRight"
+        //         }
+        //     },
+        // ]);
+        // let listAdminUser = await AdminUser.find(condition, fields).sort({ loginName: 1, active: -1 }).lean();
+        let fields = { loginName: 1, name: 1, email: 1, phone: 1, editAll: 1, langId: 1, isAdmin: 1, active: 1 };
+        let listAdminUser = await functions.pageFind(AdminUser, condition, { loginName: 1, active: -1 }, skip, limit);
 
         // lap qua danh sach user
         for (let i = 0; i < listAdminUser.length; i++) {
@@ -72,23 +81,41 @@ exports.getListAdminUser = async(req, res, next) => {
             let arrIdModule = [],
                 arrRightAdd = [],
                 arrRightEdit = [],
-                arrRightDelete = []
+                arrRightDelete = [];
+            let arrNameModule = "";
                 // lap qua cac quyen cua admindo
             for (let j = 0; j < adminUserRight.length; j++) {
+                let nameModule = await Module.findOne({_id: adminUserRight[j].moduleId}, {_id: 1, name: 1});
                 arrIdModule.push(adminUserRight[j].moduleId);
+                if(nameModule) {
+                    if(arrNameModule != ""){
+                        arrNameModule = `${arrNameModule}, ${nameModule.name}`;
+                    }else {
+                        arrNameModule = nameModule.name;
+                    }
+                }
+                // else arrNameModule.push("");
                 arrRightAdd.push(adminUserRight[j].add);
                 arrRightEdit.push(adminUserRight[j].edit);
                 arrRightDelete.push(adminUserRight[j].delete);
             }
             let adminUser = listAdminUser[i];
-            let tmpOb = { adminUser, arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete };
+            let tmpOb = { adminUser, arrIdModule, arrNameModule, arrRightAdd, arrRightEdit, arrRightDelete };
             listAdminUser[i] = tmpOb;
         }
         const totalCount = await functions.findCount(AdminUser, condition);
         return functions.success(res, "get list blog success", { totalCount: totalCount, data: listAdminUser });
     } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
+    }
+}
+
+exports.listModule = async(req, res, next) => {
+    try{
+        let listModule = await Module.find({}).sort({order: -1});
+        return functions.success(res, "Get list module success", {data: listModule});
+    }catch(error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -96,65 +123,53 @@ exports.getListAdminUser = async(req, res, next) => {
 exports.getAndCheckDataAdminUser = async(req, res, next) => {
     try {
         let { loginName, name, phone, email, editAll, langId, active, accessModule, adminId } = req.body;
-        if (!loginName || !phone || !phone) {
-            return functions.setError(res, "Missing input value", 404)
-        }
-
-        // xoa cac quyen hien tai cua admin neu chon muc sua
-        if (adminId) {
-            let adminUserRight = await AdminUserRight.deleteMany({ adminId: adminId });
-        } else {
-            const maxIdAdminUser = await AdminUser.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            if (maxIdAdminUser) {
-                adminId = Number(maxIdAdminUser._id) + 1;
-            } else adminId = 1;
-
-        }
-        //cap quyen cho admin ca them moi+sua
-        let { arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete } = req.body;
-        arrIdModule = arrIdModule.split(",");
-        arrRightAdd = arrRightAdd.split(",");
-        arrRightEdit = arrRightEdit.split(",");
-        arrRightDelete = arrRightDelete.split(",");
-
-        //
-        for (let i = 0; i < arrIdModule.length; i++) {
-            //tao id cho bang phan quyen
-            const maxIdAdminUserRight = await AdminUserRight.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            let newIdAdminUserRight;
-            if (maxIdAdminUserRight) {
-                newIdAdminUserRight = Number(maxIdAdminUserRight._id) + 1;
-            } else newIdAdminUserRight = 1;
-
-            let fieldsRight = {
-                _id: newIdAdminUserRight,
-                adminId: adminId,
-                moduleId: arrIdModule[i],
-                add: arrRightAdd[i],
-                edit: arrRightEdit[i],
-                deletelet: arrRightDelete[i]
+        if (loginName && phone && email) {
+            // xoa cac quyen hien tai cua admin neu chon muc sua
+            if (adminId) {
+                let adminUserRight = await AdminUserRight.deleteMany({ adminId: adminId });
+            } else {
+                adminId = await functions.getMaxIdByField(AdminUser, '_id');
             }
+            //cap quyen cho admin ca them moi+sua
+            let { arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete } = req.body;
+            arrIdModule = arrIdModule.split(",");
+            arrRightAdd = arrRightAdd.split(",");
+            arrRightEdit = arrRightEdit.split(",");
+            arrRightDelete = arrRightDelete.split(",");
 
-            let adminUserRight = new AdminUserRight(fieldsRight);
-            await adminUserRight.save();
+            //
+            for (let i = 0; i < arrIdModule.length; i++) {
+                //tao id cho bang phan quyen
+                let newIdAdminUserRight = await functions.getMaxIdByField(AdminUserRight, '_id');
+                let fieldsRight = {
+                    _id: newIdAdminUserRight,
+                    adminId: adminId,
+                    moduleId: arrIdModule[i],
+                    add: arrRightAdd[i],
+                    edit: arrRightEdit[i],
+                    delete: arrRightDelete[i]
+                }
+                let adminUserRight = new AdminUserRight(fieldsRight);
+                await adminUserRight.save();
+            }
+            
+            // them cac truong muon them hoac sua
+            req.info = {
+                _id: adminId,
+                loginName: loginName,
+                name: name,
+                phone: phone,
+                email: email,
+                langId: langId,
+                editAll: editAll,
+                active: active,
+                accessModule: accessModule,
+            }
+            return next();
         }
-
-        // them cac truong muon them hoac sua
-        req.info = {
-            _id: adminId,
-            loginName: loginName,
-            name: name,
-            phone: phone,
-            email: email,
-            langId: langId,
-            editAll: editAll,
-            active: active,
-            accessModule: accessModule,
-        }
-        return next();
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, "Missing input value", 404)
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -162,54 +177,55 @@ exports.createAdminUser = async(req, res, next) => {
     try {
         // luu thong tin admin
         let password = req.body.password;
-        let fields = req.info;
-        fields.password = md5(password);
+        if(password) {
+            let fields = req.info;
+            fields.password = md5(password);
 
-        let adminUser = new AdminUser(fields);
-        await adminUser.save();
-        return functions.success(res, 'Create AdminUser and AdminUserRight RN365 success!');
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+            let adminUser = new AdminUser(fields);
+            await adminUser.save();
+            return functions.success(res, 'Create AdminUser and AdminUserRight RN365 success!');
+        }
+        return functions.setError(res, "Missing input password!");
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.updateAdminUser = async(req, res, next) => {
     try {
-        if (!req.body.adminId)
-            return functions.setError(res, "Missing input value id admin!", 404);
-        let fields = req.info;
         let adminId = req.body.adminId;
-        fields.password = md5(password);
-        delete fields._id;
-        let existsAdminUser = await AdminUser.findOne({ _id: adminId });
-        if (existsAdminUser) {
-
-            await AdminUser.findOneAndUpdate({ _id: adminId }, fields);
-            return functions.success(res, "AdminUser edited successfully");
+        if (adminId) {
+            let fields = req.info;
+            fields.password = md5(password);
+            delete fields._id;
+            let existsAdminUser = await AdminUser.findOne({ _id: adminId });
+            if (existsAdminUser) {
+                await AdminUser.findOneAndUpdate({ _id: adminId }, fields);
+                return functions.success(res, "AdminUser edited successfully");
+            }
+            return functions.setError(res, "AdminUser not found!", 505);
         }
-        return functions.setError(res, "AdminUser not found!", 505);
-    } catch (err) {
-        console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, "Missing input value id admin!", 404);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.deleteAdminUser = async(req, res, next) => {
     try {
-        let userID = Number(req.query.userID);
-        if (userID) {
-            let user = await functions.getDataDeleteOne(Users, { _id: userID });
+        let adminId = req.body.adminId;
+        if (adminId) {
+            adminId = Number(adminId);
+            let user = await functions.getDataDeleteOne(AdminUser, { _id: adminId });
             if (user.deletedCount === 1) {
-                return functions.success(res, `Delete user with _id=${userID} success`);
+                return functions.success(res, `Delete user with _id=${adminId} success`);
             } else {
                 return functions.success(res, "User not found");
             }
         }
-        return functions.setError(res, "Missing input userID", 500);
-    } catch (e) {
-        console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+        return functions.setError(res, "Missing input adminId", 500);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -219,12 +235,10 @@ exports.deleteAdminUser = async(req, res, next) => {
 exports.getListCategory = async(req, res, next) => {
     try {
         let { page, pageSize, _id, name, parentId } = req.body;
-        if (!page) {
-            return functions.setError(res, "Missing input page", 401);
-        }
-        if (!pageSize) {
-            return functions.setError(res, "Missing input pageSize", 402);
-        }
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let condition = {};
@@ -236,67 +250,60 @@ exports.getListCategory = async(req, res, next) => {
         const totalCount = await functions.findCount(Category, condition);
         return functions.success(res, "get list category success", { totalCount: totalCount, data: listCategory });
     } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 
 exports.getAndCheckDataCategory = async(req, res, next) => {
     try {
         let { parentId, adminId, name, order, description } = req.body;
-        if (!name || !order) {
-            return functions.setError(res, "Missing input value", 404)
+        if (name && order) {
+            // them cac truong muon them hoac sua
+            req.info = {
+                parentId: parentId,
+                adminId: adminId,
+                name: name,
+                order: order,
+                description: description
+            }
+            return next();
         }
-        // them cac truong muon them hoac sua
-        req.info = {
-            parentId: parentId,
-            adminId: adminId,
-            name: name,
-            order: order,
-            description: description
-        }
-        return next();
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, "Missing input value", 404)
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.createCategory = async(req, res, next) => {
     try {
         let fields = req.info;
-        const maxIdCategory = await Category.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-        let newIdCategory;
-        if (maxIdCategory) {
-            newIdCategory = Number(maxIdCategory._id) + 1;
-        } else newIdCategory = 1;
+        let newIdCategory = await functions.getMaxIdByField(Category, '_id');
         fields._id = newIdCategory;
         let category = new Category(fields);
         await category.save();
         return functions.success(res, 'Create category RN365 success!');
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.updateCategory = async(req, res, next) => {
     try {
-        if (!req.body.cateID)
-            return functions.setError(res, "Missing input value id cate!", 404);
-        let cateID = req.body.cateID;
-        let fields = req.info;
+        let cateID = req.body.cateID; 
+        if (cateID) {
+            let fields = req.info;
 
-        let existsCategory = await Category.findOne({ _id: cateID });
-        if (existsCategory) {
+            let existsCategory = await Category.findOne({ _id: cateID });
+            if (existsCategory) {
 
-            await Category.findOneAndUpdate({ _id: cateID }, fields);
-            return functions.success(res, "Category edited successfully");
+                await Category.findOneAndUpdate({ _id: cateID }, fields);
+                return functions.success(res, "Category edited successfully");
+            }
+            return functions.setError(res, "Category not found!", 505);
         }
-        return functions.setError(res, "Category not found!", 505);
-    } catch (err) {
-        console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, "Missing input value id cate!", 404);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -309,12 +316,8 @@ exports.updateCategory = async(req, res, next) => {
 exports.getListNews = async(req, res, next) => {
     try {
         let { page, pageSize, _id, buySell, title, cateID, fromDate, toDate } = req.body;
-        if (!page) {
-            return functions.setError(res, "Missing input page", 401);
-        }
-        if (!pageSize) {
-            return functions.setError(res, "Missing input pageSize", 402);
-        }
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
@@ -328,12 +331,9 @@ exports.getListNews = async(req, res, next) => {
         if (cateID) condition.cateID = Number(cateID); // cate
 
         // tu ngay den ngay
-        if (fromDate) {
-            condition.createTime = { $gte: new Date(fromDate) }
-        }
-        if (toDate) {
-            condition.createTime = { $lte: new Date(toDate) };
-        }
+        if (fromDate && !toDate) condition.createTime = { $gte: new Date(fromDate) };
+        if (toDate && !fromDate) condition.createTime = { $lte: new Date(toDate) };
+        if (toDate && fromDate) condition.createTime = { $gte: new Date(fromDate), $lte: new Date(toDate) };
         let fields = { _id: 1, title: 1, linkTitle: 1, img: 1, cateID: 1, createTime: 1, active: 1, city: 1, userID: 1, email: 1, updateTime: 1 };
         let listNews = await News.aggregate([
                 { $match: condition },
@@ -350,76 +350,70 @@ exports.getListNews = async(req, res, next) => {
                 { $skip: skip },
                 { $limit: limit }
             ])
-            // let listNews = await News.find(condition, fields);
         const totalCount = await News.countDocuments(condition);
         return functions.success(res, 'Get list news success', { totalCount, listNews });
     } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message);
     }
 }
 
 exports.getAndCheckDataNews = async(req, res, next) => {
     try {
         let { title, description, money } = req.body;
-        if (!title || !description) {
-            return functions.setError(res, "Missing input value", 404)
+        if (title && description) {
+             // them cac truong muon them hoac sua
+            req.info = {
+                title: title,
+                description: description,
+                money: money
+            }
+            return next();
         }
-        // them cac truong muon them hoac sua
-        req.info = {
-            title: title,
-            description: description,
-            money: money
-        }
-        return next();
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, "Missing input value", 404)
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.createNews = async(req, res, next) => {
     try {
         let fields = req.info;
-        const maxIdNews = await News.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-        let newIdNews;
-        if (maxIdNews) {
-            newIdNews = Number(maxIdNews._id) + 1;
-        } else newIdNews = 1;
+        let newIdNews = await functions.getMaxIdByField(News, '_id');
+
         fields._id = newIdNews;
         fields.createTime = Date(Date.now());
         let news = new News(fields);
         await news.save();
         return functions.success(res, 'Create news RN365 success!');
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.updateNews = async(req, res, next) => {
     try {
-        if (!req.body.newsID)
-            return functions.setError(res, "Missing input value id news!", 404);
         let newsID = req.body.newsID;
-        let fields = req.info;
-        fields.updateTime = Date(Date.now());
-        let existsNews = await News.findOne({ _id: newsID });
-        if (existsNews) {
-            await News.findOneAndUpdate({ _id: newsID }, fields);
-            return functions.success(res, "News edited successfully");
+        if (newsID) {
+            let fields = req.info;
+            fields.updateTime = Date(Date.now());
+            let existsNews = await News.findOne({ _id: newsID });
+            if (existsNews) {
+                await News.findOneAndUpdate({ _id: newsID }, fields);
+                return functions.success(res, "News edited successfully");
+            }
+            return functions.setError(res, "News not found!", 505);
         }
-        return functions.setError(res, "News not found!", 505);
-    } catch (err) {
-        console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, "Missing input value id news!", 404);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.deleteNews = async(req, res, next) => {
     try {
-        let newsID = Number(req.query.newsID);
+        let newsID = req.body.newsID;
         if (newsID) {
+            newsID = Number(newsID);
             let news = await functions.getDataDeleteOne(News, { _id: newsID });
             if (news.deletedCount === 1) {
                 return functions.success(res, `Delete news with _id=${newsID} success`);
@@ -428,9 +422,8 @@ exports.deleteNews = async(req, res, next) => {
             }
         }
         return functions.setError(res, "Missing input newsID", 500);
-    } catch (e) {
-        console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -440,10 +433,7 @@ exports.deleteNews = async(req, res, next) => {
 exports.getListPriceList = async(req, res, next) => {
     try {
         //lay cac tham so dieu kien tim kiem tin
-        let request = req.body;
-        let _id = request._id,
-            time = request.time,
-            type = request.type
+        let {_id, time, type} = req.body;
 
         let condition = {};
         if (_id) condition._id = Number(_id);
@@ -454,28 +444,28 @@ exports.getListPriceList = async(req, res, next) => {
         let listPriceList = await PriceList.find(condition, fields);
         return functions.success(res, 'Get list PriceList success', { data: listPriceList })
     } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message);
     }
 }
 
 exports.update = async(req, res, next) => {
     try {
-        if (!req.body.newsID)
-            return functions.setError(res, "Missing input value id news!", 404);
         let newsID = req.body.newsID;
-        let fields = req.info;
-        fields.updateTime = Date(Date.now());
-        let existsNews = await News.findOne({ _id: newsID });
-        if (existsNews) {
+        if (newsID) {
+            newsID = Number(newsID);
+            let fields = req.info;
+            fields.updateTime = Date(Date.now());
+            let existsNews = await News.findOne({ _id: newsID });
+            if (existsNews) {
 
-            await News.findOneAndUpdate({ _id: newsID }, fields);
-            return functions.success(res, "News edited successfully");
+                await News.findOneAndUpdate({ _id: newsID }, fields);
+                return functions.success(res, "News edited successfully");
+            }
+            return functions.setError(res, "News not found!", 505);
         }
-        return functions.setError(res, "News not found!", 505);
-    } catch (err) {
-        console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, "Missing input value id news!", 404);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -484,24 +474,10 @@ exports.update = async(req, res, next) => {
 
 exports.getListUser = async(req, res, next) => {
     try {
-        //lay cac tham so dieu kien tim kiem tin
-        let request = req.body;
-        let authentic = request.authentic, // phan biet tai khoan bt va tk gian hang(xac thuc va chua xac thuc)
-            _id = request._id,
-            userName = request.userName,
-            email = request.email,
-            phoneTK = request.phoneTK,
-            fromDate = request.fromDate,
-            toDate = request.toDate,
-            page = request.page,
-            pageSize = request.pageSize;
-        //
-        if (!page) {
-            return functions.setError(res, "Missing input page", 401);
-        }
-        if (!pageSize) {
-            return functions.setError(res, "Missing input pageSize", 402);
-        }
+        let {idRaoNhanh365, authentic, userName, email, phoneTK, fromDate, toDate, page, pageSize} = req.body;
+        //authentic => phan biet tai khoan bt va tk gian hang(xac thuc va chua xac thuc)
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
@@ -509,27 +485,23 @@ exports.getListUser = async(req, res, next) => {
 
         //
         let condition = {};
-        if (_id) condition._id = Number(_id);
+        if (idRaoNhanh365) condition.idRaoNhanh365 = Number(idRaoNhanh365);
         if (authentic) condition.authentic = Number(authentic);
         if (userName) condition.userName = new RegExp(userName);
         if (email) condition.email = new RegExp(email);
         if (phoneTK) condition.phoneTK = new RegExp(phoneTK);
-        // tu ngay den ngay
-        if (fromDate) {
-            condition.updatedAt = { $gte: new Date(fromDate) }
-        }
-        if (toDate) {
-            condition.updatedAt = { $lte: new Date(toDate) };
-        }
 
-        let fields = { avatarUser: 1, _id: 1, userName: 1, email: 1, phoneTK: 1, createdAt: 1, money: 1 };
+        if (fromDate && !toDate) condition.updatedAt = { $gte: new Date(fromDate) };
+        if (toDate && !fromDate) condition.updatedAt = { $lte: new Date(toDate) };
+        if (toDate && fromDate) condition.updatedAt = { $gte: new Date(fromDate), $lte: new Date(toDate) };
+
+        let fields = { avatarUser: 1, idRaoNhanh365: 1, userName: 1, email: 1, phoneTK: 1, createdAt: 1, money: 1 };
 
         let listUsers = await functions.pageFindWithFields(Users, condition, fields, skip, limit);
         const totalCount = await Users.countDocuments(condition);
         return functions.success(res, 'Get list news success', { totalCount, listUsers })
     } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 
@@ -538,81 +510,74 @@ exports.getAndCheckDataUser = async(req, res, next) => {
     try {
         let { userName, email, phoneTK, phone, money, cong, tru } = req.body;
 
-        if (!userName || !phoneTK) {
-            return functions.setError(res, "Missing input value", 404)
+        if (userName && phoneTK) {
+            // them cac truong muon them hoac sua
+            req.info = {
+                userName: userName,
+                phoneTK: phoneTK,
+                email: email,
+                phone: phone,
+                money: Number(money) + Number(cong) - Number(tru)
+            }
+            return next();
         }
-        // them cac truong muon them hoac sua
-        req.info = {
-            userName: userName,
-            phoneTK: phoneTK,
-            email: email,
-            phone: phone,
-            money: Number(money) + Number(cong) - Number(tru)
-        }
-        return next();
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, "Missing input value", 404)
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.createUser = async(req, res, next) => {
     try {
         let fields = req.info;
-        const maxIdUser = await Users.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-        let newIdUser;
-        if (maxIdUser) {
-            newIdUser = Number(maxIdUser._id) + 1;
-        } else newIdUser = 1;
-        fields._id = newIdUser;
+        
+        let newIdUser = await functions.getMaxIdByField(Users, 'idRaoNhanh365');
+        fields.idRaoNhanh365 = newIdUser;
         fields.createdAt = Date(Date.now());
         let news = new Users(fields);
         await news.save();
         return functions.success(res, 'Create news RN365 success!');
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.updateUser = async(req, res, next) => {
     try {
-        if (!req.body.userID)
-            return functions.setError(res, "Missing input value id user!", 404);
         let userID = req.body.userID;
-        let fields = req.info;
-        fields.updateAt = Date(Date.now());
-        let existsUser = await Users.findOne({ _id: userID });
-        if (existsUser) {
-
-            await Users.findOneAndUpdate({ _id: userID }, fields);
-            return functions.success(res, "User edited successfully");
+        if (userID) {
+            let fields = req.info;
+            fields.updateAt = Date(Date.now());
+            let existsUser = await Users.findOne({ idRaoNhanh365: userID });
+            if (existsUser) {
+                await Users.findOneAndUpdate({ idRaoNhanh365: userID }, fields);
+                return functions.success(res, "User edited successfully");
+            }
+            return functions.setError(res, "User not found!", 505);
         }
-        return functions.setError(res, "User not found!", 505);
-    } catch (err) {
-        console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, "Missing input value id user!", 404);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.deleteUser = async(req, res, next) => {
     try {
-        let userID = Number(req.query.userID);
+        let userID = req.body.userID;
         if (userID) {
-            let user = await functions.getDataDeleteOne(Users, { _id: userID });
+            userID = Number(userID);
+            let user = await functions.getDataDeleteOne(Users, { idRaoNhanh365: userID });
             if (user.deletedCount === 1) {
-                return functions.success(res, `Delete user with _id=${userID} success`);
+                return functions.success(res, `Delete user with idRaoNhanh365=${userID} success`);
             } else {
                 return functions.success(res, "User not found");
             }
         }
         return functions.setError(res, "Missing input userID", 500);
-    } catch (e) {
-        console.log("Error from server", e);
-        return functions.setError(res, "Error from server", 500);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
-
 
 //-------------------------------------------------------controller lich su nap the -------------------------
 
@@ -620,12 +585,8 @@ exports.getListHistory = async(req, res, next) => {
     try {
         //lay cac tham so dieu kien tim kiem tin
         let { page, pageSize, _id, userName, userId, seri, fromDate, toDate } = req.body;
-        if (!page) {
-            return functions.setError(res, "Missing input page", 401);
-        }
-        if (!pageSize) {
-            return functions.setError(res, "Missing input pageSize", 402);
-        }
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
@@ -634,18 +595,13 @@ exports.getListHistory = async(req, res, next) => {
 
         let condition = {};
 
-        // tu ngay den ngay
-        if (fromDate) {
-            condition.createTime = { $gte: new Date(fromDate) }
-        }
-        if (toDate) {
-            condition.createTime = { $lte: new Date(toDate) };
-        }
-
+        if (fromDate && !toDate) condition.createTime = { $gte: new Date(fromDate) };
+        if (toDate && !fromDate) condition.createTime = { $lte: new Date(toDate) };
+        if (toDate && fromDate) condition.createTime = { $gte: new Date(fromDate), $lte: new Date(toDate) };
         if (_id) condition._id = Number(_id);
-        if (userName) condition.userName = new RegExp(userName);
+        if (userName) condition.userName = new RegExp(userName, 'i');
         if (userId) condition.userId = new Number(userId);
-        if (seri) condition.seri = new RegExp(seri);
+        if (seri) condition.seri = new RegExp(seri, 'i');
         let fields = { _id: 1, userId: 1, seri: 1, time: 1, price: 1 };
         let listHistory = await History.aggregate([
             { $match: condition },
@@ -653,11 +609,10 @@ exports.getListHistory = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "userId",
-                    foreignField: "_id",
+                    foreignField: "idRaoNhanh365",
                     as: "matchedDocuments"
                 }
             },
-            // {$project: fields},
             { $sort: { _id: 1 } },
             { $skip: skip },
             { $limit: limit }
@@ -665,8 +620,7 @@ exports.getListHistory = async(req, res, next) => {
         const totalCount = await News.countDocuments(condition);
         return functions.success(res, 'Get list history success', { totalCount, listHistory })
     } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message);
     }
 }
 
@@ -675,59 +629,52 @@ exports.getListHistory = async(req, res, next) => {
 
 exports.getListBlog = async(req, res, next) => {
     try {
-        if (req.body) {
-            if (!req.body.page) {
-                return functions.setError(res, "Missing input page", 401);
-            }
-            if (!req.body.pageSize) {
-                return functions.setError(res, "Missing input pageSize", 402);
-            }
-            let page = Number(req.body.page);
-            let pageSize = Number(req.body.pageSize);
-            const skip = (page - 1) * pageSize;
-            const limit = pageSize;
-            let title = req.body.title;
-            let blogId = req.body.blogId;
-            let listCondition = {};
+        let {page, pageSize, title, blogId} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let listCondition = {};
 
-            // dua dieu kien vao ob listCondition
-            if (title) listCondition.title = new RegExp(title);
-            if (blogId) listCondition._id = Number(blogId);
-            let fieldsGet = {
-                adminId: 1,
-                langId: 1,
-                title: 1,
-                url: 1,
-                image: 1,
-                keyword: 1,
-                sapo: 1,
-                des: 1,
-                detailDes: 1,
-                date: 1,
-                adminEdit: 1,
-                dateLastEdit: 1,
-                order: 1,
-                active: 1,
-                new: 1,
-                hot: 1,
-                titleRelate: 1,
-                contentRelate: 1
-            }
-            const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit);
-            const totalCount = await functions.findCount(Blog, listCondition);
-            return functions.success(res, "get list blog success", { totalCount: totalCount, data: listBlog });
-        } else {
-            return functions.setError(res, "Missing input data", 400);
+        // dua dieu kien vao ob listCondition
+        if (title) listCondition.title = new RegExp(title, 'i');
+        if (blogId) listCondition._id = Number(blogId);
+        let fieldsGet = {
+            adminId: 1,
+            langId: 1,
+            title: 1,
+            url: 1,
+            image: 1,
+            keyword: 1,
+            sapo: 1,
+            des: 1,
+            detailDes: 1,
+            date: 1,
+            adminEdit: 1,
+            dateLastEdit: 1,
+            order: 1,
+            active: 1,
+            new: 1,
+            hot: 1,
+            titleRelate: 1,
+            contentRelate: 1
         }
-    } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit);
+        const totalCount = await functions.findCount(Blog, listCondition);
+        return functions.success(res, "get list blog success", { totalCount: totalCount, data: listBlog });
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.getAndCheckDataBlog = async(req, res, next) => {
     try {
-        let image = req.files.image;
+        let image;
+        if(req.files) {
+            image = req.files.image;
+        }
         let { adminId, title, url, des, keyword, sapo, active, hot, detailDes, titleRelate, contentRelate, newStatus, date, dateLastEdit } = req.body;
         let fields = [adminId, title, url, image, des, keyword, sapo, detailDes, titleRelate, contentRelate];
         for (let i = 0; i < fields.length; i++) {
@@ -753,9 +700,8 @@ exports.getAndCheckDataBlog = async(req, res, next) => {
             dateLastEdit: dateLastEdit
         }
         return next();
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -764,11 +710,7 @@ exports.getAndCheckDataBlog = async(req, res, next) => {
 exports.createBlog = async(req, res, next) => {
     try {
         let fields = req.info;
-        const maxIdBlog = await Blog.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-        let newIdBlog;
-        if (maxIdBlog) {
-            newIdBlog = Number(maxIdBlog._id) + 1;
-        } else newIdBlog = 1;
+        let newIdBlog = functions.getMaxIdByField(Blog, '_id');
         fields._id = newIdBlog;
 
         if (!fields.date) {
@@ -779,22 +721,19 @@ exports.createBlog = async(req, res, next) => {
         if (!await functions.checkImage(image.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        serviceRN.uploadFileRN2(folderImg, newIdBlog, image);
-        fields.image = serviceRN.createLinkFileRaonhanh(folderImg, newIdBlog, image.name);
+        fields.image = await serviceRN.uploadFileRaoNhanh(folderImg, newIdBlog, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
         let blog = new Blog(fields);
         await blog.save();
         return functions.success(res, 'Create blog RN365 success!');
-    } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
 exports.updateBlog = async(req, res, next) => {
     try {
-        if (!req.body._id)
-            return functions.setError(res, "Missing input value id blog!", 404);
         let _id = req.body._id;
+        if (!_id) return functions.setError(res, "Missing input value id blog!", 404);
         let fields = req.info;
         if (!fields.dateLastEdit) {
             fields.dateLastEdit = Date(Date.now());
@@ -809,18 +748,16 @@ exports.updateBlog = async(req, res, next) => {
             let linkImg = existsBlog.image.split("/");
             let len = linkImg.length;
             // functions.deleteImgRaoNhanh(folderImg, linkImg[len-2], linkImg[len-1]);
-            serviceRN.uploadFileRN2(folderImg, _id, image);
-            fields.image = serviceRN.createLinkFileRaonhanh(folderImg, _id, image.name);
+            fields.image = await serviceRN.uploadFileRaoNhanh(folderImg, newIdBlog, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
 
             //cap nhat du lieu
-            await Blog.findByIdAndUpdate(_id, fields);
+            await Blog.findOneAndUpdate({_id: _id}, fields);
             return functions.success(res, "Blog edited successfully");
         }
 
         return functions.setError(res, "Blog not found!", 505);
-    } catch (err) {
-        console.log("Err from server!", err);
-        return functions.setError(res, "Err from server!", 500);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -849,8 +786,7 @@ exports.getListNewWithPin = async(req, res, next) => {
                 return functions.success(res, 'Get ListNewWithPin', { data: priceList })
             }
         } catch (error) {
-            console.error(error);
-            return functions.setError(res, error)
+            return functions.setError(res, error.message)
         }
     }
     //api tạo mới ghim tin đăng
@@ -900,8 +836,7 @@ exports.createNewWithPin = async(req, res, next) => {
             return functions.setError(res, 'The input No Vaild', 400);
         }
     } catch (error) {
-        console.log(error);
-        return functions.setError(res, err)
+        return functions.setError(res, error.message);
     }
 }
 
@@ -939,8 +874,7 @@ exports.putNewWithPin = async(req, res, next) => {
             return functions.setError(res, 'The input No Vaild', 400);
         }
     } catch (error) {
-        console.error(error);
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 
@@ -957,7 +891,7 @@ exports.getListPricePush = async(req, res, next) => {
         let data = await PriceList.find(condition, {}, { unitPrice: 1 })
         return functions.success(res, 'Get List New With Push', { data })
     } catch (error) {
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 
@@ -1003,8 +937,7 @@ exports.createNewWithPush = async(req, res, next) => {
             return functions.setError(res, 'The input No Vaild', 400);
         }
     } catch (error) {
-        console.error(error);
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 
@@ -1013,15 +946,15 @@ exports.createNewWithPush = async(req, res, next) => {
 
 // tạo mới
 exports.createReport = async(req, res, next) => {
-        try {
-            const reportNewsData = req.body;
-            const newReportNews = new ReportNews(reportNewsData);
-            const savedReportNews = await newReportNews.save();
-            res.status(201).json(savedReportNews);
-        } catch (error) {
-            return functions.setError(res, error)
-        }
+    try {
+        const reportNewsData = req.body;
+        const newReportNews = new ReportNews(reportNewsData);
+        const savedReportNews = await newReportNews.save();
+        res.status(201).json(savedReportNews);
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
+}
     // api danh sách tìm kiếm tin báo cáo
 exports.listReportNew = async(req, res, next) => {
         try {
@@ -1058,50 +991,48 @@ exports.listReportNew = async(req, res, next) => {
             }])
             return functions.success(res, "get list report success", { data });
         } catch (error) {
-            console.log("Err from server", error);
-            return functions.setError(res, error)
+            return functions.setError(res, error.message)
         }
     }
     // api sửa tin báo cáo
 exports.fixNewReport = async(req, res, next) => {
-        try {
-            const { id } = req.params;
-            const Report = await ReportNews.findOneAndUpdate({ _id: id }, { fixed: 1 }, {
-                new: true
-            })
-            return functions.success(res, "Fix report success", { data: Report });
-        } catch (error) {
-            console.log("Err from server", error);
-            return functions.setError(res, error)
-        }
+    try {
+        const { id } = req.params;
+        const Report = await ReportNews.findOneAndUpdate({ _id: id }, { fixed: 1 }, {
+            new: true
+        })
+        return functions.success(res, "Fix report success", { data: Report });
+    } catch (error) {
+        return functions.setError(res, error.message)
     }
-    //-------------------------------------------------------API chiet khau nap the-------------------------
-    // tạo
+}
+//-------------------------------------------------------API chiet khau nap the-------------------------
+// tạo
 exports.createDiscount = async(req, res, next) => {
-        try {
-            const reportNewsData = req.body;
-            const newReportNews = new NetworkOperator(reportNewsData);
-            const savedReportNews = await newReportNews.save();
-            res.status(201).json(savedReportNews);
-        } catch (error) {
-            return functions.setError(res, error)
-        }
+    try {
+        const reportNewsData = req.body;
+        const newReportNews = new NetworkOperator(reportNewsData);
+        const savedReportNews = await newReportNews.save();
+        res.status(201).json(savedReportNews);
+    } catch (error) {
+        return functions.setError(res, error.message)
     }
+}
     // api tìm kiếm và danh sách chiết khấu
 exports.getListDiscountCard = async(req, res, next) => {
-        try {
-            let page = req.body.page || 1;
-            let pageSize = req.body.pageSize || 50;
-            let skip = (page - 1) * pageSize;
-            let limit = pageSize;
-            let conditions = { priceListActive: 1 };
-            let count = await NetworkOperator.find(conditions, {}).skip(skip).limit(limit).count();
-            let data = await NetworkOperator.find(conditions).sort({ _id: 1 }).skip(skip).limit(limit);
-            return functions.success(res, "Get List Report Success", { count, data });
-        } catch (error) {
-            return functions.setError(res, error)
-        }
+    try {
+        let page = req.body.page || 1;
+        let pageSize = req.body.pageSize || 50;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+        let conditions = { priceListActive: 1 };
+        let count = await NetworkOperator.find(conditions, {}).skip(skip).limit(limit).count();
+        let data = await NetworkOperator.find(conditions).sort({ _id: 1 }).skip(skip).limit(limit);
+        return functions.success(res, "Get List Report Success", { count, data });
+    } catch (error) {
+        return functions.setError(res, error.message)
     }
+}
     // api update Discount for Card
 exports.updateDiscount = async(req, res, next) => {
     try {
@@ -1124,7 +1055,7 @@ exports.updateDiscount = async(req, res, next) => {
             return functions.success(res, "Update Discount Success", { data: upDateDiscount });
         }
     } catch (error) {
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 
@@ -1146,7 +1077,7 @@ exports.failRegisterUser = async(req, res, next) => {
         let data = await RegisterFail.find(condition, {}).skip(skip).limit(limit)
         return functions.success(res, "get data success", { count, data })
     } catch (error) {
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 
@@ -1168,8 +1099,7 @@ exports.getInfoForEdit = async(req, res, next) => {
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
-        console.log("🚀 ~ file: admin.js:1156 ~ exports.getInfoForEdit= ~ error:", error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 

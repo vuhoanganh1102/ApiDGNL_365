@@ -857,7 +857,7 @@ const UserSchema = new mongoose.Schema({
             },
             xacThucLienket: {
                 type: Number,
-                default: null
+                default: 0
             },
             store_name: {
                 type: String,

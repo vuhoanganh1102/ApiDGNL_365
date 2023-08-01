@@ -811,23 +811,29 @@ exports.listAndDetail = async (req, res, next) => {
         let numAllocaction = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
         let numRecall = await ThuHoi.distinct('id_ng_thuhoi', { id_cty: id_cty, xoa_thuhoi: 0 })
         let dem_bg = (numAllocaction.length + numRecall.length)
+        let thongKe = {
+            Num_dc_vitri: Num_dc_vitri,
+            Num_dc_doituong: Num_dc_doituong,
+            Num_dcdvQL: Num_dcdvQL,
+            dem_bg: dem_bg,
+        };
         // data.push({Num_dc_vitri : Num_dc_vitri})
         // data.push({Num_dc_doituong : Num_dc_doituong})
         // data.push({Num_dcdvQL : Num_dcdvQL})
         // data.push({dem_bg : dem_bg})
         let filter = {};
         filter.id_cty = id_cty
-        // filter.xoa_dieuchuyen = 0
-        // filter.dc_type = 0
+        filter.xoa_dieuchuyen = 0
+        filter.dc_type = 0
         if(dc_id)  filter.dc_id = Number(dc_id)
-        // if(type)  filter.type = Number(type)
         if(dc_trangthai)  filter.dc_trangthai = Number(dc_trangthai)
-console.log(filter)
         //1: điều chuyển vị trí tài sản
         if (type == 1) {
-            // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
+            filter.dc_type = 0
+            console.log(filter)
+
             let data = await DieuChuyen.aggregate([
-                { $match: filter },
+                { $match: filter }, 
                 { $sort: { dc_id: -1 } },
                 { $skip: skip },
                 { $limit: limit },
@@ -870,7 +876,7 @@ console.log(filter)
                     id_nv_nhan: '$id_nv_nhan',
                     id_pb_nhan: '$id_pb_nhan',
                     dc_lydo: 1,
-                    id_ng_thuchien: '$users_id_ng_thuchien.userName',
+                    ten_ng_thuchien: '$users_id_ng_thuchien.userName',
                     dep_id: "$users_id_ng_thuchien.inForPerson.employee.dep_id",
                     dc_vi_tri_tu: "$infoVTtu.vi_tri",
                     dc_vi_tri_den: "$infoVTden.vi_tri",
@@ -904,11 +910,15 @@ console.log(filter)
                 data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
                 data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
               }
-              return fnc.success(res, 'get data success', { data })
+              let totalCount = await DieuChuyen.count(filter) 
+
+              return fnc.success(res, 'get data success', {thongKe, data , totalCount })
         }
         //2: điều chuyển đối tượng sd
         if (type == 2) {
-            // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
+            filter.dc_type = 1
+            console.log(filter)
+
             let data = await DieuChuyen.aggregate([
                 { $match: filter },
                 { $sort: { dc_id: -1 } },
@@ -935,7 +945,7 @@ console.log(filter)
                     id_nv_nhan: '$id_nv_nhan',
                     id_pb_nhan: '$id_pb_nhan',
                     dc_lydo: 1,
-                    id_ng_thuchien: '$users_id_ng_thuchien.userName',
+                    ten_ng_thuchien: '$users_id_ng_thuchien.userName',
                   }
                 }
               ]);
@@ -961,13 +971,16 @@ console.log(filter)
                 data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
                 data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
               }
+              let totalCount = await DieuChuyen.count(filter)
           
-              return fnc.success(res, 'get data success', { data })
+              return fnc.success(res, 'get data success', {thongKe, data ,totalCount})
         }
 
         //3: điều chuyển đơn vị quản lý
         if (type == 3) {
             // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
+            filter.dc_type = 2
+            console.log(filter)
             let data = await DieuChuyen.aggregate([
                 { $match: filter },
                 { $sort: { dc_id: -1 } },
@@ -992,26 +1005,30 @@ console.log(filter)
                     }
                 },
                 { $unwind: { path: "$infoVTden", preserveNullAndEmptyArrays: true } },
-                // {
-                //   $lookup: {
-                //     from: 'Users',
-                //     localField: 'id_cty_dang_sd',
-                //     foreignField: 'idQLC',
-                //     as: 'users'
-                //   }
-                // },
-                // { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
+                { $match: {$and : [{id_cty_dang_sd:{$ne : 0}},
+                                    {id_cty_dang_sd:{$ne : 1}}] }},
+                
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'id_cty_dang_sd',
+                        foreignField: 'idQLC',
+                        as: 'cty_dang_sd'
+                    }
+                },
+                { $unwind: { path: "$cty_dang_sd", preserveNullAndEmptyArrays: true } },
           
-                // {
-                //   $lookup: {
-                //     from: 'Users',
-                //     localField: 'id_cty_nhan',
-                //     foreignField: 'idQLC',
-                //     as: 'users_id_nv_nhan'
-                //   }
-                // },
-                // { $unwind: { path: "$users_id_nv_nhan", preserveNullAndEmptyArrays: true } },
-          
+                { $match: {$and : [{id_cty_nhan:{$ne : 0}},
+                                    {id_cty_nhan:{$ne : 1}}] }},
+                {
+                    $lookup: {
+                        from: 'Users',
+                    localField: 'id_cty_nhan',
+                    foreignField: 'idQLC',
+                    as: 'cty_nhan'
+                  }
+                },
+                { $unwind: { path: "$cty_nhan", preserveNullAndEmptyArrays: true } },
                 {
                   $lookup: {
                     from: 'Users',
@@ -1027,10 +1044,10 @@ console.log(filter)
                     dc_id: 1,
                     dc_date_delete: 1,
                     dc_trangthai: 1,
-                    id_cty_dang_sd: '$users.userName',
-                    id_cty_nhan: '$users_id_nv_nhan.userName',
                     dc_lydo: 1,
-                    id_ng_thuchien: '$users_id_ng_thuchien.userName',
+                    ten_ng_thuchien: '$users_id_ng_thuchien.userName',
+                    ten_cty_nhan: '$cty_nhan.userName',
+                    ten_cty_dang_sd: '$cty_dang_sd.userName',
                     dc_vi_tri_tu: "$infoVTtu.vi_tri",
                     dc_vi_tri_den: "$infoVTden.vi_tri",
                   }
@@ -1039,9 +1056,10 @@ console.log(filter)
               for (let i = 0; i < data.length; i++) {
                 data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
                 data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
-              }
+              } 
+              let totalCount = await DieuChuyen.count(filter)
           
-              return fnc.success(res, 'get data success', { data })
+              return fnc.success(res, 'get data success', {thongKe, data , totalCount })
         }
     } catch (error) {
          console.error(error)

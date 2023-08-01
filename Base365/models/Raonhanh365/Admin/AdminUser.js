@@ -102,8 +102,6 @@ const AdminUserSchema = new mongoose.Schema({
         type: Number,
         default: 0
     }
-
-
 }, {
     collection: 'RN365_AdminUser',
     versionKey: false,
