@@ -126,7 +126,7 @@ exports.edit = async (req, res) => {
             return fnc.success(res, "cập nhật thành công", { cap })
         }
     } catch (e) {
-        return fnc.setError(res, e.message)
+        return fnc.setError(res, e.message) 
     }
 }
 
@@ -134,34 +134,34 @@ exports.delete = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
         const datatype = req.body.datatype
-        const _id = req.body.id
+        const cp_id = req.body.cp_id
         const type_quyen = req.body.type_quyen
         const id_ng_xoa = req.user.data.idQLC
         const date_delete = new Date()
 
         if (datatype == 1) {
-            const data = await capPhat.findOne({ _id: _id, id_cty: id_cty });
+            const data = await capPhat.findOne({ cp_id: cp_id, id_cty: id_cty });
             if (!data) {
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
-                await capPhat.findOneAndUpdate({ _id: _id }, {
+                await capPhat.findOneAndUpdate({ cp_id: cp_id }, {
                     id_cty: id_cty,
                     cp_da_xoa: 1,
                     cp_type_quyen_xoa: type_quyen,
                     cp_id_ng_xoa: id_ng_xoa,
-                    cp_date_delete: Date.parse(date_delete),
+                    cp_date_delete: Date.parse(date_delete)/1000, 
 
                 })
                     .then((data) => fnc.success(res, "cập nhật thành công", { data }))
                     .catch((err) => fnc.setError(res, err.message, 511));
             }
         }
-        if (datatype == 2) {
-            const data = await capPhat.findOne({ _id: _id, id_cty: id_cty });
+        if (datatype == 2) { 
+            const data = await capPhat.findOne({ cp_id: cp_id, id_cty: id_cty });
             if (!data) {
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
-                await capPhat.findOneAndUpdate({ _id: _id, id_cty: id_cty }, {
+                await capPhat.findOneAndUpdate({ cp_id: cp_id, id_cty: id_cty }, {
                     id_cty: id_cty,
                     cp_da_xoa: 0,
                     cp_type_quyen_xoa: 0,
@@ -174,14 +174,14 @@ exports.delete = async (req, res) => {
             }
         }
         if (datatype == 3) {
-            const deleteonce = await fnc.getDatafindOne(capPhat, { _id: _id, id_cty: id_cty });
+            const deleteonce = await fnc.getDatafindOne(capPhat, { cp_id: cp_id, id_cty: id_cty });
             if (!deleteonce) {
                 return fnc.setError(res, "không tìm thấy bản ghi", 510);
             } else { //tồn tại thì xóa 
-                fnc.getDataDeleteOne(capPhat, { _id: _id })
+                fnc.getDataDeleteOne(capPhat, { cp_id: cp_id })
                     .then(() => fnc.success(res, "xóa thành công!", { deleteonce }))
                     .catch(err => fnc.setError(res, err.message, 512));
-            }
+            } 
         }
 
 
@@ -282,7 +282,6 @@ exports.getListNV = async (req, res) => {
                     }
                 },
             { $unwind: { path: "$infoNguoiDuocCP", preserveNullAndEmptyArrays: true } },
-            { $match: {"infoNguoiDuocCP.type" : 2} },
 
 
             {
