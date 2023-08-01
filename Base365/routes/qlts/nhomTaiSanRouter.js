@@ -10,6 +10,9 @@ router.post('/add',functions.checkToken,formData.parse(),controllerNhomTs.addNho
 //Api hiển thị + dổ danh sách tìm kiếm
 router.post('/list',functions.checkToken,formData.parse(),controllerNhomTs.showNhomTs)
 
+//Api đổ data để sửa nhóm
+router.post('/Nhomdata',functions.checkToken,formData.parse(),controllerNhomTs.showdataCT)
+
 //Api hiển thị chi tiết nhóm
 router.post('/details',functions.checkToken,formData.parse(),controllerNhomTs.showCTNhomTs)
 
@@ -19,6 +22,18 @@ router.post('/edit',functions.checkToken,formData.parse(),controllerNhomTs.editN
 //Api xóa
 router.post('/delete',functions.checkToken,formData.parse(),controllerNhomTs.xoaNhom)
 
+//Api hiển thị thông tin tùy chỉnh phần nhóm
+router.post('/listTttc',functions.checkToken,formData.parse(),controllerNhomTs.listTTPBnhom)
 
+//Api thêm mới thông tin tùy chỉnh nhóm
+router.post('/addTTTC',functions.checkToken,formData.parse(),controllerNhomTs.addTTPB)
 
+//Api chi tiết thông tin tùy chỉnh
+router.post('/detailsTTTC',functions.checkToken,formData.parse(),controllerNhomTs.detailsTTTC)
+
+//Api thông tin tùy chỉnh
+router.post('/editTTTC',functions.checkToken,formData.parse(),controllerNhomTs.editTTTC);
+
+//Api xóa thông tin tùy chỉnh
+router.post('/deleteTTTC',functions.checkToken,formData.parse(),controllerNhomTs.deleteTTTC);
 module.exports = router

@@ -23,7 +23,7 @@ var TrangChu = require("./qlts/TrangChu");
 var DieuChuyenBanGiaoDT = require('./qlts/DieuChuyenBanGiao/DieuchuyenDoiTuong')
 var thanhly = require('./qlts/thanhLyRouter')
 var phanQuyen = require('./qlts/phanQuyen')
-var DanhSach = require('./qlts/DanhSach');
+
 //Api tool quét data
 router.use('/tool', toolData)
 
@@ -58,7 +58,7 @@ router.use('/BaoDuong', BaoDuong);
 router.use('/QuyDinhBaoDuong', QuyDinhBaoDuong);
 router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
 router.use('/TheoDoiCongSuat', TheoDoiCongSuat);
-router.use('/DanhSach', DanhSach);
+
 // điều chuyển bàn giao 
 router.use('/DieuChuyenBanGiao', DieuChuyenBanGiao);
 

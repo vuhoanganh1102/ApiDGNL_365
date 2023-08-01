@@ -16,9 +16,10 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
         const skip = (page-1)*pageSize;
 
         let id_cty = req.user.data.com_id;
-        let condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}};
-        if(key) condition.mat_id = Number(key);
-
+        let condition = {};
+        if (key) {
+            condition.mat_id = Number(key);
+          }
         let baoCaoMat = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}});
         let choDenBu = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 3});
         let slMat = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 1});
@@ -27,7 +28,15 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
             choDenBu: choDenBu,
             slMat: slMat,
         };
-
+        if (dataType == 1) {
+            condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}};
+        } else if (dataType == 2) {
+            condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 3};
+        } else if(dataType == 3){
+            condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 1};
+        }else{
+            return functions.setError(res, 'dataType không hợp lệ', 400);
+        }
         let danhSachMat = await Mat.aggregate([
             {$match: condition},
             {$sort: {mat_id: -1}},
@@ -61,8 +70,13 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
                     as: "NguoiTao"
                 }
             },
+            
             { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
-
+            {
+                $match: {
+                  'NguoiTao.type': { $ne: 0 },
+                },
+            },
             { $project: {
                 "mat_id": "$mat_id", 
                 "mat_trangthai": "$mat_trangthai",

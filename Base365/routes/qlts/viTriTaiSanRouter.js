@@ -17,4 +17,7 @@ router.post('/showadd',functions.checkToken,formData.parse(),controllerViTriTs.s
 //Api xóa
 router.post("/delete",functions.checkToken,formData.parse(),controllerViTriTs.deleteVT)
 
+//Api chi tiết 
+router.post("/details",functions.checkToken,formData.parse(),controllerViTriTs.detailsVT)
+
 module.exports = router

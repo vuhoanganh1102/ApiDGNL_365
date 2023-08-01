@@ -1,4 +1,5 @@
 
+const NhomTaiSan = require('../../models/QuanLyTaiSan/NhomTaiSan');
 const phanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen');
 const Users = require('../../models/Users');
 const department = require('../../models/qlc/Deparment')
@@ -42,6 +43,10 @@ exports.validateTaiSanInput = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, i
   }
   else if (!id_dv_quanly) {
     throw { code: 400, message: "id_dv_quanly không không được bỏ trống" }
+  }
+  
+  else if (isNaN(Number(id_ten_quanly))) {
+    throw { code: 400, message: "id_dv_quanly phải là 1 số" }
   }
   else if (!id_ten_quanly) {
     throw { code: 400, message: "id_ten_quanly không không được bỏ trống" }
@@ -272,7 +277,7 @@ exports.loaiTaiSanXoa = async (res, LoaiTaiSan, dem, conditions, skip, limit) =>
         }
       },
       { $unwind: { path: "$nhom_ts", preserveNullAndEmptyArrays: true } },
-
+      
       {
         $project: {
           tongSoLuongTaiSan: { $sum: '$taiSan.ts_so_luong' },
@@ -292,7 +297,8 @@ exports.loaiTaiSanXoa = async (res, LoaiTaiSan, dem, conditions, skip, limit) =>
         data[i].ng_xoa = user.userName
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await LoaiTaiSan.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -341,7 +347,8 @@ exports.nhomTaiSanDaXoa = async (res, nhomTaiSan, dem, conditions, skip, limit, 
         data[i].ng_xoa = user.userName
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await NhomTaiSan.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -367,6 +374,7 @@ exports.taiSanXoa = async (res, TaiSan, dem, conditions, skip, limit, comId) => 
         }
       },
       { $unwind: '$loaits' },
+      
       {
         $project: {
           tongSoLuongTaiSan: { $sum: '$taiSan.ts_so_luong' },
@@ -400,7 +408,8 @@ exports.taiSanXoa = async (res, TaiSan, dem, conditions, skip, limit, comId) => 
         data[i].com_address = com_address.address
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await TaiSan.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -435,6 +444,11 @@ exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
       },
       { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'user.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           cp_id: 1,
           mataisan: '$taisan.ts_id',
@@ -454,8 +468,9 @@ exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
       data[i].cp_date_delete = new Date(data[i].cp_date_delete * 1000);
 
     }
-
-    return functions.success(res, 'get data success', { dem, data })
+    
+    const totalCount = await CapPhat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount})
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -491,6 +506,11 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
       },
       { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'user.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           thuhoi_ngay: 1,
           thuhoi_date_delete: 1,
@@ -518,7 +538,8 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
       }
     }
 
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await ThuHoi.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -554,6 +575,11 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
         }
       },
       { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
+      {
+        $match: {
+          'user.type': { $ne: 0 },
+        },
+    },
       {
         $project: {
           dc_ngay: 1,
@@ -593,7 +619,8 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
     }
 
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await DieuChuyen.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -628,6 +655,11 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
         }
       },
       { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
+      {
+        $match: {
+          'user.type': { $ne: 0 },
+        },
+    },
       {
         $project: {
           dc_ngay: 1,
@@ -667,7 +699,8 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
     }
 
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await DieuChuyen.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -703,7 +736,12 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
         }
       },
       { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
-
+      {
+        $match: {
+          'user.type': { $ne: 0 },
+          'users.type': { $ne: 0 }
+        },
+    },
       {
         $lookup: {
           from: 'Users',
@@ -724,6 +762,12 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
       },
       { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'users_id_nv_nhan.type': { $ne: 0 },
+          'users_id_ng_thuchien.type': { $ne: 0 }
+        },
+    },
+      {
         $project: {
           dc_ngay: 1,
           dc_id: 1,
@@ -742,7 +786,8 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
     }
 
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await DieuChuyen.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -787,6 +832,12 @@ exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       },
       { $unwind: { path: "$sc_ng_sd", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'sc_ng_sd.type': { $ne: 0 },
+          'ng_xoa.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           sc_id: 1,
           sc_trangthai: 1,
@@ -809,7 +860,8 @@ exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       data[i].sc_ngay_hong = new Date(data[i].sc_ngay_hong * 1000)
       data[i].sc_date_delete = new Date(data[i].sc_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await SuaChua.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -845,6 +897,12 @@ exports.dangSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       },
       { $unwind: { path: "$ng_xoa", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+
+          'ng_xoa.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           sc_id: 1,
           sc_trangthai: 1,
@@ -868,7 +926,8 @@ exports.dangSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       data[i].sc_ngay_hong = new Date(data[i].sc_dukien * 1000)
       data[i].sc_date_delete = new Date(data[i].sc_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await SuaChua.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -904,6 +963,11 @@ exports.daSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       },
       { $unwind: { path: "$ng_xoa", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'ng_xoa.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           sc_ngay: 1,
           sc_dukien: 1,
@@ -928,7 +992,8 @@ exports.daSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       data[i].sc_hoanthanh = new Date(data[i].sc_hoanthanh * 1000)
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await SuaChua.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -982,6 +1047,13 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       },
       { $unwind: { path: "$bd_ng_sd", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'bd_id_ng_tao.type': { $ne: 0 },
+          'bd_id_ng_xoa.type': { $ne: 0 },
+          'bd_ng_sd.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           id_bd: 1,
           bd_trang_thai: 1,
@@ -1006,7 +1078,8 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       data[i].bd_date_create = new Date(data[i].bd_date_create * 1000)
       data[i].bd_date_delete = new Date(data[i].bd_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await BaoDuong.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1042,6 +1115,11 @@ exports.dangBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       },
       { $unwind: { path: "$bd_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'bd_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           id_bd: 1,
           ts_id: '$taisan.ts_id',
@@ -1062,7 +1140,9 @@ exports.dangBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       data[i].bd_dukien_ht = new Date(data[i].bd_dukien_ht * 1000)
       data[i].bd_date_delete = new Date(data[i].bd_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await BaoDuong.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
+    
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1098,6 +1178,11 @@ exports.daBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       },
       { $unwind: { path: "$bd_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'bd_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           id_bd: 1,
           ts_id: '$taisan.ts_id',
@@ -1124,7 +1209,8 @@ exports.daBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       data[i].bd_date_delete = new Date(data[i].bd_date_delete * 1000)
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await BaoDuong.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1170,6 +1256,11 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
       },
       { $unwind: { path: "$qd_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'bd_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           qd_id: 1,
           ten_loai: '$loaitaisan.ten_loai',
@@ -1202,9 +1293,10 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
         data[i].cs_bd_bd_vip = '---';
       }
     }
-
-
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Quydinh_bd.countDocuments(conditions);
+   
+    return functions.success(res, 'get data success', { dem , data,totalCount})
+    
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1230,6 +1322,11 @@ exports.quanLyDonViDoCongSuat = async (res, DonViCS, dem, conditions, skip, limi
       },
       { $unwind: { path: "$dvcs_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'bd_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
+      {
         $project: {
           id_donvi: 1,
           ten_donvi: 1,
@@ -1245,7 +1342,8 @@ exports.quanLyDonViDoCongSuat = async (res, DonViCS, dem, conditions, skip, limi
 
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await DonViCS.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount})
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1290,6 +1388,11 @@ exports.theoDoiCongSuat = async (res, TheoDoiCongSuat, dem, conditions, skip, li
       },
       { $unwind: { path: "$tdcs_id_ng_xoa", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'tdcs_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
+      {
         $lookup: {
           from: 'QLTS_Tai_San',
           localField: 'loaitaisan.id_loai',
@@ -1325,7 +1428,9 @@ exports.theoDoiCongSuat = async (res, TheoDoiCongSuat, dem, conditions, skip, li
         data[i].ngayxoa = new Date(data[i].ngayxoa * 1000)
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await TheoDoiCongSuat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount})
+   
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1360,6 +1465,11 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
         }
       },
       { $unwind: { path: "$mat_id_ng_xoa", preserveNullAndEmptyArrays: true } },
+      {
+        $match: {
+          'mat_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1404,7 +1514,8 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
         }
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Mat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1461,6 +1572,13 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
       },
       { $unwind: { path: "$id_ng_nhan_denbu", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'mat_id_ng_xoa.type': { $ne: 0 },
+          'id_ng_duyet.type': { $ne: 0 },
+          'id_ng_nhan_denbu.type': { $ne: 0 },
+        },
+    },
+      {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
           localField: 'taisan.id_loai_ts',
@@ -1506,7 +1624,8 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
         }
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Mat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1578,6 +1697,15 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
       },
       { $unwind: { path: "$id_ng_nhan_denbu", preserveNullAndEmptyArrays: true } },
       {
+        $match: {
+          'id_ng_tao.type': { $ne: 0 },
+          'mat_id_ng_xoa.type': { $ne: 0 },
+          'id_ngdexuat.type': { $ne: 0 },
+          'id_ng_duyet.type': { $ne: 0 },
+          'id_ng_nhan_denbu.type': { $ne: 0 },
+        },
+    },
+      {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
           localField: 'taisan.id_loai_ts',
@@ -1614,7 +1742,9 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
       data[i].mat_han_ht = new Date(data[i].mat_han_ht * 1000)
       data[i].mat_date_delete = new Date(data[i].mat_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+
+    const totalCount = await Mat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1651,6 +1781,11 @@ exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
         }
       },
       { $unwind: { path: "$huy_id_ng_xoa", preserveNullAndEmptyArrays: true } },
+      {
+        $match: {
+          'huy_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1694,7 +1829,8 @@ exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
         data[i].vi_tri_ts = '---';
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Huy.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1738,7 +1874,12 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
         }
       },
       { $unwind: { path: "$id_ng_duyet", preserveNullAndEmptyArrays: true } },
-
+      {
+        $match: {
+          'huy_id_ng_xoa.type': { $ne: 0 },
+          'id_ng_duyet.type': { $ne: 0 },
+        },
+    },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1783,7 +1924,8 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
       }
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Huy.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1818,6 +1960,11 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
         }
       },
       { $unwind: { path: "$tl_id_ng_xoa", preserveNullAndEmptyArrays: true } },
+      {
+        $match: {
+          'tl_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1863,7 +2010,8 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
       }
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await ThanhLy.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1898,8 +2046,11 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
         }
       },
       { $unwind: { path: "$tl_id_ng_xoa", preserveNullAndEmptyArrays: true } },
-
-
+      {
+        $match: {
+          'tl_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1944,7 +2095,8 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
         }
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await ThanhLy.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)

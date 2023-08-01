@@ -352,7 +352,7 @@ exports.danhSachBaoDuong = async (req, res, next) => {
 
         let taiDaBD = await fnc.findCount(BaoDuong, {...condition, bd_trang_thai: 1});
 
-        let quyDinhBD = await fnc.findCount(QuyDinhBaoDuong, {id_cty: com_id, qd_xoa: 0, id_ng_tao_qd: idQLC});
+        let quyDinhBD = await fnc.findCount(QuyDinhBaoDuong, {id_cty: com_id, qd_xoa: 0});
 
         let theoDoiCongSuat = await fnc.findCount(TheoDoiCongSuat, {id_cty: com_id, tdcs_xoa: 0});
 
