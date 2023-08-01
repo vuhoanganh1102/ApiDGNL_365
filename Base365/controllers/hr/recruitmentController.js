@@ -732,7 +732,6 @@ exports.getListCandidate= async(req, res, next) => {
             {$sort: {id: -1}},
             {$skip: skip},
             {$limit: limit},
-            //lay ra thong tin vi tri tuyen dung
             {
                 $lookup: {
                     from: "HR_AnotherSkills",
@@ -809,9 +808,9 @@ exports.getListCandidate= async(req, res, next) => {
                     'hometown': '$hometown',
                     'isSwitch': '$isSwitch',
                     'epIdCrm': '$epIdCrm',
-                    'Recruitment': '$Recruitment.title',
+                    'Title': '$Recruitment.title',
                     'Position': '$Recruitment.posApply',
-                    'recruitmentId': '$Recruitment.recruitmentId',
+                    'RecruitmentId': '$Recruitment.recruitmentId',
                     'NvTuyenDung': '$NvTuyenDung.userName',
                     'NguoiGioiThieu': '$NguoiGioiThieu.userName',
                     'listSkill': '$listSkill',
