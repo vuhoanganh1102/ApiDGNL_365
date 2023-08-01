@@ -14,7 +14,7 @@ exports.addAchievement = async (req, res, next) => {
         let listUser = [];
         let type = 1;
         let price = req.body.price;
-        let createdBy = req.body.name;
+        let createdBy = req.body.created_by;
         let achievementType = req.body.achievement_type;
         let appellation = req.body.appellation;
         let achievementLevel = req.body.achievement_level;
@@ -86,7 +86,7 @@ exports.addAchievementGroup = async (req, res, next) => {
         let achievementId = req.body.achievement_id;
         let content = req.body.content;
         let type = 2;
-        let createdBy = req.body.name;
+        let createdBy = req.body.created_by;
         let achievementAt = req.body.achievement_at;
         let depId = Number(req.body.depId);
         let depName = req.body.depName;
@@ -154,7 +154,7 @@ exports.updateAchievement = async (req, res, next) => {
         if (!id) return functions.setError(res, 'Invalid id', 400)
         let list_user = req.body.list_user;
         let list_user_name = req.body.list_user_name;
-        let createdBy = req.body.name;
+        let createdBy = req.body.created_by;
         let achievementAt = req.body.achievement_at;
         let achievementType = req.body.achievement_type;
         let appellation = req.body.appellation;
@@ -272,7 +272,7 @@ exports.addInfinges = async (req, res, next) => {
         let regulatoryBasis = req.body.regulatory_basis;
         let infringeName = req.body.infringe_name;
         let listUser = [];
-        let createdBy = req.body.name;
+        let createdBy = req.body.created_by;
         let infringeAt = req.body.infringe_at;
 
         let infringeType = req.body.infringe_type;
@@ -331,7 +331,7 @@ exports.addInfingesGroup = async (req, res, next) => {
         let comId = req.infoLogin.comId;
         let regulatoryBasis = req.body.regulatory_basis;
         let infringeName = req.body.infringe_name;
-        let createdBy = req.body.name;
+        let createdBy = req.body.created_by;
         let infringeAt = req.body.infringe_at;
         let infringeType = req.body.infringe_type;
         let numberViolation = req.body.number_violation;
@@ -395,7 +395,7 @@ exports.updateInfinges = async (req, res, next) => {
         let list_user_name = req.body.list_user_name;
         let infringeAt = req.body.infringe_at;
         let infringeName = req.body.infringe_name;
-        let createdBy = req.body.name;
+        let createdBy = req.body.created_by;
         let check = await InfringesFors.findOne({ id, comId });
         let listUpdate = [];
 

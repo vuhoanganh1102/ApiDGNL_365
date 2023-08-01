@@ -701,6 +701,15 @@ exports.reportChart = async (req, res, next) => {
         if (married) conditions['inForPerson.account.married'] = married;
         if (depId) conditions['inForPerson.employee.dep_id'] = depId;
         if (seniority) conditions['inForPerson.account.experience'] = seniority;
+        
+        if(birthday){
+            var dauNam = new Date(birthday,1,1).getTime() / 1000;
+            var cuoiNam = new Date(birthday,12,31).getTime() / 1000;
+            conditions['inForPerson.account.birthday'] = {
+                $gt:dauNam,
+                $lt:cuoiNam
+            };
+        }
         conditions.type = 2
         if (link === 'bieu-do-danh-sach-nhan-vien.html') {
             data = await Users.aggregate([
@@ -923,7 +932,6 @@ exports.reportChart = async (req, res, next) => {
             ])
             let subData = [];
             for (let i = 0; i < data.length; i++) {
-                console.log("🚀 ~ file: report.js:926 ~ exports.reportChart= ~ data:", data)
                 conditions = {};
                 
                 conditions.sb_id_user = data[i].sb_id_user;
@@ -984,7 +992,7 @@ exports.reportChart = async (req, res, next) => {
                 { $project: searchItem }
 
             ])
-            for (let i = 0; i < check.length; i++) {
+            for (let i = 0; i < check.length; i++) { 
                 let sinhnhat = new Date(check[i].birthday * 1000).getFullYear()
                 let namhientai = new Date().getFullYear();
                 tuoi = namhientai - sinhnhat;
@@ -999,7 +1007,7 @@ exports.reportChart = async (req, res, next) => {
                 }
             }
             let soluong = data.length
-            return functions.success(res, 'get data success', { soluong, data })
+            return functions.success(res, 'get data success', { soluong, data:list })
         }
     } catch (error) {
         console.log("🚀 ~ file: report.js:985 ~ exports.reportChart= ~ error:", error)
