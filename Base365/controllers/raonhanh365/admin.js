@@ -32,7 +32,7 @@ exports.loginAdminUser = async(req, res, next) => {
                 if (checkPassword) {
                     let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
                         date: new Date(Date.now())
-                    })
+                    }, {new: true});
                     const token = await functions.createToken(updateUser, "1d")
                     return functions.success(res, 'Đăng nhập thành công', { token: token })
                 }
@@ -48,12 +48,32 @@ exports.loginAdminUser = async(req, res, next) => {
 
 exports.getListAdminUser = async(req, res, next) => {
     try {
-        let idAdmin = req.body.idAdmin;
+        let {idAdmin, page, pageSize} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 10;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
         let condition = {delete: 0};
         if (idAdmin) condition._id = Number(idAdmin);
-        let fields = { loginName: 1, name: 1, email: 1, phone: 1, editAll: 1, langId: 1, active: 1 };
-        let listAdminUser = await AdminUser.find(condition, fields).sort({ loginName: 1, active: -1 }).lean();
-        // let listAdminUser = await functions.pageFindWithFields(AdminUser, condition, fields, { loginName: 1, active: -1 }, skip, limit);
+        // let listAdminUser = await AdminUser.aggregate([
+        //     {$match: condition},
+        //     {$sort: { loginName: 1, active: -1 }},
+        //     {$skip: skip},
+        //     {$limit: limit},
+        //     {
+        //         $lookup: {
+        //             from: "RN365_AdminUserRight",
+        //             localField: "_id",
+        //             foreignField: "adminId",
+        //             as: "AdminUserRight"
+        //         }
+        //     },
+        // ]);
+        // let listAdminUser = await AdminUser.find(condition, fields).sort({ loginName: 1, active: -1 }).lean();
+        let fields = { loginName: 1, name: 1, email: 1, phone: 1, editAll: 1, langId: 1, isAdmin: 1, active: 1 };
+        let listAdminUser = await functions.pageFind(AdminUser, condition, { loginName: 1, active: -1 }, skip, limit);
 
         // lap qua danh sach user
         for (let i = 0; i < listAdminUser.length; i++) {
@@ -61,16 +81,26 @@ exports.getListAdminUser = async(req, res, next) => {
             let arrIdModule = [],
                 arrRightAdd = [],
                 arrRightEdit = [],
-                arrRightDelete = []
+                arrRightDelete = [];
+            let arrNameModule = "";
                 // lap qua cac quyen cua admindo
             for (let j = 0; j < adminUserRight.length; j++) {
+                let nameModule = await Module.findOne({_id: adminUserRight[j].moduleId}, {_id: 1, name: 1});
                 arrIdModule.push(adminUserRight[j].moduleId);
+                if(nameModule) {
+                    if(arrNameModule != ""){
+                        arrNameModule = `${arrNameModule}, ${nameModule.name}`;
+                    }else {
+                        arrNameModule = nameModule.name;
+                    }
+                }
+                // else arrNameModule.push("");
                 arrRightAdd.push(adminUserRight[j].add);
                 arrRightEdit.push(adminUserRight[j].edit);
                 arrRightDelete.push(adminUserRight[j].delete);
             }
             let adminUser = listAdminUser[i];
-            let tmpOb = { adminUser, arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete };
+            let tmpOb = { adminUser, arrIdModule, arrNameModule, arrRightAdd, arrRightEdit, arrRightDelete };
             listAdminUser[i] = tmpOb;
         }
         const totalCount = await functions.findCount(AdminUser, condition);
@@ -117,7 +147,7 @@ exports.getAndCheckDataAdminUser = async(req, res, next) => {
                     moduleId: arrIdModule[i],
                     add: arrRightAdd[i],
                     edit: arrRightEdit[i],
-                    deletelet: arrRightDelete[i]
+                    delete: arrRightDelete[i]
                 }
                 let adminUserRight = new AdminUserRight(fieldsRight);
                 await adminUserRight.save();

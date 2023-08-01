@@ -102,10 +102,13 @@ exports.updateInfoUserRaoNhanh = async (req, res, next) => {
     }
 };
 
-// thông báo kết quả đấu thầu
+// api thông báo kết quả đấu thầu
 exports.announceResult = async (req, res, next) => {
     try {
-        let { status, id_dauthau } = req.body;
+        let status = Number(req.body.status);
+        let id_dauthau = Number(req.body.id_dauthau);
+        let note = req.body.note;
+
         if (!status || !id_dauthau) {
             return functions.setError(res, 'missing data', 400);
         }
@@ -114,13 +117,13 @@ exports.announceResult = async (req, res, next) => {
         }
         let data = await Bidding.findById(id_dauthau);
         if (!data) {
-            return functions.setError(res, 'not exits', 400);
+            return functions.setError(res, 'tin không tồn tại', 400);
         }
         if (data.updatedAt) {
             return functions.setError(res, 'Chỉ được cập nhật 1 lần', 400);
         }
-        let updatedAt = new Date(Date.now())
-        await Bidding.findByIdAndUpdate(id_dauthau, { status, updatedAt })
+        let updatedAt = new Date()
+        await Bidding.findByIdAndUpdate(id_dauthau, { status, updatedAt, note })
         return functions.success(res, 'Thông báo thành công')
     } catch (error) {
         return functions.setError(res, error)
