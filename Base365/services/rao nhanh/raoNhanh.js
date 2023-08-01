@@ -288,4 +288,6 @@ exports.getLinkFile = async (file, cateId) => {
 }
 
 // lấy avatar user
-// exports.user = async (name)
+exports.getLinkAvatarUser = async (name)=>{
+    link = procees.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_dangtin'
+}
