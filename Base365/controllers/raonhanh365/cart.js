@@ -54,39 +54,31 @@ exports.getListCartByUserId = async (req, res, next) => {
 exports.addCart = async (req, res, next) => {
   try {
     let userId = req.user.data.idRaoNhanh365;
-    let { newsId, quantity,type } = req.body;
+    let { newsId, quantity, type, status, totalMoney} = req.body;
     if ( !newsId || !quantity ) {
       return functions.setError(res, "Missing input value!", 404);
     }
-
+    let time = Date.now();
     let quantityUpdate = quantity;
-    let cart = await Cart.findOne({ userId: userId, newsId: newsId });
+    let cart = await Cart.findOne({ userId: userId, newsId: newsId, type: type, status: status});
     if (cart) {
       quantityUpdate = Number(cart.quantity) + Number(quantity);
-      await Cart.findOneAndUpdate({ userId, newsId }, {
-        quantity: quantityUpdate,type,total
+      await Cart.findOneAndUpdate({ _id: cart._id }, {
+        quantity: quantityUpdate, type, totalMoney, date: time
       });
       return functions.success(res, 'Add cart RN365 success!');
     }
-
-    const maxIdCart = await Cart.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-    let newIdCart;
-    if (maxIdCart) {
-      newIdCart = Number(maxIdCart._id) + 1;
-    } else newIdCart = 1;
-
-    cart = new Cart({
-      _id: newIdCart,
-      userId: userId,
-      newsId: newsId,
-      quantity: quantity,
-      type
-    });
+    let newIdCart = await functions.getMaxIdByField(Cart, '_id');
+    let fields = {_id: newIdCart, userId: userId, newsId: newsId, quantity: quantity, type: type, date: time};
+    if(status == 0) {
+      fields.total = totalMoney;
+      await Cart.deleteMany({userId: userId, status: 0});
+    }
+    cart = new Cart(fields);
     await cart.save();
     return functions.success(res, 'Add cart RN365 success!');
   } catch (e) {
-    console.log("Err from server!", e);
-    return functions.setError(res, "Err from server!", 500);
+    return functions.setError(res, e.message);
   }
 }
 

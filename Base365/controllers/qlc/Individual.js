@@ -304,7 +304,7 @@ exports.updateInfoindividual = async(req, res, next) => {
                 address: address,
                 avatarUser: avatarUser,
                 updatedAt: functions.getTimeNow(),
-                "inForPerson.account.birthday": Date.parse(birthday) / 1000,
+                "inForPerson.account.birthday": birthday?Date.parse(birthday) / 1000:undefined,
                 "inForPerson.account.gender": gender,
                 "inForPerson.account.married": married,
                 "inForPerson.account.experience": experience,

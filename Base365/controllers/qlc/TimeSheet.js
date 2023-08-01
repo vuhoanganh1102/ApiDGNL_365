@@ -1,9 +1,11 @@
 const TimeSheets = require('../../models/qlc/TimeSheets');
+const CC365_Cycle = require('../../models/qlc/Cycle');
 const functions = require('../../services/functions')
 const calEmp = require('../../models/qlc/CalendarWorkEmployee');
 const Users = require('../../models/Users');
 const EmployeeDevice = require('../../models/qlc/EmployeeDevice');
 const CompanyWebIP = require('../../models/qlc/CompanyWebIP');
+const Tracking = TimeSheets;
 const moment = require('moment-timezone');
 
 //thêm chấm công 
@@ -407,82 +409,196 @@ exports.getListUserTrackingSuccess = async(req, res) => {
         const pageNumber = req.body.pageNumber || 1;
         const request = req.body;
         let com_id = request.com_id
-        shift_id = request.shift_id
+        //shift_id = request.shift_id
         at_time = request.at_time || true
-        inputNew = request.inputNew
-        inputOld = request.inputOld
-        if ((com_id && shift_id) == undefined) {
+        let inputNew = new Date(request.inputNew);
+        let inputOld = new Date(request.inputOld);
+        if ((com_id ) == undefined) {
             functions.setError(res, "lack of input")
-        } else if (isNaN(com_id && shift_id)) {
-            functions.setError(res, "id must be a Number")
-        } else {
-            const data = await Tracking.find({ ts_com_id: com_id, shift_id: shift_id, at_time: { $gte: inputOld, $lte: inputNew } }).select('_id idQLC ts_image ts_location_name at_time shift_id status is_success ').skip((pageNumber - 1) * 20).limit(20).sort({ sheet_id: -1 });
-            if (data) { //lấy thành công danh sách NV đã chấm công 
-                //so sanh loại bỏ phan tu trung lap
-                function compare(personA, personB) {
-                    return personA.idQLC === personB.idQLC && personA.shift_id === personB.shift_id;
+        } 
+        else {
+            const data = await Tracking.find(
+                { ts_com_id: com_id, at_time: { $gte: inputOld, $lte: inputNew } },
+                {
+                    sheet_id:1,
+                    shift_id:1,
+                    ep_id:1,
+                    at_time:1
                 }
-
-                let newData = functions.arrfil(data, compare);
-                return await functions.success(res, 'Lấy thành công', { newData });
+            ).sort({at_time:-1}).lean();
+            let listUserId = [];
+            let dataTimeSheet = [];
+            for(let i = 0; i <data.length; i++){
+                 if(!listUserId.find((e)=> e == data[i].ep_id)){
+                    listUserId.push(data[i].ep_id);
+                 };
+                 if(!dataTimeSheet.find((e)=> e.ep_id == data[i].ep_id)){
+                    dataTimeSheet.push({
+                        ep_id: data[i].ep_id,
+                        time:data[i].at_time
+                    })
+                 }
+            };
+            let listUser = await Users.find({idQLC:{$in:listUserId},type:2}).lean();
+       
+            if (data) { //lấy thành công danh sách NV đã chấm công 
+                return await functions.success(res, 'Lấy thành công', { dataTimeSheet , listUser});
             }
             return functions.setError(res, 'Không có dữ liệu', 404);
         }
 
 
     } catch (err) {
-        functions.setError(res, err.message);
+        console.log(err);
+        return functions.setError(res, err.message);
     };
+};
+function compareObjects(obj1, obj2) {
+    return JSON.stringify(obj1.idQLC) === JSON.stringify(obj2.idQLC);
+}
 
+function removeSimilarElements(data, data2) {
+    const newArray = data.filter(
+        (item1) => !data2.some((item2) => compareObjects(item1, item2))
+    );
 
+    return newArray.concat(
+        data2.filter(
+            (item2) => !data.some((item1) => compareObjects(item1, item2))
+        )
+    );
+}
+
+//LỌC PHẦN TỬ LẶP LẠI 
+function compare(personA, personB) {
+    return personA.idQLC === personB.idQLC && personA.shift_id === personB.shift_id;
 };
 
+// danh sách nhân viên chưa chấm công của ca đấy trong ngày hôm đấy 
 exports.getlistUserNoneHistoryOfTracking = async(req, res) => {
     const pageNumber = req.body.pageNumber || 1;
-    at_time = req.body.at_time || true
-    inputNew = req.body.inputNew || null
-    inputOld = req.body.inputOld || null
-    com_id = req.body.com_id;
-    shift_id = req.body.shift_id
-        //ta tìm danh sách lịch sử nhân viên của công ty đã chấm công   
-    const data = await Tracking.find({ ts_com_id: com_id, shift_id: shift_id, at_time: { $gte: inputOld, $lte: inputNew } }).select('sheet_id ep_id shift_id ')
-        //ta tìm danh sách nhân viên đã có lịch làm việc của công ty
-    const data2 = await calEmp.find({ com_id: com_id, shift_id: shift_id, }).select('sheet_id ep_id shift_id  ')
-        //ta so sánh 2 mảng 
-        // Lọc ra các phần tử không giống nhau trong cả hai mảng
+    let at_time = req.body.at_time || true
+    let inputNew = new Date(req.body.inputNew) || null
+    let inputOld = new Date(req.body.inputOld) || null
+    let com_id = Number(req.body.com_id);
+    let shift_id = req.body.shift_id
+    //ta tìm danh sách lịch sử nhân viên của công ty đã chấm công  
+    // xử lý thời gian => Lấy phổ rộng nhất có thể 
+    let start_date = new Date(inputNew.getFullYear(),inputNew.getMonth());
+    start_date = new Date(start_date.setSeconds(start_date.getSeconds() - 1));
+    let end_date = new Date(inputOld.getFullYear(),inputOld.getMonth()+1,1,7);
+    end_date = new Date(end_date.setSeconds(end_date.getSeconds() + 1))
+    let list_ep = [];
+    let listEm = await Users.find({ "inForPerson.employee.com_id":com_id},{idQLC:1}).lean();
+    for(let i=0; i<listEm.length; i++){
+        list_ep.push(listEm[i].idQLC);
+    };
+    const data = await Tracking.find(
+        { ts_com_id: com_id, shift_id: shift_id, at_time: { $gte: inputNew, $lte: inputOld } },
+        {
+            sheet_id:1,
+            shift_id:1,
+            ep_id:1
+        }
+    ).lean();
+    //ta tìm danh sách nhân viên đã có lịch làm việc của công ty
+    const data2 = await calEmp.find({ com_id: com_id, shift_id: shift_id },{
+            sheet_id:1,
+            shift_id:1,
+            ep_id:1
+        }
+    ).lean();
+    
+    // dữ liệu lịch làm việc 
+    console.log(list_ep,start_date,end_date,com_id)
+    let list_cy_detail = await CC365_Cycle.aggregate([
+        {   
+            $lookup: { 
+                from: 'CC365_EmployeCycle', 
+                localField: 'cy_id', 
+                foreignField: 'cy_id', 
+                as: 'CC365_EmployeCycle' 
+            } 
+        },
+        {
+            $match:{
+                $and:[
+                    {"CC365_EmployeCycle.ep_id":{$in:list_ep}},
+                    {"apply_month":{"$gte": start_date}},
+                    {"apply_month":{"$lte": end_date}},
+                    {com_id:com_id}
+                ]
+            }
+        },
+        {
+            $project:{
+                "cy_id":1,
+                "cy_detail":1,
+                "apply_month":1,
+                "CC365_EmployeCycle.ep_id":1
+            }
+        }
+    ]);
+    let list_detail = []; //thông tin ca của từng ngày 
+    for(let i=0; i<list_cy_detail.length;i++){
+            let array = JSON.parse(list_cy_detail[i].cy_detail);
+            for(let j = 0; j < array.length;j++){
+                // console.log(array[j]);
+                if(array[j].shift_id){
+                    let date = new Date(
+                        Number(array[j].date.split('-')[0]),
+                        Number(array[j].date.split('-')[1])-1,
+                        Number(array[j].date.split('-')[2]),
+                        7
+                    )
+                    if(array[j].shift_id.includes(',')){
+                        let array_shift = array[j].shift_id.split(',');
+                        for(let k = 0; k < array_shift.length; k++){
+                            list_detail.push({
+                                shift_id:Number(array_shift[k]),
+                                date,
+                                ep_id:list_cy_detail[i].CC365_EmployeCycle[0].ep_id
+                            });
+                        }
+                    }
+                    else{
+                        list_detail.push({
+                            shift_id:Number(array[j].shift_id),
+                            date,
+                            ep_id:list_cy_detail[i].CC365_EmployeCycle[0].ep_id,
+                        });
+                    }
+                }
+            }
+    };
+    // dữ liệu lịch làm việc của ca trong ngày đó 
+    list_detail = list_detail.filter((e)=> (e.date.getDate() == inputNew.getDate()) && (e.shift_id == shift_id) );
+    let listUserIdNoTimeSheet = [];
+    for(let i=0; i<list_detail.length; i++){
+        let check = data.find((e)=> e.ep_id == list_detail[i].ep_id );
+        if(!check){
+           if(list_ep.find((e)=> e == list_detail[i].ep_id)){
+               listUserIdNoTimeSheet.push(list_detail[i].ep_id);
+           }
+        }
+    };
+    let listUserNoTimeSheet = await Users.find({idQLC:{$in:listUserIdNoTimeSheet}},{password:0}).lean();
+    return await functions.success(res, 'Lấy thành công', { listUserNoTimeSheet}); 
 
-    function compareObjects(obj1, obj2) {
-        return JSON.stringify(obj1.idQLC) === JSON.stringify(obj2.idQLC);
-    }
+    // const ketQua = removeSimilarElements(data, data2);
 
-    function removeSimilarElements(data, data2) {
-        const newArray = data.filter(
-            (item1) => !data2.some((item2) => compareObjects(item1, item2))
-        );
 
-        return newArray.concat(
-            data2.filter(
-                (item2) => !data.some((item1) => compareObjects(item1, item2))
-            )
-        );
-    }
-    const ketQua = removeSimilarElements(data, data2);
-    //LỌC PHẦN TỬ LẶP LẠI 
-    function compare(personA, personB) {
-        return personA.idQLC === personB.idQLC && personA.shift_id === personB.shift_id;
-    }
+    // let newData = functions.arrfil(ketQua, compare);
 
-    let newData = functions.arrfil(ketQua, compare);
+    // const pageSize = 20;
+    // const startIndex = (pageNumber - 1) * pageSize;
+    // const endIndex = pageNumber * pageSize;
+    // const results = newData.slice(startIndex, endIndex);
 
-    const pageSize = 20;
-    const startIndex = (pageNumber - 1) * pageSize;
-    const endIndex = pageNumber * pageSize;
-    const results = newData.slice(startIndex, endIndex);
-
-    if (newData) { //lấy thành công danh sách NV 
-        return await functions.success(res, 'Lấy thành công', { results, pageNumber });
-    }
-    return functions.setError(res, 'Không có dữ liệu', 404);
+    // if (newData) { //lấy thành công danh sách NV 
+    //     return await functions.success(res, 'Lấy thành công', { results, pageNumber });
+    // }
+    // return functions.setError(res, 'Không có dữ liệu', 404);
 }
 
 

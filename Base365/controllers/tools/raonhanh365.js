@@ -33,7 +33,7 @@ const loveNew = require('../../models/Raonhanh365/LoveNews');
 
 
 // danh mục sản phẩm
-exports.toolCategory = async(req, res, next) => {
+exports.toolCategory = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -79,7 +79,7 @@ exports.toolCategory = async(req, res, next) => {
     }
 };
 
-exports.toolNewRN = async(req, res, next) => {
+exports.toolNewRN = async (req, res, next) => {
     try {
         let result = true;
         let page = 1;
@@ -105,7 +105,7 @@ exports.toolNewRN = async(req, res, next) => {
                         timeSell = new Date(data[i].tgian_ban * 1000)
                     }
                     if (data[i].thoigian_bdghim != 0) {
-                        timeStartPinning = new Date(data[i].thoigian_bdghim * 1000)
+                        timeStartPinning = data[i].thoigian_bdghim
                     }
                     if (data[i].ngay_bdghim != 0) {
                         dayStartPinning = new Date(data[i].ngay_bdghim * 1000)
@@ -114,25 +114,25 @@ exports.toolNewRN = async(req, res, next) => {
                         dayEndPinning = new Date(data[i].ngay_ktghim * 1000)
                     }
                     if (data[i].tgian_tghim != 0) {
-                        timePinning = new Date(data[i].tgian_ban * 1000)
+                        timePinning = data[i].tgian_ban
                     }
                     if (data[i].refresh_time != 0) {
                         refreshTime = new Date(data[i].refresh_time * 1000)
                     }
                     if (data[i].new_time_home != 0) {
-                        timeHome = new Date(data[i].new_time_home * 1000)
+                        timeHome = data[i].new_time_home
                     }
                     if (data[i].new_time_cate != 0) {
-                        timeCate = new Date(data[i].new_time_cate * 1000)
+                        timeCate = data[i].new_time_cate
                     }
                     if (data[i].tgian_hethan_thau != 0) {
                         timeEndReceivebidding = new Date(data[i].tgian_hethan_thau * 1000)
                     }
                     if (data[i].thoigian_kmbd != 0) {
-                        timePromotionStart = new Date(data[i].thoigian_kmbd * 1000)
+                        timePromotionStart = data[i].thoigian_kmbd
                     }
                     if (data[i].thoigian_kmkt != 0) {
-                        timePromotionEnd = new Date(data[i].thoigian_kmkt * 1000)
+                        timePromotionEnd = data[i].thoigian_kmkt
                     }
                     const images = data[i].new_image.split(";").map((image, index) => {
                         const parts = image.split("/");
@@ -154,7 +154,7 @@ exports.toolNewRN = async(req, res, next) => {
                             money: data[i].new_money,
                             endvalue: data[i].gia_kt,
                             downPayment: data[i].datcoc,
-until: data[i].new_unit,
+                            until: data[i].new_unit,
                             cateID: data[i].new_cate_id,
                             type: data[i].new_type,
                             city: data[i].new_city,
@@ -165,8 +165,7 @@ until: data[i].new_unit,
                             detailCategory: data[i].new_ctiet_dmuc,
                             createTime: new Date(data[i].new_create_time * 1000),
                             updateTime: new Date(data[i].new_update_time * 1000),
-                            
- phone: data[i].new_phone,
+                            phone: data[i].new_phone,
                             email: data[i].new_email,
                             address: data[i].dia_chi,
                             district: data[i].quan_huyen,
@@ -176,16 +175,16 @@ until: data[i].new_unit,
                             electroniceDevice: {
                                 warranty: data[i].new_baohanh
                             },
-                           
-free: data[i].chotang_mphi,
+                            refresh_new_home: data[i].refresh_new_home,
+                            free: data[i].chotang_mphi,
                             sold: data[i].da_ban,
                             timeSell: timeSell,
                             pinHome: data[i].new_pin_home,
                             pinCate: data[i].new_pin_cate,
                             timePushNew: data[i].new_gap,
                             timeStartPinning: timeStartPinning,
-                            dayStartPinning: dayStartPinning,
-                            dayEndPinning: dayEndPinning,
+                            dayStartPinning: data[i].ngay_bdghim,
+                            dayEndPinning: data[i].ngay_ktghim,
                             timePinning: timePinning,
                             numberDayPinning: data[i].so_ngay_ghim,
                             moneyPinning: data[i].tien_ghim,
@@ -222,7 +221,7 @@ free: data[i].chotang_mphi,
     }
 }
 
-exports.updateNewDescription = async(req, res, next) => {
+exports.updateNewDescription = async (req, res, next) => {
     try {
         let result = true;
         let page = 1;
@@ -261,8 +260,8 @@ exports.updateNewDescription = async(req, res, next) => {
                     if (post != null) {
                         await New.updateOne({ _id: idnew }, {
                             $set: {
-                            
-'han_su_dung': data[i].han_su_dung,
+
+                                'han_su_dung': data[i].han_su_dung,
                                 'poster': data[i].canhan_moigioi,
                                 'description': data[i].new_description,
                                 'productType': data[i].loai_sanpham,
@@ -399,7 +398,7 @@ exports.updateNewDescription = async(req, res, next) => {
 }
 
 
-exports.toolCateDetail = async(req, res, next) => {
+exports.toolCateDetail = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -551,8 +550,8 @@ exports.toolCateDetail = async(req, res, next) => {
             //             name: data[i].noi_xuatxu,
             //             parent: data[i].id_parents,
             //         };
-                                
- //     }
+
+            //     }
             //     page++;
             // } else {
             //     result = false;
@@ -708,8 +707,8 @@ exports.toolCateDetail = async(req, res, next) => {
             // });
             // let data = response.data.data.items;
             // if (data.length) {
-           
-//     for (let i = 0; i < data.length; i++) {
+
+            //     for (let i = 0; i < data.length; i++) {
             //         const newItem = {
             //             _id: data[i].id,
             //             name: data[i].ten_hang,
@@ -727,26 +726,26 @@ exports.toolCateDetail = async(req, res, next) => {
             // }
 
             //14. dòng ( dòng của hãng)
-            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data',
-            //     },
-            // });
+            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
 
-            // let data = response.data.data.items;
-            // if (data.length) {
-            //     for (let i = 0; i < data.length; i++) {
-            //         const newItem = {
-            //             _id: data[i].id,
-            //             name: data[i].ten_dong,
-            //         };
-            //         await CateDetail.findOneAndUpdate({ "brand": { $elemMatch: { "_id": data[i].id_hang } } }, { $push: { "brand.$.line": newItem } }, { new: true });
+            let data = response.data.data.items;
+            if (data.length) {
+                for (let i = 0; i < data.length; i++) {
+                    const newItem = {
+                        _id: data[i].id,
+                        name: data[i].ten_dong,
+                    };
+                    await CateDetail.findOneAndUpdate({ "brand": { $elemMatch: { "_id": data[i].id_hang } } }, { $push: { "brand.$.line": newItem } }, { new: true });
 
-            //     }
-            //     page++;
-            // } else {
-            //     result = false;
-            // }
+                }
+                page++;
+            } else {
+                result = false;
+            }
 
             // 15. tầng phòng
             // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_tangphong.php', form, {
@@ -794,41 +793,41 @@ exports.toolCateDetail = async(req, res, next) => {
 
 
             //17. loại chung
-            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            let data = response.data.data.items;
-            if (data.length) {
+            //             const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
+            //                 headers: {
+            //                     'Content-Type': 'multipart/form-data',
+            //                 },
+            //             });
+            //             let data = response.data.data.items;
+            //             if (data.length) {
 
-                for (let i = 0; i < data.length; i++) {
-                    const newItem = {
-                        _id: data[i].id,
-                        name: data[i].ten_loai,
-                        parent: data[i].id_cha,
-                    };
- if (data[i].id_danhmuc == 0) {
-                        await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { allType: newItem } }, { upsert: true },)
-                    } else {
-                        await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true },)
-                    }
-                }
-                page++;
-            } else {
-                result = false;
-            }
+            //                 for (let i = 0; i < data.length; i++) {
+            //                     const newItem = {
+            //                         _id: data[i].id,
+            //                         name: data[i].ten_loai,
+            //                         parent: data[i].id_cha,
+            //                     };
+            //  if (data[i].id_danhmuc == 0) {
+            //                         await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { allType: newItem } }, { upsert: true },)
+            //                     } else {
+            //                         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true },)
+            //                     }
+            //                 }
+            //                 page++;
+            //             } else {
+            //                 result = false;
+            //             }
 
             console.log(page);
         } while (result);
 
         return fnc.success(res, "Thành công");
     } catch (error) {
-        return fnc.setError(res, error.message, )
+        return fnc.setError(res, error.message,)
     }
 };
 
-exports.updateInfoSell = async(req, res, next) => {
+exports.updateInfoSell = async (req, res, next) => {
     try {
         let result = true;
         let page = 1;
@@ -869,7 +868,7 @@ exports.updateInfoSell = async(req, res, next) => {
 }
 
 // bang gia
-exports.toolPriceList = async(req, res, next) => {
+exports.toolPriceList = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -914,7 +913,7 @@ exports.toolPriceList = async(req, res, next) => {
 };
 
 // city
-exports.toolCity = async(req, res, next) => {
+exports.toolCity = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -953,7 +952,7 @@ exports.toolCity = async(req, res, next) => {
 };
 
 
-exports.toolLike = async(req, res, next) => {
+exports.toolLike = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -997,7 +996,7 @@ exports.toolLike = async(req, res, next) => {
     }
 };
 //lich su nap the
-exports.toolHistory = async(req, res, next) => {
+exports.toolHistory = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1048,7 +1047,7 @@ exports.toolHistory = async(req, res, next) => {
     }
 };
 //tin ung tuyen
-exports.toolApplyNew = async(req, res, next) => {
+exports.toolApplyNew = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1087,7 +1086,7 @@ exports.toolApplyNew = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
-exports.toolComment = async(req, res, next) => {
+exports.toolComment = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1135,7 +1134,7 @@ exports.toolComment = async(req, res, next) => {
 };
 
 //tag index
-exports.toolTagsIndex = async(req, res, next) => {
+exports.toolTagsIndex = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1185,7 +1184,7 @@ exports.toolTagsIndex = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
-exports.toolApplyNew = async(req, res, next) => {
+exports.toolApplyNew = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1224,7 +1223,7 @@ exports.toolApplyNew = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 };
-exports.toolComment = async(req, res, next) => {
+exports.toolComment = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1271,7 +1270,7 @@ exports.toolComment = async(req, res, next) => {
     }
 };
 
-exports.updateInfoSell = async(req, res, next) => {
+exports.updateInfoSell = async (req, res, next) => {
     try {
         let result = true;
         let page = 1;
@@ -1311,7 +1310,7 @@ exports.updateInfoSell = async(req, res, next) => {
 }
 
 // danh mục sản phẩm
-exports.toolPriceList = async(req, res, next) => {
+exports.toolPriceList = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1355,7 +1354,7 @@ exports.toolPriceList = async(req, res, next) => {
     }
 };
 
-exports.toolTagsIndex = async(req, res, next) => {
+exports.toolTagsIndex = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1400,7 +1399,7 @@ exports.toolTagsIndex = async(req, res, next) => {
 };
 
 
-exports.toolAdminUserRight = async(req, res, next) => {
+exports.toolAdminUserRight = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1441,7 +1440,7 @@ exports.toolAdminUserRight = async(req, res, next) => {
 };
 
 
-exports.toolBidding = async(req, res, next) => {
+exports.toolBidding = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1492,7 +1491,7 @@ exports.toolBidding = async(req, res, next) => {
 };
 
 
-exports.toolAdminMenuOrder = async(req, res, next) => {
+exports.toolAdminMenuOrder = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1530,7 +1529,7 @@ exports.toolAdminMenuOrder = async(req, res, next) => {
     }
 };
 
-exports.toolModule = async(req, res, next) => {
+exports.toolModule = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1573,7 +1572,7 @@ exports.toolModule = async(req, res, next) => {
     }
 };
 
-exports.toolOrder = async(req, res, next) => {
+exports.toolOrder = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1645,7 +1644,7 @@ exports.toolOrder = async(req, res, next) => {
     }
 };
 
-exports.toolEvaluate = async(req, res, next) => {
+exports.toolEvaluate = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1692,7 +1691,7 @@ exports.toolEvaluate = async(req, res, next) => {
     }
 };
 
-exports.toolCart = async(req, res, next) => {
+exports.toolCart = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1736,7 +1735,7 @@ exports.toolCart = async(req, res, next) => {
     }
 };
 
-exports.toolTags = async(req, res, next) => {
+exports.toolTags = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1776,7 +1775,7 @@ exports.toolTags = async(req, res, next) => {
     }
 };
 
-exports.toolContact = async(req, res, next) => {
+exports.toolContact = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1818,7 +1817,7 @@ exports.toolContact = async(req, res, next) => {
     }
 };
 
-exports.toolRegisterFail = async(req, res, next) => {
+exports.toolRegisterFail = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1861,7 +1860,7 @@ exports.toolRegisterFail = async(req, res, next) => {
     }
 };
 
-exports.toolSearch = async(req, res, next) => {
+exports.toolSearch = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1901,7 +1900,7 @@ exports.toolSearch = async(req, res, next) => {
     }
 };
 
-exports.toolTblTags = async(req, res, next) => {
+exports.toolTblTags = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1938,7 +1937,7 @@ exports.toolTblTags = async(req, res, next) => {
     }
 };
 
-exports.toolPushNewsTime = async(req, res, next) => {
+exports.toolPushNewsTime = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -1975,7 +1974,7 @@ exports.toolPushNewsTime = async(req, res, next) => {
 };
 
 
-exports.toolBlog = async(req, res, next) => {
+exports.toolBlog = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2044,7 +2043,7 @@ exports.toolBlog = async(req, res, next) => {
     }
 }
 
-exports.toolAdminUser = async(req, res, next) => {
+exports.toolAdminUser = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2099,7 +2098,7 @@ exports.toolAdminUser = async(req, res, next) => {
     }
 };
 
-exports.toolAdminTranslate = async(req, res, next) => {
+exports.toolAdminTranslate = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2138,7 +2137,7 @@ exports.toolAdminTranslate = async(req, res, next) => {
     }
 };
 
-exports.toolBaoHanh = async(req, res, next) => {
+exports.toolBaoHanh = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
@@ -2177,7 +2176,7 @@ exports.toolBaoHanh = async(req, res, next) => {
     }
 }
 
-exports.toolLoveNew = async(req, res, next) => {
+exports.toolLoveNew = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;

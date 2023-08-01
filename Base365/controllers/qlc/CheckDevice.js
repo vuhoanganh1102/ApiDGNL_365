@@ -5,44 +5,52 @@ const functions = require("../../services/functions")
 
 exports.getlist = async(req, res) => {
     try {
-        const com_id = req.body.com_id;
+        const com_id = Number(req.body.com_id);
         const type = req.user.data.type;
-        let dep_id = req.body.dep_id;
-        let findbyNameUser = req.body.findbyNameUser;
-        let condition = {};
+        if(com_id == req.user.data.idQLC){
+            // let dep_id = req.body.dep_id;
+            // let findbyNameUser = req.body.findbyNameUser;
+            let condition = {};
 
-        if (type == 1) {
-            if (com_id) condition["com_id"] = Number(com_id)
-            if (dep_id) condition.dep_id = Number(dep_id)
-            if (findbyNameUser) condition["userName"] = { $regex: findbyNameUser };
-            let data = await Users.aggregate([
-                { $match: condition },
-                {
-                    $lookup: {
-                        from: "qlc_employee_devices",
-                        localField: "idQLC",
-                        foreignField: "ep_id",
-                        as: "listDevice"
-                    }
-                },
+            if (type == 1) {
+                // if (com_id) condition["com_id"] = Number(com_id)
+                // if (dep_id) condition.dep_id = Number(dep_id)
+                // if (findbyNameUser) condition["userName"] = { $regex: findbyNameUser };
+                let data = await Users.aggregate([
+                    { 
+                        $match: {
+                           "inForPerson.employee.com_id":com_id
+                        } 
+                    },
+                    {
+                        $lookup: {
+                            from: "QLC_EmployeeDevice",
+                            localField: "idQLC",
+                            foreignField: "ep_id",
+                            as: "listDevice"
+                        }
+                    },
 
-                { $unwind: "$listDevice" }, {
-                    $project: {
-                        "userName": "$userName",
-                        "dep_id": "$inForPerson.employee.dep_id",
-                        "com_id": "$inForPerson.employee.com_id",
-                        "idQLC": "$idQLC",
-                        "ed_id": "$listDevice.ed_id",
-                        "current_device": "$listDevice.current_device",
-                        "current_device_name": "$listDevice.current_device_name",
-                        "new_device": "$listDevice.new_device",
-                        "new_device_name": "$listDevice.new_device_name",
-                    }
-                },
+                    { $unwind: "$listDevice" }, 
+                    {
+                        $project: {
+                            "userName": "$userName",
+                            "dep_id": "$inForPerson.employee.dep_id",
+                            "com_id": "$inForPerson.employee.com_id",
+                            "idQLC": "$idQLC",
+                            "ed_id": "$listDevice.ed_id",
+                            "current_device": "$listDevice.current_device",
+                            "current_device_name": "$listDevice.current_device_name",
+                            "new_device": "$listDevice.new_device",
+                            "new_device_name": "$listDevice.new_device_name",
+                        }
+                    },
 
-            ]);
-            return functions.success(res, 'Lấy thành công', { data });
+                ]);
+                return functions.success(res, 'Lấy thành công', { data });
+            }
         }
+       
         return functions.setError(res, "Tài khoản không phải Công ty");
 
     } catch (err) {

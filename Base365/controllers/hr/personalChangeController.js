@@ -122,6 +122,9 @@ exports.getListAppoint = async(req, res, next) => {
                     from: "Users",
                     localField: "ep_id",
                     foreignField: "idQLC",
+                    pipeline: [
+                        { $match: { type: {$ne: 1} } },
+                    ],
                     as: "user"
                 }
             },
@@ -251,6 +254,9 @@ exports.getListTranferJob = async(req, res, next) => {
                     from: "Users",
                     localField: "ep_id",
                     foreignField: "idQLC",
+                    pipeline: [
+                        { $match: { type: {$ne: 1} } },
+                    ],
                     as: "user"
                 }
             },
@@ -497,6 +503,9 @@ exports.getListQuitJob = async(req, res, next) => {
                     from: "HR_QuitJobs",
                     localField: "hs_ep_id",
                     foreignField: "ep_id",
+                    pipeline: [
+                        { $match: { type: {$ne: 1} }},
+                    ],
                     as: "quitJob"
                 }
             },
@@ -519,7 +528,8 @@ exports.updateQuitJob = async(req, res, next) => {
     try {
         let infoLogin = req.infoLogin;
         let {ep_id, com_id, current_position, current_dep_id, created_at, decision_id, note, type, shift_id} = req.body;
-        if(ep_id && created_at && type && com_id) {
+        if(ep_id && created_at && type && com_id && shift_id) {
+            
             let employee = await Users.findOne({idQLC: ep_id});
             if(employee) {
                 await Users.findOneAndUpdate({idQLC: ep_id}, {role: 3, type: 0, 
@@ -667,8 +677,6 @@ exports.getListIllegalQuitJob = async(req, res, next) => {
                 infoQuitJob.time = listQuitJob[i].hs_time_end;
 
                 data.push(infoQuitJob);
-            }else {
-                return functions.setError(res, "Employee not found!", 405);
             }
         }
         const total = await EmployeeHistory.aggregate([
@@ -678,6 +686,9 @@ exports.getListIllegalQuitJob = async(req, res, next) => {
                     from: "HR_QuitJobs",
                     localField: "hs_ep_id",
                     foreignField: "ep_id",
+                    pipeline: [
+                        { $match: { type: {$ne: 1} }},
+                    ],
                     as: "quitJob"
                 }
             },

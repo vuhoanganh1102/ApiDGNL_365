@@ -287,3 +287,5 @@ exports.getLinkFile = async (file, cateId) => {
     return arr;
 }
 
+// lấy avatar user
+// exports.user = async (name)

@@ -451,18 +451,18 @@ exports.pinNews = async (req, res, next) => {
                 var fields = {
                     pinHome: 1,
                     numberDayPinning: so_ngayg,
-                    timeStartPinning: new Date(),
-                    dayStartPinning: new Date(),
-                    dayEndPinning: new Date(ngay_kthuc),
+                    timeStartPinning: new Date().getTime() / 1000,
+                    dayStartPinning: new Date().getTime() / 1000,
+                    dayEndPinning: new Date(ngay_kthuc).getTime() / 1000,
                     moneyPinning: tienthanhtoan,
                 };
             } else {
                 var fields = {
                     pinCate: 5,
                     numberDayPinning: so_ngay,
-                    timeStartPinning: new Date(),
-                    dayStartPinning: new Date(),
-                    dayEndPinning: new Date(ngay_kthuc),
+                    timeStartPinning: new Date().getTime() / 1000,
+                    dayStartPinning: new Date().getTime() / 1000,
+                    dayEndPinning: new Date(ngay_kthuc).getTime() / 1000,
                     moneyPinning: tienthanhtoan,
                 };
             }
@@ -505,7 +505,7 @@ exports.pushNews = async (req, res, next) => {
         } = req.body;
         let existsNews = await New.find({ _id: idNews });
         if (existsNews) {
-            let now = new Date(Date.now());
+            let now = new Date();
             if (!timeStartPinning) timeStartPinning = now;
             if (!dayStartPinning) dayStartPinning = now;
             let fields = {
@@ -1063,7 +1063,7 @@ exports.searchNew = async (req, res, next) => {
         if (benefit) condition["Job.benefit"] = Number(benefit);
         if (startvalue) condition.money = { $gte: Number(startvalue) };
         if (endvalue) condition.money = { $lte: Number(endvalue) };
-        if (startvalue && endvalue) condition.startvalue = { $gte: Number(startvalue), $lte: Number(endvalue) };
+        if (startvalue && endvalue) condition.money = { $gte: Number(startvalue), $lte: Number(endvalue) };
         condition.userID = { $ne: 0 }
         let data = await New.aggregate([
             { $sort: { pinCate: -1 } },
@@ -2566,9 +2566,9 @@ exports.likeNews = async (req, res, next) => {
     try {
         let { forUrlNew } = req.body;
         let ip = req.ip;
-        let commentId = req.body.commentId || 0;
+        let commentId = Number(req.body.commentId) || 0;
         let userName = req.user.data.userName;
-        let type = req.body.type || null;
+        let type = Number(req.body.type) || null;
         let userId = req.user.data.idRaoNhanh365;
         let userAvatar = req.user.data.userAvatar;
 
@@ -2576,7 +2576,7 @@ exports.likeNews = async (req, res, next) => {
         if (!forUrlNew) {
             return functions.setError(res, "Missing input value", 404);
         }
-        if (commentId === 0) {
+        if (commentId == 0) {
             let like = await LikeRN.findOne({
                 userIdChat: userId,
                 forUrlNew: forUrlNew,
@@ -2590,7 +2590,7 @@ exports.likeNews = async (req, res, next) => {
                     }
                 );
                 return functions.success(res, "Like thành công");
-            } else if (like && type === 0) {
+            } else if (like && type == 0) {
                 await LikeRN.findOneAndDelete({ _id: like._id });
                 return functions.success(res, "Xoá like thành công");
             } else {
@@ -3104,9 +3104,62 @@ exports.napTien = async (req, res, next) => {
 exports.getDataBidding = async (req, res, next) => {
     try {
         let id = Number(req.body.id);
-        let data = await Bidding.find({
-            newId: id,
-        })
+        let sapxep = Number(req.body.type);
+        let data = await Bidding.aggregate([
+            { $match: { newId: id } },
+            { $sort:{}},
+            {
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'newId',
+                    foreignField: '_id',
+                    as: 'new'
+                }
+            },
+            { $unwind: '$new' },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'userID',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'nguoidauthau'
+                }
+            },
+            { $unwind: '$nguoidauthau' },
+            {
+                $project: {
+                    _id: 1,
+                    newId: 1,
+                    userName: 1,
+                    userIntro: 1,
+                    userFile: 1,
+                    userProfile: 1,
+                    userProfileFile: 1,
+                    productName: 1,
+                    productDesc: 1,
+                    productLink: 1,
+                    price: 1,
+                    priceUnit: 1,
+                    promotion: 1,
+                    promotionFile: 1,
+                    status: 1,
+                    createTime: 1,
+                    note: 1,
+                    updatedAt: 1,
+                    nguoidauthau: {
+                        userName: 1,
+                        avatarUser: 1,
+                        phone: 1,
+                        isOnline: 1,
+                        phoneTK: 1,
+                        address: 1,
+                    },
+                    thongtinthau: '$new.bidding'
+                }
+            }
+
+        ])
+
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.error(error)
@@ -3168,19 +3221,15 @@ exports.capNhatTin = async (req, res, next) => {
         if (!data) return functions.setError(res, 'not found new', 404)
         let thoi_gian = new Date();
         let year = new Date().getFullYear();
-        let month = new Date().getMonth() + 1;
-        let ngay1 = new Date().getDate();
-        let ngay2 = new Date().getDate() + 1;
-        let hom_nay = year + '/' + month + '/' + ngay1;
-
-        let ngay_mai = year + '/' + month + '/' + ngay2;
-
-
+        let month = new Date().getMonth();
+        let ngay = new Date().getDate();
+        let hom_nay = new Date(year, month, ngay).getTime() / 1000;
+        let ngay_mai = hom_nay + 86400;
         let check = await New.countDocuments({
             userID: userId,
             refreshTime: {
-                $gt: new Date(hom_nay).getTime() / 1000,
-                $lt: new Date(ngay_mai).getTime() / 1000
+                $gt: hom_nay,
+                $lt: ngay_mai
             },
             refresh_new_home: 1
         })
@@ -3225,7 +3274,7 @@ exports.dangBanLai = async (req, res, next) => {
                     { new_day_tin: { $ne: 0 } }
                 ]
             }, {
-                timeStartPinning: new Date()
+                timeStartPinning: new Date().getTime() / 1000,
             })
             await axios({
                 method: "post",
@@ -3250,14 +3299,14 @@ exports.dangBanLai = async (req, res, next) => {
             if (check) {
                 dayEndPinning = check.dayEndPinning;
                 timePinning = check.timePinning;
-                let tgian_clai = new Date(dayEndPinning).getTime() - new Date(timePinning).getTime();
-                let tgian_ktmoi = tgian_clai + new Date().getTime();
+                let tgian_clai = dayEndPinning - timePinning;
+                let tgian_ktmoi = tgian_clai + new Date().getTime() / 1000;
                 await New.findOneAndUpdate({
                     _id: id,
                     userID: userID,
                 }, {
                     timePinning: 0,
-                    dayEndPinning: new Date(tgian_ktmoi)
+                    dayEndPinning: tgian_ktmoi
                 })
             }
             await New.findOneAndUpdate({
@@ -3402,18 +3451,18 @@ exports.updateNewPromotion = async (req, res, next) => {
             && loaikhuyenmai.length === giatri.length && giatri.length === id.length) {
             for (let i = 0; i < id.length; i++) {
                 let checkNew = await New.findById(id[i]);
-                    if (checkNew) {
-                        await New.findByIdAndUpdate(id[i], {
-                            timePromotionStart: ngay_bat_dau[i],
-                            timePromotionEnd: ngay_ket_thuc[i],
-                            "infoSell.promotionType": loaikhuyenmai[i],
-                            "infoSell.promotionValue": giatri[i],
-                        });
-                    } else {
-                        return functions.setError(res, "Không tìm thấy tin", 400);
-                    }
+                if (checkNew) {
+                    await New.findByIdAndUpdate(id[i], {
+                        timePromotionStart: new Date(ngay_bat_dau[i]).getTime() / 1000,
+                        timePromotionEnd: new Date(ngay_ket_thuc[i]).getTime() / 1000,
+                        "infoSell.promotionType": loaikhuyenmai[i],
+                        "infoSell.promotionValue": giatri[i],
+                    });
+                } else {
+                    return functions.setError(res, "Không tìm thấy tin", 400);
+                }
             }
-            return functions.success(res,'Cập nhật khuyến mãi thành công')
+            return functions.success(res, 'Cập nhật khuyến mãi thành công')
         }
         return functions.setError(res, 'Nhập đúng kiểu dữ liệu')
     } catch (error) {

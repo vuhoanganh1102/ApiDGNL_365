@@ -3,6 +3,7 @@ var router = express.Router();
 const formData = require('express-form-data');
 const controllerTs =  require('../../controllers/qlts/taiSan');
 const functions = require('../../services/functions')
+const QLTS = require('../../services/QLTS/qltsService');
 
 //Api danh sach
 router.post('/list',functions.checkToken,formData.parse(),controllerTs.showAll)
@@ -38,9 +39,12 @@ router.post('/addkhauhao',functions.checkToken,formData.parse(),controllerTs.add
 //Api tài liệu đính kèm
 router.post('/listFile',functions.checkToken,formData.parse(),controllerTs.showFile)
 
+
 router.post('/addFile',functions.checkToken,formData.parse(),controllerTs.addFile)
 
+
 router.post('/deleteFile',functions.checkToken,formData.parse(),controllerTs.deleteFile)
+
 //Api Bảo duongx theo chi tiết
 router.post('/showBDCT',functions.checkToken,formData.parse(),controllerTs.showBDCT)
 

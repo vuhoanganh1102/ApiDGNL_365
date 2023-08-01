@@ -174,6 +174,10 @@ const newSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    refresh_new_home:{
+        type: Number,
+        default: 0
+    },
     timePushNew: {
         // thời gian đẩy tin 
         type: Date,
@@ -185,28 +189,28 @@ const newSchema = new mongoose.Schema({
     },
     timeStartPinning: {
         // thời gian bắt đầu ghim
-        type: Date,
+        type: Number,
         default: null
     },
     dayStartPinning: {
         // ngày bắt đầu ghim
-        type: Date,
+        type: Number,
         default: null
     },
     dayEndPinning: {
         // ngày kết thúc ghim
-        type: Date,
+        type: Number,
         default: null
     },
     numberDayPinning: {
         // số ngày ghim
-        type: String,
-        default: null
+        type: Number,
+        default: 0
     },
     timePinning: {
         // thời gian ghim
-        type: Date,
-        default: null
+        type: Number,
+        default: 0
     },
     moneyPinning: {
         // tiền ghim
@@ -231,17 +235,17 @@ const newSchema = new mongoose.Schema({
     refreshTime: {
         // thời gian làm mới
         type: Number,
-        default: null
+        default: 0
     },
     timeHome: {
         // thời gian ghim trên trang chủ
         type: Number,
-        default: null
+        default: 0
     },
     timeCate: {
         // thời gian ghim tren trang ngày
         type: Number,
-        default: null
+        default: 0
     },
     quantitySold: {
         // số lượng đã bán
@@ -281,13 +285,13 @@ const newSchema = new mongoose.Schema({
     },
     timePromotionStart: {
         // thời gian khuyến mãi bắt đầu
-        type: Date,
-        default: null
+        type: Number,
+        default: 0
     },
     timePromotionEnd: {
         // thời gian khuyến mãi kết thúc
-        type: Date,
-        default: null
+        type: Number,
+        default: 0
     },
     productType: {
         // loại sản phẩm 

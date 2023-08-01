@@ -397,7 +397,7 @@ exports.checkToken = (req, res, next) => {
 // ham check admin rao nhanh 365
 exports.isAdminRN365 = async(req, res, next) => {
     let user = req.user.data;
-    let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, isAdmin: 1, active: 1 });
+    let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, active: 1 });
     if (admin) return next();
     return res.status(403).json({ message: "is not admin RN365" });
 }
