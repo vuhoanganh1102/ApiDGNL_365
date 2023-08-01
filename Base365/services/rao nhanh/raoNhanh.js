@@ -249,11 +249,11 @@ exports.checkFolderCateRaoNhanh = async (data) => {
         case 'Việc làm':
             return 'timviec'
         case 'Thực phẩm, Đồ uống':
-            return 'thuc_pham' 
+            return 'thuc_pham'
     }
 }
 // lấy tên danh mục
-exports.getNameCate = async (cateId,number) =>{
+exports.getNameCate = async (cateId, number) => {
     let danh_muc1 = null;
     let danh_muc2 = null;
     cate1 = await Category.findById(cateId);
@@ -265,29 +265,30 @@ exports.getNameCate = async (cateId,number) =>{
     let name = {};
     name.danh_muc1 = danh_muc1
     name.danh_muc2 = danh_muc2
-    if(number === 2){
+    if (number === 2) {
         return name
-    }else if(danh_muc2){
+    } else if (danh_muc2) {
         return danh_muc2
-    }else if(danh_muc1){
+    } else if (danh_muc1) {
         return danh_muc1
     }
 }
 // lấy link file
 exports.getLinkFile = async (file, cateId) => {
-    let nameCate = await exports.getNameCate(cateId,1);
+    let nameCate = await exports.getNameCate(cateId, 1);
     let folder = await exports.checkFolderCateRaoNhanh(nameCate)
     let link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/${folder}/`;
     let res = '';
     let arr = [];
     for (let i = 0; i < file.length; i++) {
         res = link + file[i].nameImg;
-        arr.push({nameImg:res})
+        arr.push({ nameImg: res })
     }
     return arr;
 }
 
 // lấy avatar user
-exports.getLinkAvatarUser = async (name)=>{
-    link = procees.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_dangtin'
+exports.getLinkAvatarUser = async (name) => {
+    let link = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_dangtin/' + name;
+    return link;
 }
