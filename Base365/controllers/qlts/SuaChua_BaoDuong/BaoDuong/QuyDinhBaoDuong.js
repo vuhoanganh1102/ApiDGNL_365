@@ -113,10 +113,10 @@ exports.addRegulations = async (req, res) => {
                 let ngay_co_ts = item.ts_date_create;
                 let tong_so_ngay_lap_lai = 0;
                 let ngay_sd_ts = 0;
-                let ngay_thong_bao = 0;
+                let ngay_thong_bao = 0; 
                 // ĐỊNH KỲ
                 if (tan_suat_bd == 1) {
-                    if (bd_lap_lai_theo == 0) {
+                    if (bd_lap_lai_theo == 0) { 
                         tong_so_ngay_lap_lai = sl_ngay_lap_lai * 86400;
                     }
                     if (bd_lap_lai_theo == 1) {

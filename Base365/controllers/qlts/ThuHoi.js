@@ -11,7 +11,7 @@ const dangSd = require('../../models/QuanLyTaiSan/TaiSanDangSuDung')
 exports.create = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
-        const thuhoi_ng_tao = req.user.data.idQLC
+        const thuhoi_ng_tao = req.user.data._id
         const type_quyen = req.body.type_quyen
         const id_ng_thuhoi = req.body.id_ng_thuhoi
         const id_pb_thuhoi = req.body.id_pb_thuhoi
@@ -272,15 +272,14 @@ exports.getListDetail = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "thuhoi_ng_tao",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}
-                        ]},
-                        }
-                    ],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}
+                    //     ]},
+                    //     }
+                    // ],
                      as : "info"
                 }
             },
@@ -290,15 +289,15 @@ exports.getListDetail = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_dc_thuhoi",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}
-                        ]},
-                        }
-                    ],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : {$ne : 1 }},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}
+                    //     ]},
+                    //     }
+                    // ],
                      as : "infoNguoiDuocTH"
                 }
             },
@@ -307,15 +306,15 @@ exports.getListDetail = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_thuhoi",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}
-                        ]},
-                        }
-                    ],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : {$ne : 1 }},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}
+                    //     ]},
+                    //     }
+                    // ],
                      as : "infoNguoiTH"
                 }
             },
@@ -374,40 +373,37 @@ exports.getListDetail = async (req, res) => {
 exports.edit = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
-        const id_ng_thuhoi = req.user.data.idQLC//id nguoi tao
-        // const type_quyen = req.body.type_quyen
+        const id_ng_thuhoi = req.user.data._id//id nguoi tao
         const thuhoi_id = req.body.thuhoi_id;
         const thuhoi_ngay = req.body.thuhoi_ngay;
         const thuhoi_soluong = req.body.thuhoi_soluong;
         const id_ng_dc_thuhoi = req.body.id_ng_dc_thuhoi;
+        const id_pb_thuhoi = req.body.id_pb_thuhoi;
         const thuhoi__lydo = req.body.thuhoi__lydo;
         const loai_edit = req.body.loai_edit
         const data = await ThuHoi.findOne({ thuhoi_id: thuhoi_id, id_cty: id_cty });
         if (!data) {
             return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
-        } else {
+        } else { 
             if (loai_edit == 2) {
                 await ThuHoi.updateOne({ thuhoi_id: thuhoi_id, id_cty: id_cty }, {
                     thuhoi_ngay: thuhoi_ngay,
                     thuhoi_soluong: thuhoi_soluong,
                     thuhoi__lydo: thuhoi__lydo,
                     id_ng_thuhoi: id_ng_thuhoi,
-                    id_pb_thuhoi: id_ng_dc_thuhoi,
+                    id_pb_thuhoi: id_pb_thuhoi,
                     id_ng_dc_thuhoi: id_ng_dc_thuhoi,
                 })
-                return fnc.success(res, "cập nhật thành công")
+                return fnc.success(res, "cập nhật thành công", { data })
             } else {
                 await ThuHoi.updateOne({ thuhoi_id: thuhoi_id, id_cty: id_cty }, {
-                    thuhoi_ngay: thuhoi_ngay,
+                    thuhoi_ngay: thuhoi_ngay, 
                     thuhoi_soluong: thuhoi_soluong,
                     thuhoi__lydo: thuhoi__lydo,
                 })
                 return fnc.success(res, "cập nhật thành công", { data })
             }
         }
-        // }else{
-        // return fnc.setError(res, "bạn chưa có quyền", 510);
-        //   }
     } catch (e) {
         return fnc.setError(res, e.message)
     }
@@ -416,49 +412,47 @@ exports.edit = async (req, res) => {
 exports.delete = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
-        const datatype = req.body.datatype
-        const _id = req.body.id
+        const datatype = Number(req.body.datatype)
+        const thuhoi_id = Number(req.body.thuhoi_id)
         const type_quyen = req.body.type_quyen
-        const id_ng_xoa = req.user.data.idQLC
+        const id_ng_xoa = req.user.data._id
         const date_delete = new Date()
         if (type_quyen != 0) {
-            if (datatype == 1) {
-                const data = await ThuHoi.findOne({ _id: _id, id_cty: id_cty });
+            if (datatype == 1) { 
+                const data = await ThuHoi.findOne({ thuhoi_id: thuhoi_id, id_cty: id_cty });
                 if (!data) {
-                    return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+                    return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật");
                 } else {
-                    await ThuHoi.findOneAndUpdate({ _id: _id }, {
-                        id_cty: id_cty,
-                        cp_da_xoa: 1,
+                    await ThuHoi.findOneAndUpdate({ thuhoi_id: thuhoi_id }, {
+                        xoa_thuhoi: 1,
                         cp_type_quyen_xoa: type_quyen,
                         thuhoi_id_ng_xoa: id_ng_xoa,
-                        cp_date_delete: Date.parse(date_delete) / 1000,
+                        thuhoi_date_delete: Date.parse(date_delete) / 1000,
 
                     })
                     return fnc.success(res, "cập nhật thành công", { data })
-                }
+                } 
             }
-            if (datatype == 2) {
-                const data = await ThuHoi.findOne({ _id: _id, id_cty: id_cty });
-                if (!data) {
-                    await ThuHoi.findOneAndUpdate({ _id: _id, id_cty: id_cty }, {
-                        id_cty: id_cty,
-                        cp_da_xoa: 0,
+            if (datatype == 2) { 
+                const data = await ThuHoi.findOne({ thuhoi_id: thuhoi_id, id_cty: id_cty });
+                if (data) {
+                    await ThuHoi.findOneAndUpdate({ thuhoi_id: thuhoi_id, id_cty: id_cty }, {
+                        xoa_thuhoi: 0, 
                         cp_type_quyen_xoa: 0,
                         thuhoi_id_ng_xoa: 0,
-                        cp_date_delete: 0,
+                        thuhoi_date_delete: 0,
 
-                    })
+                    }) 
                     return fnc.success(res, "cập nhật thành công", { data })
                 }
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật");
             }
             if (datatype == 3) {
-                const deleteonce = await fnc.getDatafindOne(ThuHoi, { _id: _id, id_cty: id_cty });
+                const deleteonce = await fnc.getDatafindOne(ThuHoi, { thuhoi_id: thuhoi_id, id_cty: id_cty });
                 if (!deleteonce) {
                     return fnc.setError(res, "không tìm thấy bản ghi", 510);
                 } else { //tồn tại thì xóa 
-                    fnc.getDataDeleteOne(ThuHoi, { _id: _id })
+                    fnc.getDataDeleteOne(ThuHoi, { thuhoi_id: thuhoi_id })
                     return fnc.success(res, "xóa thành công!", { deleteonce })
                 }
             }

@@ -19,17 +19,14 @@ const AdminUserRightchema = new mongoose.Schema({
     add: {
         //quyen them moi,(1: co quyen)
         type: Number,
-        default: 0
     },
     edit: {
         //quyen edit
         type: Number,
-        default: 0
     },
     delete: {
         //quyen xoa
         type: Number,
-        default: 0
     }
 }, {
     collection: 'RN365_AdminUserRight',

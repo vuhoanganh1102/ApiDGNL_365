@@ -24,7 +24,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
         // id_ng_xoa = req.user.data.idQLC;
 
     }
-    let ng_duyet = req.user.data.idQLC;
+    let ng_duyet = req.user.data._id;
 
     try {
         if (isNaN(id_bb) || id_bb <= 0) {
@@ -40,7 +40,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
         let id_ts = q_this_sc.suachua_taisan;
         let sl_sc = q_this_sc.sl_sc;
         let ng_sd = q_this_sc.sc_ng_sd;
-        if (quyen_ng_sd == 1) {
+        if (quyen_ng_sd == 1) { 
             //sua chua tai san chua cap phat
 
             let q_taisan = await TaiSan.findOne({ id_cty: com_id, ts_id: id_ts });
@@ -198,18 +198,22 @@ exports.listBBDangSuaChua = async (req, res) => {
                 as: "infoTS"
             }
             },
-            // { $unwind: "$infoTS" },
             { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
 
             {
                 $lookup: {
                     from: "Users",
                     localField: "id_cty",
-                    foreignField: "idQLC",
-                    as: "infoCtyDangSD"
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : 1 },
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
+                     as : "infoCtyDangSD"
                 }
             },
-            // { $unwind: "$infoCtyDangSD" },
             { $unwind: { path: "$infoCtyDangSD", preserveNullAndEmptyArrays: true } },
 
             {$project : {
@@ -236,11 +240,20 @@ exports.listBBDangSuaChua = async (req, res) => {
                 "sc_ngay_nhapkho" : "$sc_ngay_nhapkho",
                 "sc_lydo_tuchoi" : "$sc_lydo_tuchoi",
                 "sc_id_ng_tao" : "$sc_id_ng_tao",
+                "sc_ts_vitri" : "$sc_ts_vitri",
             }}
             ])
+            for (let i = 0; i < data1.length; i++) {
+                data1[i].sc_ngay = new Date(data1[i].sc_ngay * 1000);
+                data1[i].sc_ngay_nhapkho = new Date(data1[i].sc_ngay_nhapkho * 1000);
+                data1[i].sc_date_duyet = new Date(data1[i].sc_date_duyet * 1000);
+                data1[i].sc_dukien = new Date(data1[i].sc_dukien * 1000);
+            }
             data.push({list : data1})
+            let totalCount = await SuaChua.count(conditions)
+
             // return res.status(200).json({data : {data} , message : "lấy thành công"})
-            return fnc.success(res,"lấy thành công",{data})
+            return fnc.success(res,"lấy thành công",{data, totalCount})
     } catch (error) {
         return fnc.setError(res, error.message);
     }
@@ -260,12 +273,12 @@ exports.XoabbSuaChua = async (req, res) => {
 
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     } else if (req.user.data.type == 2) {
         com_id = req.user.data.com_id;
-        id_ng_xoa = req.user.data.idQLC;
-
+        id_ng_xoa = req.user.data._id;
+ 
     }
     try {
         if (isNaN(datatype) || datatype <= 0) {
@@ -277,7 +290,8 @@ exports.XoabbSuaChua = async (req, res) => {
 
 
         let suachua = await SuaChua.findOne({ id_cty: com_id, sc_id: id });
-        let ng_sd = suachua.sc_ng_sd;
+        if(suachua){
+            let ng_sd = suachua.sc_ng_sd; 
         let sc_quyen_sd = suachua.sc_quyen_sd;
         let sl_sc = suachua.sl_sc;
         let id_ts = suachua.suachua_taisan;
@@ -306,8 +320,9 @@ exports.XoabbSuaChua = async (req, res) => {
                     let update_sl = sl_ts_cu + sl_sc;
                     update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts }, { sl_dang_sd: update_sl });
                 }
+                return fnc.success(res, "xoá thành công ")
             }
-            if (datatype == 2) {
+            if (datatype == 2) { 
                 //khoi phuc
                 bb_crr = await SuaChua.findOneAndUpdate({ sc_id: id, id_cty: com_id }, { sc_da_xoa: 0, sc_type_quyen_xoa: 0, sc_id_ng_xoa: 0, sc_date_delete: 0 });
                 if (trang_thai_sc == 0) {
@@ -330,15 +345,20 @@ exports.XoabbSuaChua = async (req, res) => {
                         update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts }, { sl_dang_sd: update_sl });
                     }
                 }
+                return fnc.success(res, "xoá thành công ")
+
             }
             if (datatype == 3) {
                 //xoa vinh vien
                 bb_crr = await SuaChua.findOneAndRemove({ sc_id: id, id_cty: com_id });
+                return fnc.success(res, "xoá thành công ")
+
             }
         }
-        return res.status(200).json({ data: { bb_crr: bb_crr, update_taisan: update_taisan }, message: "thanh cong" });
+        }
+        return fnc.setError(res, "không tìm thấy đối tượng cần xóa ")
+        // return res.status(200).json({ data: { bb_crr: bb_crr, update_taisan: update_taisan }, message: "thanh cong" });
     } catch (error) {
-        console.log9(error)
         return res.status(500).json({ message: error.message });
     }
 }
@@ -354,11 +374,11 @@ exports.deleteAll = async (req, res) => {
     let type_quyen = req.user.data.type;
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     } else if (req.user.data.type == 2) {
         com_id = user_xoa.inForPerson.employee.com_id;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
     }
     try {
         let xoa = array_xoa.split(",");
@@ -549,7 +569,7 @@ exports.details = async (req, res) => {
     }
 }
 
-//Tài sản đã sủa chữa
+//xóa Tài sản đã sủa chữa
 //xoa_bb_sua_chua
 exports.xoa_bb_sua_chua = async (req, res) => {
     //xóa riêng lẻ từng biên bản 
@@ -560,13 +580,13 @@ exports.xoa_bb_sua_chua = async (req, res) => {
     let type_quyen = req.user.data.type;
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     } else if (req.user.data.type == 2) {
         com_id = req.user.dat.com_id;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
-    }
+    } 
     try {
         if (isNaN(datatype) || isNaN(id) || datatype <= 0 || id <= 0) {
             return res.status(404).json({ message: "datatype, id, phai la 1 so lon hon 0" });
@@ -574,16 +594,18 @@ exports.xoa_bb_sua_chua = async (req, res) => {
             if (datatype == 1) {
                 let suachua = await SuaChua.findOneAndUpdate({ sc_id: id, id_cty: com_id }, { sc_da_xoa: 1, sc_type_quyen_xoa: type_quyen, sc_id_ng_xoa: id_ng_xoa, date_delete: new Date().getTime() });
                 return res.status(200).json({ data: suachua, message: " xoa thanh cong" });
-            }
-            if (datatype == 2) {
+            }else if (datatype == 2) {
                 let khoiphuc = await SuaChua.findOneAndUpdate({ sc_id: id, id_cty: com_id }, { sc_da_xoa: 0, sc_type_quyen_xoa: 0, sc_id_ng_xoa: 0 });
                 return res.status(200).json({ data: khoiphuc, message: " khoi phuc thanh cong" });
-            }
-            if (datatype == 3) {
-                let xoa = await SuaChua.findOneAndRemove({ sc_id: id, id_cty: com_id });
+            }else if (datatype == 3) {
+                let xoavinhvien = await SuaChua.findOne({ sc_id: id, id_cty: com_id })
+                if(xoavinhvien){
+                    let xoa = await SuaChua.findOneAndRemove({ sc_id: id, id_cty: com_id });
                 return res.status(200).json({ data: xoa, message: " xoa vinh vien thanh cong" });
+                }
+                return fnc.setError(res, "không tìm thấy đối tượng cần xóa")
             } else {
-                return res.status(500).json({ message: 'datatype phai la 1 so tu 1- 3' })
+                return res.status(500).json({ message: 'datatype phai la 1 so tu 1- 3' })  
             }
         }
     } catch (error) {
@@ -597,15 +619,15 @@ exports.xoa_all = async (req, res) => {
     let com_id = 0;
     let id_ng_xoa = 0;
     let type_quyen = req.user.data.type;
-    //let com_id  =req.comId || 1763;
+    //let com_id  =req.comId || 1763; 
 
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     } else if (req.user.data.type == 2) {
         com_id = req.user.data.com_id;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     }
 
@@ -768,18 +790,22 @@ exports.listBBDaSuaChua = async (req, res) => {
                 as: "infoTS"
             }
             },
-            // { $unwind: "$infoTS" },
             { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
 
             {
                 $lookup: {
                     from: "Users",
                     localField: "id_cty",
-                    foreignField: "idQLC",
-                    as: "infoCtyDangSD"
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : 1 },
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
+                     as : "infoCtyDangSD"
                 }
             },
-            // { $unwind: "$infoCtyDangSD" },
             { $unwind: { path: "$infoCtyDangSD", preserveNullAndEmptyArrays: true } },
 
             {$project : {
@@ -806,11 +832,19 @@ exports.listBBDaSuaChua = async (req, res) => {
                 "sc_ngay_nhapkho" : "$sc_ngay_nhapkho",
                 "sc_lydo_tuchoi" : "$sc_lydo_tuchoi",
                 "sc_id_ng_tao" : "$sc_id_ng_tao",
+                "sc_ts_vitri" : "$sc_ts_vitri",
             }}
             ])
+            for (let i = 0; i < data1.length; i++) {
+                data1[i].sc_ngay = new Date(data1[i].sc_ngay * 1000);
+                data1[i].sc_ngay_nhapkho = new Date(data1[i].sc_ngay_nhapkho * 1000);
+                data1[i].sc_date_duyet = new Date(data1[i].sc_date_duyet * 1000);
+                data1[i].sc_dukien = new Date(data1[i].sc_dukien * 1000);
+            }
             data.push({list : data1})
+            let totalCount = await SuaChua.count(conditions)
             // return res.status(200).json({data : {data} , message : "lấy thành công"})
-            return fnc.success(res,"lấy thành công",{data})
+            return fnc.success(res,"lấy thành công",{data, totalCount})
     } catch (error) {
         return fnc.setError(res, error.message);
     }
@@ -824,7 +858,7 @@ exports.addSuaChua = async (req, res) => {
     try {
         let { id_ts, sl_sc, trangthai_sc, loai_bb, sc_quyen_sd, ng_sd, vitri_ts, dv_sc, dia_chi_nha_cung_cap,
             ngay_sc, ngay_dukien, hoanthanh_sc, chiphi_dukien, chiphi_thucte, nd_sc, ng_thuc_hien, dia_diem_sc, } = req.body;
-        let id_ng_tao = req.user.data.idQLC;
+        let id_ng_tao = req.user.data._id;
         let type_quyen = req.user.data.type;
         let com_id = req.user.data.com_id;
         let ID_bb_sua_chua = 0;
@@ -846,7 +880,7 @@ exports.addSuaChua = async (req, res) => {
         });
         await new_thongBao_1.save();
         
-        let new_thongBao_2 = new ThongBao({
+        let new_thongBao_2 = new ThongBao({ 
             id_tb: Number(max_tb.id_tb) + 2 || 1,
             id_cty: com_id,
             id_ng_nhan: com_id,
@@ -1061,9 +1095,9 @@ exports.tuChoiSC = async (req, res) => {
             return res.status(500).json({ message: " sc_quyen_sd  fails" });
         }
 
-
+ 
     } catch (error) {
-        console.log(error)
+        console.log(error) 
         return res.status(500).json({ message: error.message });
     }
 }
@@ -1090,86 +1124,88 @@ exports.xoaBBcanSC = async (req, res) => {
 
         } else if (req.user.data.type == 2) {
             com_id = user_xoa.inForPerson.employee.type.com_id;
-            id_ng_xoa = req.user.data.idQLC;
+            id_ng_xoa = req.user.data._id;
 
         }
         let q_suachua = await SuaChua.findOne({ id_cty: com_id, sc_id: id });
-        let ng_sd = q_suachua.sc_ng_sd;
-        let sc_quyen_sd = q_suachua.sc_quyen_sd;
-        let sl_sc = q_suachua.sl_sc;
-        let id_ts = q_suachua.suachua_taisan;
-        let trang_thai_sc = q_suachua.sc_trangthai;
-        if (datatype == 1) {
-            //xoa
-            let suachua = await SuaChua.findOneAndUpdate({ sc_id: id, id_cty: com_id },
-                { sc_da_xoa: 1, sc_type_quyen_xoa: type_quyen, sc_id_ng_xoa: id_ng_xoa, sc_date_delete: new Date().getTime() });
-            if (trang_thai_sc == 0) {
-                if (sc_quyen_sd == 1) {
-                    let q_taisan = await TaiSan.findOne({ id_cty: com_id, ts_id: id_ts });
-                    let sl_ts_cu = q_taisan.ts_so_luong;
-                    let update_sl = sl_ts_cu + sl_sc;
-                    let update_taisan = await TaiSan.findOneAndUpdate({ id_cty: com_id, ts_id: id_ts }, { ts_so_luong: update_sl });
-                    return res.status(200).json({ data: { suachua: suachua, update_taisan: update_taisan, message: "xoa thanh cong " } });
-
+        if(q_suachua){
+            let ng_sd = q_suachua.sc_ng_sd;
+            let sc_quyen_sd = q_suachua.sc_quyen_sd;
+            let sl_sc = q_suachua.sl_sc;
+            let id_ts = q_suachua.suachua_taisan;
+            let trang_thai_sc = q_suachua.sc_trangthai;
+            if (datatype == 1) {
+                //xoa
+                let suachua = await SuaChua.findOneAndUpdate({ sc_id: id, id_cty: com_id },
+                    { sc_da_xoa: 1, sc_type_quyen_xoa: type_quyen, sc_id_ng_xoa: id_ng_xoa, sc_date_delete: new Date().getTime() });
+                if (trang_thai_sc == 0) {
+                    if (sc_quyen_sd == 1) {
+                        let q_taisan = await TaiSan.findOne({ id_cty: com_id, ts_id: id_ts });
+                        let sl_ts_cu = q_taisan.ts_so_luong;
+                        let update_sl = sl_ts_cu + sl_sc;
+                        let update_taisan = await TaiSan.findOneAndUpdate({ id_cty: com_id, ts_id: id_ts }, { ts_so_luong: update_sl });
+                        return res.status(200).json({ data: { suachua: suachua, update_taisan: update_taisan, message: "xoa thanh cong " } });
+    
+                    }
+                    if (sc_quyen_sd == 2) {
+                        let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
+                        let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
+                        let update_sl = sl_ts_cu + sl_sc;
+                        let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_nv_sd: ng_sd }, { sl_dang_sd: update_sl, });
+                        return res.status(200).json({ data: { suachua: suachua, update_taisan: update_taisan, message: "xoa thanh cong " } });
+                    }
+                    if (sc_quyen_sd == 3) {
+                        let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts });
+                        let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
+                        let update_sl = sl_ts_cu + sl_sc;
+                        let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_pb_sd: ng_sd }, { sl_dang_sd: update_sl, });
+                        return res.status(200).json({ data: { suachua: suachua, update_taisan: update_taisan, message: "xoa thanh cong " } });
+    
+                    }
                 }
-                if (sc_quyen_sd == 2) {
-                    let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
-                    let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
-                    let update_sl = sl_ts_cu + sl_sc;
-                    let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_nv_sd: ng_sd }, { sl_dang_sd: update_sl, });
-                    return res.status(200).json({ data: { suachua: suachua, update_taisan: update_taisan, message: "xoa thanh cong " } });
-                }
-                if (sc_quyen_sd == 3) {
-                    let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts });
-                    let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
-                    let update_sl = sl_ts_cu + sl_sc;
-                    let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_pb_sd: ng_sd }, { sl_dang_sd: update_sl, });
-                    return res.status(200).json({ data: { suachua: suachua, update_taisan: update_taisan, message: "xoa thanh cong " } });
-
-                }
+                return res.status(200).json({ data: suachua, message: "xoa thanh cong " });
             }
-            return res.status(200).json({ data: suachua, message: "xoa thanh cong " });
-        }
-        if (datatype == 2) {
-            //khoiphuc
-            let khoiphuc = await SuaChua.findOneAndUpdate({ sc_id: id, id_cty: com_id },
-                { sc_da_xoa: 0, sc_type_quyen_xoa: 0, sc_id_ng_xoa: 0, sc_date_delete: 0 });
-            if (trang_thai_sc == 0) {
-
-                if (sc_quyen_sd == 1) {
-                    let q_taisan = await TaiSan.findOne({ id_cty: com_id, ts_id: id_ts });
-                    let sl_ts_cu = q_taisan.ts_so_luong;
-                    let update_sl = sl_ts_cu - sl_sc;
-                    let update_taisan = await TaiSan.findOneAndUpdate({ id_cty: com_id, ts_id: id_ts }, { ts_so_luong: update_sl });
-                    return res.status(200).json({ data: { khoiphuc: khoiphuc, update_taisan: update_taisan, message: "khoi phuc thanh cong" } });
+            if (datatype == 2) {
+                //khoiphuc
+                let khoiphuc = await SuaChua.findOneAndUpdate({ sc_id: id, id_cty: com_id },
+                    { sc_da_xoa: 0, sc_type_quyen_xoa: 0, sc_id_ng_xoa: 0, sc_date_delete: 0 });
+                if (trang_thai_sc == 0) {
+    
+                    if (sc_quyen_sd == 1) {
+                        let q_taisan = await TaiSan.findOne({ id_cty: com_id, ts_id: id_ts });
+                        let sl_ts_cu = q_taisan.ts_so_luong;
+                        let update_sl = sl_ts_cu - sl_sc;
+                        let update_taisan = await TaiSan.findOneAndUpdate({ id_cty: com_id, ts_id: id_ts }, { ts_so_luong: update_sl });
+                        return res.status(200).json({ data: { khoiphuc: khoiphuc, update_taisan: update_taisan, message: "khoi phuc thanh cong" } });
+                    }
+                    if (sc_quyen_sd == 2) {
+                        let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
+                        let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
+                        let update_sl = sl_ts_cu - sl_sc;
+                        let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_nv_sd: ng_sd },
+                            { sl_dang_sd: update_sl, });
+                        return res.status(200).json({ data: { khoiphuc: khoiphuc, update_taisan: update_taisan, message: "khoi phuc thanh cong" } });
+                    }
+                    if (sc_quyen_sd == 3) {
+                        let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts });
+                        let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
+                        let update_sl = sl_ts_cu - sl_sc;
+                        let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_pb_sd: ng_sd }, { sl_dang_sd: update_sl, });
+                        return res.status(200).json({ data: { khoiphuc: khoiphuc, update_taisan: update_taisan, message: "khoi phuc thanh cong" } });
+    
+    
+                    }
                 }
-                if (sc_quyen_sd == 2) {
-                    let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
-                    let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
-                    let update_sl = sl_ts_cu - sl_sc;
-                    let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_nv_sd: ng_sd },
-                        { sl_dang_sd: update_sl, });
-                    return res.status(200).json({ data: { khoiphuc: khoiphuc, update_taisan: update_taisan, message: "khoi phuc thanh cong" } });
-                }
-                if (sc_quyen_sd == 3) {
-                    let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts });
-                    let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
-                    let update_sl = sl_ts_cu - sl_sc;
-                    let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_pb_sd: ng_sd }, { sl_dang_sd: update_sl, });
-                    return res.status(200).json({ data: { khoiphuc: khoiphuc, update_taisan: update_taisan, message: "khoi phuc thanh cong" } });
-
-
-                }
+                return res.status(200).json({ data: khoiphuc, message: "khoi phuc thanh cong " });
             }
-            return res.status(200).json({ data: khoiphuc, message: "khoi phuc thanh cong " });
+            if (datatype == 3) {
+                //xoavinhvien
+                let xoa = await SuaChua.findOneAndRemove({ sc_id: id, id_cty: com_id });
+                return res.status(200).json({ message: "xoa vinh vien thanh cong " });
+            }
+    
         }
-        if (datatype == 3) {
-            //xoavinhvien
-            let xoa = await SuaChua.findOneAndRemove({ sc_id: id, id_cty: com_id });
-            return res.status(200).json({ message: "xoa vinh vien thanh cong " });
-        }
-
-
+        return fnc.setError(res, "khong tim thay doi tuong can xoa")
     } catch (error) {
         console.log(error)
 
@@ -1200,26 +1236,60 @@ exports.detailBBCanSuaChua = async (req, res) => {
             },
             // { $unwind: "$infoTS" },
             { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
-
             {
                 $lookup: {
-                    from: "Users",
+                    from: "QLTS_ViTri_ts",
+                    localField: "sc_ts_vitri",
+                    foreignField: "id_vitri",
+                    as: "infoVT"
+                }
+            },
+            { $unwind: { path: "$infoVT", preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: "Users", 
                     localField: "id_cty",
-                    foreignField: "idQLC",
-                    as: "infoCtyDangSD"
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : 1},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
+                     as : "infoCtyDangSD"
                 }
             },
             // { $unwind: "$infoCtyDangSD" },
             { $unwind: { path: "$infoCtyDangSD", preserveNullAndEmptyArrays: true } },
             {
                 $lookup: {
-                    from: "Users",
-                    localField: "sc_ng_thuchien",
-                    foreignField: "idQLC",
-                    as: "infoNV"
+                    from: "Users", 
+                    localField: "sc_id_ng_tao",
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
+                     as : "infoNV"
                 }
             },
             { $unwind: { path: "$infoNV", preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: "Users", 
+                    localField: "sc_ng_thuchien",
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : {$ne : 1 }},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
+                     as : "infoNV_ng_thuchien"
+                }
+            },
+            { $unwind: { path: "$infoNV_ng_thuchien", preserveNullAndEmptyArrays: true } },
             {$project : {
                 "sc_id" : "$sc_id",
                 "sc_trangthai" : "$sc_trangthai",
@@ -1245,14 +1315,21 @@ exports.detailBBCanSuaChua = async (req, res) => {
                 "sc_lydo_tuchoi" : "$sc_lydo_tuchoi",
                 "sc_id_ng_tao" : "$sc_id_ng_tao",
                 "sc_ng_thuchien" : "$sc_ng_thuchien",
-                "ten_nguoi_thuchien": "$infoNV.userName",
-                "dep_id": "$infoNV.inForPerson.employee.dep_id",
-                "position_id": "$infoNV.inForPerson.employee.position_id",
+                "ten_nguoi_tao": "$infoNV.userName",
+                "vi_tri": "$infoVT.vi_tri",
+                "sc_ts_vitri" : "$sc_ts_vitri", 
+                "ten_nguoi_thuchien": "$infoNV_ng_thuchien.userName",
+                "dep_id": "$infoNV_ng_thuchien.inForPerson.employee.dep_id",
             }}
             ])
             for (let i = 0; i < data1.length; i++) {
                 let depName = await Department.findOne({ com_id: id_cty, dep_id: data1[i].dep_id })
                 data1[i].depName = depName
+                data1[i].sc_ngay = new Date(data1[i].sc_ngay * 1000);
+                data1[i].sc_ngay_nhapkho = new Date(data1[i].sc_ngay_nhapkho * 1000);
+                data1[i].sc_date_duyet = new Date(data1[i].sc_date_duyet * 1000);
+                data1[i].sc_dukien = new Date(data1[i].sc_dukien * 1000);
+                data1[i].sc_hoanthanh = new Date(data1[i].sc_hoanthanh * 1000);
             }
             data.push({list : data1})
             // return res.status(200).json({data : {data} , message : "lấy thành công"})
@@ -1300,18 +1377,22 @@ exports.listBBCanSuaChua = async (req, res) => {
                 as: "infoTS"
             }
             },
-            // { $unwind: "$infoTS" },
             { $unwind: { path: "$infoTS", preserveNullAndEmptyArrays: true } },
 
             {
                 $lookup: {
                     from: "Users",
                     localField: "id_cty",
-                    foreignField: "idQLC",
-                    as: "infoCtyDangSD"
+                    foreignField: "_id", 
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : 1},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
+                     as : "infoCtyDangSD"
                 }
             },
-            // { $unwind: "$infoCtyDangSD" },
             { $unwind: { path: "$infoCtyDangSD", preserveNullAndEmptyArrays: true } },
             {$project : {
                 "sc_id" : "$sc_id",
@@ -1337,9 +1418,18 @@ exports.listBBCanSuaChua = async (req, res) => {
                 "sc_id_ng_tao" : "$sc_id_ng_tao",
             }}
             ])
+            for (let i = 0; i < data1.length; i++) {
+                data1[i].sc_ngay = new Date(data1[i].sc_ngay * 1000);
+                data1[i].sc_ngay_nhapkho = new Date(data1[i].sc_ngay_nhapkho * 1000);
+                data1[i].sc_date_duyet = new Date(data1[i].sc_date_duyet * 1000);
+                data1[i].sc_dukien = new Date(data1[i].sc_dukien * 1000);
+                data1[i].sc_hoanthanh = new Date(data1[i].sc_hoanthanh * 1000);
+            }
             data.push({list : data1})
+            let totalCount = await SuaChua.count(conditions)
+
             // return res.status(200).json({data : {data} , message : "lấy thành công"})
-            return fnc.success(res,"lấy thành công",{data})
+            return fnc.success(res,"lấy thành công",{data, totalCount})
     } catch (error) {
         return fnc.setError(res, error.message);
     }
