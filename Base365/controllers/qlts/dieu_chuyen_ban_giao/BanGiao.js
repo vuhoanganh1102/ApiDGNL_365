@@ -47,13 +47,22 @@ exports.list = async (req, res) => {
                     {$skip : skip },
                     {$limit : limit },
                     {$sort: {cp_id:-1}},
-                    {$lookup: {
-                        from: "Users",
-                        localField: "id_ng_thuchien",
-                        foreignField : "idQLC",
-                        as : "info"
-                    }},
-                    { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
+                    {
+                        $lookup: {
+                            from: "Users",
+                            localField: "id_ng_thuchien",
+                            foreignField: "_id",
+                            // pipeline: [
+                            //     { $match: {$and : [
+                            //     { "type" : {$ne : 1 }},
+                            //     {"idQLC":{$ne : 0}},
+                            //     {"idQLC":{$ne : 1}}] },
+                            //     }
+                            // ],
+                             as : "info"
+                        }
+                    },
+                { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
 
                     {$project : {  
                         cp_id : 1,
@@ -62,19 +71,6 @@ exports.list = async (req, res) => {
                         ten_ng_thuchien : "$info.userName",
                         dep_id : "$info.inForPerson.employee.dep_id",
                     }}, 
-                    // {
-                    //     "$group": {
-                    //     "_id": "$_id",
-                    //     "id_ng_thuchien": {
-                    //         "$first": "$id_ng_thuchien"
-                    //     }, 
-                    //     "ten_ng_thuchien": {
-                    //         "$first": "$ten_ng_thuchien"
-                    //     }, 
-                    //     "dep_id": { 
-                    //         "$first": "$dep_id"
-                    //     }, 
-                    // }}
                     
                 ]) 
                 for (let j = 0; j < UserAllocation.length; j++) {
@@ -106,12 +102,22 @@ exports.list = async (req, res) => {
                     {$skip : skip },
                     {$limit : limit },
                     {$sort: {thuhoi_id:-1}},
-                    {$lookup: {
-                        from: "Users",
-                        localField: "id_ng_thuhoi",
-                        foreignField : "idQLC",
-                        as : "info" 
-                    }},
+                    {
+                        $lookup: {
+                            from: "Users",
+                            localField: "id_ng_thuhoi",
+                            foreignField: "_id",
+                            // pipeline: [
+                            //     { $match: {$and : [
+                            //     { "type" : {$ne : 1 }},
+                            //     {"idQLC":{$ne : 0}},
+                            //     {"idQLC":{$ne : 1}}
+                            //     ]},
+                            //     }
+                            // ],
+                             as : "info"
+                        }
+                    },
                     { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
 
                     {$project : { 
@@ -122,19 +128,6 @@ exports.list = async (req, res) => {
                         dep_id : "$info.inForPerson.employee.dep_id",
 
                     }},
-                    // {
-                    //     "$group": {
-                    //     "_id": "$_id",
-                    //     "id_ng_thuhoi": {
-                    //         "$first": "$id_ng_thuhoi"
-                    //     }, 
-                    //     "ten_nguoi_thuhoi": {
-                    //         "$first": "$ten_nguoi_thuhoi"
-                    //     }, 
-                    //     "dep_id": { 
-                    //         "$first": "$dep_id"
-                    //     }, 
-                    // }}
                     
                 ])
                 for (let t = 0; t < UserRecall.length; t++) { 
@@ -189,14 +182,14 @@ exports.listDetailAllocation = async (req, res) => {
             {$lookup: {
                 from: "Users",
                 localField: "id_ng_thuchien",
-                foreignField : "idQLC",
+                foreignField : "_id",
                 as : "info"
             }},
             { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
             {$lookup: {
                 from: "Users",
                 localField: "cp_id_ng_tao",
-                foreignField : "idQLC",
+                foreignField : "_id",
                 as : "info_nguoi_tao"
             }},
             { $unwind: { path: "$info_nguoi_tao", preserveNullAndEmptyArrays: true } },
@@ -248,14 +241,14 @@ exports.listDetailRecall = async (req, res) => {
             {$lookup: {
                 from: "Users",
                 localField: "id_ng_thuhoi",
-                foreignField : "idQLC",
+                foreignField : "_id",
                 as : "info"
             }},
             { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
             {$lookup: {
                 from: "Users",
                 localField: "thuhoi_ng_tao",
-                foreignField : "idQLC",
+                foreignField : "_id",
                 as : "info_ng_tao"
             }},
             { $unwind: { path: "$info_ng_tao", preserveNullAndEmptyArrays: true } },
@@ -312,35 +305,35 @@ exports.refuserHandOver = async (req , res) =>{
     }
 }
 //Từ chối bàn giao tài sản cấp phát
-exports.refuserHandOverAllocation = async (req , res) =>{
-    try{
-        const id_cty = req.user.data.com_id
-        const cp_id = req.body.cp_id
-        const content = req.body.content
-        const data = await capPhat.findOne({ cp_id: cp_id,id_cty: id_cty });
-        if (!data) {
-            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
-         } else {
-             // console.log(data.cap_phat_taisan.ds_ts[0].ts_id)
-             let count = data.cap_phat_taisan.ds_ts[0].ts_id
-             for(let t = 0; t<count.length; t ++){
-                 let listItemsType = await TaiSan.find({ id_cty: id_cty, ts_id : count(t) })
-                     let sl_taisan = listItemsType.soluong_cp_bb + data.cap_phat_taisan.ds_ts[0].sl_cp
-                     await TaiSan.updateOne({ ts_id : count(t),id_cty:id_cty }, {
-                         soluong_cp_bb : sl_taisan,
-                         })
-             }
-            //  await capPhat.updateOne({ cp_id: cp_id,id_cty:id_cty }, {
-            //  cp_trangthai : 2,
-            //  cp_tu_choi_tiep_nhan : content,
-            //  })
-         }
-         return fnc.success(res, "cập nhật thành công")
+// exports.refuserHandOverAllocation = async (req , res) =>{
+//     try{
+//         const id_cty = req.user.data.com_id
+//         const cp_id = req.body.cp_id
+//         const content = req.body.content
+//         const data = await capPhat.findOne({ cp_id: cp_id,id_cty: id_cty });
+//         if (!data) {
+//             return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+//          } else {
+//              // console.log(data.cap_phat_taisan.ds_ts[0].ts_id)
+//              let count = data.cap_phat_taisan.ds_ts[0].ts_id
+//              for(let t = 0; t<count.length; t ++){
+//                  let listItemsType = await TaiSan.find({ id_cty: id_cty, ts_id : count(t) })
+//                      let sl_taisan = listItemsType.soluong_cp_bb + data.cap_phat_taisan.ds_ts[0].sl_cp
+//                      await TaiSan.updateOne({ ts_id : count(t),id_cty:id_cty }, {
+//                          soluong_cp_bb : sl_taisan,
+//                          })
+//              }
+//             //  await capPhat.updateOne({ cp_id: cp_id,id_cty:id_cty }, {
+//             //  cp_trangthai : 2,
+//             //  cp_tu_choi_tiep_nhan : content,
+//             //  })
+//          }
+//          return fnc.success(res, "cập nhật thành công")
 
-    }catch(e){
-        return fnc.setError(res, e.message)
-    }
-}
+//     }catch(e){
+//         return fnc.setError(res, e.message)
+//     }
+// }
 // //Từ chối tiếp nhận tài sản cấp phát"
 // exports.AcceptHandOverAllocation = async (req, res) => {
 //     try {

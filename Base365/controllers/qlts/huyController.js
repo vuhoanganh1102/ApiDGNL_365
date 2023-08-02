@@ -490,7 +490,7 @@ exports.detailAssetDisposal = async (req, res, next) => {
                 name_link = 'Danh sách tài sản đã hủy';
             }
             data.ngaytao = new Date(data.ngaytao * 1000)
-            let id_ng_tao = await Users.findOne({ idQLC: data.nguoitao }, { userName: 1, inForPerson: 1, address: 1 });
+            let id_ng_tao = await Users.findOne({ _id: data.nguoitao }, { userName: 1, inForPerson: 1, address: 1 });
             data.nguoitao = id_ng_tao.userName;
             data.ngdexuat = id_ng_tao.userName;
             data.link_url = link_url;
@@ -599,7 +599,7 @@ exports.listOfDestroyedAssets = async (req, res, next) => {
                 $lookup: {
                     from: 'Users',
                     localField: 'id_ng_duyet',
-                    foreignField: 'idQLC',
+                    foreignField: '_id',
                     as: 'id_ng_duyet'
                 }
             },

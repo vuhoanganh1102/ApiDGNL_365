@@ -28,6 +28,6 @@ router.post('/getListDetail',functions.checkToken,fnc.checkRole("CP_TH",1) ,form
 
 router.post('/DetailDep',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.DetailDep)
 
-router.post('/refuserAll',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.refuserAll)
+router.post('/refuserAll',functions.checkToken,fnc.checkRole("CP_TH") ,formData.parse(),controller.refuserAll)
 
 module.exports = router

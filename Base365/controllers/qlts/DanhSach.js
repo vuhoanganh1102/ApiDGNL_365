@@ -3,7 +3,8 @@ const ViTriTaiSan = require('../../models/QuanLyTaiSan/ViTri_ts');
 const TaiSan = require('../../models/QuanLyTaiSan/TaiSan');
 const LoaiTaiSan = require('../../models/QuanLyTaiSan/LoaiTaiSan');
 const DonViCongSuat = require('../../models/QuanLyTaiSan/DonViCS');
-
+const dep = require('../../models/qlc/Deparment')
+const user = require('../../models/Users')
 //page dieu chuyen vi tri
 exports.list_vitri = async (req, res) => {
     try {
@@ -135,6 +136,42 @@ exports.list_dvi_csuat = async (req, res) => {
             id_cty: com_id
         });
         fnc.success(res, "OK", { list_divi });
+    } catch (error) {
+        console.log(error);
+        fnc.setError(res, error.message);
+    }
+}
+exports.list_Dep = async (req, res) => {
+    try {
+        let com_id = req.user.data.com_id;
+        let data = dep.find({
+            com_id: com_id
+        }).select("dep_id dep_name -_id").sort({dep_id : -1})
+        fnc.success(res, "lấy thành công", { data });
+    } catch (error) {
+        console.log(error);
+        fnc.setError(res, error.message);
+    }
+}
+exports.list_Users = async (req, res) => {
+    try {
+        let com_id = req.user.data.com_id;
+        let data = await user.find({
+            "inForPerson.employee.com_id": com_id , type :2
+        }).select("_id userName").sort({_id : -1})
+        fnc.success(res, "lấy thành công", { data });
+    } catch (error) {
+        console.log(error);
+        fnc.setError(res, error.message);
+    }
+}
+exports.list_Com = async (req, res) => {
+    try {
+        let com_id = req.user.data.com_id;
+        let data = await user.find({
+           _id: com_id , type : 1
+        }).select("_id userName").sort({_id : -1})
+        fnc.success(res, "lấy thành công", { data });
     } catch (error) {
         console.log(error);
         fnc.setError(res, error.message);
