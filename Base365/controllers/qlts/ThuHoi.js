@@ -11,7 +11,7 @@ const dangSd = require('../../models/QuanLyTaiSan/TaiSanDangSuDung')
 exports.create = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
-        const thuhoi_ng_tao = req.user.data.idQLC
+        const thuhoi_ng_tao = req.user.data._id
         const type_quyen = req.body.type_quyen
         const id_ng_thuhoi = req.body.id_ng_thuhoi
         const id_pb_thuhoi = req.body.id_pb_thuhoi
@@ -272,15 +272,14 @@ exports.getListDetail = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "thuhoi_ng_tao",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}
-                        ]},
-                        }
-                    ],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}
+                    //     ]},
+                    //     }
+                    // ],
                      as : "info"
                 }
             },
@@ -290,15 +289,15 @@ exports.getListDetail = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_dc_thuhoi",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}
-                        ]},
-                        }
-                    ],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : {$ne : 1 }},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}
+                    //     ]},
+                    //     }
+                    // ],
                      as : "infoNguoiDuocTH"
                 }
             },
@@ -307,15 +306,15 @@ exports.getListDetail = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_thuhoi",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}
-                        ]},
-                        }
-                    ],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : {$ne : 1 }},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}
+                    //     ]},
+                    //     }
+                    // ],
                      as : "infoNguoiTH"
                 }
             },
@@ -374,7 +373,7 @@ exports.getListDetail = async (req, res) => {
 exports.edit = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
-        const id_ng_thuhoi = req.user.data.idQLC//id nguoi tao
+        const id_ng_thuhoi = req.user.data._id//id nguoi tao
         const thuhoi_id = req.body.thuhoi_id;
         const thuhoi_ngay = req.body.thuhoi_ngay;
         const thuhoi_soluong = req.body.thuhoi_soluong;
@@ -416,7 +415,7 @@ exports.delete = async (req, res) => {
         const datatype = Number(req.body.datatype)
         const thuhoi_id = Number(req.body.thuhoi_id)
         const type_quyen = req.body.type_quyen
-        const id_ng_xoa = req.user.data.idQLC
+        const id_ng_xoa = req.user.data._id
         const date_delete = new Date()
         if (type_quyen != 0) {
             if (datatype == 1) { 

@@ -78,15 +78,15 @@ try{
                     $lookup: {
                         from: "Users",
                         localField: "id_user",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}
-                            ]},
-                            }
-                        ],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     { "type" : {$ne : 1 }},
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}
+                        //     ]},
+                        //     }
+                        // ],
                          as : "info"
                     }
                 },

@@ -163,7 +163,7 @@ exports.getDataLiquidationAssetProposal = async (req, res, next) => {
             let tl_type_quyen = taiSanDeXuatThanhLy[i].tl_type_quyen;
 
             // lấy thông tin user
-            let user = await Users.findOne({ idQLC: taiSanDeXuatThanhLy[i].ngdexuat }, { userName: 1, inForPerson: 1, address: 1 })
+            let user = await Users.findOne({ _id: taiSanDeXuatThanhLy[i].ngdexuat }, { userName: 1, inForPerson: 1, address: 1 })
             if (user) {
 
                 taiSanDeXuatThanhLy[i].ngdexuat = user.userName
@@ -573,7 +573,7 @@ exports.detailLiquidationAssetProposal = async (req, res, next) => {
             let tl_type_quyen = chiTiet.tl_type_quyen;
 
             // lấy thông tin user
-            let user = await Users.findOne({ idQLC: chiTiet.id_ngtao }, { userName: 1, inForPerson: 1, address: 1 })
+            let user = await Users.findOne({ _id: chiTiet.id_ngtao }, { userName: 1, inForPerson: 1, address: 1 })
 
             if (tl_type_quyen === 1) {
                 chiTiet.nguoitao = user.userName

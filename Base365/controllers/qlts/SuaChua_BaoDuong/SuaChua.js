@@ -24,7 +24,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
         // id_ng_xoa = req.user.data.idQLC;
 
     }
-    let ng_duyet = req.user.data.idQLC;
+    let ng_duyet = req.user.data._id;
 
     try {
         if (isNaN(id_bb) || id_bb <= 0) {
@@ -204,13 +204,13 @@ exports.listBBDangSuaChua = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_cty",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : 1 },
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}] },
-                        }],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : 1 },
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
                      as : "infoCtyDangSD"
                 }
             },
@@ -273,11 +273,11 @@ exports.XoabbSuaChua = async (req, res) => {
 
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     } else if (req.user.data.type == 2) {
         com_id = req.user.data.com_id;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
  
     }
     try {
@@ -374,11 +374,11 @@ exports.deleteAll = async (req, res) => {
     let type_quyen = req.user.data.type;
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     } else if (req.user.data.type == 2) {
         com_id = user_xoa.inForPerson.employee.com_id;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
     }
     try {
         let xoa = array_xoa.split(",");
@@ -580,11 +580,11 @@ exports.xoa_bb_sua_chua = async (req, res) => {
     let type_quyen = req.user.data.type;
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     } else if (req.user.data.type == 2) {
         com_id = req.user.dat.com_id;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     } 
     try {
@@ -623,11 +623,11 @@ exports.xoa_all = async (req, res) => {
 
     if (req.user.data.type == 1) {
         com_id = req.user.data.idQLC;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     } else if (req.user.data.type == 2) {
         com_id = req.user.data.com_id;
-        id_ng_xoa = req.user.data.idQLC;
+        id_ng_xoa = req.user.data._id;
 
     }
 
@@ -796,13 +796,13 @@ exports.listBBDaSuaChua = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_cty",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : 1 },
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}] },
-                        }],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : 1 },
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
                      as : "infoCtyDangSD"
                 }
             },
@@ -858,7 +858,7 @@ exports.addSuaChua = async (req, res) => {
     try {
         let { id_ts, sl_sc, trangthai_sc, loai_bb, sc_quyen_sd, ng_sd, vitri_ts, dv_sc, dia_chi_nha_cung_cap,
             ngay_sc, ngay_dukien, hoanthanh_sc, chiphi_dukien, chiphi_thucte, nd_sc, ng_thuc_hien, dia_diem_sc, } = req.body;
-        let id_ng_tao = req.user.data.idQLC;
+        let id_ng_tao = req.user.data._id;
         let type_quyen = req.user.data.type;
         let com_id = req.user.data.com_id;
         let ID_bb_sua_chua = 0;
@@ -1124,7 +1124,7 @@ exports.xoaBBcanSC = async (req, res) => {
 
         } else if (req.user.data.type == 2) {
             com_id = user_xoa.inForPerson.employee.type.com_id;
-            id_ng_xoa = req.user.data.idQLC;
+            id_ng_xoa = req.user.data._id;
 
         }
         let q_suachua = await SuaChua.findOne({ id_cty: com_id, sc_id: id });
@@ -1249,13 +1249,13 @@ exports.detailBBCanSuaChua = async (req, res) => {
                 $lookup: {
                     from: "Users", 
                     localField: "id_cty",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : 1},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}] },
-                        }],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : 1},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
                      as : "infoCtyDangSD"
                 }
             },
@@ -1265,13 +1265,12 @@ exports.detailBBCanSuaChua = async (req, res) => {
                 $lookup: {
                     from: "Users", 
                     localField: "sc_id_ng_tao",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}] },
-                        }],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
                      as : "infoNV"
                 }
             },
@@ -1280,13 +1279,13 @@ exports.detailBBCanSuaChua = async (req, res) => {
                 $lookup: {
                     from: "Users", 
                     localField: "sc_ng_thuchien",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}] },
-                        }],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : {$ne : 1 }},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
                      as : "infoNV_ng_thuchien"
                 }
             },
@@ -1384,13 +1383,13 @@ exports.listBBCanSuaChua = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_cty",
-                    foreignField: "idQLC", 
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : 1},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}] },
-                        }],
+                    foreignField: "_id", 
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : 1},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }],
                      as : "infoCtyDangSD"
                 }
             },

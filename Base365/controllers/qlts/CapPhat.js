@@ -9,8 +9,8 @@ const user = require('../../models/Users')
 
 exports.create = async (req, res) => {
     try {
-        const id_cty = req.user.data.idQLC
-        const idQLC = req.user.data.idQLC
+        const id_cty = req.user.data.com_id
+        const idQLC = req.user.data._id
         const pageNumber = req.body.pageNumber || 1;
         const id_phongban = req.body.id_phongban;
         const cp_lydo = req.body.cp_lydo;
@@ -87,7 +87,7 @@ exports.edit = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
 
-        const idQLC = req.user.data.idQLC
+        const idQLC = req.user.data._id
         const cp_id = req.body.cp_id;
         const id_phongban = req.body.id_phongban;
         const cp_lydo = req.body.cp_lydo;
@@ -269,15 +269,15 @@ exports.getListNV = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "id_nhanvien",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}
-                            ]},
-                            }
-                        ],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     { "type" : {$ne : 1 }},
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}
+                        //     ]},
+                        //     }
+                        // ],
                          as : "infoNguoiDuocCP"
                     }
                 },
@@ -406,6 +406,7 @@ exports.getListDep = async (req, res) => {
 exports.getListDetail = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
+        const type = req.user.data.type
         // const type_quyen = req.body.type_quyen
         let option = req.body.option
         const id_nhanvien = req.body.id_nhanvien
@@ -450,25 +451,22 @@ exports.getListDetail = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "cp_id_ng_tao",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}] },
-                            }
-                        ],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}] },
+                        //     }
+                        // ],
                          as : "info"
                     }
                 },
             { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
 
 
-            // { $unwind: "$info" },
             {
                 $project: {
                     "cp_id": "$cp_id",
-                    // "cap_phat_taisan": "$cap_phat_taisan",
                     "cp_trangthai": "$cp_trangthai",
                     "id_nhanvien": "$id_nhanvien",
                     "id_phongban": "$id_phongban",
@@ -523,14 +521,14 @@ exports.DetailEmp = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "id_ng_thuchien",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}] },
-                            }
-                        ],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     { "type" : {$ne : 1 }},
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}] },
+                        //     }
+                        // ],
                          as : "info"
                     }
                 },
@@ -539,13 +537,13 @@ exports.DetailEmp = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "id_nhanvien",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}] },
-                            }],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     { "type" : {$ne : 1 }},
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}] },
+                        //     }],
                          as : "infoNguoiDuocCP"
                     }
                 },
@@ -621,14 +619,14 @@ exports.DetailDep = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_thuchien",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}] },
-                        }
-                    ],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : {$ne : 1 }},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }
+                    // ],
                      as : "info"
                 }
             },
@@ -640,14 +638,14 @@ exports.DetailDep = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "id_ng_daidien",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}] },
-                            }
-                        ],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     { "type" : {$ne : 1 }},
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}] },
+                        //     }
+                        // ],
                          as : "infoNgDaiDienCP"
                     }
                 },
