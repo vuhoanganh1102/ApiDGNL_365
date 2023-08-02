@@ -21,6 +21,7 @@ const jwt = require('jsonwebtoken');
 const CV = require('../models/Timviec365/CV/Cv365');
 const Users = require('../models/Users');
 const slugify = require('slugify');
+const AdminUser = require('../models/Timviec365/Admin/AdminUser');
 const MbSize = 1024 * 1024;
 
 // giới hạn dung lượng video < 100MB
@@ -400,6 +401,18 @@ exports.isAdminRN365 = async(req, res, next) => {
     let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, active: 1 });
     if (admin) return next();
     return res.status(403).json({ message: "is not admin RN365" });
+}
+//
+exports.isAdmin = async(req, res, next) => {
+    let user = req.user.data;
+    let admin = await functions.getDatafindOne(AdminUser, { 
+        adm_id: user.adm_id,
+        adm_isadmin: 1,
+        adm_active: 1,
+        adm_delete: 0
+    });
+    if (admin) return next();
+    return res.status(403).json({ message: "is not admin" });
 }
 
 const checkTokenV3 = (req, res, next) => {

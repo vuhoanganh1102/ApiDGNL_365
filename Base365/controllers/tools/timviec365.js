@@ -70,6 +70,7 @@ const tblfooter = require("../../models/Timviec365/TblFooter");
 const salaryLevel = require("../../models/Timviec365/SalaryLevel");
 const mailntd = require("../../models/Timviec365/Mail365/Mail365NTD");
 const savemember = require("../../models/Timviec365/Mail365/SaveMember");
+const PresPointHistory = require('../../models/Timviec365/UserOnSite/Company/ManageCredits/PresPointHistory');
 
 // Kết nối API
 const axios = require("axios");
@@ -3244,3 +3245,36 @@ exports.savemember = async(req, res) => {
         return fnc.setError(res, error);
     }
 };
+
+
+exports.normalizeExchangePointHistory = async (req, res) => {
+    try {
+        let history = await PresPointHistory.find({});
+        function num(value) {
+            if (!value) return 0;
+            return Number(value);
+        }
+        
+        for (let i = 0; i < history.length; i++) {
+            let doc = history[i];
+            let fields = ["point_time_active","point_see","point_use_point","point_share_social_new","point_share_social_url","point_share_social_user","point_vote","point_next_page","point_see_em_apply","point_vip","point_TiaSet","point_comment","point_ntd_comment","point_be_seen_by_em","point_content_new"]
+            let total = 0;
+            fields.forEach(field => {
+                total += num(doc[field]);
+            })
+            if (doc.point_to_change === 0) {
+                doc.sum = total;
+                doc.point_to_change = doc.sum;
+            } else if (doc.point_to_change === doc.sum) {
+                doc.sum = total;
+                doc.point_to_change = total;
+            }
+            await doc.save();
+        }
+
+        return fnc.success(res, "thành công");
+    } catch (error) {
+        console.log(error);
+        await fnc.setError(res, "Failed");
+    }
+}
