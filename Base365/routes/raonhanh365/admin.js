@@ -62,7 +62,7 @@ router.post('/getListOrderPayment', formData.parse(), [functions.checkToken, ser
 router.post('/order/verifyOrder', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.adminVerifyOrder);
 
 //----------------------------------------------api tags index
-router.post('/tagsIndex', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminTagsIndex.getListTagsIndex);
+router.post('/tagsIndex', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListTagsIndex);
 
 router.get('/getListPriceList', [functions.checkToken, serviceRN.isAdminRN365], admin.getListPriceList);
 

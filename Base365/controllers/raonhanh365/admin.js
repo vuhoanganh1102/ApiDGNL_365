@@ -21,6 +21,7 @@ const Order = require('../../models/Raonhanh365/Order');
 const Module = require('../../models/Raonhanh365/Admin/Module');
 const AdminUserLanguagues = require('../../models/Raonhanh365/Admin/AdminUserLanguagues');
 const Language = require('../../models/Raonhanh365/Language');
+const TagIndex = require('../../models/Raonhanh365/TagIndex');
 
 //đăng nhập admin
 exports.loginAdminUser = async(req, res, next) => {
@@ -1249,4 +1250,51 @@ exports.getInfoForEdit = async(req, res, next) => {
 
 exports.active = async(req, res, next) => {
 
+}
+
+//tag index
+exports.getListTagsIndex = async(req, res, next) => {
+    try {
+        let {page, pageSize, type, _id, fromDate, toDate} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 30;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+
+        if(type==1 || type==2 || type==3 || type ==4 || type==5 || type==6) {
+            let listCondition = {};
+            //danh sach danh muc va tag
+            if(type == 1) listCondition.classify = {$in: [1, 2]};
+
+            //danh sach dia diem
+            if(type == 2) listCondition.classify = {$in: [3, 14]};
+
+            //danh sach tag + dia diem
+            if(type == 3) listCondition.classify = {$in: [4, 9, 15]};
+
+            //danh sach nganh nghe + tag nganh nghe
+            if(type == 4) listCondition.classify = {$in: [5, 6]};
+
+            //danh sach viec lam + dia diem
+            if(type == 5) listCondition.classify = {$in: [10, 11]};
+
+            //danh sach nganh nghe + tag nganh nghe
+            if(type == 6) listCondition.classify = {$in: [12, 13]};
+
+            if(fromDate && !toDate) listCondition.time = {$gte: new Date(fromDate)};
+            if(!fromDate && toDate) listCondition.time = {$lte: new Date(toDate)};
+            if(fromDate && toDate) listCondition.time = {$gte: new Date(fromDate), $lte: new Date(toDate)};
+
+            if(_id) listCondition._id = Number(_id);
+            let fieldsGet = {_id: 1, link: 1, time: 1}
+            const listTagsIndex = await functions.pageFindWithFields(TagIndex, listCondition, fieldsGet, { _id: -1 }, skip, limit); 
+            const totalCount = await functions.findCount(TagIndex, listCondition);
+            return functions.success(res, "get list tags index success", {totalCount: totalCount, data: listTagsIndex });
+        }
+        return functions.setError(res, "type = 1, 2, 3, 4, 5, 6", 405);
+    } catch (error) {
+        return functions.setError(res, error.message)
+    }
 }
