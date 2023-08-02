@@ -62,7 +62,7 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
     try {
         // khai báo biến lấy dữ liệu từ token
         let comId = req.comId;
-        let emId = req.emId;
+        let emId = req.user.data._id;
         let type_quyen = req.type;
         console.log(type_quyen);
         // khai báo biến người dùng nhập vào
@@ -263,7 +263,7 @@ exports.dataKiemKeDaXoa = async (req, res, next) => {
                 $lookup: {
                     from: 'Users',
                     localField: 'id_ngtao_kk',
-                    foreignField: 'idQLC',
+                    foreignField: '_id',
                     as: 'user'
                 }
             },
@@ -272,7 +272,7 @@ exports.dataKiemKeDaXoa = async (req, res, next) => {
                 $lookup: {
                     from: 'Users',
                     localField: 'kk_id_ng_xoa',
-                    foreignField: 'idQLC',
+                    foreignField: '_id',
                     as: 'users'
                 }
             },
@@ -281,18 +281,11 @@ exports.dataKiemKeDaXoa = async (req, res, next) => {
                 $lookup: {
                     from: 'Users',
                     localField: 'id_ng_kiemke',
-                    foreignField: 'idQLC',
+                    foreignField: '_id',
                     as: 'usersid_ng_kiemke'
                 }
             },
             { $unwind: '$usersid_ng_kiemke' },
-            {
-                $match: {
-                  'usersid_ng_kiemke.type': { $ne: 0 },
-                  'users.type': { $ne: 0 },
-                  'user.type': { $ne: 0 },
-                },
-            },
             {
                 $project: {
                     kk_date_create: 1,

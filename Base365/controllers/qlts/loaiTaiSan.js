@@ -206,7 +206,7 @@ exports.deleteLoaiTs = async (req, res) => {
     const deleteDate = Math.floor(Date.now() / 1000);
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      id_ng_xoa = req.user.data.idQLC;
+      id_ng_xoa = req.user.data._id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }

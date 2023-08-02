@@ -64,69 +64,57 @@ exports.showNhomTs = async (req, res) => {
 
     let matchQuery = {
       id_cty: com_id ,
-      ts_da_xoa : 0
+      nhom_da_xoa : 0
     };
     if (id_nhom) {
       const parsedIdNhom = parseInt(id_nhom);
       if (!isNaN(parsedIdNhom)) {
-        matchQuery.$or = [{ id_nhom_ts: parsedIdNhom }, { id_nhom: parsedIdNhom }];
-    // Thêm điều kiện $nin để loại bỏ những id_nhom đã có
+        matchQuery.id_nhom = parsedIdNhom;
       } else {
-        // Xử lý trường hợp id_nhom không phải là số hợp lệ
         return functions.setError(res, 'id_nhom không hợp lệ', 400);
       }
     }
     // Đếm số lượng ts_id dựa trên giá trị id_nhom_ts và gom nhóm theo id_nhom_ts
-    const countTs = await TaiSan.aggregate([
+    let result = await NhomTaiSan.aggregate([
       {
         $match: matchQuery,
       },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
-          localField: 'id_loai_ts',
-          foreignField: 'id_loai',
-          as: 'name_loai',
+          localField: 'id_nhom',
+          foreignField: 'id_nhom_ts',
+          as: 'loai_tai_san',
         },
       },
-      {
-        $unwind: {
-          path: '$name_loai',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
+      {$sort : {id_nhom : -1}},
       {
         $lookup: {
-          from: 'QLTS_Nhom_Tai_San',
-          localField: 'id_nhom_ts',
-          foreignField: 'id_nhom',
-          as: 'name_nhom',
+          from: 'QLTS_Tai_San',
+          localField: 'id_nhom',
+          foreignField: 'id_nhom_ts',
+          as: 'tai_san',
         },
       },
       {
-        $unwind: {
-          path: '$name_nhom',
-          preserveNullAndEmptyArrays: true,
+        $project: {
+          'id_nhom': '$id_nhom',
+          'ten_nhom': '$ten_nhom',
+          so_luong_loai_ts: { $size: '$loai_tai_san' },
+          so_luong_tai_san: { $size: '$tai_san' },
         },
       },
       {
-        $group: {
-          _id: '$name_nhom.id_nhom',
-          ten_nhom: { $addToSet: '$name_nhom.ten_nhom' },
-         
-        },
+        $skip: (page - 1) * perPage,
       },
+      {
+        $limit: perPage,
+      }
     ]);
-    const totalItems = countTs.length;
+    const totalItems = await NhomTaiSan.countDocuments(matchQuery);
     const totalPages = Math.ceil(totalItems / perPage);
-    const startIndex = (page - 1) * perPage;
-    const endIndex = page * perPage;
 
-    // Lấy các kết quả phân trang
-    const pagedCountTs = countTs.slice(startIndex, endIndex);
-    const pagedCountLoai = countloai.slice(startIndex, endIndex);
-    
-    return functions.success(res, 'get data success', { nhomTsInfo,countloai,countTs, totalPages });
+    return functions.success(res, 'get data success', {result,totalPages,totalItems});
   } catch (error) {
     console.log(error);
     return functions.setError(res, error);
@@ -135,22 +123,76 @@ exports.showNhomTs = async (req, res) => {
 
 exports.showCTNhomTs = async (req, res) => {
   try {
-    let { id, page, perPage } = req.body;
+    let { id_nhom_ts,id_loai, page, perPage } = req.body;
     let com_id = '';
     page = parseInt(page) || 1; // Trang hiện tại (mặc định là trang 1)
     perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      console.log(com_id)
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    const startIndex = (page - 1) * perPage;
-    const endIndex = page * perPage;
+    let chage = parseInt(id_nhom_ts)
     let matchQuery = {
       id_cty : com_id,// Lọc theo com_id
+      id_nhom_ts : chage,
       loai_da_xoa: 0
     };
+    if (id_loai) {
+      const parsedIdloai = parseInt(id_loai);
+      if (!isNaN(parsedIdloai)) {
+        matchQuery.id_loai = parsedIdloai;
+      } else {
+        return functions.setError(res, 'id_loai không hợp lệ', 400);
+      }
+    }
+    let listLoai = await LoaiTaiSan.aggregate([
+      {
+        $match : matchQuery
+      },
+      {$sort : {id_loai : -1}},
+      {
+        $lookup: {
+          from: 'QLTS_Tai_San',
+          localField: 'id_loai',
+          foreignField: 'id_loai_ts',
+          as: 'tai_san',
+        },
+      },
+      {
+        $project: {
+          'id_loai': '$id_loai',
+          'ten_loai': '$ten_loai',
+          tong_so_luong_chua_cp: { 
+            $reduce: {
+              input: '$tai_san',
+              initialValue: 0,
+              in: { $add: ['$$value', '$$this.soluong_cp_bb'] }
+            }
+           },
+           so_tai_san: {
+            $map: {
+              input: '$tai_san',
+              as: 'tai_san',
+              in: {
+                'id_tai_san': '$$tai_san.ts_id',
+                'ten_tai_san': '$$tai_san.ts_ten',
+                'so_luong_chua_cap_phat': '$$tai_san.soluong_cp_bb'
+              }
+            }
+          }
+        },
+      },
+      {
+        $skip: (page - 1) * perPage,
+      },
+      {
+        $limit: perPage,
+      }
+    ])
+    const totalItems = await LoaiTaiSan.countDocuments(matchQuery);
+    const totalPages = Math.ceil(totalItems / perPage);
+    return functions.success(res, 'get data success', {listLoai,totalItems,totalPages});
   } catch (error) {
     console.log(error);
     return functions.setError(res, error);
@@ -211,7 +253,7 @@ exports.xoaNhom = async (req, res) => {
     const deleteDate = Math.floor(Date.now() / 1000);
     if (req.user.data.type == 1|| req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      nhom_id_ng_xoa = req.user.data.idQLC;
+      nhom_id_ng_xoa = req.user.data._id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -338,7 +380,7 @@ exports.addTTPB = async(req,res)=>{
    let createDate =  Math.floor(Date.now() / 1000);
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      ng_tao = req.user.data.idQLC;
+      ng_tao = req.user.data._id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -453,7 +495,7 @@ exports.deleteTTTC = async(req,res)=>{
     const deleteDate = Math.floor(Date.now() / 1000);
     if (req.user.data.type == 1|| req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      ng_xoa = req.user.data.idQLC;
+      ng_xoa = req.user.data._id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }

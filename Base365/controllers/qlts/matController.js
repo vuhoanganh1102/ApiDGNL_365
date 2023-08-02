@@ -66,17 +66,12 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_tao",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiTao"
                 }
             },
             
             { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
-            {
-                $match: {
-                  'NguoiTao.type': { $ne: 0 },
-                },
-            },
             { $project: {
                 "mat_id": "$mat_id", 
                 "mat_trangthai": "$mat_trangthai",
@@ -185,27 +180,18 @@ exports.danhSachChoDenBuVaMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_tao",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiTao"
                 }
             },
             { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
 
-            // {
-            //     $lookup: {
-            //         from: "Users",
-            //         localField: "id_ng_lam_mat",
-            //         foreignField: "idQLC",
-            //         as: "NguoiLamMat"
-            //     }
-            // },
-            // { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
 
             {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_nhan_denbu",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiNhanDenBu"
                 }
             },
@@ -215,7 +201,7 @@ exports.danhSachChoDenBuVaMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_duyet",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiDuyet"
                 }
             },
@@ -249,10 +235,6 @@ exports.danhSachChoDenBuVaMat = async(req, res, next) => {
                 
                 "id_ng_tao": "$id_ng_tao",
                 "ten_ng_tao": "$NguoiTao.userName",
-
-                // "id_ng_lam_mat": "$id_ng_lam_mat",
-                // "ten_ng_lam_mat": "$NguoiLamMat.userName",
-
                 "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
                 "ten_ng_nhan_denbu": "$NguoiNhanDenBu.userName",
 
@@ -320,27 +302,16 @@ exports.danhSachMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_tao",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiTao"
                 }
             },
             { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
-
-            // {
-            //     $lookup: {
-            //         from: "Users",
-            //         localField: "id_ng_lam_mat",
-            //         foreignField: "idQLC",
-            //         as: "NguoiLamMat"
-            //     }
-            // },
-            // { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
-
             {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_nhan_denbu",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiNhanDenBu"
                 }
             },
@@ -350,7 +321,7 @@ exports.danhSachMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_duyet",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiDuyet"
                 }
             },
@@ -411,7 +382,7 @@ exports.createMat = async(req, res, next) => {
         if(ts_mat && ngay_mat && nglammat && sl_mat && lydo && day_htdenbu) {
             let type_quyen_nhan_db = 2;
             let id_cty = req.user.data.com_id;
-            let id_ng_tao = req.user.data.idQLC;
+            let id_ng_tao = req.user.data._id;
             let type_quyen = req.user.data.type;
             ngay_mat = new Date(ngay_mat);
             day_htdenbu = new Date(day_htdenbu);

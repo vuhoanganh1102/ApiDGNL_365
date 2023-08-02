@@ -172,7 +172,7 @@ exports.showDataSearch = async (req, res) => {
     }
     let checktaisan = await TaiSan.distinct('id_ten_quanly', { id_cty: com_id })
     let listTaiSan = await TaiSan.find({ id_cty: com_id, ts_da_xoa: 0 }).select('ts_id ts_ten')
-    let listUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan } }).select('idQLC userName');
+    let listUser = await User.find({ 'inForPerson.employee.com_id': com_id, _id: { $in: checktaisan } }).select('_id userName');
     let listVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
     let listloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id, loai_da_xoa: 0 }).select('id_loai ten_loai')
     let listNhom = await NhomTs.find({ id_cty: com_id, nhom_da_xoa: 0 }).select('id_nhom ten_nhom')
@@ -200,7 +200,8 @@ exports.showadd = async (req, res) => {
     if (req.user.data.type = 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id
       let checktaisan = await TaiSan.distinct('id_ten_quanly', { id_cty: com_id })
-      let listUser = await User.find({ 'inForPerson.employee.com_id': com_id, idQLC: { $in: checktaisan } }).select('idQLC userName');;
+      let listUser = await User.find({ $or: [{'inForPerson.employee.com_id': com_id },{idQLC : com_id}],  }).select('_id userName');;
+      console.log(listUser);
       let listVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
       let listloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id }).select('id_loai ten_loai')
       let item = {
@@ -222,15 +223,17 @@ exports.addTaiSan = async (req, res) => {
   try {
     let {
       id_loai_ts, id_dv_quanly,
-      id_ten_quanly, ts_ten, ts_so_luong,
+      ts_ten, ts_so_luong,
       soluong_cp_bb, ts_gia_tri, ts_don_vi, ts_vi_tri,
       ts_trangthai, ts_da_xoa,
       don_vi_tinh, ghi_chu
     } = req.body
     let createDate = Math.floor(Date.now() / 1000);
     let com_id = '';
+    let id_ten_quanly = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
+      id_ten_quanly = req.user.data._id
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -330,7 +333,7 @@ exports.showCTts = async (req, res) => {
     if(!chekVitri){
       chekVitri = "";
     }
-    let checkUser = await User.findOne({ idQLC: checkts.id_ten_quanly, $or: [
+    let checkUser = await User.findOne({ _id: checkts.id_ten_quanly, $or: [
       { 'inForPerson.employee.com_id': com_id },
       { idQLC: com_id }
     ] }).select('userName');
@@ -391,7 +394,7 @@ exports.deleteTs = async (req, res) => {
     let ts_id_ng_xoa = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      ts_id_ng_xoa = req.user.data.idQLC;
+      ts_id_ng_xoa = req.user.data._id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -448,7 +451,7 @@ exports.editTS = async (req, res) => {
     let {ts_vi_tri,
       ts_ten,ts_don_vi,ts_id,
       id_loai_ts,ts_so_luong,
-      id_ten_quanly,id_dv_quanly,
+      id_dv_quanly,
       ts_gia_tri,ts_trangthai,
       } = req.body;
    
@@ -458,7 +461,7 @@ exports.editTS = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    const validationResult = quanlytaisanService.validateinputEdit(ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly,id_loai_ts,ts_vi_tri,ts_so_luong,ts_gia_tri,ts_trangthai);
+    const validationResult = quanlytaisanService.validateinputEdit(ts_ten, ts_don_vi, id_dv_quanly,id_loai_ts,ts_vi_tri,ts_so_luong,ts_gia_tri,ts_trangthai);
     if(validationResult == true) {
       let chinhsua = await TaiSan.findOneAndUpdate(
         { ts_id: ts_id, id_cty: com_id ,ts_da_xoa : 0},
@@ -467,7 +470,6 @@ exports.editTS = async (req, res) => {
             ts_ten: ts_ten,
             ts_don_vi: ts_don_vi,
             id_dv_quanly: id_dv_quanly,
-            id_ten_quanly: id_ten_quanly,
             id_loai_ts : id_loai_ts,
             ts_vi_tri : ts_vi_tri,
             ts_so_luong : ts_so_luong,
@@ -508,14 +510,14 @@ exports.showGhiTang = async(req,res) => {
   if (!checkGhiTang) {
     return functions.setError(res, 'Biên bản ghi tăng không tồn tại', 400);
   }
-  let checkNguoiTao = await User.findOne({ idQLC: checkGhiTang.id_ng_tao, $or: [
+  let checkNguoiTao = await User.findOne({ _id: checkGhiTang.id_ng_tao, $or: [
     { 'inForPerson.employee.com_id': com_id },
     { idQLC: com_id }
   ] }).select('userName');
   if(!checkNguoiTao){
     checkNguoiTao = "";
   }
-  let checkNguoiDuyet = await User.findOne({ idQLC: checkGhiTang.id_ng_duyet, $or: [
+  let checkNguoiDuyet = await User.findOne({ _id: checkGhiTang.id_ng_duyet, $or: [
     { 'inForPerson.employee.com_id': com_id },
     { idQLC: com_id }
   ] }).select('userName');
@@ -555,7 +557,7 @@ exports.duyetHuyGhiTang = async(req,res) => {
     let id_nguoi_duyet = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      id_nguoi_duyet = req.user.data.idQLC
+      id_nguoi_duyet = req.user.data._id
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -631,16 +633,6 @@ exports.duyetHuyGhiTang = async(req,res) => {
       if (!tuchoiGhiTang) {
         return functions.setError(res, 'Không tìm thấy bản ghi để từ chối', 400);
       }
-      // let createThongBao = new ThongBao({
-      //   id_tb: maxIdThongBao,
-      //   id_cty: com_id,
-      //   id_ng_nhan : checkGhiTang.id_ng_tao,
-      //   id_ng_tao : id_nguoi_duyet,
-      //   loai_tb: 2,
-      //   date_create : createDate
-      
-      // })
-      // let saveTSVT = await createThongBao.save()
       return functions.success(res, 'từ chối  thành công ', { tuchoiGhiTang });
     }else {
       return functions.setError(res, 'type xử lý không hợp lệ', 400);
@@ -658,7 +650,7 @@ exports.XoaGhiTang = async(req,res) => {
     let id_ng_xoa = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      id_ghitang = req.user.data.idQLC;
+      id_ghitang = req.user.data._id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -716,7 +708,7 @@ exports.addGhiTang  = async(req,res) => {
     let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      id_nguoi_tao = req.user.data.idQLC
+      id_nguoi_tao = req.user.data._id
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -778,7 +770,7 @@ exports.chinhSuaGhitang = async(req,res) => {
       let {id_ghitang,sl_tang,gt_ghi_chu} = req.body;
       if (req.user.data.type == 1 || req.user.data.type == 2) {
         com_id = req.user.data.com_id;
-        id_nguoi_duyet = req.user.data.idQLC
+        id_nguoi_duyet = req.user.data._id
       } else {
         return functions.setError(res, 'không có quyền truy cập', 400);
       }
@@ -1061,7 +1053,7 @@ exports.addKhauHao = async (req, res) => {
     
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      id_ng_tao = req.user.data.idQLC;
+      id_ng_tao = req.user.data._id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
