@@ -396,11 +396,10 @@ exports.checkRole = async(infoLogin, barId, perId)=> {
 exports.checkRight = (barId, perId) => {
     return async (req, res, next) => {
         let infoLogin = req.infoLogin;
-       
         if(infoLogin.type==1) return next();
         let permission = await PermissionUser.findOne({userId: infoLogin.id, barId: barId, perId: perId});
         if(permission) return next();
-        return functions.setError(res, "no right", 444); 
+        return functions.setError(res, "no right", 403); 
     };
 };
 

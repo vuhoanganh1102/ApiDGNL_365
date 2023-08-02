@@ -1070,6 +1070,7 @@ exports.toolProcessInterview = async(req, res, next) => {
                         id: data[i].id,
                         name: data[i].name,
                         processBefore: data[i].process_before,
+                        beforeProcess: data[i].before_process,
                         comId: data[i].com_id,
                         createdAt: data[i].created_at
                     });
