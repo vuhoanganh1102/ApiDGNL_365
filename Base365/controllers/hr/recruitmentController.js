@@ -808,6 +808,7 @@ exports.getListCandidate= async(req, res, next) => {
                     'hometown': '$hometown',
                     'isSwitch': '$isSwitch',
                     'epIdCrm': '$epIdCrm',
+                    'timeSendCv': '$timeSendCv',
                     'Title': '$Recruitment.title',
                     'Position': '$Recruitment.posApply',
                     'RecruitmentId': '$Recruitment.recruitmentId',
