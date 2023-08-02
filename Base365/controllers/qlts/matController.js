@@ -16,9 +16,10 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
         const skip = (page-1)*pageSize;
 
         let id_cty = req.user.data.com_id;
-        let condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}};
-        if(key) condition.mat_id = Number(key);
-
+        let condition = {};
+        if (key) {
+            condition.mat_id = Number(key);
+          }
         let baoCaoMat = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}});
         let choDenBu = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 3});
         let slMat = await functions.findCount(Mat, {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 1});
@@ -27,7 +28,15 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
             choDenBu: choDenBu,
             slMat: slMat,
         };
-
+        if (dataType == 1) {
+            condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: {$in: [0, 2]}};
+        } else if (dataType == 2) {
+            condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 3};
+        } else if(dataType == 3){
+            condition = {id_cty: id_cty, xoa_dx_mat: 0, mat_trangthai: 1};
+        }else{
+            return functions.setError(res, 'dataType không hợp lệ', 400);
+        }
         let danhSachMat = await Mat.aggregate([
             {$match: condition},
             {$sort: {mat_id: -1}},
@@ -57,12 +66,12 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_tao",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiTao"
                 }
             },
+            
             { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
-
             { $project: {
                 "mat_id": "$mat_id", 
                 "mat_trangthai": "$mat_trangthai",
@@ -171,27 +180,18 @@ exports.danhSachChoDenBuVaMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_tao",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiTao"
                 }
             },
             { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
 
-            // {
-            //     $lookup: {
-            //         from: "Users",
-            //         localField: "id_ng_lam_mat",
-            //         foreignField: "idQLC",
-            //         as: "NguoiLamMat"
-            //     }
-            // },
-            // { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
 
             {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_nhan_denbu",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiNhanDenBu"
                 }
             },
@@ -201,7 +201,7 @@ exports.danhSachChoDenBuVaMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_duyet",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiDuyet"
                 }
             },
@@ -235,10 +235,6 @@ exports.danhSachChoDenBuVaMat = async(req, res, next) => {
                 
                 "id_ng_tao": "$id_ng_tao",
                 "ten_ng_tao": "$NguoiTao.userName",
-
-                // "id_ng_lam_mat": "$id_ng_lam_mat",
-                // "ten_ng_lam_mat": "$NguoiLamMat.userName",
-
                 "id_ng_nhan_denbu": "$id_ng_nhan_denbu",
                 "ten_ng_nhan_denbu": "$NguoiNhanDenBu.userName",
 
@@ -306,27 +302,16 @@ exports.danhSachMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_tao",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiTao"
                 }
             },
             { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
-
-            // {
-            //     $lookup: {
-            //         from: "Users",
-            //         localField: "id_ng_lam_mat",
-            //         foreignField: "idQLC",
-            //         as: "NguoiLamMat"
-            //     }
-            // },
-            // { $unwind: { path: "$NguoiLamMat", preserveNullAndEmptyArrays: true } },
-
             {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_nhan_denbu",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiNhanDenBu"
                 }
             },
@@ -336,7 +321,7 @@ exports.danhSachMat = async(req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_duyet",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiDuyet"
                 }
             },
@@ -397,7 +382,7 @@ exports.createMat = async(req, res, next) => {
         if(ts_mat && ngay_mat && nglammat && sl_mat && lydo && day_htdenbu) {
             let type_quyen_nhan_db = 2;
             let id_cty = req.user.data.com_id;
-            let id_ng_tao = req.user.data.idQLC;
+            let id_ng_tao = req.user.data._id;
             let type_quyen = req.user.data.type;
             ngay_mat = new Date(ngay_mat);
             day_htdenbu = new Date(day_htdenbu);

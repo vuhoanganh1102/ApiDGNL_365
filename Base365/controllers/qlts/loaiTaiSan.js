@@ -1,6 +1,7 @@
 const LoaiTaiSan = require('../../models/QuanLyTaiSan/LoaiTaiSan');
 const quanlytaisanService = require('../../services/QLTS/qltsService');
 const functions = require('../../services/functions')
+const NhomTs =  require('../../models/QuanLyTaiSan/NhomTaiSan');
 
 exports.addLoaiTaiSan = async (req, res) => {
   try {
@@ -89,24 +90,30 @@ exports.showLoaiTs = async (req, res) => {
         }
       },
       {
-        $project: {
-          "id_loai": "$id_loai",
-          "ten_loai": "$ten_loai",
-          "tong_so_tai_san": {
-            $reduce: {
-              input: "$listTaiSan",
-              initialValue: 0,
-              in: { $add: ["$$value", "$$this.sl_bandau"] }
-            }
+        $unwind: {
+          path: '$listNhom',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: '$listTaiSan',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$id_loai",
+          id_loai: { $first: "$id_loai" },
+          ten_loai: { $first: "$ten_loai" },
+          
+          tong_so_tai_san: {
+            $sum: "$listTaiSan.sl_bandau"
           },
-          "so_ts_chua_phat": {
-            $reduce: {
-              input: "$listTaiSan",
-              initialValue: 0,
-              in: { $add: ["$$value", "$$this.ts_so_luong"] }
-            }
+          so_ts_chua_phat: {
+            $sum: "$listTaiSan.ts_so_luong"
           },
-          "ten_nhom": "$listNhom.ten_nhom"
+          ten_nhom: { $first: "$listNhom.ten_nhom" },
         }
       },
       {
@@ -127,7 +134,7 @@ exports.showLoaiTs = async (req, res) => {
     const totalPages = Math.ceil(totalTsCount / perPage);
     const hasNextPage = endIndex < totalTsCount;
 
-    return functions.success(res, 'get data success', { showLoaiTs, totalPages, hasNextPage });
+    return functions.success(res, 'get data success', { showLoaiTs,totalTsCount, totalPages, hasNextPage });
   } catch (e) {
     console.log(e);
     return fnc.setError(res, e.message)
@@ -144,11 +151,7 @@ exports.editLoaiTs = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    let checloai = await LoaiTaiSan.find({ id_cty: com_id })
-    if (checloai.some(loai => loai.ten_loai === ten_loai)) {
-      return functions.setError(res, 'tên loại đã được sử dụng', 400);
-    } else {
-      let chinhsualoai = await LoaiTaiSan.findOneAndUpdate(
+    let chinhsualoai = await LoaiTaiSan.findOneAndUpdate(
         { id_loai: id_loai, id_cty: com_id },
         {
           $set: {
@@ -159,13 +162,40 @@ exports.editLoaiTs = async (req, res) => {
         { new: true }
       );
 
-      return functions.success(res, 'edit data success', { chinhsualoai });
-    }
+    return functions.success(res, 'edit data success', { chinhsualoai });
+    
   } catch (e) {
     console.log(e);
     return fnc.setError(res, e.message)
   }
 }
+
+exports.detailsLoai = async(req,res) => {
+  try{
+     let {id_loai} = req.body
+     let com_id = '';
+     if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    let showLoai = await LoaiTaiSan.findOne({id_loai : id_loai,id_cty : com_id,loai_da_xoa : 0 })
+    .select('id_loai id_nhom_ts ten_loai')
+    if(!showLoai){
+      return functions.setError(res, 'không tìm thấy bản ghi phừ hợp', 400);
+    }
+    let shownhom = await (await NhomTs.find({ id_cty : com_id,nhom_da_xoa :0}).select('id_nhom ten_nhom'))
+    if(!shownhom){
+      shownhom = [];
+    }
+    return functions.success(res, 'edit data success', { showLoai,shownhom });
+  }catch (e) {
+    console.log(e);
+    return fnc.setError(res, e.message)
+  }
+}
+
+
 
 exports.deleteLoaiTs = async (req, res) => {
   try {
@@ -176,7 +206,7 @@ exports.deleteLoaiTs = async (req, res) => {
     const deleteDate = Math.floor(Date.now() / 1000);
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      id_ng_xoa = req.user.data.idQLC;
+      id_ng_xoa = req.user.data._id;
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }

@@ -43,7 +43,7 @@ exports.showaddViTri = async (req,res) => {
     let com_id = '';
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      let showdp = await Depament.find({com_id : com_id }).select('dep_id deparment_Name')
+      let showdp = await Depament.find({com_id : com_id }).select('dep_id dep_name').lean()
       return  functions.success(res, 'get data success', { showdp})
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
@@ -81,7 +81,7 @@ exports.show = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'qlc_deparments', // Tên bảng khác bạn muốn tham gia
+          from: 'QLC_Deparments', // Tên bảng khác bạn muốn tham gia
           localField:'dv_quan_ly',
           foreignField:  'dep_id',
           as: 'name_dep',
@@ -91,8 +91,8 @@ exports.show = async (req, res) => {
         $group: {
           _id: '$id_vitri',
           vi_tri_ts: { $first: '$vi_tri' },
-          don_vi_quan_ly : {$first : '$name_dep.deparmentName'},
-          ghi_chu : {$first: '$ghi_chu_vitri'}
+          don_vi_quan_ly : { $first: { $arrayElemAt: ["$name_dep.dep_name", 0] } },
+          ghi_chu : { $first: '$ghi_chu_vitri'}
         },
       },
       {
@@ -114,14 +114,36 @@ exports.show = async (req, res) => {
 
     const hasNextPage = endIndex < totalItems; // Kiểm tra xem còn trang kế tiếp hay không
 
-    return functions.success(res, 'get data success', { data, totalPages, hasNextPage });
+    return functions.success(res, 'get data success', { data,totalItems,totalPages,hasNextPage });
   } catch (error) {
     console.log(error);
     return functions.setError(res, error);
   }
 };
 
-
+exports.detailsVT = async(req,res) => {
+  try{
+    let {id_vitri} = req.body;
+    let com_id = '';
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    let details = await ViTriTs.findOne({id_vitri : id_vitri, id_cty : com_id}).select('id_vitri vi_tri ghi_chu_vitri')
+    if(!details){
+      return functions.setError(res, 'không tìm thấy bản ghi phù hợp ', 400);
+    }
+    let dp_list = await Depament.find({com_id : com_id}).select('dep_id dep_name')
+    if(!dp_list){
+      dp_list = '';
+    }
+    return  functions.success(res, 'get data success', { details,dp_list})
+  } catch(e){
+    console.log(e);
+    return functions.setError(res , e.message)
+}
+}
 
 exports.deleteVT = async (req, res) => {
   try {
