@@ -13,7 +13,7 @@ router.post('/delete1', functions.checkToken, fnc.checkRole('SC_BD',3), formData
 router.post('/deleteAll', functions.checkToken, fnc.checkRole('SC_BD',3), formData.parse(), controllers.deleteAll);
 
 //lay ra danh sach cho ca 5 tap
-router.post('/danhSachBaoDuong', functions.checkToken, fnc.checkRole('SC_BD',1), formData.parse(), controllers.danhSachBaoDuong);
+router.post('/danhSachBaoDuong', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.danhSachBaoDuong);
 router.post('/hoanThanh', functions.checkToken, fnc.checkRole('SC_BD'), formData.parse(), controllers.hoanThanh);
 router.post('/deleteBd', functions.checkToken, fnc.checkRole('SC_BD',3), formData.parse(), controllers.xoaBaoDuong);
 

@@ -6,11 +6,11 @@ const fnc = require('../../../services/QLTS/qltsService')
 
 
 
-router.post('/list', functions.checkToken,fnc.checkRole("DC_BG",1), formData.parse(), controllers.list);
+router.post('/list', functions.checkToken, formData.parse(), controllers.list);
 
-router.post('/listDetailAllocation', functions.checkToken,fnc.checkRole("DC_BG",1), formData.parse(), controllers.listDetailAllocation);
+router.post('/listDetailAllocation', functions.checkToken, formData.parse(), controllers.listDetailAllocation);
 
-router.post('/listDetailRecall', functions.checkToken,fnc.checkRole("DC_BG",1), formData.parse(), controllers.listDetailRecall);
+router.post('/listDetailRecall', functions.checkToken, formData.parse(), controllers.listDetailRecall);
 
 // router.post('/AcceptHandOverAllocation', functions.checkToken,fnc.checkRole("DC_BG",4), formData.parse(), controllers.AcceptHandOverAllocation);
 
