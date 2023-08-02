@@ -60,7 +60,7 @@ exports.validateTaiSanInput = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, i
   return true;
 };
 
-exports.validateinputEdit = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, id_loai_ts, ts_vi_tri, ts_so_luong, ts_gia_tri, ts_trangthai) => {
+exports.validateinputEdit = (ts_ten, ts_don_vi, id_dv_quanly, id_loai_ts, ts_vi_tri, ts_so_luong, ts_gia_tri,ts_trangthai) => {
   if (!ts_ten) {
     throw { code: 400, message: 'Tên tài sản bắt buộc.' };
   }

@@ -406,8 +406,8 @@ exports.listtamung = async (req, res) => {
 
 exports.showloaicate = async(req,res) => {
   try{
-    let showcatedx = await CateDeXuat.find({com_id : 0})
-    .select('id_cate_dx name_cate_dx')
+    let showcatedx = await CateDeXuat.find({com_id : 0}).select('id_cate_dx name_cate_dx')
+    
     return functions.success(res, 'get data success', {showcatedx})
   } catch(e){
     console.log(e)
