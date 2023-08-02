@@ -10,11 +10,16 @@ var news = require('../../controllers/raonhanh365/new');
 var blog = require('../../controllers/raonhanh365/blog');
 
 //------------------------------------------------api quan ly tai khoan admin
-router.post('/account/loginAdmin', formData.parse(), admin.loginAdminUser);
+router.post('/loginAdmin', formData.parse(), admin.loginAdminUser);
+router.post('/changePasswordAdminLogin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.changePasswordAdminLogin);
+router.post('/changeInfoAdminLogin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.changeInfoAdminLogin);
+router.post('/getSideBar', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getSideBar);
+router.post('/listModule', formData.parse(), functions.checkToken, admin.listModule);
+
 router.post('/account/getListAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListAdminUser);
-router.post('/account/createAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(27, 2)], admin.getAndCheckDataAdminUser, admin.createAdminUser);
-router.post('/account/updateAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(27, 3)], admin.getAndCheckDataAdminUser, admin.updateAdminUser);
-router.post('/account/listModule', formData.parse(), functions.checkToken, admin.listModule);
+router.post('/account/createAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(27, 2)], admin.createAdminUser);
+router.post('/account/updateAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(27, 3)], admin.updateAdminUser);
+router.post('/account/changePassword', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(27, 3)], admin.changePassword);
 
 //------------------------------------------------api quan ly danh muc
 router.post('/category/getListCate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListCategory);
