@@ -19,6 +19,8 @@ const NewReport = require('../../models/Raonhanh365/NewReport');
 const New = require('../../models/Raonhanh365/New');
 const Order = require('../../models/Raonhanh365/Order');
 const Module = require('../../models/Raonhanh365/Admin/Module');
+const AdminUserLanguagues = require('../../models/Raonhanh365/Admin/AdminUserLanguagues');
+const Language = require('../../models/Raonhanh365/Language');
 
 //đăng nhập admin
 exports.loginAdminUser = async(req, res, next) => {
@@ -46,6 +48,57 @@ exports.loginAdminUser = async(req, res, next) => {
     }
 }
 
+exports.changePasswordAdminLogin = async(req, res, next) => {
+    try{
+        let idAdmin = req.infoAdmin._id;
+        let findUser = await AdminUser.findOne({_id: idAdmin});
+        if(findUser) {
+            const oldPass = req.body.oldPass;
+            const newPass = req.body.newPass;
+            if(oldPass && newPass) {
+                let checkPassword = await functions.verifyPassword(oldPass, findUser.password)
+                if (checkPassword) {
+                    let updatePassword = await AdminUser.findOneAndUpdate({_id: idAdmin}, {
+                        password: md5(newPass),
+                    }, {new: true});
+                    if(updatePassword) {
+                        return functions.success(res, "Update password success!");
+                    }
+                    return functions.setError(res, "Update password fail!", 407);
+                }
+                return functions.setError(res, "Wrong password!", 406);
+            }
+            return functions.setError(res, "Missing input value!", 405);
+        }
+        return functions.setError(res, "Admin not found!", 404);
+    }catch(error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+exports.changeInfoAdminLogin = async(req, res, next) => {
+    try{
+        let idAdmin = req.infoAdmin._id;
+        let findUser = await AdminUser.findOne({_id: idAdmin});
+        if(findUser) {
+            let email = req.body.email;
+            if(email) {
+                let updateInfo = await AdminUser.findOneAndUpdate({_id: idAdmin}, {
+                    email: email,
+                }, {new: true});
+                if(updateInfo) {
+                    return functions.success(res, "Update info admin success!");
+                }
+                return functions.setError(res, "Update info admin fail!", 407);
+            }
+            return functions.setError(res, "Admin not found!", 405);
+        }
+        return functions.setError(res, "Admin not found!", 404);
+    }catch(error) {
+        return functions.setError(res, error.message);
+    }
+}
+
 exports.getListAdminUser = async(req, res, next) => {
     try {
         let {idAdmin, page, pageSize} = req.body;
@@ -57,22 +110,6 @@ exports.getListAdminUser = async(req, res, next) => {
         const limit = pageSize;
         let condition = {delete: 0};
         if (idAdmin) condition._id = Number(idAdmin);
-        // let listAdminUser = await AdminUser.aggregate([
-        //     {$match: condition},
-        //     {$sort: { loginName: 1, active: -1 }},
-        //     {$skip: skip},
-        //     {$limit: limit},
-        //     {
-        //         $lookup: {
-        //             from: "RN365_AdminUserRight",
-        //             localField: "_id",
-        //             foreignField: "adminId",
-        //             as: "AdminUserRight"
-        //         }
-        //     },
-        // ]);
-        // let listAdminUser = await AdminUser.find(condition, fields).sort({ loginName: 1, active: -1 }).lean();
-        let fields = { loginName: 1, name: 1, email: 1, phone: 1, editAll: 1, langId: 1, isAdmin: 1, active: 1 };
         let listAdminUser = await functions.pageFind(AdminUser, condition, { loginName: 1, active: -1 }, skip, limit);
 
         // lap qua danh sach user
@@ -83,7 +120,8 @@ exports.getListAdminUser = async(req, res, next) => {
                 arrRightEdit = [],
                 arrRightDelete = [];
             let arrNameModule = "";
-                // lap qua cac quyen cua admindo
+            let arrAdminLanguage = [];
+
             for (let j = 0; j < adminUserRight.length; j++) {
                 let nameModule = await Module.findOne({_id: adminUserRight[j].moduleId}, {_id: 1, name: 1});
                 arrIdModule.push(adminUserRight[j].moduleId);
@@ -94,14 +132,24 @@ exports.getListAdminUser = async(req, res, next) => {
                         arrNameModule = nameModule.name;
                     }
                 }
-                // else arrNameModule.push("");
                 arrRightAdd.push(adminUserRight[j].add);
                 arrRightEdit.push(adminUserRight[j].edit);
                 arrRightDelete.push(adminUserRight[j].delete);
             }
+            let adminLanguage = await AdminUserLanguagues.find({adminId: listAdminUser[i]._id});
+            let nameLanguage = "";
+            for (let j=0; j<adminLanguage.length; j++) {
+                let nameL = await Language.findOne({_id: adminLanguage[j].langId});
+                if(nameL) {
+                    if(nameLanguage != "") nameLanguage = `${nameLanguage}, ${nameL.name}`;
+                    else nameLanguage = nameL.name;
+                }
+                
+            }
             let adminUser = listAdminUser[i];
-            let tmpOb = { adminUser, arrIdModule, arrNameModule, arrRightAdd, arrRightEdit, arrRightDelete };
+            let tmpOb = { adminUser, arrIdModule, arrNameModule, arrRightAdd, arrRightEdit, arrRightDelete, adminLanguage, nameLanguage};
             listAdminUser[i] = tmpOb;
+            
         }
         const totalCount = await functions.findCount(AdminUser, condition);
         return functions.success(res, "get list blog success", { totalCount: totalCount, data: listAdminUser });
@@ -119,71 +167,132 @@ exports.listModule = async(req, res, next) => {
     }
 }
 
-
-exports.getAndCheckDataAdminUser = async(req, res, next) => {
-    try {
-        let { loginName, name, phone, email, editAll, langId, active, accessModule, adminId } = req.body;
-        if (loginName && phone && email) {
-            // xoa cac quyen hien tai cua admin neu chon muc sua
-            if (adminId) {
-                let adminUserRight = await AdminUserRight.deleteMany({ adminId: adminId });
-            } else {
-                adminId = await functions.getMaxIdByField(AdminUser, '_id');
+exports.getSideBar = async(req, res, next) => {
+    try{
+        let idAdmin = req.infoAdmin._id;
+        let admin = await AdminUser.findOne({_id: idAdmin}).lean();
+        if(admin) {
+            let adminRight;
+            if(admin.isAdmin != 1) {
+                adminRight = await AdminUserRight.aggregate([
+                    {$match: {adminId: idAdmin}},
+                    {
+                        $lookup: {
+                            from: "RN365_Module",
+                            localField: "moduleId",
+                            foreignField: "_id",
+                            as: "Module"
+                        }
+                    },
+                    { $unwind: { path: "$Module", preserveNullAndEmptyArrays: true } },
+                    {
+                        $project: {
+                            "moduleId": "$moduleId",
+                            "add": "$add",
+                            "edit": "$edit",
+                            "delete": "$delete",
+                            "nameM": "$Module.name",
+                            "pathM": "$Module.path",
+                            "listNameM": "$Module.listName",
+                            "listFileM": "$Module.listFile",
+                            "langIdM": "$Module.langId",
+                            "checkLocaM": "$Module.checkLoca",
+                        }
+                    },
+                    {$sort: {moduleId: 1}}
+                ]);
+                
+            }else {
+                adminRight = await Module.find({}).sort({order: 1});
             }
-            //cap quyen cho admin ca them moi+sua
-            let { arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete } = req.body;
-            arrIdModule = arrIdModule.split(",");
-            arrRightAdd = arrRightAdd.split(",");
-            arrRightEdit = arrRightEdit.split(",");
-            arrRightDelete = arrRightDelete.split(",");
-
-            //
-            for (let i = 0; i < arrIdModule.length; i++) {
-                //tao id cho bang phan quyen
-                let newIdAdminUserRight = await functions.getMaxIdByField(AdminUserRight, '_id');
-                let fieldsRight = {
-                    _id: newIdAdminUserRight,
-                    adminId: adminId,
-                    moduleId: arrIdModule[i],
-                    add: arrRightAdd[i],
-                    edit: arrRightEdit[i],
-                    delete: arrRightDelete[i]
-                }
-                let adminUserRight = new AdminUserRight(fieldsRight);
-                await adminUserRight.save();
-            }
-            
-            // them cac truong muon them hoac sua
-            req.info = {
-                _id: adminId,
-                loginName: loginName,
-                name: name,
-                phone: phone,
-                email: email,
-                langId: langId,
-                editAll: editAll,
-                active: active,
-                accessModule: accessModule,
-            }
-            return next();
+            admin = {...admin, adminRight};
+            return functions.success(res, "Get list module success", {admin});
         }
-        return functions.setError(res, "Missing input value", 404)
-    } catch (error) {
+        return functions.setError(res, "Admin not found!", 404);
+    }catch(error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+exports.changePassword = async(req, res, next) => {
+    try{
+        let idAdmin = req.body.idAdmin;
+        let password = req.body.password;
+        if(idAdmin && password) {
+            let updatePassword = await AdminUser.findOneAndUpdate({_id: idAdmin}, {password: md5(password)}, {new: true});
+            if(updatePassword) {
+                return functions.success(res, "Update password success");
+            }
+            return functions.setError(res, "Change password fail", 405);
+        }
+        return functions.setError(res, "Missing input idAdmin", 404);
+    }catch(error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+exports.activeAdmin = async(req, res, next) => {
+    try{
+
+    }catch(error) {
         return functions.setError(res, error.message);
     }
 }
 
 exports.createAdminUser = async(req, res, next) => {
     try {
-        // luu thong tin admin
-        let password = req.body.password;
-        if(password) {
-            let fields = req.info;
-            fields.password = md5(password);
-
+        let { loginName, password, name, phone, email, editAll, allCategory, arrLangId, accessModule, arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete} = req.body;
+        if (loginName && password && phone && email) {
+            let maxIdAdmin = await functions.getMaxIdByField(AdminUser, '_id');
+            let adminId = req.infoAdmin._id;
+            password = md5(password);
+            let fields = {
+                _id: maxIdAdmin, 
+                loginName,
+                password,
+                name,
+                phone,
+                email,
+                editAll,
+                allCategory,
+                langId: 1,
+                active: 1,
+                adminId: adminId
+            }
             let adminUser = new AdminUser(fields);
-            await adminUser.save();
-            return functions.success(res, 'Create AdminUser and AdminUserRight RN365 success!');
+            adminUser = await adminUser.save();
+            if(adminUser) {
+                arrIdModule = arrIdModule.split(",");
+                arrRightAdd = arrRightAdd.split(",");
+                arrRightEdit = arrRightEdit.split(",");
+                arrRightDelete = arrRightDelete.split(",");
+                for (let i = 0; i < arrIdModule.length; i++) {
+                    //tao id cho bang phan quyen
+                    let newIdAdminUserRight = await functions.getMaxIdByField(AdminUserRight, '_id');
+                    let fieldsRight = {
+                        _id: newIdAdminUserRight,
+                        adminId: maxIdAdmin,
+                        moduleId: arrIdModule[i],
+                        add: arrRightAdd[i],
+                        edit: arrRightEdit[i],
+                        delete: arrRightDelete[i]
+                    }
+                    let adminUserRight = new AdminUserRight(fieldsRight);
+                    await adminUserRight.save();
+                }
+                arrLangId = arrLangId.split(",");
+                for(let i=0; i<arrLangId.length; i++) {
+                    let newIdLang = await functions.getMaxIdByField(AdminUserLanguagues, '_id');
+                    let languagueAdmin = new AdminUserLanguagues({
+                        _id: newIdLang,
+                        adminId: maxIdAdmin,
+                        langId: arrLangId[i]
+                    });
+                    await languagueAdmin.save();
+                }
+                return functions.success(res, 'Create AdminUser and AdminUserRight RN365 success!');
+            }
+            return functions.setError(res, "Insert info adminUser fail!");
         }
         return functions.setError(res, "Missing input password!");
     } catch (error) {
@@ -193,19 +302,59 @@ exports.createAdminUser = async(req, res, next) => {
 
 exports.updateAdminUser = async(req, res, next) => {
     try {
-        let adminId = req.body.adminId;
-        if (adminId) {
-            let fields = req.info;
-            fields.password = md5(password);
-            delete fields._id;
-            let existsAdminUser = await AdminUser.findOne({ _id: adminId });
-            if (existsAdminUser) {
-                await AdminUser.findOneAndUpdate({ _id: adminId }, fields);
-                return functions.success(res, "AdminUser edited successfully");
+        let {_id, name, phone, email, editAll, allCategory, arrLangId, accessModule, arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete} = req.body;
+        let adminId = req.infoAdmin._id;
+        if (_id && name && phone && email) {
+            let fields = {
+                name,
+                phone,
+                email,
+                editAll,
+                allCategory,
+                langId: 1,
+                adminId: adminId
             }
-            return functions.setError(res, "AdminUser not found!", 505);
+            let adminUser = await AdminUser.findOneAndUpdate({_id: _id}, fields, {new: true});
+            if(adminUser) {
+                await AdminUserRight.deleteMany({ adminId: _id });
+
+                arrIdModule = arrIdModule.split(",");
+                arrRightAdd = arrRightAdd.split(",");
+                arrRightEdit = arrRightEdit.split(",");
+                arrRightDelete = arrRightDelete.split(",");
+                for (let i = 0; i < arrIdModule.length; i++) {
+                    //tao id cho bang phan quyen
+                    let newIdAdminUserRight = await functions.getMaxIdByField(AdminUserRight, '_id');
+                    let fieldsRight = {
+                        _id: newIdAdminUserRight,
+                        adminId: _id,
+                        moduleId: arrIdModule[i],
+                        add: arrRightAdd[i],
+                        edit: arrRightEdit[i],
+                        delete: arrRightDelete[i]
+                    }
+                    let adminUserRight = new AdminUserRight(fieldsRight);
+                    await adminUserRight.save();
+                }
+                //xoa du lieu hien tai
+                await AdminUserLanguagues.deleteMany({ adminId: _id });
+
+                //them moi
+                arrLangId = arrLangId.split(",");
+                for(let i=0; i<arrLangId.length; i++) {
+                    let newIdLang = await functions.getMaxIdByField(AdminUserLanguagues, '_id');
+                    let languagueAdmin = new AdminUserLanguagues({
+                        _id: newIdLang,
+                        adminId: _id,
+                        langId: arrLangId[i]
+                    });
+                    await languagueAdmin.save();
+                }
+                return functions.success(res, 'Update AdminUser and AdminUserRight RN365 success!');
+            }
+            return functions.setError(res, "Admin user not found!");
         }
-        return functions.setError(res, "Missing input value id admin!", 404);
+        return functions.setError(res, "Missing input value!");
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -234,23 +383,18 @@ exports.deleteAdminUser = async(req, res, next) => {
 // lay ra danh sach
 exports.getListCategory = async(req, res, next) => {
     try {
-        let { page, pageSize, _id, name, parentId } = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 10;
-        page = Number(page);
-        pageSize = Number(pageSize);
-        const skip = (page - 1) * pageSize;
-        const limit = pageSize;
+        let {_id, name, parentId } = req.body;
+        console.log(req.infoAdmin);
         let condition = {};
         if (_id) condition._id = Number(_id);
         if (name) condition.name = new RegExp(name);
         if (parentId) condition.parentId = parentId;
 
-        const listCategory = await functions.pageFind(Category, condition, { _id: 1 }, skip, limit);
-        const totalCount = await functions.findCount(Category, condition);
+        const listCategory = await Category.find({}).sort({_id: -1});
+        const totalCount = await functions.findCount(Category, {});
         return functions.success(res, "get list category success", { totalCount: totalCount, data: listCategory });
     } catch (error) {
-        return functions.setError(res, error.message)
+        return functions.setError(res, error.message);
     }
 }
 
