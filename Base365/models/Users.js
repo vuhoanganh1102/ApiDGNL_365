@@ -145,6 +145,21 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    chat365_id: {
+        //Chờ cập nhật
+        type: Number,
+        default: 0
+    },
+    scan_base365: {
+        //Chờ cập nhật
+        type: Number,
+        default: 0
+    },
+    check_chat: {
+        //Chờ cập nhật
+        type: Number,
+        default: 0
+    },
     sharePermissionId: [{
         type: Number
     }],
@@ -769,6 +784,45 @@ const UserSchema = new mongoose.Schema({
                     type: String,
                     default: null
                 },
+                usc_star: {
+                    //NTD có ánh sao(điểm lịch sử >= 70))
+                    type: Number,
+                    default: 0
+                },
+                usc_cc365: {
+                    type: Number,
+                    default: 0
+                },
+                usc_crm: {
+                    type: Number,
+                    default: 0
+                },
+                usc_images: {
+                    //kho ảnh ntd
+                    type: String,
+                    default: null
+                },
+                usc_active_img: {
+                    //0: chưa được duyệt; 1: đã duyệt
+                    type: Number,
+                    default: 0
+                },
+                usc_manager: {
+                    //tên giám đốc công ty
+                    type: String,
+                    default: null
+                },
+                usc_license: {
+                    //giấy phép kinh doanh ntd
+                    type: String,
+                    default: null
+                },
+                usc_active_license: {
+                    //1: xác nhận giấy phép kinh doanh ntd
+                    type: Number,
+                    default: 0
+                },
+                
 
             },
             // Thông tin công ty luồng chuyển đổi số
