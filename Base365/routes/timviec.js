@@ -19,6 +19,8 @@ var mail365Router = require('./timviec/mail365');
 var sslRouter = require('./timviec/ssl');
 var accountRouter = require('./timviec/account');
 var companyVipRouter = require('./timviec/company_vip');
+var creditsRouter = require('./timviec/credits');
+var tools = require('../controllers/tools/timviec365');
 
 
 router.use('/candidate', candidateRouter);
@@ -39,5 +41,7 @@ router.use('/priceList', priceListRouter);
 router.use('/ssl', sslRouter);
 router.use('/account', accountRouter);
 router.use('/company/vip', companyVipRouter);
+router.use('/credits', creditsRouter);
+router.get('/normalize', tools.normalizeExchangePointHistory);
 
 module.exports = router;
