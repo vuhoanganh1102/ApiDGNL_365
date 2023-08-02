@@ -23,10 +23,10 @@ router.post('/updateStatus',functions.checkToken,fnc.checkRole("CP_TH",4) ,formD
 //đồng ý cấp phát
 router.post('/acceptAllocation',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.acceptAllocation)
 
-router.post('/DetailEmp',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.DetailEmp)
-router.post('/getListDetail',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.getListDetail)
+router.post('/DetailEmp',functions.checkToken,fnc.checkRole("CP_TH") ,formData.parse(),controller.DetailEmp)
+router.post('/getListDetail',functions.checkToken ,formData.parse(),controller.getListDetail)
 
-router.post('/DetailDep',functions.checkToken,fnc.checkRole("CP_TH",1) ,formData.parse(),controller.DetailDep)
+router.post('/DetailDep',functions.checkToken,fnc.checkRole("CP_TH") ,formData.parse(),controller.DetailDep)
 
 router.post('/refuserAll',functions.checkToken,fnc.checkRole("CP_TH") ,formData.parse(),controller.refuserAll)
 
