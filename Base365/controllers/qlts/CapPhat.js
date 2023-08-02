@@ -340,7 +340,7 @@ exports.getListDep = async (req, res) => {
         let data = []
         let numEmp = await capPhat.distinct('id_nhanvien', { id_cty: id_cty, id_nhanvien: { $exists: true }, cp_da_xoa: 0 })
         if (numEmp) data.push({ numEmp: numEmp.length })
-        let numDep = await capPhat.distinct('id_phongban', { id_cty: id_cty, id_nhanvien: { $exists: true }, cp_da_xoa: 0 })
+        let numDep = await capPhat.distinct('id_phongban', { id_cty: id_cty, id_phongban: { $exists: true }, cp_da_xoa: 0 })
         if (numDep) data.push({ numDep: numDep.length })
         let listConditions = {};
         listConditions.id_cty = id_cty
