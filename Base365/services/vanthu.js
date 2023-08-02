@@ -45,7 +45,6 @@ exports.createLinkFileVanthu = (id, name) => {
 
 // };
 // exports.upload = multer({ storage: storageVanthu('../../../Storage/VanThu') });
-
 exports.chat = async (id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, status, link, file_kem) => {
     return await axios.post('http://43.239.223.142:9000/api/V2/Notification/NotificationOfferReceive', {
         SenderID: id_user,
