@@ -1141,7 +1141,23 @@ exports.getListProcessInterview= async(req, res, next) => {
         }
 
         //danh sach ung vien nhan viec
-        let listProcess = await ProcessInterview.find({comId: comId}).lean();
+        let listProcess = await ProcessInterview.find({comId: comId}).sort({processBefore: 1, id: -1}).lean();
+        let listProcessInterview = [];
+        let data = [];
+        listProcessInterview.push({id: 0,name: "Nhận hồ sơ ứng viên",});
+        listProcessInterview.push({id: 1,name: "Nhận việc",});
+        listProcessInterview.push({id: 2,name: "Trượt",});
+        listProcessInterview.push({id: 3,name: "Hủy",});
+        listProcessInterview.push({id: 4,name: "Ký hợp đồng",});
+
+        for(let i=0; i<listProcessInterview.length; i++) {
+            data.push(listProcessInterview[i]);
+            for(let j=0; j<listProcess.length; j++) {
+                if(listProcessInterview[i].id == listProcess[j].beforeProcess) {
+                    data.push(listProcess[j]);
+                }
+            }
+        }
         for(let i=0; i<listProcess.length; i++) {
             let processInterview = listProcess[i];
             let listCandidate = await ScheduleInterview.aggregate([
@@ -1241,7 +1257,7 @@ exports.getListProcessInterview= async(req, res, next) => {
         let listCandidateFailJob = await getCandidateProcess(FailJob, condition);
         let listCandidateContactJob = await getCandidateProcess(ContactJob, condition);
 
-        return functions.success(res, "Get list process interview success", {listProcess, listCandidate,listCandidateGetJob, listCandidateCancelJob, listCandidateFailJob, listCandidateContactJob});
+        return functions.success(res, "Get list process interview success", {data, listCandidate,listCandidateGetJob, listCandidateCancelJob, listCandidateFailJob, listCandidateContactJob});
     } catch (e) {
         return functions.setError(res, e.message);
     }
@@ -1257,20 +1273,20 @@ exports.checkDataProcess = async(req, res, next) => {
         let comId = req.infoLogin.comId;
         
         //lay ra giai doan dung dang truoc
+        let beforeProcess = 0; //id giai doan mac dinh phia truoc 1, 2, 3, 4
         if(processBefore!=1 && processBefore!=2 && processBefore!=3 && processBefore!=4){
             let process = await ProcessInterview.findOne({id: processBefore, comId: comId});
             if(!process) return functions.setError(res, `Process not found!`, 405);
 
-            if(process && process.processBefore!=0){
-                processBefore = process.processBefore;
-            }else {
-                processBefore = 0;
+            if(process && process.beforeProcess!=0){
+                beforeProcess = process.beforeProcess;
             }
-        }
+        }else beforeProcess = processBefore;
         // them cac truong muon them hoac sua
         req.info = {
             name: name,
-            processBefore: processBefore
+            processBefore: processBefore,
+            beforeProcess: beforeProcess,
         }
         return next();
     } catch (e) {

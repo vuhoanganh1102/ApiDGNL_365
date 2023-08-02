@@ -390,7 +390,7 @@ exports.updateTranferJob = async(req, res, next) => {
             }
         }, {new: true})
         if(!employee){
-            return functions.setError(res, "Employee not found!", 403);
+            return functions.setError(res, "Employee not found!", 408);
         }
 
         let check = await TranferJob.findOne({com_id: com_id, ep_id: ep_id});

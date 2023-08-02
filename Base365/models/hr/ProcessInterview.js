@@ -13,8 +13,13 @@ const ProcessInterviewSchema = new Schema({
         type: String,
         require: true
     },
-    // giai doan truoc
+    //id cua giai doan truoc
     processBefore: {
+        type: Number,
+        default: 0
+    },
+    //giai doan phia truoc 1: Nhận việc, 2: Trượt, 3: Hủy, 4: Ký hợp đồng
+    beforeProcess: {
         type: Number,
         default: 0
     },
