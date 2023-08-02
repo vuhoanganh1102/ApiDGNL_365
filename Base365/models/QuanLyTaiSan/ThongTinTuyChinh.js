@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const model_ThongTinTuyChinh = new mongoose.Schema({
-    _id: {
+    id_tt: {
         type: Number,
-    
+    require : true
     },
     com_id_tt: {
         type: Number
@@ -26,23 +26,27 @@ const model_ThongTinTuyChinh = new mongoose.Schema({
         type: Number
     },
     tt_date_create: {
-        tpye: Number
-    },
-    tt_xoa: {
         type: Number
     },
+    tt_xoa: {
+        type: Number,
+        default : 0
+    },
     ng_xoa : {
-        type : Number
+        type : Number,
+        default : 0
     },
     ngay_xoa : {
-        type : Number
+        type : Number,
+        default : 0
     },
     type_quyen_xoa : {
-        type : Number
+        type : Number,
+        default : 0
     }
 },
     {
-        collection: "QLTS_hongTinTuyChinh",
+        collection: "QLTS_ThongTinTuyChinh",
         versionKey: false
     });
 module.exports = mongoose.model("QLTS_ThongTinTuyChinh", model_ThongTinTuyChinh);

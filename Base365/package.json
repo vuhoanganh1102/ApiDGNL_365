@@ -11,6 +11,7 @@
         "clean-css": "^4.1.11",
         "constantinople": "^3.1.1",
         "cookie-parser": "~1.4.4",
+        "cor": "^0.0.0",
         "cors": "^2.8.5",
         "debug": "~2.6.9",
         "dotenv": "^16.0.3",
