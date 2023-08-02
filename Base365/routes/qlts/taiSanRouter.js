@@ -5,78 +5,79 @@ const controllerTs =  require('../../controllers/qlts/taiSan');
 const functions = require('../../services/functions')
 const QLTS = require('../../services/QLTS/qltsService');
 
+
 //Api danh sach
-router.post('/list',functions.checkToken,formData.parse(),controllerTs.showAll)
+router.post('/list',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.showAll)
 
 
 //Api show dữ liệu tìm kiếm danh sách
-router.post('/datasearch',functions.checkToken,formData.parse(),controllerTs.showDataSearch)
+router.post('/datasearch',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.showDataSearch)
 
 
 //Api thêm mới
-router.post('/add',functions.checkToken,formData.parse(),controllerTs.addTaiSan)
+router.post('/add',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.addTaiSan)
 
 
 //Api hiển thị dữ liệu thêm mới
-router.post('/showadd',functions.checkToken,formData.parse(),controllerTs.showadd)
+router.post('/showadd',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.showadd)
 
 
 //Api hiển thị chi tiết tài sản
-router.post('/details',functions.checkToken,formData.parse(),controllerTs.showCTts)
+router.post('/details',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.showCTts)
 
 
 //Api hiển thị quá trình sử dụng
-router.post('/quatrinhSd',functions.checkToken,formData.parse(),controllerTs.quatrinhsd)
+router.post('/quatrinhSd',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.quatrinhsd)
 
 
 //Api hiển thị khấu hao
-router.post('/showkh',functions.checkToken,formData.parse(),controllerTs.khauhaoCTTS)
+router.post('/showkh',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.khauhaoCTTS)
 
 //Apo thêm khấu hao
 router.post('/addkhauhao',functions.checkToken,formData.parse(),controllerTs.addKhauHao)
 
 
 //Api tài liệu đính kèm
-router.post('/listFile',functions.checkToken,formData.parse(),controllerTs.showFile)
+router.post('/listFile',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.showFile)
 
 
-router.post('/addFile',functions.checkToken,formData.parse(),controllerTs.addFile)
+router.post('/addFile',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.addFile)
 
 
-router.post('/deleteFile',functions.checkToken,formData.parse(),controllerTs.deleteFile)
+router.post('/deleteFile',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.deleteFile)
 
 //Api Bảo duongx theo chi tiết
-router.post('/showBDCT',functions.checkToken,formData.parse(),controllerTs.showBDCT)
+router.post('/showBDCT',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.showBDCT)
 
 //Api sửa chữa theo chi tiết 
-router.post('/showSCCT',functions.checkToken,formData.parse(),controllerTs.showScCT)
+router.post('/showSCCT',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.showScCT)
 
 //Api sửa chữa theo chi tiết
-router.post('/editTS',functions.checkToken,formData.parse(),controllerTs.editTS)
+router.post('/editTS',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.editTS)
 
 //Api xóa tài sản
-router.post('/delete',functions.checkToken,formData.parse(),controllerTs.deleteTs)
+router.post('/delete',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.deleteTs)
 
 
 
 
 //Api hiển thị ghi tăng
-router.post('/DTghitang',functions.checkToken,formData.parse(),controllerTs.showGhiTang)
+router.post('/DTghitang',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.showGhiTang)
 
 //thêm mới ghi tăng
-router.post('/addghitang',functions.checkToken,formData.parse(),controllerTs.addGhiTang)
+router.post('/addghitang',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.addGhiTang)
 
 
 //duyệt ghi tăng
-router.post('/duyetGT',functions.checkToken,formData.parse(),controllerTs.duyetHuyGhiTang)
+router.post('/duyetGT',functions.checkToken,QLTS.checkRole("CP_TH",1),formData.parse(),controllerTs.duyetHuyGhiTang)
 
 //xóa ghi tăng
-router.post('/Deleteghitang',functions.checkToken,formData.parse(),controllerTs.XoaGhiTang)
+router.post('/Deleteghitang',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.XoaGhiTang)
 
 //sửa ghi tăng
-router.post('/Editghitang',functions.checkToken,formData.parse(),controllerTs.chinhSuaGhitang)
+router.post('/Editghitang',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.chinhSuaGhitang)
 
 //Thông tin phân bổ
-router.post('/ShowTTPB',functions.checkToken,formData.parse(),controllerTs.showTTPB)
+router.post('/ShowTTPB',functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerTs.showTTPB)
 
 module.exports = router
