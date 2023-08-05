@@ -24,7 +24,6 @@ exports.dataDeleteHome = async (req, res, next) => {
 
         // khai báo biến phụ
         let data = {};
-
         // logic
         let demts = await TaiSan.countDocuments({ ts_da_xoa: 1, id_cty: comId });
         let loai_ts = await LoaiTaiSan.countDocuments({ loai_da_xoa: 1, id_cty: comId });
@@ -63,9 +62,9 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
     try {
         // khai báo biến lấy dữ liệu từ token
         let comId = req.comId;
-        let emId = req.emId;
+        let emId = req.user.data._id;
         let type_quyen = req.type;
-
+        console.log(type_quyen);
         // khai báo biến người dùng nhập vào
         let page = Number(req.body.page) || 1;
         let pageSize = Number(req.body.pageSize) || 10;
@@ -91,14 +90,14 @@ exports.dataTaiSanDeleted = async (req, res, next) => {
         }
         conditions.id_cty = comId
         let dem = {};
-        let demts = await TaiSan.find({ ts_da_xoa: 1, id_cty: comId }).count();
+        let demTS = await TaiSan.find({ ts_da_xoa: 1, id_cty: comId }).count();
 
-        let demloai = await LoaiTaiSan.find({ loai_da_xoa: 1, id_cty: comId }).count();
+        let demTSloai = await LoaiTaiSan.find({ loai_da_xoa: 1, id_cty: comId }).count();
 
-        let demnhom = await NhomTaiSan.find({ nhom_da_xoa: 1, id_cty: comId }).count();
-        dem.demts = demts;
-        dem.demloai = demloai;
-        dem.demnhom = demnhom;
+        let demTSnhom = await NhomTaiSan.find({ nhom_da_xoa: 1, id_cty: comId }).count();
+        dem.demts = demTS;
+        dem.demloai = demTSloai;
+        dem.demnhom = demTSnhom;
 
         // 1:  tài sản đã xoá
         if (type === 1) {
@@ -264,7 +263,7 @@ exports.dataKiemKeDaXoa = async (req, res, next) => {
                 $lookup: {
                     from: 'Users',
                     localField: 'id_ngtao_kk',
-                    foreignField: 'idQLC',
+                    foreignField: '_id',
                     as: 'user'
                 }
             },
@@ -273,7 +272,7 @@ exports.dataKiemKeDaXoa = async (req, res, next) => {
                 $lookup: {
                     from: 'Users',
                     localField: 'kk_id_ng_xoa',
-                    foreignField: 'idQLC',
+                    foreignField: '_id',
                     as: 'users'
                 }
             },
@@ -282,7 +281,7 @@ exports.dataKiemKeDaXoa = async (req, res, next) => {
                 $lookup: {
                     from: 'Users',
                     localField: 'id_ng_kiemke',
-                    foreignField: 'idQLC',
+                    foreignField: '_id',
                     as: 'usersid_ng_kiemke'
                 }
             },
@@ -318,7 +317,9 @@ exports.dataKiemKeDaXoa = async (req, res, next) => {
                 data[i].vitri_kk = com.address
             }
         }
-        return functions.success(res, 'get data success', { tongSoLuong, data })
+       
+    return functions.success(res, 'get data success', { tongSoLuong , data })
+       
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)

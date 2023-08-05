@@ -3,7 +3,6 @@ const Schema = mongoose.Schema;
 const Counter = require('../Counter');
 let connection = mongoose.createConnection('mongodb://127.0.0.1:27017/api-base365');
 
-
 const CC365_CompanyWorkdaySchema = new Schema({
     cw_id: {
         type: Number,

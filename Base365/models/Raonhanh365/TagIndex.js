@@ -42,8 +42,7 @@ const TagIndexSchema = new mongoose.Schema({
     },
     time: {
         //thoi gian
-        type: Date,
-        default: Date(Date.now())
+        type: Number,
     },
     active: {
         // tag dc su dung khong

@@ -23,7 +23,7 @@ exports.xoaBaoDuong = async (req, res) => {
         let id_com = 0;
         if (req.user.data.type == 1 || req.user.data.type == 2) {
             id_com = req.user.data.com_id;
-            bd_id_ng_xoa = req.user.data.idQLC
+            bd_id_ng_xoa = req.user.data._id
         } else {
             return fnc.setError(res, 'không có quyền truy cập', 400);
         }
@@ -89,7 +89,7 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
         }
         let type_quyen = req.user.data.type;
         let com_id = req.user.data.com_id;
-        let id_ng_tao = req.user.data.idQLC;
+        let id_ng_tao = req.user.data._id;
 
         let date_create = new Date().getTime();
         let maxIDTb = 0;
@@ -327,7 +327,7 @@ exports.danhSachBaoDuong = async (req, res, next) => {
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         let com_id = req.user.data.com_id;
-        let idQLC = req.user.data.idQLC;
+        let idQLC = req.user.data._id;
         let type = req.user.data.type;
 
         
@@ -352,7 +352,7 @@ exports.danhSachBaoDuong = async (req, res, next) => {
 
         let taiDaBD = await fnc.findCount(BaoDuong, {...condition, bd_trang_thai: 1});
 
-        let quyDinhBD = await fnc.findCount(QuyDinhBaoDuong, {id_cty: com_id, qd_xoa: 0, id_ng_tao_qd: idQLC});
+        let quyDinhBD = await fnc.findCount(QuyDinhBaoDuong, {id_cty: com_id, qd_xoa: 0});
 
         let theoDoiCongSuat = await fnc.findCount(TheoDoiCongSuat, {id_cty: com_id, tdcs_xoa: 0});
 
@@ -541,7 +541,7 @@ exports.danhSachBaoDuong = async (req, res, next) => {
                 $lookup: {
                     from: "Users",
                     localField: "bd_id_ng_tao",
-                    foreignField: "idQLC",
+                    foreignField: "_id",
                     as: "NguoiTao"
                 }
             },
@@ -591,13 +591,13 @@ exports.danhSachBaoDuong = async (req, res, next) => {
             let bd_ng_sd = listBaoDuong[i].bd_ng_sd;
             let infoBaoDuong = listBaoDuong[i];
             if(listBaoDuong[i].bd_type_quyen_sd == 1) {
-                let user = await Users.findOne({idQLC: bd_ng_sd}, {userName: 1, address: 1});
+                let user = await Users.findOne({_id: bd_ng_sd}, {userName: 1, address: 1});
                 if(user) {
                     ten_ng_sd = user.userName;
                     ten_vi_tri = user.address;
                 }
             }else if(listBaoDuong[i].bd_type_quyen_sd == 2 ) {
-                let user = await Users.findOne({idQLC: bd_ng_sd}, {userName: 1});
+                let user = await Users.findOne({_id: bd_ng_sd}, {userName: 1});
                 if(user) ten_ng_sd = user.userName;
                 
                 let department = await Department.findOne({dep_id: bd_ng_sd}, {dep_name: 1});
@@ -624,7 +624,7 @@ exports.TuChoiBaoDuong = async (req, res) => {
     try {
         let { id_bb, content } = req.body;
         let com_id = req.user.data.com_id;
-        let id_ng_tao = req.user.data.idQLC;
+        let id_ng_tao = req.user.data._id;
 
         let tuchoi_bao_duong = await BaoDuong.findOneAndUpdate({
             id_bd: id_bb,
@@ -776,7 +776,7 @@ exports.delete1 = async (req, res) => {
 
         let { datatype, id, } = req.body;
         let com_id = req.user.data.com_id;
-        let id_ng_xoa = req.user.data.idQLC;
+        let id_ng_xoa = req.user.data._id;
         let date_delete = new Date().getTime();
         let this_baoduong = await BaoDuong.findOne({
             id_cty: com_id,
@@ -938,7 +938,7 @@ exports.deleteAll = async (req, res) => {
     try {
         let { xoa_vinh_vien, array_xoa } = req.body;
         let com_id = req.user.data.com_id;
-        let id_ng_xoa = req.user.data.idQLC;
+        let id_ng_xoa = req.user.data._id;
         let xoa = array_xoa.split(',');
         let dem = xoa.length;
         let type_quyen = req.user.data.type;

@@ -59,7 +59,7 @@ const AdminUserSchema = new mongoose.Schema({
     isAdmin: {
         //có phải là admin hay không
         type: Number,
-        default: 1
+        default: 0
     },
     active: {
         //admin này có hoạt động ko
@@ -102,8 +102,6 @@ const AdminUserSchema = new mongoose.Schema({
         type: Number,
         default: 0
     }
-
-
 }, {
     collection: 'RN365_AdminUser',
     versionKey: false,

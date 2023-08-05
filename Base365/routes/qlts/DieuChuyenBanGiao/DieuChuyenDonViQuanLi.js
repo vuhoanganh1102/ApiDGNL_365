@@ -10,6 +10,6 @@ router.post('/create', functions.checkToken,fnc.checkRole("DC_BG",2) , formData.
 
 router.post('/edit', functions.checkToken,fnc.checkRole("DC_BG",2) , formData.parse(), controllers.edit);
 
-router.post('/list', functions.checkToken,fnc.checkRole("DC_BG",1) , formData.parse(), controllers.list);
+router.post('/list', functions.checkToken, formData.parse(), controllers.list);
 
 module.exports = router;

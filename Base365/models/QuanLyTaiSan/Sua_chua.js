@@ -121,9 +121,9 @@ const model_Sua_chua = new mongoose.Schema({
         default: 0
     },
     sc_type_quyet_duyet: {
-        type: Number,
+        type: Number, 
         default: 0
-    }
+    } 
 },
     {
         collection: "QLTS_Sua_chua",

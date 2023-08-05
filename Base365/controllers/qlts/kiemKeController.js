@@ -17,7 +17,7 @@ exports.getAndCheckData = async(req, res, next) => {
       return functions.setError(res, "Ngay khong dung dinh dang!", 405);
     }
     let comId = req.user.data.com_id;
-    let id = req.user.data.idQLC;
+    let id = req.user.data._id;
     let type = req.user.data.type;
 
     let ky_kk;
@@ -156,44 +156,66 @@ exports.danhSachKiemKe = async(req, res, next)=>{
       {$skip: skip},
       {$limit: limit},
       {
-          $lookup: {
-              from: 'Users',
-              localField: 'id_cty',
-              foreignField: 'idQLC',
-              as: 'company',
-          }
-      },
+        $lookup: {
+            from: "Users",
+            localField: "id_cty",
+            foreignField: "_id",
+            // pipeline: [
+            //     { $match: {$and : [
+            //     { "type" : 1},
+            //     {"idQLC":{$ne : 0}},
+            //     {"idQLC":{$ne : 1}}] },
+            //     }
+            // ],
+             as : "company"
+        }
+    },
       { $unwind: { path: '$company', preserveNullAndEmptyArrays: true } },
 
       {
           $lookup: {
               from: 'Users',
               localField: 'id_ngtao_kk',
-              foreignField: 'idQLC',
+              foreignField: '_id',
               as: 'nguoi_tao',
           }
       },
+
       { $unwind: { path: '$nguoi_tao', preserveNullAndEmptyArrays: true } },
 
-      // {
-      //     $lookup: {
-      //         from: 'Users',
-      //         localField: 'kk_donvi',
-      //         foreignField: 'idQLC',
-      //         as: 'donvi',
-      //     }
-      // },
-      // { $unwind: { path: '$donvi', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+            from: "Users",
+            localField: "kk_donvi",
+            foreignField: "_id",
+            // pipeline: [
+            //     { $match: {$and : [
+            //     { "type" : 1},
+            //     {"idQLC":{$ne : 0}},
+            //     {"idQLC":{$ne : 1}}] },
+                // }
+            // ],
+             as : "donvi"
+        }
+    },
+      { $unwind: { path: '$donvi', preserveNullAndEmptyArrays: true } },
 
-      // {
-      //     $lookup: {
-      //         from: 'Users',
-      //         localField: 'id_ng_kiemke',
-      //         foreignField: 'idQLC',
-      //         as: 'ng_kiemke',
-      //     }
-      // },
-      // { $unwind: { path: '$ng_kiemke', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+            from: "Users",
+            localField: "id_ng_kiemke",
+            foreignField: "_id",
+            // pipeline: [
+            //     { $match: {$and : [
+            //     { "type" : {$ne : 1 }},
+            //     {"idQLC":{$ne : 0}},
+            //     {"idQLC":{$ne : 1}}] },
+            //     }
+            // ],
+             as : "ng_kiemke"
+        }
+    },
+      { $unwind: { path: '$ng_kiemke', preserveNullAndEmptyArrays: true } },
 
       { $project: {
         "id_kiemke": "$id_kiemke", 
@@ -226,7 +248,7 @@ exports.danhSachKiemKe = async(req, res, next)=>{
 exports.delete = async(req, res, next) => {
   try{
     const {id_kk, datatype} = req.body;
-    const userId = req.user.data.idQLC;
+    const userId = req.user.data._id;
     const comId = req.user.data.com_id;
     const type = req.user.data.type;
     const time = functions.convertTimestamp(Date.now());
@@ -269,7 +291,7 @@ exports.delete = async(req, res, next) => {
 exports.deleteMany = async(req, res, next) => {
   try{
     const {array_xoa, datatype} = req.body;
-    const userId = req.user.data.idQLC;
+    const userId = req.user.data._id;
     const comId = req.user.data.com_id;
     const type = req.user.data.type;
     const time = functions.convertTimestamp(Date.now());
@@ -318,7 +340,7 @@ exports.deleteMany = async(req, res, next) => {
 exports.duyet = async(req, res, next) => {
   try{
     const id_kk = req.body.id_kk;
-    const ng_duyet = req.user.data.idQLC;
+    const ng_duyet = req.user.data._id;
     const type = req.user.data.type;
     const comId = req.user.data.com_id;
     const time = functions.convertTimestamp(Date.now());
@@ -348,7 +370,7 @@ exports.chiTiet = async(req, res, next) => {
           $lookup: {
               from: 'Users',
               localField: 'id_cty',
-              foreignField: 'idQLC',
+              foreignField: '_id',
               as: 'company',
           }
       },
@@ -358,7 +380,7 @@ exports.chiTiet = async(req, res, next) => {
           $lookup: {
               from: 'Users',
               localField: 'id_ngtao_kk',
-              foreignField: 'idQLC',
+              foreignField: '_id',
               as: 'nguoi_tao',
           }
       },
@@ -368,7 +390,7 @@ exports.chiTiet = async(req, res, next) => {
           $lookup: {
               from: 'Users',
               localField: 'kk_donvi',
-              foreignField: 'idQLC',
+              foreignField: '_id',
               as: 'donvi',
           }
       },
@@ -378,7 +400,7 @@ exports.chiTiet = async(req, res, next) => {
           $lookup: {
               from: 'Users',
               localField: 'id_ng_kiemke',
-              foreignField: 'idQLC',
+              foreignField: '_id',
               as: 'ng_kiemke',
           }
       },
@@ -436,7 +458,7 @@ exports.chiTiet = async(req, res, next) => {
             ts_detail.name_tai_san = taiSan.ts_ten;
             ts_detail.vitri_ts = taiSan.ts_vi_tri;
             ts_detail.donvi_ql = taiSan.id_dv_quanly;
-            let ng_dai_dien = await Users.findOne({idQLC: taiSan.id_ten_quanly});
+            let ng_dai_dien = await Users.findOne({_id: taiSan.id_ten_quanly});
             if(ng_dai_dien) {
               ts_detail.ng_dai_dien = ng_dai_dien.userName;
             }

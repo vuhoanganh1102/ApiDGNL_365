@@ -11,7 +11,7 @@ const History = require('../../models/Raonhanh365/History');
 const ApplyNews = require('../../models/Raonhanh365/ApplyNews');
 const Comments = require('../../models/Raonhanh365/Comments');
 const OrderRN = require('../../models/Raonhanh365/Order');
-const TagsIndex = require('../../models/Raonhanh365/RN365_TagIndex');
+const TagsIndex = require('../../models/Raonhanh365/TagIndex');
 const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
 const Bidding = require('../../models/Raonhanh365/Bidding')
 const dotenv = require("dotenv");
@@ -1120,56 +1120,56 @@ exports.toolComment = async (req, res, next) => {
 };
 
 //tag index
-exports.toolTagsIndex = async (req, res, next) => {
-    try {
-        let page = 1;
-        let result = true;
-        do {
-            const form = new FormData();
-            form.append('page', page);
-            const response = await axios.post('https://raonhanh365.vn/api/select_history.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+// exports.toolTagsIndex = async (req, res, next) => {
+//     try {
+//         let page = 1;
+//         let result = true;
+//         do {
+//             const form = new FormData();
+//             form.append('page', page);
+//             const response = await axios.post('https://raonhanh365.vn/api/select_history.php', form, {
+//                 headers: {
+//                     'Content-Type': 'multipart/form-data',
+//                 },
+//             });
 
-            let data = response.data.data.items;
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-                    const history = new History({
-                        _id: data[i].his_id,
-                        userId: data[i].his_user_id,
-                        seri: data[i].his_seri,
-                        cardId: data[i].his_mathe,
-                        tranId: data[i].his_tranid,
-                        price: data[i].his_price,
-                        priceSuccess: data[i].his_price_suc,
-                        time: data[i].his_time,
-                        networkOperatorName: data[i].his_nhamang,
-                        bank: data[i].his_bank,
-                        bankNumber: data[i].his_bank_number,
-                        cardHolder: data[i].his_cardholder,
-                        type: data[i].his_type,
-                        status: data[i].his_status,
-                        content: data[i].noi_dung,
-                        countGetMoney: data[i].count_ntien,
-                        distinguish: data[i].his_pb,
-                    });
+//             let data = response.data.data.items;
+//             if (data.length > 0) {
+//                 for (let i = 0; i < data.length; i++) {
+//                     const history = new History({
+//                         _id: data[i].his_id,
+//                         userId: data[i].his_user_id,
+//                         seri: data[i].his_seri,
+//                         cardId: data[i].his_mathe,
+//                         tranId: data[i].his_tranid,
+//                         price: data[i].his_price,
+//                         priceSuccess: data[i].his_price_suc,
+//                         time: data[i].his_time,
+//                         networkOperatorName: data[i].his_nhamang,
+//                         bank: data[i].his_bank,
+//                         bankNumber: data[i].his_bank_number,
+//                         cardHolder: data[i].his_cardholder,
+//                         type: data[i].his_type,
+//                         status: data[i].his_status,
+//                         content: data[i].noi_dung,
+//                         countGetMoney: data[i].count_ntien,
+//                         distinguish: data[i].his_pb,
+//                     });
 
-                    await History.create(history);
-                }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page);
-        } while (result);
+//                     await History.create(history);
+//                 }
+//                 page++;
+//             } else {
+//                 result = false;
+//             }
+//             console.log(page);
+//         } while (result);
 
-        return fnc.success(res, "Thành công");
-    } catch (error) {
-        return fnc.setError(res, error.message);
-    }
-};
+//         return fnc.success(res, "Thành công");
+//     } catch (error) {
+//         return fnc.setError(res, error.message);
+//     }
+// };
 exports.toolApplyNew = async (req, res, next) => {
     try {
         let page = 1;

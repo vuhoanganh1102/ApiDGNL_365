@@ -23,7 +23,7 @@ const model_KHauHao = new mongoose.Schema({
         type: Number
     },
     kh_gt_da_kh: {
-        typw: Number
+        type: Number
     },
     kh_gt_cho_kh: {
         type: Number
@@ -38,7 +38,8 @@ const model_KHauHao = new mongoose.Schema({
         type: Number
     },
     kh_quyen_tao: {
-        type: Number
+        type: Number,
+        default : 1
     }
 
 }, {

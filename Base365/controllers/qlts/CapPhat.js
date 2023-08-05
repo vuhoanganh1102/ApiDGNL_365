@@ -9,8 +9,8 @@ const user = require('../../models/Users')
 
 exports.create = async (req, res) => {
     try {
-        const id_cty = req.user.data.idQLC
-        const idQLC = req.user.data.idQLC
+        const id_cty = req.user.data.com_id
+        const idQLC = req.user.data._id
         const pageNumber = req.body.pageNumber || 1;
         const id_phongban = req.body.id_phongban;
         const cp_lydo = req.body.cp_lydo;
@@ -87,7 +87,7 @@ exports.edit = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
 
-        const idQLC = req.user.data.idQLC
+        const idQLC = req.user.data._id
         const cp_id = req.body.cp_id;
         const id_phongban = req.body.id_phongban;
         const cp_lydo = req.body.cp_lydo;
@@ -126,7 +126,7 @@ exports.edit = async (req, res) => {
             return fnc.success(res, "cập nhật thành công", { cap })
         }
     } catch (e) {
-        return fnc.setError(res, e.message)
+        return fnc.setError(res, e.message) 
     }
 }
 
@@ -134,34 +134,34 @@ exports.delete = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
         const datatype = req.body.datatype
-        const _id = req.body.id
+        const cp_id = req.body.cp_id
         const type_quyen = req.body.type_quyen
         const id_ng_xoa = req.user.data.idQLC
         const date_delete = new Date()
 
         if (datatype == 1) {
-            const data = await capPhat.findOne({ _id: _id, id_cty: id_cty });
+            const data = await capPhat.findOne({ cp_id: cp_id, id_cty: id_cty });
             if (!data) {
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
-                await capPhat.findOneAndUpdate({ _id: _id }, {
+                await capPhat.findOneAndUpdate({ cp_id: cp_id }, {
                     id_cty: id_cty,
                     cp_da_xoa: 1,
                     cp_type_quyen_xoa: type_quyen,
                     cp_id_ng_xoa: id_ng_xoa,
-                    cp_date_delete: Date.parse(date_delete),
+                    cp_date_delete: Date.parse(date_delete)/1000, 
 
                 })
                     .then((data) => fnc.success(res, "cập nhật thành công", { data }))
                     .catch((err) => fnc.setError(res, err.message, 511));
             }
         }
-        if (datatype == 2) {
-            const data = await capPhat.findOne({ _id: _id, id_cty: id_cty });
+        if (datatype == 2) { 
+            const data = await capPhat.findOne({ cp_id: cp_id, id_cty: id_cty });
             if (!data) {
                 return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
             } else {
-                await capPhat.findOneAndUpdate({ _id: _id, id_cty: id_cty }, {
+                await capPhat.findOneAndUpdate({ cp_id: cp_id, id_cty: id_cty }, {
                     id_cty: id_cty,
                     cp_da_xoa: 0,
                     cp_type_quyen_xoa: 0,
@@ -174,14 +174,14 @@ exports.delete = async (req, res) => {
             }
         }
         if (datatype == 3) {
-            const deleteonce = await fnc.getDatafindOne(capPhat, { _id: _id, id_cty: id_cty });
+            const deleteonce = await fnc.getDatafindOne(capPhat, { cp_id: cp_id, id_cty: id_cty });
             if (!deleteonce) {
                 return fnc.setError(res, "không tìm thấy bản ghi", 510);
             } else { //tồn tại thì xóa 
-                fnc.getDataDeleteOne(capPhat, { _id: _id })
+                fnc.getDataDeleteOne(capPhat, { cp_id: cp_id })
                     .then(() => fnc.success(res, "xóa thành công!", { deleteonce }))
                     .catch(err => fnc.setError(res, err.message, 512));
-            }
+            } 
         }
 
 
@@ -269,20 +269,19 @@ exports.getListNV = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "id_nhanvien",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}
-                            ]},
-                            }
-                        ],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     { "type" : {$ne : 1 }},
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}
+                        //     ]},
+                        //     }
+                        // ],
                          as : "infoNguoiDuocCP"
                     }
                 },
             { $unwind: { path: "$infoNguoiDuocCP", preserveNullAndEmptyArrays: true } },
-            { $match: {"infoNguoiDuocCP.type" : 2} },
 
 
             {
@@ -341,7 +340,7 @@ exports.getListDep = async (req, res) => {
         let data = []
         let numEmp = await capPhat.distinct('id_nhanvien', { id_cty: id_cty, id_nhanvien: { $exists: true }, cp_da_xoa: 0 })
         if (numEmp) data.push({ numEmp: numEmp.length })
-        let numDep = await capPhat.distinct('id_phongban', { id_cty: id_cty, id_nhanvien: { $exists: true }, cp_da_xoa: 0 })
+        let numDep = await capPhat.distinct('id_phongban', { id_cty: id_cty, id_phongban: { $exists: true }, cp_da_xoa: 0 })
         if (numDep) data.push({ numDep: numDep.length })
         let listConditions = {};
         listConditions.id_cty = id_cty
@@ -407,6 +406,7 @@ exports.getListDep = async (req, res) => {
 exports.getListDetail = async (req, res) => {
     try {
         const id_cty = req.user.data.com_id
+        const type = req.user.data.type
         // const type_quyen = req.body.type_quyen
         let option = req.body.option
         const id_nhanvien = req.body.id_nhanvien
@@ -451,25 +451,22 @@ exports.getListDetail = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "cp_id_ng_tao",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}] },
-                            }
-                        ],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}] },
+                        //     }
+                        // ],
                          as : "info"
                     }
                 },
             { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
 
 
-            // { $unwind: "$info" },
             {
                 $project: {
                     "cp_id": "$cp_id",
-                    // "cap_phat_taisan": "$cap_phat_taisan",
                     "cp_trangthai": "$cp_trangthai",
                     "id_nhanvien": "$id_nhanvien",
                     "id_phongban": "$id_phongban",
@@ -524,14 +521,14 @@ exports.DetailEmp = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "id_ng_thuchien",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}] },
-                            }
-                        ],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     { "type" : {$ne : 1 }},
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}] },
+                        //     }
+                        // ],
                          as : "info"
                     }
                 },
@@ -540,13 +537,13 @@ exports.DetailEmp = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "id_nhanvien",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}] },
-                            }],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     { "type" : {$ne : 1 }},
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}] },
+                        //     }],
                          as : "infoNguoiDuocCP"
                     }
                 },
@@ -622,14 +619,14 @@ exports.DetailDep = async (req, res) => {
                 $lookup: {
                     from: "Users",
                     localField: "id_ng_thuchien",
-                    foreignField: "idQLC",
-                    pipeline: [
-                        { $match: {$and : [
-                        { "type" : {$ne : 1 }},
-                        {"idQLC":{$ne : 0}},
-                        {"idQLC":{$ne : 1}}] },
-                        }
-                    ],
+                    foreignField: "_id",
+                    // pipeline: [
+                    //     { $match: {$and : [
+                    //     { "type" : {$ne : 1 }},
+                    //     {"idQLC":{$ne : 0}},
+                    //     {"idQLC":{$ne : 1}}] },
+                    //     }
+                    // ],
                      as : "info"
                 }
             },
@@ -641,14 +638,14 @@ exports.DetailDep = async (req, res) => {
                     $lookup: {
                         from: "Users",
                         localField: "id_ng_daidien",
-                        foreignField: "idQLC",
-                        pipeline: [
-                            { $match: {$and : [
-                            { "type" : {$ne : 1 }},
-                            {"idQLC":{$ne : 0}},
-                            {"idQLC":{$ne : 1}}] },
-                            }
-                        ],
+                        foreignField: "_id",
+                        // pipeline: [
+                        //     { $match: {$and : [
+                        //     { "type" : {$ne : 1 }},
+                        //     {"idQLC":{$ne : 0}},
+                        //     {"idQLC":{$ne : 1}}] },
+                        //     }
+                        // ],
                          as : "infoNgDaiDienCP"
                     }
                 },
