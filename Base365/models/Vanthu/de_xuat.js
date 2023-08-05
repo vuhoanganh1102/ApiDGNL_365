@@ -329,13 +329,13 @@ const Vanthu_de_xuat = new Schema({
                 default: null,
 
             },
-            local_di: { //địa điểm di chuyển 
-                type: Number,
+            local_di: {
+                type: String,
                 default: null,
 
             },
             local_den: {
-                type: Number,
+                type: String,
                 default: null,
 
             },
