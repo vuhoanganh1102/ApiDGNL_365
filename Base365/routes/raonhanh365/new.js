@@ -127,4 +127,7 @@ router.post('/tinApDungKhuyenMai',formData.parse(),functions.checkToken,newRN.ti
 
 // chỉnh sửa tin khuyến mãi
 router.post('/updateNewPromotion',formData.parse(),functions.checkToken,newRN.updateNewPromotion)
+
+// kho ảnh
+router.get('/getDataImage',functions.checkToken,newRN.getDataImage)
 module.exports = router;

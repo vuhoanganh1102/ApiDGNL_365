@@ -135,19 +135,24 @@ exports.listUserOnline = async (req, res, next) => {
     try {
         let data = [];
         data = await User.aggregate([
+            { $match: { isOnline: 1, idRaoNhanh365: { $ne: 0 } } },
+            { $limit: 20 },
             {
-                $match: { isOnline: 1, idRaoNhanh365: { $ne: 0 } }
-            },
-            {
-                $limit: 20
-            },
-            {
-                $project: { userName: 1, avatarUser: 1, idRaoNhanh365: 1, _id: 1, type: 1, city: 1, district: 1, address: 1 }
+                $project: {
+                    userName: 1,
+                    avatarUser: 1,
+                    idRaoNhanh365: 1,
+                    _id: 1,
+                    type: 1,
+                    city: 1,
+                    district: 1,
+                    address: 1
+                }
             },
 
         ]);
         for (let i = 0; i < data.length; i++) {
-            data
+            if (data[i].userName) data[i].userName = await raoNhanh.getLinkAvatarUser(data[i].idRaoNhanh365,data[i].userName)
             let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1, _id: 1, linkTitle: 1, type: 1, buySell: 1 })
             if (tin) data[i].tin = tin
         }

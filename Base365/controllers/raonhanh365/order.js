@@ -76,7 +76,7 @@ exports.order = async (req, res, next) => {
                     await Order.create({
                         _id, codeOrder: codeOrder[i], phone, deliveryAddress, sellerId: sellerId[i], note, paymentType,
                         totalProductCost: totalProductCost[i], promotionType: promotionType[i], promotionValue: promotionValue[i], shipFee: shipFee[i], shipType: shipType[i],
-                        tien_ttoan_ctra, paymentMethod, unitPrice: unitPrice[i], buyerId: idRaoNhanh365, status
+                        amountPaid, paymentMethod, unitPrice: unitPrice[i], buyerId: idRaoNhanh365, status
                     }
                     )
                     if (paymentMethod == 0) {
@@ -133,7 +133,7 @@ exports.bidding = async (req, res, next) => {
             promotionFile = await raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
         }
         await Bidding.create({ _id, newId, userName, userIntro, userID, productName, productDesc, status, price, priceUnit, productLink, userFile, userProfile, userProfileFile, promotion, promotionFile })
-        return functions.success(res, 'bidding success')
+        return functions.success(res, 'bidding success', { id:_id })
     } catch (error) {
         return functions.setError(res, error)
     }
@@ -159,8 +159,10 @@ exports.manageOrderBuy = async (req, res, next) => {
         let sl_daHuy = await Order.find({ buyerId, status: 4 }).count();
         let sl_hoanTat = await Order.find({ buyerId, status: 5 }).count();
         let searchItem = {
-            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
-            orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
+            sellerId: 1,
+            new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 },
+            user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
+            orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1, unitPrice: 1, amountPaid: 1
         }
         if (linkTitle === 'quan-ly-don-hang-mua.html') {
             data = await Order.aggregate([
@@ -186,8 +188,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                { $unwind: "$user" },
-
+                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-dang-xu-ly-nguoi-mua.html') {
@@ -211,7 +212,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-
+                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem },
 
             ])
@@ -236,7 +237,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-
+                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem },
 
             ])
@@ -264,16 +265,12 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                { $unwind: "$user" },
-                { $skip: skip },
-                { $limit: limit },
+                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-mua.html') {
             data = await Order.aggregate([
-                {
-                    $match: { buyerId, status: 4 }
-                },
+                { $match: { buyerId, status: 4 } },
                 { $skip: skip },
                 { $limit: limit },
                 {
@@ -293,15 +290,12 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                { $unwind: "$user" },
-
+                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
             ])
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-mua.html') {
             data = await Order.aggregate([
-                {
-                    $match: { buyerId, status: 5 }
-                },
+                { $match: { buyerId, status: 5 } },
                 { $skip: skip },
                 { $limit: limit },
                 {
@@ -321,8 +315,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "user"
                     }
                 },
-                { $unwind: "$user" },
-
+                { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
 
             ])
@@ -332,7 +325,10 @@ exports.manageOrderBuy = async (req, res, next) => {
         }
         for (let i = 0; i < data.length; i++) {
             if (data[i].new.img) {
-                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img, data[i].new.cateID, 2);
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
+            }
+            if (data[i].user && data[i].user.avatarUser) {
+                data[i].user.avatarUser = await raoNhanh.getAvatarUser(data[i].user.avatarUser);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
@@ -359,7 +355,7 @@ exports.manageOrderSell = async (req, res, next) => {
         let sl_daHuy = await Order.find({ sellerId, status: 4 }).count();
         let sl_hoanTat = await Order.find({ sellerId, status: 5 }).count();
         let searchItem = {
-            sellerId: 1, new: { _id: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
+            sellerId: 1, new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
 
         };
@@ -541,7 +537,7 @@ exports.manageOrderSell = async (req, res, next) => {
         }
         for (let i = 0; i < data.length; i++) {
             if (data[i].new.img) {
-                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.img, data[i].new.cateID, 2);
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })

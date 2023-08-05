@@ -274,10 +274,11 @@ exports.getNameCate = async (cateId, number) => {
     }
 }
 // lấy link file
-exports.getLinkFile = async (file, cateId) => {
+exports.getLinkFile = async (userID, file, cateId, buySell) => {
     let nameCate = await exports.getNameCate(cateId, 1);
     let folder = await exports.checkFolderCateRaoNhanh(nameCate)
-    let link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/${folder}/`;
+    let link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/${folder}/${userID}/`;
+    if (buySell == 1) link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/avt_tindangmua/${userID}/`;
     let res = '';
     let arr = [];
     for (let i = 0; i < file.length; i++) {
@@ -288,7 +289,387 @@ exports.getLinkFile = async (file, cateId) => {
 }
 
 // lấy avatar user
-exports.getLinkAvatarUser = async (name) => {
-    let link = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_dangtin/' + name;
+exports.getLinkAvatarUser = async (id, name) => {
+    let link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/avt_dangtin/${id}/` + name;
     return link;
+}
+
+// hàm chứa item serch của chi tiết tin
+exports.searchItem = async (type) => {
+    if (type === 1) {
+        return searchitem = {
+            _id: 1,
+            title: 1,
+            money: 1,
+            endvalue: 1,
+            city: 1,
+            userID: 1,
+            img: 1,
+            cateID: 1,
+            updateTime: 1,
+            type: 1,
+            active: 1,
+            until: 1,
+            address: 1,
+            ward: 1,
+            detailCategory: 1,
+            district: 1,
+            viewCount: 1,
+            apartmentNumber: 1,
+            com_city: 1,
+            com_district: 1,
+            com_ward: 1,
+            com_address_num: 1,
+            bidding: 1,
+            tgian_kt: 1,
+            tgian_bd: 1,
+            buySell: 1,
+            video: 1,
+            user: { _id: 1, idRaoNhanh365: 1, phone: 1, isOnline: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, lastActivedAt: 1, time_login: 1 },
+        };
+    } else if (type === 2) {
+        return searchitem = {
+            _id: 1,
+            title: 1,
+            linkTitle: 1,
+            free: 1,
+            address: 1,
+            money: 1,
+            createTime: 1,
+            cateID: 1,
+            pinHome: 1,
+            pinCate: 1,
+            new_day_tin: 1,
+            buySell: 1,
+            email: 1,
+            tgian_kt: 1,
+            tgian_bd: 1,
+            phone: 1,
+            userID: 1,
+            img: 1,
+            updateTime: 1,
+            user: { _id: 1, idRaoNhanh365: 1, isOnline: 1, phone: 1, avatarUser: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, 'inforRN365.xacThucLienket': 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
+            district: 1,
+            ward: 1,
+            description: 1,
+            city: 1,
+            islove: '1',
+            until: 1,
+            endvalue: 1,
+            type: 1,
+            detailCategory: 1,
+            infoSell: 1,
+            timePromotionStart: 1,
+            timePromotionEnd: 1,
+            quantitySold: 1,
+            infoSell: 1,
+            viewCount: 1,
+            poster: 1,
+            sold: 1,
+            com_city: 1,
+            video: 1,
+            district: 1,
+            ward: 1,
+            com_address_num: 1,
+            buySell: 1,
+            totalSold: 1,
+            quantityMin: 1,
+            quantityMax: 1,
+            productGroup: 1,
+            productType: 1
+        }
+    }
+}
+
+// lấy tin tương tự cho chi tiết tin
+exports.tinTuongTu = async (res, New, check, id_new, userId,LoveNews) => {
+    try {
+        let tintuongtu = await New.aggregate([
+            { $match: { cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } } },
+            { $limit: 6 },
+            {
+                $lookup: {
+                    from: 'Users',
+                    foreignField: 'idRaoNhanh365',
+                    localField: 'userID',
+                    as: 'user'
+                }
+            },
+            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    linkTitle: 1,
+                    free: 1,
+                    address: 1,
+                    money: 1,
+                    createTime: 1,
+                    cateID: 1,
+                    pinHome: 1,
+                    userID: 1,
+                    img: 1,
+                    updateTime: 1,
+                    user: { _id: 1, avatarUser: 1, phone: 1, userName: 1, type: 1, chat365_secret: 1, 'inforRN365.xacThucLienket': 1, email: 1, 'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1 },
+                    district: 1,
+                    ward: 1,
+                    city: 1,
+                    dia_chi: 1,
+                    islove: 1,
+                    until: 1,
+                    endvalue: 1,
+                    active: 1,
+                    type: 1,
+                    sold: 1,
+                    createTime: 1,
+                    free: 1,
+                    buySell: 1
+                }
+            }
+        ]);
+        if (tintuongtu.length !== 0) {
+            for (let i = 0; i < tintuongtu.length; i++) {
+                if (tintuongtu[i].user && tintuongtu[i].user.avatarUser) {
+                    tintuongtu[i].user.avatarUser = await exports.getLinkAvatarUser(tintuongtu[i].user.idRaoNhanh365, tintuongtu[i].user.avatarUser);
+                }
+                if (tintuongtu[i].img) {
+                    tintuongtu[i].img = await exports.getLinkFile(tintuongtu[i].img, tintuongtu[i].cateID, tintuongtu[i].buySell);
+                    tintuongtu[i].soluonganh = tintuongtu[i].img.length;
+                }
+                tintuongtu[i].buySell == 1 ? tintuongtu[i].link = `https://raonhanh.vn/${tintuongtu[i].linkTitle}-ct${tintuongtu[i]._id}.html` : tintuongtu[i].link = `https://raonhanh.vn/${tintuongtu[i].linkTitle}-c${tintuongtu[i]._id}.html`
+                if (userId) {
+                    let dataLoveNew = await LoveNews.findOne({ id_user: userId, id_new: tintuongtu[i]._id });
+                    if (dataLoveNew) tintuongtu[i].islove = 1;
+                    else tintuongtu[i].islove = 0;
+                } else {
+                    tintuongtu[i].islove = 0;
+                }
+            }
+        }
+        return tintuongtu
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// lấy like comment cho chi tiết tin
+exports.getComment = async (res, Comments, LikeRN, url, sort, cm_start, cm_limit) => {
+    try {
+        let ListComment = [];
+        if (sort == 1) {
+            ListComment = await Comments.find({ url, parent_id: 0 }).sort({ _id: -1 }).skip(cm_start).limit(cm_limit).lean();
+        } else {
+            ListComment = await Comments.find({ url, parent_id: 0 }).sort({ _id: 1 }).skip(cm_start).limit(cm_limit).lean();
+        }
+        let ListReplyComment = [];
+        let ListLikeComment = [];
+        let ListLikeCommentChild = [];
+        if (ListComment.length !== 0) {
+            for (let i = 0; i < ListComment.length; i++) {
+                ListLikeComment = await LikeRN.find({ forUrlNew: url, type: { $lt: 8 }, commentId: ListComment[i]._id }, {}, { type: 1 })
+                ListReplyComment = await Comments.find({ url, parent_id: ListComment[i]._id }, {}, { time: -1 }).lean();
+                // lấy lượt like của từng trả lời
+                if (ListReplyComment && ListReplyComment.length > 0) {
+                    for (let j = 0; j < ListReplyComment.length; j++) {
+                        ListLikeCommentChild = await LikeRN.find({ forUrlNew: url, type: { $lt: 8 }, commentId: ListReplyComment[j]._id }, {}, { type: 1 })
+                        ListReplyComment[j].ListLikeCommentChild = ListLikeCommentChild
+                        ListReplyComment[i].img = process.env.DOMAIN_RAO_NHANH + '/' + ListReplyComment[i].img
+                    }
+                }
+                ListComment[i].ListLikeComment = ListLikeComment
+                ListComment[i].ListReplyComment = ListReplyComment
+                if (ListComment[i].img) {
+                    ListComment[i].img = process.env.DOMAIN_RAO_NHANH + '/' + ListComment[i].img
+                }
+            }
+        }
+        return ListComment
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// lấy thông tin đấu thầu nếu là tin mua
+exports.getDataBidding = async (res, Bidding, id_new, Evaluate) => {
+    try {
+        let dataBidding = await Bidding.aggregate([
+            { $match: { newId: id_new } },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: 'userID',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $project: {
+                    user: { _id: 1, idRaoNhanh365: 1, phone: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1 },
+                    _id: 1,
+                    userName: 1,
+                    userIntro: 1,
+                    userFile: 1,
+                    userProfile: 1,
+                    userProfileFile: 1,
+                    productName: 1,
+                    productDesc: 1,
+                    productLink: 1,
+                    price: 1,
+                    priceUnit: 1,
+                    promotion: 1,
+                    promotionFile: 1,
+                    status: 1,
+                    createTime: 1,
+                    note: 1,
+                    updatedAt: 1,
+                }
+            }
+        ])
+        if (dataBidding.length !== 0) {
+            for (let i = 0; i < dataBidding.length; i++) {
+                if (dataBidding[i].user && dataBidding[i].user.avatarUser) {
+                    dataBidding[i].user.avatarUser = await exports.getLinkAvatarUser(dataBidding[i].user.idRaoNhanh365, dataBidding[i].user.avatarUser);
+                }
+                if (dataBidding[i].userFile) {
+                    dataBidding[i].userFile = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + dataBidding[i].userFile;
+                }
+                if (dataBidding[i].userProfileFile) {
+                    dataBidding[i].userProfileFile = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + dataBidding[i].userProfileFile;
+                }
+                if (dataBidding[i].promotionFile) {
+                    dataBidding[i].promotionFile = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + dataBidding[i].promotionFile;
+                }
+                dataBidding[i].user.thongTinSao = await exports.getInfoEnvaluate(res, Evaluate, dataBidding[i].user.idRaoNhanh365)
+            }
+        }
+        return dataBidding
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// lấy thông tin sao của user
+exports.getInfoEnvaluate = async (res, Evaluate, userID) => {
+    try {
+        let cousao = await Evaluate.find({ blUser: 0, userId: userID }).count();
+        let sumsao = await Evaluate.aggregate([
+            { $match: { blUser: 0, userId: userID } },
+            {
+                $group:
+                {
+                    _id: null,
+                    count: { $sum: "$stars" }
+                }
+            }
+        ]);
+        let thongTinSao = {};
+        if (sumsao && sumsao.length !== 0) {
+            thongTinSao.cousao = cousao;
+            thongTinSao.sumsao = sumsao[0].count;
+        }
+        return thongTinSao;
+    } catch (error) {
+        return functions.setError(res, error)
+    }
+}
+
+// hàm xửl lý tên mặt hàng cho danh mục
+exports.getDataNewDetail = async (objectarr) => {
+    let array = Object.entries(objectarr).map(([key, value]) => [key, value]);
+    for (let i = 0; i < array.length; i++) {
+        let name = await exports.switchCase(array[i][0])
+        let value = await exports.cateDetail(2, name, array[i][1])
+        array[i][1] = value
+    }
+    let objectt = Object.fromEntries(array);
+    return objectt
+}
+
+// hàm lấy tên mặt hàng cho danh mục
+exports.cateDetail = async (cateID, item, id) => {
+
+    let check = await CateDetail.aggregate([
+        { $match: { _id: cateID } },
+        {
+            $project: {
+                [item]: 1
+            }
+        },
+        { $unwind: `$${item}` }
+    ]);
+
+    let data = check.find((itemm) => itemm[`${item}`]._id == id)
+    if (data && data.length) {
+        return data[0][`${item}`].name
+    }
+    return 0
+}
+
+exports.switchCase = (item) => {
+    switch (item) {
+        case 'microprocessor':
+            return 'brand'
+        case 'ram':
+            return 'capacity'
+        case 'hardDrive':
+            return 'capacity'
+        case 'typeHardrive':
+            return 'capacity'
+        case 'screen':
+            return 'screen'
+        case 'size':
+            return 'screen'
+        case 'brand':
+            return 'brand'
+        case 'machineSeries':
+            return brand.line   // chưa chắc chắn
+        // case device:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+        // case ram:
+        //     return capacity
+
+    }
+
+}
+
+// copy folder image
+exports.copyFolder = async (imgOld, folderNew) => {
+    let fileOld = imgOld.replace(`${process.env.DOMAIN_RAO_NHANH}`, '')
+    let folderOld = fileOld.split('/').reverse()[2]
+    let id = fileOld.split('/').reverse()[1]
+    let fileNew = fileOld.replace(`${folderOld}`, folderNew)
+    let path = `../storage/base365/raonhanh365/pictures/${folderNew}/${id}`;
+    if (!fs.existsSync(path)) {
+        fs.mkdirSync(path, { recursive: true });
+    }
+    fs.copyFile(`../storage/${fileOld}`, `../storage/${fileNew}`, (err) => {
+        if (err) {
+            console.error(err)
+            return false
+        }
+    });
+    return true
 }
