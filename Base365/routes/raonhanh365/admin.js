@@ -34,8 +34,10 @@ router.post('/news/pushNews', formData.parse(), [functions.checkToken, serviceRN
 
 //------------------------------------------------api giá ghim tin đăng and giá đẩy tin đăng
 router.post('/getListPrice', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListPrice);
-router.post('/createAndUpdatePriceListPin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.createAndUpdatePriceListPin);
-router.post('/updatePriceListPush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.updatePriceListPush);
+router.post('/createPriceListPin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(22, 2)], admin.createAndUpdatePriceListPin);
+router.post('/updatePriceListPin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(22, 3)], admin.createAndUpdatePriceListPin);
+
+router.post('/updatePriceListPush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(32, 3)], admin.updatePriceListPush);
 
 //------------------------------------------------api quan ly tai khoan(tai khoan chua xac thuc va da xac thuc)
 router.post('/user/getListUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListUser);
@@ -44,8 +46,8 @@ router.post('/user/deleteUser', [functions.checkToken, serviceRN.isAdminRN365, s
 
 //------------------------------------------------api blog
 router.post('/blog/getListBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListBlog);
-router.post('/blog/createBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getAndCheckDataBlog, admin.createBlog);
-router.post('/blog/updateBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getAndCheckDataBlog, admin.updateBlog);
+router.post('/blog/createBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(37, 2)], admin.getAndCheckDataBlog, admin.createBlog);
+router.post('/blog/updateBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(37, 3)], admin.getAndCheckDataBlog, admin.updateBlog);
 // router.post('/blog/hotBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.hotBlog);
 
 //------------------------------------------------api lich su nap the---------------------------------------------------
@@ -67,7 +69,6 @@ router.post('/listReportNew', formData.parse(), [functions.checkToken, serviceRN
 router.post('report/fixNewReport', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.fixNewReport);
 
 //------------------------------------------------api danh sách lỗi đăng ki
-//api danh sách lỗi đăng ký
 router.post('/failRegisterUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.failRegisterUser);
 
 //------------------------------------------------api chiết khấu nạp thẻ
