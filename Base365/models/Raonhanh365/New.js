@@ -330,6 +330,14 @@ const newSchema = new mongoose.Schema({
     order: {
         type: Number
     },
+    kiem_duyet: {
+        type: Number,
+        default: 0
+    },
+    duplicate: {
+        type: String,
+        default: ""
+    },
     // đô điện tử
     electroniceDevice: {
         microprocessor: {
