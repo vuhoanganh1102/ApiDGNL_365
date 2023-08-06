@@ -30,9 +30,16 @@ exports.list = async (req, res) => {
         let transferObject = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0,dc_type :1}).count()
         let transferManagerUnit = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0, dc_type :2}).count()
         if(dem_bg)  data.push({dem_bg: dem_bg})
+        else  data.push({dem_bg: 0})
         if(transferLocate)  data.push({transferLocate: transferLocate})
+        else  data.push({transferLocate: 0})
+
         if(transferObject) data.push({transferObject: transferObject})
+        else  data.push({transferObject: 0})
+
         if(transferManagerUnit) data.push({transferManagerUnit: transferManagerUnit})
+        else  data.push({transferManagerUnit: 0})
+
         console.log(listConditions)
         //query find user hand over 
 
@@ -210,7 +217,7 @@ exports.listDetailAllocation = async (req, res) => {
         if(data){
             return fnc.success(res, " lấy thành công ",{data})
         }
-        return fnc.setError(res, "không tìm thấy đối tượng", 510);
+        return fnc.setError(res, "không tìm thấy đối tượng");
     }
     return fnc.setError(res, "vui lòng nhập id_ng_thuchien ");
 
