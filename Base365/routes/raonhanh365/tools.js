@@ -34,6 +34,6 @@ router.post('/raonhanh/toolBlog', toolRaoNhanh.toolBlog)
 router.post('/raonhanh/toolLoveNew', toolRaoNhanh.toolLoveNew)
     // router.post('/raonhanh/toolCateVl',toolRaoNhanh.toolCateVl)
     // router.post('/raonhanh/toolPhuongXa', toolRaoNhanh.toolPhuongXa)
-    // router.post('/raonhanh/toolbanggiacknt', toolRaoNhanh.toolbanggiacknt)
+router.post('/raonhanh/toolbanggiacknt', toolRaoNhanh.toolbanggiacknt)
 
 module.exports = router;

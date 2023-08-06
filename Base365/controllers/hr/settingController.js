@@ -23,8 +23,25 @@ exports.getListPermisionUser= async(req, res, next) => {
         
         return functions.success(res, `Get list role user with id=${userId}`, {infoRoleTD, infoRoleTTNS, infoRoleTTVP, infoRoleHNNV, infoRoleBCNS, infoRoleDXGD, infoRoleTGL });
     } catch (e) {
-        console.log("Err from server", e);
-        return functions.setError(res, "Err from server", 500);
+        return functions.setError(res, e.message);
+    }
+}
+
+exports.getListPermisionUserLogin= async(req, res, next) => {
+    try {
+        let userId = req.infoLogin.id;
+        let type = req.infoLogin.type;
+        let infoRoleTD = await PermisionUser.find({userId: userId, barId: 1});
+        let infoRoleTTNS = await PermisionUser.find({userId: userId, barId: 2});
+        let infoRoleTTVP = await PermisionUser.find({userId: userId, barId: 3});
+        let infoRoleHNNV = await PermisionUser.find({userId: userId, barId: 4});
+        let infoRoleBCNS = await PermisionUser.find({userId: userId, barId: 5});
+        let infoRoleDXGD = await PermisionUser.find({userId: userId, barId: 6});
+        let infoRoleTGL = await PermisionUser.find({userId: userId, barId: 7});
+        
+        return functions.success(res, `Get list role user with id=${userId}`, {type, infoRoleTD, infoRoleTTNS, infoRoleTTVP, infoRoleHNNV, infoRoleBCNS, infoRoleDXGD, infoRoleTGL });
+    } catch (e) {
+        return functions.setError(res, e.message);
     }
 }
 
@@ -90,8 +107,7 @@ exports.createPermisionUser = async(req, res, next) => {
         }
         return functions.success(res, "Create permision for user success!");
     } catch (e) {
-        console.log("Err from server!", e);
-        return functions.setError(res, "Err from server!", 500);
+        return functions.setError(res, e.message);
     }
 }
 

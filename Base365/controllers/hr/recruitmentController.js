@@ -42,7 +42,7 @@ exports.getListRecruitment= async(req, res, next) => {
         // dua dieu kien vao ob listCondition
         if(name) listCondition.name =  new RegExp(name, 'i');
         if(recruitmentId) listCondition.id = Number(recruitmentId);
-        const listRecruit = await functions.pageFind(Recruitment, listCondition, { _id: 1 }, skip, limit); 
+        const listRecruit = await functions.pageFind(Recruitment, listCondition, { _id: -1 }, skip, limit); 
         const totalCount = await functions.findCount(Recruitment, listCondition);
         return functions.success(res, "Get list recruitment success", {totalCount: totalCount, data: listRecruit });
     } catch (e) {
@@ -1081,6 +1081,7 @@ let getCandidateProcess = async(model, condition)=> {
                 as: "hrName"
             }
         },
+
         {$unwind: { path: "$candidate", preserveNullAndEmptyArrays: true }},
         {$unwind: { path: "$recruitmentNews", preserveNullAndEmptyArrays: true }},
         {$unwind: { path: "$hrName", preserveNullAndEmptyArrays: true }},
@@ -1090,6 +1091,17 @@ let getCandidateProcess = async(model, condition)=> {
                 "canName": "$candidate.name",
                 "email": "$candidate.email",
                 "phone": "$candidate.phone",
+                "gender": "$candidate.gender",
+                "birthday": "$candidate.birthday",
+                "hometown": "$candidate.hometown",
+                "education": "$candidate.education",
+                "school": "$candidate.school",
+                "exp": "$candidate.exp",
+                "isMarried": "$candidate.isMarried",
+                "exp": "$candidate.exp",
+                "address": "$candidate.address",
+                "cvFrom": "$candidate.cvFrom",
+                "userRecommend": "$candidate.userRecommend",
                 "starVote": "$candidate.starVote",
                 "recruitmentNewsId": "$candidate.recruitmentNewsId",
                 "title": "$recruitmentNews.title",
@@ -1854,8 +1866,8 @@ exports.detailCandidateGetJob = async(req, res, next) => {
             return functions.setError(res, "Missing input canId!", 405);
         }
         
-        let list_process_interview = await ProcessInterview.find({comId: comId}, {id: 1, name: 1}).sort({id: 1}).lean();
-        let list_new = await RecruitmentNews.find({comId: comId, isDelete: 0}).sort({id: 1}).lean();
+        let list_process_interview = await ProcessInterview.find({comId: comId}, {id: 1, name: 1}).sort({id: -1}).lean();
+        let list_new = await RecruitmentNews.find({comId: comId, isDelete: 0}).sort({id: -1}).lean();
         let detail = await Candidate.findOne({id: canId});
         let another_skill = await AnotherSkill.find({canId: canId});
         let list_schedule = await ScheduleInterview.find({canId: canId});
