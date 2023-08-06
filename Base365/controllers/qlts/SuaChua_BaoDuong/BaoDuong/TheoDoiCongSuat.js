@@ -30,15 +30,22 @@ exports.edit_dvi_csuat = async (req, res) => {
     try {
         let { id_donvi_edit, ten_DV, mota } = req.body;
         let com_id = req.user.data.com_id;
-        let edit = await DonViCongSuat.findOneAndUpdate({
+        let dvi = await DonViCongSuat.findOne({
             id_donvi: id_donvi_edit,
             id_cty: com_id
-        }, {
-            ten_donvi: ten_DV,
-            mota_donvi: mota
+        })
+        if(dvi){
+            let edit = await DonViCongSuat.findOneAndUpdate({
+                id_donvi: id_donvi_edit,
+                id_cty: com_id
+            }, {
+                ten_donvi: ten_DV,
+                mota_donvi: mota
+            }
+            );
+            return fnc.success(res, "ok", { edit });
         }
-        );
-        return fnc.success(res, "ok", { edit });
+        return fnc.setError(res, "khong tim thay doi tuong can sua");
     } catch (error) {
         return fnc.setError(res, error.message);
     }
@@ -103,18 +110,26 @@ exports.update_theodoi_cs = async (req, res) => {
         let com_id = req.user.data.com_id;
         if(id && day_update && cs_thuc) {
             if (isNaN(id) || id <= 0) {
-                return res.statsus(404).json({ message: 'id phai la 1 so lon hon 0' })
+                return fnc.setError(res,'id phai la 1 so lon hon 0')
             }
             if(fnc.checkDate(day_update)) day_update = fnc.convertTimestamp(day_update);
             else return fnc.setError(res, "Khong dung dinh dang date");
-            let update = await TheoDoiCongSuat.findOneAndUpdate({
+            let theodoi = await TheoDoiCongSuat.findOne({
                 id_cs: id,
                 id_cty: com_id
-            }, {
-                date_update: day_update,
-                cs_gannhat: cs_thuc
             })
-            return fnc.success(res, "OK", { update })
+            if(theodoi){
+                let update = await TheoDoiCongSuat.findOneAndUpdate({
+                    id_cs: id,
+                    id_cty: com_id
+                }, {
+                    date_update: day_update,
+                    cs_gannhat: cs_thuc
+                })
+                return fnc.success(res, "OK", { update })
+            }
+            return fnc.setError(res, "khong tim thay đối tượng cần cập nhật ");
+            
         }
         return fnc.setError(res, "Missing input value!");
     } catch (error) {

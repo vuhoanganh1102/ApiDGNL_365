@@ -356,12 +356,16 @@ exports.edit = async(req,res) =>{
         const khoi_ng_dai_dien_dc_den = req.body.khoi_ng_dai_dien_dc_den
         const khoi_ng_dai_dien_dc_tu = req.body.khoi_ng_dai_dien_dc_tu
         const dai_dien_nhan = req.body.dai_dien_nhan
+        let updated_ds_dc = ""
         let now = new Date()
-        const ds_dc = JSON.parse(dieuchuyen_taisan).ds_dc;
-        const updated_ds_dc = ds_dc.map((item) => ({
-        ts_id: item[0],
-        sl_ts: item[1]
-        }));
+        if(dieuchuyen_taisan){
+          const ds_dc = JSON.parse(dieuchuyen_taisan).ds_dc;
+          updated_ds_dc = ds_dc.map((item) => ({
+          ts_id: item[0],
+          sl_ts: item[1]
+          }));
+        }
+     
         if(loai_dc == 0){
              const DC = await DieuChuyen.findOne({ dc_id: dc_id });
              if (DC) {
