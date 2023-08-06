@@ -12,7 +12,7 @@ const ThuHoi = require('../../../models/QuanLyTaiSan/ThuHoi')
 exports.create = async(req,res) =>{
     try{//code theo PHP : add_dc_ts.php
         const id_cty = req.user.data.com_id
-        const idQLC = req.user.data.idQLC
+        const idQLC = req.user.data._id
         const dieuchuyen_taisan = req.body.dieuchuyen_taisan
         const loai_dc = req.body.loai_dc
         const ng_thuc_hien = req.body.ng_thuc_hien
@@ -558,15 +558,15 @@ exports.list = async (req, res, next) => {
                       $lookup: {
                           from: "Users",
                           localField: "id_ng_thuchien",
-                          foreignField: "idQLC",
-                          pipeline: [
-                              { $match: {$and : [
-                              { "type" : {$ne : 1 }},
-                              {"idQLC":{$ne : 0}},
-                              {"idQLC":{$ne : 1}}
-                              ]},
-                              }
-                          ],
+                          foreignField: "_id",
+                        //   pipeline: [
+                        //       { $match: {$and : [
+                        //       { "type" : {$ne : 1 }},
+                        //       {"idQLC":{$ne : 0}},
+                        //       {"idQLC":{$ne : 1}}
+                        //       ]},
+                        //       }
+                        //   ],
                            as : "users_id_ng_thuchien"
                       }
                   },
@@ -635,15 +635,15 @@ exports.list = async (req, res, next) => {
                       $lookup: {
                           from: "Users",
                           localField: "id_ng_thuchien",
-                          foreignField: "idQLC",
-                          pipeline: [
-                              { $match: {$and : [
-                              { "type" : {$ne : 1 }},
-                              {"idQLC":{$ne : 0}},
-                              {"idQLC":{$ne : 1}}
-                              ]},
-                              }
-                          ],
+                          foreignField: "_id",
+                        //   pipeline: [
+                        //       { $match: {$and : [
+                        //       { "type" : {$ne : 1 }},
+                        //       {"idQLC":{$ne : 0}},
+                        //       {"idQLC":{$ne : 1}}
+                        //       ]},
+                        //       }
+                        //   ],
                            as : "users_id_ng_thuchien"
                       }
                   },
@@ -725,15 +725,15 @@ exports.list = async (req, res, next) => {
                       $lookup: {
                           from: "Users",
                           localField: "id_cty_dang_sd",
-                          foreignField: "idQLC",
-                          pipeline: [
-                              { $match: {$and : [
-                              { "type" : 1},
-                              {"idQLC":{$ne : 0}},
-                              {"idQLC":{$ne : 1}}
-                              ]},
-                              }
-                          ],
+                          foreignField: "_id",
+                        //   pipeline: [
+                        //       { $match: {$and : [
+                        //       { "type" : 1},
+                        //       {"idQLC":{$ne : 0}},
+                        //       {"idQLC":{$ne : 1}}
+                        //       ]},
+                        //       }
+                        //   ],
                            as : "cty_dang_sd"
                       }
                   },
@@ -743,15 +743,15 @@ exports.list = async (req, res, next) => {
                       $lookup: {
                           from: "Users",
                           localField: "id_cty_dang_sd",
-                          foreignField: "idQLC",
-                          pipeline: [
-                              { $match: {$and : [
-                              { "type" : 1},
-                              {"idQLC":{$ne : 0}},
-                              {"idQLC":{$ne : 1}}
-                              ]},
-                              }
-                          ],
+                          foreignField: "_id",
+                        //   pipeline: [
+                        //       { $match: {$and : [
+                        //       { "type" : 1},
+                        //       {"idQLC":{$ne : 0}},
+                        //       {"idQLC":{$ne : 1}}
+                        //       ]},
+                        //       }
+                        //   ],
                            as : "cty_nhan"
                       }
                   },
@@ -761,7 +761,7 @@ exports.list = async (req, res, next) => {
                   $lookup: {
                     from: 'Users',
                     localField: 'id_ng_thuchien',
-                    foreignField: 'idQLC',
+                    foreignField: '_id',
                     as: 'users_id_ng_thuchien'
                   }
                 },
@@ -796,22 +796,26 @@ exports.list = async (req, res, next) => {
         return fnc.setError(res, error)
     }
 };
-
+//tu choi dieu chuyen 
 exports.refuserTransfer = async (req , res) =>{
     try{
         const id_cty = req.user.data.com_id
         const dc_id = req.body.dc_id
         const content = req.body.content
-        const data = await DieuChuyen.findOne({ dc_id: dc_id,id_cty: id_cty });
-        if (!data) {
-           return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
-        } else {
-        await DieuChuyen.updateOne({ dc_id: dc_id,id_cty:id_cty }, {
-            dc_trangthai : 4,
-            dc_lydo_tuchoi : content,
-            })
+        if(dc_id){
+            const data = await DieuChuyen.findOne({ dc_id: dc_id,id_cty: id_cty });
+            if (!data) {
+               return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+            } else {
+            await DieuChuyen.updateOne({ dc_id: dc_id,id_cty:id_cty }, {
+                dc_trangthai : 4,
+                dc_lydo_tuchoi : content,
+                })
+            }
+            return fnc.success(res, "cập nhật thành công")
         }
-        return fnc.success(res, "cập nhật thành công")
+        return fnc.setError(res, "thiếu trường dc_id")
+
     }catch(e){
         return fnc.setError(res, e.message)
     }

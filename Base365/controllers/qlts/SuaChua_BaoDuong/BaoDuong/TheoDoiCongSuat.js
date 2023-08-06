@@ -72,7 +72,7 @@ exports.add_do_csuat = async (req, res) => {
         else chon_ngay = fnc.convertTimestamp(Date.now());
         
         let type_quyen = req.user.data.type;
-        let maxid = await fnc.getMaxIdByField(TheoDoiCongSuat, 'id_cs');
+        let maxid = await fnc.getMaxIdByField(TheoDoiCongSuat, 'id_cs') || 1;
 
         let insert = await TheoDoiCongSuat({
             id_cs: maxid,
@@ -136,7 +136,7 @@ exports.xoaTheoDoiCongSuat = async (req, res) => {
             return fnc.setError(res, 'không có quyền truy cập', 400);
         }
         let type_quyen = req.user.data.type;
-        let idQLC = req.user.data.idQLC;
+        let idQLC = req.user.data._id;
         let date = fnc.convertTimestamp(Date.now());
         if (type == 1) { // xóa vĩnh viễn
             let idArraya = id.map(idItem => parseInt(idItem));
@@ -183,7 +183,7 @@ exports.xoaDonViCongSuat = async (req, res) => {
             return fnc.setError(res, 'không có quyền truy cập', 400);
         }
         let type_quyen = req.user.data.type;
-        let idQLC = req.user.data.idQLC;
+        let idQLC = req.user.data._id;
         let date = fnc.convertTimestamp(Date.now());
         if (type == 1) { // xóa vĩnh viễn
             let idArraya = id.map(idItem => parseInt(idItem));

@@ -568,7 +568,18 @@ exports.updateInfor = async(req, res, next) => {
             description = request.gt,
             mst = request.thue,
             tagLinhVuc = request.tagLinhVuc,
-            usc_video_link = request.usc_video_link;
+            usc_video_link = request.usc_video_link,
+            chat365_id = request.chat365_id,
+            scan_base365 = request.scan_base365,
+            check_chat = request.check_chat,
+            usc_star = request.usc_star,
+            usc_cc365 = request.usc_cc365,
+            usc_crm = request.usc_crm,
+            usc_images = request.usc_images,
+            usc_active_img = request.usc_active_img,
+            usc_manager = request.usc_manager,
+            usc_license = request.usc_license,
+            usc_active_license = request.usc_active_license;
         if (phone && userCompany && city && district && address) {
             let checkPhone = await functions.checkPhoneNumber(phone);
             const now = functions.getTimeNow();
@@ -580,8 +591,19 @@ exports.updateInfor = async(req, res, next) => {
                     'city': city,
                     'district': district,
                     'address': address,
+                    'chat365_id': chat365_id,
+                    'scan_base365': scan_base365,
+                    'check_chat': check_chat,
                     'inForCompany.timviec365.usc_mst': mst || null,
-                    "inForCompany.timviec365.usc_lv": tagLinhVuc
+                    "inForCompany.timviec365.usc_lv": tagLinhVuc,
+                    "inForCompany.timviec365.usc_star": usc_star,
+                    "inForCompany.timviec365.usc_cc365": usc_cc365,
+                    "inForCompany.timviec365.usc_crm": usc_crm,
+                    "inForCompany.timviec365.usc_images": usc_images,
+                    "inForCompany.timviec365.usc_active_img": usc_active_img,
+                    "inForCompany.timviec365.usc_manager": usc_manager,
+                    "inForCompany.timviec365.usc_license": usc_license,
+                    "inForCompany.timviec365.usc_active_license": usc_active_license,
                 };
 
                 if (usc_video_link) {

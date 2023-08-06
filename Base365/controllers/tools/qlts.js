@@ -173,26 +173,20 @@ exports.toolThongTinTuyChinh = async (req, res, next) => {
             let data = listItems.data.items;
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    const element = data[i];
-                    const html = JSON.stringify(element.html);
-                    // let updateAt = element.update_time;
-                    // if (updateAt == 0) {
-                    //     updateAt = null;
-                    // };
                     const info = new ThongTinTuyChinh({
-                        _id: element.id_tt,
-                        com_id_tt: element.com_id_tt,
-                        id_nhom_ts: element.id_nhom_ts,
-                        tt_ten_truong: element.tt_ten_truong,
-                        kieu_du_lieu: element.kieu_du_lieu,
-                        noidung_mota: element.noidung_mota,
-                        ng_tao: element.ng_tao,
-                        type_quyen_tao: element.type_quyen_tao,
-                        tt_date_create: element.tt_date_create,
-                        tt_xoa: element.tt_xoa,
-                        ng_xoa: element.ng_xoa,
-                        ngay_xoa: element.ngay_xoa,
-                        type_quyen_xoa: element.type_quyen_xoa,
+                        id_tt: data[i].id_tt,
+                        com_id_tt: data[i].com_id_tt,
+                        id_nhom_ts: data[i].id_nhom_ts,
+                        tt_ten_truong: data[i].tt_ten_truong,
+                        kieu_du_lieu: data[i].kieu_du_lieu,
+                        noidung_mota: data[i].noidung_mota,
+                        ng_tao: data[i].ng_tao,
+                        type_quyen_tao: data[i].type_quyen_tao,
+                        tt_date_create: data[i].tt_date_create,
+                        tt_xoa: data[i].tt_xoa,
+                        ng_xoa: data[i].ng_xoa,
+                        ngay_xoa: data[i].ngay_xoa,
+                        type_quyen_xoa: data[i].type_quyen_xoa,
                     })
                     await info.save()
 

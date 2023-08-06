@@ -1,4 +1,5 @@
 
+const NhomTaiSan = require('../../models/QuanLyTaiSan/NhomTaiSan');
 const phanQuyen = require('../../models/QuanLyTaiSan/PhanQuyen');
 const Users = require('../../models/Users');
 const department = require('../../models/qlc/Deparment')
@@ -43,6 +44,10 @@ exports.validateTaiSanInput = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, i
   else if (!id_dv_quanly) {
     throw { code: 400, message: "id_dv_quanly không không được bỏ trống" }
   }
+  
+  else if (isNaN(Number(id_ten_quanly))) {
+    throw { code: 400, message: "id_dv_quanly phải là 1 số" }
+  }
   else if (!id_ten_quanly) {
     throw { code: 400, message: "id_ten_quanly không không được bỏ trống" }
   }
@@ -55,7 +60,7 @@ exports.validateTaiSanInput = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, i
   return true;
 };
 
-exports.validateinputEdit = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, id_loai_ts, ts_vi_tri, ts_so_luong, ts_gia_tri, ts_trangthai) => {
+exports.validateinputEdit = (ts_ten, ts_don_vi, id_dv_quanly, id_loai_ts, ts_vi_tri, ts_so_luong, ts_gia_tri,ts_trangthai) => {
   if (!ts_ten) {
     throw { code: 400, message: 'Tên tài sản bắt buộc.' };
   }
@@ -67,9 +72,6 @@ exports.validateinputEdit = (ts_ten, ts_don_vi, id_dv_quanly, id_ten_quanly, id_
   }
   else if (!id_dv_quanly) {
     throw { code: 400, message: "id_dv_quanly không không được bỏ trống" }
-  }
-  else if (!id_ten_quanly) {
-    throw { code: 400, message: "id_ten_quanly không không được bỏ trống" }
   }
   else if (!id_loai_ts) {
     throw { code: 400, message: "id_loai_ts không không được bỏ trống" }
@@ -107,7 +109,7 @@ exports.checkRole = (page, role) => {
             let TS = data.ds_ts.split(",").map(Number)
             if (TS.includes(role)) {
               req.comId = req.user.data.com_id;
-              req.emId = req.user.data.idQLC;
+              req.emId = req.user.data._id;
               req.type = 2;
               return next()
             }
@@ -115,7 +117,7 @@ exports.checkRole = (page, role) => {
             let CP_TH = data.capphat_thuhoi.split(",").map(Number)
             if (CP_TH.includes(role)) {
               req.comId = req.user.data.com_id;
-              req.emId = req.user.data.idQLC;
+              req.emId = req.user.data._id;
               req.type = 2;
               return next()
             }
@@ -123,7 +125,7 @@ exports.checkRole = (page, role) => {
             let DC_BG = data.dieuchuyen_bangiao.split(",").map(Number)
             if (DC_BG.includes(role)) {
               req.comId = req.user.data.com_id;
-              req.emId = req.user.data.idQLC;
+              req.emId = req.user.data._id;
               req.type = 2;
               return next()
             }
@@ -131,7 +133,7 @@ exports.checkRole = (page, role) => {
             let SC_BD = data.suachua_baoduong.split(",").map(Number)
             if (SC_BD.includes(role)) {
               req.comId = req.user.data.com_id;
-              req.emId = req.user.data.idQLC;
+              req.emId = req.user.data._id;
               req.type = 2;
               return next()
             }
@@ -139,7 +141,7 @@ exports.checkRole = (page, role) => {
             let M_H_TL = data.mat_huy_tl.split(",").map(Number)
             if (M_H_TL.includes(role)) {
               req.comId = req.user.data.com_id;
-              req.emId = req.user.data.idQLC;
+              req.emId = req.user.data._id;
               req.type = 2;
               return next()
             }
@@ -147,13 +149,13 @@ exports.checkRole = (page, role) => {
             let PQ = data.phan_quyen.split(",").map(Number)
             if (PQ.includes(role)) {
               req.comId = req.user.data.com_id;
-              req.emId = req.user.data.idQLC;
+              req.emId = req.user.data._id;
               req.type = 2;
               return next()
             }
           } else if (page === "none") {
             req.comId = req.user.data.com_id;
-            req.emId = req.user.data.idQLC;
+            req.emId = req.user.data._id;
             req.type = 2;
             return next()
           } else {
@@ -173,29 +175,7 @@ exports.checkRole = (page, role) => {
 exports.numberWithCommas = (number) => {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
-exports.getDataFromToken = async (req, res, next) => {
-  let user = req.user;
-  if (!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
-    return res.status(404).json({ message: "Token missing info!" });
-  }
-  var infoLogin = { type: user.data.type, role: user.data.role, id: user.data.idQLC, name: user.data.userName };
-  if (user.data.type != 1) {
-    if (user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id) {
-      infoLogin.comId = user.data.inForPerson.employee.com_id;
-    } else {
-      return res.status(405).json({ message: "Missing info inForPerson!" });
-    }
-  } else {
-    infoLogin.comId = user.data.idQLC;
-  }
-  req.id = infoLogin.id;
-  req.com_id = infoLogin.comId;
-  req.userName = infoLogin.name;
-  req.type = infoLogin.type;
-  req.role = infoLogin.role;
-  req.infoLogin = infoLogin;
-  next();
-}
+
 
 exports.getLinkFile = (folder, time, fileName) => {
   let date = new Date(time * 1000);
@@ -272,7 +252,6 @@ exports.loaiTaiSanXoa = async (res, LoaiTaiSan, dem, conditions, skip, limit) =>
         }
       },
       { $unwind: { path: "$nhom_ts", preserveNullAndEmptyArrays: true } },
-
       {
         $project: {
           tongSoLuongTaiSan: { $sum: '$taiSan.ts_so_luong' },
@@ -287,12 +266,13 @@ exports.loaiTaiSanXoa = async (res, LoaiTaiSan, dem, conditions, skip, limit) =>
     ]);
     for (let i = 0; i < data.length; i++) {
       data[i].loai_date_delete = new Date(data[i].loai_date_delete * 1000);
-      let user = await Users.findOne({ idQLC: data[i].loai_id_ng_xoa }, { userName: 1 })
+      let user = await Users.findOne({ _id: data[i].loai_id_ng_xoa }, { userName: 1 })
       if (user) {
         data[i].ng_xoa = user.userName
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await LoaiTaiSan.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -336,12 +316,13 @@ exports.nhomTaiSanDaXoa = async (res, nhomTaiSan, dem, conditions, skip, limit, 
       data[i].nhom_date_delete = new Date(data[i].nhom_date_delete * 1000);
       let loaiTS = await LoaiTaiSan.find({ id_nhom_ts: data[i].id_nhom, loai_da_xoa: 1 }).count();
       data[i].soLuongLoaiTs = loaiTS
-      let user = await Users.findOne({ idQLC: data[i].nhom_id_ng_xoa }, { userName: 1, idQLC: 1 })
+      let user = await Users.findOne({ _id: data[i].nhom_id_ng_xoa }, { userName: 1, _id: 1 })
       if (user) {
         data[i].ng_xoa = user.userName
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await NhomTaiSan.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -367,6 +348,7 @@ exports.taiSanXoa = async (res, TaiSan, dem, conditions, skip, limit, comId) => 
         }
       },
       { $unwind: '$loaits' },
+      
       {
         $project: {
           tongSoLuongTaiSan: { $sum: '$taiSan.ts_so_luong' },
@@ -387,9 +369,9 @@ exports.taiSanXoa = async (res, TaiSan, dem, conditions, skip, limit, comId) => 
     ]);
     for (let i = 0; i < data.length; i++) {
       data[i].ts_date_delete = new Date(data[i].ts_date_delete * 1000);
-      let user = await Users.findOne({ idQLC: data[i].ts_id_ng_xoa }, { userName: 1 })
-      let id_ten_quanly = await Users.findOne({ idQLC: data[i].id_ten_quanly }, { userName: 1 })
-      let com_address = await Users.findOne({ idQLC: comId }, { userName: 1, address: 1 })
+      let user = await Users.findOne({ _id: data[i].ts_id_ng_xoa }, { userName: 1 })
+      let id_ten_quanly = await Users.findOne({ _id: data[i].id_ten_quanly }, { userName: 1 })
+      let com_address = await Users.findOne({ _id: comId }, { userName: 1, address: 1 })
       if (user) {
         data[i].ng_xoa = user.userName
       }
@@ -400,7 +382,8 @@ exports.taiSanXoa = async (res, TaiSan, dem, conditions, skip, limit, comId) => 
         data[i].com_address = com_address.address
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await TaiSan.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -429,7 +412,7 @@ exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'cp_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'user'
         }
       },
@@ -454,8 +437,9 @@ exports.capPhatXoa = async (res, CapPhat, dem, conditions, skip, limit) => {
       data[i].cp_date_delete = new Date(data[i].cp_date_delete * 1000);
 
     }
-
-    return functions.success(res, 'get data success', { dem, data })
+    
+    const totalCount = await CapPhat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount})
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -485,7 +469,7 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
         $lookup: {
           from: 'Users',
           localField: 'thuhoi_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'user'
         }
       },
@@ -509,7 +493,7 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
     for (let i = 0; i < data.length; i++) {
       data[i].thuhoi_ngay = new Date(data[i].thuhoi_ngay * 1000);
       data[i].thuhoi_date_delete = new Date(data[i].thuhoi_date_delete * 1000);
-      let user = await Users.findOne({ idQLC: data[i].id_ng_dc_thuhoi })
+      let user = await Users.findOne({ _id: data[i].id_ng_dc_thuhoi })
       if (user && user.inForPerson && user.inForPerson.employee) {
         let dep = await department.findOne({ dep_id: user.inForPerson.employee.dep_id })
         if (dep) {
@@ -518,7 +502,8 @@ exports.thuHoiXoa = async (res, ThuHoi, dem, conditions, skip, limit, comId) => 
       }
     }
 
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await ThuHoi.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -540,7 +525,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
         $lookup: {
           from: 'Users',
           localField: 'id_ng_xoa_dc',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'user'
         }
       },
@@ -549,7 +534,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
         $lookup: {
           from: 'Users',
           localField: 'id_ng_thuchien',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'users_id_ng_thuchien'
         }
       },
@@ -572,7 +557,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
     ]);
     for (let i = 0; i < data.length; i++) {
       if (data[i].id_nv_dangsudung != 0) {
-        let id_nv_dangsudung = await Users.findOne({ idQLC: data[i].id_nv_dangsudung }, { userName: 1 })
+        let id_nv_dangsudung = await Users.findOne({ _id: data[i].id_nv_dangsudung }, { userName: 1 })
         if (id_nv_dangsudung) data[i].id_nv_dangsudung = id_nv_dangsudung.userName
       }
       if (data[i].id_pb_dang_sd != 0) {
@@ -581,7 +566,7 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
 
       }
       if (data[i].id_nv_nhan != 0) {
-        let id_nv_nhan = await Users.findOne({ idQLC: data[i].id_nv_nhan }, { userName: 1 })
+        let id_nv_nhan = await Users.findOne({ _id: data[i].id_nv_nhan }, { userName: 1 })
         if (id_nv_nhan) data[i].id_nv_nhan = id_nv_nhan.userName
 
       }
@@ -593,7 +578,8 @@ exports.dieuChuyenViTriTaiSanDaXoa = async (res, DieuChuyen, dem, conditions, sk
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
     }
 
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await DieuChuyen.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -614,7 +600,7 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
         $lookup: {
           from: 'Users',
           localField: 'id_ng_xoa_dc',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'user'
         }
       },
@@ -623,7 +609,7 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
         $lookup: {
           from: 'Users',
           localField: 'id_ng_thuchien',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'users_id_ng_thuchien'
         }
       },
@@ -646,7 +632,7 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
     ]);
     for (let i = 0; i < data.length; i++) {
       if (data[i].id_nv_dangsudung != 0) {
-        let id_nv_dangsudung = await Users.findOne({ idQLC: data[i].id_nv_dangsudung }, { userName: 1 })
+        let id_nv_dangsudung = await Users.findOne({ _id: data[i].id_nv_dangsudung }, { userName: 1 })
         if (id_nv_dangsudung) data[i].id_nv_dangsudung = id_nv_dangsudung.userName
       }
       if (data[i].id_pb_dang_sd != 0) {
@@ -655,7 +641,7 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
 
       }
       if (data[i].id_nv_nhan != 0) {
-        let id_nv_nhan = await Users.findOne({ idQLC: data[i].id_nv_nhan }, { userName: 1 })
+        let id_nv_nhan = await Users.findOne({ _id: data[i].id_nv_nhan }, { userName: 1 })
         if (id_nv_nhan) data[i].id_nv_nhan = id_nv_nhan.userName
 
       }
@@ -667,7 +653,8 @@ exports.dieuChuyenDoiTuongSdDaXoa = async (res, DieuChuyen, dem, conditions, ski
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
     }
 
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await DieuChuyen.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -689,7 +676,7 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
         $lookup: {
           from: 'Users',
           localField: 'id_ng_xoa_dc',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'user'
         }
       },
@@ -698,17 +685,16 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
         $lookup: {
           from: 'Users',
           localField: 'id_cty_dang_sd',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'users'
         }
       },
       { $unwind: { path: "$users", preserveNullAndEmptyArrays: true } },
-
       {
         $lookup: {
           from: 'Users',
           localField: 'id_cty_nhan',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'users_id_nv_nhan'
         }
       },
@@ -718,7 +704,7 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
         $lookup: {
           from: 'Users',
           localField: 'id_ng_thuchien',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'users_id_ng_thuchien'
         }
       },
@@ -742,7 +728,8 @@ exports.dieuChuyenDonViQuanLyDaXoa = async (res, DieuChuyen, dem, conditions, sk
       data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
     }
 
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await DieuChuyen.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -772,7 +759,7 @@ exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'sc_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'ng_xoa'
         }
       },
@@ -781,7 +768,7 @@ exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'sc_ng_sd',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'sc_ng_sd'
         }
       },
@@ -809,7 +796,8 @@ exports.canSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       data[i].sc_ngay_hong = new Date(data[i].sc_ngay_hong * 1000)
       data[i].sc_date_delete = new Date(data[i].sc_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await SuaChua.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -839,11 +827,12 @@ exports.dangSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'sc_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'ng_xoa'
         }
       },
       { $unwind: { path: "$ng_xoa", preserveNullAndEmptyArrays: true } },
+      ,
       {
         $project: {
           sc_id: 1,
@@ -868,7 +857,8 @@ exports.dangSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       data[i].sc_ngay_hong = new Date(data[i].sc_dukien * 1000)
       data[i].sc_date_delete = new Date(data[i].sc_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await SuaChua.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -898,7 +888,7 @@ exports.daSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'sc_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'ng_xoa'
         }
       },
@@ -928,7 +918,8 @@ exports.daSuaChua = async (res, SuaChua, dem, conditions, skip, limit) => {
       data[i].sc_hoanthanh = new Date(data[i].sc_hoanthanh * 1000)
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await SuaChua.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -958,7 +949,7 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'bd_id_ng_tao',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'bd_id_ng_tao'
         }
       },
@@ -967,7 +958,7 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'bd_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'bd_id_ng_xoa'
         }
       },
@@ -976,7 +967,7 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'bd_ng_sd',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'bd_ng_sd'
         }
       },
@@ -1006,7 +997,8 @@ exports.canBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       data[i].bd_date_create = new Date(data[i].bd_date_create * 1000)
       data[i].bd_date_delete = new Date(data[i].bd_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await BaoDuong.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1036,7 +1028,7 @@ exports.dangBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'bd_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'bd_id_ng_xoa'
         }
       },
@@ -1062,7 +1054,9 @@ exports.dangBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       data[i].bd_dukien_ht = new Date(data[i].bd_dukien_ht * 1000)
       data[i].bd_date_delete = new Date(data[i].bd_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await BaoDuong.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
+    
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1092,7 +1086,7 @@ exports.daBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'bd_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'bd_id_ng_xoa'
         }
       },
@@ -1124,7 +1118,8 @@ exports.daBaoDuong = async (res, BaoDuong, dem, conditions, skip, limit) => {
       data[i].bd_date_delete = new Date(data[i].bd_date_delete * 1000)
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await BaoDuong.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1164,7 +1159,7 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
         $lookup: {
           from: 'Users',
           localField: 'qd_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'qd_id_ng_xoa'
         }
       },
@@ -1202,9 +1197,10 @@ exports.thietLapLichBaoDuong = async (res, Quydinh_bd, dem, conditions, skip, li
         data[i].cs_bd_bd_vip = '---';
       }
     }
-
-
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Quydinh_bd.countDocuments(conditions);
+   
+    return functions.success(res, 'get data success', { dem , data,totalCount})
+    
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1224,7 +1220,7 @@ exports.quanLyDonViDoCongSuat = async (res, DonViCS, dem, conditions, skip, limi
         $lookup: {
           from: 'Users',
           localField: 'dvcs_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'dvcs_id_ng_xoa'
         }
       },
@@ -1245,7 +1241,8 @@ exports.quanLyDonViDoCongSuat = async (res, DonViCS, dem, conditions, skip, limi
 
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await DonViCS.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount})
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1284,7 +1281,7 @@ exports.theoDoiCongSuat = async (res, TheoDoiCongSuat, dem, conditions, skip, li
         $lookup: {
           from: 'Users',
           localField: 'tdcs_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'tdcs_id_ng_xoa'
         }
       },
@@ -1325,7 +1322,9 @@ exports.theoDoiCongSuat = async (res, TheoDoiCongSuat, dem, conditions, skip, li
         data[i].ngayxoa = new Date(data[i].ngayxoa * 1000)
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await TheoDoiCongSuat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount})
+   
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1355,7 +1354,7 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'mat_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'mat_id_ng_xoa'
         }
       },
@@ -1393,7 +1392,7 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
       data[i].mat_date_create = new Date(data[i].mat_date_create * 1000)
       data[i].mat_ngay = new Date(data[i].mat_ngay * 1000)
       data[i].mat_date_delete = new Date(data[i].mat_date_delete * 1000)
-      let check = await Users.findOne({ idQLC: data[i].id_ng_tao })
+      let check = await Users.findOne({ _id: data[i].id_ng_tao })
       if (check) {
         data[i].id_ng_tao = check.userName
       }
@@ -1404,7 +1403,8 @@ exports.taiSanBaoMat = async (res, Mat, dem, conditions, skip, limit) => {
         }
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Mat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1437,7 +1437,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'mat_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'mat_id_ng_xoa'
         }
       },
@@ -1446,7 +1446,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'id_ng_duyet',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'id_ng_duyet'
         }
       },
@@ -1455,7 +1455,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'id_ng_nhan_denbu',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'id_ng_nhan_denbu'
         }
       },
@@ -1495,7 +1495,7 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
       data[i].mat_ngay = new Date(data[i].mat_ngay * 1000)
       data[i].mat_han_ht = new Date(data[i].mat_han_ht * 1000)
       data[i].mat_date_delete = new Date(data[i].mat_date_delete * 1000)
-      let check = await Users.findOne({ idQLC: data[i].id_ng_tao })
+      let check = await Users.findOne({ _id: data[i].id_ng_tao })
       if (check) {
         data[i].id_ng_tao = check.userName
       }
@@ -1506,7 +1506,8 @@ exports.taiSanChoDenBu = async (res, Mat, dem, conditions, skip, limit) => {
         }
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Mat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1536,7 +1537,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'id_ng_tao',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'id_ng_tao'
         }
       },
@@ -1545,7 +1546,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'mat_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'mat_id_ng_xoa'
         }
       },
@@ -1554,7 +1555,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'id_ngdexuat',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'id_ngdexuat'
         }
       },
@@ -1563,7 +1564,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'id_ng_duyet',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'id_ng_duyet'
         }
       },
@@ -1572,7 +1573,7 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'id_ng_nhan_denbu',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'id_ng_nhan_denbu'
         }
       },
@@ -1614,7 +1615,9 @@ exports.danhSachTaiSanMat = async (res, Mat, dem, conditions, skip, limit) => {
       data[i].mat_han_ht = new Date(data[i].mat_han_ht * 1000)
       data[i].mat_date_delete = new Date(data[i].mat_date_delete * 1000)
     }
-    return functions.success(res, 'get data success', { dem, data })
+
+    const totalCount = await Mat.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1646,7 +1649,7 @@ exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'huy_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'huy_id_ng_xoa'
         }
       },
@@ -1680,7 +1683,7 @@ exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
     for (let i = 0; i < data.length; i++) {
       data[i].huy_date_create = new Date(data[i].huy_date_create * 1000)
       data[i].huy_date_delete = new Date(data[i].huy_date_delete * 1000)
-      let check = await Users.findOne({ idQLC: data[i].id_ng_dexuat })
+      let check = await Users.findOne({ _id: data[i].id_ng_dexuat })
       if (check) {
         data[i].id_ng_dexuat = check.userName
       }
@@ -1694,7 +1697,8 @@ exports.taiSanDeXuatHuy = async (res, Huy, dem, conditions, skip, limit) => {
         data[i].vi_tri_ts = '---';
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Huy.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1724,7 +1728,7 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'huy_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'huy_id_ng_xoa'
         }
       },
@@ -1733,12 +1737,11 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
         $lookup: {
           from: 'Users',
           localField: 'id_ng_duyet',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'id_ng_duyet'
         }
       },
       { $unwind: { path: "$id_ng_duyet", preserveNullAndEmptyArrays: true } },
-
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1768,7 +1771,7 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
     for (let i = 0; i < data.length; i++) {
       data[i].huy_ngayduyet = new Date(data[i].huy_ngayduyet * 1000)
       data[i].huy_date_delete = new Date(data[i].huy_date_delete * 1000)
-      let check = await Users.findOne({ idQLC: data[i].id_ng_tao })
+      let check = await Users.findOne({ _id: data[i].id_ng_tao })
       if (check) {
         data[i].id_ng_tao = check.userName
       }
@@ -1783,7 +1786,8 @@ exports.danhSachTaiSanHuy = async (res, Huy, dem, conditions, skip, limit) => {
       }
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await Huy.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1813,11 +1817,16 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
         $lookup: {
           from: 'Users',
           localField: 'tl_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'tl_id_ng_xoa'
         }
       },
       { $unwind: { path: "$tl_id_ng_xoa", preserveNullAndEmptyArrays: true } },
+      {
+        $match: {
+          'tl_id_ng_xoa.type': { $ne: 0 },
+        },
+    },
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1848,7 +1857,7 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
     for (let i = 0; i < data.length; i++) {
       data[i].tl_date_create = new Date(data[i].tl_date_create * 1000)
       data[i].tl_date_delete = new Date(data[i].tl_date_delete * 1000)
-      let check = await Users.findOne({ idQLC: data[i].id_ngdexuat })
+      let check = await Users.findOne({ _id : data[i].id_ngdexuat })
       if (check) {
         data[i].id_ngdexuat = check.userName
         if (data[i].tl_type_quyen == 2) {
@@ -1863,7 +1872,8 @@ exports.taiSanDeXuatThanhLy = async (res, ThanhLy, dem, conditions, skip, limit)
       }
 
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await ThanhLy.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
@@ -1893,13 +1903,11 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
         $lookup: {
           from: 'Users',
           localField: 'tl_id_ng_xoa',
-          foreignField: 'idQLC',
+          foreignField: '_id',
           as: 'tl_id_ng_xoa'
         }
       },
       { $unwind: { path: "$tl_id_ng_xoa", preserveNullAndEmptyArrays: true } },
-
-
       {
         $lookup: {
           from: 'QLTS_Loai_Tai_San',
@@ -1930,7 +1938,7 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
     for (let i = 0; i < data.length; i++) {
       data[i].ngay_duyet = new Date(data[i].ngay_duyet * 1000)
       data[i].tl_ngay = new Date(data[i].tl_ngay * 1000)
-      let check = await Users.findOne({ idQLC: data[i].id_ngdexuat })
+      let check = await Users.findOne({ _id: data[i].id_ngdexuat })
       if (check) {
         data[i].id_ngdexuat = check.userName
         if (data[i].tl_type_quyen == 2) {
@@ -1944,7 +1952,8 @@ exports.taiSanDaThanhLy = async (res, ThanhLy, dem, conditions, skip, limit) => 
         }
       }
     }
-    return functions.success(res, 'get data success', { dem, data })
+    const totalCount = await ThanhLy.countDocuments(conditions);
+    return functions.success(res, 'get data success', { dem , data,totalCount })
   } catch (error) {
     console.error(error)
     return functions.setError(res, error)
