@@ -4,8 +4,6 @@ var admin = require('../../controllers/raonhanh365/admin');
 var formData = require('express-form-data');
 const functions = require('../../services/functions');
 const serviceRN = require('../../services/rao nhanh/raoNhanh');
-var adminPayment = require('../../controllers/raonhanh365/admin/verifyPayment');
-var adminTagsIndex = require('../../controllers/raonhanh365/admin/tagAndIndex');
 var news = require('../../controllers/raonhanh365/new');
 var blog = require('../../controllers/raonhanh365/blog');
 
@@ -25,6 +23,7 @@ router.post('/account/changePassword', formData.parse(), [functions.checkToken, 
 router.post('/category/getListCate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListCategory);
 router.post('/category/createCate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(15, 2)], admin.getAndCheckDataCategory, admin.createCategory);
 router.post('/category/updateCate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(15, 3)], admin.getAndCheckDataCategory, admin.updateCategory);
+router.post('/category/activeAndShowCategory', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(15, 3)], admin.activeAndShowCategory);
 
 //------------------------------------------------api quan ly tin(tin rao vat, tin mua)
 router.post('/news/getListNews', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListNews);
@@ -33,14 +32,12 @@ router.post('/news/deleteNews', [functions.checkToken, serviceRN.isAdminRN365, s
 router.post('/news/pinNews', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(14, 3)], news.pinNews);
 router.post('/news/pushNews', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(14, 3)], news.pushNews);
 
-// router.post('/news/ghimTin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.ghimTin);
+//------------------------------------------------api giá ghim tin đăng and giá đẩy tin đăng
+router.post('/getListPrice', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListPrice);
+router.post('/createPriceListPin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(22, 2)], admin.createAndUpdatePriceListPin);
+router.post('/updatePriceListPin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(22, 3)], admin.createAndUpdatePriceListPin);
 
-//------------------------------------------------api quan ly bang gia(gia ghim gian hang)
-router.post('/priceList/getListPriceList', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListPriceList);
-// router.post('/priceList/updatePriceList', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.updatePriceList);
-
-//------------------------------------------------api lich su nap the---------------------------------------------------
-router.post('/history/getListHistory', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListHistory);
+router.post('/updatePriceListPush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(32, 3)], admin.updatePriceListPush);
 
 //------------------------------------------------api quan ly tai khoan(tai khoan chua xac thuc va da xac thuc)
 router.post('/user/getListUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListUser);
@@ -49,48 +46,19 @@ router.post('/user/deleteUser', [functions.checkToken, serviceRN.isAdminRN365, s
 
 //------------------------------------------------api blog
 router.post('/blog/getListBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListBlog);
-router.post('/blog/createBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getAndCheckDataBlog, admin.createBlog);
-router.post('/blog/updateBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getAndCheckDataBlog, admin.updateBlog);
+router.post('/blog/createBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(37, 2)], admin.getAndCheckDataBlog, admin.createBlog);
+router.post('/blog/updateBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(37, 3)], admin.getAndCheckDataBlog, admin.updateBlog);
 // router.post('/blog/hotBlog', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.hotBlog);
 
-//------------------------------------------------api xac thuc thanh toan dam bao
-router.post('/getUserVerifyPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.getListUserVerifyPayment);
-router.post('/payment/verifyPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.adminVerifyPayment);
+//------------------------------------------------api lich su nap the---------------------------------------------------
+router.post('/getListHistory', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListHistory);
 
-//-----------------------------------------------api nguoi mua xac nhan thanh toan
-router.post('/getListOrderPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.getListOrderPayment);
-router.post('/order/verifyOrder', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], adminPayment.adminVerifyOrder);
+//-----------------------------------------------tin spam
+router.post('/getListNewsSpam', [functions.checkToken, serviceRN.isAdminRN365], admin.getListNewsSpam);
 
-//----------------------------------------------api tags index
-router.post('/tagsIndex', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListTagsIndex);
-
-router.get('/getListPriceList', [functions.checkToken, serviceRN.isAdminRN365], admin.getListPriceList);
-
-
-//------------------------------------------------api giá ghim tin đăng
-//api danh sách và tìm kiếm giá ghim tin đăng
-router.post('/priceList/getListPricePin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListNewWithPin);
-
-//api thêm mới giá ghim tin đăng
-router.post('/createNewWithPin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.createNewWithPin);
-
-//api sửa giá tin đăng
-// router.put('/putPricePin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.putPricePin);
-
-
-
-//------------------------------------------------api giá đẩy tin đăng
-//api danh sách và tìm kiếm Giá đẩy tin đăng
-router.post('/getListPricePush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListPricePush);
-
-
-//api sửa giá đẩy tin đăng dựa vào id
-// router.put('/updateListPricePush', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.updateListPricePush);
-
-
-//------------------------------------------------api danh sách lỗi đăng ki
-//api danh sách lỗi đăng ký
-router.post('/failRegisterUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.failRegisterUser);
+//------------------------------------------------duyet tin
+router.post('/danhSachTinCanDuyet', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.danhSachTinCanDuyet);
+router.post('/duyetTin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.duyetTin);
 
 //------------------------------------------------api báo cáo tin
 // api tạo mới tin báo cáo
@@ -100,21 +68,25 @@ router.post('/listReportNew', formData.parse(), [functions.checkToken, serviceRN
 // api sửa tin dựa vào param
 router.post('report/fixNewReport', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.fixNewReport);
 
+//------------------------------------------------api danh sách lỗi đăng ki
+router.post('/failRegisterUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.failRegisterUser);
 
 //------------------------------------------------api chiết khấu nạp thẻ
-// api tạo mới chiết khấu nạp thẻ
-router.post('/discountCreate', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(39, 2)], admin.createDiscount);
-// api lấy ra danh sách và tìm kiếm chiết khấu nap thẻ
-router.post('/discountCard', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListDiscountCard);
+router.post('/getListDiscountCard', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListDiscountCard);
+router.post('/updateDiscountCard', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(39, 2)], admin.updateDiscountCard);
 
+//------------------------------------------------api xac thuc thanh toan dam bao
+router.post('/getUserVerifyPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListUserVerifyPayment);
+router.post('/verifyPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.adminVerifyPayment);
 
-router.post('/createTokenAdmin', formData.parse(), blog.createToken);
-router.post('/createTokenUser', formData.parse(), blog.createTokenUser);
+//-----------------------------------------------api nguoi mua xac nhan thanh toan
+router.post('/getListOrderPayment', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListOrderPayment);
+router.post('/verifyOrder', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.adminVerifyOrder);
 
-router.post('/getInfoForEdit', formData.parse(), admin.getInfoForEdit);
-
-// router.post('/updatediscountCard', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.updatediscountCard);
+//----------------------------------------------api tags index
+router.post('/tagsIndex', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListTagsIndex);
 
 router.post('/active', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.active);
+router.post('/deleleManyByModule', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.deleleManyByModule);
 
 module.exports = router;

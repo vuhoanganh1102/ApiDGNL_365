@@ -385,15 +385,17 @@ exports.deleteAdminUser = async(req, res, next) => {
 exports.getListCategory = async(req, res, next) => {
     try {
         let {_id, name, parentId } = req.body;
-        console.log(req.infoAdmin);
         let condition = {};
         if (_id) condition._id = Number(_id);
-        if (name) condition.name = new RegExp(name);
+        if (name) condition.name = new RegExp(name, 'i');
         if (parentId) condition.parentId = parentId;
-
-        const listCategory = await Category.find({}).sort({_id: -1});
-        const totalCount = await functions.findCount(Category, {});
-        return functions.success(res, "get list category success", { totalCount: totalCount, data: listCategory });
+        const listCategoryParent = await Category.find(condition).sort({type: 1}).lean();
+        for(let i=0; i<listCategoryParent.length; i++) {
+            let categoryChild = await Category.find({parentId: listCategoryParent[i]._id});
+            listCategoryParent[i].categoryChild = categoryChild;
+        }
+        const totalCount = await functions.findCount(Category, condition);
+        return functions.success(res, "get list category success", { totalCount: totalCount, data: listCategoryParent });
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -401,17 +403,23 @@ exports.getListCategory = async(req, res, next) => {
 
 exports.getAndCheckDataCategory = async(req, res, next) => {
     try {
-        let { parentId, adminId, name, order, description } = req.body;
+        let { parentId, name, order, description } = req.body;
+        let adminId = req.infoAdmin._id;
         if (name && order) {
             // them cac truong muon them hoac sua
             req.info = {
                 parentId: parentId,
                 adminId: adminId,
                 name: name,
+                active: 1,
+                show: 1,
                 order: order,
                 description: description
             }
             return next();
+        }
+        if(parentId > 0) {
+            await Category.findOneAndUpdate({_id: parentId}, {hasChild: 1}, {new: true});
         }
         return functions.setError(res, "Missing input value", 404)
     } catch (error) {
@@ -437,7 +445,6 @@ exports.updateCategory = async(req, res, next) => {
         let cateID = req.body.cateID; 
         if (cateID) {
             let fields = req.info;
-
             let existsCategory = await Category.findOne({ _id: cateID });
             if (existsCategory) {
 
@@ -452,6 +459,21 @@ exports.updateCategory = async(req, res, next) => {
     }
 }
 
+exports.activeAndShowCategory = async(req, res, next) => {
+    try { 
+        let {cateID, active, show} = req.body;
+        if (cateID) {
+            let updateCategory = await Category.findOneAndUpdate({_id: cateID}, {active: active, show: show}, {new: true});
+            if(updateCategory) {
+                return functions.success(res, "Active or show success!");
+            }
+            return functions.setError(res, "Category not found!", 405);
+        }
+        return functions.setError(res, "Missing input value id cate!", 404);
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
 
 //---------------------------------------------------------controller quan ly tin(tin rao vat, tin mua)-----------------------------------------------
 //-------gom ca quan ly tin tuyen dung va tin tim viec lam -----> bang cach su dung truong cateID de phan biet
@@ -460,7 +482,7 @@ exports.updateCategory = async(req, res, next) => {
 // khi truyen cateID = 120, 121 se lay dc tin tuyen dung va tin tim viec lam
 exports.getListNews = async(req, res, next) => {
     try {
-        let { page, pageSize, _id, buySell, title, cateID, fromDate, toDate } = req.body;
+        let { page, pageSize, _id, buySell, title, cateID, email, fromDate, toDate } = req.body;
         if(!page) page = 1;
         if(!pageSize) pageSize = 10;
         page = Number(page);
@@ -472,14 +494,15 @@ exports.getListNews = async(req, res, next) => {
         let condition = {};
         if (buySell) condition.buySell = Number(buySell); // 1: tin mua, 2: tin ban
         if (_id) condition._id = Number(_id);
-        if (title) condition.title = new RegExp(title);
+        if (title) condition.title = new RegExp(title, 'i');
         if (cateID) condition.cateID = Number(cateID); // cate
+        if (email) condition.email = new RegExp(email, 'i');
 
         // tu ngay den ngay
         if (fromDate && !toDate) condition.createTime = { $gte: new Date(fromDate) };
         if (toDate && !fromDate) condition.createTime = { $lte: new Date(toDate) };
         if (toDate && fromDate) condition.createTime = { $gte: new Date(fromDate), $lte: new Date(toDate) };
-        let fields = { _id: 1, title: 1, linkTitle: 1, img: 1, cateID: 1, createTime: 1, active: 1, city: 1, userID: 1, email: 1, updateTime: 1 };
+        let fields = { _id: 1, title: 1, linkTitle: 1, description: 1, img: 1, cateID: 1, createTime: 1, active: 1, city: 1, userID: 1, email: 1, updateTime: 1 };
         let listNews = await News.aggregate([
                 { $match: condition },
                 {
@@ -640,9 +663,9 @@ exports.getListUser = async(req, res, next) => {
         if (toDate && !fromDate) condition.updatedAt = { $lte: new Date(toDate) };
         if (toDate && fromDate) condition.updatedAt = { $gte: new Date(fromDate), $lte: new Date(toDate) };
 
-        let fields = { avatarUser: 1, idRaoNhanh365: 1, userName: 1, email: 1, phoneTK: 1, createdAt: 1, money: 1 };
+        let fields = { avatarUser: 1, idRaoNhanh365: 1, userName: 1,authentic: 1, email: 1, phoneTK: 1, createdAt: 1, "inforRN365.money": 1 };
 
-        let listUsers = await functions.pageFindWithFields(Users, condition, fields, skip, limit);
+        let listUsers = await functions.pageFindWithFields(Users, condition, fields, {_id: 1}, skip, limit);
         const totalCount = await Users.countDocuments(condition);
         return functions.success(res, 'Get list news success', { totalCount, listUsers })
     } catch (error) {
@@ -662,7 +685,7 @@ exports.getAndCheckDataUser = async(req, res, next) => {
                 phoneTK: phoneTK,
                 email: email,
                 phone: phone,
-                money: Number(money) + Number(cong) - Number(tru)
+                "inforRN365.money": Number(money) + Number(cong) - Number(tru)
             }
             return next();
         }
@@ -724,6 +747,29 @@ exports.deleteUser = async(req, res, next) => {
     }
 }
 
+//------------------tin spam
+exports.getListNewsSpam = async(req, res, next) => {
+    try{
+        let {page, pageSize, fromDate, toDate} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 20;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
+        let condition = {duplicate: {$ne: ""}};
+        if(fromDate && !toDate) condition.createTime = {$gte: new Date(fromDate)};
+        if(!fromDate && toDate) condition.createTime = {$lte: new Date(toDate)};
+        if(fromDate && toDate) condition.createTime = {$gte: new Date(fromDate), $lte: new Date(toDate)};
+
+        let fields = {_id: 1, title: 1, linkTitle: 1, createTime: 1, img: 1, active: 1, duplicate: 1, userID: 1, cateID: 1};
+        let total = await functions.findCount(News, condition);
+        let listNewsSpam = await functions.pageFindWithFields(News, condition, fields, {_id: 1}, skip, pageSize);
+        return functions.success(res, "Get list news spam success:", {total, data: listNewsSpam});
+    }catch(error) {
+        return functions.setError(res, error.message);
+    }
+}
+
 //-------------------------------------------------------controller lich su nap the -------------------------
 
 exports.getListHistory = async(req, res, next) => {
@@ -749,6 +795,9 @@ exports.getListHistory = async(req, res, next) => {
         if (seri) condition.seri = new RegExp(seri, 'i');
         let fields = { _id: 1, userId: 1, seri: 1, time: 1, price: 1 };
         let listHistory = await History.aggregate([
+            { $sort: { _id: 1 } },
+            { $skip: skip },
+            { $limit: limit },
             { $match: condition },
             {
                 $lookup: {
@@ -758,11 +807,8 @@ exports.getListHistory = async(req, res, next) => {
                     as: "matchedDocuments"
                 }
             },
-            { $sort: { _id: 1 } },
-            { $skip: skip },
-            { $limit: limit }
         ])
-        const totalCount = await News.countDocuments(condition);
+        const totalCount = await History.countDocuments(condition);
         return functions.success(res, 'Get list history success', { totalCount, listHistory })
     } catch (error) {
         return functions.setError(res, error.message);
@@ -806,7 +852,12 @@ exports.getListBlog = async(req, res, next) => {
             titleRelate: 1,
             contentRelate: 1
         }
-        const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit);
+        
+        let listBlog = await functions.pageFind(Blog, listCondition, { _id: 1 }, skip, limit);
+        for(let i=0; i<listBlog.length; i++) {
+            let linkImage = `https://raonhanh365.vn/pictures/news/${listBlog[i].image}`;
+            listBlog[i].linkImage = linkImage;
+        }
         const totalCount = await functions.findCount(Blog, listCondition);
         return functions.success(res, "get list blog success", { totalCount: totalCount, data: listBlog });
     } catch (error) {
@@ -820,8 +871,10 @@ exports.getAndCheckDataBlog = async(req, res, next) => {
         if(req.files) {
             image = req.files.image;
         }
-        let { adminId, title, url, des, keyword, sapo, active, hot, detailDes, titleRelate, contentRelate, newStatus, date, dateLastEdit } = req.body;
-        let fields = [adminId, title, url, image, des, keyword, sapo, detailDes, titleRelate, contentRelate];
+        if(!image) return functions.setError(res, `Missing input image`, 405);
+        let {title, url, des, keyword, sapo, active, hot, detailDes, titleRelate, contentRelate, newStatus, date, dateLastEdit } = req.body;
+        let fields = [title, url, image, des, keyword, sapo, detailDes, titleRelate, contentRelate];
+        let adminId = req.infoAdmin._id;
         for (let i = 0; i < fields.length; i++) {
             if (!fields[i])
                 return functions.setError(res, `Missing input value ${i + 1}`, 404);
@@ -855,7 +908,7 @@ exports.getAndCheckDataBlog = async(req, res, next) => {
 exports.createBlog = async(req, res, next) => {
     try {
         let fields = req.info;
-        let newIdBlog = functions.getMaxIdByField(Blog, '_id');
+        let newIdBlog = await functions.getMaxIdByField(Blog, '_id');
         fields._id = newIdBlog;
 
         if (!fields.date) {
@@ -893,7 +946,7 @@ exports.updateBlog = async(req, res, next) => {
             let linkImg = existsBlog.image.split("/");
             let len = linkImg.length;
             // functions.deleteImgRaoNhanh(folderImg, linkImg[len-2], linkImg[len-1]);
-            fields.image = await serviceRN.uploadFileRaoNhanh(folderImg, newIdBlog, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
+            fields.image = await serviceRN.uploadFileRaoNhanh(folderImg, _id, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
 
             //cap nhat du lieu
             await Blog.findOneAndUpdate({_id: _id}, fields);
@@ -906,189 +959,51 @@ exports.updateBlog = async(req, res, next) => {
     }
 }
 
+//--------Duyet tin
+//lay ra danh sach
+exports.danhSachTinCanDuyet = async(req, res, next) => {
+    try{
+        let {page, pageSize, _id, title, updateTime, fromDate, toDate} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 30;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
+        const limit = pageSize;
+        let condition = {};
+        if(_id) condition._id = Number(_id);
+        if(title) condition.title = new RegExp(title, 'i');
+        if(updateTime) condition.updateTime = new Date(updateTime);
+        if (fromDate && !toDate) condition.updateTime = { $gte: new Date(fromDate) };
+        if (toDate && !fromDate) condition.updateTime = { $lte: new Date(toDate) };
+        if (toDate && fromDate) condition.updateTime = { $gte: new Date(fromDate), $lte: new Date(toDate) };
 
-//-------------------------------------------------------controller giá ghim tin đăng -------------------------
-//api danh sách và tìm kiếm giá ghim tin đăng
-exports.getListNewWithPin = async(req, res, next) => {
-        try {
-            if (req.body) {
-                const { _id, time, type } = req.body;
-                let query = {};
-                if (_id) {
-                    query._id = _id;
-                }
-                if (time) {
-                    query.time = time;
-                }
-                if (type && [1, 5, 3, 4].includes(type)) {
-                    query.type = type;
-                }
-                const priceList = await PriceList.find(query);
-                return functions.success(res, 'Get List Search New With Pin', { data: priceList })
-            } else {
-                const typeList = [1, 5, 3, 4];
-                const priceList = await PriceList.find({ type: { $in: typeList } });
-                return functions.success(res, 'Get ListNewWithPin', { data: priceList })
-            }
-        } catch (error) {
-            return functions.setError(res, error.message)
-        }
-    }
-    //api tạo mới ghim tin đăng
-exports.createNewWithPin = async(req, res, next) => {
-    try {
-        const {
-            time,
-            unitPrice,
-            discount,
-            intoMoney,
-            vat,
-            intoMoneyVat,
-            type,
-            cardGift,
-            newNumber
-        } = req.body;
-        if (![1, 5, 3, 4].includes(Number(type))) {
-            // kiểm tra có phải loại ghim tin
-            return res.status(400).json({ message: 'Type not vaild' });
-        }
-        // kiểm tra các trường cần phải cos
-        if (typeof discount === "number" && typeof vat === "number" &&
-            typeof type === "number" && typeof newNumber === "number" && _id !== null && cardGift !== null) {
-            // check tồn tại sản phẩm id lớn nất
-            const maxIdCategory = await PriceListRN.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            // tăng id lên 1 đơn vị
-            let _id;
-            if (maxIdCategory) {
-                _id = Number(maxIdCategory._id) + 1;
-            } else _id = 1;
-            // tạo mới tin ghim tin đăng
-            const newPriceList = new PriceListRN({
-                _id,
-                time,
-                unitPrice,
-                discount,
-                intoMoney,
-                vat,
-                intoMoneyVat,
-                type,
-                cardGift,
-                newNumber
-            });
-            const savedPriceList = await newPriceList.save();
-            return functions.success(res, 'Create Success', { data: savedPriceList })
-        } else {
-            return functions.setError(res, 'The input No Vaild', 400);
-        }
-    } catch (error) {
+        let fields = {_id: 1, title: 1, linkTitle: 1, kiem_duyet: 1, createTime: 1, updateTime: 1};
+        let total = await functions.findCount(News, {kiem_duyet: 0});
+        let listNews = await functions.pageFindWithFields(News, {kiem_duyet: 0},fields, {_id: -1}, skip, limit);
+        return functions.success(res, "Get danh sach tin can duyet thanh cong", {total, data: listNews});
+    }catch(error) {
         return functions.setError(res, error.message);
     }
 }
 
-// api sửa ghim tin đăng
-exports.putNewWithPin = async(req, res, next) => {
-    let { id } = req.body;
-    const {
-        time,
-        unitPrice,
-        discount,
-        intoMoney,
-        vat,
-        intoMoneyVat,
-        cardGift,
-        newNumber
-    } = req.body;
+//duyet tin
+exports.duyetTin = async(req, res, next) => {
     try {
-        const priceList = await PriceList.findById(id);
-        if (!priceList) {
-            return res.status(404).json({ message: '_id is notExist' });
+        let _id = req.body._id;
+        if(_id) {
+            let activeNews = await News.findOneAndUpdate({_id: _id}, {kiem_duyet: 1}, {new: true});
+            if(activeNews) {
+                return functions.success(res, "Duyet tin thanh cong!");
+            }
+            return functions.setError(res, "Tin khong ton tai!", 406);
         }
-        if (typeof discount === "number" && typeof vat === "number" &&
-            typeof type === "number" && typeof newNumber === "number" && _id !== null && cardGift !== null) {
-            priceList.time = time;
-            priceList.unitPrice = unitPrice;
-            priceList.discount = discount;
-            priceList.intoMoney = intoMoney;
-            priceList.vat = vat;
-            priceList.intoMoneyVat = intoMoneyVat;
-            priceList.cardGift = cardGift;
-            priceList.newNumber = newNumber;
-            const updatedPriceList = await priceList.save();
-            return functions.success(res, 'Put Success', { data: updatedPriceList })
-        } else {
-            return functions.setError(res, 'The input No Vaild', 400);
-        }
+        return functions.setError(res, "Missing input _id!", 405);
     } catch (error) {
-        return functions.setError(res, error.message)
+        return functions.setError(res, error.message);
     }
 }
-
-
-//-------------------------------------------------------controller giá đẩy tin đăng -------------------------
-// api danh sách và tìm kiếm đẩy tin đăng
-exports.getListPricePush = async(req, res, next) => {
-    try {
-        let condition = { type: 2 };
-        let id = req.body.id;
-        let loaiTin = req.body.loaiTin;
-        if (id) condition._id = id;
-        if (loaiTin) condition.time = { $regex: `.*${loaiTin}.*` }
-        let data = await PriceList.find(condition, {}, { unitPrice: 1 })
-        return functions.success(res, 'Get List New With Push', { data })
-    } catch (error) {
-        return functions.setError(res, error.message)
-    }
-}
-
-//api tạo mới đẩy tin đăng
-exports.createNewWithPush = async(req, res, next) => {
-    try {
-        const {
-            time,
-            unitPrice,
-            discount,
-            intoMoney,
-            vat,
-            intoMoneyVat,
-            type = 2,
-            cardGift,
-            newNumber
-        } = req.body;
-        if (typeof discount === "number" && typeof vat === "number" &&
-            typeof type === "number" && typeof newNumber === "number" && _id !== null && cardGift !== null) {
-            // check tồn tại sản phẩm id lớn nất
-            const maxIdCategory = await PriceListRN.findOne({}, { _id: 1 }).sort({ _id: -1 }).limit(1).lean();
-            let _id;
-            // nếu tồn tại tăng 1 đơn vị
-            if (maxIdCategory) {
-                _id = Number(maxIdCategory._id) + 1;
-            } else _id = 1;
-            // tạo mới tin ghim tin đăng
-            const newPriceList = new PriceListRN({
-                _id,
-                time,
-                unitPrice,
-                discount,
-                intoMoney,
-                vat,
-                intoMoneyVat,
-                type,
-                cardGift,
-                newNumber
-            });
-            const savedPriceList = await newPriceList.save();
-            return functions.success(res, 'Create Success', { data: savedPriceList })
-        } else {
-            return functions.setError(res, 'The input No Vaild', 400);
-        }
-    } catch (error) {
-        return functions.setError(res, error.message)
-    }
-}
-
-
-
-
+//---------Bao cao tin
 // tạo mới
 exports.createReport = async(req, res, next) => {
     try {
@@ -1100,7 +1015,7 @@ exports.createReport = async(req, res, next) => {
         return functions.setError(res, error.message);
     }
 }
-    // api danh sách tìm kiếm tin báo cáo
+// api danh sách tìm kiếm tin báo cáo
 exports.listReportNew = async(req, res, next) => {
         try {
             let condition = {};
@@ -1138,8 +1053,8 @@ exports.listReportNew = async(req, res, next) => {
         } catch (error) {
             return functions.setError(res, error.message)
         }
-    }
-    // api sửa tin báo cáo
+}
+// api sửa tin báo cáo
 exports.fixNewReport = async(req, res, next) => {
     try {
         const { id } = req.params;
@@ -1151,54 +1066,137 @@ exports.fixNewReport = async(req, res, next) => {
         return functions.setError(res, error.message)
     }
 }
-//-------------------------------------------------------API chiet khau nap the-------------------------
-// tạo
-exports.createDiscount = async(req, res, next) => {
+
+
+//-------------------------------------------------------controller giá ghim/day tin đăng -------------------------
+//api tạo mới ghim tin đăng
+exports.createAndUpdatePriceListPin = async(req, res, next) => {
     try {
-        const reportNewsData = req.body;
-        const newReportNews = new NetworkOperator(reportNewsData);
-        const savedReportNews = await newReportNews.save();
-        res.status(201).json(savedReportNews);
+        let {_id, time, unitPrice, discount, intoMoney, vat, intoMoneyVat, type, cardGift} = req.body;
+        if ([1, 5, 3, 4].includes(Number(type)) && time && unitPrice && intoMoney && intoMoneyVat && cardGift) {
+            let fields = {
+                time: time,
+                unitPrice: unitPrice,
+                discount: discount,
+                intoMoney: intoMoney,
+                vat: vat,
+                intoMoneyVat: intoMoneyVat,
+                type: type,
+                cardGift: cardGift
+            }
+            if(!_id) {
+                _id = await functions.getMaxIdByField(PriceList, '_id');
+                fields._id = _id;
+            }
+            let priceList = await PriceList.findOneAndUpdate({_id: _id}, fields, {new: true, upsert: true}).lean();
+            if(priceList) {
+                return functions.success(res, "Create or Update success", {priceList});
+            }
+            return functions.setError(res, "Update fail!", 406);
+        }
+        return functions.setError(res, "Missing input or type invalid!", 405);
     } catch (error) {
-        return functions.setError(res, error.message)
+        return functions.setError(res, error.message);
     }
 }
-    // api tìm kiếm và danh sách chiết khấu
+
+//api tạo mới ghim day tin
+exports.updatePriceListPush = async(req, res, next) => {
+    try {
+        let {_id, time, unitPrice, discount, intoMoney, vat, intoMoneyVat, cardGift} = req.body;
+        if (_id && time && unitPrice && intoMoney && intoMoneyVat && cardGift) {
+            let fields = {
+                time: time,
+                unitPrice: unitPrice,
+                discount: discount,
+                intoMoney: intoMoney,
+                vat: vat,
+                intoMoneyVat: intoMoneyVat,
+                cardGift: cardGift
+            }
+            let priceList = await PriceList.findOneAndUpdate({_id: _id, type: 2}, fields, {new: true});
+            if(priceList) {
+                return functions.success(res, "Update success", {priceList});
+            }
+            return functions.setError(res, "Price list not found!", 406);
+        }
+        return functions.setError(res, "Missing input value!", 405);
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+// api danh sách và tìm kiếm đẩy/ghim tin đăng 
+exports.getListPrice = async(req, res, next) => {
+    try {
+        let {page, pageSize, type, _id, time} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 30;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
+        const limit = pageSize;
+
+        if(type==1 || type==2) {
+            let condition = {};
+            if(_id) condition._id = Number(_id);
+            if(time) condition.time = new RegExp(time, 'i');
+
+            //gia ghim tin
+            if(type==1) condition.type = {$in: [1, 3, 4, 5]};
+            //gia day tin
+            if(type==2) condition.type = 2;
+            let total = await functions.findCount(PriceList, condition);
+            let priceList = await functions.pageFind(PriceList, condition, {_id: 1}, skip, limit);
+            return functions.success(res, "Lay ra danh sach gia day va ghim tin thanh cong", {total, data: priceList});
+        }
+        return functions.setError(res, "Truyen type=1, 2", 405);
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+//-------------------------------------------------------API chiet khau nap the-------------------------
+
+// api tìm kiếm và danh sách chiết khấu
 exports.getListDiscountCard = async(req, res, next) => {
     try {
-        let page = req.body.page || 1;
-        let pageSize = req.body.pageSize || 50;
-        let skip = (page - 1) * pageSize;
-        let limit = pageSize;
-        let conditions = { priceListActive: 1 };
-        let count = await NetworkOperator.find(conditions, {}).skip(skip).limit(limit).count();
+        let {page, pageSize, _id, operator} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 30;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+
+        let conditions = { active: 1 };
+        if(_id) conditions._id = Number(_id);
+        if(operator) conditions.operator = new RegExp(operator, 'i');
+
+        let count = await functions.findCount(NetworkOperator, conditions);
         let data = await NetworkOperator.find(conditions).sort({ _id: 1 }).skip(skip).limit(limit);
-        return functions.success(res, "Get List Report Success", { count, data });
+        return functions.success(res, "Get List Discount Card Success", { count, data });
     } catch (error) {
         return functions.setError(res, error.message)
     }
 }
-    // api update Discount for Card
-exports.updateDiscount = async(req, res, next) => {
-    try {
-        let { id } = req.params;
-        let { nameBefore, nameAfter, discount } = req.body;
-        //  nếu có param Id thì trả ra thông tin để sưả
-        if (id && !nameBefore) {
-            const netWorkOperator = await NetworkOperator.findOne({ _id: id })
-            return functions.success(res, "Get Data", { data: netWorkOperator });
-        } else if (id && nameBefore && nameAfter && discount) {
 
-            const update = {
-                nameBefore: nameBefore,
-                nameAfter: nameAfter,
+//chinh sua chiet khau
+exports.updateDiscountCard = async(req, res, next) => {
+    try {
+        let {_id, operator, operatorName, discount } = req.body;
+        if (_id && operator && operatorName && discount) {
+            let updateDiscount = await NetworkOperator.findOneAndUpdate({ _id: _id }, {
+                operator: operator,
+                operatorName: operatorName,
                 discount: discount
+            }, {new: true});
+            if(updateDiscount) {
+                return functions.success(res, "Update Discount Success", { data: updateDiscount });
             }
-            const upDateDiscount = await NetworkOperator.findOneAndUpdate({ _id: id }, update, {
-                new: true
-            })
-            return functions.success(res, "Update Discount Success", { data: upDateDiscount });
+            return funcitons.setError(res, "NetworkOperator not found!", 406);
         }
+        return functions.setError(res, "Missing input value!", 405);
     } catch (error) {
         return functions.setError(res, error.message)
     }
@@ -1244,7 +1242,170 @@ exports.getInfoForEdit = async(req, res, next) => {
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
-        return functions.setError(res, error.message)
+        return functions.setError(res, error.message);
+    }
+}
+
+//----------------------- xac thuc thanh toan
+
+exports.getListUserVerifyPayment = async (req, res, next) => {
+    try {
+        let {page, pageSize, fromDate, toDate} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 50;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
+
+        if (fromDate && !toDate) condition["inforRN365.time"] = { $gte: new Date(fromDate) };
+        if (toDate && !fromDate) condition["inforRN365.time"] = { $lte: new Date(toDate) };
+        if (toDate && fromDate) condition["inforRN365.time"] = { $gte: new Date(fromDate), $lte: new Date(toDate) };
+
+        let condition = {'inforRN365.xacThucLienket':{$in:[1,2]}};
+        let total = await functions.findCount(Users, condition);
+        let data = await functions.pageFind(Users, condition, {idRaoNhanh365: 1}, skip, pageSize);
+        return functions.success(res, "get list user verify paymet success", { total, data });
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+exports.adminVerifyPayment = async (req, res, next) => {
+    try {
+        // xacThucLienket: 2 => da xac thuc, 1: cho admin xac thuc
+        let { userId, active, xacThucLienket} = req.body;
+        if (!userId || !active || !xacThucLienket) {
+            return functions.setError(res, "Missing input value!", 404);
+        }
+        let user = await Users.findOne({ _id: userId }, { userName: 1 });
+        if (!user)
+            return functions.setError(res, "Users not fount!", 404);
+        if (xacThucLienket == 2) {
+            await Users.findOneAndUpdate({ _id: userId }, {
+                inforRN365: {
+                    xacThucLienket: xacThucLienket,
+                    active: active
+                }
+            }, { new: true })
+            return functions.success(res, 'admin verify payment success!');
+        }
+        await Users.findOneAndUpdate({ _id: userId }, {
+            inforRN365: {
+                cccd: null,
+                cccdFrontImg: null,
+                cccdBackImg: null,
+                bankName: null,
+                stk: null,
+                ownerName: null,
+                time: null,
+                active: 0,
+                xacThucLienket: 1
+            }
+        })
+        return functions.success(res, 'admin delete verify payment success!');
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+//-----------------------nguoi mua xac thuc thanh toan
+
+exports.getListOrderPayment = async (req, res, next) => {
+    try {
+            let page = req.body.page || 1;
+            let pageSize = req.body.pageSize || 50;
+            let skip = (page -  1)* pageSize ;
+            let limit = pageSize ;
+            let _id   = req.body.id;
+            let thoiGianTu = req.body.thoiGianTu;
+            let thoiGianDen = req.body.thoiGianDen;
+            let conditions = {};
+            if(_id) conditions._id = _id;
+            if(thoiGianDen) conditions.thoiGianDen = {$lte:{thoiGianDen}};
+            if(thoiGianTu) conditions.thoiGianTu = {$gte:{thoiGianTu}};
+            let count = await Order.aggregate([
+                {
+                    $match:conditions
+                },
+                {
+                    $lookup:{
+                        from:'Users',
+                        localField:'buyerId',
+                        foreignField:'idRaoNhanh365',
+                        as:'user'
+                    }
+                },
+                {
+                    $lookup:{
+                        from:'RN365_News',
+                        localField:'newId',
+                        foreignField:'_id',
+                        as:'new'
+                    }
+                },
+                {
+                    $count:"all"
+                }
+            ]);
+            await Order.createIndexes({buyerId:1,newId:1});
+
+            let data = await Order.aggregate([
+                {
+                    $match:conditions
+                },
+                {$sort:{_id:1}},
+                {$skip: skip},
+                {$limit: limit},
+                {
+                    $lookup:{
+                        from:'Users',
+                        localField:'buyerId',
+                        foreignField:'idRaoNhanh365',
+                        as:'Buyer'
+                    }
+                },{
+                    $lookup:{
+                        from:'RN365_News',
+                        localField:'newId',
+                        foreignField:'_id',
+                        as:'New'
+                    }
+                },
+                {
+                    $project: {
+                        "_id": "$_id",
+                        "buyerId": "$buyerId",
+                        "sellerId": "$sellerId",
+                        "newId": "$newId",
+                        "paymentType": "$paymentType",
+                        "buyTime": "$buyTime",
+                        "orderActive": "$orderActive",
+                        "amountPaid": "$amountPaid",
+                        "buyerName": "$Buyer.userName",
+                        "newsTitle": "$New.title",
+                    }
+                },
+            ]);
+
+            return functions.success(res, "get list user verify paymet success", {  count, data });
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+exports.adminVerifyOrder = async (req, res, next) => {
+    try {
+        let { orderId, active } = req.body;
+        if (!orderId || !active) {
+            return functions.setError(res, "Missing input value!", 404);
+        }
+        let order = await Order.findOne({ _id: orderId });
+        if (!order)
+            return functions.setError(res, "Order not fount!", 404);
+        await Order.findOneAndUpdate({ _id: orderId }, { orderActive: active })
+        return functions.success(res, 'admin verify payment success!');
+    } catch (error) {
+        return functions.setError(res, error.message);
     }
 }
 
@@ -1282,19 +1443,61 @@ exports.getListTagsIndex = async(req, res, next) => {
 
             //danh sach nganh nghe + tag nganh nghe
             if(type == 6) listCondition.classify = {$in: [12, 13]};
-
-            if(fromDate && !toDate) listCondition.time = {$gte: new Date(fromDate)};
-            if(!fromDate && toDate) listCondition.time = {$lte: new Date(toDate)};
-            if(fromDate && toDate) listCondition.time = {$gte: new Date(fromDate), $lte: new Date(toDate)};
+            if(fromDate && !toDate && functions.checkDate(fromDate)) {
+                listCondition.time = {$gte: functions.convertTimestamp(fromDate)};
+            }
+            if(!fromDate && toDate && functions.checkDate(toDate)) {
+                listCondition.time = {$lte: functions.convertTimestamp(toDate)};
+            }
+            if(fromDate && toDate && functions.checkDate(fromDate) && functions.checkDate(toDate)) {
+                listCondition.time = {$gte: functions.convertTimestamp(fromDate), $lte: functions.convertTimestamp(toDate)};
+            }
 
             if(_id) listCondition._id = Number(_id);
-            let fieldsGet = {_id: 1, link: 1, time: 1}
+            let fieldsGet = {_id: 1, link: 1, cateId: 1, tags: 1, time: 1}
             const listTagsIndex = await functions.pageFindWithFields(TagIndex, listCondition, fieldsGet, { _id: -1 }, skip, limit); 
             const totalCount = await functions.findCount(TagIndex, listCondition);
             return functions.success(res, "get list tags index success", {totalCount: totalCount, data: listTagsIndex });
         }
         return functions.setError(res, "type = 1, 2, 3, 4, 5, 6", 405);
     } catch (error) {
-        return functions.setError(res, error.message)
+        return functions.setError(res, error.message);
+    }
+}
+
+exports.deleleManyByModule = async(req, res, next) => {
+    try{
+        let moduleId = req.body.moduleId;
+        let arrId = req.body.arrId;
+        if(moduleId && arrId && arrId.length > 0) {
+            let arrIdDelete = arrId.map(idItem => parseInt(idItem));
+            //tag index
+            if(moduleId == 36) {
+                await TagIndex.deleteMany({ _id: { $in: arrIdDelete }});
+                return functions.success(res, 'xóa thành công!');
+            }
+            //chiet khau nap tien
+            if(moduleId == 39) {
+                await NetworkOperator.deleteMany({ _id: { $in: arrIdDelete }});
+                return functions.success(res, 'xóa thành công!');
+            }
+            //gia ghim day tin
+            if(moduleId == 32 || moduleId == 33) {
+                await PriceList.deleteMany({ _id: { $in: arrIdDelete }});
+                return functions.success(res, 'xóa thành công!');
+            }
+            if(moduleId == 14 || moduleId == 28 || moduleId == 29 || moduleId ==30) {
+                await News.deleteMany({ _id: { $in: arrIdDelete }});
+                return functions.success(res, 'xóa thành công!');
+            }
+            if(moduleId == 26 || moduleId == 23) {
+                await Users.deleteMany({ idRaoNhanh365: { $in: arrIdDelete }});
+                return functions.success(res, 'xóa thành công!');
+            }
+            return functions.setError(res, "Truyen dung moduleId muon xoa", 406);
+        }
+        return functions.setError(res, "Truyen moduleId va arrId dang mang", 405);
+    }catch(error) {
+        return functions.setError(res, error.message);
     }
 }
