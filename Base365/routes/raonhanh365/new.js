@@ -52,8 +52,6 @@ router.post('/getListCate',formData.parse(), newRN.getListCate);
 // quản lí tin tìm ứng viên
 router.post('/listCanNew',formData.parse(),functions.checkToken,newRN.listCanNew)
 
-// quản lí đang ứng tuyển
-// router.get('/listJobNewApply',functions.checkToken,newRN.listJobNewApply)
 
 // quản lý tin tìm việc làm
 router.post('/listJobNew',functions.checkToken,formData.parse(),newRN.listJobNew)
@@ -127,4 +125,16 @@ router.post('/tinApDungKhuyenMai',formData.parse(),functions.checkToken,newRN.ti
 
 // chỉnh sửa tin khuyến mãi
 router.post('/updateNewPromotion',formData.parse(),functions.checkToken,newRN.updateNewPromotion)
+
+// kho ảnh
+router.get('/getDataImage',functions.checkToken,newRN.getDataImage)
+
+// báo cáo tin
+router.post('/reportNew',formData.parse(),functions.checkToken,newRN.reportNew)
+
+// thông tin thả cảm xúc
+router.post('/getDataLike',formData.parse(),functions.checkToken,newRN.getDataLike)
+
+// đánh giá tài khoản
+router.post('/envaluate',formData.parse(),functions.checkToken,newRN.envaluate)
 module.exports = router;

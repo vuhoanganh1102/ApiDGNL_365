@@ -32,7 +32,7 @@ const LikeSchema = new mongoose.Schema({
     },
     userIdChat: {
         //idchat cua nguoi binh luan
-        type: String,
+        type: Number,
         default: null,
     },
     ip: {

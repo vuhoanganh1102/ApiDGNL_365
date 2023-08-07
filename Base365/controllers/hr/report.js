@@ -195,10 +195,11 @@ exports.report = async (req, res, next) => {
         if (from_date && to_date)
             subConditions['resign.created_at'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
 
-        conditions['inForPerson.employee.com_id'] = comId;
-        conditions['inForPerson.employee.ep_status'] = "Deny";
+        // conditions['inForPerson.employee.com_id'] = comId;
+        // conditions['inForPerson.employee.ep_status'] = "Deny";
         subConditions['resign.type'] = 1;
         conditions.type = { $ne: 2 };
+        subConditions['resign.com_id'] = comId;
         // số lượng nhân viên giảm biên chế
         let giamBienChe = await Users.aggregate([
             { $match: conditions },
@@ -748,6 +749,9 @@ exports.reportChart = async (req, res, next) => {
             let soluong = data.length
             return functions.success(res, 'get data success', { soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-nghi-viec.html') {
+            delete conditions['inForPerson.employee.com_id']
+            delete conditions['inForPerson.employee.ep_status']
+            subConditions['resign.com_id'] = comId;
             conditions.type = { $ne: 2 }
             data = await Users.aggregate([
                 { $match: conditions },
