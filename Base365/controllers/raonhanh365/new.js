@@ -23,6 +23,8 @@ const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const { default: axios } = require("axios");
 const md5 = require("md5");
 const CateDetail = require("../../models/Raonhanh365/CateDetail");
+const BaoCao = require("../../models/Raonhanh365/BaoCao");
+
 dotenv.config();
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
@@ -659,18 +661,10 @@ exports.getNew = async (req, res, next) => {
             link: 1
         };
         let data = await New.aggregate([
-            {
-                $sort: { pinHome: -1 },
-            },
-            {
-                $match: { buySell: 2, sold: 0, active: 1 },
-            },
-            {
-                $limit: 50,
-            },
-            {
-                $sort: { createTime: -1, order: -1 }
-            },
+            { $sort: { pinHome: -1 }, },
+            { $match: { buySell: 2, sold: 0, active: 1 }, },
+            { $limit: 50, },
+            { $sort: { createTime: -1, order: -1 } },
             {
                 $lookup: {
                     from: "Users",
@@ -680,13 +674,9 @@ exports.getNew = async (req, res, next) => {
                 },
             },
             { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-            {
-                $project: searchItem,
-            },
+            { $project: searchItem, },
 
         ]);
-
-
         for (let i = 0; i < data.length; i++) {
             data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-c${data[i]._id}.html`;
             data[i].img = await raoNhanh.getLinkFile(data[i].userID, data[i].img, data[i].cateID, 2)
@@ -953,9 +943,6 @@ exports.searchNew = async (req, res, next) => {
             condition.linkTitle = { $regex: `.*${query}.*` };
         }
         if (cateID) condition.cateID = Number(cateID);
-        if (brand) condition.brand = Number(brand);
-        if (wattage) condition.wattage = Number(wattage);
-        if (han_su_dung) condition.han_su_dung = Number(han_su_dung);
         if (city) condition.city = Number(city);
         if (district) condition.district = Number(district);
         if (ward) condition.ward = Number(ward);
@@ -971,7 +958,6 @@ exports.searchNew = async (req, res, next) => {
             condition["electroniceDevice.typeHardrive"] = Number(typeHardrive);
         if (screen) condition["electroniceDevice.screen"] = Number(screen);
         if (size) condition["electroniceDevice.size"] = Number(size);
-        if (brand) condition["electroniceDevice.brand"] = Number(brand);
         if (warranty) condition["electroniceDevice.warranty"] = Number(warranty);
         if (device) condition["electroniceDevice.device"] = Number(device);
         if (capacity) condition["electroniceDevice.capacity"] = Number(capacity);
@@ -979,7 +965,6 @@ exports.searchNew = async (req, res, next) => {
         if (phien_ban) condition["electroniceDevice.phien_ban"] = Number(phien_ban);
         if (machineSeries)
             condition["electroniceDevice.machineSeries"] = Number(machineSeries);
-        if (hang) condition["vehicle.hang"] = Number(hang);
         if (loai_xe) condition["vehicle.loai_xe"] = Number(loai_xe);
         if (xuat_xu) condition["vehicle.xuat_xu"] = Number(xuat_xu);
         if (mau_sac) condition["vehicle.mau_sac"] = Number(mau_sac);
@@ -1034,7 +1019,6 @@ exports.searchNew = async (req, res, next) => {
         if (allDay) condition["ship.allDay"] = Number(allDay);
         if (loai_hinh_sp) condition["beautifull.loai_hinh_sp"] = Number(loai_hinh_sp);
         if (loai_sanpham) condition["beautifull.loai_sanpham"] = Number(loai_sanpham);
-        if (han_su_dung) condition["beautifull.han_su_dung"] = han_su_dung;
         if (hang_vattu) condition["beautifull.hang_vattu"] = hang_vattu;
         if (loai_thiet_bi) condition["wareHouse.loai_thiet_bi"] = loai_thiet_bi;
         if (hang) condition["wareHouse.hang"] = Number(hang);
@@ -1700,7 +1684,7 @@ exports.getDetailNew = async (req, res, next) => {
         }
 
         // tìm kiếm tin tương tự
-        tintuongtu = await raoNhanh.tinTuongTu(res, New, check, id_new,userIdRaoNhanh,LoveNews);
+        tintuongtu = await raoNhanh.tinTuongTu(res, New, check, id_new, userIdRaoNhanh, LoveNews);
 
         // lấy comment 
         ListComment = await raoNhanh.getComment(res, Comments, LikeRN, linkTitle, sort, cm_start, cm_limit);
@@ -1731,8 +1715,6 @@ exports.getDetailNew = async (req, res, next) => {
         // lấy tổng số lượng comment
         let soComment = await Comments.countDocuments({ url: linkTitle })
 
-
-
         data[0].ListComment = ListComment;
         data[0].ListLike = ListLike;
         data[0].tintuongtu = tintuongtu;
@@ -1747,7 +1729,10 @@ exports.getDetailNew = async (req, res, next) => {
             let Biddingg = await raoNhanh.getDataBidding(res, Bidding, id_new, Evaluate)
             return functions.success(res, "get data success", { data, Bidding: Biddingg });
         }
-        //data[`${cate_Special}`] = await raoNhanh.getDataNewDetail(data[`${cate_Special}`])
+        if(cate_Special){
+            data[`${cate_Special}`] = await raoNhanh.getDataNewDetail(data[`${cate_Special}`])
+        }
+        
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.error(error)
@@ -2145,6 +2130,9 @@ exports.newisbidding = async (req, res, next) => {
                     'inforRN365.store_name': 1, lastActivedAt: 1, time_login: 1
                 },
             )
+            if (data[i].user.avatarUser) data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365, data[i].user.avatarUser)
+            if (nguoidang.avatarUser) nguoidang.avatarUser = await raoNhanh.getLinkAvatarUser(nguoidang.idRaoNhanh365, nguoidang.avatarUser)
+
             data[i].nguoidang = nguoidang
         }
 
@@ -2922,8 +2910,6 @@ exports.napTien = async (req, res, next) => {
                     content: 'Nạp tiền',
                     networkOperatorName: nhaCungCap,
                     time: ngay_nap,
-
-
                 })
             }
             return functions.setError(res, 'mã thẻ sai', 400)
@@ -3226,7 +3212,6 @@ exports.getNewForDiscount = async (req, res, next) => {
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
-        console.log("🚀 ~ file: new.js:3342 ~ exports.getNewForDiscount= ~ error:", error)
         return functions.setError(res, error.message)
     }
 }
@@ -3332,6 +3317,116 @@ exports.getDataImage = async (req, res, next) => {
             if (!data.find(item => item.split('/').reverse()[0] == img)) data.push(khoAnh[i]);
         }
         return functions.success(res, 'get data success', { data })
+    } catch (error) {
+        return functions.setError(res, error.message)
+    }
+}
+
+// báo cáo tin
+exports.reportNew = async (req, res, next) => {
+    try {
+        let userId = req.user.data.idRaoNhanh365;
+        let idnew = Number(req.body.id);
+        let vande = Number(req.body.vande);
+        let mota = req.body.mota;
+        let time = new Date().getTime() / 1000;
+
+        if (idnew && vande && mota) {
+            let check = await New.findById(idnew);
+            if (check) {
+                let id = await functions.getMaxID(BaoCao) + 1 || 1;
+                await BaoCao.create({
+                    _id: id,
+                    user_baocao: userId,
+                    new_user: check.userID,
+                    tgian_baocao: time,
+                    van_de: vande,
+                    mo_ta: mota,
+                    new_baocao: idnew
+                })
+                return functions.success(res, 'Report success')
+            }
+            return functions.setError(res, 'Không tìm thấy tin', 404)
+        }
+        return functions.setError(res, 'Missing data', 400)
+    } catch (error) {
+        return functions.setError(res, error.messsage)
+    }
+}
+
+// thông tin thả cảm xúc
+exports.getDataLike = async (req, res, next) => {
+    try {
+        let url = req.body.url;
+        let type = Number(req.body.type) || 1;
+        if (url) {
+            let dataa = await LikeRN.aggregate([
+                { $match: { forUrlNew: url } },
+                {
+                    $lookup: {
+                        from: 'Users',
+                        localField: 'userIdChat',
+                        foreignField: 'idRaoNhanh365',
+                        as: 'user'
+                    }
+                },
+                { $unwind: '$user' },
+                {
+                    $project: { type: 1, user: { userName: 1, avatarUser: 1, idRaoNhanh365: 1 } }
+                }
+            ])
+            if (dataa.length !== 0) {
+                for (let i = 0; i < dataa.length; i++) {
+                    if (dataa[i].user.avatarUser) dataa[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(dataa[i].user.idRaoNhanh365, dataa[i].user.avatarUser)
+                }
+                let data = dataa.filter(item => item.type === type)
+                let soluong1 = dataa.filter(item => item.type === 1).length;
+                let soluong2 = dataa.filter(item => item.type === 2).length;
+                let soluong3 = dataa.filter(item => item.type === 3).length;
+                let soluong4 = dataa.filter(item => item.type === 4).length;
+                let soluong5 = dataa.filter(item => item.type === 5).length;
+                let soluong6 = dataa.filter(item => item.type === 6).length;
+                let soluong7 = dataa.filter(item => item.type === 7).length;
+
+                let soluong = { soluong1, soluong2, soluong3, soluong4, soluong5, soluong6, soluong7 }
+                return functions.success(res, 'get data success', { soluong, data })
+            }
+            return functions.success(res, 'get data success', { soluong: 0, data: [] })
+        }
+        return functions.setError(res, 'missing data input', 400)
+    } catch (error) {
+        return functions.setError(res, error.message)
+    }
+}
+
+// đánh giá tài khoản
+exports.envaluate = async (req, res, next) => {
+    try {
+        let userId = req.user.data.idRaoNhanh365;
+        let us_bl = req.body.us_bl;
+        let so_sao = req.body.so_sao || 1;
+        let noi_dung_dgia = req.body.noi_dung_dgia;
+        let tgian_bluan = new Date();
+        if (us_bl && noi_dung_dgia) {
+            let check = await Evaluate.findOne({ userId, blUser: us_bl })
+            if (check) {
+                return functions.setError(res, 'Bạn đã đánh giá tài khoản này', 400)
+            }
+            let id = await functions.getMaxID(Evaluate) + 1 || 1;
+            await Evaluate.create({
+                _id: id,
+                userId,
+                blUser: us_bl,
+                stars: so_sao,
+                comment: noi_dung_dgia,
+                time: tgian_bluan,
+                active: 1,
+                tgianHetcs: 0,
+                csbl: 0
+            })
+            return functions.success(res, 'Đánh giá tài khoản thành công')
+        }
+        return functions.setError(res, 'missing data', 400)
     } catch (error) {
         return functions.setError(res, error.message)
     }

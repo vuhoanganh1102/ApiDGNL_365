@@ -49,30 +49,57 @@ exports.getListCartByUserId = async (req, res, next) => {
 exports.addCart = async (req, res, next) => {
   try {
     let userId = req.user.data.idRaoNhanh365;
-    let { newsId, quantity, type, status, totalMoney } = req.body;
-    if (!newsId || !quantity) {
-      return functions.setError(res, "Missing input value!", 404);
+    let idnew = Number(req.body.id);
+    let soluong = Number(req.body.soluong);
+    let phanloai = req.body.phanloai;
+    // trang thai = 1: vao gio hang;  0: mua ngay dat coc
+    let trangthai = Number(req.body.trangthai);
+    let tongtien = Number(req.body.tongtien);
+    let ngaydathang = new Date();
+
+    if (idnew && soluong && tongtien && phanloai) {
+      if (
+        functions.checkNumber(soluong) && functions.checkNumber(tongtien) &&
+        functions.checkNumber(trangthai) && soluong > 0 && tongtien > 0) {
+
+        let checkGh = await Cart.findOne({ userId, newsId: idnew, type: phanloai, status: trangthai }).lean();
+        if (checkGh) {
+          await Cart.findByIdAndUpdate(checkGh._id, { $inc: { quantity: +soluong, total: +tongtien }, date: ngaydathang })
+        } else {
+          if (trangthai === 0) {
+            await Cart.deleteOne({ userId, trangthai: 0 });
+            let id = await functions.getMaxID(Cart) + 1 || 1;
+            await Cart.create({
+              _id: id,
+              date: ngaydathang,
+              userId,
+              newsId: idnew,
+              type: phanloai,
+              quantity: soluong,
+              total: tongtien,
+              status: trangthai,
+            })
+          }else if(trangthai === 1){
+            let id = await functions.getMaxID(Cart) + 1 || 1;
+            await Cart.create({
+              _id: id,
+              date: ngaydathang,
+              userId,
+              newsId: idnew,
+              type: phanloai,
+              quantity: soluong,
+              status: trangthai,
+            })
+          }
+        }
+        return functions.success(res, 'thành công')
+      }
+      return functions.setError(res, 'invalid number', 400)
     }
-    let time = Date.now();
-    let quantityUpdate = quantity;
-    let cart = await Cart.findOne({ userId: userId, newsId: newsId, type: type, status: status });
-    if (cart) {
-      quantityUpdate = Number(cart.quantity) + Number(quantity);
-      await Cart.findOneAndUpdate({ _id: cart._id }, {
-        quantity: quantityUpdate, type, totalMoney, date: time
-      });
-      return functions.success(res, 'Add cart RN365 success!');
-    }
-    let newIdCart = await functions.getMaxIdByField(Cart, '_id');
-    let fields = { _id: newIdCart, userId: userId, newsId: newsId, quantity: quantity, type: type, date: time };
-    if (status == 0) {
-      fields.total = totalMoney;
-      await Cart.deleteMany({ userId: userId, status: 0 });
-    }
-    cart = new Cart(fields);
-    await cart.save();
-    return functions.success(res, 'Add cart RN365 success!');
+
+    return functions.setError(res, 'missing data', 400)
   } catch (e) {
+    console.log("🚀 ~ file: cart.js:100 ~ exports.addCart= ~ e:", e)
     return functions.setError(res, e.message);
   }
 }
@@ -95,3 +122,5 @@ exports.removeCart = async (req, res, next) => {
     return functions.setError(res, "Error from server", 500);
   }
 }
+
+// thay đổi số lượng trong giỏ hàng

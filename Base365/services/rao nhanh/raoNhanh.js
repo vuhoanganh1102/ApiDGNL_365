@@ -382,7 +382,7 @@ exports.searchItem = async (type) => {
 }
 
 // lấy tin tương tự cho chi tiết tin
-exports.tinTuongTu = async (res, New, check, id_new, userId,LoveNews) => {
+exports.tinTuongTu = async (res, New, check, id_new, userId, LoveNews) => {
     try {
         let tintuongtu = await New.aggregate([
             { $match: { cateID: check.cateID, active: 1, sold: 0, _id: { $ne: id_new } } },
@@ -609,7 +609,7 @@ exports.cateDetail = async (cateID, item, id) => {
 exports.switchCase = (item) => {
     switch (item) {
         case 'microprocessor':
-            return 'brand'
+            return 'processor'
         case 'ram':
             return 'capacity'
         case 'hardDrive':
@@ -623,22 +623,22 @@ exports.switchCase = (item) => {
         case 'brand':
             return 'brand'
         case 'machineSeries':
-            return brand.line   // chưa chắc chắn
-        // case device:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
+            return 'brand.line' 
+        case 'device':
+            return 'allType'
+        case 'loai_xe':
+            return 'allType'
+        case 'kich_co':
+            return 'size'
+        case 'chat_lieu_khung':
+            return 'productMaterial'
+        case 'dong_xe':
+            return 'brand.line'
+        case 'dung_tich':
+            return 'capacity'
+        case 'loai_thiet_bi':
+            return 'allType'
+        // case cong_suat:
         //     return capacity
         // case ram:
         //     return capacity
@@ -670,6 +670,24 @@ exports.copyFolder = async (imgOld, folderNew) => {
             console.error(err)
             return false
         }
+    });
+    return true
+}
+
+// send chat
+exports.sendChat = async (id_nguoigui, id_nguoinhan, noidung) => {
+    await axios({
+        method: "post",
+        url: "http://43.239.223.142:9000/api/V2/Notification/SendNewNotification_v2",
+        data: {
+            'UserId': id_nguoinhan,
+            'SenderId': id_nguoigui,
+            'Message': noidung,
+            'Type': 'text',
+            'Title': "",
+            'Link': '',
+        },
+        headers: { 'Content-Type': 'application/json' }
     });
     return true
 }

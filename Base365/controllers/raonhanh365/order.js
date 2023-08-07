@@ -5,6 +5,7 @@ const Order = require('../../models/Raonhanh365/Order');
 const Bidding = require('../../models/Raonhanh365/Bidding');
 const raoNhanh = require('../../services/rao nhanh/raoNhanh');
 const Cart = require('../../models/Raonhanh365/Cart');
+const Notify = require('../../models/Raonhanh365/Notify');
 
 // đặt hàng
 exports.order = async (req, res, next) => {
@@ -28,19 +29,16 @@ exports.order = async (req, res, next) => {
         let idRaoNhanh365 = req.user.data.idRaoNhanh365;
         let status = 0;
         let amountPaid = 0;
-        if (codeOrder && codeOrder.length !== 0) {
+        if (Array.isArray(codeOrder)) {
             for (let i = 0; i < codeOrder.length; i++) {
-                if (phone && deliveryAddress && sellerId[i] &&
-                    note && paymentType && totalProductCost[i] &&
-                    promotionType[i] && promotionValue[i] && shipFee[i] && shipType[i]
+                if (phone && deliveryAddress && sellerId[i]
+                    && paymentType && totalProductCost[i] &&
+                    shipFee[i] && shipType[i]
                     && tien_ttoan_ctra && paymentMethod && cartID[i] && unitPrice[i]) {
                     if (await functions.checkNumber(tien_ttoan_ctra) === false
-                        || await functions.checkNumber(totalProductCost[i]) === false
-                        || await functions.checkNumber(promotionValue[i]) === false
-                        || await functions.checkNumber(shipFee[i]) === false) {
+                        || await functions.checkNumber(totalProductCost[i]) === false) {
                         return functions.setError(res, 'invalid number', 400)
                     }
-
                     let check_money = await User.findOne({ idRaoNhanh365 })
                     if (!check_money) {
                         return functions.setError(res, 'người dùng không tồn tại', 400)
@@ -55,7 +53,7 @@ exports.order = async (req, res, next) => {
                     }
                     let dataCart = await Cart.findById(cartID[i], { newsId: 1, quantity: 1 })
                     if (!dataCart) {
-                        return functions.setError(res, 'hàng không tồn tại')
+                        return functions.setError(res, 'hàng không tồn tại', 400)
                     }
                     if (paymentType === 1) {
                         amountPaid = totalProductCost[i]
@@ -76,7 +74,7 @@ exports.order = async (req, res, next) => {
                     await Order.create({
                         _id, codeOrder: codeOrder[i], phone, deliveryAddress, sellerId: sellerId[i], note, paymentType,
                         totalProductCost: totalProductCost[i], promotionType: promotionType[i], promotionValue: promotionValue[i], shipFee: shipFee[i], shipType: shipType[i],
-                        amountPaid, paymentMethod, unitPrice: unitPrice[i], buyerId: idRaoNhanh365, status
+                        amountPaid, paymentMethod, unitPrice: unitPrice[i], buyerId: idRaoNhanh365, status, newId: dataCart.newsId
                     }
                     )
                     if (paymentMethod == 0) {
@@ -90,11 +88,12 @@ exports.order = async (req, res, next) => {
                     return functions.setError(res, 'missing data', 404)
                 }
             }
+            return functions.success(res, 'order success')
         }
-        return functions.success(res, 'order success')
+        return functions.setError(res, 'missing data', 404)
     } catch (error) {
         console.log("🚀 ~ file: order.js:43 ~ exports.order= ~ error:", error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 // Đấu thầu
@@ -133,13 +132,11 @@ exports.bidding = async (req, res, next) => {
             promotionFile = await raoNhanh.uploadFileRaoNhanh('avt_dthau', userID, uploadfile.promotionFile, ['.jpg', '.png', '.docx', '.pdf'])
         }
         await Bidding.create({ _id, newId, userName, userIntro, userID, productName, productDesc, status, price, priceUnit, productLink, userFile, userProfile, userProfileFile, promotion, promotionFile })
-        return functions.success(res, 'bidding success', { id:_id })
+        return functions.success(res, 'bidding success', { id: _id })
     } catch (error) {
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
-
-
 
 // quản lý đơn hàng mua
 exports.manageOrderBuy = async (req, res, next) => {
@@ -328,13 +325,13 @@ exports.manageOrderBuy = async (req, res, next) => {
                 data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
             }
             if (data[i].user && data[i].user.avatarUser) {
-                data[i].user.avatarUser = await raoNhanh.getAvatarUser(data[i].user.avatarUser);
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.avatarUser);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
         console.log("🚀 ~ file: order.js:370 ~ exports.manageOrderBuy= ~ error:", error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 
@@ -355,7 +352,8 @@ exports.manageOrderSell = async (req, res, next) => {
         let sl_daHuy = await Order.find({ sellerId, status: 4 }).count();
         let sl_hoanTat = await Order.find({ sellerId, status: 5 }).count();
         let searchItem = {
-            sellerId: 1, new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 }, user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
+            sellerId: 1, new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 },
+            user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
 
         };
@@ -363,7 +361,7 @@ exports.manageOrderSell = async (req, res, next) => {
 
             data = await Order.aggregate([
                 {
-                    $match: { sellerId, status: 0, orderActive: 1 }
+                    $match: { sellerId, status: 0 }
                 },
                 { $skip: skip },
                 { $limit: limit },
@@ -422,7 +420,7 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-dang-giao-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
-                    $match: { sellerId, status: 2, orderActive: 1 }
+                    $match: { sellerId, status: 2 }
                 },
                 { $skip: skip },
                 { $limit: limit },
@@ -450,7 +448,7 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-da-giao-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
-                    $match: { sellerId, status: 3, orderActive: 1 }
+                    $match: { sellerId, status: 3 }
                 },
                 { $skip: skip },
                 { $limit: limit },
@@ -478,7 +476,7 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
-                    $match: { sellerId, status: 4, orderActive: 1 }
+                    $match: { sellerId, status: 4 }
                 },
                 { $skip: skip },
                 { $limit: limit },
@@ -506,7 +504,7 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
-                    $match: { sellerId, status: 5, orderActive: 1 }
+                    $match: { sellerId, status: 5 }
                 },
                 { $skip: skip },
                 { $limit: limit },
@@ -539,11 +537,14 @@ exports.manageOrderSell = async (req, res, next) => {
             if (data[i].new.img) {
                 data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
             }
+            if (data[i].user && data[i].user.avatarUser) {
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.avatarUser);
+            }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
         console.log("🚀 ~ file: order.js:422 ~ exports.manageOrderSell= ~ error:", error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 
@@ -553,39 +554,132 @@ exports.statusOrder = async (req, res, next) => {
         let status = Number(req.body.status);
         let orderId = Number(req.body.orderId);
         let userID = req.user.data.idRaoNhanh365;
-        let check = await Order.findById(orderId);
+        let check = await Order.aggregate([
+            { $match: { _id: orderId } },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'sellerId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'nguoiban'
+                }
+            },
+            { $unwind: '$nguoiban' },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'buyerId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'nguoimua'
+                }
+            },
+            { $unwind: '$nguoimua' },
+            {
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'newId',
+                    foreignField: '_id',
+                    as: 'new'
+                }
+            },
+            { $unwind: '$new' },
+            {
+                $project: {
+                    _id: 1,
+                    sellerId: 1,
+                    buyerId: 1,
+                    nguoiban: { _id: 1, chat365_secret: 1, chat365_id: 1 },
+                    nguoimua: { _id: 1, chat365_secret: 1, chat365_id: 1 },
+                    newId: 1,
+                    status: 1,
+                    title: 'new.title'
+                }
+            }
+
+        ]);
         if (!check || check.length === 0) {
             return functions.setError(res, 'không tìm thấy đơn hàng', 400)
         }
+        check = check[0]
         if (await functions.checkNumber(status) === false) {
             return functions.setError(res, 'invalid data', 400)
         }
+        let id = await functions.getMaxID(Notify) + 1 || 1;
         if (userID === check.sellerId) {
             if (status === 1) {
-                let sellerConfirmTime = new Date(Date.now());
+                let sellerConfirmTime = new Date();
                 await Order.findByIdAndUpdate(orderId, { sellerConfirmTime, status })
+                let noi_dung = "thông báo xác nhận sản phẩm mua và đang xử lý";
+                var noidunggui = `thông báo xác nhận sản phẩm mua và đang xử lý ${check.title}`;
+                await Notify.create({
+                    _id:id,
+                    from: check.sellerId,
+                    newId: check.newId,
+                    to: check.buyerId,
+                    type: 5,
+                    createdAt: sellerConfirmTime,
+                    content: noi_dung
+                })
+                await raoNhanh.sendChat(check.sellerId, check.newId, noidunggui)
             } else if (status === 2) {
-                let deliveryStartTime = new Date(Date.now());
+                let deliveryStartTime = new Date();
                 await Order.findByIdAndUpdate(orderId, { deliveryStartTime, status })
+                let noi_dung = "thông báo bắt đầu giao hàng";
+                var noidunggui = `Bắt đầu giao hàng cho bạn:  ${check.title}`;
+                await Notify.create({
+                    _id:id,
+                    from: check.sellerId,
+                    newId: check.newId,
+                    to: check.buyerId,
+                    type: 6,
+                    createdAt: deliveryStartTime,
+                    content: noi_dung
+                })
+                await raoNhanh.sendChat(check.sellerId, check.newId, noidunggui)
             } else if (status === 3) {
-                let totalDeliveryTime = new Date(Date.now());
+                let totalDeliveryTime = new Date();
                 await Order.findByIdAndUpdate(orderId, { totalDeliveryTime, status })
+                let noi_dung = "thông báo giao hàng thành công";
+                var noidunggui = `Giao hàng thành công cho bạn:   ${check.title}`;
+                await Notify.create({
+                    _id:id,
+                    from: check.sellerId,
+                    newId: check.newId,
+                    to: check.buyerId,
+                    type: 8,
+                    createdAt: totalDeliveryTime,
+                    content: noi_dung
+                })
+                await raoNhanh.sendChat(check.sellerId, check.newId, noidunggui)
             } else if (status === 4) {
-                let deliveryEndTime = new Date(Date.now());
+                let deliveryEndTime = new Date();
                 await Order.findByIdAndUpdate(orderId, {
                     deliveryEndTime, status
                 })
+                let noi_dung = "thông báo hoàn tất đơn hàng";
+                var noidunggui = `Hoàn tất đơn hàng cho bạn:    ${check.title}`;
+                await Notify.create({
+                    _id:id,
+                    from: check.sellerId,
+                    newId: check.newId,
+                    to: check.buyerId,
+                    type: 9,
+                    createdAt: deliveryEndTime,
+                    content: noi_dung
+                })
+                await raoNhanh.sendChat(check.sellerId, check.newId, noidunggui)
+                await raoNhanh.sendChat(56387, check.newId, noidunggui)
             } else if (status === 5) {
-                let deliveryFailedTime = new Date(Date.now());
+                let deliveryFailedTime = new Date();
                 let deliveryFailureReason = req.body.deliveryFailureReason || null;
                 await Order.findByIdAndUpdate(orderId, { deliveryFailedTime, deliveryFailureReason })
             } else {
-                return functions.setError(res, 'invalid data3', 400)
+                return functions.setError(res, 'invalid data', 400)
             }
         } else if (userID === check.buyerId) {
             if (status === 6) {
                 let buyerConfirm = 1;
-                let buyerConfirmTime = new Date(Date.now());
+                let buyerConfirmTime = new Date();
                 await Order.findByIdAndUpdate(orderId, { buyerConfirm, buyerConfirmTime })
             } else {
                 return functions.setError(res, 'invalid data1', 400)
@@ -596,7 +690,7 @@ exports.statusOrder = async (req, res, next) => {
         return functions.success(res, 'change status success')
     }
     catch (error) {
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }
 // Huỷ đơn hàng
@@ -636,6 +730,6 @@ exports.cancelOrder = async (req, res, next) => {
     }
     catch (error) {
         console.log("🚀 ~ file: order.js:478 ~ exports.cancelOrder= ~ error:", error)
-        return functions.setError(res, error)
+        return functions.setError(res, error.message)
     }
 }

@@ -330,19 +330,13 @@ const newSchema = new mongoose.Schema({
     order: {
         type: Number
     },
-    brand: {
-        // hãng
-        type: String,
-        default: 0
-    },
-    warranty: {
-        // bảo hành
-        type: String,
-        default: 0
-    },
-    han_su_dung: {
+    kiem_duyet: {
         type: Number,
         default: 0
+    },
+    duplicate: {
+        type: String,
+        default: ""
     },
     // đô điện tử
     electroniceDevice: {
@@ -376,8 +370,18 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: 0
         },
+        brand: {
+            // hãng
+            type: String,
+            default: 0
+        },
         machineSeries: {
             // dòng máy
+            type: String,
+            default: 0
+        },
+        warranty: {
+            // bảo hành
             type: String,
             default: 0
         },
@@ -400,6 +404,10 @@ const newSchema = new mongoose.Schema({
     },
     // xe cộ
     vehicle: {
+        hang: {
+            type: String,
+            default: 0
+        },
         loai_xe: {
             type: String,
             default: 0
@@ -417,6 +425,10 @@ const newSchema = new mongoose.Schema({
             default: 0
         },
         chat_lieu_khung: {
+            type: String,
+            default: 0
+        },
+        baohanh: {
             type: String,
             default: 0
         },
@@ -628,6 +640,10 @@ const newSchema = new mongoose.Schema({
             type: Number,
             default: 0
         },
+        han_su_dung: {
+            type: Number,
+            default: 0
+        },
         hang_vattu: {
             type: String,
             default: 0
@@ -637,6 +653,10 @@ const newSchema = new mongoose.Schema({
     wareHouse: {
         loai_thiet_bi: {
             type: Number,
+            default: 0
+        },
+        hang: {
+            type: String,
             default: 0
         },
         cong_suat: {
@@ -794,6 +814,10 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: 0
         },
+        brand:{
+            type: String,
+            default: 0
+        }
     },
     // thông tin bán hàng
     infoSell: {
@@ -864,6 +888,10 @@ const newSchema = new mongoose.Schema({
     },
     bidding:{
         han_bat_dau:{
+            type:Date,
+            default: null
+        },
+        han_su_dung:{
             type:Date,
             default: null
         },

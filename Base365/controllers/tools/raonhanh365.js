@@ -260,7 +260,7 @@ exports.updateNewDescription = async (req, res, next) => {
                     if (post != null) {
                         await New.updateOne({ _id: idnew }, {
                             $set: {
-
+                                'brand':data[i].hang,
                                 'han_su_dung': data[i].han_su_dung,
                                 'poster': data[i].canhan_moigioi,
                                 'description': data[i].new_description,
@@ -368,8 +368,8 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'com_address_num': data[i].com_address_num,
                                 'bidding.han_bat_dau': data[i].han_bat_dau,
                                 'bidding.han_su_dung': data[i].han_su_dung,
-                                tgian_bd: data[i].tgian_bd,
-                                tgian_kt: data[i].tgian_kt,
+                                'tgian_bd': data[i].tgian_bd,
+                                'tgian_kt': data[i].tgian_kt,
                                 'bidding.new_job_kind': data[i].new_job_kind,
                                 'bidding.new_file_dthau': new_file_dthau,
                                 'bidding.noidung_nhs': data[i].noidung_nhs,
