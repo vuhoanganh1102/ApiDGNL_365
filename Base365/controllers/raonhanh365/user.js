@@ -7,7 +7,7 @@ const LoveNews = require('../../models/Raonhanh365/LoveNews');
 const Order = require('../../models/Raonhanh365/Order');
 const Bidding = require('../../models/Raonhanh365/Bidding');
 const md5 = require('md5');
-const raoNhanh = require('../../services/raoNhanh');
+const raoNhanh = require('../../services/raoNhanh365/service');
 const History = require('../../models/Raonhanh365/History');
 const Evaluate = require('../../models/Raonhanh365/Evaluate');
 
