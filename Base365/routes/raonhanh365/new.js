@@ -137,4 +137,7 @@ router.post('/getDataLike',formData.parse(),functions.checkToken,newRN.getDataLi
 
 // đánh giá tài khoản
 router.post('/envaluate',formData.parse(),functions.checkToken,newRN.envaluate)
+
+// update status ứng tuyển
+router.post('/updateStatusAplly',formData.parse(),functions.checkToken,newRN.updateStatusAplly)
 module.exports = router;
