@@ -135,21 +135,29 @@ exports.listUserOnline = async (req, res, next) => {
     try {
         let data = [];
         data = await User.aggregate([
+            { $match: { isOnline: 1, idRaoNhanh365: { $ne: 0 } } },
+            { $limit: 20 },
             {
-                $match: { isOnline: 1, idRaoNhanh365: { $ne: 0 } }
-            },
-            {
-                $limit: 20
-            },
-            {
-                $project: { userName: 1, avatarUser: 1, idRaoNhanh365: 1, _id: 1, type: 1, city: 1, district: 1, address: 1 }
+                $project: {
+                    userName: 1,
+                    avatarUser: 1,
+                    idRaoNhanh365: 1,
+                    _id: 1,
+                    type: 1,
+                    city: 1,
+                    district: 1,
+                    address: 1
+                }
             },
 
         ]);
         for (let i = 0; i < data.length; i++) {
-            data
-            let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1, _id: 1, linkTitle: 1, type: 1, buySell: 1 })
-            if (tin) data[i].tin = tin
+            if (data[i].avatarUser) data[i].avatarUser = await raoNhanh.getLinkAvatarUser(data[i].idRaoNhanh365, data[i].avatarUser)
+            let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1,userID:1, _id: 1,cateID:1, linkTitle: 1, type: 1, buySell: 1, img: 1 })
+            if (tin){
+                if(tin.img) await raoNhanh.getLinkFile(tin.userID, tin.img, tin.cateID, tin.buySell)
+                data[i].tin = tin
+            } 
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
@@ -224,8 +232,6 @@ exports.profileInformation = async (req, res, next) => {
         };
         let dataUser = {}
 
-        //thong tin tk
-        let userInFor = await User.findOne({ idRaoNhanh365: userIdRaoNhanh }, fields);
 
         //tin da dang
         let numberOfNew = await New.find({ userID: userIdRaoNhanh, active: 1 }).count();
@@ -234,6 +240,15 @@ exports.profileInformation = async (req, res, next) => {
         var currentDate = new Date();  // Lấy ngày hiện tại
         var thirtyDaysAgo = new Date(currentDate.getTime() - (30 * 24 * 60 * 60 * 1000));  // Trừ 30 ngày từ ngày hiện tại
         let numberOfNewNgay = await New.find({ userID: userIdRaoNhanh, active: 1, updateTime: { $gte: thirtyDaysAgo, $lte: currentDate } }).count();
+
+
+        // số tiền đã nạp trong 30 ngày
+        let userInFor = await User.findOne({ idRaoNhanh365: userIdRaoNhanh }, fields);
+        let tienDaNap = await History.aggregate([
+            { $match: { userId: idRaoNhanh365, time: { $gt: thirtyDaysAgo } } },
+            
+        ]);
+
 
         //tin da ban
         let numberOfNewSold = await New.find({ userID: userIdRaoNhanh, active: 1, sold: 1 }).count();
@@ -271,7 +286,7 @@ exports.profileInformation = async (req, res, next) => {
         dataUser.likeCount = likeNew
         dataUser.listSellNews = listSellNews;
         dataUser.listBuyNews = listBuyNews;
-
+        dataUser.tienDaNap = tienDaNap.money;
         return functions.success(res, 'get Data User Success', { dataUser });
     } catch (err) {
         console.log("Err from server", err);

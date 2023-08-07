@@ -4,6 +4,10 @@ const RN365_BaoCaoSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    new_baocao: {
+        type: Number,
+        required: true,
+    },
     user_baocao: {
         
         type: Number,
@@ -27,7 +31,7 @@ const RN365_BaoCaoSchema = new mongoose.Schema({
     },
     da_xuly: {
         type: Number,
-        required: true,
+        default:0
     },   
 }, {
     collection: 'RN365_BaoCao',

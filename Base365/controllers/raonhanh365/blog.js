@@ -4,7 +4,7 @@ const AdminUser = require('../../models/Raonhanh365/Admin/AdminUser');
 const Category = require('../../models/Raonhanh365/Category');
 const Users = require('../../models/Users')
 const md5 = require('md5');
-const folderImg = 'img_blog';
+const folderImg = 'news';
 const raoNhanh = require('../../services/rao nhanh/raoNhanh')
 exports.getListBlogByFields = async (req, res, next) => {
     try {
@@ -90,15 +90,20 @@ exports.createBlog = async (req, res, next) => {
         fields._id = newIdBlog;
 
         if (!fields.date) {
-            fields.date = Date(Date.now());
+            fields.date = Date();
         }
         //luu anh
         let image = fields.image;
         if (!await functions.checkImage(image.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        raoNhanh.uploadFileRaoNhanh(folderImg, newIdBlog, image);
-        fields.image = functions.createLinkFileRaonhanh(folderImg, newIdBlog, image.name);
+        let date =  new Date();
+        let year = date.getFullYear();
+        let month = date.getMonth() + 1;
+        let day = date.getDate();
+
+        let upload = raoNhanh.uploadFileRaoNhanh(folderImg, ``, image);
+        fields.image = upload;
         let blog = new Blog(fields);
         await blog.save();
         return functions.success(res, 'Create blog RN365 success!');
