@@ -13,7 +13,7 @@ router.post('/listBlog', formData.parse(), blog.getListBlogByFields);
 router.post('/getBlog', formData.parse(), blog.getListBlogByFields);
 
 //api admin tao blog
-router.post('/createBlog', formData.parse(), [functions.checkToken, functions.isAdminRN365], blog.getAndCheckData, blog.createBlog);
+router.post('/createBlog', formData.parse(), [functions.checkToken], blog.getAndCheckData, blog.createBlog);
 
 //api admin cap nhat blog
 router.put('/updateBlog', formData.parse(), [functions.checkToken, functions.isAdminRN365], blog.getAndCheckData ,blog.updateBlog);
