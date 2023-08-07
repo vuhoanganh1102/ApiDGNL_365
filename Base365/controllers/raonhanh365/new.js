@@ -8,7 +8,7 @@ const LoveNews = require("../../models/Raonhanh365/LoveNews");
 const Bidding = require("../../models/Raonhanh365/Bidding");
 const LikeRN = require("../../models/Raonhanh365/Like");
 const ApplyNewsRN = require("../../models/Raonhanh365/ApplyNews");
-const raoNhanh = require("../../services/raoNhanh");
+const raoNhanh = require("../../services/raoNhanh365/service");
 const Comments = require("../../models/Raonhanh365/Comments");
 const Evaluate = require("../../models/Raonhanh365/Evaluate");
 const dotenv = require("dotenv");
@@ -943,6 +943,10 @@ exports.searchNew = async (req, res, next) => {
             condition.linkTitle = { $regex: `.*${query}.*` };
         }
         if (cateID) condition.cateID = Number(cateID);
+        if(brandddt) condition["electroniceDevice.brand"] = Number(brandddt);
+        if(brandxeco) condition["vehicle.hang"] = Number(brandxeco);
+        if(branddgd) condition["wareHouse.hang"] = Number(branddgd);
+        if(brandntnt) condition["noiThatNgoaiThat.brand"] = Number(brandntnt);
         if (city) condition.city = Number(city);
         if (district) condition.district = Number(district);
         if (ward) condition.ward = Number(ward);
