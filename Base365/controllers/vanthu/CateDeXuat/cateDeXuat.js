@@ -355,49 +355,45 @@ exports.listtamung = async (req, res) => {
     page = parseInt(page) || 1;
     const perPage = 8;
 
-    if (req.user.data.type == 1) {
-      com_id = req.user.data.idQLC;
+    com_id = req.user.data.idQLC;
 
-      let matchQuery = {
-        com_id: com_id,
-        type_dx: 3,
-      };
+    let matchQuery = {
+      com_id: com_id,
+      type_dx: 3,
+    };
 
-      if (id_user) {
-        matchQuery.id_user = parseInt(id_user);
-      }
-
-      if (time) {
-        matchQuery.time = new Date(time);
-      }
-
-      const startIndex = (page - 1) * perPage;
-      const endIndex = page * perPage;
-
-      const listDeXuat = await DeXuat.find(matchQuery)
-        .select('name_user noi_dung.tam_ung.sotien_tam_ung type_duyet id_user')
-        .sort({_id : -1})
-        .skip(startIndex)
-        .limit(perPage);
-
-      const totalTsCount = await DeXuat.countDocuments(matchQuery);
-
-      const listUserId = listDeXuat.map(item => item.id_user);
-      const listUser = await UserDX.find({ idQLC: { $in: listUserId } })
-        .select('userName avatarUser idQLC');
-
-      const data = {
-        listDeXuat,
-        listUser,
-      };
-
-      const totalPages = Math.ceil(totalTsCount / perPage);
-      const hasNextPage = endIndex < totalTsCount;
-
-      return functions.success(res, 'get data success', { data, totalPages, hasNextPage });
-    } else {
-      return functions.setError(res, 'không có quyền truy cập', 400);
+    if (id_user) {
+      matchQuery.id_user = parseInt(id_user);
     }
+
+    if (time) {
+      matchQuery.time = new Date(time);
+    }
+
+    const startIndex = (page - 1) * perPage;
+    const endIndex = page * perPage;
+
+    const listDeXuat = await DeXuat.find(matchQuery)
+      .select('name_user noi_dung.tam_ung.sotien_tam_ung type_duyet id_user')
+      .sort({_id : -1})
+      .skip(startIndex)
+      .limit(perPage);
+
+    const totalTsCount = await DeXuat.countDocuments(matchQuery);
+
+    const listUserId = listDeXuat.map(item => item.id_user);
+    const listUser = await UserDX.find({ idQLC: { $in: listUserId } })
+      .select('userName avatarUser idQLC');
+
+    const data = {
+      listDeXuat,
+      listUser,
+    };
+
+    const totalPages = Math.ceil(totalTsCount / perPage);
+    const hasNextPage = endIndex < totalTsCount;
+
+    return functions.success(res, 'get data success', { data, totalPages, hasNextPage });
   }catch (error) {
     console.error('Failed ', error);
     return functions.setError(res, error);
