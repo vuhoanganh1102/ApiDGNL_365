@@ -22,7 +22,7 @@ const OrderSchema = new mongoose.Schema({
     },
     phone: {
         // số điện thoại liên hệ
-        type:Number
+        type:String
     },
     paymentMethod: {
         //phương thức thanh toán

@@ -137,7 +137,8 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
         await insert_taisan.save();
         if (quyen_ng_sd == 1) {
             let taisan = await TaiSan.findOne({ ts_id: id_ts, id_cty: com_id });
-            let sl_ts_cu = taisan.ts_so_luong;
+            if(taisan){
+                let sl_ts_cu = taisan.ts_so_luong;
             let update_sl = sl_ts_cu - sl_bd;
             let update_taisan = await TaiSan.findOneAndUpdate(
                 { ts_id: id_ts, id_cty: com_id },
@@ -164,9 +165,13 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
                 time_created: new Date().getTime()
             });
             await qr_qtr_sd.save();
+            }
+            
         }
         if (quyen_ng_sd == 2) {
             let taisan = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
+            if(taisan){
+
             let sl_ts_cu = taisan.sl_dang_sd;
             let update_sl = sl_ts_cu - sl_bd;
             let maxIDQTSD = 0;
@@ -194,9 +199,12 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
                 , {
                     sl_dang_sd: update_sl
                 });
+            }
         }
         if (quyen_ng_sd == 3) {
             let taisan = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts });
+            if(taisan){
+
             let sl_ts_cu = taisan.sl_dang_sd;
             let update_sl = sl_ts_cu - sl_bd;
             let maxIDQTSD = 0;
@@ -223,6 +231,7 @@ exports.add_Ts_can_bao_duong = async (req, res) => {
                 , {
                     sl_dang_sd: update_sl
                 });
+            }
         }
         fnc.success(res, "ok", { insert_taisan });
 
@@ -639,7 +648,7 @@ exports.TuChoiBaoDuong = async (req, res) => {
             id_bd: id_bb
         });
         if (!this_baoduong) {
-            return res.status(400).json({ message: "khong co thong tin cua bien ban nay" });
+            return fnc.setError(res,  "khong co thong tin cua bien ban nay" );
         }
 
         let ng_sd = this_baoduong.bd_ng_sd;
@@ -715,7 +724,7 @@ exports.hoanThanh = async(req, res) => {
                 day_taisd = fnc.convertTimestamp(day_taisd);
                 ngay_bd_done = fnc.convertTimestamp(ngay_bd_done);
             }else {
-                return fnc.setError(res, "Truyen ngay khong dung dinh dang!", 405);
+                return fnc.setError(res, "Truyen ngay khong dung dinh dang!");
             }
             let hoan_thanh_bao_duong = await BaoDuong.findOneAndUpdate({id_bd: id_bb, id_cty: com_id}, {
                 bd_trang_thai: 1,
@@ -738,7 +747,7 @@ exports.hoanThanh = async(req, res) => {
                         }, {new: true});
                         return fnc.success(res, "Bao duong thanh cong, da cap nhat so luong tai san!")
                     }
-                    return fnc.setError(res, "Cap nhat so luong tai san that bai!", 406);
+                    return fnc.setError(res, "Cap nhat so luong tai san that bai!");
                 }
                 if(quyen_ng_sd == 2) {
                     let taisan = await TaiSanDangSuDung.findOne({com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts});
@@ -749,7 +758,7 @@ exports.hoanThanh = async(req, res) => {
                         }, {new: true});
                         return fnc.success(res, "Bao duong thanh cong, da cap nhat so luong tai san!")
                     }
-                    return fnc.setError(res, "Cap nhat so luong tai san that bai!", 406);
+                    return fnc.setError(res, "Cap nhat so luong tai san that bai!");
                 }
                 if(quyen_ng_sd == 3) {
                     let taisan = await TaiSanDangSuDung.findOne({com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts});
@@ -760,12 +769,12 @@ exports.hoanThanh = async(req, res) => {
                         }, {new: true});
                         return fnc.success(res, "Bao duong thanh cong, da cap nhat so luong tai san!")
                     }
-                    return fnc.setError(res, "Cap nhat so luong tai san that bai!", 406);
+                    return fnc.setError(res, "Cap nhat so luong tai san that bai!");
                 }
             }
-            return fnc.setError(res, "Bao duong not found!!", 404);
+            return fnc.setError(res, "Bao duong not found!!");
         }
-        return fnc.setError(res, "Missing input value!", 404);
+        return fnc.setError(res, "Missing input value!");
     }catch(error) {
         return fnc.setError(res, error.message);
     }

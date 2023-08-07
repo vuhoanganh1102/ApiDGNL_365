@@ -6,23 +6,21 @@ const NetworkOperatorSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    nameBefore: {
-        //tên nhà mạng khi nạp tiền
+    operator: {
         type: String,
         default: null
     },
-    nameAfter: {
-        //tên nhà mạng khi lấy ra
+    operatorName: {
+        //tên nhà mạng
         type: String,
         default: null
     },
     discount: {
-        //chiết khấu % sau khi nạp tiền
+        //chiết khấu %
         type: Number,
         default: 0
     },
-    priceListActive: {
-        //bảng giá hoạt động
+    active: {
         type: Number,
         default: 0
     }
