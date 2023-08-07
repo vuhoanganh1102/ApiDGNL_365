@@ -1,84 +1,9 @@
 const Users = require("../../models/Users")
-const UserCompanyMulti = require("../../models/Timviec365/UserCompanyMulti")
-const UserCompanyAddressBranch = require("../../models/Timviec365/UserCompanyAddressBranch")
 const functions = require("../../services/functions")
-
-const getCompanyId = async (req, res) => {
-    if (!req.user||!req.user.data) return functions.setError(res, "Công ty không tồn tại", 429);
-    let usc_id = req.user.data.idTimViec365;
-    let company = await Users.findOne({idTimViec365: usc_id, type: 1});
-    if (!company) return functions.setError(res, "Không tồn tại công ty có ID này", 400);
-    return usc_id;
-}
-
-
-const handleGetUserCompanyMulti = async (usc_id) => {
-    let userCM = await UserCompanyMulti.findOne({usc_id});
-    if (!userCM) {
-        await createNewUserCompanyMulti(usc_id);
-        userCM = await UserCompanyMulti.findOne({usc_id});
-    }
-    return userCM;
-}
-
-const createNewUserCompanyMulti = async (usc_id, data = {}) => {
-    let pri_id = 0;
-    let latestCM = await UserCompanyMulti.findOne({}).sort({pri_id: -1});
-    if (latestCM) pri_id = latestCM.pri_id + 1;
-    let payload = {
-        pri_id,
-        usc_id,
-        ...data
-    }
-    await (new UserCompanyMulti(payload)).save();
-}
-
-const handleGetUserCompanyAddressBranch = async (usc_id) => {
-    let userCAB = await UserCompanyAddressBranch.findOne({usc_id});
-    if (!userCAB) {
-        await createNewUserCompanyAddressBranch(usc_id);
-        userCAB = await UserCompanyAddressBranch.findOne({usc_id});
-    }
-    return userCAB;
-}
-
-const createNewUserCompanyAddressBranch = async (usc_id, data = {}) => {
-    let id = 0;
-    let latestCAB = await UserCompanyAddressBranch.findOne({}).sort({id: -1});
-    if (latestCAB) id = latestCAB.id + 1;
-    let payload = {
-        id,
-        usc_id,
-        ...data,
-        usc_branch_time: functions.getTimeNow()
-    }
-    await (new UserCompanyAddressBranch(payload)).save();
-}
-
-exports.getUSCIDFromToken = async (req, res, next) => {
-    if (!req.user||!req.user.data) return functions.setError(res, "Công ty không tồn tại", 429);
-    req.body.usc_id = req.user.data.idTimViec365;
-    next();
-
-}
-
-exports.getUserCompanyMulti = async (req, res) => {
-    try {
-        let usc_id = await getCompanyId(req, res);
-        let data = await handleGetUserCompanyMulti(usc_id);
-        return functions.success(res, "Thành công", {data});
-    } catch (error) {
-        console.log(error);
-        return functions.setError(res, error)
-    }
-}
 
 exports.editUserCompanyMulti = async (req, res) => {
     try {
         let {
-            usc_id,
-
-            usc_company_info,
             usc_map,
             usc_dgc,
             usc_dgtv,
@@ -88,13 +13,22 @@ exports.editUserCompanyMulti = async (req, res) => {
             usc_lv,
             usc_zalo
         } = req.body;
-        let data = {usc_company_info, usc_map, usc_dgc, usc_dgtv, usc_dg_time, usc_skype, usc_video_com, usc_lv, usc_zalo};
-        let exists = await UserCompanyMulti.findOne({usc_id});
-        if (exists) {
-            await UserCompanyMulti.updateOne({usc_id}, data);
-        } else {
-            await createNewUserCompanyMulti(usc_id, data);
-        }
+        if (!req.user||!req.user.data||!req.user.data._id) return functions.setError(res, "Công ty không tồn tại", 429);
+        let companyID = req.user.data._id;
+        let data = {
+            'inForCompany.timviec365.usc_map': usc_map,
+            'inForCompany.timviec365.usc_dgc': usc_dgc,
+            'inForCompany.timviec365.usc_dgtv': usc_dgtv,
+            'inForCompany.timviec365.usc_dg_time': usc_dg_time,
+            'inForCompany.timviec365.usc_skype': usc_skype,
+            'inForCompany.timviec365.usc_video_com': usc_video_com,
+            'inForCompany.timviec365.usc_lv': usc_lv,
+            'inForCompany.timviec365.usc_zalo': usc_zalo
+        };
+        await Users.updateOne({ _id: companyID }, {
+            $set: data
+        });
+        
         return functions.success(res, "Thành công", {data});
     } catch (error) {
         console.log(error);
@@ -102,10 +36,29 @@ exports.editUserCompanyMulti = async (req, res) => {
     }
 }
 
-exports.getUserCompanyAddressBranch = async (req, res) => {
+exports.createUserCompanyAddressBranch = async (req, res) => {
     try {
-        let usc_id = await getCompanyId(req, res);
-        let data = await handleGetUserCompanyAddressBranch(usc_id);
+        let {
+            usc_branch_cit,
+            usc_branch_qh,
+            usc_branch_address,
+        } = req.body;
+        if (!req.user||!req.user.data||!req.user.data._id) return functions.setError(res, "Công ty không tồn tại", 429);
+        let companyID = req.user.data._id;
+        let data = {usc_branch_cit, usc_branch_qh, usc_branch_address, usc_branch_time: functions.getTimeNow()};
+        let company = await Users.findOne({ _id: companyID });
+        if (company) {
+            if (company.inForCompany) {
+                if (company.inForCompany.timviec365) {
+                    if (!company.inForCompany.timviec365.usc_branches) {
+                        company.inForCompany.timviec365.usc_branches = [data];
+                    } else {
+                        company.inForCompany.timviec365.usc_branches.push(data);
+                    }
+                    await company.save()
+                }
+            }
+        }
         return functions.success(res, "Thành công", {data});
     } catch (error) {
         console.log(error);
@@ -116,20 +69,63 @@ exports.getUserCompanyAddressBranch = async (req, res) => {
 exports.editUserCompanyAddressBranch = async (req, res) => {
     try {
         let {
-            usc_id,
-
+            index,
             usc_branch_cit,
             usc_branch_qh,
             usc_branch_address,
         } = req.body;
+        if (!req.user||!req.user.data||!req.user.data._id) return functions.setError(res, "Công ty không tồn tại", 429);
+        let companyID = req.user.data._id;
         let data = {usc_branch_cit, usc_branch_qh, usc_branch_address};
-        let exists = await UserCompanyAddressBranch.findOne({usc_id});
-        if (exists) {
-            await UserCompanyAddressBranch.updateOne({usc_id}, data);
+        let company = await Users.findOne({ _id: companyID });
+        if (!company||
+            !company.inForCompany||
+            !company.inForCompany.timviec365||
+            !company.inForCompany.timviec365.usc_branches
+            ) return functions.setError(res, "Công ty không tồn tại", 400);
+        let branch = company.inForCompany.timviec365.usc_branches[index];
+        if (branch) {
+            let newBranch = JSON.parse(JSON.stringify(branch));
+            newBranch.usc_branch_cit = data.usc_branch_cit?data.usc_branch_cit:branch.usc_branch_cit;
+            newBranch.usc_branch_qh = data.usc_branch_qh?data.usc_branch_qh:branch.usc_branch_qh;
+            newBranch.usc_branch_address = data.usc_branch_address?data.usc_branch_address:branch.usc_branch_address;
+            let query = {};
+            query[`inForCompany.timviec365.usc_branches.${index}`] = newBranch;
+            await Users.updateOne({_id: companyID}, query);
         } else {
-            await createNewUserCompanyAddressBranch(usc_id, data);
+            return functions.setError(res, "Không tồn tại chi nhánh này", 400);
         }
-        return functions.success(res, "Thành công", {data});
+    return functions.success(res, "Thành công", {data});
+        
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error)
+    }
+}
+
+exports.deleteUserCompanyAddressBranch = async (req, res) => {
+    try {
+        let {
+            index
+        } = req.params;
+        if (!req.user||!req.user.data||!req.user.data._id) return functions.setError(res, "Công ty không tồn tại", 429);
+        let companyID = req.user.data._id;
+        let company = await Users.findOne({ _id: companyID });
+        if (!company||
+            !company.inForCompany||
+            !company.inForCompany.timviec365||
+            !company.inForCompany.timviec365.usc_branches
+            ) return functions.setError(res, "Công ty không tồn tại", 400);
+        let branch = company.inForCompany.timviec365.usc_branches[index];
+        let unset = {};
+        unset[`inForCompany.timviec365.usc_branches.${index}`] = 1;
+        if (branch) {
+            await Users.updateOne({_id: companyID}, {$unset : unset});
+            await Users.updateOne({_id: companyID}, {$pull : {"inForCompany.timviec365.usc_branches" : null}});
+        }else {
+            return functions.setError(res, "Không tồn tại chi nhánh này", 400);
+        }
+        return functions.success(res, "Thành công");
     } catch (error) {
         console.log(error);
         return functions.setError(res, error)
