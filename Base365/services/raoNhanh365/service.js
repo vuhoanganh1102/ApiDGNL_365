@@ -28,12 +28,12 @@ const MAX_IMG_SIZE = 10 * 1024 * 1024;
 // giới hạn dung lượng kho ảnh
 exports.MAX_Kho_Anh = 300 * 1024 * 1024;
 
-const functions = require('./functions');
+const functions = require('../functions');
 
 // import model
-const AdminUserRaoNhanh365 = require('../models/Raonhanh365/Admin/AdminUser');
-const AdminUserRight = require('../models/Raonhanh365/Admin/AdminUserRight');
-const Category = require('../models/Raonhanh365/Category');
+const AdminUserRaoNhanh365 = require('../../models/Raonhanh365/Admin/AdminUser');
+const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
+const Category = require('../../models/Raonhanh365/Category');
 
 dotenv.config();
 
