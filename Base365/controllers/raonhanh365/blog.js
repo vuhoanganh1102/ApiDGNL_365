@@ -5,7 +5,7 @@ const Category = require('../../models/Raonhanh365/Category');
 const Users = require('../../models/Users')
 const md5 = require('md5');
 const folderImg = 'news';
-const raoNhanh = require('../../services/rao nhanh/raoNhanh')
+const raoNhanh = require('../../services/raoNhanh')
 exports.getListBlogByFields = async (req, res, next) => {
     try {
         let page = Number(req.body.page);

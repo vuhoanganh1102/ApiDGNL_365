@@ -3,7 +3,7 @@ var router = express.Router();
 var admin = require('../../controllers/raonhanh365/admin');
 var formData = require('express-form-data');
 const functions = require('../../services/functions');
-const serviceRN = require('../../services/rao nhanh/raoNhanh');
+const serviceRN = require('../../services/raoNhanh');
 var news = require('../../controllers/raonhanh365/new');
 var blog = require('../../controllers/raonhanh365/blog');
 
