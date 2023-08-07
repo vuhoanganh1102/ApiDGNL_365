@@ -5,7 +5,7 @@ const Category = require('../../models/Raonhanh365/Category');
 const Users = require('../../models/Users')
 const md5 = require('md5');
 const folderImg = 'news';
-const raoNhanh = require('../../services/raoNhanh')
+const raoNhanh = require('../../services/raoNhanh365/service')
 exports.getListBlogByFields = async (req, res, next) => {
     try {
         let page = Number(req.body.page);
@@ -97,13 +97,13 @@ exports.createBlog = async (req, res, next) => {
         if (!await functions.checkImage(image.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        let date =  new Date();
+        let date = new Date();
         let year = date.getFullYear();
         let month = date.getMonth() + 1;
         let day = date.getDate();
 
-        let upload = raoNhanh.uploadFileRaoNhanh(folderImg, ``, image);
-        fields.image = upload;
+        let upload = await raoNhanh.uploadFileRaoNhanh("news", `${year}/${month}/${day}`, image);
+        fields.image = `${year}/${month}/${day}/` + upload;
         let blog = new Blog(fields);
         await blog.save();
         return functions.success(res, 'Create blog RN365 success!');
@@ -156,7 +156,7 @@ exports.getDetailBlog = async (req, res, next) => {
         let fields = {
             title: 1, url: 1, imgName: 1, imgWebName: 1, des: 1, status: 1,
             keyword: 1, sapo: 1, active: 1, hot: 1, new: 1, detailDes: 1, titleRelate: 1, categoryId: 1,
-            image:1,
+            image: 1,
             titleRelate: 1, contentRelate: 1, teaser: 1, _id: 1, date: 1, admin: { name: 1, _id: 1 }
         }
         let listImgBase64 = req.body.listImgBase64;
@@ -165,20 +165,20 @@ exports.getDetailBlog = async (req, res, next) => {
             functions.uploadFileBase64RaoNhanh(folderImg, idBlog, listImgBase64, image);
             let existsBlog = await Blog.findOne({ _id: idBlog }, fields);
             tintuongtu = await Blog.find({ categoryId: existsBlog.categoryId, active: 1, _id: { $ne: existsBlog._id } }, {
-                _id:1,title:1,teaser:1,image:1,url:1
+                _id: 1, title: 1, teaser: 1, image: 1, url: 1
             }).limit(6);
             if (existsBlog) {
-                return functions.success(res, "get detail blog successfully", { blog: existsBlog, listImage: listImgBase64,tintuongtu });
+                return functions.success(res, "get detail blog successfully", { blog: existsBlog, listImage: listImgBase64, tintuongtu });
             }
         }
         let existsBlog = await Blog.findOne({ _id: idBlog }, fields);
         tintuongtu = await Blog.find({ categoryId: existsBlog.categoryId, active: 1, _id: { $ne: existsBlog._id } }, {
-            _id:1,title:1,teaser:1,image:1,url:1
+            _id: 1, title: 1, teaser: 1, image: 1, url: 1
         }).limit(6);
         if (existsBlog) {
-            return functions.success(res, "get detail blog successfully", { blog: existsBlog,tintuongtu });
+            return functions.success(res, "get detail blog successfully", { blog: existsBlog, tintuongtu });
         }
-       
+
         return functions.setError(res, "Blog not found!", 505);
     } catch (err) {
         console.log("Err from server!", err);
@@ -220,9 +220,9 @@ exports.deleteBlog = async (req, res, next) => {
         return functions.setError(res, "Error from server", 500);
     }
 }
-exports.createToken = async(req, res, next) => {
-    try{
-        let admin = await AdminUser.findOne({_id: 4});
+exports.createToken = async (req, res, next) => {
+    try {
+        let admin = await AdminUser.findOne({ _id: 4 });
         let token = await functions.createToken(admin, "28d")
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, 'Create token admin success',);
@@ -231,9 +231,9 @@ exports.createToken = async(req, res, next) => {
         return functions.setError(res, "Đã có lỗi xảy ra", 400);
     }
 }
-exports.createTokenUser = async(req, res, next) => {
-    try{
-        let admin = await Users.findOne({_id: 1191});
+exports.createTokenUser = async (req, res, next) => {
+    try {
+        let admin = await Users.findOne({ _id: 1191 });
         let token = await functions.createToken(admin, "28d");
         res.setHeader('authorization', `Bearer ${token}`);
         return functions.success(res, `Bearer ${token}`);
