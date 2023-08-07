@@ -127,12 +127,12 @@ exports.addDieuchuyenTaiSan = async (req, res) => {
             date_create: new Date().getTime()
         });
         await insert_thongbao2.save();
-        fnc.success(res, "success", { insert_dc_vt });
+        return fnc.success(res, "success", { insert_dc_vt });
 
 
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: error.message });
+        return fnc.setError(res,  error.message );
     }
 }
 
@@ -162,7 +162,7 @@ exports.editDCTS = async (req, res) => {
         }
 
         if (isNaN(id_dc) || id_dc <= 0) {
-            return res.status(404).json({ message: "id_dc phai la 1 Number" });
+            return fnc.setError(res,  "id_dc phai la 1 Number" );
         }
         const ds_dc = JSON.parse(dieuchuyen_taisan1)?.ds_dc || [];
         const updated_ds_dc = ds_dc.map((item) => ({
@@ -189,7 +189,7 @@ exports.editDCTS = async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: error.message });
+        return fnc.setError(res,  error.message );
     }
 }
 //
@@ -212,10 +212,10 @@ exports.deleteBBDieuChuyen = async (req, res) => {
         let type_quyen = req.user.data.type;
 
         if (isNaN(datatype) || datatype <= 0) {
-            return res.status(404).json({ message: "datatype phai la 1 Number" });
+            return fnc.setError(res,  "datatype phai la 1 Number" );
         }
         if (isNaN(id) || id <= 0) {
-            return res.status(404).json({ message: "id phai la 1 Number" });
+            return fnc.setError(res,  "id phai la 1 Number" );
         }
         let dieuchuyen = await DieuChuyen.findOne({dc_id : id, id_cty : com_id })
         if(dieuchuyen){
@@ -255,14 +255,14 @@ exports.deleteBBDieuChuyen = async (req, res) => {
             return fnc.success(res, 'xoa vinh vien thanh cong ');
 
         } else {
-            return res.status(404).json({ message: "datatype phai la 1 Number tu 1 den 3" });
+            return fnc.setError(res , "datatype phai la 1 Number tu 1 den 3" );
         }
        }
-       return fnc.success(res, 'khong tim thay doi tuong ');
+       return fnc.setError(res, 'khong tim thay doi tuong ');
 
     } catch (error) {
 
-        return res.satus(500).json({ message: error.message });
+        return fnc.setError(res ,error.message );
     }
 }
 //dieuchuyen_vitriTS2
@@ -358,7 +358,7 @@ exports.TuchoiDCVT = async (req, res) => {
         }
 
         if (isNaN(id_bb) || id_bb <= 0) {
-            return res.status(404).json({ message: "id_bb phai la 1 Number" });
+            return fnc.setError(res , "id_bb phai la 1 Number" );
         }
 
         let qr_tuchoi_nhan_dc = await DieuChuyen.findOneAndUpdate(
@@ -370,10 +370,10 @@ exports.TuchoiDCVT = async (req, res) => {
             dc_lydo_tuchoi: content,
         })
 
-        fnc.success(res, "tu choi thanh cong")
+        return fnc.success(res, "tu choi thanh cong")
     } catch (error) {
         console.log(error)
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 }
 //xac_nhan_dc
@@ -390,7 +390,7 @@ exports.TiepNhanDCVT = async (req, res) => {
 
         }
         if (isNaN(id_dc)) {
-            return res.status(404).json({ message: "id_dc phai la 1 Number" });
+            return fnc.setError(res , "id_dc phai la 1 Number" );
         }
         let filter = {
             dc_id: id_dc,
@@ -400,8 +400,8 @@ exports.TiepNhanDCVT = async (req, res) => {
         //     filter.dc_type = dc_type;
         // }
         let this_dc = await DieuChuyen.findOne(filter);
-
-        let arr_val = this_dc.dieuchuyen_taisan.ds_dc;
+        if(this_dc){
+            let arr_val = this_dc.dieuchuyen_taisan.ds_dc;
 
         let val_dc = [];
         let val_dc_1 = [];
@@ -433,28 +433,33 @@ exports.TiepNhanDCVT = async (req, res) => {
 
                     });
             } else {
-                let sl_tu_moi = check_ts_tu.sl_bandau - val_dc_1[i];
-                let maxId = 0;
-                let maxId_crr = await TaiSanViTri.findOne({}, {}, { sort: { tsvt_id: -1 } });
-                if (maxId_crr) {
-                    maxId = maxId_crr.tsvt_id;
+                if(check_ts_tu){
+                    let sl_tu_moi = check_ts_tu.sl_bandau - val_dc_1[i];
+                    let maxId = 0;
+                    let maxId_crr = await TaiSanViTri.findOne({}, {}, { sort: { tsvt_id: -1 } });
+                    if (maxId_crr) {
+                        maxId = maxId_crr.tsvt_id;
+                    }
+                    let add_sl_tu = new TaiSanViTri({
+    
+                        tsvt_id: maxId + 1,
+                        tsvt_cty: com_id,
+                        tsvt_taisan: val_dc[i],
+                        tsvt_vitri: vitri_dc_tu,
+                        tsvt_soluong: sl_tu_moi
+                    });
+                    await add_sl_tu.save();
                 }
-                let add_sl_tu = new TaiSanViTri({
-
-                    tsvt_id: maxId + 1,
-                    tsvt_cty: com_id,
-                    tsvt_taisan: val_dc[i],
-                    tsvt_vitri: vitri_dc_tu,
-                    tsvt_soluong: sl_tu_moi
-                });
-                await add_sl_tu.save();
             }
         }
         let xac_nhan_bg = await DieuChuyen.findOneAndUpdate({ dc_id: id_dc, id_cty: com_id }, { dc_trangthai: 1 });
-        fnc.success(res, "tiep nhan thanh cong", { xac_nhan_bg });
+        return fnc.success(res, "tiep nhan thanh cong", { xac_nhan_bg });
+        }
+        return fnc.setError(res , "khong tim thay doi tuong") 
+        
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: error.message });
+        return fnc.setError(res , error.message) 
     }
 
 

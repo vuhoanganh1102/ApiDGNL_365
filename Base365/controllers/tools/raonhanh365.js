@@ -30,7 +30,7 @@ const TblTags = require('../../models/Raonhanh365/TblTag');
 const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
 const loveNew = require('../../models/Raonhanh365/LoveNews');
-
+const NetworkOperator = require('../../models/Raonhanh365/NetworkOperator');
 
 // danh mục sản phẩm
 exports.toolCategory = async (req, res, next) => {
@@ -2287,8 +2287,8 @@ exports.toolbanggiacknt = async (req, res, next) => {
             for (let i = 0; i < data.length; i++) {
                 const loveNew1 = new NetworkOperator({
                     _id: data[i].id,
-                    nameBefore: data[i].nha_mang,
-                    nameAfter: data[i].ten_nhmang,
+                    operator: data[i].nha_mang,
+                    operatorName: data[i].ten_nhmang,
                     discount: data[i].chiet_khau,
                     active: data[i].bg_active,
                 });
