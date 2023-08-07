@@ -553,57 +553,61 @@ exports.detailLiquidationAssetProposal = async (req, res, next) => {
                 },
                 { $unwind: { path: "$loaiTS", preserveNullAndEmptyArrays: true } },
             ]);
-            chiTiet = chiTiet[0];
+            if(chiTiet.length !== 0){
+                chiTiet = chiTiet[0];
 
-            let link_url = '';
-            let name_link = '';
-            if (chiTiet.tl_trangthai === 0 || chiTiet.tl_trangthai === 2) {
-                chiTiet.link_url = '/dsts-da-thanh-ly.html';
-                chiTiet.name_link = 'Tài sản đề xuất thanh lý';
+                let link_url = '';
+                let name_link = '';
+                if (chiTiet.tl_trangthai === 0 || chiTiet.tl_trangthai === 2) {
+                    chiTiet.link_url = '/dsts-da-thanh-ly.html';
+                    chiTiet.name_link = 'Tài sản đề xuất thanh lý';
+                }
+                if (chiTiet.tl_trangthai === 1 || chiTiet.tl_trangthai === 3) {
+                    chiTiet.link_url = '/ts-dx-thanh-ly.html';
+                    chiTiet.name_link = 'Danh sách tài sản đã thanh lý';
+                }
+    
+                // trả về định dạng ngày
+                chiTiet.tl_date_create = new Date(chiTiet.tl_date_create * 1000);
+    
+                // lấy quyền người dùng đã đề xuất
+                let tl_type_quyen = chiTiet.tl_type_quyen;
+    
+                // lấy thông tin user
+                let user = await Users.findOne({ _id: chiTiet.id_ngtao }, { userName: 1, inForPerson: 1, address: 1 })
+    
+                if (tl_type_quyen === 1) {
+                    chiTiet.nguoitao = user.userName
+                    chiTiet.ngdexuat = user.userName
+                    chiTiet.phongban = "---"
+                    chiTiet.vitri = user.address
+                    chiTiet.doi_tuong_sd = user.userName
+                }
+    
+                if (tl_type_quyen === 2) {
+                    let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
+                    chiTiet.nguoitao = user.userName
+                    chiTiet.ngdexuat = user.userName
+                    chiTiet.phongban = dep.dep_name
+                    chiTiet.vitri = dep.dep_name
+                    chiTiet.doi_tuong_sd = user.userName
+                }
+    
+                if (tl_type_quyen === 3) {
+                    let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
+                    chiTiet.nguoitao = dep.dep_name
+                    chiTiet.ngdexuat = dep.dep_name
+                    chiTiet.phongban = dep.dep_name
+                    chiTiet.vitri = dep.dep_name
+                    chiTiet.doi_tuong_sd = dep.dep_name
+                }
+                chiTiet.nguoiduyet = user.userName
+                return functions.success(res, 'get data success', { data: chiTiet })
             }
-            if (chiTiet.tl_trangthai === 1 || chiTiet.tl_trangthai === 3) {
-                chiTiet.link_url = '/ts-dx-thanh-ly.html';
-                chiTiet.name_link = 'Danh sách tài sản đã thanh lý';
-            }
-
-            // trả về định dạng ngày
-            chiTiet.tl_date_create = new Date(chiTiet.tl_date_create * 1000);
-
-            // lấy quyền người dùng đã đề xuất
-            let tl_type_quyen = chiTiet.tl_type_quyen;
-
-            // lấy thông tin user
-            let user = await Users.findOne({ _id: chiTiet.id_ngtao }, { userName: 1, inForPerson: 1, address: 1 })
-
-            if (tl_type_quyen === 1) {
-                chiTiet.nguoitao = user.userName
-                chiTiet.ngdexuat = user.userName
-                chiTiet.phongban = "---"
-                chiTiet.vitri = user.address
-                chiTiet.doi_tuong_sd = user.userName
-            }
-
-            if (tl_type_quyen === 2) {
-                let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
-                chiTiet.nguoitao = user.userName
-                chiTiet.ngdexuat = user.userName
-                chiTiet.phongban = dep.dep_name
-                chiTiet.vitri = dep.dep_name
-                chiTiet.doi_tuong_sd = user.userName
-            }
-
-            if (tl_type_quyen === 3) {
-                let dep = await Department.findOne({ dep_id: user.inForPerson.employee.dep_id })
-                chiTiet.nguoitao = dep.dep_name
-                chiTiet.ngdexuat = dep.dep_name
-                chiTiet.phongban = dep.dep_name
-                chiTiet.vitri = dep.dep_name
-                chiTiet.doi_tuong_sd = dep.dep_name
-            }
-            chiTiet.nguoiduyet = user.userName
-            return functions.success(res, 'get data success', { data: chiTiet })
+        return functions.setError(res, 'cannot get data')
+           
         }
-        return functions.setError(res, 'Missing id', 400)
+        return functions.setError(res, 'Missing id')
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)

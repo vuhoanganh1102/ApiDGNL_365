@@ -481,33 +481,37 @@ exports.detailAssetDisposal = async (req, res, next) => {
                     }
                 }
             ]);
-            data = data[0];
-            if (data.ngdexuat == 0 || data.ngdexuat == 2) {
-                link_url = '/tai-san-dx-huy.html';
-                name_link = 'Tài sản đề xuất hủy';
-            } else if (data.ngdexuat == 1 || data.ngdexuat == 3) {
-                link_url = '/dsts-da-huy.html';
-                name_link = 'Danh sách tài sản đã hủy';
+            if(data.length !== 0){
+                data = data[0];
+                if (data.ngdexuat == 0 || data.ngdexuat == 2) {
+                    link_url = '/tai-san-dx-huy.html';
+                    name_link = 'Tài sản đề xuất hủy';
+                } else if (data.ngdexuat == 1 || data.ngdexuat == 3) {
+                    link_url = '/dsts-da-huy.html';
+                    name_link = 'Danh sách tài sản đã hủy';
+                }
+                data.ngaytao = new Date(data.ngaytao * 1000)
+                let id_ng_tao = await Users.findOne({ _id: data.nguoitao }, { userName: 1, inForPerson: 1, address: 1 });
+                data.nguoitao = id_ng_tao.userName;
+                data.ngdexuat = id_ng_tao.userName;
+                data.link_url = link_url;
+                data.name_link = name_link;
+                if (data.vitri === 1 && id_ng_tao) {
+                    data.vitri = id_ng_tao.address;
+                    data.doi_tuong_sd = id_ng_tao.userName;
+                    data.phongban = '---'
+                } else if (id_ng_tao && id_ng_tao.inForPerson && id_ng_tao.inForPerson.employee) {
+                    let dep = await Department.findOne({ dep_id: id_ng_tao.inForPerson.employee.dep_id })
+                    data.doi_tuong_sd = id_ng_tao.userName;
+                    data.phongban = dep.dep_name;
+                    data.vitri = dep.dep_name;
+                }
+                return functions.success(res, 'get data success', { data })
             }
-            data.ngaytao = new Date(data.ngaytao * 1000)
-            let id_ng_tao = await Users.findOne({ _id: data.nguoitao }, { userName: 1, inForPerson: 1, address: 1 });
-            data.nguoitao = id_ng_tao.userName;
-            data.ngdexuat = id_ng_tao.userName;
-            data.link_url = link_url;
-            data.name_link = name_link;
-            if (data.vitri === 1 && id_ng_tao) {
-                data.vitri = id_ng_tao.address;
-                data.doi_tuong_sd = id_ng_tao.userName;
-                data.phongban = '---'
-            } else if (id_ng_tao && id_ng_tao.inForPerson && id_ng_tao.inForPerson.employee) {
-                let dep = await Department.findOne({ dep_id: id_ng_tao.inForPerson.employee.dep_id })
-                data.doi_tuong_sd = id_ng_tao.userName;
-                data.phongban = dep.dep_name;
-                data.vitri = dep.dep_name;
-            }
-            return functions.success(res, 'get data success', { data })
+        return functions.setError(res, 'can not get data')
+           
         }
-        return functions.setError(res, 'missing id', 400)
+        return functions.setError(res, 'missing id')
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)
