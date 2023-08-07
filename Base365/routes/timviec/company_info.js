@@ -4,14 +4,12 @@ const router = express.Router();
 const functions = require('../../services/functions')
 const CompanyInfo = require('../../controllers/timviec/company_info');
 
+router.patch('/userCompanyMulti', formData.parse(), functions.checkToken, CompanyInfo.editUserCompanyMulti);
 
-router.get('/userCompanyMulti', formData.parse(), functions.checkToken, CompanyInfo.getUserCompanyMulti);
+router.post('/userCompanyAddressBranch', formData.parse(), functions.checkToken, CompanyInfo.createUserCompanyAddressBranch);
 
-router.get('/userCompanyAddressBranch', formData.parse(), functions.checkToken, CompanyInfo.getUserCompanyAddressBranch);
+router.patch('/userCompanyAddressBranch', formData.parse(), functions.checkToken, CompanyInfo.editUserCompanyAddressBranch);
 
-router.patch('/userCompanyMulti', formData.parse(), functions.checkToken, CompanyInfo.getUSCIDFromToken, CompanyInfo.editUserCompanyMulti);
-
-router.patch('/userCompanyAddressBranch', formData.parse(), functions.checkToken, CompanyInfo.getUSCIDFromToken, CompanyInfo.editUserCompanyAddressBranch);
-
+router.delete('/userCompanyAddressBranch/:index', formData.parse(), functions.checkToken, CompanyInfo.deleteUserCompanyAddressBranch);
 
 module.exports = router;

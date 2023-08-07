@@ -49,4 +49,6 @@ router.post('/updatePassword', functions.checkToken, formData.parse(), admin.upd
 // luồng ứng viên
 router.post('/uv/list/regis', formData.parse(), admin.candi_register);
 
+router.post('/topupCredits', formData.parse(), functions.checkToken, admin.topupCredits);
+
 module.exports = router;
