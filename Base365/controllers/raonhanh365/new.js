@@ -943,10 +943,10 @@ exports.searchNew = async (req, res, next) => {
             condition.linkTitle = { $regex: `.*${query}.*` };
         }
         if (cateID) condition.cateID = Number(cateID);
-        if(brandddt) condition["electroniceDevice.brand"] = Number(brandddt);
-        if(brandxeco) condition["vehicle.hang"] = Number(brandxeco);
-        if(branddgd) condition["wareHouse.hang"] = Number(branddgd);
-        if(brandntnt) condition["noiThatNgoaiThat.brand"] = Number(brandntnt);
+        if (brandddt) condition["electroniceDevice.brand"] = Number(brandddt);
+        if (brandxeco) condition["vehicle.hang"] = Number(brandxeco);
+        if (branddgd) condition["wareHouse.hang"] = Number(branddgd);
+        if (brandntnt) condition["noiThatNgoaiThat.brand"] = Number(brandntnt);
         if (city) condition.city = Number(city);
         if (district) condition.district = Number(district);
         if (ward) condition.ward = Number(ward);
@@ -1733,10 +1733,10 @@ exports.getDetailNew = async (req, res, next) => {
             let Biddingg = await raoNhanh.getDataBidding(res, Bidding, id_new, Evaluate)
             return functions.success(res, "get data success", { data, Bidding: Biddingg });
         }
-        if(cate_Special){
+        if (cate_Special) {
             data[`${cate_Special}`] = await raoNhanh.getDataNewDetail(data[`${cate_Special}`])
         }
-        
+
         return functions.success(res, "get data success", { data });
     } catch (error) {
         console.error(error)
@@ -3410,28 +3410,81 @@ exports.envaluate = async (req, res, next) => {
         let us_bl = req.body.us_bl;
         let so_sao = req.body.so_sao || 1;
         let noi_dung_dgia = req.body.noi_dung_dgia;
+        let parentId = Number (req.body.parentId) || 0;
         let tgian_bluan = new Date();
         if (us_bl && noi_dung_dgia) {
-            let check = await Evaluate.findOne({ userId, blUser: us_bl })
-            if (check) {
-                return functions.setError(res, 'Bạn đã đánh giá tài khoản này', 400)
-            }
-            let id = await functions.getMaxID(Evaluate) + 1 || 1;
-            await Evaluate.create({
-                _id: id,
-                userId,
-                blUser: us_bl,
-                stars: so_sao,
-                comment: noi_dung_dgia,
-                time: tgian_bluan,
-                active: 1,
-                tgianHetcs: 0,
-                csbl: 0
-            })
+           
+                let check = await Evaluate.findOne({ userId, blUser: us_bl })
+                if (check) {
+                    return functions.setError(res, 'Bạn đã đánh giá tài khoản này', 400)
+                }
+                let id = await functions.getMaxID(Evaluate) + 1 || 1;
+                await Evaluate.create({
+                    _id: id,
+                    userId,
+                    blUser: us_bl,
+                    stars: so_sao,
+                    comment: noi_dung_dgia,
+                    time: tgian_bluan,
+                    active: 1,
+                    tgianHetcs: 0,
+                    csbl: 0,
+                    parentId
+                })
+            
+            
             return functions.success(res, 'Đánh giá tài khoản thành công')
         }
         return functions.setError(res, 'missing data', 400)
     } catch (error) {
         return functions.setError(res, error.message)
+    }
+}
+
+// update status ứng tuyển
+exports.updateStatusAplly = async (req, res, next) => {
+    try {
+        let userId = req.user.data.idRaoNhanh365;
+        let id = Number(req.body.id);
+        let note = req.body.note;
+        let status = Number(req.body.status);
+
+        if (id) {
+            let check = await ApplyNews.aggregate([
+                { $match: { _id: id } },
+                {
+                    $lookup: {
+                        from: 'RN365_News',
+                        localField: 'newId',
+                        foreignField: '_id',
+                        as: 'new'
+                    }
+                },
+                { $unwind: '$new' },
+                { $match: { 'new.userID': userId } }
+            ]);
+            if (check.length !== 0) {
+                
+                if(note){
+                    await ApplyNews.findByIdAndUpdate(
+                        id, {
+                        note: note,
+                        status: status
+                    })
+                }
+                if(status && status !== 0){
+                    await ApplyNews.findByIdAndUpdate(
+                        id, {
+                        note: note,
+                        status: status
+                    })
+                }
+                return functions.success(res,'update success')
+            }
+            return functions.setError(res, 'not found apply new', 404)
+        }
+        return functions.setError(res, 'missing data', 400)
+    } catch (error) {
+        return functions.setError(res, error);
     }
 }
