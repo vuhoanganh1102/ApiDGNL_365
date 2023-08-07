@@ -1,5 +1,7 @@
 // check ảnh và video
 const fs = require('fs');
+
+const fsPromises = require('fs/promises');
 // upload file
 const multer = require('multer')
 
@@ -1040,4 +1042,29 @@ exports.renderAlias = (text) => {
 
 exports.fileType = (file) => {
     return file.originalFilename.split('.').pop()
+}
+
+
+exports.uploadLicense = async(userId, file) => {
+    try {
+        const timestamp = Date.now();
+        const data = await fsPromises.readFile(file.path);
+        const parentDir = path.resolve(process.cwd(), '..');
+        const uploadDir = path.join(parentDir, `/storage/base365/timviec365/license/${userId}`);
+        const uploadFileName = `${timestamp}_${file.originalFilename}`;
+        const uploadPath = path.join(uploadDir, uploadFileName);
+        await fsPromises.mkdir(uploadDir, { recursive: true });
+        await fsPromises.writeFile(uploadPath, data);
+
+        return uploadFileName;
+
+
+    } catch (error) {
+        console.log(error)
+        return null;
+    }
+}
+
+exports.getLicenseURL = async(userId, filename) => {
+    return `${process.env.cdn}/timviec365/license/${userId}/${filename}`
 }
