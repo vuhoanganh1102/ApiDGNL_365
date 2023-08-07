@@ -2,7 +2,7 @@ const fnc = require('../../services/functions');
 const New = require('../../models/Raonhanh365/New');
 const CompanyRN = require('../../models/Users');
 const md5 = require('md5');
-const raoNhanh = require('../../services/rao nhanh/raoNhanh');
+const raoNhanh = require('../../services/raoNhanh');
 // thông tin tài khoản
 exports.comInfo = async(req, res, next) => {
     try {
