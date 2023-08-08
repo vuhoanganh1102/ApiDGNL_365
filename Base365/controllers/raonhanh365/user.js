@@ -235,7 +235,6 @@ exports.profileInformation = async (req, res, next) => {
     try {
         let userIdRaoNhanh = req.user.data.idRaoNhanh365;
         let type = Number(req.body.type);
-        console.log("🚀 ~ file: user.js:238 ~ exports.profileInformation= ~ type:", type)
         let userId = Number(req.body.userId);
         if (type) userIdRaoNhanh = userId
         let fields = {
@@ -274,18 +273,26 @@ exports.profileInformation = async (req, res, next) => {
         let numberOfNewNgaySold = await New.find({ userID: userIdRaoNhanh, active: 1, sold: 1, updateTime: { $gte: thirtyDaysAgo, $lte: currentDate } }).count();
 
         //so luong danh gia va so sao
-        let listEvaluate = await Evaluate.find({ userId: userIdRaoNhanh, newId: 0, active: 1 }, { _id: 1, stars: 1, userId: 1, blUser: 1, parentId: 1, comment: 1, time: 1, active: 1, csbl: 1, tgianHetcs: 1, csuaBl: 1 });
-        let numberEvaluate = await Evaluate.countDocuments({ userId: userIdRaoNhanh, newId: 0, active: 1 });
-        let numberStar = 0;
-        for (let i = 0; i < listEvaluate.length; i++) {
-            numberStar += listEvaluate[i].stars;
-        }
+        let listEvaluate = await Evaluate.find({ blUser: userIdRaoNhanh, parentId: 0, newId: 0, active: 1 }, {}).lean();
+        let listEvaluate1 = await Evaluate.find({ blUser: userIdRaoNhanh, newId: 0, active: 1 }, {}).lean();
 
+        let numberEvaluate = listEvaluate1.length;
+        let numberStar = 0;
+        for (let i = 0; i < listEvaluate1.length; i++) {
+            numberStar += listEvaluate1[i].stars;
+        }
+        if (listEvaluate.length > 0) {
+            for (let i = 0; i < listEvaluate.length; i++) {
+                var repdanhgia = listEvaluate1.filter(item => item.parentId == listEvaluate[i]._id)
+                listEvaluate[i].repdanhgia = repdanhgia
+
+            }
+        }
         fields = {
             _id: 1, image: 1, title: 1, createTime: 1, updateTime: 1, address: 1, money: 1, sold: 1, unit: 1,
             cateID: 1, linkTitle: 1, free: 1, img: 1, userID: 1, type: 1, dia_chi: 1, endvalue: 1, img: 1, until: 1, address: 1, buySell: 1
         }
-        let lovenew = await LoveNews.find({ id_user: userIdRaoNhanh });
+        let lovenew = await LoveNews.find({ id_user: userIdRaoNhanh }).lean();
         //tin dang ban
         let listSellNews = await New.find({ userID: userIdRaoNhanh, active: 1, buySell: 2 }, fields).lean();
         if (listSellNews.length > 0) {
@@ -296,7 +303,7 @@ exports.profileInformation = async (req, res, next) => {
                 }
                 let checkLove = lovenew.find(item => item.id_new == listSellNews[i]._id)
                 checkLove ? listSellNews[i].islove = 1 : listSellNews[i].islove = 0
-                
+
             }
         }
 

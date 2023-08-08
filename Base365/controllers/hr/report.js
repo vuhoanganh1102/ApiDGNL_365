@@ -663,7 +663,7 @@ exports.reportChart = async (req, res, next) => {
         let married = Number(req.body.married);
         let seniority = Number(req.body.seniority);
         let old = Number(req.body.old);
-
+        // let from_date = 
 
         let limit = 10;
         let skip = (page - 1) * limit;
@@ -686,10 +686,11 @@ exports.reportChart = async (req, res, next) => {
             luongmoi: '$HR_Salarys.sb_salary_basic',
             sb_id_user: '$HR_Salarys.sb_id_user',
             sb_time_up: '$HR_Salarys.sb_time_up',
+            sb_quyetdinh: '$HR_Salarys.sb_quyetdinh'
         };
         let conditions = {};
         let data = {};
-
+        let subConditions = {};
 
         conditions['inForPerson.employee.com_id'] = comId;
         conditions['inForPerson.employee.ep_status'] = 'Active';
@@ -702,13 +703,13 @@ exports.reportChart = async (req, res, next) => {
         if (married) conditions['inForPerson.account.married'] = married;
         if (depId) conditions['inForPerson.employee.dep_id'] = depId;
         if (seniority) conditions['inForPerson.account.experience'] = seniority;
-        
-        if(birthday){
-            var dauNam = new Date(birthday,1,1).getTime() / 1000;
-            var cuoiNam = new Date(birthday,12,31).getTime() / 1000;
+
+        if (birthday) {
+            var dauNam = new Date(birthday, 1, 1).getTime() / 1000;
+            var cuoiNam = new Date(birthday, 12, 31).getTime() / 1000;
             conditions['inForPerson.account.birthday'] = {
-                $gt:dauNam,
-                $lt:cuoiNam
+                $gt: dauNam,
+                $lt: cuoiNam
             };
         }
         conditions.type = 2
@@ -753,6 +754,7 @@ exports.reportChart = async (req, res, next) => {
             delete conditions['inForPerson.employee.ep_status']
             subConditions['resign.com_id'] = comId;
             conditions.type = { $ne: 2 }
+
             data = await Users.aggregate([
                 { $match: conditions },
                 { $skip: skip },
@@ -766,6 +768,7 @@ exports.reportChart = async (req, res, next) => {
                     }
                 },
                 { $unwind: "$resign" },
+                { $match: subConditions },
                 {
                     $lookup: {
                         from: 'QLC_Deparments',
@@ -890,6 +893,11 @@ exports.reportChart = async (req, res, next) => {
             let soluong = data.length
             return functions.success(res, 'get data success', { soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-tang-giam-luong.html') {
+            if (from_date) subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date) }
+            if (to_date) subConditions['HR_Salarys.sb_time_up'] = { $lte: new Date(to_date) }
+            if (from_date && to_date)
+                subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
+
             data = await Users.aggregate([
                 { $match: conditions },
                 {
@@ -901,6 +909,7 @@ exports.reportChart = async (req, res, next) => {
                     }
                 },
                 { $unwind: '$HR_Salarys' },
+                { $match: subConditions },
                 { $match: { 'HR_Salarys.sb_first': { $ne: 1 }, 'HR_Salarys.sb_id_com': comId } },
                 { $sort: { 'HR_Salarys.sb_time_up': -1 } },
                 { $skip: skip },
@@ -937,7 +946,7 @@ exports.reportChart = async (req, res, next) => {
             let subData = [];
             for (let i = 0; i < data.length; i++) {
                 conditions = {};
-                
+
                 conditions.sb_id_user = data[i].sb_id_user;
                 conditions.sb_time_up = { $lt: data[i].sb_time_up }
 
@@ -949,7 +958,7 @@ exports.reportChart = async (req, res, next) => {
                     if (luongcu.sb_salary_basic > data[i].luongmoi) {
                         data[i].giamLuong = luongcu.sb_salary_basic - data[i].luongmoi;
                         data[i].tangLuong = 0;
-                        
+
                     } else if (luongcu.sb_salary_basic < data[i].luongmoi) {
                         data[i].tangLuong = data[i].luongmoi - luongcu.sb_salary_basic;
                         data[i].giamLuong = 0;
@@ -958,7 +967,7 @@ exports.reportChart = async (req, res, next) => {
                 }
             }
             let soluong = subData.length
-            return functions.success(res, 'get data success', { soluong, data:subData })
+            return functions.success(res, 'get data success', { soluong, data: subData })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
             let tuoi = 0;
             let list = [];
@@ -996,7 +1005,7 @@ exports.reportChart = async (req, res, next) => {
                 { $project: searchItem }
 
             ])
-            for (let i = 0; i < check.length; i++) { 
+            for (let i = 0; i < check.length; i++) {
                 let sinhnhat = new Date(check[i].birthday * 1000).getFullYear()
                 let namhientai = new Date().getFullYear();
                 tuoi = namhientai - sinhnhat;
@@ -1011,7 +1020,7 @@ exports.reportChart = async (req, res, next) => {
                 }
             }
             let soluong = data.length
-            return functions.success(res, 'get data success', { soluong, data:list })
+            return functions.success(res, 'get data success', { soluong, data: list })
         }
     } catch (error) {
         console.log("🚀 ~ file: report.js:985 ~ exports.reportChart= ~ error:", error)
