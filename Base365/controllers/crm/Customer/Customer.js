@@ -238,405 +238,206 @@ exports.addCustomer = async (req, res) => {
   }
 };
 
+
 exports.showKH = async (req, res) => {
   try {
-    let { page, perPage } = req.body;
-
-    if (req.user.data.type !== 1) {
-      return functions.setError(res, 'Không có quyền truy cập', 400);
-    }
-
-    const com_id = req.user.data.com_id;
-    const matchQuery = {
-      company_id: com_id,
-      is_delete: 0
+    let { page,perPage,name, phone_number, status, resoure, user_edit_id, time_s, time_e, group_id, group_pins_id } = req.body;
+    ; // Số lượng giá trị hiển thị trên mỗi trang
+    let startIndex = (page - 1) * perPage;
+    let endIndex = page * perPage;
+    let com_id = req.user.data.com_id
+    let query = {
+      company_id : com_id,
+      is_delete: 0,
     };
 
-    page = parseInt(page) || 1;
-    perPage = parseInt(perPage) || 10;
-    const startIndex = (page - 1) * perPage;
+    if (name) {
+      query.name = { $regex: name, $options: "i" };
+    }
+    if (phone_number) {
+      query.phone_number = { $regex: phone_number, $options: "i" };
+    }
+    if (status) {
+      query.status = status;
+    }
+    if (resoure) {
+      query.resoure = resoure;
+    }
+    if (user_edit_id) {
+      query.user_edit_id = user_edit_id;
+    }
+    if (group_id) {
+      query.group_id = group_id;
+    }
+    if (group_pins_id) {
+      query.group_pins_id = group_pins_id;
+    }
 
-    let pipeline = [
+    // Thêm các điều kiện tìm kiếm theo thuộc tính được gửi qua req.body
+    Object.keys(req.body).forEach(key => {
+      if (req.body[key] && !['page', 'userId', 'name', 'phone_number', 'status', 'resoure', 'user_edit_id', 'time_s', 'time_e', 'group_id', 'group_pins_id'].includes(key)) {
+        query[key] = req.body[key];
+      }
+    });
+    if (time_s && time_e) {
+      if (time_s > time_e) {
+        return functions.setError(res, 'Thời gian bắt đầu không thể lớn hơn thời gian kết thúc.', 400);
+      }
+      query.created_at = { $gte: time_s, $lte: time_e };
+    }
+
+    if (req.user.data.type == 1) {
+      // trường hợp là công ty
+      let com_id = req.user.data.com_id;
+      page = parseInt(page) || 1;
+      perPage = parseInt(perPage) || 10;
+      let startIndex = (page - 1) * perPage
+      let showCty = await Customer.find({ ...query })
+      .select('cus_id name phone_number email group_id status description resoure user_create_id emp_id user_handing_over_work updated_at')
+      .sort({ updated_at: -1 })
+      .limit(perPage)
+      let listUser = await User.find({ 'inForPerson.employee.com_id' : com_id}).select('idQLC userName').lean()
+      console.log(listUser);
+      for(let i = 0 ; i < showCty.length ; i++){
+        const element = showCty[i];
+  const emplopyee =  listUser.find(e =>  Number(e.idQLC) == Number(element.emp_id) );
+        element.emp_name = "";
+console.log(element.emp_id,emplopyee, com_id)
+      }
+
+    let totalRecords = await Customer.countDocuments({ company_id: com_id, ...query });
+    let totalPages = Math.ceil(totalRecords / perPage);
+    let hasNextPage = startIndex + perPage < totalRecords;
+
+    return functions.success(res, 'Lấy dữ liệu thành công', { showCty, totalRecords, totalPages, hasNextPage });
+    }
+    if (req.user.data.type == 2) {
+      // trường hợp là nhân viên
+      let userId = req.user.data.idQLC
+      const checkUser = await User.findOne({ idQLC: userId });
+      if ([1, 2, 9, 3].includes(checkUser.inForPerson.employee.position_id))
+      //( là sinh viên thực tập,nhân viên thử việc,nhân viên part time, nhân viên chính thức)
       {
-        $match: matchQuery,
-      },
-      { $sort: { cus_id: -1 } }, // Sắp xếp kết quả theo cus_id giảm dần
-      {
-        $lookup: {
-          from: 'CRM_customer_group',
-          localField: 'group_id',
-          foreignField: 'gr_id',
-          as: 'ten_nhom',
-        },
-      },
-      {
-        $lookup: {
-          from: 'Users',
-          let: {
-            user_create_id: '$user_create_id',
-            emp_id: '$emp_id',
-            user_handing_over_work: '$user_handing_over_work',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$idQLC', '$$user_create_id'] },
-                    { $ne: ['$type', 0] },
-                  ],
-                },
-              },
-            },
+        let id_dataNhanvien = checkUser.idQLC;
+        const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien });
+        const customerIds = shareCusNV.map(item => item.customer_id);
+        const checkCus = await Customer.find({
+          $or: [
+            { emp_id: id_dataNhanvien },
+            { cus_id: { $in: customerIds } }
           ],
-          as: 'nguoi_tao',
-        },
-      },
+          ...query // Kết hợp với các điều kiện tìm kiếm khác
+        })
+        .select('cus_id name phone_number email group_id status description resoure user_create_id emp_id user_handing_over_work updated_at');
+        let checkgroup = await NhomKH.find({ gr_id: { $in: showCty.group_id, company_id: com_id } }).select('gr_name')
+        if (!checkgroup) {
+          checkgroup = ''
+        }
+        let chekUser1 = await User.find({ idQLC: { $in: checkCus.user_create_id } }).select('userName')
+        if (!chekUser1) {
+          chekUser1 = ''
+        }
+        let checkUser2 = await User.find({ idQLC: { $in: checkCus.emp_id } }).select('userName')
+        if (!checkUser2) {
+          checkUser2 = ''
+        }
+        let checkUser3 = await User.find({ idQLC: { $in: checkCus.user_handing_over_work } }).select('userName')
+        if (!checkUser3) {
+          checkUser3 = ''
+        }
+      }
+ 
+      if ([7,8,14,16,22,21,18,19,17].includes(checkUser.inForPerson.employee.position_id))
+      // (phó giám đốc,giám đốc,phó tổng giám đốc,tổng giám đốc,phó tổng giám đốc tập đoàn,
+        // tổng giám đốc tập đoàn, phó chủ tịch hội đồng quản trị, chủ tịch hội đồng quản trị,
+        // thành viên hội đồng quản trị)
+        {
+        let id_com = checkUser.inForPerson.employee.com_id;
+        const checkCus = await Customer.find({ company_id: id_com, ...query })
+          .select('cus_id name phone_number email group_id status description resoure user_create_id emp_id user_handing_over_work updated_at')
+          .skip(startIndex)
+          .limit(perPage)
+        let checkgroup = await NhomKH.find({ gr_id: { $in: showCty.group_id, company_id: com_id } }).select('gr_name')
+        if (!checkgroup) {
+          checkgroup = ''
+        }
+        let chekUser1 = await User.find({ idQLC: { $in: checkCus.user_create_id } }).select('userName')
+        if (!chekUser1) {
+          chekUser1 = ''
+        }
+        let checkUser2 = await User.find({ idQLC: { $in: checkCus.emp_id } }).select('userName')
+        if (!checkUser2) {
+          checkUser2 = ''
+        }
+        let checkUser3 = await User.find({ idQLC: { $in: checkCus.user_handing_over_work } }).select('userName')
+        if (!checkUser3) {
+          checkUser3 = ''
+        }
+      }
+
+      if ([20,4,12,13,11.10,5,6].includes(checkUser.inForPerson.employee.position_id))
+      //(Nhóm phó, trưởng nhóm,phó tổ trưởng, tổ trưởng,phó ban dự án,trưởng ban dự án
+      // Phó trưởng phòng,trường phòng)
       {
-        $lookup: {
-          from: 'Users',
-          let: {
-            emp_id: '$emp_id',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$idQLC', '$$emp_id'] },
-                    { $ne: ['$type', 0] },
-                  ],
-                },
-              },
-            },
-          ],
-          as: 'nguoi_phu_trach',
-        },
-      },
-      {
-        $lookup: {
-          from: 'Users',
-          let: {
-            user_handing_over_work: '$user_handing_over_work',
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$_id', '$$user_handing_over_work'] },
-                    { $ne: ['$type', 0] },
-                  ],
-                },
-              },
-            },
-          ],
-          as: 'nguoi_ban_giao',
-        },
-      },
-      {
-        $group: {
-          _id: '$cus_id',
-          ma_kh: { $first: '$cus_id' },
-          ten_khach_hang: { $first: '$name' },
-          dien_thoai: { $first: '$phone_number' },
-          email: { $first: '$email' },
-          nhom_khach_hang: { $first: '$ten_nhom.gr_name' },
-          nguoi_tao: { $first: '$nguoi_tao.userName' },
-          nguoi_phu_trach: { $first: '$nguoi_phu_trach.userName' },
-          nguoi_ban_giao: { $first: '$nguoi_ban_giao.userName' },
-        },
-      },
-    ];
-
-    // Phân trang
-    pipeline.push(
-      { $skip: startIndex },
-      { $limit: perPage }
-    );
-
-    let listKh = await Customer.aggregate(pipeline);
-
-    const totalTsCount = await Customer.countDocuments(matchQuery);
-    const totalPages = Math.ceil(totalTsCount / perPage);
-    const hasNextPage = startIndex + perPage < totalTsCount;
-
-    return functions.success(res, 'Lấy dữ liệu thành công', { listKh, totalTsCount, totalPages, hasNextPage });
+        let id_com = checkUser.inForPerson.employee.com_id;
+        let id_dataNhanvien = checkUser.idQLC;
+        let id_pb = checkUser.inForPerson.employee.dep_id;
+        const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien, dep_id: id_pb });
+        const customerIds = shareCusNV.map(item => item.customer_id);
+        let checkCB = await User.find({
+          "inForPerson.employee.dep_id": id_pb,
+          "inForPerson.employee.com_id": id_com,
+        })
+        .select("idQLC")
+        .skip(startIndex)
+        .limit(perPage)
+        const shareCb = checkCB.map(item => item.idQLC);
+        const checkCus = await Customer.find({
+          $or: [{ emp_id: { $in: shareCb } }, { cus_id: { $in: customerIds } }],
+          ...query // Kết hợp với các điều kiện tìm kiếm khác
+        })
+        let checkgroup = await NhomKH.find({ gr_id: { $in: showCty.group_id, company_id: com_id } }).select('gr_name')
+        if (!checkgroup) {
+          checkgroup = ''
+        }
+        let chekUser1 = await User.find({ idQLC: { $in: checkCus.user_create_id } }).select('userName')
+        if (!chekUser1) {
+          chekUser1 = ''
+        }
+        let checkUser2 = await User.find({ idQLC: { $in: checkCus.emp_id } }).select('userName')
+        if (!checkUser2) {
+          checkUser2 = ''
+        }
+        let checkUser3 = await User.find({ idQLC: { $in: checkCus.user_handing_over_work } }).select('userName')
+        if (!checkUser3) {
+          checkUser3 = ''
+        }
+        
+      }
+      const totalRecords = await Customer.countDocuments(query);
+      let data = {
+        ma_kh: showCty.cus_id,
+        ten_khach_hang: showCty.name,
+        dien_thoai: showCty.phone_number,
+        email: showCty.email,
+        nhom_khach_hang: checkgroup.gr_name,
+        tinh_trang_khach_hang: showCty.status,
+        mo_ta: showCty.description,
+        nguon_khach_hang: showCty.resoure,
+        nhan_vien_tao: chekUser1.userName,
+        nhan_vien_phu_trach: checkUser2.userName,
+        nhan_vien_ban_giao: checkUser3.userName,
+        ngay_cap_nhat: showCty.updated_at
+      }
+      return functions.success(res, 'get data success', { data,totalRecords });
+    } else {
+      return functions.setError(res, 'bạn không có quyền', 400)
+    }
   } catch (e) {
-    console.log(e);
-    return functions.setError(res, e.message);
+    console.log(e)
+    return functions.setError(res, e.message)
   }
 };
-
-
-
-
-// exports.showKH = async (req, res) => {
-//   try {
-//     let { page, perPage,name, phone_number, status, resoure, user_edit_id, time_s, time_e, group_id, group_pins_id } = req.body
-//     if (req.user.data.type == 1 || req.user.data.type == 2) {
-//       com_id = req.user.data.com_id;
-//       console.log(com_id)
-//     } else {
-//       return functions.setError(res, 'không có quyền truy cập', 400);
-//     }
-//     let matchQuery = {
-//       company_id : com_id,
-//       is_delete : 0
-//     };
-     
-//     // if (name) {
-//     //   matchQuery.name = { $regex: name, $options: "i" };
-//     // }
-//     // if (phone_number) {
-//     //   query.phone_number = { $regex: phone_number, $options: "i" };
-//     // }
-//     // if (status) {
-//     //   query.status = status;
-//     // }
-//     // if (resoure) {
-//     //   query.resoure = resoure;
-//     // }
-//     // if (user_edit_id) {
-//     //   query.user_edit_id = user_edit_id;
-//     // }
-//     // if (group_id) {
-//     //   query.group_id = group_id;
-//     // }
-//     // if (group_pins_id) {
-//     //   query.group_pins_id = group_pins_id;
-//     // }
-
-//     // // Thêm các điều kiện tìm kiếm theo thuộc tính được gửi qua req.body
-//     // Object.keys(req.body).forEach(key => {
-//     //   if (req.body[key] && !['page', 'userId', 'name', 'phone_number', 'status', 'resoure', 'user_edit_id', 'time_s', 'time_e', 'group_id', 'group_pins_id'].includes(key)) {
-//     //     query[key] = req.body[key];
-//     //   }
-//     // });
-//     // if (time_s && time_e) {
-//     //   if (time_s > time_e) {
-//     //     return functions.setError(res, 'Thời gian bắt đầu không thể lớn hơn thời gian kết thúc.', 400);
-//     //   }
-//     //   query.created_at = { $gte: time_s, $lte: time_e };
-//     // }
-
-//     if (req.user.data.type == 1) {
-//       // trường hợp là công ty
-//       com_id = req.user.data.com_id
-//       page = parseInt(page) || 1; // Trang hiện tại (mặc định là trang 1)
-//       perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
-//        const startIndex = (page - 1) * perPage;
-//     const endIndex = page * perPage;
-
-//       let listKh = await Customer.aggregate([
-//         {
-//           $match: matchQuery,
-//         },
-//         { $sort: { cus_id: -1 } },
-//         {
-//           $lookup: {
-//             from: 'CRM_customer_group',
-//             localField: 'group_id',
-//             foreignField: 'gr_id',
-//             as: 'ten_nhom',
-//           },
-//         },
-//         {
-//           $lookup: {
-//             from: 'Users',
-//             localField: 'user_create_id',
-//             foreignField: 'idQLC',
-//             as: 'nguoi_tao',
-//           },
-//         },
-//         {
-//           $lookup: {
-//             from: 'Users',
-//             localField: 'emp_id',
-//             foreignField: 'idQLC',
-//             as: 'nguoi_phu_trach',
-//           },
-//         },
-//         {
-//           $lookup: {
-//             from: 'Users',
-//             localField: 'user_handing_over_work',
-//             foreignField: 'idQLC',
-//             as: 'nguoi_ban_giao',
-//           },
-//         },
-//         {
-//           $unwind: '$nguoi_tao',
-//         },
-//         {
-//           $unwind: '$nguoi_phu_trach',
-//         },
-//         {
-//           $unwind: '$nguoi_ban_giao',
-//         },
-//         {
-//           $match: {
-//             $and: [
-//               { 'nguoi_tao.type': { $ne: 0 } },
-//               { 'nguoi_phu_trach.type': { $ne: 0 } },
-//               { 'nguoi_ban_giao.type': { $ne: 0 } },
-//             ],
-//           },
-//         },
-//         {
-//           $skip: startIndex, // Bỏ qua kết quả trước startIndex
-//         },
-//         {
-//           $limit: perPage, // Giới hạn số lượng kết quả trả về
-//         },
-//         {
-//           $group: {
-//             _id: '$cus_id',
-//             ma_kh: { $first: '$cus_id' },
-//             ten_khach_hang: { $first: '$name' },
-//             dien_thoai: { $first: '$phone_number' },
-//             email: { $first: '$email' },
-//             nhom_khach_hang: { $first: '$ten_nhom.gr_name' },
-//             nguoi_tao :{ $first: '$nguoi_tao.userName'},
-//             nguoi_phu_trach : { $first: '$nguoi_phu_trach.userName'},
-//             nguoi_ban_giao : { $first: '$nguoi_ban_giao.userName'},
-//           },
-//         },
-//       ]);
-//       const totalTsCount = await Customer.countDocuments(matchQuery);
-
-//       // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không
-//       const totalPages = Math.ceil(totalTsCount / perPage);
-//       const hasNextPage = endIndex < totalTsCount;
-//       return functions.success(res, 'get data success', { listKh,totalTsCount });
-//     }
-//     // if (req.user.data.type == 2) {
-//     //   // trường hợp là nhân viên
-//     //   let userId = req.user.data.idQLC
-//     //   const checkUser = await User.findOne({ idQLC: userId });
-//     //   if ([1, 2, 9, 3].includes(checkUser.inForPerson.employee.position_id))
-//     //   //( là sinh viên thực tập,nhân viên thử việc,nhân viên part time, nhân viên chính thức)
-//     //   {
-//     //     let id_dataNhanvien = checkUser.idQLC;
-//     //     const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien });
-//     //     const customerIds = shareCusNV.map(item => item.customer_id);
-//     //     const checkCus = await Customer.find({
-//     //       $or: [
-//     //         { emp_id: id_dataNhanvien },
-//     //         { cus_id: { $in: customerIds } }
-//     //       ],
-//     //       ...query // Kết hợp với các điều kiện tìm kiếm khác
-//     //     })
-//     //     .select('cus_id name phone_number email group_id status description resoure user_create_id emp_id user_handing_over_work updated_at')
-//     //     let checkgroup = await NhomKH.find({ gr_id: { $in: showCty.group_id, company_id: com_id } }).select('gr_name')
-//     //     if (!checkgroup) {
-//     //       checkgroup = ''
-//     //     }
-//     //     let chekUser1 = await User.find({ idQLC: { $in: checkCus.user_create_id } }).select('userName')
-//     //     if (!chekUser1) {
-//     //       chekUser1 = ''
-//     //     }
-//     //     let checkUser2 = await User.find({ idQLC: { $in: checkCus.emp_id } }).select('userName')
-//     //     if (!checkUser2) {
-//     //       checkUser2 = ''
-//     //     }
-//     //     let checkUser3 = await User.find({ idQLC: { $in: checkCus.user_handing_over_work } }).select('userName')
-//     //     if (!checkUser3) {
-//     //       checkUser3 = ''
-//     //     }
-//     //   }
- 
-//     //   if ([7,8,14,16,22,21,18,19,17].includes(checkUser.inForPerson.employee.position_id))
-//     //   // (phó giám đốc,giám đốc,phó tổng giám đốc,tổng giám đốc,phó tổng giám đốc tập đoàn,
-//     //     // tổng giám đốc tập đoàn, phó chủ tịch hội đồng quản trị, chủ tịch hội đồng quản trị,
-//     //     // thành viên hội đồng quản trị)
-//     //   {
-//     //     let id_com = checkUser.inForPerson.employee.com_id;
-//     //     const checkCus = await Customer.find({ company_id: id_com, ...query })
-//     //       .select('cus_id name phone_number email group_id status description resoure user_create_id emp_id user_handing_over_work updated_at')
-//     //       .skip(startIndex)
-//     //       .limit(perPage)
-//     //     let checkgroup = await NhomKH.find({ gr_id: { $in: showCty.group_id, company_id: com_id } }).select('gr_name')
-//     //     if (!checkgroup) {
-//     //       checkgroup = ''
-//     //     }
-//     //     let chekUser1 = await User.find({ idQLC: { $in: checkCus.user_create_id } }).select('userName')
-//     //     if (!chekUser1) {
-//     //       chekUser1 = ''
-//     //     }
-//     //     let checkUser2 = await User.find({ idQLC: { $in: checkCus.emp_id } }).select('userName')
-//     //     if (!checkUser2) {
-//     //       checkUser2 = ''
-//     //     }
-//     //     let checkUser3 = await User.find({ idQLC: { $in: checkCus.user_handing_over_work } }).select('userName')
-//     //     if (!checkUser3) {
-//     //       checkUser3 = ''
-//     //     }
-//     //   }
-
-//     //   if ([20,4,12,13,11.10,5,6].includes(checkUser.inForPerson.employee.position_id))
-//     //   //(Nhóm phó, trưởng nhóm,phó tổ trưởng, tổ trưởng,phó ban dự án,trưởng ban dự án
-//     // // Phó trưởng phòng,trường phòng)
-//     //   {
-//     //     let id_com = checkUser.inForPerson.employee.com_id;
-//     //     let id_dataNhanvien = checkUser.idQLC;
-//     //     let id_pb = checkUser.inForPerson.employee.dep_id;
-//     //     const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien, dep_id: id_pb });
-//     //     const customerIds = shareCusNV.map(item => item.customer_id);
-//     //     let checkCB = await User.find({
-//     //       "inForPerson.employee.dep_id": id_pb,
-//     //       "inForPerson.employee.com_id": id_com,
-//     //     })
-//     //     .select("idQLC")
-//     //     .skip(startIndex)
-//     //     .limit(perPage)
-//     //     const shareCb = checkCB.map(item => item.idQLC);
-//     //     const checkCus = await Customer.find({
-//     //       $or: [{ emp_id: { $in: shareCb } }, { cus_id: { $in: customerIds } }],
-//     //       ...query // Kết hợp với các điều kiện tìm kiếm khác
-//     //     })
-//     //     let checkgroup = await NhomKH.find({ gr_id: { $in: showCty.group_id, company_id: com_id } }).select('gr_name')
-//     //     if (!checkgroup) {
-//     //       checkgroup = ''
-//     //     }
-//     //     let chekUser1 = await User.find({ idQLC: { $in: checkCus.user_create_id } }).select('userName')
-//     //     if (!chekUser1) {
-//     //       chekUser1 = ''
-//     //     }
-//     //     let checkUser2 = await User.find({ idQLC: { $in: checkCus.emp_id } }).select('userName')
-//     //     if (!checkUser2) {
-//     //       checkUser2 = ''
-//     //     }
-//     //     let checkUser3 = await User.find({ idQLC: { $in: checkCus.user_handing_over_work } }).select('userName')
-//     //     if (!checkUser3) {
-//     //       checkUser3 = ''
-//     //     }
-        
-//     //   }
-//     //   const totalRecords = await Customer.countDocuments(query);
-//     //   let data = {
-//     //     ma_kh: showCty.cus_id,
-//     //     ten_khach_hang: showCty.name,
-//     //     dien_thoai: showCty.phone_number,
-//     //     email: showCty.email,
-//     //     nhom_khach_hang: checkgroup.gr_name,
-//     //     tinh_trang_khach_hang: showCty.status,
-//     //     mo_ta: showCty.description,
-//     //     nguon_khach_hang: showCty.resoure,
-//     //     nhan_vien_tao: chekUser1.userName,
-//     //     nhan_vien_phu_trach: checkUser2.userName,
-//     //     nhan_vien_ban_giao: checkUser3.userName,
-//     //     ngay_cap_nhat: showCty.updated_at
-//     //   }
-//     //   return functions.success(res, 'get data success', { data,totalRecords });
-//     // } else {
-//     //   return functions.setError(res, 'bạn không có quyền', 400)
-//     // }
-//   } catch (e) {
-//     console.log(e)
-//     return functions.setError(res, e.message)
-//   }
-// };
 
 
 //Xoa khach hang                            
@@ -644,25 +445,24 @@ exports.DeleteKH = async (req, res) => {
   try {
     let { cus_id } = req.body;
     if (!cus_id || !Array.isArray(cus_id) || cus_id.length === 0) {
-      return res.status(400).json({ success: false, error: 'Mảng cus_id không được bỏ trống' });
+      return functions.setError(res, 'Mảng cus_id không được bỏ trống', 400);
     }
     if (!cus_id.every(Number.isInteger)) {
-      return res.status(400).json({ success: false, error: 'Tất cả các giá trị trong mảng cus_id phải là số nguyên' });
+      return functions.setError(res, 'Tất cả các giá trị trong mảng cus_id phải là số nguyên', 400);
     }
     const existingCustomers = await Customer.find({ cus_id: { $in: cus_id } });
-
     if (existingCustomers.length === 0) {
-      return res.status(400).json({ success: false, error: 'Khách hàng không tồn tại' });
+      return functions.setError(res, 'Khách hàng không tồn tại', 400);
     }
     const deleteCustomers = existingCustomers.filter(customer => customer.is_delete === 0);
     if (deleteCustomers.length === 0) {
-      return res.status(400).json({ success: false, error: 'Tất cả khách hàng đã bị xóa trước đó' });
+      return functions.setError(res, 'Tất cả khách hàng đã bị xóa trước đó', 400);
     }
     await Customer.updateMany({ cus_id: { $in: cus_id } }, { is_delete: 1 });
-    return res.status(200).json({ success: true, message: 'Xóa thành công' });
-  } catch (e) {
-    console.log(e);
-    return functions.setError(res, e.message);
+    return functions.success(res, 'Xóa thành công');
+  } catch (error) {
+    console.error('Failed to delete', error);
+    return res.status(500).json({ success: false, error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
   }
 };
 
@@ -673,16 +473,21 @@ exports.DeleteKH = async (req, res) => {
 exports.addConnectCs = async (req, res) => {
   try {
     let { appID, webhook } = req.body
-    let comId = req.user.data.inForPerson.employee.com_id
+    let comId = '';
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      comId = req.user.data.com_id;
+      userID = req.user.data.idQLC
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
     let tokenCn = req.headers["authorization"]
-    let userID = req.user.idQLC
     let createDate = new Date();
 
     if (typeof appID === 'undefined') {
-      res.status(400).json({ success: false, error: 'appID không được bỏ trống' });
+      return functions.setError(res, 'appID không được bỏ trống', 400);
     }
     if (typeof webhook === 'undefined') {
-      res.status(400).json({ success: false, error: 'webhook phải là 1 số' });
+      return functions.setError(res, 'webhook phải là 1 số', 400);
     }
     let maxID = await customerService.getMaxIDConnectApi(ConnectApi);
     let id = 0;
@@ -691,24 +496,8 @@ exports.addConnectCs = async (req, res) => {
     }
     let checkCn = await ConnectApi.findOne({ company_id: comId })
     if (checkCn) {
-      res.status(400).json({ success: false, error: "Api kết nối đã có không thể tạo mới" });
+      return functions.setError(res, 'Api kết nối đã có không thể tạo mới', 400)
     } else {
-      if (req.user.data.type == 2) {
-        let createApi = await new ConnectApi({
-          id: id,
-          company_id: comId,
-          appID: appID,
-          webhook: webhook,
-          token: tokenCn,
-          user_edit_id: comId,
-          user_edit_type: 1,
-          stt_conn: 1,
-          created_at: createDate
-        })
-        let saveApi = await createApi.save();
-        res.status(200).json(saveApi);
-      }
-      else if (req.user.data.type == 1) {
         let createApi = await new ConnectApi({
           id: id,
           company_id: comId,
@@ -721,13 +510,11 @@ exports.addConnectCs = async (req, res) => {
           created_at: createDate
         })
         let saveApi = await createApi.save();
-        res.status(200).json(saveApi);
-      }
+        return functions.success(res, 'thêm thành công', { saveApi })
     }
 
-  }catch (e) {
-    console.log(e);
-    return functions.setError(res, e.message);
+  } catch (error) {
+    return functions.setError(res, error)
   }
 
 }
@@ -737,17 +524,16 @@ exports.addConnectCs = async (req, res) => {
 exports.editConnectCs = async (req, res) => {
   try {
     let { appID, webhook } = req.body
-    let comId = req.user.data.inForPerson.employee.com_id
+    let comId = req.user.data.idQLC
     let tokenCn = req.headers["authorization"]
-    let userID = req.user.idQLC;
     let updateDate = new Date();
     if (typeof appID === 'undefined') {
-      res.status(400).json({ success: false, error: 'appID không được bỏ trống' });
+      return functions.setError(res, 'appID không được bỏ trống', 400);
     }
     if (typeof webhook === 'undefined') {
-      res.status(400).json({ success: false, error: 'webhook phải là 1 số' });
+      return functions.setError(res, 'webhook phải là 1 số', 400);
     }
-    if (req.user.data.type == 2) {
+    if (req.user.data.type == 2 ||req.user.data.type == 1) {
       await customerService.getDatafindOneAndUpdate(ConnectApi, { company_id: comId }, {
         id: id,
         company_id: comId,
@@ -759,24 +545,10 @@ exports.editConnectCs = async (req, res) => {
         stt_conn: 1,
         updated_at: updateDate
       })
-      return customerService.success(res, "Api edited successfully");
-    }
-    else if (req.user.data.type == 1) {
-      await customerService.getDatafindOneAndUpdate(ConnectApi, { company_id: comId }, {
-        id: id,
-        company_id: comId,
-        appID: appID,
-        webhook: webhook,
-        token: tokenCn,
-        user_edit_id: userID,
-        user_edit_type: 1,
-        stt_conn: 1,
-        updated_at: updateDate
-      })
-      return customerService.success(res, "Api edited successfully");
+      return functions.success(res, 'Api edited successfully');
     }
     else {
-      return res.status(200).json({ error: 'Bạn không có quyền' })
+      return functions.setError(res, 'bạn không có quyền', 400)
     }
   } catch (error) {
     return customerService.setError(res, error)
@@ -789,7 +561,7 @@ exports.ShowConnectCs = async (req, res) => {
   try {
     let comId = req.user.data.inForPerson.employee.com_id
     const check = await ConnectApi.findOne({ company_id: comId })
-    return functions.success(res, 'Lấy dữ liệu thành công', { lcheck });
+    return functions.success(res, 'Lấy dữ liệu thành công', { check });
   } catch (error) {
     return functions.setError(res, error)
   }
