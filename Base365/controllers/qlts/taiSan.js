@@ -486,6 +486,7 @@ exports.editTS = async (req, res) => {
     return functions.setError(res , e.message)
 }
 };
+
 //hiển thị ghi tang
 exports.showGhiTang = async(req,res) => {
   try{
@@ -805,8 +806,6 @@ exports.chinhSuaGhitang = async(req,res) => {
 }
 }
 
-
-
 exports.quatrinhsd = async (req, res) => {
   try {
 
@@ -973,7 +972,6 @@ exports.quatrinhsd = async (req, res) => {
 }
 };
 
-
 //Phần Khấu hao
 exports.khauhaoCTTS = async (req, res) => {
   try {
@@ -1056,7 +1054,7 @@ exports.addKhauHao = async (req, res) => {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     
-    if (!kh_gt || !kh_so_ky || !kh_so_ky_con_lai || !kh_day_start || !kh_gt_cho_kh || !kh_gt_da_kh || kh_type_ky) {
+    if (!kh_gt || !kh_so_ky || !kh_so_ky_con_lai || !kh_day_start || !kh_gt_cho_kh || !kh_gt_da_kh || !kh_type_ky) {
       return functions.setError(res, 'thiếu thông tin truyền lên', 400);
     }
 

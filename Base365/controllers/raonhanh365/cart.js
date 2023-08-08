@@ -57,7 +57,7 @@ exports.addCart = async (req, res, next) => {
     let tongtien = Number(req.body.tongtien);
     let ngaydathang = new Date();
 
-    if (idnew && soluong && tongtien && phanloai) {
+    if (idnew && soluong && phanloai) {
       if (
         functions.checkNumber(soluong) && functions.checkNumber(tongtien) &&
         functions.checkNumber(trangthai) && soluong > 0 && tongtien > 0) {

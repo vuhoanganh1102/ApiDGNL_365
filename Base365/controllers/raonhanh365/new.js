@@ -342,7 +342,7 @@ exports.createNews = async (req, res, next) => {
         }
         if (fields.linkImage && fields.linkImage.length) {
             for (let i = 0; i < fields.linkImage.length; i++) {
-                await raoNhanh.copyFolder(res, fields.linkImage[i], folder)
+                await raoNhanh.copyFolder(fields.linkImage[i], folder)
                 let img = fields.linkImage[i].split('/').reverse()[0]
                 fields.img.push({ nameImg: img })
             }
@@ -360,6 +360,7 @@ exports.createNews = async (req, res, next) => {
         }
 
         fields.createTime = new Date();
+        fields.updateTime = new Date();
 
         const news = new New(fields);
         await news.save();
@@ -416,6 +417,7 @@ exports.updateNews = async (req, res, next) => {
         if (existsNews) {
             // xoa truong _id
             delete fields._id;
+            fields.updateTime = new Date();
             await New.findByIdAndUpdate(idNews, fields);
             return functions.success(res, "Sửa tin thành công");
         }
@@ -717,11 +719,12 @@ exports.getNew = async (req, res, next) => {
             free: 1,
             link: 1
         };
+
         let data = await New.aggregate([
             { $sort: { pinHome: -1 }, },
-            { $match: { buySell: 2, sold: 0, active: 1 }, },
-            { $limit: 50, },
-            { $sort: { createTime: -1, order: -1 } },
+            { $match: { buySell: 2, sold: 0, active: 1, userID: { $ne: 0 } } },
+            { $sort: { createTime: -1, updateTime: -1 } },
+            { $limit: 50 },
             {
                 $lookup: {
                     from: "Users",
@@ -734,30 +737,26 @@ exports.getNew = async (req, res, next) => {
             { $project: searchItem },
 
         ]);
+        if (userIdRaoNhanh) {
+            var dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh }).lean();
+        }
         for (let i = 0; i < data.length; i++) {
             data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-c${data[i]._id}.html`;
             data[i].img = await raoNhanh.getLinkFile(data[i].userID, data[i].img, data[i].cateID, 2)
             data[i].islove = 0;
             if (userIdRaoNhanh) {
-                let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
-                for (let j = 0; j < dataLoveNew.length; j++) {
-                    if (data[i]._id === dataLoveNew[j].id_new) {
-                        data[i].islove = 1;
-                    }
-                    if (!data[i].islove || data[i].islove !== 1) {
-                        data[i].islove = 0;
-                    }
-                }
+                let checklove = dataLoveNew.find(item => item.id_new == data[i]._id);
+                checklove ? data[i].islove = 1 : data[i].islove = 0;
             }
-            if (data[i].city) {
+            if (data[i].city && data[i].city != 0) {
                 let datacity = await City.findById({ _id: data[i].city }).lean();
                 if (datacity) data[i].city = datacity.name
             }
-            if (data[i].district) {
+            if (data[i].district && data[i].district != 0) {
                 let datadistric = await District.findById({ _id: data[i].district }).lean();
                 if (datadistric) data[i].district = datadistric.name
             }
-            if (data[i].ward) {
+            if (data[i].ward && data[i].ward != 0) {
                 let dataward = await Ward.findById({ _id: data[i].ward }).lean();
                 if (dataward) data[i].ward = dataward.name
             }
@@ -1082,6 +1081,7 @@ exports.searchNew = async (req, res, next) => {
             { $match: condition },
             { $skip: skip },
             { $limit: limit },
+            { $sort: { createTime: -1, order: -1, updateTime: -1 } },
             {
                 $lookup: {
                     from: "Users",
@@ -2699,45 +2699,21 @@ exports.addDiscount = async (req, res, next) => {
                     ngay_ket_thuc &&
                     giatri_khuyenmai
                 ) {
-                    if (loai_khuyenmai === 1 || loai_khuyenmai === 2) {
+                    if (loai_khuyenmai == 1 || loai_khuyenmai == 2) {
                     } else {
-                        return functions.setError(res, "Nhập ngày không hợp lệ", 400);
+                        return functions.setError(res, "Nhập số không hợp lệ", 400);
                     }
                     if (
-                        functions.checkNumber(giatri_khuyenmai) === false ||
-                        giatri_khuyenmai <= 0
+                        functions.checkNumber(giatri_khuyenmai) === false || giatri_khuyenmai <= 0
                     ) {
                         return functions.setError(res, "invalid number", 400);
                     }
 
-                    if (
-                        (await functions.checkDate(ngay_bat_dau)) === true &&
-                        (await functions.checkDate(ngay_ket_thuc)) === true
-                    ) {
-                        if (
-                            (await functions.checkTime(ngay_bat_dau)) &&
-                            (await functions.checkTime(ngay_ket_thuc))
-                        ) {
-                            let date1 = new Date(ngay_bat_dau);
-                            let date2 = new Date(ngay_ket_thuc);
-                            if (date1 >= date2) {
-                                return functions.setError(res, "Nhập ngày không hợp lệ", 400);
-                            }
-                        } else {
-                            return functions.setError(
-                                res,
-                                "Ngày nhập vào nhỏ hơn ngày hiện tại",
-                                400
-                            );
-                        }
-                    } else {
-                        return functions.setError(res, "Invalid date format", 400);
-                    }
                     let checkNew = await New.findById(new_id);
                     if (checkNew && checkNew.length !== 0) {
                         await New.findByIdAndUpdate(new_id, {
-                            timePromotionStart: ngay_bat_dau,
-                            timePromotionEnd: ngay_ket_thuc,
+                            timePromotionStart: new Date(ngay_bat_dau).getTime() / 1000,
+                            timePromotionEnd: new Date(ngay_ket_thuc).getTime() / 1000,
                             "infoSell.promotionType": loai_khuyenmai,
                             "infoSell.promotionValue": giatri_khuyenmai,
                         });
@@ -3010,7 +2986,7 @@ exports.getDataBidding = async (req, res, next) => {
                         isOnline: 1,
                         phoneTK: 1,
                         address: 1,
-                        idRaoNhanh365:1
+                        idRaoNhanh365: 1
                     },
                     thongtinthau: '$new.bidding'
                 }
@@ -3290,8 +3266,7 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
                 'infoSell.promotionType': { $nin: [1, 2] }
             }
         }
-        if (cateID) conditions.cateID = Number(cateID);
-        if (type) conditions.promotionType = Number(type);
+        if (type) conditions['infoSell.promotionType'] = Number(type);
         if (ten) {
             conditions.title = new RegExp(ten, 'i')
         }
@@ -3301,6 +3276,8 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
         conditions.cateID = {
             $nin: [120, 121, 119, 11, 12, 26, 27, 29, 33, 34]
         }
+        if (cateID) conditions.cateID = Number(cateID);
+        
         let data = await New.find(conditions, {
             electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
             noiThatNgoaiThat: 0, bidding: 0
