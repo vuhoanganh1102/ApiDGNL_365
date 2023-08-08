@@ -15,6 +15,7 @@ router.post('/luuVBCTY',functions.checkToken,formData.parse(), vanBanDiControlle
 router.post('/setTrangThaiVanBan',functions.checkToken,formData.parse(), vanBanDiController.setTrangThaiVanBan);
 router.post('/checkQuyenBanHanh',functions.checkToken,formData.parse(), vanBanDiController.checkQuyenBanHanh);
 router.post('/getUserByEmail',functions.checkToken,formData.parse(), vanBanDiController.getUserByEmail);
+router.post('/getUserByType',functions.checkToken,formData.parse(), vanBanDiController.getUserByType);
 
 
 module.exports = router

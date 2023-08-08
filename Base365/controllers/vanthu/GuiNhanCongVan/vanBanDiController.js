@@ -79,12 +79,8 @@ exports.getDataAndCheck = async(req, res, next) => {
     const d = ('0' + date.getDate()).slice(-2);
     if(file) {
       for(let i=0; i<file.length; i++){
-        let checkFile = await functions.checkFile(file[i].path);
         let fileNameOrigin = file[i].name;
 
-        if(!checkFile){
-          return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
-        }
         let fileName = await vanThuService.uploadFileNameRandom(folder, file[i]);
         if(fileName) {
           file_vb_name += fileName;
@@ -296,10 +292,6 @@ exports.createVanBanIn = async(req, res, next) => {
     let phieu_trinh = req.files.phieu_trinh;
     let fileName = '';
     if(phieu_trinh) {
-      let checkFile = await functions.checkFile(phieu_trinh.path);
-      if(!checkFile){
-        return functions.setError(res, `File khong dung dinh dang hoac qua kich cho phep!`, 411);
-      }
       fileName = await vanThuService.uploadFileNameRandom('file_van_ban', phieu_trinh);
     }
 
@@ -687,6 +679,21 @@ exports.getUserByEmail = async(req, res, next) => {
       return functions.setError(res, "User khong ton tai!", 405);
     }
     return functions.success(res, "Get user by email success!", {user: user});
+  }catch(err){
+    return functions.setError(res, err.message);
+  }
+}
+exports.getUserByType = async(req, res, next) => {
+  try{
+    let {type} = req.body;
+    if(type){
+      let user = await Users.find({type: type},{idQLC: 1, userName: 1, email: 1});
+      if(!user) {
+        return functions.setError(res, "User khong ton tai!", 405);
+      }
+      return functions.success(res, "Get user by type success!", {user: user});
+    }
+    return functions.setError(res, "Missing input type or email!", 404);
   }catch(err){
     return functions.setError(res, err.message);
   }

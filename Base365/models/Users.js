@@ -15,7 +15,7 @@ const UserSchema = new mongoose.Schema({
         // Sđt đăng nhập (nếu đối tượng đăng ký bằng sđt)
         type: String,
         default: null,
-    },
+    }, 
     userName: {
         // Tên của đối tượng
         type: String,
