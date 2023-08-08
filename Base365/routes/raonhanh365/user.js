@@ -27,7 +27,7 @@ router.post('/createVerifyPayment', formData.parse(), functions.checkToken, user
 
 
 // thông tin tài khoản cá nhân
-router.get('/profileInformation',functions.checkToken,userRN.profileInformation);
+router.post('/profileInformation',functions.checkToken,formData.parse(),userRN.profileInformation);
 
 //lay ra thong tin tai khoan user
 router.post('/inforUser', formData.parse(), userRN.profileInformation);

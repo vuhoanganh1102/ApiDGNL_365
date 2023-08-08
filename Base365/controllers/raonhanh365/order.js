@@ -158,7 +158,7 @@ exports.manageOrderBuy = async (req, res, next) => {
         let searchItem = {
             sellerId: 1,
             new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 },
-            user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
+            user: { userName: 1, avatarUser: 1, type: 1, _id: 1,idRaoNhanh365:1 },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1, unitPrice: 1, amountPaid: 1
         }
         if (linkTitle === 'quan-ly-don-hang-mua.html') {
@@ -325,7 +325,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                 data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
             }
             if (data[i].user && data[i].user.avatarUser) {
-                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.avatarUser);
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365,data[i].user.avatarUser);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
@@ -353,7 +353,7 @@ exports.manageOrderSell = async (req, res, next) => {
         let sl_hoanTat = await Order.find({ sellerId, status: 5 }).count();
         let searchItem = {
             sellerId: 1, new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 },
-            user: { userName: 1, avatarUser: 1, type: 1, _id: 1, },
+            user: { userName: 1, avatarUser: 1, type: 1, _id: 1,idRaoNhanh365:1 },
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
 
         };
@@ -538,7 +538,7 @@ exports.manageOrderSell = async (req, res, next) => {
                 data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
             }
             if (data[i].user && data[i].user.avatarUser) {
-                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.avatarUser);
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365,data[i].user.avatarUser);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
@@ -612,7 +612,7 @@ exports.statusOrder = async (req, res, next) => {
                 let noi_dung = "thông báo xác nhận sản phẩm mua và đang xử lý";
                 var noidunggui = `thông báo xác nhận sản phẩm mua và đang xử lý ${check.title}`;
                 await Notify.create({
-                    _id:id,
+                    _id: id,
                     from: check.sellerId,
                     newId: check.newId,
                     to: check.buyerId,
@@ -627,7 +627,7 @@ exports.statusOrder = async (req, res, next) => {
                 let noi_dung = "thông báo bắt đầu giao hàng";
                 var noidunggui = `Bắt đầu giao hàng cho bạn:  ${check.title}`;
                 await Notify.create({
-                    _id:id,
+                    _id: id,
                     from: check.sellerId,
                     newId: check.newId,
                     to: check.buyerId,
@@ -642,7 +642,7 @@ exports.statusOrder = async (req, res, next) => {
                 let noi_dung = "thông báo giao hàng thành công";
                 var noidunggui = `Giao hàng thành công cho bạn:   ${check.title}`;
                 await Notify.create({
-                    _id:id,
+                    _id: id,
                     from: check.sellerId,
                     newId: check.newId,
                     to: check.buyerId,
@@ -657,9 +657,9 @@ exports.statusOrder = async (req, res, next) => {
                     deliveryEndTime, status
                 })
                 let noi_dung = "thông báo hoàn tất đơn hàng";
-                var noidunggui = `Hoàn tất đơn hàng cho bạn:    ${check.title}`;
+                var noidunggui = `Hoàn tất đơn hàng cho bạn: ${check.title}`;
                 await Notify.create({
-                    _id:id,
+                    _id: id,
                     from: check.sellerId,
                     newId: check.newId,
                     to: check.buyerId,
@@ -672,7 +672,19 @@ exports.statusOrder = async (req, res, next) => {
             } else if (status === 5) {
                 let deliveryFailedTime = new Date();
                 let deliveryFailureReason = req.body.deliveryFailureReason || null;
+                let noi_dung = "thông báo giao hàng thất bại";
+                var noidunggui = `Giao hàng thất bại cho bạn: ${check.title}`;
                 await Order.findByIdAndUpdate(orderId, { deliveryFailedTime, deliveryFailureReason })
+                await Notify.create({
+                    _id: id,
+                    from: check.sellerId,
+                    newId: check.newId,
+                    to: check.buyerId,
+                    type: 7,
+                    createdAt: deliveryFailedTime,
+                    content: noi_dung
+                })
+                await raoNhanh.sendChat(check.sellerId, check.newId, noidunggui)
             } else {
                 return functions.setError(res, 'invalid data', 400)
             }
@@ -730,6 +742,88 @@ exports.cancelOrder = async (req, res, next) => {
     }
     catch (error) {
         console.log("🚀 ~ file: order.js:478 ~ exports.cancelOrder= ~ error:", error)
+        return functions.setError(res, error.message)
+    }
+}
+
+// chi tiết huỷ đơn hàng
+exports.detailCancelOrder = async (req, res, next) => {
+    try {
+        let userId = req.user.data.idRaoNhanh365;
+        let id = Number(req.body.id);
+        let data = await Order.aggregate([
+            { $match: { status: 5, sellerId: userId, _id: id } },
+            {
+                $lookup:{
+                    from:'RN365_News',
+                    localField:'newId',
+                    foreignField:'_id',
+                    as:'new'
+                }
+            },
+            {$unwind:'$new'},
+            {
+                $lookup:{
+                    from:'Users',
+                    localField:'buyerId',
+                    foreignField:'idRaoNhanh365',
+                    as:'user'
+                }
+            },
+            {$unwind:'$user'},
+            {$project:{_id:1,
+                sellerId:1,
+                buyerId:1,
+                name:1,
+                phone:1,
+                paymentMethod:1,
+                deliveryAddress:1,
+                newId:1,
+                codeOrder:1,
+                quantity:1,
+                classify:1,
+                unitPrice:1,
+                promotionType:1,
+                promotionValue:1,
+                shipType:1,
+                shipFee:1,
+                note:1,
+                paymentType:1,
+                bankName:1,
+                amountPaid:1,
+                totalProductCost:1,
+                buyTime:1,
+                status:1,
+                sellerConfirmTime:1,
+                deliveryStartTime:1,
+                totalDeliveryTime:1,
+                buyerConfirm:1,
+                buyerConfirmTime:1,
+                deliveryEndTime:1,
+                deliveryFailedTime:1,
+                deliveryFailureReason:1,
+                cancelerId:1,
+                orderCancellationTime:1,
+                orderCancellationReason:1,
+                buyerCancelsDelivered:1,
+                buyerCancelsDeliveredTime:1,
+                orderActive:1,
+                distinguish:1,
+                user: { userName: 1, avatarUser: 1, type: 1, _id: 1,chat365_secret:1,idRaoNhanh365:1 },
+                new:{_id:1,title:1,linkTitle:1,money:1,type:1,until:1,img:1,cateID:1,userID:1}
+            }}
+        ])
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].new.img) {
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
+            }
+            if (data[i].user && data[i].user.avatarUser) {
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365,data[i].user.avatarUser);
+            }
+        }
+
+        return functions.success(res, 'get data success', { data })
+    } catch (error) {
         return functions.setError(res, error.message)
     }
 }

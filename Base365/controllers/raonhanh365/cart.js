@@ -34,7 +34,7 @@ exports.getListCartByUserId = async (req, res, next) => {
       },
       { $unwind: { path: "$new", preserveNullAndEmptyArrays: true } },
       {
-        $project: { quantity: 1, unit: 1, status: 1, new: { _id: 1, title: 1, linkTitle: 1, img: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1 }, user: { userName: 1, type: 1 } }
+        $project: { quantity: 1, unit: 1, status: 1, new: { _id: 1, title: 1, linkTitle: 1, img: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1 }, user: {_id:1, userName: 1, type: 1 } }
       }
     ])
     let soluong = data.length;
@@ -79,7 +79,7 @@ exports.addCart = async (req, res, next) => {
               total: tongtien,
               status: trangthai,
             })
-          }else if(trangthai === 1){
+          } else if (trangthai === 1) {
             let id = await functions.getMaxID(Cart) + 1 || 1;
             await Cart.create({
               _id: id,
@@ -124,3 +124,40 @@ exports.removeCart = async (req, res, next) => {
 }
 
 // thay đổi số lượng trong giỏ hàng
+exports.changeCart = async (req, res, next) => {
+  try {
+    let userId = req.user.data.idRaoNhanh365;
+    let request = req.body;
+    let _id = Number(request.id);
+    let soluong = Number(request.soluong);
+    if (_id && soluong) {
+      if (functions.checkNumber(soluong)) {
+        let check = await Cart.findOne({ _id, userId }).lean();
+        if (check) {
+          if (soluong < 0 && check.quantity + soluong > 0) {
+            await Cart.findByIdAndUpdate(_id, {
+              $inc: { quantity: +soluong }
+            });
+          }
+          if (soluong > 0) {
+            await Cart.findByIdAndUpdate(_id, {
+              $inc: { quantity: +soluong }
+            });
+          }
+          if (soluong < 0 && check.quantity + soluong == 0) {
+            await Cart.findByIdAndDelete(_id);
+          }
+          if (soluong < 0 && check.quantity + soluong < 0) {
+            return functions.setError(res, 'Số lượng muốn xoá lớn hơn số lượng trong giỏ hàng', 400)
+          }
+          return functions.success(res, 'cập nhật giỏ hàng thành công')
+        }
+        return functions.setError(res, 'not found cart', 404)
+      }
+      return functions.setError(res, 'invalid soluong', 400)
+    }
+    return functions.setError(res, 'missing data', 400)
+  } catch (error) {
+    return functions.setError(res, error.message)
+  }
+}

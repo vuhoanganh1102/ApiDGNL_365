@@ -13,4 +13,6 @@ router.post('/addCart', formData.parse(), functions.checkToken, cart.addCart);
 //api xoa 1 cart by id hoac xoa tat ca
 router.delete('/removeCart', formData.parse(),functions.checkToken, cart.removeCart);
 
+// thay đổi số lượng trong giỏ hàng
+router.post('/changeCart', formData.parse(),functions.checkToken, cart.changeCart)
 module.exports = router;

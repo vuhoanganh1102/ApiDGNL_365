@@ -11,7 +11,7 @@ const raoNhanh = require('../../services/raoNhanh365/service');
 const History = require('../../models/Raonhanh365/History');
 const Evaluate = require('../../models/Raonhanh365/Evaluate');
 
-
+const axios = require('axios')
 const folderUserImg = "img_user"
 // gửi otp
 exports.changePasswordSendOTP = async (req, res, next) => {
@@ -153,11 +153,11 @@ exports.listUserOnline = async (req, res, next) => {
         ]);
         for (let i = 0; i < data.length; i++) {
             if (data[i].avatarUser) data[i].avatarUser = await raoNhanh.getLinkAvatarUser(data[i].idRaoNhanh365, data[i].avatarUser)
-            let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1,userID:1, _id: 1,cateID:1, linkTitle: 1, type: 1, buySell: 1, img: 1 })
-            if (tin){
-                if(tin.img) await raoNhanh.getLinkFile(tin.userID, tin.img, tin.cateID, tin.buySell)
+            let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1, userID: 1, _id: 1, cateID: 1, linkTitle: 1, type: 1, buySell: 1, img: 1 })
+            if (tin) {
+                if (tin.img) await raoNhanh.getLinkFile(tin.userID, tin.img, tin.cateID, tin.buySell)
                 data[i].tin = tin
-            } 
+            }
         }
         return functions.success(res, 'get data success', { data })
     } catch (error) {
@@ -180,14 +180,15 @@ exports.createVerifyPayment = async (req, res, next) => {
     try {
         let cccdFrontImg = req.files.cccdFrontImg;
         let cccdBackImg = req.files.cccdBackImg;
-        let { userId, cccd, phoneContact, bank, stk, ownerName } = req.body;
-        if (!userId || !cccd || !phoneContact || !bank || !stk || !ownerName) {
+        let userId = req.user.data.idRaoNhanh365;
+
+        let { cccd, phoneContact, bank, stk, ownerName } = req.body;
+        if (!cccd || !phoneContact || !bank || !stk || !ownerName || !cccdFrontImg || !cccdBackImg) {
             return functions.setError(res, "Missing input value!", 404);
         }
-        let user = await User.findOne({ _id: userId }, { userName: 1 });
+        let user = await User.findOne({ idRaoNhanh365: userId }).lean();
         if (!user)
-            return functions.setError(res, "User not fount!", 404);
-
+            return functions.setError(res, "User not found!", 404);
 
         if (!await functions.checkImage(cccdFrontImg.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
@@ -195,24 +196,33 @@ exports.createVerifyPayment = async (req, res, next) => {
         if (!await functions.checkImage(cccdBackImg.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        raoNhanh.uploadFileRN2(folderUserImg, userId, cccdFrontImg);
-        cccdFrontImg = functions.createLinkFileRaonhanh(folderUserImg, userId, cccdFrontImg.name);
+        cccdFrontImg = await raoNhanh.uploadFileRaoNhanh('avt_dangtin', '', cccdFrontImg, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf']);
 
-        raoNhanh.uploadFileRN2(folderUserImg, userId, cccdBackImg);
-        cccdBackImg = functions.createLinkFileRaonhanh(folderUserImg, userId, cccdBackImg.name);
-        await User.findOneAndUpdate({ _id: userId }, {
+        cccdBackImg = await raoNhanh.uploadFileRaoNhanh('avt_dangtin', '', cccdBackImg, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf']);
+        await User.findOneAndUpdate({ idRaoNhanh365: userId }, {
             phone: phoneContact,
             inforRN365: {
+                xacThucLienket: 2,
                 cccd: cccd,
-                cccdFrontImg: cccdFrontImg,
-                cccdBackImg: cccdBackImg,
+                cccdFrontImg: '/pictures/avt_dangtin/' + cccdFrontImg,
+                cccdBackImg: '/pictures/avt_dangtin/' + cccdBackImg,
                 bankName: bank,
                 stk: stk,
                 ownerName: ownerName,
-                time: Date(Date.now()),
+                time: Date(),
                 active: 1
             }
         })
+        await axios({
+            method: "post",
+            url: "http://43.239.223.142:3005/Notification/SendNewNotification",
+            data: {
+                'UserId': 56387,
+                'SenderId': user._id,
+                'Message': 'Đăng ký xác thực thanh toán đảm bảo',
+            },
+            headers: { 'Content-Type': 'application/json' }
+        });
         return functions.success(res, 'Create verify payment success!');
     } catch (e) {
         console.log("Err from server!", e);
@@ -224,15 +234,16 @@ exports.createVerifyPayment = async (req, res, next) => {
 exports.profileInformation = async (req, res, next) => {
     try {
         let userIdRaoNhanh = req.user.data.idRaoNhanh365;
-
+        let type = Number(req.body.type);
+        console.log("🚀 ~ file: user.js:238 ~ exports.profileInformation= ~ type:", type)
+        let userId = Number(req.body.userId);
+        if (type) userIdRaoNhanh = userId
         let fields = {
             userName: 1, phone: 1, type: 1, email: 1, address: 1,
             createdAt: 1, money: 1, idRaoNhanh365: 1, phoneTK: 1, avatarUser: 1, type: 1,
             _id: 1, emailContact: 1, chat365_secret: 1, inforRN365: 1
         };
         let dataUser = {}
-
-
         //tin da dang
         let numberOfNew = await New.find({ userID: userIdRaoNhanh, active: 1 }).count();
 
@@ -244,12 +255,18 @@ exports.profileInformation = async (req, res, next) => {
 
         // số tiền đã nạp trong 30 ngày
         let userInFor = await User.findOne({ idRaoNhanh365: userIdRaoNhanh }, fields);
+        if (!userInFor) return functions.setError(res, 'not found user', 404)
         let tienDaNap = await History.aggregate([
-            { $match: { userId: idRaoNhanh365, time: { $gt: thirtyDaysAgo } } },
-            
+            { $match: { userId: userIdRaoNhanh, time: { $gt: new Date(thirtyDaysAgo) }, content: 'Nạp tiền' } },
+            {
+                $group: {
+                    _id: null,
+                    total_price: {
+                        $sum: "$price"
+                    }
+                }
+            }
         ]);
-
-
         //tin da ban
         let numberOfNewSold = await New.find({ userID: userIdRaoNhanh, active: 1, sold: 1 }).count();
 
@@ -263,30 +280,52 @@ exports.profileInformation = async (req, res, next) => {
         for (let i = 0; i < listEvaluate.length; i++) {
             numberStar += listEvaluate[i].stars;
         }
-        // numberEvaluate = listEvaluate.count();
 
         fields = {
             _id: 1, image: 1, title: 1, createTime: 1, updateTime: 1, address: 1, money: 1, sold: 1, unit: 1,
-            cateID: 1, linkTitle: 1, free: 1, img: 1, userID: 1, type: 1, dia_chi: 1, endvalue: 1, img: 1, until: 1, address: 1
+            cateID: 1, linkTitle: 1, free: 1, img: 1, userID: 1, type: 1, dia_chi: 1, endvalue: 1, img: 1, until: 1, address: 1, buySell: 1
         }
+        let lovenew = await LoveNews.find({ id_user: userIdRaoNhanh });
         //tin dang ban
-        let listSellNews = await New.find({ userID: userIdRaoNhanh, active: 1, buySell: 2 }, fields);
+        let listSellNews = await New.find({ userID: userIdRaoNhanh, active: 1, buySell: 2 }, fields).lean();
+        if (listSellNews.length > 0) {
+            for (let i = 0; i < listSellNews.length; i++) {
+                if (listSellNews[i].img) {
+                    listSellNews[i].img = await raoNhanh.getLinkFile(listSellNews[i].userID, listSellNews[i].img, listSellNews[i].cateID, 2)
+                    listSellNews[i].soluonganh = listSellNews[i].img.length
+                }
+                let checkLove = lovenew.find(item => item.id_new == listSellNews[i]._id)
+                checkLove ? listSellNews[i].islove = 1 : listSellNews[i].islove = 0
+                
+            }
+        }
 
         //tin dang mua
-        let listBuyNews = await New.find({ userID: userIdRaoNhanh, active: 1, buySell: 1 }, fields);
+        let listBuyNews = await New.find({ userID: userIdRaoNhanh, active: 1, buySell: 1 }, fields).lean();
+        if (listBuyNews.length > 0) {
+            for (let i = 0; i < listBuyNews.length; i++) {
+                if (listBuyNews[i].img) {
+                    listBuyNews[i].img = await raoNhanh.getLinkFile(listBuyNews[i].userID, listBuyNews[i].img, listBuyNews[i].cateID, 1)
+                    listBuyNews[i].soluonganh = listSellNews[i].img.length
+                }
+                let checkLove = lovenew.find(item => item.id_new == listSellNews[i]._id)
+                checkLove ? listSellNews[i].islove = 1 : listSellNews[i].islove = 0
+            }
+        }
+        if (userInFor.avatarUser) userInFor.avatarUser = await raoNhanh.getLinkAvatarUser(userInFor.idRaoNhanh365, userInFor.avatarUser)
 
-        // let numberOfNewSold = await New.find({userID: userID, sold: 1}).count();
         let likeNew = await LoveNews.find({ userID: userIdRaoNhanh }).count()
         dataUser.InforUser = userInFor;
         dataUser.numberOfNew = numberOfNew;
         dataUser.numberOfNewNgay = numberOfNewNgay;
         dataUser.numberOfNewSold = numberOfNewSold;
+        dataUser.listEvaluate = listEvaluate;
         dataUser.numberOfNewNgaySold = numberOfNewNgaySold;
         dataUser.evaluate = { numberEvaluate, numberStar };
         dataUser.likeCount = likeNew
         dataUser.listSellNews = listSellNews;
         dataUser.listBuyNews = listBuyNews;
-        dataUser.tienDaNap = tienDaNap.money;
+        tienDaNap.length > 0 ? dataUser.tienDaNap = tienDaNap[0].total_price : dataUser.tienDaNap = 0;
         return functions.success(res, 'get Data User Success', { dataUser });
     } catch (err) {
         console.log("Err from server", err);
