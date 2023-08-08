@@ -256,10 +256,11 @@ exports.checkFolderCateRaoNhanh = async (data) => {
 exports.getNameCate = async (cateId, number) => {
     let danh_muc1 = null;
     let danh_muc2 = null;
-    cate1 = await Category.findById(cateId);
-    danh_muc1 = cate1.name;
+    cate1 = await Category.findById(cateId).lean();
+    if (cate1)
+        danh_muc1 = cate1.name;
     if (cate1.parentId !== 0) {
-        cate2 = await Category.findById(cate1.parentId);
+        cate2 = await Category.findById(cate1.parentId).lean();
         danh_muc2 = cate2.name;
     }
     let name = {};
@@ -325,8 +326,8 @@ exports.searchItem = async (type) => {
             tgian_bd: 1,
             buySell: 1,
             video: 1,
-            brand:1,
-            kich_co:1,
+            brand: 1,
+            kich_co: 1,
             user: { _id: 1, idRaoNhanh365: 1, phone: 1, isOnline: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, lastActivedAt: 1, time_login: 1 },
         };
     } else if (type === 2) {
@@ -577,7 +578,7 @@ exports.getInfoEnvaluate = async (res, Evaluate, userID) => {
 }
 
 // hàm xửl lý tên mặt hàng cho danh mục
-exports.getDataNewDetail = async (objectarr,cate) => {
+exports.getDataNewDetail = async (objectarr, cate) => {
     let array = Object.entries(objectarr).map(([key, value]) => [key, value]);
     for (let i = 0; i < array.length; i++) {
         let name = await exports.switchCase(array[i][0])
