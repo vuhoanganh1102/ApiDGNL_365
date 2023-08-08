@@ -6,7 +6,7 @@ const Modules = require('../../models/Timviec365/Admin/Modules');
 const functions = require('../../services/functions');
 const AdminUserRight = require('../../models/Timviec365/Admin/AdminUserRight');
 const AdminTranslate = require('../../models/Timviec365/Admin/AdminTranslate');
-
+const {recordCreditsHistory} = require("./credits");
 
 // Đăng nhập
 exports.login = async(req, res) => {
@@ -398,5 +398,44 @@ exports.candi_register = async(req, res) => {
     } catch (error) {
         console.log(error);
         return functions.setError(res, error);
+    }
+}
+
+exports.topupCredits = async (req, res) => {
+    try {
+        let {
+            usc_id,
+            amount
+        } = req.body;
+        let idAdmin = req.user.data._id;
+        let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
+        if (checkAdmin) {
+            if (usc_id&&amount) {
+                let company = await Users.findOne({idTimViec365: usc_id, type: 1});
+                if (company) {
+                    let doc = await Credits.findOne({usc_id});
+                    if (!doc) {
+                        doc = await (new Credits({
+                            usc_id: usc_id,
+                            balance: amount,
+                            status: 1,
+                        })).save();
+                    } else {
+                        await Credits.findOneAndUpdate({usc_id}, {$inc: {balance: amount}});
+                    }
+                    await recordCreditsHistory(usc_id, 1, amount, idAdmin, getIP(req));
+                    return functions.success(res, "Nạp tiền thành công!")
+                } else {
+                    return functions.setError(res, "Không tồn tại công ty có ID này", 400);
+                }
+            } else {
+                return functions.setError(res, "Thiếu các trường cần thiết", 429);
+            }
+        } else {
+            return functions.setError(res, 'Bạn không có quyền thực hiện hành động này!', 403)
+        }
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error)
     }
 }

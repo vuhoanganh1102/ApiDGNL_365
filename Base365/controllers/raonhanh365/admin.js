@@ -899,6 +899,7 @@ exports.getAndCheckDataBlog = async (req, res, next) => {
         }
         return next();
     } catch (error) {
+        console.error(error)
         return functions.setError(res, error.message);
     }
 }
@@ -925,11 +926,12 @@ exports.createBlog = async (req, res, next) => {
         let day = date.getDate();
 
         let upload = await serviceRN.uploadFileRaoNhanh("news", `${year}/${month}/${day}`, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
-        fields.image = `${year}/${month}/${day}` + upload;
+        fields.image = `${year}/${month}/${day}/` + upload;
         let blog = new Blog(fields);
         await blog.save();
         return functions.success(res, 'Create blog RN365 success!');
     } catch (error) {
+        console.error(error)
         return functions.setError(res, error.message);
     }
 }
@@ -948,12 +950,8 @@ exports.updateBlog = async (req, res, next) => {
         }
         let existsBlog = await Blog.findOne({ _id: _id });
         if (existsBlog) {
-            // xu ly anh
-            let linkImg = existsBlog.image.split("/");
-            let len = linkImg.length;
-            // functions.deleteImgRaoNhanh(folderImg, linkImg[len-2], linkImg[len-1]);
-            fields.image = await serviceRN.uploadFileRaoNhanh(folderImg, _id, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
-
+            let upload = await serviceRN.uploadFileRaoNhanh("news", `${year}/${month}/${day}`, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
+            fields.image = `${year}/${month}/${day}/` + upload;
             //cap nhat du lieu
             await Blog.findOneAndUpdate({ _id: _id }, fields);
             return functions.success(res, "Blog edited successfully");

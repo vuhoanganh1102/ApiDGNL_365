@@ -769,7 +769,7 @@ const UserSchema = new mongoose.Schema({
                 },
                 usc_dg_time: {
                     type: Number,
-                    default: null
+                    default: 0
                 },
                 usc_skype: {
                     type: String,
@@ -781,6 +781,11 @@ const UserSchema = new mongoose.Schema({
                 },
                 usc_lv: {
                     // Lĩnh vực của công ty
+                    type: String,
+                    default: null
+                },
+                usc_zalo: {
+                    //Zalo ntd
                     type: String,
                     default: null
                 },
@@ -822,7 +827,37 @@ const UserSchema = new mongoose.Schema({
                     type: Number,
                     default: 0
                 },
-                
+                usc_founded_time: {
+                    //Thời gian công ty được thành lập
+                    type: Number,
+                    default: 0
+                },
+                usc_branches: {
+                    type: [{
+                        usc_branch_cit: {
+                            //tỉnh thành chi nhánh
+                            type: Number,
+                            default: 0
+                        },
+                        usc_branch_qh: {
+                            //quận huyện chi nhánh
+                            type: Number,
+                            default: 0
+                        },
+                        usc_branch_address: {
+                            //địa chỉ chi nhánh
+                            type: String,
+                            default: null
+                        },
+                        usc_branch_time: {
+                            //Thời gian tạo
+                            type: Number,
+                            default: 0
+                        },
+                    
+                    }],
+                    default: [],
+                }
 
             },
             // Thông tin công ty luồng chuyển đổi số
@@ -939,6 +974,16 @@ const UserSchema = new mongoose.Schema({
             money: {
                 type: Number,
                 default: 0
+            },
+            usc_tax_code:{
+                // mã số thuế 
+                type: Number,
+                default: 0
+            },
+            usc_des:{
+                // mô tả 
+                type: String,
+                default: null
             }
         },
         default: null

@@ -137,4 +137,16 @@ router.post('/getDataLike',formData.parse(),functions.checkToken,newRN.getDataLi
 
 // đánh giá tài khoản
 router.post('/envaluate',formData.parse(),functions.checkToken,newRN.envaluate)
+
+// update status ứng tuyển
+router.post('/updateStatusAplly',formData.parse(),functions.checkToken,newRN.updateStatusAplly)
+
+//get tags
+router.get('/getTags',newRN.getTags)
+
+// danh mục việc làm
+router.get('/getCateVL',newRN.getCateVL)
+
+//get tags vl
+router.get('/getTagsVL',newRN.getTagsVL)
 module.exports = router;

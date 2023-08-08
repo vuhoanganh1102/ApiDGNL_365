@@ -237,3 +237,37 @@ exports.edit_active = async (req, res) => {
   }
 };
 
+// duyet de xuat tam ung 
+exports.duyet_de_xuat_tam_ung = async (req, res) => {
+  try {
+    const { _id, id_user_duyet, id_user_theo_doi } = req.body;
+    const timeNow = new Date().getTime()/1000;
+    let com_id = '';
+    if (req.user.data.type == 2) {
+      com_id = req.user.data.com_id
+    } else {
+      return functions.setError(res, 'bạn phải là tài khoản nhân viên', 400);
+    };
+    // thêm đoạn check phân quyền. 
+    const check = await De_Xuat.findOne({ _id: _id }).lean();
+    if (check) {
+      // set type_duyet = 5
+      await De_Xuat.updateOne({ _id: _id },{$set:{
+        type_duyet:5,
+        id_user_duyet:id_user_duyet,
+        id_user_theo_doi:id_user_theo_doi,
+        time_duyet:timeNow
+      }});
+      return res.status(200).json({ 
+        message: 'Đã duyệt đề xuất',
+        data:await De_Xuat.findOne({ _id: _id }).lean()
+      });
+    } else {
+      return functions.setError(res, 'Không tìm thấy đề xuất',400);
+    }
+  } catch (error) {
+    console.error('Failed ', error);
+    return functions.setError(res, error);
+  }
+};
+
