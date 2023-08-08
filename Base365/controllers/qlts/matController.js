@@ -72,6 +72,16 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
             },
             
             { $unwind: { path: "$NguoiTao", preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "id_ng_lam_mat",
+                    foreignField: "_id",
+                    as: "NguoiBaoMat"
+                }
+            },
+            
+            { $unwind: { path: "$NguoiBaoMat", preserveNullAndEmptyArrays: true } },
             { $project: {
                 "mat_id": "$mat_id", 
                 "mat_trangthai": "$mat_trangthai",
@@ -100,6 +110,7 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
                 
                 "id_ng_tao": "$id_ng_tao",
                 "ten_ng_tao": "$NguoiTao.userName",                
+                "ten_ng_bao_mat": "$NguoiBaoMat.userName",                
             }},
         ]);
         for(let i=0; i<danhSachMat.length; i++) {
