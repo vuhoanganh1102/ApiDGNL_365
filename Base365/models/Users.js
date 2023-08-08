@@ -827,6 +827,11 @@ const UserSchema = new mongoose.Schema({
                     type: Number,
                     default: 0
                 },
+                usc_founded_time: {
+                    //Thời gian công ty được thành lập
+                    type: Number,
+                    default: 0
+                },
                 usc_branches: {
                     type: [{
                         usc_branch_cit: {
@@ -841,8 +846,8 @@ const UserSchema = new mongoose.Schema({
                         },
                         usc_branch_address: {
                             //địa chỉ chi nhánh
-                            type: Number,
-                            default: 0
+                            type: String,
+                            default: null
                         },
                         usc_branch_time: {
                             //Thời gian tạo
