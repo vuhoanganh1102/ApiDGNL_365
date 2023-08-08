@@ -3266,7 +3266,6 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
                 'infoSell.promotionType': { $nin: [1, 2] }
             }
         }
-        if (cateID) conditions.cateID = Number(cateID);
         if (type) conditions['infoSell.promotionType'] = Number(type);
         if (ten) {
             conditions.title = new RegExp(ten, 'i')
@@ -3277,6 +3276,8 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
         conditions.cateID = {
             $nin: [120, 121, 119, 11, 12, 26, 27, 29, 33, 34]
         }
+        if (cateID) conditions.cateID = Number(cateID);
+        
         let data = await New.find(conditions, {
             electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
             noiThatNgoaiThat: 0, bidding: 0
