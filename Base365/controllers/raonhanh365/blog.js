@@ -6,6 +6,8 @@ const Users = require('../../models/Users')
 const md5 = require('md5');
 const folderImg = 'news';
 const raoNhanh = require('../../services/raoNhanh365/service')
+const dotenv = require("dotenv");
+dotenv.config();
 exports.getListBlogByFields = async (req, res, next) => {
     try {
         let page = Number(req.body.page);
@@ -32,6 +34,12 @@ exports.getListBlogByFields = async (req, res, next) => {
         }
         const listBlog = await functions.pageFindWithFields(Blog, listCondition, fieldsGet, { _id: 1 }, skip, limit);
         const totalCount = await functions.findCount(Blog, listCondition);
+        for (let i = 0; i < listBlog.length; i++){
+            if (listBlog[i].image) {
+                listBlog[i].image = process.env.DOMAIN_RAO_NHANH + '/base365/pictures/news/' + listBlog[i].image
+            }
+        }
+        
         return functions.success(res, "get list blog success", { totalCount: totalCount, data: listBlog });
 
 
@@ -162,20 +170,37 @@ exports.getDetailBlog = async (req, res, next) => {
         let listImgBase64 = req.body.listImgBase64;
         let image = req.files.image;
         if (image) {
-            functions.uploadFileBase64RaoNhanh(folderImg, idBlog, listImgBase64, image);
-            let existsBlog = await Blog.findOne({ _id: idBlog }, fields);
+            await functions.uploadFileBase64RaoNhanh("news", idBlog, listImgBase64, image);
+            let existsBlog = await Blog.findOne({ _id: idBlog }, fields).lean();
             tintuongtu = await Blog.find({ categoryId: existsBlog.categoryId, active: 1, _id: { $ne: existsBlog._id } }, {
                 _id: 1, title: 1, teaser: 1, image: 1, url: 1
-            }).limit(6);
+            }).limit(6).lean();
             if (existsBlog) {
+                if (existsBlog.image) {
+                    existsBlog.image = process.env.DOMAIN_RAO_NHANH + '/base365/pictures/news/' + existsBlog.image
+                }
+                for (let i = 0; i < tintuongtu.length; i++) {
+                    if (tintuongtu[i].image) {
+                        tintuongtu[i].image = process.env.DOMAIN_RAO_NHANH + '/base365/pictures/news/' + tintuongtu[i].image
+                    }
+                }
                 return functions.success(res, "get detail blog successfully", { blog: existsBlog, listImage: listImgBase64, tintuongtu });
             }
         }
-        let existsBlog = await Blog.findOne({ _id: idBlog }, fields);
+        let existsBlog = await Blog.findOne({ _id: idBlog }, fields).lean();
         tintuongtu = await Blog.find({ categoryId: existsBlog.categoryId, active: 1, _id: { $ne: existsBlog._id } }, {
             _id: 1, title: 1, teaser: 1, image: 1, url: 1
-        }).limit(6);
+        }).limit(6).lean();
         if (existsBlog) {
+            if (existsBlog.image) {
+                existsBlog.image = process.env.DOMAIN_RAO_NHANH + '/base365/pictures/news/' + existsBlog.image
+            }
+            for (let i = 0; i < tintuongtu.length; i++) {
+                if (tintuongtu[i].image) {
+                    tintuongtu[i].image = process.env.DOMAIN_RAO_NHANH + '/base365/pictures/news/' + tintuongtu[i].image
+                }
+            }
+
             return functions.success(res, "get detail blog successfully", { blog: existsBlog, tintuongtu });
         }
 
