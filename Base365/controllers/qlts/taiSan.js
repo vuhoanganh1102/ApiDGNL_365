@@ -30,7 +30,6 @@ exports.showAll = async (req, res) => {
     perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      console.log(com_id)
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }

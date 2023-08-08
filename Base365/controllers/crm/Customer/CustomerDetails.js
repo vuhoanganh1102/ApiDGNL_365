@@ -42,7 +42,7 @@ exports.findOneCus = async (req, res) => {
     if(!name_phu_trach){
       name_phu_trach = ''
     }
-    let name_nhom = await NhomKH.findOne({gr_id : findCus.gr_id}).select('gr_name')
+    let name_nhom = await NhomKH.findOne({gr_id : findCus.group_id}).select('gr_name')
     if(!name_nhom){
       name_nhom = ''
     }
@@ -89,7 +89,7 @@ exports.findOneCus = async (req, res) => {
         resoure: findCus.resoure, // ngưồn khách hàng
         thong_tin_mo_ta: findCus.description, // thông tin mô tả
         ma_so_thue: findCus.tax_code, // mã số thuế
-        nhom_khach_hang: name_nhom,// id nhóm khách hàng
+        nhom_khach_hang: name_nhom.gr_name,// id nhóm khách hàng
         status: findCus.status,// trạng thái khach hàng
         linh_vuc: findCus.business_areas,// lĩnh vực
         category: findCus.category, //
@@ -99,27 +99,27 @@ exports.findOneCus = async (req, res) => {
         hoa_don_tp: hd_thanh_pho,// hóa đơn id thành phố
         hoa_don_huyen: hd_huyen, // hóa đơn id huyện
         hoa_don_xa: hd_ten_xa, // hóa đơn id phường xã
-        dia_chi_don_hang: findCus.bill_address, // địa chỉ đơn hàng
-        ma_vung: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
+        so_nha_duong_pho: findCus.bill_address, // địa chỉ đơn hàng
+        ma_vung_hoa_don: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
         bill_invoice_address: findCus.bill_invoice_address, // Địa chỉ giao hàng
         bill_invoice_address_email: findCus.bill_invoice_address_email, // địa chỉ đơn hàng email
         giao_hang_tp : hd_thanh_pho,// giao hàng tại thành phố
         giao_hang_huyen :hd_huyen, // giao hàng tại huyện
         giao_hang_xa :  hd_ten_xa,// giao hàng tại phường,xã
-        ma_thong_tin_giao_hang : findCus.ship_area,// Mã vùng thông tin giao hàng
+        ma_vung_giao_hang : findCus.ship_area,// Mã vùng thông tin giao hàng
         bank_id: findCus.bank_id, // id của ngân hàng
         bank_account: findCus.bank_account, // tài khoản ngân hàng
         xep_hang_kh: findCus.rank,// xếp hạng khách hàng
         website: findCus.website, // website ngân hàng
-        number_of_day_owed: findCus.number_of_day_owed,// số ngày được nợ
+        so_ngay_duoc_no: findCus.number_of_day_owed,// số ngày được nợ
         gender: findCus.gender,// giới tính
-        deb_limit: findCus.deb_limit,// hạn mức nợ
-        type: findCus.type, // loại hình khách hàng
+        han_muc_no: findCus.deb_limit,// hạn mức nợ
+        loai_hinh_khach_hang: findCus.type, // loại hình khách hàng
         doanh_thu: findCus.revenue, // doanh thu
         ngay_sinh: findCus.birthday, // ngày sinh nếu là cá nhân
         la_khach_hang_tu: findCus.created_at, // là khách hàng từ ngày
-        nguoi_tao : name_tao, // tên nhân viên tạo 
-        nguoi_sua : name_sua, // tên nhân viên sửa
+        nguoi_tao : name_tao.userName, // tên nhân viên tạo 
+        nguoi_sua : name_sua.userName, // tên nhân viên sửa
         ngay_tao : findCus.created_at,
         ngay_sua : findCus.updated_at
       }
@@ -135,12 +135,12 @@ exports.findOneCus = async (req, res) => {
         thanh_pho: thanh_pho,//thành phố
         huyen: huyen,// huyện
         phuong_xa: ten_xa, //phường hoặc xã
-        address: findCus.address,// số nhà đường phố
+        so_nha_duong_pho_hd: findCus.address,// số nhà đường phố
         ship_invoice_address: findCus.ship_invoice_address,// địa chỉ đơn hàng
         resoure: findCus.resoure, // ngưồn khách hàng
         thong_tin_mo_ta: findCus.description, // thông tin mô tả
         ma_so_thue: findCus.tax_code, // mã số thuế
-        group_id: name_nhom,// id nhóm khách hàng
+        group_id: name_nhom.gr_name,// id nhóm khách hàng
         status: findCus.status,// trạng thái khach hàng
         linh_vuc: findCus.business_areas,// lĩnh vực
         category: findCus.category, //
@@ -150,26 +150,26 @@ exports.findOneCus = async (req, res) => {
         hoa_don_tp: hd_thanh_pho,// hóa đơn id thành phố
         hoa_don_huyen: hd_huyen, // hóa đơn id huyện
         hoa_don_xa: hd_ten_xa, // hóa đơn id phường xã
-        dia_chi_don_hang: findCus.bill_address, // địa chỉ đơn hàng
-        ma_vung: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
+        so_nha_duong_pho_gh: findCus.bill_address, // địa chỉ đơn hàng
+        ma_vung_hoa_don: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
         bill_invoice_address: findCus.bill_invoice_address, // Địa chỉ giao hàng
         bill_invoice_address_email: findCus.bill_invoice_address_email, // địa chỉ đơn hàng email
         giao_hang_tp : hd_thanh_pho,// giao hàng tại thành phố
         giao_hang_huyen :hd_huyen, // giao hàng tại huyện
         giao_hang_xa :  hd_ten_xa,// giao hàng tại phường,xã
-        ship_area: findCus.ship_area,// Mã vùng thông tin giao hàng
+        ma_vung_giao_hang: findCus.ship_area,// Mã vùng thông tin giao hàng
         bank_id: findCus.bank_id, // id của ngân hàng
         bank_account: findCus.bank_account, // tài khoản ngân hàng
         rank: findCus.rank,// xếp hạng khách hàng
         website: findCus.website, // website ngân hàng
-        number_of_day_owed: findCus.number_of_day_owed,// số ngày được nợ
-       quy_mo_nhan_su : findCus.size,// quy mô nhân sự
-        deb_limit: findCus.deb_limit,// hạn mức nợ
-        type: findCus.type, // loại hình khách hàng
+        so_ngay_duoc_no: findCus.number_of_day_owed,// số ngày được nợ
+        quy_mo_nhan_su : findCus.size,// quy mô nhân sự
+        han_muc_no: findCus.deb_limit,// hạn mức nợ
+        loai_hinh_khach_hang: findCus.type, // loại hình khách hàng
         doanh_thu: findCus.revenue, // doanh thu
         la_khach_hang_tu: findCus.created_at, // là khách hàng từ ngày
-        nguoi_tao : name_tao, // tên nhân viên tạo 
-        nguoi_sua : name_sua, // tên nhân viên sửa
+        nguoi_tao : name_tao.userName, // tên nhân viên tạo 
+        nguoi_sua : name_sua.userName, // tên nhân viên sửa
         ngay_tao : findCus.created_at,
         ngay_sua : findCus.updated_at
       }
