@@ -587,8 +587,6 @@ exports.listAndDetail = async (req, res, next) => {
         //1: điều chuyển vị trí tài sản
         if (type == 1) {
             filter.dc_type = 0
-            console.log(filter)
-
             let data = await DieuChuyen.aggregate([
                 { $match: filter }, 
                 { $sort: { dc_id: -1 } },
@@ -674,7 +672,6 @@ exports.listAndDetail = async (req, res, next) => {
         //2: điều chuyển đối tượng sd
         if (type == 2) {
             filter.dc_type = 1
-            console.log(filter)
 
             let data = await DieuChuyen.aggregate([
                 { $match: filter },
@@ -737,7 +734,6 @@ exports.listAndDetail = async (req, res, next) => {
         if (type == 3) {
             // if (type_quyen == 2) filter.id_ng_tao_dc = idQLC
             filter.dc_type = 2
-            console.log(filter)
             let data = await DieuChuyen.aggregate([
                 { $match: filter },
                 { $sort: { dc_id: -1 } },

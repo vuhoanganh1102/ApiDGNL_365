@@ -250,7 +250,6 @@ exports.getListDetail = async (req, res) => {
         if (option == 6) listConditions.thuhoi_trangthai = 0, listConditions.thuhoi_id = Number(thuhoi_id), listConditions.id_pb_thuhoi = Number(id_pb_thuhoi)  // //thu hôi chờ nhận PB
         if (option == 7) listConditions.thuhoi_trangthai = 1, listConditions.id_pb_thuhoi = Number(id_pb_thuhoi)  //DS đồng ý thu hồi  PB
         if (option == 8) listConditions.thuhoi_trangthai = 1, listConditions.thuhoi_id = Number(thuhoi_id), listConditions.id_pb_thuhoi = Number(id_pb_thuhoi)  // đồng ý thu hồi  PB
-        console.log(listConditions)
 
         data = await ThuHoi.aggregate([
             { $match: listConditions },
@@ -608,10 +607,9 @@ exports.refuserRecallCapital = async (req, res) => {
         const thuhoi_id = req.body.thuhoi_id
         const content = req.body.content
         const data = await ThuHoi.findOne({ thuhoi_id: thuhoi_id, id_cty: id_cty });
-        if (!data) {
-            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+        if (data.length == 0) {
+            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật");
         } else {
-            console.log(data)
             let id_nv = data.id_ng_dc_thuhoi
             let id_pb = data.id_pb_thuhoi
             let sl_th = data.thuhoi_taisan.ds_thuhoi[0].sl_th
@@ -652,7 +650,7 @@ exports.acceptRecallCapital = async (req, res) => {
        if(thuhoi_id){
         const data = await ThuHoi.findOne({ thuhoi_id: thuhoi_id, id_cty: id_cty });
         if (!data) {
-            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
+            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật");
         } else {
             if(type_thuhoi == 0){
                 let id_nv = data.id_ng_dc_thuhoi
@@ -690,17 +688,23 @@ exports.acceptRecallCapital = async (req, res) => {
                 for (let t = 0; t < count.length; t++) {
                     if (id_nv != 0) {
                         let sl_dang_sd = await dangSd.findOne({com_id_sd : id_cty, id_nv_sd : id_nv, id_ts_sd: count(t) })
+                        if(sl_dang_sd){
+
                         let sl_da_tru = sl_dang_sd.sl_dang_sd - sl_th
                         await dangSd.updateOne({ id_ts_sd: count(t), com_id_sd: id_cty ,id_nv_sd : id_nv}, {
                             sl_dang_sd: sl_da_tru,
                         })
                     }
+                    }
                     if (id_pb != 0) {
                         let sl_dang_sd = await dangSd.findOne({com_id_sd : id_cty, id_pb_sd : id_pb, id_ts_sd: count(t) })
+                        if(sl_dang_sd){
+
                         let sl_da_tru = sl_dang_sd.sl_dang_sd - sl_th
                         await dangSd.updateOne({ id_ts_sd: count(t), com_id_sd: id_cty ,id_pb_sd : id_pb}, {
                             sl_dang_sd: sl_da_tru,
                         })
+                    }
                     }
                 }
                 await ThuHoi.updateOne({ thuhoi_id: thuhoi_id, id_cty: id_cty }, {
@@ -717,3 +721,76 @@ exports.acceptRecallCapital = async (req, res) => {
         return fnc.setError(res, e.message)
     }
 }
+exports.accept = async (req, res) => {
+    try {
+        const id_cty = req.user.data.com_id
+        const thuhoi_id = req.body.thuhoi_id
+       if(thuhoi_id){
+        let now = new Date()
+        let maxQuaTrinh = await QuaTrinhSuDung.findOne({},{},{sort: {quatrinh_id : -1}}).lean() || 0 
+
+        const data = await ThuHoi.findOne({ thuhoi_id: thuhoi_id, id_cty: id_cty }).lean();
+        if (!data) {
+            return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật");
+        } else {
+                let id_nv = data.id_ng_dc_thuhoi
+                let id_pb = data.id_pb_thuhoi
+                let sl_th = data.thuhoi_taisan.ds_thuhoi[0].sl_th
+                let count = data.thuhoi_taisan.ds_thuhoi[0].ts_id
+                // let count = data.map(item => item.thuhoi_taisan.ds_thuhoi[0].ts_id)
+                let updateQuantity = await TaiSan.findOne({ ts_id: count }).lean()
+                    if (updateQuantity) {
+                        let sl_taisan2 = updateQuantity.ts_so_luong + sl_th
+                        await TaiSan.updateOne({ts_id: count,id_cty:id_cty  },{
+                            ts_so_luong : sl_taisan2,
+                            soluong_cp_bb : sl_taisan2,
+                        })
+                    }
+                // for (let t = 0; t < count.length; t++) {
+                    if (id_nv != 0) {
+                        let sl_dang_sd = await dangSd.findOne({com_id_sd : id_cty, id_nv_sd : id_nv, id_ts_sd: count })
+                        if(sl_dang_sd){
+                            let sl_da_tru = sl_dang_sd.sl_dang_sd - sl_th
+                            await dangSd.updateOne({ id_ts_sd: count, com_id_sd: id_cty ,id_nv_sd : id_nv}, {
+                                sl_dang_sd: sl_da_tru,
+                            })
+                        }
+                    }
+                    if (id_pb != 0) {
+                        let sl_dang_sd = await dangSd.findOne({com_id_sd : id_cty, id_pb_sd : id_pb, id_ts_sd: count })
+                        if(sl_dang_sd){
+                        let sl_da_tru = sl_dang_sd.sl_dang_sd - sl_th
+                        await dangSd.updateOne({ id_ts_sd: count, com_id_sd: id_cty ,id_pb_sd : id_pb}, {
+                            sl_dang_sd: sl_da_tru,
+                            })
+                        }
+                    }
+                // }
+                await ThuHoi.updateOne({ thuhoi_id: thuhoi_id, id_cty: id_cty }, {
+                    thuhoi_trangthai: 1,
+                })
+                let quatrinh_sudung = new QuaTrinhSuDung({
+                    quatrinh_id : Number(maxQuaTrinh.quatrinh_id) +1 || 1,
+                    id_ts : count,
+                    id_bien_ban : thuhoi_id,
+                    so_lg : sl_th,
+                    id_cty : id_cty,
+                    id_ng_sudung : data.id_ng_dc_thuhoi,
+                    id_phong_sudung : data.id_pb_thuhoi,
+                    qt_ngay_thuchien : data.thuhoi_ngay,
+                    qt_nghiep_vu : 2,
+                    vitri_ts : "Công ty",
+                    ghi_chu : data.thuhoi__lydo,
+                    time_created :Date.parse(now)/1000,
+                })
+                await quatrinh_sudung.save()
+                return fnc.success(res, "cập nhật thành công")
+            }
+            
+        }
+            return fnc.setError(res, "vui lòng nhập thuhoi_id")
+     
+         } catch (e) {
+             return fnc.setError(res, e.message)
+         }
+     }

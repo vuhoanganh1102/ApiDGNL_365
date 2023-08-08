@@ -30,4 +30,5 @@ router.post('/DetailDep',functions.checkToken,fnc.checkRole("CP_TH") ,formData.p
 
 router.post('/refuserAll',functions.checkToken,fnc.checkRole("CP_TH") ,formData.parse(),controller.refuserAll)
 
+router.post('/accept',functions.checkToken,fnc.checkRole("CP_TH") ,formData.parse(),controller.accept)
 module.exports = router
