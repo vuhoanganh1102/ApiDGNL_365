@@ -775,7 +775,6 @@ exports.accept = async (req, res) => {
             listConditions.cp_id = Number(cp_id)
             listConditions.id_cty = id_cty
             listConditions.cp_trangthai ={$in : [1,6]} 
-            console.log(listConditions)
             let infoCP = await capPhat.findOne(listConditions)
             if (infoCP) {
                 let arr = infoCP.cap_phat_taisan.ds_ts[0].ts_id
