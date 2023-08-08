@@ -97,21 +97,21 @@ const crm_customer = new Schema({
     company_id : {// id cong ty 
         type : Number
     },
-    emp_id : { // id nhân viên tạo ?
+    emp_id : { // id nhân viên phụ trách
         type : Number,
         default : 0
     },
     user_handing_over_work :{// id người bàn giao
         type : Number
     },
-    user_create_id : {//id nguoi tO
+    user_create_id : {//id nhân viên tạo
         type : Number
     },
     user_create_type : {//id người tạo
         type : Number,
         default : null
     },
-    user_edit_id : {//id người phụ trách
+    user_edit_id : {//id người sửa
         type : Number,
         default : null
     },
