@@ -95,7 +95,7 @@ errorApp(AppHR);
 
 // Cấu hình AppCRM
 configureApp(AppCRM);
-var CrmRouter = require('./routes/crm');
+var CrmRouter = require('./routes/crm/CRMroutes');
 AppCRM.use("/api/crm", CrmRouter);
 errorApp(AppCRM);
 
