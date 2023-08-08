@@ -717,11 +717,12 @@ exports.getNew = async (req, res, next) => {
             free: 1,
             link: 1
         };
+
         let data = await New.aggregate([
-            { $sort: { pinHome: -1 }, },
+            { $sort: { pinHome: -1}, },
             { $match: { buySell: 2, sold: 0, active: 1 }, },
-            { $limit: 50, },
-            { $sort: { createTime: -1, order: -1 } },
+            { $sort: { createTime: -1, updateTime: -1 } },
+            { $limit: 50 },
             {
                 $lookup: {
                     from: "Users",
@@ -734,30 +735,26 @@ exports.getNew = async (req, res, next) => {
             { $project: searchItem },
 
         ]);
+        if (userIdRaoNhanh) {
+            var dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh }).lean();
+        }
         for (let i = 0; i < data.length; i++) {
             data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-c${data[i]._id}.html`;
             data[i].img = await raoNhanh.getLinkFile(data[i].userID, data[i].img, data[i].cateID, 2)
             data[i].islove = 0;
             if (userIdRaoNhanh) {
-                let dataLoveNew = await LoveNews.find({ id_user: userIdRaoNhanh });
-                for (let j = 0; j < dataLoveNew.length; j++) {
-                    if (data[i]._id === dataLoveNew[j].id_new) {
-                        data[i].islove = 1;
-                    }
-                    if (!data[i].islove || data[i].islove !== 1) {
-                        data[i].islove = 0;
-                    }
-                }
+                let checklove = dataLoveNew.find(item => item.id_new == data[i]._id);
+                checklove ? data[i].islove = 1 : data[i].islove = 0;
             }
-            if (data[i].city) {
+            if (data[i].city && data[i].city != 0) {
                 let datacity = await City.findById({ _id: data[i].city }).lean();
                 if (datacity) data[i].city = datacity.name
             }
-            if (data[i].district) {
+            if (data[i].district && data[i].district != 0) {
                 let datadistric = await District.findById({ _id: data[i].district }).lean();
                 if (datadistric) data[i].district = datadistric.name
             }
-            if (data[i].ward) {
+            if (data[i].ward && data[i].ward != 0) {
                 let dataward = await Ward.findById({ _id: data[i].ward }).lean();
                 if (dataward) data[i].ward = dataward.name
             }
@@ -1082,6 +1079,7 @@ exports.searchNew = async (req, res, next) => {
             { $match: condition },
             { $skip: skip },
             { $limit: limit },
+            { $sort: { createTime: -1, order: -1, updateTime: -1 } },
             {
                 $lookup: {
                     from: "Users",
@@ -2699,7 +2697,7 @@ exports.addDiscount = async (req, res, next) => {
                     ngay_ket_thuc &&
                     giatri_khuyenmai
                 ) {
-                    if (loai_khuyenmai === 1 || loai_khuyenmai === 2) {
+                    if (loai_khuyenmai == 1 || loai_khuyenmai == 2) {
                     } else {
                         return functions.setError(res, "Nhập ngày không hợp lệ", 400);
                     }
@@ -3010,7 +3008,7 @@ exports.getDataBidding = async (req, res, next) => {
                         isOnline: 1,
                         phoneTK: 1,
                         address: 1,
-                        idRaoNhanh365:1
+                        idRaoNhanh365: 1
                     },
                     thongtinthau: '$new.bidding'
                 }
