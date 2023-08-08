@@ -354,8 +354,13 @@ exports.listtamung = async (req, res) => {
     let com_id = '';
     page = parseInt(page) || 1;
     const perPage = 8;
-
-    com_id = req.user.data.idQLC;
+    if(req.user.data.type == 1){
+      com_id = req.user.data.idQLC;
+    }
+    else{
+      com_id = req.user.data.com_id;
+      //return functions.success(res, 'get data success', { data:req.user.data })
+    }
 
     let matchQuery = {
       com_id: com_id,
