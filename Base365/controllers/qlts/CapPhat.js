@@ -309,7 +309,7 @@ exports.getListNV = async (req, res) => {
         for (let i = 0; i < data1.length; i++) {
             if(data1[i].dep_id != 0){
                 let depName = await dep.findOne({ com_id: id_cty, dep_id: data1[i].dep_id })
-                data1[i].depName = depName
+                if(depName) data1[i].depName = depName.dep_name
             }
             let depStatus = await TaiSanDangSuDung.findOne({ com_id_sd: id_cty, id_nv_sd: data1[i].id_nhanvien })
             let total = 0
@@ -380,12 +380,14 @@ exports.getListDep = async (req, res) => {
             },
         ])
         // .explain("executionStats")
-        if (dataDep) {
+        if (dataDep.length > 0) {
             for (let i = 0; i < dataDep.length; i++) {
                 let depStatus = await TaiSanDangSuDung.findOne({ com_id_sd: id_cty, id_pb_sd: dataDep[i].id_phongban })
                 let total = 0
                 if (depStatus) total += depStatus.sl_dang_sd
                 dataDep[i].NumCapitalUsing = total
+                let nameManager = await user.findOne({idQLC : dataDep[i].manager_id , type : 2 })
+                if(nameManager) dataDep[i].nameManager = nameManager.userName
                 dataDep[i].cp_ngay = new Date(dataDep[i].cp_ngay * 1000);
 
             }
@@ -395,7 +397,7 @@ exports.getListDep = async (req, res) => {
             let totalCount = await capPhat.count(listConditions)
             return fnc.success(res, " lấy thành công ", { data,totalCount })
         }
-        return fnc.setError(res, "không tìm thấy đối tượng", 510);
+        return fnc.setError(res, "không tìm thấy đối tượng");
     } catch (e) {
         console.log(e);
         return fnc.setError(res, e.message)

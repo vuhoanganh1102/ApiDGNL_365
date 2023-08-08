@@ -240,7 +240,7 @@ exports.listBBDangSuaChua = async (req, res) => {
                 "sl_sc" : "$sl_sc",
                 "doi_tuong_sd" : "$infoCtyDangSD.userName",
                 "sc_ngay_hong" : "$sc_ngay_hong",
-                // "Vi_tri" : "$Vi_tri",
+                "Vi_tri" : "$Vi_tri",
                 "sc_ngay_nhapkho" : "$sc_ngay_nhapkho",
                 "sc_ng_duyet" : "$sc_ng_duyet",
                 "sc_date_duyet" : "$sc_date_duyet",
