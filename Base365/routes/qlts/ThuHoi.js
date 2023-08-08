@@ -21,5 +21,7 @@ router.post('/refuserRecall',functions.checkToken,fnc.checkRole("CP_TH",4) ,form
 
 router.post('/refuserRecallCapital',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.refuserRecallCapital)
 
+router.post('/accept',functions.checkToken,fnc.checkRole("CP_TH",4) ,formData.parse(),controller.accept)
+
 
 module.exports = router

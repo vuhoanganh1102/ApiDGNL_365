@@ -484,7 +484,6 @@ exports.duyet = async(req, res, next) => {
             let id_ts_mat = mat.mat_taisan;
             if(duyet_yc == 1) {
                 let update_mat = await Mat.findOneAndUpdate({mat_id: id_mat, id_cty: com_id}, {mat_trangthai: 1}, {new: true});
-                // console.log(update_mat)
                 if(update_mat) return functions.success(res, "Duyet bien ban mat thanh cong!", {update_mat});
             }else {
                 let q_doituong_sd_ts = await TaiSanDangSD.findOne({com_id_sd: com_id, id_ts_sd: id_ts_mat, id_nv_sd: id_ng_nhan}); 

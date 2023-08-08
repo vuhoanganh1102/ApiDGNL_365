@@ -30,7 +30,6 @@ exports.showAll = async (req, res) => {
     perPage = parseInt(perPage) || 10; // Số lượng bản ghi trên mỗi trang (mặc định là 10)
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
-      console.log(com_id)
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
@@ -201,7 +200,6 @@ exports.showadd = async (req, res) => {
       com_id = req.user.data.com_id
       let checktaisan = await TaiSan.distinct('id_ten_quanly', { id_cty: com_id })
       let listUser = await User.find({ $or: [{'inForPerson.employee.com_id': com_id },{idQLC : com_id}],  }).select('_id userName');;
-      console.log(listUser);
       let listVitri = await ViTri_ts.find({ id_cty: com_id }).select('id_vitri vi_tri');
       let listloaiTaiSan = await LoaiTaiSan.find({ id_cty: com_id }).select('id_loai ten_loai')
       let item = {
@@ -1183,7 +1181,6 @@ exports.showFile = async (req, res) => {
        fileX = await quanlytaisanService.createLinkFileQLTS(showtep[i].id_ts ,showtep[i].tep_ten);
         
       }
-      console.log(fileX);
     const totalTsCount = await TepDinhKem.countDocuments({ id_cty: com_id, id_ts: ts_id });
 
     const totalPages = Math.ceil(totalTsCount / perPage);
