@@ -974,6 +974,16 @@ const UserSchema = new mongoose.Schema({
             money: {
                 type: Number,
                 default: 0
+            },
+            usc_tax_code:{
+                // mã số thuế 
+                type: Number,
+                default: 0
+            },
+            usc_des:{
+                // mô tả 
+                type: String,
+                default: null
             }
         },
         default: null

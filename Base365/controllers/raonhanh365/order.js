@@ -657,7 +657,7 @@ exports.statusOrder = async (req, res, next) => {
                     deliveryEndTime, status
                 })
                 let noi_dung = "thông báo hoàn tất đơn hàng";
-                var noidunggui = `Hoàn tất đơn hàng cho bạn:    ${check.title}`;
+                var noidunggui = `Hoàn tất đơn hàng cho bạn: ${check.title}`;
                 await Notify.create({
                     _id: id,
                     from: check.sellerId,
@@ -672,7 +672,19 @@ exports.statusOrder = async (req, res, next) => {
             } else if (status === 5) {
                 let deliveryFailedTime = new Date();
                 let deliveryFailureReason = req.body.deliveryFailureReason || null;
+                let noi_dung = "thông báo giao hàng thất bại";
+                var noidunggui = `Giao hàng thất bại cho bạn: ${check.title}`;
                 await Order.findByIdAndUpdate(orderId, { deliveryFailedTime, deliveryFailureReason })
+                await Notify.create({
+                    _id: id,
+                    from: check.sellerId,
+                    newId: check.newId,
+                    to: check.buyerId,
+                    type: 7,
+                    createdAt: deliveryFailedTime,
+                    content: noi_dung
+                })
+                await raoNhanh.sendChat(check.sellerId, check.newId, noidunggui)
             } else {
                 return functions.setError(res, 'invalid data', 400)
             }
@@ -739,14 +751,6 @@ exports.detailCancelOrder = async (req, res, next) => {
     try {
         let userId = req.user.data.idRaoNhanh365;
         let id = Number(req.body.id);
-        // SELECT`dh_id`, `id_nguoi_dh`, `hoten_nm`, `sdt_lienhe`, `dia_chi_nhanhang`, `id_spham`, `ma_dhang`,
-        //     `so_luong`, `phan_loai`, `phuongthuc_tt`, `ghi_chu`, `loai_ttoan`, `tien_ttoan`, `tgian_huydhang`, `ly_do_hdon`,
-        //     `usc_name`, `usc_logo`, `usc_phone`, `usc_address`, `chat365_id`,
-        //     `new_title`, `link_title`, `new_money`, `new_unit`, `new_type`, `new_image`
-        // FROM`dat_hang`
-        //                     LEFT JOIN `new` ON`new`.`new_id` = `dat_hang`.`id_spham`
-        //                     LEFT JOIN `user` ON`user`.`usc_id` = `dat_hang`.`id_nguoi_dh`
-        // WHERE`trang_thai` = 5 AND`id_nguoi_ban` = $id_user AND`dh_id` = $id LIMIT 1
         let data = await Order.aggregate([
             { $match: { status: 5, sellerId: userId, _id: id } },
             {
