@@ -580,33 +580,27 @@ exports.getInfoEnvaluate = async (res, Evaluate, userID) => {
 // hàm xửl lý tên mặt hàng cho danh mục
 exports.getDataNewDetail = async (objectarr, cate) => {
     let array = Object.entries(objectarr).map(([key, value]) => [key, value]);
+
+    let check = await CateDetail.findOne({ _id: cate }).lean();
+
+    let data ='';
     for (let i = 0; i < array.length; i++) {
         let name = await exports.switchCase(array[i][0])
-        let value = await exports.cateDetail(cate, name, array[i][1])
-        array[i][1] = value
+        if (name)
+            var chartAt = name.split('.')[0];
+        let filter1 = check[`${chartAt}`]
+        data = await filter1.find(item => item._id === array[i][1])
+        console.log("🚀 ~ file: service.js:593 ~ exports.getDataNewDetail= ~ filter1:", filter1)
+        objectarr[`${array[i][0]}`] =  data.name
     }
-    let objectt = Object.fromEntries(array);
-    return objectt
+    return objectarr
 }
 
 // hàm lấy tên mặt hàng cho danh mục
 exports.cateDetail = async (cateID, item, id) => {
 
-    let check = await CateDetail.aggregate([
-        { $match: { _id: cateID } },
-        {
-            $project: {
-                [item]: 1
-            }
-        },
-        { $unwind: `$${item}` }
-    ]);
 
-    let data = check.find((itemm) => itemm[`${item}`]._id == id)
-    if (data && data.length) {
-        return data[0][`${item}`].name
-    }
-    return 0
+
 }
 
 exports.switchCase = (item) => {
@@ -686,3 +680,4 @@ exports.sendChat = async (id_nguoigui, id_nguoinhan, noidung) => {
     });
     return true
 }
+
