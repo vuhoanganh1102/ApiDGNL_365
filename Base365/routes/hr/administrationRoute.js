@@ -14,10 +14,10 @@ router.post('/addPolicy',formData.parse(), hrService.checkRoleUser, hrService.ch
 router.post('/updatePolicy', formData.parse(), hrService.checkRoleUser, hrService.checkRight(2, 3), administration.updatePolicy)
 
 // danh sách nhóm quy định 
-router.get('/listProvision',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.listProvision)
+router.get('/listProvision',hrService.checkRoleUser,administration.listProvision)
 
 // chi tiết nhóm quy định 
-router.get('/detailProvision',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.detailProvision)
+router.get('/detailProvision',hrService.checkRoleUser,administration.detailProvision)
 
 // sửa nhóm quy định
 router.put('/updateProvision',hrService.checkRoleUser, hrService.checkRight(2, 3),formData.parse(),administration.updateProvision)
@@ -26,10 +26,10 @@ router.put('/updateProvision',hrService.checkRoleUser, hrService.checkRight(2, 3
 router.delete('/deleteProvision',hrService.checkRoleUser, hrService.checkRight(2, 4),formData.parse(),administration.deleteProvision)
 
 // danh sách quy định theo nhóm quy định
-router.get('/listPolicy',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.listPolicy)
+router.get('/listPolicy',hrService.checkRoleUser,administration.listPolicy)
 
 // chi tiết quy định theo nhóm quy định
-router.get('/detailPolicy',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.detailPolicy)
+router.get('/detailPolicy',hrService.checkRoleUser,administration.detailPolicy)
 
 // xoá quy định theo nhóm quy định
 router.delete('/deletePolicy',hrService.checkRoleUser, hrService.checkRight(2, 4),formData.parse(),administration.deletePolicy)
@@ -48,17 +48,17 @@ router.delete('/deleteEmployeePolicy',hrService.checkRoleUser, hrService.checkRi
 router.post('/addEmpoyePolicySpecific',hrService.checkRoleUser, hrService.checkRight(2, 2),formData.parse(),administration.addEmpoyePolicySpecific)
 
 // Danh sách nhóm chính sách
-router.get('/listEmpoyePolicy',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.listEmpoyePolicy)
+router.get('/listEmpoyePolicy',hrService.checkRoleUser,administration.listEmpoyePolicy)
 
 // chi tiết nhóm chính sách
-router.get('/getDetailPolicy',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.getDetailPolicy)
+router.get('/getDetailPolicy',hrService.checkRoleUser,administration.getDetailPolicy)
 
 // danh sách quy định theo nhóm quy định
-router.get('/listEmployeePolicySpecific',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.listEmployeePolicySpecific)
+router.get('/listEmployeePolicySpecific',hrService.checkRoleUser,administration.listEmployeePolicySpecific)
 
 
 // chi tiết chính sách
-router.get('/detailEmployeePolicySpecific',hrService.checkRoleUser, hrService.checkRight(2, 1),administration.detailEmployeePolicySpecific)
+router.get('/detailEmployeePolicySpecific',hrService.checkRoleUser,administration.detailEmployeePolicySpecific)
 
 // xoá nhóm chính sách
 router.delete('/deleteEmployeePolicySpecific',hrService.checkRoleUser, hrService.checkRight(2, 4),formData.parse(),administration.deleteEmployeePolicySpecific)

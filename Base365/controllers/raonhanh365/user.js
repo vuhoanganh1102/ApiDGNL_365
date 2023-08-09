@@ -10,7 +10,8 @@ const md5 = require('md5');
 const raoNhanh = require('../../services/raoNhanh365/service');
 const History = require('../../models/Raonhanh365/History');
 const Evaluate = require('../../models/Raonhanh365/Evaluate');
-
+const City = require("../../models/City");
+const District = require("../../models/District");
 const axios = require('axios')
 const folderUserImg = "img_user"
 // gửi otp
@@ -146,17 +147,26 @@ exports.listUserOnline = async (req, res, next) => {
                     type: 1,
                     city: 1,
                     district: 1,
-                    address: 1
+                    address: 1,
+                    chat365_secret:1
                 }
             },
 
         ]);
         for (let i = 0; i < data.length; i++) {
             if (data[i].avatarUser) data[i].avatarUser = await raoNhanh.getLinkAvatarUser(data[i].idRaoNhanh365, data[i].avatarUser)
-            let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1, userID: 1, _id: 1, cateID: 1, linkTitle: 1, type: 1, buySell: 1, img: 1 })
+            let tin = await New.findOne({ userID: data[i].idRaoNhanh365 }, { title: 1, userID: 1, _id: 1, cateID: 1, linkTitle: 1, type: 1, buySell: 1, img: 1 }).lean()
             if (tin) {
-                if (tin.img) await raoNhanh.getLinkFile(tin.userID, tin.img, tin.cateID, tin.buySell)
+                if (tin.img) tin.img = await raoNhanh.getLinkFile(tin.userID, tin.img, tin.cateID, tin.buySell)
                 data[i].tin = tin
+            }
+            if (data[i].city && data[i].city != 0) {
+                let datacity = await City.findById({ _id: data[i].city }).lean();
+                if (datacity) data[i].city = datacity.name
+            }
+            if (data[i].district && data[i].district != 0) {
+                let datadistric = await District.findById({ _id: data[i].district }).lean();
+                if (datadistric) data[i].district = datadistric.name
             }
         }
         return functions.success(res, 'get data success', { data })
@@ -253,7 +263,7 @@ exports.profileInformation = async (req, res, next) => {
 
 
         // số tiền đã nạp trong 30 ngày
-        let userInFor = await User.findOne({ idRaoNhanh365: userIdRaoNhanh }, fields);
+        let userInFor = await User.findOne({ idRaoNhanh365: userIdRaoNhanh }, fields).lean();
         if (!userInFor) return functions.setError(res, 'not found user', 404)
         let tienDaNap = await History.aggregate([
             { $match: { userId: userIdRaoNhanh, time: { $gt: new Date(thirtyDaysAgo) }, content: 'Nạp tiền' } },

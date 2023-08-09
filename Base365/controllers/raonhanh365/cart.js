@@ -34,9 +34,15 @@ exports.getListCartByUserId = async (req, res, next) => {
       },
       { $unwind: { path: "$new", preserveNullAndEmptyArrays: true } },
       {
-        $project: { quantity: 1, unit: 1, status: 1, new: { _id: 1, title: 1, linkTitle: 1, img: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1 }, user: {_id:1, userName: 1, type: 1 } }
+        $project: { quantity: 1, unit: 1, status: 1, new: { _id: 1, title: 1, userID: 1, linkTitle: 1, cateID: 1, img: 1, money: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1, buySell: 1, infoSell: 1 }, user: { _id: 1, userName: 1, type: 1 } }
       }
     ])
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].new.img) {
+        data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, data[i].new.buySell)
+
+      }
+    }
     let soluong = data.length;
     return functions.success(res, "get list cart success", { soluong, data });
   } catch (e) {
