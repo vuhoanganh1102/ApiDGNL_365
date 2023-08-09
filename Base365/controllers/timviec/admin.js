@@ -8,7 +8,6 @@ const AdminUserRight = require('../../models/Timviec365/Admin/AdminUserRight');
 const AdminTranslate = require('../../models/Timviec365/Admin/AdminTranslate');
 const {recordCreditsHistory} = require("./credits");
 const PointCompany = require("../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany")
-const GhimTinPackages = require("../../models/Timviec365/UserOnSite/Company/GhimTinPackages")
 
 const getIP = (req) => {
     let forwardedIpsStr = req.header('x-forwarded-for');
@@ -443,52 +442,6 @@ exports.topupCredits = async (req, res) => {
             } else {
                 return functions.setError(res, "Thiếu các trường cần thiết", 429);
             }
-        } else {
-            return functions.setError(res, 'Bạn không có quyền thực hiện hành động này!', 403)
-        }
-    } catch (error) {
-        console.log(error);
-        return functions.setError(res, error)
-    }
-}
-//Thêm gói ghim tin
-exports.createGhimTinPackage = async (req, res) => {
-    try {
-        let {
-            name,
-            price,
-            duration
-        } = req.body;
-
-        let idAdmin = req.user.data._id;
-        let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
-        if (checkAdmin) {
-            let doc = await (new GhimTinPackages({
-                name,
-                price,
-                duration
-            })).save();
-            return functions.success(res, "Thêm gói ghim tin thành công", {data: doc})
-        } else {
-            return functions.setError(res, 'Bạn không có quyền thực hiện hành động này!', 403)
-        }
-    } catch (error) {
-        console.log(error);
-        return functions.setError(res, error)
-    }
-}
-
-//Thêm gói ghim tin
-exports.deleteGhimTinPackage = async (req, res) => {
-    try {
-        let {
-            id
-        } = req.params;
-        let idAdmin = req.user.data._id;
-        let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
-        if (checkAdmin) {
-            let doc = await GhimTinPackages.findByIdAndDelete(id);
-            return functions.success(res, "Xóa gói ghim tin thành công", {data: doc})
         } else {
             return functions.setError(res, 'Bạn không có quyền thực hiện hành động này!', 403)
         }

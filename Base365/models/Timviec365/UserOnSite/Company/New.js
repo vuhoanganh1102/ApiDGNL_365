@@ -176,43 +176,6 @@ const newTV365Schema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    new_ghim_tu_dong: {
-        type: [
-            {
-                vi_tri: {
-                    type: String,
-                    enum: ["hap_dan", "thuong_hieu", "tuyen_gap", null],
-                    default: null
-                },
-                created_time: {
-                    type: Number,
-                    default: 0
-                },
-                ghim_start: {
-                    type: Number,
-                    default: 0
-                },
-                ghim_end: {
-                    type: Number,
-                    default: 0
-                },
-                price: {
-                    type: Number,
-                    default: 0
-                },
-                duration: {
-                    type: Number,
-                    default: 0
-                },
-                //1 is active, 0 is disabled
-                status: {
-                    type: Number,
-                    default: 1
-                }
-            }
-        ],
-        default: null
-    },
     new_thuc: {
         type: Number,
         default: 0

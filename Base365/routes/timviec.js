@@ -42,6 +42,7 @@ router.use('/ssl', sslRouter);
 router.use('/account', accountRouter);
 router.use('/company/vip', companyVipRouter);
 router.use('/credits', creditsRouter);
-router.get('/normalize', tools.normalizeExchangePointHistory);
+router.get('/normalize/EPH', tools.normalizeExchangePointHistory);
+router.get('/normalize/PL', tools.normalizePriceList);
 
 module.exports = router;
