@@ -15,7 +15,7 @@ const CV = require('../../models/Timviec365/CV/Cv365')
 const TagBlog = require('../../models/Timviec365/Blog/TagBlog');
 const CompanyStorage = require('../../models/Timviec365/UserOnSite/Company/Storage');
 const PermissionNotify = require('../../models/Timviec365/PermissionNotify');
-
+const CreditController = require('./credits')
 
 // Load service
 const service = require('../../services/timviec365/company');
@@ -569,7 +569,6 @@ exports.updateInfor = async(req, res, next) => {
             mst = request.thue,
             tagLinhVuc = request.tagLinhVuc,
             usc_video_link = request.usc_video_link,
-            check_chat = request.check_chat,
             usc_images = request.usc_images,
             usc_manager = request.usc_manager,
             usc_skype = request.usc_skype,
@@ -1250,7 +1249,7 @@ exports.seenUVWithPoint = async(req, res, next) => {
     try {
         let idCompany = req.user.data.idTimViec365;
         let idUser = req.body.useID;
-        let point = 0;
+        let type_payment = req.body.type_payment?req.body.type_payment:0;
         if (idUser) {
             // Kiểm tra xem đã mất điểm hay chưa
             const checkUsePoint = await functions.getDatafindOne(PointUsed, {
@@ -1260,30 +1259,56 @@ exports.seenUVWithPoint = async(req, res, next) => {
 
             // Nếu chưa mất điểm thì xử lý
             if (!checkUsePoint) {
+                // point - money
                 // Lấy điểm hiện tại của ntd xem còn điểm không
                 let companyPoint = await functions.getDatafindOne(PointCompany, { usc_id: idCompany });
                 if (companyPoint) {
-                    let pointUSC = companyPoint.point_usc;
-                    if (pointUSC > 0) {
-                        pointUSC = pointUSC - 1;
-                        await PointCompany.updateOne({ usc_id: idCompany }, {
-                            $set: {
-                                pointUSC: pointUSC,
-                            }
-                        });
-                        const pointUsed = new PointUsed({
-                            usc_id: idCompany,
-                            use_id: idUser,
-                            point: 1,
-                            type: 1,
-                            used_day: functions.getTimeNow(),
-                            check_from: 1
-                        })
-                        await pointUsed.save();
-
-                        return functions.success(res, "Mở điểm ứng viên thành công");
+                    //Luồng xử lý điểm
+                    if (type_payment === 0) {
+                        let pointUSC = companyPoint.point_usc;
+                        if (pointUSC > 0) {
+                            pointUSC = pointUSC - 1;
+                            await PointCompany.updateOne({ usc_id: idCompany }, {
+                                $set: {
+                                    pointUSC: pointUSC,
+                                }
+                            });
+                            const pointUsed = new PointUsed({
+                                usc_id: idCompany,
+                                use_id: idUser,
+                                point: 1,
+                                type: 1,
+                                used_day: functions.getTimeNow(),
+                                check_from: 1
+                            })
+                            await pointUsed.save();
+    
+                            return functions.success(res, "Mở điểm ứng viên thành công");
+                        }
+                        return functions.setError(res, "Bạn đã hết điểm để sử dụng", 200)
+                    } else if (type_payment === 1) {
+                        let money_usc = companyPoint.money_usc;
+                        const _price = 30000;
+                        if (money_usc >= _price) {
+                            await CreditController.useCreditsHandler(idCompany, _price);
+                            const pointUsed = new PointUsed({
+                                usc_id: idCompany,
+                                use_id: idUser,
+                                money: _price,
+                                type: 1,
+                                //Kiểu thanh toán: 1: Tiền, mặc định là 0: Điểm
+                                type_payment: 1,
+                                used_day: functions.getTimeNow(),
+                                check_from: 1
+                            })
+                            await pointUsed.save();
+    
+                            return functions.success(res, "Mở điểm ứng viên thành công");
+                        }
+                        return functions.setError(res, "Bạn đã hết tiền để sử dụng", 200)
+                    } else {
+                        return functions.setError(res, "Không tồn tại phương thức thanh toán này!", 200)
                     }
-                    return functions.setError(res, "Bạn đã hết điểm để sử dụng", 200)
                 }
                 return functions.setError(res, 'nhà tuyển dụng không có điểm', 200);
             }
@@ -1902,6 +1927,13 @@ exports.getDetailInfoCompany = async(req, res, next) => {
                     "usc_video_type": "$inForCompany.timviec365.usc_video_type",
                     "usc_xac_thuc": "$otp",
                     "usc_kd": "$inForCompany.usc_kd",
+                    "usc_license":"$inForCompany.timviec365.usc_license",
+                    "usc_images": "$inForCompany.timviec365.usc_images",
+                    "usc_manager": "$inForCompany.timviec365.usc_manager",
+                    "usc_skype": "$inForCompany.timviec365.usc_skype",
+                    "usc_zalo": "$inForCompany.timviec365.usc_zalo",
+                    "usc_founded_time": "$inForCompany.timviec365.usc_founded_time",
+                    "usc_branches": "$inForCompany.timviec365.usc_branches",
                     "idQLC": "$idQLC",
                 }
             }]);
@@ -1910,6 +1942,9 @@ exports.getDetailInfoCompany = async(req, res, next) => {
 
                 // Xử lý ảnh đại diện
                 company.usc_logo = functions.getUrlLogoCompany(company.usc_create_time, company.usc_logo);
+
+                company.usc_license = functions.getLicenseURL(idCompany, company.usc_license);
+                
                 // Lấy danh sách tin tuyển dụng của cty
                 const listNew = await NewTV365.find({
                         $or: [

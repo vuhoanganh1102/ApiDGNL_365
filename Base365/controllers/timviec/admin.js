@@ -7,6 +7,19 @@ const functions = require('../../services/functions');
 const AdminUserRight = require('../../models/Timviec365/Admin/AdminUserRight');
 const AdminTranslate = require('../../models/Timviec365/Admin/AdminTranslate');
 const {recordCreditsHistory} = require("./credits");
+const PointCompany = require("../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany")
+const GhimTinPackages = require("../../models/Timviec365/UserOnSite/Company/GhimTinPackages")
+
+const getIP = (req) => {
+    let forwardedIpsStr = req.header('x-forwarded-for');
+    let ip = '';
+    if (forwardedIpsStr) {
+        ip = forwardedIpsStr.split(',')[0];
+    } else {
+        ip = req.socket.remoteAddress 
+    }
+    return ip;
+}
 
 // Đăng nhập
 exports.login = async(req, res) => {
@@ -413,17 +426,16 @@ exports.topupCredits = async (req, res) => {
             if (usc_id&&amount) {
                 let company = await Users.findOne({idTimViec365: usc_id, type: 1});
                 if (company) {
-                    let doc = await Credits.findOne({usc_id});
+                    let doc = await PointCompany.findOne({usc_id});
                     if (!doc) {
-                        doc = await (new Credits({
+                        doc = await (new PointCompany({
                             usc_id: usc_id,
-                            balance: amount,
-                            status: 1,
+                            money_usc: amount,
                         })).save();
                     } else {
-                        await Credits.findOneAndUpdate({usc_id}, {$inc: {balance: amount}});
+                        await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
                     }
-                    await recordCreditsHistory(usc_id, 1, amount, idAdmin, getIP(req));
+                    await recordCreditsHistory(usc_id, 1, amount, null, getIP(req));
                     return functions.success(res, "Nạp tiền thành công!")
                 } else {
                     return functions.setError(res, "Không tồn tại công ty có ID này", 400);
@@ -431,6 +443,52 @@ exports.topupCredits = async (req, res) => {
             } else {
                 return functions.setError(res, "Thiếu các trường cần thiết", 429);
             }
+        } else {
+            return functions.setError(res, 'Bạn không có quyền thực hiện hành động này!', 403)
+        }
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error)
+    }
+}
+//Thêm gói ghim tin
+exports.createGhimTinPackage = async (req, res) => {
+    try {
+        let {
+            name,
+            price,
+            duration
+        } = req.body;
+
+        let idAdmin = req.user.data._id;
+        let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
+        if (checkAdmin) {
+            let doc = await (new GhimTinPackages({
+                name,
+                price,
+                duration
+            })).save();
+            return functions.success(res, "Thêm gói ghim tin thành công", {data: doc})
+        } else {
+            return functions.setError(res, 'Bạn không có quyền thực hiện hành động này!', 403)
+        }
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error)
+    }
+}
+
+//Thêm gói ghim tin
+exports.deleteGhimTinPackage = async (req, res) => {
+    try {
+        let {
+            id
+        } = req.params;
+        let idAdmin = req.user.data._id;
+        let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
+        if (checkAdmin) {
+            let doc = await GhimTinPackages.findByIdAndDelete(id);
+            return functions.success(res, "Xóa gói ghim tin thành công", {data: doc})
         } else {
             return functions.setError(res, 'Bạn không có quyền thực hiện hành động này!', 403)
         }

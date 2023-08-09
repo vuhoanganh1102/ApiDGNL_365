@@ -50,5 +50,9 @@ router.post('/updatePassword', functions.checkToken, formData.parse(), admin.upd
 router.post('/uv/list/regis', formData.parse(), admin.candi_register);
 
 router.post('/topupCredits', formData.parse(), functions.checkToken, admin.topupCredits);
+//Thêm gói ghim tin
+router.post('/ghimTinPackage', formData.parse(), /*functions.checkToken, */ admin.createGhimTinPackage);
+//Xóa gói ghim tin
+router.delete('/ghimTinPackage/:id', formData.parse(), /*functions.checkToken, */ admin.deleteGhimTinPackage);
 
 module.exports = router;
