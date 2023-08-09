@@ -328,6 +328,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                 data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365,data[i].user.avatarUser);
             }
         }
+        
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
         console.log("🚀 ~ file: order.js:370 ~ exports.manageOrderBuy= ~ error:", error)

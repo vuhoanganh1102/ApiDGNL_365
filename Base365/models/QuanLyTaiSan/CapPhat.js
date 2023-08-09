@@ -31,7 +31,9 @@ const QLTS_Cap_Phat = new mongoose.Schema({
         default: 0,
     },
     id_ng_daidien: {
-        type: Number
+        type: Number,
+        default: 0,
+
     },
     id_ng_thuchien: {
         type: Number
