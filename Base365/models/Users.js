@@ -140,6 +140,11 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    idGiaSu: {
+        // ID gốc lấy từ base gia sư
+        type: Number,
+        default: 0
+    },
     chat365_secret: {
         // Mã chat
         type: String,
@@ -987,6 +992,104 @@ const UserSchema = new mongoose.Schema({
             }
         },
         default: null
+    },
+    inforGiaSu : {
+        type : {
+            ugs_ft : {
+                type : Number,
+                // 1 phụ huynh , 2 gia sư
+            },
+            ugs_tutor_style : {
+                // //chưa biết
+                type : String,
+            },
+            ugs_class_teach : {
+                // lớp dạy
+                type : String,
+            },
+            ugs_school : {
+                // trường học
+                type : String,
+            },
+            ugs_graduation_year : {
+                //năm tốt nghiệp 
+                type : Number,
+            },
+            ugs_specialized : {
+                  //chưa biết
+                type : String,
+            },
+            ugs_county_gs : {
+                type : Number,
+                // quốc gia của gia sư
+            },
+            ugs_city_gs : {
+                type : Number,
+                // tỉnh, thành phố của gia sư nếu là ở nước ngoài
+            },
+            ugs_county : {
+                // quốc gia của phụ huynh
+                type : String,
+            },
+            ugs_city : {
+                // tỉnh, thành phố của phụ huynh nếu là ở nước ngoài
+                type : String,
+            },
+            ugs_workplace : {
+                //nơi làm việc 
+                type : String,
+            },
+            ugs_about_us : {
+                 //chưa biết
+                type : String,
+            },
+            ugs_experience_year : {
+                //năm tốt nghiệp
+                type : Number,
+            },
+            ugs_achievements : {
+                // chứng chỉ , thành tựu
+                type : String,
+            },
+            as_id : {
+                 //chưa biết
+                type : Number,
+            },
+            as_detail : {
+                //chưa biết
+                type : String,
+            },
+            point_free : {
+                //điểm miễn phí cho phụ huynh để xem ứng viên 
+                type : Number,
+            },
+            point_buy : {
+                //điểm mất phí cho phụ huynh để xem ứng viên 
+                type : Number,
+            },
+            time_present : {
+                //chưa rõ
+                type : Number,
+            },
+            ugs_view : {
+                // lượt xem
+                type : Number,
+            },
+            token : {
+                //token
+                type : String,
+            },
+            check_index : {
+                 //chưa rõ
+                type : Number,
+                default : 0
+            },
+            is_hide : {
+                //'0:chưa ẩn, 1: đã ẩn'
+                type : Number,
+                default : 0
+            },
+        }
     },
     configChat: {
         notificationAcceptOffer: {

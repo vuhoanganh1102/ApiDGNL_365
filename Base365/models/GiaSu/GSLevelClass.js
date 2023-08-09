@@ -5,6 +5,8 @@ const gs_level_class = new mongoose.Schema({
     level_class_id : {
         type : Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     level_class_name : {

@@ -4,6 +4,8 @@ const save_parent = new mongoose.Schema({
     sp_id : {
         type : Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     ugs_id : {

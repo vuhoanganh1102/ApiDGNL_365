@@ -110,14 +110,16 @@ exports.danhSachTaiBaoMat = async(req, res, next) => {
                 
                 "id_ng_tao": "$id_ng_tao",
                 "ten_ng_tao": "$NguoiTao.userName",                
-                "ten_ng_bao_mat": "$NguoiBaoMat.userName",                
+                "ten_ng_bao_mat": "$NguoiBaoMat.userName", 
+                "dep_id": "$NguoiBaoMat.inForPerson.employee.dep_id",
+
             }},
         ]);
         for(let i=0; i<danhSachMat.length; i++) {
             let mat = danhSachMat[i];
             let dep_name = mat.ten_ng_tao;
             if(mat.mat_type_quyen == 2) {
-                let department = await Department.findOne({dep_id: mat.id_ng_tao});
+                let department = await Department.findOne({ com_id: id_cty, dep_id: danhSachMat[i].dep_id});
                 if(department) dep_name = department.dep_name;
                 else dep_name = "Chua cap nhat";
             }

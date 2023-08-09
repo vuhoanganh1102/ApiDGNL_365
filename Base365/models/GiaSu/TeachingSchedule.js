@@ -4,6 +4,8 @@ const teaching_schedule = new mongoose.Schema({
     ts_id : {
         type : Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     ugs_id : {
