@@ -1,7 +1,5 @@
 const axios = require('axios');
 const functions = require('../../services/functions');
-const City = require('../../models/City');
-const District = require('../../models/District');
 const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
 const Users = require('../../models/Users');
 const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
@@ -16,14 +14,17 @@ const TblHistoryViewed = require('../../models/Timviec365/UserOnSite/Candicate/T
 const Profile = require('../../models/Timviec365/UserOnSite/Candicate/Profile');
 const HistoryNewPoint = require('../../models/Timviec365/HistoryNewPoint');
 const PermissionNotify = require('../../models/Timviec365/PermissionNotify');
-
+const GhimHistory = require('../../models/Timviec365/UserOnSite/Company/GhimHistory')
+const PriceList = require('../../models/Timviec365/PriceList/PriceList')
 const CategoryDes = require('../../models/Timviec365/CategoryDes');
 const TblModules = require('../../models/Timviec365/TblModules');
 const slugify = require('slugify');
 
 // Service
 const service = require('../../services/timviec365/new');
-const serviceCompany = require('../../services/timviec365/company')
+const serviceCompany = require('../../services/timviec365/company');
+const New = require('../../models/Timviec365/UserOnSite/Company/New');
+const creditsController = require('./credits');
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -2163,5 +2164,135 @@ exports.like = async(req, res) => {
     } catch (error) {
         console.log(error);
         return functions.setError(res, error);
+    }
+}
+
+exports.tuDongGhimTin = async (req, res) => {
+    try {
+        let {
+            /**Id tin */
+            new_id,
+            /**Gói ghim tin */
+            bg_id,
+            /** Vị trí ghim tin
+             * type: String,
+             * enum: ["hap_dan", "thuong_hieu", "tuyen_gap", null],
+             * default: null
+             */
+            ghim_start
+        } = req.body;
+        if (!req.user||!req.user.data.idTimViec365) return functions.setError(res, "Forbidden", 403);
+        let usc_id = req.user.data.idTimViec365;
+        let priceListing = await PriceList.findOne({bg_id: bg_id, bg_type: {$in: ["1", "4", "5", "6"]}});
+        if (!priceListing) return functions.setError(res, "Gói ghim tin không tồn tại", 404);
+        let news = await NewTV365.findOne({ new_id: new_id, new_user_id: usc_id })
+        if (!news) return functions.setError(res, "Bản tin không tồn tại", 404);
+
+        let bg_vat = priceListing.bg_vat;
+        let bg_vip_duration = priceListing.bg_vip_duration;
+        let bg_type = priceListing.bg_type;
+        if (typeof bg_vat === "string"&&bg_vip_duration&&bg_type) {
+            bg_vat = Number(bg_vat.replace(/\./g, ""));
+            if (isNaN(bg_vat)) return functions.setError(res, "Gói ghim tin không tồn tại", 404);
+            if (["1", "4", "5"].includes(bg_type)
+                &&(news.new_hot||news.new_cao||news.new_gap)
+                &&news.new_vip_time > functions.getTimeNow())
+                return functions.setError(res, "Tin vẫn đang được ghim", 400);
+            if (bg_type === "6"
+                &&(news.new_nganh)
+                &&news.new_cate_time > functions.getTimeNow())
+                return functions.setError(res, "Tin vẫn đang được ghim ngành", 400);
+
+            let paymentResult = await creditsController.useCreditsHandler(usc_id, bg_vat);
+            if (!paymentResult) {
+                return functions.setError(res, "Tài khoản không đủ!", 400);
+            }
+            /**
+             * 1: Hấp dẫn
+             * 4: Thương hiệu
+             * 5: Tuyển gấp
+             * 6: Trang ngành
+             */
+            switch (bg_type) {
+                case "1":
+                    await New.updateOne({ 
+                        new_id: new_id,
+                        new_user_id: usc_id
+                    },
+                    {
+                        $set: {
+                            new_hot: 1,
+                            new_cao: 0,
+                            new_gap: 0,
+                            new_vip_time: Number(ghim_start) + Number(bg_vip_duration)
+                        }
+                    })
+                    break;
+
+                case "4":
+                    await New.updateOne({ 
+                        new_id: new_id,
+                        new_user_id: usc_id
+                    },
+                    {
+                        $set: {
+                            new_hot: 0,
+                            new_cao: 1,
+                            new_gap: 0,
+                            new_vip_time: Number(ghim_start) + Number(bg_vip_duration)
+                        }
+                    })
+                    break;
+
+                case "5":
+                    await New.updateOne({ 
+                        new_id: new_id,
+                        new_user_id: usc_id
+                    },
+                    {
+                        $set: {
+                            new_hot: 0,
+                            new_cao: 0,
+                            new_gap: 1,
+                            new_vip_time: Number(ghim_start) + Number(bg_vip_duration)
+                        }
+                    })
+                    break;
+
+                case "6":
+                    await New.updateOne({ 
+                        new_id: new_id,
+                        new_user_id: usc_id
+                    },
+                    {
+                        $set: {
+                            new_nganh: 1,
+                            new_cate_time: Number(ghim_start) + Number(bg_vip_duration)
+                        }
+                    })
+                    break;
+            }
+
+            let data = {
+                new_id: new_id,
+                new_user_id: usc_id,
+                bg_type: bg_type,
+                bg_id: bg_id,
+                created_time: functions.getTimeNow(),
+                ghim_start: Number(ghim_start),
+                ghim_end: Number(ghim_start) + Number(bg_vip_duration),
+                price: Number(bg_vat),
+                duration: bg_vip_duration,
+            }
+            await (new GhimHistory(data)).save();
+
+            return functions.success(res, "Ghim tin thành công", { data });
+        } else {
+            return functions.setError(res, "Chưa đủ thông tin truyền lên", 400);
+        }
+
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
     }
 }

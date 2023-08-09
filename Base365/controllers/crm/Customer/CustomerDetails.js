@@ -11,7 +11,7 @@ const District = require('../../../models/District')
 const Ward = require('../../../models/crm/ward')
 const NhomKH = require('../../../models/crm/Customer/customer_group')
 // hàm hiển thị chi tiết khách hàng
-exports.findOneCus = async (req, res) => {
+exports.detail = async (req, res) => {
   try {
     let { cus_id } = req.body
     let com_id = ''    
@@ -42,7 +42,7 @@ exports.findOneCus = async (req, res) => {
     if(!name_phu_trach){
       name_phu_trach = ''
     }
-    let name_nhom = await NhomKH.findOne({gr_id : findCus.gr_id}).select('gr_name')
+    let name_nhom = await NhomKH.findOne({gr_id : findCus.group_id}).select('gr_name')
     if(!name_nhom){
       name_nhom = ''
     }
@@ -89,7 +89,7 @@ exports.findOneCus = async (req, res) => {
         resoure: findCus.resoure, // ngưồn khách hàng
         thong_tin_mo_ta: findCus.description, // thông tin mô tả
         ma_so_thue: findCus.tax_code, // mã số thuế
-        nhom_khach_hang: name_nhom,// id nhóm khách hàng
+        nhom_khach_hang: name_nhom.gr_name,// id nhóm khách hàng
         status: findCus.status,// trạng thái khach hàng
         linh_vuc: findCus.business_areas,// lĩnh vực
         category: findCus.category, //
@@ -99,27 +99,27 @@ exports.findOneCus = async (req, res) => {
         hoa_don_tp: hd_thanh_pho,// hóa đơn id thành phố
         hoa_don_huyen: hd_huyen, // hóa đơn id huyện
         hoa_don_xa: hd_ten_xa, // hóa đơn id phường xã
-        dia_chi_don_hang: findCus.bill_address, // địa chỉ đơn hàng
-        ma_vung: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
+        so_nha_duong_pho: findCus.bill_address, // địa chỉ đơn hàng
+        ma_vung_hoa_don: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
         bill_invoice_address: findCus.bill_invoice_address, // Địa chỉ giao hàng
         bill_invoice_address_email: findCus.bill_invoice_address_email, // địa chỉ đơn hàng email
         giao_hang_tp : hd_thanh_pho,// giao hàng tại thành phố
         giao_hang_huyen :hd_huyen, // giao hàng tại huyện
         giao_hang_xa :  hd_ten_xa,// giao hàng tại phường,xã
-        ma_thong_tin_giao_hang : findCus.ship_area,// Mã vùng thông tin giao hàng
+        ma_vung_giao_hang : findCus.ship_area,// Mã vùng thông tin giao hàng
         bank_id: findCus.bank_id, // id của ngân hàng
         bank_account: findCus.bank_account, // tài khoản ngân hàng
         xep_hang_kh: findCus.rank,// xếp hạng khách hàng
         website: findCus.website, // website ngân hàng
-        number_of_day_owed: findCus.number_of_day_owed,// số ngày được nợ
+        so_ngay_duoc_no: findCus.number_of_day_owed,// số ngày được nợ
         gender: findCus.gender,// giới tính
-        deb_limit: findCus.deb_limit,// hạn mức nợ
-        type: findCus.type, // loại hình khách hàng
+        han_muc_no: findCus.deb_limit,// hạn mức nợ
+        loai_hinh_khach_hang: findCus.type, // loại hình khách hàng
         doanh_thu: findCus.revenue, // doanh thu
         ngay_sinh: findCus.birthday, // ngày sinh nếu là cá nhân
         la_khach_hang_tu: findCus.created_at, // là khách hàng từ ngày
-        nguoi_tao : name_tao, // tên nhân viên tạo 
-        nguoi_sua : name_sua, // tên nhân viên sửa
+        nguoi_tao : name_tao.userName, // tên nhân viên tạo 
+        nguoi_sua : name_sua.userName, // tên nhân viên sửa
         ngay_tao : findCus.created_at,
         ngay_sua : findCus.updated_at
       }
@@ -135,12 +135,12 @@ exports.findOneCus = async (req, res) => {
         thanh_pho: thanh_pho,//thành phố
         huyen: huyen,// huyện
         phuong_xa: ten_xa, //phường hoặc xã
-        address: findCus.address,// số nhà đường phố
+        so_nha_duong_pho_hd: findCus.address,// số nhà đường phố
         ship_invoice_address: findCus.ship_invoice_address,// địa chỉ đơn hàng
         resoure: findCus.resoure, // ngưồn khách hàng
         thong_tin_mo_ta: findCus.description, // thông tin mô tả
         ma_so_thue: findCus.tax_code, // mã số thuế
-        group_id: name_nhom,// id nhóm khách hàng
+        group_id: name_nhom.gr_name,// id nhóm khách hàng
         status: findCus.status,// trạng thái khach hàng
         linh_vuc: findCus.business_areas,// lĩnh vực
         category: findCus.category, //
@@ -150,26 +150,26 @@ exports.findOneCus = async (req, res) => {
         hoa_don_tp: hd_thanh_pho,// hóa đơn id thành phố
         hoa_don_huyen: hd_huyen, // hóa đơn id huyện
         hoa_don_xa: hd_ten_xa, // hóa đơn id phường xã
-        dia_chi_don_hang: findCus.bill_address, // địa chỉ đơn hàng
-        ma_vung: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
+        so_nha_duong_pho_gh: findCus.bill_address, // địa chỉ đơn hàng
+        ma_vung_hoa_don: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
         bill_invoice_address: findCus.bill_invoice_address, // Địa chỉ giao hàng
         bill_invoice_address_email: findCus.bill_invoice_address_email, // địa chỉ đơn hàng email
         giao_hang_tp : hd_thanh_pho,// giao hàng tại thành phố
         giao_hang_huyen :hd_huyen, // giao hàng tại huyện
         giao_hang_xa :  hd_ten_xa,// giao hàng tại phường,xã
-        ship_area: findCus.ship_area,// Mã vùng thông tin giao hàng
+        ma_vung_giao_hang: findCus.ship_area,// Mã vùng thông tin giao hàng
         bank_id: findCus.bank_id, // id của ngân hàng
         bank_account: findCus.bank_account, // tài khoản ngân hàng
         rank: findCus.rank,// xếp hạng khách hàng
         website: findCus.website, // website ngân hàng
-        number_of_day_owed: findCus.number_of_day_owed,// số ngày được nợ
-       quy_mo_nhan_su : findCus.size,// quy mô nhân sự
-        deb_limit: findCus.deb_limit,// hạn mức nợ
-        type: findCus.type, // loại hình khách hàng
+        so_ngay_duoc_no: findCus.number_of_day_owed,// số ngày được nợ
+        quy_mo_nhan_su : findCus.size,// quy mô nhân sự
+        han_muc_no: findCus.deb_limit,// hạn mức nợ
+        loai_hinh_khach_hang: findCus.type, // loại hình khách hàng
         doanh_thu: findCus.revenue, // doanh thu
         la_khach_hang_tu: findCus.created_at, // là khách hàng từ ngày
-        nguoi_tao : name_tao, // tên nhân viên tạo 
-        nguoi_sua : name_sua, // tên nhân viên sửa
+        nguoi_tao : name_tao.userName, // tên nhân viên tạo 
+        nguoi_sua : name_sua.userName, // tên nhân viên sửa
         ngay_tao : findCus.created_at,
         ngay_sua : findCus.updated_at
       }
@@ -218,7 +218,6 @@ exports.listDistrict = async(req,res) => {
   }
 }
 
-
 exports.listWard = async (req,res) =>{
   try{
     let {_id} = req.body
@@ -260,10 +259,10 @@ exports.editCustomer = async (req, res) => {
       }
     }
     if (typeof cus_id === 'undefined') {
-      res.status(400).json({ success: false, error: 'cus_id không được bỏ trống' });
+      return functions.setError(res, 'cus_id không được bỏ trống', 400);
     }
     if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
-      res.status(400).json({ success: false, error: 'cus_id phải là 1 số' });
+      return functions.setError(res, 'cus_id phải là 1 số', 400);
     }
     if (type == 1) {
       await customerService.getDatafindOneAndUpdate(Customer, { cus_id: cus_id }, {
@@ -414,7 +413,6 @@ exports.editCustomer = async (req, res) => {
   }
 }
 
-
 // hàm hiển thị lịch sử trợ lý kinh doanh (theo id khach hang)
 exports.showHisCus = async (req, res) => {
   try {
@@ -423,16 +421,17 @@ exports.showHisCus = async (req, res) => {
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
     if (typeof cus_id === 'undefined') {
-      res.status(400).json({ success: false, error: 'cus_id không được bỏ trống' });
+      return functions.setError(res, 'cus_id không được bỏ trống', 400);
     }
     if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
-      res.status(400).json({ success: false, error: 'cus_id phải là 1 số' });
+      return functions.setError(res, 'cus_id phải là 1 số', 400);
     }
     let checkHis = await HistoryEditCustomer.findOne({ customer_id: cus_id })
       .sort({ id: -1 })
       .skip(startIndex)
-      .limit(perPage);
-  return functions.success(res, 'get data success', { checkHis });
+      .limit(perPage)
+      .lean()
+    return functions.success(res, 'get data success', { checkHis });
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -462,7 +461,7 @@ exports.banGiao = async (req, res) => {
           user_handing_over_work: user_edit_id
         }
       );
-      customerService.success(res, " edited successfully");
+      return functions.success(res, 'edited successfully');
     }
   } catch (e) {
     console.log(e)
@@ -497,7 +496,7 @@ exports.ShareCustomer = async (req, res) => {
     }
 
     const saveSC = await ShareCustomer.insertMany(shareCustomers);
-    res.status(200).json(saveSC);
+    return functions.success(res, 'share thành công', { saveSC });
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -509,8 +508,14 @@ exports.ShareCustomer = async (req, res) => {
 exports.ChosseCustomer = async (req, res) => {
   try {
     let { arrCus } = req.body
+    if (!cus_id || !Array.isArray(cus_id) || cus_id.length === 0) {
+      return functions.setError(res, 'Mảng cus_id không được bỏ trống', 400);
+    }
+    if (!cus_id.every(Number.isInteger)) {
+      return functions.setError(res, 'Tất cả các giá trị trong mảng cus_id phải là số nguyên', 400);
+    }
     const customers = await Customer.find({ cus_id: { $in: arrCus } });
-    res.json(customers);
+    return functions.success(res, 'get data success', { customers });
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -575,13 +580,11 @@ exports.CombineCustome = async (req, res) => {
     } = req.body;
 
     if (!Array.isArray(arrCus)) {
-      res.status(400).json({ error: 'arrCus phải là 1 mảng' });
-      return;
+      return functions.setError(res, 'arrCus phải là 1 mảng', 400);
     }
     const type = req.body.type || 2;
     if (![1, 2].includes(type)) {
-      res.status(400).json({ error: 'Invalid type value' });
-      return;
+      return functions.setError(res, 'loại khách hàng không hợp lệ', 400);
     }
     let createDate = new Date();
     const validationResult = customerService
@@ -653,7 +656,7 @@ exports.CombineCustome = async (req, res) => {
     let saveCS = await createCustomer.save();
     // Xóa các id khách hàng từ danh sách
     await customerService.deleteCustomerByIds(arrCus);
-    res.status(200).json(saveCS);
+    return functions.success(res, 'get data success', { saveCS });
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
