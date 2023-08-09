@@ -233,8 +233,9 @@ exports.addCustomer = async (req, res) => {
       return functions.setError(res, 'bạn không có quyền', 400)
     }
 
-  } catch (error) {
-    return functions.setError(res, error)
+  } catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
   }
 };
 
@@ -243,6 +244,7 @@ exports.showKH = async (req, res) => {
   try {
     let { page,perPage,name, phone_number, status, resoure, user_edit_id, time_s, time_e, group_id, group_pins_id } = req.body;
     ; // Số lượng giá trị hiển thị trên mỗi trang
+    
     let startIndex = (page - 1) * perPage;
     let endIndex = page * perPage;
     let com_id = req.user.data.com_id
@@ -279,6 +281,7 @@ exports.showKH = async (req, res) => {
         query[key] = req.body[key];
       }
     });
+    let listUser = await User.find({ 'inForPerson.employee.com_id' : com_id}).select('idQLC userName').lean()
     if (time_s && time_e) {
       if (time_s > time_e) {
         return functions.setError(res, 'Thời gian bắt đầu không thể lớn hơn thời gian kết thúc.', 400);
@@ -286,150 +289,106 @@ exports.showKH = async (req, res) => {
       query.created_at = { $gte: time_s, $lte: time_e };
     }
 
-    if (req.user.data.type == 1) {
-      // trường hợp là công ty
+    if (req.user.data.type == 1 ||(req.user.data.type == 2 && [7,8,14,16,22,21,18,19,17].includes(checkUser.inForPerson.employee.position_id))  ) {
+      // trường hợp là công ty 
+        // (phó giám đốc,giám đốc,phó tổng giám đốc,tổng giám đốc,phó tổng giám đốc tập đoàn,
+        // tổng giám đốc tập đoàn, phó chủ tịch hội đồng quản trị, chủ tịch hội đồng quản trị,
+        // thành viên hội đồng quản trị)
       let com_id = req.user.data.com_id;
       page = parseInt(page) || 1;
       perPage = parseInt(perPage) || 10;
       let startIndex = (page - 1) * perPage
       let showCty = await Customer.find({ ...query })
-      .select('cus_id name phone_number email group_id status description resoure user_create_id emp_id user_handing_over_work updated_at')
+      .select('cus_id name phone_number email group_id status description resoure  updated_at')
       .sort({ updated_at: -1 })
       .limit(perPage)
-      let listUser = await User.find({ 'inForPerson.employee.com_id' : com_id}).select('idQLC userName').lean()
-      console.log(listUser);
+      .lean()
+      
       for(let i = 0 ; i < showCty.length ; i++){
-        const element = showCty[i];
-  const emplopyee =  listUser.find(e =>  Number(e.idQLC) == Number(element.emp_id) );
+        let element = showCty[i];
+        let emplopyee =  listUser.find(e =>  Number(e.idQLC) == Number(element.emp_id) );
         element.emp_name = "";
-console.log(element.emp_id,emplopyee, com_id)
+        let employeeCreate = listUser.find(e =>  Number(e.idQLC) == Number(element.user_create_id))
+        element.userCrete = "";
+        let userHandingOverWork = listUser.find(e =>  Number(e.idQLC) == Number(element.user_handing_over_work))
+        element.user_handing_over_work ="";
       }
 
-    let totalRecords = await Customer.countDocuments({ company_id: com_id, ...query });
-    let totalPages = Math.ceil(totalRecords / perPage);
-    let hasNextPage = startIndex + perPage < totalRecords;
+      let totalRecords = await Customer.countDocuments({ company_id: com_id, ...query });
+      let totalPages = Math.ceil(totalRecords / perPage);
+      let hasNextPage = startIndex + perPage < totalRecords;
 
     return functions.success(res, 'Lấy dữ liệu thành công', { showCty, totalRecords, totalPages, hasNextPage });
     }
     if (req.user.data.type == 2) {
       // trường hợp là nhân viên
       let userId = req.user.data.idQLC
-      const checkUser = await User.findOne({ idQLC: userId });
+      let checkUser = await User.findOne({ idQLC: userId });
       if ([1, 2, 9, 3].includes(checkUser.inForPerson.employee.position_id))
       //( là sinh viên thực tập,nhân viên thử việc,nhân viên part time, nhân viên chính thức)
       {
         let id_dataNhanvien = checkUser.idQLC;
-        const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien });
-        const customerIds = shareCusNV.map(item => item.customer_id);
-        const checkCus = await Customer.find({
+        let shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien });
+        let customerIds = shareCusNV.map(item => item.customer_id);
+        let showNV = await Customer.find({
           $or: [
             { emp_id: id_dataNhanvien },
             { cus_id: { $in: customerIds } }
           ],
           ...query // Kết hợp với các điều kiện tìm kiếm khác
         })
-        .select('cus_id name phone_number email group_id status description resoure user_create_id emp_id user_handing_over_work updated_at');
-        let checkgroup = await NhomKH.find({ gr_id: { $in: showCty.group_id, company_id: com_id } }).select('gr_name')
-        if (!checkgroup) {
-          checkgroup = ''
+        .select('cus_id name phone_number email group_id status description resoure  updated_at')
+        .sort({ updated_at: -1 })
+        .limit(perPage)
+        .lean()
+        for(let i = 0 ; i < showNV.length ; i++){
+          let element = showNV[i];
+          let emplopyee =  listUser.find(e =>  Number(e.idQLC) == Number(element.emp_id) );
+          element.emp_name = "";
+          let employeeCreate = listUser.find(e =>  Number(e.idQLC) == Number(element.user_create_id))
+          element.userCrete = "";
+          let userHandingOverWork = listUser.find(e =>  Number(e.idQLC) == Number(element.user_handing_over_work))
+          element.user_handing_over_work ="";
         }
-        let chekUser1 = await User.find({ idQLC: { $in: checkCus.user_create_id } }).select('userName')
-        if (!chekUser1) {
-          chekUser1 = ''
-        }
-        let checkUser2 = await User.find({ idQLC: { $in: checkCus.emp_id } }).select('userName')
-        if (!checkUser2) {
-          checkUser2 = ''
-        }
-        let checkUser3 = await User.find({ idQLC: { $in: checkCus.user_handing_over_work } }).select('userName')
-        if (!checkUser3) {
-          checkUser3 = ''
-        }
-      }
- 
-      if ([7,8,14,16,22,21,18,19,17].includes(checkUser.inForPerson.employee.position_id))
-      // (phó giám đốc,giám đốc,phó tổng giám đốc,tổng giám đốc,phó tổng giám đốc tập đoàn,
-        // tổng giám đốc tập đoàn, phó chủ tịch hội đồng quản trị, chủ tịch hội đồng quản trị,
-        // thành viên hội đồng quản trị)
-        {
-        let id_com = checkUser.inForPerson.employee.com_id;
-        const checkCus = await Customer.find({ company_id: id_com, ...query })
-          .select('cus_id name phone_number email group_id status description resoure user_create_id emp_id user_handing_over_work updated_at')
-          .skip(startIndex)
-          .limit(perPage)
-        let checkgroup = await NhomKH.find({ gr_id: { $in: showCty.group_id, company_id: com_id } }).select('gr_name')
-        if (!checkgroup) {
-          checkgroup = ''
-        }
-        let chekUser1 = await User.find({ idQLC: { $in: checkCus.user_create_id } }).select('userName')
-        if (!chekUser1) {
-          chekUser1 = ''
-        }
-        let checkUser2 = await User.find({ idQLC: { $in: checkCus.emp_id } }).select('userName')
-        if (!checkUser2) {
-          checkUser2 = ''
-        }
-        let checkUser3 = await User.find({ idQLC: { $in: checkCus.user_handing_over_work } }).select('userName')
-        if (!checkUser3) {
-          checkUser3 = ''
-        }
-      }
-
-      if ([20,4,12,13,11.10,5,6].includes(checkUser.inForPerson.employee.position_id))
+        let totalRecords = await Customer.countDocuments({ company_id: com_id, ...query });
+        let totalPages = Math.ceil(totalRecords / perPage);
+        let hasNextPage = startIndex + perPage < totalRecords;
+        return functions.success(res, 'Lấy dữ liệu thành công', { showNV, totalRecords, totalPages, hasNextPage });
+       }
+      else if ([20,4,12,13,11.10,5,6].includes(checkUser.inForPerson.employee.position_id))
       //(Nhóm phó, trưởng nhóm,phó tổ trưởng, tổ trưởng,phó ban dự án,trưởng ban dự án
       // Phó trưởng phòng,trường phòng)
       {
-        let id_com = checkUser.inForPerson.employee.com_id;
+       
         let id_dataNhanvien = checkUser.idQLC;
         let id_pb = checkUser.inForPerson.employee.dep_id;
         const shareCusNV = await ShareCustomer.find({ receiver_id: id_dataNhanvien, dep_id: id_pb });
         const customerIds = shareCusNV.map(item => item.customer_id);
         let checkCB = await User.find({
           "inForPerson.employee.dep_id": id_pb,
-          "inForPerson.employee.com_id": id_com,
+          "inForPerson.employee.com_id": com_id,
         })
         .select("idQLC")
-        .skip(startIndex)
         .limit(perPage)
-        const shareCb = checkCB.map(item => item.idQLC);
-        const checkCus = await Customer.find({
+        .lean()
+        let shareCb = checkCB.map(item => item.idQLC);
+        let checkCus = await Customer.find({
           $or: [{ emp_id: { $in: shareCb } }, { cus_id: { $in: customerIds } }],
           ...query // Kết hợp với các điều kiện tìm kiếm khác
         })
-        let checkgroup = await NhomKH.find({ gr_id: { $in: showCty.group_id, company_id: com_id } }).select('gr_name')
-        if (!checkgroup) {
-          checkgroup = ''
-        }
-        let chekUser1 = await User.find({ idQLC: { $in: checkCus.user_create_id } }).select('userName')
-        if (!chekUser1) {
-          chekUser1 = ''
-        }
-        let checkUser2 = await User.find({ idQLC: { $in: checkCus.emp_id } }).select('userName')
-        if (!checkUser2) {
-          checkUser2 = ''
-        }
-        let checkUser3 = await User.find({ idQLC: { $in: checkCus.user_handing_over_work } }).select('userName')
-        if (!checkUser3) {
-          checkUser3 = ''
-        }
-        
+        .select('cus_id name phone_number email group_id status description resoure  updated_at')
+        .sort({ updated_at: -1 })
+        .limit(perPage)
+        .lean()
+        let totalRecords = await Customer.countDocuments({ company_id: com_id, ...query });
+        let totalPages = Math.ceil(totalRecords / perPage);
+        let hasNextPage = startIndex + perPage < totalRecords;
+        return functions.success(res, 'Lấy dữ liệu thành công', { checkCus, totalRecords, totalPages, hasNextPage });
+      }else{
+        return functions.setError(res, 'id phòng ban không hợp lệ', 400)
       }
-      const totalRecords = await Customer.countDocuments(query);
-      let data = {
-        ma_kh: showCty.cus_id,
-        ten_khach_hang: showCty.name,
-        dien_thoai: showCty.phone_number,
-        email: showCty.email,
-        nhom_khach_hang: checkgroup.gr_name,
-        tinh_trang_khach_hang: showCty.status,
-        mo_ta: showCty.description,
-        nguon_khach_hang: showCty.resoure,
-        nhan_vien_tao: chekUser1.userName,
-        nhan_vien_phu_trach: checkUser2.userName,
-        nhan_vien_ban_giao: checkUser3.userName,
-        ngay_cap_nhat: showCty.updated_at
-      }
-      return functions.success(res, 'get data success', { data,totalRecords });
+      
+      
     } else {
       return functions.setError(res, 'bạn không có quyền', 400)
     }
@@ -444,13 +403,18 @@ console.log(element.emp_id,emplopyee, com_id)
 exports.DeleteKH = async (req, res) => {
   try {
     let { cus_id } = req.body;
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
     if (!cus_id || !Array.isArray(cus_id) || cus_id.length === 0) {
       return functions.setError(res, 'Mảng cus_id không được bỏ trống', 400);
     }
     if (!cus_id.every(Number.isInteger)) {
       return functions.setError(res, 'Tất cả các giá trị trong mảng cus_id phải là số nguyên', 400);
     }
-    const existingCustomers = await Customer.find({ cus_id: { $in: cus_id } });
+    const existingCustomers = await Customer.find({ cus_id: { $in: cus_id },company_id : com_id });
     if (existingCustomers.length === 0) {
       return functions.setError(res, 'Khách hàng không tồn tại', 400);
     }
@@ -458,11 +422,11 @@ exports.DeleteKH = async (req, res) => {
     if (deleteCustomers.length === 0) {
       return functions.setError(res, 'Tất cả khách hàng đã bị xóa trước đó', 400);
     }
-    await Customer.updateMany({ cus_id: { $in: cus_id } }, { is_delete: 1 });
+    await Customer.updateMany({ cus_id: { $in: cus_id },company_id : com_id }, { is_delete: 1, });
     return functions.success(res, 'Xóa thành công');
-  } catch (error) {
-    console.error('Failed to delete', error);
-    return res.status(500).json({ success: false, error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+  } catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
   }
 };
 
@@ -474,6 +438,7 @@ exports.addConnectCs = async (req, res) => {
   try {
     let { appID, webhook } = req.body
     let comId = '';
+    let userID = "";
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       comId = req.user.data.com_id;
       userID = req.user.data.idQLC
@@ -513,8 +478,9 @@ exports.addConnectCs = async (req, res) => {
         return functions.success(res, 'thêm thành công', { saveApi })
     }
 
-  } catch (error) {
-    return functions.setError(res, error)
+  } catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
   }
 
 }
@@ -550,8 +516,9 @@ exports.editConnectCs = async (req, res) => {
     else {
       return functions.setError(res, 'bạn không có quyền', 400)
     }
-  } catch (error) {
-    return customerService.setError(res, error)
+  } catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
   }
 }
 
@@ -562,8 +529,9 @@ exports.ShowConnectCs = async (req, res) => {
     let comId = req.user.data.inForPerson.employee.com_id
     const check = await ConnectApi.findOne({ company_id: comId })
     return functions.success(res, 'Lấy dữ liệu thành công', { check });
-  } catch (error) {
-    return functions.setError(res, error)
+  } catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
   }
 }
 

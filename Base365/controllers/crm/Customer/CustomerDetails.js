@@ -11,7 +11,7 @@ const District = require('../../../models/District')
 const Ward = require('../../../models/crm/ward')
 const NhomKH = require('../../../models/crm/Customer/customer_group')
 // hàm hiển thị chi tiết khách hàng
-exports.findOneCus = async (req, res) => {
+exports.detail = async (req, res) => {
   try {
     let { cus_id } = req.body
     let com_id = ''    
@@ -218,7 +218,6 @@ exports.listDistrict = async(req,res) => {
   }
 }
 
-
 exports.listWard = async (req,res) =>{
   try{
     let {_id} = req.body
@@ -260,10 +259,10 @@ exports.editCustomer = async (req, res) => {
       }
     }
     if (typeof cus_id === 'undefined') {
-      res.status(400).json({ success: false, error: 'cus_id không được bỏ trống' });
+      return functions.setError(res, 'cus_id không được bỏ trống', 400);
     }
     if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
-      res.status(400).json({ success: false, error: 'cus_id phải là 1 số' });
+      return functions.setError(res, 'cus_id phải là 1 số', 400);
     }
     if (type == 1) {
       await customerService.getDatafindOneAndUpdate(Customer, { cus_id: cus_id }, {
@@ -414,7 +413,6 @@ exports.editCustomer = async (req, res) => {
   }
 }
 
-
 // hàm hiển thị lịch sử trợ lý kinh doanh (theo id khach hang)
 exports.showHisCus = async (req, res) => {
   try {
@@ -423,16 +421,17 @@ exports.showHisCus = async (req, res) => {
     const startIndex = (page - 1) * perPage;
     const endIndex = page * perPage;
     if (typeof cus_id === 'undefined') {
-      res.status(400).json({ success: false, error: 'cus_id không được bỏ trống' });
+      return functions.setError(res, 'cus_id không được bỏ trống', 400);
     }
     if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
-      res.status(400).json({ success: false, error: 'cus_id phải là 1 số' });
+      return functions.setError(res, 'cus_id phải là 1 số', 400);
     }
     let checkHis = await HistoryEditCustomer.findOne({ customer_id: cus_id })
       .sort({ id: -1 })
       .skip(startIndex)
-      .limit(perPage);
-  return functions.success(res, 'get data success', { checkHis });
+      .limit(perPage)
+      .lean()
+    return functions.success(res, 'get data success', { checkHis });
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -462,7 +461,7 @@ exports.banGiao = async (req, res) => {
           user_handing_over_work: user_edit_id
         }
       );
-      customerService.success(res, " edited successfully");
+      return functions.success(res, 'edited successfully');
     }
   } catch (e) {
     console.log(e)
@@ -497,7 +496,7 @@ exports.ShareCustomer = async (req, res) => {
     }
 
     const saveSC = await ShareCustomer.insertMany(shareCustomers);
-    res.status(200).json(saveSC);
+    return functions.success(res, 'share thành công', { saveSC });
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -509,8 +508,14 @@ exports.ShareCustomer = async (req, res) => {
 exports.ChosseCustomer = async (req, res) => {
   try {
     let { arrCus } = req.body
+    if (!cus_id || !Array.isArray(cus_id) || cus_id.length === 0) {
+      return functions.setError(res, 'Mảng cus_id không được bỏ trống', 400);
+    }
+    if (!cus_id.every(Number.isInteger)) {
+      return functions.setError(res, 'Tất cả các giá trị trong mảng cus_id phải là số nguyên', 400);
+    }
     const customers = await Customer.find({ cus_id: { $in: arrCus } });
-    res.json(customers);
+    return functions.success(res, 'get data success', { customers });
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -575,13 +580,11 @@ exports.CombineCustome = async (req, res) => {
     } = req.body;
 
     if (!Array.isArray(arrCus)) {
-      res.status(400).json({ error: 'arrCus phải là 1 mảng' });
-      return;
+      return functions.setError(res, 'arrCus phải là 1 mảng', 400);
     }
     const type = req.body.type || 2;
     if (![1, 2].includes(type)) {
-      res.status(400).json({ error: 'Invalid type value' });
-      return;
+      return functions.setError(res, 'loại khách hàng không hợp lệ', 400);
     }
     let createDate = new Date();
     const validationResult = customerService
@@ -653,7 +656,7 @@ exports.CombineCustome = async (req, res) => {
     let saveCS = await createCustomer.save();
     // Xóa các id khách hàng từ danh sách
     await customerService.deleteCustomerByIds(arrCus);
-    res.status(200).json(saveCS);
+    return functions.success(res, 'get data success', { saveCS });
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)

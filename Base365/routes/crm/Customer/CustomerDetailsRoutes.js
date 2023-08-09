@@ -5,7 +5,7 @@ const CustomerDetailsRoutes = require('../../../controllers/crm/Customer/Custome
 const functions = require("../../../services/functions");
 
 //Api hiển thị chi tiết khách hàng 
-router.post("/showCT",functions.checkToken,formData.parse(),CustomerDetailsRoutes.findOneCus)
+router.post("/detail",functions.checkToken,formData.parse(),CustomerDetailsRoutes.detail)
 
 
 

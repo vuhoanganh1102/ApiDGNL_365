@@ -13,12 +13,12 @@ exports.getListGroup = async (req, res) => {
         const endIndex = page * perPage;
 
         if (req.user.data.type == 1) {
-            let com_id = req.user.data.idQLC
+            let com_id = req.user.data.com_id
             let showGr = await Customer_group.find({ company_id: com_id, is_delete: 0 })
                 .sort({ gr_id: -1 })
                 .skip(startIndex)
                 .limit(perPage);
-            return res.status(200).json({ showGr });
+            return functions.success(res, 'get data success', { showGr });
         }
 
         if (req.user.data.type == 2) {
@@ -43,14 +43,14 @@ exports.getListGroup = async (req, res) => {
                 .sort({ gr_id: -1 })
                 .skip(startIndex)
                 .limit(perPage);
-            return res.status(200).json({ checkEmp });
+            return functions.success(res, 'get data success', { checkEmp });
         } else {
             return res.status(400).json({ error: 'Bạn không có quyền' });
         }
-    } catch (error) {
-        console.error("Failed to show", error);
-        res.status(500).json({ error: "Đã xảy ra lỗi trong quá trình xử lý." });
-    }
+    }catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
+      }
 };
 
 
@@ -69,12 +69,11 @@ exports.createGroup = async (req, res) => {
         let company_id = '';
         if (!groupName) {
             //kiểm tra thuộc tính groupName truyền vào
-            functions.setError(res, "groupName must not leave empty")
-
+            return functions.setError(res, 'groupName không được bỏ trống', 400);
         } if (groupName) {
             if(req.user.data.type == 1) {
                 company_id = req.user.data.idQLC
-                let checkName = await Customer_group.findOne({ gr_name: groupName, company_id: company_id });
+                let checkName = await Customer_group.findOne({ gr_name: groupName, company_id: com_id });
                 if (!checkName) {
                     let depId = dep_id
                     let maxId = 0;
@@ -129,12 +128,14 @@ exports.createGroup = async (req, res) => {
                 } else {
                     res.status(400).json({ error: 'tên đã được sử dụng' })
                 } 
-            }
+            }else {
+                return functions.setError(res, 'không có quyền truy cập', 400);
+              }
         }
-    } catch (error) {
-        console.error("Failed to create", error);
-        res.status(500).json({ error: "Đã xảy ra lỗi trong quá trình xử lý." });
-    }
+    } catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
+      }
 
 
 
@@ -143,6 +144,9 @@ exports.createGroup = async (req, res) => {
 
 
 exports.update = async (req, res) => {
+    try{
+
+    
     const {
         gr_id,
         name,
@@ -155,12 +159,10 @@ exports.update = async (req, res) => {
     } = req.body;
 
     if (name && gr_id) {
-        try {
             // Kiểm tra sự tồn tại của nhóm khách hàng
             const check = await Customer_group.findOne({ gr_name: name, gr_id: gr_id });
             if (check) {
-                error_msg(res, 'Nhóm khách hàng đã tồn tại', { load: false });
-                return;
+                return functions.setError(res, 'tên nhóm khách hàng đã tồn tại', 400);
             }
 
             // Cập nhật nhóm khách hàng
@@ -197,16 +199,18 @@ exports.update = async (req, res) => {
                     }
                 }
 
-                success(res, "Chỉnh sửa nhóm khách hàng thành công!");
+                return functions.success(res, "Chỉnh sửa nhóm khách hàng thành công!");
             } else {
-                error_msg(res, 'Có lỗi!', { load: true });
+                return functions.setError(res, 'chia sẻ không thành công', 400);
             }
-        } catch (err) {
-            error_msg(res, err.message);
-        }
+        
     } else {
-        error_msg(res, 'Có lỗi!', { load: true });
+        return functions.setError(res, 'phải truyền name và gr_id', 400);
     }
+}catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
+  }
 };
 
 
