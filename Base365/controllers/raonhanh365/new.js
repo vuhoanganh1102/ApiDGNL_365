@@ -24,7 +24,7 @@ const { default: axios } = require("axios");
 const md5 = require("md5");
 const CateDetail = require("../../models/Raonhanh365/CateDetail");
 const BaoCao = require("../../models/Raonhanh365/BaoCao");
-const tags = require("../../models/Raonhanh365/tags");
+const tags = require("../../models/Raonhanh365/Tags");
 const City = require("../../models/City");
 const District = require("../../models/District");
 const Ward = require("../../models/Raonhanh365/PhuongXa");
@@ -744,6 +744,9 @@ exports.getNew = async (req, res, next) => {
             data[i].link = `https://raonhanh365.vn/${data[i].linkTitle}-c${data[i]._id}.html`;
             data[i].img = await raoNhanh.getLinkFile(data[i].userID, data[i].img, data[i].cateID, 2)
             data[i].islove = 0;
+            if (data[i].user && data[i].user.avatarUser) {
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365, data[i].user.avatarUser)
+            }
             if (userIdRaoNhanh) {
                 let checklove = dataLoveNew.find(item => item.id_new == data[i]._id);
                 checklove ? data[i].islove = 1 : data[i].islove = 0;
@@ -1147,6 +1150,20 @@ exports.searchNew = async (req, res, next) => {
                 minhLike ? data[i].minhLike = 1 : data[i].minhLike = 0
                 minhLike ? data[i].typelike = minhLike.type : data[i].typelike = 0
             }
+            if (data[i].city && data[i].city != 0) {
+                let datacity = await City.findById({ _id: data[i].city }).lean();
+                if (datacity) data[i].city = datacity.name
+            }
+            if (data[i].district && data[i].district != 0) {
+                let datadistric = await District.findById({ _id: data[i].district }).lean();
+                if (datadistric) data[i].district = datadistric.name
+            }
+            if (data[i].ward && data[i].ward != 0) {
+                let dataward = await Ward.findById({ _id: data[i].ward }).lean();
+                if (dataward) data[i].ward = dataward.name
+            }
+            data[i].soShare = 0;
+            data[i].nguoiShare = [];
             data[i].ListLike = ListLike
             data[i].ListComment = ListComment
             data[i].soluonglike = soluonglike
@@ -1760,9 +1777,8 @@ exports.getDetailNew = async (req, res, next) => {
             let Biddingg = await raoNhanh.getDataBidding(res, Bidding, id_new, Evaluate)
             return functions.success(res, "get data success", { data, Bidding: Biddingg });
         }
-        if (cate_Special) {
-            data[`${cate_Special}`] = await raoNhanh.getDataNewDetail(data[`${cate_Special}`], data.cateId)
-        }
+
+        // await raoNhanh.getDataNewDetail(data, 61)
         if (data.city) {
             let datacity = await City.findById({ _id: data.city }).lean();
             if (datacity) data.city = datacity.name
@@ -1776,7 +1792,7 @@ exports.getDetailNew = async (req, res, next) => {
             if (dataward) data.ward = dataward.name
         }
         if (data.brand) {
-            let databrand = await CateDetail.findOne({ 'brand._id': data.brand }).lean();
+            let databrand = await CateDetail.findOne({ 'brand.$._id': data.brand }).lean();
             if (databrand) data.brand = databrand.name
         }
         return functions.success(res, "get data success", { data });
@@ -2692,7 +2708,7 @@ exports.addDiscount = async (req, res, next) => {
                 let giatri_khuyenmai = Number(request.giatri_khuyenmai);
                 let ngay_bat_dau = request.ngay_bat_dau;
                 let ngay_ket_thuc = request.ngay_ket_thuc;
-                let new_id = request.new_id[i];
+                let new_id = Number(request.new_id[i]);
                 if (
                     loai_khuyenmai &&
                     ngay_bat_dau &&
@@ -2710,7 +2726,7 @@ exports.addDiscount = async (req, res, next) => {
                     }
 
                     let checkNew = await New.findById(new_id);
-                    if (checkNew && checkNew.length !== 0) {
+                    if (checkNew) {
                         await New.findByIdAndUpdate(new_id, {
                             timePromotionStart: new Date(ngay_bat_dau).getTime() / 1000,
                             timePromotionEnd: new Date(ngay_ket_thuc).getTime() / 1000,
@@ -3277,7 +3293,7 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
             $nin: [120, 121, 119, 11, 12, 26, 27, 29, 33, 34]
         }
         if (cateID) conditions.cateID = Number(cateID);
-        
+
         let data = await New.find(conditions, {
             electroniceDevice: 0, vehicle: 0, realEstate: 0, ship: 0, beautifull: 0, wareHouse: 0, pet: 0, Job: 0,
             noiThatNgoaiThat: 0, bidding: 0
@@ -3289,9 +3305,11 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
                 }
             }
         }
+        let tongsoluong = await New.countDocuments(conditions)
         let soluong = data.length
-        return functions.success(res, 'get data success', { soluong, data })
+        return functions.success(res, 'get data success', { tongsoluong, soluong, data })
     } catch (err) {
+        console.log("🚀 ~ file: new.js:3312 ~ exports.tinApDungKhuyenMai= ~ err:", err)
         return functions.setError(res, err)
     }
 }
@@ -3307,9 +3325,9 @@ exports.updateNewPromotion = async (req, res, next) => {
         if (Array.isArray(loaikhuyenmai) && Array.isArray(giatri) && Array.isArray(id)
             && loaikhuyenmai.length === giatri.length && giatri.length === id.length) {
             for (let i = 0; i < id.length; i++) {
-                let checkNew = await New.findById(id[i]);
-                if (checkNew) {
-                    await New.findByIdAndUpdate(id[i], {
+                let checkNew = await New.findById(Number(id[i]));
+                if (checkNew) { 
+                    await New.findByIdAndUpdate(Number(id[i]), {
                         timePromotionStart: new Date(ngay_bat_dau[i]).getTime() / 1000,
                         timePromotionEnd: new Date(ngay_ket_thuc[i]).getTime() / 1000,
                         "infoSell.promotionType": loaikhuyenmai[i],
@@ -3436,7 +3454,7 @@ exports.getDataLike = async (req, res, next) => {
 exports.envaluate = async (req, res, next) => {
     try {
         let userId = req.user.data.idRaoNhanh365;
-        let us_bl = req.body.us_bl;
+        let us_bl = Number(req.body.us_bl);
         let so_sao = req.body.so_sao || 1;
         let noi_dung_dgia = req.body.noi_dung_dgia;
         let parentId = Number(req.body.parentId) || 0;
@@ -3456,6 +3474,7 @@ exports.envaluate = async (req, res, next) => {
                 comment: noi_dung_dgia,
                 time: tgian_bluan,
                 active: 1,
+                newId: 0,
                 tgianHetcs: 0,
                 csbl: 0,
                 parentId

@@ -134,7 +134,7 @@ exports.addCustomer = async (req, res) => {
             link: link
           });
           let saveCS = await createCustomer.save();
-          if (typeof content === 'undefined' && content.trim() !== '') {
+          if (typeof content !== 'undefined' ) {
             return functions.success(res, 'get data success', { saveCS });
           } else {
             let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
@@ -146,7 +146,7 @@ exports.addCustomer = async (req, res) => {
               id: id,
               customer_id: cus_id,
               content: content,
-              created_at: createHtime
+              created_at: createDate
 
             })
             let savehis = await newHT.save();
