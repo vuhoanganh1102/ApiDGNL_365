@@ -4,6 +4,8 @@ const new_tags_gs = new mongoose.Schema({
     new_id : {
         type : Number, 
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     tag_id : {

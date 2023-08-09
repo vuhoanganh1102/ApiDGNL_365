@@ -67,7 +67,6 @@ try{
     if (id_user) {listConditions.id_user = Number(id_user)}
     let listConditions2 = {};
     if (dep_id) listConditions2.dep_id = Number(dep_id)
-    console.log(listConditions)
         let data = await phanQuyen.aggregate([
             // { $match: {id_cty: id_cty ,id_nhanvien : {$ne: 0} } },
             { $match: listConditions },

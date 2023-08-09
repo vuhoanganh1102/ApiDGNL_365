@@ -5,6 +5,8 @@ const save_course = new mongoose.Schema({
     sc_id : {
         type : Number, 
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     ugs_teach : {

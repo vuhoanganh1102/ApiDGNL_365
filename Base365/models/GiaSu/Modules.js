@@ -4,6 +4,8 @@ const modules = new mongoose.Schema({
     mod_id : {
         type : Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     mod_name : {

@@ -4,6 +4,8 @@ const post_find_tutor = new mongoose.Schema({
     pft_id : {
         type: Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     ugs_id : {

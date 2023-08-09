@@ -12,6 +12,10 @@ const Tv365PointCompanySchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    money_usc: {
+        type: Number,
+        default: 0,
+    },
     point_bao_luu: {
         type: Number,
         default: 0,

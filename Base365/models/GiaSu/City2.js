@@ -4,6 +4,8 @@ const city2 = new mongoose.Schema({
     cit_id: {
         type : Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     cit_name: {

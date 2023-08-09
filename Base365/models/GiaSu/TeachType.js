@@ -3,7 +3,9 @@ const teachtype = new mongoose.Schema({
 
     id : {
         type : Number,
-
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     nametype : {
         type : String,

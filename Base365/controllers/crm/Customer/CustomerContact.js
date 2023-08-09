@@ -6,13 +6,13 @@ const Callhistory = require('../../../models/crm/call_history')
 const { create } = require('yallist')
     //them chi tiet lien he KH
 exports.addContact = async(req, res) => {
-        // const user_create_id = req.user.data.user_create_id
-        // const user_create_type = req.user.data.user_create_type
+    try{
+        if (req.user.data.type == 1 || req.user.data.type == 2) {
+            com_id = req.user.data.com_id;
+        
         const { id_customer, middle_name, name, fullname, vocative, contact_type, titles, department, office_phone, office_email, personal_phone, personal_email, social, social_detail, source, country_contact, city_contact, district_contact, ward_contact, street_contact, address_contact, area_code_contact, country_ship, city_ship, district_ship, ward_ship, street_ship, address_ship, area_code_ship, description, share_all, accept_phone, accept_email } = req.body;
         let File = req.files || null;
         let logo = null;
-
-
         if ((id_customer) == undefined) {
             functions.setError(res, " khong tim thay KH ")
         } else if ((name && fullname) == undefined) {
@@ -65,27 +65,31 @@ exports.addContact = async(req, res) => {
                     share_all: share_all,
                     accept_phone: accept_phone,
                     accept_email: accept_email,
-                    // user_create_id:user_create_id,
-                    // user_create_type:user_create_type,
                     created_at: new Date(),
 
 
                 })
-                await data.save()
-                    .then(() => functions.success(res, "tao thanh cong", { data }))
-                    .catch((err) => functions.setError(res, err.message))
+                let save = await data.save()
+                return functions.success(res, " tạo  thành công!",{save});
             }
         }
+        } else {
+        return functions.setError(res, 'không có quyền truy cập', 400);
+        }
+    }catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
+      }
     }
     //sua lien he KH
 exports.editContact = async(req, res) => {
-    // try{
-    // const user_edit_id = req.user.data.user_edit_id
-    // const user_edit_type = req.user.data.user_edit_type
-    const { contact_id, id_customer, middle_name, name, fullname, vocative, contact_type, titles, department, office_phone, office_email, personal_phone, personal_email, social, social_detail, source, country_contact, city_contact, district_contact, ward_contact, street_contact, address_contact, area_code_contact, country_ship, city_ship, district_ship, ward_ship, street_ship, address_ship, area_code_ship, description, share_all, accept_phone, accept_email } = req.body;
-    let File = req.files || null;
+    try{
+    
+    let { contact_id, id_customer, middle_name, name, fullname, vocative, contact_type, titles, department, office_phone, office_email, personal_phone, personal_email, social, social_detail, source, country_contact, city_contact, district_contact, ward_contact, street_contact, address_contact, area_code_contact, country_ship, city_ship, district_ship, ward_ship, street_ship, address_ship, area_code_ship, description, share_all, accept_phone, accept_email } = req.body;
     let logo = null;
-
+    let File = req.files || null;
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+    
     if ((id_customer) == undefined) {
         functions.setError(res, " khong tim thay KH ")
     } else if ((name && fullname) == undefined) {
@@ -131,29 +135,24 @@ exports.editContact = async(req, res) => {
                 district_ship: district_ship,
                 ward_contact: ward_contact,
                 ward_ship: ward_ship,
-                // user_edit_id:user_edit_id,
-                // user_edit_type:user_edit_type,
                 updated_at: new Date(),
-
-
             })
-            .then((data) => functions.success(res, "contact edited successfully", { data }))
-            .catch((err) => functions.setError(res, err.message, 511));
-        // if(!data){
-        //     functions.setError(res,"sửa không thành công")
-        // }
-        // functions.success(res,"sửa thành công",{data})
+            return functions.success(res, " chỉnh sửa  thành công!");
     }
-    // }catch(err){
-    //     functions.setError(res,err.message)
-    // }
+    } else {
+    return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    }catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
+    }
 
 }
 
 //xoa lien he KH
 exports.deleteContact = async(req, res) => {
     try {
-        const { contact_id, id_customer } = req.body;
+        let { contact_id, id_customer } = req.body;
         const data = await contact.findOne({ contact_id: contact_id, id_customer: id_customer })
         if (!data) {
             functions.setError(res, " lien he k ton tai ")
@@ -161,9 +160,9 @@ exports.deleteContact = async(req, res) => {
             const result = await contact.findOneAndUpdate({ contact_id: contact_id, id_customer: id_customer }, { $set: { is_delete: 1 } })
             functions.success(res, " xoa thanh cong ", { result })
         }
-    } catch (error) {
-        console.error('Failed to delete ', error);
-        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+    } catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
     }
 }
 
@@ -181,8 +180,8 @@ exports.getContact = async(req, res) => {
             };
             return functions.setError(res, 'Không có dữ liệu', 404);
         }
-    } catch (error) {
-        console.error('Failed to show ', error);
-        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+    }catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
     }
 }

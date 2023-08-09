@@ -5,6 +5,8 @@ const admin_user_right = new mongoose.Schema({
     adu_admin_id : {
         type: Number,
         required: true,
+        unique: true,
+        autoIncrement: true
     },
     adu_admin_module_id : {
         type: Number,
