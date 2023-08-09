@@ -4,6 +4,8 @@ const new_district = new mongoose.Schema({
     new_id : {
         type : Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     dis_parent : {

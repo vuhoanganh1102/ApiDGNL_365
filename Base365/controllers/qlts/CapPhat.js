@@ -304,25 +304,25 @@ exports.getListNV = async (req, res) => {
             { $unwind: "$So_luong_cap_phat" },
             { $match: listConditions2 },
         ])
-        for (let i = 0; i < data1.length; i++) {
-            if(data1[i].dep_id != 0){
-                let depName = await dep.findOne({ com_id: id_cty, dep_id: data1[i].dep_id })
-                if(depName) data1[i].depName = depName.dep_name
-            }
-            let depStatus = await TaiSanDangSuDung.findOne({ com_id_sd: id_cty, id_nv_sd: data1[i].id_nhanvien })
-            let total = 0
-            if (depStatus) total += depStatus.sl_dang_sd
-            data1[i].NumCapitalUsingOfUser = total
-            data1[i].cp_ngay = new Date(data1[i].cp_ngay * 1000);
-            data1[i].cp_date_create = new Date(data1[i].cp_date_create * 1000);
-        }
-        data.push({ infoEmp: data1 })
-        let count = await capPhat.find(listConditions).count()
         // data.push({ NumberEmp: count })
-        if (data) {
+        if (data1) {
+            for (let i = 0; i < data1.length; i++) {
+                if(data1[i].dep_id != 0){
+                    let depName = await dep.findOne({ com_id: id_cty, dep_id: data1[i].dep_id })
+                    if(depName) data1[i].depName = depName.dep_name
+                }
+                let depStatus = await TaiSanDangSuDung.findOne({ com_id_sd: id_cty, id_nv_sd: data1[i].id_nhanvien })
+                let total = 0
+                if (depStatus) total += depStatus.sl_dang_sd
+                data1[i].NumCapitalUsingOfUser = total
+                data1[i].cp_ngay = new Date(data1[i].cp_ngay * 1000);
+                data1[i].cp_date_create = new Date(data1[i].cp_date_create * 1000);
+            }
+            data.push({ infoEmp: data1 })
+            let count = await capPhat.find(listConditions).count()
             return fnc.success(res, " lấy thành công ", { data ,count })
         }
-        return fnc.setError(res, "không tìm thấy đối tượng", 510);
+        return fnc.setError(res, "không tìm thấy đối tượng");
     } catch (e) {
         return fnc.setError(res, e.message)
     }
@@ -719,14 +719,14 @@ exports.refuserAll = async (req, res) => {
             return fnc.setError(res, "không tìm thấy đối tượng cần cập nhật", 510);
         } else {
             let count = data.cap_phat_taisan.ds_ts[0].ts_id
-            for (let t = 0; t < count.length; t++) {
-                let listItemsType = await TaiSan.find({ id_cty: id_cty, ts_id: count(t) })
+            // for (let t = 0; t < count.length; t++) {
+                let listItemsType = await TaiSan.find({ id_cty: id_cty, ts_id: count })
                 let sl_taisan = listItemsType.ts_so_luong + data.cap_phat_taisan.ds_ts[0].sl_cp
-                await TaiSan.updateOne({ ts_id: count(t), id_cty: id_cty }, {
+                await TaiSan.updateOne({ ts_id: count, id_cty: id_cty }, {
                     ts_so_luong: sl_taisan,
                     soluong_cp_bb: sl_taisan,
                 })
-            }
+            // }
             await capPhat.updateOne({ cp_id: cp_id, id_cty: id_cty }, {
                 cp_trangthai: 4,
                 cp_tu_choi_tiep_nhan: content,
@@ -789,7 +789,7 @@ exports.accept = async (req, res) => {
                         let sl_capphat = infoCP.cap_phat_taisan.ds_ts[0].sl_cp
                         // kiểm tra trạng thái tài sản
                         if(updateQuantity.ts_trangthai == 0){
-                            await TaiSan.findOneAndUpdate({ ts_id: arr[i], ts_trangthai: 0 }, {
+                            await TaiSan.findOneAndUpdate({ ts_id: arr, ts_trangthai: 0 }, {
                                 ts_trangthai : 1,
                                 ts_date_sd: Date.parse(now)/1000,
                             })

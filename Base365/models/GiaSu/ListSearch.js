@@ -5,6 +5,8 @@ const list_search = new mongoose.Schema({
     ls_id : {
         type : Number, 
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     ls_name : {

@@ -4,6 +4,8 @@ const gs_comment_rate = new mongoose.Schema({
     comment_rate_id : {
         type : Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     gs_userteach_id : {

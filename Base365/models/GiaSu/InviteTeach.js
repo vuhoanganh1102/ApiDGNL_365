@@ -4,7 +4,8 @@ const invite_teach = new mongoose.Schema({
     it_id : {
         type : Number,
         required: true,
-
+        unique: true,
+        autoIncrement: true
     },
     ugs_parent : {
         type : Number,

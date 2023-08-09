@@ -4,7 +4,8 @@ const new_teacher_city = new mongoose.Schema({
     new_id :{
         type : Number,
         required: true,
-
+        unique: true,
+        autoIncrement: true
     },
     city_id :{
         type : Number,
