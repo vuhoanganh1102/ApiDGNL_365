@@ -70,6 +70,4 @@ router.post('/listTagByCate', formData.parse(), newTV365.listTagByCate);
 router.post('/listSuggestFromAI', formData.parse(), newTV365.listSuggestFromAI);
 
 router.post('/tuDongGhimTin', formData.parse(), functions.checkToken, newTV365.tuDongGhimTin);
-
-router.get('/ghimTinPackages', formData.parse(), newTV365.getAllGhimTinPackages);
 module.exports = router;

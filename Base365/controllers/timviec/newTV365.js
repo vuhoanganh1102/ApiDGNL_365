@@ -14,7 +14,8 @@ const TblHistoryViewed = require('../../models/Timviec365/UserOnSite/Candicate/T
 const Profile = require('../../models/Timviec365/UserOnSite/Candicate/Profile');
 const HistoryNewPoint = require('../../models/Timviec365/HistoryNewPoint');
 const PermissionNotify = require('../../models/Timviec365/PermissionNotify');
-const GhimTinPackages = require('../../models/Timviec365/UserOnSite/Company/GhimTinPackages')
+const GhimHistory = require('../../models/Timviec365/UserOnSite/Company/GhimHistory')
+const PriceList = require('../../models/Timviec365/PriceList/PriceList')
 const CategoryDes = require('../../models/Timviec365/CategoryDes');
 const TblModules = require('../../models/Timviec365/TblModules');
 const slugify = require('slugify');
@@ -528,61 +529,20 @@ exports.homePage = async(req, res, next) => {
             usc_time_login: "$user.time_login",
             usc_create_time: "$user.createdAt",
             usc_logo: "$user.avatarUser",
-            isOnline: "$user.isOnline",
+            isOnline: "$user.isOnline"
         }
-        let listPostVLHD = await NewTV365.aggregate([
-            {
+        let listPostVLHD = await NewTV365.aggregate([{
                 $match: {
+                    new_cao: 0,
+                    new_gap: 0,
                     new_han_nop: { $gt: now }
                 }
-            },
-            {
-                $addFields: {new_ghim_latest: {$last: "$new_ghim_tu_dong"}}
-            },
-            {
-                $facet: {
-                    normal: [
-                        {
-                            $match: {
-                                new_cao: 0,
-                                new_gap: 0,
-                                $or: [
-                                    {
-                                        "new_ghim_latest.vi_tri": {$ne: "hap_dan"}
-                                    },
-                                    {
-                                        "new_ghim_latest.status": 0
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            $sort: {
-                                new_hot: -1,
-                                new_update_time: -1
-                            }
-                        }
-                    ],
-                    //Tin được ghim tự động sẽ được ưu tiên
-                    priority: [
-                        {
-                            $match: {
-                                "new_ghim_latest.vi_tri": "hap_dan",
-                                "new_ghim_latest.ghim_end": {$gte: functions.getTimeNow()},
-                                "new_ghim_latest.status": 1
-                            }
-                        },
-                        {
-                            $sort: {
-                                "new_ghim_latest.ghim_start": -1
-                            }
-                        },
-                    ]
+            }, {
+                $sort: {
+                    new_hot: -1,
+                    new_update_time: -1
                 }
             },
-            { $project: {combinedArray: {$concatArrays:['$priority','$normal']} } },
-            { $unwind: '$combinedArray'},
-            { $replaceRoot: { newRoot: "$combinedArray" } },
             {
                 $skip: 0
             },
@@ -608,7 +568,6 @@ exports.homePage = async(req, res, next) => {
             {
                 $project: project
             },
-            
         ]);
 
         for (let i = 0; i < listPostVLHD.length; i++) {
@@ -619,59 +578,18 @@ exports.homePage = async(req, res, next) => {
 
         let listPostVLTH = [],
             listPostVLTG = [];
-        listPostVLTH = await NewTV365.aggregate([
-            {
+        listPostVLTH = await NewTV365.aggregate([{
                 $match: {
+                    new_hot: 0,
+                    new_gap: 0,
                     new_han_nop: { $gt: now }
                 }
-            },
-            {
-                $addFields: {new_ghim_latest: {$last: "$new_ghim_tu_dong"}}
-            },
-            {
-                $facet: {
-                    normal: [
-                        {
-                            $match: {
-                                new_hot: 0,
-                                new_gap: 0,
-                                $or: [
-                                    {
-                                        "new_ghim_latest.vi_tri": {$ne: "thuong_hieu"}
-                                    },
-                                    {
-                                        "new_ghim_latest.status": 0
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            $sort: {
-                                new_cao: -1,
-                                new_update_time: -1
-                            }
-                        },
-                    ],
-                    //Tin được ghim tự động sẽ được ưu tiên
-                    priority: [
-                        {
-                            $match: {
-                                "new_ghim_latest.vi_tri": "thuong_hieu",
-                                "new_ghim_latest.ghim_end": {$gte: functions.getTimeNow()},
-                                "new_ghim_latest.status": 1
-                            }
-                        },
-                        {
-                            $sort: {
-                                "new_ghim_latest.ghim_start": -1
-                            }
-                        },
-                    ]
+            }, {
+                $sort: {
+                    new_cao: -1,
+                    new_update_time: -1
                 }
             },
-            { $project: {combinedArray: {$concatArrays:['$priority','$normal']} } },
-            { $unwind: '$combinedArray'},
-            { $replaceRoot: { newRoot: "$combinedArray" } },
             {
                 $skip: 0
             },
@@ -707,56 +625,16 @@ exports.homePage = async(req, res, next) => {
 
         listPostVLTG = await NewTV365.aggregate([{
                 $match: {
+                    new_cao: 0,
+                    new_hot: 0,
                     new_han_nop: { $gt: now }
                 }
-            },
-            {
-                $addFields: {new_ghim_latest: {$last: "$new_ghim_tu_dong"}}
-            },
-            {
-                $facet: {
-                    normal: [
-                        {
-                            $match: {
-                                new_cao: 0,
-                                new_hot: 0,
-                                $or: [
-                                    {
-                                        "new_ghim_latest.vi_tri": {$ne: "tuyen_gap"}
-                                    },
-                                    {
-                                        "new_ghim_latest.status": 0
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            $sort: {
-                                new_gap: -1,
-                                new_update_time: -1
-                            }
-                        },
-                    ],
-                    //Tin được ghim tự động sẽ được ưu tiên
-                    priority: [
-                        {
-                            $match: {
-                                "new_ghim_latest.vi_tri": "tuyen_gap",
-                                "new_ghim_latest.ghim_end": {$gte: functions.getTimeNow()},
-                                "new_ghim_latest.status": 1
-                            }
-                        },
-                        {
-                            $sort: {
-                                "new_ghim_latest.ghim_start": -1
-                            }
-                        },
-                    ]
+            }, {
+                $sort: {
+                    new_gap: -1,
+                    new_update_time: -1
                 }
             },
-            { $project: {combinedArray: {$concatArrays:['$priority','$normal']} } },
-            { $unwind: '$combinedArray'},
-            { $replaceRoot: { newRoot: "$combinedArray" } },
             {
                 $skip: 0
             },
@@ -2289,67 +2167,125 @@ exports.like = async(req, res) => {
     }
 }
 
-exports.getAllGhimTinPackages = async (req, res) => {
-    try {
-        let docs = await GhimTinPackages.find({});
-        return functions.success(res, "Thành công", { data: docs });
-    } catch (error) {
-        console.log(error)
-        return functions.setError(res, error)
-    }
-}
-
 exports.tuDongGhimTin = async (req, res) => {
     try {
         let {
             /**Id tin */
             new_id,
             /**Gói ghim tin */
-            package_id,
+            bg_id,
             /** Vị trí ghim tin
              * type: String,
              * enum: ["hap_dan", "thuong_hieu", "tuyen_gap", null],
              * default: null
              */
-            vi_tri,
             ghim_start
         } = req.body;
         if (!req.user||!req.user.data.idTimViec365) return functions.setError(res, "Forbidden", 403);
         let usc_id = req.user.data.idTimViec365;
-        let package = await GhimTinPackages.findOne({_id: package_id});
-        if (!package) return functions.setError(res, "Gói ghim tin không tồn tại", 404);
+        let priceListing = await PriceList.findOne({bg_id: bg_id, bg_type: {$in: ["1", "4", "5", "6"]}});
+        if (!priceListing) return functions.setError(res, "Gói ghim tin không tồn tại", 404);
         let news = await NewTV365.findOne({ new_id: new_id, new_user_id: usc_id })
         if (!news) return functions.setError(res, "Bản tin không tồn tại", 404);
-        if (ghim_start&&vi_tri&&["hap_dan", "thuong_hieu", "tuyen_gap"].includes(vi_tri)) {
-            //Kiểm tra xem tin còn đang được ghim hay không
-            let latest_ghim = news.new_ghim_tu_dong[news.new_ghim_tu_dong.length - 1];
-            if (latest_ghim&&latest_ghim.status === 1&&functions.getTimeNow() < latest_ghim.ghim_end) {
-                //Nếu tin vẫn đang được ghim thì báo lỗi
-                return functions.setError(res, "Ghim trên bản tin này vẫn còn hiệu lực", 400);
-            }
-            let paymentResult = await creditsController.useCreditsHandler(usc_id, package.price);
+
+        let bg_vat = priceListing.bg_vat;
+        let bg_vip_duration = priceListing.bg_vip_duration;
+        let bg_type = priceListing.bg_type;
+        if (typeof bg_vat === "string"&&bg_vip_duration&&bg_type) {
+            bg_vat = Number(bg_vat.replace(/\./g, ""));
+            if (isNaN(bg_vat)) return functions.setError(res, "Gói ghim tin không tồn tại", 404);
+            if (["1", "4", "5"].includes(bg_type)
+                &&(news.new_hot||news.new_cao||news.new_gap)
+                &&news.new_vip_time > functions.getTimeNow())
+                return functions.setError(res, "Tin vẫn đang được ghim", 400);
+            if (bg_type === "6"
+                &&(news.new_nganh)
+                &&news.new_cate_time > functions.getTimeNow())
+                return functions.setError(res, "Tin vẫn đang được ghim ngành", 400);
+
+            let paymentResult = await creditsController.useCreditsHandler(usc_id, bg_vat);
             if (!paymentResult) {
                 return functions.setError(res, "Tài khoản không đủ!", 400);
             }
+            /**
+             * 1: Hấp dẫn
+             * 4: Thương hiệu
+             * 5: Tuyển gấp
+             * 6: Trang ngành
+             */
+            switch (bg_type) {
+                case "1":
+                    await New.updateOne({ 
+                        new_id: new_id,
+                        new_user_id: usc_id
+                    },
+                    {
+                        $set: {
+                            new_hot: 1,
+                            new_cao: 0,
+                            new_gap: 0,
+                            new_vip_time: Number(ghim_start) + Number(bg_vip_duration)
+                        }
+                    })
+                    break;
+
+                case "4":
+                    await New.updateOne({ 
+                        new_id: new_id,
+                        new_user_id: usc_id
+                    },
+                    {
+                        $set: {
+                            new_hot: 0,
+                            new_cao: 1,
+                            new_gap: 0,
+                            new_vip_time: Number(ghim_start) + Number(bg_vip_duration)
+                        }
+                    })
+                    break;
+
+                case "5":
+                    await New.updateOne({ 
+                        new_id: new_id,
+                        new_user_id: usc_id
+                    },
+                    {
+                        $set: {
+                            new_hot: 0,
+                            new_cao: 0,
+                            new_gap: 1,
+                            new_vip_time: Number(ghim_start) + Number(bg_vip_duration)
+                        }
+                    })
+                    break;
+
+                case "6":
+                    await New.updateOne({ 
+                        new_id: new_id,
+                        new_user_id: usc_id
+                    },
+                    {
+                        $set: {
+                            new_nganh: 1,
+                            new_cate_time: Number(ghim_start) + Number(bg_vip_duration)
+                        }
+                    })
+                    break;
+            }
+
             let data = {
-                vi_tri: vi_tri,
+                new_id: new_id,
+                new_user_id: usc_id,
+                bg_type: bg_type,
+                bg_id: bg_id,
                 created_time: functions.getTimeNow(),
                 ghim_start: Number(ghim_start),
-                ghim_end: Number(ghim_start) + Number(package.duration),
-                price: package.price,
-                duration: package.duration,
-                pkg_name: package.pkg_name,
-
+                ghim_end: Number(ghim_start) + Number(bg_vip_duration),
+                price: Number(bg_vat),
+                duration: bg_vip_duration,
             }
-            await New.updateOne({ 
-                new_id: new_id,
-                new_user_id: usc_id
-            },
-            {
-                $push: {
-                    new_ghim_tu_dong: data
-                }
-            })
+            await (new GhimHistory(data)).save();
+
             return functions.success(res, "Ghim tin thành công", { data });
         } else {
             return functions.setError(res, "Chưa đủ thông tin truyền lên", 400);
