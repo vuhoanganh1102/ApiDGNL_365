@@ -774,7 +774,8 @@ exports.reportChart = async (req, res, next) => {
         let married = Number(req.body.married);
         let seniority = Number(req.body.seniority);
         let old = Number(req.body.old);
-        // let from_date = 
+        let from_date = req.body.from_date;
+        let to_date = req.body.to_date;
 
         let limit = 10;
         let skip = (page - 1) * limit;
@@ -1006,11 +1007,10 @@ exports.reportChart = async (req, res, next) => {
             let soluong = data.length
             return functions.success(res, 'get data success', { soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-tang-giam-luong.html') {
-            // if (from_date) subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date) }
-            // if (to_date) subConditions['HR_Salarys.sb_time_up'] = { $lte: new Date(to_date) }
-            // if (from_date && to_date)
-            //     subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
-
+            if (from_date) subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date) }
+            if (to_date) subConditions['HR_Salarys.sb_time_up'] = { $lte: new Date(to_date) }
+            if (from_date && to_date)
+                subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
             data = await Users.aggregate([
                 { $match: conditions },
                 {
@@ -1060,14 +1060,10 @@ exports.reportChart = async (req, res, next) => {
             for (let i = 0; i < data.length; i++) {
                 const element = data[i];
                 conditions = {};
-
                 conditions.sb_id_user = element.sb_id_user;
                 conditions.sb_time_up = { $lt: element.sb_time_up }
-
                 let luongcu = await Salarys.findOne(conditions).lean();
                 if (luongcu) {
-                    console.log(luongcu.sb_salary_basic)
-                    console.log(element.luongmoi)
                     if (luongcu.sb_salary_basic > element.luongmoi) {
                         element.giamLuong = luongcu.sb_salary_basic - element.luongmoi;
                         element.tangLuong = 0;
@@ -1081,9 +1077,10 @@ exports.reportChart = async (req, res, next) => {
             }
             let soluong = subData.length
             return functions.success(res, 'get data success', { soluong, data: subData })
-        } else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
+        } else if (link === 'bieu-do-danh-sach-nhan-vien-theo-do-tuoi.html') {
             let tuoi = 0;
             let list = [];
+
             let check = await Users.aggregate([
                 { $match: conditions },
                 { $skip: skip },
@@ -1117,9 +1114,10 @@ exports.reportChart = async (req, res, next) => {
                 { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
 
-            ])
+            ]);
             for (let i = 0; i < check.length; i++) {
-                let sinhnhat = new Date(check[i].birthday * 1000).getFullYear()
+                const element = check[i];
+                let sinhnhat = new Date(element.birthday * 1000).getFullYear()
                 let namhientai = new Date().getFullYear();
                 tuoi = namhientai - sinhnhat;
                 if (old === 1 && tuoi < 30) {
@@ -1129,6 +1127,8 @@ exports.reportChart = async (req, res, next) => {
                 } else if (old === 3 && tuoi > 45 && tuoi < 59) {
                     list.push(check[i])
                 } else if (old === 4 && tuoi > 60) {
+                    list.push(check[i])
+                } else if (!old) {
                     list.push(check[i])
                 }
             }
