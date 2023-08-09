@@ -239,7 +239,7 @@ exports.report = async (req, res, next) => {
             for (let i = 0; i < dataLuong.length; i++) {
 
                 conditions.sb_id_user = dataLuong[i].sb_id_user;
-                conditions.sb_time_up = { $lt: dataLuong[i].sb_time_up }
+                conditions.sb_time_up = { $lt: new Date(dataLuong[i].sb_time_up) }
                 checkTangGiam = await Salarys.findOne(conditions).lean()
 
                 if (checkTangGiam) {
@@ -558,7 +558,7 @@ exports.report = async (req, res, next) => {
                 $gte: new Date(from).getTime() / 1000,
                 $lt: new Date(to).getTime() / 1000
             }
-   
+
             let datachart = await Users.countDocuments(conditions);
             chartEmployee.push(datachart)
             // Biểu đồ thống kê tình trạng hôn nhân
@@ -692,7 +692,7 @@ exports.report = async (req, res, next) => {
                     conditions.sb_time_up = { $lt: dataLuong[j].sb_time_up }
                     checkTangGiam = await Salarys.findOne(conditions).lean()
                     if (checkTangGiam) {
-                        if(dataLuong[j].sb_salary_basic != checkTangGiam.sb_salary_basic ){
+                        if (dataLuong[j].sb_salary_basic != checkTangGiam.sb_salary_basic) {
                             tanggiam++;
                         }
                     }
@@ -730,7 +730,7 @@ exports.report = async (req, res, next) => {
                 { $unwind: "$TranferJobs" },
                 { $match: subConditions },
             ])
-            
+
             chartLuanChuyen.push(data.length)
         }
 
@@ -1058,25 +1058,25 @@ exports.reportChart = async (req, res, next) => {
             ])
             let subData = [];
             for (let i = 0; i < data.length; i++) {
+                const element = data[i];
                 conditions = {};
 
-                conditions.sb_id_user = data[i].sb_id_user;
-                conditions.sb_time_up = { $lt: data[i].sb_time_up }
+                conditions.sb_id_user = element.sb_id_user;
+                conditions.sb_time_up = { $lt: element.sb_time_up }
 
                 let luongcu = await Salarys.findOne(conditions).lean();
                 if (luongcu) {
-                    if (luongcu.sb_salary_basic == data[i].luongmoi) {
-                        continue;
-                    }
-                    if (luongcu.sb_salary_basic > data[i].luongmoi) {
-                        data[i].giamLuong = luongcu.sb_salary_basic - data[i].luongmoi;
-                        data[i].tangLuong = 0;
+                    console.log(luongcu.sb_salary_basic)
+                    console.log(element.luongmoi)
+                    if (luongcu.sb_salary_basic > element.luongmoi) {
+                        element.giamLuong = luongcu.sb_salary_basic - element.luongmoi;
+                        element.tangLuong = 0;
 
-                    } else if (luongcu.sb_salary_basic < data[i].luongmoi) {
-                        data[i].tangLuong = data[i].luongmoi - luongcu.sb_salary_basic;
-                        data[i].giamLuong = 0;
+                    } else if (luongcu.sb_salary_basic < element.luongmoi) {
+                        element.tangLuong = element.luongmoi - luongcu.sb_salary_basic;
+                        element.giamLuong = 0;
                     }
-                    subData.push(data[i]);
+                    subData.push(element);
                 }
             }
             let soluong = subData.length
