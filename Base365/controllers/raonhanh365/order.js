@@ -203,6 +203,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -228,6 +229,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -406,9 +408,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "new"
                     }
                 },
-                {
-                    $unwind: "$new"
-                },
+                {$unwind: "$new"},
                 {
                     $lookup: {
                         from: "Users",
