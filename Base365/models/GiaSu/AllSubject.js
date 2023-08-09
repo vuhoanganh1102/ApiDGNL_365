@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const all_subject = new mongoose.Schema({
-
+   // môn học
     as_id : {
         type : Number, 
         required: true,

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const invite_teach = new mongoose.Schema({
-    
+    // mời dạy
     it_id : {
         type : Number,
         required: true,
