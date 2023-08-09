@@ -1,16 +1,18 @@
 const Cus_Chance = require('../../../models/crm/Customer/customer_chance');
 const Share_Cus = require("../../../models/crm/tbl_share_customer");
 const Share_Chance = require("../../../models/crm/tbl_shareChance");
+const functions = require("../../../services/functions");
+
 exports.listChance = async (req, res) => {
     try{
     let skip = req.body.skip ? req.body.skip : 1;
     let limit = req.body.limit ? req.body.limit : 10;
     let chances = await Cus_Chance.find().skip((skip - 1) * 10).limit(limit);
-    return res.status(200).json({ data: chances, message: "sucess" });
-    }catch (error) {
-        console.error('Failed to show', error);
-        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
-    }
+    return functions.success(res, 'Lấy dữ liệu thành công', { chances });
+    }catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
+      }
    
 }
 exports.create_Chance = async (req, res) => {
@@ -59,7 +61,7 @@ exports.create_Chance = async (req, res) => {
             update_at: new Date()
         });
         await new_chance.save();
-        return res.status(200).json({ data: new_chance, message: 'sucess' });
+        return functions.success(res, 'Lấy dữ liệu thành công', { new_chance });
         }
         if(req.user.data.type == 2) {
             com_id = req.user.data.inForPerson.employee.com_id
@@ -97,14 +99,15 @@ exports.create_Chance = async (req, res) => {
             update_at: new Date()
         });
         await new_chance.save();
-        return res.status(200).json({ data: new_chance, message: 'sucess' });
+        return functions.success(res, 'Lấy dữ liệu thành công', { new_chance });
         }
         else{
-            return res.status(200).json({error :'Bạn không có quyền'})
+            return functions.setError(res, 'bạn không có quyền', 400)
         }
-    }catch (error) {
-        return functions.setError(res, error)
-      } 
+    }catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
+      }
     
 }
 exports.update_chance = async (req, res) => {
@@ -161,14 +164,15 @@ exports.update_chance = async (req, res) => {
     
             })
             await Chance_update.save();
-            return res.status(200).json({ data: Chance_update, message: "update sucess" });
+            return functions.success(res, 'sửa thành công', { Chance_update });
     
         } else {
             return functions.setError(res,'dieu kien  sai',400)
         }
-    }catch (error) {
-        return functions.setError(res, error)
-      } 
+    }catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
+      }
 }
 
 exports.deleteChange = async (req, res) => {
@@ -176,13 +180,14 @@ exports.deleteChange = async (req, res) => {
     let { chance_id, cus_id } = req.body;
     if (chance_id > 0 && cus_id > 0) {
         let del_chance = await Cus_Chance.findOneAndUpdate({ id: chance_id, cus_id: cus_id }, { delete_chance: 1 });
-        return res.status(200).json({ data: del_chance, message: 'sucess' });
+        return functions.success(res, 'xóa thành công', { del_chance });
     } else {
         return functions.setError(res,'dieu kien  sai',400)
     }
-    }catch (error) {
-        return functions.setError(res, error)
-      } 
+    }catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
+      }
     
 }
 
