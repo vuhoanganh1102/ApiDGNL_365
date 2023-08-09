@@ -1084,4 +1084,11 @@ const UserSchema = new mongoose.Schema({
     timestamp: true
 })
 
+UserSchema.index({ 
+    "inForCompany.description": "text",
+    userName: "text",
+    "inForCompany.timviec365.usc_lv": "text",
+    updatedAt: 1
+})
+
 module.exports = mongoose.model("Users", UserSchema);

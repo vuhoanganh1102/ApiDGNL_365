@@ -210,53 +210,48 @@ exports.yp_list_cate = async(req, res) => {
 // tìm kiếm công ty theo điều kiện
 exports.findCompany = async(req, res, next) => {
     try {
+        
         const request = req.body,
             keyword = request.keyword,
             page = Number(request.page) || 1,
             pageSize = Number(request.pageSize) || 10,
             skip = (page - 1) * pageSize;
         if (keyword) {
-            let conditionKeyWord = [];
-            const arraySearch = keyword.split(' ');
-            for (let i = 0; i < arraySearch.length; i++) {
-                const keyword = arraySearch[i];
-                conditionKeyWord = [{ "inForCompany.description": { $regex: keyword, $options: 'i' } }, ...conditionKeyWord];
-                conditionKeyWord = [{ userName: { $regex: keyword, $options: 'i' } }, ...conditionKeyWord];
-                conditionKeyWord = [{ "inForCompany.timviec365.usc_lv": { $regex: keyword, $options: 'i' } }, ...conditionKeyWord];
-            }
-            const condition = {
-                    $or: conditionKeyWord,
-                    userName: { $ne: '' },
-                    idTimViec365: { $gt: 694 },
-                    "inForCompany.timviec365.usc_redirect": '',
-                    type: 1,
-                    fromWeb: "timviec365"
-                },
-                sort = { updatedAt: -1 };
             // Lấy công ty tương ứng
-            const lists = await Users.aggregate([{
-                    $match: condition
-                },
-                { $sort: sort },
-                { $skip: skip },
-                { $limit: pageSize },
+            let companyAggregate = Users.aggregate([
                 {
-                    $project: {
-                        usc_id: "$idTimViec365",
-                        usc_company: "$userName",
-                        usc_logo: "$avatarUser",
-                        usc_alias: "$alias",
-                        usc_create_time: "$createdAt",
-                        usc_size: "$inForCompany.timviec365.usc_size",
-                        usc_address: "$address",
-                        usc_company_info: "$inForCompany.description",
+                    $match: {
+                        userName: { $ne: '' },
+                        idTimViec365: { $gt: 694 },
+                        "inForCompany.timviec365.usc_redirect": '',
+                        type: 1,
+                        fromWeb: "timviec365",
+                        $text: {
+                            $search: keyword
+                        }
                     }
-                }
+                },
+                { $facet: {
+                    counter: [{$count: "count"}],
+                    data: [
+                        { $sort:  { updatedAt: -1 } },
+                        { $skip: skip },
+                        { $limit: pageSize },
+                        {
+                            $project: {
+                                usc_id: "$idTimViec365",
+                                usc_company: "$userName",
+                                usc_logo: "$avatarUser",
+                                usc_alias: "$alias",
+                                usc_create_time: "$createdAt",
+                                usc_size: "$inForCompany.timviec365.usc_size",
+                                usc_address: "$address",
+                                usc_company_info: "$inForCompany.description",
+                            }
+                        }
+                    ]
+                }},
             ]);
-
-            // Lấy tổng
-            const count = await Users.countDocuments(condition);
-
 
             let array_keyword = [];
             const array_name_tag = keyword.split(' ');
@@ -265,7 +260,7 @@ exports.findCompany = async(req, res, next) => {
                 array_keyword.push({ name_tag: { $regex: element } });
             }
             // Lấy từ khóa liên quan
-            const list_reated = await CategoryCompany.find({
+            let list_related = CategoryCompany.find({
                 // id: { $ne: item.id },
                 $or: array_keyword,
                 city_tag: 0,
@@ -273,12 +268,11 @@ exports.findCompany = async(req, res, next) => {
             }).select("id city_tag name_tag").limit(20);
 
             // Địa điểm liên quan
-            const list_city_reated = await CategoryCompany.find({
+            let list_city_related = CategoryCompany.find({
                 // id: { $ne: item.id },
                 $or: array_keyword,
                 city_tag: { $ne: 0 },
             }).select("id city_tag name_tag").limit(20);
-
             // // Blog liên quan
             let conditionBlog = {
                 new_new: 0,
@@ -288,19 +282,36 @@ exports.findCompany = async(req, res, next) => {
             // if (item.name_tag != "") {
             conditionBlog.new_title = { $regex: keyword }
                 // }
-
-            const blog = await Blog.find(conditionBlog)
+            let blog = Blog.find(conditionBlog)
                 .select("new_title_rewrite new_id new_picture new_title")
                 .sort({ new_id: -1 })
                 .limit(4)
                 .lean();
 
+            let promises = [
+                companyAggregate,
+                list_related,
+                list_city_related,
+                blog
+            ]
+
+            let data = await Promise.all(promises);
+            companyAggregate = data[0];
+            list_related = data[1];
+            list_city_related = data[2];
+            blog = data[3];
+            let lists = [];
+            let count = 0;
+            if (companyAggregate[0]) {
+                lists = companyAggregate[0].data;
+                count = companyAggregate[0].counter[0].count
+            }
+
             return functions.success(res, "Lấy thông tin thành công", {
-                // data: { item, lists, count, list_reated, list_city_reated, blog }
                 company: lists,
                 count: count,
-                key_lienquan: list_reated,
-                diadiem_lienquan: list_city_reated,
+                key_lienquan: list_related,
+                diadiem_lienquan: list_city_related,
                 news_lienquan: blog
             });
 
