@@ -75,7 +75,7 @@ exports.order = async (req, res, next) => {
                         _id, codeOrder: codeOrder[i], phone, deliveryAddress, sellerId: sellerId[i], note, paymentType,
                         totalProductCost: totalProductCost[i], promotionType: promotionType[i], promotionValue: promotionValue[i], shipFee: shipFee[i], shipType: shipType[i],
                         amountPaid, paymentMethod, unitPrice: unitPrice[i], buyerId: idRaoNhanh365, status, newId: dataCart.newsId,
-                        quantity:dataCart.quantity
+                        quantity: dataCart.quantity
                     }
                     )
                     if (paymentMethod == 0) {
@@ -360,7 +360,7 @@ exports.manageOrderSell = async (req, res, next) => {
             sellerId: 1, new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 },
             user: { userName: 1, avatarUser: 1, type: 1, _id: 1, idRaoNhanh365: 1 },
             createdAt: 1,
-            orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,unitPrice: 1, amountPaid: 1
+            orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1, unitPrice: 1, amountPaid: 1
 
         };
         if (linkTitle === 'quan-ly-don-hang-ban.html') {
@@ -396,7 +396,7 @@ exports.manageOrderSell = async (req, res, next) => {
 
             data = await Order.aggregate([
                 {
-                    $match: { sellerId, status: 1,  }
+                    $match: { sellerId, status: 1, }
                 },
                 { $skip: skip },
                 { $limit: limit },
@@ -408,7 +408,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "new"
                     }
                 },
-                {$unwind: "$new"},
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -699,8 +699,9 @@ exports.statusOrder = async (req, res, next) => {
                 await Order.findByIdAndUpdate(orderId, { buyerConfirm, buyerConfirmTime })
             } else if (status === 7) {
                 let buyerCancelsDelivered = 1;
+                let orderCancellationReason = req.body.lido;
                 let buyerCancelsDeliveredTime = new Date();
-                await Order.findByIdAndUpdate(orderId, { buyerCancelsDelivered, buyerCancelsDeliveredTime })
+                await Order.findByIdAndUpdate(orderId, { buyerCancelsDelivered, orderCancellationReason, buyerCancelsDeliveredTime })
             } else {
                 return functions.setError(res, 'invalid data1', 400)
             }
@@ -798,6 +799,7 @@ exports.detailCancelOrder = async (req, res, next) => {
                     shipType: 1,
                     shipFee: 1,
                     note: 1,
+                    createdAt: 1,
                     paymentType: 1,
                     bankName: 1,
                     amountPaid: 1,
@@ -896,6 +898,7 @@ exports.detailOrder = async (req, res, next) => {
                     amountPaid: 1,
                     totalProductCost: 1,
                     buyTime: 1,
+                    createdAt: 1,
                     status: 1,
                     sellerConfirmTime: 1,
                     deliveryStartTime: 1,
@@ -912,9 +915,9 @@ exports.detailOrder = async (req, res, next) => {
                     buyerCancelsDeliveredTime: 1,
                     orderActive: 1,
                     distinguish: 1,
-                    user: { userName: 1, avatarUser: 1, type: 1, _id: 1, chat365_secret: 1, idRaoNhanh365: 1 },
+                    user: { userName: 1, address: 1, phone: 1, avatarUser: 1, type: 1, _id: 1, chat365_secret: 1, idRaoNhanh365: 1 },
                     new: { _id: 1, title: 1, linkTitle: 1, money: 1, type: 1, until: 1, img: 1, cateID: 1, userID: 1 },
-                    sellerId:{userName: 1, avatarUser: 1, type: 1, _id: 1, chat365_secret: 1, idRaoNhanh365: 1}
+                    sellerId: { userName: 1, address: 1, phone: 1, avatarUser: 1, type: 1, _id: 1, chat365_secret: 1, idRaoNhanh365: 1 }
                 }
             }
         ])
