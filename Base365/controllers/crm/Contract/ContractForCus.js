@@ -40,7 +40,7 @@ exports.showContract = async(req, res) => {
 }
 
 exports.showDetailContract = async(req, res) => {
-    const com_id = req.user.data.inForPerson.employee.com_id
+    const com_id = req.user.data.com_id
     const idQLC = req.user.data.idQLC
 
     const { _id, id_customer, status, id_form_contract, path_dowload, is_delete } = req.body;
