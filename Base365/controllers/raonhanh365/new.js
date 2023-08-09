@@ -2726,7 +2726,7 @@ exports.addDiscount = async (req, res, next) => {
                     }
 
                     let checkNew = await New.findById(new_id);
-                    if (checkNew && checkNew.length !== 0) {
+                    if (checkNew) {
                         await New.findByIdAndUpdate(new_id, {
                             timePromotionStart: new Date(ngay_bat_dau).getTime() / 1000,
                             timePromotionEnd: new Date(ngay_ket_thuc).getTime() / 1000,
@@ -3305,10 +3305,11 @@ exports.tinApDungKhuyenMai = async (req, res, next) => {
                 }
             }
         }
-        let tongsoluong = New.countDocuments(conditions)
+        let tongsoluong = await New.countDocuments(conditions)
         let soluong = data.length
         return functions.success(res, 'get data success', { tongsoluong, soluong, data })
     } catch (err) {
+        console.log("🚀 ~ file: new.js:3312 ~ exports.tinApDungKhuyenMai= ~ err:", err)
         return functions.setError(res, err)
     }
 }
