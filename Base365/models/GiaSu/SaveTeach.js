@@ -5,6 +5,8 @@ const save_teach = new mongoose.Schema({
     st_id : {
         type : Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     st_pr_id : {

@@ -4,6 +4,8 @@ const all_subject = new mongoose.Schema({
     as_id : {
         type : Number, 
         required: true,
+        unique: true,
+        autoIncrement: true
     },
     as_name : {
         type : String, 

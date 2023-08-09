@@ -1,9 +1,9 @@
 const functions = require('../../services/functions');
-const Credits = require('../../models/Timviec365/UserOnSite/Company/ManageCredits/Credits');
 const CreditsHistory = require('../../models/Timviec365/UserOnSite/Company/ManageCredits/CreditsHistory');
 const CreditExchangeHistory = require('../../models/Timviec365/UserOnSite/Company/ManageCredits/CreditExchangeHistory');
 const PresPointHistory = require('../../models/Timviec365/UserOnSite/Company/ManageCredits/PresPointHistory');
 const PTCMultiplier = require('../../models/Timviec365/UserOnSite/Company/ManageCredits/PointToCreditMultiplier');
+const PointCompany = require('../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany')
 const Users = require('../../models/Users');
 
 const getIP = (req) => {
@@ -27,13 +27,13 @@ const getIP = (req) => {
 // }
 
 const recordCreditsHistory = async (usc_id, type, amount, admin_id, ip_user) => {
-    let use_id = 0;
-    let latestHistory = await CreditsHistory.findOne({}).sort({use_id: -1});
-    if (latestHistory) use_id = latestHistory.use_id + 1;
+    let _id = 0;
+    let latestHistory = await CreditsHistory.findOne({}).sort({_id: -1});
+    if (latestHistory) _id = latestHistory._id + 1;
     let doc = await (new CreditsHistory({
         //idTimViec365
         usc_id,
-        use_id,
+        _id,
         amount,
         /**
          * Loại lịch sử: 
@@ -134,24 +134,38 @@ const getTotalUsedPresPoint = async (usc_id) => {
     }
 }
 
+const useCreditsHandler = async (usc_id, amount, ip="") => {
+    try {
+        let pointCompany = await PointCompany.findOne({usc_id});
+        if (!pointCompany) {
+            doc = await (new PointCompany({
+                usc_id: usc_id,
+                money_usc: 0,
+            })).save();
+            return false;
+        }
+        if (pointCompany.money_usc < amount)
+            return false;
+        await recordCreditsHistory(usc_id, 0, amount, null, ip);
+        await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: -amount}});
+        return true;
+    } catch (error) {
+       console.log(error);
+       return false; 
+    }
+}
+exports.useCreditsHandler = useCreditsHandler;
+
 exports.useCredits = (amount) => {
     return async (req, res, next) => {
         try {
             let usc_id = await getTimviec365Id(req, res);
-            let credits = await Credits.findOne({usc_id});
-            if (!credits) {
-                doc = await (new Credits({
-                    usc_id: usc_id,
-                    balance: 0,
-                    status: 1,
-                })).save();
+            let result = await useCreditsHandler(usc_id, amount, getIP(req));
+            if (result) {
+                next();
+            } else {
                 return functions.setError(res, "Tài khoản của bạn không đủ để thực hiện hành động này", 400);
             }
-            if (credits.balance < amount)
-                return functions.setError(res, "Tài khoản của bạn không đủ để thực hiện hành động này", 400);
-            await recordCreditsHistory(usc_id, 0, amount, null, getIP(req));
-            await Credits.findOneAndUpdate({usc_id}, {$inc: {balance: -amount}});
-            next();
         } catch (error) {
             console.log(error);
             return functions.setError(res, error)
@@ -194,8 +208,8 @@ exports.exchangePointToCredits = async (req, res) => {
             const amount = points*multiplier;
             //Trừ đi số điểm đã đổi
             await handlePresPointUpdate(pointHistory, availablePoints - points, amount);
-            //Tăng credits cho người dùng
-            await Credits.findOneAndUpdate({usc_id}, {$inc: {balance: amount}});
+            //Tăng money cho người dùng
+            await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
             //Ghi lại lịch sử
             await recordCreditsHistory(usc_id, 2, amount, null, getIP(req));
             return functions.success(res, "Đổi điểm thành công!")
@@ -211,8 +225,8 @@ exports.exchangePointToCredits = async (req, res) => {
 exports.getCreditBalance = async (req, res) => {
     try {
         let usc_id = await getTimviec365Id(req, res);
-        let doc = await Credits.findOne({usc_id});
-        return functions.success(res, "Thành công!", {data: doc});
+        let doc = await PointCompany.findOne({usc_id});
+        return functions.success(res, "Thành công!", {money_usc: doc.money_usc});
     } catch (error) {
         console.log(error);
         return functions.setError(res, error)
@@ -261,34 +275,3 @@ exports.success = async (req, res) => {
         return functions.setError(res, error)
     }
 }
-
-// exports.topupCredits = async (req, res) => {
-//     try {
-//         let {
-//             usc_id,
-//             amount
-//         } = req.body;
-//         if (!usc_id||!amount) return functions.setError(res, "Thiếu các trường cần thiết", 429);
-//         let company = await Users.findOne({idTimViec365: usc_id, type: 1});
-//         if (!company) return functions.setError(res, "Không tồn tại công ty có ID này", 400);
-//         let admin_id = '';
-//         if (req.user&&req.user.data) {
-//             admin_id = req.user.data.adm_id;
-//         }
-//         let doc = await Credits.findOne({usc_id});
-//         if (!doc) {
-//             doc = await (new Credits({
-//                 usc_id: usc_id,
-//                 balance: amount,
-//                 status: 1,
-//             })).save();
-//         } else {
-//             await Credits.findOneAndUpdate({usc_id}, {$inc: {balance: amount}});
-//         }
-//         await recordCreditsHistory(usc_id, 1, amount, admin_id, getIP(req));
-//         return functions.success(res, "Nạp tiền thành công!")
-//     } catch (error) {
-//         console.log(error);
-//         return functions.setError(res, error)
-//     }
-// }

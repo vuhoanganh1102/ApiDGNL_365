@@ -4,6 +4,8 @@ const see_user = new mongoose.Schema({
     su_id : {
         type : Number ,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     ugs_parent : {

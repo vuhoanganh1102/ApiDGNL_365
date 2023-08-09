@@ -3,7 +3,9 @@ const class_teach = new mongoose.Schema({
 
     ct_id: {
         type : Number,
-
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     ct_name: {
         type : String,

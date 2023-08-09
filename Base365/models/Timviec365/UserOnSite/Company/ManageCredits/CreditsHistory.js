@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 const CreditsHistorySchema = new mongoose.Schema(
     {
-        //idTimViec365
+        _id: {
+            type: Number,
+            required: true
+        },
         usc_id: {
             type: Number,
             default: 0

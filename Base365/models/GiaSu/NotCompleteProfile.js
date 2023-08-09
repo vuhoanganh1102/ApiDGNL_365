@@ -4,6 +4,8 @@ const not_complete_profile = new mongoose.Schema({
     profile_id :{
         type : Number, 
         required: true,
+        unique: true,
+        autoIncrement: true
     },
     user_name :{
         type : String, 

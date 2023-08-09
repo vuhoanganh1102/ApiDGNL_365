@@ -3278,3 +3278,58 @@ exports.normalizeExchangePointHistory = async (req, res) => {
         await fnc.setError(res, "Failed");
     }
 }
+
+exports.normalizePriceList = async (req, res) => {
+    try {
+        let priceListings = await PriceList.find({bg_type: {$in: ["1", "4", "5", "6"]}});
+        let stringMap = new Map();
+        for (let i = 0; i < 100; i++) {
+            stringMap.set(`${i} tuần`, i*7*24*60*60);
+        }
+        for (let i = 0; i < priceListings.length; i++) {
+            let doc = priceListings[i];
+            doc.bg_vip_duration = stringMap.get(doc.bg_handung);
+            await doc.save();
+            console.log(i);
+        }
+        return fnc.success(res, "thành công");
+    } catch (error) {
+        console.log(error);
+        await fnc.setError(res, "Failed");
+    }
+}
+
+
+exports.dailyScanExpiredVipNews = async (req, res) => {
+    try {
+        let now = fnc.getTimeNow();
+        let allNews = await NewTV365.find(
+            {
+                $or: [
+                    {new_vip_time: {$gt: 0, $lt: now}},
+                    {new_cate_time: {$gt: 0, $lt: now}},
+                ]
+            }
+        );
+        let promises = [];
+        for (let i = 0; i < allNews.length; i++) {
+            let doc = allNews[i];
+            if (doc.new_vip_time < now) {
+                doc.new_hot = 0;
+                doc.new_cao = 0;
+                doc.new_gap = 0;
+                doc.new_vip_time = 0;
+            }
+            if (doc.new_cate_time < now) {
+                doc.new_nganh = 0;
+                doc.new_cate_time = 0;
+            }
+            promises.push(doc.save());
+        }
+        await Promise.all(promises);
+        return fnc.success(res, `Update thành công [${promises.length}] tin hết hạn!`);
+    } catch (error) {
+        console.log(error);
+        await fnc.setError(res, "Failed");
+    }
+}

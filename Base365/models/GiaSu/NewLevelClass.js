@@ -4,6 +4,8 @@ const admin_user = new mongoose.Schema({
     id : {
         type : Number,
         required: true,
+        unique: true,
+        autoIncrement: true
 
     },
     id_level : {

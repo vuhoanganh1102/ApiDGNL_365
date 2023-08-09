@@ -3,7 +3,9 @@ const user_experience = new mongoose.Schema({
 
     ue_id : {
         type : Number,
-
+        required: true,
+        unique: true,
+        autoIncrement: true
     },
     ugs_id : {
         type : Number,

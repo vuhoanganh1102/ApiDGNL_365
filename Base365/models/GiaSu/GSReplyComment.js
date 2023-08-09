@@ -5,7 +5,8 @@ const gs_reply_comment = new mongoose.Schema({
     rep_comment_id : {
         type : Number,
         required: true,
-
+        unique: true,
+        autoIncrement: true
     },
     gs_comment_id : {
         type : Number,
