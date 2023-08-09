@@ -10,6 +10,17 @@ const {recordCreditsHistory} = require("./credits");
 const PointCompany = require("../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany")
 const GhimTinPackages = require("../../models/Timviec365/UserOnSite/Company/GhimTinPackages")
 
+const getIP = (req) => {
+    let forwardedIpsStr = req.header('x-forwarded-for');
+    let ip = '';
+    if (forwardedIpsStr) {
+        ip = forwardedIpsStr.split(',')[0];
+    } else {
+        ip = req.socket.remoteAddress 
+    }
+    return ip;
+}
+
 // Đăng nhập
 exports.login = async(req, res) => {
     const { adm_loginname, adm_password } = req.body;
@@ -419,12 +430,12 @@ exports.topupCredits = async (req, res) => {
                     if (!doc) {
                         doc = await (new PointCompany({
                             usc_id: usc_id,
-                            usc_money: amount,
+                            money_usc: amount,
                         })).save();
                     } else {
-                        await PointCompany.findOneAndUpdate({usc_id}, {$inc: {usc_money: amount}});
+                        await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
                     }
-                    await recordCreditsHistory(usc_id, 1, amount, idAdmin, getIP(req));
+                    await recordCreditsHistory(usc_id, 1, amount, null, getIP(req));
                     return functions.success(res, "Nạp tiền thành công!")
                 } else {
                     return functions.setError(res, "Không tồn tại công ty có ID này", 400);
@@ -449,10 +460,8 @@ exports.createGhimTinPackage = async (req, res) => {
             duration
         } = req.body;
 
-        // let idAdmin = req.user.data._id;
-        // let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
-        //TODO: REMOVE THIS
-        let checkAdmin = true;
+        let idAdmin = req.user.data._id;
+        let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
         if (checkAdmin) {
             let doc = await (new GhimTinPackages({
                 name,
@@ -475,10 +484,8 @@ exports.deleteGhimTinPackage = async (req, res) => {
         let {
             id
         } = req.params;
-        // let idAdmin = req.user.data._id;
-        // let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
-        //TODO: REMOVE THIS
-        let checkAdmin = true;
+        let idAdmin = req.user.data._id;
+        let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
         if (checkAdmin) {
             let doc = await GhimTinPackages.findByIdAndDelete(id);
             return functions.success(res, "Xóa gói ghim tin thành công", {data: doc})

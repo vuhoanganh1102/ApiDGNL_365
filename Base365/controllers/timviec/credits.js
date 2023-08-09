@@ -28,8 +28,8 @@ const getIP = (req) => {
 
 const recordCreditsHistory = async (usc_id, type, amount, admin_id, ip_user) => {
     let _id = 0;
-    let latestHistory = await CreditsHistory.findOne({}).sort({use_id: -1});
-    if (latestHistory) _id = latestHistory.use_id + 1;
+    let latestHistory = await CreditsHistory.findOne({}).sort({_id: -1});
+    if (latestHistory) _id = latestHistory._id + 1;
     let doc = await (new CreditsHistory({
         //idTimViec365
         usc_id,
@@ -140,14 +140,14 @@ const useCreditsHandler = async (usc_id, amount, ip="") => {
         if (!pointCompany) {
             doc = await (new PointCompany({
                 usc_id: usc_id,
-                usc_money: 0,
+                money_usc: 0,
             })).save();
             return false;
         }
-        if (pointCompany.usc_money < amount)
+        if (pointCompany.money_usc < amount)
             return false;
         await recordCreditsHistory(usc_id, 0, amount, null, ip);
-        await PointCompany.findOneAndUpdate({usc_id}, {$inc: {usc_money: -amount}});
+        await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: -amount}});
         return true;
     } catch (error) {
        console.log(error);
@@ -209,7 +209,7 @@ exports.exchangePointToCredits = async (req, res) => {
             //Trừ đi số điểm đã đổi
             await handlePresPointUpdate(pointHistory, availablePoints - points, amount);
             //Tăng money cho người dùng
-            await PointCompany.findOneAndUpdate({usc_id}, {$inc: {usc_money: amount}});
+            await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
             //Ghi lại lịch sử
             await recordCreditsHistory(usc_id, 2, amount, null, getIP(req));
             return functions.success(res, "Đổi điểm thành công!")
@@ -226,7 +226,7 @@ exports.getCreditBalance = async (req, res) => {
     try {
         let usc_id = await getTimviec365Id(req, res);
         let doc = await PointCompany.findOne({usc_id});
-        return functions.success(res, "Thành công!", {usc_money: doc.usc_money});
+        return functions.success(res, "Thành công!", {money_usc: doc.money_usc});
     } catch (error) {
         console.log(error);
         return functions.setError(res, error)

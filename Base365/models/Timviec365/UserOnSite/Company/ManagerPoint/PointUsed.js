@@ -22,8 +22,8 @@ const Tv365PointUsedSchema = new mongoose.Schema({
     },
     /**
      * loại thanh toán:
-     * - 0: usc_point
-     * - 1: usc_money
+     * - 0: point_usc
+     * - 1: money_usc
      * */
     type_payment: {
         type: Number,
