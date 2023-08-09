@@ -1,7 +1,7 @@
 // check ảnh và video
 const fs = require('fs');
-const PerUser  = require('../../models/hr/PerUsers');
-const Users  = require('../../models/Users');
+const PerUser = require('../../models/hr/PerUsers');
+const Users = require('../../models/Users');
 
 // upload file
 const multer = require('multer')
@@ -64,7 +64,7 @@ exports.HR_CheckTokenCompany = (req, res, next) => {
     });
 }
 
-exports.HR_UploadFile = async(folder, id, file, allowedExtensions) => {
+exports.HR_UploadFile = async (folder, id, file, allowedExtensions) => {
 
     let path1 = `../storage/base365/hr/${folder}/${id}/`;
     let filePath = `../storage/base365/hr/${folder}/${id}/` + file.name;
@@ -100,7 +100,7 @@ exports.deleteFileHR = (folder, id, file) => {
     });
 }
 
-exports.checkPermissions = async(req, res, next, per, bar) => {
+exports.checkPermissions = async (req, res, next, per, bar) => {
     //1. Quản lý tuyển dụng, 2. Quản lý thông tin nhân sự, 3. Thành tích - Vi phạm,5. Báo cáo nhân sự, 6. Dữ liệu đã xóa gần đây, 7. Tăng/giảm lương
     if (per === 'read') {
         per = 1
@@ -122,7 +122,7 @@ exports.checkPermissions = async(req, res, next, per, bar) => {
     }
 }
 // hàm check định dạng ảnh
-let checkFile = async(filePath) => {
+let checkFile = async (filePath) => {
     const extname = path.extname(filePath).toLowerCase();
     return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.pdf', '.doc', '.docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv', 'ods', 'odt', 'odp', 'rtf', 'sxc', 'sxi', 'txt'].includes(extname);
 };
@@ -132,7 +132,7 @@ exports.createLinkFile = (folder, name) => {
     return link;
 }
 
-exports.uploadFile = async(folder, id, file) => {
+exports.uploadFile = async (folder, id, file) => {
     let path1 = `../storage/base365/hr/${folder}/${id}/`;
     let filePath = `../storage/base365/hr/${folder}/${id}/` + file.name;
     if (!fs.existsSync(path1)) {
@@ -151,11 +151,11 @@ exports.uploadFile = async(folder, id, file) => {
     return true
 }
 
-exports.uploadFileCv = async(id, file) => {
+exports.uploadFileCv = async (id, file) => {
     let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     let fileExtension = file.originalFilename.split('.').pop();
     let name = `cv_${random}.${fileExtension}`
-    let filePath= `../storage/base365/hr/upload/cv/${id}/`;
+    let filePath = `../storage/base365/hr/upload/cv/${id}/`;
     if (!fs.existsSync(filePath)) {
         fs.mkdirSync(filePath, { recursive: true });
     }
@@ -163,7 +163,7 @@ exports.uploadFileCv = async(id, file) => {
         if (err) {
             console.log(err)
         }
-        fs.writeFile(filePath+name, data, (err) => {
+        fs.writeFile(filePath + name, data, (err) => {
             if (err) {
                 console.log(err)
             }
@@ -172,11 +172,11 @@ exports.uploadFileCv = async(id, file) => {
     return name;
 }
 
-exports.uploadFileSignature = async(file) => {
+exports.uploadFileSignature = async (file) => {
     let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     let fileExtension = file.originalFilename.split('.').pop();
     let name = `signature_${random}.${fileExtension}`
-    let filePath= `../storage/base365/hr/upload/signature/`;
+    let filePath = `../storage/base365/hr/upload/signature/`;
     if (!fs.existsSync(filePath)) {
         fs.mkdirSync(filePath, { recursive: true });
     }
@@ -184,7 +184,7 @@ exports.uploadFileSignature = async(file) => {
         if (err) {
             console.log(err)
         }
-        fs.writeFile(filePath+name, data, (err) => {
+        fs.writeFile(filePath + name, data, (err) => {
             if (err) {
                 console.log(err)
             }
@@ -193,11 +193,11 @@ exports.uploadFileSignature = async(file) => {
     return name;
 }
 
-exports.uploadFileRoadMap = async(id, file) => {
+exports.uploadFileRoadMap = async (id, file) => {
     let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     let fileExtension = file.originalFilename.split('.').pop();
     let name = `roadmap_${random}.${fileExtension}`
-    let filePath= `../storage/base365/hr/upload/roadmap/${id}/`;
+    let filePath = `../storage/base365/hr/upload/roadmap/${id}/`;
     if (!fs.existsSync(filePath)) {
         fs.mkdirSync(filePath, { recursive: true });
     }
@@ -205,7 +205,7 @@ exports.uploadFileRoadMap = async(id, file) => {
         if (err) {
             console.log(err)
         }
-        fs.writeFile(filePath+name, data, (err) => {
+        fs.writeFile(filePath + name, data, (err) => {
             if (err) {
                 console.log(err)
             }
@@ -214,11 +214,11 @@ exports.uploadFileRoadMap = async(id, file) => {
     return name;
 }
 
-exports.uploadFileNameRandom = async(folder, file) => {
+exports.uploadFileNameRandom = async (folder, file) => {
     let random = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
     let fileExtension = file.originalFilename.split('.').pop();
     let name = `${folder}_${random}.${fileExtension}`
-    let filePath= `../storage/base365/hr/upload/${folder}/`;
+    let filePath = `../storage/base365/hr/upload/${folder}/`;
     if (!fs.existsSync(filePath)) {
         fs.mkdirSync(filePath, { recursive: true });
     }
@@ -226,7 +226,7 @@ exports.uploadFileNameRandom = async(folder, file) => {
         if (err) {
             console.log(err)
         }
-        fs.writeFile(filePath+name, data, (err) => {
+        fs.writeFile(filePath + name, data, (err) => {
             if (err) {
                 console.log(err)
             }
@@ -236,20 +236,20 @@ exports.uploadFileNameRandom = async(folder, file) => {
 }
 
 
-exports.createLinkFileCv = async(folder, id, name) => {
+exports.createLinkFileCv = async (folder, id, name) => {
     let link = process.env.DOMAIN_HR + '/base365/hr/' + folder + '/' + id + '/' + name;
     return link;
 }
 
 exports.deleteFileCv = (id) => {
-    let filePath = '../storage/hr/upload/cv' +'/' + id;
+    let filePath = '../storage/hr/upload/cv' + '/' + id;
     fs.unlink(filePath, (err) => {
         if (err) console.log(err);
     });
 }
 
 
-exports.uploadFileBase64 = async(folder, id, base64String, file) => {
+exports.uploadFileBase64 = async (folder, id, base64String, file) => {
     let path1 = `../storage/base365/hr/pictures/${folder}/${id}/`;
     // let filePath = `../Storage/base365/raonhanh365/pictures/${folder}/${id}/` + file.name;
     if (!fs.existsSync(path1)) {
@@ -271,7 +271,7 @@ exports.uploadFileBase64 = async(folder, id, base64String, file) => {
     });
 }
 
-exports.getMaxId = async(model) => {
+exports.getMaxId = async (model) => {
     let maxId = await model.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1).lean();
     if (maxId) {
         maxId = Number(maxId.id) + 1;
@@ -330,8 +330,8 @@ let toLowerCaseNonAccentVietnamese = (str) => {
 }
 
 // hàm check ảnh
-exports.checkFile = async(filePath) => {
-    if (typeof(filePath) !== 'string') {
+exports.checkFile = async (filePath) => {
+    if (typeof (filePath) !== 'string') {
         return false;
     }
 
@@ -348,8 +348,8 @@ exports.checkFile = async(filePath) => {
     return true;
 };
 
-exports.checkRoleUser = (req, res, next)=> {
-    try{
+exports.checkRoleUser = (req, res, next) => {
+    try {
         const authHeader = req.headers["authorization"];
         const token = authHeader && authHeader.split(" ")[1];
         if (!token) {
@@ -359,55 +359,55 @@ exports.checkRoleUser = (req, res, next)=> {
             if (err) {
                 return res.status(403).json({ message: "Invalid token" });
             }
-            if(!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
+            if (!user.data || !user.data.type || !user.data.idQLC || !user.data.userName) {
                 return res.status(404).json({ message: "Token missing info!" });
             }
-            var infoLogin = {type: user.data.type, id: user.data.idQLC, name: user.data.userName};
-            if(user.data.type!=1){
-                if(user.data && user.data.com_id) {
+            var infoLogin = { type: user.data.type, id: user.data.idQLC, name: user.data.userName };
+            if (user.data.type != 1) {
+                if (user.data && user.data.com_id) {
                     infoLogin.comId = user.data.com_id;
                 }
-                else if(user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id){
+                else if (user.data.inForPerson && user.data.inForPerson.employee && user.data.inForPerson.employee.com_id) {
                     infoLogin.comId = user.data.inForPerson.employee.com_id;
-                }else {
+                } else {
                     return res.status(404).json({ message: "Missing info inForPerson!" });
                 }
-                
-            }else {
+
+            } else {
                 infoLogin.comId = user.data.idQLC;
             }
             req.infoLogin = infoLogin;
             next();
         });
-    }catch(err){
+    } catch (err) {
         return functions.setError(res, err.massage, 500);
     }
-    
+
 }
 
-exports.checkRole = async(infoLogin, barId, perId)=> {
-    if(infoLogin.type==1) return true;
-    let permission = await PermissionUser.findOne({userId: infoLogin.id, barId: barId, perId: perId});
+exports.checkRole = async (infoLogin, barId, perId) => {
+    if (infoLogin.type == 1) return true;
+    let permission = await PermissionUser.findOne({ userId: infoLogin.id, barId: barId, perId: perId });
     // console.log(permission);
-    if(permission) return true;
+    if (permission) return true;
     return false;
 }
 
 exports.checkRight = (barId, perId) => {
     return async (req, res, next) => {
         let infoLogin = req.infoLogin;
-        if(infoLogin.type==1) return next();
-        let permission = await PermissionUser.findOne({userId: infoLogin.id, barId: barId, perId: perId});
-        if(permission) return next();
-        return functions.setError(res, "no right", 403); 
+        if (infoLogin.type == 1) return next();
+        let permission = await PermissionUser.findOne({ userId: infoLogin.id, barId: barId, perId: perId });
+        if (permission) return next();
+        return functions.setError(res, "no right", 403);
     };
 };
 
-exports.checkIsInteger = (data)=>{
+exports.checkIsInteger = (data) => {
 
-    for(let i=0; i<data.length; i++){
+    for (let i = 0; i < data.length; i++) {
         if (isNaN(data[i])) {
-        return false;
+            return false;
         }
         var x = parseFloat(data[i]);
         return (x | 0) === x;
@@ -416,34 +416,34 @@ exports.checkIsInteger = (data)=>{
 }
 
 exports.sendChat = async (id_user, status, ep_id, new_com_id, new_update_position, new_update_dep_id, created_at, type) => {
-    
+
     const data = {
-    SenderId: id_user,
-    Status: status,
-    EmployeeId: ep_id,
-    ListReceive: '[' + ep_id + ']',
-    NewCompanyId: new_com_id,
-    Position: new_update_position,
-    Department: new_update_dep_id,
-    CreateAt: created_at,
-    // Type: 'Appoint',
-    Type: type,
-    CompanyId: new_com_id,
+        SenderId: id_user,
+        Status: status,
+        EmployeeId: ep_id,
+        ListReceive: '[' + ep_id + ']',
+        NewCompanyId: new_com_id,
+        Position: new_update_position,
+        Department: new_update_dep_id,
+        CreateAt: created_at,
+        // Type: 'Appoint',
+        Type: type,
+        CompanyId: new_com_id,
     };
 
     axios.post('https://mess.timviec365.vn/Notification/NotificationPersonnelChange', data)
-    .then(response => {
-        // Xử lý phản hồi thành công
-        console.log(response.data);
-    })
-    .catch(error => {
-        // Xử lý lỗi
-        console.error(error);
-    });
+        .then(response => {
+            // Xử lý phản hồi thành công
+            console.log(response.data);
+        })
+        .catch(error => {
+            // Xử lý lỗi
+            console.error(error);
+        });
 }
 
-exports.sendChat2 = async(to, subject, content, url) => {
-    try{
+exports.sendChat2 = async (to, subject, content, url) => {
+    try {
         const data = {
             SenderId: id_user,
             Status: status,
@@ -458,22 +458,22 @@ exports.sendChat2 = async(to, subject, content, url) => {
             CompanyId: new_com_id,
         };
         axios.post(url, data)
-        .then(response => {
-            // Xử lý phản hồi thành công
-            console.log(response.data);
-        })
-        .catch(error => {
-            // Xử lý lỗi
-            console.error(error);
-        });
-    }catch(e){
+            .then(response => {
+                // Xử lý phản hồi thành công
+                console.log(response.data);
+            })
+            .catch(error => {
+                // Xử lý lỗi
+                console.error(error);
+            });
+    } catch (e) {
         console.log(e);
     }
 }
 
 const storageFile = (destination) => {
     return multer.diskStorage({
-        destination: function(req, file, cb) {
+        destination: function (req, file, cb) {
             let userDestination = " "
             if (req.user) {
                 req.user.data._id; // Lấy id người dùng từ request
@@ -494,11 +494,11 @@ const storageFile = (destination) => {
             }
             cb(null, userDestination);
         },
-        filename: function(req, file, cb) {
+        filename: function (req, file, cb) {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
             cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop())
         },
-        fileFilter: function(req, file, cb) {
+        fileFilter: function (req, file, cb) {
             // const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'video/webm', 'video/quicktime'];
             const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
 
@@ -525,7 +525,7 @@ const transport = nodemailer.createTransport({
     }
 });
 
-exports.sendEmailtoCandidate = async(email, subject, data) => {
+exports.sendEmailtoCandidate = async (email, subject, data) => {
     let options = {
         from: process.env.AUTH_EMAIL,
         to: email,
@@ -541,11 +541,11 @@ exports.sendEmailtoCandidate = async(email, subject, data) => {
     })
 };
 
-exports.getLinkFile = async (data,folder,id)=>{
-    if(data && data.length > 0) {
-        for(let i = 0; i < data.length; i++) {
-            if(data[i].file){
-                data[i].file = process.env.DOMAIN_HR +'/base365/hr/' + folder + '/' + id + '/' +  data[i].file;
+exports.getLinkFile = async (data, folder, id) => {
+    if (data && data.length > 0) {
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].file) {
+                data[i].file = process.env.DOMAIN_HR + '/base365/hr/' + folder + '/' + id + '/' + data[i].file;
             }
         }
     }
@@ -577,3 +577,17 @@ const positionNames = {
 };
 
 exports.positionNames = positionNames;
+
+exports.thoigian = (from_date, to_date) => {
+    if (!to_date){
+        to_date = new Date()
+    }else{
+        to_date = new Date(to_date)
+    }
+    if (!from_date) from_date = new Date(to_date.getTime() - 15 * 24 * 60 * 60 * 1000)
+    let from = new Date(from_date).getTime();
+    let to = new Date(to_date).getTime();
+    let songay = (to - from) / (1000 * 60 * 60 * 24);
+    return songay
+}
+
