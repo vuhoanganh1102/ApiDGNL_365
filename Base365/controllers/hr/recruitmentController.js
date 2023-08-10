@@ -1295,8 +1295,6 @@ exports.checkDataProcess = async(req, res, next) => {
         let beforeProcess = 0; //id giai doan mac dinh phia truoc 1, 2, 3, 4
         if(processBefore!=1 && processBefore!=2 && processBefore!=3 && processBefore!=4){
             let process = await ProcessInterview.findOne({id: processBefore, comId: comId});
-            if(!process) return functions.setError(res, `Process not found!`, 405);
-
             if(process && process.beforeProcess!=0){
                 beforeProcess = process.beforeProcess;
             }
