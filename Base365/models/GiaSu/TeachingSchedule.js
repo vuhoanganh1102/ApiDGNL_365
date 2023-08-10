@@ -9,26 +9,28 @@ const teaching_schedule = new mongoose.Schema({
 
     },
     ugs_id : {
+        //id gia sư
         type : Number,
 
     },
     pft_id : {
+        //id đăng tin tìm gia sư
         type : Number,
 
     },
     morning : {
         //truyền từ 2 - 8 tương ứng sáng từ t2-CN
-        type : Number,
+        type : String,
 
     },
     afternoon : {
           //truyền từ 2 - 8 tương ứng chiều từ t2-CN
-        type : Number,
+        type : String,
 
     },
     evening : {
           //truyền từ 2 - 8 tương ứng tối từ t2-CN
-        type : Number,
+        type : String,
 
     },
     // st2 : {
