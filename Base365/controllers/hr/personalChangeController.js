@@ -284,8 +284,8 @@ exports.getListTranferJob = async(req, res, next) => {
             infoTransfer.note = listTranferJob[i].note;
             infoTransfer.mission = listTranferJob[i].mission;
 
-            infoTransfer.userName = infoUser.userName;
             if(infoUser && infoUser.inForPerson.employee) {
+                infoTransfer.userName = infoUser.userName;
                 
                 let new_com_id = infoUser.inForPerson.employee.com_id;
                 let new_dep = infoUser.inForPerson.employee.dep_id;
@@ -342,8 +342,6 @@ exports.getListTranferJob = async(req, res, next) => {
                 }
 
                 dataTranferJob.push(infoTransfer);
-            }else {
-                return functions.setError(res, "Khong tim thay thong tin nhan vien!", 405);
             }
         }
         return functions.success(res, "Get list appoint success", {totalCount: totalCount, data: dataTranferJob });
