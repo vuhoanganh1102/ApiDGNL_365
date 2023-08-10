@@ -155,9 +155,7 @@ exports.update = async (req, res) => {
         share_group_child,
         dep_id,
         emp_id,
-        emp_id_share
     } = req.body;
-
     if (name && gr_id) {
             // Kiểm tra sự tồn tại của nhóm khách hàng
             const check = await Customer_group.findOne({ gr_name: name, gr_id: gr_id });
@@ -166,8 +164,8 @@ exports.update = async (req, res) => {
             }
 
             // Cập nhật nhóm khách hàng
-            const updatedGroup = await Customer_group.findByIdAndUpdate(
-                gr_id,
+            const updatedGroup = await Customer_group.findOneAndUpdate(
+               {gr_id : gr_id},
                 {
                     gr_name: name,
                     gr_description: description,
@@ -181,7 +179,7 @@ exports.update = async (req, res) => {
 
             if (updatedGroup) {
                 // Chia sẻ nhóm khách hàng con
-                if (group_parent === 0 && share_group_child === 1) {
+                if (updatedGroup.group_parent === 0 && share_group_child === 1) {
                     // Lấy danh sách nhóm khách hàng con
                     const list_gr_child = await Customer_group.find({ company_id: company_id, group_parent: gr_id, is_delete: 0 });
 

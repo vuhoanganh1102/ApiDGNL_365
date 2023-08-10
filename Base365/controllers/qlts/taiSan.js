@@ -129,6 +129,7 @@ exports.showAll = async (req, res) => {
           tinh_trang_su_dung: { $first: '$ts_trangthai' },
           don_vi_quan_ly: { $first: '$id_dv_quanly' },
           vi_tri_tai_san: { $first: { $arrayElemAt: ["$name_vitri.vi_tri", 0] } },
+          id_vi_tri : { $first: { $arrayElemAt: ["$name_vitri.id_vitri", 0] } }
         },
       },
       {

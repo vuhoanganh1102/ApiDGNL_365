@@ -50,10 +50,8 @@ exports.validateImage = async (logo) => {
 
   if (!validExtensions.includes(fileExtension)) {
     return { isValid: false, message: 'Định dạng ảnh không hợp lệ. Chỉ hỗ trợ định dạng JPEG, JPG, PNG, GIF và BMP.' };
+    
   }
-
-  // Thực hiện kiểm tra kích thước ảnh và các yêu cầu khác nếu cần
-
   return  true ;
 };
 
@@ -147,9 +145,6 @@ function isInvalidDateRange(time_s, time_e) {
 exports.validateCustomerInput = (name,comId) => {
     if (!name) {
       throw { code: 400, message: 'Tên khách hàng là bắt buộc.' };
-    }
-    else if(!comId){
-      throw {code : 4000 , message : "company_id không được bỏ trống"} 
     }
     return true;
   };

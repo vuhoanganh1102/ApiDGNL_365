@@ -2,7 +2,7 @@
 const mongoose = require('mongoose')
 
 
-const AppointmentSchedule = new mongoose.Schema({
+const CRM_AppointmentSchedule = new mongoose.Schema({
     _id: {
         //id 
         type: Number,
@@ -69,4 +69,4 @@ const AppointmentSchedule = new mongoose.Schema({
 
 });
 
-module.exports = mongoose.model('AppointmentSchedule', AppointmentSchedule);
+module.exports = mongoose.model('CRM_AppointmentSchedule', CRM_AppointmentSchedule);
