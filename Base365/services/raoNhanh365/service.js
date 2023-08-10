@@ -596,13 +596,6 @@ exports.getDataNewDetail = async (objectarr, cate) => {
     return objectarr
 }
 
-// hàm lấy tên mặt hàng cho danh mục
-exports.cateDetail = async (cateID, item, id) => {
-
-
-
-}
-
 exports.switchCase = (item) => {
     switch (item) {
         case 'microprocessor':
