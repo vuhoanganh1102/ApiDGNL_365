@@ -1,5 +1,7 @@
 // check ảnh và video
 const fs = require('fs');
+
+const fsPromises = require('fs/promises');
 // upload file
 const multer = require('multer')
 
@@ -398,7 +400,7 @@ exports.checkToken = (req, res, next) => {
 // ham check admin rao nhanh 365
 exports.isAdminRN365 = async(req, res, next) => {
     let user = req.user.data;
-    let admin = await functions.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, active: 1 });
+    let admin = await exports.getDatafindOne(AdminUserRaoNhanh365, { _id: user._id, active: 1 });
     if (admin) return next();
     return res.status(403).json({ message: "is not admin RN365" });
 }
@@ -802,8 +804,14 @@ exports.getMaxUserID = async(type = "user") => {
     if (maxIdRN365) {
         _idRN365 = Number(maxIdRN365.idRaoNhanh365) + 1;
     } else _idRN365 = 1;
+    
+    // ID GiaSu
+    const maxIdGiaSu = await Users.findOne(condition, { idGiaSu: 1 }).sort({ idGiaSu: -1 }).lean() ;
+    if (maxIdGiaSu) {
+        _idGiaSu = Number(maxIdGiaSu.idGiaSu) + 1 || 1;
+    } else _idGiaSu = 1;
 
-    return { _id, _idTV365, _idQLC, _idRN365 }
+    return { _id, _idTV365, _idQLC, _idRN365, _idGiaSu }
 }
 
 const hostImage = () => {
@@ -1040,4 +1048,29 @@ exports.renderAlias = (text) => {
 
 exports.fileType = (file) => {
     return file.originalFilename.split('.').pop()
+}
+
+
+exports.uploadLicense = async(userId, file) => {
+    try {
+        const timestamp = Date.now();
+        const data = await fsPromises.readFile(file.path);
+        const parentDir = path.resolve(process.cwd(), '..');
+        const uploadDir = path.join(parentDir, `/storage/base365/timviec365/license/${userId}`);
+        const uploadFileName = `${timestamp}_${file.originalFilename}`;
+        const uploadPath = path.join(uploadDir, uploadFileName);
+        await fsPromises.mkdir(uploadDir, { recursive: true });
+        await fsPromises.writeFile(uploadPath, data);
+
+        return uploadFileName;
+
+
+    } catch (error) {
+        console.log(error)
+        return null;
+    }
+}
+
+exports.getLicenseURL = async(userId, filename) => {
+    return `${process.env.cdn}/timviec365/license/${userId}/${filename}`
 }

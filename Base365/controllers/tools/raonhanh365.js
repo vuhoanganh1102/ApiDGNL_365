@@ -31,6 +31,8 @@ const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
 const loveNew = require('../../models/Raonhanh365/LoveNews');
 const NetworkOperator = require('../../models/Raonhanh365/NetworkOperator');
+const CateVl = require('../../models/Raonhanh365/CateVl');
+const Keyword = require('../../models/Raonhanh365/Keywords');
 
 // danh mục sản phẩm
 exports.toolCategory = async (req, res, next) => {
@@ -137,7 +139,7 @@ exports.toolNewRN = async (req, res, next) => {
                     const images = data[i].new_image.split(";").map((image, index) => {
                         const parts = image.split("/");
 
-                        const filename = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/' + parts[parts.length - 2] + '/' + data[i].new_id + '/' + parts[parts.length - 1];
+                        const filename = parts[parts.length - 1];
 
                         return {
                             nameImg: filename
@@ -246,21 +248,21 @@ exports.updateNewDescription = async (req, res, next) => {
                     let new_file_nophs = null;
                     let new_file_chidan = null;
                     if (data[i].new_file_dthau && data[i].new_file_dthau != 0) {
-                        new_file_dthau = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_dthau.split('/')[1];
+                        new_file_dthau = data[i].new_file_dthau.split('/')[1];
                     }
                     if (data[i].new_file_nophs && data[i].new_file_nophs != 0) {
-                        new_file_nophs = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_nophs.split('/')[1];
+                        new_file_nophs = data[i].new_file_nophs.split('/')[1];
 
                     }
                     if (data[i].new_file_chidan && data[i].new_file_chidan != 0) {
-                        new_file_chidan = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_chidan.split('/')[1];
+                        new_file_chidan = data[i].new_file_chidan.split('/')[1];
 
                     }
 
                     if (post != null) {
                         await New.updateOne({ _id: idnew }, {
                             $set: {
-
+                                'brand':data[i].hang,
                                 'han_su_dung': data[i].han_su_dung,
                                 'poster': data[i].canhan_moigioi,
                                 'description': data[i].new_description,
@@ -368,8 +370,8 @@ exports.updateNewDescription = async (req, res, next) => {
                                 'com_address_num': data[i].com_address_num,
                                 'bidding.han_bat_dau': data[i].han_bat_dau,
                                 'bidding.han_su_dung': data[i].han_su_dung,
-                                tgian_bd: data[i].tgian_bd,
-                                tgian_kt: data[i].tgian_kt,
+                                'tgian_bd': data[i].tgian_bd,
+                                'tgian_kt': data[i].tgian_kt,
                                 'bidding.new_job_kind': data[i].new_job_kind,
                                 'bidding.new_file_dthau': new_file_dthau,
                                 'bidding.noidung_nhs': data[i].noidung_nhs,
@@ -421,10 +423,7 @@ exports.toolCateDetail = async (req, res, next) => {
             //             _id: data[i].id,
             //             name: data[i].name,
             //         };
-
-
             //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { productGroup: newItem } }, { upsert: true },)
-
             //     }
             //     page++;
             // } else {
@@ -500,11 +499,9 @@ exports.toolCateDetail = async (req, res, next) => {
             //             name: data[i].giong_thucung,
             //             parent: data[i].id_cha,
             //         };
-            //         if (data[i].id_danhmuc == 0) {
-            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { petPurebred: newItem } }, { upsert: true },)
-            //         } else {
-            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { petPurebred: newItem } }, { upsert: true },)
-            //         }
+
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { petPurebred: newItem } }, { upsert: true },)
+
             //     }
             //     page++;
             // } else {
@@ -526,15 +523,12 @@ exports.toolCateDetail = async (req, res, next) => {
             //             name: data[i].contents_name,
             //             type: data[i].type,
             //         };
-
             //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { petInfo: newItem } }, { upsert: true },)
-
             //     }
             //     page++;
             // } else {
             //     result = false;
             // }
-
             // 6. xuất sứ
             // const response = await axios.post('https://raonhanh365.vn/api/select_ds_xuatxu.php', form, {
             //     headers: {
@@ -550,6 +544,7 @@ exports.toolCateDetail = async (req, res, next) => {
             //             name: data[i].noi_xuatxu,
             //             parent: data[i].id_parents,
             //         };
+            //          await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { origin: newItem } }, { upsert: true },)
 
             //     }
             //     page++;
@@ -565,7 +560,6 @@ exports.toolCateDetail = async (req, res, next) => {
             // });
             // let data = response.data.data.items;
             // if (data.length) {
-
             //     for (let i = 0; i < data.length; i++) {
             //         const newItem = {
             //             _id: data[i].id_dl,
@@ -573,11 +567,7 @@ exports.toolCateDetail = async (req, res, next) => {
             //             type: data[i].phan_loai,
             //             parent: data[i].id_cha,
             //         };
-            //         if (data[i].id_danhmuc == 0) {
-            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { capacity: newItem } }, { upsert: true },)
-            //         } else {
-            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { capacity: newItem } }, { upsert: true },)
-            //         }
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { capacity: newItem } }, { upsert: true },)
             //     }
             //     page++;
             // } else {
@@ -600,11 +590,8 @@ exports.toolCateDetail = async (req, res, next) => {
             //             type: data[i].phan_loai,
             //             parent: data[i].id_cha,
             //         };
-            //         if (data[i].id_danhmuc == 0) {
-            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { screen: newItem } }, { upsert: true },)
-            //         } else {
-            //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { screen: newItem } }, { upsert: true },)
-            //         }
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { screen: newItem } }, { upsert: true },)
+
             //     }
             //     page++;
             // } else {
@@ -714,9 +701,14 @@ exports.toolCateDetail = async (req, res, next) => {
             //             name: data[i].ten_hang,
             //             parent: data[i].id_parent,
             //         };
-            //         if (data[i].id_danhmuc == 0) {
+            //         if (data[i].id_parent == 150 ||
+            //             data[i].id_parent == 152 ||
+            //             data[i].id_parent == 153 ||
+            //             data[i].id_parent == 154) {
+            //             await CateDetail.findOneAndUpdate({ _id: 61 }, { $addToSet: { brand: newItem } }, { upsert: true },)
+            //         }else if(data[i].id_danhmuc == 0){
             //             await CateDetail.findOneAndUpdate({ _id: data[i].id_parent }, { $addToSet: { brand: newItem } }, { upsert: true },)
-            //         } else {
+            //         }else{
             //             await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { brand: newItem } }, { upsert: true },)
             //         }
             //     }
@@ -726,26 +718,26 @@ exports.toolCateDetail = async (req, res, next) => {
             // }
 
             //14. dòng ( dòng của hãng)
-            const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_dong.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
 
-            let data = response.data.data.items;
-            if (data.length) {
-                for (let i = 0; i < data.length; i++) {
-                    const newItem = {
-                        _id: data[i].id,
-                        name: data[i].ten_dong,
-                    };
-                    await CateDetail.findOneAndUpdate({ "brand": { $elemMatch: { "_id": data[i].id_hang } } }, { $push: { "brand.$.line": newItem } }, { new: true });
+            // let data = response.data.data.items;
+            // if (data.length) {
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].ten_dong,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ "brand": { $elemMatch: { "_id": data[i].id_hang } } }, { $push: { "brand.$.line": newItem } }, { new: true });
 
-                }
-                page++;
-            } else {
-                result = false;
-            }
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
 
             // 15. tầng phòng
             // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_tangphong.php', form, {
@@ -793,30 +785,26 @@ exports.toolCateDetail = async (req, res, next) => {
 
 
             //17. loại chung
-            //             const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
-            //                 headers: {
-            //                     'Content-Type': 'multipart/form-data',
-            //                 },
-            //             });
-            //             let data = response.data.data.items;
-            //             if (data.length) {
+            // const response = await axios.post('https://raonhanh365.vn/api/select_tbl_loaichung.php', form, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data',
+            //     },
+            // });
+            // let data = response.data.data.items;
+            // if (data.length) {
 
-            //                 for (let i = 0; i < data.length; i++) {
-            //                     const newItem = {
-            //                         _id: data[i].id,
-            //                         name: data[i].ten_loai,
-            //                         parent: data[i].id_cha,
-            //                     };
-            //  if (data[i].id_danhmuc == 0) {
-            //                         await CateDetail.findOneAndUpdate({ _id: data[i].id_cha }, { $addToSet: { allType: newItem } }, { upsert: true },)
-            //                     } else {
-            //                         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true },)
-            //                     }
-            //                 }
-            //                 page++;
-            //             } else {
-            //                 result = false;
-            //             }
+            //     for (let i = 0; i < data.length; i++) {
+            //         const newItem = {
+            //             _id: data[i].id,
+            //             name: data[i].ten_loai,
+            //             parent: data[i].id_cha,
+            //         };
+            //         await CateDetail.findOneAndUpdate({ _id: data[i].id_danhmuc }, { $addToSet: { allType: newItem } }, { upsert: true },)
+            //     }
+            //     page++;
+            // } else {
+            //     result = false;
+            // }
 
             console.log(page);
         } while (result);
@@ -2309,6 +2297,63 @@ exports.toolbanggiacknt = async (req, res, next) => {
                 await loveNew1.save();
             }
         }
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
+
+exports.toolkeyword = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_keyword.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const loveNew1 = new Keyword({
+                        key_id: data[i].key_id,
+                        key_name: data[i].key_name,
+                        key_lq: data[i].key_lq,
+                        key_cate_id: data[i].key_cate_id,
+                        key_city_id: data[i].key_city_id,
+                        key_qh_id: data[i].key_qh_id,
+                        key_city_id: data[i].key_city_id,
+                        key_cb_id: data[i].key_cb_id,
+                        key_teaser: data[i].key_teaser,
+                        key_type: data[i].key_type,
+                        key_err: data[i].key_err,
+                        key_qh_kcn: data[i].key_qh_kcn,
+                        key_cate_lq: data[i].key_cate_lq,
+                        key_tit: data[i].key_tit,
+                        key_desc: data[i].key_desc,
+                        key_key: data[i].key_key,
+                        key_h1: data[i].key_h1,
+                        key_time: data[i].key_time,
+                        key_301: data[i].key_301,
+                        key_index: data[i].key_index,
+                        key_bao_ham: data[i].key_bao_ham,
+                        key_tdgy: data[i].key_tdgy,
+                        key_ndgy: data[i].key_ndgy,
+                    });
+                    await loveNew1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
         return fnc.success(res, "Thành công");
     } catch (error) {
         return fnc.setError(res, error.message);

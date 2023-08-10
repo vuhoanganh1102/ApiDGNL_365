@@ -66,8 +66,18 @@ const PriceListSchema = new mongoose.Schema({
     bg_hp: {
         type: Number
     },
+    /**
+     * 4: Thương hiệu
+     * 1: Hấp dẫn
+     * 5: Tuyển gấp
+     * 6: Trang ngành
+     */
     bg_type: {
         type: String
+    },
+    bg_vip_duration: {
+        type: Number,
+        default: 0
     },
     bg_ql_hd: {
         type: String

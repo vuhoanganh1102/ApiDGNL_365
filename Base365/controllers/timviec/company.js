@@ -15,7 +15,7 @@ const CV = require('../../models/Timviec365/CV/Cv365')
 const TagBlog = require('../../models/Timviec365/Blog/TagBlog');
 const CompanyStorage = require('../../models/Timviec365/UserOnSite/Company/Storage');
 const PermissionNotify = require('../../models/Timviec365/PermissionNotify');
-
+const CreditController = require('./credits')
 
 // Load service
 const service = require('../../services/timviec365/company');
@@ -569,17 +569,41 @@ exports.updateInfor = async(req, res, next) => {
             mst = request.thue,
             tagLinhVuc = request.tagLinhVuc,
             usc_video_link = request.usc_video_link,
-            chat365_id = request.chat365_id,
-            scan_base365 = request.scan_base365,
-            check_chat = request.check_chat,
-            usc_star = request.usc_star,
-            usc_cc365 = request.usc_cc365,
-            usc_crm = request.usc_crm,
             usc_images = request.usc_images,
-            usc_active_img = request.usc_active_img,
             usc_manager = request.usc_manager,
-            usc_license = request.usc_license,
-            usc_active_license = request.usc_active_license;
+            usc_skype = request.usc_skype,
+            usc_zalo = request.usc_zalo,
+            usc_website = request.usc_website,
+            //Quy mô công ty
+            usc_size = request.usc_size,
+            //Thời gian thành lập
+            usc_founded_time = request.usc_founded_time,
+            /**
+             * Mảng chứa data add chi nhánh.
+             * VD: [
+             * {
+             *  usc_branch_cit: 1,
+             *  usc_branch_qh: 2,
+             *  usc_branch_address: "Hai Ba Trung"
+             * }, ...
+             * ]
+             * */
+            usc_branches_add = request.usc_branches_add,
+            /**
+             * Mảng chứa data edit chi nhánh. Chỉ thêm những trường muốn edit, bắt buộc có _id
+             * VD: [
+             * {
+             *  _id: "64d04ce1b0671c0154f00b53",
+             *  usc_branch_cit: 1,
+             *  usc_branch_qh: 2,
+             *  usc_branch_address: "Hai Ba Trung"
+             * }, ...
+             * ]
+             * */
+            usc_branches_edit = request.usc_branches_edit,
+            //Mảng chứa _id để xóa chi nhánh. VD: ["64d04ce1b0671c0154f00b53", "64d04ce1b0671c0154f00b54"]
+            usc_branches_delete = request.usc_branches_delete;
+
         if (phone && userCompany && city && district && address) {
             let checkPhone = await functions.checkPhoneNumber(phone);
             const now = functions.getTimeNow();
@@ -591,33 +615,84 @@ exports.updateInfor = async(req, res, next) => {
                     'city': city,
                     'district': district,
                     'address': address,
-                    'chat365_id': chat365_id,
-                    'scan_base365': scan_base365,
-                    'check_chat': check_chat,
                     'inForCompany.timviec365.usc_mst': mst || null,
                     "inForCompany.timviec365.usc_lv": tagLinhVuc,
-                    "inForCompany.timviec365.usc_star": usc_star,
-                    "inForCompany.timviec365.usc_cc365": usc_cc365,
-                    "inForCompany.timviec365.usc_crm": usc_crm,
                     "inForCompany.timviec365.usc_images": usc_images,
-                    "inForCompany.timviec365.usc_active_img": usc_active_img,
                     "inForCompany.timviec365.usc_manager": usc_manager,
-                    "inForCompany.timviec365.usc_license": usc_license,
-                    "inForCompany.timviec365.usc_active_license": usc_active_license,
+                    "inForCompany.timviec365.usc_skype": usc_skype,
+                    "inForCompany.timviec365.usc_zalo": usc_zalo,
+                    "inForCompany.timviec365.usc_website": usc_website,
+                    "inForCompany.timviec365.usc_size": usc_size,
                 };
+
+                let pull = {};
+                let push = {};
 
                 if (usc_video_link) {
                     dataUpdate["inForCompany.timviec365.usc_video"] = usc_video_link;
                     dataUpdate["inForCompany.timviec365.usc_video_type"] = 2;
                 }
+
+                if (usc_founded_time) {
+                    dataUpdate["inForCompany.timviec365.usc_founded_time"] = (new Date(usc_founded_time)).getTime()/1000;
+                }
+                
+                let Files = req.files || null;
+                if (Files&&Files.usc_license) {
+                    let license = await functions.uploadLicense(idTimViec365, Files.usc_license);
+                    dataUpdate["inForCompany.timviec365.usc_license"] = license;
+                }
+
+                if (usc_branches_delete&&usc_branches_delete.length) {
+                    if (typeof usc_branches_delete === "string") {
+                        //Trong trường hợp chỉ có 1 giá trị id
+                        usc_branches_delete = [usc_branches_delete];
+                    } 
+                    pull["inForCompany.timviec365.usc_branches"] = {_id:{$in: [...usc_branches_delete]}};
+                }
+
+                if (usc_branches_add&&usc_branches_add.length) {
+                    //Map lại để lọc trường, tránh việc thêm sai trường
+                    push["inForCompany.timviec365.usc_branches"] = {
+                        $each: usc_branches_add.map(data => ({
+                            usc_branch_cit: data.usc_branch_cit,
+                            usc_branch_qh: data.usc_branch_qh,
+                            usc_branch_address: data.usc_branch_address,
+                            usc_branch_time: functions.getTimeNow()
+                        }))}
+                }
+
+                if (usc_branches_edit&&usc_branches_edit.length) {
+                    let promises = [];
+                    usc_branches_edit.forEach(payload => {
+                        if (payload._id) {
+                            promises.push(
+                                Users.updateOne(
+                                    { _id: companyID, "inForCompany.timviec365.usc_branches._id": payload._id },
+                                    { $set: {
+                                        "inForCompany.timviec365.usc_branches.$.usc_branch_cit": payload.usc_branch_cit,
+                                        "inForCompany.timviec365.usc_branches.$.usc_branch_qh": payload.usc_branch_qh,
+                                        "inForCompany.timviec365.usc_branches.$.usc_branch_address": payload.usc_branch_address
+                                    } }
+                                )
+                            )
+                        }
+                    });
+                    //
+                    await Promise.all(promises);
+                }
+
                 await Users.updateOne({ _id: companyID }, {
-                    $set: dataUpdate
+                    $set: dataUpdate,
+                    $pull: pull,
+                    $push: push
                 });
+                
 
 
                 // Cập nhật quyền
                 const list_permission = req.body.list_permission;
-                if (list_permission != '' && list_permission.length > 0) {
+                if (list_permission && list_permission != '' && list_permission.length > 0) {
                     const array_list_permission = JSON.parse(list_permission);
                     for (let i = 0; i < array_list_permission.length; i++) {
                         const element = array_list_permission[i];
@@ -663,7 +738,7 @@ exports.updateInfor = async(req, res, next) => {
 
                 // Xóa các quyền bị loại bỏ
                 const list_permission_rm = req.body.list_permission_rm;
-                if (list_permission_rm != '') {
+                if (list_permission_rm&&list_permission_rm != '') {
                     const array_list_permission_rm = list_permission_rm.split(',').map(Number);
                     for (let k = 0; k < array_list_permission_rm.length; k++) {
                         const pn_id_chat = array_list_permission_rm[k];
@@ -857,6 +932,10 @@ exports.getDataCompany = async(req, res, next) => {
     try {
         let id = req.user.data.idTimViec365;
         let user = await functions.getDatafindOne(Users, { idTimViec365: id, type: 1 });
+        if (user.inForCompany.timviec365.usc_license) {
+            user.inForCompany.timviec365.usc_license =
+                functions.getLicenseURL(id, user.inForCompany.timviec365.usc_license);
+        }
         if (user) {
             return functions.success(res, 'lấy thông tin thành công', user)
         }
@@ -1170,7 +1249,7 @@ exports.seenUVWithPoint = async(req, res, next) => {
     try {
         let idCompany = req.user.data.idTimViec365;
         let idUser = req.body.useID;
-        let point = 0;
+        let type_payment = req.body.type_payment?req.body.type_payment:0;
         if (idUser) {
             // Kiểm tra xem đã mất điểm hay chưa
             const checkUsePoint = await functions.getDatafindOne(PointUsed, {
@@ -1180,30 +1259,56 @@ exports.seenUVWithPoint = async(req, res, next) => {
 
             // Nếu chưa mất điểm thì xử lý
             if (!checkUsePoint) {
+                // point - money
                 // Lấy điểm hiện tại của ntd xem còn điểm không
                 let companyPoint = await functions.getDatafindOne(PointCompany, { usc_id: idCompany });
                 if (companyPoint) {
-                    let pointUSC = companyPoint.point_usc;
-                    if (pointUSC > 0) {
-                        pointUSC = pointUSC - 1;
-                        await PointCompany.updateOne({ usc_id: idCompany }, {
-                            $set: {
-                                pointUSC: pointUSC,
-                            }
-                        });
-                        const pointUsed = new PointUsed({
-                            usc_id: idCompany,
-                            use_id: idUser,
-                            point: 1,
-                            type: 1,
-                            used_day: functions.getTimeNow(),
-                            check_from: 1
-                        })
-                        await pointUsed.save();
-
-                        return functions.success(res, "Mở điểm ứng viên thành công");
+                    //Luồng xử lý điểm
+                    if (type_payment === 0) {
+                        let pointUSC = companyPoint.point_usc;
+                        if (pointUSC > 0) {
+                            pointUSC = pointUSC - 1;
+                            await PointCompany.updateOne({ usc_id: idCompany }, {
+                                $set: {
+                                    pointUSC: pointUSC,
+                                }
+                            });
+                            const pointUsed = new PointUsed({
+                                usc_id: idCompany,
+                                use_id: idUser,
+                                point: 1,
+                                type: 1,
+                                used_day: functions.getTimeNow(),
+                                check_from: 1
+                            })
+                            await pointUsed.save();
+    
+                            return functions.success(res, "Mở điểm ứng viên thành công");
+                        }
+                        return functions.setError(res, "Bạn đã hết điểm để sử dụng", 200)
+                    } else if (type_payment === 1) {
+                        let money_usc = companyPoint.money_usc;
+                        const _price = 30000;
+                        if (money_usc >= _price) {
+                            await CreditController.useCreditsHandler(idCompany, _price);
+                            const pointUsed = new PointUsed({
+                                usc_id: idCompany,
+                                use_id: idUser,
+                                money: _price,
+                                type: 1,
+                                //Kiểu thanh toán: 1: Tiền, mặc định là 0: Điểm
+                                type_payment: 1,
+                                used_day: functions.getTimeNow(),
+                                check_from: 1
+                            })
+                            await pointUsed.save();
+    
+                            return functions.success(res, "Mở điểm ứng viên thành công");
+                        }
+                        return functions.setError(res, "Bạn đã hết tiền để sử dụng", 200)
+                    } else {
+                        return functions.setError(res, "Không tồn tại phương thức thanh toán này!", 200)
                     }
-                    return functions.setError(res, "Bạn đã hết điểm để sử dụng", 200)
                 }
                 return functions.setError(res, 'nhà tuyển dụng không có điểm', 200);
             }
@@ -1822,6 +1927,13 @@ exports.getDetailInfoCompany = async(req, res, next) => {
                     "usc_video_type": "$inForCompany.timviec365.usc_video_type",
                     "usc_xac_thuc": "$otp",
                     "usc_kd": "$inForCompany.usc_kd",
+                    "usc_license":"$inForCompany.timviec365.usc_license",
+                    "usc_images": "$inForCompany.timviec365.usc_images",
+                    "usc_manager": "$inForCompany.timviec365.usc_manager",
+                    "usc_skype": "$inForCompany.timviec365.usc_skype",
+                    "usc_zalo": "$inForCompany.timviec365.usc_zalo",
+                    "usc_founded_time": "$inForCompany.timviec365.usc_founded_time",
+                    "usc_branches": "$inForCompany.timviec365.usc_branches",
                     "idQLC": "$idQLC",
                 }
             }]);
@@ -1830,6 +1942,9 @@ exports.getDetailInfoCompany = async(req, res, next) => {
 
                 // Xử lý ảnh đại diện
                 company.usc_logo = functions.getUrlLogoCompany(company.usc_create_time, company.usc_logo);
+
+                company.usc_license = functions.getLicenseURL(idCompany, company.usc_license);
+                
                 // Lấy danh sách tin tuyển dụng của cty
                 const listNew = await NewTV365.find({
                         $or: [

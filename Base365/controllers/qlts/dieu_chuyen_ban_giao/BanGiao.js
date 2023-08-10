@@ -30,10 +30,16 @@ exports.list = async (req, res) => {
         let transferObject = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0,dc_type :1}).count()
         let transferManagerUnit = await DieuChuyen.find({id_cty: id_cty ,xoa_dieuchuyen : 0, dc_type :2}).count()
         if(dem_bg)  data.push({dem_bg: dem_bg})
+        else  data.push({dem_bg: 0})
         if(transferLocate)  data.push({transferLocate: transferLocate})
+        else  data.push({transferLocate: 0})
+
         if(transferObject) data.push({transferObject: transferObject})
+        else  data.push({transferObject: 0})
+
         if(transferManagerUnit) data.push({transferManagerUnit: transferManagerUnit})
-        console.log(listConditions)
+        else  data.push({transferManagerUnit: 0})
+
         //query find user hand over 
 
         // let allocation = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
@@ -173,7 +179,6 @@ exports.listDetailAllocation = async (req, res) => {
         cond.id_cty = id_cty
         cond.id_ng_thuchien = id_ng_thuchien
         if(cp_id)cond.cp_id = cp_id
-        console.log(cond)
         let data = await capPhat.aggregate([
             {$match: cond},
             {$skip : skip },
@@ -210,7 +215,7 @@ exports.listDetailAllocation = async (req, res) => {
         if(data){
             return fnc.success(res, " lấy thành công ",{data})
         }
-        return fnc.setError(res, "không tìm thấy đối tượng", 510);
+        return fnc.setError(res, "không tìm thấy đối tượng");
     }
     return fnc.setError(res, "vui lòng nhập id_ng_thuchien ");
 
@@ -232,7 +237,6 @@ exports.listDetailRecall = async (req, res) => {
         cond.id_cty = id_cty
         cond.id_ng_thuhoi = id_ng_thuhoi
         if(thuhoi_id)cond.thuhoi_id = thuhoi_id
-        console.log(cond)
         let    data = await ThuHoi.aggregate([
             {$match: cond},
             {$skip : skip },

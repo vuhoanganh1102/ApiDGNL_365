@@ -6,7 +6,7 @@ const md5 = require("md5")
 //đăng kí tài khoản cá nhân 
 exports.register = async(req, res) => {
     try {
-        const { userName, password, phoneTK, address, phone, fromWeb } = req.body
+        const { userName, password, phoneTK, address, phone, ugs_ft } = req.body
         const createdAt = new Date()
         if (userName && password && phoneTK && address) {
             let checkPhone = await functions.checkPhoneNumber(phoneTK);
@@ -29,11 +29,13 @@ exports.register = async(req, res) => {
                         idQLC: MaxId._idQLC,
                         idTimViec365: MaxId._idTV365,
                         idRaoNhanh365: MaxId._idRN365,
+                        idGiaSu: MaxId._idGiaSu,
                         "inForPerson.account.birthday": null,
                         "inForPerson.account.gender": 0,
                         "inForPerson.account.married": 0,
                         "inForPerson.account.experience": 0,
                         "inForPerson.account.education": 0,
+                        "inforGiaSu.ugs_ft": ugs_ft,
                     })
                     await Inuser.save()
                     const token = await functions.createToken(Inuser, "1d")
@@ -132,7 +134,6 @@ exports.login = async(req, res, next) => {
                             access_token: token,
                             refresh_token: refreshToken,
                             com_info: {
-                                com_id: checkTypeUser._id,
                                 com_phone_tk: checkTypeUser.phoneTK,
                             }
                         }

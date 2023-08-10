@@ -6,7 +6,19 @@ const Modules = require('../../models/Timviec365/Admin/Modules');
 const functions = require('../../services/functions');
 const AdminUserRight = require('../../models/Timviec365/Admin/AdminUserRight');
 const AdminTranslate = require('../../models/Timviec365/Admin/AdminTranslate');
+const {recordCreditsHistory} = require("./credits");
+const PointCompany = require("../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany")
 
+const getIP = (req) => {
+    let forwardedIpsStr = req.header('x-forwarded-for');
+    let ip = '';
+    if (forwardedIpsStr) {
+        ip = forwardedIpsStr.split(',')[0];
+    } else {
+        ip = req.socket.remoteAddress 
+    }
+    return ip;
+}
 
 // Đăng nhập
 exports.login = async(req, res) => {
@@ -398,5 +410,43 @@ exports.candi_register = async(req, res) => {
     } catch (error) {
         console.log(error);
         return functions.setError(res, error);
+    }
+}
+
+exports.topupCredits = async (req, res) => {
+    try {
+        let {
+            usc_id,
+            amount
+        } = req.body;
+        let idAdmin = req.user.data._id;
+        let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
+        if (checkAdmin) {
+            if (usc_id&&amount) {
+                let company = await Users.findOne({idTimViec365: usc_id, type: 1});
+                if (company) {
+                    let doc = await PointCompany.findOne({usc_id});
+                    if (!doc) {
+                        doc = await (new PointCompany({
+                            usc_id: usc_id,
+                            money_usc: amount,
+                        })).save();
+                    } else {
+                        await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
+                    }
+                    await recordCreditsHistory(usc_id, 1, amount, null, getIP(req));
+                    return functions.success(res, "Nạp tiền thành công!")
+                } else {
+                    return functions.setError(res, "Không tồn tại công ty có ID này", 400);
+                }
+            } else {
+                return functions.setError(res, "Thiếu các trường cần thiết", 429);
+            }
+        } else {
+            return functions.setError(res, 'Bạn không có quyền thực hiện hành động này!', 403)
+        }
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error)
     }
 }

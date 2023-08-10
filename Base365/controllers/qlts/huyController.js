@@ -41,34 +41,35 @@ exports.createAssetProposeCancel = async (req, res, next) => {
                             huy_quyen_sd = 3
                             huy_ng_sd = huyquensudung.id_pb_sd;
                         }
+                        await Huy.create({
+                            huy_id,
+                            huy_taisan: tentshuy,
+                            id_ng_dexuat: id_ng_dexuat,
+                            id_cty: comId,
+                            id_ng_tao: id_ng_tao,
+                            huy_soluong: slhuy,
+                            huy_lydo: lydohuy,
+                            huy_type_quyen: type_quyen,
+                            huy_date_create: date,
+                            huy_ng_sd: huy_ng_sd,
+                            huy_quyen_sd: huy_quyen_sd,
+                        })
+                        let id_tb = await functions.getMaxIdByField(ThongBao, 'id_tb');
+                        await ThongBao.create({
+                            id_tb,
+                            id_cty: comId,
+                            id_ng_nhan: comId,
+                            id_ng_tao: id_ng_tao,
+                            type_quyen: 2,
+                            type_quyen_tao: type_quyen,
+                            loai_tb: 7,
+                            add_or_duyet: 1,
+                            da_xem: 0,
+                            date_create: date
+                        })
+                        return functions.success(res, 'Tạo đề xuất huỷ tài sản thành công')
                     }
-                    await Huy.create({
-                        huy_id,
-                        huy_taisan: tentshuy,
-                        id_ng_dexuat: id_ng_dexuat,
-                        id_cty: comId,
-                        id_ng_tao: id_ng_tao,
-                        huy_soluong: slhuy,
-                        huy_lydo: lydohuy,
-                        huy_type_quyen: type_quyen,
-                        huy_date_create: date,
-                        huy_ng_sd: huy_ng_sd,
-                        huy_quyen_sd: huy_quyen_sd,
-                    })
-                    let id_tb = await functions.getMaxIdByField(ThongBao, 'id_tb');
-                    await ThongBao.create({
-                        id_tb,
-                        id_cty: comId,
-                        id_ng_nhan: comId,
-                        id_ng_tao: id_ng_tao,
-                        type_quyen: 2,
-                        type_quyen_tao: type_quyen,
-                        loai_tb: 7,
-                        add_or_duyet: 1,
-                        da_xem: 0,
-                        date_create: date
-                    })
-                    return functions.success(res, 'Tạo đề xuất huỷ tài sản thành công')
+                    return functions.setError(res, 'Tài sản đang sử dụng không tồn tại', 400)
                 }
                 return functions.setError(res, 'Tài sản không tồn tại', 400)
             }
@@ -142,6 +143,8 @@ exports.getDataAssetProposeCancel = async (req, res, next) => {
             {
                 $project: {
                     sobienban: '$huy_id',
+                    huy_taisan : 1,
+                    huy_quyen_sd : 1,
                     ngaytao: '$huy_date_create',
                     trangthai: '$huy_trangthai',
                     mataisan: '$taiSan.ts_id',
@@ -209,6 +212,7 @@ exports.approveAssetDisposal = async (req, res, next) => {
         } else {
             var ng_duyet = emId;
         }
+        console.log(getData)
 
         if (getData) {
             let id_ng_nhan = getData.id_ng_tao;
@@ -233,7 +237,8 @@ exports.approveAssetDisposal = async (req, res, next) => {
                 da_xem: 0,
                 date_create: ngay_duyet
             })
-            if (getData.huy_taisan) {
+            // console.log(getData)
+            // if (getData) {
                 // nhân viên sử dụng
                 if (huy_quyen_sd === 2) {
                     let checkUpdate = await TaiSanDangSuDung.findOne(
@@ -327,9 +332,11 @@ exports.approveAssetDisposal = async (req, res, next) => {
                         return functions.setError(res, 'Số lượng huỷ lớn hơn số lượng hiện sử dụng', 400)
                     }
                     return functions.setError(res, 'Không tìm thấy tài sản đang sử dụng', 404)
+                }else {
+                    return functions.setError(res, "Không tìm thấy huy_quyen_sd ")
                 }
-            }
-            return functions.setError(res, 'Không tìm thấy tài sản ', 404)
+            // }
+            // return functions.setError(res, 'Không tìm thấy tài sản ', 404)
         }
         return functions.setError(res, 'Không tìm thấy tài sản đề xuất huỷ', 404)
     } catch (error) {
@@ -481,33 +488,37 @@ exports.detailAssetDisposal = async (req, res, next) => {
                     }
                 }
             ]);
-            data = data[0];
-            if (data.ngdexuat == 0 || data.ngdexuat == 2) {
-                link_url = '/tai-san-dx-huy.html';
-                name_link = 'Tài sản đề xuất hủy';
-            } else if (data.ngdexuat == 1 || data.ngdexuat == 3) {
-                link_url = '/dsts-da-huy.html';
-                name_link = 'Danh sách tài sản đã hủy';
+            if(data.length !== 0){
+                data = data[0];
+                if (data.ngdexuat == 0 || data.ngdexuat == 2) {
+                    link_url = '/tai-san-dx-huy.html';
+                    name_link = 'Tài sản đề xuất hủy';
+                } else if (data.ngdexuat == 1 || data.ngdexuat == 3) {
+                    link_url = '/dsts-da-huy.html';
+                    name_link = 'Danh sách tài sản đã hủy';
+                }
+                data.ngaytao = new Date(data.ngaytao * 1000)
+                let id_ng_tao = await Users.findOne({ _id: data.nguoitao }, { userName: 1, inForPerson: 1, address: 1 });
+                data.nguoitao = id_ng_tao.userName;
+                data.ngdexuat = id_ng_tao.userName;
+                data.link_url = link_url;
+                data.name_link = name_link;
+                if (data.vitri === 1 && id_ng_tao) {
+                    data.vitri = id_ng_tao.address;
+                    data.doi_tuong_sd = id_ng_tao.userName;
+                    data.phongban = '---'
+                } else if (id_ng_tao && id_ng_tao.inForPerson && id_ng_tao.inForPerson.employee) {
+                    let dep = await Department.findOne({ dep_id: id_ng_tao.inForPerson.employee.dep_id })
+                    data.doi_tuong_sd = id_ng_tao.userName;
+                    data.phongban = dep.dep_name;
+                    data.vitri = dep.dep_name;
+                }
+                return functions.success(res, 'get data success', { data })
             }
-            data.ngaytao = new Date(data.ngaytao * 1000)
-            let id_ng_tao = await Users.findOne({ _id: data.nguoitao }, { userName: 1, inForPerson: 1, address: 1 });
-            data.nguoitao = id_ng_tao.userName;
-            data.ngdexuat = id_ng_tao.userName;
-            data.link_url = link_url;
-            data.name_link = name_link;
-            if (data.vitri === 1 && id_ng_tao) {
-                data.vitri = id_ng_tao.address;
-                data.doi_tuong_sd = id_ng_tao.userName;
-                data.phongban = '---'
-            } else if (id_ng_tao && id_ng_tao.inForPerson && id_ng_tao.inForPerson.employee) {
-                let dep = await Department.findOne({ dep_id: id_ng_tao.inForPerson.employee.dep_id })
-                data.doi_tuong_sd = id_ng_tao.userName;
-                data.phongban = dep.dep_name;
-                data.vitri = dep.dep_name;
-            }
-            return functions.success(res, 'get data success', { data })
+        return functions.setError(res, 'can not get data')
+           
         }
-        return functions.setError(res, 'missing id', 400)
+        return functions.setError(res, 'missing id')
     } catch (error) {
         console.error(error)
         return functions.setError(res, error)

@@ -10,7 +10,7 @@ const ReportNews = require('../../models/Raonhanh365/NewReport');
 const NetworkOperator = require('../../models/Raonhanh365/NetworkOperator')
 const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
 
-const serviceRN = require('../../services/rao nhanh/raoNhanh');
+const serviceRN = require('../../services/raoNhanh365/service');
 const folderImg = "img_blog";
 const md5 = require('md5');
 const Cart = require("../../models/Raonhanh365/Cart");
@@ -24,7 +24,7 @@ const Language = require('../../models/Raonhanh365/Language');
 const TagIndex = require('../../models/Raonhanh365/TagIndex');
 
 //đăng nhập admin
-exports.loginAdminUser = async(req, res, next) => {
+exports.loginAdminUser = async (req, res, next) => {
     try {
         if (req.body.loginName && req.body.password) {
             const loginName = req.body.loginName
@@ -35,7 +35,7 @@ exports.loginAdminUser = async(req, res, next) => {
                 if (checkPassword) {
                     let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
                         date: new Date(Date.now())
-                    }, {new: true});
+                    }, { new: true });
                     const token = await functions.createToken(updateUser, "1d")
                     return functions.success(res, 'Đăng nhập thành công', { token: token })
                 }
@@ -49,20 +49,20 @@ exports.loginAdminUser = async(req, res, next) => {
     }
 }
 
-exports.changePasswordAdminLogin = async(req, res, next) => {
-    try{
+exports.changePasswordAdminLogin = async (req, res, next) => {
+    try {
         let idAdmin = req.infoAdmin._id;
-        let findUser = await AdminUser.findOne({_id: idAdmin});
-        if(findUser) {
+        let findUser = await AdminUser.findOne({ _id: idAdmin });
+        if (findUser) {
             const oldPass = req.body.oldPass;
             const newPass = req.body.newPass;
-            if(oldPass && newPass) {
+            if (oldPass && newPass) {
                 let checkPassword = await functions.verifyPassword(oldPass, findUser.password)
                 if (checkPassword) {
-                    let updatePassword = await AdminUser.findOneAndUpdate({_id: idAdmin}, {
+                    let updatePassword = await AdminUser.findOneAndUpdate({ _id: idAdmin }, {
                         password: md5(newPass),
-                    }, {new: true});
-                    if(updatePassword) {
+                    }, { new: true });
+                    if (updatePassword) {
                         return functions.success(res, "Update password success!");
                     }
                     return functions.setError(res, "Update password fail!", 407);
@@ -72,22 +72,22 @@ exports.changePasswordAdminLogin = async(req, res, next) => {
             return functions.setError(res, "Missing input value!", 405);
         }
         return functions.setError(res, "Admin not found!", 404);
-    }catch(error) {
+    } catch (error) {
         return functions.setError(res, error.message);
     }
 }
 
-exports.changeInfoAdminLogin = async(req, res, next) => {
-    try{
+exports.changeInfoAdminLogin = async (req, res, next) => {
+    try {
         let idAdmin = req.infoAdmin._id;
-        let findUser = await AdminUser.findOne({_id: idAdmin});
-        if(findUser) {
+        let findUser = await AdminUser.findOne({ _id: idAdmin });
+        if (findUser) {
             let email = req.body.email;
-            if(email) {
-                let updateInfo = await AdminUser.findOneAndUpdate({_id: idAdmin}, {
+            if (email) {
+                let updateInfo = await AdminUser.findOneAndUpdate({ _id: idAdmin }, {
                     email: email,
-                }, {new: true});
-                if(updateInfo) {
+                }, { new: true });
+                if (updateInfo) {
                     return functions.success(res, "Update info admin success!");
                 }
                 return functions.setError(res, "Update info admin fail!", 407);
@@ -95,21 +95,21 @@ exports.changeInfoAdminLogin = async(req, res, next) => {
             return functions.setError(res, "Admin not found!", 405);
         }
         return functions.setError(res, "Admin not found!", 404);
-    }catch(error) {
+    } catch (error) {
         return functions.setError(res, error.message);
     }
 }
 
-exports.getListAdminUser = async(req, res, next) => {
+exports.getListAdminUser = async (req, res, next) => {
     try {
-        let {idAdmin, page, pageSize} = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 10;
+        let { idAdmin, page, pageSize } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
-        let condition = {delete: 0};
+        let condition = { delete: 0 };
         if (idAdmin) condition._id = Number(idAdmin);
         let listAdminUser = await functions.pageFind(AdminUser, condition, { loginName: 1, active: -1 }, skip, limit);
 
@@ -124,12 +124,12 @@ exports.getListAdminUser = async(req, res, next) => {
             let arrAdminLanguage = [];
 
             for (let j = 0; j < adminUserRight.length; j++) {
-                let nameModule = await Module.findOne({_id: adminUserRight[j].moduleId}, {_id: 1, name: 1});
+                let nameModule = await Module.findOne({ _id: adminUserRight[j].moduleId }, { _id: 1, name: 1 });
                 arrIdModule.push(adminUserRight[j].moduleId);
-                if(nameModule) {
-                    if(arrNameModule != ""){
+                if (nameModule) {
+                    if (arrNameModule != "") {
                         arrNameModule = `${arrNameModule}, ${nameModule.name}`;
-                    }else {
+                    } else {
                         arrNameModule = nameModule.name;
                     }
                 }
@@ -137,20 +137,20 @@ exports.getListAdminUser = async(req, res, next) => {
                 arrRightEdit.push(adminUserRight[j].edit);
                 arrRightDelete.push(adminUserRight[j].delete);
             }
-            let adminLanguage = await AdminUserLanguagues.find({adminId: listAdminUser[i]._id});
+            let adminLanguage = await AdminUserLanguagues.find({ adminId: listAdminUser[i]._id });
             let nameLanguage = "";
-            for (let j=0; j<adminLanguage.length; j++) {
-                let nameL = await Language.findOne({_id: adminLanguage[j].langId});
-                if(nameL) {
-                    if(nameLanguage != "") nameLanguage = `${nameLanguage}, ${nameL.name}`;
+            for (let j = 0; j < adminLanguage.length; j++) {
+                let nameL = await Language.findOne({ _id: adminLanguage[j].langId });
+                if (nameL) {
+                    if (nameLanguage != "") nameLanguage = `${nameLanguage}, ${nameL.name}`;
                     else nameLanguage = nameL.name;
                 }
-                
+
             }
             let adminUser = listAdminUser[i];
-            let tmpOb = { adminUser, arrIdModule, arrNameModule, arrRightAdd, arrRightEdit, arrRightDelete, adminLanguage, nameLanguage};
+            let tmpOb = { adminUser, arrIdModule, arrNameModule, arrRightAdd, arrRightEdit, arrRightDelete, adminLanguage, nameLanguage };
             listAdminUser[i] = tmpOb;
-            
+
         }
         const totalCount = await functions.findCount(AdminUser, condition);
         return functions.success(res, "get list blog success", { totalCount: totalCount, data: listAdminUser });
@@ -159,24 +159,24 @@ exports.getListAdminUser = async(req, res, next) => {
     }
 }
 
-exports.listModule = async(req, res, next) => {
-    try{
-        let listModule = await Module.find({}).sort({order: -1});
-        return functions.success(res, "Get list module success", {data: listModule});
-    }catch(error) {
+exports.listModule = async (req, res, next) => {
+    try {
+        let listModule = await Module.find({}).sort({ order: -1 });
+        return functions.success(res, "Get list module success", { data: listModule });
+    } catch (error) {
         return functions.setError(res, error.message);
     }
 }
 
-exports.getSideBar = async(req, res, next) => {
-    try{
+exports.getSideBar = async (req, res, next) => {
+    try {
         let idAdmin = req.infoAdmin._id;
-        let admin = await AdminUser.findOne({_id: idAdmin}).lean();
-        if(admin) {
+        let admin = await AdminUser.findOne({ _id: idAdmin }).lean();
+        if (admin) {
             let adminRight;
-            if(admin.isAdmin != 1) {
+            if (admin.isAdmin != 1) {
                 adminRight = await AdminUserRight.aggregate([
-                    {$match: {adminId: idAdmin}},
+                    { $match: { adminId: idAdmin } },
                     {
                         $lookup: {
                             from: "RN365_Module",
@@ -200,55 +200,55 @@ exports.getSideBar = async(req, res, next) => {
                             "checkLocaM": "$Module.checkLoca",
                         }
                     },
-                    {$sort: {moduleId: 1}}
+                    { $sort: { moduleId: 1 } }
                 ]);
-                
-            }else {
-                adminRight = await Module.find({}).sort({order: 1});
+
+            } else {
+                adminRight = await Module.find({}).sort({ order: 1 });
             }
-            admin = {...admin, adminRight};
-            return functions.success(res, "Get list module success", {admin});
+            admin = { ...admin, adminRight };
+            return functions.success(res, "Get list module success", { admin });
         }
         return functions.setError(res, "Admin not found!", 404);
-    }catch(error) {
+    } catch (error) {
         return functions.setError(res, error.message);
     }
 }
 
-exports.changePassword = async(req, res, next) => {
-    try{
+exports.changePassword = async (req, res, next) => {
+    try {
         let idAdmin = req.body.idAdmin;
         let password = req.body.password;
-        if(idAdmin && password) {
-            let updatePassword = await AdminUser.findOneAndUpdate({_id: idAdmin}, {password: md5(password)}, {new: true});
-            if(updatePassword) {
+        if (idAdmin && password) {
+            let updatePassword = await AdminUser.findOneAndUpdate({ _id: idAdmin }, { password: md5(password) }, { new: true });
+            if (updatePassword) {
                 return functions.success(res, "Update password success");
             }
             return functions.setError(res, "Change password fail", 405);
         }
         return functions.setError(res, "Missing input idAdmin", 404);
-    }catch(error) {
+    } catch (error) {
         return functions.setError(res, error.message);
     }
 }
 
-exports.activeAdmin = async(req, res, next) => {
-    try{
-
-    }catch(error) {
-        return functions.setError(res, error.message);
-    }
-}
-
-exports.createAdminUser = async(req, res, next) => {
+exports.activeAdmin = async (req, res, next) => {
     try {
-        let { loginName, password, name, phone, email, editAll, allCategory, arrLangId, accessModule, arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete} = req.body;
+
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+exports.createAdminUser = async (req, res, next) => {
+    try {
+        let { loginName, password, name, phone, email, editAll, allCategory, arrLangId, accessModule, arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete } = req.body;
         if (loginName && password && phone && email) {
             let maxIdAdmin = await functions.getMaxIdByField(AdminUser, '_id');
             let adminId = req.infoAdmin._id;
             password = md5(password);
             let fields = {
-                _id: maxIdAdmin, 
+                _id: maxIdAdmin,
                 loginName,
                 password,
                 name,
@@ -262,7 +262,7 @@ exports.createAdminUser = async(req, res, next) => {
             }
             let adminUser = new AdminUser(fields);
             adminUser = await adminUser.save();
-            if(adminUser) {
+            if (adminUser) {
                 arrIdModule = arrIdModule.split(",");
                 arrRightAdd = arrRightAdd.split(",");
                 arrRightEdit = arrRightEdit.split(",");
@@ -282,7 +282,7 @@ exports.createAdminUser = async(req, res, next) => {
                     await adminUserRight.save();
                 }
                 arrLangId = arrLangId.split(",");
-                for(let i=0; i<arrLangId.length; i++) {
+                for (let i = 0; i < arrLangId.length; i++) {
                     let newIdLang = await functions.getMaxIdByField(AdminUserLanguagues, '_id');
                     let languagueAdmin = new AdminUserLanguagues({
                         _id: newIdLang,
@@ -301,9 +301,9 @@ exports.createAdminUser = async(req, res, next) => {
     }
 }
 
-exports.updateAdminUser = async(req, res, next) => {
+exports.updateAdminUser = async (req, res, next) => {
     try {
-        let {_id, name, phone, email, editAll, allCategory, arrLangId, accessModule, arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete} = req.body;
+        let { _id, name, phone, email, editAll, allCategory, arrLangId, accessModule, arrIdModule, arrRightAdd, arrRightEdit, arrRightDelete } = req.body;
         let adminId = req.infoAdmin._id;
         if (_id && name && phone && email) {
             let fields = {
@@ -315,8 +315,8 @@ exports.updateAdminUser = async(req, res, next) => {
                 langId: 1,
                 adminId: adminId
             }
-            let adminUser = await AdminUser.findOneAndUpdate({_id: _id}, fields, {new: true});
-            if(adminUser) {
+            let adminUser = await AdminUser.findOneAndUpdate({ _id: _id }, fields, { new: true });
+            if (adminUser) {
                 await AdminUserRight.deleteMany({ adminId: _id });
 
                 arrIdModule = arrIdModule.split(",");
@@ -342,7 +342,7 @@ exports.updateAdminUser = async(req, res, next) => {
 
                 //them moi
                 arrLangId = arrLangId.split(",");
-                for(let i=0; i<arrLangId.length; i++) {
+                for (let i = 0; i < arrLangId.length; i++) {
                     let newIdLang = await functions.getMaxIdByField(AdminUserLanguagues, '_id');
                     let languagueAdmin = new AdminUserLanguagues({
                         _id: newIdLang,
@@ -361,7 +361,7 @@ exports.updateAdminUser = async(req, res, next) => {
     }
 }
 
-exports.deleteAdminUser = async(req, res, next) => {
+exports.deleteAdminUser = async (req, res, next) => {
     try {
         let adminId = req.body.adminId;
         if (adminId) {
@@ -382,16 +382,16 @@ exports.deleteAdminUser = async(req, res, next) => {
 //-----------------------------------------------------------controller quan ly danh muc----------------------------------------------------------------
 
 // lay ra danh sach
-exports.getListCategory = async(req, res, next) => {
+exports.getListCategory = async (req, res, next) => {
     try {
-        let {_id, name, parentId } = req.body;
+        let { _id, name, parentId } = req.body;
         let condition = {};
         if (_id) condition._id = Number(_id);
         if (name) condition.name = new RegExp(name, 'i');
         if (parentId) condition.parentId = parentId;
-        const listCategoryParent = await Category.find(condition).sort({type: 1}).lean();
-        for(let i=0; i<listCategoryParent.length; i++) {
-            let categoryChild = await Category.find({parentId: listCategoryParent[i]._id});
+        const listCategoryParent = await Category.find(condition).sort({ type: 1 }).lean();
+        for (let i = 0; i < listCategoryParent.length; i++) {
+            let categoryChild = await Category.find({ parentId: listCategoryParent[i]._id });
             listCategoryParent[i].categoryChild = categoryChild;
         }
         const totalCount = await functions.findCount(Category, condition);
@@ -401,7 +401,7 @@ exports.getListCategory = async(req, res, next) => {
     }
 }
 
-exports.getAndCheckDataCategory = async(req, res, next) => {
+exports.getAndCheckDataCategory = async (req, res, next) => {
     try {
         let { parentId, name, order, description } = req.body;
         let adminId = req.infoAdmin._id;
@@ -418,8 +418,8 @@ exports.getAndCheckDataCategory = async(req, res, next) => {
             }
             return next();
         }
-        if(parentId > 0) {
-            await Category.findOneAndUpdate({_id: parentId}, {hasChild: 1}, {new: true});
+        if (parentId > 0) {
+            await Category.findOneAndUpdate({ _id: parentId }, { hasChild: 1 }, { new: true });
         }
         return functions.setError(res, "Missing input value", 404)
     } catch (error) {
@@ -427,7 +427,7 @@ exports.getAndCheckDataCategory = async(req, res, next) => {
     }
 }
 
-exports.createCategory = async(req, res, next) => {
+exports.createCategory = async (req, res, next) => {
     try {
         let fields = req.info;
         let newIdCategory = await functions.getMaxIdByField(Category, '_id');
@@ -440,9 +440,9 @@ exports.createCategory = async(req, res, next) => {
     }
 }
 
-exports.updateCategory = async(req, res, next) => {
+exports.updateCategory = async (req, res, next) => {
     try {
-        let cateID = req.body.cateID; 
+        let cateID = req.body.cateID;
         if (cateID) {
             let fields = req.info;
             let existsCategory = await Category.findOne({ _id: cateID });
@@ -459,12 +459,12 @@ exports.updateCategory = async(req, res, next) => {
     }
 }
 
-exports.activeAndShowCategory = async(req, res, next) => {
-    try { 
-        let {cateID, active, show} = req.body;
+exports.activeAndShowCategory = async (req, res, next) => {
+    try {
+        let { cateID, active, show } = req.body;
         if (cateID) {
-            let updateCategory = await Category.findOneAndUpdate({_id: cateID}, {active: active, show: show}, {new: true});
-            if(updateCategory) {
+            let updateCategory = await Category.findOneAndUpdate({ _id: cateID }, { active: active, show: show }, { new: true });
+            if (updateCategory) {
                 return functions.success(res, "Active or show success!");
             }
             return functions.setError(res, "Category not found!", 405);
@@ -480,11 +480,11 @@ exports.activeAndShowCategory = async(req, res, next) => {
 
 //api lay ra danh sach va tim kiem tin
 // khi truyen cateID = 120, 121 se lay dc tin tuyen dung va tin tim viec lam
-exports.getListNews = async(req, res, next) => {
+exports.getListNews = async (req, res, next) => {
     try {
         let { page, pageSize, _id, buySell, title, cateID, email, fromDate, toDate } = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 10;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
@@ -504,20 +504,20 @@ exports.getListNews = async(req, res, next) => {
         if (toDate && fromDate) condition.createTime = { $gte: new Date(fromDate), $lte: new Date(toDate) };
         let fields = { _id: 1, title: 1, linkTitle: 1, description: 1, img: 1, cateID: 1, createTime: 1, active: 1, city: 1, userID: 1, email: 1, updateTime: 1 };
         let listNews = await News.aggregate([
-                { $match: condition },
-                {
-                    $lookup: {
-                        from: "Users",
-                        localField: "userID",
-                        foreignField: "_id",
-                        as: "matchedDocuments"
-                    }
-                },
-                { $project: fields },
-                { $sort: { _id: 1 } },
-                { $skip: skip },
-                { $limit: limit }
-            ])
+            { $match: condition },
+            {
+                $lookup: {
+                    from: "Users",
+                    localField: "userID",
+                    foreignField: "_id",
+                    as: "matchedDocuments"
+                }
+            },
+            { $project: fields },
+            { $sort: { _id: 1 } },
+            { $skip: skip },
+            { $limit: limit }
+        ])
         const totalCount = await News.countDocuments(condition);
         return functions.success(res, 'Get list news success', { totalCount, listNews });
     } catch (error) {
@@ -525,11 +525,11 @@ exports.getListNews = async(req, res, next) => {
     }
 }
 
-exports.getAndCheckDataNews = async(req, res, next) => {
+exports.getAndCheckDataNews = async (req, res, next) => {
     try {
         let { title, description, money } = req.body;
         if (title && description) {
-             // them cac truong muon them hoac sua
+            // them cac truong muon them hoac sua
             req.info = {
                 title: title,
                 description: description,
@@ -543,7 +543,7 @@ exports.getAndCheckDataNews = async(req, res, next) => {
     }
 }
 
-exports.createNews = async(req, res, next) => {
+exports.createNews = async (req, res, next) => {
     try {
         let fields = req.info;
         let newIdNews = await functions.getMaxIdByField(News, '_id');
@@ -558,7 +558,7 @@ exports.createNews = async(req, res, next) => {
     }
 }
 
-exports.updateNews = async(req, res, next) => {
+exports.updateNews = async (req, res, next) => {
     try {
         let newsID = req.body.newsID;
         if (newsID) {
@@ -577,7 +577,7 @@ exports.updateNews = async(req, res, next) => {
     }
 }
 
-exports.deleteNews = async(req, res, next) => {
+exports.deleteNews = async (req, res, next) => {
     try {
         let newsID = req.body.newsID;
         if (newsID) {
@@ -598,10 +598,10 @@ exports.deleteNews = async(req, res, next) => {
 //---------------------------------------------------------controller quan ly bang gia-----------------------------------------------
 
 //api lay ra danh sach va tim kiem tin
-exports.getListPriceList = async(req, res, next) => {
+exports.getListPriceList = async (req, res, next) => {
     try {
         //lay cac tham so dieu kien tim kiem tin
-        let {_id, time, type} = req.body;
+        let { _id, time, type } = req.body;
 
         let condition = {};
         if (_id) condition._id = Number(_id);
@@ -616,7 +616,7 @@ exports.getListPriceList = async(req, res, next) => {
     }
 }
 
-exports.update = async(req, res, next) => {
+exports.update = async (req, res, next) => {
     try {
         let newsID = req.body.newsID;
         if (newsID) {
@@ -640,12 +640,12 @@ exports.update = async(req, res, next) => {
 
 //-------------------------------------------------------controller quan ly tai khoan(da xac nhan opt va chua xac nhan)tk gian hang-------------------------
 
-exports.getListUser = async(req, res, next) => {
+exports.getListUser = async (req, res, next) => {
     try {
-        let {idRaoNhanh365, authentic, userName, email, phoneTK, fromDate, toDate, page, pageSize} = req.body;
+        let { idRaoNhanh365, authentic, userName, email, phoneTK, fromDate, toDate, page, pageSize } = req.body;
         //authentic => phan biet tai khoan bt va tk gian hang(xac thuc va chua xac thuc)
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 10;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
@@ -663,9 +663,9 @@ exports.getListUser = async(req, res, next) => {
         if (toDate && !fromDate) condition.updatedAt = { $lte: new Date(toDate) };
         if (toDate && fromDate) condition.updatedAt = { $gte: new Date(fromDate), $lte: new Date(toDate) };
 
-        let fields = { avatarUser: 1, idRaoNhanh365: 1, userName: 1,authentic: 1, email: 1, phoneTK: 1, createdAt: 1, "inforRN365.money": 1 };
+        let fields = { avatarUser: 1, idRaoNhanh365: 1, userName: 1, authentic: 1, email: 1, phoneTK: 1, createdAt: 1, "inforRN365.money": 1 };
 
-        let listUsers = await functions.pageFindWithFields(Users, condition, fields, {_id: 1}, skip, limit);
+        let listUsers = await functions.pageFindWithFields(Users, condition, fields, { _id: 1 }, skip, limit);
         const totalCount = await Users.countDocuments(condition);
         return functions.success(res, 'Get list news success', { totalCount, listUsers })
     } catch (error) {
@@ -674,7 +674,7 @@ exports.getListUser = async(req, res, next) => {
 }
 
 
-exports.getAndCheckDataUser = async(req, res, next) => {
+exports.getAndCheckDataUser = async (req, res, next) => {
     try {
         let { userName, email, phoneTK, phone, money, cong, tru } = req.body;
 
@@ -695,10 +695,10 @@ exports.getAndCheckDataUser = async(req, res, next) => {
     }
 }
 
-exports.createUser = async(req, res, next) => {
+exports.createUser = async (req, res, next) => {
     try {
         let fields = req.info;
-        
+
         let newIdUser = await functions.getMaxIdByField(Users, 'idRaoNhanh365');
         fields.idRaoNhanh365 = newIdUser;
         fields.createdAt = Date(Date.now());
@@ -710,7 +710,7 @@ exports.createUser = async(req, res, next) => {
     }
 }
 
-exports.updateUser = async(req, res, next) => {
+exports.updateUser = async (req, res, next) => {
     try {
         let userID = req.body.userID;
         if (userID) {
@@ -729,7 +729,7 @@ exports.updateUser = async(req, res, next) => {
     }
 }
 
-exports.deleteUser = async(req, res, next) => {
+exports.deleteUser = async (req, res, next) => {
     try {
         let userID = req.body.userID;
         if (userID) {
@@ -748,36 +748,36 @@ exports.deleteUser = async(req, res, next) => {
 }
 
 //------------------tin spam
-exports.getListNewsSpam = async(req, res, next) => {
-    try{
-        let {page, pageSize, fromDate, toDate} = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 20;
+exports.getListNewsSpam = async (req, res, next) => {
+    try {
+        let { page, pageSize, fromDate, toDate } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 20;
         page = Number(page);
         pageSize = Number(pageSize);
-        const skip = (page-1)*pageSize;
-        let condition = {duplicate: {$ne: ""}};
-        if(fromDate && !toDate) condition.createTime = {$gte: new Date(fromDate)};
-        if(!fromDate && toDate) condition.createTime = {$lte: new Date(toDate)};
-        if(fromDate && toDate) condition.createTime = {$gte: new Date(fromDate), $lte: new Date(toDate)};
+        const skip = (page - 1) * pageSize;
+        let condition = { duplicate: { $ne: "" } };
+        if (fromDate && !toDate) condition.createTime = { $gte: new Date(fromDate) };
+        if (!fromDate && toDate) condition.createTime = { $lte: new Date(toDate) };
+        if (fromDate && toDate) condition.createTime = { $gte: new Date(fromDate), $lte: new Date(toDate) };
 
-        let fields = {_id: 1, title: 1, linkTitle: 1, createTime: 1, img: 1, active: 1, duplicate: 1, userID: 1, cateID: 1};
+        let fields = { _id: 1, title: 1, linkTitle: 1, createTime: 1, img: 1, active: 1, duplicate: 1, userID: 1, cateID: 1 };
         let total = await functions.findCount(News, condition);
-        let listNewsSpam = await functions.pageFindWithFields(News, condition, fields, {_id: 1}, skip, pageSize);
-        return functions.success(res, "Get list news spam success:", {total, data: listNewsSpam});
-    }catch(error) {
+        let listNewsSpam = await functions.pageFindWithFields(News, condition, fields, { _id: 1 }, skip, pageSize);
+        return functions.success(res, "Get list news spam success:", { total, data: listNewsSpam });
+    } catch (error) {
         return functions.setError(res, error.message);
     }
 }
 
 //-------------------------------------------------------controller lich su nap the -------------------------
 
-exports.getListHistory = async(req, res, next) => {
+exports.getListHistory = async (req, res, next) => {
     try {
         //lay cac tham so dieu kien tim kiem tin
         let { page, pageSize, _id, userName, userId, seri, fromDate, toDate } = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 10;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
@@ -818,11 +818,11 @@ exports.getListHistory = async(req, res, next) => {
 
 //-------------------------------------------------------controller quan ly blog -------------------------
 
-exports.getListBlog = async(req, res, next) => {
+exports.getListBlog = async (req, res, next) => {
     try {
-        let {page, pageSize, title, blogId} = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 10;
+        let { page, pageSize, title, blogId } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 10;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
@@ -852,9 +852,9 @@ exports.getListBlog = async(req, res, next) => {
             titleRelate: 1,
             contentRelate: 1
         }
-        
+
         let listBlog = await functions.pageFind(Blog, listCondition, { _id: 1 }, skip, limit);
-        for(let i=0; i<listBlog.length; i++) {
+        for (let i = 0; i < listBlog.length; i++) {
             let linkImage = `https://raonhanh365.vn/pictures/news/${listBlog[i].image}`;
             listBlog[i].linkImage = linkImage;
         }
@@ -865,14 +865,14 @@ exports.getListBlog = async(req, res, next) => {
     }
 }
 
-exports.getAndCheckDataBlog = async(req, res, next) => {
+exports.getAndCheckDataBlog = async (req, res, next) => {
     try {
         let image;
-        if(req.files) {
+        if (req.files) {
             image = req.files.image;
         }
-        if(!image) return functions.setError(res, `Missing input image`, 405);
-        let {title, url, des, keyword, sapo, active, hot, detailDes, titleRelate, contentRelate, newStatus, date, dateLastEdit } = req.body;
+        if (!image) return functions.setError(res, `Missing input image`, 405);
+        let { title, url, des, keyword, sapo, active, hot, detailDes, titleRelate, contentRelate, newStatus, date, dateLastEdit } = req.body;
         let fields = [title, url, image, des, keyword, sapo, detailDes, titleRelate, contentRelate];
         let adminId = req.infoAdmin._id;
         for (let i = 0; i < fields.length; i++) {
@@ -899,36 +899,44 @@ exports.getAndCheckDataBlog = async(req, res, next) => {
         }
         return next();
     } catch (error) {
+        console.error(error)
         return functions.setError(res, error.message);
     }
 }
 
 
 //admin tạo 1 blog
-exports.createBlog = async(req, res, next) => {
+exports.createBlog = async (req, res, next) => {
     try {
         let fields = req.info;
         let newIdBlog = await functions.getMaxIdByField(Blog, '_id');
         fields._id = newIdBlog;
 
         if (!fields.date) {
-            fields.date = Date(Date.now());
+            fields.date = Date();
         }
         //luu anh
         let image = fields.image;
         if (!await functions.checkImage(image.path)) {
             return functions.setError(res, 'ảnh sai định dạng hoặc lớn hơn 2MB', 405);
         }
-        fields.image = await serviceRN.uploadFileRaoNhanh(folderImg, newIdBlog, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = date.getMonth() + 1;
+        let day = date.getDate();
+
+        let upload = await serviceRN.uploadFileRaoNhanh("news", `${year}/${month}/${day}`, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
+        fields.image = `${year}/${month}/${day}/` + upload;
         let blog = new Blog(fields);
         await blog.save();
         return functions.success(res, 'Create blog RN365 success!');
     } catch (error) {
+        console.error(error)
         return functions.setError(res, error.message);
     }
 }
 
-exports.updateBlog = async(req, res, next) => {
+exports.updateBlog = async (req, res, next) => {
     try {
         let _id = req.body._id;
         if (!_id) return functions.setError(res, "Missing input value id blog!", 404);
@@ -942,14 +950,10 @@ exports.updateBlog = async(req, res, next) => {
         }
         let existsBlog = await Blog.findOne({ _id: _id });
         if (existsBlog) {
-            // xu ly anh
-            let linkImg = existsBlog.image.split("/");
-            let len = linkImg.length;
-            // functions.deleteImgRaoNhanh(folderImg, linkImg[len-2], linkImg[len-1]);
-            fields.image = await serviceRN.uploadFileRaoNhanh(folderImg, _id, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
-
+            let upload = await serviceRN.uploadFileRaoNhanh("news", `${year}/${month}/${day}`, image, ['.png', '.jpg', '.jpeg', '.gif', '.psd', '.pdf', '.jpg', '.docx', '.png']);
+            fields.image = `${year}/${month}/${day}/` + upload;
             //cap nhat du lieu
-            await Blog.findOneAndUpdate({_id: _id}, fields);
+            await Blog.findOneAndUpdate({ _id: _id }, fields);
             return functions.success(res, "Blog edited successfully");
         }
 
@@ -961,39 +965,39 @@ exports.updateBlog = async(req, res, next) => {
 
 //--------Duyet tin
 //lay ra danh sach
-exports.danhSachTinCanDuyet = async(req, res, next) => {
-    try{
-        let {page, pageSize, _id, title, updateTime, fromDate, toDate} = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 30;
+exports.danhSachTinCanDuyet = async (req, res, next) => {
+    try {
+        let { page, pageSize, _id, title, updateTime, fromDate, toDate } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 30;
         page = Number(page);
         pageSize = Number(pageSize);
-        const skip = (page-1)*pageSize;
+        const skip = (page - 1) * pageSize;
         const limit = pageSize;
         let condition = {};
-        if(_id) condition._id = Number(_id);
-        if(title) condition.title = new RegExp(title, 'i');
-        if(updateTime) condition.updateTime = new Date(updateTime);
+        if (_id) condition._id = Number(_id);
+        if (title) condition.title = new RegExp(title, 'i');
+        if (updateTime) condition.updateTime = new Date(updateTime);
         if (fromDate && !toDate) condition.updateTime = { $gte: new Date(fromDate) };
         if (toDate && !fromDate) condition.updateTime = { $lte: new Date(toDate) };
         if (toDate && fromDate) condition.updateTime = { $gte: new Date(fromDate), $lte: new Date(toDate) };
 
-        let fields = {_id: 1, title: 1, linkTitle: 1, kiem_duyet: 1, createTime: 1, updateTime: 1};
-        let total = await functions.findCount(News, {kiem_duyet: 0});
-        let listNews = await functions.pageFindWithFields(News, {kiem_duyet: 0},fields, {_id: -1}, skip, limit);
-        return functions.success(res, "Get danh sach tin can duyet thanh cong", {total, data: listNews});
-    }catch(error) {
+        let fields = { _id: 1, title: 1, linkTitle: 1, kiem_duyet: 1, createTime: 1, updateTime: 1 };
+        let total = await functions.findCount(News, { kiem_duyet: 0 });
+        let listNews = await functions.pageFindWithFields(News, { kiem_duyet: 0 }, fields, { _id: -1 }, skip, limit);
+        return functions.success(res, "Get danh sach tin can duyet thanh cong", { total, data: listNews });
+    } catch (error) {
         return functions.setError(res, error.message);
     }
 }
 
 //duyet tin
-exports.duyetTin = async(req, res, next) => {
+exports.duyetTin = async (req, res, next) => {
     try {
         let _id = req.body._id;
-        if(_id) {
-            let activeNews = await News.findOneAndUpdate({_id: _id}, {kiem_duyet: 1}, {new: true});
-            if(activeNews) {
+        if (_id) {
+            let activeNews = await News.findOneAndUpdate({ _id: _id }, { kiem_duyet: 1 }, { new: true });
+            if (activeNews) {
                 return functions.success(res, "Duyet tin thanh cong!");
             }
             return functions.setError(res, "Tin khong ton tai!", 406);
@@ -1005,7 +1009,7 @@ exports.duyetTin = async(req, res, next) => {
 }
 //---------Bao cao tin
 // tạo mới
-exports.createReport = async(req, res, next) => {
+exports.createReport = async (req, res, next) => {
     try {
         const reportNewsData = req.body;
         const newReportNews = new ReportNews(reportNewsData);
@@ -1016,46 +1020,46 @@ exports.createReport = async(req, res, next) => {
     }
 }
 // api danh sách tìm kiếm tin báo cáo
-exports.listReportNew = async(req, res, next) => {
-        try {
-            let condition = {};
-            let id_user = req.body.id_user;
-            let userName = req.body.userName;
-            let problem = req.body.problem;
-            let thoiGianTu = req.body.thoiGianTu;
-            let thoiGianDen = req.body.thoiGianDen;
-            let page = req.body.page || 1;
-            let pageSize = req.body.pageSize || 30;
-            let skip = (page - 1) * pageSize;
-            let limit = pageSize;
-            if (id_user) condition.id_user = id_user;
-            if (thoiGianTu) condition.time = { $gte: new Date(thoiGianTu) }
-            if (thoiGianDen) condition.time = { $lte: new Date(thoiGianDen) }
-            if (thoiGianTu && thoiGianDen) condition.time = { $gte: new Date(thoiGianTu), $lte: new Date(thoiGianDen) }
-            if (userName) condition['user.userName'] = userName;
-            if (problem) condition.problem = problem;
+exports.listReportNew = async (req, res, next) => {
+    try {
+        let condition = {};
+        let id_user = req.body.id_user;
+        let userName = req.body.userName;
+        let problem = req.body.problem;
+        let thoiGianTu = req.body.thoiGianTu;
+        let thoiGianDen = req.body.thoiGianDen;
+        let page = req.body.page || 1;
+        let pageSize = req.body.pageSize || 30;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+        if (id_user) condition.id_user = id_user;
+        if (thoiGianTu) condition.time = { $gte: new Date(thoiGianTu) }
+        if (thoiGianDen) condition.time = { $lte: new Date(thoiGianDen) }
+        if (thoiGianTu && thoiGianDen) condition.time = { $gte: new Date(thoiGianTu), $lte: new Date(thoiGianDen) }
+        if (userName) condition['user.userName'] = userName;
+        if (problem) condition.problem = problem;
 
-            let data = await NewReport.aggregate([{
-                $lookup: {
-                    from: 'Users',
-                    localField: 'id_user',
-                    foreignField: 'idRaoNhanh365',
-                    as: 'user'
-                }
-            }, {
-                $match: condition
-            }, {
-                $skip: skip
-            }, {
-                $limit: limit
-            }])
-            return functions.success(res, "get list report success", { data });
-        } catch (error) {
-            return functions.setError(res, error.message)
-        }
+        let data = await NewReport.aggregate([{
+            $lookup: {
+                from: 'Users',
+                localField: 'id_user',
+                foreignField: 'idRaoNhanh365',
+                as: 'user'
+            }
+        }, {
+            $match: condition
+        }, {
+            $skip: skip
+        }, {
+            $limit: limit
+        }])
+        return functions.success(res, "get list report success", { data });
+    } catch (error) {
+        return functions.setError(res, error.message)
+    }
 }
 // api sửa tin báo cáo
-exports.fixNewReport = async(req, res, next) => {
+exports.fixNewReport = async (req, res, next) => {
     try {
         const { id } = req.params;
         const Report = await ReportNews.findOneAndUpdate({ _id: id }, { fixed: 1 }, {
@@ -1070,9 +1074,9 @@ exports.fixNewReport = async(req, res, next) => {
 
 //-------------------------------------------------------controller giá ghim/day tin đăng -------------------------
 //api tạo mới ghim tin đăng
-exports.createAndUpdatePriceListPin = async(req, res, next) => {
+exports.createAndUpdatePriceListPin = async (req, res, next) => {
     try {
-        let {_id, time, unitPrice, discount, intoMoney, vat, intoMoneyVat, type, cardGift} = req.body;
+        let { _id, time, unitPrice, discount, intoMoney, vat, intoMoneyVat, type, cardGift } = req.body;
         if ([1, 5, 3, 4].includes(Number(type)) && time && unitPrice && intoMoney && intoMoneyVat && cardGift) {
             let fields = {
                 time: time,
@@ -1084,13 +1088,13 @@ exports.createAndUpdatePriceListPin = async(req, res, next) => {
                 type: type,
                 cardGift: cardGift
             }
-            if(!_id) {
+            if (!_id) {
                 _id = await functions.getMaxIdByField(PriceList, '_id');
                 fields._id = _id;
             }
-            let priceList = await PriceList.findOneAndUpdate({_id: _id}, fields, {new: true, upsert: true}).lean();
-            if(priceList) {
-                return functions.success(res, "Create or Update success", {priceList});
+            let priceList = await PriceList.findOneAndUpdate({ _id: _id }, fields, { new: true, upsert: true }).lean();
+            if (priceList) {
+                return functions.success(res, "Create or Update success", { priceList });
             }
             return functions.setError(res, "Update fail!", 406);
         }
@@ -1101,9 +1105,9 @@ exports.createAndUpdatePriceListPin = async(req, res, next) => {
 }
 
 //api tạo mới ghim day tin
-exports.updatePriceListPush = async(req, res, next) => {
+exports.updatePriceListPush = async (req, res, next) => {
     try {
-        let {_id, time, unitPrice, discount, intoMoney, vat, intoMoneyVat, cardGift} = req.body;
+        let { _id, time, unitPrice, discount, intoMoney, vat, intoMoneyVat, cardGift } = req.body;
         if (_id && time && unitPrice && intoMoney && intoMoneyVat && cardGift) {
             let fields = {
                 time: time,
@@ -1114,9 +1118,9 @@ exports.updatePriceListPush = async(req, res, next) => {
                 intoMoneyVat: intoMoneyVat,
                 cardGift: cardGift
             }
-            let priceList = await PriceList.findOneAndUpdate({_id: _id, type: 2}, fields, {new: true});
-            if(priceList) {
-                return functions.success(res, "Update success", {priceList});
+            let priceList = await PriceList.findOneAndUpdate({ _id: _id, type: 2 }, fields, { new: true });
+            if (priceList) {
+                return functions.success(res, "Update success", { priceList });
             }
             return functions.setError(res, "Price list not found!", 406);
         }
@@ -1127,28 +1131,28 @@ exports.updatePriceListPush = async(req, res, next) => {
 }
 
 // api danh sách và tìm kiếm đẩy/ghim tin đăng 
-exports.getListPrice = async(req, res, next) => {
+exports.getListPrice = async (req, res, next) => {
     try {
-        let {page, pageSize, type, _id, time} = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 30;
+        let { page, pageSize, type, _id, time } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 30;
         page = Number(page);
         pageSize = Number(pageSize);
-        const skip = (page-1)*pageSize;
+        const skip = (page - 1) * pageSize;
         const limit = pageSize;
 
-        if(type==1 || type==2) {
+        if (type == 1 || type == 2) {
             let condition = {};
-            if(_id) condition._id = Number(_id);
-            if(time) condition.time = new RegExp(time, 'i');
+            if (_id) condition._id = Number(_id);
+            if (time) condition.time = new RegExp(time, 'i');
 
             //gia ghim tin
-            if(type==1) condition.type = {$in: [1, 3, 4, 5]};
+            if (type == 1) condition.type = { $in: [1, 3, 4, 5] };
             //gia day tin
-            if(type==2) condition.type = 2;
+            if (type == 2) condition.type = 2;
             let total = await functions.findCount(PriceList, condition);
-            let priceList = await functions.pageFind(PriceList, condition, {_id: 1}, skip, limit);
-            return functions.success(res, "Lay ra danh sach gia day va ghim tin thanh cong", {total, data: priceList});
+            let priceList = await functions.pageFind(PriceList, condition, { _id: 1 }, skip, limit);
+            return functions.success(res, "Lay ra danh sach gia day va ghim tin thanh cong", { total, data: priceList });
         }
         return functions.setError(res, "Truyen type=1, 2", 405);
     } catch (error) {
@@ -1159,19 +1163,19 @@ exports.getListPrice = async(req, res, next) => {
 //-------------------------------------------------------API chiet khau nap the-------------------------
 
 // api tìm kiếm và danh sách chiết khấu
-exports.getListDiscountCard = async(req, res, next) => {
+exports.getListDiscountCard = async (req, res, next) => {
     try {
-        let {page, pageSize, _id, operator} = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 30;
+        let { page, pageSize, _id, operator } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 30;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
 
         let conditions = { active: 1 };
-        if(_id) conditions._id = Number(_id);
-        if(operator) conditions.operator = new RegExp(operator, 'i');
+        if (_id) conditions._id = Number(_id);
+        if (operator) conditions.operator = new RegExp(operator, 'i');
 
         let count = await functions.findCount(NetworkOperator, conditions);
         let data = await NetworkOperator.find(conditions).sort({ _id: 1 }).skip(skip).limit(limit);
@@ -1182,16 +1186,16 @@ exports.getListDiscountCard = async(req, res, next) => {
 }
 
 //chinh sua chiet khau
-exports.updateDiscountCard = async(req, res, next) => {
+exports.updateDiscountCard = async (req, res, next) => {
     try {
-        let {_id, operator, operatorName, discount } = req.body;
+        let { _id, operator, operatorName, discount } = req.body;
         if (_id && operator && operatorName && discount) {
             let updateDiscount = await NetworkOperator.findOneAndUpdate({ _id: _id }, {
                 operator: operator,
                 operatorName: operatorName,
                 discount: discount
-            }, {new: true});
-            if(updateDiscount) {
+            }, { new: true });
+            if (updateDiscount) {
                 return functions.success(res, "Update Discount Success", { data: updateDiscount });
             }
             return funcitons.setError(res, "NetworkOperator not found!", 406);
@@ -1202,7 +1206,7 @@ exports.updateDiscountCard = async(req, res, next) => {
     }
 }
 
-exports.failRegisterUser = async(req, res, next) => {
+exports.failRegisterUser = async (req, res, next) => {
     try {
         let page = req.body.page;
         let pageSize = req.body.pageSize;
@@ -1224,7 +1228,7 @@ exports.failRegisterUser = async(req, res, next) => {
     }
 }
 
-exports.getInfoForEdit = async(req, res, next) => {
+exports.getInfoForEdit = async (req, res, next) => {
     try {
         let model = req.body.model;
         let _id = req.body._id;
@@ -1250,20 +1254,20 @@ exports.getInfoForEdit = async(req, res, next) => {
 
 exports.getListUserVerifyPayment = async (req, res, next) => {
     try {
-        let {page, pageSize, fromDate, toDate} = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 50;
+        let { page, pageSize, fromDate, toDate } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 50;
         page = Number(page);
         pageSize = Number(pageSize);
-        const skip = (page-1)*pageSize;
+        const skip = (page - 1) * pageSize;
 
         if (fromDate && !toDate) condition["inforRN365.time"] = { $gte: new Date(fromDate) };
         if (toDate && !fromDate) condition["inforRN365.time"] = { $lte: new Date(toDate) };
         if (toDate && fromDate) condition["inforRN365.time"] = { $gte: new Date(fromDate), $lte: new Date(toDate) };
 
-        let condition = {'inforRN365.xacThucLienket':{$in:[1,2]}};
+        let condition = { 'inforRN365.xacThucLienket': { $in: [1, 2] } };
         let total = await functions.findCount(Users, condition);
-        let data = await functions.pageFind(Users, condition, {idRaoNhanh365: 1}, skip, pageSize);
+        let data = await functions.pageFind(Users, condition, { idRaoNhanh365: 1 }, skip, pageSize);
         return functions.success(res, "get list user verify paymet success", { total, data });
     } catch (error) {
         return functions.setError(res, error.message);
@@ -1273,7 +1277,7 @@ exports.getListUserVerifyPayment = async (req, res, next) => {
 exports.adminVerifyPayment = async (req, res, next) => {
     try {
         // xacThucLienket: 2 => da xac thuc, 1: cho admin xac thuc
-        let { userId, active, xacThucLienket} = req.body;
+        let { userId, active, xacThucLienket } = req.body;
         if (!userId || !active || !xacThucLienket) {
             return functions.setError(res, "Missing input value!", 404);
         }
@@ -1312,82 +1316,82 @@ exports.adminVerifyPayment = async (req, res, next) => {
 
 exports.getListOrderPayment = async (req, res, next) => {
     try {
-            let page = req.body.page || 1;
-            let pageSize = req.body.pageSize || 50;
-            let skip = (page -  1)* pageSize ;
-            let limit = pageSize ;
-            let _id   = req.body.id;
-            let thoiGianTu = req.body.thoiGianTu;
-            let thoiGianDen = req.body.thoiGianDen;
-            let conditions = {};
-            if(_id) conditions._id = _id;
-            if(thoiGianDen) conditions.thoiGianDen = {$lte:{thoiGianDen}};
-            if(thoiGianTu) conditions.thoiGianTu = {$gte:{thoiGianTu}};
-            let count = await Order.aggregate([
-                {
-                    $match:conditions
-                },
-                {
-                    $lookup:{
-                        from:'Users',
-                        localField:'buyerId',
-                        foreignField:'idRaoNhanh365',
-                        as:'user'
-                    }
-                },
-                {
-                    $lookup:{
-                        from:'RN365_News',
-                        localField:'newId',
-                        foreignField:'_id',
-                        as:'new'
-                    }
-                },
-                {
-                    $count:"all"
+        let page = req.body.page || 1;
+        let pageSize = req.body.pageSize || 50;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
+        let _id = req.body.id;
+        let thoiGianTu = req.body.thoiGianTu;
+        let thoiGianDen = req.body.thoiGianDen;
+        let conditions = {};
+        if (_id) conditions._id = _id;
+        if (thoiGianDen) conditions.thoiGianDen = { $lte: { thoiGianDen } };
+        if (thoiGianTu) conditions.thoiGianTu = { $gte: { thoiGianTu } };
+        let count = await Order.aggregate([
+            {
+                $match: conditions
+            },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'buyerId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'user'
                 }
-            ]);
-            await Order.createIndexes({buyerId:1,newId:1});
+            },
+            {
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'newId',
+                    foreignField: '_id',
+                    as: 'new'
+                }
+            },
+            {
+                $count: "all"
+            }
+        ]);
+        await Order.createIndexes({ buyerId: 1, newId: 1 });
 
-            let data = await Order.aggregate([
-                {
-                    $match:conditions
-                },
-                {$sort:{_id:1}},
-                {$skip: skip},
-                {$limit: limit},
-                {
-                    $lookup:{
-                        from:'Users',
-                        localField:'buyerId',
-                        foreignField:'idRaoNhanh365',
-                        as:'Buyer'
-                    }
-                },{
-                    $lookup:{
-                        from:'RN365_News',
-                        localField:'newId',
-                        foreignField:'_id',
-                        as:'New'
-                    }
-                },
-                {
-                    $project: {
-                        "_id": "$_id",
-                        "buyerId": "$buyerId",
-                        "sellerId": "$sellerId",
-                        "newId": "$newId",
-                        "paymentType": "$paymentType",
-                        "buyTime": "$buyTime",
-                        "orderActive": "$orderActive",
-                        "amountPaid": "$amountPaid",
-                        "buyerName": "$Buyer.userName",
-                        "newsTitle": "$New.title",
-                    }
-                },
-            ]);
+        let data = await Order.aggregate([
+            {
+                $match: conditions
+            },
+            { $sort: { _id: 1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'buyerId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'Buyer'
+                }
+            }, {
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'newId',
+                    foreignField: '_id',
+                    as: 'New'
+                }
+            },
+            {
+                $project: {
+                    "_id": "$_id",
+                    "buyerId": "$buyerId",
+                    "sellerId": "$sellerId",
+                    "newId": "$newId",
+                    "paymentType": "$paymentType",
+                    "buyTime": "$buyTime",
+                    "orderActive": "$orderActive",
+                    "amountPaid": "$amountPaid",
+                    "buyerName": "$Buyer.userName",
+                    "newsTitle": "$New.title",
+                }
+            },
+        ]);
 
-            return functions.success(res, "get list user verify paymet success", {  count, data });
+        return functions.success(res, "get list user verify paymet success", { count, data });
     } catch (error) {
         return functions.setError(res, error.message);
     }
@@ -1409,55 +1413,55 @@ exports.adminVerifyOrder = async (req, res, next) => {
     }
 }
 
-exports.active = async(req, res, next) => {
+exports.active = async (req, res, next) => {
 
 }
 
 //tag index
-exports.getListTagsIndex = async(req, res, next) => {
+exports.getListTagsIndex = async (req, res, next) => {
     try {
-        let {page, pageSize, type, _id, fromDate, toDate} = req.body;
-        if(!page) page = 1;
-        if(!pageSize) pageSize = 30;
+        let { page, pageSize, type, _id, fromDate, toDate } = req.body;
+        if (!page) page = 1;
+        if (!pageSize) pageSize = 30;
         page = Number(page);
         pageSize = Number(pageSize);
         const skip = (page - 1) * pageSize;
         const limit = pageSize;
 
-        if(type==1 || type==2 || type==3 || type ==4 || type==5 || type==6) {
+        if (type == 1 || type == 2 || type == 3 || type == 4 || type == 5 || type == 6) {
             let listCondition = {};
             //danh sach danh muc va tag
-            if(type == 1) listCondition.classify = {$in: [1, 2]};
+            if (type == 1) listCondition.classify = { $in: [1, 2] };
 
             //danh sach dia diem
-            if(type == 2) listCondition.classify = {$in: [3, 14]};
+            if (type == 2) listCondition.classify = { $in: [3, 14] };
 
             //danh sach tag + dia diem
-            if(type == 3) listCondition.classify = {$in: [4, 9, 15]};
+            if (type == 3) listCondition.classify = { $in: [4, 9, 15] };
 
             //danh sach nganh nghe + tag nganh nghe
-            if(type == 4) listCondition.classify = {$in: [5, 6]};
+            if (type == 4) listCondition.classify = { $in: [5, 6] };
 
             //danh sach viec lam + dia diem
-            if(type == 5) listCondition.classify = {$in: [10, 11]};
+            if (type == 5) listCondition.classify = { $in: [10, 11] };
 
             //danh sach nganh nghe + tag nganh nghe
-            if(type == 6) listCondition.classify = {$in: [12, 13]};
-            if(fromDate && !toDate && functions.checkDate(fromDate)) {
-                listCondition.time = {$gte: functions.convertTimestamp(fromDate)};
+            if (type == 6) listCondition.classify = { $in: [12, 13] };
+            if (fromDate && !toDate && functions.checkDate(fromDate)) {
+                listCondition.time = { $gte: functions.convertTimestamp(fromDate) };
             }
-            if(!fromDate && toDate && functions.checkDate(toDate)) {
-                listCondition.time = {$lte: functions.convertTimestamp(toDate)};
+            if (!fromDate && toDate && functions.checkDate(toDate)) {
+                listCondition.time = { $lte: functions.convertTimestamp(toDate) };
             }
-            if(fromDate && toDate && functions.checkDate(fromDate) && functions.checkDate(toDate)) {
-                listCondition.time = {$gte: functions.convertTimestamp(fromDate), $lte: functions.convertTimestamp(toDate)};
+            if (fromDate && toDate && functions.checkDate(fromDate) && functions.checkDate(toDate)) {
+                listCondition.time = { $gte: functions.convertTimestamp(fromDate), $lte: functions.convertTimestamp(toDate) };
             }
 
-            if(_id) listCondition._id = Number(_id);
-            let fieldsGet = {_id: 1, link: 1, cateId: 1, tags: 1, time: 1}
-            const listTagsIndex = await functions.pageFindWithFields(TagIndex, listCondition, fieldsGet, { _id: -1 }, skip, limit); 
+            if (_id) listCondition._id = Number(_id);
+            let fieldsGet = { _id: 1, link: 1, cateId: 1, tags: 1, time: 1 }
+            const listTagsIndex = await functions.pageFindWithFields(TagIndex, listCondition, fieldsGet, { _id: -1 }, skip, limit);
             const totalCount = await functions.findCount(TagIndex, listCondition);
-            return functions.success(res, "get list tags index success", {totalCount: totalCount, data: listTagsIndex });
+            return functions.success(res, "get list tags index success", { totalCount: totalCount, data: listTagsIndex });
         }
         return functions.setError(res, "type = 1, 2, 3, 4, 5, 6", 405);
     } catch (error) {
@@ -1465,39 +1469,39 @@ exports.getListTagsIndex = async(req, res, next) => {
     }
 }
 
-exports.deleleManyByModule = async(req, res, next) => {
-    try{
+exports.deleleManyByModule = async (req, res, next) => {
+    try {
         let moduleId = req.body.moduleId;
         let arrId = req.body.arrId;
-        if(moduleId && arrId && arrId.length > 0) {
+        if (moduleId && arrId && arrId.length > 0) {
             let arrIdDelete = arrId.map(idItem => parseInt(idItem));
             //tag index
-            if(moduleId == 36) {
-                await TagIndex.deleteMany({ _id: { $in: arrIdDelete }});
+            if (moduleId == 36) {
+                await TagIndex.deleteMany({ _id: { $in: arrIdDelete } });
                 return functions.success(res, 'xóa thành công!');
             }
             //chiet khau nap tien
-            if(moduleId == 39) {
-                await NetworkOperator.deleteMany({ _id: { $in: arrIdDelete }});
+            if (moduleId == 39) {
+                await NetworkOperator.deleteMany({ _id: { $in: arrIdDelete } });
                 return functions.success(res, 'xóa thành công!');
             }
             //gia ghim day tin
-            if(moduleId == 32 || moduleId == 33) {
-                await PriceList.deleteMany({ _id: { $in: arrIdDelete }});
+            if (moduleId == 32 || moduleId == 33) {
+                await PriceList.deleteMany({ _id: { $in: arrIdDelete } });
                 return functions.success(res, 'xóa thành công!');
             }
-            if(moduleId == 14 || moduleId == 28 || moduleId == 29 || moduleId ==30) {
-                await News.deleteMany({ _id: { $in: arrIdDelete }});
+            if (moduleId == 14 || moduleId == 28 || moduleId == 29 || moduleId == 30) {
+                await News.deleteMany({ _id: { $in: arrIdDelete } });
                 return functions.success(res, 'xóa thành công!');
             }
-            if(moduleId == 26 || moduleId == 23) {
-                await Users.deleteMany({ idRaoNhanh365: { $in: arrIdDelete }});
+            if (moduleId == 26 || moduleId == 23) {
+                await Users.deleteMany({ idRaoNhanh365: { $in: arrIdDelete } });
                 return functions.success(res, 'xóa thành công!');
             }
             return functions.setError(res, "Truyen dung moduleId muon xoa", 406);
         }
         return functions.setError(res, "Truyen moduleId va arrId dang mang", 405);
-    }catch(error) {
+    } catch (error) {
         return functions.setError(res, error.message);
     }
 }

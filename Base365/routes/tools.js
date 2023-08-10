@@ -94,6 +94,9 @@ router.get("/toolPointUse", toolTimviec365.toolPointUse);
 // api quét data nganh don
 router.get("/toolNganhDon", toolTimviec365.toolNganhDon);
 
+// api quét tin ghim hết hạn hàng ngày
+router.get("/toolQuetTinGhim", toolTimviec365.dailyScanExpiredVipNews);
+
 // api quét data nganh thu
 router.get("/toolNganhThu", toolTimviec365.toolNganhThu);
 router.get("/toolTagBlog", toolTimviec365.toolTagBlog);

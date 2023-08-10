@@ -32,7 +32,7 @@ exports.Home = async (req, res) => {
                     as: "info"
                 }
             },
-            { $unwind: "$info" },
+            { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
             {
                 $group: {
                     _id: "$id_sd",
@@ -65,7 +65,7 @@ exports.Home = async (req, res) => {
                     as: "info"
                 }
             },
-            { $unwind: "$info" },
+            { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
 
             {
                 $group: {
@@ -76,7 +76,6 @@ exports.Home = async (req, res) => {
                     ts_so_luong: { $first: "$sl_sc" }
                 }
             },
-            { $match: { id_cty: id_cty } },
         ])
         let sl_dang_sc = 0;
         let gt_ts_dang_sc = 0;
@@ -95,7 +94,7 @@ exports.Home = async (req, res) => {
                     as: "info"
                 }
             },
-            { $unwind: "$info" },
+            { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
 
             {
                 $group: {
@@ -107,7 +106,6 @@ exports.Home = async (req, res) => {
                 }
             },
 
-            { $match: { id_cty: id_cty } },
         ])
         let sl_dang_bd = 0;
         let gt_ts_dang_bd = 0;
@@ -130,7 +128,7 @@ exports.Home = async (req, res) => {
                     as: "info"
                 }
             },
-            { $unwind: "$info" },
+            { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
             {
                 $group: {
                     _id: "$mat_id",
@@ -159,7 +157,7 @@ exports.Home = async (req, res) => {
                     as: "info"
                 }
             },
-            { $unwind: "$info" },
+            { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
             {
                 $group: {
                     _id: "$huy_id",
@@ -169,7 +167,6 @@ exports.Home = async (req, res) => {
                     ts_so_luong: { $first: "$huy_soluong" }
                 }
             },
-            { $match: { id_cty: id_cty } },
         ])
         let sl_huy = 0;
         let gt_ts_huy = 0;
@@ -188,7 +185,7 @@ exports.Home = async (req, res) => {
                     as: "info"
                 }
             },
-            { $unwind: "$info" },
+            { $unwind: { path: "$info", preserveNullAndEmptyArrays: true } },
             {
                 $group: {
                     _id: "$tl_id",
@@ -198,7 +195,6 @@ exports.Home = async (req, res) => {
                     ts_so_luong: { $first: "$tl_soluong" }
                 }
             },
-            { $match: { id_cty: id_cty } },
         ])
         let sl_thanhly = 0;
         let gt_ts_thanhly = 0;

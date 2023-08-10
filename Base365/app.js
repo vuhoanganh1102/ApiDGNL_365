@@ -13,6 +13,7 @@ var AppCRM = express();
 var AppQLC = express();
 var AppHR = express();
 var appQLTS = express();
+var AppGiaSu = express();
 var AppTinhluong = express();
 
 function configureApp(app) {
@@ -95,7 +96,7 @@ errorApp(AppHR);
 
 // Cấu hình AppCRM
 configureApp(AppCRM);
-var CrmRouter = require('./routes/crm');
+var CrmRouter = require('./routes/crm/CRMroutes');
 AppCRM.use("/api/crm", CrmRouter);
 errorApp(AppCRM);
 
@@ -104,6 +105,12 @@ configureApp(appQLTS);
 var qltsRouter = require('./routes/qltsRouter');
 appQLTS.use("/api/qlts", qltsRouter);
 errorApp(appQLTS)
+
+// Cấu hình appQLTS
+configureApp(AppGiaSu);
+var GiaSuRouter = require('./routes/giasu');
+AppGiaSu.use("/api/giasu", GiaSuRouter);
+errorApp(AppGiaSu)
 
 // Cấu hình AppTinhluongs
 configureApp(AppTinhluong);
@@ -174,6 +181,15 @@ var serverQLTS = appQLTS.listen(3008, () => {
 
 serverQLTS.on('error', (error) => {
     console.error('Error occurred while listening on QLTS port:', error);
+});
+
+//GiaSu
+AppGiaSu.listen(3009, () => {
+    console.log(`GiaSu app is running on port 3009`);
+});  
+
+AppGiaSu.on('error', (error) => {
+    console.error('Error occurred while listening on GiaSu port:', error);
 });
 
 // Tính lương 
