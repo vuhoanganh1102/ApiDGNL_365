@@ -10,6 +10,9 @@ const functions = require('../../../services/functions')
 exports.deXuat_user_send = async (req, res) => {
   try {
     let { type, time_s, time_e, id_user_duyet,page } = req.body;
+    if (!type){
+      type = 1
+    }
     let id_user = 0;
     let com_id = 0;
     if(req.user.data.type == 2) {
@@ -45,42 +48,50 @@ exports.deXuat_user_send = async (req, res) => {
     } else if (time_e) {
       query.time_create = { $lte: new Date(time_e) };
     }
-
+    let totalPages
     if (type == 1) { // Hiển thị tất cả
+      const datafull = await De_Xuat.find(query)
       const showAll = await De_Xuat.find(query)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-        return functions.success(res,'get data success',{showAll})  
+      totalPages = Math.ceil(datafull.length / perPage);
+      return functions.success(res,'get data success',{showAll,totalPages})  
     }
 
     if (type == 2) { // Hiển thị đang chờ duyệt
       query.active = 1;
       query.type_duyet = { $in: [0, 7] };
+      const datafull = await De_Xuat.find(query)
       const showCD = await De_Xuat.find(query)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-        return functions.success(res,'get data success',{showCD})
+      totalPages = Math.ceil(datafull.length / perPage);
+      return functions.success(res,'get data success',{showCD,totalPages})
     }
 
     if (type == 4) { // Hiển thị đã phê duyệt
       query.active = 0;
       query.type_duyet = 5;
+      const datafull = await De_Xuat.find(query)
       const showD = await De_Xuat.find(query)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);;
-      return functions.success(res,'get data success',{showD})
+      totalPages = Math.ceil(datafull.length / perPage);
+      return functions.success(res,'get data success',{showD,totalPages})
     }
 
     if (type == 5) { // Hiển thị đã từ chối
       query.$or = [{ active: 2 }, { type_duyet: 3 }];
+      const datafull = await De_Xuat.find(query)
       const showTC = await De_Xuat.find(query)  
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);; 
-      return functions.success(res,'get data success',{showTC})
+      totalPages = Math.ceil(datafull.length / perPage);
+      return functions.success(res,'get data success',{showTC,totalPages})
     }
     else{
       return functions.setError(res,'type khong hop le',400)

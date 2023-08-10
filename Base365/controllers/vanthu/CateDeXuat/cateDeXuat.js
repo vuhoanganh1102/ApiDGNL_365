@@ -333,6 +333,7 @@ exports.findthanhVien = async (req, res) => {
     const startIndex = (page - 1) * perPage;
     if(req.user.data.type == 1) {
       com_id = req.user.data.com_id
+      const dataFull = await UserDX.find({ 'inForPerson.employee.com_id': com_id,type : 2 })
       const checkTV = await UserDX.find({ 'inForPerson.employee.com_id': com_id,type : 2 })
       .select('idQLC userName email inForPerson.employee.position_id inForPerson.employee.dep_id')
       .sort({ 'inForPerson.employee.dep_id': -1 })
@@ -344,7 +345,7 @@ exports.findthanhVien = async (req, res) => {
           pos_id : emp.inForPerson.employee.position_id,
           dep_id : emp.inForPerson.employee.dep_id
       }))
-      const totalPages = Math.ceil(data.length / perPage);
+      const totalPages = Math.ceil(dataFull.length / perPage);
       return functions.success(res, 'get data success', { data, totalPages});
     }else {
       return functions.setError(res, 'không có quyền truy cập', 400);
