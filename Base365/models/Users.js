@@ -1024,29 +1024,6 @@ const UserSchema = new mongoose.Schema({
                 type : String,
                 default : null
             },
-<<<<<<< HEAD
-            ugs_county_gs : {
-                type : Number,
-                default : null
-                // quốc gia của gia sư
-            },
-            ugs_city_gs : {
-                type : Number,
-                default : null
-                // tỉnh, thành phố của gia sư nếu là ở nước ngoài
-            },
-            ugs_county : {
-                // quốc gia của phụ huynh
-                type : String,
-                default : null
-            },
-            ugs_city : {
-                // tỉnh, thành phố của phụ huynh nếu là ở nước ngoài
-                type : String,
-                default : null
-            },
-=======
->>>>>>> 2286414875f61458284cc020fd7869492aeba420
             ugs_workplace : {
                 //nơi làm việc 
                 type : String,
