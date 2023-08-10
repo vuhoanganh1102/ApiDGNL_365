@@ -231,7 +231,6 @@ exports.report = async (req, res, next) => {
         if (from_date && to_date)
             conditions.sb_time_up = { $gte: new Date(from_date), $lte: new Date(to_date) }
         let dataLuong = await Salarys.find({ sb_id_com: comId, sb_first: { $ne: 1 } }).sort({ sb_time_up: -1 });
-
         let tangLuong = 0;
         let giamLuong = 0;
         let arr = [];
@@ -519,16 +518,16 @@ exports.report = async (req, res, next) => {
 
 
 
-        // data.tongSoTinTuyenDung = tongSoTinTuyenDung;
-        // data.tongSoHoSo = tongSoHoSo;
-        // tongSoUngVienCanTuyen.length !== 0 ? data.tongSoUngVienCanTuyen = tongSoUngVienCanTuyen[0].total : data.tongSoUngVienCanTuyen = 0
-        // tongSoUngVienDenPhongVan.length !== 0 ? data.tongSoUngVienDenPhongVan = tongSoUngVienDenPhongVan[0].SL : data.tongSoUngVienDenPhongVan = 0
-        // tongSoUngVienQuaPhongVan.length !== 0 ? data.tongSoUngVienQuaPhongVan = tongSoUngVienQuaPhongVan[0].SL : data.tongSoUngVienQuaPhongVan = 0
-        // tongSoUngVienHuyNhanViec.length !== 0 ? data.tongSoUngVienHuyNhanViec = tongSoUngVienHuyNhanViec[0].SL : data.tongSoUngVienHuyNhanViec = 0
+        data.tongSoTinTuyenDung = tongSoTinTuyenDung;
+        data.tongSoHoSo = tongSoHoSo;
+        tongSoUngVienCanTuyen.length !== 0 ? data.tongSoUngVienCanTuyen = tongSoUngVienCanTuyen[0].total : data.tongSoUngVienCanTuyen = 0
+        tongSoUngVienDenPhongVan.length !== 0 ? data.tongSoUngVienDenPhongVan = tongSoUngVienDenPhongVan[0].SL : data.tongSoUngVienDenPhongVan = 0
+        tongSoUngVienQuaPhongVan.length !== 0 ? data.tongSoUngVienQuaPhongVan = tongSoUngVienQuaPhongVan[0].SL : data.tongSoUngVienQuaPhongVan = 0
+        tongSoUngVienHuyNhanViec.length !== 0 ? data.tongSoUngVienHuyNhanViec = tongSoUngVienHuyNhanViec[0].SL : data.tongSoUngVienHuyNhanViec = 0
 
-        // data.mangThongTin = mangThongTin;
-        // data.thongKeNhanVienTuyenDung = thongKeNhanVienTuyenDung;
-        // data.gioiThieuUngVien = gioiThieuUngVien;
+        data.mangThongTin = mangThongTin;
+        data.thongKeNhanVienTuyenDung = thongKeNhanVienTuyenDung;
+        data.gioiThieuUngVien = gioiThieuUngVien;
 
         //Biểu đồ thống kê số nhân viên mới
         let chartEmployee = [];
@@ -774,7 +773,9 @@ exports.reportChart = async (req, res, next) => {
         let married = Number(req.body.married);
         let seniority = Number(req.body.seniority);
         let old = Number(req.body.old);
-        // let from_date = 
+        let from_date = req.body.from_date;
+        let to_date = req.body.to_date;
+        let type = Number(req.body.type);
 
         let limit = 10;
         let skip = (page - 1) * limit;
@@ -860,14 +861,15 @@ exports.reportChart = async (req, res, next) => {
                 { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
             ])
-            let soluong = data.length
-            return functions.success(res, 'get data success', { soluong, data })
+            let soluong = data.length;
+            let total = await User.countDocuments(conditions)
+            return functions.success(res, 'get data success', { total, soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-nghi-viec.html') {
             delete conditions['inForPerson.employee.com_id']
             delete conditions['inForPerson.employee.ep_status']
             subConditions['resign.com_id'] = comId;
             conditions.type = { $ne: 2 }
-
+            if (type) subConditions['resign.type'] = type;
             data = await Users.aggregate([
                 { $match: conditions },
                 { $skip: skip },
@@ -912,7 +914,22 @@ exports.reportChart = async (req, res, next) => {
                 { $project: searchItem }
             ])
             let soluong = data.length
-            return functions.success(res, 'get data success', { soluong, data })
+            let total = await Users.aggregate([
+                { $match: conditions },
+                { $skip: skip },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: 'HR_Resigns',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'resign'
+                    }
+                },
+                { $unwind: "$resign" },
+                { $match: subConditions },]);
+            total = total.length;
+            return functions.success(res, 'get data success', { total, soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-bo-nhiem.html') {
             data = await Users.aggregate([
                 { $match: conditions },
@@ -957,8 +974,22 @@ exports.reportChart = async (req, res, next) => {
                 { $project: searchItem }
 
             ])
+            let total = await Users.aggregate([
+                { $match: conditions },
+                { $skip: skip },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: 'HR_Appoints',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'Appoints'
+                    }
+                },
+                { $unwind: "$Appoints" },]);
             let soluong = data.length
-            return functions.success(res, 'get data success', { soluong, data })
+            total = total.length
+            return functions.success(res, 'get data success', { total, soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-chuyen-cong-tac.html') {
             data = await Users.aggregate([
                 { $match: conditions },
@@ -1002,14 +1033,28 @@ exports.reportChart = async (req, res, next) => {
                 { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
 
-            ])
+            ]);
+            let total = await Users.aggregate([
+                { $match: conditions },
+                { $skip: skip },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: 'HR_TranferJobs',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'HR_TranferJobs'
+                    }
+                },
+                { $unwind: '$HR_TranferJobs' }]);
+            total = total.length;
             let soluong = data.length
-            return functions.success(res, 'get data success', { soluong, data })
+            return functions.success(res, 'get data success', { total, soluong, data })
         } else if (link === 'bieu-do-danh-sach-nhan-vien-tang-giam-luong.html') {
-            // if (from_date) subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date) }
-            // if (to_date) subConditions['HR_Salarys.sb_time_up'] = { $lte: new Date(to_date) }
-            // if (from_date && to_date)
-            //     subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
+            if (from_date) subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date) }
+            if (to_date) subConditions['HR_Salarys.sb_time_up'] = { $lte: new Date(to_date) }
+            if (from_date && to_date)
+                subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
 
             data = await Users.aggregate([
                 { $match: conditions },
@@ -1060,18 +1105,26 @@ exports.reportChart = async (req, res, next) => {
             for (let i = 0; i < data.length; i++) {
                 const element = data[i];
                 conditions = {};
-
                 conditions.sb_id_user = element.sb_id_user;
                 conditions.sb_time_up = { $lt: element.sb_time_up }
-
                 let luongcu = await Salarys.findOne(conditions).lean();
-                if (luongcu) {
-                    console.log(luongcu.sb_salary_basic)
-                    console.log(element.luongmoi)
+                if (luongcu && type === 1) {
                     if (luongcu.sb_salary_basic > element.luongmoi) {
                         element.giamLuong = luongcu.sb_salary_basic - element.luongmoi;
                         element.tangLuong = 0;
-
+                        subData.push(element);
+                    }
+                } else if (luongcu && type === 2) {
+                    if (luongcu.sb_salary_basic < element.luongmoi) {
+                        element.tangLuong = element.luongmoi - luongcu.sb_salary_basic;
+                        element.giamLuong = 0;
+                        subData.push(element);
+                    }
+                } else if (luongcu && !type) {
+                    if (luongcu.sb_salary_basic > element.luongmoi) {
+                        element.giamLuong = luongcu.sb_salary_basic - element.luongmoi;
+                        element.tangLuong = 0;
+                        console.log(luongcu.sb_salary_basic)
                     } else if (luongcu.sb_salary_basic < element.luongmoi) {
                         element.tangLuong = element.luongmoi - luongcu.sb_salary_basic;
                         element.giamLuong = 0;
@@ -1080,10 +1133,45 @@ exports.reportChart = async (req, res, next) => {
                 }
             }
             let soluong = subData.length
-            return functions.success(res, 'get data success', { soluong, data: subData })
-        } else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
+            let dataLuong = await Salarys.find({ sb_id_com: comId, sb_first: { $ne: 1 } }).sort({ sb_time_up: -1 });
+            let tangLuong = 0;
+            let giamLuong = 0;
+            if (dataLuong.length !== 0) {
+                for (let i = 0; i < dataLuong.length; i++) {
+                    conditions.sb_id_user = dataLuong[i].sb_id_user;
+                    conditions.sb_time_up = { $lt: new Date(dataLuong[i].sb_time_up) }
+                    checkTangGiam = await Salarys.findOne(conditions).lean()
+
+                    if (checkTangGiam) {
+                        if (type === 2) {
+                            if (dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic > 0) {
+                                tangLuong++;
+                            }
+                        } else if (type === 1) {
+                            if (dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic < 0) {
+                                giamLuong++;
+                            }
+                        } else if (!type) {
+                            if (dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic > 0) {
+                                tangLuong++;
+                                
+                            } else if (dataLuong[i].sb_salary_basic - checkTangGiam.sb_salary_basic < 0) {
+                                giamLuong++;
+                                console.log(checkTangGiam.sb_salary_basic)
+                            }
+                        }
+                    }
+                }
+            }
+            let tangGiamLuong = 0;
+            if (tangLuong !== 0) tangGiamLuong = tangLuong;
+            if (giamLuong !== 0) tangGiamLuong = giamLuong;
+            if (tangLuong !== 0 && giamLuong !== 0) tangGiamLuong = tangLuong + giamLuong;
+            return functions.success(res, 'get data success', { total: tangGiamLuong, soluong, data: subData })
+        } else if (link === 'bieu-do-danh-sach-nhan-vien-theo-do-tuoi.html') {
             let tuoi = 0;
             let list = [];
+
             let check = await Users.aggregate([
                 { $match: conditions },
                 { $skip: skip },
@@ -1117,9 +1205,10 @@ exports.reportChart = async (req, res, next) => {
                 { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
 
-            ])
+            ]);
             for (let i = 0; i < check.length; i++) {
-                let sinhnhat = new Date(check[i].birthday * 1000).getFullYear()
+                const element = check[i];
+                let sinhnhat = new Date(element.birthday * 1000).getFullYear()
                 let namhientai = new Date().getFullYear();
                 tuoi = namhientai - sinhnhat;
                 if (old === 1 && tuoi < 30) {
@@ -1130,10 +1219,58 @@ exports.reportChart = async (req, res, next) => {
                     list.push(check[i])
                 } else if (old === 4 && tuoi > 60) {
                     list.push(check[i])
+                } else if (!old) {
+                    list.push(check[i])
                 }
             }
             let soluong = data.length
             return functions.success(res, 'get data success', { soluong, data: list })
+        } else if (link === 'bieu-do-danh-sach-nhan-vien-theo-tham-nien-cong-tac.html') {
+            data = await Users.aggregate([
+                { $match: conditions },
+                { $skip: skip },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: 'HR_Resigns',
+                        localField: 'idQLC',
+                        foreignField: 'ep_id',
+                        as: 'resign'
+                    }
+                },
+                { $unwind: "$resign" },
+                { $match: subConditions },
+                {
+                    $lookup: {
+                        from: 'QLC_Deparments',
+                        localField: 'inForPerson.employee.dep_id',
+                        foreignField: 'dep_id',
+                        as: 'dep'
+                    }
+                },
+                { $unwind: { path: "$dep", preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'QLC_Teams',
+                        localField: 'inForPerson.employee.team_id',
+                        foreignField: 'team_id',
+                        as: 'team'
+                    }
+                },
+                { $unwind: { path: "$team", preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'QLC_Groups',
+                        localField: 'inForPerson.employee.group_id',
+                        foreignField: 'gr_id',
+                        as: 'group'
+                    }
+                },
+                { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
+                { $project: searchItem }
+            ])
+            let soluong = data.length
+            return functions.success(res, 'get data success', { soluong, data })
         }
     } catch (error) {
         console.log("🚀 ~ file: report.js:985 ~ exports.reportChart= ~ error:", error)

@@ -2311,3 +2311,418 @@ exports.showadd = async(req, res) => {
         return functions.setError(res, error.message);
     }
 };
+
+exports.dxDiMuonVeSom = async(req, res) => {
+    try {
+        let {
+            name_dx,
+            type_dx,
+            noi_dung,
+            kieu_duyet,
+            id_user_duyet,
+            id_user_theo_doi,
+            type_duyet,
+            link,
+
+            time_batdau,
+            time_batdau_tomorrow,
+            time_ketthuc,
+            time_ketthuc_tomorrow,
+            ca_lam_viec,
+            ly_do
+        } = req.body;
+        let createDate = new Date()
+        let id_user = req.user.data.idQLC
+        let com_id = -1;
+        if (req.user.data.inForPerson && req.user.data.inForPerson.employee) {
+            com_id = req.user.data.inForPerson.employee.com_id
+        }
+        let name_user = req.user.data.userName;
+        let file_kem = req.files.file_kem;
+        let linkDL = '';
+        if (file_kem) {
+            console.log("Hit filekem")
+            functions.uploadFileVanThu(id_user, file_kem);
+            linkDL = functions.createLinkFileVanthu(id_user, file_kem.name);
+        }
+        console.log("Hit DX2")
+        if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+            return res.status(404).json('bad request')
+        } else {
+            let maxID = await functions.getMaxID(DeXuat);
+            let _id = 0;
+            if (maxID) {
+
+                _id = Number(maxID) + 1;
+            }
+            let createDXDMVS = new DeXuat({
+                _id: _id,
+                name_dx: name_dx,
+                type_dx: 21,
+                noi_dung: {
+                    di_muon_ve_som: {
+                        time_batdau: time_batdau,
+                        time_batdau_tomorrow: time_batdau_tomorrow,
+                        time_ketthuc: time_ketthuc,
+                        time_ketthuc_tomorrow: time_ketthuc_tomorrow,
+                        ca_lam_viec: ca_lam_viec,
+                        ly_do: ly_do,
+                    },
+                },
+                name_user: name_user,
+                id_user: id_user,
+                com_id: com_id,
+                kieu_duyet: kieu_duyet,
+                id_user_duyet: id_user_duyet,
+                id_user_theo_doi: id_user_theo_doi,
+                file_kem: linkDL,
+                type_duyet: type_duyet,
+                time_create: createDate,
+            });
+
+            let savedDXDMVS = await createDXDMVS.save();
+            console.log(savedDXDMVS)
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Đề xuất đi muộn về sớm", link);
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
+            const id_user_nhan_arr = savedDXDMVS.id_user_duyet.split(',');
+
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: savedDXDMVS._id,
+                    type: 2,
+                    view: 0,
+                    created_date: createDate
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+
+            res.status(200).json({ savedDXDMVS: savedDXDMVS, saveCreateTb });
+        };
+    } catch (error) {
+        console.error('Failed to add', error);
+        res.status(500).json({ error: 'Failed to add' });
+    }
+}
+
+//đề xuất xin nghỉ phép ra ngoài
+exports.dxXinNghiRaNgoai = async(req, res) => {
+    try {
+        let {
+            name_dx,
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
+            id_user_duyet,
+            id_user_theo_doi,
+            phong_ban,
+            ly_do,
+            bd_nghi,
+            kt_nghi,
+            ca_nghi,
+            link
+        } = req.body;
+        let id_user = req.user.data.idQLC
+        let com_id = -1;
+        if (req.user.data.inForPerson && req.user.data.inForPerson.employee) {
+            com_id = req.user.data.inForPerson.employee.com_id
+        }
+        let name_user = req.user.data.userName
+        let file_kem = req.files.fileKem;
+        let link_download = '';
+
+        if (file_kem) {
+            functions.uploadFileVanThu(id_user, file_kem);
+            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+        }
+        if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+            return res.status(404).json("bad request ");
+        } else {
+            let maxID = 0;
+            const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+            //   console.log(de_xuat);
+            if (de_xuat) {
+                maxID = de_xuat._id;
+            }
+            //console.log("mx : " + maxID);
+            const new_de_xuat = new De_Xuat({
+                _id: (maxID + 1),
+                name_dx: name_dx,
+                type_dx: 1,
+                phong_ban: phong_ban,
+                noi_dung: {
+                    nghi_phep_ra_ngoai: {
+                        ly_do: ly_do,
+                        bd_nghi: bd_nghi,
+                        kt_nghi: kt_nghi,
+                        ca_nghi: ca_nghi,
+                    }
+                },
+                name_user: name_user,
+                id_user: id_user,
+                com_id: com_id,
+                kieu_duyet: kieu_duyet,
+                id_user_duyet: id_user_duyet,
+                id_user_theo_doi: id_user_theo_doi,
+                file_kem: link_download,
+                kieu_duyet: 0,
+                //   type_duyet: 0,
+                //  type_time: type_time,
+                //time_start_out: " ",
+                time_create: new Date(),
+                //  time_tiep_nhan: null,
+                //  time_duyet: null,
+                // active: 1,//1-bên 3 đã đồng ý , 2 - bên 3 không đồng ý 
+                // del_type: 1,//1-active , 2 --delete
+            });
+            let saveDX = await new_de_xuat.save();
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin nghỉ phép", link, file_kem);
+            // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
+            const id_user_nhan_arr = id_user_duyet.split(',');
+
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date()
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json({ saveDX, saveCreateTb });
+        }
+    } catch (error) {
+        console.error('Failed to add', error);
+        res.status(500).json({ error: 'Failed to add' });
+    }
+}
+
+exports.dxNhapNgayNhanLuong = async(req, res) => {
+    try {
+        let {
+            name_dx,
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
+            id_user_duyet,
+            id_user_theo_doi,
+            phong_ban,
+            ngay_nhan_luong,
+            ly_do,
+            link
+        } = req.body;
+        let id_user = req.user.data.idQLC
+        let com_id = -1;
+        if (req.user.data.inForPerson && req.user.data.inForPerson.employee) {
+            com_id = req.user.data.inForPerson.employee.com_id
+        }
+        let name_user = req.user.data.userName
+        let file_kem = req.files.fileKem;
+        let link_download = '';
+
+        if (file_kem) {
+            functions.uploadFileVanThu(id_user, file_kem);
+            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+        }
+        if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+            return res.status(404).json("bad request ");
+        } else {
+            let maxID = 0;
+            const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+            //   console.log(de_xuat);
+            if (de_xuat) {
+                maxID = de_xuat._id;
+            }
+            //console.log("mx : " + maxID);
+            const new_de_xuat = new De_Xuat({
+                _id: (maxID + 1),
+                name_dx: name_dx,
+                type_dx: 1,
+                phong_ban: phong_ban,
+                noi_dung: {
+                    nhap_ngay_nhan_luong: {
+                        ly_do: ly_do,
+                        ngay_nhan_luong: ngay_nhan_luong
+                    }
+                },
+                name_user: name_user,
+                id_user: id_user,
+                com_id: com_id,
+                kieu_duyet: kieu_duyet,
+                id_user_duyet: id_user_duyet,
+                id_user_theo_doi: id_user_theo_doi,
+                file_kem: link_download,
+                kieu_duyet: 0,
+                //   type_duyet: 0,
+                //  type_time: type_time,
+                //time_start_out: " ",
+                time_create: new Date(),
+                //  time_tiep_nhan: null,
+                //  time_duyet: null,
+                // active: 1,//1-bên 3 đã đồng ý , 2 - bên 3 không đồng ý 
+                // del_type: 1,//1-active , 2 --delete
+            });
+            let saveDX = await new_de_xuat.save();
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Nhập ngày nhận lương", link);
+            // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
+            const id_user_nhan_arr = id_user_duyet.split(',');
+
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date()
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json({ saveDX, saveCreateTb });
+        }
+    } catch (error) {
+        console.error('Failed to add', error);
+        res.status(500).json({ error: 'Failed to add' });
+    }
+}
+
+exports.dxXinTaiTaiLieu = async(req, res) => {
+    try {
+        let {
+            name_dx,
+            kieu_duyet, // 0-kiểm duyệt lần lượt hay đồng thời 
+            id_user_duyet,
+            id_user_theo_doi,
+            phong_ban,
+            ten_tai_lieu,
+            ly_do,
+            link
+        } = req.body;
+        let id_user = req.user.data.idQLC
+        let com_id = -1;
+        if (req.user.data.inForPerson && req.user.data.inForPerson.employee) {
+            com_id = req.user.data.inForPerson.employee.com_id
+        }
+        let name_user = req.user.data.userName
+        let file_kem = req.files.fileKem;
+        let link_download = '';
+
+        if (file_kem) {
+            functions.uploadFileVanThu(id_user, file_kem);
+            link_download = functions.createLinkFileVanthu(id_user, file_kem.name);
+        }
+        if (!name_dx || !name_user || !id_user || !id_user_duyet || !id_user_theo_doi) {
+            return res.status(404).json("bad request ");
+        } else {
+            let maxID = 0;
+            const de_xuat = await De_Xuat.findOne({}, {}, { sort: { _id: -1 } }).lean() || 0;
+            //   console.log(de_xuat);
+            if (de_xuat) {
+                maxID = de_xuat._id;
+            }
+            //console.log("mx : " + maxID);
+            const new_de_xuat = new De_Xuat({
+                _id: (maxID + 1),
+                name_dx: name_dx,
+                type_dx: 1,
+                phong_ban: phong_ban,
+                noi_dung: {
+                    xin_tai_tai_lieu: {
+                        ly_do: ly_do,
+                        ten_tai_lieu: ten_tai_lieu
+                    }
+                },
+                name_user: name_user,
+                id_user: id_user,
+                com_id: com_id,
+                kieu_duyet: kieu_duyet,
+                id_user_duyet: id_user_duyet,
+                id_user_theo_doi: id_user_theo_doi,
+                file_kem: link_download,
+                kieu_duyet: 0,
+                //   type_duyet: 0,
+                //  type_time: type_time,
+                //time_start_out: " ",
+                time_create: new Date(),
+                //  time_tiep_nhan: null,
+                //  time_duyet: null,
+                // active: 1,//1-bên 3 đã đồng ý , 2 - bên 3 không đồng ý 
+                // del_type: 1,//1-active , 2 --delete
+            });
+            let saveDX = await new_de_xuat.save();
+            functions.chat(id_user, id_user_duyet, com_id, name_dx, id_user_theo_doi, "Xin tải tài liệu", link);
+            // SenderID :nguoi gui , ListReceive: nguoi duyet , CompanyId, Message: ten de_xuat,ListFollower: nguoi thoe doi,Status,Link,file_kem
+            let maxIDTB = await functions.getMaxID(ThongBao)
+            let idTB = 0;
+            if (maxIDTB) {
+                idTB = Number(maxIDTB) + 1;
+            }
+            const id_user_nhan_arr = id_user_duyet.split(',');
+
+            let createTBs = []; // Mảng chứa các đối tượng ThongBao
+
+            for (let i = 0; i < id_user_nhan_arr.length; i++) {
+                const id_user_nhan = parseInt(id_user_nhan_arr[i]);
+
+                let createTB = new ThongBao({
+                    _id: idTB + i, // Sử dụng idTB + i để tạo id duy nhất cho mỗi đối tượng ThongBao
+                    id_user: id_user,
+                    id_user_nhan: id_user_nhan, // Lưu giá trị từng phần tử của id_user_duyet dưới dạng số
+                    id_van_ban: saveDX._id,
+                    type: 2,
+                    view: 0,
+                    created_date: new Date()
+                });
+
+                createTBs.push(createTB);
+            }
+
+            // Lưu tất cả các đối tượng ThongBao vào cơ sở dữ liệu
+            let saveCreateTb = await ThongBao.insertMany(createTBs)
+            return res.status(200).json({ saveDX, saveCreateTb });
+        }
+    } catch (error) {
+        console.error('Failed to add', error);
+        res.status(500).json({ error: 'Failed to add' });
+    }
+}
