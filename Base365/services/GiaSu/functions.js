@@ -38,7 +38,8 @@ dotenv.config();
 
 const functions = require('../../services/functions');
 
-exports.uploadAvaPH = async(file, allowedExtensions, createdAt = null) => {
+exports.uploadAva = async(Object, file, allowedExtensions, createdAt = null) => {
+    //truyền Object nếu là Phụ Huynh thì truyền "PH", nếu gia sư thì truyền "GS"
     // const namefiles = req.files.name
     let date = new Date();
     if (createdAt) {
@@ -46,10 +47,10 @@ exports.uploadAvaPH = async(file, allowedExtensions, createdAt = null) => {
     }
     var filename = file.name;
     var arr_filename = filename.split('.');
-    var new_filename = 'PH' +  Math.round(date.getTime() / 1000) + '.' + arr_filename[arr_filename.length - 1];
+    var new_filename = `${Object}` +  Math.round(date.getTime() / 1000) + '.' + arr_filename[arr_filename.length - 1];
     // let namefile = 'PH' + Math.round(date.getTime() / 1000) + "_" + file.name;
-    let path1 = `../storage/base365/giasu/upload/ph/${functions.convertDate(date.getTime()/1000, true)}/`;
-    let filePath = `../storage/base365/giasu/upload/ph/${functions.convertDate(date.getTime()/1000, true)}/` + new_filename;
+    let path1 = `../storage/base365/giasu/upload/${Object.toLocaleLowerCase()}/${functions.convertDate(date.getTime()/1000, true)}/`;
+    let filePath = `../storage/base365/giasu/upload/${Object.toLocaleLowerCase()}/${functions.convertDate(date.getTime()/1000, true)}/` + new_filename;
     let fileCheck = path.extname(filePath);
     if (allowedExtensions.includes(fileCheck.toLocaleLowerCase()) === false) {
         return false
@@ -68,4 +69,12 @@ exports.uploadAvaPH = async(file, allowedExtensions, createdAt = null) => {
         });
     });
     return new_filename
+}
+exports.createLinkFile = (Object, createAt, file) => {
+     //truyền Object nếu là Phụ Huynh thì truyền "PH", nếu gia sư thì truyền "GS"
+    if (file != null && file != '') {
+        return `${process.env.cdn}/upload/${Object.toLocaleLowerCase()}/${functions.convertDate(createAt,true)}/${file}`;
+    } else {
+        return "";
+    }
 }
