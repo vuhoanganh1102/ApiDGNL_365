@@ -578,16 +578,24 @@ const positionNames = {
 
 exports.positionNames = positionNames;
 
-exports.thoigian = (from_date, to_date) => {
-    if (!to_date){
+exports.thoigian = (from_date, to_date, type) => {
+    if (!to_date) {
         to_date = new Date()
-    }else{
+    } else {
         to_date = new Date(to_date)
     }
-    if (!from_date) from_date = new Date(to_date.getTime() - 15 * 24 * 60 * 60 * 1000)
+    if (type === 3 && !from_date) from_date = new Date(to_date.getTime() - 15 * 24 * 60 * 60 * 1000)
+
+    let songay = 0;
     let from = new Date(from_date).getTime();
     let to = new Date(to_date).getTime();
-    let songay = (to - from) / (1000 * 60 * 60 * 24);
+    if (type === 3) {
+        songay = (to - from) / (1000 * 60 * 60 * 24);
+    } else if (type === 2) {
+        songay = (to - from) / (1000 * 60 * 60 * 24 * 30);
+    } else {
+        songay = (to - from) / (1000 * 60 * 60 * 24 * 365);
+    }
     return songay
 }
 

@@ -2702,46 +2702,37 @@ exports.addDiscount = async (req, res, next) => {
     try {
         let request = req.body;
         let user_id = req.user.data.idRaoNhanh365;
-        if (request.new_id && request.new_id.length) {
-            for (let i = 0; i < request.new_id.length; i++) {
-                let loai_khuyenmai = Number(request.loai_khuyenmai);
-                let giatri_khuyenmai = Number(request.giatri_khuyenmai);
-                let ngay_bat_dau = request.ngay_bat_dau;
-                let ngay_ket_thuc = request.ngay_ket_thuc;
-                let new_id = Number(request.new_id[i]);
-                if (
-                    loai_khuyenmai &&
-                    ngay_bat_dau &&
-                    ngay_ket_thuc &&
-                    giatri_khuyenmai
-                ) {
-                    if (loai_khuyenmai == 1 || loai_khuyenmai == 2) {
-                    } else {
-                        return functions.setError(res, "Nhập số không hợp lệ", 400);
+        let loai_khuyenmai = Number(request.loai_khuyenmai);
+        let giatri_khuyenmai = Number(request.giatri_khuyenmai);
+        let ngay_bat_dau = request.ngay_bat_dau;
+        let ngay_ket_thuc = request.ngay_ket_thuc;
+        if (loai_khuyenmai && ngay_bat_dau && ngay_ket_thuc && giatri_khuyenmai) {
+            if (loai_khuyenmai == 1 || loai_khuyenmai == 2) {
+                if (functions.checkNumber(giatri_khuyenmai) && giatri_khuyenmai >= 0) {
+                    if (request.new_id && request.new_id.length) {
+                        for (let i = 0; i < request.new_id.length; i++) {
+                            let new_id = Number(request.new_id[i]);
+                            let checkNew = await New.findById(new_id);
+                            if (checkNew) {
+                                await New.findByIdAndUpdate(new_id, {
+                                    timePromotionStart: new Date(ngay_bat_dau).getTime() / 1000,
+                                    timePromotionEnd: new Date(ngay_ket_thuc).getTime() / 1000,
+                                    "infoSell.promotionType": loai_khuyenmai,
+                                    "infoSell.promotionValue": giatri_khuyenmai,
+                                });
+                            } else {
+                                return functions.setError(res, "not found new", 404);
+                            }
+                        }
+                        return functions.success(res, 'add discount success')
                     }
-                    if (
-                        functions.checkNumber(giatri_khuyenmai) === false || giatri_khuyenmai <= 0
-                    ) {
-                        return functions.setError(res, "invalid number", 400);
-                    }
-
-                    let checkNew = await New.findById(new_id);
-                    if (checkNew) {
-                        await New.findByIdAndUpdate(new_id, {
-                            timePromotionStart: new Date(ngay_bat_dau).getTime() / 1000,
-                            timePromotionEnd: new Date(ngay_ket_thuc).getTime() / 1000,
-                            "infoSell.promotionType": loai_khuyenmai,
-                            "infoSell.promotionValue": giatri_khuyenmai,
-                        });
-                    } else {
-                        return functions.setError(res, "not found new", 400);
-                    }
-                } else {
-                    return functions.setError(res, "missing data", 400);
+                    return functions.setError(res, 'invalid data input', 400)
                 }
+                return functions.setError(res, "invalid number giatri_khuyenmai", 400);
             }
+            return functions.setError(res, 'invalid data input', 400)
         }
-        return functions.success(res, "add discount success");
+        return functions.setError(res, "missing data", 400);
     } catch (error) {
         console.log("Err from server", error);
         return functions.setError(res, error.message);
@@ -3326,7 +3317,7 @@ exports.updateNewPromotion = async (req, res, next) => {
             && loaikhuyenmai.length === giatri.length && giatri.length === id.length) {
             for (let i = 0; i < id.length; i++) {
                 let checkNew = await New.findById(Number(id[i]));
-                if (checkNew) { 
+                if (checkNew) {
                     await New.findByIdAndUpdate(Number(id[i]), {
                         timePromotionStart: new Date(ngay_bat_dau[i]).getTime() / 1000,
                         timePromotionEnd: new Date(ngay_ket_thuc[i]).getTime() / 1000,

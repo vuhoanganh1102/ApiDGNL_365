@@ -161,7 +161,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 },
             user: { userName: 1, avatarUser: 1, type: 1, _id: 1, idRaoNhanh365: 1 },
             createdAt: 1,
-            orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1, unitPrice: 1, amountPaid: 1
+            orderActive: 1, _id: 1, buyerId: 1,totalProductCost:1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1, unitPrice: 1, amountPaid: 1
         }
         if (linkTitle === 'quan-ly-don-hang-mua.html') {
             data = await Order.aggregate([
@@ -360,7 +360,7 @@ exports.manageOrderSell = async (req, res, next) => {
             sellerId: 1, new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 },
             user: { userName: 1, avatarUser: 1, type: 1, _id: 1, idRaoNhanh365: 1 },
             createdAt: 1,
-            orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1, unitPrice: 1, amountPaid: 1
+            orderActive: 1, _id: 1, buyerId: 1,totalProductCost:1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1, unitPrice: 1, amountPaid: 1
 
         };
         if (linkTitle === 'quan-ly-don-hang-ban.html') {
