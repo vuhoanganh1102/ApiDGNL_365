@@ -1002,62 +1002,100 @@ const UserSchema = new mongoose.Schema({
             ugs_tutor_style : {
                 // //chưa biết
                 type : String,
+                default : ''
             },
             ugs_class_teach : {
                 // lớp dạy
                 type : String,
+                default : null
             },
             ugs_school : {
                 // trường học
                 type : String,
+                default : null
             },
             ugs_graduation_year : {
                 //năm tốt nghiệp 
                 type : Number,
+                default : null
             },
             ugs_specialized : {
                   //chưa biết
                 type : String,
+                default : null
             },
+<<<<<<< HEAD
+            ugs_county_gs : {
+                type : Number,
+                default : null
+                // quốc gia của gia sư
+            },
+            ugs_city_gs : {
+                type : Number,
+                default : null
+                // tỉnh, thành phố của gia sư nếu là ở nước ngoài
+            },
+            ugs_county : {
+                // quốc gia của phụ huynh
+                type : String,
+                default : null
+            },
+            ugs_city : {
+                // tỉnh, thành phố của phụ huynh nếu là ở nước ngoài
+                type : String,
+                default : null
+            },
+=======
+>>>>>>> 2286414875f61458284cc020fd7869492aeba420
             ugs_workplace : {
                 //nơi làm việc 
                 type : String,
+                default : null
             },
             ugs_about_us : {
                  //chưa biết
                 type : String,
+                default : null
             },
             ugs_experience_year : {
                 //năm tốt nghiệp
                 type : Number,
+                default : null
             },
             ugs_achievements : {
                 // chứng chỉ , thành tựu
                 type : String,
+                default : null
             },
             as_id : {
                  //chưa biết
                 type : Number,
+                default : null
             },
             as_detail : {
                 //chưa biết
                 type : String,
+                default : null
             },
             point_free : {
                 //điểm miễn phí cho phụ huynh để xem ứng viên 
                 type : Number,
+                default : null
             },
             point_buy : {
                 //điểm mất phí cho phụ huynh để xem ứng viên 
                 type : Number,
+                default : null
             },
             time_present : {
                 //chưa rõ
                 type : Number,
+                default : null
             },
             ugs_view : {
                 // lượt xem
                 type : Number,
+                default : null
             },
             token : {
                 //token

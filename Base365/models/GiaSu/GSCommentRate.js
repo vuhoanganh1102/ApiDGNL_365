@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const gs_comment_rate = new mongoose.Schema({
-
+    // tỉ lệ bình luận
     comment_rate_id : {
         type : Number,
         required: true,
@@ -8,22 +8,27 @@ const gs_comment_rate = new mongoose.Schema({
         autoIncrement: true
 
     },
+    // id hướng dẫn sử dụng
     gs_userteach_id : {
         type : Number,
 
     },
+    // id của cha mẹ
     gs_userparent_id : {
         type : Number,
 
     },
+    // tỷ lệ
     rate : {
         type : Number,
 
     },
+    // nội dung bình luận
     comment_content : {
         type : String,
 
     },
+    // thời gian bình luận
     time_comment : {
         type : Date,
         default : new Date()
