@@ -719,7 +719,7 @@ exports.reportDetail = async (req, res, next) => {
                 conditions = {};
                 conditions.sb_id_user = element.sb_id_user;
                 conditions.sb_time_up = { $lt: new Date(element.sb_time_up) }
-                let luongcu = await Salarys.findOne(conditions).lean();
+                let luongcu = await Salarys.findOne(conditions).sort({sb_time_up:-1}).lean();
                 if (luongcu && type === 1) {
                     if (luongcu.sb_salary_basic > element.luongmoi) {
                         element.giamLuong = luongcu.sb_salary_basic - element.luongmoi;

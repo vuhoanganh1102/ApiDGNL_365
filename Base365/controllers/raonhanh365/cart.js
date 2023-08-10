@@ -34,7 +34,15 @@ exports.getListCartByUserId = async (req, res, next) => {
       },
       { $unwind: { path: "$new", preserveNullAndEmptyArrays: true } },
       {
-        $project: { quantity: 1, unit: 1, status: 1, new: { _id: 1, title: 1, userID: 1, linkTitle: 1, cateID: 1, img: 1, money: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1, buySell: 1, infoSell: 1 }, user: { _id: 1, userName: 1, type: 1 } }
+        $project: {
+          quantity: 1, unit: 1, status: 1,
+          new: {
+            _id: 1, title: 1, userID: 1, linkTitle: 1,
+            cateID: 1, img: 1, money: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1, buySell: 1, infoSell: 1,
+            transport, transportFee
+          },
+          user: { _id: 1, userName: 1, type: 1 }
+        }
       }
     ])
     for (let i = 0; i < data.length; i++) {
@@ -60,14 +68,12 @@ exports.addCart = async (req, res, next) => {
     let phanloai = req.body.phanloai;
     // trang thai = 1: vao gio hang;  0: mua ngay dat coc
     let trangthai = Number(req.body.trangthai);
-    let tongtien = Number(req.body.tongtien);
+    let tongtien = Number(req.body.tongtien) || 0;
     let ngaydathang = new Date();
 
-    if (idnew && soluong && phanloai) {
-      if (
-        functions.checkNumber(soluong) && functions.checkNumber(tongtien) &&
-        functions.checkNumber(trangthai) && soluong > 0 && tongtien > 0) {
-
+    if (idnew && soluong) {
+      
+        
         let checkGh = await Cart.findOne({ userId, newsId: idnew, type: phanloai, status: trangthai }).lean();
         if (checkGh) {
           await Cart.findByIdAndUpdate(checkGh._id, { $inc: { quantity: +soluong, total: +tongtien }, date: ngaydathang })
@@ -99,8 +105,8 @@ exports.addCart = async (req, res, next) => {
           }
         }
         return functions.success(res, 'thành công')
-      }
-      return functions.setError(res, 'invalid number', 400)
+      
+  
     }
 
     return functions.setError(res, 'missing data', 400)
