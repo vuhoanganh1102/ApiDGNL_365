@@ -338,6 +338,15 @@ const newSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    brand: {
+        // hãng
+        type: String,
+        default: 0
+    },
+    kich_co:{
+        type: String,
+        default: 0
+    },
     // đô điện tử
     electroniceDevice: {
         microprocessor: {
@@ -370,18 +379,9 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: 0
         },
-        brand: {
-            // hãng
-            type: String,
-            default: 0
-        },
+       
         machineSeries: {
             // dòng máy
-            type: String,
-            default: 0
-        },
-        warranty: {
-            // bảo hành
             type: String,
             default: 0
         },
@@ -404,10 +404,6 @@ const newSchema = new mongoose.Schema({
     },
     // xe cộ
     vehicle: {
-        hang: {
-            type: String,
-            default: 0
-        },
         loai_xe: {
             type: String,
             default: 0
@@ -420,15 +416,7 @@ const newSchema = new mongoose.Schema({
             type: String,
             default: 0
         },
-        kich_co: {
-            type: String,
-            default: 0
-        },
         chat_lieu_khung: {
-            type: String,
-            default: 0
-        },
-        baohanh: {
             type: String,
             default: 0
         },
@@ -624,7 +612,7 @@ const newSchema = new mongoose.Schema({
             type: Number,
             default: 0
         },
-        vehicloType: {
+        vehicleType: {
             // loại xe
             type: Number,
             default: 0
@@ -633,50 +621,34 @@ const newSchema = new mongoose.Schema({
     // sức khoẻ - sắc đẹp
     beautifull: {
         loai_hinh_sp: {
-            type: Number,
-            default: 0
-        },
-        loai_sanpham: {
-            type: Number,
+            type: String,
             default: 0
         },
         han_su_dung: {
-            type: Number,
-            default: 0
-        },
-        hang_vattu: {
             type: String,
             default: 0
-        }
+        },
     },
     // đồ gia dụng
     wareHouse: {
         loai_thiet_bi: {
-            type: Number,
-            default: 0
-        },
-        hang: {
             type: String,
             default: 0
         },
         cong_suat: {
-            type: Number,
+            type: String,
             default: 0
         },
         dung_tich: {
-            type: Number,
+            type: String,
             default: 0
         },
         khoiluong: {
-            type: Number,
+            type: String,
             default: 0
         },
         loai_chung: {
-            type: Number,
-            default: 0
-        },
-        loai_sanpham: {
-            type: Number,
+            type: String,
             default: 0
         },
     },
@@ -802,22 +774,10 @@ const newSchema = new mongoose.Schema({
         }
     },
     noiThatNgoaiThat:{
-        chat_lieu: {
-            type: String,
-            default: 0
-        },
-        kich_co:{
-            type: String,
-            default: 0
-        },
         hinhdang:{
             type: String,
             default: 0
         },
-        brand:{
-            type: String,
-            default: 0
-        }
     },
     // thông tin bán hàng
     infoSell: {

@@ -24,4 +24,7 @@ router.post('/cancelOrder',formData.parse(),functions.checkToken,orderRN.cancelO
 
 // chi tiết huỷ đơn hàng
 router.post('/detailCancelOrder',formData.parse(),functions.checkToken,orderRN.detailCancelOrder)
+
+// chi tiết đơn hàng
+router.post('/detailOrder',formData.parse(),functions.checkToken,orderRN.detailOrder)
 module.exports = router;

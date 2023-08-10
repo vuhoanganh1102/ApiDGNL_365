@@ -40,7 +40,6 @@ exports.list = async (req, res) => {
         if(transferManagerUnit) data.push({transferManagerUnit: transferManagerUnit})
         else  data.push({transferManagerUnit: 0})
 
-        console.log(listConditions)
         //query find user hand over 
 
         // let allocation = await capPhat.distinct('id_ng_thuchien', { id_cty: id_cty, cp_da_xoa: 0 })
@@ -180,7 +179,6 @@ exports.listDetailAllocation = async (req, res) => {
         cond.id_cty = id_cty
         cond.id_ng_thuchien = id_ng_thuchien
         if(cp_id)cond.cp_id = cp_id
-        console.log(cond)
         let data = await capPhat.aggregate([
             {$match: cond},
             {$skip : skip },
@@ -239,7 +237,6 @@ exports.listDetailRecall = async (req, res) => {
         cond.id_cty = id_cty
         cond.id_ng_thuhoi = id_ng_thuhoi
         if(thuhoi_id)cond.thuhoi_id = thuhoi_id
-        console.log(cond)
         let    data = await ThuHoi.aggregate([
             {$match: cond},
             {$skip : skip },

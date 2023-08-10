@@ -206,52 +206,188 @@ exports.yp_list_cate = async(req, res) => {
         return functions.setError(res, error.message);
     }
 }
+/**Conflicted changes */
+// // tìm kiếm công ty theo điều kiện
+// exports.findCompany = async(req, res, next) => {
+//     try {
+        
+//         const request = req.body,
+//             keyword = request.keyword,
+//             page = Number(request.page) || 1,
+//             pageSize = Number(request.pageSize) || 10,
+//             skip = (page - 1) * pageSize;
+//         if (keyword) {
+//             // Lấy công ty tương ứng
+//             let companyAggregate = Users.aggregate([
+//                 {
+//                     $match: {
+//                         userName: { $ne: '' },
+//                         idTimViec365: { $gt: 694 },
+//                         "inForCompany.timviec365.usc_redirect": '',
+//                         type: 1,
+//                         fromWeb: "timviec365",
+//                         $text: {
+//                             $search: keyword
+//                         }
+//                     }
+//                 },
+//                 { $facet: {
+//                     counter: [{$count: "count"}],
+//                     data: [
+//                         { $sort:  { updatedAt: -1 } },
+//                         { $skip: skip },
+//                         { $limit: pageSize },
+//                         {
+//                             $project: {
+//                                 usc_id: "$idTimViec365",
+//                                 usc_company: "$userName",
+//                                 usc_logo: "$avatarUser",
+//                                 usc_alias: "$alias",
+//                                 usc_create_time: "$createdAt",
+//                                 usc_size: "$inForCompany.timviec365.usc_size",
+//                                 usc_address: "$address",
+//                                 usc_company_info: "$inForCompany.description",
+//                             }
+//                         }
+//                     ]
+//                 }},
+//             ]);
+
+//             let array_keyword = [];
+//             const array_name_tag = keyword.split(' ');
+//             for (let j = 0; j < array_name_tag.length; j++) {
+//                 const element = array_name_tag[j];
+//                 array_keyword.push({ name_tag: { $regex: element } });
+//             }
+//             // Lấy từ khóa liên quan
+//             let list_related = CategoryCompany.find({
+//                 // id: { $ne: item.id },
+//                 $or: array_keyword,
+//                 city_tag: 0,
+//                 parent_id: { $ne: 0 }
+//             }).select("id city_tag name_tag").limit(20);
+
+//             // Địa điểm liên quan
+//             let list_city_related = CategoryCompany.find({
+//                 // id: { $ne: item.id },
+//                 $or: array_keyword,
+//                 city_tag: { $ne: 0 },
+//             }).select("id city_tag name_tag").limit(20);
+//             // // Blog liên quan
+//             let conditionBlog = {
+//                 new_new: 0,
+//                 new_301: "",
+//             }
+
+//             // if (item.name_tag != "") {
+//             conditionBlog.new_title = { $regex: keyword }
+//                 // }
+//             let blog = Blog.find(conditionBlog)
+//                 .select("new_title_rewrite new_id new_picture new_title")
+//                 .sort({ new_id: -1 })
+//                 .limit(4)
+//                 .lean();
+
+//             let promises = [
+//                 companyAggregate,
+//                 list_related,
+//                 list_city_related,
+//                 blog
+//             ]
+
+//             let data = await Promise.all(promises);
+//             companyAggregate = data[0];
+//             list_related = data[1];
+//             list_city_related = data[2];
+//             blog = data[3];
+//             let lists = [];
+//             let count = 0;
+//             if (companyAggregate[0]) {
+//                 lists = companyAggregate[0].data;
+//                 count = companyAggregate[0].counter[0].count
+//             }
+
+//             return functions.success(res, "Lấy thông tin thành công", {
+//                 company: lists,
+//                 count: count,
+//                 key_lienquan: list_related,
+//                 diadiem_lienquan: list_city_related,
+//                 news_lienquan: blog
+//             });
+
+//             return functions.setError(res, "Không tồn tại");
+//         }
+//         return functions.setError(res, "Không đủ tham số");
+//     } catch (error) {
+//         console.log(error);
+//         return functions.setError(res, error.message);
+//     }
+// };
 
 // tìm kiếm công ty theo điều kiện
 exports.findCompany = async(req, res, next) => {
     try {
-        
         const request = req.body,
             keyword = request.keyword,
+            city = request.diadiem,
             page = Number(request.page) || 1,
             pageSize = Number(request.pageSize) || 10,
             skip = (page - 1) * pageSize;
         if (keyword) {
+            let conditionKeyWord = [];
+            const arraySearch = keyword.split(' ');
+            for (let i = 0; i < arraySearch.length; i++) {
+                const keyword = arraySearch[i];
+                conditionKeyWord = [{  "inForCompany.description": { $regex: keyword, $options: 'i' } }, ...conditionKeyWord];
+                conditionKeyWord = [{  userName: { $regex: keyword, $options: 'i' } }, ...conditionKeyWord];
+                conditionKeyWord = [{  "inForCompany.timviec365.usc_lv": { $regex: keyword, $options: 'i' } }, ...conditionKeyWord];
+            }
+            let condition = {
+                    $or: conditionKeyWord,
+                },
+                sort = { updatedAt: -1 };
+
+            if (city) {
+                condition.city = city;
+            }
+
             // Lấy công ty tương ứng
-            let companyAggregate = Users.aggregate([
+            //console.log(conditionKeyWord);
+            const lists = await Users.aggregate([
+                { $match: { $text: { $search: keyword } } },
+                { $sort: sort },
+                { $sort: { score: { $meta: "textScore" } } },
                 {
-                    $match: {
+                   $match:{
                         userName: { $ne: '' },
                         idTimViec365: { $gt: 694 },
                         "inForCompany.timviec365.usc_redirect": '',
                         type: 1,
                         fromWeb: "timviec365",
-                        $text: {
-                            $search: keyword
-                        }
-                    }
+                   }
                 },
-                { $facet: {
-                    counter: [{$count: "count"}],
-                    data: [
-                        { $sort:  { updatedAt: -1 } },
-                        { $skip: skip },
-                        { $limit: pageSize },
-                        {
-                            $project: {
-                                usc_id: "$idTimViec365",
-                                usc_company: "$userName",
-                                usc_logo: "$avatarUser",
-                                usc_alias: "$alias",
-                                usc_create_time: "$createdAt",
-                                usc_size: "$inForCompany.timviec365.usc_size",
-                                usc_address: "$address",
-                                usc_company_info: "$inForCompany.description",
-                            }
-                        }
-                    ]
-                }},
+                // {
+                //     $match: condition
+                // },
+                { $skip: skip },
+                { $limit: pageSize },
+                {
+                    $project: {
+                        usc_id: "$idTimViec365",
+                        usc_company: "$userName",
+                        usc_logo: "$avatarUser",
+                        usc_alias: "$alias",
+                        usc_create_time: "$createdAt",
+                        usc_size: "$inForCompany.timviec365.usc_size",
+                        usc_address: "$address",
+                        usc_company_info: "$inForCompany.description",
+                        usc_lv:"$inForCompany.timviec365.usc_lv"
+                    }
+                }
             ]);
+          
+            // Lấy tổng
+            const count = await Users.countDocuments({$text: { $search: keyword }});
 
             let array_keyword = [];
             const array_name_tag = keyword.split(' ');
@@ -260,58 +396,39 @@ exports.findCompany = async(req, res, next) => {
                 array_keyword.push({ name_tag: { $regex: element } });
             }
             // Lấy từ khóa liên quan
-            let list_related = CategoryCompany.find({
+            const list_reated = await CategoryCompany.find({
                 // id: { $ne: item.id },
                 $or: array_keyword,
                 city_tag: 0,
                 parent_id: { $ne: 0 }
-            }).select("id city_tag name_tag").limit(20);
+            }).select("id city_tag name_tag").limit(20).lean();
 
             // Địa điểm liên quan
-            let list_city_related = CategoryCompany.find({
+            const list_city_reated = await CategoryCompany.find({
                 // id: { $ne: item.id },
                 $or: array_keyword,
                 city_tag: { $ne: 0 },
-            }).select("id city_tag name_tag").limit(20);
+            }).select("id city_tag name_tag").limit(20).lean();
+
             // // Blog liên quan
             let conditionBlog = {
                 new_new: 0,
                 new_301: "",
             }
 
-            // if (item.name_tag != "") {
             conditionBlog.new_title = { $regex: keyword }
-                // }
-            let blog = Blog.find(conditionBlog)
+
+            const blog = await Blog.find(conditionBlog)
                 .select("new_title_rewrite new_id new_picture new_title")
                 .sort({ new_id: -1 })
                 .limit(4)
                 .lean();
 
-            let promises = [
-                companyAggregate,
-                list_related,
-                list_city_related,
-                blog
-            ]
-
-            let data = await Promise.all(promises);
-            companyAggregate = data[0];
-            list_related = data[1];
-            list_city_related = data[2];
-            blog = data[3];
-            let lists = [];
-            let count = 0;
-            if (companyAggregate[0]) {
-                lists = companyAggregate[0].data;
-                count = companyAggregate[0].counter[0].count
-            }
-
             return functions.success(res, "Lấy thông tin thành công", {
                 company: lists,
                 count: count,
-                key_lienquan: list_related,
-                diadiem_lienquan: list_city_related,
+                key_lienquan: list_reated,
+                diadiem_lienquan: list_city_reated,
                 news_lienquan: blog
             });
 

@@ -44,7 +44,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
             if (quyen_ng_sd == 1) { 
                 //sua chua tai san chua cap phat
                 let q_taisan = await TaiSan.findOne({ id_cty: com_id, ts_id: id_ts });
-                if(q_taisan) {
+                if(q_taisan.length > 0) {
                 let sl_ts_cu = q_taisan.ts_so_luong;
                 let update_sl = sl_ts_cu + sl_sc;
                 let update_taisan = await TaiSan.findOneAndUpdate({ id_cty: com_id, ts_id: id_ts }, { ts_so_luong: update_sl, soluong_cp_bb: update_sl });
@@ -53,7 +53,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
             if (quyen_ng_sd == 2) {
                 //tai san cap phat cho nhan vien
                 let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
-                if(q_taisan_doituong) {
+                if(q_taisan_doituong.length >0) {
                 let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
                 let update_sl = sl_ts_cu + sl_sc;
                 let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts }, { sl_dang_sd: update_sl });
@@ -62,7 +62,7 @@ exports.HoanThanhSuaChua = async (req, res) => {
             if (quyen_ng_sd == 3) {
                 //tai san cap phat cho phong ban
                 let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts });
-                if(q_taisan_doituong) {
+                if(q_taisan_doituong.length > 0) {
                 let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
                 let update_sl = sl_ts_cu + sl_sc;
                 let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts }, { sl_dang_sd: update_sl });
@@ -158,27 +158,6 @@ exports.SuaChuaBB = async (req, res) => {
 
 }
 
-// exports.Seach = async (req, res) => {
-//     let id_bb = req.body.id_bb;
-//     let trang_thai = req.body.trang_thai;
-//     try {
-//         if (isNaN(id_bb) || isNaN(trang_thai)) {
-//             return res.status(404).json("id  và trang thaibien ban phai la 1 so");
-//         } else {
-//             let listdata = await SuaChua.findOne({ sc_id: id_bb });
-//             if (listdata) {
-//                 return res.status(200).json({ data: listdata, message: " thanh cong " });
-//             } else {
-//                 return res.status(202).json({ data: [], message: " khong co du lieu " });
-//             }
-//         }
-
-//     } catch (error) {
-
-//          return fnc.setError(res, error.message);
-//     }
-// }
-
 exports.listBBDangSuaChua = async (req, res) => {
     try {
 
@@ -200,7 +179,6 @@ exports.listBBDangSuaChua = async (req, res) => {
         conditions.sc_trangthai = 1
         conditions.id_cty = id_cty
         if(sc_id) conditions.sc_id = Number(sc_id) 
-        console.log(conditions)
         const data1 = await SuaChua.aggregate([
             {$match : conditions},
             {$skip : skip},
@@ -240,7 +218,7 @@ exports.listBBDangSuaChua = async (req, res) => {
                 "sl_sc" : "$sl_sc",
                 "doi_tuong_sd" : "$infoCtyDangSD.userName",
                 "sc_ngay_hong" : "$sc_ngay_hong",
-                // "Vi_tri" : "$Vi_tri",
+                "Vi_tri" : "$Vi_tri",
                 "sc_ngay_nhapkho" : "$sc_ngay_nhapkho",
                 "sc_ng_duyet" : "$sc_ng_duyet",
                 "sc_date_duyet" : "$sc_date_duyet",
@@ -831,7 +809,6 @@ exports.listBBDaSuaChua = async (req, res) => {
         conditions.sc_trangthai = 3
         conditions.id_cty = id_cty
         if(sc_id) conditions.sc_id = Number(sc_id) 
-        console.log(conditions)
         const data1 = await SuaChua.aggregate([
             {$match : conditions},
             {$skip : skip},
@@ -871,7 +848,7 @@ exports.listBBDaSuaChua = async (req, res) => {
                 "sl_sc" : "$sl_sc",
                 "doi_tuong_sd" : "$infoCtyDangSD.userName",
                 "sc_ngay_hong" : "$sc_ngay_hong",
-                // "Vi_tri" : "$Vi_tri",
+                "Vi_tri" : "$Vi_tri",
                 "sc_ngay_nhapkho" : "$sc_ngay_nhapkho",
                 "sc_ng_duyet" : "$sc_ng_duyet",
                 "sc_date_duyet" : "$sc_date_duyet",
@@ -1102,7 +1079,7 @@ exports.addSuaChua = async (req, res) => {
         }
         // return fnc.setError(res,"vui lòng nhập sc_quyen_sd")
     } catch (error) {
-        console.error(error)
+        console.log(error)
          return fnc.setError(res, error.message);
     }
 }
@@ -1122,8 +1099,8 @@ exports.tuChoiSC = async (req, res) => {
 
         let tuchoi_sua_chua = await SuaChua.findOneAndUpdate({ sc_id: id_bb, id_cty: com_id }, { sc_trangthai: 2, sc_lydo_tuchoi: content });
         let q_suachua = await SuaChua.findOne({ id_cty: com_id, sc_id: id_bb });
+        console.log(q_suachua)
         if(q_suachua){
-
         let ng_sd = q_suachua.sc_ng_sd;
         let sc_quyen_sd = q_suachua.sc_quyen_sd;
         let sl_sc = q_suachua.sl_sc;
@@ -1131,32 +1108,33 @@ exports.tuChoiSC = async (req, res) => {
         if (sc_quyen_sd == 1) {
             let q_taisan = await TaiSan.findOne({ id_cty: com_id, ts_id: id_ts });
             if(q_taisan){
-
             let sl_ts_cu = q_taisan.ts_so_luong;
             let update_sl = sl_ts_cu + sl_sc;
             let update_taisan = await TaiSan.findOneAndUpdate({ id_cty: com_id, ts_id: id_ts }, { ts_so_luong: update_sl, soluong_cp_bb: update_sl });
-            return fnc.success(res,"success" );}
+            return fnc.success(res,"success" ,{update_taisan});}
+            return fnc.setError(res," khong tim thay tài sản" );
         } else if (sc_quyen_sd == 2) {
-
             let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_nv_sd: ng_sd, id_ts_sd: id_ts });
             if(q_taisan_doituong){
-
             let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
             let update_sl = sl_ts_cu + sl_sc;
             let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_ts_sd: id_ts, id_nv_sd: ng_sd }, { sl_dang_sd: update_sl, });
-            return fnc.success(res,"success");}
+            return fnc.success(res,"success",{update_taisan});}
+            return fnc.setError(res," khong tim thay tài sản đang sử dụng" );
         } else if (sc_quyen_sd == 3) {
             let q_taisan_doituong = await TaiSanDangSuDung.findOne({ com_id_sd: com_id, id_pb_sd: ng_sd, id_ts_sd: id_ts });
             if(q_taisan_doituong){
             let sl_ts_cu = q_taisan_doituong.sl_dang_sd;
             let update_sl = sl_ts_cu + sl_sc;
             let update_taisan = await TaiSanDangSuDung.findOneAndUpdate({ com_id_sd: com_id, id_pb_sd: id_ts, id_nv_sd: ng_sd }, { sl_dang_sd: update_sl, });
-            return fnc.success(res,"success" );}
+            return fnc.success(res,"success" ,{update_taisan});}
+            return fnc.setError(res," khong tim thay tài sản đang sử dụng" );
+
         } else {
             return fnc.setError(res," sc_quyen_sd  fails" );
         }
     }
-    return fnc.setError(res," khong tim thay bb sửa chữa" );
+    // return fnc.setError(res," khong tim thay bb sửa chữa" );
     
 
  
@@ -1297,7 +1275,6 @@ exports.detailBBCanSuaChua = async (req, res) => {
         conditions.sc_da_xoa = 0
         conditions.id_cty = id_cty
         conditions.sc_id = Number(sc_id) 
-        console.log(conditions)
         const data1 = await SuaChua.aggregate([
             {$match : conditions},
             {$sort : {sc_id : -1}},
@@ -1373,7 +1350,7 @@ exports.detailBBCanSuaChua = async (req, res) => {
                 "sl_sc" : "$sl_sc",
                 "doi_tuong_sd" : "$infoCtyDangSD.userName",
                 "sc_ngay_hong" : "$sc_ngay_hong",
-                // "Vi_tri" : "$Vi_tri",
+                "Vi_tri" : "$Vi_tri",
                 "sc_ngay_nhapkho" : "$sc_ngay_nhapkho",
                 "sc_ng_duyet" : "$sc_ng_duyet",
                 "sc_date_duyet" : "$sc_date_duyet",
@@ -1406,7 +1383,6 @@ exports.detailBBCanSuaChua = async (req, res) => {
                 data1[i].sc_hoanthanh = new Date(data1[i].sc_hoanthanh * 1000);
             }
             data.push({list : data1})
-            // return res.status(200).json({data : {data} , message : "lấy thành công"})
             return fnc.success(res,"lấy thành công",{data})
        }
        return fnc.setError(res, "vui lòng nhập sc_id");
@@ -1438,7 +1414,6 @@ exports.listBBCanSuaChua = async (req, res) => {
         conditions.sc_trangthai = {$in : [0,2]}
         conditions.id_cty = id_cty
         if(sc_id) conditions.sc_id = Number(sc_id) 
-        console.log(conditions)
         const data1 = await SuaChua.aggregate([
             {$match : conditions},
             {$skip : skip},
@@ -1502,7 +1477,6 @@ exports.listBBCanSuaChua = async (req, res) => {
             data.push({list : data1})
             let totalCount = await SuaChua.count(conditions)
 
-            // return res.status(200).json({data : {data} , message : "lấy thành công"})
             return fnc.success(res,"lấy thành công",{data, totalCount})
     } catch (error) {
         return fnc.setError(res, error.message);

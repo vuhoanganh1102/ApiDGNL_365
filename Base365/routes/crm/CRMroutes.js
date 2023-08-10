@@ -7,9 +7,10 @@ const formContract = require("./Contract/formContract");
 const Contract = require("./Contract/ContractForCus");
 const settingContract = require("./Setting/AccountAPI");
 const CustomerContact = require("./Customer/CustomerContact");
+const ToolCRM = require('../crm/toolCRM')
 const Nhap_lieu = require('./Nhap_lieu')
 
-
+router.use('/tool',ToolCRM)
 
 // khách hàng
 router.use('/customer',CustomerRouter)

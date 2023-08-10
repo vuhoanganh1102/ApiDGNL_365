@@ -804,8 +804,14 @@ exports.getMaxUserID = async(type = "user") => {
     if (maxIdRN365) {
         _idRN365 = Number(maxIdRN365.idRaoNhanh365) + 1;
     } else _idRN365 = 1;
+    
+    // ID GiaSu
+    const maxIdGiaSu = await Users.findOne(condition, { idGiaSu: 1 }).sort({ idGiaSu: -1 }).lean() ;
+    if (maxIdGiaSu) {
+        _idGiaSu = Number(maxIdGiaSu.idGiaSu) + 1 || 1;
+    } else _idGiaSu = 1;
 
-    return { _id, _idTV365, _idQLC, _idRN365 }
+    return { _id, _idTV365, _idQLC, _idRN365, _idGiaSu }
 }
 
 const hostImage = () => {

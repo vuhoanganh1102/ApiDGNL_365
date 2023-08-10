@@ -76,14 +76,11 @@ exports.toolCampaign = async(req, res, next) => {
         do {
 
             let data = await fnc.getDataAxios('https://crm.timviec365.vn/ApiDataTable/listCampaign?page' + page)
-            // let data = listItems.data;
+           
             console.log(data)
-
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const element = DB[i];
-                    // let cityArray = item.new_city.split(",").map(String);
-
                     const Campaigns = new Campaign({
                         _id: element.id,
                         groupID: element.group_id,
@@ -124,7 +121,6 @@ exports.toolCampaign = async(req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
-
 
 exports.toolContact = async (req, res, next) => {
     try {
@@ -174,8 +170,6 @@ exports.toolContact = async (req, res, next) => {
     }
 };
 
-
-
 exports.toolTablePriceList = async (req, res, next) => {
 
     try {
@@ -184,9 +178,6 @@ exports.toolTablePriceList = async (req, res, next) => {
         do {
             let listItems = await fnc.getDataAxios('https://crm.timviec365.vn/ApiDataTable/listTablePriceList?page' + page)
             let data = listItems.data;
-            // console.log(data)
-            // let cityArray = item.new_city.split(",").map(String);
-
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const element = data[i];
@@ -226,54 +217,6 @@ exports.toolTablePriceList = async (req, res, next) => {
     }
 }
 
-
-exports.toolAppointmentSchedule = async (req, res, next) => {
-
-    try {
-        let page = 1;
-        let result = true;
-        do {
-            let listItems = await fnc.getDataAxios('https://crm.timviec365.vn/ApiDataTable/listAppointmentSchedule?page' + page)
-            let data = listItems.data;
-            // console.log(data)
-            // let cityArray = item.new_city.split(",").map(String);
-            if (data.length > 0) {
-                for (let i = 0; i < data.length; i++) {
-                    const element = data[i];
-                    let check = await AppointmentSchedule.findById(element.id)
-                    if (check) continue
-                    // let post = await fnc.getDatafindOne(AppointmentSchedule, { _id: element.new_id });
-                    // if (post == null) {
-                    const schedule = new DetailCampaign({
-                        _id: element.id,
-                        schedule_name: element.schedule_name,
-                        cus_id: element.cus_id,
-                        id_customer: element.id_customer,
-                        ep_id: element.ep_id,
-                        address: element.address,
-                        start_date_schedule: element.start_date_schedule,
-                        end_date_schedule: element.end_date_schedule,
-                        schedule_status: element.schedule_status,
-                        reason_cancel: element.reason_cancel,
-                        description: element.description,
-                        is_delete: element.is_delete,
-                        created_at: element.created_at,
-                        updated_at: element.updated_at,
-                    })
-                    await schedule.save()
-                }
-                page++;
-            } else {
-                result = false;
-            }
-            console.log(page)
-        } while (result);
-        return fnc.success(res, 'Thành công')
-    } catch (error) {
-        console.log(error);
-        return fnc.setError(res, error.message);
-    }
-}
 exports.toolDetailCampaign = async (req, res, next) => {
 
     try {
@@ -282,15 +225,11 @@ exports.toolDetailCampaign = async (req, res, next) => {
         do {
             let listItems = await fnc.getDataAxios('https://crm.timviec365.vn/ApiDataTable/listDetailCampaign?page' + page)
             let data = listItems.data;
-            // console.log(data)
-            // let cityArray = item.new_city.split(",").map(String);
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const element = data[i];
                     let check = await DetailCampaign.findById(element.id)
                     if (check) continue
-                    // let post = await fnc.getDatafindOne(AppointmentSchedule, { _id: element.new_id });
-                    // if (post == null) {
                     const Detail = new DetailCampaign({
                         _id: element.id,
                         id_campagin: element.id_campagin,
@@ -316,16 +255,15 @@ exports.toolDetailCampaign = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
-exports.toolAppointmentSchedule = async (req, res, next) => {
 
+exports.toolAppointmentSchedule = async (req, res, next) => {
     try {
         let page = 1;
         let result = true;
         do {
             let listItems = await fnc.getDataAxios('https://crm.timviec365.vn/ApiDataTable/listAppointmentSchedule?page' + page)
             let data = listItems.data;
-            // console.log(data)
-            // let cityArray = item.new_city.split(",").map(String);
+            
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
                     const element = data[i];
@@ -363,7 +301,6 @@ exports.toolAppointmentSchedule = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
-
 
 exports.toolHistoryCustomerCare = async (req, res, next) => {
 
@@ -411,7 +348,6 @@ exports.toolHistoryCustomerCare = async (req, res, next) => {
     }
 }
 
-
 exports.toolFundbook = async (req, res, next) => {
 
     try {
@@ -457,6 +393,7 @@ exports.toolFundbook = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
+
 exports.toolDetailPriceList = async (req, res, next) => {
 
     try {
@@ -502,8 +439,6 @@ exports.toolDetailPriceList = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
-
-
 
 exports.toollistSurvey = async (req, res, next) => {
 
@@ -598,6 +533,7 @@ exports.toolForm = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
+
 exports.toolFormContract = async (req, res, next) => {
 
     try {
@@ -635,6 +571,7 @@ exports.toolFormContract = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
+
 exports.toolFormEmail = async (req, res, next) => {
 
     try {
@@ -675,7 +612,6 @@ exports.toolFormEmail = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
-
 
 exports.toolFormRegister = async (req, res, next) => {
 
@@ -720,7 +656,6 @@ exports.toolFormRegister = async (req, res, next) => {
     }
 }
 
-
 exports.toolEmailPersonal = async (req, res, next) => {
 
     try {
@@ -763,6 +698,7 @@ exports.toolEmailPersonal = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
+
 exports.toolEmailSms = async (req, res, next) => {
 
     try {
@@ -837,7 +773,6 @@ exports.toolEmailSms = async (req, res, next) => {
     }
 }
 
-
 exports.toolEmailSystem = async (req, res, next) => {
 
     try {
@@ -881,6 +816,7 @@ exports.toolEmailSystem = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
+
 exports.toolGroupSupplier = async (req, res, next) => {
 
     try {
@@ -1012,7 +948,6 @@ exports.toolDetailSurvery = async (req, res, next) => {
     }
 }
 
-
 exports.toolDetailReturnProduct = async (req, res, next) => {
     try {
         let page = 1;
@@ -1052,7 +987,6 @@ exports.toolDetailReturnProduct = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
-
 
 exports.toolContactCustomer = async (req, res, next) => {
     try {
@@ -1288,7 +1222,6 @@ exports.toolCustomerCare = async (req, res, next) => {
     }
 };
 
-
 exports.toolDetailListOrder = async (req, res, next) => {
     try {
         let page = 1;
@@ -1339,6 +1272,7 @@ exports.toolDetailListOrder = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
+
 exports.toolCustomerChance = async (req, res, next) => {
     try {
         let page = 1;
@@ -1538,7 +1472,6 @@ exports.toolChanFoots = async (req, res, next) => {
     }
 };
 
-
 exports.toolDetailEmailSms = async (req, res, next) => {
     try {
         let page = 1;
@@ -1576,7 +1509,6 @@ exports.toolDetailEmailSms = async (req, res, next) => {
         return fnc.setError(res, error.message);
     }
 }
-
 
 exports.toolCusFile = async (req, res, next) => {
 
@@ -1783,7 +1715,6 @@ exports.toolCustomerStatus = async (req, res, next) => {
     }
 };
 
-
 exports.tool_phieu = async (req, res) => {
     try {
         let result = true;
@@ -1834,6 +1765,7 @@ exports.tool_phieu = async (req, res) => {
         return fnc.setError(res, error)
     }
 }
+
 exports.tbl_share_campaign = async (req, res) => {
     try {
         let result = true;
@@ -1875,6 +1807,7 @@ exports.tbl_share_campaign = async (req, res) => {
         return fnc.setError(res, error)
     }
 }
+
 exports.tbl_share_chance = async (req, res) => {
     try {
         let result = true;
@@ -2058,6 +1991,7 @@ exports.history_stages = async (req, res) => {
         return fnc.setError(res, error)
     }
 }
+
 exports.list_new_3321 = async (req, res) => {
     try {
         let result = true;
@@ -2096,6 +2030,7 @@ exports.list_new_3321 = async (req, res) => {
         return fnc.setError(res, error)
     }
 }
+
 exports.list_order = async (req, res) => {
     try {
         let result = true;
@@ -2350,9 +2285,7 @@ exports.toolmanageExtension= async (req, res, next) => {
         return fnc.setError(res, err);
         }
         };
-        
-            
-        
+           
 //lâm
 exports.toolmoduleParent = async (req, res, next) => {
     try {
@@ -2384,6 +2317,7 @@ exports.toolmoduleParent = async (req, res, next) => {
         return fnc.setError(res, err);
     }
 };
+
 //trung
 exports.toolProductGroups = async(req, res, next) => {
             
@@ -2433,7 +2367,6 @@ return fnc.setError(res, error.message);
 }
 }
 
-
 //lâm
 exports.toolNotify = async (req, res, next) => {
     try {
@@ -2476,7 +2409,6 @@ exports.toolNotify = async (req, res, next) => {
 };
 
 //lam
-
 exports.toolPackages =  async (req, res, next) => {
     try {
         let page = 1;
@@ -2533,7 +2465,6 @@ exports.toolPackages =  async (req, res, next) => {
         return fnc.setError(res, err);
     }
 };
-
 exports.toolSavestatusC =  async (req, res, next) => {
     try {
         let page = 1;

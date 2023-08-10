@@ -34,7 +34,7 @@ const functions = require('../functions');
 const AdminUserRaoNhanh365 = require('../../models/Raonhanh365/Admin/AdminUser');
 const AdminUserRight = require('../../models/Raonhanh365/Admin/AdminUserRight');
 const Category = require('../../models/Raonhanh365/Category');
-
+const CateDetail = require('../../models/Raonhanh365/CateDetail')
 dotenv.config();
 
 // hàm tạo link title
@@ -256,10 +256,11 @@ exports.checkFolderCateRaoNhanh = async (data) => {
 exports.getNameCate = async (cateId, number) => {
     let danh_muc1 = null;
     let danh_muc2 = null;
-    cate1 = await Category.findById(cateId);
-    danh_muc1 = cate1.name;
+    cate1 = await Category.findById(cateId).lean();
+    if (cate1)
+        danh_muc1 = cate1.name;
     if (cate1.parentId !== 0) {
-        cate2 = await Category.findById(cate1.parentId);
+        cate2 = await Category.findById(cate1.parentId).lean();
         danh_muc2 = cate2.name;
     }
     let name = {};
@@ -325,6 +326,8 @@ exports.searchItem = async (type) => {
             tgian_bd: 1,
             buySell: 1,
             video: 1,
+            brand: 1,
+            kich_co: 1,
             user: { _id: 1, idRaoNhanh365: 1, phone: 1, isOnline: 1, avatarUser: 1, 'inforRN365.xacThucLienket': 1, createdAt: 1, userName: 1, type: 1, chat365_secret: 1, email: 1, lastActivedAt: 1, time_login: 1 },
         };
     } else if (type === 2) {
@@ -575,35 +578,29 @@ exports.getInfoEnvaluate = async (res, Evaluate, userID) => {
 }
 
 // hàm xửl lý tên mặt hàng cho danh mục
-exports.getDataNewDetail = async (objectarr) => {
+exports.getDataNewDetail = async (objectarr, cate) => {
     let array = Object.entries(objectarr).map(([key, value]) => [key, value]);
+
+    let check = await CateDetail.findOne({ _id: cate }).lean();
+
+    let data ='';
     for (let i = 0; i < array.length; i++) {
         let name = await exports.switchCase(array[i][0])
-        let value = await exports.cateDetail(2, name, array[i][1])
-        array[i][1] = value
+        if (name)
+            var chartAt = name.split('.')[0];
+        let filter1 = check[`${chartAt}`]
+        data = await filter1.find(item => item._id === array[i][1])
+        console.log("🚀 ~ file: service.js:593 ~ exports.getDataNewDetail= ~ filter1:", filter1)
+        objectarr[`${array[i][0]}`] =  data.name
     }
-    let objectt = Object.fromEntries(array);
-    return objectt
+    return objectarr
 }
 
 // hàm lấy tên mặt hàng cho danh mục
 exports.cateDetail = async (cateID, item, id) => {
 
-    let check = await CateDetail.aggregate([
-        { $match: { _id: cateID } },
-        {
-            $project: {
-                [item]: 1
-            }
-        },
-        { $unwind: `$${item}` }
-    ]);
 
-    let data = check.find((itemm) => itemm[`${item}`]._id == id)
-    if (data && data.length) {
-        return data[0][`${item}`].name
-    }
-    return 0
+
 }
 
 exports.switchCase = (item) => {
@@ -620,39 +617,31 @@ exports.switchCase = (item) => {
             return 'screen'
         case 'size':
             return 'screen'
-        case 'brand':
-            return 'brand'
         case 'machineSeries':
-            return 'brand.line' 
+            return 'brand.line'
         case 'device':
             return 'allType'
         case 'loai_xe':
             return 'allType'
-        case 'kich_co':
-            return 'size'
+        case 'capacity':
+            return 'capacity'
         case 'chat_lieu_khung':
             return 'productMaterial'
         case 'dong_xe':
             return 'brand.line'
-        case 'dung_tich':
-            return 'capacity'
+        case 'vehicleType':
+            return 'allType'
         case 'loai_thiet_bi':
             return 'allType'
-        // case cong_suat:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-        // case ram:
-        //     return capacity
-
+        case 'cong_suat':
+            return 'capacity'
+        case 'dung_tich':
+            return 'capacity'
+        case 'kindOfPet':
+            return 'petPurebred'
+        case 'age':
+            return 'petInfo'
     }
-
 }
 
 // copy folder image
@@ -691,3 +680,4 @@ exports.sendChat = async (id_nguoigui, id_nguoinhan, noidung) => {
     });
     return true
 }
+

@@ -31,6 +31,8 @@ const PushNewsTime = require('../../models/Raonhanh365/PushNewsTime');
 const Blog = require('../../models/Raonhanh365/Admin/Blog');
 const loveNew = require('../../models/Raonhanh365/LoveNews');
 const NetworkOperator = require('../../models/Raonhanh365/NetworkOperator');
+const CateVl = require('../../models/Raonhanh365/CateVl');
+const Keyword = require('../../models/Raonhanh365/Keywords');
 
 // danh mục sản phẩm
 exports.toolCategory = async (req, res, next) => {
@@ -137,7 +139,7 @@ exports.toolNewRN = async (req, res, next) => {
                     const images = data[i].new_image.split(";").map((image, index) => {
                         const parts = image.split("/");
 
-                        const filename = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/' + parts[parts.length - 2] + '/' + data[i].new_id + '/' + parts[parts.length - 1];
+                        const filename = parts[parts.length - 1];
 
                         return {
                             nameImg: filename
@@ -246,14 +248,14 @@ exports.updateNewDescription = async (req, res, next) => {
                     let new_file_nophs = null;
                     let new_file_chidan = null;
                     if (data[i].new_file_dthau && data[i].new_file_dthau != 0) {
-                        new_file_dthau = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_dthau.split('/')[1];
+                        new_file_dthau = data[i].new_file_dthau.split('/')[1];
                     }
                     if (data[i].new_file_nophs && data[i].new_file_nophs != 0) {
-                        new_file_nophs = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_nophs.split('/')[1];
+                        new_file_nophs = data[i].new_file_nophs.split('/')[1];
 
                     }
                     if (data[i].new_file_chidan && data[i].new_file_chidan != 0) {
-                        new_file_chidan = process.env.DOMAIN_RAO_NHANH + '/base365/raonhanh365/pictures/avt_tindangmua/' + post.userID + '/' + data[i].new_file_chidan.split('/')[1];
+                        new_file_chidan = data[i].new_file_chidan.split('/')[1];
 
                     }
 
@@ -2295,6 +2297,63 @@ exports.toolbanggiacknt = async (req, res, next) => {
                 await loveNew1.save();
             }
         }
+        return fnc.success(res, "Thành công");
+    } catch (error) {
+        return fnc.setError(res, error.message);
+    }
+}
+
+exports.toolkeyword = async (req, res, next) => {
+    try {
+        let page = 1;
+        let result = true;
+        let id = 1;
+        do {
+            const form = new FormData();
+            form.append('page', page);
+            const response = await axios.post('https://raonhanh365.vn/api/select_keyword.php', form, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let data = response.data.data.items;
+            if (data.length > 0) {
+                for (let i = 0; i < data.length; i++) {
+                    const loveNew1 = new Keyword({
+                        key_id: data[i].key_id,
+                        key_name: data[i].key_name,
+                        key_lq: data[i].key_lq,
+                        key_cate_id: data[i].key_cate_id,
+                        key_city_id: data[i].key_city_id,
+                        key_qh_id: data[i].key_qh_id,
+                        key_city_id: data[i].key_city_id,
+                        key_cb_id: data[i].key_cb_id,
+                        key_teaser: data[i].key_teaser,
+                        key_type: data[i].key_type,
+                        key_err: data[i].key_err,
+                        key_qh_kcn: data[i].key_qh_kcn,
+                        key_cate_lq: data[i].key_cate_lq,
+                        key_tit: data[i].key_tit,
+                        key_desc: data[i].key_desc,
+                        key_key: data[i].key_key,
+                        key_h1: data[i].key_h1,
+                        key_time: data[i].key_time,
+                        key_301: data[i].key_301,
+                        key_index: data[i].key_index,
+                        key_bao_ham: data[i].key_bao_ham,
+                        key_tdgy: data[i].key_tdgy,
+                        key_ndgy: data[i].key_ndgy,
+                    });
+                    await loveNew1.save();
+                }
+                page++;
+            } else {
+                result = false;
+            }
+            console.log(page);
+        } while (result);
+
         return fnc.success(res, "Thành công");
     } catch (error) {
         return fnc.setError(res, error.message);

@@ -28,6 +28,10 @@ router.post('/addDxTs',functions.checkToken,formData.parse(),Controller.dxThaiSa
 router.post('/addDXTT',functions.checkToken,formData.parse(),Controller.dxThanhToan)
 router.post('/addDXTP',functions.checkToken,formData.parse(),Controller.dxThuongPhat)
 
+router.post('/addDXDMVS', functions.checkToken, formData.parse(), Controller.dxDiMuonVeSom)
+router.post('/addDXXNRN', functions.checkToken, formData.parse(), Controller.dxXinNghiRaNgoai)
+router.post('/addDXNNNL', functions.checkToken, formData.parse(), Controller.dxNhapNgayNhanLuong)
+router.post('/addDXXTTL', functions.checkToken, formData.parse(), Controller.dxXinTaiTaiLieu)
 
 //Api đổ dữ liệu danh sách người duyệt và người theo dõi
 router.post('/showadd',functions.checkToken,formData.parse(),Controller.showadd)

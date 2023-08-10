@@ -74,7 +74,8 @@ exports.order = async (req, res, next) => {
                     await Order.create({
                         _id, codeOrder: codeOrder[i], phone, deliveryAddress, sellerId: sellerId[i], note, paymentType,
                         totalProductCost: totalProductCost[i], promotionType: promotionType[i], promotionValue: promotionValue[i], shipFee: shipFee[i], shipType: shipType[i],
-                        amountPaid, paymentMethod, unitPrice: unitPrice[i], buyerId: idRaoNhanh365, status, newId: dataCart.newsId
+                        amountPaid, paymentMethod, unitPrice: unitPrice[i], buyerId: idRaoNhanh365, status, newId: dataCart.newsId,
+                        quantity: dataCart.quantity
                     }
                     )
                     if (paymentMethod == 0) {
@@ -153,12 +154,13 @@ exports.manageOrderBuy = async (req, res, next) => {
         let sl_dangXuLy = await Order.find({ buyerId, status: 1 }).count();
         let sl_dangGiao = await Order.find({ buyerId, status: 2 }).count();
         let sl_daGiao = await Order.find({ buyerId, status: 3 }).count();
-        let sl_daHuy = await Order.find({ buyerId, status: 4 }).count();
-        let sl_hoanTat = await Order.find({ buyerId, status: 5 }).count();
+        let sl_daHuy = await Order.find({ buyerId, $or: [{ status: 5 }, { buyerCancelsDelivered: 1 }] }).count();
+        let sl_hoanTat = await Order.find({ buyerId, $or: [{ status: 4 }, { buyerConfirm: 1 }] }).count();
         let searchItem = {
             sellerId: 1,
             new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 },
-            user: { userName: 1, avatarUser: 1, type: 1, _id: 1,idRaoNhanh365:1 },
+            user: { userName: 1, avatarUser: 1, type: 1, _id: 1, idRaoNhanh365: 1 },
+            createdAt: 1,
             orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1, unitPrice: 1, amountPaid: 1
         }
         if (linkTitle === 'quan-ly-don-hang-mua.html') {
@@ -201,6 +203,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -226,6 +229,7 @@ exports.manageOrderBuy = async (req, res, next) => {
                         as: "new"
                     }
                 },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -267,7 +271,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             ])
         } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-mua.html') {
             data = await Order.aggregate([
-                { $match: { buyerId, status: 4 } },
+                { $match: { buyerId, $or: [{ status: 5 }, { buyerCancelsDelivered: 1 }] } },
                 { $skip: skip },
                 { $limit: limit },
                 {
@@ -292,7 +296,7 @@ exports.manageOrderBuy = async (req, res, next) => {
             ])
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-mua.html') {
             data = await Order.aggregate([
-                { $match: { buyerId, status: 5 } },
+                { $match: { buyerId, $or: [{ status: 4 }, { buyerConfirm: 1 }] } },
                 { $skip: skip },
                 { $limit: limit },
                 {
@@ -325,9 +329,10 @@ exports.manageOrderBuy = async (req, res, next) => {
                 data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
             }
             if (data[i].user && data[i].user.avatarUser) {
-                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365,data[i].user.avatarUser);
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365, data[i].user.avatarUser);
             }
         }
+
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
     } catch (error) {
         console.log("🚀 ~ file: order.js:370 ~ exports.manageOrderBuy= ~ error:", error)
@@ -349,12 +354,13 @@ exports.manageOrderSell = async (req, res, next) => {
         let sl_dangXuLy = await Order.find({ sellerId, status: 1 }).count();
         let sl_dangGiao = await Order.find({ sellerId, status: 2 }).count();
         let sl_daGiao = await Order.find({ sellerId, status: 3 }).count();
-        let sl_daHuy = await Order.find({ sellerId, status: 4 }).count();
-        let sl_hoanTat = await Order.find({ sellerId, status: 5 }).count();
+        let sl_daHuy = await Order.find({ sellerId, status: 5 }).count();
+        let sl_hoanTat = await Order.find({ sellerId, status: 4 }).count();
         let searchItem = {
             sellerId: 1, new: { _id: 1, userID: 1, until: 1, type: 1, linkTitle: 1, title: 1, money: 1, img: 1, cateID: 1 },
-            user: { userName: 1, avatarUser: 1, type: 1, _id: 1,idRaoNhanh365:1 },
-            orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1,
+            user: { userName: 1, avatarUser: 1, type: 1, _id: 1, idRaoNhanh365: 1 },
+            createdAt: 1,
+            orderActive: 1, _id: 1, buyerId: 1, sellerConfirmTime: 1, codeOrder: 1, quantity: 1, classify: 1, unitPrice: 1, amountPaid: 1
 
         };
         if (linkTitle === 'quan-ly-don-hang-ban.html') {
@@ -390,7 +396,7 @@ exports.manageOrderSell = async (req, res, next) => {
 
             data = await Order.aggregate([
                 {
-                    $match: { sellerId, status: 1, orderActive: 1 }
+                    $match: { sellerId, status: 1, }
                 },
                 { $skip: skip },
                 { $limit: limit },
@@ -402,9 +408,7 @@ exports.manageOrderSell = async (req, res, next) => {
                         as: "new"
                     }
                 },
-                {
-                    $unwind: "$new"
-                },
+                { $unwind: "$new" },
                 {
                     $lookup: {
                         from: "Users",
@@ -476,7 +480,7 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-da-huy-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
-                    $match: { sellerId, status: 4 }
+                    $match: { sellerId, status: 5 }
                 },
                 { $skip: skip },
                 { $limit: limit },
@@ -504,7 +508,7 @@ exports.manageOrderSell = async (req, res, next) => {
         } else if (linkTitle === 'quan-ly-don-hang-hoan-tat-nguoi-ban.html') {
             data = await Order.aggregate([
                 {
-                    $match: { sellerId, status: 5 }
+                    $match: { sellerId, status: 4 }
                 },
                 { $skip: skip },
                 { $limit: limit },
@@ -538,7 +542,7 @@ exports.manageOrderSell = async (req, res, next) => {
                 data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
             }
             if (data[i].user && data[i].user.avatarUser) {
-                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365,data[i].user.avatarUser);
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365, data[i].user.avatarUser);
             }
         }
         return functions.success(res, 'get data success', { sl_choXacNhan, sl_dangXuLy, sl_dangGiao, sl_daGiao, sl_daHuy, sl_hoanTat, data })
@@ -657,7 +661,7 @@ exports.statusOrder = async (req, res, next) => {
                     deliveryEndTime, status
                 })
                 let noi_dung = "thông báo hoàn tất đơn hàng";
-                var noidunggui = `Hoàn tất đơn hàng cho bạn:    ${check.title}`;
+                var noidunggui = `Hoàn tất đơn hàng cho bạn: ${check.title}`;
                 await Notify.create({
                     _id: id,
                     from: check.sellerId,
@@ -672,7 +676,19 @@ exports.statusOrder = async (req, res, next) => {
             } else if (status === 5) {
                 let deliveryFailedTime = new Date();
                 let deliveryFailureReason = req.body.deliveryFailureReason || null;
+                let noi_dung = "thông báo giao hàng thất bại";
+                var noidunggui = `Giao hàng thất bại cho bạn: ${check.title}`;
                 await Order.findByIdAndUpdate(orderId, { deliveryFailedTime, deliveryFailureReason })
+                await Notify.create({
+                    _id: id,
+                    from: check.sellerId,
+                    newId: check.newId,
+                    to: check.buyerId,
+                    type: 7,
+                    createdAt: deliveryFailedTime,
+                    content: noi_dung
+                })
+                await raoNhanh.sendChat(check.sellerId, check.newId, noidunggui)
             } else {
                 return functions.setError(res, 'invalid data', 400)
             }
@@ -681,6 +697,11 @@ exports.statusOrder = async (req, res, next) => {
                 let buyerConfirm = 1;
                 let buyerConfirmTime = new Date();
                 await Order.findByIdAndUpdate(orderId, { buyerConfirm, buyerConfirmTime })
+            } else if (status === 7) {
+                let buyerCancelsDelivered = 1;
+                let orderCancellationReason = req.body.lido;
+                let buyerCancelsDeliveredTime = new Date();
+                await Order.findByIdAndUpdate(orderId, { buyerCancelsDelivered, orderCancellationReason, buyerCancelsDeliveredTime })
             } else {
                 return functions.setError(res, 'invalid data1', 400)
             }
@@ -739,82 +760,176 @@ exports.detailCancelOrder = async (req, res, next) => {
     try {
         let userId = req.user.data.idRaoNhanh365;
         let id = Number(req.body.id);
-        // SELECT`dh_id`, `id_nguoi_dh`, `hoten_nm`, `sdt_lienhe`, `dia_chi_nhanhang`, `id_spham`, `ma_dhang`,
-        //     `so_luong`, `phan_loai`, `phuongthuc_tt`, `ghi_chu`, `loai_ttoan`, `tien_ttoan`, `tgian_huydhang`, `ly_do_hdon`,
-        //     `usc_name`, `usc_logo`, `usc_phone`, `usc_address`, `chat365_id`,
-        //     `new_title`, `link_title`, `new_money`, `new_unit`, `new_type`, `new_image`
-        // FROM`dat_hang`
-        //                     LEFT JOIN `new` ON`new`.`new_id` = `dat_hang`.`id_spham`
-        //                     LEFT JOIN `user` ON`user`.`usc_id` = `dat_hang`.`id_nguoi_dh`
-        // WHERE`trang_thai` = 5 AND`id_nguoi_ban` = $id_user AND`dh_id` = $id LIMIT 1
         let data = await Order.aggregate([
             { $match: { status: 5, sellerId: userId, _id: id } },
             {
-                $lookup:{
-                    from:'RN365_News',
-                    localField:'newId',
-                    foreignField:'_id',
-                    as:'new'
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'newId',
+                    foreignField: '_id',
+                    as: 'new'
                 }
             },
-            {$unwind:'$new'},
+            { $unwind: '$new' },
             {
-                $lookup:{
-                    from:'Users',
-                    localField:'buyerId',
-                    foreignField:'idRaoNhanh365',
-                    as:'user'
+                $lookup: {
+                    from: 'Users',
+                    localField: 'buyerId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'user'
                 }
             },
-            {$unwind:'$user'},
-            {$project:{_id:1,
-                sellerId:1,
-                buyerId:1,
-                name:1,
-                phone:1,
-                paymentMethod:1,
-                deliveryAddress:1,
-                newId:1,
-                codeOrder:1,
-                quantity:1,
-                classify:1,
-                unitPrice:1,
-                promotionType:1,
-                promotionValue:1,
-                shipType:1,
-                shipFee:1,
-                note:1,
-                paymentType:1,
-                bankName:1,
-                amountPaid:1,
-                totalProductCost:1,
-                buyTime:1,
-                status:1,
-                sellerConfirmTime:1,
-                deliveryStartTime:1,
-                totalDeliveryTime:1,
-                buyerConfirm:1,
-                buyerConfirmTime:1,
-                deliveryEndTime:1,
-                deliveryFailedTime:1,
-                deliveryFailureReason:1,
-                cancelerId:1,
-                orderCancellationTime:1,
-                orderCancellationReason:1,
-                buyerCancelsDelivered:1,
-                buyerCancelsDeliveredTime:1,
-                orderActive:1,
-                distinguish:1,
-                user: { userName: 1, avatarUser: 1, type: 1, _id: 1,chat365_secret:1,idRaoNhanh365:1 },
-                new:{_id:1,title:1,linkTitle:1,money:1,type:1,until:1,img:1,cateID:1,userID:1}
-            }}
+            { $unwind: '$user' },
+            {
+                $project: {
+                    _id: 1,
+                    sellerId: 1,
+                    buyerId: 1,
+                    name: 1,
+                    phone: 1,
+                    paymentMethod: 1,
+                    deliveryAddress: 1,
+                    newId: 1,
+                    codeOrder: 1,
+                    quantity: 1,
+                    classify: 1,
+                    unitPrice: 1,
+                    promotionType: 1,
+                    promotionValue: 1,
+                    shipType: 1,
+                    shipFee: 1,
+                    note: 1,
+                    createdAt: 1,
+                    paymentType: 1,
+                    bankName: 1,
+                    amountPaid: 1,
+                    totalProductCost: 1,
+                    buyTime: 1,
+                    status: 1,
+                    sellerConfirmTime: 1,
+                    deliveryStartTime: 1,
+                    totalDeliveryTime: 1,
+                    buyerConfirm: 1,
+                    buyerConfirmTime: 1,
+                    deliveryEndTime: 1,
+                    deliveryFailedTime: 1,
+                    deliveryFailureReason: 1,
+                    cancelerId: 1,
+                    orderCancellationTime: 1,
+                    orderCancellationReason: 1,
+                    buyerCancelsDelivered: 1,
+                    buyerCancelsDeliveredTime: 1,
+                    orderActive: 1,
+                    distinguish: 1,
+                    user: { userName: 1, avatarUser: 1, type: 1, _id: 1, chat365_secret: 1, idRaoNhanh365: 1 },
+                    new: { _id: 1, title: 1, linkTitle: 1, money: 1, type: 1, until: 1, img: 1, cateID: 1, userID: 1 }
+                }
+            }
         ])
         for (let i = 0; i < data.length; i++) {
             if (data[i].new.img) {
                 data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
             }
             if (data[i].user && data[i].user.avatarUser) {
-                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365,data[i].user.avatarUser);
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365, data[i].user.avatarUser);
+            }
+        }
+
+        return functions.success(res, 'get data success', { data })
+    } catch (error) {
+        return functions.setError(res, error.message)
+    }
+}
+
+// chi tiết đơn hàng
+exports.detailOrder = async (req, res, next) => {
+    try {
+        let id = Number(req.body.id);
+        let data = await Order.aggregate([
+            { $match: { _id: id } },
+            {
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'newId',
+                    foreignField: '_id',
+                    as: 'new'
+                }
+            },
+            { $unwind: '$new' },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'buyerId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'sellerId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'sellerId'
+                }
+            },
+            { $unwind: '$sellerId' },
+            {
+                $project: {
+                    _id: 1,
+                    sellerId: 1,
+                    buyerId: 1,
+                    name: 1,
+                    phone: 1,
+                    paymentMethod: 1,
+                    deliveryAddress: 1,
+                    newId: 1,
+                    codeOrder: 1,
+                    quantity: 1,
+                    classify: 1,
+                    unitPrice: 1,
+                    promotionType: 1,
+                    promotionValue: 1,
+                    shipType: 1,
+                    shipFee: 1,
+                    note: 1,
+                    paymentType: 1,
+                    bankName: 1,
+                    amountPaid: 1,
+                    totalProductCost: 1,
+                    buyTime: 1,
+                    createdAt: 1,
+                    status: 1,
+                    sellerConfirmTime: 1,
+                    deliveryStartTime: 1,
+                    totalDeliveryTime: 1,
+                    buyerConfirm: 1,
+                    buyerConfirmTime: 1,
+                    deliveryEndTime: 1,
+                    deliveryFailedTime: 1,
+                    deliveryFailureReason: 1,
+                    cancelerId: 1,
+                    orderCancellationTime: 1,
+                    orderCancellationReason: 1,
+                    buyerCancelsDelivered: 1,
+                    buyerCancelsDeliveredTime: 1,
+                    orderActive: 1,
+                    distinguish: 1,
+                    user: { userName: 1, address: 1, phone: 1, avatarUser: 1, type: 1, _id: 1, chat365_secret: 1, idRaoNhanh365: 1 },
+                    new: { _id: 1, title: 1, linkTitle: 1, money: 1, type: 1, until: 1, img: 1, cateID: 1, userID: 1 },
+                    sellerId: { userName: 1, address: 1, phone: 1, avatarUser: 1, type: 1, _id: 1, chat365_secret: 1, idRaoNhanh365: 1 }
+                }
+            }
+        ])
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].new.img) {
+                data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, 2);
+            }
+            if (data[i].user && data[i].user.avatarUser) {
+                data[i].user.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].user.idRaoNhanh365, data[i].user.avatarUser);
+            }
+            if (data[i].sellerId && data[i].sellerId.avatarUser) {
+                data[i].sellerId.avatarUser = await raoNhanh.getLinkAvatarUser(data[i].sellerId.idRaoNhanh365, data[i].sellerId.avatarUser);
             }
         }
 

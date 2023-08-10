@@ -874,7 +874,7 @@ exports.getAndCheckDataBlog = async (req, res, next) => {
         if (!image) return functions.setError(res, `Missing input image`, 405);
         let { title, url, des, keyword, sapo, active, hot, detailDes, titleRelate, contentRelate, newStatus, date, dateLastEdit } = req.body;
         let fields = [title, url, image, des, keyword, sapo, detailDes, titleRelate, contentRelate];
-        let adminId = 2001 || req.infoAdmin._id;
+        let adminId = req.infoAdmin._id;
         for (let i = 0; i < fields.length; i++) {
             if (!fields[i])
                 return functions.setError(res, `Missing input value ${i + 1}`, 404);
