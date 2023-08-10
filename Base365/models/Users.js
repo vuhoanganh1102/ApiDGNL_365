@@ -1024,6 +1024,7 @@ const UserSchema = new mongoose.Schema({
                 type : String,
                 default : null
             },
+<<<<<<< HEAD
             ugs_county_gs : {
                 type : Number,
                 default : null
@@ -1044,6 +1045,8 @@ const UserSchema = new mongoose.Schema({
                 type : String,
                 default : null
             },
+=======
+>>>>>>> 2286414875f61458284cc020fd7869492aeba420
             ugs_workplace : {
                 //nơi làm việc 
                 type : String,
