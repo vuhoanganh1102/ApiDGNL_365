@@ -384,7 +384,7 @@ const Vanthu_de_xuat = new Schema({
                 type: String
             },
             ca_xnc: {
-                type: String,
+                type: Number,
                 default: null,
 
             },

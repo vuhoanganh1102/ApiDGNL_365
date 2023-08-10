@@ -70,20 +70,20 @@ exports.ChitietDx = async (req, res) => {
       let numberOfDays = Math.floor(timeDifferenceInMillis / (1000 * 60 * 60 * 24));
       let detailDeXuat = [
         {
-      ten_de_xuat : dexuat.name_dx,
-      nguoi_tao : dexuat.name_user,
-      nhom_de_xuat : dexuat.type_dx,
-      thoi_gian_tao : dexuat.time_create * 1000,
-      loai_de_xuat : dexuat.type_time,
-      cap_nhat : numberOfDays,
-      thong_tin_chung : dexuat.noi_dung,
-      kieu_phe_duyet : dexuat.kieu_duyet,
-      lanh_dao_duyet :namnUserDuyet,
-      nguoi_theo_doi :namnUsertd,
-      file_kem : fileX,
-      thoi_gian_tao : dexuat.time_create * 1000,
-      thoi_gian_duyet : dexuat.time_duyet,
-      thoi_gian_tiep_nhan : checkhandling.time ,
+          ten_de_xuat : dexuat.name_dx,
+          nguoi_tao : dexuat.name_user,
+          nhom_de_xuat : dexuat.type_dx,
+          thoi_gian_tao : dexuat.time_create * 1000,
+          loai_de_xuat : dexuat.type_time,
+          cap_nhat : numberOfDays,
+          thong_tin_chung : dexuat.noi_dung,
+          kieu_phe_duyet : dexuat.kieu_duyet,
+          lanh_dao_duyet :namnUserDuyet,
+          nguoi_theo_doi :namnUsertd,
+          file_kem : fileX,
+          thoi_gian_tao : dexuat.time_create * 1000,
+          thoi_gian_duyet : dexuat.time_duyet,
+          thoi_gian_tiep_nhan : checkhandling.time ,
         }
       ]
       return functions.success(res, 'get data success', { detailDeXuat });
@@ -334,10 +334,18 @@ exports.findthanhVien = async (req, res) => {
     if(req.user.data.type == 1) {
       com_id = req.user.data.com_id
       const checkTV = await UserDX.find({ 'inForPerson.employee.com_id': com_id,type : 2 })
-      .select('idQlC userName inForPerson.employee.position_id ')
+      .select('idQLC userName email inForPerson.employee.position_id inForPerson.employee.dep_id')
       .sort({ 'inForPerson.employee.dep_id': -1 })
       .skip(startIndex).limit(perPage);
-      return functions.success(res, 'get data success', { checkTV });
+      const data = checkTV.map(emp => ({
+          idQLC : emp.idQLC,
+          userName : emp.userName,
+          email: emp.email,
+          pos_id : emp.inForPerson.employee.position_id,
+          dep_id : emp.inForPerson.employee.dep_id
+      }))
+      const totalPages = Math.ceil(data.length / perPage);
+      return functions.success(res, 'get data success', { data, totalPages});
     }else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }  

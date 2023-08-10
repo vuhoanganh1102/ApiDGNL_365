@@ -3,7 +3,7 @@ const functions = require("../../services/functions");
 //lấy danh sách ca làm việc
 exports.getListShifts = async(req, res) => {
     try {
-        const com_id = req.user.data.idQLC;
+        const com_id = req.user.data.com_id;
         const list = await Shifts.find({
             com_id: com_id
         }).sort({ _id: -1 });

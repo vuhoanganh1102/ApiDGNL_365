@@ -261,7 +261,7 @@ exports.deleteFile = (file) => {
 
 exports.convertTimestamp = (date) => {
     let time = new Date(date);
-    return Math.round(time.getTime() / 1000);
+    return Math.round(time.getTime());
 }
 
 exports.convertDate = (timestamp) => {

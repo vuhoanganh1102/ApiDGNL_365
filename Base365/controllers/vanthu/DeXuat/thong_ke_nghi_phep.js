@@ -1,4 +1,5 @@
 const De_Xuat = require("../../../models/Vanthu/de_xuat");
+const functions = require('../../../services/vanthu');
 
 exports.thong_ke_nghi_phep = async (req, res) => {
     try {
