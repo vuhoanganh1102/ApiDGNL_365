@@ -25,6 +25,10 @@ const TinhluongDiMuonVeSomSchema = new Schema({
         type:Date,
         default:new Date('1970-01-01T00:00:00.000+00:00')
     },
+    dmvs_shift: {
+        type: Number,
+        default: 0
+    }
 },{
     collection: 'TinhluongDiMuonVeSom',
     versionKey: false,
