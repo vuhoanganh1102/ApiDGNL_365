@@ -210,26 +210,35 @@ exports.de_xuat_theo_doi = async (req, res) => {
     }else{
       return functions.setError(res,'Bạn không có quyền truy cập.',400)
     }
-    
+    if (!type){
+      type = 1
+    }
     const perPage = 10; // Giá trị mặc định nếu không được cung cấp
     const startIndex = (page - 1) * perPage;
     const sortOptions = { _id: -1 };
     if (!type) {
       return res.status(400).json({ error: 'type không được bỏ trống.' });
     }
+    let totalPages
     if (type == 1) {
-      const showAll = await De_Xuat.find({
+      const data = await De_Xuat.find({
         id_user_theo_doi: { $in: [id_user_theo_doi] },
         com_id: com_id,
         del_type: 1
       })
         .sort(sortOptions)
         .skip(startIndex)
-        .limit(perPage);
-      return functions.success(res,'get data success',{showAll})
+        .limit(perPage);    
+      const datafull = await De_Xuat.find({
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        com_id: com_id,
+        del_type: 1
+      });
+      totalPages = Math.ceil(datafull.length / perPage);
+      return functions.success(res,'get data success',{data,totalPages})
     }
     if (type == 2) {
-      const showCD = await De_Xuat.find({
+      const data = await De_Xuat.find({
         id_user_theo_doi: { $in: [id_user_theo_doi] },
         com_id: com_id,
         del_type: 1,
@@ -238,7 +247,14 @@ exports.de_xuat_theo_doi = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      return functions.success(res,'get data success',{showCD})
+      const datafull = await De_Xuat.find({
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        com_id: com_id,
+        del_type: 1,
+        type_duyet: { $in: [0, 7] },
+      });
+      totalPages = Math.ceil(datafull.length / perPage);
+      return functions.success(res,'get data success',{data,totalPages})
     }
     if (type == 3) {
       const checkSetting = await setting_dx.findOne({ com_id: com_id })
@@ -246,7 +262,7 @@ exports.de_xuat_theo_doi = async (req, res) => {
         return res.status(400).json({ error: 'Công ty chưa cài đặt hạn duyệt.' });
       }
      let timeLimit = checkSetting.time_limit * 60 * 60 * 1000; // Chuyển time_limit thành mili giây
-      const exceedingDeXuat = await De_Xuat.find({
+      const data = await De_Xuat.find({
         id_user_theo_doi: { $in: [id_user_theo_doi] },
         com_id: com_id,
         del_type: 1,
@@ -255,10 +271,17 @@ exports.de_xuat_theo_doi = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);;
-      return functions.success(res,'get data success',{exceedingDeXuat})
+      const datafull = await De_Xuat.find({
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        com_id: com_id,
+        del_type: 1,
+        $expr: { $gt: [{ $subtract: [new Date(), "$time_create"] }, timeLimit] }
+      });
+      totalPages = Math.ceil(datafull.length / perPage);
+      return functions.success(res,'get data success',{data,totalPages})
     }
     if (type == 4) {
-      const showD = await De_Xuat.find({
+      const data = await De_Xuat.find({
         com_id: com_id,
         id_user_theo_doi: { $in: [id_user_theo_doi] },
         del_type: 1,
@@ -267,10 +290,18 @@ exports.de_xuat_theo_doi = async (req, res) => {
       }).sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      return functions.success(res,'get data success',{showD})
+      const datafull = await De_Xuat.find({
+        com_id: com_id,
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        del_type: 1,
+        type_duyet: 5,
+        active: 1
+      });
+      totalPages = Math.ceil(datafull.length / perPage);
+      return functions.success(res,'get data success',{data,totalPages})
     }
     if (type == 5) {
-      const showTC = await De_Xuat.find({
+      const data = await De_Xuat.find({
         com_id: com_id,
         id_user_theo_doi: { $in: [id_user_theo_doi] },
         $or: [{ active: 2 }, { type_duyet: 3 }],
@@ -278,7 +309,13 @@ exports.de_xuat_theo_doi = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      return functions.success(res,'get data success',{showTC})
+      const datafull = await De_Xuat.find({
+        com_id: com_id,
+        id_user_theo_doi: { $in: [id_user_theo_doi] },
+        $or: [{ active: 2 }, { type_duyet: 3 }],
+      });
+      totalPages = Math.ceil(datafull.length / perPage);
+      return functions.success(res,'get data success',{data,totalPages})
     }
   }  catch (error) {
     console.error('Failed ', error);
