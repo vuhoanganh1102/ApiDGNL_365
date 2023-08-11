@@ -276,8 +276,8 @@ exports.getNameCate = async (cateId, number) => {
 }
 // lấy link file
 exports.getLinkFile = async (userID, file, cateId, buySell) => {
-    let nameCate = await exports.getNameCate(cateId, 1);
-    let folder = await exports.checkFolderCateRaoNhanh(nameCate)
+    let nameCate = await this.getNameCate(cateId, 1);
+    let folder = await this.checkFolderCateRaoNhanh(nameCate)
     let link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/${folder}/${userID}/`;
     if (buySell == 1) link = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/avt_tindangmua/${userID}/`;
     let res = '';
@@ -451,7 +451,7 @@ exports.tinTuongTu = async (res, New, check, id_new, userId, LoveNews) => {
         }
         return tintuongtu
     } catch (error) {
-        return functions.setError(res, error)
+        return null
     }
 }
 
@@ -488,7 +488,7 @@ exports.getComment = async (res, Comments, LikeRN, url, sort, cm_start, cm_limit
         }
         return ListComment
     } catch (error) {
-        return functions.setError(res, error)
+        return null
     }
 }
 
@@ -548,7 +548,7 @@ exports.getDataBidding = async (res, Bidding, id_new, Evaluate) => {
         }
         return dataBidding
     } catch (error) {
-        return functions.setError(res, error)
+        return null
     }
 }
 
@@ -573,7 +573,7 @@ exports.getInfoEnvaluate = async (res, Evaluate, userID) => {
         }
         return thongTinSao;
     } catch (error) {
-        return functions.setError(res, error)
+        return null
     }
 }
 
