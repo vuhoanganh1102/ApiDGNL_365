@@ -23,9 +23,9 @@ const CaLamViecSchema = new Schema({
         required: true,
     },
 },{
-    collection: 'VLTH_CaLamViec',
+    collection: 'VLTG_CaLamViec',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_CaLamViec",CaLamViecSchema);
+module.exports = mongoose.model("VLTG_CaLamViec",CaLamViecSchema);

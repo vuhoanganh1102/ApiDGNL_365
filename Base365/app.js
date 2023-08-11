@@ -15,6 +15,7 @@ var AppHR = express();
 var appQLTS = express();
 var AppGiaSu = express();
 var AppTinhluong = express();
+var AppViecLamTheoGio = express();
 
 function configureApp(app) {
     app.set('views', path.join(__dirname, 'views'));
@@ -118,6 +119,13 @@ var tinhluongRouter = require('./routes/tinhluong');
 AppTinhluong.use("/api/tinhluong", tinhluongRouter);
 errorApp(AppTinhluong)
 
+// Cấu hình App Viec lam theo gio
+configureApp(AppViecLamTheoGio);
+var VLTGRouter = require('./routes/vieclamtheogio');
+AppViecLamTheoGio.use("/api/vltg", VLTGRouter);
+errorApp(AppViecLamTheoGio);
+
+
 const DB_URL = 'mongodb://127.0.0.1:27017/api-base365';
 mongoose.connect(DB_URL)
     .then(() => console.log('DB Connected!'))
@@ -199,4 +207,13 @@ AppTinhluong.listen(3010, () => {
 
 AppTinhluong.on('error', (error) => {
     console.error('Error occurred while listening on QLTS port:', error);
+});
+
+// Viec lam theo gio 
+AppViecLamTheoGio.listen(3011, () => {
+    console.log(`Viec lam theo gio app is running on port 3011`);
+});
+
+AppViecLamTheoGio.on('error', (error) => {
+    console.error('Error occurred while listening on viec lam theo gio port:', error);
 });

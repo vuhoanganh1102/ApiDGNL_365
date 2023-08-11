@@ -23,9 +23,9 @@ const UvSaveVlSchema = new Schema({
         default: 0,
     },
 },{
-    collection: 'VLTH_UvSaveVl',
+    collection: 'VLTG_UvSaveVl',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_UvSaveVl",UvSaveVlSchema);
+module.exports = mongoose.model("VLTG_UvSaveVl",UvSaveVlSchema);

@@ -19,9 +19,9 @@ const NtdSaveUvSchema = new Schema({
         default: 0,
     }
 },{
-    collection: 'VLTH_NtdSaveUv',
+    collection: 'VLTG_NtdSaveUv',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_NtdSaveUv",NtdSaveUvSchema);
+module.exports = mongoose.model("VLTG_NtdSaveUv",NtdSaveUvSchema);
