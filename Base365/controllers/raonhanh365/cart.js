@@ -1,7 +1,7 @@
 const functions = require('../../services/functions');
 const Cart = require('../../models/Raonhanh365/Cart');
 const News = require('../../models/Raonhanh365/New');
-
+const raoNhanh = require('../../services/raoNhanh365/service')
 exports.getListCartByUserId = async (req, res, next) => {
   try {
     let userId = req.user.data.idRaoNhanh365;
@@ -39,7 +39,7 @@ exports.getListCartByUserId = async (req, res, next) => {
           new: {
             _id: 1, title: 1, userID: 1, linkTitle: 1,
             cateID: 1, img: 1, money: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1, buySell: 1, infoSell: 1,
-            transport, transportFee
+            transport, transportFee,until
           },
           user: { _id: 1, userName: 1, type: 1 }
         }
