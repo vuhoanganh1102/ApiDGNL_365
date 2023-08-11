@@ -1,6 +1,7 @@
 const functions = require('../../services/functions');
 const Cart = require('../../models/Raonhanh365/Cart');
 const News = require('../../models/Raonhanh365/New');
+const DiaChiNhanHang = require('../../models/Raonhanh365/DiaChiNhanHang');
 const raoNhanh = require('../../services/raoNhanh365/service')
 const Users = require('../../models/Users.js');
 
@@ -243,6 +244,33 @@ exports.getTickCart = async (req, res, next) => {
     }
     let soluong = data.length;
     return functions.success(res, "get list cart success", { soluong, data });
+  } catch (error) {
+    return functions.setError(res, error.message)
+  }
+}
+
+// cập nhật địa chỉ nhận hàng
+exports.updateAddressCart = async (req, res, next) => {
+  try {
+    let userId = req.user.data.idRaoNhanh365;
+    let phone = req.body.phone;
+    let address = req.body.address;
+    let name = req.body.name;
+    if (phone && name && address) {
+      if (await functions.checkPhoneNumber(phone)) {
+        let _id = await functions.getMaxID(DiaChiNhanHang) + 1 || 1;
+        await DiaChiNhanHang.create({
+          _id,
+          us_id: userId,
+          nguoi_nhang: name,
+          sdt_nhang: phone,
+          dia_chi: address,
+        })
+        return functions.success(res, 'success')
+      }
+      return functions.setError(res, 'invalid phone number', 400)
+    }
+    return functions.setError(res, 'Missing data', 400)
   } catch (error) {
     return functions.setError(res, error.message)
   }

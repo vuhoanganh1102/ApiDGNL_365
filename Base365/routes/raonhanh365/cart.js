@@ -21,4 +21,7 @@ router.post('/tickCart', formData.parse(),functions.checkToken, cart.tickCart)
 
 // lấy sản phẩm đã chọn
 router.post('/getTickCart', formData.parse(),functions.checkToken, cart.getTickCart)
+
+// thêm địa chỉ nhận hàng
+router.post('/updateAddressCart', formData.parse(),functions.checkToken, cart.updateAddressCart)
 module.exports = router;
