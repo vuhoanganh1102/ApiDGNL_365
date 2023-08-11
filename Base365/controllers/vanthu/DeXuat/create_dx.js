@@ -2460,7 +2460,7 @@ exports.dxXinNghiRaNgoai = async(req, res) => {
             const new_de_xuat = new De_Xuat({
                 _id: (maxID + 1),
                 name_dx: name_dx,
-                type_dx: 1,
+                type_dx: 22,
                 phong_ban: phong_ban,
                 noi_dung: {
                     nghi_phep_ra_ngoai: {
@@ -2563,7 +2563,7 @@ exports.dxNhapNgayNhanLuong = async(req, res) => {
             const new_de_xuat = new De_Xuat({
                 _id: (maxID + 1),
                 name_dx: name_dx,
-                type_dx: 1,
+                type_dx: 23,
                 phong_ban: phong_ban,
                 noi_dung: {
                     nhap_ngay_nhan_luong: {
@@ -2664,7 +2664,7 @@ exports.dxXinTaiTaiLieu = async(req, res) => {
             const new_de_xuat = new De_Xuat({
                 _id: (maxID + 1),
                 name_dx: name_dx,
-                type_dx: 1,
+                type_dx: 24,
                 phong_ban: phong_ban,
                 noi_dung: {
                     xin_tai_tai_lieu: {

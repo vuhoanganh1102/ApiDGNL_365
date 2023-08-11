@@ -227,6 +227,32 @@ exports.edit_active = async (req, res) => {
           );
         }
         return functions.success(res, 'duyệt đề xuất thành công', { savehh});
+      } else if (type == 21) {
+        //Đi muộn về sớm
+        let id_ephh  = check.id_user
+        const ndhh = check.noi_dung.hoa_hong;
+        const createhh = new HoaHong({
+          ro_id : await functions.getMaxIDrose(HoaHong) + 1,
+          ro_id_user: id_ephh,
+          ro_id_com: check.com_id,
+          ro_time : ndhh.time_hh,
+          ro_time_end: ndhh.item_mdt_date,
+          ro_note : ndhh.ly_do,
+          ro_time_created : timeNow
+        });
+        let savehh = await createhh.save();
+        if(createhh){
+          await De_Xuat.findOneAndUpdate(
+            { _id: _id },
+            {
+              $set: {
+                active: 1,
+              }
+            },
+            { new: true }
+          );
+        }
+        return functions.success(res, 'duyệt đề xuất thành công', { savehh});
       }
     } else {
       return functions.setError(res, 'Không tìm thấy đề xuất',400);
