@@ -171,3 +171,43 @@ exports.deleteVT = async (req, res) => {
   }
 };
 
+exports.editVT = async(req,res) => {
+  try{
+    let { id_vitri,vi_tri, dv_quan_ly, ghi_chu_vitri } = req.body;
+    let com_id = '';
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+    if(!id_vitri){
+      return functions.setError(res, 'id_vitri không được bỏ trống', 400);
+    }
+    if(!vi_tri){
+      return functions.setError(res, 'tên vị trí  không được bỏ trống', 400);
+    }
+    if(!dv_quan_ly){
+      return functions.setError(res, 'dv_quan_ly  không được bỏ trống', 400);
+    }
+    
+    let chinhsuaVT = await ViTriTs.findOneAndUpdate(
+        { id_vitri: id_vitri, id_cty: com_id },
+        {
+          $set: {
+            vi_tri: vi_tri,
+            dv_quan_ly: dv_quan_ly,
+            ghi_chu_vitri : ghi_chu_vitri
+          }
+        },
+        { new: true }
+      );
+      if (!chinhsuaVT){
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      } 
+    return functions.success(res, 'edit data success', { chinhsuaVT }); 
+  }catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message);
+  }
+}
+
