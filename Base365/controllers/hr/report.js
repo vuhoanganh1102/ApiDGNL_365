@@ -101,62 +101,60 @@ exports.report = async (req, res, next) => {
         subConditions = {};
 
         // điều kiện tìm kiếm
-        if (depId) conditions['inForPerson.employee.dep_id'] = depId;
-        if (from_date) subConditions['Appoints.created_at'] = { $gte: new Date(from_date) }
-        if (to_date) subConditions['Appoints.created_at'] = { $lte: new Date(to_date) }
+        if (depId) subConditions['user.inForPerson.employee.dep_id'] = depId;
+        if (from_date) conditions.created_at = { $gte: new Date(from_date) }
+        if (to_date) conditions.created_at = { $lte: new Date(to_date) }
         if (from_date && to_date)
-            subConditions['Appoints.created_at'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
+            conditions.created_at = { $gte: new Date(from_date), $lte: new Date(to_date) }
 
-        conditions['inForPerson.account.gender'] = 1;
-        conditions['inForPerson.employee.com_id'] = comId;
-        conditions['inForPerson.employee.ep_status'] = "Active";
-        conditions.type = 2;
+        subConditions['user.inForPerson.account.gender'] = 1;
+        subConditions['user.inForPerson.employee.com_id'] = comId;
+        subConditions['user.inForPerson.employee.ep_status'] = "Active";
+        subConditions['user.type'] = 2;
         // tìm kiếm nhân viên được bổ nhiệm là nam
-        let dataBoNhiemNam = await Users.aggregate([
+        let dataBoNhiemNam = await Appoint.aggregate([
             { $match: conditions },
             {
                 $lookup: {
-                    from: 'HR_Appoints',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'Appoints'
+                    from: 'Users',
+                    localField: 'ep_id',
+                    foreignField: 'idQLC',
+                    as: 'user'
                 }
             },
-            { $unwind: "$Appoints" },
+            { $unwind: "$user" },
             { $match: subConditions },
         ])
         // tìm kiếm với nhân viên được bổ nhiệm là nữ
-        conditions['inForPerson.account.gender'] = 2;
-        let dataBoNhiemNu = await Users.aggregate([
+        subConditions['user.inForPerson.account.gender'] = 2;
+        let dataBoNhiemNu = await Appoint.aggregate([
             { $match: conditions },
             {
                 $lookup: {
-                    from: 'HR_Appoints',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'Appoints'
+                    from: 'Users',
+                    localField: 'ep_id',
+                    foreignField: 'idQLC',
+                    as: 'user'
                 }
             },
-            { $unwind: "$Appoints" },
+            { $unwind: "$user" },
             { $match: subConditions },
-
         ])
 
         // tìm kiếm nhân viên được bổ nhiệm
-        delete conditions['inForPerson.account.gender']
-        let dataBoNhiem = await Users.aggregate([
+        delete subConditions['user.inForPerson.account.gender']
+        let dataBoNhiem = await Appoint.aggregate([
             { $match: conditions },
             {
                 $lookup: {
-                    from: 'HR_Appoints',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'Appoints'
+                    from: 'Users',
+                    localField: 'ep_id',
+                    foreignField: 'idQLC',
+                    as: 'user'
                 }
             },
-            { $unwind: "$Appoints" },
+            { $unwind: "$user" },
             { $match: subConditions },
-            { $project: searchItem }
         ])
 
         // xoá điều kiện 
@@ -164,67 +162,59 @@ exports.report = async (req, res, next) => {
         subConditions = {};
 
         // điều kiện tìm kiếm
-        if (depId) conditions['inForPerson.employee.dep_id'] = depId;
-        if (from_date) subConditions['resign.created_at'] = { $gte: new Date(from_date) }
-        if (to_date) subConditions['resign.created_at'] = { $lte: new Date(to_date) }
+        if (depId) subConditions['user.inForPerson.employee.dep_id'] = depId;
+        if (from_date) conditions.created_at = { $gte: new Date(from_date) }
+        if (to_date) conditions.created_at = { $lte: new Date(to_date) }
         if (from_date && to_date)
-            subConditions['resign.created_at'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
-
-        conditions['inForPerson.employee.com_id'] = 0;
-        conditions['inForPerson.employee.ep_status'] = "Deny";
-        subConditions['resign.type'] = 1;
-        conditions.type = { $ne: 2 };
-        subConditions['resign.com_id'] = comId;
+            conditions.created_at = { $gte: new Date(from_date), $lte: new Date(to_date) }
+        conditions.type = 1;
+        conditions.com_id = comId;
         // số lượng nhân viên giảm biên chế
-        let giamBienChe = await Users.aggregate([
+        let giamBienChe = await Resign.aggregate([
             { $match: conditions },
             {
                 $lookup: {
-                    from: 'HR_Resigns',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'resign'
+                    from: 'Users',
+                    localField: 'ep_id',
+                    foreignField: 'idQLC',
+                    as: 'user'
                 }
             },
-            { $unwind: "$resign" },
+            { $unwind: "$user" },
             { $match: subConditions },
-
         ])
 
-        subConditions['resign.type'] = 2;
+        conditions.type = 2;
         // số lượng nhân viên nghỉ việc
-        let nghiViec = await Users.aggregate([
+        let nghiViec = await Resign.aggregate([
             { $match: conditions },
             {
                 $lookup: {
-                    from: 'HR_Resigns',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'resign'
+                    from: 'Users',
+                    localField: 'ep_id',
+                    foreignField: 'idQLC',
+                    as: 'user'
                 }
             },
-            { $unwind: "$resign" },
+            { $unwind: "$user" },
             { $match: subConditions },
-
         ])
 
         // tổng số lượng nhân viên nghỉ việc
-        delete subConditions['resign.type']
-        let countDataNghiViec = await Users.aggregate([
+        delete conditions.type
+        let countDataNghiViec = await Resign.aggregate([
             { $match: conditions },
             {
                 $lookup: {
-                    from: 'HR_Resigns',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'resign'
+                    from: 'Users',
+                    localField: 'ep_id',
+                    foreignField: 'idQLC',
+                    as: 'user'
                 }
             },
-            { $unwind: "$resign" },
+            { $unwind: "$user" },
             { $match: subConditions },
-            { $project: searchItem }
         ])
-
 
         // xoá điều kiện 
         conditions = {};
@@ -234,13 +224,27 @@ exports.report = async (req, res, next) => {
         if (to_date) conditions.sb_time_up = { $lte: new Date(to_date) }
         if (from_date && to_date)
             conditions.sb_time_up = { $gte: new Date(from_date), $lte: new Date(to_date) }
-        let dataLuong = await Salarys.find({ sb_id_com: comId, sb_first: { $ne: 1 } }).sort({ sb_time_up: -1 });
+        if(depId) subConditions['user.inForPerson.employee.dep_id'] = depId
+        conditions.sb_id_com = comId;
+        let dataLuong = await Salarys.aggregate([
+            {$match:conditions},
+            {
+                $lookup:{
+                    from: 'Users',
+                    localField: 'sb_id_user',
+                    foreignField: 'idQLC',
+                    as: 'user'
+                }
+            },
+            { $unwind: "$user" },
+            { $match: subConditions },
+        ])
         let tangLuong = 0;
         let giamLuong = 0;
         let arr = [];
         if (dataLuong.length !== 0) {
             for (let i = 0; i < dataLuong.length; i++) {
-
+                conditions = {};
                 conditions.sb_id_user = dataLuong[i].sb_id_user;
                 conditions.sb_time_up = { $lt: new Date(dataLuong[i].sb_time_up) }
                 checkTangGiam = await Salarys.findOne(conditions).lean()
@@ -258,6 +262,7 @@ exports.report = async (req, res, next) => {
                 }
             }
         }
+
         let tangGiamLuong = 0;
         if (tangLuong !== 0) tangGiamLuong = tangLuong;
         if (giamLuong !== 0) tangGiamLuong = giamLuong;
@@ -268,59 +273,62 @@ exports.report = async (req, res, next) => {
         subConditions = {};
 
         // điều kiện tìm kiếm
-        if (depId) subConditions['TranferJobs.dep_id'] = depId;
-        if (from_date) subConditions['TranferJobs.created_at'] = { $gte: new Date(from_date) }
-        if (to_date) subConditions['TranferJobs.created_at'] = { $lte: new Date(to_date) }
+        if (depId) subConditions['user.inForPerson.employee.dep_id'] = depId;
+        if (from_date) conditions.created_at = { $gte: new Date(from_date) }
+        if (to_date) conditions.created_at = { $lte: new Date(to_date) }
         if (from_date && to_date)
-            subConditions['TranferJobs.created_at'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
+            conditions.created_at = { $gte: new Date(from_date), $lte: new Date(to_date) }
 
-        conditions['inForPerson.employee.com_id'] = comId;
-        conditions['inForPerson.employee.ep_status'] = "Active";
-        conditions.type = 2;
+        subConditions['user.inForPerson.employee.com_id'] = comId;
+        subConditions['user.inForPerson.employee.ep_status'] = "Active";
+        subConditions['user.type'] = 2;
+        conditions.com_id = comId;
+
+        
         // Luân chuyển công tác
-        let countDataLuanChuyen = await Users.aggregate([
+        let countDataLuanChuyen = await TranferJob.aggregate([
             { $match: conditions },
             {
                 $lookup: {
-                    from: 'HR_TranferJobs',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'TranferJobs'
+                    from: 'Users',
+                    localField: 'ep_id',
+                    foreignField: 'idQLC',
+                    as: 'user'
                 }
             },
-            { $unwind: "$TranferJobs" },
+            { $unwind: "$user" },
             { $match: subConditions },
         ])
 
         // nhân viên nam luân chuyển
-        conditions['inForPerson.account.gender'] = 1
-        let countDataLuanChuyenNam = await Users.aggregate([
+        subConditions['user.inForPerson.account.gender'] = 1
+        let countDataLuanChuyenNam = await TranferJob.aggregate([
             { $match: conditions },
             {
                 $lookup: {
-                    from: 'HR_TranferJobs',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'TranferJobs'
+                    from: 'Users',
+                    localField: 'ep_id',
+                    foreignField: 'idQLC',
+                    as: 'user'
                 }
             },
-            { $unwind: "$TranferJobs" },
+            { $unwind: "$user" },
             { $match: subConditions },
         ])
 
         // nhân viên nữ luân chuyển
-        conditions['inForPerson.account.gender'] = 2
-        let countDataLuanChuyenNu = await Users.aggregate([
+        subConditions['user.inForPerson.account.gender'] = 2
+        let countDataLuanChuyenNu = await TranferJob.aggregate([
             { $match: conditions },
             {
                 $lookup: {
-                    from: 'HR_TranferJobs',
-                    localField: 'idQLC',
-                    foreignField: 'ep_id',
-                    as: 'TranferJobs'
+                    from: 'Users',
+                    localField: 'ep_id',
+                    foreignField: 'idQLC',
+                    as: 'user'
                 }
             },
-            { $unwind: "$TranferJobs" },
+            { $unwind: "$user" },
             { $match: subConditions },
         ])
 
@@ -399,7 +407,7 @@ exports.reportDetail = async (req, res, next) => {
             sb_quyetdinh: '$HR_Salarys.sb_quyetdinh',
             address: 1,
             experience: '$inForPerson.account.experience',
-            
+
         };
         let conditions = {};
         let data = {};
@@ -462,7 +470,7 @@ exports.reportDetail = async (req, res, next) => {
             ])
             let soluong = data.length;
             let total = await Users.countDocuments(conditions)
-            for(let i = 0; i < data.length; i++){
+            for (let i = 0; i < data.length; i++) {
                 data[i].chucvu = hr.positionNames[data[i].chucvu]
             }
             return functions.success(res, 'get data success', { total, soluong, data })
@@ -531,7 +539,7 @@ exports.reportDetail = async (req, res, next) => {
                 { $unwind: "$resign" },
                 { $match: subConditions },]);
             total = total.length;
-            for(let i = 0; i < data.length; i++){
+            for (let i = 0; i < data.length; i++) {
                 data[i].chucvu = hr.positionNames[data[i].chucvu]
             }
             return functions.success(res, 'get data success', { total, soluong, data })
@@ -594,7 +602,7 @@ exports.reportDetail = async (req, res, next) => {
                 { $unwind: "$Appoints" },]);
             let soluong = data.length
             total = total.length
-            for(let i = 0; i < data.length; i++){
+            for (let i = 0; i < data.length; i++) {
                 data[i].chucvu = hr.positionNames[data[i].chucvu]
             }
             return functions.success(res, 'get data success', { total, soluong, data })
@@ -657,7 +665,7 @@ exports.reportDetail = async (req, res, next) => {
                 { $unwind: '$HR_TranferJobs' }]);
             total = total.length;
             let soluong = data.length
-            for(let i = 0; i < data.length; i++){
+            for (let i = 0; i < data.length; i++) {
                 data[i].chucvu = hr.positionNames[data[i].chucvu]
             }
             return functions.success(res, 'get data success', { total, soluong, data })
@@ -667,7 +675,8 @@ exports.reportDetail = async (req, res, next) => {
             if (from_date && to_date)
                 subConditions['HR_Salarys.sb_time_up'] = { $gte: new Date(from_date), $lte: new Date(to_date) }
             let idnv = Number(req.body.idnv);
-            if(idnv) conditions.idQLC = idnv;
+            if (idnv) conditions.idQLC = idnv;
+
             data = await Users.aggregate([
                 { $match: conditions },
                 {
@@ -713,13 +722,16 @@ exports.reportDetail = async (req, res, next) => {
                 { $unwind: { path: "$group", preserveNullAndEmptyArrays: true } },
                 { $project: searchItem }
             ])
+
+
             let subData = [];
             for (let i = 0; i < data.length; i++) {
                 let element = data[i];
                 conditions = {};
                 conditions.sb_id_user = element.sb_id_user;
                 conditions.sb_time_up = { $lt: new Date(element.sb_time_up) }
-                let luongcu = await Salarys.findOne(conditions).lean();
+                let luongcu = await Salarys.findOne(conditions).sort({ sb_time_up: -1 }).lean();
+
                 if (luongcu && type === 1) {
                     if (luongcu.sb_salary_basic > element.luongmoi) {
                         element.giamLuong = luongcu.sb_salary_basic - element.luongmoi;
@@ -755,7 +767,7 @@ exports.reportDetail = async (req, res, next) => {
                 'inForPerson.employee.ep_status': 'Active',
                 type: 2
             }
-            if(idnv) conditions.idQLC = idnv;
+            if (idnv) conditions.idQLC = idnv;
             let dataLuong = await Users.aggregate([
                 { $match: conditions },
                 {
@@ -807,7 +819,7 @@ exports.reportDetail = async (req, res, next) => {
             if (tangLuong !== 0) tangGiamLuong = tangLuong;
             if (giamLuong !== 0) tangGiamLuong = giamLuong;
             if (tangLuong !== 0 && giamLuong !== 0) tangGiamLuong = tangLuong + giamLuong;
-            for(let i = 0; i < subData.length; i++){
+            for (let i = 0; i < subData.length; i++) {
                 subData[i].chucvu = hr.positionNames[data[i].chucvu]
             }
             return functions.success(res, 'get data success', { tongsoluong: tangGiamLuong, soluong, data: subData })
@@ -890,7 +902,7 @@ exports.reportDetail = async (req, res, next) => {
                 }
             }
             tongsoluong = listTotal.length
-            for(let i = 0; i < list.length; i++){
+            for (let i = 0; i < list.length; i++) {
                 list[i].chucvu = hr.positionNames[list[i].chucvu]
             }
             return functions.success(res, 'get data success', { tongsoluong, soluong, data: list })
@@ -951,7 +963,7 @@ exports.reportDetail = async (req, res, next) => {
             let datatotal = await Users.countDocuments(conditions);
             let soluong = data.length
             let tongsoluong = datatotal
-            for(let i = 0; i < data.length; i++){
+            for (let i = 0; i < data.length; i++) {
                 data[i].chucvu = hr.positionNames[data[i].chucvu]
             }
             return functions.success(res, 'get data success', { tongsoluong, soluong, data })
@@ -1001,7 +1013,7 @@ exports.reportDetail = async (req, res, next) => {
                 { $limit: limit }]);
             let tongsoluong = datatotal.length
             let soluong = data.length
-            for(let i = 0; i < data.length; i++){
+            for (let i = 0; i < data.length; i++) {
                 data[i].chucvu = hr.positionNames[data[i].chucvu]
             }
             return functions.success(res, 'get data success', { tongsoluong, soluong, data })
@@ -1302,6 +1314,10 @@ exports.reportChart = async (req, res, next) => {
 exports.reportRecruitment = async (req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
+        let page = Number(req.body.page) || 1;
+        let pageSize = Number(req.body.pageSize) || 10;
+        let skip = (page - 1) * pageSize;
+        let limit = pageSize;
         //  Tổng số tin
         let tongSoTinTuyenDung = await RecruitmentNews.countDocuments({ isDelete: 0, comId })
 
@@ -1365,7 +1381,7 @@ exports.reportRecruitment = async (req, res, next) => {
         { $count: 'SL' }
         ])
         // Báo cáo chi tiết theo tin tuyển dụng
-        let query = await RecruitmentNews.find({ comId });
+        let query = await RecruitmentNews.find({ comId }).skip(skip).limit(limit);
         let mangThongTin = [];
         if (query.length !== 0) {
             for (let i = 0; i < query.length; i++) {
@@ -1434,15 +1450,16 @@ exports.reportRecruitment = async (req, res, next) => {
             }
         }
         // Thống kê xếp hạng nhân viên tuyển dụng
-        let thongKeNhanVienTuyenDung = await RecruitmentNews.aggregate([{
-            $match: { comId }
-        },
-        {
-            $group: {
-                _id: "$hrName",
-                total: { $sum: 1 },
-            }
-        },
+        let thongKeNhanVienTuyenDung = await RecruitmentNews.aggregate([
+            { $match: { comId } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $group: {
+                    _id: "$hrName",
+                    total: { $sum: 1 },
+                }
+            },
         ])
         if (thongKeNhanVienTuyenDung.length !== 0) {
             for (let i = 0; i < thongKeNhanVienTuyenDung.length; i++) {
@@ -1453,15 +1470,16 @@ exports.reportRecruitment = async (req, res, next) => {
         }
 
         //Báo cáo chi tiết theo nhân viên giới thiệu ứng viên và tiền thưởng trực tiếp
-        let gioiThieuUngVien = await Candidates.aggregate([{
-            $match: { comId }
-        },
-        {
-            $group: {
-                _id: "$userRecommend",
-                total: { $sum: 1 },
-            }
-        },
+        let gioiThieuUngVien = await Candidates.aggregate([
+            { $match: { comId } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $group: {
+                    _id: "$userRecommend",
+                    total: { $sum: 1 },
+                }
+            },
         ])
         if (gioiThieuUngVien.length !== 0) {
             for (let i = 0; i < gioiThieuUngVien.length; i++) {
