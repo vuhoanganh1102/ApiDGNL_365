@@ -27,9 +27,9 @@ const ThongBaoUvSchema = new Schema({
         default: 0,
     },
 },{
-    collection: 'VLTH_ThongBaoUv',
+    collection: 'VLTG_ThongBaoUv',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_ThongBaoUv",ThongBaoUvSchema);
+module.exports = mongoose.model("VLTG_ThongBaoUv",ThongBaoUvSchema);

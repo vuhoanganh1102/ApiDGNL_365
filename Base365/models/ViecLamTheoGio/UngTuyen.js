@@ -43,9 +43,9 @@ const UngTuyenSchema = new Schema({
         default: 0,
     },
 },{
-    collection: 'VLTH_UngTuyen',
+    collection: 'VLTG_UngTuyen',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_UngTuyen",UngTuyenSchema);
+module.exports = mongoose.model("VLTG_UngTuyen",UngTuyenSchema);
