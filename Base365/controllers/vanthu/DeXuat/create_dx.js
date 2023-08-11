@@ -2312,6 +2312,7 @@ exports.showadd = async(req, res) => {
     }
 };
 
+
 exports.dxDiMuonVeSom = async(req, res) => {
     try {
         let {
@@ -2334,8 +2335,8 @@ exports.dxDiMuonVeSom = async(req, res) => {
         let createDate = new Date()
         let id_user = req.user.data.idQLC
         let com_id = -1;
-        if (req.user.data.inForPerson && req.user.data.inForPerson.employee) {
-            com_id = req.user.data.inForPerson.employee.com_id
+        if (req.user.data.com_id) {
+            com_id = req.user.data.com_id
         }
         let name_user = req.user.data.userName;
         let file_kem = req.files.file_kem;
@@ -2375,7 +2376,7 @@ exports.dxDiMuonVeSom = async(req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: linkDL,
+                file_kem: [{file:linkDL}],
                 type_duyet: type_duyet,
                 time_create: createDate,
             });
@@ -2436,8 +2437,8 @@ exports.dxXinNghiRaNgoai = async(req, res) => {
         } = req.body;
         let id_user = req.user.data.idQLC
         let com_id = -1;
-        if (req.user.data.inForPerson && req.user.data.inForPerson.employee) {
-            com_id = req.user.data.inForPerson.employee.com_id
+        if (req.user.data.com_id) {
+            com_id = req.user.data.com_id
         }
         let name_user = req.user.data.userName
         let file_kem = req.files.fileKem;
@@ -2476,7 +2477,8 @@ exports.dxXinNghiRaNgoai = async(req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                // file_kem: link_download,
+                file_kem: [{file:link_download}],
                 kieu_duyet: 0,
                 //   type_duyet: 0,
                 //  type_time: type_time,
@@ -2539,8 +2541,8 @@ exports.dxNhapNgayNhanLuong = async(req, res) => {
         } = req.body;
         let id_user = req.user.data.idQLC
         let com_id = -1;
-        if (req.user.data.inForPerson && req.user.data.inForPerson.employee) {
-            com_id = req.user.data.inForPerson.employee.com_id
+        if (req.user.data.com_id) {
+            com_id = req.user.data.com_id
         }
         let name_user = req.user.data.userName
         let file_kem = req.files.fileKem;
@@ -2577,7 +2579,8 @@ exports.dxNhapNgayNhanLuong = async(req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                //file_kem: link_download,
+                file_kem: [{file:link_download}],
                 kieu_duyet: 0,
                 //   type_duyet: 0,
                 //  type_time: type_time,
@@ -2640,8 +2643,8 @@ exports.dxXinTaiTaiLieu = async(req, res) => {
         } = req.body;
         let id_user = req.user.data.idQLC
         let com_id = -1;
-        if (req.user.data.inForPerson && req.user.data.inForPerson.employee) {
-            com_id = req.user.data.inForPerson.employee.com_id
+        if (req.user.data.com_id) {
+            com_id = req.user.data.com_id
         }
         let name_user = req.user.data.userName
         let file_kem = req.files.fileKem;
@@ -2678,7 +2681,8 @@ exports.dxXinTaiTaiLieu = async(req, res) => {
                 kieu_duyet: kieu_duyet,
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
-                file_kem: link_download,
+                //file_kem: link_download,
+                file_kem: [{file:link_download}],
                 kieu_duyet: 0,
                 //   type_duyet: 0,
                 //  type_time: type_time,
