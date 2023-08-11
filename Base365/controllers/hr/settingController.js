@@ -31,14 +31,24 @@ exports.getListPermisionUserLogin= async(req, res, next) => {
     try {
         let userId = req.infoLogin.id;
         let type = req.infoLogin.type;
-        let infoRoleTD = await PermisionUser.find({userId: userId, barId: 1});
-        let infoRoleTTNS = await PermisionUser.find({userId: userId, barId: 2});
-        let infoRoleTTVP = await PermisionUser.find({userId: userId, barId: 3});
-        let infoRoleHNNV = await PermisionUser.find({userId: userId, barId: 4});
-        let infoRoleBCNS = await PermisionUser.find({userId: userId, barId: 5});
-        let infoRoleDXGD = await PermisionUser.find({userId: userId, barId: 6});
-        let infoRoleTGL = await PermisionUser.find({userId: userId, barId: 7});
-        
+        let infoRoleTD, infoRoleTTNS, infoRoleTTVP, infoRoleHNNV, infoRoleBCNS, infoRoleDXGD, infoRoleTGL;
+        if(type==1) {
+          infoRoleTD = [{perId: 1}, {perId: 2}, {perId: 3}, {perId: 4}];
+          infoRoleTTNS = [{perId: 1}, {perId: 2}, {perId: 3}, {perId: 4}];
+          infoRoleTTVP = [{perId: 1}, {perId: 2}, {perId: 3}, {perId: 4}];
+          infoRoleHNNV = [{perId: 1}, {perId: 2}, {perId: 3}, {perId: 4}];
+          infoRoleBCNS = [{perId: 1}, {perId: 2}, {perId: 3}, {perId: 4}];
+          infoRoleDXGD = [{perId: 1}, {perId: 2}, {perId: 3}, {perId: 4}];
+          infoRoleTGL = [{perId: 1}, {perId: 2}, {perId: 3}, {perId: 4}];
+        }else {
+          infoRoleTD = await PermisionUser.find({userId: userId, barId: 1});
+          infoRoleTTNS = await PermisionUser.find({userId: userId, barId: 2});
+          infoRoleTTVP = await PermisionUser.find({userId: userId, barId: 3});
+          infoRoleHNNV = await PermisionUser.find({userId: userId, barId: 4});
+          infoRoleBCNS = await PermisionUser.find({userId: userId, barId: 5});
+          infoRoleDXGD = await PermisionUser.find({userId: userId, barId: 6});
+          infoRoleTGL = await PermisionUser.find({userId: userId, barId: 7});
+        }
         return functions.success(res, `Get list role user with id=${userId}`, {type, infoRoleTD, infoRoleTTNS, infoRoleTTVP, infoRoleHNNV, infoRoleBCNS, infoRoleDXGD, infoRoleTGL });
     } catch (e) {
         return functions.setError(res, e.message);

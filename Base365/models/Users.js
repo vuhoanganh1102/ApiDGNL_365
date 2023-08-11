@@ -1090,6 +1090,16 @@ const UserSchema = new mongoose.Schema({
             },
         }
     },
+    inforVLTG: {
+        uv_day: {
+            type: String,
+            default: null
+        },
+        luot_xem: {
+            type: Number,
+            default: 0
+        }
+    },
     configChat: {
         notificationAcceptOffer: {
             type: Number,
