@@ -41,7 +41,7 @@ exports.getListCartByUserId = async (req, res, next) => {
           new: {
             _id: 1, title: 1, userID: 1, linkTitle: 1,
             cateID: 1, img: 1, money: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1, buySell: 1, infoSell: 1,
-            transport:1, transportFee:1, until:1
+            transport: 1, transportFee: 1, until: 1
           },
           user: { _id: 1, userName: 1, type: 1 }
         }
@@ -183,13 +183,13 @@ exports.tickCart = async (req, res, next) => {
     let id = req.body.id;
     if (Array.isArray(id)) {
       for (let i = 0; i < id.length; i++) {
-        console.log(id[i]);
         let check = await Cart.findOne({ _id: Number(id[i]), userId }).lean();
         if (check) {
           await Cart.findOneAndUpdate({ _id: Number(id[i]), userId }, { tick: 1 })
         } else {
           return functions.setError(res, 'Không tìm thấy giỏ hàng', 404)
         }
+        await Cart.findOneAndUpdate({ userId, _id: { $nin: id } }, { tick: 0 });
       }
       return functions.success(res, 'Success')
     }
@@ -230,7 +230,7 @@ exports.getTickCart = async (req, res, next) => {
           new: {
             _id: 1, title: 1, userID: 1, linkTitle: 1,
             cateID: 1, img: 1, money: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1, buySell: 1, infoSell: 1,
-            transport:1, transportFee:1, until:1
+            transport: 1, transportFee: 1, until: 1
           },
           user: { _id: 1, userName: 1, type: 1 }
         }
