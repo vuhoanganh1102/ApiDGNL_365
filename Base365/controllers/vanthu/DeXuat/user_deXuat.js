@@ -121,8 +121,8 @@ exports.de_xuat_send_to_me = async (req, res) => {
     const perPage = 10; // Giá trị mặc định nếu không được cung cấp
     const startIndex = (page - 1) * perPage;
     const sortOptions = { _id: -1 };
-    if (!type) {
-      return functions.setError(res,'type không được bỏ trống.',400)
+    if (!type){
+      type = 1
     }
     let query = {
       id_user_duyet:  { $in: [id_user_duyet] },
@@ -138,20 +138,24 @@ exports.de_xuat_send_to_me = async (req, res) => {
     if (id_user) {
       query.id_user = id_user;
     }
+    const startTime = new Date(time_s);
+    const endTime = new Date(time_e);
     if (time_s && time_e) {
-      query.time_create = { $gte: new Date(time_s), $lte: new Date(time_e) };
+      query.time_create = { $gte: startTime/1000, $lte: endTime/1000 };
     } else if (time_s) {
-      query.time_create = { $gte: new Date(time_s) };
+      query.time_create = { $gte: startTime/1000 };
     } else if (time_e) {
-      query.time_create = { $lte: new Date(time_e) };
+      query.time_create = { $lte: endTime/1000 };
     }
+
+    let totalPages;
     if (type == 1) { // Hiển thị tất cả
       
       const data = await De_Xuat.find(query)
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      const datafull = De_Xuat.find(query);
+      const datafull = await De_Xuat.find(query);
       totalPages = Math.ceil(datafull.length / perPage);
       return functions.success(res,'get data success',{data,totalPages})
     }
@@ -162,7 +166,7 @@ exports.de_xuat_send_to_me = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);;
-      const datafull = De_Xuat.find(query);
+      const datafull = await De_Xuat.find(query);
       totalPages = Math.ceil(datafull.length / perPage);
       return functions.success(res,'get data success',{data,totalPages})
     }
@@ -173,7 +177,7 @@ exports.de_xuat_send_to_me = async (req, res) => {
         .sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);;
-      const datafull = De_Xuat.find(query);
+      const datafull = await De_Xuat.find(query);
       totalPages = Math.ceil(datafull.length / perPage);
       return functions.success(res,'get data success',{data,totalPages})
     }
@@ -182,7 +186,7 @@ exports.de_xuat_send_to_me = async (req, res) => {
       const data = await De_Xuat.find(query).sort(sortOptions)
         .skip(startIndex)
         .limit(perPage);
-      const datafull = De_Xuat.find(query);
+      const datafull = await De_Xuat.find(query);
       totalPages = Math.ceil(datafull.length / perPage);
       return functions.success(res,'get data success',{data,totalPages})
     } else{
