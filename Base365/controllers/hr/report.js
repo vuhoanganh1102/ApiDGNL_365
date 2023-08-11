@@ -224,12 +224,12 @@ exports.report = async (req, res, next) => {
         if (to_date) conditions.sb_time_up = { $lte: new Date(to_date) }
         if (from_date && to_date)
             conditions.sb_time_up = { $gte: new Date(from_date), $lte: new Date(to_date) }
-        if(depId) subConditions['user.inForPerson.employee.dep_id'] = depId
+        if (depId) subConditions['user.inForPerson.employee.dep_id'] = depId
         conditions.sb_id_com = comId;
         let dataLuong = await Salarys.aggregate([
-            {$match:conditions},
+            { $match: conditions },
             {
-                $lookup:{
+                $lookup: {
                     from: 'Users',
                     localField: 'sb_id_user',
                     foreignField: 'idQLC',
@@ -284,7 +284,7 @@ exports.report = async (req, res, next) => {
         subConditions['user.type'] = 2;
         conditions.com_id = comId;
 
-        
+
         // Luân chuyển công tác
         let countDataLuanChuyen = await TranferJob.aggregate([
             { $match: conditions },
@@ -1314,10 +1314,18 @@ exports.reportChart = async (req, res, next) => {
 exports.reportRecruitment = async (req, res, next) => {
     try {
         let comId = req.infoLogin.comId;
-        let page = Number(req.body.page) || 1;
-        let pageSize = Number(req.body.pageSize) || 10;
-        let skip = (page - 1) * pageSize;
-        let limit = pageSize;
+        let page1 = Number(req.body.page1) || 1;
+        let pageSize1 = Number(req.body.pageSize1) || 10;
+        let page2 = Number(req.body.page2) || 1;
+        let pageSize2 = Number(req.body.pageSize2) || 10;
+        let page3 = Number(req.body.page3) || 1;
+        let pageSize3 = Number(req.body.pageSize3) || 10;
+        let skip1 = (page1 - 1) * pageSize1;
+        let limit1 = pageSize1;
+        let skip2 = (page2 - 1) * pageSize2;
+        let limit2 = pageSize2;
+        let skip3 = (page3 - 1) * pageSize3;
+        let limit3 = pageSize3;
         //  Tổng số tin
         let tongSoTinTuyenDung = await RecruitmentNews.countDocuments({ isDelete: 0, comId })
 
@@ -1381,7 +1389,8 @@ exports.reportRecruitment = async (req, res, next) => {
         { $count: 'SL' }
         ])
         // Báo cáo chi tiết theo tin tuyển dụng
-        let query = await RecruitmentNews.find({ comId }).skip(skip).limit(limit);
+        let tongso1 = await RecruitmentNews.countDocuments({ comId });
+        let query = await RecruitmentNews.find({ comId }).skip(skip1).limit(limit1);
         let mangThongTin = [];
         if (query.length !== 0) {
             for (let i = 0; i < query.length; i++) {
@@ -1450,10 +1459,11 @@ exports.reportRecruitment = async (req, res, next) => {
             }
         }
         // Thống kê xếp hạng nhân viên tuyển dụng
+        let tongso2 = await RecruitmentNews.countDocuments({ comId })
         let thongKeNhanVienTuyenDung = await RecruitmentNews.aggregate([
             { $match: { comId } },
-            { $skip: skip },
-            { $limit: limit },
+            { $skip: skip2 },
+            { $limit: limit2 },
             {
                 $group: {
                     _id: "$hrName",
@@ -1472,8 +1482,8 @@ exports.reportRecruitment = async (req, res, next) => {
         //Báo cáo chi tiết theo nhân viên giới thiệu ứng viên và tiền thưởng trực tiếp
         let gioiThieuUngVien = await Candidates.aggregate([
             { $match: { comId } },
-            { $skip: skip },
-            { $limit: limit },
+            { $skip: skip3 },
+            { $limit: limit3 },
             {
                 $group: {
                     _id: "$userRecommend",
@@ -1481,6 +1491,7 @@ exports.reportRecruitment = async (req, res, next) => {
                 }
             },
         ])
+        let tongso3 = await Candidates.countDocuments({ comId })
         if (gioiThieuUngVien.length !== 0) {
             for (let i = 0; i < gioiThieuUngVien.length; i++) {
                 let nameHr = await Users.findOne({ 'inForPerson.employee.com_id': comId, 'idQLC': gioiThieuUngVien[i]._id }, { userName: 1, })
@@ -1500,7 +1511,7 @@ exports.reportRecruitment = async (req, res, next) => {
         data.mangThongTin = mangThongTin;
         data.thongKeNhanVienTuyenDung = thongKeNhanVienTuyenDung;
         data.gioiThieuUngVien = gioiThieuUngVien;
-        return functions.success(res, 'get data success', { data })
+        return functions.success(res, 'get data success', { tongso1, tongso2, tongso3, data })
     } catch (error) {
         return functions.setError(res, error.message)
     }

@@ -590,7 +590,6 @@ exports.getDataNewDetail = async (objectarr, cate) => {
             var chartAt = name.split('.')[0];
         let filter1 = check[`${chartAt}`]
         data = await filter1.find(item => item._id === array[i][1])
-        console.log("🚀 ~ file: service.js:593 ~ exports.getDataNewDetail= ~ filter1:", filter1)
         objectarr[`${array[i][0]}`] =  data.name
     }
     return objectarr
