@@ -129,6 +129,7 @@ exports.showAll = async (req, res) => {
           tinh_trang_su_dung: { $first: '$ts_trangthai' },
           don_vi_quan_ly: { $first: '$id_dv_quanly' },
           vi_tri_tai_san: { $first: { $arrayElemAt: ["$name_vitri.vi_tri", 0] } },
+          id_vi_tri : { $first: { $arrayElemAt: ["$name_vitri.id_vitri", 0] } }
         },
       },
       {
@@ -847,8 +848,7 @@ exports.quatrinhsd = async (req, res) => {
     let foreignField = "";
     let asField = "";
     let tinh_trang_sd = "";
-    let checkTs = await QuaTrinhSuDung.find({id_ts : ts_id,id_cty : com_id})
-    console.log(checkTs);
+    let checkTs = await QuaTrinhSuDung.find({id_cty : com_id,id_ts : ts_id}).lean()
     for( let i = 0; i < checkTs.length; i++) {
       if(checkTs[i].qt_nghiep_vu == 1){
         lookupTableName = 'QLTS_Cap_Phat';
@@ -916,12 +916,12 @@ exports.quatrinhsd = async (req, res) => {
 
       
     }
-    console.log(lookupTableName,555);
+    
     let listQuaTrinh = await QuaTrinhSuDung.aggregate([
       {
         $match: matchQuery,
       },
-      { $sort: { id_ts: -1 } },
+      { $sort: { time_created: -1 } },
       {
         $lookup: {
           from: lookupTableName,
@@ -930,28 +930,28 @@ exports.quatrinhsd = async (req, res) => {
           as: asField 
         }
       },
-      {
-        $addFields: {
-          [asField]: {
-            $cond: {
-              if: { $eq: ["$" + asField, null] },
-              then: { field_default: "default_value" }, // Giá trị mặc định nếu không tìm thấy kết quả
-              else: "$" + asField, // Giữ nguyên kết quả lookup nếu tìm thấy
-            },
-          },
-        },
-      },
+      // {
+      //   $addFields: {
+      //     [asField]: {
+      //       $cond: {
+      //         if: { $eq: ["$" + asField, null] },
+      //         then: { field_default: "default_value" }, // Giá trị mặc định nếu không tìm thấy kết quả
+      //         else: "$" + asField, // Giữ nguyên kết quả lookup nếu tìm thấy
+      //       },
+      //     },
+      //   },
+      // },
       {
         $group: {
           _id: '$id_ts',
-          so_bien_ban: { $first: '$id_ts' },
-          ngay_thuc_hien: { $first: '$qt_ngay_thuchien' },
-          ngiep_vu: { $first: '$qt_nghiep_vu' },
-          tinh_trang: { $first: tinh_trang_sd },
-          vitri_taisan : { $first: '$vitri_ts' },
-          id_ng_sudung : {$first: '$id_ng_sudung'},
-          id_phong_su_dung :{$first: '$id_phong_sudung'},
-          ghi_chu : {$first: '$ghi_chu'}
+          so_bien_ban:  {$first :'$quatrinh_id' },
+          ngay_thuc_hien: {$first:'$qt_ngay_thuchien'},
+          ngiep_vu: {$first:'$qt_nghiep_vu'} ,
+          tinh_trang: { $first : tinh_trang_sd},
+          vitri_taisan : {$first :'$vitri_ts' },
+          id_ng_sudu :{$first :'$id_ng_sudung'},
+          id_phong_su_dung :{$first :'$id_phong_sudung' },
+          ghi_chu : {$first :'$ghi_chu' },
         },
       },
       {
@@ -961,6 +961,7 @@ exports.quatrinhsd = async (req, res) => {
         $limit: perPage,
       },
     ])
+    console.log(listQuaTrinh);
     const totalTsCount = await QuaTrinhSuDung.countDocuments(matchQuery);
 
     // Tính toán số trang và kiểm tra xem còn trang kế tiếp hay không

@@ -801,11 +801,12 @@ exports.searchNew = async (req, res, next) => {
             warranty,
             endvalue,
             numberOfSeats,
-            loai_sanphamwh,
+            status,
             loai_sanphambe,
             phien_banxc,
             phien_banddt,
             block,
+            poster,
             kindOfPet,
             age,
             gender,
@@ -966,6 +967,8 @@ exports.searchNew = async (req, res, next) => {
             let query = raoNhanh.createLinkTilte(search_key);
             condition.linkTitle = { $regex: `.*${query}.*` };
         }
+        if(poster) condition.poster = poster
+        if (status) condition.status = status;
         if (cateID) condition.cateID = Number(cateID);
         if (brand) condition.brand = brand;
         if (city) condition.city = Number(city);
