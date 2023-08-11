@@ -95,6 +95,14 @@ exports.showAll = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: 'Users',
+          localField: 'id_ten_quanly',
+          foreignField: '_id',
+          as: 'name_User',
+        },
+      },
+      {
         $unwind: {
           path: '$cap_phat',
           preserveNullAndEmptyArrays: true,
@@ -111,7 +119,8 @@ exports.showAll = async (req, res) => {
           _id: '$ts_id',
           ts_id: { $first: '$ts_id' },
           ts_ten: { $first: '$ts_ten' },
-          nguoi_cam: { $first: '$id_ten_quanly' },
+          id_nguoi_cam: { $first: '$id_ten_quanly' },
+          ten_nguoi_cam : { $first: { $arrayElemAt: ["$name_User.userName", 0] } },
           tong_so_luong: { $first: '$sl_bandau' },
           so_luong_cap_phat: {
             $sum: {

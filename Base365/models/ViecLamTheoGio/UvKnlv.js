@@ -31,9 +31,9 @@ const UvKnlvSchema = new Schema({
         default: null,
     },
 },{
-    collection: 'VLTH_UvKnlv',
+    collection: 'VLTG_UvKnlv',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_UvKnlv",UvKnlvSchema);
+module.exports = mongoose.model("VLTG_UvKnlv",UvKnlvSchema);

@@ -11,7 +11,7 @@ const XemUvSchema = new Schema({
         required: true,
     },
     xm_id_uv: {
-        type: Number
+        type: Number,
         required: true,
     },
     xm_time_created: {
@@ -19,9 +19,9 @@ const XemUvSchema = new Schema({
         default: 0,
     },
 },{
-    collection: 'VLTH_XemUv',
+    collection: 'VLTG_XemUv',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_XemUv",XemUvSchema);
+module.exports = mongoose.model("VLTG_XemUv",XemUvSchema);

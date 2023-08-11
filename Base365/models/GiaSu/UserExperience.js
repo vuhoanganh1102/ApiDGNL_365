@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const user_experience = new mongoose.Schema({
-
+    //Bảng kinh nghiệm làm việc
     ue_id : {
         type : Number,
         required: true,

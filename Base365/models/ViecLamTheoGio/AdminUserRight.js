@@ -1,31 +1,32 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const NtdXemUvSchema = new Schema({
-    stt: {
+const AdminUserRightSchema = new Schema({
+    //id
+    adu_admin_id: {
         type: Number,
         required: true,
     },
-    id_ntd: {
+    adu_admin_module_id: {
         type: Number,
         required: true,
     },
-    id_uv: {
-        type: Number,
-        required: true,
-    },
-    ket_qua: {
+    adu_add: {
         type: Number,
         default: 0,
     },
-    time_created: {
+    adu_edit: {
         type: Number,
         default: 0,
-    }
+    },
+    adu_delete: {
+        type: Number,
+        default: 0,
+    },
 },{
-    collection: 'VLTG_NtdXemUv',
+    collection: 'VLTG_AdminUserRight',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTG_NtdXemUv",NtdXemUvSchema);
+module.exports = mongoose.model("VLTG_AdminUserRight",AdminUserRightSchema);

@@ -35,9 +35,9 @@ const ModulesSchema = new Schema({
         default: 0,
     },
 },{
-    collection: 'VLTH_Modules',
+    collection: 'VLTG_Modules',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_Modules",ModulesSchema);
+module.exports = mongoose.model("VLTG_Modules",ModulesSchema);

@@ -1,87 +1,100 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const MenusMultiSchema = new Schema({
-    mnu_id: {
-        type: Number,
+const AdminUserSchema = new Schema({
+    //id
+    adm_id: {
+        type: String,
         required: true,
     },
-    mnu_name: {
+    adm_loginname: {
         type: String,
-        default: null,
-    },
-    mnu_name_index: {
-        type: String,
-        default: null,
-    },
-    mnu_check: {
-        type: String,
-        default: null,
-    },
-    mnu_link: {
-        type: String,
-        default: null,
-    },
-    mnu_target: {
-        type: String,
-        default: null,
-    },
-    mnu_description: {
-        type: String,
-        default: null,
-    },
-    mnu_data: {
-        type: String,
-        default: null,
-    },
-    admin_id: {
-        type: Number,
         required: true,
+    },
+    adm_password: {
+        type: String,
+        required: true,
+    },
+    adm_name: {
+        type: String,
+        default: null,
+    },
+    adm_email: {
+        type: String,
+        default: null,
+    },
+    adm_author: {
+        type: String,
+        default: null,
+    },
+    adm_address: {
+        type: String,
+        default: null,
+    },
+    adm_phone: {
+        type: String,
+        default: null,
+    },
+    adm_mobile: {
+        type: String,
+        default: null,
+    },
+    adm_access_module: {
+        type: String,
+        default: null,
+    },
+    adm_access_category: {
+        type: String,
+        default: null,
+    },
+    adm_date: {
+        type: Number,
+        default: 0,
+    },
+    adm_isadmin: {
+        type: Number,
+        default: 0,
+    },
+    adm_active: {
+        type: Number,
+        default: 0,
     },
     lang_id: {
         type: Number,
         default: 0,
     },
-    mnu_active: {
+    adm_delete: {
         type: Number,
         default: 0,
     },
-    mnu_follow: {
+    adm_all_category: {
         type: Number,
         default: 0,
     },
-    mnu_type: {
+    adm_edit_all: {
         type: Number,
         default: 0,
     },
-    mnu_date: {
+    admin_id: {
+        type: Number,
+        required: true,
+    },
+    adm_bophan: {
         type: Number,
         default: 0,
     },
-    mnu_order: {
+    adm_ntd: {
         type: Number,
         default: 0,
     },
-    mnu_parent_id: {
-        type: Number,
-        default: 0,
-    },
-    mnu_has_child: {
-        type: Number,
-        default: 0,
-    },
-    mnu_background: {
-        type: String,
-        default: null,
-    },
-    mnu_padding_left: {
+    adm_rank: {
         type: Number,
         default: 0,
     },
 },{
-    collection: 'VLTG_MenusMulti',
+    collection: 'VLTG_AdminUser',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTG_MenusMulti",MenusMultiSchema);
+module.exports = mongoose.model("VLTG_AdminUser",AdminUserSchema);
