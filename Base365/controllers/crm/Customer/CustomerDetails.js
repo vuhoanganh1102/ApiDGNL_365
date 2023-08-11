@@ -13,6 +13,9 @@ const NhomKH = require('../../../models/crm/Customer/customer_group')
 const CustomerCare = require('../../../models/crm/Customer/customer_care')
 const AppointmentSchedule = require('../../../models/crm/CustomerCare/AppointmentSchedule');
 const AppointmentContentCall = require('../../../models/crm/appointment_content_call');
+const CallHistory = require('../../../models/crm/call_history')
+const ManagerExtension = require('../../../models/crm/manager_extension');
+const AcountApi = require('../../../models/crm/account_api')
 // hàm hiển thị chi tiết khách hàng
 exports.detail = async (req, res) => {
   try {
@@ -669,6 +672,66 @@ exports.CombineCustome = async (req, res) => {
 }
 
 
+
+// hàm hiển thị lịch sử cuộc gọi
 exports.Callhistory = async(req,res) =>{
-  
+  try{
+    let com_id = "";
+    let emp_id = "";
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      emp_id = req.user.data.idQLC;
+      let checkExt = await ManagerExtension.findOne({emp_id : emp_id, company_id : com_id}).select('ext_number manager_extension')
+      if(checkExt){
+      let extension = checkExt.ext_number
+      const totalCount = await CallHistory.countDocuments({ extension: extension });
+      let call_history = await CallHistory.find({extension : extension })
+      .select('phone created_at')
+      .sort({ created_at: -1 })
+      .limit(1000)
+      return functions.success(res, 'get data success', { call_history,totalCount });
+      }else{
+        return functions.setError(res, 'không tìm thấy cài đặt', 400);
+      }
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+  }catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
+  }
+}
+
+// Hàm gọi điện 
+exports.Call = async(req,res)=>{
+  try{
+    let com_id = "";
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      emp_id = req.user.data.idQLC;
+    let {phone } = req.body
+    if(phone) {
+      // lay data cua tổng đài
+      let connect = await AcountApi.findOne({
+        com_id : com_id,
+        switchboard : "fpt",
+        status : 1
+      })
+      .select('account password domain')
+      if(connect){
+       // lấy data của NV đc cài đặt với line
+      
+      }else{
+        return functions.setError(res, 'không tồn tại bản ghi ', 400);
+      }
+    }else{
+      return functions.setError(res, 'số điện thoại khôn được bỏ trống', 400);
+    }
+    }else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+  }catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
+  }
 }
