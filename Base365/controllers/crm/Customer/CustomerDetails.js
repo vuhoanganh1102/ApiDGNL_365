@@ -11,7 +11,8 @@ const District = require('../../../models/District')
 const Ward = require('../../../models/crm/ward')
 const NhomKH = require('../../../models/crm/Customer/customer_group')
 const CustomerCare = require('../../../models/crm/Customer/customer_care')
-const AppointmentSchedule = require('../../../models/crm/CustomerCare/AppointmentSchedule')
+const AppointmentSchedule = require('../../../models/crm/CustomerCare/AppointmentSchedule');
+const AppointmentContentCall = require('../../../models/crm/appointment_content_call');
 // hàm hiển thị chi tiết khách hàng
 exports.detail = async (req, res) => {
   try {
@@ -186,7 +187,6 @@ exports.detail = async (req, res) => {
     return functions.setError(res, e.message)
   }
 }
-
 
 exports.listCity = async(req,res) => {
   try{
@@ -418,23 +418,17 @@ exports.editCustomer = async (req, res) => {
 // hàm hiển thị lịch sử trợ lý kinh doanh (theo id khach hang)
 exports.showHisCus = async (req, res) => {
   try {
-    let { cus_id } = req.body;
-    const page = 10
-    const perPage = 6; // Số lượng giá trị hiển thị trên mỗi trang
-    const startIndex = (page - 1) * perPage;
-    const endIndex = page * perPage;
+    let {cus_id} = req.body;
     if (!cus_id) {
       return functions.setError(res, 'cus_id không được bỏ trống', 400);
     }
     if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
       return functions.setError(res, 'cus_id phải là 1 số', 400);
     }
-    let checkHis = await HistoryEditCustomer.find({ customer_id: cus_id })
+    let checkHis = await AppointmentContentCall.find({ id_cus : cus_id })
       .sort({ id: -1 })
-      .skip(startIndex)
-      .limit(perPage)
       .lean()
-    return functions.success(res, 'get data success', { checkHis });
+    return functions.success(res, 'get data success', {checkHis});
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -520,11 +514,11 @@ exports.ShareCustomer = async (req, res) => {
 exports.ChosseCustomer = async (req, res) => {
   try {
     let { arrCus } = req.body
-    if (!cus_id || !Array.isArray(cus_id) || cus_id.length === 0) {
-      return functions.setError(res, 'Mảng cus_id không được bỏ trống', 400);
+    if (!arrCus || !Array.isArray(arrCus) || arrCus.length === 0) {
+      return functions.setError(res, 'Mảng arrCus không được bỏ trống', 400);
     }
-    if (!cus_id.every(Number.isInteger)) {
-      return functions.setError(res, 'Tất cả các giá trị trong mảng cus_id phải là số nguyên', 400);
+    if (!arrCus.every(Number.isInteger)) {
+      return functions.setError(res, 'Tất cả các giá trị trong mảng arrCus phải là số nguyên', 400);
     }
     const customers = await Customer.find({ cus_id: { $in: arrCus } });
     return functions.success(res, 'get data success', { customers });
@@ -533,7 +527,6 @@ exports.ChosseCustomer = async (req, res) => {
     return functions.setError(res, e.message)
   }
 }
-
 
 //Api thực hiện gộp khách hàng và xóa những giá trị cũ
 exports.CombineCustome = async (req, res) => {
@@ -676,3 +669,6 @@ exports.CombineCustome = async (req, res) => {
 }
 
 
+exports.Callhistory = async(req,res) =>{
+  
+}

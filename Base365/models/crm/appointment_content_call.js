@@ -13,7 +13,7 @@ const appointment_content_call = new mongoose.Schema({
         type: String
     },
     created_at: {
-        type: Date
+        type: String
     }
 }, {
     collection: "CRM_appointment_content_call"
