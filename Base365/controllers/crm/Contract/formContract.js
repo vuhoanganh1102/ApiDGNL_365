@@ -2,7 +2,7 @@ const functions = require('../../../services/CRM/CRMservice')
 const Contract = require('../../../models/crm/Contract/FormContract')
 const detailContract = require('../../../models/crm/Contract/DetailFormContract')
 
-exports.addContract = async(req, res) => {
+exports.addContract = async (req, res) => {
     try {
         const {
             name,
@@ -26,7 +26,7 @@ exports.addContract = async(req, res) => {
 
             if (req.data.user.type == 1) {
                 com_id = req.user.data.idQLC
-                    //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
+                //Lấy ID kế tiếp, nếu chưa có giá trị nào thì bằng 1
                 let maxID = await functions.getMaxID(Contract);
                 if (!maxID) {
                     maxID = 0
@@ -113,77 +113,93 @@ exports.addContract = async(req, res) => {
 
 
         }
-    } catch (err) {
-        functions.setError(res, err.message, 509);
-
+    } catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
     }
 }
 
-exports.editContract = async(req, res) => {
-    const {
-        _id,
-        ep_id,
-        id_file,
-        new_field,
-        old_field,
-        index_field,
-        default_field
-    } = req.body;
-    let File = req.files || null;
-    let pathFile = null;
-    // if(com_id === id_file){}
-    //cap nhat binh thuong
-    const form = await Contract.findOne({ _id: _id });
-    if (!form) {
-        functions.setError(res, "form does not exist!", 510);
-    } else {
-        await Contract.findOneAndUpdate({ _id: _id }, {
-            ep_id: ep_id,
-            id_file: id_file,
-            updated_at: new Date(),
-        })
-    }
-    // meu upload file
-    if (File.pathFile) {
-        let upload = functions.upFileCRM('Form_Contract', _id, File.pathFile, ['.jpeg', '.jpg', '.png', '.doc', '.txt', 'docx']);
-        if (!upload) {
-            return functions.setError(res, 'file không hỗ trợ', 400)
-        }
-        pathFile = functions.createLinkFileCRM('Form_Contract', _id, File.pathFile.name)
+exports.editContract = async (req, res) => {
+    try {
+        const {
+            _id,
+            id_file,
+            new_field,
+            old_field,
+            index_field,
+            default_field
+        } = req.body;
 
+        const File = req.files.pathFile;
+        let pathFile = null;
 
-    } else {
-
-        const form = await Contract.findOne({ _id: _id });
-        if (!form) {
-            functions.setError(res, "form does not exist!", 510);
+        let com_id = "";
+        let ep_id = "";
+        if (req.user.data.type == 1 || req.user.data.type == 2) {
+            com_id = req.user.data.com_id;
+            ep_id = req.user.data._id;
         } else {
-            await Contract.findOneAndUpdate({ _id: _id }, {
+            return functions.setError(res, 'không có quyền truy cập', 400);
+        }
+
+        // Cập nhật thông tin contract
+        const updatedForm = await Contract.findOneAndUpdate(
+            { _id: _id, com_id: com_id },
+            {
+                ep_id: ep_id,
+                id_file: id_file,
+                updated_at: new Date(),
+            },
+            { new: true }
+        );
+
+        if (!updatedForm) {
+            return functions.setError(res, "form does not exist!", 510);
+        }
+
+        // Upload file
+        if (File) {
+            const upload = functions.upFileCRM('Form_Contract', _id, File.path, ['.jpeg', '.jpg', '.png', '.doc', '.txt', 'docx']);
+            if (!upload) {
+                return functions.setError(res, 'file không hỗ trợ', 400);
+            }
+            pathFile = File.name;
+        }
+
+        // Cập nhật contract với pathFile
+        await Contract.findOneAndUpdate(
+            { _id: _id },
+            {
                 pathFile: pathFile,
                 ep_id: ep_id,
                 id_file: id_file,
                 updated_at: new Date(),
+            },
+            { new: true }
+        );
 
-            })
-
-            .then((form) => functions.success(res, "Deparment edited successfully", { form }))
-                .catch((err) => functions.setError(res, err.message, 511));
-        }
-
-        // luu vao bang detail contract
-        await detailContract.findOneAndUpdate({ id_form_contract: _id }, {
+        // Luu vao bang detail contract
+        const updatedDetailContract = await detailContract.findOneAndUpdate(
+            { id_form_contract: _id },
+            {
                 new_field: new_field,
                 old_field: old_field,
                 index_field: index_field,
                 default_field: default_field,
-            })
-            .then((form) => functions.success(res, "Deparment edited successfully", { form }))
-            .catch((err) => functions.setError(res, err.message, 511))
+            },
+            { new: true }
+        );
+
+        return functions.success(res, "Department edited successfully", { updatedForm, updatedDetailContract });
+    } catch (error) {
+        console.log(error);
+        return functions.setError(res, error.message);
     }
 }
 
 
-exports.deleteContract = async(req, res) => {
+
+exports.deleteContract = async (req, res) => {
     try {
         const { _id } = req.body;
         const data = await Contract.findOne({ _id: _id })
@@ -193,15 +209,15 @@ exports.deleteContract = async(req, res) => {
             const result = await Contract.findOneAndUpdate({ _id: _id }, { $set: { is_delete: 1 } })
             functions.success(res, " xoa thanh cong ", { result })
         }
-    } catch (error) {
-        console.error('Failed to delete', error);
-        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+    } catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
     }
 
 }
 
 
-exports.deleteDetailContract = async(req, res) => {
+exports.deleteDetailContract = async (req, res) => {
     try {
         const { _id } = req.body;
         const data = await detailContract.findOne({ id_form_contract: _id })
@@ -211,13 +227,12 @@ exports.deleteDetailContract = async(req, res) => {
             const result = await detailContract.deleteOne({ id_form_contract: _id })
             functions.success(res, " xoa thanh cong ", { result })
         }
-    } catch (error) {
-        console.error('Failed to delete', error);
-        res.status(500).json({ error: 'Đã xảy ra lỗi trong quá trình xử lý.' });
+    } catch (e) {
+        console.log(e)
+        return functions.setError(res, e.message)
     }
 
 }
 
 
 
-//thêm try catch, checktoken

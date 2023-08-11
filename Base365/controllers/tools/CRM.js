@@ -1403,18 +1403,14 @@ exports.toolDetailFormContract = async (req, res, next) => {
             // console.log(data)
             if (data.length > 0) {
                 for (let i = 0; i < data.length; i++) {
-                    // let check = await DetailListOrder.findById(data[i].id)
-                    // console.log(check)
-                    // if (check) continue
-                    const element = data[i];
                     const listSurvey = new DetailFormContract({
 
-                        _id: element.id,
-                        id_form_contract: element.id_form_contract,
-                        new_field: element.new_field,
-                        old_field: element.old_field,
-                        index_field: element.index_field,
-                        default_field: element.default_field,
+                        _id: data[i].id,
+                        id_form_contract: data[i].id_form_contract,
+                        new_field: data[i].new_field,
+                        old_field: data[i].old_field,
+                        index_field: data[i].index_field,
+                        default_field: data[i].default_field,
 
                     })
                     await listSurvey.save()
@@ -1928,7 +1924,7 @@ exports.history_edit_customer = async (req, res) => {
                     let new_history_edit_customer = new history_edit_customer({
                         id: listItem[i].id,
                         customer_id: listItem[i].customer_id,
-                        content: listItem[i].customer_id,
+                        content: listItem[i].content,
                         contact_id: listItem[i].contact_id,
                         type: listItem[i].type,
                         created_at: listItem[i].created_at,

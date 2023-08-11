@@ -56,7 +56,7 @@ exports.addCustomer = async (req, res) => {
     let type = req.body
     let comId = '';
     let empId = '';
-    let logo = req.files.logo;
+    
     let createDate = new Date();
     let linkDL = '';
     if (!type || ![1, 2].includes(type)) {
@@ -65,20 +65,23 @@ exports.addCustomer = async (req, res) => {
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       comId = req.user.data.com_id;
       empId = req.user.data.idQLC
-      if (logo) {
-        const imageValidationResult = await customerService.validateImage(logo);
-        if (imageValidationResult === true) {
-          await customerService.uploadFileCRM(cus_id, logo);
-          linkDL = customerService.createLinkFileCRM(cus_id, logo.name);
-        }
-      }
-      const validationResult = customerService.validateCustomerInput(name, comId);
-      if (validationResult === true) {
-        let maxID = await customerService.getMaxIDCRM(Customer);
+    let logo = req.files.logo;
+    let maxID = await customerService.getMaxIDCRM(Customer);
         let cus_id = 0;
         if (maxID) {
           cus_id = Number(maxID) + 1;
         }
+    if (logo) {
+        const imageValidationResult = await customerService.validateImage(logo);
+      if (imageValidationResult === true) {
+          await customerService.uploadFileCRM(cus_id, logo);
+          linkDL = logo.name;
+      }else{
+        return functions.setError(res, 'Định dạng ảnh không hợp lệ. Chỉ hỗ trợ định dạng JPEG, JPG, PNG, GIF và BMP.', 400)
+      }
+    }
+      const validationResult = customerService.validateCustomerInput(name, comId);
+      if (validationResult === true) {
         if (type == 2) {
           // với yêu cầu là khach hàng cá nhân
           let createCustomer = new Customer({
@@ -134,9 +137,7 @@ exports.addCustomer = async (req, res) => {
             link: link
           });
           let saveCS = await createCustomer.save();
-          if (typeof content !== 'undefined' ) {
-            return functions.success(res, 'get data success', { saveCS });
-          } else {
+          if (content){
             let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
             let id = 0;
             if (maxID) {
@@ -151,6 +152,8 @@ exports.addCustomer = async (req, res) => {
             })
             let savehis = await newHT.save();
             return functions.success(res, 'get data success', { saveCS, savehis });
+          } else {
+            return functions.success(res, 'get data success', { saveCS });
           }
         }
         if (type == 1) {
@@ -206,9 +209,7 @@ exports.addCustomer = async (req, res) => {
             link: link
           });
           let saveCS = await createCustomer.save();
-          if (typeof content === 'undefined' && content.trim() !== '') {
-            return functions.success(res, 'get data success', { saveCS });
-          } else {
+          if (content) {
             let maxID = await customerService.getMaxIDConnectApi(HistoryEditCustomer);
             let id = 0;
             if (maxID) {
@@ -223,10 +224,12 @@ exports.addCustomer = async (req, res) => {
             })
             let savehis = await newHT.save();
             return functions.success(res, 'get data success', { saveCS, savehis });
+          } else {
+            return functions.success(res, 'get data success', { saveCS });
           }
         }
         else {
-          res.status(400).json({ message: 'khong hop le' })
+          return functions.setError(res, 'type không hợp lệ', 400)
         }
       }
     } else {
@@ -408,11 +411,8 @@ exports.DeleteKH = async (req, res) => {
     } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-    if (!cus_id || !Array.isArray(cus_id) || cus_id.length === 0) {
+    if (!cus_id || cus_id.length === 0) {
       return functions.setError(res, 'Mảng cus_id không được bỏ trống', 400);
-    }
-    if (!cus_id.every(Number.isInteger)) {
-      return functions.setError(res, 'Tất cả các giá trị trong mảng cus_id phải là số nguyên', 400);
     }
     const existingCustomers = await Customer.find({ cus_id: { $in: cus_id },company_id : com_id });
     if (existingCustomers.length === 0) {
@@ -448,23 +448,23 @@ exports.addConnectCs = async (req, res) => {
     let tokenCn = req.headers["authorization"]
     let createDate = new Date();
 
-    if (typeof appID === 'undefined') {
+    if (!appID ) {
       return functions.setError(res, 'appID không được bỏ trống', 400);
     }
-    if (typeof webhook === 'undefined') {
-      return functions.setError(res, 'webhook phải là 1 số', 400);
+    if (!webhook) {
+      return functions.setError(res, 'webhook không được bỏ trống', 400);
     }
     let maxID = await customerService.getMaxIDConnectApi(ConnectApi);
-    let id = 0;
+    let idAPI = 0;
     if (maxID) {
-      id = Number(maxID) + 1;
+      idAPI = Number(maxID) + 1;
     }
     let checkCn = await ConnectApi.findOne({ company_id: comId })
     if (checkCn) {
-      return functions.setError(res, 'Api kết nối đã có không thể tạo mới', 400)
+      return functions.success(res, 'Api kết nối đã có không thể tạo mới',{checkCn})
     } else {
         let createApi = await new ConnectApi({
-          id: id,
+          id: idAPI,
           company_id: comId,
           appID: appID,
           webhook: webhook,
@@ -490,23 +490,25 @@ exports.addConnectCs = async (req, res) => {
 exports.editConnectCs = async (req, res) => {
   try {
     let { appID, webhook } = req.body
-    let comId = req.user.data.idQLC
+    let emp_id = "";
+    let comId = ""
     let tokenCn = req.headers["authorization"]
     let updateDate = new Date();
-    if (typeof appID === 'undefined') {
+    if (!appID) {
       return functions.setError(res, 'appID không được bỏ trống', 400);
     }
-    if (typeof webhook === 'undefined') {
-      return functions.setError(res, 'webhook phải là 1 số', 400);
+    if (!webhook) {
+      return functions.setError(res, 'webhook không được bỏ trống', 400);
     }
     if (req.user.data.type == 2 ||req.user.data.type == 1) {
+      emp_id = req.user.data.idQLC
+      comId = req.user.data.com_id
       await customerService.getDatafindOneAndUpdate(ConnectApi, { company_id: comId }, {
-        id: id,
         company_id: comId,
         appID: appID,
         webhook: webhook,
         token: tokenCn,
-        user_edit_id: comId,
+        user_edit_id: emp_id,
         user_edit_type: 1,
         stt_conn: 1,
         updated_at: updateDate
@@ -526,7 +528,7 @@ exports.editConnectCs = async (req, res) => {
 // hiển thị Api kết nối
 exports.ShowConnectCs = async (req, res) => {
   try {
-    let comId = req.user.data.inForPerson.employee.com_id
+    let comId = req.user.data.com_id
     const check = await ConnectApi.findOne({ company_id: comId })
     return functions.success(res, 'Lấy dữ liệu thành công', { check });
   } catch (e) {
