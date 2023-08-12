@@ -1,13 +1,13 @@
 const md5 = require('md5');
 
-const Users = require('../../models/Users');
-const AdminUser = require('../../models/Timviec365/Admin/AdminUser');
-const Modules = require('../../models/Timviec365/Admin/Modules');
-const functions = require('../../services/functions');
-const AdminUserRight = require('../../models/Timviec365/Admin/AdminUserRight');
-const AdminTranslate = require('../../models/Timviec365/Admin/AdminTranslate');
-const {recordCreditsHistory} = require("./credits");
-const PointCompany = require("../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany")
+const Users = require('../../../models/Users');
+const AdminUser = require('../../../models/Timviec365/Admin/AdminUser');
+const Modules = require('../../../models/Timviec365/Admin/Modules');
+const functions = require('../../../services/functions');
+const AdminUserRight = require('../../../models/Timviec365/Admin/AdminUserRight');
+const AdminTranslate = require('../../../models/Timviec365/Admin/AdminTranslate');
+const {recordCreditsHistory} = require("../credits");
+const PointCompany = require("../../../models/Timviec365/UserOnSite/Company/ManagerPoint/PointCompany")
 
 const getIP = (req) => {
     let forwardedIpsStr = req.header('x-forwarded-for');
@@ -22,17 +22,29 @@ const getIP = (req) => {
 
 // Đăng nhập
 exports.login = async(req, res) => {
-    const { adm_loginname, adm_password } = req.body;
-    const result = await AdminUser.findOne({
-        adm_loginname: adm_loginname,
-        adm_password: md5(adm_password)
-    }).select('adm_id').lean();
-    if (result) {
-        return functions.success(res, 'thành công', {
-            adm_id: result.adm_id
-        });
+    try {
+        if (req.body.loginName && req.body.password) {
+            const loginName = req.body.adm_loginname
+            const password = req.body.adm_password
+            let findUser = await functions.getDatafindOne(AdminUser, { loginName })
+            if (findUser) {
+                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if (checkPassword) {
+                    let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
+                        date: new Date(Date.now())
+                    }, { new: true });
+                    const token = await functions.createToken(updateUser, "1d")
+                    return functions.success(res, 'Đăng nhập thành công', { token: token })
+                }
+                return functions.setError(res, "Mật khẩu sai", 406);
+            }
+            return functions.setError(res, "không tìm thấy tài khoản trong bảng admin user", 405)
+        }
+        return functions.setError(res, "Missing input value!", 404)
+    } catch (error) {
+        return functions.setError(res, error.message)
     }
-    return functions.setError(res, 'vui lòng thử lại');
+
 }
 
 exports.translate = async(req, res) => {
@@ -417,11 +429,8 @@ exports.topupCredits = async (req, res) => {
     try {
         let {
             usc_id,
-            amount,
-            //0 là trừ tiền, 1 là nạp tiền
-            type
+            amount
         } = req.body;
-        if (!type) type = 1;
         let idAdmin = req.user.data._id;
         let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
         if (checkAdmin) {
@@ -430,26 +439,14 @@ exports.topupCredits = async (req, res) => {
                 if (company) {
                     let doc = await PointCompany.findOne({usc_id});
                     if (!doc) {
-                        if (type === 1) {
-                            doc = await (new PointCompany({
-                                usc_id: usc_id,
-                                money_usc: amount,
-                            })).save();
-                        } else if (type === 0) {
-                            return functions.setError(res, "Trừ tiền không hợp lệ", 400);
-                        } else {
-                            return functions.setError(res, "Thao tác không hợp lệ", 400);
-                        }
+                        doc = await (new PointCompany({
+                            usc_id: usc_id,
+                            money_usc: amount,
+                        })).save();
                     } else {
-                        if (type === 1) {
-                            await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
-                        } else if (type === 0) {
-                            await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: -amount}});
-                        } else {
-                            return functions.setError(res, "Thao tác không hợp lệ", 400);
-                        }
+                        await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
                     }
-                    await recordCreditsHistory(usc_id, type===1?1:0, amount, idAdmin, getIP(req));
+                    await recordCreditsHistory(usc_id, 1, amount, null, getIP(req));
                     return functions.success(res, "Nạp tiền thành công!")
                 } else {
                     return functions.setError(res, "Không tồn tại công ty có ID này", 400);

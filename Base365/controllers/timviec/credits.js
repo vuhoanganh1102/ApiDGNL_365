@@ -71,10 +71,12 @@ const recordCreditExchangeHistory = async (usc_id, point, money, point_later) =>
 
 //Validate và lấy ID timviec365
 const getTimviec365Id = async (req, res) => {
-    if (!req.user||!req.user.data) return functions.setError(res, "Công ty không tồn tại", 429);
+    if (!req.user||!req.user.data) return false;
     let usc_id = req.user.data.idTimViec365;
     let company = await Users.findOne({idTimViec365: usc_id, type: 1});
-    if (!company) return functions.setError(res, "Không tồn tại công ty có ID này", 400);
+    if (!company) {
+        return false;
+    }
     return usc_id;
 }
 
@@ -160,6 +162,7 @@ exports.useCredits = (amount) => {
     return async (req, res, next) => {
         try {
             let usc_id = await getTimviec365Id(req, res);
+            if (!usc_id) return functions.setError(res, "Không tồn tại công ty có ID này", 400);;
             let result = await useCreditsHandler(usc_id, amount, getIP(req));
             if (result) {
                 next();
@@ -190,7 +193,8 @@ exports.exchangePointToCredits = async (req, res) => {
         let {
             points
         } = req.body;
-        let usc_id = await getTimviec365Id(req, res)
+        let usc_id = await getTimviec365Id(req, res);
+        if (!usc_id) return functions.setError(res, "Không tồn tại công ty có ID này", 400);;
         if (points) {
             points = Number(points);
             //Kiểm tra xem trường point có phải số nguyên hay không
@@ -209,7 +213,15 @@ exports.exchangePointToCredits = async (req, res) => {
             //Trừ đi số điểm đã đổi
             await handlePresPointUpdate(pointHistory, availablePoints - points, amount);
             //Tăng money cho người dùng
-            await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
+            let exists = await PointCompany.findOne({usc_id});
+            if (!exists) {
+                doc = await (new PointCompany({
+                    usc_id: usc_id,
+                    money_usc: amount,
+                })).save();
+            } else {
+                await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
+            }
             //Ghi lại lịch sử
             await recordCreditsHistory(usc_id, 2, amount, null, getIP(req));
             return functions.success(res, "Đổi điểm thành công!")
@@ -225,8 +237,15 @@ exports.exchangePointToCredits = async (req, res) => {
 exports.getCreditBalance = async (req, res) => {
     try {
         let usc_id = await getTimviec365Id(req, res);
+        if (!usc_id) return functions.setError(res, "Không tồn tại công ty có ID này", 400);;
         let doc = await PointCompany.findOne({usc_id});
-        return functions.success(res, "Thành công!", {money_usc: doc.money_usc});
+        if (!doc) {
+            doc = await (new PointCompany({
+                usc_id: usc_id,
+                money_usc: 0,
+            })).save();
+        }
+        return functions.success(res, "Thành công!", {money_usc: doc.money_usc?doc.money_usc:0});
     } catch (error) {
         console.log(error);
         return functions.setError(res, error)
@@ -247,6 +266,7 @@ exports.getCreditsHistory = async (req, res) => {
 exports.getPresPointHistory = async (req, res) => {
     try {
         let usc_id = await getTimviec365Id(req, res);
+        if (!usc_id) return functions.setError(res, "Không tồn tại công ty có ID này", 400);;
         let docs = await PresPointHistory.find({userId: usc_id});
         let points = await getTotalUsedPresPoint(usc_id);
         return functions.success(res, "Thành công!", {points, record: docs});
@@ -259,6 +279,7 @@ exports.getPresPointHistory = async (req, res) => {
 exports.getCreditExchangeHistory = async (req, res) => {
     try {
         let usc_id = await getTimviec365Id(req, res);
+        if (!usc_id) return functions.setError(res, "Không tồn tại công ty có ID này", 400);;
         let docs = await CreditExchangeHistory.find({userId: usc_id});
         return functions.success(res, "Thành công!", {data: docs});
     } catch (error) {

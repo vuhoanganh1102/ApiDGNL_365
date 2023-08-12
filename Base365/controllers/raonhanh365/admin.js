@@ -31,18 +31,20 @@ exports.loginAdminUser = async (req, res, next) => {
             const password = req.body.password
             let findUser = await functions.getDatafindOne(AdminUser, { loginName })
             if (findUser) {
-                if(findUser.active)
-                // let checkPassword = await functions.verifyPassword(password, findUser.password)
-                if (checkPassword) {
-                    let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
-                        date: new Date(Date.now())
-                    }, { new: true });
-                    const token = await functions.createToken(updateUser, "1d")
-                    return functions.success(res, 'Đăng nhập thành công', { token: token })
+                if (findUser.active !== 0) {
+                    let checkPassword = await functions.verifyPassword(password, findUser.password)
+                    if (checkPassword) {
+                        let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
+                            date: new Date(Date.now())
+                        }, { new: true });
+                        const token = await functions.createToken(updateUser, "1d")
+                        return functions.success(res, 'Đăng nhập thành công', { token: token })
+                    }
+                    return functions.setError(res, "Mật khẩu sai", 406);
                 }
-                return functions.setError(res, "Mật khẩu sai", 406);
+                return functions.setError(res, "Admin không còn hoạt động", 400)
             }
-            return functions.setError(res, "không tìm thấy tài khoản trong bảng admin user", 405)
+            return functions.setError(res, "Không tìm thấy tài khoản trong bảng admin user", 405)
         }
         return functions.setError(res, "Missing input value!", 404)
     } catch (error) {
@@ -380,6 +382,21 @@ exports.deleteAdminUser = async (req, res, next) => {
     }
 }
 
+exports.updateActiveAdmin = async (req,res,next)=>{
+    try {
+        let adminId = req.infoAdmin._id;
+        let id =  Number(req.body.id);
+        if(id){
+            if(functions.checkNumber(id)){
+                let check = await AdminUser.find()
+            }
+        }
+        
+        return 
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
 //-----------------------------------------------------------controller quan ly danh muc----------------------------------------------------------------
 
 // lay ra danh sach
