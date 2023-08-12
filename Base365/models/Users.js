@@ -145,6 +145,11 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    idVLTG: {
+        //ID goc lay tu base viec lam theo gio
+        type: Number,
+        default: 0
+    },
     chat365_secret: {
         // Mã chat
         type: String,
@@ -980,12 +985,12 @@ const UserSchema = new mongoose.Schema({
                 type: Number,
                 default: 0
             },
-            usc_tax_code:{
+            usc_tax_code: {
                 // mã số thuế 
                 type: Number,
                 default: 0
             },
-            usc_des:{
+            usc_des: {
                 // mô tả 
                 type: String,
                 default: null

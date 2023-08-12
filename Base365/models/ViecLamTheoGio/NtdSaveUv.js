@@ -15,8 +15,8 @@ const NtdSaveUvSchema = new Schema({
         required: true,
     },
     created_at: {
-        type: Number,
-        default: 0,
+        type: Date,
+        default: null,
     }
 },{
     collection: 'VLTG_NtdSaveUv',

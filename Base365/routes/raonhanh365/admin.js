@@ -55,19 +55,19 @@ router.post('/blog/updateBlog', formData.parse(), [functions.checkToken, service
 router.post('/getListHistory', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListHistory);
 
 //-----------------------------------------------tin spam
-router.post('/getListNewsSpam', [functions.checkToken, serviceRN.isAdminRN365], admin.getListNewsSpam);
+router.post('/getListNewsSpam', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListNewsSpam);
+
+//-----------------------------------------------Danh sach anh trung
+router.post('/danhSachAnhTrung', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.danhSachAnhTrung);
+router.post('/activeAnhTrung', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.activeAnhTrung);
 
 //------------------------------------------------duyet tin
-router.post('/danhSachTinCanDuyet', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.danhSachTinCanDuyet);
+router.post('/danhSachTinCanDuyet', formData.parse(), formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.danhSachTinCanDuyet);
 router.post('/duyetTin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.duyetTin);
 
 //------------------------------------------------api báo cáo tin
-// api tạo mới tin báo cáo
-router.post('/newReportt', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(31, 2)], admin.createReport);
-// api danh sách và tìm kiếm báo cáo tin
 router.post('/listReportNew', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.listReportNew);
-// api sửa tin dựa vào param
-router.post('report/fixNewReport', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.fixNewReport);
+router.post('/xuLyBaoCao', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.xuLyBaoCao);
 
 //------------------------------------------------api danh sách lỗi đăng ki
 router.post('/failRegisterUser', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.failRegisterUser);

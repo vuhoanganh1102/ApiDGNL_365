@@ -15,11 +15,11 @@ const UvKnlvSchema = new Schema({
         default: null,
     },
     time_fist: {
-        type: String,
+        type: Date,
         default: null,
     },
     time_end: {
-        type: String,
+        type: Date,
         default: null,
     },
     cty_name: {
