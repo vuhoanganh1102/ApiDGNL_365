@@ -23,8 +23,8 @@ const ThongBaoUvSchema = new Schema({
         default: null,
     },
     created_at: {
-        type: Number,
-        default: 0,
+        type: Date,
+        default: null,
     },
 },{
     collection: 'VLTG_ThongBaoUv',

@@ -140,4 +140,4 @@ const ViecLamSchema = new Schema({
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTG_ViecLam",UvSaveVlSchema);
+module.exports = mongoose.model("VLTG_ViecLam",ViecLamSchema);

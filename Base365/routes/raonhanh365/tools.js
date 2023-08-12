@@ -34,6 +34,8 @@ router.post('/raonhanh/toolBlog', toolRaoNhanh.toolBlog)
 router.post('/raonhanh/toolLoveNew', toolRaoNhanh.toolLoveNew)
 router.post('/raonhanh/toolCateVl',toolRaoNhanh.toolCateVl)
 router.post('/raonhanh/toolkeyword',toolRaoNhanh.toolkeyword)
+router.post('/raonhanh/imageDeplicate',toolRaoNhanh.imageDeplicate);
+router.post('/raonhanh/baoCao',toolRaoNhanh.baoCao);
 
     // router.post('/raonhanh/toolPhuongXa', toolRaoNhanh.toolPhuongXa)
 router.post('/raonhanh/toolbanggiacknt', toolRaoNhanh.toolbanggiacknt)

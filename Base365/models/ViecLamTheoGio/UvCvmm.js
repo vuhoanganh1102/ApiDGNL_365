@@ -31,8 +31,8 @@ const UvCvmmSchema = new Schema({
         default: 0,
     },
     ky_nang: {
-        type: Number,
-        default: 0,
+        type: String,
+        default: null,
     },
 },{
     collection: 'VLTG_UvCvmm',

@@ -6,11 +6,11 @@ const UngTuyenSchema = new Schema({
         type: Number,
         required: true,
     },
-    td_uv: {
+    id_uv: {
         type: Number,
         required: true,
     },
-    td_ntd: {
+    id_ntd: {
         type: Number,
         required: true,
     },
@@ -39,8 +39,8 @@ const UngTuyenSchema = new Schema({
         default: 0,
     },
     created_at: {
-        type: Number,
-        default: 0,
+        type: Date,
+        default: null,
     },
 },{
     collection: 'VLTG_UngTuyen',
