@@ -75,8 +75,6 @@ exports.addCart = async (req, res, next) => {
     let ngaydathang = new Date();
 
     if (idnew && soluong) {
-
-
       let checkGh = await Cart.findOne({ userId, newsId: idnew, type: phanloai, status: trangthai }).lean();
       if (checkGh) {
         await Cart.findByIdAndUpdate(checkGh._id, { $inc: { quantity: +soluong, total: +tongtien }, date: ngaydathang })
@@ -104,14 +102,13 @@ exports.addCart = async (req, res, next) => {
             type: phanloai,
             quantity: soluong,
             status: trangthai,
+            tick: 1
           })
+          await Cart.updateMany({ _id: { $ne: id }, userId }, { tick: 0 })
         }
       }
       return functions.success(res, 'thành công')
-
-
     }
-
     return functions.setError(res, 'missing data', 400)
   } catch (e) {
     return functions.setError(res, e.message);
@@ -184,13 +181,14 @@ exports.tickCart = async (req, res, next) => {
     let id = req.body.id;
     if (Array.isArray(id)) {
       for (let i = 0; i < id.length; i++) {
+        id[i] = Number(id[i])
         let check = await Cart.findOne({ _id: Number(id[i]), userId }).lean();
         if (check) {
           await Cart.findOneAndUpdate({ _id: Number(id[i]), userId }, { tick: 1 })
         } else {
           return functions.setError(res, 'Không tìm thấy giỏ hàng', 404)
         }
-        await Cart.findOneAndUpdate({ userId, _id: { $nin: id } }, { tick: 0 });
+        await Cart.updateMany({ userId, _id: { $nin: id } }, { tick: 0 })
       }
       return functions.success(res, 'Success')
     }
@@ -242,8 +240,8 @@ exports.getTickCart = async (req, res, next) => {
         data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, data[i].new.buySell)
       }
     }
-    let soluong = data.length;
-    return functions.success(res, "get list cart success", { soluong, data });
+    let addressReceive = await DiaChiNhanHang.find({ us_id: userId }).lean();
+    return functions.success(res, "get list cart success", { addressReceive, data });
   } catch (error) {
     return functions.setError(res, error.message)
   }
