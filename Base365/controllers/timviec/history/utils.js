@@ -4,8 +4,8 @@ const CreditExchangeHistory = require("../../../models/Timviec365/UserOnSite/Com
 exports.userExists = async (usc_id, type)=>{
     try {
         let user = await User.findOne({idTimViec365: usc_id, type});
-        if (user) return true;
-        return false;
+        if (!user) return false;
+        return true;
     }
     catch (error) {
        console.log(error);
