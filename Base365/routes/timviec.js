@@ -21,6 +21,7 @@ var sslRouter = require('./timviec/ssl');
 var accountRouter = require('./timviec/account');
 var companyVipRouter = require('./timviec/company_vip');
 var creditsRouter = require('./timviec/credits');
+var ordersRouter = require('./timviec/orders');
 var tools = require('../controllers/tools/timviec365');
 
 
@@ -43,6 +44,7 @@ router.use('/ssl', sslRouter);
 router.use('/account', accountRouter);
 router.use('/company/vip', companyVipRouter);
 router.use('/credits', creditsRouter);
+router.use('/order', ordersRouter);
 router.get('/normalize/EPH', tools.normalizeExchangePointHistory);
 router.get('/normalize/PL', tools.normalizePriceList);
 
