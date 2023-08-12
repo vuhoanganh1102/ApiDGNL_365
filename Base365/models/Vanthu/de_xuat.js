@@ -417,7 +417,7 @@ const Vanthu_de_xuat = new Schema({
 
             },
             ca_la_viec: { //1-ca hanh chinh 2-ca sang 3-ca chieu
-                type: Number,
+                type: String,
                 default: null,
 
             },
