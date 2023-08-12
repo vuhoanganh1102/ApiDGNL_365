@@ -2168,6 +2168,20 @@ exports.like = async(req, res) => {
     }
 }
 
+const renderBGName = (type) => {
+    switch(type) {
+        case "1":
+            return "box Hấp dẫn";
+        case "4":
+            return "box Thương hiệu";
+        case "5":
+            return "box Tuyển gấp";
+        case "6":
+            return "Trang ngành";
+        default: return "";
+    }
+}
+
 exports.tuDongGhimTin = async (req, res) => {
     try {
         let {
@@ -2273,12 +2287,14 @@ exports.tuDongGhimTin = async (req, res) => {
                     })
                     break;
             }
-
+            let bg_title = "Ghim tin" + renderBGName(bg_type) + " - " + priceListing.bg_handung;
             let data = {
                 new_id: new_id,
+                new_title: news.new_title,
                 new_user_id: usc_id,
                 bg_type: bg_type,
                 bg_id: bg_id,
+                bg_title: bg_title,
                 created_time: functions.getTimeNow(),
                 ghim_start: Number(ghim_start),
                 ghim_end: Number(ghim_start) + Number(bg_vip_duration),
@@ -2292,6 +2308,20 @@ exports.tuDongGhimTin = async (req, res) => {
             return functions.setError(res, "Chưa đủ thông tin truyền lên", 400);
         }
 
+    } catch (error) {
+        console.log(error)
+        return functions.setError(res, error)
+    }
+}
+
+//Lấy lịch sử ghim
+exports.getPinnedHistory = async (req, res) => {
+    try {
+        let {
+            new_id
+        } = req.params;
+        let docs = await GhimHistory.find({new_id});
+        return functions.success(res, "Thành công", { data: docs });
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
