@@ -495,7 +495,7 @@ exports.pageFind = async(model, condition, sort, skip, limit, select) => {
 };
 
 exports.pageFindWithFields = async(model, condition, fields, sort, skip, limit) => {
-    return model.find(condition, fields).sort(sort).skip(skip).limit(limit);
+    return model.find(condition, fields).sort(sort).skip(skip).limit(limit).lean();
 };
 
 // lấy danh sách mẫu CV sắp xếp mới nhất

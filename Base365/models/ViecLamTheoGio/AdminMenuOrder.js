@@ -1,31 +1,23 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const AdminCommentSchema = new Schema({
-    admc_id: {
+const AdminMenuOrderSchema = new Schema({
+    amo_admin: {
         type: Number,
         required: true,
     },
-    admc_comment: {
-        type: String,
-        default: null,
-    },
-    admc_date: {
+    amo_module: {
         type: Number,
-        default: 0,
+        required: true,
     },
-    admin_id: {
-        type: Number,
-        default: 0,
-    },
-    admc_keyword: {
+    amo_order: {
         type: Number,
         default: 0,
     },
 },{
-    collection: 'VLTG_AdminComment',
+    collection: 'VLTG_AdminMenuOrder',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTG_AdminComment",AdminCommentSchema);
+module.exports = mongoose.model("VLTG_AdminMenuOrder",AdminMenuOrderSchema);
