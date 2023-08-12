@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const CreditExchangeHistorySchema = new mongoose.Schema(
     {
         //idTimViec365
-
         id: {
             type: Number,
             required: true,
@@ -42,6 +41,6 @@ const CreditExchangeHistorySchema = new mongoose.Schema(
         },
     },
     {
-        collection: "Tv365CreditExchangeHistory"
+        collection: "TV365SaveExchangePoint"
     })
-module.exports = mongoose.model("Tv365CreditExchangeHistory", CreditExchangeHistorySchema);
+module.exports = mongoose.model("TV365SaveExchangePoint", CreditExchangeHistorySchema);
