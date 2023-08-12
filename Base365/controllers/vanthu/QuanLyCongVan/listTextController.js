@@ -75,12 +75,6 @@ exports.createIncomingText = async(req, res, next) => {
         let cv_time_create = new Date();
         if (file && file.length > 0) {
             for (let i = 0; i < file.length; i++) {
-                // // let checkFile = await functions.checkFile(file[i].path);
-                //let fileNameOrigin = file[i].name;
-
-                // if (!checkFile) {
-                //     return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
-                // }
                 let fileName = await vanthu.uploadfile(folder, file[i], cv_time_create);
                 if (fileName) {
                     cv_file += fileName;
@@ -163,12 +157,6 @@ exports.updateIncomingText = async(req, res, next) => {
         }
         if (file && file.length > 0) {
             for (let i = 0; i < file.length; i++) {
-                // let checkFile = await functions.checkFile(file[i].path);
-                
-                // if (!checkFile) {
-                //     return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
-                // }
-                //let fileNameOrigin = file[i].name;
                 let fileName = await vanthu.uploadfile(folder, file[i], new Date(check.cv_time_created * 1000));
                 if (fileName) {
                     cv_file += fileName;
@@ -410,12 +398,6 @@ exports.createSendText = async(req, res, next) => {
             }
             if (file && file.length > 0) {
                 for (let i = 0; i < file.length; i++) {
-                    let checkFile = await functions.checkFile(file[i].path);
-                    let fileNameOrigin = file[i].name;
-
-                    if (!checkFile) {
-                        return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
-                    }
                     let fileName = await vanthu.uploadfile(folder, file[i], cv_time_created);
                     if (fileName) {
                         cv_file += fileName;
@@ -509,11 +491,7 @@ exports.updateSendText = async(req, res, next) => {
             if (!check) return functions.setError(res, 'not found sendtext', 404)
             if (file && file.length > 0) {
                 for (let i = 0; i < file.length; i++) {
-                    let checkFile = await functions.checkFile(file[i].path);
-                    let fileNameOrigin = file[i].name;
-                    if (!checkFile) {
-                        return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
-                    }
+        
                     let fileName = await vanthu.uploadfile(folder, file[i], new Date(check.cv_time_created * 1000));
                     if (fileName) {
                         cv_file += fileName;
