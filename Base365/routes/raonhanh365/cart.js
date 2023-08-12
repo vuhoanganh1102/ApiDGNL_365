@@ -15,4 +15,13 @@ router.delete('/removeCart', formData.parse(),functions.checkToken, cart.removeC
 
 // thay đổi số lượng trong giỏ hàng
 router.post('/changeCart', formData.parse(),functions.checkToken, cart.changeCart)
+
+// chọn sản phẩm trong giỏ hàng
+router.post('/tickCart', formData.parse(),functions.checkToken, cart.tickCart)
+
+// lấy sản phẩm đã chọn
+router.post('/getTickCart', formData.parse(),functions.checkToken, cart.getTickCart)
+
+// thêm địa chỉ nhận hàng
+router.post('/updateAddressCart', formData.parse(),functions.checkToken, cart.updateAddressCart)
 module.exports = router;

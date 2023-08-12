@@ -7,7 +7,8 @@ var cvRouter = require('./timviec/cv');
 var appliRouter = require('./timviec/jobApplication');
 var letterRouter = require('./timviec/letter');
 var syllRouter = require('./timviec/syll');
-var newTV365Router = require('./timviec/newTV365');
+var newTV365Router = require('./timviec/newTV365/newTV365');
+// var newTV365Router = require('./timviec/newTV365');
 var adminRouter = require('./timviec/admin');
 var blogRouter = require('./timviec/blog');
 var bodeRouter = require('./timviec/bo_de');
@@ -20,6 +21,7 @@ var sslRouter = require('./timviec/ssl');
 var accountRouter = require('./timviec/account');
 var companyVipRouter = require('./timviec/company_vip');
 var creditsRouter = require('./timviec/credits');
+var ordersRouter = require('./timviec/orders');
 var tools = require('../controllers/tools/timviec365');
 
 
@@ -42,6 +44,7 @@ router.use('/ssl', sslRouter);
 router.use('/account', accountRouter);
 router.use('/company/vip', companyVipRouter);
 router.use('/credits', creditsRouter);
+router.use('/order', ordersRouter);
 router.get('/normalize/EPH', tools.normalizeExchangePointHistory);
 router.get('/normalize/PL', tools.normalizePriceList);
 

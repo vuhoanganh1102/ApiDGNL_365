@@ -67,8 +67,8 @@ const PriceListSchema = new mongoose.Schema({
         type: Number
     },
     /**
-     * 4: Thương hiệu
      * 1: Hấp dẫn
+     * 4: Thương hiệu
      * 5: Tuyển gấp
      * 6: Trang ngành
      */

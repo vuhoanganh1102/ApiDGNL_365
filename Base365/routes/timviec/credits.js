@@ -3,6 +3,7 @@ const formData = require('express-form-data');
 const router = express.Router();
 const functions = require('../../services/functions')
 const Credits = require('../../controllers/timviec/credits');
+const newTV365 = require('../../controllers/timviec/newTv365/newTV365');
 
 /**
  * Route này dùng cho admin nạp tiền sau khi nhận được chuyển khoản của khách hàng
@@ -12,7 +13,7 @@ const Credits = require('../../controllers/timviec/credits');
  * Chỗ này đáng ra phải dùng middleware để nối vào cùng với route của làm mới ứng viên, route này chỉ để
  * demo, không nên sử dụng cho production
  */
-router.post('/payToRefreshCandidate', formData.parse(), functions.checkToken,/*Dùng cái này =>*/Credits.useCredits(2000), Credits.success);
+router.post('/payToRefreshNew', formData.parse(), functions.checkToken, Credits.useCredits(2000), newTV365.refreshNew);
 /** Đổi điểm thành tiền */ 
 router.post('/exchangePoints', formData.parse(), functions.checkToken, Credits.exchangePointToCredits);
 

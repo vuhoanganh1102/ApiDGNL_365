@@ -1,7 +1,10 @@
 const functions = require('../../services/functions');
 const Cart = require('../../models/Raonhanh365/Cart');
 const News = require('../../models/Raonhanh365/New');
+const DiaChiNhanHang = require('../../models/Raonhanh365/DiaChiNhanHang');
 const raoNhanh = require('../../services/raoNhanh365/service')
+const Users = require('../../models/Users.js');
+
 exports.getListCartByUserId = async (req, res, next) => {
   try {
     let userId = req.user.data.idRaoNhanh365;
@@ -39,7 +42,7 @@ exports.getListCartByUserId = async (req, res, next) => {
           new: {
             _id: 1, title: 1, userID: 1, linkTitle: 1,
             cateID: 1, img: 1, money: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1, buySell: 1, infoSell: 1,
-            transport, transportFee,until
+            transport: 1, transportFee: 1, until: 1
           },
           user: { _id: 1, userName: 1, type: 1 }
         }
@@ -52,10 +55,10 @@ exports.getListCartByUserId = async (req, res, next) => {
       }
     }
     let soluong = data.length;
+
     return functions.success(res, "get list cart success", { soluong, data });
-  } catch (e) {
-    console.log("Err from server", e);
-    return functions.setError(res, "Err from server", 500);
+  } catch (error) {
+    return functions.setError(res, error.message);
   }
 }
 
@@ -72,46 +75,42 @@ exports.addCart = async (req, res, next) => {
     let ngaydathang = new Date();
 
     if (idnew && soluong) {
-      
-        
-        let checkGh = await Cart.findOne({ userId, newsId: idnew, type: phanloai, status: trangthai }).lean();
-        if (checkGh) {
-          await Cart.findByIdAndUpdate(checkGh._id, { $inc: { quantity: +soluong, total: +tongtien }, date: ngaydathang })
-        } else {
-          if (trangthai === 0) {
-            await Cart.deleteOne({ userId, trangthai: 0 });
-            let id = await functions.getMaxID(Cart) + 1 || 1;
-            await Cart.create({
-              _id: id,
-              date: ngaydathang,
-              userId,
-              newsId: idnew,
-              type: phanloai,
-              quantity: soluong,
-              total: tongtien,
-              status: trangthai,
-            })
-          } else if (trangthai === 1) {
-            let id = await functions.getMaxID(Cart) + 1 || 1;
-            await Cart.create({
-              _id: id,
-              date: ngaydathang,
-              userId,
-              newsId: idnew,
-              type: phanloai,
-              quantity: soluong,
-              status: trangthai,
-            })
-          }
+      let checkGh = await Cart.findOne({ userId, newsId: idnew, type: phanloai, status: trangthai }).lean();
+      if (checkGh) {
+        await Cart.findByIdAndUpdate(checkGh._id, { $inc: { quantity: +soluong, total: +tongtien }, date: ngaydathang })
+      } else {
+        if (trangthai === 0) {
+          await Cart.deleteOne({ userId, trangthai: 0 });
+          let id = await functions.getMaxID(Cart) + 1 || 1;
+          await Cart.create({
+            _id: id,
+            date: ngaydathang,
+            userId,
+            newsId: idnew,
+            type: phanloai,
+            quantity: soluong,
+            total: tongtien,
+            status: trangthai,
+          })
+        } else if (trangthai === 1) {
+          let id = await functions.getMaxID(Cart) + 1 || 1;
+          await Cart.create({
+            _id: id,
+            date: ngaydathang,
+            userId,
+            newsId: idnew,
+            type: phanloai,
+            quantity: soluong,
+            status: trangthai,
+            tick: 1
+          })
+          await Cart.updateMany({ _id: { $ne: id }, userId }, { tick: 0 })
         }
-        return functions.success(res, 'thành công')
-      
-  
+      }
+      return functions.success(res, 'thành công')
     }
-
     return functions.setError(res, 'missing data', 400)
   } catch (e) {
-    console.log("🚀 ~ file: cart.js:100 ~ exports.addCart= ~ e:", e)
     return functions.setError(res, e.message);
   }
 }
@@ -169,6 +168,107 @@ exports.changeCart = async (req, res, next) => {
       return functions.setError(res, 'invalid soluong', 400)
     }
     return functions.setError(res, 'missing data', 400)
+  } catch (error) {
+    return functions.setError(res, error.message)
+  }
+}
+
+
+// chọn sản phẩm trong giỏ hàng
+exports.tickCart = async (req, res, next) => {
+  try {
+    let userId = req.user.data.idRaoNhanh365;
+    let id = req.body.id;
+    if (Array.isArray(id)) {
+      for (let i = 0; i < id.length; i++) {
+        id[i] = Number(id[i])
+        let check = await Cart.findOne({ _id: Number(id[i]), userId }).lean();
+        if (check) {
+          await Cart.findOneAndUpdate({ _id: Number(id[i]), userId }, { tick: 1 })
+        } else {
+          return functions.setError(res, 'Không tìm thấy giỏ hàng', 404)
+        }
+        await Cart.updateMany({ userId, _id: { $nin: id } }, { tick: 0 })
+      }
+      return functions.success(res, 'Success')
+    }
+    return functions.setError(res, 'Nhập đúng kiểu dữ liệu', 400)
+  } catch (error) {
+    return functions.setError(res, error.message)
+  }
+}
+
+// lấy sản phẩm đã chọn
+exports.getTickCart = async (req, res, next) => {
+  try {
+    let userId = req.user.data.idRaoNhanh365;
+    let data = await Cart.aggregate([
+      { $match: { userId, tick: 1 } },
+      { $sort: { _id: -1 } },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'userId',
+          foreignField: 'idRaoNhanh365',
+          as: 'user'
+        }
+      },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'RN365_News',
+          localField: 'newsId',
+          foreignField: '_id',
+          as: 'new'
+        }
+      },
+      { $unwind: { path: "$new", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          quantity: 1, unit: 1, status: 1,
+          new: {
+            _id: 1, title: 1, userID: 1, linkTitle: 1,
+            cateID: 1, img: 1, money: 1, timePromotionStart: 1, timePromotionEnd: 1, baohanh: 1, buySell: 1, infoSell: 1,
+            transport: 1, transportFee: 1, until: 1
+          },
+          user: { _id: 1, userName: 1, type: 1 }
+        }
+      }
+    ])
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].new.img) {
+        data[i].new.img = await raoNhanh.getLinkFile(data[i].new.userID, data[i].new.img, data[i].new.cateID, data[i].new.buySell)
+      }
+    }
+    let addressReceive = await DiaChiNhanHang.find({ us_id: userId }).lean();
+    return functions.success(res, "get list cart success", { addressReceive, data });
+  } catch (error) {
+    return functions.setError(res, error.message)
+  }
+}
+
+// cập nhật địa chỉ nhận hàng
+exports.updateAddressCart = async (req, res, next) => {
+  try {
+    let userId = req.user.data.idRaoNhanh365;
+    let phone = req.body.phone;
+    let address = req.body.address;
+    let name = req.body.name;
+    if (phone && name && address) {
+      if (await functions.checkPhoneNumber(phone)) {
+        let _id = await functions.getMaxID(DiaChiNhanHang) + 1 || 1;
+        await DiaChiNhanHang.create({
+          _id,
+          us_id: userId,
+          nguoi_nhang: name,
+          sdt_nhang: phone,
+          dia_chi: address,
+        })
+        return functions.success(res, 'success')
+      }
+      return functions.setError(res, 'invalid phone number', 400)
+    }
+    return functions.setError(res, 'Missing data', 400)
   } catch (error) {
     return functions.setError(res, error.message)
   }

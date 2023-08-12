@@ -20,4 +20,7 @@ router.post("/delete",functions.checkToken,QLTS.checkRole("TS",1),formData.parse
 //Api chi tiết 
 router.post("/details",functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerViTriTs.detailsVT)
 
+//APi sửa
+router.post("/edit",functions.checkToken,QLTS.checkRole("TS",1),formData.parse(),controllerViTriTs.editVT)
+
 module.exports = router

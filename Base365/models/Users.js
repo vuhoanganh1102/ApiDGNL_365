@@ -1002,10 +1002,10 @@ const UserSchema = new mongoose.Schema({
         type : {
             ugs_ft : {
                 type : Number,
-                // 1 phụ huynh , 2 gia sư
+                // 2 phụ huynh , 1 gia sư
             },
             ugs_tutor_style : {
-                // //chưa biết
+                // kiểu gia sư
                 type : String,
                 default : ''
             },
@@ -1025,7 +1025,7 @@ const UserSchema = new mongoose.Schema({
                 default : null
             },
             ugs_specialized : {
-                  //chưa biết
+                  //chuyên ngành
                 type : String,
                 default : null
             },
@@ -1040,7 +1040,7 @@ const UserSchema = new mongoose.Schema({
                 default : null
             },
             ugs_experience_year : {
-                //năm tốt nghiệp
+                //sô năm kinh nghiệm
                 type : Number,
                 default : null
             },
@@ -1209,6 +1209,13 @@ const UserSchema = new mongoose.Schema({
     collection: 'Users',
     versionKey: false,
     timestamp: true
+})
+
+UserSchema.index({ 
+    "inForCompany.description": "text",
+    userName: "text",
+    "inForCompany.timviec365.usc_lv": "text",
+    updatedAt: 1
 })
 
 module.exports = mongoose.model("Users", UserSchema);

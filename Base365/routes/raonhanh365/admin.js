@@ -13,6 +13,7 @@ router.post('/changePasswordAdminLogin', formData.parse(), [functions.checkToken
 router.post('/changeInfoAdminLogin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.changeInfoAdminLogin);
 router.post('/getSideBar', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getSideBar);
 router.post('/listModule', formData.parse(), functions.checkToken, admin.listModule);
+router.post('/updateActiveAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.updateActiveAdmin)
 
 router.post('/account/getListAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365], admin.getListAdminUser);
 router.post('/account/createAdmin', formData.parse(), [functions.checkToken, serviceRN.isAdminRN365, serviceRN.checkRight(27, 2)], admin.createAdminUser);

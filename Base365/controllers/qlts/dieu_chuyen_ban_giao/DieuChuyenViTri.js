@@ -380,6 +380,7 @@ exports.TuchoiDCVT = async (req, res) => {
 exports.TiepNhanDCVT = async (req, res) => {
     try {
         let { id_dc, vitri_dc_tu, } = req.body;
+        let now = new Date()
         let com_id = 0;
 
         if (req.user.data.type == 1) {
@@ -426,7 +427,9 @@ exports.TiepNhanDCVT = async (req, res) => {
                     {
                         tsvt_cty: com_id,
                         tsvt_taisan: val_dc[i],
-                        tsvt_vitri: vitri_dc_tu
+                        tsvt_vitri: vitri_dc_tu,
+                        
+
                     }
                     , {
                         tsvt_soluong: sl_tu_moi
@@ -452,7 +455,10 @@ exports.TiepNhanDCVT = async (req, res) => {
                 }
             }
         }
-        let xac_nhan_bg = await DieuChuyen.findOneAndUpdate({ dc_id: id_dc, id_cty: com_id }, { dc_trangthai: 1 });
+        let xac_nhan_bg = await DieuChuyen.findOneAndUpdate({ dc_id: id_dc, id_cty: com_id }, { 
+            dc_trangthai: 1,
+            dc_hoan_thanh: Date.parse(now)/1000
+         });
         return fnc.success(res, "tiep nhan thanh cong", { xac_nhan_bg });
         }
         return fnc.setError(res , "khong tim thay doi tuong") 

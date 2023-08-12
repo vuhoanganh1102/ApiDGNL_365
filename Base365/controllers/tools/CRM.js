@@ -2630,18 +2630,15 @@ exports.appointment_content_call = async (req, res) => {
             let listItem = data.data;
             if (listItem.length > 0) {
                 for (let i = 0; i < listItem.length; i++) {
-                    let new_Appointment_content_calli = new Appointment_content_call({
+                    let new_Appointment_content_call = new Appointment_content_call({
                         id: listItem[i].id,
                         id_appointment: listItem[i].id_appointment,
                         id_cus: listItem[i].id_cus,
                         content_call: listItem[i].content_call,
                         created_at: listItem[i].created_at,
 
-
-
-
                     })
-                    await new_Appointment_content_calli.save();
+                    await new_Appointment_content_call.save();
 
                 }
                 page += 1;

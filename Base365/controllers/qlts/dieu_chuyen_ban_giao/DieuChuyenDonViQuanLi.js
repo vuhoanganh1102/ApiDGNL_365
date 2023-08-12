@@ -30,6 +30,7 @@ exports.create = async(req,res) =>{
         const dc_trangthai = req.body.dc_trangthai
         const dc_da_xoa = req.body.dc_da_xoa
         const date_delete = req.body.date_delete
+        const id_daidien_nhan = req.body.id_daidien_nhan
         //thongbao
         const type_quyen = req.type
         const id_ng_nhan = req.body.id_ng_nhan
@@ -64,6 +65,7 @@ exports.create = async(req,res) =>{
                 id_ng_thuchien : ng_thuc_hien,
                 vi_tri_dc_tu : vi_tri_dc_tu,
                 dc_vitri_tsnhan :vitri_dc_den,
+                id_daidien_nhan: id_daidien_nhan,
                 dc_type_quyen:type_quyen,
                 dc_type: loai_dc,
                 dc_ngay: Date.parse(dc_ngay)/1000,
@@ -574,6 +576,23 @@ exports.list = async (req, res, next) => {
                       }
                   },
                 { $unwind: { path: "$users_id_ng_thuchien", preserveNullAndEmptyArrays: true } },
+                    {
+                      $lookup: {
+                          from: "Users",
+                          localField: "id_daidien_nhan",
+                          foreignField: "_id",
+                        //   pipeline: [
+                        //       { $match: {$and : [
+                        //       { "type" : {$ne : 1 }},
+                        //       {"idQLC":{$ne : 0}},
+                        //       {"idQLC":{$ne : 1}}
+                        //       ]},
+                        //       }
+                        //   ],
+                           as : "daidien_nhan"
+                      }
+                  },
+                { $unwind: { path: "$daidien_nhan", preserveNullAndEmptyArrays: true } },
 
                 {
                   $project: {
@@ -586,8 +605,15 @@ exports.list = async (req, res, next) => {
                     id_nv_nhan: '$id_nv_nhan',
                     id_pb_nhan: '$id_pb_nhan',
                     dc_lydo: 1,
+                    id_ng_thuchien: 1,
+                    dieuchuyen_taisan: 1,
+                    id_daidien_nhan: 1,
+                    dc_hoan_thanh: 1,
+                    dc_date_create: 1,
                     ten_ng_thuchien: '$users_id_ng_thuchien.userName',
-                    dep_id: "$users_id_ng_thuchien.inForPerson.employee.dep_id",
+                    pb_ng_nhan: "$daidien_nhan.inForPerson.employee.dep_id",
+                    ten_ng_nhan: '$daidien_nhan.userName',
+                    pb_ng_thuc_hien: "$users_id_ng_thuchien.inForPerson.employee.dep_id",
                     dc_vi_tri_tu: "$infoVTtu.vi_tri",
                     dc_vi_tri_den: "$infoVTden.vi_tri",
                   }
@@ -608,9 +634,14 @@ exports.list = async (req, res, next) => {
                   if (id_nv_nhan) data[i].id_nv_nhan = id_nv_nhan.userName
           
                 }
-                if (data[i].dep_id != 0) {
-                    let depName = await department.findOne({ com_id: id_cty, dep_id: data[i].dep_id })
-                  if (depName) data[i].depName = depName.dep_name
+                if (data[i].pb_ng_thuc_hien != 0) {
+                    let depName_nguoi_thuchien = await department.findOne({ com_id: id_cty, dep_id: data[i].pb_ng_thuc_hien })
+                  if (depName_nguoi_thuchien) data[i].depName_nguoi_thuchien = depName_nguoi_thuchien.dep_name
+          
+                }
+                if (data[i].pb_ng_nhan != 0) {
+                    let depName_ng_nhan = await department.findOne({ com_id: id_cty, dep_id: data[i].pb_ng_nhan })
+                  if (depName_ng_nhan) data[i].depName_ng_nhan = depName_ng_nhan.dep_name
           
                 }
                 if (data[i].id_pb_nhan != 0) {
@@ -618,6 +649,8 @@ exports.list = async (req, res, next) => {
                   if (id_pb_nhan) data[i].id_pb_nhan = id_pb_nhan.dep_name
                 }
                 data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+                data[i].dc_date_create = new Date(data[i].dc_date_create * 1000);
+                data[i].dc_hoan_thanh = new Date(data[i].dc_hoan_thanh * 1000);
                 data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
               }
               let totalCount = await DieuChuyen.count(filter) 
@@ -656,11 +689,15 @@ exports.list = async (req, res, next) => {
                     dc_date_delete: 1,
                     dc_id: 1,
                     dc_trangthai: 1,
+                    dieuchuyen_taisan: 1,
+                    dc_hoan_thanh: 1,
+                    dc_date_create: 1,
                     id_nv_dangsudung: '$id_nv_dangsudung',
                     id_pb_dang_sd: '$id_pb_dang_sd',
                     id_nv_nhan: '$id_nv_nhan',
                     id_pb_nhan: '$id_pb_nhan',
                     dc_lydo: 1,
+                    id_ng_thuchien: 1,
                     ten_ng_thuchien: '$users_id_ng_thuchien.userName',
                   }
                 }
@@ -685,6 +722,8 @@ exports.list = async (req, res, next) => {
                   if (id_pb_nhan) data[i].id_pb_nhan = id_pb_nhan.dep_name
                 }
                 data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
+                data[i].dc_hoan_thanh = new Date(data[i].dc_hoan_thanh * 1000);
+                data[i].dc_date_create = new Date(data[i].dc_date_create * 1000);
                 data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
               }
               let totalCount = await DieuChuyen.count(filter)
@@ -742,7 +781,7 @@ exports.list = async (req, res, next) => {
                {
                       $lookup: {
                           from: "Users",
-                          localField: "id_cty_dang_sd",
+                          localField: "id_cty_nhan",
                           foreignField: "_id",
                         //   pipeline: [
                         //       { $match: {$and : [
@@ -775,10 +814,16 @@ exports.list = async (req, res, next) => {
                     dc_date_delete: 1,
                     dc_trangthai: 1,
                     dc_lydo: 1,
+                    id_ng_thuchien: 1,
+                    dieuchuyen_taisan: 1,
                     ten_ng_thuchien: '$users_id_ng_thuchien.userName',
+                    id_cty_nhan: 1,
                     ten_cty_nhan: '$cty_nhan.userName',
+                    id_cty_dang_sd: 1,
                     ten_cty_dang_sd: '$cty_dang_sd.userName',
+                    vi_tri_dc_tu: 1,
                     dc_vi_tri_tu: "$infoVTtu.vi_tri",
+                    dc_vitri_tsnhan: 1,
                     dc_vi_tri_den: "$infoVTden.vi_tri",
                   }
                 }
@@ -786,6 +831,8 @@ exports.list = async (req, res, next) => {
               for (let i = 0; i < data.length; i++) {
                 data[i].dc_ngay = new Date(data[i].dc_ngay * 1000);
                 data[i].dc_date_delete = new Date(data[i].dc_date_delete * 1000);
+                data[i].dc_hoan_thanh = new Date(data[i].dc_hoan_thanh * 1000);
+                data[i].dc_date_create = new Date(data[i].dc_date_create * 1000);
               } 
               let totalCount = await DieuChuyen.count(filter)
           
