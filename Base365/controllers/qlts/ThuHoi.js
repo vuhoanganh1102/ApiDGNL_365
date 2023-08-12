@@ -19,7 +19,7 @@ exports.create = async (req, res) => {
         const th_dai_dien_pb = req.body.th_dai_dien_pb
         const thuhoi__lydo = req.body.thuhoi__lydo
         const thuhoi_taisan = req.body.thuhoi_taisan
-        const thuhoi_ngay = req.body.thuhoi_ngay
+        const thuhoi_ngay = new Date(req.body.thuhoi_ngay)
         const thuhoi_soluong = req.body.thuhoi_soluong
         const id_ng_nhan = req.body.id_ng_nhan
         let data = []
@@ -57,7 +57,7 @@ exports.create = async (req, res) => {
                         type_quyen_tao: type_quyen,
                         thuhoi_ng_tao: thuhoi_ng_tao,
                         loai_tb: 1,
-                        thuhoi_ngay: thuhoi_ngay,
+                        thuhoi_ngay: Date.parse(thuhoi_ngay) / 1000,
                         thuhoi_trangthai: 0,
                         add_or_duyet: 0,
                         thuhoi_taisan: { ds_thuhoi: updated_ds_thuhoi },
@@ -97,7 +97,7 @@ exports.create = async (req, res) => {
                         thuhoi_ng_tao: thuhoi_ng_tao,
                         thuhoi_trangthai: 0,
                         loai_tb: 1,
-                        thuhoi_ngay: thuhoi_ngay,
+                        thuhoi_ngay: Date.parse(thuhoi_ngay) / 1000,
                         add_or_duyet: 0,
                         thuhoi_taisan: { ds_thuhoi: updated_ds_thuhoi },
                         thuhoi__lydo: thuhoi__lydo,
