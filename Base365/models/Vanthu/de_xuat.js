@@ -510,7 +510,81 @@ const Vanthu_de_xuat = new Schema({
                 default: null,
 
             }
-        }
+        },
+        //Đề xuất đi muộn về sớm
+        di_muon_ve_som: {
+            time_batdau: {
+                type: Number,
+                default: null,
+            },
+            time_batdau_tomorrow: {
+                type: Boolean,
+                default: false,
+            },
+            time_ketthuc: {
+                type: Number,
+                default: null,
+            },
+            time_ketthuc_tomorrow: {
+                type: Boolean,
+                default: false,
+            },
+            ca_lam_viec: {
+                type: String,
+                default: null,
+            },
+            ly_do: {
+                type: String,
+                default: null, // Lý do chung của mọi loại đề xuất
+            },
+
+        },
+
+        nghi_phep_ra_ngoai: {
+            bd_nghi: { //ngày bắt đầu nghỉ
+                type: Number,
+                default: null,
+
+            },
+            kt_nghi: { // Ngày kết thúc nghỉ
+                type: Number,
+                default: null,
+            },
+            ca_nghi: {
+                type: Number,
+                default: null,
+            },
+            ly_do: {
+                type: String, // Lý do chung của mọi loại đề xuất
+                default: null,
+            },
+        },
+
+
+        nhap_ngay_nhan_luong: {
+            ngay_nhan_luong: { //ngày nhận lương
+                type: Number,
+                default: null,
+
+            },
+            ly_do: {
+                type: String, // Lý do chung của mọi loại đề xuất
+                default: null,
+            },
+        },
+
+
+        xin_tai_tai_lieu: {
+            ten_tai_lieu: {
+                type: String,
+                default: null,
+
+            },
+            ly_do: {
+                type: String, // Lý do chung của mọi loại đề xuất
+                default: null,
+            },
+        },
     },
     name_user: {
         type: String,

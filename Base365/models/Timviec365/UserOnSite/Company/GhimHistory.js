@@ -25,19 +25,27 @@ const TV365GhimHistorySchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    //1 is active, 0 is disabled
-    status: {
+    //trạng thái đơn hàng (0: đơn chờ duyệt, 1: đơn đang hoạt động, 2: đơn hoàn thành, 3: đơn hết hạn, 4: đơn bị hủy)
+    status:  {
         type: Number,
-        default: 1
+        default: 0
     },
     bg_id: {
+        type: String,
+        default: null
+    },
+    bg_title: {
         type: String,
         default: null
     },
     new_id: {
         type: Number,
         default: null
-    }
+    },
+    new_title: {
+        type: String,
+        default: null
+    },
 }, {
     collection: 'TV365GhimHistory',
     versionKey: false,
