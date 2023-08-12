@@ -1,30 +1,30 @@
 const axios = require('axios');
-const functions = require('../../services/functions');
-const NewTV365 = require('../../models/Timviec365/UserOnSite/Company/New');
-const Users = require('../../models/Users');
-const ApplyForJob = require('../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
-const UserSavePost = require('../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
-const CommentPost = require('../../models/Timviec365/UserOnSite/CommentPost');
-const LikePost = require('../../models/Timviec365/UserOnSite/LikePost');
-const Keyword = require('../../models/Timviec365/UserOnSite/Company/Keywords');
-const Blog = require('../../models/Timviec365/Blog/Posts');
-const Category = require('../../models/Timviec365/CategoryJob');
-const SaveVote = require('../../models/Timviec365/SaveVote');
-const TblHistoryViewed = require('../../models/Timviec365/UserOnSite/Candicate/TblHistoryViewed');
-const Profile = require('../../models/Timviec365/UserOnSite/Candicate/Profile');
-const HistoryNewPoint = require('../../models/Timviec365/HistoryNewPoint');
-const PermissionNotify = require('../../models/Timviec365/PermissionNotify');
-const GhimHistory = require('../../models/Timviec365/UserOnSite/Company/GhimHistory')
-const PriceList = require('../../models/Timviec365/PriceList/PriceList')
-const CategoryDes = require('../../models/Timviec365/CategoryDes');
-const TblModules = require('../../models/Timviec365/TblModules');
+const functions = require('../../../services/functions');
+const NewTV365 = require('../../../models/Timviec365/UserOnSite/Company/New');
+const Users = require('../../../models/Users');
+const ApplyForJob = require('../../../models/Timviec365/UserOnSite/Candicate/ApplyForJob');
+const UserSavePost = require('../../../models/Timviec365/UserOnSite/Candicate/UserSavePost');
+const CommentPost = require('../../../models/Timviec365/UserOnSite/CommentPost');
+const LikePost = require('../../../models/Timviec365/UserOnSite/LikePost');
+const Keyword = require('../../../models/Timviec365/UserOnSite/Company/Keywords');
+const Blog = require('../../../models/Timviec365/Blog/Posts');
+const Category = require('../../../models/Timviec365/CategoryJob');
+const SaveVote = require('../../../models/Timviec365/SaveVote');
+const TblHistoryViewed = require('../../../models/Timviec365/UserOnSite/Candicate/TblHistoryViewed');
+const Profile = require('../../../models/Timviec365/UserOnSite/Candicate/Profile');
+const HistoryNewPoint = require('../../../models/Timviec365/HistoryNewPoint');
+const PermissionNotify = require('../../../models/Timviec365/PermissionNotify');
+const GhimHistory = require('../../../models/Timviec365/UserOnSite/Company/GhimHistory')
+const PriceList = require('../../../models/Timviec365/PriceList/PriceList')
+const CategoryDes = require('../../../models/Timviec365/CategoryDes');
+const TblModules = require('../../../models/Timviec365/TblModules');
 const slugify = require('slugify');
 
 // Service
-const service = require('../../services/timviec365/new');
-const serviceCompany = require('../../services/timviec365/company');
-const New = require('../../models/Timviec365/UserOnSite/Company/New');
-const creditsController = require('./credits');
+const service = require('../../../services/timviec365/new');
+const serviceCompany = require('../../../services/timviec365/company');
+const New = require('../../../models/Timviec365/UserOnSite/Company/New');
+const creditsController = require('../credits');
 
 // đăng tin
 exports.postNewTv365 = async(req, res, next) => {
@@ -478,14 +478,15 @@ exports.deleteNewTv365 = async(req, res, next) => {
 // hàm làm mới tin
 exports.refreshNew = async(req, res, next) => {
     try {
-        let idNew = req.body.new_id;
-        if (idNew) {
-            let doc = await NewTV365.updateOne({ new_id: idNew }, {
+        let new_id = req.body.new_id;
+        if (new_id) {
+            await NewTV365.updateOne({new_id}, {
                 $set: { updateTime: functions.getTimeNow() }
-            }, {new: true}).lean();
-            return functions.success(res, "làm mới bài tuyển dụng thành công", {data: doc})
+            });
+            let doc = await NewTV365.findOne({new_id}, 'new_id new_title')
+            return functions.success(res, "Làm mới bài tuyển dụng thành công", {data: doc})
         }
-        return functions.setError(res, 'thiếu dữ liệu', 404)
+        return functions.setError(res, 'Thiếu dữ liệu', 404)
     } catch (error) {
         console.log(error)
         return functions.setError(res, error)
