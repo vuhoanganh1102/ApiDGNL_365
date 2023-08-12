@@ -7,6 +7,7 @@ const nhomTsRouter = require('./qlts/nhomTaiSanRouter')
 const loaiTsRouter = require('./qlts/loaiTaiSanRouter')
 const vitriTsRouter = require('./qlts/viTriTaiSanRouter')
 var capPhat = require('./qlts/CapPhat.js')
+var DanhSach = require('./qlts/DanhSach.js')
 var ThuHoi = require('./qlts/ThuHoi.js')
 var mat = require('./qlts/matRouter')
 var huy = require('./qlts/huyRouter')
@@ -70,4 +71,5 @@ router.use('/DieuChuyenBanGiao/DVQL', DieuChuyenBanGiaoDVQL);
 router.use('/BanGiao', BanGiao);
 
 router.use('/TrangChu', TrangChu);
+router.use('/DanhSach', DanhSach);
 module.exports = router

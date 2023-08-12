@@ -4,8 +4,8 @@ const notification = new mongoose.Schema({
     noti_id : {
         type : Number,
         required: true,
-        unique: true,
-        autoIncrement: true
+        // unique: true,
+        // autoIncrement: true
 
     },
     ugs_tutor : {

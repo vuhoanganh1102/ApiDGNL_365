@@ -143,38 +143,61 @@ exports.list_dvi_csuat = async (req, res) => {
 }
 exports.list_Dep = async (req, res) => {
     try {
+        let page = Number(req.body.page)|| 1;
+        let pageSize = Number(req.body.pageSize)|| 10;
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
         let com_id = req.user.data.com_id;
-        let data = dep.find({
-            com_id: com_id
-        }).select("dep_id dep_name -_id").sort({dep_id : -1})
-        fnc.success(res, "lấy thành công", { data });
+        let cid = req.body.com_id;
+        let id = ""
+        if(cid) {
+            id = cid
+        }else{
+            id = com_id
+        }
+        console.log(id)
+        let data = dep.find({com_id: id}).select("dep_id dep_name -_id").sort({dep_id : -1}).skip(skip).limit(limit).lean()
+        return fnc.success(res, "lấy thành công", { data });
     } catch (error) {
         console.log(error);
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 }
 exports.list_Users = async (req, res) => {
     try {
-        let com_id = req.user.data.com_id;
-        let data = await user.find({
-            "inForPerson.employee.com_id": com_id , type :2
-        }).select("_id userName").sort({_id : -1})
-        fnc.success(res, "lấy thành công", { data });
+        let page = Number(req.body.page)|| 1;
+        let pageSize = Number(req.body.pageSize)|| 10;
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let com_id = req.body.com_id;
+        let cond = {}
+        if(com_id) cond["inForPerson.employee.com_id"] = com_id
+        cond.type = 2
+        let data = await user.find(cond).select("_id userName").sort({updatedAt : -1}).skip(skip).limit(limit).lean()
+        return fnc.success(res, "lấy thành công", { data });
     } catch (error) {
         console.log(error);
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 }
 exports.list_Com = async (req, res) => {
     try {
-        let com_id = req.user.data.com_id;
-        let data = await user.find({
-           _id: com_id , type : 1
-        }).select("_id userName").sort({_id : -1})
-        fnc.success(res, "lấy thành công", { data });
+        let page = Number(req.body.page)|| 1;
+        let pageSize = Number(req.body.pageSize)|| 10;
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        let com_id = req.body.com_id;
+        let comName = req.body.comName;
+        let cond = {}
+        if(com_id) cond._id = {$in : com_id}
+        if(comName) cond.userName = {$regex : comName}
+        cond.type = 1
+        console.log(cond)
+        let data = await user.find(cond).select("_id userName").skip(skip).limit(limit).sort({updatedAt : -1}).lean()
+        return fnc.success(res, "lấy thành công", { data });
     } catch (error) {
         console.log(error);
-        fnc.setError(res, error.message);
+        return fnc.setError(res, error.message);
     }
 }
 

@@ -9,6 +9,7 @@ const TeachingSchedule = require("../../models/GiaSu/TeachingSchedule")
 const ClassTeach = require("../../models/GiaSu/ClassTeach")
 const Notification = require("../../models/GiaSu/Notification")
 const InviteTeach = require("../../models/GiaSu/InviteTeach")
+const SaveTeach = require("../../models/GiaSu/SaveTeach")
 
 
 exports.post = async(req, res) =>{
@@ -340,6 +341,52 @@ exports.updateStatus = async (req, res) =>{
         return functions.setError(res, e.message )
     }
 }
+exports.saveTeacher = async (req, res) =>{
+    try{
+        const st_pr_id = req.body.st_pr_id
+        const idGiaSu = req.user.data.idGiaSu;
+        const st_it_teach = req.body.st_it_teach
+        const today = new Date()
+        const max  = await functions.getMaxIdByField(SaveTeach,"st_id")
+        let check = await SaveTeach.findOne({
+            st_pr_id :st_pr_id,
+            ugs_teach :idGiaSu,//id phu huynh - idParent
+        })
+        if(!check) {
+            let saveTeacher =  await SaveTeach({
+                st_id : max,
+                st_pr_id :st_pr_id,
+                ugs_teach :idGiaSu,
+                st_it_teach :st_it_teach,
+                st_date : Date.parse(today)/1000,
+            })
+            await saveTeacher.save()
+            return functions.success(res , "Lưu gia sư thành công")
+        }
+        return functions.setError(res, "Gia sư này bạn đã lưu" )
+    }catch(e){
+        console.log(e)
+        return functions.setError(res, e.message )
+    }
+}
+exports.unsave_teacher = async (req, res) =>{
+    try{
+        const id = req.body.id
+        let check = await SaveTeach.findOne({
+            st_id :id,
+        })
+        if(check) {
+            await SaveTeach.deleteOne({
+                st_id :id,
+            })
+            return functions.success(res , "Xóa lưu gia sư thành công")
+        }
+        return functions.setError(res, "khong tim thay Gia sư " )
+    }catch(e){
+        console.log(e)
+        return functions.setError(res, e.message)
+    }
+}
 exports.deleteNoti = async (req, res) =>{
     try{
         const id = req.body.id;
@@ -347,7 +394,7 @@ exports.deleteNoti = async (req, res) =>{
         let idArray = id.split(",").map(Number)
         for(let i = 0 ; i< idArray.length ; i++ ){
             console.log(idArray[i])
-        await Notification.deleteOne({ noti_id: { $in: idArray[i] }});
+        await Notification.deleteOne({ noti_id: idArray[i] });
         }
         // await Notification.deleteMany({ noti_id: { $in: idArray }});
         return functions.success(res, 'Xoa thanh cong!');
@@ -365,13 +412,16 @@ exports.deleteNoti = async (req, res) =>{
         const ugs_teach = req.body.ugs_teach  
         const pft_address = req.body.pft_address  
         const it_status = req.body.it_status  
-        const day_invitation_teach = req.body.day_invitation_teach  
+        const day_invitation_teach = new Date(req.body.day_invitation_teach)  
+        let today = new Date()
+        let check = ""
         let idArray = pft_id.split(",").map(Number)
         for(let i = 0 ; i< idArray.length ; i++ ){
-            //select info class
-            console.log(idArray[i])
+            let maxTB = await functions.getMaxIdByField(Notification, "noti_id")
+            let maxInvite = await functions.getMaxIdByField(InviteTeach, "it_id")
+            console.log(idArray[i], maxTB ,maxInvite )
             let validateInvie = await InviteTeach.findOne({
-                it_class_code : {$in: idArray[i]},
+                it_class_code : idArray[i],
                 $and : [{ it_status: {$ne : 3}}, 
                         { it_status: {$ne : 4}}
                     ],
@@ -381,7 +431,6 @@ exports.deleteNoti = async (req, res) =>{
                 ugs_id : idGiaSu,
                 pft_id : idArray[i],
                 trangthai_lop : 2
-                
             })
             let getClass =  await PostFindTutor.findOne({
                 ugs_id : idGiaSu,
@@ -395,30 +444,128 @@ exports.deleteNoti = async (req, res) =>{
                     if(validateInvie.type_invite_suggest == 0){
                         // đc mời dạy rồi
                         if(validateInvie.hidden == 0){
-                            let updateInvite = await InviteTeach.findOne({})
+                            
+                            let updateInvite = await InviteTeach.updateOne({ 
+                                ugs_parent: idGiaSu,
+                                ugs_teach: ugs_teach,
+                                it_class_code : idArray[i],
+                            },{
+                                it_status : 1, 
+                                it_address :address,
+                                as_id : pft_nb_lesson,day_invitation_teach : Date.parse(today)/1000,
+                                hidden: 1,
+                            })
+                            let TB = new Notification({
+                                noti_id: maxTB,
+                                ugs_tutor: ugs_teach,
+                                ugs_parent: idGiaSu,
+                                pft_id: idArray[i],
+                                type: 1,
+                                noti_date: Date.parse(today)/1000,
+                            })
+                            await TB.save()
+                            check ="Mời dạy thành công."
                         }else{
-
+                            if(validateInvie.it_status == 1){
+                                // gia sư được mời dạy nhưng chưa phản hồi
+                                check = "Bạn đã mời gia sư với dạy lớp này rồi, hãy đợi phản hồi."
+                            }else if(validateInvie.it_status == 2){
+                                 //gia sư đồng ý dạy
+                                check = "Lớp này đang được gia sư này dạy rồi."
+                            }else if((validateInvie.it_status == 3)||(validateInvie.it_status == 4)){
+                                 // gia sư từ chối lời mời dạy or kết thúc 
+                                 let createInvite = new InviteTeach({
+                                    it_id : maxInvite,
+                                    it_address :address,
+                                    ugs_tutor: ugs_teach,
+                                    ugs_parent: idGiaSu,
+                                    it_class_code :idArray[i],
+                                    day_invitation_teach : Date.parse(day_invitation_teach)/1000,
+                                    received_date: 0,
+                                    it_status: it_status,
+                                    received_date: 0,
+                                    as_id : pft_nb_lesson,
+                                 })
+                                 await createInvite.save()
+                                 let TB = new Notification({
+                                    noti_id: maxTB,
+                                    ugs_tutor: ugs_teach,
+                                    ugs_parent: idGiaSu,
+                                    pft_id: idArray[i],
+                                    type: 1,
+                                    noti_date: Date.parse(today)/1000,
+                                })
+                                await TB.save()
+                                check = "Mời dạy thành công - TH: gia sư từ chối lời mời dạy or kết thúc  "
+                            }
                         }
                     }else if(validateInvie.type_invite_suggest == 1){
                         //đề nghị rồi
-
+                        if(validateInvie.it_status == 1){
+                             //đề nghị trạng thái đã gửi
+                             check = "Gia sư này đã đề nghị dạy lớp rồi."
+                        }else if(validateInvie.it_status == 2){
+                            //đề nghị trạng thái đã đồng ý
+                            check =  "Gia sư này đang dạy lớp rồi."
+                        }else if((validateInvie.it_status == 3)||(validateInvie.it_status == 4)){
+                            //đề nghị trạng thái từ chối và kết thúc
+                            let createInvite = new InviteTeach({
+                                it_id : maxInvite,
+                                it_address :address,
+                                ugs_tutor: ugs_teach,
+                                ugs_parent: idGiaSu,
+                                it_class_code :idArray[i],
+                                day_invitation_teach : Date.parse(day_invitation_teach)/1000,
+                                received_date: 0,
+                                it_status: it_status,
+                                received_date: 0,
+                                as_id : pft_nb_lesson,
+                             })
+                             await createInvite.save()
+                             let TB = new Notification({
+                                noti_id: maxTB,
+                                ugs_tutor: ugs_teach,
+                                ugs_parent: idGiaSu,
+                                pft_id: idArray[i],
+                                type: 1,
+                                noti_date: Date.parse(today)/1000,
+                            })
+                            await TB.save()
+                            check = "Mời dạy thành công - TH: đề nghị trạng thái từ chối và kết thúc"
+                        }
                     }
-                    
-
-
                 }else{ 
                     // gia sư chưa được mời hoặc đề nghị
-
+                    let createInvite = new InviteTeach({
+                        it_id : maxInvite,
+                        it_address :address,
+                        ugs_tutor: ugs_teach,
+                        ugs_parent: idGiaSu,
+                        it_class_code :idArray[i],
+                        day_invitation_teach : Date.parse(day_invitation_teach)/1000,
+                        received_date: 0,
+                        it_status: it_status,
+                        received_date: 0,
+                        as_id : pft_nb_lesson,
+                     })
+                     await createInvite.save()
+                    let TB = new Notification({
+                        noti_id: maxTB,
+                        ugs_tutor: ugs_teach,
+                        ugs_parent: idGiaSu,
+                        pft_id: idArray[i],
+                        type: 1,
+                        noti_date: Date.parse(today)/1000,
+                    })
+                    await TB.save()
+                    check = "Mời dạy thành công - TH: gia sư chưa được mời hoặc đề nghị"
                 }
             }
-            console.log(validateInvie,checkClass,getClass)
         }
-
-
-
-        return functions.success(res, "", {idArray})
-
-
+        if(check === ""){
+            return functions.success(res, "đã gửi lời mời dạy")
+        }
+        return functions.success(res, "", {check})
     }catch(e){
         console.log(e)
         return functions.setError(res, e.message )
