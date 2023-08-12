@@ -22,6 +22,10 @@ router.post('/ParentInvite',functions.checkToken, formData.parse(), controller.P
 router.post('/checkTittle',functions.checkToken, formData.parse(), controller.checkTittle);
 //cap nhat trang thai lop hoc
 router.post('/updateStatus',functions.checkToken, formData.parse(), controller.updateStatus);
+//huy luu Gia Su
+router.post('/unsaveTeacher',functions.checkToken, formData.parse(), controller.unsave_teacher);
+// luu Gia Su
+router.post('/saveTeacher',functions.checkToken, formData.parse(), controller.saveTeacher);
 //danh sach thanh pho
 router.post('/listCity',functions.checkToken, formData.parse(), controller.listCity);
 //danh sach quan huyen
