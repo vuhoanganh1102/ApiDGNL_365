@@ -31,7 +31,8 @@ exports.loginAdminUser = async (req, res, next) => {
             const password = req.body.password
             let findUser = await functions.getDatafindOne(AdminUser, { loginName })
             if (findUser) {
-                let checkPassword = await functions.verifyPassword(password, findUser.password)
+                if(findUser.active)
+                // let checkPassword = await functions.verifyPassword(password, findUser.password)
                 if (checkPassword) {
                     let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
                         date: new Date(Date.now())
@@ -1505,3 +1506,5 @@ exports.deleleManyByModule = async (req, res, next) => {
         return functions.setError(res, error.message);
     }
 }
+
+

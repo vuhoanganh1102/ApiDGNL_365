@@ -59,9 +59,9 @@ const JobCategorySchema = new Schema({
         default: 0
     },
 },{
-    collection: 'VLTH_JobCategories',
+    collection: 'VLTG_JobCategories',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_JobCategories",JobCategorySchema);
+module.exports = mongoose.model("VLTG_JobCategories",JobCategorySchema);

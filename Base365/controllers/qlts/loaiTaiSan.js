@@ -161,7 +161,9 @@ exports.editLoaiTs = async (req, res) => {
         },
         { new: true }
       );
-
+      if (!chinhsualoai){
+        return functions.setError(res, 'Không tìm thấy bản ghi phù hợp để thay đổi', 400);
+      } 
     return functions.success(res, 'edit data success', { chinhsualoai });
     
   } catch (e) {

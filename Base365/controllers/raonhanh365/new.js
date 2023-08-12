@@ -30,7 +30,7 @@ const District = require("../../models/District");
 const Ward = require("../../models/Raonhanh365/PhuongXa");
 const CateVl = require("../../models/Raonhanh365/CateVl");
 const Keywords = require("../../models/Raonhanh365/Keywords");
-
+const FormData = require('form-data');
 dotenv.config();
 // đăng tin
 exports.postNewMain = async (req, res, next) => {
@@ -800,17 +800,21 @@ exports.searchNew = async (req, res, next) => {
             productGroup,
             warranty,
             endvalue,
+            detailCategory,
             numberOfSeats,
-            loai_sanphamwh,
+            status,
             loai_sanphambe,
             phien_banxc,
             phien_banddt,
             block,
+            poster,
             kindOfPet,
             age,
             gender,
             exp,
             level,
+            tagvl,
+            tagid,
             degree,
             jobType,
             jobDetail,
@@ -875,6 +879,7 @@ exports.searchNew = async (req, res, next) => {
             cong_suat,
             khoiluong,
             loai_chung,
+            cu_moi
         } = req.body;
         let page = req.body.page || 1;
         let pageSize = Number(req.body.pageSize) || 50;
@@ -962,10 +967,73 @@ exports.searchNew = async (req, res, next) => {
             };
         }
         let condition = { buySell };
-        if (search_key) {
-            let query = raoNhanh.createLinkTilte(search_key);
-            condition.linkTitle = { $regex: `.*${query}.*` };
+        // if (search_key) {
+        //     let query = raoNhanh.createLinkTilte(search_key);
+        //     condition.linkTitle = { $regex: `.*${query}.*` };
+        // }
+        let listIdByAI = [];
+        if (search_key || tagvl || jobType || tagid) {
+            let title = search_key;
+            let catid = 0;
+            let tag = 0;
+            if (tagid) {
+                let check = await tags.findOne({ _id: tagid });
+                if (check) title = check.name;
+                tag = tagid;
+            }
+            if (jobType) {
+                catid = 120
+                let check = await CateVl.findOne({ _id: jobType });
+                if (check) title = check.name;
+                tag = jobType;
+
+            }
+            if (tagvl) {
+                catid = 120
+                let check = await Keywords.findOne({ _id: tagvl });
+                if (check) title = check.name;
+            }
+            if (!cu_moi) cu_moi = 1;
+            if (!cateID) cateID = '';
+            if (!city) city = 0;
+            if (!district) district = 0;
+            if (!ward) ward = 0;
+            if (!startvalue) startvalue = 0;
+            if (!endvalue) endvalue = 0;
+            let data = new FormData();
+            data.append('site', 'spraonhanh365');
+            data.append('size', pageSize);
+            data.append('pagination', page);
+            data.append('keyword', search_key);
+            data.append('new_cate_id', cateID);
+            data.append('new_parent_id', catid);
+            data.append('new_city', city);
+            data.append('quan_huyen', district);
+            data.append('phuong_xa', ward);
+            data.append('gia_bd', startvalue);
+            data.append('gia_kt', endvalue);
+            data.append('sort', cu_moi);
+            data.append('new_ctiet_dmuc', tag);
+            data.append('new_active', 1);
+            data.append('da_ban', 0);
+
+
+            let listID = await axios({
+                method: "post",
+                maxBodyLength: Infinity,
+                url: "http://43.239.223.10:5003/search_sanpham",
+                data
+            })
+
+            if (listID.data.data.message == 'Tìm kiếm thành công') {
+                if (listID.data && listID.data.data && listID.data.data.list_id !== "") {
+                    listIdByAI = listID.data.data.list_id.split(",");
+                    listIdByAI = listIdByAI.map(item => item = Number(item));
+                }
+            }
         }
+        if (poster) condition.poster = poster
+        if (status) condition.status = status;
         if (cateID) condition.cateID = Number(cateID);
         if (brand) condition.brand = brand;
         if (city) condition.city = Number(city);
@@ -1055,7 +1123,7 @@ exports.searchNew = async (req, res, next) => {
         if (kindOfPet) condition["pet.kindOfPet"] = kindOfPet;
         if (age) condition["pet.age"] = age;
         if (gender) condition["pet.gender"] = gender;
-        if (jobType) condition["Job.jobType"] = jobType;
+        // if (jobType) condition["Job.jobType"] = jobType;
         if (jobDetail) condition["Job.jobDetail"] = jobDetail;
         if (jobKind) condition["Job.jobKind"] = jobKind;
         if (salary) condition["Job.salary"] = salary;
@@ -1074,17 +1142,22 @@ exports.searchNew = async (req, res, next) => {
         if (startvalue && endvalue) condition.money = { $gte: Number(startvalue), $lte: Number(endvalue) };
         condition.userID = { $ne: 0 }
         condition.active = 1
+        if (listIdByAI.length > 0) {
+            condition = {};
+            condition._id = { $in: listIdByAI }
+            condition.userID = { $ne: 0 }
+        }
         let sort = { pinCate: -1 };
         if (uutien === 2) sort.updateTime = -1;
         if (uutien === 3) condition.type = 0;
         if (uutien === 4) condition.type = 1;
         if (uutien === 1) sort.viewCount = -1;
         let data = await New.aggregate([
-            { $sort: sort },
             { $match: condition },
+            { $sort: sort },
             { $skip: skip },
             { $limit: limit },
-            { $sort: { createTime: -1, order: -1, updateTime: -1 } },
+            { $sort: { createTime: -1, updateTime: -1 } },
             {
                 $lookup: {
                     from: "Users",
@@ -1096,6 +1169,7 @@ exports.searchNew = async (req, res, next) => {
             { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
             { $project: searchItem }
         ]);
+        
         let userIdRaoNhanh = await raoNhanh.checkTokenUser(req, res, next);
         for (let i = 0; i < data.length; i++) {
             if (data[i].img) {
@@ -1171,10 +1245,11 @@ exports.searchNew = async (req, res, next) => {
 
         }
 
-        let totalCount = data.length
-
+        let totalCount = await New.countDocuments(condition)
+        let soluong = data.length
         return functions.success(res, "get data success", {
             totalCount,
+            soluong,
             data,
         });
     } catch (error) {
@@ -2702,46 +2777,37 @@ exports.addDiscount = async (req, res, next) => {
     try {
         let request = req.body;
         let user_id = req.user.data.idRaoNhanh365;
-        if (request.new_id && request.new_id.length) {
-            for (let i = 0; i < request.new_id.length; i++) {
-                let loai_khuyenmai = Number(request.loai_khuyenmai);
-                let giatri_khuyenmai = Number(request.giatri_khuyenmai);
-                let ngay_bat_dau = request.ngay_bat_dau;
-                let ngay_ket_thuc = request.ngay_ket_thuc;
-                let new_id = Number(request.new_id[i]);
-                if (
-                    loai_khuyenmai &&
-                    ngay_bat_dau &&
-                    ngay_ket_thuc &&
-                    giatri_khuyenmai
-                ) {
-                    if (loai_khuyenmai == 1 || loai_khuyenmai == 2) {
-                    } else {
-                        return functions.setError(res, "Nhập số không hợp lệ", 400);
+        let loai_khuyenmai = Number(request.loai_khuyenmai);
+        let giatri_khuyenmai = Number(request.giatri_khuyenmai);
+        let ngay_bat_dau = request.ngay_bat_dau;
+        let ngay_ket_thuc = request.ngay_ket_thuc;
+        if (loai_khuyenmai && ngay_bat_dau && ngay_ket_thuc && giatri_khuyenmai) {
+            if (loai_khuyenmai == 1 || loai_khuyenmai == 2) {
+                if (functions.checkNumber(giatri_khuyenmai) && giatri_khuyenmai >= 0) {
+                    if (request.new_id && request.new_id.length) {
+                        for (let i = 0; i < request.new_id.length; i++) {
+                            let new_id = Number(request.new_id[i]);
+                            let checkNew = await New.findById(new_id);
+                            if (checkNew) {
+                                await New.findByIdAndUpdate(new_id, {
+                                    timePromotionStart: new Date(ngay_bat_dau).getTime() / 1000,
+                                    timePromotionEnd: new Date(ngay_ket_thuc).getTime() / 1000,
+                                    "infoSell.promotionType": loai_khuyenmai,
+                                    "infoSell.promotionValue": giatri_khuyenmai,
+                                });
+                            } else {
+                                return functions.setError(res, "not found new", 404);
+                            }
+                        }
+                        return functions.success(res, 'add discount success')
                     }
-                    if (
-                        functions.checkNumber(giatri_khuyenmai) === false || giatri_khuyenmai <= 0
-                    ) {
-                        return functions.setError(res, "invalid number", 400);
-                    }
-
-                    let checkNew = await New.findById(new_id);
-                    if (checkNew) {
-                        await New.findByIdAndUpdate(new_id, {
-                            timePromotionStart: new Date(ngay_bat_dau).getTime() / 1000,
-                            timePromotionEnd: new Date(ngay_ket_thuc).getTime() / 1000,
-                            "infoSell.promotionType": loai_khuyenmai,
-                            "infoSell.promotionValue": giatri_khuyenmai,
-                        });
-                    } else {
-                        return functions.setError(res, "not found new", 400);
-                    }
-                } else {
-                    return functions.setError(res, "missing data", 400);
+                    return functions.setError(res, 'invalid data input', 400)
                 }
+                return functions.setError(res, "invalid number giatri_khuyenmai", 400);
             }
+            return functions.setError(res, 'invalid data input', 400)
         }
-        return functions.success(res, "add discount success");
+        return functions.setError(res, "missing data", 400);
     } catch (error) {
         console.log("Err from server", error);
         return functions.setError(res, error.message);
@@ -3326,7 +3392,7 @@ exports.updateNewPromotion = async (req, res, next) => {
             && loaikhuyenmai.length === giatri.length && giatri.length === id.length) {
             for (let i = 0; i < id.length; i++) {
                 let checkNew = await New.findById(Number(id[i]));
-                if (checkNew) { 
+                if (checkNew) {
                     await New.findByIdAndUpdate(Number(id[i]), {
                         timePromotionStart: new Date(ngay_bat_dau[i]).getTime() / 1000,
                         timePromotionEnd: new Date(ngay_ket_thuc[i]).getTime() / 1000,

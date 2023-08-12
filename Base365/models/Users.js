@@ -997,67 +997,82 @@ const UserSchema = new mongoose.Schema({
         type : {
             ugs_ft : {
                 type : Number,
-                // 1 phụ huynh , 2 gia sư
+                // 2 phụ huynh , 1 gia sư
             },
             ugs_tutor_style : {
-                // //chưa biết
+                // kiểu gia sư
                 type : String,
+                default : ''
             },
             ugs_class_teach : {
                 // lớp dạy
                 type : String,
+                default : null
             },
             ugs_school : {
                 // trường học
                 type : String,
+                default : null
             },
             ugs_graduation_year : {
                 //năm tốt nghiệp 
                 type : Number,
+                default : null
             },
             ugs_specialized : {
-                  //chưa biết
+                  //chuyên ngành
                 type : String,
+                default : null
             },
             ugs_workplace : {
                 //nơi làm việc 
                 type : String,
+                default : null
             },
             ugs_about_us : {
                  //chưa biết
                 type : String,
+                default : null
             },
             ugs_experience_year : {
-                //năm tốt nghiệp
+                //sô năm kinh nghiệm
                 type : Number,
+                default : null
             },
             ugs_achievements : {
                 // chứng chỉ , thành tựu
                 type : String,
+                default : null
             },
             as_id : {
                  //chưa biết
                 type : Number,
+                default : null
             },
             as_detail : {
                 //chưa biết
                 type : String,
+                default : null
             },
             point_free : {
                 //điểm miễn phí cho phụ huynh để xem ứng viên 
                 type : Number,
+                default : null
             },
             point_buy : {
                 //điểm mất phí cho phụ huynh để xem ứng viên 
                 type : Number,
+                default : null
             },
             time_present : {
                 //chưa rõ
                 type : Number,
+                default : null
             },
             ugs_view : {
                 // lượt xem
                 type : Number,
+                default : null
             },
             token : {
                 //token
@@ -1073,6 +1088,16 @@ const UserSchema = new mongoose.Schema({
                 type : Number,
                 default : 0
             },
+        }
+    },
+    inforVLTG: {
+        uv_day: {
+            type: String,
+            default: null
+        },
+        luot_xem: {
+            type: Number,
+            default: 0
         }
     },
     configChat: {

@@ -1,60 +1,87 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const MuSchema = new Schema({
+const MenusMultiSchema = new Schema({
     mnu_id: {
         type: Number,
         required: true,
     },
     mnu_name: {
-        type: Number,
-        required: true,
+        type: String,
+        default: null,
     },
     mnu_name_index: {
         type: String,
-        required: true,
+        default: null,
     },
     mnu_check: {
         type: String,
-        required: true, 
+        default: null,
     },
     mnu_link: {
         type: String,
-        required: true,
+        default: null,
     },
     mnu_target: {
         type: String,
-        required: true,
+        default: null,
     },
     mnu_description: {
         type: String,
-        required: true,
+        default: null,
     },
     mnu_data: {
         type: String,
-        required: true,
+        default: null,
     },
     admin_id: {
-        type: String,
+        type: Number,
         required: true,
     },
     lang_id: {
-        type: String,
-        required: true,
+        type: Number,
+        default: 0,
     },
     mnu_active: {
-        type: String,
-        required: true,
+        type: Number,
+        default: 0,
     },
-    mnu_active: {
-        type: String,
-        required: true,
+    mnu_follow: {
+        type: Number,
+        default: 0,
     },
-    
+    mnu_type: {
+        type: Number,
+        default: 0,
+    },
+    mnu_date: {
+        type: Number,
+        default: 0,
+    },
+    mnu_order: {
+        type: Number,
+        default: 0,
+    },
+    mnu_parent_id: {
+        type: Number,
+        default: 0,
+    },
+    mnu_has_child: {
+        type: Number,
+        default: 0,
+    },
+    mnu_background: {
+        type: String,
+        default: null,
+    },
+    mnu_padding_left: {
+        type: Number,
+        default: 0,
+    },
 },{
-    collection: 'VLTH_Mu',
+    collection: 'VLTG_MenusMulti',
     versionKey: false,
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTH_Mu",MuSchema);
+module.exports = mongoose.model("VLTG_MenusMulti",MenusMultiSchema);

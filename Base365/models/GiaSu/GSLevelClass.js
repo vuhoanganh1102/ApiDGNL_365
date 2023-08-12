@@ -1,7 +1,7 @@
 
 const mongoose = require("mongoose");
 const gs_level_class = new mongoose.Schema({
-
+    // lớp cấp
     level_class_id : {
         type : Number,
         required: true,

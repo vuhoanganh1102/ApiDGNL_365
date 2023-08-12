@@ -63,6 +63,7 @@ exports.updateInfoParent = async(req, res, next) => {
                 return functions.setError(res, "không tìm thấy Phụ huynh")
             }
     } catch (error) {
+        console.log(error);
         return functions.setError(res, error.message)
     }
 }
@@ -113,6 +114,9 @@ exports.detailParent = async(req, res ) =>{
         return functions.setError(res, error.message)
     }
 }
+
+
+
 exports.updateInfoTeacher = async(req, res, next) => {
     try {
         let idGiaSu = req.user.data.idGiaSu;
@@ -120,30 +124,7 @@ exports.updateInfoTeacher = async(req, res, next) => {
         const { userName, emailContact, address, phone, birthday, gender,  ugs_about_us,ugs_city_gs,ugs_county_gs,married,ugs_class_teach,ugs_tutor_style,ugs_school,ugs_graduation_year,ugs_specialized,ugs_workplace,ugs_achievements,experience } = req.body;
         let File = req.files || null;
         let avatarUser = null;
-            // if(!userName) {
-            //     return functions.setError(res, "userName không được để trống")
-            // }
-            // // if(!emailContact) {
-            // //     return functions.setError(res, "emailContact không được để trống")
-            // // }
-            // // if(!phone) {
-            // //     return functions.setError(res, "phone không được để trống")
-            // // }
-            // if(!address) {
-            //     return functions.setError(res, "address không được để trống")
-            // }
-            // if(!birthday) {
-            //     return functions.setError(res, "birthday không được để trống")
-            // }
-            // if(!gender) {
-            //     return functions.setError(res, "gender không được để trống")
-            // }
-            // if(!ugs_city_gs) {
-            //     return functions.setError(res, "ugs_city_gs không được để trống")
-            // }
-            // if(!ugs_county_gs) {
-            //     return functions.setError(res, "ugs_county_gs không được để trống")
-            // }
+       
             let findUser = await Users.findOne({ idGiaSu: idGiaSu, "inforGiaSu.ugs_ft": 1 })
             if (findUser) {
                 if (File && File.avatarUser) {

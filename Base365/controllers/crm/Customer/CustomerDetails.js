@@ -10,6 +10,12 @@ const City = require('../../../models/City')
 const District = require('../../../models/District')
 const Ward = require('../../../models/crm/ward')
 const NhomKH = require('../../../models/crm/Customer/customer_group')
+const CustomerCare = require('../../../models/crm/Customer/customer_care')
+const AppointmentSchedule = require('../../../models/crm/CustomerCare/AppointmentSchedule');
+const AppointmentContentCall = require('../../../models/crm/appointment_content_call');
+const CallHistory = require('../../../models/crm/call_history')
+const ManagerExtension = require('../../../models/crm/manager_extension');
+const AcountApi = require('../../../models/crm/account_api')
 // hàm hiển thị chi tiết khách hàng
 exports.detail = async (req, res) => {
   try {
@@ -184,7 +190,6 @@ exports.detail = async (req, res) => {
     return functions.setError(res, e.message)
   }
 }
-
 
 exports.listCity = async(req,res) => {
   try{
@@ -416,22 +421,17 @@ exports.editCustomer = async (req, res) => {
 // hàm hiển thị lịch sử trợ lý kinh doanh (theo id khach hang)
 exports.showHisCus = async (req, res) => {
   try {
-    let { cus_id } = req.body;
-    const perPage = 6; // Số lượng giá trị hiển thị trên mỗi trang
-    const startIndex = (page - 1) * perPage;
-    const endIndex = page * perPage;
-    if (typeof cus_id === 'undefined') {
+    let {cus_id} = req.body;
+    if (!cus_id) {
       return functions.setError(res, 'cus_id không được bỏ trống', 400);
     }
     if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
       return functions.setError(res, 'cus_id phải là 1 số', 400);
     }
-    let checkHis = await HistoryEditCustomer.findOne({ customer_id: cus_id })
+    let checkHis = await AppointmentContentCall.find({ id_cus : cus_id })
       .sort({ id: -1 })
-      .skip(startIndex)
-      .limit(perPage)
       .lean()
-    return functions.success(res, 'get data success', { checkHis });
+    return functions.success(res, 'get data success', {checkHis});
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -442,27 +442,30 @@ exports.showHisCus = async (req, res) => {
 //Ham ban giao cong viec
 exports.banGiao = async (req, res) => {
   try {
-    let { targets } = req.body;
-    let comId = req.user.data.inForPerson.employee.com_id;
-    let userID = req.user.idQLC;
-    if (!Array.isArray(targets) || targets.length === 0) {
-      res.status(400).json({ success: false, error: 'Không có mục tiêu được chọn' });
+    let { cus_id,userID } = req.body;
+    let comId = req.user.data.com_id;
+    if (!Array.isArray(cus_id) || cus_id.length === 0) {
+      return functions.setError(res, 'Không có mục tiêu được chọn', 400);
     }
-    for (let i = 0; i < targets.length; i++) {
-      let { cus_id, user_edit_id } = targets[i];
+    for (let i = 0; i < cus_id.length; i++) {
+      let customer = await Customer.findOne({ cus_id: cus_id[i] });
 
+      if (!customer) {
+        // Xử lý nếu không tìm thấy khách hàng
+        continue;
+      }
       await customerService.getDatafindOneAndUpdate(
         Customer,
-        { cus_id: cus_id },
+        { cus_id: cus_id[i]},
         {
-          cus_id: cus_id,
+          cus_id: cus_id[i],
           company_id: comId,
           emp_id: userID,
-          user_handing_over_work: user_edit_id
+          user_handing_over_work: customer.emp_id
         }
       );
-      return functions.success(res, 'edited successfully');
     }
+    return functions.success(res, 'edited successfully');
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -472,14 +475,20 @@ exports.banGiao = async (req, res) => {
 //hàm chia sẻ khách hàng
 exports.ShareCustomer = async (req, res) => {
   try {
-    let { arrCus, customer_id, roll, dep_id, receiver_id } = req.body;
-    let NVshare = req.user.idQLC;
+    let {customer_id,role,dep_id,receiver_id } = req.body;
+    let NVshare = "";
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      NVshare = req.user.data.idQLC;
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
     let updateAt = new Date();
     let createAt = new Date();
     const maxID = await customerService.getMaxIDConnectApi(ShareCustomer);
     const maxId = maxID ? Number(maxID) + 1 : 0;
     const shareCustomers = [];
-    const minLength = Math.min(customer_id.length, dep_id.length, roll.length, receiver_id.length);
+    const minLength = Math.min(customer_id.length,dep_id.length,role.length,receiver_id.length);
     for (let i = 0; i < minLength; i++) {
       const id = maxId + i;
       const createShareCustomer = new ShareCustomer({
@@ -487,7 +496,7 @@ exports.ShareCustomer = async (req, res) => {
         customer_id: customer_id[i] || 0,
         emp_share: NVshare,
         dep_id: dep_id[i] || 0,
-        roll: roll[i] || "all",
+        role: role[i] || "all",
         receiver_id: receiver_id[i] || 0,
         created_at: createAt,
         updated_at: updateAt
@@ -508,11 +517,11 @@ exports.ShareCustomer = async (req, res) => {
 exports.ChosseCustomer = async (req, res) => {
   try {
     let { arrCus } = req.body
-    if (!cus_id || !Array.isArray(cus_id) || cus_id.length === 0) {
-      return functions.setError(res, 'Mảng cus_id không được bỏ trống', 400);
+    if (!arrCus || !Array.isArray(arrCus) || arrCus.length === 0) {
+      return functions.setError(res, 'Mảng arrCus không được bỏ trống', 400);
     }
-    if (!cus_id.every(Number.isInteger)) {
-      return functions.setError(res, 'Tất cả các giá trị trong mảng cus_id phải là số nguyên', 400);
+    if (!arrCus.every(Number.isInteger)) {
+      return functions.setError(res, 'Tất cả các giá trị trong mảng arrCus phải là số nguyên', 400);
     }
     const customers = await Customer.find({ cus_id: { $in: arrCus } });
     return functions.success(res, 'get data success', { customers });
@@ -521,7 +530,6 @@ exports.ChosseCustomer = async (req, res) => {
     return functions.setError(res, e.message)
   }
 }
-
 
 //Api thực hiện gộp khách hàng và xóa những giá trị cũ
 exports.CombineCustome = async (req, res) => {
@@ -664,3 +672,66 @@ exports.CombineCustome = async (req, res) => {
 }
 
 
+
+// hàm hiển thị lịch sử cuộc gọi
+exports.Callhistory = async(req,res) =>{
+  try{
+    let com_id = "";
+    let emp_id = "";
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      emp_id = req.user.data.idQLC;
+      let checkExt = await ManagerExtension.findOne({emp_id : emp_id, company_id : com_id}).select('ext_number manager_extension')
+      if(checkExt){
+      let extension = checkExt.ext_number
+      const totalCount = await CallHistory.countDocuments({ extension: extension });
+      let call_history = await CallHistory.find({extension : extension })
+      .select('phone created_at')
+      .sort({ created_at: -1 })
+      .limit(1000)
+      return functions.success(res, 'get data success', { call_history,totalCount });
+      }else{
+        return functions.setError(res, 'không tìm thấy cài đặt', 400);
+      }
+    } else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+  }catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
+  }
+}
+
+// Hàm gọi điện 
+exports.Call = async(req,res)=>{
+  try{
+    let com_id = "";
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      com_id = req.user.data.com_id;
+      emp_id = req.user.data.idQLC;
+    let {phone } = req.body
+    if(phone) {
+      // lay data cua tổng đài
+      let connect = await AcountApi.findOne({
+        com_id : com_id,
+        switchboard : "fpt",
+        status : 1
+      })
+      .select('account password domain')
+      if(connect){
+       // lấy data của NV đc cài đặt với line
+      
+      }else{
+        return functions.setError(res, 'không tồn tại bản ghi ', 400);
+      }
+    }else{
+      return functions.setError(res, 'số điện thoại khôn được bỏ trống', 400);
+    }
+    }else {
+      return functions.setError(res, 'không có quyền truy cập', 400);
+    }
+  }catch (e) {
+    console.log(e)
+    return functions.setError(res, e.message)
+  }
+}

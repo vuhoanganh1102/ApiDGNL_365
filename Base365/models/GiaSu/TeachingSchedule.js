@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const teaching_schedule = new mongoose.Schema({
-
+    // lịch có thể dạy của gia sư
     ts_id : {
         type : Number,
         required: true,
