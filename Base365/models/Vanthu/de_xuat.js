@@ -526,7 +526,7 @@ const Vanthu_de_xuat = new Schema({
     },
     kieu_duyet: {
         type: Number,
-
+        default: 0,
     },
     id_user_duyet: {
         type: String,

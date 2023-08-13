@@ -428,7 +428,7 @@ exports.edit_active = async (req, res) => {
           _id: await functions.getMaxID(His_Handle) + 1,
           id_user:id_user,
           id_dx: check._id,
-          type_handling: 1,
+          type_handling: 2,
           time: timeNow
         });
         await createHis.save();
@@ -448,8 +448,12 @@ exports.edit_active = async (req, res) => {
                 if(history.every(his => his.history === 2)){
                   let id_ephh  = check.id_user
                   const ndhh = check.noi_dung.hoa_hong;
+                  let maxID = await functions.getMaxIDrose(HoaHong)
+                  if(!maxID){
+                    maxID = 0
+                  }
                   const createhh = new HoaHong({
-                    ro_id : await functions.getMaxIDrose(HoaHong) + 1,
+                    ro_id : maxID + 1,
                     ro_id_user: id_ephh,
                     ro_id_com: check.com_id,
                     ro_time : ndhh.time_hh,

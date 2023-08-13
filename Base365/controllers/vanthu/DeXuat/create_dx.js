@@ -550,7 +550,6 @@ exports.de_xuat_luan_chuyen_cong_tac = async(req, res) => {
                 id_user_duyet: id_user_duyet,
                 id_user_theo_doi: id_user_theo_doi,
                 file_kem: link_download.map(file => ({ file })),
-                kieu_duyet: kieu_duyet,
                 time_create: Math.floor(Date.now() / 1000),
             })
             let saveDX = await new_de_xuat.save();
