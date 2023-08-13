@@ -3,8 +3,12 @@
 const path = require('path');
 // const { log } = require("console");
 const fs = require('fs');
+const https = require('https');
 const Customer = require('../../models/crm/Customer/customer')
 const User = require('../../models/Users')
+const axios = require('axios');
+const { log } = require('console');
+const AcountApi = require('../../models/crm/account_api')
 
 exports.getMaxIDCRM = async (model) => {
     const maxUser = await model.findOne({}, {}, { sort: { cus_id: -1 } }).lean() || 0;
@@ -228,3 +232,95 @@ exports.getEmployeesFromDepartment = async(depId) => {
   }
 }
 
+
+exports.getToken = async (name, password) => {
+  try {
+    let data = {
+      name: name,
+      password: password
+    };
+    console.log(data);
+    const response = await axios.post('https://s02.oncall.vn:8900/api/account/credentials/verify', data, {
+    headers: {
+    'Content-Type': 'application/json'
+    },
+    httpsAgent: new https.Agent({ rejectUnauthorized: false }) // Tắt kiểm tra chứng chỉ
+    });
+
+    // Xử lý phản hồi từ API ở đây (response.data)
+    return response.data; // Trả về dữ liệu từ API (hoặc có thể là phần xử lý dữ liệu nếu cần)
+  }  catch (error) {
+    if (error.response && error.response.data) {
+      console.log('Error:', error.response.data);
+      return error.response.data;
+    } else {
+      console.error('Unknown Error:', error);
+      throw error;
+    }
+  }
+};
+
+exports.getExtensionInfo = async (access_token, id) => {
+  try {
+    const response = await axios.get(`https://s02.oncall.vn:8900/api/extensions/show?id=${id}`,{
+      headers: {
+        'Content-Type': 'application/json',
+        'accept': 'application/json',
+        'access_token': access_token
+      },
+      httpsAgent: new https.Agent({ rejectUnauthorized: false }) // Tắt kiểm tra chứng chỉ
+    });
+    // Xử lý phản hồi từ API ở đây (response.data)
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      console.log('Error:', error.response.data);
+      return error.response.data;
+    } else {
+      console.error('Unknown Error:', error);
+      throw error;
+    }
+  }
+};
+
+exports.list_extension = async(token,page = 1,limit) =>{
+  try{
+  let url = 'https://s02.oncall.vn:8900/api/extensions/list?pagination=' + page ;
+  const headers = {
+    'Content-Type': 'application/json',
+    'accept': 'application/json',
+    'access_token': token
+  };
+  let response = await axios.get(url, { headers,
+    httpsAgent: new https.Agent({ rejectUnauthorized: false }) });
+  return response.data;
+  }catch (error) {
+    console.error(error);
+    throw new Error('Error retrieving employees from department.'); // Ném lỗi nếu có lỗi xảy ra
+  }
+}
+
+exports.check_connect = async(com_id)=>{
+  try{
+    let getInforApi = await  AcountApi.findOne({com_id : com_id})
+    if(getInforApi){
+      let data = {
+        check_connect: true,
+        account_api: getInforApi.account,
+        pass_api: getInforApi.password
+      }
+     
+      return data
+    }else{
+      let data = {
+        check_connect: false,
+        account_api: '',
+        pass_api: ''
+      }
+      return data
+    }
+  }catch (error) {
+    console.error(error);
+    throw new Error('Error retrieving employees from department.'); // Ném lỗi nếu có lỗi xảy ra
+  }
+}
