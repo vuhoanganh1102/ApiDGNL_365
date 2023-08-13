@@ -193,7 +193,6 @@ exports.showHome = async (req, res) => {
   }
 };
 
-
 // Hiển thị trang show nghỉ  tìm kiếm
 exports.showNghi = async (req, res) => {
   try {
@@ -249,7 +248,6 @@ exports.showNghi = async (req, res) => {
 };
 
 
-
 //Api thay đổi trạng thái thái ẩn hiện đề xuất
 exports.changeCate = async (req, res) => {
   try {
@@ -258,8 +256,18 @@ exports.changeCate = async (req, res) => {
      if(req.user.data.type == 1){
       com_id = req.user.data.com_id
       // Kiểm tra xem loại đề xuất đã được ẩn hay chưa
-    const hideCate = await HideCateDX.findOne({ id_com: com_id });
-    let hideCateStr = hideCate.id_cate_dx.toString();
+    let hideCate = await HideCateDX.findOne({ id_com: com_id });
+    if(!hideCate){
+      const newHideCate = new HideCateDX({
+        _id: await serviceVanthu.getMaxID(HideCateDX),
+        id_com: com_id,
+        id_cate_dx: "",
+        __v: 0
+      })
+      await newHideCate.save();
+    }
+    hideCate = await HideCateDX.findOne({ id_com: com_id });
+    let hideCateStr = hideCate?.id_cate_dx.toString();
 
     if (value == 1) {
       // Xóa ẩn loại đề xuất
@@ -272,7 +280,7 @@ exports.changeCate = async (req, res) => {
       } else {
         return functions.success(res, 'Loại đề xuất này chưa được ẩn!');
       }
-    } else {
+      } else {
       // Thêm ẩn loại đề xuất
       const idStr = id.toString();
       if (hideCateStr.includes(idStr)) {
@@ -292,13 +300,6 @@ exports.changeCate = async (req, res) => {
     return functions.setError(res, error);
   }
 };
-
-
-
-
-
-
-
 // tìm theo tên loại đề xuất + hiển thị các loại đề xuất
 
 exports.findNameCate = async (req, res) => {
@@ -337,8 +338,6 @@ exports.findNameCate = async (req, res) => {
     return functions.setError(res, error);
   }
 };
-
-
 
 //Api hiển thị thành viên công ty
 
@@ -438,5 +437,5 @@ exports.showloaicate = async(req,res) => {
   } catch(e){
     console.log(e)
     return functions.setError(res , e.message)
-}
+  }
 }
