@@ -18,11 +18,13 @@ const vanthu = require('../../../services/vanthu')
 //ham duyet
 exports.edit_active = async (req, res) => {
   try {
-    const { _id, type, id_user, ngaybatdau_tv, id_ep,shift_id,ly_do,id_uct } = req.body;
+    const { _id, type, ngaybatdau_tv, id_ep,shift_id,ly_do,id_uct } = req.body;
     const timeNow = new Date();
     let com_id = '';
+    let id_user = '';
     if (req.user.data.type == 2) {
       com_id = req.user.data.com_id
+      id_user = req.user.data.idQLC
     } else {
       return functions.setError(res, 'bạn phải là tài khoản nhân viên', 400);
     }
@@ -94,6 +96,7 @@ exports.edit_active = async (req, res) => {
         );
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
+          id_user : id_user,
           id_dx: check._id,
           type_handling: 1,
           time: timeNow
