@@ -288,7 +288,7 @@ exports.browseProposals = async (res, His_Handle, De_Xuat, _id, check, id_user, 
         let id_user_duyet = [];
         let history = [];
         if(userDuyet) {
-            id_user_duyet = userDuyet.split(',');
+            id_user_duyet = userDuyet.split(',').map(Number);
             for(var i =0; i < id_user_duyet.length; i++) {
                 id = id_user_duyet[i];
                 const his = await His_Handle.findOne({id_user: id,id_dx: _id}).sort({time:-1})
@@ -297,6 +297,7 @@ exports.browseProposals = async (res, His_Handle, De_Xuat, _id, check, id_user, 
         }
         if (check.kieu_duyet == 0) {
             if (history.length > 0){
+                // Nếu tất cả người duyệt đều đã duyệt
                 if(history.every(his => his.history === 2)){
                     await De_Xuat.findOneAndUpdate(
                         { _id: _id },
@@ -310,6 +311,7 @@ exports.browseProposals = async (res, His_Handle, De_Xuat, _id, check, id_user, 
                     );
                     res.status(200).json({ message: 'Đã duyệt đề xuất' });
                 }
+                // Nếu có bất cứ một người nào chưa duyệt
                 else{
                     await De_Xuat.findOneAndUpdate(
                         { _id: _id },

@@ -24,7 +24,6 @@ exports.ChitietDx = async (req, res) => {
     if (!dexuat) {
       return functions.setError(res, 'Không tìm thấy bản ghi dexuat', 400);
     } else {
-      let checkhandling = await HistoryHandling.find({id_dx : _id ,id_user : dexuat.id_user,type_handling : 1})
       const checkuserduyet = dexuat.id_user_duyet.split(',').map(Number);
       // Tìm bản ghi trong bảng User dựa trên checkuserduyet
       const users = await UserDX.find({ idQLC: { $in: checkuserduyet } });
@@ -68,6 +67,19 @@ exports.ChitietDx = async (req, res) => {
       let timeCreateInMillis = dexuat.time_create * 1000;
       let timeDifferenceInMillis = currentTime.getTime() - timeCreateInMillis;
       let numberOfDays = Math.floor(timeDifferenceInMillis / (1000 * 60 * 60 * 24));
+
+      //Đổ ra lịch sử duyệt văn bản
+      const historyData = await HistoryHandling
+        .find({id_dx: _id},{id_user:1,type_handling:1,time:1})
+        .sort({time:-1})
+        .limit(5);
+      const history = historyData
+        .reverse()
+        .map(his => ({
+          ng_duyet: namnUserDuyet?.find(user => user.idQLC === his.id_user)?.userName,
+          type_duyet: his.type_handling,
+          time: his.time
+        }));
       let detailDeXuat = [
         {
           ten_de_xuat : dexuat.name_dx,
@@ -85,6 +97,7 @@ exports.ChitietDx = async (req, res) => {
           thoi_gian_tao : dexuat.time_create * 1000,
           thoi_gian_duyet : dexuat.time_duyet,
           thoi_gian_tiep_nhan : dexuat.time_tiep_nhan ,
+          lich_su_duyet : history,
         }
       ]
       return functions.success(res, 'get data success', { detailDeXuat });
