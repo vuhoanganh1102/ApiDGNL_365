@@ -286,7 +286,12 @@ exports.changeCate = async (req, res) => {
       if (hideCateStr.includes(idStr)) {
         return functions.success(res,  'Loại đề xuất này đã được ẩn rồi!');
       } else {
-        hideCateStr += ',' + idStr;
+        if (hideCateStr.length === 0) {
+          hideCateStr += idStr;
+        }
+        else{
+          hideCateStr += ',' + idStr;
+        }
         hideCate.id_cate_dx = hideCateStr;
         await hideCate.save();
         return functions.success(res,  'Ẩn loại đề xuất thành công!');
