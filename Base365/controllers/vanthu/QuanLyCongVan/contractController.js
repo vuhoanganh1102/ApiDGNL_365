@@ -94,6 +94,7 @@ exports.createSendContract = async (req, res, next) => {
                 if(fileName) {
                     cv_file += fileName;
                 }
+                
             }
         }
 

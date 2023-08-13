@@ -81,9 +81,10 @@ exports.ChitietDx = async (req, res) => {
           lanh_dao_duyet :namnUserDuyet,
           nguoi_theo_doi :namnUsertd,
           file_kem : fileX,
+          type_duyet : dexuat.type_duyet,
           thoi_gian_tao : dexuat.time_create * 1000,
           thoi_gian_duyet : dexuat.time_duyet,
-          thoi_gian_tiep_nhan : checkhandling.time ,
+          thoi_gian_tiep_nhan : dexuat.time_tiep_nhan ,
         }
       ]
       return functions.success(res, 'get data success', { detailDeXuat });
@@ -94,7 +95,10 @@ exports.ChitietDx = async (req, res) => {
   }
 };
 
-
+// Api hiển thị lịch sử duyệt
+exports.historyduyet = async (req, res) => {
+  
+}
 
 // Api hiển thị trang home tà khoản công ty và cá nhân
 

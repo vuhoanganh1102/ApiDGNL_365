@@ -18,31 +18,34 @@ const vanthu = require('../../../services/vanthu')
 //ham duyet
 exports.edit_active = async (req, res) => {
   try {
-    const { _id, type, id_user, ngaybatdau_tv, id_ep,shift_id,ly_do,id_uct } = req.body;
+    const { _id, type, ngaybatdau_tv, id_ep,shift_id,ly_do,id_uct } = req.body;
     const timeNow = new Date();
     let com_id = '';
+    let id_user = '';
     if (req.user.data.type == 2) {
-      com_id = req.user.data.com_id
+      com_id = req.user.data.com_id;
+      id_user = req.user.data.idQLC;
     } else {
       return functions.setError(res, 'bạn phải là tài khoản nhân viên', 400);
     }
     const check = await De_Xuat.findOne({ _id: _id });
     if (check) {
+      const userDuyet = check.id_user_duyet;
       // Duyệt đề xuất
       if (type == 1) {
-       return vanthu.browseProposals(res,His_Handle,De_Xuat,_id,check)
+       return vanthu.browseProposals(res,His_Handle,De_Xuat,_id,check,id_user,userDuyet);
       }
       // Từ chối đề xuất 
       if (type == 2) {
-        return vanthu.refuseProposal(res,His_Handle,De_Xuat,_id,id_ep,check)
+        return vanthu.refuseProposal(res,His_Handle,De_Xuat,_id,id_ep,check,id_user)
       } 
       // Bắt buộc đi làm
       if (type == 3) {
-        return vanthu.compulsoryWork(res,His_Handle,De_Xuat,_id,check)
+        return vanthu.compulsoryWork(res,His_Handle,De_Xuat,_id,check,id_user);
       }
       // Duyệt chuyển tiếp
       if (type == 4) {
-        return vanthu.forwardBrowsing(res,His_Handle,De_Xuat,_id,id_uct,check)
+        return vanthu.forwardBrowsing(res,His_Handle,De_Xuat,_id,id_uct,check,id_user)
       }   
       // Thôi việc
       if (type == 5){      
@@ -60,6 +63,7 @@ exports.edit_active = async (req, res) => {
         );
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
+          id_user: id_user,
           id_dx: check._id,
           type_handling: 2,
           time: timeNow
@@ -80,8 +84,9 @@ exports.edit_active = async (req, res) => {
         });
         await createQJ.save();
         return functions.success(res, 'Thôi việc thành công');
-      } else if (type == 6) {
-        // Tiếp nhận
+      } 
+      // Tiếp nhận
+      else if (type == 6) {
         await De_Xuat.findOneAndUpdate(
           { _id: _id },
           {
@@ -94,14 +99,16 @@ exports.edit_active = async (req, res) => {
         );
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
+          id_user:id_user,
           id_dx: check._id,
           type_handling: 1,
           time: timeNow
         });
         await createHis.save();
         return functions.success(res, 'Tiếp nhận đề xuất thành công');
-      } else if (type == 7) {
-        // Tăng ca
+      } 
+      // Tăng ca
+      else if (type == 7) {
         const historyDuyet = await De_Xuat.findOne({ _id: _id })
         const nd = historyDuyet.noi_dung.tang_ca;
 
@@ -165,12 +172,20 @@ exports.edit_active = async (req, res) => {
             },
             { new: true }
           );
-          
+          const createHis = new His_Handle({
+            _id: await functions.getMaxID(His_Handle) + 1,
+            id_user:id_user,
+            id_dx: check._id,
+            type_handling: 1,
+            time: timeNow
+          });
+          await createHis.save();
           return functions.success(res, 'Đề xuất tăng ca đã được duyệt');
         } else {
           return functions.setError(res,'Thông tin truyền lên không đầy đủ, vui lòng thử lại!',400)
         }
-      }//đề xuất thưởng phạt
+      }
+      //đề xuất thưởng phạt
       else if (type == 19){
         let id_eptp = '';
         const ndtp = check.noi_dung.thuong_phat
@@ -200,8 +215,17 @@ exports.edit_active = async (req, res) => {
             { new: true }
           );
         }
-        return functions.success(res, 'save data success', { savetp});
-      }// //đề xuất hoa hồng
+        const createHis = new His_Handle({
+          _id: await functions.getMaxID(His_Handle) + 1,
+          id_user:id_user,
+          id_dx: check._id,
+          type_handling: 1,
+          time: timeNow
+        });
+        await createHis.save();
+        return functions.success(res, 'duyệt đề xuất thành công', { savetp});
+      }
+      // //đề xuất hoa hồng
       else if (type == 20){
         let id_ephh  = check.id_user
         const ndhh = check.noi_dung.hoa_hong;
@@ -226,6 +250,14 @@ exports.edit_active = async (req, res) => {
             { new: true }
           );
         }
+        const createHis = new His_Handle({
+          _id: await functions.getMaxID(His_Handle) + 1,
+          id_user:id_user,
+          id_dx: check._id,
+          type_handling: 1,
+          time: timeNow
+        });
+        await createHis.save();
         return functions.success(res, 'duyệt đề xuất thành công', { savehh});
       }
     } else {

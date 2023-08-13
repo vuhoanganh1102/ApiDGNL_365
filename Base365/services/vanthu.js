@@ -269,7 +269,7 @@ exports.convertDate = (timestamp) => {
 }
 
 // duyệt đề xuất
-exports.browseProposals = async (res, His_Handle, De_Xuat, _id, check) => {
+exports.browseProposals = async (res, His_Handle, De_Xuat, _id, check, id_user, userDuyet) => {
     try {
         let timeNow = new Date();
         const maxID = await functions.getMaxID(His_Handle);
@@ -279,23 +279,51 @@ exports.browseProposals = async (res, His_Handle, De_Xuat, _id, check) => {
         }
         const createHis = new His_Handle({
             _id: newID,
+            id_user: id_user,
             id_dx: check._id,
             type_handling: 2,
             time: timeNow
         });
         await createHis.save();
+        let id_user_duyet = [];
+        let history = [];
+        if(userDuyet) {
+            id_user_duyet = userDuyet.split(',');
+            for(var i =0; i < id_user_duyet.length; i++) {
+                id = id_user_duyet[i];
+                const his = await His_Handle.findOne({id_user: id,id_dx: _id}).sort({time:-1})
+                history.push({id: id, history: his?.type_handling});
+            }
+        }
         if (check.kieu_duyet == 0) {
-            await De_Xuat.findOneAndUpdate(
-                { _id: _id },
-                {
-                    $set: {
-                        type_duyet: 5,
-                        time_duyet: timeNow
-                    }
-                },
-                { new: true }
-            );
-            res.status(200).json({ message: 'Đã duyệt đề xuất' });
+            if (history.length > 0){
+                if(history.every(his => his.history === 2)){
+                    await De_Xuat.findOneAndUpdate(
+                        { _id: _id },
+                        {
+                            $set: {
+                                type_duyet: 5,
+                                time_duyet: timeNow
+                            }
+                        },
+                        { new: true }
+                    );
+                    res.status(200).json({ message: 'Đã duyệt đề xuất' });
+                }
+                else{
+                    await De_Xuat.findOneAndUpdate(
+                        { _id: _id },
+                        {
+                            $set: {
+                                type_duyet: 10,
+                                time_duyet: timeNow
+                            }
+                        },
+                        { new: true }
+                    );
+                    res.status(200).json({ message: 'Chờ lãnh đạo còn lại duyệt' });
+                }
+            }
         } else {
             const historyDuyet = await His_Handle.find({ id_dx: check._id, type_handling: 2 }).sort({ id_his: 1 });
             const listDuyet = historyDuyet.map((item) => item.id_user).join(',');
@@ -325,7 +353,7 @@ exports.browseProposals = async (res, His_Handle, De_Xuat, _id, check) => {
 }
 
 // từ chối đề xuất
-exports.refuseProposal = async (res, His_Handle, De_Xuat, _id, id_ep, check) => {
+exports.refuseProposal = async (res, His_Handle, De_Xuat, _id, id_ep, check, id_user) => {
     try {
         let timeNow = new Date()
         await De_Xuat.findOneAndUpdate(
@@ -340,6 +368,7 @@ exports.refuseProposal = async (res, His_Handle, De_Xuat, _id, id_ep, check) => 
         );
         const createHis = new His_Handle({
             _id: await functions.getMaxID(His_Handle) + 1,
+            id_user: id_user,
             id_dx: check._id,
             type_handling: 3,
             time: timeNow
@@ -367,7 +396,7 @@ exports.refuseProposal = async (res, His_Handle, De_Xuat, _id, id_ep, check) => 
 }
 
 // bắt buộc đi làm
-exports.compulsoryWork = async (res, His_Handle, De_Xuat, _id, check) => {
+exports.compulsoryWork = async (res, His_Handle, De_Xuat, _id, check, id_user) => {
     try {
         let timeNow = new Date();
         await De_Xuat.findOneAndUpdate(
@@ -382,6 +411,7 @@ exports.compulsoryWork = async (res, His_Handle, De_Xuat, _id, check) => {
         );
         const createHis = new His_Handle({
             _id: await functions.getMaxID(His_Handle) + 1,
+            id_user:id_user,
             id_dx: check._id,
             type_handling: 6,
             time: timeNow
@@ -394,10 +424,17 @@ exports.compulsoryWork = async (res, His_Handle, De_Xuat, _id, check) => {
 }
 
 // duyệt chuyển tiếp
-exports.forwardBrowsing = async (res, His_Handle, De_Xuat, _id, id_uct, check) => {
+exports.forwardBrowsing = async (res, His_Handle, De_Xuat, _id, id_uct, check,id_user) => {
     try {
         let timeNow = new Date()
-        const user_td = `${check.id_user_theo_doi},${id_uct}`;
+        let user_td
+        const listIDtheodoi = check.id_user_theo_doi.split(',')
+        if (id_uct && listIDtheodoi.length > 0 && !listIDtheodoi.includes(id_uct)) {
+            user_td = `${check.id_user_theo_doi},${id_uct}`;
+        }
+        else{
+            return res.status(200).json({ message: 'Thiếu trường người chuyển tiếp' })
+        }
         await De_Xuat.findOneAndUpdate(
             { _id: _id },
             { id_user_duyet: id_uct, id_user_theo_doi: user_td },
@@ -406,6 +443,7 @@ exports.forwardBrowsing = async (res, His_Handle, De_Xuat, _id, id_uct, check) =
 
         const createHis = new His_Handle({
             _id: await functions.getMaxID(His_Handle) + 1,
+            id_user:id_user,
             id_dx: check._id,
             type_handling: 2,
             time: timeNow
