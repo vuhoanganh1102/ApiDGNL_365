@@ -417,8 +417,11 @@ exports.topupCredits = async (req, res) => {
     try {
         let {
             usc_id,
-            amount
+            amount,
+            //0 là trừ tiền, 1 là nạp tiền
+            type
         } = req.body;
+        if (!type) type = 1;
         let idAdmin = req.user.data._id;
         let checkAdmin = await functions.getDatafindOne(AdminUser, { _id: idAdmin });
         if (checkAdmin) {
@@ -427,14 +430,26 @@ exports.topupCredits = async (req, res) => {
                 if (company) {
                     let doc = await PointCompany.findOne({usc_id});
                     if (!doc) {
-                        doc = await (new PointCompany({
-                            usc_id: usc_id,
-                            money_usc: amount,
-                        })).save();
+                        if (type === 1) {
+                            doc = await (new PointCompany({
+                                usc_id: usc_id,
+                                money_usc: amount,
+                            })).save();
+                        } else if (type === 0) {
+                            return functions.setError(res, "Trừ tiền không hợp lệ", 400);
+                        } else {
+                            return functions.setError(res, "Thao tác không hợp lệ", 400);
+                        }
                     } else {
-                        await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
+                        if (type === 1) {
+                            await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: amount}});
+                        } else if (type === 0) {
+                            await PointCompany.findOneAndUpdate({usc_id}, {$inc: {money_usc: -amount}});
+                        } else {
+                            return functions.setError(res, "Thao tác không hợp lệ", 400);
+                        }
                     }
-                    await recordCreditsHistory(usc_id, 1, amount, null, getIP(req));
+                    await recordCreditsHistory(usc_id, type===1?1:0, amount, idAdmin, getIP(req));
                     return functions.success(res, "Nạp tiền thành công!")
                 } else {
                     return functions.setError(res, "Không tồn tại công ty có ID này", 400);

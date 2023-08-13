@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const post_find_tutor = new mongoose.Schema({
 
     pft_id : {
+        //id lớp học
         type: Number,
         required: true,
         unique: true,
@@ -45,6 +46,7 @@ const post_find_tutor = new mongoose.Schema({
 
     },
     pft_nb_lesson : {
+        ///id môn học
         type: Number,
 
     },

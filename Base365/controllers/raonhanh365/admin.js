@@ -22,6 +22,10 @@ const Module = require('../../models/Raonhanh365/Admin/Module');
 const AdminUserLanguagues = require('../../models/Raonhanh365/Admin/AdminUserLanguagues');
 const Language = require('../../models/Raonhanh365/Language');
 const TagIndex = require('../../models/Raonhanh365/TagIndex');
+const BaoCao = require('../../models/Raonhanh365/BaoCao');
+const ImageDeplicate = require('../../models/Raonhanh365/ImageDeplicate');
+const dotenv = require("dotenv");
+dotenv.config();
 
 //đăng nhập admin
 exports.loginAdminUser = async (req, res, next) => {
@@ -31,17 +35,20 @@ exports.loginAdminUser = async (req, res, next) => {
             const password = req.body.password
             let findUser = await functions.getDatafindOne(AdminUser, { loginName })
             if (findUser) {
-                let checkPassword = await functions.verifyPassword(password, findUser.password)
-                if (checkPassword) {
-                    let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
-                        date: new Date(Date.now())
-                    }, { new: true });
-                    const token = await functions.createToken(updateUser, "1d")
-                    return functions.success(res, 'Đăng nhập thành công', { token: token })
+                if (findUser.active !== 0) {
+                    let checkPassword = await functions.verifyPassword(password, findUser.password)
+                    if (checkPassword) {
+                        let updateUser = await functions.getDatafindOneAndUpdate(AdminUser, { loginName }, {
+                            date: new Date(Date.now())
+                        }, { new: true });
+                        const token = await functions.createToken(updateUser, "1d")
+                        return functions.success(res, 'Đăng nhập thành công', { token: token })
+                    }
+                    return functions.setError(res, "Mật khẩu sai", 406);
                 }
-                return functions.setError(res, "Mật khẩu sai", 406);
+                return functions.setError(res, "Admin không còn hoạt động", 400)
             }
-            return functions.setError(res, "không tìm thấy tài khoản trong bảng admin user", 405)
+            return functions.setError(res, "Không tìm thấy tài khoản trong bảng admin user", 405)
         }
         return functions.setError(res, "Missing input value!", 404)
     } catch (error) {
@@ -379,6 +386,21 @@ exports.deleteAdminUser = async (req, res, next) => {
     }
 }
 
+exports.updateActiveAdmin = async (req,res,next)=>{
+    try {
+        let adminId = req.infoAdmin._id;
+        let id =  Number(req.body.id);
+        if(id){
+            if(functions.checkNumber(id)){
+                let check = await AdminUser.find()
+            }
+        }
+        
+        return 
+    } catch (error) {
+        return functions.setError(res, error.message);
+    }
+}
 //-----------------------------------------------------------controller quan ly danh muc----------------------------------------------------------------
 
 // lay ra danh sach
@@ -963,6 +985,76 @@ exports.updateBlog = async (req, res, next) => {
     }
 }
 
+//-------Anh trung
+exports.danhSachAnhTrung = async(req, res, next) => {
+    try{
+        let {id, new_id, anh_trung, fromDate, toDate, page, pageSize} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 30;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page-1)*pageSize;
+        let condition = {};
+        fromDate = functions.convertTimestamp(fromDate);
+        toDate = functions.convertTimestamp(toDate);
+        if (fromDate && !toDate) condition.create_time = { $gte: fromDate }
+        if (!fromDate && toDate) condition.create_time = { $lte: toDate }
+        if (fromDate && toDate) condition.create_time = { $gte: fromDate, $lte: toDate }
+        let data = await ImageDeplicate.aggregate([
+            {$match: condition},
+            {$sort: {_id: -1}},
+            {$skip: skip}, 
+            {$limit: pageSize},
+            {
+                $lookup: {
+                    from: 'RN365_News',
+                    localField: 'new_id',
+                    foreignField: '_id',
+                    as: 'New'
+                }
+            },
+            {$unwind: { path: "$New", preserveNullAndEmptyArrays: true }},
+            // {$match: condition2},
+            {
+                $project: {
+                    "id": "$id",
+                    "usc_id": "$usc_id",
+                    "img_check": "$img_check",
+                    "list_img_dep": "$list_img_dep",
+                    "new_id": "$new_id",
+                    "create_time": "$create_time",
+                    "active": "$active",
+                    "title_new": "$New.title"
+                }
+            }
+        ]);
+        for(let i=0; i<data.length; i++) {
+            if(!data[i].title_new) data[i].title_new = "";
+        }
+        let total = await functions.findCount(ImageDeplicate, condition);
+        return functions.success(res, "Danh sach anh trung", {total, data});
+    } catch(error) {
+        return functions.setError(res, error.message);
+    }
+}
+
+exports.activeAnhTrung = async(req, res, next) => {
+    try{
+        let {id, active} = req.body;
+        if(id) {
+            if(!active) active = 0;
+            let anhTrung = await ImageDeplicate.findOneAndUpdate({id: id}, {active: active}, {new: true});
+            if(anhTrung) {
+                return functions.success(res, "Active anh trung thanh cong");
+            }
+            return functions.setError(res, "Anh trung not found!", 406);
+        }
+        return functions.setError(res, "Missing input id", 405);
+    }catch(error) {
+        return functions.setError(res, error.message);
+    }
+}
+
 //--------Duyet tin
 //lay ra danh sach
 exports.danhSachTinCanDuyet = async (req, res, next) => {
@@ -1008,66 +1100,97 @@ exports.duyetTin = async (req, res, next) => {
     }
 }
 //---------Bao cao tin
-// tạo mới
-exports.createReport = async (req, res, next) => {
-    try {
-        const reportNewsData = req.body;
-        const newReportNews = new ReportNews(reportNewsData);
-        const savedReportNews = await newReportNews.save();
-        res.status(201).json(savedReportNews);
-    } catch (error) {
-        return functions.setError(res, error.message);
-    }
-}
+
 // api danh sách tìm kiếm tin báo cáo
 exports.listReportNew = async (req, res, next) => {
     try {
         let condition = {};
-        let id_user = req.body.id_user;
-        let userName = req.body.userName;
-        let problem = req.body.problem;
-        let thoiGianTu = req.body.thoiGianTu;
-        let thoiGianDen = req.body.thoiGianDen;
-        let page = req.body.page || 1;
-        let pageSize = req.body.pageSize || 30;
-        let skip = (page - 1) * pageSize;
-        let limit = pageSize;
-        if (id_user) condition.id_user = id_user;
-        if (thoiGianTu) condition.time = { $gte: new Date(thoiGianTu) }
-        if (thoiGianDen) condition.time = { $lte: new Date(thoiGianDen) }
-        if (thoiGianTu && thoiGianDen) condition.time = { $gte: new Date(thoiGianTu), $lte: new Date(thoiGianDen) }
-        if (userName) condition['user.userName'] = userName;
-        if (problem) condition.problem = problem;
+        let condition2 = {};
+        let {id_user, userName, problem, fromDate, toDate, page, pageSize} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 30;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
+        fromDate = functions.convertTimestamp(fromDate);
+        toDate = functions.convertTimestamp(toDate);
+        if (id_user) condition.user_baocao = Number(id_user);
+        if (fromDate && !toDate) condition.tgian_baocao = { $gte: fromDate }
+        if (!fromDate && toDate) condition.tgian_baocao = { $lte: toDate }
+        if (fromDate && toDate) condition.tgian_baocao = { $gte: fromDate, $lte: toDate }
+        if (userName) condition2['user.userName'] = new RegExp(userName, 'i');
+        if (problem) condition.van_de = Number(problem);
 
-        let data = await NewReport.aggregate([{
-            $lookup: {
-                from: 'Users',
-                localField: 'id_user',
-                foreignField: 'idRaoNhanh365',
-                as: 'user'
+        let data = await BaoCao.aggregate([
+            {$match: condition},
+            {$sort: {_id: 1}},
+            {$skip: skip}, 
+            {$limit: limit},
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'user_baocao',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'user'
+                }
+            },
+            {$unwind: { path: "$user", preserveNullAndEmptyArrays: true }},
+            {$match: condition2},
+            {
+                $project: {
+                    "_id": "$_id",
+                    "new_baocao": "$new_baocao",
+                    "user_baocao": "$user_baocao",
+                    "new_user": "$new_user",
+                    "tgian_baocao": "$tgian_baocao",
+                    "van_de": "$van_de",
+                    "mo_ta": "$mo_ta",
+                    "da_xuly": "$da_xuly",
+                    "userName": "$user.userName",
+                }
             }
-        }, {
-            $match: condition
-        }, {
-            $skip: skip
-        }, {
-            $limit: limit
-        }])
-        return functions.success(res, "get list report success", { data });
+        ]);
+        for(let i=0; i<data.length; i++) {
+            if(!data[i].userName) data[i].userName = "";
+        }
+        let total = await BaoCao.aggregate([
+            {$match: condition},
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'user_baocao',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'user'
+                }
+            },
+            {$unwind: { path: "$user", preserveNullAndEmptyArrays: true }},
+            {$match: condition2},
+            {
+                $count: "count"
+            }
+        ]);
+        total = total.length!=0 ? total[0].count: 0;
+        return functions.success(res, "get list report success", {total, data });
     } catch (error) {
         return functions.setError(res, error.message)
     }
 }
 // api sửa tin báo cáo
-exports.fixNewReport = async (req, res, next) => {
+exports.xuLyBaoCao = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const Report = await ReportNews.findOneAndUpdate({ _id: id }, { fixed: 1 }, {
-            new: true
-        })
-        return functions.success(res, "Fix report success", { data: Report });
+        let {id, da_xuly} = req.body;
+        if(id) {
+            if(!da_xuly) da_xuly = 0;
+            let baoCaoTin = await BaoCao.findOneAndUpdate({ _id: id }, { da_xuly: da_xuly }, {new: true});
+            if(baoCaoTin) {
+                return functions.success(res, "Fix report success", { data: baoCaoTin });
+            }
+            return functions.setError(res, "Bao cao tin not found!", 406);
+        }
+        return functions.setError(res, "Missing input id", 405);
     } catch (error) {
-        return functions.setError(res, error.message)
+        return functions.setError(res, error.message);
     }
 }
 
@@ -1133,7 +1256,7 @@ exports.updatePriceListPush = async (req, res, next) => {
 // api danh sách và tìm kiếm đẩy/ghim tin đăng 
 exports.getListPrice = async (req, res, next) => {
     try {
-        let { page, pageSize, type, _id, time } = req.body;
+        let { page, pageSize, type, _id, time, ghimTinNoiBat} = req.body;
         if (!page) page = 1;
         if (!pageSize) pageSize = 30;
         page = Number(page);
@@ -1150,6 +1273,9 @@ exports.getListPrice = async (req, res, next) => {
             if (type == 1) condition.type = { $in: [1, 3, 4, 5] };
             //gia day tin
             if (type == 2) condition.type = 2;
+            //gia ghim gian hang
+            if(ghimTinNoiBat) condition.type = 1;
+
             let total = await functions.findCount(PriceList, condition);
             let priceList = await functions.pageFind(PriceList, condition, { _id: 1 }, skip, limit);
             return functions.success(res, "Lay ra danh sach gia day va ghim tin thanh cong", { total, data: priceList });
@@ -1267,7 +1393,36 @@ exports.getListUserVerifyPayment = async (req, res, next) => {
 
         let condition = { 'inforRN365.xacThucLienket': { $in: [1, 2] } };
         let total = await functions.findCount(Users, condition);
-        let data = await functions.pageFind(Users, condition, { idRaoNhanh365: 1 }, skip, pageSize);
+        let data = await functions.pageFindWithFields(Users, condition,
+            {
+                "userName": "$userName",
+                "phone": "$phone",
+                "phoneTK": "$phoneTK",
+                "idRaoNhanh365": "$idRaoNhanh365",
+                "cccd": "$inforRN365.cccd",
+                "cccdFrontImg": "$inforRN365.cccdFrontImg",
+                "cccdBackImg": "$inforRN365.cccdBackImg",
+                "bankName": "$inforRN365.bankName",
+                "stk": "$inforRN365.stk",
+                "xacThucLienket": "$inforRN365.xacThucLienket",
+                "store_name": "$inforRN365.store_name",
+                "store_phone": "$inforRN365.store_phone",
+                "ownerName": "$inforRN365.ownerName",
+                "time": "$inforRN365.time",
+                "active": "$inforRN365.active",
+                "money": "$inforRN365.money",
+                "usc_tax_code": "$inforRN365.usc_tax_code",
+                "usc_des": "$inforRN365.usc_des",
+            }, 
+            {"inforRN365.time": -1},skip, pageSize
+        );
+
+        for(let i=0; i<data.length; i++) {
+            let linkCccdFrontImg = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/avt_dangtin/${data[i].cccdFrontImg}`;
+            let linkCccdBackImg = process.env.DOMAIN_RAO_NHANH + `/base365/raonhanh365/pictures/avt_dangtin/${data[i].cccdBackImg}`;
+            data[i].linkCccdFrontImg = linkCccdFrontImg;
+            data[i].linkCccdBackImg = linkCccdBackImg;
+        }
         return functions.success(res, "get list user verify paymet success", { total, data });
     } catch (error) {
         return functions.setError(res, error.message);
@@ -1316,17 +1471,18 @@ exports.adminVerifyPayment = async (req, res, next) => {
 
 exports.getListOrderPayment = async (req, res, next) => {
     try {
-        let page = req.body.page || 1;
-        let pageSize = req.body.pageSize || 50;
-        let skip = (page - 1) * pageSize;
-        let limit = pageSize;
-        let _id = req.body.id;
-        let thoiGianTu = req.body.thoiGianTu;
-        let thoiGianDen = req.body.thoiGianDen;
+        let {page, pageSize, _id, buyerName, fromDate, toDate} = req.body;
+        if(!page) page = 1;
+        if(!pageSize) pageSize = 30;
+        page = Number(page);
+        pageSize = Number(pageSize);
+        const skip = (page - 1) * pageSize;
+        const limit = pageSize;
         let conditions = {};
-        if (_id) conditions._id = _id;
-        if (thoiGianDen) conditions.thoiGianDen = { $lte: { thoiGianDen } };
-        if (thoiGianTu) conditions.thoiGianTu = { $gte: { thoiGianTu } };
+        if (_id) conditions._id = Number(_id);
+        if (fromDate && !toDate) conditions.buyTime = {$gte: new Date(fromDate)};
+        if (!fromDate && toDate) conditions.buyTime = {$lte: new Date(toDate)};
+        if (fromDate && toDate) conditions.buyTime = {$gte: new Date(fromDate), $lte: new Date(toDate)};
         let count = await Order.aggregate([
             {
                 $match: conditions
@@ -1336,15 +1492,15 @@ exports.getListOrderPayment = async (req, res, next) => {
                     from: 'Users',
                     localField: 'buyerId',
                     foreignField: 'idRaoNhanh365',
-                    as: 'user'
+                    as: 'Buyer'
                 }
             },
             {
                 $lookup: {
-                    from: 'RN365_News',
-                    localField: 'newId',
-                    foreignField: '_id',
-                    as: 'new'
+                    from: 'Users',
+                    localField: 'sellerId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'Seller'
                 }
             },
             {
@@ -1357,7 +1513,7 @@ exports.getListOrderPayment = async (req, res, next) => {
             {
                 $match: conditions
             },
-            { $sort: { _id: 1 } },
+            { $sort: { _id: -1 } },
             { $skip: skip },
             { $limit: limit },
             {
@@ -1367,14 +1523,17 @@ exports.getListOrderPayment = async (req, res, next) => {
                     foreignField: 'idRaoNhanh365',
                     as: 'Buyer'
                 }
-            }, {
+            }, 
+            {$unwind: { path: "$Buyer", preserveNullAndEmptyArrays: true }},
+            {
                 $lookup: {
-                    from: 'RN365_News',
-                    localField: 'newId',
-                    foreignField: '_id',
-                    as: 'New'
+                    from: 'Users',
+                    localField: 'sellerId',
+                    foreignField: 'idRaoNhanh365',
+                    as: 'Seller'
                 }
             },
+            {$unwind: { path: "$Seller", preserveNullAndEmptyArrays: true }},
             {
                 $project: {
                     "_id": "$_id",
@@ -1386,10 +1545,14 @@ exports.getListOrderPayment = async (req, res, next) => {
                     "orderActive": "$orderActive",
                     "amountPaid": "$amountPaid",
                     "buyerName": "$Buyer.userName",
-                    "newsTitle": "$New.title",
+                    "sellerName": "$Seller.userName",
                 }
             },
         ]);
+        for(let i=0; i<data.length; i++) {
+            if(!data[i].buyerName) data[i].buyerName = "";
+            if(!data[i].sellerName) data[i].sellerName = "";
+        }
 
         return functions.success(res, "get list user verify paymet success", { count, data });
     } catch (error) {
@@ -1475,6 +1638,12 @@ exports.deleleManyByModule = async (req, res, next) => {
         let arrId = req.body.arrId;
         if (moduleId && arrId && arrId.length > 0) {
             let arrIdDelete = arrId.map(idItem => parseInt(idItem));
+
+            //danh muc san pham
+            if (moduleId == 15) {
+                await Category.deleteMany({ _id: { $in: arrIdDelete } });
+                return functions.success(res, 'xóa thành công danh muc san pham!');
+            }
             //tag index
             if (moduleId == 36) {
                 await TagIndex.deleteMany({ _id: { $in: arrIdDelete } });
@@ -1485,17 +1654,56 @@ exports.deleleManyByModule = async (req, res, next) => {
                 await NetworkOperator.deleteMany({ _id: { $in: arrIdDelete } });
                 return functions.success(res, 'xóa thành công!');
             }
-            //gia ghim day tin
-            if (moduleId == 32 || moduleId == 33) {
+            //32,33: gia ghim/day tin/ 22=gia ghim gian hang
+            if (moduleId == 22 || moduleId == 32 || moduleId == 33) {
                 await PriceList.deleteMany({ _id: { $in: arrIdDelete } });
                 return functions.success(res, 'xóa thành công!');
             }
+            //14=tin rao vat, 30=tin dang mua, 28,29: tin tim viec, tin tuyen dung
             if (moduleId == 14 || moduleId == 28 || moduleId == 29 || moduleId == 30) {
                 await News.deleteMany({ _id: { $in: arrIdDelete } });
                 return functions.success(res, 'xóa thành công!');
             }
+            //23 = danh sach tai khoan, 26=tai khaon gian hang
             if (moduleId == 26 || moduleId == 23) {
                 await Users.deleteMany({ idRaoNhanh365: { $in: arrIdDelete } });
+                return functions.success(res, 'xóa thành công!');
+            }
+            //25 = tin tuc
+            if (moduleId == 25) {
+                await Blog.deleteMany({ _id: { $in: arrIdDelete } });
+                return functions.success(res, 'xóa thành công!');
+            }
+            //24 = lich su nap the
+            if (moduleId == 24) {
+                await History.deleteMany({ _id: { $in: arrIdDelete } });
+                return functions.success(res, 'xóa thành công!');
+            }
+            //31 = lich su nap the
+            if (moduleId == 31) {
+                await BaoCao.deleteMany({ _id: { $in: arrIdDelete } });
+                return functions.success(res, 'xóa thành công!');
+            }
+            //35 = xac thuc thanh toan dam bao
+            if (moduleId == 35) {
+                await Users.updateMany({ idRaoNhanh365: { $in: arrIdDelete } }, {
+                    inforRN365: {
+                        cccd: null,
+                        cccdFrontImg: null,
+                        cccdBackImg: null,
+                        bankName: null,
+                        stk: null,
+                        ownerName: null,
+                        time: null,
+                        active: 0,
+                        xacThucLienket: 0
+                    }
+                })
+                return functions.success(res, 'xóa thành công!');
+            }
+            //34 = nguoi mua xac thuc thanh toan
+            if (moduleId == 34) {
+                await Order.deleteMany({ _id: { $in: arrIdDelete } });
                 return functions.success(res, 'xóa thành công!');
             }
             return functions.setError(res, "Truyen dung moduleId muon xoa", 406);
@@ -1505,3 +1713,5 @@ exports.deleleManyByModule = async (req, res, next) => {
         return functions.setError(res, error.message);
     }
 }
+
+

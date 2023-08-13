@@ -34,7 +34,7 @@ exports.updateInfoParent = async(req, res, next) => {
             if(!ugs_county) {
                 return functions.setError(res, "ugs_county không được để trống")
             }
-            let findUser = await Users.findOne({ idGiaSu: idGiaSu, "inforGiaSu.ugs_ft": 1 })
+            let findUser = await Users.findOne({ idGiaSu: idGiaSu, "inforGiaSu.ugs_ft": 2 })
             if (findUser) {
                 if (File && File.avatarUser) {
                     let upload = await fnc.uploadAva("PH", File.avatarUser, ['.jpeg', 'gif', '.jpg', '.png']);
@@ -43,7 +43,7 @@ exports.updateInfoParent = async(req, res, next) => {
                     }
                     avatarUser = upload
                 }
-                data = await Users.updateOne({ idGiaSu: idGiaSu, "inforGiaSu.ugs_ft": 1}, {
+                data = await Users.updateOne({ idGiaSu: idGiaSu, "inforGiaSu.ugs_ft": 2}, {
                     $set: {
                         userName: userName,
                         emailContact: emailContact,
@@ -71,7 +71,7 @@ exports.detailParent = async(req, res ) =>{
     try {
         let idGiaSu = req.user.data.idGiaSu;
         let user = await Users.aggregate([
-            {$match : {idGiaSu : idGiaSu, "inforGiaSu.ugs_ft": 1 }},
+            {$match : {idGiaSu : idGiaSu, "inforGiaSu.ugs_ft": 2 }},
             {$lookup : {
                 from : "City",
                 localField : "city",
@@ -124,7 +124,8 @@ exports.updateInfoTeacher = async(req, res, next) => {
         const { userName, emailContact, address, phone, birthday, gender,  ugs_about_us,ugs_city_gs,ugs_county_gs,married,ugs_class_teach,ugs_tutor_style,ugs_school,ugs_graduation_year,ugs_specialized,ugs_workplace,ugs_achievements,experience } = req.body;
         let File = req.files || null;
         let avatarUser = null;
-            let findUser = await Users.findOne({ idGiaSu: idGiaSu, "inforGiaSu.ugs_ft": 2 })
+       
+            let findUser = await Users.findOne({ idGiaSu: idGiaSu, "inforGiaSu.ugs_ft": 1 })
             if (findUser) {
                 if (File && File.avatarUser) {
                     let upload = await fnc.uploadAva("GS", File.avatarUser, ['.jpeg', 'gif', '.jpg', '.png']);
@@ -134,7 +135,7 @@ exports.updateInfoTeacher = async(req, res, next) => {
                     avatarUser = upload
                 } 
                 //b1 + b2
-                data = await Users.updateOne({ idGiaSu: idGiaSu, "inforGiaSu.ugs_ft": 2}, {
+                data = await Users.updateOne({ idGiaSu: idGiaSu, "inforGiaSu.ugs_ft": 1}, {
                     $set: {
                         userName: userName,
                         emailContact: emailContact,

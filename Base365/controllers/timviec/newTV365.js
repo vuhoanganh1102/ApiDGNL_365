@@ -480,10 +480,10 @@ exports.refreshNew = async(req, res, next) => {
     try {
         let idNew = req.body.new_id;
         if (idNew) {
-            await NewTV365.updateOne({ _id: idNew }, {
-                $set: { updateTime: new Date.getTime() }
-            });
-            return functions.success(res, "làm mới bài tuyển dụng thành công")
+            let doc = await NewTV365.updateOne({ new_id: idNew }, {
+                $set: { updateTime: functions.getTimeNow() }
+            }, {new: true}).lean();
+            return functions.success(res, "làm mới bài tuyển dụng thành công", {data: doc})
         }
         return functions.setError(res, 'thiếu dữ liệu', 404)
     } catch (error) {

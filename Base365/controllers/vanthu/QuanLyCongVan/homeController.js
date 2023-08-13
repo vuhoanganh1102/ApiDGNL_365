@@ -14,7 +14,7 @@ exports.index = async (req, res, next) => {
         let hd_tong = await tbl_qly_congvan.countDocuments({ cv_usc_id: comId, cv_type_xoa: 0, cv_type_hd: 1 }, { cv_id: 1 });
         let hd_den = await tbl_qly_congvan.countDocuments({ cv_usc_id: comId, cv_type_xoa: 0, cv_type_hd: 1, cv_type_loai: 1 }, { cv_id: 1 });
         let hd_di = await tbl_qly_congvan.countDocuments({ cv_usc_id: comId, cv_type_xoa: 0, cv_type_hd: 1, cv_type_loai: 2 }, { cv_id: 1 });
-        let arr_xoa = await tbl_qly_congvan.find({ cv_usc_id: comId, cv_type_xoa: 0 }, { cv_id: 1, cv_name: 1, cv_so: 1, cv_type_loai: 1, cv_type_hd: 1, cv_time_created: 1 }).sort({ cv_time_created: -1 }).limit(6);
+        let arr_xoa = await tbl_qly_congvan.find({ cv_usc_id: comId, cv_type_xoa: 0 }, { cv_id: 1, cv_name: 1, cv_so: 1, cv_type_loai: 1, cv_type_hd: 1, cv_time_xoa: 1 }).sort({ cv_time_xoa: -1 }).limit(6);
         data.dem_tong = dem_tong;
         data.dem_den = dem_den;
         data.dem_di = dem_di;

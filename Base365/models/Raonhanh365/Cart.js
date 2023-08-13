@@ -32,6 +32,7 @@ const CartSchema = new mongoose.Schema({
         default: 0
     },
     tick: {
+        // đã chọn
         type: Number,
         default: 0
     },

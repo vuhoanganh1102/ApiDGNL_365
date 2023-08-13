@@ -11,7 +11,7 @@ const UvSaveVlSchema = new Schema({
         required: true,
     },
     id_viec: {
-        type: String,
+        type: Number,
         required: true,
     },
     ntd_name: {
@@ -19,8 +19,8 @@ const UvSaveVlSchema = new Schema({
         required: true,
     },
     created_at: {
-        type: Number,
-        default: 0,
+        type: Date,
+        default: Date.now(),
     },
 },{
     collection: 'VLTG_UvSaveVl',
@@ -28,4 +28,4 @@ const UvSaveVlSchema = new Schema({
     timestamp: true
 });
 
-module.exports = mongoose.model("VLTG_UvSaveVl",UvSaveVlSchema);
+module.exports = mongoose.model("VLTG_UvSaveVl", UvSaveVlSchema);

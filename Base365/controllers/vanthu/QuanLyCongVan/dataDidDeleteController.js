@@ -3,7 +3,7 @@ const vanthu = require('../../../services/vanthu.js');
 const tbl_qly_congvan = require('../../../models/Vanthu365/tbl_qly_congvan');
 const tbl_qlcv_edit = require('../../../models/Vanthu365/tbl_qlcv_edit');
 
-exports.getDataDidDelete = async(req, res, next) => {
+exports.getDataDidDelete = async (req, res, next) => {
     try {
         let comId = Number(req.comId);
 
@@ -17,20 +17,47 @@ exports.getDataDidDelete = async(req, res, next) => {
 
         let countContractSend = await tbl_qly_congvan.countDocuments({ cv_type_loai: 2, cv_type_xoa: 1, cv_type_hd: 1, cv_usc_id: comId })
 
-        let list = await tbl_qly_congvan.find({ cv_type_xoa: 1, cv_usc_id: comId }, {
-            cv_id: 1,
-            cv_name: 1,
-            cv_so: 1,
-            cv_type_user_xoa: 1,
-            cv_user_xoa: 1,
-            cv_time_xoa: 1,
-            cv_type_loai: 1
-        }).sort({ cv_time_xoa: -1 }).limit(6)
+        // let list = await tbl_qly_congvan.find({ cv_type_xoa: 1, cv_usc_id: comId }, {
+        //     cv_id: 1,
+        //     cv_name: 1,
+        //     cv_so: 1,
+        //     cv_type_user_xoa: 1,
+        //     cv_user_xoa: 1,
+        //     cv_time_xoa: 1,
+        //     cv_type_loai: 1
+        // }).sort({ cv_time_xoa: -1 }).limit(6)
 
+        let list = await tbl_qly_congvan.aggregate([
+            { $match: { cv_type_xoa: 1, cv_usc_id: comId } },
+            { $sort: { cv_time_xoa: -1 } },
+            { $limit: 6 },
+            {
+                $lookup: {
+                    from: 'Users',
+                    localField: 'cv_user_xoa',
+                    foreignField: 'idQLC',
+                    as: 'user'
+                }
+            },
+            { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    cv_id: 1,
+                    cv_name: 1,
+                    cv_so: 1,
+                    cv_type_user_xoa: 1,
+                    cv_user_xoa: '$user.userName',
+                    cv_time_xoa: 1,
+                    cv_type_loai: 1
+                }
+            }
+        ])
+        // console.log("🚀 ~ file: dataDidDeleteController.js:55 ~ exports.getDataDidDelete ~ list:", list)
         data.countTextReceve = countTextReceve;
         data.countTextSend = countTextSend;
         data.countContractReceve = countContractReceve;
         data.countContractSend = countContractSend;
+
         data.list = list;
         return functions.success(res, 'get data success', { data })
     } catch (error) {
@@ -39,7 +66,7 @@ exports.getDataDidDelete = async(req, res, next) => {
     }
 }
 
-exports.getDetailDataDelete = async(req, res, next) => {
+exports.getDetailDataDelete = async (req, res, next) => {
     try {
         let data = {};
         let comId = req.comId;
@@ -79,5 +106,26 @@ exports.getDetailDataDelete = async(req, res, next) => {
     } catch (error) {
         console.error(error);
         return functions.setError(res, error)
+    }
+};
+
+exports.deleteVV = async (req, res, next) => {
+    try {
+        let id = req.body.id;
+        let arr = id.split(',');
+        if (Array.isArray(arr)) {
+            for (let i = 0; i < arr.length; i++) {
+                arr[i] = Number(arr[i])
+                let check = await tbl_qly_congvan.findById(arr[i]);
+                if (!check) return functions.setError(res, 'Không tìm thấy bài đăng', 404)
+            }
+            await tbl_qly_congvan.deleteMany({ _id: { $in: arr } })
+            await tbl_qlcv_edit.deleteMany({ ed_cv_id: { $in: arr } })
+            return functions.success(res, 'Xoá dữ liệu thành công')
+        }
+        return functions.setError(res, 'Nhập lại id đúng định dạng', 400)
+    }
+    catch (error) {
+        return functions.setError(res, error.message)
     }
 };

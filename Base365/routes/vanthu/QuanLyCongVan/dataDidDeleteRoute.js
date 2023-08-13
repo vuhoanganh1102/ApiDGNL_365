@@ -9,4 +9,7 @@ router.post('/getDataDidDelete',functions.checkToken,formData.parse(),permission
 // lấy chi tiết data đã xoá
 router.post('/getDetailDataDelete',functions.checkToken,formData.parse(),permissions.checkPermission('dele_vb',3),controller.getDetailDataDelete)
 
+// xoá vĩnh viễn
+router.post('/deleteVV',functions.checkToken,formData.parse(),permissions.checkPermission('dele_vb',4),controller.deleteVV)
+
 module.exports = router;
