@@ -232,6 +232,33 @@ exports.getEmployeesFromDepartment = async(depId) => {
   }
 }
 
+const getTokenFromLocalStorage = () => {
+  const storedToken = localStorage.getItem('access_token');
+  const storedTokenTime = localStorage.getItem('access_token_time');
+  
+  if (storedToken && storedTokenTime) {
+    const currentTime = new Date().getTime();
+    const tokenAge = currentTime - parseInt(storedTokenTime);
+    if (tokenAge < 600000) { // Kiểm tra xem token có còn hiệu lực trong 10 phút (600,000 ms) không
+      return storedToken;
+    } else {
+      // Xóa token hết hạn khỏi localStorage
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('access_token_time');
+    }
+  }
+  
+  return null;
+};
+
+// Hàm lưu token vào localStorage
+const saveTokenToLocalStorage = (token) => {
+  const currentTime = new Date().getTime();
+  localStorage.setItem('access_token', token);
+  localStorage.setItem('access_token_time', currentTime);
+};
+
+
 
 exports.getToken = async (name, password) => {
   try {
@@ -259,6 +286,29 @@ exports.getToken = async (name, password) => {
     }
   }
 };
+
+exports.getCallHistory = async(token)=>{
+  try{
+    let url = 'https://s02.oncall.vn:8900/api/call_logs/list?page =1&pagesize=1000'
+  const headers = {
+    'Content-Type': 'application/json',
+    'accept': 'application/json',
+    'access_token': token
+  };
+  let response = await axios.get(url, { headers,
+    httpsAgent: new https.Agent({ rejectUnauthorized: false }) });
+  return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      console.log('Error:', error.response.data);
+      return error.response.data;
+    } else {
+      console.error('Unknown Error:', error);
+      throw error;
+    }
+  }
+}
+
 
 exports.getExtensionInfo = async (access_token, id) => {
   try {
