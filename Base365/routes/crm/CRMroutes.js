@@ -9,6 +9,7 @@ const settingContract = require("./Setting/AccountAPI");
 const CustomerContact = require("./Customer/CustomerContact");
 const ToolCRM = require('../crm/toolCRM')
 const Nhap_lieu = require('./Nhap_lieu')
+const CustomerCare = require("../crm/CustomerCare/CustomerCare")
 
 router.use('/tool',ToolCRM)
 
@@ -26,6 +27,9 @@ router.use('/contract',formContract);
 
 //hợp đồng bán
 router.use('/contractforcus',Contract);
+
+//chăm sóc khách hàng
+router.use('/cutomerCare',CustomerCare)
 
 //cài đặt tong dai
 router.use('/settingContract', settingContract);

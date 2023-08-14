@@ -33,10 +33,5 @@ router.post('/ChosseCustomer',functions.checkToken,formData.parse(),CustomerDeta
 router.post('/combineCustome',functions.checkToken,formData.parse(),CustomerDetailsRoutes.CombineCustome)
 
 
-//Api gọi điện 
-router.post('/call',functions.checkToken,formData.parse(),CustomerDetailsRoutes.Call)
-
-//Api danh sách line 
- router.post('/listLine',functions.checkToken,formData.parse(),CustomerDetailsRoutes.QuanLyLine)
 
 module.exports = router;
