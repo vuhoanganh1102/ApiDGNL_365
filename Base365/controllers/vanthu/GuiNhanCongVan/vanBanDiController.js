@@ -79,12 +79,8 @@ exports.getDataAndCheck = async(req, res, next) => {
     const d = ('0' + date.getDate()).slice(-2);
     if(file) {
       for(let i=0; i<file.length; i++){
-        let checkFile = await functions.checkFile(file[i].path);
         let fileNameOrigin = file[i].name;
 
-        if(!checkFile){
-          return functions.setError(res, `File ${fileNameOrigin} khong dung dinh dang hoac qua kich cho phep!`, 405);
-        }
         let fileName = await vanThuService.uploadFileNameRandom(folder, file[i]);
         if(fileName) {
           file_vb_name += fileName;
@@ -162,6 +158,7 @@ exports.createVanBanOut = async(req, res, next) => {
         return functions.setError(res, "Tai khoan chua duoc phan quyen de ban hanh ngoai cong ty!", 409);
       }
     }
+    const id_uv_nhan_tb = id_user_nhan;
     id_user_nhan = id_user_nhan.join(", ");
     fields = {...fields, 
       user_cty: id_cong_ty, 
@@ -228,22 +225,25 @@ exports.createVanBanOut = async(req, res, next) => {
       Link: link
     }
     dataSendChat = await functions.getDataAxios(vanThuService.arrAPI().SendContractFile, dataSend);
-
-    let maxIdThongBao = await vanThuService.getMaxId(ThongBao);
-    let fieldsThongBao = {_id: maxIdThongBao, id_user: fields.user_send, id_user_nhan: id_user_nhan, type: 1, view: 0, created_date: fields.created_date, id_van_ban: maxIdVB};
-    if(noidung_guimail == ''){
-      if(id_user_nhan == 0){
-        return functions.setError(res, "Email not found!", 406);
+    
+    for (var id_uv in id_uv_nhan_tb){
+      let maxIdThongBao = await vanThuService.getMaxId(ThongBao);
+      let fieldsThongBao = {_id: maxIdThongBao, id_user: fields.user_send, id_user_nhan: id_uv, type: 1, view: 0, created_date: fields.created_date, id_van_ban: maxIdVB};
+      if(noidung_guimail == ''){
+        if(id_uv == 0){
+          return functions.setError(res, "Email not found!", 406);
+        }
+        fieldsThongBao.id_uv = tk_mail_nhan;
+        delete fieldsThongBao.view;
       }
-      fieldsThongBao.id_user_nhan = tk_mail_nhan;
-      delete fieldsThongBao.view;
+      //them thong bao
+      let thongBao = new ThongBao(fieldsThongBao);
+      thongBao = await thongBao.save();
+      if(!thongBao) {
+        return functions.setError(res, "Insert data into tbl thong bao fail!", 505);
+      }
     }
-    //them thong bao
-    let thongBao = new ThongBao(fieldsThongBao);
-    thongBao = await thongBao.save();
-    if(!thongBao) {
-      return functions.setError(res, "Insert data into tbl thong bao fail!", 505);
-    }
+    
     return functions.success(res, "Create van ban gui di ngoai cong ty thanh cong!");
   }catch(err){
     return functions.setError(res, err.message);
@@ -263,8 +263,9 @@ exports.createVanBanIn = async(req, res, next) => {
     let type_thu_hoi = 0, so_vb_th;
 
     if(!vb_th || !type_nhieu_nguoi_ky || !nguoi_ky || !chuc_vu_nguoi_ky || !id_uv_nhan) {
-      return functions.setError(res, "Missing input value", 408);
+      return functions.setError(res, "Thiếu trường", 408);
     }
+
     if(fields.duyet_vb != 2) {
       if(!await checkBanHanh(type, comId, id, 1)) {
         return functions.setError(res, "Tai khoan chua duoc phan quyen de ban hanh ngoai cong ty!", 409);
@@ -278,18 +279,19 @@ exports.createVanBanIn = async(req, res, next) => {
     }
 
     let list_duyet = await UserVT.findOne({id_user: comId}, {duyet_pb: 1, type_cong_ty: 1});
+    
+    //Đặt một biến đệm để về sau gọi api thông báo
+    const ids_uv_nhan_tb = id_uv_nhan;
     id_uv_nhan = id_uv_nhan.join(", ");
-
     if(type_nhieu_nguoi_ky=='on'){
       nguoi_ky = nguoi_ky.join(", ");
+    }
+    else{
+      nguoi_ky = nguoi_ky[0]
     }
     let phieu_trinh = req.files.phieu_trinh;
     let fileName = '';
     if(phieu_trinh) {
-      let checkFile = await functions.checkFile(phieu_trinh.path);
-      if(!checkFile){
-        return functions.setError(res, `File khong dung dinh dang hoac qua kich cho phep!`, 411);
-      }
       fileName = await vanThuService.uploadFileNameRandom('file_van_ban', phieu_trinh);
     }
 
@@ -330,13 +332,15 @@ exports.createVanBanIn = async(req, res, next) => {
     }
 
     //thong bao
-    let maxIdThongBao = await vanThuService.getMaxId(ThongBao);
-    let fieldsThongBao = {_id: maxIdThongBao, id_user: fields.user_send, id_user_nhan: id_uv_nhan, type: 1, view: 0, created_date: fields.created_date, id_van_ban: maxIdVB};
-    //them thong bao
-    let thongBao = new ThongBao(fieldsThongBao);
-    thongBao = await thongBao.save();
-    if(!thongBao) {
-      return functions.setError(res, "Insert data into tbl thong bao fail!", 505);
+    for (var id_nv in ids_uv_nhan_tb){
+      let maxIdThongBao = await vanThuService.getMaxId(ThongBao);
+      let fieldsThongBao = {_id: maxIdThongBao, id_user: fields.user_send, id_user_nhan: id_nv, type: 1, view: 0, created_date: fields.created_date, id_van_ban: maxIdVB};
+      //them thong bao
+      let thongBao = new ThongBao(fieldsThongBao);
+      thongBao = await thongBao.save();
+      if(!thongBao) {
+        return functions.setError(res, "Insert data into tbl thong bao fail!", 505);
+      }
     }
     let type_user = '';
     let type_sent = '';
@@ -675,6 +679,21 @@ exports.getUserByEmail = async(req, res, next) => {
       return functions.setError(res, "User khong ton tai!", 405);
     }
     return functions.success(res, "Get user by email success!", {user: user});
+  }catch(err){
+    return functions.setError(res, err.message);
+  }
+}
+exports.getUserByType = async(req, res, next) => {
+  try{
+    let {type} = req.body;
+    if(type){
+      let user = await Users.find({type: type},{idQLC: 1, userName: 1, email: 1});
+      if(!user) {
+        return functions.setError(res, "User khong ton tai!", 405);
+      }
+      return functions.success(res, "Get user by type success!", {user: user});
+    }
+    return functions.setError(res, "Missing input type or email!", 404);
   }catch(err){
     return functions.setError(res, err.message);
   }

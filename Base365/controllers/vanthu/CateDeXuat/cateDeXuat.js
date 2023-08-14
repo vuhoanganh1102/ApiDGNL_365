@@ -24,7 +24,6 @@ exports.ChitietDx = async (req, res) => {
     if (!dexuat) {
       return functions.setError(res, 'Không tìm thấy bản ghi dexuat', 400);
     } else {
-      let checkhandling = await HistoryHandling.find({id_dx : _id ,id_user : dexuat.id_user,type_handling : 1})
       const checkuserduyet = dexuat.id_user_duyet.split(',').map(Number);
       // Tìm bản ghi trong bảng User dựa trên checkuserduyet
       const users = await UserDX.find({ idQLC: { $in: checkuserduyet } });
@@ -68,22 +67,38 @@ exports.ChitietDx = async (req, res) => {
       let timeCreateInMillis = dexuat.time_create * 1000;
       let timeDifferenceInMillis = currentTime.getTime() - timeCreateInMillis;
       let numberOfDays = Math.floor(timeDifferenceInMillis / (1000 * 60 * 60 * 24));
+
+      //Đổ ra lịch sử duyệt văn bản
+      const historyData = await HistoryHandling
+        .find({id_dx: _id},{id_user:1,type_handling:1,time:1})
+        .sort({time:-1})
+        .limit(5);
+      const history = historyData
+        .reverse()
+        .map(his => ({
+          ng_duyet: namnUserDuyet?.find(user => user.idQLC === his.id_user)?.userName,
+          type_duyet: his.type_handling,
+          time: his.time
+        }));
       let detailDeXuat = [
         {
-      ten_de_xuat : dexuat.name_dx,
-      nguoi_tao : dexuat.name_user,
-      nhom_de_xuat : dexuat.type_dx,
-      thoi_gian_tao : dexuat.time_create * 1000,
-      loai_de_xuat : dexuat.type_time,
-      cap_nhat : numberOfDays,
-      thong_tin_chung : dexuat.noi_dung,
-      kieu_phe_duyet : dexuat.kieu_duyet,
-      lanh_dao_duyet :namnUserDuyet,
-      nguoi_theo_doi :namnUsertd,
-      file_kem : fileX,
-      thoi_gian_tao : dexuat.time_create * 1000,
-      thoi_gian_duyet : dexuat.time_duyet,
-      thoi_gian_tiep_nhan : checkhandling.time ,
+          ten_de_xuat : dexuat.name_dx,
+          nguoi_tao : dexuat.name_user,
+          nhom_de_xuat : dexuat.type_dx,
+          thoi_gian_tao : dexuat.time_create * 1000,
+          loai_de_xuat : dexuat.type_time,
+          cap_nhat : numberOfDays,
+          thong_tin_chung : dexuat.noi_dung,
+          kieu_phe_duyet : dexuat.kieu_duyet,
+          lanh_dao_duyet :namnUserDuyet,
+          nguoi_theo_doi :namnUsertd,
+          file_kem : fileX,
+          type_duyet : dexuat.type_duyet,
+          thoi_gian_tao : dexuat.time_create * 1000,
+          thoi_gian_duyet : dexuat.time_duyet,
+          thoi_gian_tiep_nhan : dexuat.time_tiep_nhan ,
+          lich_su_duyet : history,
+          del_type: dexuat.del_type
         }
       ]
       return functions.success(res, 'get data success', { detailDeXuat });
@@ -94,7 +109,10 @@ exports.ChitietDx = async (req, res) => {
   }
 };
 
-
+// Api hiển thị lịch sử duyệt
+exports.historyduyet = async (req, res) => {
+  
+}
 
 // Api hiển thị trang home tà khoản công ty và cá nhân
 
@@ -176,7 +194,6 @@ exports.showHome = async (req, res) => {
   }
 };
 
-
 // Hiển thị trang show nghỉ  tìm kiếm
 exports.showNghi = async (req, res) => {
   try {
@@ -232,7 +249,6 @@ exports.showNghi = async (req, res) => {
 };
 
 
-
 //Api thay đổi trạng thái thái ẩn hiện đề xuất
 exports.changeCate = async (req, res) => {
   try {
@@ -241,8 +257,18 @@ exports.changeCate = async (req, res) => {
      if(req.user.data.type == 1){
       com_id = req.user.data.com_id
       // Kiểm tra xem loại đề xuất đã được ẩn hay chưa
-    const hideCate = await HideCateDX.findOne({ id_com: com_id });
-    let hideCateStr = hideCate.id_cate_dx.toString();
+    let hideCate = await HideCateDX.findOne({ id_com: com_id });
+    if(!hideCate){
+      const newHideCate = new HideCateDX({
+        _id: await serviceVanthu.getMaxID(HideCateDX),
+        id_com: com_id,
+        id_cate_dx: "",
+        __v: 0
+      })
+      await newHideCate.save();
+    }
+    hideCate = await HideCateDX.findOne({ id_com: com_id });
+    let hideCateStr = hideCate?.id_cate_dx.toString();
 
     if (value == 1) {
       // Xóa ẩn loại đề xuất
@@ -255,13 +281,18 @@ exports.changeCate = async (req, res) => {
       } else {
         return functions.success(res, 'Loại đề xuất này chưa được ẩn!');
       }
-    } else {
+      } else {
       // Thêm ẩn loại đề xuất
       const idStr = id.toString();
       if (hideCateStr.includes(idStr)) {
         return functions.success(res,  'Loại đề xuất này đã được ẩn rồi!');
       } else {
-        hideCateStr += ',' + idStr;
+        if (hideCateStr.length === 0) {
+          hideCateStr += idStr;
+        }
+        else{
+          hideCateStr += ',' + idStr;
+        }
         hideCate.id_cate_dx = hideCateStr;
         await hideCate.save();
         return functions.success(res,  'Ẩn loại đề xuất thành công!');
@@ -275,13 +306,6 @@ exports.changeCate = async (req, res) => {
     return functions.setError(res, error);
   }
 };
-
-
-
-
-
-
-
 // tìm theo tên loại đề xuất + hiển thị các loại đề xuất
 
 exports.findNameCate = async (req, res) => {
@@ -321,8 +345,6 @@ exports.findNameCate = async (req, res) => {
   }
 };
 
-
-
 //Api hiển thị thành viên công ty
 
 exports.findthanhVien = async (req, res) => {
@@ -333,11 +355,20 @@ exports.findthanhVien = async (req, res) => {
     const startIndex = (page - 1) * perPage;
     if(req.user.data.type == 1) {
       com_id = req.user.data.com_id
+      const dataFull = await UserDX.find({ 'inForPerson.employee.com_id': com_id,type : 2 })
       const checkTV = await UserDX.find({ 'inForPerson.employee.com_id': com_id,type : 2 })
-      .select('idQlC userName inForPerson.employee.position_id ')
+      .select('idQLC userName email inForPerson.employee.position_id inForPerson.employee.dep_id')
       .sort({ 'inForPerson.employee.dep_id': -1 })
       .skip(startIndex).limit(perPage);
-      return functions.success(res, 'get data success', { checkTV });
+      const data = checkTV.map(emp => ({
+          idQLC : emp.idQLC,
+          userName : emp.userName,
+          email: emp.email,
+          pos_id : emp.inForPerson.employee.position_id,
+          dep_id : emp.inForPerson.employee.dep_id
+      }))
+      const totalPages = Math.ceil(dataFull.length / perPage);
+      return functions.success(res, 'get data success', { data, totalPages});
     }else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }  
@@ -413,5 +444,5 @@ exports.showloaicate = async(req,res) => {
   } catch(e){
     console.log(e)
     return functions.setError(res , e.message)
-}
+  }
 }

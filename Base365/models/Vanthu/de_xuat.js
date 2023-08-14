@@ -329,13 +329,13 @@ const Vanthu_de_xuat = new Schema({
                 default: null,
 
             },
-            local_di: { //địa điểm di chuyển 
-                type: Number,
+            local_di: {
+                type: String,
                 default: null,
 
             },
             local_den: {
-                type: Number,
+                type: String,
                 default: null,
 
             },
@@ -384,7 +384,7 @@ const Vanthu_de_xuat = new Schema({
                 type: String
             },
             ca_xnc: {
-                type: String,
+                type: Number,
                 default: null,
 
             },
@@ -417,7 +417,7 @@ const Vanthu_de_xuat = new Schema({
 
             },
             ca_la_viec: { //1-ca hanh chinh 2-ca sang 3-ca chieu
-                type: Number,
+                type: String,
                 default: null,
 
             },
@@ -600,7 +600,7 @@ const Vanthu_de_xuat = new Schema({
     },
     kieu_duyet: {
         type: Number,
-
+        default: 0,
     },
     id_user_duyet: {
         type: String,
@@ -651,6 +651,9 @@ const Vanthu_de_xuat = new Schema({
     del_type: { // trạng thái xoa
         type: Number, //'1:active; 2 delete'
         default: 1
-    }
+    },
+    user_del: {
+        type: Number,
+      }
 })
 module.exports = mongoose.model("Vanthu_de_xuat", Vanthu_de_xuat);
