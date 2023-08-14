@@ -98,6 +98,7 @@ exports.ChitietDx = async (req, res) => {
           thoi_gian_duyet : dexuat.time_duyet,
           thoi_gian_tiep_nhan : dexuat.time_tiep_nhan ,
           lich_su_duyet : history,
+          del_type: dexuat.del_type
         }
       ]
       return functions.success(res, 'get data success', { detailDeXuat });

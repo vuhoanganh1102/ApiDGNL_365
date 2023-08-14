@@ -577,6 +577,9 @@ const Vanthu_de_xuat = new Schema({
     del_type: { // trạng thái xoa
         type: Number, //'1:active; 2 delete'
         default: 1
-    }
+    },
+    user_del: {
+        type: Number,
+      }
 })
 module.exports = mongoose.model("Vanthu_de_xuat", Vanthu_de_xuat);

@@ -34,6 +34,7 @@ exports.delete_dx = async (req, res) => {
         return functions.setError(message, 'Đề xuất không tồn tại!', 400);
       }
       deXuat.del_type = 2;
+      deXuat.user_del = req.user.data.idQLC
       await deXuat.save();
       let deleteDX = new delete_Dx({
         _id: await functions.getMaxID(delete_Dx) + 1,
@@ -50,9 +51,12 @@ exports.delete_dx = async (req, res) => {
       let idArray = id.map(idItem => parseInt(idItem));
       await De_Xuat.updateMany({
         _id: { $in: idArray },
-        del_type: 1
+        del_type: 2,
       },
-        { del_type: 0 });
+      { 
+        del_type: 1, 
+        user_del: null 
+      });
       await delete_Dx.deleteMany({
         id_dx_del: { $in: idArray },
         user_del_com: id_com
@@ -80,7 +84,6 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
       pageSize
     } = req.body;
     let com_id = '';
-
     if (req.user.data.type == 1) {
       com_id = req.user.data.com_id;
       if (time_start && time_end && time_start > time_end) {
@@ -137,7 +140,6 @@ exports.de_xuat_da_xoa_All = async (req, res) => {
       const totalCount = await De_Xuat.countDocuments(query);
       const totalPages = Math.ceil(totalCount / pageSize);
       const listDeXuatUser = await De_Xuat.find(query)
-        .populate('delete_dx')
         .skip((page - 1) * pageSize)
         .limit(pageSize);
       return functions.success(res, 'get data success', { listDeXuatUser, totalPages  });
