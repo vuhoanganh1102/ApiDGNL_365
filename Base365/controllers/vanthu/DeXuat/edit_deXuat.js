@@ -22,9 +22,12 @@ exports.edit_active = async (req, res) => {
     const timeNow = new Date();
     let com_id = '';
     let id_user = '';
-    com_id = req.user.data.com_id;
-    id_user = req.user.data.idQLC;
-      
+    if (req.user.data.type == 2) {
+      com_id = req.user.data.com_id
+      id_user = req.user.data.idQLC
+    } else {
+      return functions.setError(res, 'bạn phải là tài khoản nhân viên', 400);
+    }
     const check = await De_Xuat.findOne({ _id: _id });
     if (check) {
       const userDuyet = check.id_user_duyet;
@@ -200,7 +203,7 @@ exports.edit_active = async (req, res) => {
       else if (type == 7) {
         const createHis = new His_Handle({
           _id: await functions.getMaxID(His_Handle) + 1,
-          id_user:id_user,
+          id_user : id_user,
           id_dx: check._id,
           type_handling: 2,
           time: timeNow

@@ -73,7 +73,7 @@ exports.createGroup = async (req, res) => {
         } if (groupName) {
             if(req.user.data.type == 1) {
                 company_id = req.user.data.idQLC
-                let checkName = await Customer_group.findOne({ gr_name: groupName, company_id: com_id });
+                let checkName = await Customer_group.findOne({ gr_name: groupName, company_id: company_id });
                 if (!checkName) {
                     let depId = dep_id
                     let maxId = 0;

@@ -33,4 +33,5 @@ router.post('/ChosseCustomer',functions.checkToken,formData.parse(),CustomerDeta
 router.post('/combineCustome',functions.checkToken,formData.parse(),CustomerDetailsRoutes.CombineCustome)
 
 
+
 module.exports = router;

@@ -1,5 +1,3 @@
-
-const CustomerContact = require('../../../models/crm/Customer/contact_customer')
 const Customer = require('../../../models/crm/Customer/customer')
 const functions = require("../../../services/functions");
 const customerService = require('../../../services/CRM/CRMservice')
@@ -10,20 +8,17 @@ const City = require('../../../models/City')
 const District = require('../../../models/District')
 const Ward = require('../../../models/crm/ward')
 const NhomKH = require('../../../models/crm/Customer/customer_group')
-const CustomerCare = require('../../../models/crm/Customer/customer_care')
-const AppointmentSchedule = require('../../../models/crm/CustomerCare/AppointmentSchedule');
 const AppointmentContentCall = require('../../../models/crm/appointment_content_call');
-const CallHistory = require('../../../models/crm/call_history')
-const ManagerExtension = require('../../../models/crm/manager_extension');
-const AcountApi = require('../../../models/crm/account_api')
+const { log } = require('console');
+
 // hàm hiển thị chi tiết khách hàng
 exports.detail = async (req, res) => {
   try {
     let { cus_id } = req.body
-    let com_id = ''    
-    if(req.user.data.type == 1 || req.user.data.type == 2){
+    let com_id = ''
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id
-    }else {
+    } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
     if (typeof cus_id === 'undefined') {
@@ -32,55 +27,55 @@ exports.detail = async (req, res) => {
     if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
       return functions.setError(res, 'cus_id phải là 1 số', 400);
     }
-    let findCus = await Customer.findOne({ cus_id , company_id : com_id})
+    let findCus = await Customer.findOne({ cus_id, company_id: com_id })
     if (!findCus) {
       return functions.setError(res, 'không tìm thấy bản ghi phù hợp', 400);
     }
-    let name_tao = await User.findOne({idQLC : findCus.user_create_id}).select('userName')
-    if(!name_tao){
+    let name_tao = await User.findOne({ idQLC: findCus.user_create_id }).select('userName')
+    if (!name_tao) {
       name_tao = ''
     }
-    let name_sua = await User.findOne({idQLC : findCus.user_edit_id}).select('userName')
-    if(!name_sua){
+    let name_sua = await User.findOne({ idQLC: findCus.user_edit_id }).select('userName')
+    if (!name_sua) {
       name_sua = ''
     }
-    let name_phu_trach =  await User.findOne({idQLC : findCus.emp_id}).select('userName')
-    if(!name_phu_trach){
+    let name_phu_trach = await User.findOne({ idQLC: findCus.emp_id }).select('userName')
+    if (!name_phu_trach) {
       name_phu_trach = ''
     }
-    let name_nhom = await NhomKH.findOne({gr_id : findCus.group_id}).select('gr_name')
-    if(!name_nhom){
+    let name_nhom = await NhomKH.findOne({ gr_id: findCus.group_id }).select('gr_name')
+    if (!name_nhom) {
       name_nhom = ''
     }
-    let thanh_pho = await City.findOne({_id : findCus.cit_id }).select('name')
-    if(!thanh_pho){
+    let thanh_pho = await City.findOne({ _id: findCus.cit_id }).select('name')
+    if (!thanh_pho) {
       thanh_pho = ''
     }
-    let huyen = await District.findOne({_id : findCus.district_id}).select('name')
-    if(!huyen){
+    let huyen = await District.findOne({ _id: findCus.district_id }).select('name')
+    if (!huyen) {
       huyen = ''
     }
-    let ten_xa = await Ward.findOne({ward_id : findCus.ward}).select('ward_name')
-    if(!ten_xa){
+    let ten_xa = await Ward.findOne({ ward_id: findCus.ward }).select('ward_name')
+    if (!ten_xa) {
       ten_xa = ''
     }
-    let hd_thanh_pho = await City.findOne({_id : findCus.cit_id }).select('name')
-    if(!hd_thanh_pho){
+    let hd_thanh_pho = await City.findOne({ _id: findCus.cit_id }).select('name')
+    if (!hd_thanh_pho) {
       hd_thanh_pho = ''
     }
-    let hd_huyen = await District.findOne({_id : findCus.district_id}).select('name')
-    if(!hd_huyen){
+    let hd_huyen = await District.findOne({ _id: findCus.district_id }).select('name')
+    if (!hd_huyen) {
       hd_huyen = ''
     }
-    let hd_ten_xa = await Ward.findOne({ward_id : findCus.ward}).select('ward_name')
-    if(!hd_ten_xa){
+    let hd_ten_xa = await Ward.findOne({ ward_id: findCus.ward }).select('ward_name')
+    if (!hd_ten_xa) {
       hd_ten_xa = ''
     }
     if (findCus.type == 2) {
       let data1 = {
-        ma_khach_hang : findCus.cus_id,// id khách hàng
+        ma_khach_hang: findCus.cus_id,// id khách hàng
         email: findCus.email,// địa chỉ email khách hàng
-        ten_khach_hang : findCus.name, // tên khách hàng
+        ten_khach_hang: findCus.name, // tên khách hàng
         ten_viet_tat: findCus.stand_name, // tên viết tắt
         dien_thoai: findCus.phone_number, // số điện thoại
         anh_dai_dien: findCus.logo, // ảnh đại diện
@@ -99,8 +94,8 @@ exports.detail = async (req, res) => {
         status: findCus.status,// trạng thái khach hàng
         linh_vuc: findCus.business_areas,// lĩnh vực
         category: findCus.category, //
-        nhan_vien_phu_trach : name_phu_trach, // tên nhân viên phụ trách
-        loai_hinh : findCus.business_type, // loại hình
+        nhan_vien_phu_trach: name_phu_trach, // tên nhân viên phụ trách
+        loai_hinh: findCus.business_type, // loại hình
         phan_loai_khach_hang: findCus.classify, // loại khách hàng
         hoa_don_tp: hd_thanh_pho,// hóa đơn id thành phố
         hoa_don_huyen: hd_huyen, // hóa đơn id huyện
@@ -109,10 +104,10 @@ exports.detail = async (req, res) => {
         ma_vung_hoa_don: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
         bill_invoice_address: findCus.bill_invoice_address, // Địa chỉ giao hàng
         bill_invoice_address_email: findCus.bill_invoice_address_email, // địa chỉ đơn hàng email
-        giao_hang_tp : hd_thanh_pho,// giao hàng tại thành phố
-        giao_hang_huyen :hd_huyen, // giao hàng tại huyện
-        giao_hang_xa :  hd_ten_xa,// giao hàng tại phường,xã
-        ma_vung_giao_hang : findCus.ship_area,// Mã vùng thông tin giao hàng
+        giao_hang_tp: hd_thanh_pho,// giao hàng tại thành phố
+        giao_hang_huyen: hd_huyen, // giao hàng tại huyện
+        giao_hang_xa: hd_ten_xa,// giao hàng tại phường,xã
+        ma_vung_giao_hang: findCus.ship_area,// Mã vùng thông tin giao hàng
         bank_id: findCus.bank_id, // id của ngân hàng
         bank_account: findCus.bank_account, // tài khoản ngân hàng
         xep_hang_kh: findCus.rank,// xếp hạng khách hàng
@@ -124,17 +119,17 @@ exports.detail = async (req, res) => {
         doanh_thu: findCus.revenue, // doanh thu
         ngay_sinh: findCus.birthday, // ngày sinh nếu là cá nhân
         la_khach_hang_tu: findCus.created_at, // là khách hàng từ ngày
-        nguoi_tao : name_tao.userName, // tên nhân viên tạo 
-        nguoi_sua : name_sua.userName, // tên nhân viên sửa
-        ngay_tao : findCus.created_at,
-        ngay_sua : findCus.updated_at
+        nguoi_tao: name_tao.userName, // tên nhân viên tạo 
+        nguoi_sua: name_sua.userName, // tên nhân viên sửa
+        ngay_tao: findCus.created_at,
+        ngay_sua: findCus.updated_at
       }
       return functions.success(res, 'get data success', { data1 });
     } else if (findCus.type == 1) {
       let data2 = {
-        ma_khach_hang : findCus.cus_id,// id khách hàng
+        ma_khach_hang: findCus.cus_id,// id khách hàng
         email: findCus.email,// địa chỉ email khách hàng
-        ten_khach_hang : findCus.name, // tên khách hàng
+        ten_khach_hang: findCus.name, // tên khách hàng
         ten_viet_tat: findCus.stand_name, // tên viết tắt
         dien_thoai: findCus.phone_number, // số điện thoại
         anh_dai_dien: findCus.logo, // ảnh đại diện
@@ -150,8 +145,8 @@ exports.detail = async (req, res) => {
         status: findCus.status,// trạng thái khach hàng
         linh_vuc: findCus.business_areas,// lĩnh vực
         category: findCus.category, //
-        nhan_vien_phu_trach : name_phu_trach, // tên nhân viên phụ trách
-        loai_hinh : findCus.business_type, // loại hình
+        nhan_vien_phu_trach: name_phu_trach, // tên nhân viên phụ trách
+        loai_hinh: findCus.business_type, // loại hình
         phan_loai_khach_hang: findCus.classify, // loại khách hàng
         hoa_don_tp: hd_thanh_pho,// hóa đơn id thành phố
         hoa_don_huyen: hd_huyen, // hóa đơn id huyện
@@ -160,24 +155,24 @@ exports.detail = async (req, res) => {
         ma_vung_hoa_don: findCus.bill_area_code,// Mã vùng thông tin viết hóa đơn
         bill_invoice_address: findCus.bill_invoice_address, // Địa chỉ giao hàng
         bill_invoice_address_email: findCus.bill_invoice_address_email, // địa chỉ đơn hàng email
-        giao_hang_tp : hd_thanh_pho,// giao hàng tại thành phố
-        giao_hang_huyen :hd_huyen, // giao hàng tại huyện
-        giao_hang_xa :  hd_ten_xa,// giao hàng tại phường,xã
+        giao_hang_tp: hd_thanh_pho,// giao hàng tại thành phố
+        giao_hang_huyen: hd_huyen, // giao hàng tại huyện
+        giao_hang_xa: hd_ten_xa,// giao hàng tại phường,xã
         ma_vung_giao_hang: findCus.ship_area,// Mã vùng thông tin giao hàng
         bank_id: findCus.bank_id, // id của ngân hàng
         bank_account: findCus.bank_account, // tài khoản ngân hàng
         rank: findCus.rank,// xếp hạng khách hàng
         website: findCus.website, // website ngân hàng
         so_ngay_duoc_no: findCus.number_of_day_owed,// số ngày được nợ
-        quy_mo_nhan_su : findCus.size,// quy mô nhân sự
+        quy_mo_nhan_su: findCus.size,// quy mô nhân sự
         han_muc_no: findCus.deb_limit,// hạn mức nợ
         loai_hinh_khach_hang: findCus.type, // loại hình khách hàng
         doanh_thu: findCus.revenue, // doanh thu
         la_khach_hang_tu: findCus.created_at, // là khách hàng từ ngày
-        nguoi_tao : name_tao.userName, // tên nhân viên tạo 
-        nguoi_sua : name_sua.userName, // tên nhân viên sửa
-        ngay_tao : findCus.created_at,
-        ngay_sua : findCus.updated_at
+        nguoi_tao: name_tao.userName, // tên nhân viên tạo 
+        nguoi_sua: name_sua.userName, // tên nhân viên sửa
+        ngay_tao: findCus.created_at,
+        ngay_sua: findCus.updated_at
       }
       return functions.success(res, 'get data success', { data2 });
     } else {
@@ -191,50 +186,50 @@ exports.detail = async (req, res) => {
   }
 }
 
-exports.listCity = async(req,res) => {
-  try{
-    if(req.user.data.type == 1 || req.user.data.type == 2){
+exports.listCity = async (req, res) => {
+  try {
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
       let listCity = await City.find({}).select('_id name')
-    return functions.success(res, 'get data success', { listCity });
-    }else {
+      return functions.success(res, 'get data success', { listCity });
+    } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-  }catch (e) {
+  } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
   }
 }
 
-exports.listDistrict = async(req,res) => {
-  try{
-    let {_id} = req.body
-    if(req.user.data.type == 1 || req.user.data.type == 2){
-      let listDistrict = await District.find({parent : _id}).select('_id name')
-      if(!listDistrict){
+exports.listDistrict = async (req, res) => {
+  try {
+    let { _id } = req.body
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      let listDistrict = await District.find({ parent: _id }).select('_id name')
+      if (!listDistrict) {
         listDistrict = []
       }
       return functions.success(res, 'get data success', { listDistrict });
-    }else {
+    } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-  }catch (e) {
+  } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
   }
 }
 
-exports.listWard = async (req,res) =>{
-  try{
-    let {_id} = req.body
-    if(req.user.data.type == 1 || req.user.data.type == 2){
-      let listWard = await Ward.find({district_id : _id}).select('ward_id ward_name')
-      if(!listWard){
+exports.listWard = async (req, res) => {
+  try {
+    let { _id } = req.body
+    if (req.user.data.type == 1 || req.user.data.type == 2) {
+      let listWard = await Ward.find({ district_id: _id }).select('ward_id ward_name')
+      if (!listWard) {
         listWard = []
       }
-    }else {
+    } else {
       return functions.setError(res, 'không có quyền truy cập', 400);
     }
-  }catch (e) {
+  } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
   }
@@ -421,17 +416,17 @@ exports.editCustomer = async (req, res) => {
 // hàm hiển thị lịch sử trợ lý kinh doanh (theo id khach hang)
 exports.showHisCus = async (req, res) => {
   try {
-    let {cus_id} = req.body;
+    let { cus_id } = req.body;
     if (!cus_id) {
       return functions.setError(res, 'cus_id không được bỏ trống', 400);
     }
     if (typeof cus_id !== 'number' && isNaN(Number(cus_id))) {
       return functions.setError(res, 'cus_id phải là 1 số', 400);
     }
-    let checkHis = await AppointmentContentCall.find({ id_cus : cus_id })
+    let checkHis = await AppointmentContentCall.find({ id_cus: cus_id })
       .sort({ id: -1 })
       .lean()
-    return functions.success(res, 'get data success', {checkHis});
+    return functions.success(res, 'get data success', { checkHis });
   } catch (e) {
     console.log(e)
     return functions.setError(res, e.message)
@@ -442,7 +437,7 @@ exports.showHisCus = async (req, res) => {
 //Ham ban giao cong viec
 exports.banGiao = async (req, res) => {
   try {
-    let { cus_id,userID } = req.body;
+    let { cus_id, userID } = req.body;
     let comId = req.user.data.com_id;
     if (!Array.isArray(cus_id) || cus_id.length === 0) {
       return functions.setError(res, 'Không có mục tiêu được chọn', 400);
@@ -456,7 +451,7 @@ exports.banGiao = async (req, res) => {
       }
       await customerService.getDatafindOneAndUpdate(
         Customer,
-        { cus_id: cus_id[i]},
+        { cus_id: cus_id[i] },
         {
           cus_id: cus_id[i],
           company_id: comId,
@@ -475,7 +470,7 @@ exports.banGiao = async (req, res) => {
 //hàm chia sẻ khách hàng
 exports.ShareCustomer = async (req, res) => {
   try {
-    let {customer_id,role,dep_id,receiver_id } = req.body;
+    let { customer_id, role, dep_id, receiver_id } = req.body;
     let NVshare = "";
     if (req.user.data.type == 1 || req.user.data.type == 2) {
       com_id = req.user.data.com_id;
@@ -488,7 +483,7 @@ exports.ShareCustomer = async (req, res) => {
     const maxID = await customerService.getMaxIDConnectApi(ShareCustomer);
     const maxId = maxID ? Number(maxID) + 1 : 0;
     const shareCustomers = [];
-    const minLength = Math.min(customer_id.length,dep_id.length,role.length,receiver_id.length);
+    const minLength = Math.min(customer_id.length, dep_id.length, role.length, receiver_id.length);
     for (let i = 0; i < minLength; i++) {
       const id = maxId + i;
       const createShareCustomer = new ShareCustomer({
@@ -673,65 +668,3 @@ exports.CombineCustome = async (req, res) => {
 
 
 
-// hàm hiển thị lịch sử cuộc gọi
-exports.Callhistory = async(req,res) =>{
-  try{
-    let com_id = "";
-    let emp_id = "";
-    if (req.user.data.type == 1 || req.user.data.type == 2) {
-      com_id = req.user.data.com_id;
-      emp_id = req.user.data.idQLC;
-      let checkExt = await ManagerExtension.findOne({emp_id : emp_id, company_id : com_id}).select('ext_number manager_extension')
-      if(checkExt){
-      let extension = checkExt.ext_number
-      const totalCount = await CallHistory.countDocuments({ extension: extension });
-      let call_history = await CallHistory.find({extension : extension })
-      .select('phone created_at')
-      .sort({ created_at: -1 })
-      .limit(1000)
-      return functions.success(res, 'get data success', { call_history,totalCount });
-      }else{
-        return functions.setError(res, 'không tìm thấy cài đặt', 400);
-      }
-    } else {
-      return functions.setError(res, 'không có quyền truy cập', 400);
-    }
-  }catch (e) {
-    console.log(e)
-    return functions.setError(res, e.message)
-  }
-}
-
-// Hàm gọi điện 
-exports.Call = async(req,res)=>{
-  try{
-    let com_id = "";
-    if (req.user.data.type == 1 || req.user.data.type == 2) {
-      com_id = req.user.data.com_id;
-      emp_id = req.user.data.idQLC;
-    let {phone } = req.body
-    if(phone) {
-      // lay data cua tổng đài
-      let connect = await AcountApi.findOne({
-        com_id : com_id,
-        switchboard : "fpt",
-        status : 1
-      })
-      .select('account password domain')
-      if(connect){
-       // lấy data của NV đc cài đặt với line
-      
-      }else{
-        return functions.setError(res, 'không tồn tại bản ghi ', 400);
-      }
-    }else{
-      return functions.setError(res, 'số điện thoại khôn được bỏ trống', 400);
-    }
-    }else {
-      return functions.setError(res, 'không có quyền truy cập', 400);
-    }
-  }catch (e) {
-    console.log(e)
-    return functions.setError(res, e.message)
-  }
-}
