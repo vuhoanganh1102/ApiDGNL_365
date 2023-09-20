@@ -1,54 +1,54 @@
 const mongoose  = require('mongoose');
 const TblPhanQuyen = new mongoose.Schema({
     id_phanquyen : {
-        title: Number,
+        type: Number,
         require: true
     },
     // user nhân viên
     id_user : {
-        title: Number,
+        type: Number,
         require: true
     },
     id_cty : {
-        title: Number,
+        type: Number,
         require: true
     },
     tieuchi_dg : {
-        title: String,
+        type: String,
         require: true
     },
     de_kiemtra : {
-        title: String,
+        type: String,
         require: true
     },
     kehoach_dg : {
-        title: String,
+        type: String,
         require: true
     },
     ketqua_dg : {
-        title: String,
+        type: String,
         require: true
     },
     lotrinh_thangtien : {
-        title: String,
+        type: String,
         require: true
     },
     phieu_dg : {
-        title: String,
+        type: String,
         require: true
     },
     phanquyen : {
-        title: String,
+        type: String,
         require: true 
     },
     thangdiem : {
-        title: String,
+        type: String,
         require: true 
     },
 
 }, {
     collection : "DGNL_TblPhanQuyen",
-    versionKey: false
+    
 }
 )
-module.exports = mongoose.model("DGNL_TblPhanQuyen", TblPhanQuyenCollection);
+module.exports = mongoose.model("DGNL_TblPhanQuyen", TblPhanQuyen);

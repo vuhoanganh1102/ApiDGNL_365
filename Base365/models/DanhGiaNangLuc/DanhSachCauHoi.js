@@ -33,7 +33,7 @@ const DanhSachCauHoi = new mongoose.Schema({
         default: 0
     }, 
     updated_at:{
-        type: Date,
+        type: Number,
         default: null
     }, 
     nguoi_capnhat:{
@@ -49,8 +49,8 @@ const DanhSachCauHoi = new mongoose.Schema({
         default: 1
     }, 
     img_cauhoi:{
-        type: String,
-        default: null
+        type: Array,
+        default: []
     }, 
     congty_or_nv:{
         type: Number,

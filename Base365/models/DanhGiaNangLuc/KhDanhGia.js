@@ -96,9 +96,8 @@ const khDanhGia = new mongoose.Schema({
         require: true,
     },  
     kh_capnhat:{
-        type: Date,
-        default: Date.now,
-        require:true
+        type: String,
+        default:null
     },  
     id_congty:{
         type: Number,

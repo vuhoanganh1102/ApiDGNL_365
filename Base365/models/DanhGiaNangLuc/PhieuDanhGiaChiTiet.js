@@ -53,9 +53,9 @@ const PhieuDanhGiaChiTiet= new mongoose.Schema({
         default: 1
       },
       cd_capnhat: {
-        type: Date,
-        required: true,
-        default: Date.now
+        type: String,
+        required: true
+      
       },
       id_congty: {
         type: Number,

@@ -51,6 +51,7 @@ exports.register = async(req, res) => {
                         "inForPerson.account.experience": experience,
                         // "inForPerson.employee.start_working_time": Date.parse(startWorkingTime) / 1000,
                         "inForPerson.account.education": education,
+                      
                     })
                     await user.save();
 
@@ -73,6 +74,7 @@ exports.register = async(req, res) => {
                         married: user.inForPerson.account.married,
                         experience: user.inForPerson.account.experience,
                         education: user.inForPerson.account.education,
+                        
                     }, "1d")
                     const refreshToken = await functions.createToken({ userId: user._id }, "1y")
                     let data = {
@@ -185,6 +187,7 @@ exports.login = async(req, res, next) => {
                 } else if (user.type == 2 && user.inForPerson != null) {
                     com_id = user.inForPerson.employee.com_id;
                 }
+                console.log('assdsd',user.type)
                 const token = await functions.createToken({
                     _id: user._id,
                     idTimViec365: user.idTimViec365,
@@ -202,7 +205,7 @@ exports.login = async(req, res, next) => {
                     access_token: token,
                     refresh_token: refreshToken,
                     com_info: {
-                        com_id: user._id,
+                        com_id: user.inForPerson.employee.com_id,
                         com_email: user.email,
                     },
                     authentic: user.authentic
@@ -246,9 +249,10 @@ exports.login = async(req, res, next) => {
                     let com_id = 0;
                     if (user.type === 1) {
                         com_id = user.idQLC;
-                    } else if (user.inForPerson && user.type == 2) {
+                    } else if (user.inForPerson && user.type === 2) {
                         com_id = user.inForPerson.employee.com_id;
                     }
+                    console.log('asdsad',user.type)
                     const token = await functions.createToken({
                         _id: user._id,
                         idTimViec365: user.idTimViec365,

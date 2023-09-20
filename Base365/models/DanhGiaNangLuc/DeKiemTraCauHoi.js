@@ -1,64 +1,63 @@
 const mongoose = require('mongoose');
 const DeKiemTraCauHoi = new mongoose.Schema({
-    idkt_id:{
+    id:{
         type: Number,
         require: true,
     }, 
-    hinhthuc_taodekt_id:{
+    hinhthuc_taode:{
         type: Number,
         default: 0,
     }, // '1.Nguowif dungf tuwj tao,2.Heej thoosng tuwj taoj',
-    kt_loaikt_id:{
+    kt_loai:{
         type: Number,
         default:0,
     }, // '2.tuluan, 1.Trắc nghiệm, 3.ca2',
-    ch_thangdiemkt_id:{
+    ch_thangdiem:{
         type: Number,
         default: null,
     },
-    ten_de_kiemtrakt_id:{
-        type: Number,
+    ten_de_kiemtra:{
+        type: String,
         require: true,
-    }, text,
-    nguoitaokt_id:{
+    }, 
+    nguoitao:{
         type: Number,
         default:null
     }, 
-    ngaytaokt_id:{
+    ngaytao:{
         type: String,
         default: null
     }, 
-    ghichukt_id:{
+    ghichu:{
         type: String,
         default:null
     }, 
-    phanloai_macdinhkt_id:{
+    phanloai_macdinh:{
         type: String,
         default:null,
     }, 
-    phanloaikhackt_id:{
+    phanloaikhac:{
         type: String,
         default:null,
     }, 
-    danhsach_cauhoikt_id:{
+    danhsach_cauhoi:{
         type: String,
         default:null,
     }, 
-    id_congtykt_id:{
+    id_congty:{
         type: Number,
         default:0,
     }, 
-    congty_or_nvkt_id:{
+    congty_or_nv:{
         type: Number,
         default:0,
     }, 
-    is_deletekt_id:{
+    is_delete:{
         type: Number,
         default:1,
     }, 
-    updated_atkt_id:{
-        type: Date,
-        default: Date.now,
+    updated_at:{
+        type: String,
         require:true
     }, 
 }, {

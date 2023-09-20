@@ -37,8 +37,8 @@ const DeDanhGia = new mongoose.Schema({
         default:null,
     },   
     dg_capnhat:{
-        type: Date,
-        default: Date.now,
+        type: String,
+        
         require:true,
     },   
     id_congty:{

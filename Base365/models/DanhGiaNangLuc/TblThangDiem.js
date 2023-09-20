@@ -1,29 +1,28 @@
 const mongoose = require('mongoose');
 const TblThangDiem = new mongoose.Schema({
     id : {
-        title: Number,
+        type: Number,
         required: true
     },
     thangdiem : {
-        title: Number,
+        type: Number,
         default: null
     },
     phanloai : {
-        title: String,
-        required: true
+        type: String,
+        default:null
     },
     update_at : {
-        title: Number,
+        type: Number,
         required: true
     },
     id_congty : {
-        title: Number,
+        type: Number,
         required: true
     },
 
 },{
-    collection: "DGNL_TblThangDiem",
-    versionKey: false
+    collection: "DGNL_TblThangDiem"
 }
-);
-module.exports = new mongoose.module("DGNL_TblThangDiem", TblThangDi);
+)
+module.exports = new mongoose.model("DGNL_TblThangDiem", TblThangDiem);
