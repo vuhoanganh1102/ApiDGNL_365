@@ -1,27 +1,31 @@
 const mongoose = require('mongoose');
 const TblYcCv = new mongoose.Schema({
     id : {
-        title: Number,
+        type: Number,
         required: true
     },
     id_chucvu : {
-        title: Number,
+        type: Number,
         required: true
     },
     ten_yeucau : {
-        title: String,
+        type: String,
         required: true
     },
     id_pb : {
-        title: Number,
+        type: Number,
+        required: true
+    },
+    vitri_yeucau: {
+        type: String,
         required: true
     },
     mota_yeucau : {
-        title: String,
+        type: String,
         required: true
     },
     id_congty : {
-        title: Number,
+        type: Number,
         required: true
     }
 },{

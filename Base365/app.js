@@ -16,6 +16,9 @@ var appQLTS = express();
 var AppGiaSu = express();
 var AppTinhluong = express();
 var AppViecLamTheoGio = express();
+var AppDGNL = express();
+
+
 
 function configureApp(app) {
     app.set('views', path.join(__dirname, 'views'));
@@ -125,6 +128,14 @@ var VLTGRouter = require('./routes/vieclamtheogio');
 AppViecLamTheoGio.use("/api/vltg", VLTGRouter);
 errorApp(AppViecLamTheoGio);
 
+// Cấu hình AppDGNL
+configureApp(AppDGNL);
+var DgnlRouter = require('./routes/DGNL');
+AppDGNL.use("/api/DGNL", DgnlRouter);
+errorApp(AppDGNL)
+
+
+
 
 const DB_URL = 'mongodb://127.0.0.1:27017/api-base365';
 mongoose.connect(DB_URL)
@@ -213,7 +224,15 @@ AppTinhluong.on('error', (error) => {
 AppViecLamTheoGio.listen(3011, () => {
     console.log(`Viec lam theo gio app is running on port 3011`);
 });
-
 AppViecLamTheoGio.on('error', (error) => {
     console.error('Error occurred while listening on viec lam theo gio port:', error);
+});
+
+// Danh gia nang luc
+AppDGNL.listen(3012, () => {
+    console.log('Danh gia nang luc is running on port 3012');
+})
+AppDGNL.on('error', (error) => {
+    
+    console.error('Error occurred while listening on DGNL port:', error);
 });

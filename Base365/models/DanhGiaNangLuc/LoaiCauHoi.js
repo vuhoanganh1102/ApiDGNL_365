@@ -22,7 +22,7 @@ const LoaiCauHoi = new mongoose.Schema({
         default:0
     },  
     updated_at:{
-        type: Date,
+        type: String,
         default:null
     },  
     trangthai_xoa:{

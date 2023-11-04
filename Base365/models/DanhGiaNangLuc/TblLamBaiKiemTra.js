@@ -1,19 +1,19 @@
 const mongoose = require('mongoose');
 const TblLamBaiKiemTra = new mongoose.Schema({
     id: {
-        title:Number,
+        type:Number,
         required: true
     },
     id_nv: {
-        title:Number,
+        type:Number,
         required: true
     },
     phieu_id: {
-        title:Number,
+        type:Number,
         required: true
     },
     cau_trl: {
-        title:Number,
+        type:Number,
         required: true
     },
 }, {

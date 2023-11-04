@@ -1,23 +1,23 @@
 const mongoose = require('mongoose');
 const TblThangDiem = new mongoose.Schema({
     id : {
-        title: Number,
+        type: Number,
         required: true
     },
     thangdiem : {
-        title: Number,
+        type: Number,
         default: null
     },
     phanloai : {
-        title: String,
+        type: String,
         required: true
     },
     update_at : {
-        title: Number,
+        type: Number,
         required: true
     },
     id_congty : {
-        title: Number,
+        type: Number,
         required: true
     },
 
@@ -26,4 +26,4 @@ const TblThangDiem = new mongoose.Schema({
     versionKey: false
 }
 );
-module.exports = new mongoose.module("DGNL_TblThangDiem", TblThangDi);
+module.exports = new mongoose.module("DGNL_TblThangDiem", TblThangDiem);

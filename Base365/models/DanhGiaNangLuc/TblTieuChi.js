@@ -1,54 +1,54 @@
 const mongoose = require('mongoose');
 const TlbTieuChi = new mongoose.Schema({
     id : {
-        title: Number,
+        type: Number,
         required: true
     },
     tcd_ten : {
-        title: String,
+        type: String,
         required: true
     },
     // '1.Tiêu chí đơn , 2.Tiêu chí tổng hợp'
     tcd_loai : {
-        title: Number,
+        type: Number,
         required: true
     },
     // 'id tông hợp'
     tc_id_tonghop : {
-        title: Number,
+        type: Number,
         default: null
     },
     // '1.Đóng 2.Mở'
     tcd_trangthai : {
-        title: Number,
+        type: Number,
         required: true
     },
     tcd_nguoitao : {
-        title: Number,
+        type: Number,
         required: true
     },
     tcd_ngaytao : {
-        title: Number,
+        type: Number,
         required: true
     },
     tcd_thangdiem : {
-        title: Number,
+        type: Number,
         required: true
     },
     tcd_ghichu : {
-        title: String
+        type: String
     },
     tcd_capnhat : {
-        title : Date,
+        type : Date,
         required : true,
         default : Date.now
     },
     id_congty : {
-        title: Number,
+        type: Number,
         required: true
     },
     trangthai_xoa : { 
-        title: Number,
+        type: Number,
         required: true,
         default : 1
     }

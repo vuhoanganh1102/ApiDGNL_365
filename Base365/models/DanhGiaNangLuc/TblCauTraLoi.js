@@ -1,28 +1,28 @@
 const mongoose = require('mongoose');
 const TblCauTraLoi = new mongoose.Schema({
   id: {
-    title: Number,
+    type: Number,
     required: true
     },
     ma_nv: {
-        title: Number,
+        type: Number,
         required: true
     },
     cau_traloi: {
-        title: String,
+        type: String,
         required: true
     },
     trangthai_lam : {
-        title: Number,
+        type: Number,
         // trạng thái   0 là đang làm , 1 là hoàn thành 
         required: true
     },
     id_congty : {
-        title: Number,
+        type: Number,
         required: true
     },
     phieu_id : {
-        title: Number,
+        type: Number,
         required: true
     },
 } ,{
