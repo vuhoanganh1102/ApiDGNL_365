@@ -1,10 +1,10 @@
 var express = require('express');
 var router = express.Router();
-const KetQuaDanhGianhanvien =  require('../../controllers/DGNL/KetQuaDanhGia/KetQuaDanhGiaNhanVien');
-const KetQuaDanhGiaPhongBan =  require('../../controllers/DGNL/KetQuaDanhGia/KetQuaPhongBan');
-const KetQuaDanhGiaCuaToi=  require('../../controllers/DGNL/KetQuaDanhGia/KetQuaCuaToi');
+const KetQuaDanhGianhanvien =  require('../../../controllers/DGNL/KetQuaDanhGia/KetQuaDanhGiaNhanVien');
+const KetQuaDanhGiaPhongBan =  require('../../../controllers/DGNL/KetQuaDanhGia/KetQuaPhongBan');
+const KetQuaDanhGiaCuaToi=  require('../../../controllers/DGNL/KetQuaDanhGia/KetQuaCuaToi');
 const formData = require("express-form-data")
-const functions = require('../../services/functions')
+const functions = require('../../../services/functions')
   
 
 router.post('/allDepKQNV', formData.parse(), functions.checkToken, KetQuaDanhGianhanvien.allDepKQNV);
